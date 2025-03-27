@@ -1,0 +1,393 @@
+
+:root {
+    /* Solid hex colors */
+    --primary-dark: #0f2418;      /* Deep forest green */
+    --primary-bg: #1a3526;        /* Dark moss green */
+    --secondary-bg: #224031;      /* Muted pine green */
+    --accent-color: #4a7c59;      /* Fresh green (main accent) - matches grass */
+    --bright-accent: #5a9e6f;     /* Lighter, vibrant green */
+    --highlight-color: #6abe54;   /* Soft green highlight - matches necroOrb */
+    --shadow-color: #3a443c;      /* Darker green for shadows */
+    --text-color: #f7f7f0;        /* Off-white for readability - matches our palette */
+    --gold-color: #e3d163;        /* Warm gold - matches goldMine inner */
+    --essence-color: #7047a3;     /* Purple for essence - matches necromancer color */
+    --health-color: #4a7c59;      /* Forest green - matches grass */
+    
+    /* Opacity variables for use with solid colors */
+    --semi-transparent: 0.6;
+    --high-transparent: 0.8;
+    --very-high-transparent: 0.95;
+    --low-transparent: 0.3;
+    --overlay-transparent: 0.75;
+    --hover-transparent: 0.9;
+    --full-transparent: 0.98;
+    --near-full-transparent: 0.99;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--primary-dark);
+    background-image: radial-gradient(circle at center, var(--primary-bg) 0%, var(--primary-dark) 100%);
+    color: var(--text-color);
+    font-family: 'Crimson Pro', serif;
+    overflow: hidden;
+    line-height: 1.6;
+}
+
+#gameContainer {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+}
+
+canvas { 
+    border: 2px solid var(--accent-color);
+    box-shadow: 0 0 30px var(--shadow-color);
+    background-color: var(--secondary-bg);
+    max-width: 90%;
+    border-radius: 8px;
+    transition: transform 0.3s ease;
+}
+
+#towerMenu {
+    width: 800px;
+    max-width: 90%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    padding: 15px;
+    background: var(--primary-dark);
+    border-radius: 10px;
+    border: 1px solid var(--accent-color);
+    border-opacity: var(--low-transparent); /* Note: This won't work directly; see below */
+    backdrop-filter: blur(5px);
+}
+
+.tower-option {
+    padding: 8px 14px;
+    background: linear-gradient(to bottom, var(--accent-color), var(--secondary-bg));
+    opacity: var(--high-transparent);
+    border: 1px solid var(--accent-color);
+    color: var(--text-color);
+    cursor: pointer;
+    transition: all 0.3s;
+    border-radius: 6px;
+    min-width: 110px;
+    text-align: center;
+    font-family: 'Cinzel', serif;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 3px #000; /* Black shadow, no rgba */
+    box-shadow: 0 3px 6px #000;   /* Black shadow, no rgba */
+}
+
+.tower-option:hover { 
+    background: linear-gradient(to bottom, var(--bright-accent), var(--accent-color));
+    opacity: var(--hover-transparent);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px #000;
+}
+
+.tower-option:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px #000;
+}
+
+#statsContainer {
+    width: 800px;
+    max-width: 90%;
+    padding: 12px;
+    background: var(--primary-dark);
+    border-radius: 10px;
+    border: 1px solid var(--accent-color);
+    border-opacity: var(--low-transparent); /* Note: This won't work directly; see below */
+    backdrop-filter: blur(5px);
+}
+
+#stats {
+    display: flex;
+    justify-content: space-around;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.stat {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.1rem;
+}
+
+.stat-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#upgradeMenu { 
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(to bottom, var(--secondary-bg), var(--primary-dark));
+    opacity: var(--very-high-transparent);
+    color: var(--text-color);
+    padding: 25px;
+    border-radius: 12px;
+    border: 2px solid var(--accent-color);
+    display: none;
+    z-index: 10;
+    width: 450px;
+    box-shadow: 0 0 40px var(--shadow-color);
+    backdrop-filter: blur(10px);
+}
+
+#upgradeMenu h2 {
+    text-align: center;
+    color: var(--highlight-color);
+    margin-top: 0;
+    border-bottom: 1px solid var(--accent-color);
+    padding-bottom: 15px;
+    font-family: 'Cinzel', serif;
+    letter-spacing: 1px;
+    font-weight: 700;
+}
+
+.upgrade-option { 
+    margin: 18px 0;
+    padding: 18px;
+    background: linear-gradient(to right, var(--secondary-bg), var(--primary-bg));
+    opacity: var(--high-transparent);
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--accent-color);
+    border-opacity: var(--low-transparent); /* Note: This won't work directly; see below */
+    box-shadow: 0 4px 8px #000;
+}
+
+.upgrade-option:hover { 
+    background: linear-gradient(to right, var(--accent-color), var(--bright-accent));
+    opacity: var(--hover-transparent);
+    transform: translateX(8px);
+    box-shadow: 0 6px 12px #000;
+}
+
+.upgrade-icon {
+    width: 48px;
+    height: 48px;
+    margin-right: 18px;
+    background: linear-gradient(135deg, var(--accent-color), var(--secondary-bg));
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    box-shadow: 0 3px 6px #000;
+}
+
+.upgrade-desc {
+    flex-grow: 1;
+}
+
+.upgrade-title {
+    font-weight: bold;
+    margin-bottom: 6px;
+    color: var(--highlight-color);
+    font-size: 1.2rem;
+    font-family: 'Cinzel', serif;
+}
+
+#overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    opacity: var(--overlay-transparent);
+    display: none;
+    z-index: 5;
+    backdrop-filter: blur(3px);
+}
+
+#waveInfo {
+    position: absolute;
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(to right, var(--secondary-bg), var(--primary-bg));
+    opacity: var(--high-transparent);
+    padding: 8px 20px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 4px 12px #000;
+    border: 1px solid var(--accent-color);
+    border-opacity: var(--low-transparent); /* Note: This won't work directly; see below */
+    backdrop-filter: blur(5px);
+}
+
+#waveDisplay {
+    font-weight: bold;
+    color: var(--highlight-color);
+}
+
+.progress-bar {
+    width: 220px;
+    height: 12px;
+    background: var(--primary-dark);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: inset 0 1px 3px #000;
+    border: 1px solid var(--accent-color);
+    border-opacity: var(--low-transparent); /* Note: This won't work directly; see below */
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(to right, var(--accent-color), var(--highlight-color));
+    width: 0%;
+    box-shadow: 0 0 8px var(--shadow-color);
+    transition: width 0.3s ease;
+}
+
+#startGameBtn {
+    padding: 12px 35px;
+    background: linear-gradient(to bottom, var(--bright-accent), var(--accent-color));
+    color: white;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    font-family: 'Cinzel', serif;
+    font-weight: 500;
+    font-size: 1.2rem;
+    transition: all 0.3s;
+    box-shadow: 0 6px 12px #000;
+    text-shadow: 0 1px 2px #000;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 20;
+}
+
+#startGameBtn:hover {
+    background: linear-gradient(to bottom, var(--highlight-color), var(--bright-accent));
+    transform: translate(-50%, -50%) scale(1.05);
+    box-shadow: 0 8px 16px #000;
+}
+
+#startGameBtn:active {
+    transform: translate(-50%, -50%) scale(1);
+    box-shadow: 0 4px 8px #000;
+}
+
+#tooltip {
+    position: absolute;
+    background: linear-gradient(to bottom, var(--primary-dark), var(--primary-dark));
+    opacity: var(--very-high-transparent);
+    color: var(--text-color);
+    padding: 12px 15px;
+    border-radius: 8px;
+    display: none;
+    z-index: 100;
+    border: 1px solid var(--accent-color);
+    pointer-events: none;
+    max-width: 280px;
+    box-shadow: 0 0 20px var(--shadow-color);
+    font-size: 0.95rem;
+    backdrop-filter: blur(5px);
+}
+
+#gameOverMenu, #victoryMenu {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(to bottom, var(--secondary-bg), var(--primary-dark));
+    opacity: var(--full-transparent);
+    color: white;
+    padding: 40px;
+    text-align: center;
+    border-radius: 15px;
+    border: 3px solid var(--accent-color);
+    z-index: 20;
+    display: none;
+    box-shadow: 0 0 60px var(--shadow-color);
+    backdrop-filter: blur(10px);
+    min-width: 350px;
+}
+
+#gameOverMenu h2, #victoryMenu h2 {
+    color: var(--highlight-color);
+    font-size: 32px;
+    margin-bottom: 20px;
+    font-family: 'Cinzel', serif;
+    text-shadow: 0 2px 4px #000;
+}
+
+#gameOverMenu p, #victoryMenu p {
+    font-size: 18px;
+    margin-bottom: 25px;
+    line-height: 1.6;
+}
+
+.menu-button {
+    margin-top: 25px;
+    padding: 12px 25px;
+    background: linear-gradient(to bottom, var(--bright-accent), var(--accent-color));
+    border: none;
+    color: white;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.3s;
+    font-family: 'Cinzel', serif;
+    font-size: 16px;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 8px #000;
+    text-shadow: 0 1px 2px #000;
+}
+
+.menu-button:hover {
+    background: linear-gradient(to bottom, var(--highlight-color), var(--bright-accent));
+    transform: scale(1.05) translateY(-3px);
+    box-shadow: 0 6px 15px #000;
+}
+
+.menu-button:active {
+    transform: scale(1) translateY(0);
+    box-shadow: 0 3px 6px #000;
+}
+
+/* Stat icons with custom styling */
+#shardsDisplay { color: var(--gold-color); font-weight: 600; }
+#essenceDisplay, #essenceNeededDisplay { color: var(--essence-color); font-weight: 600; }
+#populationDisplay, #maxPopulationDisplay { color: var(--essence-color); font-weight: 600; }
+#hpDisplay { color: var(--health-color); font-weight: 600; }
+
+
+
+#waveDisplay {
+    display: inline-block;
+}

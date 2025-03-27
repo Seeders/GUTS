@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tower Defense Level Editor</title>
+    <link href="./style/levelEditor.css" rel="stylesheet" />
+</head>
+<body>
+    <h1>Tower Defense Level Editor</h1>
+    
+    <div id="level-editor-container" class="main-content-container">
+        <div class="content-sidebar">
+            <div class="toolbar">                        
+                <button id="terrainsBtn" class="btn active">Terrains</button>
+                <button id="pathBtn" class="btn">Draw Path</button>
+                <button id="eraserBtn" class="btn">Eraser</button>
+            </div>
+            <div class="tools">                        
+                <div id="terrainsPanel">
+                    <h4>Terrain Types</h4>
+                    <div class="color-picker">
+                        <div class="color-option active" style="background-color: #8bc34a;" data-type="grass"></div>
+                        <div class="color-option" style="background-color: #64b5f6;" data-type="water"></div>
+                        <div class="color-option" style="background-color: #9e9e9e;" data-type="rock"></div>
+                    </div>
+                </div>
+            </div>
+        </div>                                  
+        <div class="grid-container grid-background">
+            <div id="grid" class="grid"></div>
+        </div>
+    </div>
+
+    <script type="module" src="./editor/levelEditor.js"></script>
+</body>
+</html>
