@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Config Editor</title>
+    <link rel="stylesheet" href="./style/editor.css" />
+    <link rel="stylesheet" href="./style/levelEditor.css" />
+    <style id="theme_style"></style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h2>Editor</h2>
+            <div class="object-list" id="object-list">
+                <!-- Object list will be dynamically populated -->
+            </div>
+            <div style="margin-top: auto; padding-top: 10px;">
+                <button class="primary" id="add-object-btn" style="width: 100%;">Add New Object</button>
+                <button id="import-export-btn" style="width: 100%; margin-top: 10px;">Import/Export Config</button>                
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div id="graphics-editor-container" class="main-content-container">
+                <div id="graphics-sidebar" class="content-sidebar">
+                    <div id="toolbar" class="toolbar">
+                        <button id="preview-animation" class="btn btn-primary" title="Preview Animation">Play</button>
+                        <button id="add-animation" class="btn btn-primary" title="Add Animation">+A</button>
+                        <button id="delete-animation" class="btn btn-danger" title="Delete Animation">-A</button>
+                        <button id="duplicate-frame" class="btn btn-primary" title="Add Frame">+F</button>
+                        <button id="delete-frame" class="btn btn-danger" title="Delete Frame">-F</button>
+                        <button id="add-shape" class="btn btn-primary" title="Add Shape">+S</button>
+                        <button id="duplicate-shape" class="btn btn-primary" title="Duplicate Shape">SS</button>
+                        <button id="delete-shape" class="btn btn-danger" title="Delete Shape">-S</button>
+                        <button id="scale-all" class="btn btn-secondary" title="Scale All">Sc</button>
+                        <button id="move-all" class="btn btn-secondary" title="Move All">Mv</button>
+                        <button id="rotate-all" class="btn btn-secondary" title="Rotate All">Rt</button>
+                        <button id="generate-isometric" class="btn btn-special" title="Generate Isometric Sprites">Iso</button>
+                    </div>
+                    <div id="shape-list"></div>
+                </div>
+                <div id="canvas-container" class="grid-background">
+                    <canvas id="canvas"></canvas>
+                    <div class="scene-info">
+                        <div>Shapes: <span id="shape-count">0</span></div>
+                        <div>Selected: <span id="selected-shape">None</span></div>
+                        <div><small>Controls: Left-click to select, Drag to rotate, Right-drag to pan, Scroll to zoom</small></div>
+                    </div>
+                </div>
+                <div id="graphics-rightbar">
+                    <div id="inspector"></div>
+                    <div id="json-editor" style="display: none">
+                        <textarea id="json-content" placeholder="Edit JSON here..."></textarea>
+                    </div>
+                </div>
+            </div>
+            <div id="level-editor-container" class="main-content-container">                
+                <div class="content-sidebar">
+                    
+                    <div class="toolbar">                        
+                        <button id="terrainsBtn" class="btn active">Terrains</button>
+                    </div>
+                    
+                    <div class="tools">     
+                        <div>
+                            <h3 style="margin-bottom: 20px; color: #e0e0e0; font-size: 18px;">Settings</h3>
+                            <div class="form-row">
+                                <label for="terrainMapSize">Map Size:</label>
+                                <input type="number" id="terrainMapSize" value="48" step="1" min="1">
+                            </div>
+                            <div class="form-row">
+                                <label for="terrainBGColor">Map Background Color:</label>
+                                <input type="color" id="terrainBGColor" />
+                            </div>
+                        </div>                   
+                        <div id="terrainsPanel">
+                            <h4>Terrain Types</h4>
+                        </div>
+                    </div>
+                </div>                                  
+                <div class="grid-container grid-background">
+                    <div class="translation-controls">
+                        <button id="translate-up"><span>↑</span></button>
+                        <button id="translate-right"><span>→</span></button>
+                        <button id="translate-left"><span>←</span></button>
+                        <button id="translate-down"><span>↓</span></button>
+                    </div>
+                    <canvas id="grid"></canvas>
+                </div>
+            </div>
+            <button id="toggleEditorButton">-</button>
+            <div class="editor" id="editor">      
+                <div class="instructions">
+                    Select a tower from the sidebar or create a new one to start editing.
+                </div>        
+                <!-- Editor form will be dynamically populated -->
+            </div>
+        </div>
+    </div>
+    <div id="modals">
+        <!-- Import/Export Modal -->
+        <div class="modal" id="import-export-modal">
+            <div class="modal-content">
+                <h2>Import/Export Configuration</h2>
+                
+                <div class="tab-navigation">
+                    <div class="tab active" data-tab="import">Import</div>
+                    <div class="tab" data-tab="export">Export</div>
+                </div>
+                
+                <div class="tab-content active" id="import-tab">
+                    <p>Paste your tower configuration below:</p>
+                    <textarea id="import-textarea" rows="15"></textarea>
+                    <div class="actions">
+                        <button class="primary" id="import-btn">Import Configuration</button>
+                        <button id="close-import-export-modal">Cancel</button>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="export-tab">
+                    <p>Copy your tower configuration:</p>
+                    <textarea id="export-textarea" rows="15" readonly></textarea>
+                    <div class="actions">
+                        <button class="primary" id="copy-export-btn">Copy to Clipboard</button>
+                        <button id="close-export-modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>    
+        <!-- New Tower Modal -->
+        <div class="modal" id="new-object-modal">
+            <div class="modal-content">
+                <h2>Create New Object</h2>
+                <div class="form-group">
+                    <label for="new-object-id">Object ID:</label>
+                    <input type="text" id="new-object-id" placeholder="e.g. fireTower">
+                </div>
+                <div class="form-group">
+                    <label for="new-object-name">Display Name:</label>
+                    <input type="text" id="new-object-name" placeholder="e.g. Fire Tower">
+                </div>
+                <div class="actions">
+                    <button class="primary" id="create-object-btn">Create Tower</button>
+                    <button id="close-new-object-modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+        <div class="modal" id="duplicate-object-modal">
+            <div class="modal-content">
+                <h2>Create Duplicate Object</h2>
+                <div class="form-group">
+                    <label for="duplicate-object-id">Object ID:</label>
+                    <input type="text" id="duplicate-object-id" placeholder="e.g. fireTower">
+                </div>
+                <div class="form-group">
+                    <label for="duplicate-object-name">Display Name:</label>
+                    <input type="text" id="duplicate-object-name" placeholder="e.g. Fire Tower">
+                </div>
+                <div class="actions">
+                    <button class="primary" id="create-duplicate-object-btn">Duplicate Object</button>
+                    <button id="close-duplicate-object-modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal" id="move-modal">
+            <div class="modal-content">
+                <h3>Move All Shapes</h3>
+                <div class="form-row">
+                    <label for="move-x">X Offset:</label>
+                    <input type="number" id="move-x" value="0" step="0.5">
+                </div>
+                <div class="form-row">
+                    <label for="move-y">Y Offset:</label>
+                    <input type="number" id="move-y" value="0" step="0.5">
+                </div>
+                <div class="form-row">
+                    <label for="move-z">Z Offset:</label>
+                    <input type="number" id="move-z" value="0" step="0.5">
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button id="move-cancel">Cancel</button>
+                    <button id="move-apply">Apply</button>
+                </div>
+            </div>
+        </div>
+        <div class="modal" id="rotate-modal">
+            <div class="modal-content">
+                <h3>Rotate All Shapes</h3>
+                <div class="form-row">
+                    <label for="rotate-angle">Angle (degrees):</label>
+                    <input type="number" id="rotate-angle" value="0" step="1">
+                </div>
+                <div class="form-row">
+                    <label for="rotate-axis">Axis:</label>
+                    <select id="rotate-axis">
+                        <option value="x">X</option>
+                        <option value="y" selected>Y</option>
+                        <option value="z">Z</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button id="rotate-cancel">Cancel</button>
+                    <button id="rotate-apply">Apply</button>
+                </div>
+            </div>
+        </div>
+        <div  class="modal" id="isometric-modal">
+            <div class="modal-content" >
+                <h3 style="margin-bottom: 20px; color: #e0e0e0; font-size: 18px;">Generate Isometric Sprites</h3>
+                <div class="form-row">
+                    <label for="iso-frustum">Frustum Size:</label>
+                    <input type="number" id="iso-frustum" value="48" step="1" min="1">
+                </div>
+                <div class="form-row">
+                    <label for="iso-distance">Distance:</label>
+                    <input type="number" id="iso-distance" value="100" step="1" min="1">
+                </div>
+                <div class="form-row">
+                    <label for="iso-size">Sprite Size:</label>
+                    <input type="number" id="iso-size" value="64" step="1" min="1">
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button id="iso-cancel">Cancel</button>
+                    <button id="iso-generate">Generate</button>
+                </div>
+            </div>
+        </div>
+        <div class="modal" id="terrainForm" >
+            <div class="modal-content" >
+                <h4 id="formTitle">Add Terrain Type</h4>
+                <input type="hidden" id="editingType" value="">
+                <div class="form-group">
+                    <label for="terrainType">Type:</label>
+                    <input type="text" id="terrainType" placeholder="grass, water, etc.">
+                </div>
+                <div class="form-group">
+                    <label for="terrainColor">Color:</label>
+                    <input type="text" id="terrainColorText">
+                    <input type="color" id="terrainColor">
+                </div>
+                <div class="form-group">
+                    <label for="terrainImage">Sprite Sheet:</label>
+                    <input type="textarea" id="terrainImage">
+                </div>
+                <div class="form-group">
+                    <input type="file" id="terrain-image-upload" accept="image/*">
+                    <div class="canvas-container" style="position: relative; display: inline-block;">
+                        <img id="terrain-image-display" alt="Terrain Image">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="terrainBuildable">Buildable:</label>
+                    <input type="checkbox" id="terrainBuildable">
+                </div>
+                <div class="form-actions">
+                    <button id="saveTerrainBtn" class="primary">Save</button>
+                    <button id="cancelTerrainBtn">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="./editor/GameEditor.js" type="module" ></script>
+    
+</body>
+</html>
