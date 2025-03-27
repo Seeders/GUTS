@@ -509,3 +509,46 @@ button:after {
     cursor: pointer;
     font-size: 0.9em;
 }
+
+#script-editor-container .grid-background {
+    width: calc(100% - 450px);
+}
+/* Override global scrollbar suppression for CodeMirror */
+#script-editor-container .CodeMirror {
+    overflow-y: auto !important; /* Enable vertical scrolling */
+    -ms-overflow-style: auto !important; /* IE and Edge */
+    scrollbar-width: auto !important; /* Firefox */
+    background: #000 !important;
+    color: #00ff00 !important;
+    font-family: 'Press Start 2P', cursive !important;
+    font-size: 10px !important;
+}
+
+/* Container and layout */
+#script-editor-container {
+    border: 4px solid #fff;
+    background: #000;
+    position: relative;
+    height: auto; /* Allow dynamic resizing */
+}
+
+#script-editor-container .grid-background {
+    width: calc(100% - 360px); /* Adjust for sidebar width */
+    flex: 1;
+    position: relative;
+    overflow: hidden; /* Contain children */
+}
+
+#script-editor-container .grid-background > div {
+    position: relative;
+    height: 100%;
+}
+
+
+/* Sidebar */
+#script-editor-sidebar {
+    width: 360px;
+    background: #3c3c3c;
+    border-right: 4px solid #000;
+    padding: 10px;
+}
