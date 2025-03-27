@@ -27785,31 +27785,31 @@
       "id": "configs",
       "name": "Configs",
       "singular": "Config",
-      "category": "Core"
+      "category": "Settings"
     },
     {
       "id": "entities",
       "name": "Entities",
       "singular": "Entity",
-      "category": "Core"
+      "category": "Scripts"
     },
     {
       "id": "components",
       "name": "Components",
       "singular": "Component",
-      "category": "Core"
+      "category": "Scripts"
     },
     {
       "id": "renderers",
       "name": "Renderers",
       "singular": "Renderer",
-      "category": "Core"
+      "category": "Scripts"
     },
     {
       "id": "functions",
       "name": "Functions",
       "singular": "Function",
-      "category": "Core"
+      "category": "Scripts"
     },
     {
       "id": "towers",
@@ -27851,19 +27851,19 @@
       "id": "waves",
       "name": "Waves",
       "singular": "Wave",
-      "category": "Levels"
+      "category": "Data"
     },
     {
       "id": "levels",
       "name": "Levels",
       "singular": "Level",
-      "category": "Levels"
+      "category": "Terrain"
     },
     {
       "id": "wavesets",
       "name": "Wave Sets",
       "singular": "Wave Set",
-      "category": "Levels"
+      "category": "Data"
     },
     {
       "id": "particles",
@@ -27875,7 +27875,7 @@
       "id": "themes",
       "name": "Themes",
       "singular": "Theme",
-      "category": "Editor"
+      "category": "Settings"
     },
     {
       "id": "modifierSets",

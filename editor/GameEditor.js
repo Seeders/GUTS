@@ -178,10 +178,13 @@ class GameEditor {
         document.querySelectorAll('.category-header').forEach(header => {
             header.addEventListener('click', () => {
                 const category = header.textContent.trim(); // Use category name as key
+                const isOpenedAlready = this.state.expandedCategories[category];
+     
                 // Collapse all categories except the clicked one
                 for (const cat in this.state.expandedCategories) {
-                    this.state.expandedCategories[cat] = cat === category;
+                    this.state.expandedCategories[cat] = false;
                 }
+                this.state.expandedCategories[category] = isOpenedAlready ? false : true;
                 this.renderObjectList(); // Re-render to reflect new state
             });
         });
