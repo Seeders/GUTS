@@ -1,5 +1,5 @@
 # GUTS
-Gaming Ultimate Toolkit System
+Gamedev Ultimate Toolkit System
 
     npm install
 
