@@ -127,7 +127,7 @@ class GameEditor {
                     Object.keys(this.state.objectTypes[type.id] || {}).forEach(objId => {
                         html += `
                             <div class="object-item ${this.state.selectedObject === objId ? 'selected' : ''}" data-object="${objId}">
-                                ${objId}
+                                ${this.state.objectTypes[type.id][objId].title || objId}
                             </div>`;
                     });
                     html += `</div>`;
