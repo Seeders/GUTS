@@ -1,6 +1,6 @@
 import { TerrainMapEditor } from "./TerrainMapEditor.js";
 import { GraphicsEditor } from "./GraphicsEditor.js";
-import {AIPromptPanel} from "./AIPromptPanel.js";
+import { AIPromptPanel } from "./AIPromptPanel.js";
 import { ScriptEditor } from "./ScriptEditor.js";
 
 class GameEditor {
@@ -65,7 +65,8 @@ class GameEditor {
             colorPicker: document.getElementById('colorPicker'),
             sizeSlider: document.getElementById('sizeSlider'),
             terrainEditorContainer: document.getElementById('level-editor-container'),
-            graphicsEditorContainer: document.getElementById('graphics-editor-container')
+            graphicsEditorContainer: document.getElementById('graphics-editor-container'),
+            scriptEditorContainer: document.getElementById('script-editor-container')
         };
 
         // Initialize the application
@@ -241,7 +242,6 @@ class GameEditor {
             </div>
         `;
         
-        this.scriptEditor.render();
         // Add event listener
         document.getElementById('ai-prompt-btn').addEventListener('click', () => {
             this.aiPromptPanel.showModal();
@@ -313,9 +313,10 @@ class GameEditor {
             value = JSON.stringify(value);
             valueInput.textContent = value;
             valueInput.setAttribute('id', 'render-value');
-        } else if(key === "script" ){ 
+        } else if(key === "script" || key === "html" || key === "css" ){ 
             valueInput = document.createElement('textarea');
             valueInput.textContent = value;
+            valueInput.setAttribute('id', 'script-value');
             type = 'textarea';            
         } else if (key === "tileMap" ) {
             valueInput = document.createElement('textarea');
@@ -514,6 +515,9 @@ class GameEditor {
         } else if(object.tileMap) {
             eventName = "editTileMap";
             data = { config: this.state.objectTypes.configs.game, tileMap: object.tileMap, environment: this.state.objectTypes.environment }
+        } else if(object.script) {
+            eventName = "editScript";
+            data = { config: this.state.objectTypes.configs.game, script: object.script }
         }
         if( data ) {
             // Create a custom event with data
@@ -787,10 +791,16 @@ class GameEditor {
     updateMainContent() {
         this.elements.terrainEditorContainer.classList.remove('show');
         this.elements.graphicsEditorContainer.classList.remove('show');
+        this.elements.scriptEditorContainer.classList.remove('show');
+        let selectedObj = this.state.objectTypes[this.state.selectedType][this.state.selectedObject];
+        let scriptProperty = selectedObj.script;
+    
         if(typeof this.state.objectTypes[this.state.selectedType][this.state.selectedObject].render != "undefined") {
             this.elements.graphicsEditorContainer.classList.add('show');
         } else if(typeof this.state.objectTypes[this.state.selectedType][this.state.selectedObject].tileMap != "undefined") {
             this.elements.terrainEditorContainer.classList.add('show');
+        } else if( typeof scriptProperty != "undefined") {
+            this.elements.scriptEditorContainer.classList.add('show');
         }
     }
 
@@ -800,10 +810,12 @@ class GameEditor {
             this.elements.editor.setAttribute('style', 'display: block');
             this.elements.terrainEditorContainer.setAttribute('style', 'height: 50vh');
             this.elements.graphicsEditorContainer.setAttribute('style', 'height: 50vh');
+            this.elements.scriptEditorContainer.setAttribute('style', 'height: 50vh');   
         } else {
             this.elements.editor.setAttribute('style', 'display: none');
             this.elements.terrainEditorContainer.setAttribute('style', 'height: 100vh');
-            this.elements.graphicsEditorContainer.setAttribute('style', 'height: 100vh');        
+            this.elements.graphicsEditorContainer.setAttribute('style', 'height: 100vh');   
+            this.elements.scriptEditorContainer.setAttribute('style', 'height: 100vh');        
         }
     }
 
@@ -942,6 +954,12 @@ class GameEditor {
         document.body.addEventListener('saveTileMap', (event) => {
             document.getElementById('tilemap-value').value = JSON.stringify(event.detail);
         });
+        
+        document.body.addEventListener('saveScript', (event) => {
+            document.getElementById('script-value').value = event.detail;
+            this.saveObject();
+        });
+        
     }
 
     init() {

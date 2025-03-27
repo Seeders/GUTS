@@ -2,92 +2,78 @@
 class ScriptEditor {
     constructor(gameEditor) {
         this.gameEditor = gameEditor;
-        this.container = null;
-        this.editorElement = null;
-        this.initialize();
+        this.container = this.gameEditor.elements.scriptEditorContainer; // Should be #script-editor-container
+        this.MIN_HEIGHT = 200;
+        this.isDragging = false;
+        this.start_y = 0;
+        this.start_h = 0;
+        this.DEFAULT_HEIGHT = () => document.body.clientHeight - 200;
+
+        if (!this.container) {
+            console.error("ScriptEditor container not found");
+            return;
+        } else {
+            console.log("Container found:", this.container);
+        }
+
+        const textArea = this.container.querySelector('#script-editor');
+        if (!textArea) {
+            console.error("Textarea #script-editor not found");
+            return;
+        }
+
+        this.scriptEditor = CodeMirror.fromTextArea(textArea, {
+            mode: 'javascript',
+            lineNumbers: true,
+            tabSize: 2,
+            indentWithTabs: false,
+            extraKeys: { 'Ctrl-Space': 'autocomplete' },
+            hintOptions: { completeSingle: false }
+        });
+
+        this.scriptEditor.setSize(null, this.DEFAULT_HEIGHT());
+
+        this.setupEventListeners();
     }
 
     initialize() {
-        // Create container if not exists
-        this.container = document.createElement('div');
-        this.container.className = 'script-editor-container';
-        this.container.innerHTML = `
-            <div class="tab-content" id="script-tab">
-                <h3>Script</h3>
-                <textarea id="script-editor" class="script-editor" placeholder="Enter your script here..."></textarea>
-                <button id="save-script-btn">Save Script</button>
-            </div>
-        `;
-
-        // Setup tabs if not already present
-        this.setupTabs();
-        
-        // Initialize editor
-        this.editorElement = this.container.querySelector('#script-editor');
-        this.updateEditorContent();
-
-        // Add event listeners
-        this.container.querySelector('#save-script-btn')
-            .addEventListener('click', () => this.saveScript());
     }
-
-    setupTabs() {
-        let tabsContainer = this.gameEditor.elements.editor.querySelector('.tabs');
-        if (!tabsContainer) {
-            tabsContainer = document.createElement('div');
-            tabsContainer.className = 'tabs';
-            this.gameEditor.elements.editor.prepend(tabsContainer);
-        }
-
-        // Ensure script tab exists
-        if (!tabsContainer.querySelector('[data-tab="script"]')) {
-            tabsContainer.innerHTML += `
-                <div class="tab" data-tab="script">Script</div>
-            `;
-            // Make Properties tab active by default if it's the first one
-            const propertiesTab = tabsContainer.querySelector('[data-tab="advanced"]');
-            if (propertiesTab && !tabsContainer.querySelector('.active')) {
-                propertiesTab.classList.add('active');
-            }
-        }
-
-        // Add tab switching logic
-        this.setupTabListeners();
-    }
-
-    setupTabListeners() {
-        const tabs = this.gameEditor.elements.editor.querySelectorAll('.tab');
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                tabs.forEach(t => t.classList.remove('active'));
-                const allContents = this.gameEditor.elements.editor.querySelectorAll('.tab-content');
-                allContents.forEach(c => c.classList.remove('active'));
-                
-                tab.classList.add('active');
-                const content = this.gameEditor.elements.editor.querySelector(`#${tab.dataset.tab}-tab`);
-                if (content) content.classList.add('active');
-            });
+   
+    setupEventListeners() {
+     
+        document.body.addEventListener('editScript', (event) => {
+            this.scriptData = event.detail;
+            this.scriptEditor.setValue(this.scriptData.script);
+            this.scriptEditor.setSize(null, this.DEFAULT_HEIGHT());
+            this.scriptEditor.refresh();
+            setTimeout(() => {
+                this.scriptEditor.refresh();
+            }, 100);
         });
-    }
-
-    updateEditorContent() {
-        const currentObject = this.gameEditor.state.objectTypes[this.gameEditor.state.selectedType]?.[this.gameEditor.state.selectedObject];
-        this.editorElement.value = currentObject?.script || '';
+        
+        const saveBtn = this.container.querySelector('#save-script-btn');
+        if (saveBtn) {
+            saveBtn.addEventListener('click', () => this.saveScript());
+        } else {
+            console.warn("Save button not found");
+        }
     }
 
     saveScript() {
-        if (!this.gameEditor.state.selectedObject) return;
-        const scriptText = this.editorElement.value;
-        this.gameEditor.state.objectTypes[this.gameEditor.state.selectedType][this.gameEditor.state.selectedObject].script = scriptText;
-        this.gameEditor.saveObject();
-    }
-
-    render() {
-        // Append to editor if not already present
-        if (!this.gameEditor.elements.editor.contains(this.container)) {
-            this.gameEditor.elements.editor.appendChild(this.container);
+        if (!this.gameEditor.state.selectedObject) {
+            console.warn("No selected object to save script to");
+            return;
         }
-        this.updateEditorContent();
+        const scriptText = this.scriptEditor.getValue();
+        // Create a custom event with data
+        const myCustomEvent = new CustomEvent('saveScript', {
+            detail: scriptText, 
+            bubbles: true, 
+            cancelable: true 
+        });
+
+        // Dispatch the event
+        document.body.dispatchEvent(myCustomEvent);
     }
 
     destroy() {

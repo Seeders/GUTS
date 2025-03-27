@@ -4,8 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Game Config Editor</title>
+    <script src="./library/codemirror.core.min.js" type="text/javascript"></script>
+    <script src="./library/codemirror.js.min.js" type="text/javascript"></script>
+    <script src="./library/codemirror.showhint.min.js" type="text/javascript"></script>
+    <script src="./library/codemirror.hint.min.js" type="text/javascript"></script>
     <link rel="stylesheet" href="./style/editor.css" />
     <link rel="stylesheet" href="./style/levelEditor.css" />
+    <link rel="stylesheet" href="./library/codemirror.css" />
     <style id="theme_style"></style>
 </head>
 <body>
@@ -87,6 +92,18 @@
                         <button id="translate-down"><span>↓</span></button>
                     </div>
                     <canvas id="grid"></canvas>
+                </div>
+            </div>
+            <div id="script-editor-container" class="main-content-container">
+                <div id="script-editor-sidebar" class="content-sidebar">                    
+                    <h3>ScriptEditor</h3>
+                    <button id="save-script-btn">Save Script</button>
+                </div>
+                <div class="grid-background">
+                    <div>
+                        <textarea id="script-editor" class="script-editor" placeholder="Enter your script here..."></textarea>                    
+                        <div class="handle"></div>
+                    </div>
                 </div>
             </div>
             <button id="toggleEditorButton">-</button>
