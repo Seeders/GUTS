@@ -71,7 +71,8 @@ class GameEditor {
             terrainEditorContainer: document.getElementById('level-editor-container'),
             graphicsEditorContainer: document.getElementById('graphics-editor-container'),
             scriptEditorContainer: document.getElementById('script-editor-container'),
-            audioEditorContainer: document.getElementById('audio-editor-container')
+            audioEditorContainer: document.getElementById('audio-editor-container'),
+            launchGameBtn: document.getElementById('launch-game-btn')
         };
 
         // Initialize the application
@@ -1005,6 +1006,10 @@ class GameEditor {
         document.body.addEventListener('saveAudio', (event) => {
             document.getElementById('audio-value').value = event.detail;
             this.saveObject();
+        });
+
+        this.elements.launchGameBtn.addEventListener('click',() => {
+            window.open("index.html", "mozillaTab");
         });
         
     }
