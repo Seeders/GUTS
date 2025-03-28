@@ -7,12 +7,12 @@ const app = express();
 app.use(express.json({ limit: '10mb' }));
 
 // Serve static files from the current directory
-app.use(express.static(path.join(__dirname, '/public/')));
+app.use(express.static(path.join(__dirname, '/')));
 
 // Endpoint to save the config
 app.post('/save-config', async (req, res) => {
     const config = req.body;
-    const filePath = path.join(__dirname, '/public/config/game_config.json');
+    const filePath = path.join(__dirname, '/config/game_config.json');
 
     try {
         await fs.writeFile(filePath, JSON.stringify(config, null, 2), 'utf8');
