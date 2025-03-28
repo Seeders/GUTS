@@ -34,9 +34,12 @@ class ScriptEditor {
         this.scriptEditor.setSize(null, this.DEFAULT_HEIGHT());
 
         this.setupEventListeners();
-    }
-
-    initialize() {
+                        
+        if( this.gameEditor.state.objectTypes.configs.codeMirror ) {
+            let styleTag = document.getElementById("theme_style");
+            styleTag.innerHTML += this.gameEditor.state.objectTypes.themes[this.gameEditor.state.objectTypes.configs.codeMirror.theme].css;
+        }
+        
     }
    
     setupEventListeners() {

@@ -11,8 +11,8 @@
     },
     "editor": {
       "title": "Editor Config",
-      "theme": "videoGame2",
-      "editorCategories": ""
+      "editorCategories": "",
+      "theme": "scifi2"
     },
     "ai": {
       "title": "AI",
@@ -45,6 +45,10 @@
       "round": 0,
       "waveDelay": 1,
       "modifierSet": "global"
+    },
+    "codeMirror": {
+      "title": "Code Mirror",
+      "theme": "codeMirrorTheme"
     }
   },
   "entities": {
@@ -239,11 +243,11 @@
     },
     "attacker": {
       "title": "Attacker",
-      "script": " init() {        \n        this.stats = this.getComponent('stats').stats;    \n        this.level = 1;\n        this.target = null;\n        this.projectiles = [];  \n        this.cooldown = 0;\n    }\n\n    update() {\n        if (this.cooldown > 0) this.cooldown--;\n\n        // Validate current target\n        if (this.target) {\n            const distance = Math.hypot(\n                this.target.position.x - this.parent.position.x,\n                this.target.position.y - this.parent.position.y\n            );\n            if (distance > this.stats.range || this.target.getComponent('health').hp <= 0) {\n                this.target = null;\n            }\n        }\n\n        // Find target if none\n        if (!this.target) {\n            this.findTarget();\n        }\n\n        // Attack if ready and has target\n        if (this.cooldown <= 0 && this.target) {\n            this.attack();\n        }\n\n        if (this.cooldown <= 0 && this.stats.mineAmt > 0) {\n            this.gather();\n        }\n        return true;\n    }\n    \n    findTarget() {\n        this.target = null;\n        let furthestEnemy = null;\n        let furthestDistance = -1;\n        const nearbyEntities = this.game.spatialGrid.getNearbyEntities(\n            this.parent.gridPosition.x, \n            this.parent.gridPosition.y, \n            this.stats.range\n        );\n        for (let enemy of nearbyEntities) {\n            let enemyHP = enemy.getComponent(\"health\").hp;\n            let followPath = enemy.getComponent('followPath');\n            if (enemyHP <= 0) continue;          \n\n            let distanceToEnd = this.game.state.paths[followPath.pathIndex].length - followPath.indexInPath;\n            if (distanceToEnd > furthestDistance) {\n                furthestDistance = followPath.indexInPath;\n                furthestEnemy = enemy;\n            }  \n        }\n        \n        this.target = furthestEnemy;\n    }\n\n    gather() {\n        this.game.state.bloodShards += this.stats.mineAmt;\n        this.cooldown = this.stats.attackSpeed;\n    }\n\n    attack() {\n        if (!this.target) return; \n        this.launchProjectile();\n        this.cooldown = this.stats.attackSpeed;\n    }\n    \n    launchProjectile() {\n        this.stats = this.getComponent('stats').stats;    \n        let projectileType = this.stats.projectile;\n        let projectileDef = this.game.config.projectiles[projectileType];\n        let projStats = { ...projectileDef };\n        delete projStats.render;\n        projStats.baseDamage = this.stats.damage || 1; \n        projStats.speed = this.stats.speed || 5;     \n        projStats.piercing = this.stats.piercing || 0;\n        projStats.splashRadius = this.stats.splashRadius || 0;\n        projStats.critChance = this.stats.critChance || 0.05;\n        projStats.critMultiplier = this.stats.critMultiplier || 2;\n    \n       \tif(projectileDef.customRenderer == \"lightning\") {\n         \tthis.game.spawn(this.parent.position.x, this.parent.position.y, 'lightningProjectile', { objectType: \"projectiles\", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });\n        } else if(projectileDef.isBallistic) {\n         \tthis.game.spawn(this.parent.position.x, this.parent.position.y, 'ballisticProjectile', { objectType: \"projectiles\", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });\n        } if( this.stats.projectileCount > 0 ) {\n          this.game.spawn(this.parent.position.x, this.parent.position.y, 'multiShotProjectile', { objectType: \"projectiles\", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });\n        } else {\n         \tthis.game.spawn(this.parent.position.x, this.parent.position.y, 'projectile', { objectType: \"projectiles\", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });\n        }\n    }"
+      "script": " init() {        \n        this.stats = this.getComponent('stats').stats;    \n        this.level = 1;\n        this.target = null;\n        this.projectiles = [];  \n        this.cooldown = 0;\n    }\n\n    update() {\n        if (this.cooldown > 0) this.cooldown--;\n\n        // Validate current target\n        if (this.target) {\n            const distance = Math.hypot(\n                this.target.position.x - this.parent.position.x,\n                this.target.position.y - this.parent.position.y\n            );\n            if (distance > this.stats.range || this.target.getComponent('health').hp <= 0) {\n                this.target = null;\n            }\n        }\n\n        // Find target if none\n        if (!this.target) {\n            this.findTarget();\n        }\n\n        // Attack if ready and has target\n        if (this.cooldown <= 0 && this.target) {\n            this.attack();\n        }\n\n        if (this.cooldown <= 0 && this.stats.mineAmt > 0) {\n            this.gather();\n        }\n        return true;\n    }\n    \n    findTarget() {\n        this.target = null;\n        let furthestEnemy = null;\n        let furthestDistance = -1;\n        const nearbyEntities = this.game.spatialGrid.getNearbyEntities(\n            this.parent.gridPosition.x, \n            this.parent.gridPosition.y, \n            this.stats.range\n        );\n        for (let enemy of nearbyEntities) {\n            let enemyHP = enemy.getComponent(\"health\").hp;\n            let followPath = enemy.getComponent('followPath');\n            if (enemyHP <= 0) continue;          \n\n            let distanceToEnd = this.game.state.paths[followPath.pathIndex].length - followPath.indexInPath;\n            if (distanceToEnd > furthestDistance) {\n                furthestDistance = followPath.indexInPath;\n                furthestEnemy = enemy;\n            }  \n        }\n        \n        this.target = furthestEnemy;\n    }\n\n    gather() {\n        this.game.state.bloodShards += this.stats.mineAmt;\n        this.cooldown = this.stats.attackSpeed;\n    }\n\n    attack() {\n        if (!this.target) return; \n        this.launchProjectile();\n        this.cooldown = this.stats.attackSpeed;\n    }\n    \n    launchProjectile() {\n        this.stats = this.getComponent('stats').stats;    \n        let projectileType = this.stats.projectile;\n        let projectileDef = this.game.config.projectiles[projectileType];\n        let projStats = { ...projectileDef };\n        delete projStats.render;\n        projStats.baseDamage = this.stats.damage || 1; \n        projStats.speed = this.stats.speed || 5;     \n        projStats.piercing = this.stats.piercing || 0;\n        projStats.splashRadius = this.stats.splashRadius || 0;\n        projStats.critChance = this.stats.critChance || 0.05;\n        projStats.critMultiplier = this.stats.critMultiplier || 2;\n    \n       \tif(projectileDef.customRenderer == \"lightning\") {\n         \tthis.game.spawn(this.parent.position.x, this.parent.position.y, 'lightningProjectile', { objectType: \"projectiles\", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });\n        } else if(projectileDef.isBallistic) {\n         \tthis.game.spawn(this.parent.position.x, this.parent.position.y, 'ballisticProjectile', { objectType: \"projectiles\", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });\n        } else if( this.stats.projectileCount > 0 ) {\n          this.game.spawn(this.parent.position.x, this.parent.position.y, 'multiShotProjectile', { objectType: \"projectiles\", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });\n        } else {\n          this.game.spawn(this.parent.position.x, this.parent.position.y, 'projectile', { objectType: \"projectiles\", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });\n        }\n    }"
     },
     "projectile": {
       "title": "Projectile",
-      "script": "init({ spawnType, owner, target, targetPosition, stats }) {\n  this.type = spawnType;\n  this.def = this.game.config.projectiles[this.type];\n  this.owner = owner;\n  this.target = target;\n  this.targetPosition = targetPosition;\n  this.stats = stats;\n  this.piercedEnemies = [];\n  this.ownerStats = this.owner.getComponent(\"stats\").stats;\n  this.distanceTraveled = 0;\n  this.distanceToSpawnParticle = 24;\n\n  // Add lifespan for projectile (e.g., 5 seconds)\n  this.maxLifespan = this.stats.lifespan || 5; // Default to 5 seconds, adjust as needed\n  this.currentLifespan = 0;\n}\n\nupdate() {\n  if(this.target) this.targetCurrentPosition = {...this.target.position };\n  // Update lifespan and destroy if expired\n  this.currentLifespan += this.game.deltaTime; // Assuming deltaTime is in seconds\n  if (this.currentLifespan >= this.maxLifespan) {\n    this.parent.destroy();\n    return;\n  }\n\n  // Remove if target is gone (only if no targetPosition)\n  if (!this.targetPosition && (!this.target || this.target.destroyed)) {\n    if(this.targetCurrentPosition) {\n    \tthis.targetPosition = this.targetCurrentPosition;\n    } else {\n     \tthis.parent.desetroy(); \n    \treturn;\n    }\n  }\n\n  // Determine movement target\n  const targetPos = this.targetPosition ? this.targetPosition : this.target.position;\n  const dx = targetPos.x - this.parent.position.x;\n  const dy = targetPos.y - this.parent.position.y;\n  const distSq = dx * dx + dy * dy;\n  const dist = Math.sqrt(distSq);\n  const speed = this.stats.speed;\n\n  // Hit detection\n  const hitRadiusSq = 15 * 15; // Same as your original hit detection radius\n  let hitDetected = false;\n\n  if (this.targetPosition) {\n    // Check nearby enemies for hit detection when using targetPosition\n    const nearbyEnemies = this.game.spatialGrid.getNearbyEntities(\n      this.parent.gridPosition.x,\n      this.parent.gridPosition.y,\n      this.stats.splashRadius || 15 // Use splashRadius or default to 15\n    );\n\n    for (const enemy of nearbyEnemies) {\n      if (enemy.isDead || this.piercedEnemies.includes(enemy)) continue;\n\n      const dxEnemy = enemy.position.x - this.parent.position.x;\n      const dyEnemy = enemy.position.y - this.parent.position.y;\n      const enemyDistSq = dxEnemy * dxEnemy + dyEnemy * dyEnemy;\n\n      if (enemyDistSq <= hitRadiusSq) {\n        // Hit detected\n        hitDetected = true;\n        let enemyHealth = enemy.getComponent(\"health\");\n        let enemyEnergyShield = enemy.getComponent(\"energyshield\");\n        let enemyStats = enemy.getComponent(\"stats\");\n        let enemyStatClone = { ...enemyStats.stats };\n        enemyStatClone.energyShield = enemyEnergyShield.energyShield;\n\n        // Apply damage\n        let damageResult = engine.getFunction(\"calculateDamage\")(this.stats, enemyStatClone);\n        if (!damageResult.wasEvaded) {\n          enemyHealth.hp -= damageResult.damageDealt;\n          enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);\n          this.game.spawn(enemy.position.x, enemy.position.y, \"hitEffect\", {\n            damageType: this.stats.damageType,\n            lifeSpan: 0.3\n          });\n          if (this.ownerStats.slowEffect) {\n            enemyStats.addEffect(\n              this.game.config.effects.slow,\n              this.game.effects.slow,\n              this.ownerStats.slowEffect\n            );\n          }\n        }\n\n        // Piercing logic\n        if (this.stats.piercing > 0 && this.piercedEnemies.length < this.stats.piercing) {\n          this.piercedEnemies.push(enemy);\n          let newTarget = this.findNewTarget(nearbyEnemies);\n          if (newTarget) {\n            this.target = newTarget;\n            this.targetPosition = null; // Switch to target-based tracking\n            return;\n          }\n        }\n\n        // Splash damage if applicable\n        if (this.stats.splashRadius > 0) {\n          this.applySplashDamage(nearbyEnemies);\n          this.game.spawn(this.parent.position.x, this.parent.position.y, \"explosion\", {\n            radius: this.stats.splashRadius\n          });\n        }\n\n        // Destroy projectile if no piercing or piercing limit reached\n        if (this.stats.piercing <= 0 || this.piercedEnemies.length >= this.stats.piercing) {\n          this.parent.destroy();\n          return;\n        }\n      }\n    }\n  } else if (distSq < hitRadiusSq) {\n    // Original target-based hit detection\n    let targetHealth = this.target.getComponent(\"health\");\n    let targetEnergyShield = this.target.getComponent(\"energyshield\");\n    let targetStats = this.target.getComponent(\"stats\");\n    let targetStatClone = { ...targetStats.stats };\n    targetStatClone.energyShield = targetEnergyShield.energyShield;\n\n    // Apply damage and effects (unchanged from your original code)\n    let damageResult = engine.getFunction(\"calculateDamage\")(this.stats, targetStatClone);\n    if (!damageResult.wasEvaded) {\n      targetHealth.hp -= damageResult.damageDealt;\n      targetEnergyShield.absorbDamage(damageResult.damageAbsorbed);\n      this.game.spawn(this.target.position.x, this.target.position.y, \"hitEffect\", {\n        damageType: this.stats.damageType,\n        lifeSpan: 0.3\n      });\n      if (this.ownerStats.slowEffect) {\n        targetStats.addEffect(\n          this.game.config.effects.slow,\n          this.game.effects.slow,\n          this.ownerStats.slowEffect\n        );\n      }\n    }\n\n    // Summon skeleton, leech, thief logic (unchanged)\n    if (\n      this.ownerStats.summonChance > 0 &&\n      targetHealth.hp <= 0 &&\n      Math.random() < this.ownerStats.summonChance - 1\n    ) {\n      this.game.spawn(this.target.position.x, this.target.position.y, \"summonedTower\", {\n        objectType: \"towers\",\n        spawnType: this.ownerStats.summonType,\n        owner: this.owner\n      });\n    }\n    if (this.ownerStats.leech > 0) {\n      const healing = this.stats.damage * this.ownerStats.leech * this.game.state.stats.healingMultiplier;\n      this.game.state.bloodCoreHP = Math.min(\n        this.game.state.stats.maxBloodCoreHP,\n        this.game.state.bloodCoreHP + healing\n      );\n    }\n    if (this.ownerStats.thief && this.ownerStats.thief != 0) {\n      const stealAmt = this.stats.damage * this.ownerStats.thief * this.game.state.stats.bloodShardMultiplier;\n      this.game.state.bloodShards += stealAmt;\n    }\n\n    // Piercing logic\n    if (this.stats.piercing > 0 && this.piercedEnemies.length < this.stats.piercing) {\n      this.piercedEnemies.push(this.target);\n      const newTarget = this.findNewTarget(\n        this.game.spatialGrid.getNearbyEntities(\n          this.parent.gridPosition.x,\n          this.parent.gridPosition.y,\n          this.ownerStats.range\n        )\n      );\n      if (newTarget) {\n        this.target = newTarget;\n        return;\n      }\n    }\n\n    this.parent.destroy();\n    return;\n  }\n\n  // Move projectile\n  this.parent.position.x += (dx / dist) * speed;\n  this.parent.position.y += (dy / dist) * speed;\n\n  // Continue moving past targetPosition by updating it if reached\n  if (this.targetPosition && distSq < speed * speed) {\n    // If close to targetPosition, extend it in the same direction\n    const directionX = dx / dist;\n    const directionY = dy / dist;\n    this.targetPosition.x += directionX * speed * 10; // Extend further (adjust multiplier)\n    this.targetPosition.y += directionY * speed * 10;\n  }\n\n  // Particle spawning logic (unchanged)\n  const tDx = this.parent.lastPosition.x - this.parent.position.x;\n  const tDy = this.parent.lastPosition.y - this.parent.position.y;\n  const tDistSq = tDx * tDx + tDy * tDy;\n  const tDist = Math.sqrt(tDistSq);\n\n  this.distanceTraveled += tDist;\n  if (this.def.particle && this.distanceTraveled > this.distanceToSpawnParticle) {\n    this.game.createParticle(this.def.particle, this.parent.position.x, this.parent.position.y);\n    this.distanceTraveled = 0;\n    this.distanceToSpawnParticle += Math.random() * 3;\n  }\n}\n\n// Helper method to find a new target for piercing\nfindNewTarget(nearbyEnemies) {\n  const gridSize = this.game.config.configs.game.gridSize;\n  const rangeSq = this.ownerStats.range * this.ownerStats.range * gridSize * gridSize;\n  for (let enemy of nearbyEnemies) {\n    if (!enemy.destroyed && !this.piercedEnemies.includes(enemy)) {\n      const dx = enemy.position.x - this.parent.position.x;\n      const dy = enemy.position.y - this.parent.position.y;\n      const distSq = dx * dx + dy * dy;\n      if (distSq < rangeSq) {\n        return enemy;\n      }\n    }\n  }\n  return null;\n}\n\n// Helper method to apply splash damage\napplySplashDamage(nearbyEnemies) {\n  const gridSize = this.game.config.configs.game.gridSize;\n  const splashRadiusSq = this.stats.splashRadius * this.stats.splashRadius * gridSize * gridSize;\n  for (const enemy of nearbyEnemies) {\n    if (enemy.isDead || this.piercedEnemies.includes(enemy)) continue;\n    let enemyHealth = enemy.getComponent(\"health\");\n    let enemyEnergyShield = enemy.getComponent(\"energyshield\");\n    let enemyStats = enemy.getComponent(\"stats\");\n    let enemyStatClone = { ...enemyStats.stats };\n    enemyStatClone.energyShield = enemyEnergyShield.energyShield;\n\n    const dx = enemy.position.x - this.parent.position.x;\n    const dy = enemy.position.y - this.parent.position.y;\n    const distSq = dx * dx + dy * dy;\n\n    if (distSq <= splashRadiusSq) {\n      let damageResult = engine.getFunction(\"calculateDamage\")(this.stats, enemyStatClone);\n      if (!damageResult.wasEvaded) {\n        enemyHealth.hp -= damageResult.damageDealt;\n        enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);\n        this.game.spawn(enemy.position.x, enemy.position.y, \"hitEffect\", {\n          damageType: this.stats.damageType,\n          lifeSpan: 0.3\n        });\n        if (this.ownerStats.slowEffect) {\n          enemyStats.addEffect(\n            this.game.config.effects.slow,\n            this.game.effects.slow,\n            this.ownerStats.slowEffect\n          );\n        }\n      }\n    }\n  }\n}"
+      "script": "init({ spawnType, owner, target, targetPosition, stats }) {\n  this.type = spawnType;\n  this.def = this.game.config.projectiles[this.type];\n  this.owner = owner;\n  this.target = target;\n  this.targetPosition = targetPosition;\n  this.stats = stats;\n  this.piercedEnemies = [];\n  this.ownerStats = this.owner.getComponent(\"stats\").stats;\n  this.distanceTraveled = 0;\n  this.distanceToSpawnParticle = 24;\n\n  // Add lifespan for projectile (e.g., 5 seconds)\n  this.maxLifespan = this.stats.lifespan || 5; // Default to 5 seconds, adjust as needed\n  this.currentLifespan = 0;\n}\n\nupdate() {\n  if(this.target) this.targetCurrentPosition = {...this.target.position };\n  // Update lifespan and destroy if expired\n  this.currentLifespan += this.game.deltaTime; // Assuming deltaTime is in seconds\n  if (this.currentLifespan >= this.maxLifespan) {\n    this.parent.destroy();\n    return;\n  }\n\n  // Remove if target is gone (only if no targetPosition)\n  if (!this.targetPosition && (!this.target || this.target.destroyed)) {\n    if(this.targetCurrentPosition) {\n    \tthis.targetPosition = this.targetCurrentPosition;\n    } else {\n     \tthis.parent.desetroy(); \n    \treturn;\n    }\n  }\n\n  // Determine movement target\n  const targetPos = this.targetPosition ? this.targetPosition : this.target.position;\n  const dx = targetPos.x - this.parent.position.x;\n  const dy = targetPos.y - this.parent.position.y;\n  const distSq = dx * dx + dy * dy;\n  const dist = Math.sqrt(distSq);\n  const speed = this.stats.speed;\n\n  // Hit detection\n  const hitRadiusSq = 15 * 15; // Same as your original hit detection radius\n  let hitDetected = false;\n\n  if (this.targetPosition) {\n    // Check nearby enemies for hit detection when using targetPosition\n    const nearbyEnemies = this.game.spatialGrid.getNearbyEntities(\n      this.parent.gridPosition.x,\n      this.parent.gridPosition.y,\n      this.stats.splashRadius || 15 // Use splashRadius or default to 15\n    );\n\n    for (const enemy of nearbyEnemies) {\n      if (enemy.isDead || this.piercedEnemies.includes(enemy)) continue;\n\n      const dxEnemy = enemy.position.x - this.parent.position.x;\n      const dyEnemy = enemy.position.y - this.parent.position.y;\n      const enemyDistSq = dxEnemy * dxEnemy + dyEnemy * dyEnemy;\n\n      if (enemyDistSq <= hitRadiusSq) {\n        // Hit detected\n        hitDetected = true;\n        let enemyHealth = enemy.getComponent(\"health\");\n        let enemyEnergyShield = enemy.getComponent(\"energyshield\");\n        let enemyStats = enemy.getComponent(\"stats\");\n        let enemyStatClone = { ...enemyStats.stats };\n        enemyStatClone.energyShield = enemyEnergyShield.energyShield;\n\n        // Apply damage\n        let damageResult = engine.getFunction(\"calculateDamage\")(this.stats, enemyStatClone);\n        if (!damageResult.wasEvaded) {\n          enemyHealth.hp -= damageResult.damageDealt;\n          enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);\n          this.game.spawn(enemy.position.x, enemy.position.y, \"hitEffect\", {\n            damageType: this.stats.damageType,\n            lifeSpan: 0.3\n          });\n          if (this.ownerStats.slowEffect) {\n            enemyStats.addEffect(\n              this.game.config.effects.slow,\n              this.game.effects.slow,\n              this.ownerStats.slowEffect\n            );\n          }\n        }\n\n        // Piercing logic\n        if (this.stats.piercing > 0 && this.piercedEnemies.length < this.stats.piercing) {\n          this.piercedEnemies.push(enemy);\n          let newTarget = this.findNewTarget(nearbyEnemies);\n          if (newTarget) {\n            this.target = newTarget;\n            this.targetPosition = null; // Switch to target-based tracking\n            return;\n          }\n        }\n\n        // Splash damage if applicable\n        if (this.stats.splashRadius > 0) {\n          this.applySplashDamage(nearbyEnemies);\n          this.game.spawn(this.parent.position.x, this.parent.position.y, \"explosion\", {\n            radius: this.stats.splashRadius\n          });\n        }\n\n        // Destroy projectile if no piercing or piercing limit reached\n        if (this.stats.piercing <= 0 || this.piercedEnemies.length >= this.stats.piercing) {\n          this.parent.destroy();\n          return;\n        }\n      }\n    }\n  } else if (distSq < hitRadiusSq) {\n    // Original target-based hit detection\n    let targetHealth = this.target.getComponent(\"health\");\n    let targetEnergyShield = this.target.getComponent(\"energyshield\");\n    let targetStats = this.target.getComponent(\"stats\");\n    let targetStatClone = { ...targetStats.stats };\n    targetStatClone.energyShield = targetEnergyShield.energyShield;\n\n    // Apply damage and effects (unchanged from your original code)\n    let damageResult = engine.getFunction(\"calculateDamage\")(this.stats, targetStatClone);\n    if (!damageResult.wasEvaded) {\n      targetHealth.hp -= damageResult.damageDealt;\n      targetEnergyShield.absorbDamage(damageResult.damageAbsorbed);\n      this.game.spawn(this.target.position.x, this.target.position.y, \"hitEffect\", {\n        damageType: this.stats.damageType,\n        lifeSpan: 0.3\n      });\n      if (this.ownerStats.slowEffect) {\n        targetStats.addEffect(\n          this.game.config.effects.slow,\n          this.game.effects.slow,\n          this.ownerStats.slowEffect\n        );\n      }\n    }\n\n    // Summon skeleton, leech, thief logic (unchanged)\n    if (\n      this.ownerStats.summonChance > 0 &&\n      targetHealth.hp <= 0 &&\n      Math.random() < this.ownerStats.summonChance - 1\n    ) {\n      this.game.spawn(this.target.position.x, this.target.position.y, \"summonedTower\", {\n        objectType: \"towers\",\n        spawnType: this.ownerStats.summonType,\n        owner: this.owner\n      });\n    }\n    if (this.ownerStats.leech > 0) {\n      const healing = this.stats.damage * this.ownerStats.leech * this.game.state.stats.healingMultiplier;\n      this.game.state.bloodCoreHP = Math.min(\n        this.game.state.stats.maxBloodCoreHP,\n        this.game.state.bloodCoreHP + healing\n      );\n    }\n    if (this.ownerStats.thief && this.ownerStats.thief != 0) {\n      const stealAmt = this.stats.damage * this.ownerStats.thief * this.game.state.stats.bloodShardMultiplier;\n      this.game.state.bloodShards += stealAmt;\n    }\n\n    // Piercing logic\n    if (this.stats.piercing > 0 && this.piercedEnemies.length < this.stats.piercing) {\n      this.piercedEnemies.push(this.target);\n      const newTarget = this.findNewTarget(\n        this.game.spatialGrid.getNearbyEntities(\n          this.parent.gridPosition.x,\n          this.parent.gridPosition.y,\n          this.ownerStats.range\n        )\n      );\n      if (newTarget) {\n        this.target = newTarget;\n        return;\n      }\n    }\n\n    this.parent.destroy();\n    return;\n  }\n\n  // Move projectile\n  this.parent.position.x += (dx / dist) * speed;\n  this.parent.position.y += (dy / dist) * speed;\n\n  // Continue moving past targetPosition by updating it if reached\n  if (this.targetPosition && distSq < speed * speed) {\n    // If close to targetPosition, extend it in the same direction\n    const directionX = dx / dist;\n    const directionY = dy / dist;\n    this.targetPosition.x += directionX * speed * 10; // Extend further (adjust multiplier)\n    this.targetPosition.y += directionY * speed * 10;\n  }\n\n  // Particle spawning logic (unchanged)\n  const tDx = this.parent.lastPosition.x - this.parent.position.x;\n  const tDy = this.parent.lastPosition.y - this.parent.position.y;\n  const tDistSq = tDx * tDx + tDy * tDy;\n  const tDist = Math.sqrt(tDistSq);\n\n  this.distanceTraveled += tDist;\n  if (this.def.particle && this.distanceTraveled > this.distanceToSpawnParticle) {\n    this.game.spawn(this.parent.position.x, this.parent.position.y, \"particle\", { objectType: \"particles\", spawnType: this.def.particle});\n    this.distanceTraveled = 0;\n    this.distanceToSpawnParticle += Math.random() * 3;\n  }\n}\n\n// Helper method to find a new target for piercing\nfindNewTarget(nearbyEnemies) {\n  const gridSize = this.game.config.configs.game.gridSize;\n  const rangeSq = this.ownerStats.range * this.ownerStats.range * gridSize * gridSize;\n  for (let enemy of nearbyEnemies) {\n    if (!enemy.destroyed && !this.piercedEnemies.includes(enemy)) {\n      const dx = enemy.position.x - this.parent.position.x;\n      const dy = enemy.position.y - this.parent.position.y;\n      const distSq = dx * dx + dy * dy;\n      if (distSq < rangeSq) {\n        return enemy;\n      }\n    }\n  }\n  return null;\n}\n\n// Helper method to apply splash damage\napplySplashDamage(nearbyEnemies) {\n  const gridSize = this.game.config.configs.game.gridSize;\n  const splashRadiusSq = this.stats.splashRadius * this.stats.splashRadius * gridSize * gridSize;\n  for (const enemy of nearbyEnemies) {\n    if (enemy.isDead || this.piercedEnemies.includes(enemy)) continue;\n    let enemyHealth = enemy.getComponent(\"health\");\n    let enemyEnergyShield = enemy.getComponent(\"energyshield\");\n    let enemyStats = enemy.getComponent(\"stats\");\n    let enemyStatClone = { ...enemyStats.stats };\n    enemyStatClone.energyShield = enemyEnergyShield.energyShield;\n\n    const dx = enemy.position.x - this.parent.position.x;\n    const dy = enemy.position.y - this.parent.position.y;\n    const distSq = dx * dx + dy * dy;\n\n    if (distSq <= splashRadiusSq) {\n      let damageResult = engine.getFunction(\"calculateDamage\")(this.stats, enemyStatClone);\n      if (!damageResult.wasEvaded) {\n        enemyHealth.hp -= damageResult.damageDealt;\n        enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);\n        this.game.spawn(enemy.position.x, enemy.position.y, \"hitEffect\", {\n          damageType: this.stats.damageType,\n          lifeSpan: 0.3\n        });\n        if (this.ownerStats.slowEffect) {\n          enemyStats.addEffect(\n            this.game.config.effects.slow,\n            this.game.effects.slow,\n            this.ownerStats.slowEffect\n          );\n        }\n      }\n    }\n  }\n}"
     },
     "hitEffectParticle": {
       "title": "Hit Effect Particle",
@@ -255,7 +259,7 @@
     },
     "chainProjectile": {
       "title": "Chain Projectile",
-      "script": "    init( { spawnType, owner, target, stats }) {        \n        this.type = spawnType;\n        this.owner = owner;\n        this.target = target;\n        this.stats = stats;\n        this.piercedEnemies = [];\n        this.ownerStats = this.owner.getComponent(\"stats\").stats;\n        this.chainTargets = []; // Store all targets hit in one frame\n        this.hasStruck = false; // Flag to strike only once\n    }\n\n    update() {\n        if (this.hasStruck) {\n            this.parent.destroy(); // Destroy after one frame of striking\n            return;\n        }\n\n        if (!this.target || this.target.destroyed) {\n            this.parent.destroy();\n            return;\n        }\n\n        // Strike the initial target\n        let targetHealth = this.target.getComponent(\"health\");\n        let targetEnergyShield = this.target.getComponent(\"energyshield\");\n        let targetStats = {...this.target.getComponent(\"stats\").stats};\n        targetStats.energyShield = targetEnergyShield.energyShield;\n        let damageResult = engine.getFunction(\"calculateDamage\")(this.stats, targetStats);                    \n        if( damageResult.wasEvaded ) { return; }         \n        targetHealth.hp -= damageResult.damageDealt;\n        targetEnergyShield.absorbDamage(damageResult.damageAbsorbed);\n        this.piercedEnemies.push(this.target);\n        this.chainTargets.push(this.target);\n        this.game.spawn(this.target.position.x, this.target.position.y, \"hitEffect\", { damageType: this.stats.damageType});\n        // Chain to nearby enemies\n        if (this.stats.piercing > 0 && this.piercedEnemies.length <= this.stats.piercing) {\n            const nearbyEnemies = this.game.spatialGrid.getNearbyEntities(\n                this.target.gridPosition.x, \n                this.target.gridPosition.y, \n                this.ownerStats.range\n            );\n\n            for (let enemy of nearbyEnemies) {\n                if (enemy.destroyed || this.piercedEnemies.includes(enemy)) continue;\n                const dx = enemy.position.x - this.target.position.x;\n                const dy = enemy.position.y - this.target.position.y;\n                const distSq = dx * dx + dy * dy;\n                let gridSize = this.game.config.configs.game.gridSize;\n                if (distSq <= this.ownerStats.range * this.ownerStats.range * gridSize * gridSize) {\n                    let enemyHealth = enemy.getComponent(\"health\");\n                    let enemyEnergyShield = enemy.getComponent(\"energyshield\");\n                    let enemyStats = {...enemy.getComponent(\"stats\").stats};\n                    enemyStats.energyShield = targetEnergyShield.energyShield;\n                    let damageResult = engine.getFunction(\"calculateDamage\")(this.stats, enemyStats); \n                    if(!damageResult.wasEvaded) {\n                        enemyHealth.hp -= damageResult.damageDealt;\n                        enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);\n                        this.piercedEnemies.push(enemy);\n                        this.chainTargets.push(enemy);\n                        this.game.spawn(enemy.position.x, enemy.position.y, \"hitEffect\", { damageType: this.stats.damageType});\n                        if (this.piercedEnemies.length > this.stats.piercing) break;\n                    } else {\n                        break;\n                    }\n                }\n            }\n        }\n\n        // Apply additional effects (e.g., slow, leech) to all hit targets\n        for (let enemy of this.chainTargets) {\n            if (this.ownerStats.slowEffect) {\n                enemy.getComponent(\"stats\").addEffect(this.game.config.effects.slow, this.game.effects.slow, this.ownerStats.slowEffect);\n            }\n            if (this.ownerStats.leech > 0) {\n                const healing = this.stats.damage * this.ownerStats.leech * this.game.state.stats.healingMultiplier;\n                this.game.state.bloodCoreHP = Math.min(this.game.state.stats.maxBloodCoreHP, this.game.state.bloodCoreHP + healing);\n            }\n            if (this.ownerStats.thief && this.ownerStats.thief != 0) {\n                const stealAmt = this.stats.damage * this.ownerStats.thief * this.game.state.stats.bloodShardMultiplier;\n                this.game.state.bloodShards += stealAmt;\n            }\n        }\n\n        this.hasStruck = true; // Mark as struck, render lightning this frame\n    }"
+      "script": "    init( { spawnType, owner, target, stats }) {        \n        this.type = spawnType;\n        this.owner = owner;\n        this.target = target;\n        this.stats = stats;\n        this.piercedEnemies = [];\n        this.ownerStats = this.owner.getComponent(\"stats\").stats;\n        this.chainTargets = []; // Store all targets hit in one frame\n        this.hasStruck = false; // Flag to strike only once\n    }\n\n    update() {\n        if (this.hasStruck) {\n            this.parent.destroy(); // Destroy after one frame of striking\n            return;\n        }\n\n        if (!this.target || this.target.destroyed) {\n            this.parent.destroy();\n            return;\n        }\n\n        // Strike the initial target\n        let targetHealth = this.target.getComponent(\"health\");\n        let targetEnergyShield = this.target.getComponent(\"energyshield\");\n        let targetStats = {...this.target.getComponent(\"stats\").stats};\n        targetStats.energyShield = targetEnergyShield.energyShield;\n        let damageResult = engine.getFunction(\"calculateDamage\")(this.stats, targetStats);                    \n        if( damageResult.wasEvaded ) { return; }         \n        targetHealth.hp -= damageResult.damageDealt;\n        targetEnergyShield.absorbDamage(damageResult.damageAbsorbed);\n        this.piercedEnemies.push(this.target);\n        this.chainTargets.push(this.target);\n        this.game.spawn(this.target.position.x, this.target.position.y, \"hitEffect\", { damageType: this.stats.damageType, lifeSpan: 1});\n        // Chain to nearby enemies\n        if (this.stats.piercing > 0 && this.piercedEnemies.length <= this.stats.piercing) {\n            const nearbyEnemies = this.game.spatialGrid.getNearbyEntities(\n                this.target.gridPosition.x, \n                this.target.gridPosition.y, \n                this.ownerStats.range\n            );\n\n            for (let enemy of nearbyEnemies) {\n                if (enemy.destroyed || this.piercedEnemies.includes(enemy)) continue;\n                const dx = enemy.position.x - this.target.position.x;\n                const dy = enemy.position.y - this.target.position.y;\n                const distSq = dx * dx + dy * dy;\n                let gridSize = this.game.config.configs.game.gridSize;\n                if (distSq <= this.ownerStats.range * this.ownerStats.range * gridSize * gridSize) {\n                    let enemyHealth = enemy.getComponent(\"health\");\n                    let enemyEnergyShield = enemy.getComponent(\"energyshield\");\n                    let enemyStats = {...enemy.getComponent(\"stats\").stats};\n                    enemyStats.energyShield = targetEnergyShield.energyShield;\n                    let damageResult = engine.getFunction(\"calculateDamage\")(this.stats, enemyStats); \n                    if(!damageResult.wasEvaded) {\n                        enemyHealth.hp -= damageResult.damageDealt;\n                        enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);\n                        this.piercedEnemies.push(enemy);\n                        this.chainTargets.push(enemy);\n                        this.game.spawn(enemy.position.x, enemy.position.y, \"hitEffect\", { damageType: this.stats.damageType, lifeSpan: 1 });\n                        if (this.piercedEnemies.length > this.stats.piercing) break;\n                    } else {\n                        break;\n                    }\n                }\n            }\n        }\n\n        // Apply additional effects (e.g., slow, leech) to all hit targets\n        for (let enemy of this.chainTargets) {\n            if (this.ownerStats.slowEffect) {\n                enemy.getComponent(\"stats\").addEffect(this.game.config.effects.slow, this.game.effects.slow, this.ownerStats.slowEffect);\n            }\n            if (this.ownerStats.leech > 0) {\n                const healing = this.stats.damage * this.ownerStats.leech * this.game.state.stats.healingMultiplier;\n                this.game.state.bloodCoreHP = Math.min(this.game.state.stats.maxBloodCoreHP, this.game.state.bloodCoreHP + healing);\n            }\n            if (this.ownerStats.thief && this.ownerStats.thief != 0) {\n                const stealAmt = this.stats.damage * this.ownerStats.thief * this.game.state.stats.bloodShardMultiplier;\n                this.game.state.bloodShards += stealAmt;\n            }\n        }\n\n        this.hasStruck = true; // Mark as struck, render lightning this frame\n    }"
     },
     "effect": {
       "title": "Effect",
@@ -302,7 +306,7 @@
     },
     "explosion": {
       "title": "Explosion",
-      "script": "   init( {radius}) {\n        this.maxRadius = radius * this.game.config.configs.game.gridSize;\n        this.currentRadius = 0;\n        this.alpha = 1;\n    }\n\n    update() {\n        this.currentRadius += this.maxRadius * 0.1;\n        this.alpha -= 0.05;\n        if( this.alpha < 0 ) {\n            this.parent.destroy();\n        }\n    }\n\n    draw() {\n        const pixelX = this.parent.position.x;\n        const pixelY = this.parent.position.y;\n\n        // Convert pixel to isometric\n        const isoPos = this.game.translator.pixelToIso(pixelX, pixelY);\n        const isoRadiusX = this.currentRadius;         // X-axis range remains roughly the same in isometric space\n        const isoRadiusY = this.currentRadius * 0.5;   // Y-axis range is halved due to isometric compression\n\n        this.game.ctx.beginPath();\n        this.game.ctx.ellipse(\n                isoPos.x,           // Center x in isometric coords\n                isoPos.y,           // Center y in isometric coords\n                isoRadiusX,          // X radius (wider due to isometric projection)\n                isoRadiusY,          // Y radius (shorter due to flattening)\n                0,                  // Rotation (none needed for isometric)\n                0,                  // Start angle\n                2 * Math.PI         // End angle (full circle)\n            );\n        this.game.ctx.fillStyle = `rgba(255, 200, 0, ${this.alpha * 0.5})`;\n        this.game.ctx.fill();\n\n        this.game.ctx.beginPath();\n        this.game.ctx.ellipse(\n                isoPos.x,           // Center x in isometric coords\n                isoPos.y,           // Center y in isometric coords\n                isoRadiusX * .7,          // X radius (wider due to isometric projection)\n                isoRadiusY * .7,          // Y radius (shorter due to flattening)\n                0,                  // Rotation (none needed for isometric)\n                0,                  // Start angle\n                2 * Math.PI         // End angle (full circle)\n            );\n        this.game.ctx.fillStyle = `rgba(255, 100, 0, ${this.alpha})`;\n        this.game.ctx.fill();\n    \n    }"
+      "script": "   init( {radius}) {\n        this.maxRadius = radius * this.game.config.configs.game.gridSize / 2;\n        this.currentRadius = 0;\n        this.alpha = 1;\n    }\n\n    update() {\n        this.currentRadius += this.maxRadius * 0.1;\n        this.alpha -= 0.05;\n        if( this.alpha < 0 ) {\n            this.parent.destroy();\n        }\n    }\n\n    draw() {\n        const pixelX = this.parent.position.x;\n        const pixelY = this.parent.position.y;\n\n        // Convert pixel to isometric\n        const isoPos = this.game.translator.pixelToIso(pixelX, pixelY);\n        const isoRadiusX = this.currentRadius;         // X-axis range remains roughly the same in isometric space\n        const isoRadiusY = this.currentRadius * 0.5;   // Y-axis range is halved due to isometric compression\n\n        this.game.ctx.beginPath();\n        this.game.ctx.ellipse(\n                isoPos.x,           // Center x in isometric coords\n                isoPos.y,           // Center y in isometric coords\n                isoRadiusX,          // X radius (wider due to isometric projection)\n                isoRadiusY,          // Y radius (shorter due to flattening)\n                0,                  // Rotation (none needed for isometric)\n                0,                  // Start angle\n                2 * Math.PI         // End angle (full circle)\n            );\n        this.game.ctx.fillStyle = `rgba(255, 200, 0, ${this.alpha * 0.5})`;\n        this.game.ctx.fill();\n\n        this.game.ctx.beginPath();\n        this.game.ctx.ellipse(\n                isoPos.x,           // Center x in isometric coords\n                isoPos.y,           // Center y in isometric coords\n                isoRadiusX * .7,          // X radius (wider due to isometric projection)\n                isoRadiusY * .7,          // Y radius (shorter due to flattening)\n                0,                  // Rotation (none needed for isometric)\n                0,                  // Start angle\n                2 * Math.PI         // End angle (full circle)\n            );\n        this.game.ctx.fillStyle = `rgba(255, 100, 0, ${this.alpha})`;\n        this.game.ctx.fill();\n    \n    }"
     }
   },
   "functions": {
@@ -712,7 +716,7 @@
                   "width": 32,
                   "height": 20,
                   "depth": 32,
-                  "color": "#A0A0A0",
+                  "color": "#707070",
                   "x": 0,
                   "y": 22,
                   "z": 0
@@ -741,7 +745,7 @@
                   "type": "cone",
                   "size": 14,
                   "height": 20,
-                  "color": "#4169E1",
+                  "color": "#676767",
                   "x": 0,
                   "y": 62,
                   "z": 0
@@ -786,7 +790,7 @@
                   "type": "cone",
                   "size": 8,
                   "height": 10,
-                  "color": "#4169E1",
+                  "color": "#4ade43",
                   "x": 16,
                   "y": 42,
                   "z": 16
@@ -795,7 +799,7 @@
                   "type": "cone",
                   "size": 8,
                   "height": 10,
-                  "color": "#4169E1",
+                  "color": "#fff422",
                   "x": -16,
                   "y": 42,
                   "z": 16
@@ -813,7 +817,412 @@
                   "type": "cone",
                   "size": 8,
                   "height": 10,
+                  "color": "#ff2227",
+                  "x": -16,
+                  "y": 42,
+                  "z": -16
+                },
+                {
+                  "type": "box",
+                  "width": 44,
+                  "height": 4,
+                  "depth": 44,
+                  "color": "#696969",
+                  "x": 0,
+                  "y": 2,
+                  "z": 0
+                }
+              ]
+            },
+            {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 40,
+                  "height": 12,
+                  "depth": 40,
+                  "color": "#8B8B8B",
+                  "x": 0,
+                  "y": 6,
+                  "z": 0
+                },
+                {
+                  "type": "box",
+                  "width": 32,
+                  "height": 20,
+                  "depth": 32,
+                  "color": "#707070",
+                  "x": 0,
+                  "y": 22,
+                  "z": 0
+                },
+                {
+                  "type": "sphere",
+                  "width": 24,
+                  "height": 16,
+                  "depth": 24,
+                  "color": "#C0C0C0",
+                  "x": 0,
+                  "y": 32,
+                  "z": 0,
+                  "size": 24
+                },
+                {
+                  "type": "cylinder",
+                  "size": 12,
+                  "height": 22,
+                  "color": "#D8D8D8",
+                  "x": 0,
+                  "y": 42,
+                  "z": 0
+                },
+                {
+                  "type": "cone",
+                  "size": 14,
+                  "height": 20,
+                  "color": "#c1c1c1",
+                  "x": 0,
+                  "y": 62,
+                  "z": 0
+                },
+                {
+                  "type": "cylinder",
+                  "size": 6,
+                  "height": 30,
+                  "color": "#C0C0C0",
+                  "x": 16,
+                  "y": 22,
+                  "z": 16
+                },
+                {
+                  "type": "cylinder",
+                  "size": 6,
+                  "height": 30,
+                  "color": "#C0C0C0",
+                  "x": -16,
+                  "y": 22,
+                  "z": 16
+                },
+                {
+                  "type": "cylinder",
+                  "size": 6,
+                  "height": 30,
+                  "color": "#C0C0C0",
+                  "x": 16,
+                  "y": 22,
+                  "z": -16
+                },
+                {
+                  "type": "cylinder",
+                  "size": 6,
+                  "height": 30,
+                  "color": "#C0C0C0",
+                  "x": -16,
+                  "y": 22,
+                  "z": -16
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 10,
+                  "color": "#4ade43",
+                  "x": 16,
+                  "y": 42,
+                  "z": 16
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 10,
+                  "color": "#fff422",
+                  "x": -16,
+                  "y": 42,
+                  "z": 16
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 10,
                   "color": "#4169E1",
+                  "x": 16,
+                  "y": 42,
+                  "z": -16
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 10,
+                  "color": "#ff2227",
+                  "x": -16,
+                  "y": 42,
+                  "z": -16
+                },
+                {
+                  "type": "box",
+                  "width": 44,
+                  "height": 4,
+                  "depth": 44,
+                  "color": "#696969",
+                  "x": 0,
+                  "y": 2,
+                  "z": 0
+                }
+              ]
+            },
+            {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 40,
+                  "height": 12,
+                  "depth": 40,
+                  "color": "#8B8B8B",
+                  "x": 0,
+                  "y": 6,
+                  "z": 0
+                },
+                {
+                  "type": "box",
+                  "width": 32,
+                  "height": 20,
+                  "depth": 32,
+                  "color": "#707070",
+                  "x": 0,
+                  "y": 22,
+                  "z": 0
+                },
+                {
+                  "type": "sphere",
+                  "width": 24,
+                  "height": 16,
+                  "depth": 24,
+                  "color": "#C0C0C0",
+                  "x": 0,
+                  "y": 32,
+                  "z": 0,
+                  "size": 24
+                },
+                {
+                  "type": "cylinder",
+                  "size": 12,
+                  "height": 22,
+                  "color": "#D8D8D8",
+                  "x": 0,
+                  "y": 42,
+                  "z": 0
+                },
+                {
+                  "type": "cone",
+                  "size": 14,
+                  "height": 20,
+                  "color": "#737373",
+                  "x": 0,
+                  "y": 62,
+                  "z": 0
+                },
+                {
+                  "type": "cylinder",
+                  "size": 6,
+                  "height": 30,
+                  "color": "#C0C0C0",
+                  "x": 16,
+                  "y": 22,
+                  "z": 16
+                },
+                {
+                  "type": "cylinder",
+                  "size": 6,
+                  "height": 30,
+                  "color": "#C0C0C0",
+                  "x": -16,
+                  "y": 22,
+                  "z": 16
+                },
+                {
+                  "type": "cylinder",
+                  "size": 6,
+                  "height": 30,
+                  "color": "#C0C0C0",
+                  "x": 16,
+                  "y": 22,
+                  "z": -16
+                },
+                {
+                  "type": "cylinder",
+                  "size": 6,
+                  "height": 30,
+                  "color": "#C0C0C0",
+                  "x": -16,
+                  "y": 22,
+                  "z": -16
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 10,
+                  "color": "#4ade43",
+                  "x": 16,
+                  "y": 42,
+                  "z": 16
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 10,
+                  "color": "#fff422",
+                  "x": -16,
+                  "y": 42,
+                  "z": 16
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 10,
+                  "color": "#4169E1",
+                  "x": 16,
+                  "y": 42,
+                  "z": -16
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 10,
+                  "color": "#ff2227",
+                  "x": -16,
+                  "y": 42,
+                  "z": -16
+                },
+                {
+                  "type": "box",
+                  "width": 44,
+                  "height": 4,
+                  "depth": 44,
+                  "color": "#696969",
+                  "x": 0,
+                  "y": 2,
+                  "z": 0
+                }
+              ]
+            },
+            {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 40,
+                  "height": 12,
+                  "depth": 40,
+                  "color": "#8B8B8B",
+                  "x": 0,
+                  "y": 6,
+                  "z": 0
+                },
+                {
+                  "type": "box",
+                  "width": 32,
+                  "height": 20,
+                  "depth": 32,
+                  "color": "#707070",
+                  "x": 0,
+                  "y": 22,
+                  "z": 0
+                },
+                {
+                  "type": "sphere",
+                  "width": 24,
+                  "height": 16,
+                  "depth": 24,
+                  "color": "#C0C0C0",
+                  "x": 0,
+                  "y": 32,
+                  "z": 0,
+                  "size": 24
+                },
+                {
+                  "type": "cylinder",
+                  "size": 12,
+                  "height": 22,
+                  "color": "#D8D8D8",
+                  "x": 0,
+                  "y": 42,
+                  "z": 0
+                },
+                {
+                  "type": "cone",
+                  "size": 14,
+                  "height": 20,
+                  "color": "#2e2e2e",
+                  "x": 0,
+                  "y": 62,
+                  "z": 0
+                },
+                {
+                  "type": "cylinder",
+                  "size": 6,
+                  "height": 30,
+                  "color": "#C0C0C0",
+                  "x": 16,
+                  "y": 22,
+                  "z": 16
+                },
+                {
+                  "type": "cylinder",
+                  "size": 6,
+                  "height": 30,
+                  "color": "#C0C0C0",
+                  "x": -16,
+                  "y": 22,
+                  "z": 16
+                },
+                {
+                  "type": "cylinder",
+                  "size": 6,
+                  "height": 30,
+                  "color": "#C0C0C0",
+                  "x": 16,
+                  "y": 22,
+                  "z": -16
+                },
+                {
+                  "type": "cylinder",
+                  "size": 6,
+                  "height": 30,
+                  "color": "#C0C0C0",
+                  "x": -16,
+                  "y": 22,
+                  "z": -16
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 10,
+                  "color": "#4ade43",
+                  "x": 16,
+                  "y": 42,
+                  "z": 16
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 10,
+                  "color": "#fff422",
+                  "x": -16,
+                  "y": 42,
+                  "z": 16
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 10,
+                  "color": "#4169E1",
+                  "x": 16,
+                  "y": 42,
+                  "z": -16
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 10,
+                  "color": "#ff2227",
                   "x": -16,
                   "y": 42,
                   "z": -16
@@ -3813,8 +4222,8 @@
                   "height": 6,
                   "depth": 30,
                   "x": 0,
-                  "y": 3.0216666666666674,
-                  "z": 1.8888888888888884,
+                  "y": 3,
+                  "z": 1.8,
                   "color": "#555555",
                   "name": "base"
                 },
@@ -3824,7 +4233,7 @@
                   "height": 7.5,
                   "x": 0,
                   "y": 10,
-                  "z": 1.8888888888888884,
+                  "z": 1.8,
                   "color": "#444444",
                   "name": "body"
                 },
@@ -3834,8 +4243,8 @@
                   "height": 10.5,
                   "depth": 22.5,
                   "x": 0,
-                  "y": 19.521666666666665,
-                  "z": 1.8888888888888884,
+                  "y": 19.5,
+                  "z": 1.8,
                   "color": "#3A3A3A",
                   "rotationX": 15,
                   "name": "missile-box"
@@ -3845,8 +4254,8 @@
                   "size": 6,
                   "height": 27,
                   "x": -6,
-                  "y": 24.021666666666665,
-                  "z": 3.3888888888888884,
+                  "y": 24,
+                  "z": 3.3,
                   "rotationX": 105,
                   "color": "#2A2A2A",
                   "name": "left missile container"
@@ -3856,8 +4265,8 @@
                   "size": 6,
                   "height": 27,
                   "x": 6,
-                  "y": 24.021666666666665,
-                  "z": 3.3888888888888884,
+                  "y": 24,
+                  "z": 3.3,
                   "rotationX": 105,
                   "color": "#2A2A2A",
                   "name": "right missile container"
@@ -3867,8 +4276,8 @@
                   "size": 4.5,
                   "height": 13.5,
                   "x": -6,
-                  "y": 27.021666666666665,
-                  "z": -7.111111111111111,
+                  "y": 27,
+                  "z": -7.2,
                   "rotationX": 105,
                   "color": "#7f7f7f",
                   "rotationZ": 0,
@@ -3879,8 +4288,8 @@
                   "size": 4.5,
                   "height": 13.5,
                   "x": 6,
-                  "y": 27.021666666666665,
-                  "z": -7.111111111111111,
+                  "y": 27,
+                  "z": -7.2,
                   "rotationX": 105,
                   "color": "#7f7f7f",
                   "name": "right missile"
@@ -3890,8 +4299,8 @@
                   "size": 4.35,
                   "height": 6,
                   "x": -6,
-                  "y": 29.429166666666667,
-                  "z": -16.11111111111111,
+                  "y": 29.4,
+                  "z": -16.2,
                   "rotationX": -75,
                   "color": "#D14A4A",
                   "name": "left missile tip"
@@ -3901,8 +4310,8 @@
                   "size": 4.35,
                   "height": 6,
                   "x": 6,
-                  "y": 29.429166666666667,
-                  "z": -16.11111111111111,
+                  "y": 29.4,
+                  "z": -16.2,
                   "rotationX": -75,
                   "color": "#D14A4A",
                   "name": "right missile tip"
@@ -27822,6 +28231,10 @@
     "videoGame2": {
       "title": "Video Game 2",
       "css": "/* retro-theme.css - Pixel Art Retro Video Game Theme */\n\n/* Import pixel font from Google Fonts */\n@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');\n\n/* Base Styles */\nbody {\n    background-color: #1a1a1a; /* Dark retro background */\n    font-family: 'Press Start 2P', cursive; /* Pixelated font */\n    image-rendering: pixelated; /* Ensures crisp pixel art rendering */\n    color: #fff; /* Default text color */\n}\n\n/* Container */\n.container {\n    background: #2b2b2b; /* Retro gray */\n    border: 4px solid #000; /* Thick black border */\n    padding: .5em;\n}\n\n/* Sidebar */\n.sidebar {\n    background: #3c3c3c; /* Mid-gray retro */\n    border: 4px solid #000;\n}\n\n.sidebar img {\n    image-rendering: pixelated;\n    border-bottom: 2px solid #000;\n}\n\n/* Object List */\n.object-item {\n    background: #5a5a5a; /* Darker gray */\n    border: 2px solid #000;\n    color: #fff;\n    font-size: 10px; /* Smaller for pixel readability */\n}\n\n.object-item:hover, .object-item.selected {\n    background: #ffcc00; /* Bright retro yellow */\n    color: #000;\n}\n.object-type-item.selected {\n    color: #ffcc00;\n}\n\n/* Buttons */\nbutton {\n    background: #ff3333; /* Retro red */\n    color: #fff;\n    border: 2px solid #000;\n    font-family: 'Press Start 2P', cursive;\n    font-size: 10px;\n    text-transform: uppercase; /* Retro game style */\n    transition: background 0.1s ease;\n}\n\nbutton:hover {\n    background: #33cc33; /* Retro green */\n}\n\nbutton.primary {\n    background: #33cc33; /* Green for primary actions */\n}\n\nbutton.primary:hover {\n    background: #ffcc00; /* Yellow on hover */\n}\n\n/* Main Content */\n.main-content {\n    background: #2b2b2b;\n}\n\n/* Editor */\n.editor {\n    background: #3c3c3c;\n    border: 4px solid #000;\n    color: #fff;\n    font-size: 10px;\n}\n\n/* Canvas and Grid Containers */\n#canvas-container, .grid-container {\n    background: #000; /* Black canvas background */\n    border: 4px solid #fff;\n}\n\n#canvas, #grid {\n    image-rendering: pixelated;\n    background: repeating-linear-gradient(\n        45deg,\n        #333 0px,\n        #333 10px,\n        #000 10px,\n        #000 20px\n    ); /* Retro checkerboard grid */\n}\n\n.scene-info {\n    background: rgba(0, 0, 0, 0.8);\n    border: 2px solid #fff;\n    color: #00ff00; /* Neon green */\n    font-size: 8px;\n}\n\n/* Toolbar */\n.toolbar {\n    background: #5a5a5a;\n    border-bottom: 2px solid #000;\n}\n\n.btn {\n    background: #ff3333; /* Retro red */\n    color: #fff;\n    border: 2px solid #000;\n    font-family: 'Press Start 2P', cursive;\n    font-size: 10px;\n    transition: background 0.1s ease;\n}\n\n.btn:hover {\n    background: #33cc33; /* Retro green */\n}\n\n.btn.btn-danger {\n    background: #ff0000; /* Bright red */\n}\n\n.btn.btn-danger:hover {\n    background: #cc0000; /* Darker red */\n}\n\n.btn.btn-secondary {\n    background: #6666ff; /* Retro blue */\n}\n\n.btn.btn-secondary:hover {\n    background: #9999ff; /* Lighter blue */\n}\n\n.btn.btn-special {\n    background: #ff00ff; /* Retro magenta */\n}\n\n.btn.btn-special:hover {\n    background: #cc00cc; /* Darker magenta */\n}\n\n/* Modals */\n.modal {\n    background: rgba(0, 0, 0, 0.8);\n}\n\n.modal-content {\n    background: #3c3c3c;\n    border: 4px solid #fff;\n    color: #fff;\n    font-size: 10px;\n}\n\n/* Form Elements */\n.form-group label {\n    color: #00ff00; /* Neon green */\n    font-size: 10px;\n}\n\ninput, textarea, select {\n    background: #000;\n    border: 2px solid #fff;\n    color: #ffcc00; /* Retro yellow */\n    font-family: 'Press Start 2P', cursive;\n    font-size: 10px;\n}\n\ninput[type=\"color\"] {\n    padding: 0; /* Fix color picker padding */\n    height: 20px; /* Consistent height */\n}\n\n/* Tabs */\n.tab-navigation {\n    border-bottom: 2px solid #000;\n}\n\n.tab {\n    background: #5a5a5a;\n    border: 2px solid #000;\n    color: #fff;\n    font-size: 10px;\n}\n\n.tab.active {\n    background: #ffcc00; /* Yellow for active tab */\n    color: #000;\n}\n\n/* Inspector and JSON Editor */\n#inspector, #json-editor {\n    background: #3c3c3c;\n    border: 2px solid #000;\n}\n\n#json-content {\n    background: #000;\n    color: #00ff00; /* Green for code-like text */\n}\n\n/* Translation Controls */\n.translation-controls button {\n    background: #6666ff; /* Retro blue */\n}\n\n.translation-controls button:hover {\n    background: #9999ff;\n}\n\n/* Shape List */\n.shape-item {\n    background: #5a5a5a;\n    border: 2px solid #000;\n    color: #fff;\n    font-size: 10px;\n}\n\n.shape-item:hover {\n    background: #ffcc00;\n    color: #000;\n}\n\n.type-selector .object-item {\n  font-size: .6em;\n}\n\n/* codemirror-retro.css - Retro Pixel Art Theme for CodeMirror */\n\n/* Import pixel font from Google Fonts */\n@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');\n\n/* Base CodeMirror Styles */\n.CodeMirror {\n    height: 100% !important;\n    font-family: 'Press Start 2P', cursive !important;\n    font-size: 10px !important; /* Small size for pixel readability */\n    background: #000 !important; /* Black background like a CRT screen */\n    color: #00ff00 !important; /* Neon green default text */\n    border: 4px solid #fff !important; /* Thick white border */\n    image-rendering: pixelated; /* Crisp rendering */\n}\n.CodeMirror-gutters {\n background-color: #000;\n}\n\n/* Retro Theme Definition */\n.cm-s-retro .CodeMirror-gutters {\n    background: #1a1a1a !important; /* Dark gray gutter */\n    border-right: 2px solid #fff !important; /* White separator */\n    color: #ffcc00 !important; /* Yellow line numbers */\n}\n\n.cm-s-retro .CodeMirror-linenumber {\n    color: #ffcc00 !important; /* Yellow line numbers */\n    padding: 0 5px !important;\n}\n\n.cm-s-retro .CodeMirror-cursor {\n    border-left: 2px solid #ff3333 !important; /* Red blinking cursor */\n    animation: blink 1s step-end infinite; /* Retro blink effect */\n}\n\n.cm-s-retro .CodeMirror-selected {\n    background: #ff3333 !important; /* Red selection highlight */\n    opacity: 0.5; /* Slightly transparent for retro effect */\n}\n\n.cm-s-retro .CodeMirror-focused .CodeMirror-selected {\n    background: #ff3333 !important;\n}\n\n/* Syntax Highlighting */\n.cm-s-retro .cm-comment {\n    color: #6666ff !important; /* Blue for comments */\n    font-style: italic; /* Slight retro flair */\n}\n\n.cm-s-retro .cm-string {\n    color: #ffcc00 !important; /* Yellow for strings */\n}\n\n.cm-s-retro .cm-number {\n    color: #33cc33 !important; /* Green for numbers */\n}\n\n.cm-s-retro .cm-keyword {\n    color: #ff00ff !important; /* Magenta for keywords */\n    font-weight: bold; /* Bold for emphasis */\n}\n\n.cm-s-retro .cm-operator {\n    color: #fff !important; /* White for operators */\n}\n\n.cm-s-retro .cm-variable {\n    color: #00ff00 !important; /* Green for variables */\n}\n\n.cm-s-retro .cm-variable-2 {\n    color: #33cc33 !important; /* Lighter green for secondary variables */\n}\n\n.cm-s-retro .cm-def {\n    color: #ff00ff !important; /* Magenta for definitions */\n}\n\n.cm-s-retro .cm-property {\n    color: #ffcc00 !important; /* Yellow for properties */\n}\n\n.cm-s-retro .cm-function {\n    color: #ff00ff !important; /* Magenta for functions */\n}\n\n.cm-s-retro .cm-builtin {\n    color: #33cc33 !important; /* Green for built-ins */\n}\n\n.cm-s-retro .cm-tag {\n    color: #ff3333 !important; /* Red for tags (if HTML mode is used) */\n}\n\n.cm-s-retro .cm-attribute {\n    color: #ffcc00 !important; /* Yellow for attributes */\n}\n\n/* Matching Brackets */\n.cm-s-retro .CodeMirror-matchingbracket {\n    color: #33cc33 !important; /* Green for matching brackets */\n    border-bottom: 2px solid #33cc33 !important;\n    background: none !important;\n}\n\n.cm-s-retro .CodeMirror-nonmatchingbracket {\n    color: #ff3333 !important; /* Red for non-matching brackets */\n    border-bottom: 2px solid #ff3333 !important;\n}\n\n/* Autocomplete Hints */\n.CodeMirror-hints {\n    background: #2b2b2b !important; /* Dark retro gray */\n    border: 2px solid #fff !important; /* White border */\n    color: #fff !important;\n    font-family: 'Press Start 2P', cursive !important;\n    font-size: 10px !important;\n    box-shadow: 4px 4px 0 #000; /* Retro shadow effect */\n}\n\n.CodeMirror-hints .CodeMirror-hint {\n    color: #ffcc00 !important; /* Yellow for hint items */\n    padding: 5px !important;\n}\n\n.CodeMirror-hints .CodeMirror-hint-active {\n    background: #ff3333 !important; /* Red for selected hint */\n    color: #000 !important;\n}\n\n/* Scrollbars (minimal retro style) */\n.CodeMirror-vscrollbar, .CodeMirror-hscrollbar {\n    background: #3c3c3c !important;\n}\n\n.CodeMirror-scrollbar-filler {\n    background: #000 !important;\n}\n\n/* Animations */\n@keyframes blink {\n    50% { opacity: 0; }\n}"
+    },
+    "codeMirrorTheme": {
+      "title": "Code - Ez On Eyes",
+      "css": "/* Eye-friendly dark theme overriding default CodeMirror blues and purples */\n.CodeMirror {\n    background: #1e1e1e; /* Dark gray background */\n    color: #d4d4d4; /* Light gray text */\n    font-size: 14px; /* Increased font size for better readability */\n}\n\n.CodeMirror-gutters {\n    background: #252525; /* Slightly lighter gutter */\n    border-right: 1px solid #444; /* Soft border */\n}\n\n.CodeMirror-linenumber {\n    color: #888; /* Muted line numbers */\n}\n\n.CodeMirror-cursor {\n    border-left: 1px solid #d4d4d4; /* Light cursor */\n}\n\n.CodeMirror-selected {\n    background: #3a3a3a; /* Dark selection */\n}\n\n.CodeMirror-focused .CodeMirror-selected {\n    background: #404040; /* Slightly lighter when focused */\n}\n\n.CodeMirror-activeline-background {\n    background: #2a2a2a; /* Subtle active line highlight */\n}\n\n.CodeMirror-matchingbracket {\n    color: #b5cea8; /* Muted green for matching brackets */\n}\n\n.CodeMirror-nonmatchingbracket {\n    color: #d16969; /* Soft red for non-matching */\n}\n\n/* Override default theme's syntax highlighting */\n.cm-s-default .cm-header { color: #dcdcaa; } /* Soft yellow (overrides #00f blue) */\n.cm-s-default .cm-quote { color: #b5cea8; } /* Muted green (overrides #090) */\n.cm-negative { color: #d16969; } /* Soft red */\n.cm-positive { color: #6a9955; } /* Muted green */\n.cm-header, .cm-strong { font-weight: 700; }\n.cm-em { font-style: italic; }\n.cm-s-default .cm-link { color: #d7ba7d; text-decoration: underline; } /* Muted yellow (overrides #00c blue) */\n.cm-strikethrough { text-decoration: line-through; }\n\n.cm-s-default .cm-keyword { color: #ce9178; } /* Soft orange (overrides #708 purple) */\n.cm-s-default .cm-atom { color: #d4d4d4; } /* Light gray (overrides #219 blue) */\n.cm-s-default .cm-number { color: #b5cea8; } /* Muted green (overrides #164) */\n.cm-s-default .cm-def { color: #dcdcaa; } /* Soft yellow (overrides #00f blue) */\n.cm-s-default .cm-variable-2 { color: #d4d4d4; } /* Light gray (overrides #05a blue) */\n.cm-s-default .cm-variable-3, \n.cm-s-default .cm-type { color: #dcdcaa; } /* Soft yellow (overrides #085 blue) */\n.cm-s-default .cm-comment { color: #6a9955; } /* Muted green (overrides #a50) */\n.cm-s-default .cm-string { color: #ce9178; } /* Soft orange (overrides #a11) */\n.cm-s-default .cm-string-2 { color: #d7ba7d; } /* Muted yellow (overrides #f50) */\n.cm-s-default .cm-meta { color: #d4d4d4; } /* Light gray (overrides #555) */\n.cm-s-default .cm-qualifier { color: #d4d4d4; } /* Light gray (overrides #555) */\n.cm-s-default .cm-builtin { color: #dcdcaa; } /* Soft yellow (overrides #30a) */\n.cm-s-default .cm-bracket { color: #d4d4d4; } /* Light gray (overrides #997) */\n.cm-s-default .cm-tag { color: #dcdcaa; } /* Soft yellow (overrides #170) */\n.cm-s-default .cm-attribute { color: #d4d4d4; } /* Light gray (overrides #00c blue) */\n.cm-s-default .cm-hr { color: #888; } /* Muted gray (overrides #999) */\n.cm-s-default .cm-link { color: #d7ba7d; } /* Muted yellow (overrides #00c blue) */\n.cm-s-default .cm-error { color: #d16969; } /* Soft red (overrides red) */\n.cm-invalidchar { color: #d16969; } /* Soft red */\n\n/* Search highlight */\n.cm-searching {\n    background-color: rgba(255, 255, 0, 0.2); /* Subtle yellow */\n}"
     }
   },
   "modifierSets": {

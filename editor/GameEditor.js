@@ -831,8 +831,6 @@ class GameEditor {
     }
 
     saveToLocalStorage() {
-        localStorage.setItem("objectTypes", JSON.stringify(this.state.objectTypes));
-        localStorage.setItem("objectTypeDefinitions", JSON.stringify(this.state.objectTypeDefinitions));
         this.saveConfigFile();
     }
     
@@ -974,6 +972,12 @@ class GameEditor {
                     this.state.objectTypeDefinitions = this.state.objectTypes.objectTypeDefinitions;
                     delete this.state.objectTypes.objectTypeDefinitions;                           
                 }
+                                
+                if( config.configs.editor ) {
+                    let styleTag = document.getElementById("theme_style");
+                    styleTag.innerHTML = config.themes[config.configs.editor.theme].css;
+                }
+                
                 this.initModules();
                 // Set up event listeners
                 this.setupEventListeners();
@@ -981,12 +985,7 @@ class GameEditor {
                 // Render initial UI
                 this.renderObjectList();
                 this.updateSidebarButtons();            
-                
-                if( config.configs.editor ) {
-                    let styleTag = document.getElementById("theme_style");
-                    styleTag.innerHTML = config.themes[config.configs.editor.theme].css;
-                }
-                
+
                 if (Object.keys(this.state.objectTypes[this.state.selectedType]).length > 0) {
                     this.selectObject(Object.keys(this.state.objectTypes[this.state.selectedType])[0]);
                 }    

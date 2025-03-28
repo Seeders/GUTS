@@ -333,10 +333,6 @@ class Engine {
     }
 
     async loadConfig() {
-        let gameData = localStorage.getItem("objectTypes");
-        if(gameData) {
-            return JSON.parse(gameData);
-        }
         
         try {
             const response = await fetch('/config/game_config.json');
