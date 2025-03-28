@@ -1,5 +1,5 @@
 class AIPromptPanel {
-    constructor(gameEditor) {
+    constructor(gameEditor, aiConfig) {
         this.gameEditor = gameEditor;
         this.elements = {
             aiPromptModal: null,
@@ -9,10 +9,10 @@ class AIPromptPanel {
             previewArea: null,
             applyBtn: null
         };
-        this.init();
+        this.init(aiConfig);
     }
 
-    init() {
+    init(aiConfig) {
         // Create the AI Prompt Modal
         const modal = document.createElement('div');
         modal.className = 'modal';
@@ -39,7 +39,7 @@ class AIPromptPanel {
             </div>
         `;
         document.body.appendChild(modal);
-        this.config = this.gameEditor.state.objectTypes.configs.ai;
+        this.config = aiConfig;
         // Cache elements
         this.elements = {
             aiPromptModal: modal,
@@ -190,7 +190,7 @@ class AIPromptPanel {
             }
 
             const { selectedType } = this.gameEditor.state;
-            this.gameEditor.state.objectTypes[selectedType][parsedResponse.id] = parsedResponse;
+            this.gameEditor.state.project.objectTypes[selectedType][parsedResponse.id] = parsedResponse;
 
             this.gameEditor.renderObjectList();
             this.gameEditor.selectObject(parsedResponse.id); // Use new id instead of old selectedObject
