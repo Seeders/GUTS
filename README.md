@@ -7,10 +7,10 @@ Gamedev Ultimate Toolkit System
 
 open 
 
-    localhost:5000/editor.html
+    http://localhost:5000/editor.html
 or 
 
-    localhost:5000/index.html
+    http://localhost:5000/index.html
 
 Available under the GNU General Public License v3 for free use. See LICENSE.GPL for details.
 
