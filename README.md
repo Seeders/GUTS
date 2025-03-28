@@ -2,7 +2,7 @@
 
 GUTS is a comprehensive toolkit for game development, providing a flexible framework to create and edit games with ease. It comes with a pre-packaged tower defense game and sample assets to help you get started.
 
-## Installation
+## Local Installation
 
 1. Install dependencies:
    ```bash
@@ -21,6 +21,10 @@ GUTS is a comprehensive toolkit for game development, providing a flexible frame
 ## License
 
 GUTS is available under the GNU General Public License v3. See [LICENSE.GPL](LICENSE.GPL) for details.
+
+## Try it yourself:
+https://seeders.github.io/GUTS/index.html
+https://seeders.github.io/GUTS/editor.html
 
 ## Screenshots
 
