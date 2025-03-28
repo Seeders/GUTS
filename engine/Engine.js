@@ -3,11 +3,9 @@ import { Component } from "./Component.js";
 import { SpatialGrid } from "./SpatialGrid.js";
 import { ImageManager } from "./ImageManager.js";
 import { CoordinateTranslator } from './CoordinateTranslator.js';
-import { MapRenderer } from "./MapRenderer.js";
-import { MapManager } from "./MapManager.js";
 import { GameState } from "./GameState.js";
 import { DEFAULT_PROJECT_CONFIG } from "../config/game_config.js";
-
+import { TileMap } from "./TileMap.js";
 class Engine {
     constructor(target) {
         this.entityId = 0;
@@ -32,25 +30,17 @@ class Engine {
         await this.loadImages();
  
         this.setupHTML();
-        
-        this.mapManager = new MapManager(); 
-        const { tileMap, paths } = this.mapManager.generateMap(this.config.levels[this.state.level].tileMap);
-        this.state.tileMap = tileMap;
-        this.state.paths = paths;
-        this.state.tileMapData = this.config.levels[this.state.level].tileMap;
-        
-
-        
+        this.state.tileMapData = this.config.levels[this.state.level].tileMap;   
         this.translator = new CoordinateTranslator(this.config.configs.game, this.config.levels[this.state.level].tileMap.terrainMap.length);
         this.spatialGrid = new SpatialGrid(this.config.levels[this.state.level].tileMap.terrainMap.length, this.config.configs.game.gridSize);
-        this.mapRenderer = new MapRenderer(this.canvasBuffer, this.config.environment, this.imageManager, this.state.level, this.config.configs.game, this.config.levels[this.state.level].tileMap.terrainBGColor );   
-
+        const terrainImages = this.imageManager.getImages("levels", this.state.level);
+        this.terrainTileMapper = new TileMap(this.terrainCanvasBuffer, this.config.configs.game.gridSize, terrainImages, this.config.configs.game.isIsometric);
         this.imageManager.dispose();
 
         this.scriptCache = new Map(); // Cache compiled scripts
         this.setupScriptEnvironment();
         this.preCompileScripts();
-        this.gameEntity = this.createEntityFromConfig(0, 0, 'game');
+        this.gameEntity = this.createEntityFromConfig(0, 0, 'game', { gameConfig: this.config.configs.game, terrainCanvasBuffer: this.terrainCanvasBuffer, canvasBuffer: this.canvasBuffer, environment: this.config.environment, imageManager: this.imageManager, levelName: this.state.level, level: this.config.levels[this.state.level] });
         this.animationFrameId = requestAnimationFrame(() => this.gameLoop());
         this.setupEventListeners();
 
@@ -83,7 +73,10 @@ class Engine {
         this.canvasBuffer.setAttribute('height', this.config.configs.game.canvasHeight);
         this.canvas.setAttribute('width', this.config.configs.game.canvasWidth);
         this.canvas.setAttribute('height', this.config.configs.game.canvasHeight);
-
+        
+        this.terrainCanvasBuffer = document.createElement('canvas');
+        this.terrainCanvasBuffer.width = this.canvas.width;
+        this.terrainCanvasBuffer.height = this.canvas.height;
     }
 
     setupEventListeners() {
@@ -280,8 +273,6 @@ class Engine {
         this.deltaTime = Math.min(1/30, timeSinceLastUpdate / 1000); // Cap at 1/30th of a second        
         this.lastTime = this.currentTime;
         
-        if (this.state.gameOver || this.state.victory || this.state.isLevelingUp) return;
-        
         // Sort entities by y position for proper drawing order
         this.state.entities.sort((a, b) => {
             return (b.position.y * this.state.tileMap.length + b.position.x) - (a.position.y * this.state.tileMap.length + a.position.x)
@@ -309,13 +300,15 @@ class Engine {
         this.ctx.clearRect(0, 0, this.canvasBuffer.width, this.canvasBuffer.height);
         this.finalCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        this.mapRenderer.renderBG(this.state, this.state.tileMapData, this.state.tileMap, this.state.paths, true);
-        
+        if(this.mapRenderer) {
+            this.mapRenderer.renderBG(this.state, this.state.tileMapData, this.state.tileMap, this.state.paths);
+        }
         if (!this.state.isPaused) {
             this.update();
-        } 
-        
-        this.mapRenderer.renderFG();
+        }         
+        if(this.mapRenderer) {
+            this.mapRenderer.renderFG();
+        }
         this.drawUI();
         this.finalCtx.drawImage(this.canvasBuffer, 0, 0);
         this.animationFrameId = requestAnimationFrame(() => this.gameLoop());

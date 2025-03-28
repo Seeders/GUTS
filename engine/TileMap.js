@@ -72,7 +72,8 @@ class TileAnalysis {
 
 class TileMap {
 
-	constructor(canvas, tileSize, layerSpriteSheets) {
+	constructor(canvas, tileSize, layerSpriteSheets, isometric) {
+		this.isometric = isometric;
 		this.canvas = canvas;
 		this.tileSize = tileSize;
 		this.numColumns = 0;
@@ -82,7 +83,7 @@ class TileMap {
 
 	}
 
-    load(map, isometric){
+    draw(map){
 		this.tileMap = map;
 		this.numColumns = this.tileMap.length;
 		// Load all textures
@@ -98,7 +99,7 @@ class TileMap {
 
 		let analyzedMap = this.analyzeMap(this.tileMap);
 		this.drawMap(analyzedMap);
-        if(isometric){
+        if(this.isometric){
             this.drawIsometric();
         }
 
