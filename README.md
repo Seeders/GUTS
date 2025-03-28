@@ -1,71 +1,66 @@
-=# GUTS
-Gamedev Ultimate Toolkit System
+# GUTS - Gamedev Ultimate Toolkit System
 
-    npm install
+GUTS is a comprehensive toolkit for game development, providing a flexible framework to create and edit games with ease. It comes with a pre-packaged tower defense game and sample assets to help you get started.
 
-    node server.js
+## Installation
 
-open 
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-    http://localhost:5000/editor.html
-or 
+2. Start the server:
+   ```bash
+   node server.js
+   ```
 
-    http://localhost:5000/index.html
+3. Open in your browser:
+   - Editor: `http://localhost:5000/editor.html`
+   - Game: `http://localhost:5000/index.html`
 
-Available under the GNU General Public License v3 for free use. See LICENSE.GPL for details.
+## License
 
-![image](https://github.com/user-attachments/assets/77f5a78d-bbfe-4d62-b26e-9479ca03dd84)
+GUTS is available under the GNU General Public License v3. See [LICENSE.GPL](LICENSE.GPL) for details.
 
-![image](https://github.com/user-attachments/assets/3f63d70f-cdd1-43f6-97fc-65805144735d)
+## Screenshots
 
+![Editor Screenshot](https://github.com/user-attachments/assets/77f5a78d-bbfe-4d62-b26e-9479ca03dd84)
+![Game Screenshot](https://github.com/user-attachments/assets/3f63d70f-cdd1-43f6-97fc-65805144735d)
 
-It comes pre-packaged with a simple tower defense game and some random assets to help you get a feel for how everything works.
+## Features
 
-Basic Overview:
+GUTS includes a simple tower defense game and various assets to demonstrate its capabilities. The toolkit is built around the following core object types:
 
-The core object types are:
+### Core Object Types
 
-Configs, Entities, Components, Renderers, Functions, Levels (Terrain), Visual Objects, and Data.
+- **Configs**: Store settings for the editor, game, and plugins.
+- **Entities**: Collections of Components and Renderers that define game objects.
+- **Components**: Standalone behaviors with an `update()` function.
+- **Renderers**: Visual components with a `draw()` function.
+- **Functions**: Global utility functions for use in Components and Renderers.
+- **Levels (Terrain)**: Tilemaps that render as level terrain.
+- **Visual Objects**: Data for game entities (e.g., Players, Allies, Enemies, Projectiles) with stats (health, speed) and render objects (3D models, animations). These can be used to create Entities.
+- **Data**: Global collections of non-visual game data (e.g., upgrades, effects).
 
-Configs - 
-    store settings for various systems including the editor, the game, and plugins.
+## Usage Tips
 
-Entities - 
-    Collections of Components and Renderers that define the structure of your games objects.   
+- **Adding Object References**: Use a key on the object with the type's singular or plural name (e.g., `components` or `component`).
+- **Data Storage**: All game data is saved in `/config/game_config.json`. Back up this file regularly, as there’s no history system yet (Git is recommended).
 
-Components - 
-    Standalone simple behaviors that implement an update() function.
+## Known Issues & Troubleshooting
 
-Renderers - 
-    The same as a component, except it implements a draw() function.
+- **Data Backup**: Save `/config/game_config.json` manually, as there’s no built-in history system.
+- **Script Saving**: Use the "Save" button next to the script editor to save scripts. The "Save Object" button won’t save script changes.
+- **Graphics Editor**: Rendering may stop occasionally—refresh the page to fix it.
+- **Level Tilemap Editor**: Tile placement can be slow.
+- **Sound Editor**: Currently experimental and limited in functionality.
 
-Functions - 
-    Global functions for your game you may want to include in components or renderers.
+## Getting Started
 
-Data - 
-    Global collections of data you may need for your game that dont necessarily have visual graphics.  Upgrades, effects, etc.
+1. Launch the server and open the editor (`/editor.html`) to explore the toolkit.
+2. Experiment with the included tower defense game to understand how Entities, Components, and Renderers work together.
+3. Modify configs and assets in `/config/game_config.json` to customize your game.
 
-Levels - 
-    Tilemaps that render as terrain for your levels.
+## Contributing
 
-Visual Objects - 
-    Data for Player, Allies, Enemies, Projectiles, etc.  They have stats like health and speed, and also a render object that stores their 3D model and animations.  This data can be fed in to their respective Entity definitions to create game objects.  
-
-
-
-Tips:
-
-To add object references, just make a key on the object with the types plural or single name.
-
-
-Known issues and troubleshooting: 
-all the data is saved in /config/game_config.json, so make backups.  i dont have a history system yet, since i just use git.  
-
-You have to click the save button next to the script editor to save your script, if you click the save object button it wont save your script.
-
-The graphics editor tends to stop rendering sometimes, just refresh and it should work again.
-
-The level tilemap editor is slow when placing tiles.
-
-The sound editor is brand new and sucks, and is basically useless.
-
+Feel free to submit issues or pull requests to improve GUTS. Contributions are welcome under the GPL v3 license.
