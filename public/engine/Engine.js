@@ -5,8 +5,6 @@ import { ImageManager } from "./ImageManager.js";
 import { CoordinateTranslator } from './CoordinateTranslator.js';
 import { MapRenderer } from "./MapRenderer.js";
 import { MapManager } from "./MapManager.js";
-import { calculateDamage } from "../functions/calculateDamage.js";
-import { calculateStats } from "../functions/calculateStats.js";
 import { GameState } from "../engine/GameState.js";
 
 class Engine {
