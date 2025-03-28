@@ -2,6 +2,7 @@ import { TerrainMapEditor } from "./TerrainMapEditor.js";
 import { GraphicsEditor } from "./GraphicsEditor.js";
 import { AIPromptPanel } from "./AIPromptPanel.js";
 import { ScriptEditor } from "./ScriptEditor.js";
+import { AudioEditor } from "./AudioEditor.js";
 
 class GameEditor {
     constructor() {
@@ -66,7 +67,8 @@ class GameEditor {
             sizeSlider: document.getElementById('sizeSlider'),
             terrainEditorContainer: document.getElementById('level-editor-container'),
             graphicsEditorContainer: document.getElementById('graphics-editor-container'),
-            scriptEditorContainer: document.getElementById('script-editor-container')
+            scriptEditorContainer: document.getElementById('script-editor-container'),
+            audioEditorContainer: document.getElementById('audio-editor-container')
         };
 
         // Initialize the application
@@ -318,6 +320,11 @@ class GameEditor {
             valueInput.textContent = value;
             valueInput.setAttribute('id', 'script-value');
             type = 'textarea';            
+        } else if(key === "audio"){ 
+            valueInput = document.createElement('textarea');
+            valueInput.textContent = value;
+            valueInput.setAttribute('id', 'audio-value');
+            type = 'text';            
         } else if (key === "tileMap" ) {
             valueInput = document.createElement('textarea');
             type = 'textarea';
@@ -518,6 +525,9 @@ class GameEditor {
         } else if(object.script) {
             eventName = "editScript";
             data = { config: this.state.objectTypes.configs.game, script: object.script }
+        }else if(object.audio) {
+            eventName = "editAudio";
+            data = { config: this.state.objectTypes.configs.game, audio: object.audio }
         }
         if( data ) {
             // Create a custom event with data
@@ -792,8 +802,10 @@ class GameEditor {
         this.elements.terrainEditorContainer.classList.remove('show');
         this.elements.graphicsEditorContainer.classList.remove('show');
         this.elements.scriptEditorContainer.classList.remove('show');
+        this.elements.audioEditorContainer.classList.remove('show');
         let selectedObj = this.state.objectTypes[this.state.selectedType][this.state.selectedObject];
         let scriptProperty = selectedObj.script;
+        let audioProperty = selectedObj.audio;
     
         if(typeof this.state.objectTypes[this.state.selectedType][this.state.selectedObject].render != "undefined") {
             this.elements.graphicsEditorContainer.classList.add('show');
@@ -801,6 +813,8 @@ class GameEditor {
             this.elements.terrainEditorContainer.classList.add('show');
         } else if( typeof scriptProperty != "undefined") {
             this.elements.scriptEditorContainer.classList.add('show');
+        } else if( typeof audioProperty != "undefined") {
+            this.elements.audioEditorContainer.classList.add('show');
         }
     }
 
@@ -811,11 +825,13 @@ class GameEditor {
             this.elements.terrainEditorContainer.setAttribute('style', 'height: 50vh');
             this.elements.graphicsEditorContainer.setAttribute('style', 'height: 50vh');
             this.elements.scriptEditorContainer.setAttribute('style', 'height: 50vh');   
+            this.elements.audioEditorContainer.setAttribute('style', 'height: 50vh');   
         } else {
             this.elements.editor.setAttribute('style', 'display: none');
             this.elements.terrainEditorContainer.setAttribute('style', 'height: 100vh');
             this.elements.graphicsEditorContainer.setAttribute('style', 'height: 100vh');   
-            this.elements.scriptEditorContainer.setAttribute('style', 'height: 100vh');        
+            this.elements.scriptEditorContainer.setAttribute('style', 'height: 100vh');     
+            this.elements.audioEditorContainer.setAttribute('style', 'height: 100vh');        
         }
     }
 
@@ -885,7 +901,7 @@ class GameEditor {
  
         this.aiPromptPanel = new AIPromptPanel(this);
         this.scriptEditor = new ScriptEditor(this); // Initialize ScriptEditor
-        
+        this.audioEditor = new AudioEditor(this);
 
     }
 
@@ -955,6 +971,11 @@ class GameEditor {
         
         document.body.addEventListener('saveScript', (event) => {
             document.getElementById('script-value').value = event.detail;
+            this.saveObject();
+        });
+        
+        document.body.addEventListener('saveAudio', (event) => {
+            document.getElementById('audio-value').value = event.detail;
             this.saveObject();
         });
         
