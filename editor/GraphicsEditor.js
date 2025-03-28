@@ -1,5 +1,5 @@
-import * as THREE from '/library/three.module.min.js';
-import { OrbitControls } from '/library/three.orbitControls.js';
+import * as THREE from './library/three.module.min.js';
+import { OrbitControls } from './library/three.orbitControls.js';
 
 class GraphicsEditor {
     constructor(containerId = 'graphics-editor-container', canvasId = 'canvas') {
