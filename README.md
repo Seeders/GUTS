@@ -24,6 +24,7 @@ GUTS is available under the GNU General Public License v3. See [LICENSE.GPL](LIC
 
 ## Try it yourself:
 https://seeders.github.io/GUTS/index.html
+
 https://seeders.github.io/GUTS/editor.html
 
 ## Screenshots
