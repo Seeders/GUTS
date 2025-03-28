@@ -78,6 +78,42 @@ class GameEditor {
         this.init();
     }
 
+    
+    init() {
+        
+        let config = localStorage.getItem("project");
+
+        if( !config ) {
+            this.state.project = DEFAULT_PROJECT_CONFIG;
+        } else {
+            this.state.project = JSON.parse(config);   
+        }
+        this.configLoaded();
+    }
+    
+    saveConfigFile() {
+        const configText = JSON.stringify(this.state.project);
+        localStorage.setItem("project", configText);
+
+        if(localStorage.getItem("saveToFile") == 1) {
+            fetch('/save-config', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: configText
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to save config');
+                    return response.text();
+                })
+                .then(message => {
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+    }
     getCollections() {
         return this.state.project.objectTypes;
     }
@@ -859,30 +895,6 @@ class GameEditor {
     saveToLocalStorage() {
         this.saveConfigFile();
     }
-    
-    saveConfigFile() {
-        const configText = JSON.stringify(this.state.project);
-        localStorage.setItem("editorProject", configText);
-
-        if(localStorage.getItem("saveToFile") == 1) {
-            fetch('/save-config', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: configText
-                })
-                .then(response => {
-                    if (!response.ok) throw new Error('Failed to save config');
-                    return response.text();
-                })
-                .then(message => {
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-        }
-    }
 
     importConfig() {
         const code = this.elements.importTextarea.value;
@@ -1015,17 +1027,6 @@ class GameEditor {
         if (Object.keys(this.getCollections()[this.state.selectedType]).length > 0) {
             this.selectObject(Object.keys(this.getCollections()[this.state.selectedType])[0]);
         }    
-    }
-    init() {
-        
-        let config = localStorage.getItem("editorProject");
-
-        if( !config ) {
-            this.state.project = DEFAULT_PROJECT_CONFIG;
-        } else {
-            this.state.project = JSON.parse(config);   
-        }
-        this.configLoaded();
     }
 }
 

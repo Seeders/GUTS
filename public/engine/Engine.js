@@ -6,6 +6,7 @@ import { CoordinateTranslator } from './CoordinateTranslator.js';
 import { MapRenderer } from "./MapRenderer.js";
 import { MapManager } from "./MapManager.js";
 import { GameState } from "../engine/GameState.js";
+import { DEFAULT_PROJECT_CONFIG } from "../config/game_config.js";
 
 class Engine {
     constructor(target) {
@@ -21,7 +22,7 @@ class Engine {
 
     async init() {
         this.displayLoadScreen();
-        this.config = await this.loadConfig();
+        this.config = this.loadConfig();
         if (!this.config) {
             console.error("Failed to load game configuration");
             return;
@@ -330,16 +331,17 @@ class Engine {
         return entity;
     }
 
-    async loadConfig() {
-        
-        try {
-            const response = await fetch('/config/game_config.json');
-            if (!response.ok) throw new Error('File not found');
-            return await response.json();
-        } catch (error) {
-            console.error('Error loading config:', error);
-            return null;
+    loadConfig() {
+               
+        let config = localStorage.getItem("project");
+
+        if( !config ) {
+            config = DEFAULT_PROJECT_CONFIG;
+        } else {
+            config = JSON.parse(config);   
         }
+        return config.objectTypes;
+        
     }
 
     createEntity(x, y) {
