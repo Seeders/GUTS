@@ -48,7 +48,7 @@
                 this.entityCells.delete(entity);
             }
         }
-        getNearbyEntities(x, y, radius) {
+        getNearbyEntities(x, y, radius, type="") {
             const nearby = [];
             // Get cells that could contain entities within radius
             const startX = Math.max(0, Math.floor((x - radius)));
@@ -67,8 +67,11 @@
                             const distSquared = dx * dx + dy * dy;
                             
                             if (distSquared <= radius * radius) {
-                                let healthComp = entity.getComponent('health');
-                                if (healthComp) {
+                                if(type) {
+                                    if( entity.type == type ) {
+                                        nearby.push(entity);
+                                    }
+                                } else {
                                     nearby.push(entity);
                                 }
                             }                            

@@ -201,7 +201,7 @@ class Engine {
     }
 
     createEntityFromConfig(x, y, type, params) {
-        const entity = this.createEntity(x, y);
+        const entity = this.createEntity(x, y, type);
         const def = this.config.entities[type];
         
         if (def.components) {
@@ -344,8 +344,8 @@ class Engine {
         
     }
 
-    createEntity(x, y) {
-        const entity = new Entity(this, x, y);
+    createEntity(x, y, type) {
+        const entity = new Entity(this, x, y, type);
         return entity;
     }
 

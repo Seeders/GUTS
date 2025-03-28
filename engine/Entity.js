@@ -1,12 +1,12 @@
 class Entity {
-    constructor(game, x, y) {
+    constructor(game, x, y, type) {
         this.game = game;
         this.position = { x: x, y: y };
         this.components = [];
         this.renderers = [];
         this.destroyed = false;        
         this.id = ++game.entityId;
-        
+        this.type = type;
         this.lastPosition = {...this.position};
         this.lastGridPosition = {...this.gridPosition};
         this.lastDrawPosition = {...this.drawPosition};
