@@ -3,6 +3,7 @@ import { GraphicsEditor } from "./GraphicsEditor.js";
 import { AIPromptPanel } from "./AIPromptPanel.js";
 import { ScriptEditor } from "./ScriptEditor.js";
 import { AudioEditor } from "./AudioEditor.js";
+import { DEFAULT_PROJECT_CONFIG } from "../config/game_config.js";
 
 class GameEditor {
     constructor() {
@@ -18,26 +19,28 @@ class GameEditor {
 
         // Application state
         this.state = {
-            objectTypes: {
-                configs: {
-                    state: {
-                        gridSize: 48,
-                        imageSize: 128,
-                        canvasWidth: 1536,
-                        canvasHeight: 768            
-                    }
+            project: {
+                objectTypes: {
+                    configs: {
+                        state: {
+                            gridSize: 48,
+                            imageSize: 128,
+                            canvasWidth: 1536,
+                            canvasHeight: 768            
+                        }
+                    },
+                    towers: {},
+                    enemies: {},
+                    projectiles: {}
                 },
-                towers: {},
-                enemies: {},
-                projectiles: {}
+                objectTypeDefinitions: [
+                    { id: 'configs', name: 'Configs', singular: 'Config' },
+                    { id: 'towers', name: 'Towers', singular: 'Tower' },
+                    { id: 'enemies', name: 'Enemies', singular: 'Enemy' },
+                    { id: 'projectiles', name: 'Projectiles', singular: 'Projectile' },
+                    { id: 'environment', name: 'Environment', singular: 'Environment' }
+                ],
             },
-            objectTypeDefinitions: [
-                { id: 'configs', name: 'Configs', singular: 'Config' },
-                { id: 'towers', name: 'Towers', singular: 'Tower' },
-                { id: 'enemies', name: 'Enemies', singular: 'Enemy' },
-                { id: 'projectiles', name: 'Projectiles', singular: 'Projectile' },
-                { id: 'environment', name: 'Environment', singular: 'Environment' }
-            ],
             selectedType: 'towers',
             selectedObject: null,
             isDragging: false,
@@ -75,14 +78,21 @@ class GameEditor {
         this.init();
     }
 
+    getCollections() {
+        return this.state.project.objectTypes;
+    }
+
+    getCollectionDefs() {
+        return this.state.project.objectTypeDefinitions;
+    }
     // Helper methods
     getSingularType(typeId) {
-        const typeDef = this.state.objectTypeDefinitions.find(t => t.id === typeId);
+        const typeDef = this.getCollectionDefs().find(t => t.id === typeId);
         return typeDef ? typeDef.singular : typeId.slice(0, -1);
     }
 
     getPluralType(typeId) {
-        const typeDef = this.state.objectTypeDefinitions.find(t => t.id === typeId);
+        const typeDef = this.getCollectionDefs().find(t => t.id === typeId);
         return typeDef ? typeDef.name : typeId;
     }
 
@@ -92,7 +102,7 @@ class GameEditor {
     
         // Group object types by category
         const categories = {};
-        this.state.objectTypeDefinitions.forEach(type => {
+        this.getCollectionDefs().forEach(type => {
             const category = type.category || 'Uncategorized';
             if (!categories[category]) {
                 categories[category] = [];
@@ -126,10 +136,10 @@ class GameEditor {
                 // If this is the selected type, render its objects underneath
                 if (isSelected) {
                     html += `<div class="object-list">`;
-                    Object.keys(this.state.objectTypes[type.id] || {}).forEach(objId => {
+                    Object.keys(this.getCollections()[type.id] || {}).forEach(objId => {
                         html += `
                             <div class="object-item ${this.state.selectedObject === objId ? 'selected' : ''}" data-object="${objId}">
-                                ${this.state.objectTypes[type.id][objId].title || objId}
+                                ${this.getCollections()[type.id][objId].title || objId}
                             </div>`;
                     });
                     html += `</div>`;
@@ -143,7 +153,7 @@ class GameEditor {
         html += `
             <div class="type-actions">
                 <button id="add-type-btn" class="small-btn">Add Type</button>
-                ${this.state.objectTypeDefinitions.length > 1 ? `<button id="remove-type-btn" class="small-btn danger">Remove Type</button>` : ''}
+                ${this.getCollectionDefs().length > 1 ? `<button id="remove-type-btn" class="small-btn danger">Remove Type</button>` : ''}
             </div>`;
     
         return html;
@@ -163,7 +173,7 @@ class GameEditor {
                 this.updateSidebarButtons();
     
                 // Auto-select the first object of the new type, if any
-                const objects = this.state.objectTypes[this.state.selectedType];
+                const objects = this.getCollections()[this.state.selectedType];
                 if (objects && Object.keys(objects).length > 0) {
                     this.selectObject(Object.keys(objects)[0]);
                 }
@@ -256,7 +266,7 @@ class GameEditor {
         });
         // Setup property editor
         const customPropertiesContainer = document.getElementById('custom-properties');
-        this.renderCustomProperties(customPropertiesContainer, this.state.objectTypes[this.state.selectedType][this.state.selectedObject]);
+        this.renderCustomProperties(customPropertiesContainer, this.getCollections()[this.state.selectedType][this.state.selectedObject]);
         
         // Add event listeners for editor controls
         document.getElementById('add-property-btn').addEventListener('click', () => {
@@ -298,8 +308,8 @@ class GameEditor {
         keyInput.className = 'property-key';
         
         // Check if the key matches a type name (plural or singular)
-        const matchingTypePlural = this.state.objectTypeDefinitions.find(t => t.id.toLowerCase() === key.toLowerCase());
-        const matchingTypeSingular = this.state.objectTypeDefinitions.find(t => t.singular.replace(/ /g,'').toLowerCase() === key.toLowerCase());
+        const matchingTypePlural = this.getCollectionDefs().find(t => t.id.toLowerCase() === key.toLowerCase());
+        const matchingTypeSingular = this.getCollectionDefs().find(t => t.singular.replace(/ /g,'').toLowerCase() === key.toLowerCase());
         
         propertyItem.appendChild(keyInput);
         // Regular property input (not a reference)
@@ -355,10 +365,10 @@ class GameEditor {
             // Add options based on available objects of that type
             selectElement.innerHTML = `<option value="">-- Select ${matchingTypePlural ? matchingTypePlural.singular : matchingTypeSingular.singular} --</option>`;
 
-            Object.keys(this.state.objectTypes[typeId] || {}).forEach(objId => {
+            Object.keys(this.getCollections()[typeId] || {}).forEach(objId => {
                 const option = document.createElement('option');
                 option.value = objId;
-                option.textContent = this.state.objectTypes[typeId][objId].title || objId;
+                option.textContent = this.getCollections()[typeId][objId].title || objId;
                 selectElement.appendChild(option);
             });
             selectElement.value = value;
@@ -381,10 +391,10 @@ class GameEditor {
             // Add options based on available objects of that type
             selectElement.innerHTML = `<option value="">-- Select ${matchingTypePlural ? matchingTypePlural.singular : matchingTypeSingular.singular} --</option>`;
             
-            Object.keys(this.state.objectTypes[typeId] || {}).forEach(objId => {
+            Object.keys(this.getCollections()[typeId] || {}).forEach(objId => {
                 const option = document.createElement('option');
                 option.value = objId;
-                option.textContent = this.state.objectTypes[typeId][objId].title || objId;
+                option.textContent = this.getCollections()[typeId][objId].title || objId;
                 selectElement.appendChild(option);
             });
             
@@ -444,7 +454,7 @@ class GameEditor {
             
             if (keyInput.value && valueInput) {
                 let value = valueInput.value;
-                const matchingTypePlural = this.state.objectTypeDefinitions.find(
+                const matchingTypePlural = this.getCollectionDefs().find(
                     t => t.id.toLowerCase() === keyInput.value.toLowerCase()
                 );
                 // Try to parse value types for non-reference fields
@@ -469,7 +479,7 @@ class GameEditor {
         });
         
         // Update the config
-        this.state.objectTypes[this.state.selectedType][this.state.selectedObject] = object;
+        this.getCollections()[this.state.selectedType][this.state.selectedObject] = object;
         
         // Update UI
         this.renderObjectList();
@@ -497,7 +507,7 @@ class GameEditor {
         const singularType = this.getSingularType(this.state.selectedType);
         
         if (confirm(`Are you sure you want to delete "${this.state.selectedObject}" ${singularType}?`)) {
-            delete this.state.objectTypes[this.state.selectedType][this.state.selectedObject];
+            delete this.getCollections()[this.state.selectedType][this.state.selectedObject];
             this.state.selectedObject = null;
             this.renderObjectList();
             this.renderEditor();
@@ -507,8 +517,8 @@ class GameEditor {
 
     // Preview methods
     renderPreview() {
-        if (this.state.selectedObject && this.state.objectTypes[this.state.selectedType][this.state.selectedObject]) {
-            const object = this.state.objectTypes[this.state.selectedType][this.state.selectedObject];
+        if (this.state.selectedObject && this.getCollections()[this.state.selectedType][this.state.selectedObject]) {
+            const object = this.getCollections()[this.state.selectedType][this.state.selectedObject];
             this.drawObject(object);               
         }
     }
@@ -521,13 +531,13 @@ class GameEditor {
             data = object.render;
         } else if(object.tileMap) {
             eventName = "editTileMap";
-            data = { config: this.state.objectTypes.configs.game, tileMap: object.tileMap, environment: this.state.objectTypes.environment }
+            data = { config: this.getCollections().configs.game, tileMap: object.tileMap, environment: this.getCollections().environment }
         } else if(object.script) {
             eventName = "editScript";
-            data = { config: this.state.objectTypes.configs.game, script: object.script }
+            data = { config: this.getCollections().configs.game, script: object.script }
         }else if(object.audio) {
             eventName = "editAudio";
-            data = { config: this.state.objectTypes.configs.game, audio: object.audio }
+            data = { config: this.getCollections().configs.game, audio: object.audio }
         }
         if( data ) {
             // Create a custom event with data
@@ -546,7 +556,7 @@ class GameEditor {
     generateConfigCode() {
         let code = `{\n`;
         
-        Object.entries(this.state.objectTypes[this.state.selectedType]).forEach(([objId, config]) => {
+        Object.entries(this.getCollections()[this.state.selectedType]).forEach(([objId, config]) => {
             code += `    ${objId}: { `;
             
             const props = Object.entries(config)
@@ -607,7 +617,7 @@ class GameEditor {
             return;
         }
         
-        if (this.state.objectTypes[this.state.selectedType][id]) {
+        if (this.getCollections()[this.state.selectedType][id]) {
             alert(`Object with ID "${id}" already exists`);
             return;
         }
@@ -618,7 +628,7 @@ class GameEditor {
             render: JSON.parse(JSON.stringify(this.CONFIG.DEFAULT_RENDER))
         };
         
-        this.state.objectTypes[this.state.selectedType][id] = defaultProps;
+        this.getCollections()[this.state.selectedType][id] = defaultProps;
         
         this.elements.newObjectModal.classList.remove('show');
         this.renderObjectList();
@@ -626,7 +636,7 @@ class GameEditor {
     }
 
     duplicateObject() {      
-        const currentSelectedObjectType = this.state.objectTypes[this.state.selectedType];
+        const currentSelectedObjectType = this.getCollections()[this.state.selectedType];
         if( currentSelectedObjectType ) {
             // Create default properties based on type
             let defaultProps = {...currentSelectedObjectType[this.state.selectedObject]};
@@ -634,7 +644,7 @@ class GameEditor {
             const id = this.elements.duplicateObjectIdInput.value.trim();
             const title = this.elements.duplicateObjectNameInput.value.trim();
             defaultProps.title = title;
-            this.state.objectTypes[this.state.selectedType][id] = defaultProps;
+            this.getCollections()[this.state.selectedType][id] = defaultProps;
             
             this.elements.duplicateObjectModal.classList.remove('show');
             this.renderObjectList();
@@ -654,13 +664,13 @@ class GameEditor {
             return;
         }
     
-        if (this.state.objectTypes[typeId]) {
+        if (this.getCollections()[typeId]) {
             alert(`Type "${typeId}" already exists`);
             return;
         }
     
-        this.state.objectTypes[typeId] = {};
-        this.state.objectTypeDefinitions.push({
+        this.getCollections()[typeId] = {};
+        this.getCollectionDefs().push({
             id: typeId,
             name: typeName || typeId.charAt(0).toUpperCase() + typeId.slice(1),
             singular: typeSingular || typeId.slice(0, -1).charAt(0).toUpperCase() + typeId.slice(0, -1).slice(1),
@@ -755,17 +765,17 @@ class GameEditor {
         if (!typeId) return;
         
         // Prevent removing all types
-        if (this.state.objectTypeDefinitions.length <= 1) {
+        if (this.getCollectionDefs().length <= 1) {
             alert('Cannot remove the last object type');
             return;
         }
         
         // Remove the type
-        delete this.state.objectTypes[typeId];
-        this.state.objectTypeDefinitions = this.state.objectTypeDefinitions.filter(type => type.id !== typeId);
+        delete this.getCollections()[typeId];
+        this.state.project.objectTypeDefinitions = this.getCollectionDefs().filter(type => type.id !== typeId);
         
         // Switch to the first available type
-        this.state.selectedType = this.state.objectTypeDefinitions[0].id;
+        this.state.selectedType = this.getCollectionDefs()[0].id;
         this.state.selectedObject = null;
         
         // Close the modal and update UI
@@ -803,13 +813,13 @@ class GameEditor {
         this.elements.graphicsEditorContainer.classList.remove('show');
         this.elements.scriptEditorContainer.classList.remove('show');
         this.elements.audioEditorContainer.classList.remove('show');
-        let selectedObj = this.state.objectTypes[this.state.selectedType][this.state.selectedObject];
+        let selectedObj = this.getCollections()[this.state.selectedType][this.state.selectedObject];
         let scriptProperty = selectedObj.script;
         let audioProperty = selectedObj.audio;
     
-        if(typeof this.state.objectTypes[this.state.selectedType][this.state.selectedObject].render != "undefined") {
+        if(typeof this.getCollections()[this.state.selectedType][this.state.selectedObject].render != "undefined") {
             this.elements.graphicsEditorContainer.classList.add('show');
-        } else if(typeof this.state.objectTypes[this.state.selectedType][this.state.selectedObject].tileMap != "undefined") {
+        } else if(typeof this.getCollections()[this.state.selectedType][this.state.selectedObject].tileMap != "undefined") {
             this.elements.terrainEditorContainer.classList.add('show');
         } else if( typeof scriptProperty != "undefined") {
             this.elements.scriptEditorContainer.classList.add('show');
@@ -851,25 +861,27 @@ class GameEditor {
     }
     
     saveConfigFile() {
-        this.state.objectTypes.objectTypeDefinitions = this.state.objectTypeDefinitions;
-        const configText = JSON.stringify(this.state.objectTypes, null, 2);
-        delete this.state.objectTypes.objectTypeDefinitions;
-        fetch('/save-config', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: configText
-            })
-            .then(response => {
-                if (!response.ok) throw new Error('Failed to save config');
-                return response.text();
-            })
-            .then(message => {
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
+        const configText = JSON.stringify(this.state.project);
+        localStorage.setItem("editorProject", configText);
+
+        if(localStorage.getItem("saveToFile") == 1) {
+            fetch('/save-config', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: configText
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to save config');
+                    return response.text();
+                })
+                .then(message => {
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
     }
 
     importConfig() {
@@ -877,13 +889,13 @@ class GameEditor {
         const result = this.parseConfigCode(code);
         
         if (result) {
-            this.state.objectTypes[result.type] = result.config;
+            this.getCollections()[result.type] = result.config;
             this.state.selectedType = result.type;
             this.renderObjectList();
             this.elements.importExportModal.classList.remove('show');
             
-            if (Object.keys(this.state.objectTypes[this.state.selectedType]).length > 0) {
-                this.selectObject(Object.keys(this.state.objectTypes[this.state.selectedType])[0]);
+            if (Object.keys(this.getCollections()[this.state.selectedType]).length > 0) {
+                this.selectObject(Object.keys(this.getCollections()[this.state.selectedType])[0]);
             } else {
                 this.state.selectedObject = null;
                 this.renderEditor();
@@ -900,7 +912,11 @@ class GameEditor {
         this.graphicsEditor = new GraphicsEditor();        
  
         this.aiPromptPanel = new AIPromptPanel(this);
-        this.scriptEditor = new ScriptEditor(this); // Initialize ScriptEditor
+        let themeCSS = false;
+        if( this.getCollections().configs.codeMirror && this.getCollections().configs.codeMirror.theme) {
+            themeCSS = this.getCollections().themes[this.getCollections().configs.codeMirror.theme].css;
+        }
+        this.scriptEditor = new ScriptEditor(this, themeCSS); // Initialize ScriptEditor
         this.audioEditor = new AudioEditor(this);
 
     }
@@ -981,39 +997,35 @@ class GameEditor {
         
     }
 
-    init() {
-        fetch('/config/game_config.json')
-            .then(response => {
-                if (!response.ok) throw new Error('File not found');
-                return response.json();
-            })
-            .then(config => {
-                this.state.objectTypes = config;                    
-                if(this.state.objectTypes.objectTypeDefinitions) {
-                    this.state.objectTypeDefinitions = this.state.objectTypes.objectTypeDefinitions;
-                    delete this.state.objectTypes.objectTypeDefinitions;                           
-                }
-                                
-                if( config.configs.editor ) {
-                    let styleTag = document.getElementById("theme_style");
-                    styleTag.innerHTML = config.themes[config.configs.editor.theme].css;
-                }
-                
-                this.initModules();
-                // Set up event listeners
-                this.setupEventListeners();
-                
-                // Render initial UI
-                this.renderObjectList();
-                this.updateSidebarButtons();            
+    configLoaded() {
+        const collections = this.getCollections();
+        if( collections.configs.editor ) {
+            let styleTag = document.getElementById("theme_style");
+            styleTag.innerHTML = collections.themes[collections.configs.editor.theme].css;
+        }
+        
+        this.initModules();
+        // Set up event listeners
+        this.setupEventListeners();
+        
+        // Render initial UI
+        this.renderObjectList();
+        this.updateSidebarButtons();            
 
-                if (Object.keys(this.state.objectTypes[this.state.selectedType]).length > 0) {
-                    this.selectObject(Object.keys(this.state.objectTypes[this.state.selectedType])[0]);
-                }    
-            })
-            .catch(error => {
-                console.error('Error loading config:', error);
-            });             
+        if (Object.keys(this.getCollections()[this.state.selectedType]).length > 0) {
+            this.selectObject(Object.keys(this.getCollections()[this.state.selectedType])[0]);
+        }    
+    }
+    init() {
+        
+        let config = localStorage.getItem("editorProject");
+
+        if( !config ) {
+            this.state.project = DEFAULT_PROJECT_CONFIG;
+        } else {
+            this.state.project = JSON.parse(config);   
+        }
+        this.configLoaded();
     }
 }
 

@@ -1,6 +1,6 @@
 // ScriptEditor.js
 class ScriptEditor {
-    constructor(gameEditor) {
+    constructor(gameEditor, theme) {
         this.gameEditor = gameEditor;
         this.container = this.gameEditor.elements.scriptEditorContainer; // Should be #script-editor-container
         this.MIN_HEIGHT = 200;
@@ -35,9 +35,9 @@ class ScriptEditor {
 
         this.setupEventListeners();
                         
-        if( this.gameEditor.state.objectTypes.configs.codeMirror ) {
+        if( theme ) { 
             let styleTag = document.getElementById("theme_style");
-            styleTag.innerHTML += this.gameEditor.state.objectTypes.themes[this.gameEditor.state.objectTypes.configs.codeMirror.theme].css;
+            styleTag.innerHTML += theme;
         }
         
     }
