@@ -27,21 +27,29 @@ The core object types are:
 
 Configs, Entities, Components, Renderers, Functions, Levels (Terrain), Visual Objects, and Data.
 
-Configs - store settings for various systems including the editor, the game, and plugins.
+Configs - 
+    store settings for various systems including the editor, the game, and plugins.
 
-Entities - Collections of Components and Renderers that define the structure of your games objects.   
+Entities - 
+    Collections of Components and Renderers that define the structure of your games objects.   
 
-Components - Standalone simple behaviors that implement an update() function.
+Components - 
+    Standalone simple behaviors that implement an update() function.
 
-Renderers - The same as a component, except it implements a draw() function.
+Renderers - 
+    The same as a component, except it implements a draw() function.
 
-Functions - Global functions for your game you may want to include in components or renderers.
+Functions - 
+    Global functions for your game you may want to include in components or renderers.
 
-Data - Global collections of data you may need for your game that dont necessarily have visual graphics.  Upgrades, effects, etc.
+Data - 
+    Global collections of data you may need for your game that dont necessarily have visual graphics.  Upgrades, effects, etc.
 
-Levels - Tilemaps that render as terrain for your levels.
+Levels - 
+    Tilemaps that render as terrain for your levels.
 
-Visual Objects - Data for Player, Allies, Enemies, Projectiles, etc.  They have stats like health and speed, and also a render object that stores their 3D model and animations.  This data can be fed in to their respective Entity definitions to create game objects.  
+Visual Objects - 
+    Data for Player, Allies, Enemies, Projectiles, etc.  They have stats like health and speed, and also a render object that stores their 3D model and animations.  This data can be fed in to their respective Entity definitions to create game objects.  
 
 
 
