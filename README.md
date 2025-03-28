@@ -14,3 +14,4 @@ or
 
 Available under the GNU General Public License v3 for free use. See LICENSE.GPL for details.
 
+![image](https://github.com/user-attachments/assets/77f5a78d-bbfe-4d62-b26e-9479ca03dd84)
