@@ -5,7 +5,7 @@ import { ImageManager } from "./ImageManager.js";
 import { CoordinateTranslator } from './CoordinateTranslator.js';
 import { MapRenderer } from "./MapRenderer.js";
 import { MapManager } from "./MapManager.js";
-import { GameState } from "../engine/GameState.js";
+import { GameState } from "./GameState.js";
 import { DEFAULT_PROJECT_CONFIG } from "../config/game_config.js";
 
 class Engine {
