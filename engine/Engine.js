@@ -12,7 +12,7 @@ class Engine {
 
         this.applicationTarget = document.getElementById(target);
         this.entitiesToAdd = [];
-        
+        this.plugins = {};
         this.currentTime = Date.now();
         this.lastTime = Date.now();
         this.deltaTime = 0;
@@ -26,8 +26,16 @@ class Engine {
             return;
         }
         this.state = new GameState(this.config);  
-       
-        await this.loadImages();
+        
+        if( this.config.configs.game.libraries ) {
+            this.config.configs.game.libraries.forEach((library) => {
+                let scriptTag = document.createElement("script");
+                scriptTag.innerText = this.config.libraries[library].source;
+                document.head.appendChild(scriptTag);
+            });
+        }
+
+        await this.loadAssets();
 
         this.isometric = this.config.configs.game.isIsometric || false;
         this.setupHTML();
@@ -48,7 +56,7 @@ class Engine {
 
     }
 
-    async loadImages() {
+    async loadAssets() {
         this.imageManager = new ImageManager(this.config.configs.game.imageSize);    
 
         // Load all images
@@ -260,39 +268,46 @@ class Engine {
     }
 
     update() {
-
         this.currentTime = Date.now();
-    
+       
         // Only update if a reasonable amount of time has passed
         const timeSinceLastUpdate = this.currentTime - this.lastTime;
-        
+       
         // Skip update if more than 1 second has passed (tab was inactive)
         if (timeSinceLastUpdate > 1000) {
             this.lastTime = this.currentTime; // Reset timer without updating
             return;
         }
-        
+       
         this.deltaTime = Math.min(1/30, timeSinceLastUpdate / 1000); // Cap at 1/30th of a second        
         this.lastTime = this.currentTime;
-        
+       
         // Sort entities by y position for proper drawing order
         this.state.entities.sort((a, b) => {
             return (b.position.y * this.state.tileMap.length + b.position.x) - (a.position.y * this.state.tileMap.length + a.position.x)
         });
-        this.gameEntity.update();
-        // Update all entities
-        for(let i = this.state.entities.length - 1; i >= 0; i--) {
-            let e = this.state.entities[i];
-            let result = e.update();     
-            e.draw();
-            e.postUpdate(); 
-            if(!result) {               
-                this.state.entities.splice(i, 1);
-            }     
-        }   
-        this.gameEntity.draw();
-        this.gameEntity.postUpdate();
     
+        this.gameEntity.update();
+        
+        // Single loop through entities for update, draw and postUpdate
+        const entitiesToKeep = [];
+        for(let i = 0; i < this.state.entities.length; i++) {
+            let e = this.state.entities[i];
+            let result = e.update();    
+            
+            if(result) {
+                entitiesToKeep.push(e);
+                e.draw();
+                e.postUpdate();
+            }
+        }
+        
+        // Replace the entities array with only entities that should be kept
+        this.state.entities = entitiesToKeep;
+        
+        this.gameEntity.postUpdate();
+        this.gameEntity.draw();
+        
         // Add any new entities
         this.entitiesToAdd.forEach((entity) => this.state.addEntity(entity));
         this.entitiesToAdd = [];
