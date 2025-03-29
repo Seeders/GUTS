@@ -1,14 +1,16 @@
-import { TerrainMapEditor } from "./TerrainMapEditor.js";
-import { GraphicsEditor } from "./GraphicsEditor.js";
-import { AIPromptPanel } from "./AIPromptPanel.js";
-import { ScriptEditor } from "./ScriptEditor.js";
-import { AudioEditor } from "./AudioEditor.js";
 import { Entity } from "../engine/Entity.js";
 import { Component } from "../engine/Component.js";
 import { DEFAULT_PROJECT_CONFIG } from "../config/game_config.js";
+import { ImageManager } from "../engine/ImageManager.js";
+import { CoordinateTranslator } from "../engine/CoordinateTranslator.js";
+import { TileMap } from "../engine/TileMap.js";
+import { TerrainImageProcessor } from "./TerrainImageProcessor.js";
+import * as THREE from '../library/three.module.min.js';
+import { OrbitControls } from '../library/three.orbitControls.js';
 
 class GameEditor {
     constructor() {
+        window.editorModules = {};
         // Configuration constants
         this.CONFIG = {
             GRID_SIZE: 40,
@@ -18,30 +20,134 @@ class GameEditor {
             DEFAULT_TILEMAP: {},
             DEFAULT_SCRIPT: 'init(){\n\n}'
         };
-
+        this.engineClasses = {"THREE": THREE, "OrbitControls": OrbitControls, "ImageManager": ImageManager, "TileMap": TileMap, "TerrainImageProcessor": TerrainImageProcessor, "CoordinateTranslator": CoordinateTranslator};
         // Application state
         this.state = {
             project: {
                 objectTypes: {
-                    configs: {
-                        state: {
-                            gridSize: 48,
-                            imageSize: 128,
-                            canvasWidth: 1536,
-                            canvasHeight: 768            
+                    configs: {                    
+                        "game": {
+                            "gridSize": 48,
+                            "imageSize": 128,
+                            "canvasWidth": 1536,
+                            "canvasHeight": 768,
+                            "html": "<div id=\"gameContainer\"></div>",
+                            "css": "",
+                            "title": "My TD Game",
+                            "isIsometric": false,
+                            "libraries": []
+                        },
+                        "editor": {
+                            "title": "Editor Config",
+                            "editorCategories": "",
+                            "theme": "default"
+                        },
+                        "ai": {
+                            "title": "AI",
+                            "aiEndPoint": "http://10.0.0.178:11434/api/generate",
+                            "aiModel": "deepseek-r1:32b",
+                            "defaultPrompt": "Help me make this better"
+                        },
+                        "state": {
+                            "level": "level1",
                         }
                     },
-                    towers: {},
-                    enemies: {},
-                    projectiles: {}
+                    "entities": {
+                        "game": {
+                            "components": ["game"]
+                        }
+                    },
+                    "components": {
+                        "game": {
+                            "script" : "init(){}"
+                        }
+                    },
+                    "renderers": {
+                        "renderer": {}
+                    },
+                    "functions": {},
+                    "environment": {},
+                    "levels": {},
+                    "themes": {
+                        "default" : {
+                            "css" : ""
+                        }
+                    },
+                    "sounds": {},
+                    "libraries": {},
                 },
-                objectTypeDefinitions: [
-                    { id: 'configs', name: 'Configs', singular: 'Config' },
-                    { id: 'towers', name: 'Towers', singular: 'Tower' },
-                    { id: 'enemies', name: 'Enemies', singular: 'Enemy' },
-                    { id: 'projectiles', name: 'Projectiles', singular: 'Projectile' },
-                    { id: 'environment', name: 'Environment', singular: 'Environment' }
-                ],
+                objectTypeDefinitions:  [
+                    {
+                      "id": "configs",
+                      "name": "Configs",
+                      "singular": "Config",
+                      "category": "Settings",
+                      "isCore": true
+                    },
+                    {
+                      "id": "entities",
+                      "name": "Entities",
+                      "singular": "Entity",
+                      "category": "Scripts",
+                      "isCore": true
+                    },
+                    {
+                      "id": "components",
+                      "name": "Components",
+                      "singular": "Component",
+                      "category": "Scripts",
+                      "isCore": true
+                    },
+                    {
+                      "id": "renderers",
+                      "name": "Renderers",
+                      "singular": "Renderer",
+                      "category": "Scripts",
+                      "isCore": true
+                    },
+                    {
+                      "id": "functions",
+                      "name": "Functions",
+                      "singular": "Function",
+                      "category": "Scripts",
+                      "isCore": true
+                    },
+                    {
+                      "id": "environment",
+                      "name": "Environment",
+                      "singular": "Environment",
+                      "category": "Visuals",
+                      "isCore": true
+                    },
+                    {
+                      "id": "levels",
+                      "name": "Levels",
+                      "singular": "Level",
+                      "category": "Terrain",
+                      "isCore": true
+                    },
+                    {
+                      "id": "themes",
+                      "name": "Themes",
+                      "singular": "Theme",
+                      "category": "Settings",
+                      "isCore": true
+                    },
+                    {
+                      "id": "sounds",
+                      "name": "Sounds",
+                      "singular": "Sound",
+                      "category": "Audio",
+                      "isCore": true
+                    },
+                    {
+                      "id": "libraries",
+                      "name": "Libraries",
+                      "singular": "Library",
+                      "category": "Scripts",
+                      "isCore": true
+                    }
+                  ]
             },
             selectedType: 'levels',
             selectedObject: null,
@@ -76,16 +182,20 @@ class GameEditor {
             audioEditorContainer: document.getElementById('audio-editor-container'),
             launchGameBtn: document.getElementById('launch-game-btn')
         };
-
+        this.registeredModules = {};
+        this.modules = {};
         this.scriptCache = new Map(); // Cache compiled scripts
         // Initialize the application
+        this.dispatchHook('constructor', this.getHookDetail({arguments}));
     }
 
     getScript(typeName) {
+        this.dispatchHook('getScript', this.getHookDetail({arguments}));
         return this.scriptContext.getComponent(typeName);
     }
 
     compileScript(scriptText, typeName) {
+        this.dispatchHook('compileScript', this.getHookDetail({arguments}));
         if (this.scriptCache.has(typeName)) {
             return this.scriptCache.get(typeName);
         }
@@ -120,6 +230,7 @@ class GameEditor {
     }
 
     setupScriptEnvironment() {
+        this.dispatchHook('setupScriptEnvironment', this.getHookDetail({arguments}));
         // Safe execution context with all imported modules
         this.scriptContext = {
             game: this,
@@ -138,7 +249,8 @@ class GameEditor {
     }
 
 
-    async init() {
+    init() {
+        this.dispatchHook('init', this.getHookDetail({arguments}));
         
         let config = localStorage.getItem("project");
 
@@ -152,6 +264,7 @@ class GameEditor {
     }
     
     saveConfigFile() {
+        this.dispatchHook('saveConfigFile', this.getHookDetail({arguments}));
         const configText = JSON.stringify(this.state.project);
         localStorage.setItem("project", configText);
 
@@ -194,10 +307,10 @@ class GameEditor {
 
     // Rendering methods
     renderTypeSelector() {
-        let html = ``;
-        console.log(this.state.selectedType);    
+        this.dispatchHook('renderTypeSelector', this.getHookDetail({arguments}));
+        let html = ``;  
         let currentCollectionDef = this.getCollectionDefs().find( type => type.id == this.state.selectedType );
-        console.log(currentCollectionDef); 
+
         // Group object types by category
         const categories = {};
         this.getCollectionDefs().forEach(type => {
@@ -247,7 +360,6 @@ class GameEditor {
         }
         html += `</div>`;
     
-
         // Add type action buttons
         html += `
             <div class="type-actions">
@@ -258,6 +370,7 @@ class GameEditor {
         return html;
     }
     renderObjectList() {
+        this.dispatchHook('renderObjectList', this.getHookDetail({arguments}));
         // Render the type selector with integrated object list
         this.elements.objectList.innerHTML = this.renderTypeSelector();
         // Add event listeners for type selection
@@ -305,14 +418,16 @@ class GameEditor {
         document.getElementById('remove-type-btn')?.addEventListener('click', () => this.showRemoveTypeModal());
     }
     selectObject(objId) {
+        this.dispatchHook('selectObject', this.getHookDetail({arguments}));
         this.state.selectedObject = objId;
         this.renderObjectList();
         this.renderEditor();
-        this.renderPreview();
         this.updateMainContent();
+        this.renderPreview();
     }
 
     renderEditor() {
+        this.dispatchHook('renderEditor', this.getHookDetail({arguments}));
         const singularType = this.getSingularType(this.state.selectedType);
         
         if (!this.state.selectedObject) {
@@ -339,7 +454,6 @@ class GameEditor {
                     <button id="add-renderer-btn">Add Render</button>
                     <button id="add-tileMap-btn">Add TileMap</button>
                     <button id="add-script-btn">Add Script</button>
-                    <button id="ai-prompt-btn">AI Generate</button>
                 </div>
             </div>
             <div class="actions">
@@ -353,9 +467,7 @@ class GameEditor {
         `;
         
         // Add event listener
-        document.getElementById('ai-prompt-btn').addEventListener('click', () => {
-            this.aiPromptPanel.showModal();
-        });
+       
         document.getElementById('duplicate-object-btn').addEventListener('click', () => {
             this.elements.duplicateObjectIdInput.value = '';
             this.elements.duplicateObjectNameInput.value = '';
@@ -385,17 +497,33 @@ class GameEditor {
             this.selectObject(this.state.selectedObject);
         });
         document.getElementById('delete-object-btn').addEventListener('click', () => this.deleteObject());
+
+    }
+    getHookDetail(params, result) {
+        return { selectedType: this.state.selectedType, selectedObject: this.state.selectedObject, params: params.arguments, result: result };
+    }
+    dispatchHook(hookName, detail = {}) {
+        requestAnimationFrame(() => {
+            const customEvent = new CustomEvent(hookName, {
+                detail: { ...detail, timestamp: Date.now() }
+            });
+            console.log('dispatched: ', hookName, detail);
+            document.body.dispatchEvent(customEvent);
+        });
     }
 
     renderCustomProperties(container, object) {
+        this.dispatchHook('renderCustomProperties', this.getHookDetail({arguments}));
         container.innerHTML = '';
 
         Object.entries(object).forEach(([key, value]) => {
             this.addCustomProperty(container, key, value);
         });
+        this.dispatchHook('renderCustomProperties', this.getHookDetail({arguments}));
     }
 
     addCustomProperty(container, key, value) {
+        this.dispatchHook('addCustomProperty', this.getHookDetail({arguments}));
         const propertyItem = document.createElement('div');
         propertyItem.className = 'property-item';
         
@@ -541,6 +669,7 @@ class GameEditor {
 
     // Object management methods
     saveObject() {
+        this.dispatchHook('saveObject', this.getHookDetail({arguments}));
         if (!this.state.selectedObject) return;
         
         const object = {}; 
@@ -600,6 +729,7 @@ class GameEditor {
     }
 
     deleteObject() {
+        this.dispatchHook('deleteObject', this.getHookDetail({arguments}));
         if (!this.state.selectedObject) return;
         
         const singularType = this.getSingularType(this.state.selectedType);
@@ -615,43 +745,16 @@ class GameEditor {
 
     // Preview methods
     renderPreview() {
+        this.dispatchHook('renderPreview', this.getHookDetail({arguments}));
         if (this.state.selectedObject && this.getCollections()[this.state.selectedType][this.state.selectedObject]) {
             const object = this.getCollections()[this.state.selectedType][this.state.selectedObject];
             this.drawObject(object);               
         }
     }
 
-    drawObject(object) {
-        let data = null;
-        let eventName = "";
-        if(object.render) {
-            eventName = "renderObject";
-            data = object.render;
-        } else if(object.tileMap) {
-            eventName = "editTileMap";
-            data = { config: this.getCollections().configs.game, tileMap: object.tileMap, environment: this.getCollections().environment }
-        } else if(object.script) {
-            eventName = "editScript";
-            data = { config: this.getCollections().configs.game, script: object.script }
-        }else if(object.audio) {
-            eventName = "editAudio";
-            data = { config: this.getCollections().configs.game, audio: object.audio }
-        }
-        if( data ) {
-            // Create a custom event with data
-            const myCustomEvent = new CustomEvent(eventName, {
-                detail: data,
-                bubbles: true,
-                cancelable: true
-            });
-
-            // Dispatch the event
-            document.body.dispatchEvent(myCustomEvent);
-        }
-    }
-
     // Import/Export methods
     generateConfigCode() {
+        this.dispatchHook('generateConfigCode', this.getHookDetail({arguments}));
         let code = `{\n`;
         
         Object.entries(this.getCollections()[this.state.selectedType]).forEach(([objId, config]) => {
@@ -679,6 +782,7 @@ class GameEditor {
     }
 
     parseConfigCode(code) {
+        this.dispatchHook('parseConfigCode', this.getHookDetail({arguments}));
         try {
             // Extract the config object with variable pattern matching
             const regex = /\{([^;]*(?:\{[^;]*\}[^;]*)*)\}/s;
@@ -707,6 +811,7 @@ class GameEditor {
 
     // Object creation methods
     createNewObject() {
+        this.dispatchHook('createNewObject', this.getHookDetail({arguments}));
         const id = this.elements.newObjectIdInput.value.trim();
         const name = this.elements.newObjectNameInput.value.trim();
         
@@ -734,6 +839,7 @@ class GameEditor {
     }
 
     duplicateObject() {      
+        this.dispatchHook('duplicateObject', this.getHookDetail({arguments}));
         const currentSelectedObjectType = this.getCollections()[this.state.selectedType];
         if( currentSelectedObjectType ) {
             // Create default properties based on type
@@ -752,6 +858,7 @@ class GameEditor {
 
     // Type management methods
     createNewType() {
+        this.dispatchHook('createNewType', this.getHookDetail({arguments}));
         const typeId = document.getElementById('new-type-id').value.trim();
         const typeName = document.getElementById('new-type-name').value.trim();
         const typeSingular = document.getElementById('new-type-singular').value.trim();
@@ -787,6 +894,7 @@ class GameEditor {
     }
 
     showAddTypeModal() {
+        this.dispatchHook('showAddTypeModal', this.getHookDetail({arguments}));
         if (!document.getElementById('add-type-modal')) {
             const modal = document.createElement('div');
             modal.className = 'modal';
@@ -827,6 +935,7 @@ class GameEditor {
     }
 
     showRemoveTypeModal() {
+        this.dispatchHook('showRemoveTypeModal', this.getHookDetail({arguments}));
         // Create the modal if it doesn't exist
         if (!document.getElementById('remove-type-modal')) {
             const modal = document.createElement('div');
@@ -858,6 +967,7 @@ class GameEditor {
     }
 
     removeSelectedType() {
+        this.dispatchHook('removeSelectedType', this.getHookDetail({arguments}));
         const typeId = this.state.selectedType;
         
         if (!typeId) return;
@@ -893,6 +1003,7 @@ class GameEditor {
 
     // UI update methods
     updateNewObjectModal() {
+        this.dispatchHook('updateNewObjectModal', this.getHookDetail({arguments}));
         const singularType = this.getSingularType(this.state.selectedType);
         document.querySelector('#new-object-modal h2').textContent = `Create New ${singularType.charAt(0).toUpperCase() + singularType.slice(1)}`;
         document.querySelector('#new-object-modal label[for="new-object-id"]').textContent = `${singularType.charAt(0).toUpperCase() + singularType.slice(1)} ID:`;
@@ -900,6 +1011,7 @@ class GameEditor {
     }
 
     updateDuplicateObjectModal() {
+        this.dispatchHook('updateDuplicateObjectModal', this.getHookDetail({arguments}));
         const singularType = this.getSingularType(this.state.selectedType);
         document.querySelector('#duplicate-object-modal h2').textContent = `Create Duplicate ${singularType.charAt(0).toUpperCase() + singularType.slice(1)}`;
         document.querySelector('#duplicate-object-modal label[for="duplicate-object-id"]').textContent = `${singularType.charAt(0).toUpperCase() + singularType.slice(1)} ID:`;
@@ -907,33 +1019,16 @@ class GameEditor {
     }
 
     updateSidebarButtons() {
+        this.dispatchHook('updateSidebarButtons', this.getHookDetail({arguments}));
         const singularType = this.getSingularType(this.state.selectedType);
         document.getElementById('add-object-btn').textContent = `Add New ${singularType}`;
         document.getElementById('import-export-btn').textContent = `Import/Export ${this.getPluralType(this.state.selectedType)}`;
     }
 
-    updateMainContent() {
-        this.elements.terrainEditorContainer.classList.remove('show');
-        this.elements.graphicsEditorContainer.classList.remove('show');
-        this.elements.scriptEditorContainer.classList.remove('show');
-        this.elements.audioEditorContainer.classList.remove('show');
-        let selectedObj = this.getCollections()[this.state.selectedType][this.state.selectedObject];
-        let scriptProperty = selectedObj.script;
-        let audioProperty = selectedObj.audio;
-    
-        if(typeof this.getCollections()[this.state.selectedType][this.state.selectedObject].render != "undefined") {
-            this.elements.graphicsEditorContainer.classList.add('show');
-        } else if(typeof this.getCollections()[this.state.selectedType][this.state.selectedObject].tileMap != "undefined") {
-            this.elements.terrainEditorContainer.classList.add('show');
-        } else if( typeof scriptProperty != "undefined") {
-            this.elements.scriptEditorContainer.classList.add('show');
-        } else if( typeof audioProperty != "undefined") {
-            this.elements.audioEditorContainer.classList.add('show');
-        }
-    }
 
     // Utility methods
     toggleEditor() {
+        this.dispatchHook('toggleEditor', this.getHookDetail({arguments}));
         if(this.elements.editor.offsetParent === null){
             this.elements.editor.setAttribute('style', 'display: block');
             this.elements.terrainEditorContainer.setAttribute('style', 'height: 50vh');
@@ -950,6 +1045,7 @@ class GameEditor {
     }
 
     copyExportToClipboard() {
+        this.dispatchHook('copyExportToClipboard', this.getHookDetail({arguments}));
         this.elements.exportTextarea.select();
         document.execCommand('copy');
         const copyBtn = document.getElementById('copy-export-btn');
@@ -961,10 +1057,12 @@ class GameEditor {
     }
 
     saveToLocalStorage() {
+        this.dispatchHook('saveToLocalStorage', this.getHookDetail({arguments}));
         this.saveConfigFile();
     }
 
     importConfig() {
+        this.dispatchHook('importConfig', this.getHookDetail({arguments}));
         const code = this.elements.importTextarea.value;
         const result = this.parseConfigCode(code);
         
@@ -986,22 +1084,171 @@ class GameEditor {
     }
 
     // Initialization methods
+    // Add these new methods to register custom modules and property handlers
+    registerModule(name, moduleInstance) {
+        this.dispatchHook('registerModule', this.getHookDetail({arguments}));
+        this.registeredModules[name] = moduleInstance;
+        return moduleInstance;
+    }
+    // Method to instantiate all registered modules
     initModules() {
-        this.terrainMapEditor = new TerrainMapEditor(this);
-        this.terrainMapEditor.init();
-        this.graphicsEditor = new GraphicsEditor();        
+        this.dispatchHook('initModules', this.getHookDetail({arguments}));
+        // Make sure we have module definitions         
+        if (!this.getCollections().propertyModules) return;
+        
+        // Track pending module loads to handle dependencies properly
+        const pendingModules = new Set();
+                
+        // Function to instantiate a module once its script is loaded
+        const instantiateModule = (moduleId, config) => {
+            this.dispatchHook('instantiateModule', this.getHookDetail({arguments}));
+            const moduleClassName = config.className;
+            
+            // Get the module class from the global scope
+            let moduleClass = window.editorModules[moduleClassName];
+                        
+            // Instantiate the module
+            try {
+                if (!moduleClass) {
+                    throw new Error(`Module class ${moduleClassName} not found in global scope`);
+                }
+                
+                this.modules[moduleId] = new moduleClass(this, config, this.engineClasses);                        
+                
+                pendingModules.delete(moduleId);
+            } catch (error) {
+                console.error(`Error initializing module ${moduleId}:`, error);
+                pendingModules.delete(moduleId);
+            }
+        };
+    
+        // Instantiate each defined module         
+        // Instantiate each defined module        
+        Object.entries(this.getCollections().propertyModules).forEach(([moduleId, config]) => {
+            let library = config.library;
+        
+            if(library) {
+                pendingModules.add(moduleId);
+                let moduleElementId = `editor_module_${moduleId}`;
+            
+                if(!document.getElementById(moduleElementId)) {
+                    // Create a blob URL from the script content
+                    const scriptContent = `window.editorModules.${config.className} = ${this.getCollections().libraries[library].script};`;
+                    const blob = new Blob([scriptContent], { type: 'application/javascript' });
+                    const scriptUrl = URL.createObjectURL(blob);
+                    
+                    // Create script element with src attribute instead of inline content
+                    let scriptTag = document.createElement("script");
+                    scriptTag.setAttribute('id', moduleElementId);
+                    scriptTag.src = scriptUrl;
+                
+                    // Add onload handler to instantiate module after script loads
+                    scriptTag.onload = () => {
+                        // Release the URL object to free memory
+                        URL.revokeObjectURL(scriptUrl);
+                        instantiateModule(moduleId, config);
+                    };
+                
+                    scriptTag.onerror = (error) => {
+                        URL.revokeObjectURL(scriptUrl);
+                        console.error(`Error loading script for module ${moduleId}:`, error);
+                        pendingModules.delete(moduleId);
+                    };
+                
+                    document.head.appendChild(scriptTag);
+                } else {
+                    // Script already exists, try to instantiate directly
+                    instantiateModule(moduleId, config);
+                }
+            } else {
+                // No library needed, instantiate directly
+                instantiateModule(moduleId, config);
+            }
+        });
+        
+        // You might want to add a way to check if all modules are loaded
+        // This could be a Promise that resolves when pendingModules is empty
+        return new Promise((resolve) => {
+            const checkPending = () => {
+                if (pendingModules.size === 0) {
+                    resolve();
+                } else {
+                    setTimeout(checkPending, 100);
+                }
+            };
+            checkPending();
+        }).then(() => {
+            this.selectCurrentObject(); // Call selectCurrentObject when all modules are loaded
+        });
+    }
+
+    selectCurrentObject() {   
+        this.dispatchHook('selectCurrentObject', this.getHookDetail({arguments}));             
  
-        this.aiPromptPanel = new AIPromptPanel(this);
-        let themeCSS = false;
-        if( this.getCollections().configs.codeMirror && this.getCollections().configs.codeMirror.theme) {
-            themeCSS = this.getCollections().themes[this.getCollections().configs.codeMirror.theme].css;
-        }
-        this.scriptEditor = new ScriptEditor(this, themeCSS); // Initialize ScriptEditor
-        this.audioEditor = new AudioEditor(this);
+        if (Object.keys(this.getCollections()[this.state.selectedType]).length > 0) {
+            this.selectObject(Object.keys(this.getCollections()[this.state.selectedType])[0]);
+        }   
+    }
+
+    // Method to access a module instance
+    getModule(name) {
+        this.dispatchHook('getModule', this.getHookDetail({arguments}));
+        return this.modules[name];
+    }
+
+    // Update the registerPropertyHandler to work with the new module system
+    registerPropertyHandler(propertyName, config) {
+        this.dispatchHook('registerPropertyHandler', this.getHookDetail({arguments}));
+        this.getCollections().propertyModules[propertyName] = {
+            ...config,
+            container: config.container || `${propertyName}-editor-container`
+        };
+    }
+
+    // Updated updateMainContent to work with the new module system
+    updateMainContent() {
+        this.dispatchHook('updateMainContent', this.getHookDetail({arguments}));
+        // Hide all editor containers first
+        Object.values(this.getCollections().propertyModules).forEach(module => {
+            const container = document.getElementById(module.container);
+            if (container) {
+                container.classList.remove('show');
+            }
+        });
 
     }
 
+    // Updated drawObject to work with the new module system
+    drawObject(object) {
+        this.dispatchHook('drawObject', this.getHookDetail({arguments}));
+        if (!object) return;
+        
+        // Find the first matching property with a module handler
+        const matchingProperty = Object.keys(this.getCollections().propertyModules).find(
+            (moduleId) => {
+                let module = this.getCollections().propertyModules[moduleId];
+                return typeof object[module.propertyName] !== "undefined"
+            }
+        );
+        
+        if (!matchingProperty) return;
+        
+        const moduleInfo = this.getCollections().propertyModules[matchingProperty];
+        document.getElementById(moduleInfo.container).classList.add('show');
+
+        requestAnimationFrame(() => {
+            // Create and dispatch the event
+            const customEvent = new CustomEvent(moduleInfo.eventName, {
+                detail: { data: object[moduleInfo.propertyName], config: this.getCollections().configs.game },
+                bubbles: true,
+                cancelable: true
+            });
+            
+            document.body.dispatchEvent(customEvent);
+        });
+    }
     setupEventListeners() {
+        this.dispatchHook('setupEventListeners', this.getHookDetail({arguments}));
         // Import/Export handling
         document.getElementById('import-export-btn').addEventListener('click', () => {
             this.elements.exportTextarea.value = this.generateConfigCode();
@@ -1082,6 +1329,7 @@ class GameEditor {
     }
 
     configLoaded() {
+        this.dispatchHook('configLoaded', this.getHookDetail({arguments}));
         const collections = this.getCollections();
         if( collections.configs.editor ) {
             let styleTag = document.getElementById("theme_style");
@@ -1094,11 +1342,7 @@ class GameEditor {
         
         // Render initial UI
         this.renderObjectList();
-        this.updateSidebarButtons();            
-
-        if (Object.keys(this.getCollections()[this.state.selectedType]).length > 0) {
-            this.selectObject(Object.keys(this.getCollections()[this.state.selectedType])[0]);
-        }    
+        this.updateSidebarButtons();    
     }
 }
 
