@@ -26475,7 +26475,7 @@ const DEFAULT_PROJECT_CONFIG = {
               "grass"
             ]
           ],
-          "terrainBGColor": "#73a874"
+          "terrainBGColor": "#487957"
         }
       },
       "level2": {

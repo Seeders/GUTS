@@ -92,11 +92,21 @@ class Engine {
     setupEventListeners() {
         this.canvas.addEventListener('mousemove', (e) => {
             const rect = this.canvas.getBoundingClientRect();
-            let mouseX = e.clientX - rect.left;
-            const mouseY = e.clientY - rect.top;
+            
+            // Account for canvas scaling and offset
+            const scaleX = this.canvas.width / rect.width;   // Ratio of canvas pixel width to CSS width
+            const scaleY = this.canvas.height / rect.height; // Ratio of canvas pixel height to CSS height
+            
+            // Calculate mouse position relative to canvas with scaling
+            const mouseX = (e.clientX - rect.left) * scaleX;
+            const mouseY = (e.clientY - rect.top) * scaleY;
+    
+            // Convert to isometric and grid coordinates
             const gridPos = this.translator.isoToGrid(mouseX, mouseY);
             const snappedGrid = this.translator.snapToGrid(gridPos.x, gridPos.y);
             const pixelIsoPos = this.translator.pixelToIso(mouseX, mouseY);
+    
+            // Update state with corrected coordinates
             this.state.mousePosition = { 
                 x: mouseX, 
                 y: mouseY, 
@@ -105,7 +115,6 @@ class Engine {
                 gridX: snappedGrid.x, 
                 gridY: snappedGrid.y 
             };
-        
         });
     }
 
