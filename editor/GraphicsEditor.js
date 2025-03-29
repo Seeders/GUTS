@@ -567,20 +567,31 @@ class GraphicsEditor {
         const tempRenderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });
         tempRenderer.setSize(size, size);
         document.getElementById('isometric-modal').classList.remove('show');
-
+    
         const renderTarget = new THREE.WebGLRenderTarget(size, size);
         const cameras = [
             new THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),
             new THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),
             new THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),
+            new THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),
+            new THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),
+            new THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),
+            new THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),
             new THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000)
         ];
-        cameras[0].position.set(cameraDistance, cameraDistance, cameraDistance);
-        cameras[1].position.set(-cameraDistance, cameraDistance, cameraDistance);
-        cameras[2].position.set(cameraDistance, cameraDistance, -cameraDistance);
-        cameras[3].position.set(-cameraDistance, cameraDistance, -cameraDistance);
+    
+        // Position cameras at 8 angles (45° increments)
+        cameras[0].position.set(cameraDistance, cameraDistance, cameraDistance);           // NE up
+        cameras[1].position.set(0, cameraDistance, cameraDistance);                       // N up
+        cameras[2].position.set(-cameraDistance, cameraDistance, cameraDistance);         // NW up
+        cameras[3].position.set(-cameraDistance, cameraDistance, 0);                      // W up
+        cameras[4].position.set(-cameraDistance, cameraDistance, -cameraDistance);        // SW up
+        cameras[5].position.set(0, cameraDistance, -cameraDistance);                      // S up
+        cameras[6].position.set(cameraDistance, cameraDistance, -cameraDistance);         // SE up
+        cameras[7].position.set(cameraDistance, cameraDistance, 0);                       // E up
+        
         cameras.forEach(camera => camera.lookAt(0, 0, 0));
-
+    
         const sprites = {};
         for (const animType in this.renderData.animations) {
             sprites[animType] = [];
@@ -589,7 +600,7 @@ class GraphicsEditor {
                 const light = new THREE.AmbientLight(0xffffff, 5);
                 scene.add(light);
                 this.createObjectsFromJSON(frame, scene);
-
+    
                 const frameSprites = [];
                 for (const camera of cameras) {
                     tempRenderer.setRenderTarget(renderTarget);
@@ -614,13 +625,12 @@ class GraphicsEditor {
                 sprites[animType].push(frameSprites);
             });
         }
-
+    
         tempRenderer.setRenderTarget(null);
         tempRenderer.dispose();
         renderTarget.dispose();
         this.displayIsometricSprites(sprites);
     }
-
     displayIsometricSprites(sprites) {
         const modal = document.createElement('div');
         modal.style.cssText = `
@@ -633,28 +643,48 @@ class GraphicsEditor {
             background: #333; padding: 20px; border-radius: 8px; 
             max-width: 80%; max-height: 80%; overflow: auto;
         `;
-
+    
+        const angleLabels = ['NE', 'N', 'NW', 'W', 'SW', 'S', 'SE', 'E']; // Labels for 8 angles
+    
         for (const animType in sprites) {
             const animSection = document.createElement('div');
             const title = document.createElement('h3');
             title.textContent = `${animType} Animation`;
             title.style.color = '#e0e0e0';
             animSection.appendChild(title);
-
-            const grid = document.createElement('div');
-            grid.style.cssText = `display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin: 10px 0;`;
-            sprites[animType].forEach(frame => {
-                frame.forEach(src => {
+    
+            // Create a container for all angles
+            const anglesContainer = document.createElement('div');
+            anglesContainer.style.cssText = `margin: 10px 0;`;
+    
+            // For each angle (0-7)
+            for (let angle = 0; angle < 8; angle++) {
+                const angleSection = document.createElement('div');
+    
+                const grid = document.createElement('div');
+                grid.style.cssText = `
+                    display: grid; 
+                    grid-template-columns: repeat(${Math.min(sprites[animType].length, 4)}, 1fr); 
+                    gap: 5px; 
+                    margin-bottom: 15px;
+                `;
+    
+                // Add all frames for this specific angle
+                sprites[animType].forEach(frame => {
                     const img = document.createElement('img');
-                    img.src = src;
+                    img.src = frame[angle]; // Get the specific angle's sprite
                     img.style.maxWidth = '100%';
                     grid.appendChild(img);
                 });
-            });
-            animSection.appendChild(grid);
+    
+                angleSection.appendChild(grid);
+                anglesContainer.appendChild(angleSection);
+            }
+    
+            animSection.appendChild(anglesContainer);
             content.appendChild(animSection);
         }
-
+    
         const closeButton = document.createElement('button');
         closeButton.textContent = 'Close';
         closeButton.style.cssText = `

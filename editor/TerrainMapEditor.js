@@ -478,7 +478,7 @@ class TerrainMapEditor {
                     gameConfig: this.config, 
                     terrainCanvasBuffer: this.terrainCanvasBuffer, 
                     canvasBuffer: this.canvasEl, 
-                    environment: this.environment, 
+                    environment: [], 
                     imageManager: this.imageManager, 
                     levelName: 'level', 
                     level: { tileMap: this.tileMap }
@@ -558,7 +558,7 @@ class TerrainMapEditor {
                     gameConfig: this.config, 
                     terrainCanvasBuffer: this.terrainCanvasBuffer, 
                     canvasBuffer: this.canvasEl, 
-                    environment: this.environment, 
+                    environment: [], 
                     imageManager: this.imageManager, 
                     levelName: 'level', 
                     level: { tileMap: this.tileMap }
