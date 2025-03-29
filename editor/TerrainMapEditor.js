@@ -580,7 +580,7 @@ class TerrainMapEditor {
         const mouseY = event.clientY - rect.top;
         
         if(!this.gameEditor.getCollections().configs.game.isIsometric ) {
-            mouseX -= this.canvasEl.width  / 4;
+            mouseX -= ( this.canvasEl.width - this.mapSize *  this.config.gridSize) / 2;
         }
         // Convert from isometric to grid coordinates
         const gridPos = this.translator.isoToGrid(mouseX, mouseY);
