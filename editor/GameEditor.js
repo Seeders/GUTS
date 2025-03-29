@@ -43,7 +43,7 @@ class GameEditor {
                     { id: 'environment', name: 'Environment', singular: 'Environment' }
                 ],
             },
-            selectedType: 'towers',
+            selectedType: 'levels',
             selectedObject: null,
             isDragging: false,
             objectPosition: { x: 300, y: 120 }
@@ -194,8 +194,10 @@ class GameEditor {
 
     // Rendering methods
     renderTypeSelector() {
-        let html = `<h2>Object Types</h2>`;
-    
+        let html = ``;
+        console.log(this.state.selectedType);    
+        let currentCollectionDef = this.getCollectionDefs().find( type => type.id == this.state.selectedType );
+        console.log(currentCollectionDef); 
         // Group object types by category
         const categories = {};
         this.getCollectionDefs().forEach(type => {
@@ -210,7 +212,7 @@ class GameEditor {
         if (!this.state.expandedCategories) {
             this.state.expandedCategories = {};
             for (const category in categories) {
-                this.state.expandedCategories[category] = false; // All closed by default
+                this.state.expandedCategories[category] = category == currentCollectionDef.category ? true : false; // All closed by default
             }
         }
     
@@ -245,11 +247,12 @@ class GameEditor {
         }
         html += `</div>`;
     
+
         // Add type action buttons
         html += `
             <div class="type-actions">
                 <button id="add-type-btn" class="small-btn">Add Type</button>
-                ${this.getCollectionDefs().length > 1 ? `<button id="remove-type-btn" class="small-btn danger">Remove Type</button>` : ''}
+                ${this.getCollectionDefs().length > 1 && !currentCollectionDef.isCore ? `<button id="remove-type-btn" class="small-btn danger">Remove Type</button>` : ''}
             </div>`;
     
         return html;
@@ -257,7 +260,6 @@ class GameEditor {
     renderObjectList() {
         // Render the type selector with integrated object list
         this.elements.objectList.innerHTML = this.renderTypeSelector();
-    
         // Add event listeners for type selection
         document.querySelectorAll('.type-selector .object-type-item').forEach(item => {
             item.addEventListener('click', () => {
@@ -859,7 +861,13 @@ class GameEditor {
         const typeId = this.state.selectedType;
         
         if (!typeId) return;
-        
+        let typeDef = this.getCollectionDefs().find(type => type.id == typeId);
+        if(typeDef.isCore){
+            
+            alert('Cannot remove a core object type');
+             return;
+        }
+
         // Prevent removing all types
         if (this.getCollectionDefs().length <= 1) {
             alert('Cannot remove the last object type');
