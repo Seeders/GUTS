@@ -1,6 +1,7 @@
 class AIPromptPanel {
-    constructor(gameEditor, aiConfig) {
+    constructor(gameEditor) {
         this.gameEditor = gameEditor;
+        const aiConfig = this.gameEditor.getCollections().configs.ai;
         this.elements = {
             aiPromptModal: null,
             promptTextarea: null,
@@ -13,6 +14,7 @@ class AIPromptPanel {
     }
 
     init(aiConfig) {
+     
         // Create the AI Prompt Modal
         const modal = document.createElement('div');
         modal.className = 'modal';
@@ -39,6 +41,7 @@ class AIPromptPanel {
             </div>
         `;
         document.body.appendChild(modal);
+
         this.config = aiConfig;
         // Cache elements
         this.elements = {
@@ -62,6 +65,20 @@ class AIPromptPanel {
         });
         this.elements.applyBtn.addEventListener('click', () => {
             this.applyAIResponse();
+        });
+    }
+
+    setupHooks() {
+        
+        document.body.addEventListener('editorRendered', () => {
+            const launchBtn = document.createElement('button');
+            launchBtn.innerHTML = "AI Prompt";
+            launchBtn.id = 'ai-prompt-modal';
+            this.gameEditor.elements.editor.querySelector(".actions").appendChild(launchBtn);
+                
+            launchBtn.addEventListener('click', () => {
+                this.showModal();
+            });
         });
     }
 

@@ -30,7 +30,7 @@ class Engine {
         if( this.config.configs.game.libraries ) {
             this.config.configs.game.libraries.forEach((library) => {
                 let scriptTag = document.createElement("script");
-                scriptTag.innerText = this.config.libraries[library].source;
+                scriptTag.innerText = this.config.libraries[library].script;
                 document.head.appendChild(scriptTag);
             });
         }
