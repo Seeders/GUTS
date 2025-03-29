@@ -28,109 +28,9 @@
         </div>
         
         <div class="main-content">
-            <div id="graphics-editor-container" class="main-content-container">
-                <div id="graphics-sidebar" class="content-sidebar">
-                    <div id="toolbar" class="toolbar">
-                        <button id="preview-animation" class="btn btn-primary" title="Preview Animation">Play</button>
-                        <button id="add-animation" class="btn btn-primary" title="Add Animation">+A</button>
-                        <button id="delete-animation" class="btn btn-danger" title="Delete Animation">-A</button>
-                        <button id="duplicate-frame" class="btn btn-primary" title="Add Frame">+F</button>
-                        <button id="delete-frame" class="btn btn-danger" title="Delete Frame">-F</button>
-                        <button id="add-shape" class="btn btn-primary" title="Add Shape">+S</button>
-                        <button id="duplicate-shape" class="btn btn-primary" title="Duplicate Shape">SS</button>
-                        <button id="delete-shape" class="btn btn-danger" title="Delete Shape">-S</button>
-                        <button id="scale-all" class="btn btn-secondary" title="Scale All">Sc</button>
-                        <button id="move-all" class="btn btn-secondary" title="Move All">Mv</button>
-                        <button id="rotate-all" class="btn btn-secondary" title="Rotate All">Rt</button>
-                        <button id="generate-isometric" class="btn btn-special" title="Generate Isometric Sprites">Iso</button>
-                    </div>
-                    <div id="shape-list"></div>
-                </div>
-                <div id="canvas-container" class="grid-background">
-                    <canvas id="canvas"></canvas>
-                    <div class="scene-info">
-                        <div>Shapes: <span id="shape-count">0</span></div>
-                        <div>Selected: <span id="selected-shape">None</span></div>
-                        <div><small>Controls: Left-click to select, Drag to rotate, Right-drag to pan, Scroll to zoom</small></div>
-                    </div>
-                </div>
-                <div id="graphics-rightbar">
-                    <div id="inspector"></div>
-                    <div id="json-editor" style="display: none">
-                        <textarea id="json-content" placeholder="Edit JSON here..."></textarea>
-                    </div>
-                </div>
-            </div>
-            <div id="level-editor-container" class="main-content-container">                
-                <div class="content-sidebar">
-                    
-                    <div class="toolbar">                        
-                        <button id="terrainsBtn" class="btn active">Terrains</button>
-                    </div>
-                    
-                    <div class="tools">     
-                        <div>
-                            <h3 style="margin-bottom: 20px; color: #e0e0e0; font-size: 18px;">Settings</h3>
-                            <div class="form-row">
-                                <label for="terrainMapSize">Map Size:</label>
-                                <input type="number" id="terrainMapSize" value="48" step="1" min="1">
-                            </div>
-                            <div class="form-row">
-                                <label for="terrainBGColor">Map Background Color:</label>
-                                <input type="color" id="terrainBGColor" />
-                            </div>
-                        </div>                   
-                        <div id="terrainsPanel">
-                            <h4>Terrain Types</h4>
-                        </div>
-                    </div>
-                </div>                                  
-                <div class="grid-container grid-background">
-                    <div class="translation-controls">
-                        <button id="translate-up"><span>↑</span></button>
-                        <button id="translate-right"><span>→</span></button>
-                        <button id="translate-left"><span>←</span></button>
-                        <button id="translate-down"><span>↓</span></button>
-                    </div>
-                    <canvas id="grid"></canvas>
-                </div>
-            </div>
-            <div id="script-editor-container" class="main-content-container">
-                <div id="script-editor-sidebar" class="content-sidebar">                    
-                    <h3>Script Editor</h3>
-                    <button id="save-script-btn">Save Script</button>
-                </div>
-                <div class="grid-background">
-                    <div>
-                        <textarea id="script-editor" class="script-editor" placeholder="Enter your script here..."></textarea>                    
-                        <div class="handle"></div>
-                    </div>
-                </div>
-            </div>
-            <div id="audio-editor-container" class="main-content-container">
-                <h2>Sound Synthesis Tool (Module)</h2>
-                <label>
-                    Waveform:
-                    <select id="waveform">
-                        <option value="sine">Sine</option>
-                        <option value="square">Square</option>
-                        <option value="sawtooth">Sawtooth</option>
-                        <option value="triangle">Triangle</option>
-                    </select>
-                </label>
-                <label>
-                    Frequency (Hz, 20-2000):
-                    <input type="number" id="frequency" value="440" min="20" max="2000">
-                </label>
-                <label>
-                    Duration (seconds, 0.1-5):
-                    <input type="number" id="duration" value="1" min="0.1" max="5" step="0.1">
-                </label>
-                <button id="playBtn">Play Sound</button>
-                <button id="exportBtn">Export to JSON (Base64)</button>
-                <label>Base64 JSON Output:</label>
-                <textarea id="jsonOutput" readonly></textarea>
-            </div>
+            <div id="main-content-container">
+
+            </div>    
             <button id="toggleEditorButton">-</button>
             <div class="editor" id="editor">      
                 <div class="instructions">
@@ -170,7 +70,6 @@
                 </div>
             </div>
         </div>    
-        <!-- New Tower Modal -->
         <div class="modal" id="new-object-modal">
             <div class="modal-content">
                 <h2>Create New Object</h2>
@@ -206,102 +105,7 @@
             </div>
         </div>
         
-        <div class="modal" id="move-modal">
-            <div class="modal-content">
-                <h3>Move All Shapes</h3>
-                <div class="form-row">
-                    <label for="move-x">X Offset:</label>
-                    <input type="number" id="move-x" value="0" step="0.5">
-                </div>
-                <div class="form-row">
-                    <label for="move-y">Y Offset:</label>
-                    <input type="number" id="move-y" value="0" step="0.5">
-                </div>
-                <div class="form-row">
-                    <label for="move-z">Z Offset:</label>
-                    <input type="number" id="move-z" value="0" step="0.5">
-                </div>
-                <div style="display: flex; gap: 10px; margin-top: 20px;">
-                    <button id="move-cancel">Cancel</button>
-                    <button id="move-apply">Apply</button>
-                </div>
-            </div>
-        </div>
-        <div class="modal" id="rotate-modal">
-            <div class="modal-content">
-                <h3>Rotate All Shapes</h3>
-                <div class="form-row">
-                    <label for="rotate-angle">Angle (degrees):</label>
-                    <input type="number" id="rotate-angle" value="0" step="1">
-                </div>
-                <div class="form-row">
-                    <label for="rotate-axis">Axis:</label>
-                    <select id="rotate-axis">
-                        <option value="x">X</option>
-                        <option value="y" selected>Y</option>
-                        <option value="z">Z</option>
-                    </select>
-                </div>
-                <div style="display: flex; gap: 10px; margin-top: 20px;">
-                    <button id="rotate-cancel">Cancel</button>
-                    <button id="rotate-apply">Apply</button>
-                </div>
-            </div>
-        </div>
-        <div  class="modal" id="isometric-modal">
-            <div class="modal-content" >
-                <h3 style="margin-bottom: 20px; color: #e0e0e0; font-size: 18px;">Generate Isometric Sprites</h3>
-                <div class="form-row">
-                    <label for="iso-frustum">Frustum Size:</label>
-                    <input type="number" id="iso-frustum" value="48" step="1" min="1">
-                </div>
-                <div class="form-row">
-                    <label for="iso-distance">Distance:</label>
-                    <input type="number" id="iso-distance" value="100" step="1" min="1">
-                </div>
-                <div class="form-row">
-                    <label for="iso-size">Sprite Size:</label>
-                    <input type="number" id="iso-size" value="64" step="1" min="1">
-                </div>
-                <div style="display: flex; gap: 10px; margin-top: 20px;">
-                    <button id="iso-cancel">Cancel</button>
-                    <button id="iso-generate">Generate</button>
-                </div>
-            </div>
-        </div>
-        <div class="modal" id="terrainForm" >
-            <div class="modal-content" >
-                <h4 id="formTitle">Add Terrain Type</h4>
-                <input type="hidden" id="editingType" value="">
-                <div class="form-group">
-                    <label for="terrainType">Type:</label>
-                    <input type="text" id="terrainType" placeholder="grass, water, etc.">
-                </div>
-                <div class="form-group">
-                    <label for="terrainColor">Color:</label>
-                    <input type="text" id="terrainColorText">
-                    <input type="color" id="terrainColor">
-                </div>
-                <div class="form-group">
-                    <label for="terrainImage">Sprite Sheet:</label>
-                    <input type="textarea" id="terrainImage">
-                </div>
-                <div class="form-group">
-                    <input type="file" id="terrain-image-upload" accept="image/*">
-                    <div class="canvas-container" style="position: relative; display: inline-block;">
-                        <img id="terrain-image-display" alt="Terrain Image">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="terrainBuildable">Buildable:</label>
-                    <input type="checkbox" id="terrainBuildable">
-                </div>
-                <div class="form-actions">
-                    <button id="saveTerrainBtn" class="primary">Save</button>
-                    <button id="cancelTerrainBtn">Cancel</button>
-                </div>
-            </div>
-        </div>
+        
     </div>
     <script src="engine/GameEditor.js" type="module" ></script>
     

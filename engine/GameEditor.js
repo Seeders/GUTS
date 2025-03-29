@@ -1,9 +1,9 @@
-import { Entity } from "../engine/Entity.js";
-import { Component } from "../engine/Component.js";
+import { Entity } from "./Entity.js";
+import { Component } from "./Component.js";
 import { DEFAULT_PROJECT_CONFIG } from "../config/game_config.js";
-import { ImageManager } from "../engine/ImageManager.js";
-import { CoordinateTranslator } from "../engine/CoordinateTranslator.js";
-import { TileMap } from "../engine/TileMap.js";
+import { ImageManager } from "./ImageManager.js";
+import { CoordinateTranslator } from "./CoordinateTranslator.js";
+import { TileMap } from "./TileMap.js";
 import { TerrainImageProcessor } from "./TerrainImageProcessor.js";
 import * as THREE from '../library/three.module.min.js';
 import { OrbitControls } from '../library/three.orbitControls.js';
@@ -149,7 +149,7 @@ class GameEditor {
                     }
                   ]
             },
-            selectedType: 'levels',
+            selectedType: 'enemies',
             selectedObject: null,
             isDragging: false,
             objectPosition: { x: 300, y: 120 }
@@ -180,7 +180,9 @@ class GameEditor {
             graphicsEditorContainer: document.getElementById('graphics-editor-container'),
             scriptEditorContainer: document.getElementById('script-editor-container'),
             audioEditorContainer: document.getElementById('audio-editor-container'),
-            launchGameBtn: document.getElementById('launch-game-btn')
+            launchGameBtn: document.getElementById('launch-game-btn'),
+            modalContainer: document.getElementById('modals'),
+            mainContentConainer: document.getElementById('main-content-container')
         };
         this.registeredModules = {};
         this.modules = {};
@@ -1111,7 +1113,7 @@ class GameEditor {
                 if (!moduleClass) {
                     throw new Error(`Module class ${moduleClassName} not found in global scope`);
                 }
-                
+                console.log('instantiating', moduleId);
                 this.modules[moduleId] = new moduleClass(this, config, this.engineClasses);                        
                 
                 pendingModules.delete(moduleId);
@@ -1120,56 +1122,87 @@ class GameEditor {
                 pendingModules.delete(moduleId);
             }
         };
-    
-        // Instantiate each defined module         
+        
         // Instantiate each defined module        
         Object.entries(this.getCollections().propertyModules).forEach(([moduleId, config]) => {
-            let library = config.library;
-        
-            if(library) {
-                pendingModules.add(moduleId);
-                let moduleElementId = `editor_module_${moduleId}`;
+     
+            let ui = this.getCollections().interfaces[config.interface];            
+            let html = ui.html;
+            let css = ui.css;
+            let modals = ui.modals;
+
+            this.elements.mainContentConainer.innerHTML += html;
             
-                if(!document.getElementById(moduleElementId)) {
-                    // Create a blob URL from the script content
-                    const scriptContent = `window.editorModules.${config.className} = ${this.getCollections().libraries[library].script};`;
-                    const blob = new Blob([scriptContent], { type: 'application/javascript' });
-                    const scriptUrl = URL.createObjectURL(blob);
-                    
-                    // Create script element with src attribute instead of inline content
-                    let scriptTag = document.createElement("script");
-                    scriptTag.setAttribute('id', moduleElementId);
-                    scriptTag.src = scriptUrl;
-                
-                    // Add onload handler to instantiate module after script loads
-                    scriptTag.onload = () => {
-                        // Release the URL object to free memory
-                        URL.revokeObjectURL(scriptUrl);
-                        instantiateModule(moduleId, config);
-                    };
-                
-                    scriptTag.onerror = (error) => {
-                        URL.revokeObjectURL(scriptUrl);
-                        console.error(`Error loading script for module ${moduleId}:`, error);
-                        pendingModules.delete(moduleId);
-                    };
-                
-                    document.head.appendChild(scriptTag);
+            if(css) {
+                let styleTag = document.createElement('style');
+                styleTag.innerHTML = css;
+                document.head.append(styleTag);
+            }
+
+            if(modals) {
+                    modals.forEach((modalId) => {
+                    let modal = document.createElement('div');
+                    modal.setAttribute('id', `modal-${modalId}`);
+                    let modalContent = document.createElement('div');
+                    modal.classList.add('modal');
+                    modalContent.classList.add('modal-content');
+                    modal.append(modalContent);
+                    modalContent.innerHTML = this.getCollections().modals[modalId].html;
+                    this.elements.modalContainer.append(modal);
+                });
+            }
+        });
+        let atLeastOneModuleAdded = false;
+        requestAnimationFrame(() => {
+            Object.entries(this.getCollections().propertyModules).forEach(([moduleId, config]) => {
+                let library = config.library;
+                if(library) {
+                        atLeastOneModuleAdded = true;
+                        pendingModules.add(moduleId);
+                        let moduleElementId = `editor_module_${moduleId}`;
+                        
+                        if(!document.getElementById(moduleElementId)) {
+                            // Create a blob URL from the script content
+                            const scriptContent = `window.editorModules.${config.className} = ${this.getCollections().libraries[library].script};`;
+                            const blob = new Blob([scriptContent], { type: 'application/javascript' });
+                            const scriptUrl = URL.createObjectURL(blob);
+                            
+                            // Create script element with src attribute instead of inline content
+                            let scriptTag = document.createElement("script");
+                            scriptTag.setAttribute('id', moduleElementId);
+                            scriptTag.src = scriptUrl;
+                        
+                            // Add onload handler to instantiate module after script loads
+                            scriptTag.onload = () => {
+                                // Release the URL object to free memory
+                                URL.revokeObjectURL(scriptUrl);
+                                instantiateModule(moduleId, config);
+                            };
+                        
+                            scriptTag.onerror = (error) => {
+                                URL.revokeObjectURL(scriptUrl);
+                                console.error(`Error loading script for module ${moduleId}:`, error);
+                                pendingModules.delete(moduleId);
+                            };
+                        
+                            document.head.appendChild(scriptTag);
+                        } else {
+                            // Script already exists, try to instantiate directly
+                            instantiateModule(moduleId, config);
+                        }
+                        
                 } else {
-                    // Script already exists, try to instantiate directly
+                    // No library needed, instantiate directly
                     instantiateModule(moduleId, config);
                 }
-            } else {
-                // No library needed, instantiate directly
-                instantiateModule(moduleId, config);
-            }
+            });
         });
         
         // You might want to add a way to check if all modules are loaded
         // This could be a Promise that resolves when pendingModules is empty
         return new Promise((resolve) => {
             const checkPending = () => {
-                if (pendingModules.size === 0) {
+                if (pendingModules.size === 0 && atLeastOneModuleAdded) {
                     resolve();
                 } else {
                     setTimeout(checkPending, 100);
@@ -1211,6 +1244,7 @@ class GameEditor {
         Object.values(this.getCollections().propertyModules).forEach(module => {
             const container = document.getElementById(module.container);
             if (container) {
+                console.log('hiding', module.container);
                 container.classList.remove('show');
             }
         });
@@ -1234,8 +1268,10 @@ class GameEditor {
         
         const moduleInfo = this.getCollections().propertyModules[matchingProperty];
         document.getElementById(moduleInfo.container).classList.add('show');
-
+        
+        console.log('show', moduleInfo.container);
         requestAnimationFrame(() => {
+            console.log('fired', moduleInfo.eventName);
             // Create and dispatch the event
             const customEvent = new CustomEvent(moduleInfo.eventName, {
                 detail: { data: object[moduleInfo.propertyName], config: this.getCollections().configs.game },
