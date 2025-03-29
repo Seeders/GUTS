@@ -507,7 +507,6 @@ class GameEditor {
             const customEvent = new CustomEvent(hookName, {
                 detail: { ...detail, timestamp: Date.now() }
             });
-            console.log('dispatched: ', hookName, detail);
             document.body.dispatchEvent(customEvent);
         });
     }
