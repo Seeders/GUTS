@@ -569,7 +569,7 @@ class GameEditor {
                 } else if(keyInput.value === "tileMap") {
                     value = JSON.parse(value);
                 } else if(matchingTypePlural) {
-                    value = JSON.parse(value);
+                    value = JSON.parse(value || '[]');
                 }
 
                 object[keyInput.value] = value;
