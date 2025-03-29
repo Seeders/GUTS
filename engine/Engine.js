@@ -32,6 +32,7 @@ class Engine {
         this.isometric = this.config.configs.game.isIsometric || false;
         this.setupHTML();
         this.state.tileMapData = this.config.levels[this.state.level].tileMap;   
+ 
         this.translator = new CoordinateTranslator(this.config.configs.game, this.config.levels[this.state.level].tileMap.terrainMap.length, this.isometric);
         this.spatialGrid = new SpatialGrid(this.config.levels[this.state.level].tileMap.terrainMap.length, this.config.configs.game.gridSize);
         const terrainImages = this.imageManager.getImages("levels", this.state.level);
