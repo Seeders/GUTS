@@ -24,7 +24,7 @@ const DEFAULT_PROJECT_CONFIG = {
         "defaultPrompt": "I am developing a 2D tower defense game featuring a simple 3d art style.  Generate a new ${type} object based on the following context.    Please provide ONLY a valid JSON object with keys MATCHING EXACTLY to the context above. It absolutely MUST have an appropriate 'id' field. Ensure all existing key types are maintained. Do not wrap the json object with any other text."
       },
       "state": {
-        "level": "level2",
+        "level": "level1",
         "enemies": [],
         "bloodShards": 200,
         "essence": 0,
