@@ -1,11 +1,12 @@
-import { MapManager } from "../engine/MapManager.js";
-import { MapRenderer } from "../engine/MapRenderer.js";
 import { ImageManager } from "../engine/ImageManager.js";
 import { CoordinateTranslator } from "../engine/CoordinateTranslator.js";
 import { TerrainImageProcessor } from "./TerrainImageProcessor.js";
+import { TileMap } from "../engine/TileMap.js";
+import { Entity } from "../engine/Entity.js";
 
 class TerrainMapEditor {
-    constructor(config = {}) {
+    constructor(gameEditor, config = {}) {
+        this.gameEditor = gameEditor;
         // Default configuration
         this.defaultConfig = {
             gridSize: 48,
@@ -41,13 +42,14 @@ class TerrainMapEditor {
 
         // DOM elements
         this.canvasEl = document.getElementById('grid');
-        
         // Managers and renderers
         this.imageManager = new ImageManager(this.config.imageSize);
         this.mapRenderer = null;
         this.mapManager = null;
-        this.translator = new CoordinateTranslator(this.config, this.tileMap.size);
-
+        this.translator = new CoordinateTranslator(this.config, this.tileMap.size, this.gameEditor.getCollections().configs.game.isIsometric);
+        this.terrainCanvasBuffer = document.createElement('canvas');
+        this.terrainCanvasBuffer.width = this.canvasEl.width;
+        this.terrainCanvasBuffer.height = this.canvasEl.height;
         // Bind methods to maintain correct context
         this.init = this.init.bind(this);
         this.setupTerrainTypesUI = this.setupTerrainTypesUI.bind(this);
@@ -417,7 +419,7 @@ class TerrainMapEditor {
             // Update tileMap with new terrain
             this.tileMap.terrainMap = newTerrainMap;
             this.tileMap.size = newGridSize;
-            this.translator = new CoordinateTranslator(this.config, newGridSize);
+            this.translator = new CoordinateTranslator(this.config, newGridSize, this.gameEditor.getCollections().configs.game.isIsometric);
             
             this.updateTerrainStyles();
             this.setupTerrainTypesUI();
@@ -456,7 +458,7 @@ class TerrainMapEditor {
         document.getElementById('translate-down').addEventListener('click', () => this.translateMap(0, 1));
     
         // Handle editTileMap event
-        document.body.addEventListener('editTileMap', (event) => {
+        document.body.addEventListener('editTileMap', async (event) => {
             this.config = event.detail.config;
             this.canvasEl.width = event.detail.config.canvasWidth;
             this.canvasEl.height = event.detail.config.canvasHeight;
@@ -465,24 +467,31 @@ class TerrainMapEditor {
             let bgColor = this.tileMap.terrainBGColor || "#7aad7b";
             document.getElementById('terrainBGColor').value = bgColor;
             this.canvasEl.backgroundColor = bgColor;
-            this.imageManager.loadImages("levels", { level: { tileMap: this.tileMap }});
-            
-            this.mapRenderer = new MapRenderer(
-                this.canvasEl, 
-                this.environment, 
-                this.imageManager, 
-                'level', 
-                event.detail.config, 
-                bgColor
-            );
+            await this.imageManager.loadImages("levels", { level: { tileMap: this.tileMap }});
 
+            const terrainImages = this.imageManager.getImages("levels", "level");
+
+            this.terrainTileMapper = new TileMap(this.terrainCanvasBuffer, this.gameEditor.getCollections().configs.game.gridSize, terrainImages, this.gameEditor.getCollections().configs.game.isIsometric);
+            this.game = { state: {}, terrainTileMapper: this.terrainTileMapper, config: this.gameEditor.getCollections(), translator: this.translator };
+            this.mapRenderer = new (this.gameEditor.scriptContext.getRenderer("mapRenderer"))(this.game, null,
+                { 
+                    gameConfig: this.config, 
+                    terrainCanvasBuffer: this.terrainCanvasBuffer, 
+                    canvasBuffer: this.canvasEl, 
+                    environment: this.environment, 
+                    imageManager: this.imageManager, 
+                    levelName: 'level', 
+                    level: { tileMap: this.tileMap }
+                }
+            );
+            
             // Update grid size if it's different
             if (this.tileMap.size && this.tileMap.size !== this.mapSize) {
                 this.mapSize = this.tileMap.size;
-                this.translator = new CoordinateTranslator(this.config, this.mapSize);
+                this.translator = new CoordinateTranslator(this.config, this.mapSize, this.gameEditor.getCollections().configs.game.isIsometric);
             } else {
                 this.mapSize = this.defaultMapSize;
-                this.translator = new CoordinateTranslator(this.config, this.mapSize);
+                this.translator = new CoordinateTranslator(this.config, this.mapSize, this.gameEditor.getCollections().configs.game.isIsometric);
             }
             
             document.getElementById('terrainMapSize').value = this.mapSize;
@@ -541,13 +550,19 @@ class TerrainMapEditor {
         
         // Initialize the map renderer
         if (!this.mapRenderer) {
-            this.mapRenderer = new MapRenderer(
-                this.canvasEl, 
-                this.environment, 
-                this.imageManager, 
-                'level', 
-                this.config, 
-                this.tileMap.terrainBGColor
+            this.terrainCanvasBuffer = document.createElement('canvas');
+            this.terrainCanvasBuffer.width = this.canvasEl.width;
+            this.terrainCanvasBuffer.height = this.canvasEl.height;
+            this.mapRenderer = new (this.gameEditor.scriptContext.getRenderer("mapRenderer"))(this.game, null,
+                { 
+                    gameConfig: this.config, 
+                    terrainCanvasBuffer: this.terrainCanvasBuffer, 
+                    canvasBuffer: this.canvasEl, 
+                    environment: this.environment, 
+                    imageManager: this.imageManager, 
+                    levelName: 'level', 
+                    level: { tileMap: this.tileMap }
+                }
             );
         }
       
@@ -561,9 +576,12 @@ class TerrainMapEditor {
     handleCanvasInteraction(event) {
         // Get mouse position relative to canvas
         const rect = this.canvasEl.getBoundingClientRect();
-        const mouseX = event.clientX - rect.left;
+        let mouseX = event.clientX - rect.left;
         const mouseY = event.clientY - rect.top;
         
+        if(!this.gameEditor.getCollections().configs.game.isIsometric ) {
+            mouseX -= this.canvasEl.width  / 4;
+        }
         // Convert from isometric to grid coordinates
         const gridPos = this.translator.isoToGrid(mouseX, mouseY);
         
@@ -587,7 +605,7 @@ class TerrainMapEditor {
 
     updateCanvasWithData() {
         if(this.tileMap.terrainMap.length > 0){
-            this.mapManager = new MapManager();
+            this.mapManager = new (this.gameEditor.scriptContext.getComponent("mapManager"))(this.game, null, { level: { tileMap: this.tileMap } });
             this.mapRenderer.isMapCached = false;
             let map = this.mapManager.generateMap(this.tileMap);
             this.mapRenderer.renderBG({}, this.tileMap, map.tileMap, [], true);

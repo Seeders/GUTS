@@ -3,6 +3,8 @@ import { GraphicsEditor } from "./GraphicsEditor.js";
 import { AIPromptPanel } from "./AIPromptPanel.js";
 import { ScriptEditor } from "./ScriptEditor.js";
 import { AudioEditor } from "./AudioEditor.js";
+import { Entity } from "../engine/Entity.js";
+import { Component } from "../engine/Component.js";
 import { DEFAULT_PROJECT_CONFIG } from "../config/game_config.js";
 
 class GameEditor {
@@ -75,12 +77,68 @@ class GameEditor {
             launchGameBtn: document.getElementById('launch-game-btn')
         };
 
+        this.scriptCache = new Map(); // Cache compiled scripts
         // Initialize the application
-        this.init();
     }
 
-    
-    init() {
+    getScript(typeName) {
+        return this.scriptContext.getComponent(typeName);
+    }
+
+    compileScript(scriptText, typeName) {
+        if (this.scriptCache.has(typeName)) {
+            return this.scriptCache.get(typeName);
+        }
+
+        try {
+            const defaultConstructor = `
+                constructor(game, parent, params) {
+                    super(game, parent, params);
+                }
+            `;
+
+            const constructorMatch = scriptText.match(/constructor\s*\([^)]*\)\s*{[^}]*}/);
+            let classBody = constructorMatch ? scriptText : `${defaultConstructor}\n${scriptText}`;
+
+            // Inject scriptContext into the Function scope
+            const scriptFunction = new Function(
+                'engine',
+                `
+                    return class ${typeName} extends engine.Component {
+                        ${classBody}
+                    }
+                `
+            );
+
+            const ScriptClass = scriptFunction(this.scriptContext);
+            this.scriptCache.set(typeName, ScriptClass);
+            return ScriptClass;
+        } catch (error) {
+            console.error(`Error compiling script for ${typeName}:`, error);
+            return Component; // Fallback to base Component
+        }
+    }
+
+    setupScriptEnvironment() {
+        // Safe execution context with all imported modules
+        this.scriptContext = {
+            game: this,
+            Entity: Entity,
+            Component: Component,
+            getFunction: (typeName) => this.scriptCache.get(typeName) || this.compileScript(this.getCollections().functions[typeName].script, typeName),
+            // Add a way to access other compiled scripts
+            getComponent: (typeName) => this.scriptCache.get(typeName) || this.compileScript(this.getCollections().components[typeName].script, typeName),
+            getRenderer: (typeName) => this.scriptCache.get(typeName) || this.compileScript(this.getCollections().renderers[typeName].script, typeName),
+            Math: Math,
+            console: {
+                log: (...args) => console.log('[Script]', ...args),
+                error: (...args) => console.error('[Script]', ...args)
+            }
+        };
+    }
+
+
+    async init() {
         
         let config = localStorage.getItem("project");
 
@@ -89,6 +147,7 @@ class GameEditor {
         } else {
             this.state.project = JSON.parse(config);   
         }
+        
         this.configLoaded();
     }
     
@@ -920,7 +979,7 @@ class GameEditor {
 
     // Initialization methods
     initModules() {
-        this.terrainMapEditor = new TerrainMapEditor();
+        this.terrainMapEditor = new TerrainMapEditor(this);
         this.terrainMapEditor.init();
         this.graphicsEditor = new GraphicsEditor();        
  
@@ -1020,7 +1079,7 @@ class GameEditor {
             let styleTag = document.getElementById("theme_style");
             styleTag.innerHTML = collections.themes[collections.configs.editor.theme].css;
         }
-        
+        this.setupScriptEnvironment();
         this.initModules();
         // Set up event listeners
         this.setupEventListeners();
@@ -1037,5 +1096,6 @@ class GameEditor {
 
 // Initialize the application when the DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    new GameEditor();
+    let editor = new GameEditor();
+    editor.init();
 });

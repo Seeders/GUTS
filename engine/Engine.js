@@ -26,15 +26,16 @@ class Engine {
             return;
         }
         this.state = new GameState(this.config);  
-      
+       
         await this.loadImages();
- 
+
+        this.isometric = this.config.configs.game.isIsometric || false;
         this.setupHTML();
         this.state.tileMapData = this.config.levels[this.state.level].tileMap;   
-        this.translator = new CoordinateTranslator(this.config.configs.game, this.config.levels[this.state.level].tileMap.terrainMap.length);
+        this.translator = new CoordinateTranslator(this.config.configs.game, this.config.levels[this.state.level].tileMap.terrainMap.length, this.isometric);
         this.spatialGrid = new SpatialGrid(this.config.levels[this.state.level].tileMap.terrainMap.length, this.config.configs.game.gridSize);
         const terrainImages = this.imageManager.getImages("levels", this.state.level);
-        this.terrainTileMapper = new TileMap(this.terrainCanvasBuffer, this.config.configs.game.gridSize, terrainImages, this.config.configs.game.isIsometric);
+        this.terrainTileMapper = new TileMap(this.terrainCanvasBuffer, this.config.configs.game.gridSize, terrainImages, this.isometric);
         this.imageManager.dispose();
 
         this.scriptCache = new Map(); // Cache compiled scripts
@@ -82,7 +83,7 @@ class Engine {
     setupEventListeners() {
         this.canvas.addEventListener('mousemove', (e) => {
             const rect = this.canvas.getBoundingClientRect();
-            const mouseX = e.clientX - rect.left;
+            let mouseX = e.clientX - rect.left;
             const mouseY = e.clientY - rect.top;
             const gridPos = this.translator.isoToGrid(mouseX, mouseY);
             const snappedGrid = this.translator.snapToGrid(gridPos.x, gridPos.y);
