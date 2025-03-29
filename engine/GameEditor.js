@@ -189,6 +189,17 @@ class GameEditor {
         this.dispatchHook('constructor', this.getHookDetail({arguments}));
     }
 
+    getHookDetail(params, result) {
+        return { selectedType: this.state.selectedType, selectedObject: this.state.selectedObject, params: params.arguments, result: result };
+    }
+    dispatchHook(hookName, detail = {}) {
+        requestAnimationFrame(() => {
+            const customEvent = new CustomEvent(hookName, {
+                detail: { ...detail, timestamp: Date.now() }
+            });
+            document.body.dispatchEvent(customEvent);
+        });
+    }
     getScript(typeName) {
         this.dispatchHook('getScript', this.getHookDetail({arguments}));
         return this.scriptContext.getComponent(typeName);
@@ -498,17 +509,6 @@ class GameEditor {
         });
         document.getElementById('delete-object-btn').addEventListener('click', () => this.deleteObject());
 
-    }
-    getHookDetail(params, result) {
-        return { selectedType: this.state.selectedType, selectedObject: this.state.selectedObject, params: params.arguments, result: result };
-    }
-    dispatchHook(hookName, detail = {}) {
-        requestAnimationFrame(() => {
-            const customEvent = new CustomEvent(hookName, {
-                detail: { ...detail, timestamp: Date.now() }
-            });
-            document.body.dispatchEvent(customEvent);
-        });
     }
 
     renderCustomProperties(container, object) {

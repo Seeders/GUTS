@@ -1,3 +1,4 @@
+//Utility function to convert terrain tile spritesheets to and from base64 encoding
 class TerrainImageProcessor {
     constructor(options = {}) {
         // Configurable tile dimensions with defaults
