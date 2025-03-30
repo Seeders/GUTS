@@ -41,6 +41,10 @@ h1,h2,h3,h4 {
     flex-direction: column;
     overflow-y: auto;
 }
+.sidebar img {
+    width: 125px;
+    margin: auto;
+}
 .sidebar-actions {
     margin-top: auto; 
     padding-top: 10px;
