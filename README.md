@@ -52,6 +52,7 @@ GUTS includes a simple tower defense game and various assets to demonstrate its 
 - **Components**: Standalone behaviors with an `update()` function.
 - **Renderers**: Visual components with a `draw()` function.
 - **Functions**: Global utility functions for use in Components and Renderers.
+- **Libraries**: Want to use Box2D include it.  Want to use Planck?  Sure.  Any library can be included.
 - **Levels (Terrain)**: Tilemaps that render as level terrain.
 - **Visual Objects**: Data for game entities (e.g., Players, Allies, Enemies, Projectiles) with stats (health, speed) and render objects (3D models, animations). These can be used to create Entities.
 - **Data**: Global collections of non-visual game data (e.g., upgrades, effects).
