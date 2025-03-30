@@ -6,12 +6,11 @@ import { ImageManager } from "./ImageManager.js";
 import { CoordinateTranslator } from "./CoordinateTranslator.js";
 import { TileMap } from "./TileMap.js";
 import { TerrainImageProcessor } from "./TerrainImageProcessor.js";
-import * as THREE from '../library/three.module.min.js';
 import { OrbitControls } from '../library/three.orbitControls.js';
 
 class Editor {
     constructor() {
-        window.editorModules = {};
+        
         // Configuration constants
         this.CONFIG = {
             GRID_SIZE: 40,
@@ -21,7 +20,7 @@ class Editor {
             DEFAULT_TILEMAP: {},
             DEFAULT_SCRIPT: 'init(){\n\n}'
         };
-        this.engineClasses = {"THREE": THREE, "OrbitControls": OrbitControls, "ImageManager": ImageManager, "TileMap": TileMap, "TerrainImageProcessor": TerrainImageProcessor, "CoordinateTranslator": CoordinateTranslator};
+        this.engineClasses = {"OrbitControls": OrbitControls, "ImageManager": ImageManager, "TileMap": TileMap, "TerrainImageProcessor": TerrainImageProcessor, "CoordinateTranslator": CoordinateTranslator};
         // Application state
         this.state = {
             project: {},
@@ -51,6 +50,7 @@ class Editor {
         };
         this.registeredModules = {};
         this.modules = {};
+        this.libraries = {};
         this.scriptCache = new Map(); // Cache compiled scripts
         // Initialize the application
         this.dispatchHook('constructor', this.getHookDetail({arguments}));
@@ -1137,7 +1137,27 @@ class Editor {
             this.saveToLocalStorage();
         }
     }
-
+    loadCommonJSModule(source) {
+        // Simulated module system
+        
+        // Shim for module.exports
+        const module = { exports: {} };
+        
+        // Wrap the source in a function and evaluate it
+        const pluginCode = `
+          (function(require, module) {
+            ${source}
+          })(require, module);
+          return module.exports;
+        `;
+        
+        // Use Function constructor to evaluate safely
+        const pluginFunction = new Function("require", "module", pluginCode);
+        const result = pluginFunction(require, module);
+        
+        return result;
+      }
+      
     // Initialization methods
     // Add these new methods to register custom modules and property handlers
     registerModule(name, moduleInstance) {
@@ -1147,134 +1167,149 @@ class Editor {
     }
     // Method to instantiate all registered modules
     initModules() {
-        this.dispatchHook('initModules', this.getHookDetail({arguments}));
-        // Make sure we have module definitions         
+        this.dispatchHook('initModules', this.getHookDetail({ arguments }));
         if (!this.getCollections().propertyModules) return;
-        
-        // Track pending module loads to handle dependencies properly
-        const pendingModules = new Set();
-                
-        // Function to instantiate a module once its script is loaded
-        const instantiateModule = (moduleId, config) => {
-            this.dispatchHook('instantiateModule', this.getHookDetail({arguments}));
-            const moduleClassName = config.className;
-            
-            // Get the module class from the global scope
-            let moduleClass = window.editorModules[moduleClassName];
-                        
-            // Instantiate the module
+        window.editorLibraries = {};
+        let atLeastOneModuleAdded = false;
+        const pendingLibraries = new Set();
+    
+        // Function to instantiate a library once its script is loaded
+        const instantiateLibrary = (library, config) => {
+            this.dispatchHook('instantiateLibraries', this.getHookDetail({ arguments }));
+            const libraryClassName = config.className;
+    
+            let libraryClass = window.editorLibraries[libraryClassName];
             try {
-                if (!moduleClass) {
-                    throw new Error(`Module class ${moduleClassName} not found in global scope`);
+                if (!libraryClass) {
+                    throw new Error(`Library class ${libraryClassName} not found in global scope`);
                 }
-                this.modules[moduleId] = new moduleClass(this, config, this.engineClasses);                        
-                
-                pendingModules.delete(moduleId);
+                this.libraries[library] = new libraryClass(this, config, this.engineClasses);
+                delete window.editorLibraries[libraryClassName];
+                pendingLibraries.delete(library);
             } catch (error) {
-                console.error(`Error initializing module ${moduleId}:`, error);
-                pendingModules.delete(moduleId);
+                console.error(`Error initializing library ${library}:`, error);
+                pendingLibraries.delete(library);
             }
         };
-        
-        // Instantiate each defined module        
+    
+        // Function to load a single library and return a promise
+        const importLibrary = (library, config) => {
+            return new Promise((resolve, reject) => {
+                let libraryDef = this.getCollections().libraries[library];
+                atLeastOneModuleAdded = true;
+    
+                if (!document.getElementById(`${library}-script`)) {
+                    console.log('loading', library);
+                    let scriptTag = document.createElement("script");
+                    scriptTag.setAttribute('id', `${library}-script`);
+                    let scriptUrl = "";
+    
+                    if (libraryDef.script) {
+                        const scriptContent = `window.editorLibraries.${libraryDef.className} = ${libraryDef.script};`;
+                        const blob = new Blob([scriptContent], { type: 'application/javascript' });
+                        scriptUrl = URL.createObjectURL(blob);
+                        scriptTag.src = scriptUrl;
+    
+                        scriptTag.onload = () => {
+                            console.log('loaded', library);
+                            URL.revokeObjectURL(scriptUrl);
+                            instantiateLibrary(library, config);
+                            resolve();
+                        };
+                    } else if (libraryDef.href) {
+                        scriptTag.src = libraryDef.href;
+                        scriptTag.onload = () => {
+                            console.log('loaded', library);   
+                            resolve();
+                        };
+                    }
+    
+                    scriptTag.onerror = (error) => {
+                        scriptUrl ? URL.revokeObjectURL(scriptUrl) : 0;
+                        console.error(`Error loading script for module ${library}:`, error);
+                        pendingLibraries.delete(library);
+                        reject(error);
+                    };
+    
+                    document.head.appendChild(scriptTag);
+                } else {
+                    // If library is already loaded, instantiate it immediately
+                    instantiateLibrary(library, config);
+                    resolve();
+                }
+            });
+        };
+    
+        // Set up UI elements (this part remains unchanged)
         Object.entries(this.getCollections().propertyModules).forEach(([moduleId, module]) => {
-     
-            let ui = this.getCollections().interfaces[module.interface];            
-            let html = ui.html;
-            let css = ui.css;
-            let modals = ui.modals;
-            this.elements.mainContentConainer.innerHTML += html;
-   
+            let ui = this.getCollections().interfaces[module.interface];
+            if (ui) {
+                let html = ui.html;
+                let css = ui.css;
+                let modals = ui.modals;
+                this.elements.mainContentConainer.innerHTML += html;
+    
+                if (css) {
+                    let styleTag = document.createElement('style');
+                    styleTag.innerHTML = css;
+                    document.head.append(styleTag);
+                }
+    
+                if (modals) {
+                    modals.forEach((modalId) => {
+                        let modal = document.createElement('div');
+                        modal.setAttribute('id', `modal-${modalId}`);
+                        let modalContent = document.createElement('div');
+                        modal.classList.add('modal');
+                        modalContent.classList.add('modal-content');
+                        modal.append(modalContent);
+                        modalContent.innerHTML = this.getCollections().modals[modalId].html;
+                        this.elements.modalContainer.append(modal);
+                    });
+                }
+            }
+    
             document.body.addEventListener(`save${module.propertyName}`, (event) => {
                 let valEl = this.elements.editor.querySelector(`#${module.propertyName}-value`);
-                if(module.inputDataType == "json"){
+                if (module.inputDataType == "json") {
                     valEl.value = JSON.stringify(event.detail);
                 } else {
                     valEl.value = event.detail;
                 }
                 this.saveObject();
             });
-
-            if(css) {
-                let styleTag = document.createElement('style');
-                styleTag.innerHTML = css;
-                document.head.append(styleTag);
-            }
-
-            if(modals) {
-                    modals.forEach((modalId) => {
-                    let modal = document.createElement('div');
-                    modal.setAttribute('id', `modal-${modalId}`);
-                    let modalContent = document.createElement('div');
-                    modal.classList.add('modal');
-                    modalContent.classList.add('modal-content');
-                    modal.append(modalContent);
-                    modalContent.innerHTML = this.getCollections().modals[modalId].html;
-                    this.elements.modalContainer.append(modal);
-                });
-            }
         });
-        let atLeastOneModuleAdded = false;
-        requestAnimationFrame(() => {
-            Object.entries(this.getCollections().propertyModules).forEach(([moduleId, config]) => {
-                let library = config.library;
-                if(library) {
-                        atLeastOneModuleAdded = true;
-                        pendingModules.add(moduleId);
-                        let moduleElementId = `editor_module_${moduleId}`;
-                        
-                        if(!document.getElementById(moduleElementId)) {
-                            // Create a blob URL from the script content
-                            const scriptContent = `window.editorModules.${config.className} = ${this.getCollections().libraries[library].script};`;
-                            const blob = new Blob([scriptContent], { type: 'application/javascript' });
-                            const scriptUrl = URL.createObjectURL(blob);
-                            
-                            // Create script element with src attribute instead of inline content
-                            let scriptTag = document.createElement("script");
-                            scriptTag.setAttribute('id', moduleElementId);
-                            scriptTag.src = scriptUrl;
-                        
-                            // Add onload handler to instantiate module after script loads
-                            scriptTag.onload = () => {
-                                // Release the URL object to free memory
-                                URL.revokeObjectURL(scriptUrl);
-                                instantiateModule(moduleId, config);
-                            };
-                        
-                            scriptTag.onerror = (error) => {
-                                URL.revokeObjectURL(scriptUrl);
-                                console.error(`Error loading script for module ${moduleId}:`, error);
-                                pendingModules.delete(moduleId);
-                            };
-                        
-                            document.head.appendChild(scriptTag);
-                        } else {
-                            // Script already exists, try to instantiate directly
-                            instantiateModule(moduleId, config);
-                        }
-                        
+    
+        // Load libraries sequentially
+        const loadLibrariesInOrder = async () => {
+            const moduleEntries = Object.entries(this.getCollections().propertyModules);
+    
+            for (const [moduleId, config] of moduleEntries) {
+                pendingLibraries.add(moduleId);
+    
+                if (config.library) {
+                    await importLibrary(config.library, config);
+                } else if (config.libraries) {
+                    // Load multiple libraries in order if specified
+                    for (const library of config.libraries) {
+                        await importLibrary(library, config);
+                    }
                 } else {
-                    // No library needed, instantiate directly
+                    // No library needed, instantiate directly (if applicable)
                     instantiateModule(moduleId, config);
                 }
-            });
-        });
-        
-        // You might want to add a way to check if all modules are loaded
-        // This could be a Promise that resolves when pendingModules is empty
-        return new Promise((resolve) => {
-            const checkPending = () => {
-                if (pendingModules.size === 0 && atLeastOneModuleAdded) {
-                    resolve();
-                } else {
-                    setTimeout(checkPending, 100);
-                }
-            };
-            checkPending();
-        }).then(() => {
-            this.selectCurrentObject(); // Call selectCurrentObject when all modules are loaded
+            }
+        };
+    
+        // Return a promise that resolves when all libraries are loaded
+        return loadLibrariesInOrder().then(() => {
+            delete window.editorLibraries;
+            this.selectCurrentObject(); // Call when all modules are loaded
+        }).catch((error) => {
+            console.error("Error during sequential library loading:", error);
         });
     }
+    
 
     selectCurrentObject() {   
         this.dispatchHook('selectCurrentObject', this.getHookDetail({arguments}));             

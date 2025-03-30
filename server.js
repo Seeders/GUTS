@@ -12,7 +12,7 @@ app.use(express.static(path.join(__dirname, '/')));
 // Endpoint to save the config
 app.post('/save-config', async (req, res) => {
     const config = req.body;
-    const filePath = path.join(__dirname, '/config/game_config.js');
+    const filePath = path.join(__dirname, '/config/gltf_config.js');
 
     try {
         await fs.writeFile(filePath, "const DEFAULT_PROJECT_CONFIG = " + JSON.stringify(config, null, 2) + "; \n\n export { DEFAULT_PROJECT_CONFIG };", 'utf8');
