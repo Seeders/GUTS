@@ -544,6 +544,7 @@ button:after {
     overflow-y: auto !important; /* Enable vertical scrolling */
     -ms-overflow-style: auto !important; /* IE and Edge */
     scrollbar-width: auto !important; /* Firefox */
+    height: calc(100% - 90px) !important;
 }
 
 /* Container and layout */
