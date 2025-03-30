@@ -159,8 +159,6 @@ class GameEditor {
         this.elements = {
             objectList: document.getElementById('object-list'),
             editor: document.getElementById('editor'),
-            previewCanvas: document.getElementById('preview-canvas'),
-            gridDisplay: document.getElementById('grid-display'),
             importExportModal: document.getElementById('import-export-modal'),
             importTextarea: document.getElementById('import-textarea'),
             exportTextarea: document.getElementById('export-textarea'),
@@ -171,15 +169,6 @@ class GameEditor {
             duplicateObjectIdInput: document.getElementById('duplicate-object-id'),
             duplicateObjectNameInput: document.getElementById('duplicate-object-name'),
             tabs: document.querySelectorAll('.tab'),
-            rotateLeftBtn: document.getElementById('rotateLeftBtn'),
-            rotateRightBtn: document.getElementById('rotateRightBtn'),
-            clearDrawingBtn: document.getElementById('clearDrawingBtn'),
-            colorPicker: document.getElementById('colorPicker'),
-            sizeSlider: document.getElementById('sizeSlider'),
-            terrainEditorContainer: document.getElementById('level-editor-container'),
-            graphicsEditorContainer: document.getElementById('graphics-editor-container'),
-            scriptEditorContainer: document.getElementById('script-editor-container'),
-            audioEditorContainer: document.getElementById('audio-editor-container'),
             launchGameBtn: document.getElementById('launch-game-btn'),
             modalContainer: document.getElementById('modals'),
             mainContentConainer: document.getElementById('main-content-container')
@@ -538,6 +527,9 @@ class GameEditor {
         const matchingTypePlural = this.getCollectionDefs().find(t => t.id.toLowerCase() === key.toLowerCase());
         const matchingTypeSingular = this.getCollectionDefs().find(t => t.singular.replace(/ /g,'').toLowerCase() === key.toLowerCase());
         
+        const matchingModuleType = Object.values(this.getCollections().propertyModules).find((t) => {
+           return t.propertyName && t.propertyName.toLowerCase() === key.toLowerCase()
+        });
         propertyItem.appendChild(keyInput);
         // Regular property input (not a reference)
         let valueInput = document.createElement('input');
@@ -546,29 +538,20 @@ class GameEditor {
             type = 'color';
             valueInput.type = type;
             valueInput.value = value;
-        } else if (key === 'render') {
-            valueInput = document.createElement('textarea');
-            type = 'textarea';
-            value = JSON.stringify(value);
-            valueInput.textContent = value;
-            valueInput.setAttribute('id', 'render-value');
-        } else if(key === "script" || key === "html" || key === "css" ){ 
-            valueInput = document.createElement('textarea');
-            valueInput.textContent = value;
-            valueInput.setAttribute('id', 'script-value');
-            type = 'textarea';            
-        } else if(key === "audio"){ 
-            valueInput = document.createElement('textarea');
-            valueInput.textContent = value;
-            valueInput.setAttribute('id', 'audio-value');
-            type = 'text';            
-        } else if (key === "tileMap" ) {
-            valueInput = document.createElement('textarea');
-            type = 'textarea';
-            value = JSON.stringify(value);
-            valueInput.textContent = value;
-            valueInput.setAttribute('id', 'tilemap-value');
-        } else {
+        } else if (matchingModuleType) {
+            let moduleInputElementType = matchingModuleType.inputElement || type;
+            let moduleDataType = matchingModuleType.inputDataType;
+            valueInput = document.createElement(moduleInputElementType);
+            if(moduleDataType == 'json') {
+                value = JSON.stringify(value);
+            } 
+            if(moduleInputElementType == 'textarea') {
+                valueInput.textContent = value;
+            } else {
+                valueInput.value = value;
+            }
+            valueInput.setAttribute('id', `${matchingModuleType.propertyName}-value`);
+        }  else {
             valueInput.type = type;
             valueInput.value = value;
         }
@@ -1124,15 +1107,18 @@ class GameEditor {
         };
         
         // Instantiate each defined module        
-        Object.entries(this.getCollections().propertyModules).forEach(([moduleId, config]) => {
+        Object.entries(this.getCollections().propertyModules).forEach(([moduleId, module]) => {
      
-            let ui = this.getCollections().interfaces[config.interface];            
+            let ui = this.getCollections().interfaces[module.interface];            
             let html = ui.html;
             let css = ui.css;
             let modals = ui.modals;
-
             this.elements.mainContentConainer.innerHTML += html;
-            
+   
+            document.body.addEventListener(`save${module.propertyName}`, (event) => {
+                this.elements.editor.querySelector(`#${module.propertyName}-value`).value = JSON.stringify(event.detail);
+            });
+
             if(css) {
                 let styleTag = document.createElement('style');
                 styleTag.innerHTML = css;
@@ -1269,9 +1255,7 @@ class GameEditor {
         const moduleInfo = this.getCollections().propertyModules[matchingProperty];
         document.getElementById(moduleInfo.container).classList.add('show');
         
-        console.log('show', moduleInfo.container);
         requestAnimationFrame(() => {
-            console.log('fired', moduleInfo.eventName);
             // Create and dispatch the event
             const customEvent = new CustomEvent(moduleInfo.eventName, {
                 detail: { data: object[moduleInfo.propertyName], config: this.getCollections().configs.game },
@@ -1336,26 +1320,7 @@ class GameEditor {
                 tab.classList.add('active');
                 document.getElementById(`${tab.dataset.tab}-tab`).classList.add('active');
             });
-        });
-        
-        document.body.addEventListener('saveObjectGraphics', (event) => {
-            let renderData = event.detail;
-            document.getElementById('render-value').value = JSON.stringify(renderData);
-        });
-        
-        document.body.addEventListener('saveTileMap', (event) => {
-            document.getElementById('tilemap-value').value = JSON.stringify(event.detail);
-        });
-        
-        document.body.addEventListener('saveScript', (event) => {
-            document.getElementById('script-value').value = event.detail;
-            this.saveObject();
-        });
-        
-        document.body.addEventListener('saveAudio', (event) => {
-            document.getElementById('audio-value').value = event.detail;
-            this.saveObject();
-        });
+        });        
 
         this.elements.launchGameBtn.addEventListener('click',() => {
             window.open("index.html", "mozillaTab");
