@@ -8,7 +8,7 @@ import { TerrainImageProcessor } from "./TerrainImageProcessor.js";
 import * as THREE from '../library/three.module.min.js';
 import { OrbitControls } from '../library/three.orbitControls.js';
 
-class GameEditor {
+class Editor {
     constructor() {
         window.editorModules = {};
         // Configuration constants
@@ -1216,12 +1216,15 @@ class GameEditor {
         
         // Render initial UI
         this.renderObjectList();
-        this.updateSidebarButtons();    
+        this.updateSidebarButtons();            
+        requestAnimationFrame(() => {
+            document.body.classList.remove('loading');
+        });
     }
 }
 
 // Initialize the application when the DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    let editor = new GameEditor();
+    let editor = new Editor();
     editor.init();
 });
