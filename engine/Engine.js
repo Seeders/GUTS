@@ -4,7 +4,8 @@ import { SpatialGrid } from "./SpatialGrid.js";
 import { ImageManager } from "./ImageManager.js";
 import { CoordinateTranslator } from './CoordinateTranslator.js';
 import { GameState } from "./GameState.js";
-import { DEFAULT_PROJECT_CONFIG } from "../config/game_config.js";
+import { DEFAULT_PROJECT_CONFIG } from "../config/default_app_config.js";
+import { TOWER_DEFENSE_CONFIG } from "../config/game_td_config.js";
 import { TileMap } from "./TileMap.js";
 class Engine {
     constructor(target) {
@@ -352,12 +353,12 @@ class Engine {
 
     loadConfig() {
                
-        let config = localStorage.getItem("project");
+        let config = localStorage.getItem("currentProject");
 
         if( !config ) {
-            config = DEFAULT_PROJECT_CONFIG;
+            config = TOWER_DEFENSE_CONFIG;
         } else {
-            config = JSON.parse(config);   
+            config = JSON.parse(localStorage.getItem(config));   
         }
         return config.objectTypes;
         
