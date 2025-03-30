@@ -12,7 +12,14 @@ body {
     margin: 0;
     padding: 20px;
 }
-
+.loading {
+    background-color: #1a1a2e;
+    color: #e6e6fa;
+    visibility: visible;
+}
+.loading * {
+    visibility: hidden; /* Hide content until fully styled */
+}
 h1,h2,h3,h4 {
     font-size: 1em;
 }
@@ -211,7 +218,6 @@ button:after {
 }
 
 .property-list {
-    max-height: 400px;
     overflow-y: auto;
     padding: 10px;
     border-radius: 0;
@@ -307,6 +313,7 @@ button:after {
 #main-content-container > div {
     display: none;
     height: 100vh;
+    width: 100%;
     position: relative;
 }
 
