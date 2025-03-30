@@ -186,7 +186,7 @@ class Editor {
     renderTypeSelector() {
         this.dispatchHook('renderTypeSelector', this.getHookDetail({arguments}));
         let html = ``;  
-        let currentCollectionDef = this.getCollectionDefs().find( type => type.id == this.state.selectedType );
+        let currentCollectionDef = this.getCollectionDefs().find( type => type.id == this.state.selectedType && this.state.selectedObject != null ) || { };
 
         // Group object types by category
         const categories = {};
@@ -211,7 +211,7 @@ class Editor {
         for (const [category, types] of Object.entries(categories)) {
             const isExpanded = this.state.expandedCategories[category] || false;
             html += `
-                <div class="category">
+                <div class="category ${(isExpanded || category == currentCollectionDef.category) ? 'highlight' : ''}">
                     <div class="category-header">${category}</div>
                     <div class="category-types" style="display: ${isExpanded ? 'block' : 'none'};">`;
             types.forEach(type => {
@@ -284,6 +284,9 @@ class Editor {
                 // Collapse all categories except the clicked one
                 for (const cat in this.state.expandedCategories) {
                     this.state.expandedCategories[cat] = false;
+                }
+                if(!isOpenedAlready) {
+                    this.selectObject(null);
                 }
                 this.state.expandedCategories[category] = isOpenedAlready ? false : true;
                 this.renderObjectList(); // Re-render to reflect new state
