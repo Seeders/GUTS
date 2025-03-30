@@ -1,6 +1,6 @@
 
 <p align="center">
-   ![logo](https://github.com/user-attachments/assets/c69f593d-ee9c-4a77-a609-b21c96f52223)
+   ![logo](https://raw.githubusercontent.com/Seeders/GUTS/logo.png))
 
 </p>
 
