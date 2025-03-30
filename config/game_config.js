@@ -62,7 +62,9 @@ const DEFAULT_PROJECT_CONFIG = {
         "library": "terrainMapEditor",
         "propertyName": "tileMap",
         "className": "TerrainMapEditor",
-        "interface": "terrainEditor"
+        "interface": "terrainEditor",
+        "inputElement": "textarea",
+        "inputDataType": "json"
       },
       "graphicsModule": {
         "title": "Graphics Module",
@@ -71,7 +73,9 @@ const DEFAULT_PROJECT_CONFIG = {
         "library": "graphicsEditor",
         "propertyName": "render",
         "className": "GraphicsEditor",
-        "interface": "graphicsEditor"
+        "interface": "graphicsEditor",
+        "inputElement": "textarea",
+        "inputDataType": "json"
       },
       "scriptModule": {
         "title": "Script Module",
@@ -80,7 +84,9 @@ const DEFAULT_PROJECT_CONFIG = {
         "library": "scriptEditor",
         "propertyName": "script",
         "className": "ScriptEditor",
-        "interface": "scriptEditor"
+        "interface": "scriptEditor",
+        "inputElement": "textarea",
+        "inputDataType": "string"
       },
       "aiPromptModule": {
         "title": "AI Prompt Module",
@@ -95,7 +101,9 @@ const DEFAULT_PROJECT_CONFIG = {
         "library": "audioEditor",
         "propertyName": "audio",
         "className": "AudioEditor",
-        "interface": "audioEditor"
+        "interface": "audioEditor",
+        "inputElement": "text",
+        "inputDataType": "string"
       }
     },
     "entities": {
@@ -244,7 +252,7 @@ const DEFAULT_PROJECT_CONFIG = {
     "components": {
       "game": {
         "title": "Game",
-        "script": "init() {\n        this.initEffectsAndUpgrades();\n        let endPath = this.game.state.paths[0][this.game.state.paths[0].length - 1];\n        let endY = endPath.y;\n        let endX = endPath.x;\n\n        this.keep = this.game.spawn(endX * this.gridSize + this.gridSize / 2, \n                                      endY * this.gridSize + this.gridSize / 2, \"tower\",\n                                      { spawnType: 'keep', objectType: 'towers', setDirection: 1});\n        this.keep.placed = true;\n  \n}\nupdate() {\n   this.game.state.stats = {...this.game.state.defaultStats};\n}\npostUpdate() {\n     \n        if (this.game.state.gameOver || this.game.state.victory || this.game.state.isLevelingUp) return;\n                \n        // Game over check\n        if (this.game.state.bloodCoreHP <= 0 && !this.game.state.gameOver) {\n            this.gameOver();\n        }\n}\n\n\n    // Game-over and victory functions\n    gameOver() {\n        this.game.state.gameOver = true;\n        this.game.state.isPaused = true;\n        gameOverWave.textContent = this.state.round + 1;\n        gameOverMenu.style.display = 'block';\n        overlay.style.display = 'block';\n    }\n\n    gameVictory() {\n        this.game.state.victory = true;\n        this.game.state.isPaused = true;\n        victoryMenu.style.display = 'block';\n        overlay.style.display = 'block';\n    }\n\n\n    // Tower placement system\n  \n\n    initEffectsAndUpgrades() {\n\nconst Upgrade = class { \n    constructor(id, title, desc, icon, appliesTo, condition, apply, onAcquire) {\n        this.id = id;\n        this.title = title;\n        this.desc = desc;\n        this.icon = icon;\n        this.appliesTo = appliesTo;\n        this.conditionFn = condition;\n        this.applyFn = apply;\n        this.onAcquire = onAcquire;        \n    }\n\n    canApply(gameState) {\n        return this.conditionFn(gameState);\n    }\n\n    apply(s, add, mul) {\n        this.applyFn(s, add, mul);\n    }\n}\n\n\n        this.game.effects = {\n            slow: (stats, additiveStats, multiplicitiveStats, slowAmount) => {\n                stats[this.game.config.effects.slow.stat] *= slowAmount;\n            }\n        }\n        this.game.upgrades = [\n            // Bat Swarm Upgrades\n            new Upgrade(\n                'sentryFrenzy',\n                'Sentry Frenzy',\n                'Sentry Swarm: ' + this.game.config.upgrades.sentryFrenzy.desc,\n                '🦇',\n                'sentry',\n                (state) => true,\n                (stats, additiveStats, multiplicitiveStats) => {\n                    multiplicitiveStats['attackSpeed'].push(this.game.config.upgrades.sentryFrenzy.value);\n                }\n            ),\n            new Upgrade(\n                'sentryIntelligence',\n                'Sentry Intelligence',\n                'Sentry Swarm: ' + this.game.config.upgrades.sentryIntelligence.desc,\n                '🦇',\n                'sentry',\n                (state) => true,\n                (stats, additiveStats, multiplicitiveStats) => {            \n                    multiplicitiveStats['damage'].push(this.game.config.upgrades.sentryIntelligence.damage);\n                    multiplicitiveStats['range'].push(this.game.config.upgrades.sentryIntelligence.range);        \n                }\n            ),\n\n            // Necromancer Upgrades\n            new Upgrade(\n                'necroSummon',\n                'Raise Dead',\n                'Necromancer: ' + this.game.config.upgrades.necroSummon.desc,\n                '💀',\n                'fabricator',\n                (state) => true,\n                (stats, additiveStats, multiplicitiveStats) => {\n                    stats.summonChance = 1;\n                    if(!additiveStats.summonChance) additiveStats.summonChance = [];\n                    additiveStats['summonChance'].push(this.game.config.upgrades.necroSummon.summonChance);\n                }\n            ),\n\n            // Shadow Turret Upgrades\n            new Upgrade(\n                'overCharge',\n                'Overcharge',\n                'Tesla Coil: ' + this.game.config.upgrades.overCharge.desc,\n                '📏',\n                'teslaCoil',\n                (state) => true,\n                (stats, additiveStats, multiplicitiveStats) => {\n                    additiveStats['range'].push(this.game.config.upgrades.overCharge.range);\n                }\n            ),\n\n            // Soul Pyre Upgrades\n            new Upgrade(\n                'pyreSoul',\n                'Radiant Soul',\n                'Soul Pyre: ' + this.game.config.upgrades.pyreSoul.desc,\n                '💉',\n                'soulPyre',\n                (state) => true,\n                (stats, additiveStats, multiplicitiveStats) => {\n                    additiveStats['splashRadius'].push(this.game.config.upgrades.pyreSoul.splashRadius);\n                }\n            ),\n\n            // Mist Shrine Upgrades\n            new Upgrade(\n                'mistSlow',\n                'Chilling Mist',\n                'Mist Shrine: ' + this.game.config.upgrades.mistSlow.desc,\n                '❄️',\n                'mistShrine',\n                (state) => true,\n                (stats, additiveStats, multiplicitiveStats) => {\n                    multiplicitiveStats['slowEffect'].push(this.game.config.upgrades.mistSlow.slowEffect);\n                }\n            ),\n            // Global Upgrades\n            new Upgrade(\n                'homeReinforcement',\n                'Reinforcement',\n                this.game.config.upgrades.bloodCore.desc,\n                '🛡️',\n                'global',\n                (state) => true,\n                (stats) => {\n                    stats.maxBloodCoreHP *= this.game.config.upgrades.bloodCore.maxHpMultiplier;\n                },\n                (state) => {\n                    state.bloodCoreHP = Math.min(state.stats.maxBloodCoreHP, state.bloodCoreHP + this.game.config.upgrades.bloodCore.healAmount);\n                }\n            ),\n            new Upgrade(\n                'essenceExtraction',\n                'Essence Extraction',\n                this.game.config.upgrades.essenceExtraction.desc,\n                '🔮',\n                'global',\n                (state) => true,\n                (stats) => {\n                    stats.essenceMultiplier *= this.game.config.upgrades.essenceExtraction.value;\n                }\n            ),\n            new Upgrade(\n                'essenceOverflow',\n                'Essence Overflow',\n                this.game.config.upgrades.essenceOverflow.desc,\n                '🔮',\n                'global',\n                (state) => state.bloodCoreHP > state.stats.maxBloodCoreHP / 2,\n                (stats) => {\n                    stats.essenceMultiplier *= this.game.config.upgrades.essenceOverflow.value;\n                }\n            ),\n\n        ];\n\n    }"
+        "script": "init() {\n        this.initEffectsAndUpgrades();\n        let endPath = this.game.state.paths[0][this.game.state.paths[0].length - 1];\n        let endY = endPath.y;\n        let endX = endPath.x;\n\n        this.keep = this.game.spawn(endX * this.gridSize + this.gridSize / 2, \n                                      endY * this.gridSize + this.gridSize / 2, \"tower\",\n                                      { spawnType: 'keep', objectType: 'towers', setDirection: 1});\n        this.keep.placed = true;\n}\n\nupdate() {\n   this.game.state.stats = {...this.game.state.defaultStats};\n}\n\npostUpdate() {\n     \n        if (this.game.state.gameOver || this.game.state.victory || this.game.state.isLevelingUp) return;\n                \n        // Game over check\n        if (this.game.state.bloodCoreHP <= 0 && !this.game.state.gameOver) {\n            this.gameOver();\n        }\n}\n\n\n    // Game-over and victory functions\n    gameOver() {\n        this.game.state.gameOver = true;\n        this.game.state.isPaused = true;\n        gameOverWave.textContent = this.state.round + 1;\n        gameOverMenu.style.display = 'block';\n        overlay.style.display = 'block';\n    }\n\n    gameVictory() {\n        this.game.state.victory = true;\n        this.game.state.isPaused = true;\n        victoryMenu.style.display = 'block';\n        overlay.style.display = 'block';\n    }\n\n\n    // Tower placement system\n  \n\n    initEffectsAndUpgrades() {\n\nconst Upgrade = class { \n    constructor(id, title, desc, icon, appliesTo, condition, apply, onAcquire) {\n        this.id = id;\n        this.title = title;\n        this.desc = desc;\n        this.icon = icon;\n        this.appliesTo = appliesTo;\n        this.conditionFn = condition;\n        this.applyFn = apply;\n        this.onAcquire = onAcquire;        \n    }\n\n    canApply(gameState) {\n        return this.conditionFn(gameState);\n    }\n\n    apply(s, add, mul) {\n        this.applyFn(s, add, mul);\n    }\n}\n\n\n        this.game.effects = {\n            slow: (stats, additiveStats, multiplicitiveStats, slowAmount) => {\n                stats[this.game.config.effects.slow.stat] *= slowAmount;\n            }\n        }\n        this.game.upgrades = [\n            // Bat Swarm Upgrades\n            new Upgrade(\n                'sentryFrenzy',\n                'Sentry Frenzy',\n                'Sentry Swarm: ' + this.game.config.upgrades.sentryFrenzy.desc,\n                '🦇',\n                'sentry',\n                (state) => true,\n                (stats, additiveStats, multiplicitiveStats) => {\n                    multiplicitiveStats['attackSpeed'].push(this.game.config.upgrades.sentryFrenzy.value);\n                }\n            ),\n            new Upgrade(\n                'sentryIntelligence',\n                'Sentry Intelligence',\n                'Sentry Swarm: ' + this.game.config.upgrades.sentryIntelligence.desc,\n                '🦇',\n                'sentry',\n                (state) => true,\n                (stats, additiveStats, multiplicitiveStats) => {            \n                    multiplicitiveStats['damage'].push(this.game.config.upgrades.sentryIntelligence.damage);\n                    multiplicitiveStats['range'].push(this.game.config.upgrades.sentryIntelligence.range);        \n                }\n            ),\n\n            // Necromancer Upgrades\n            new Upgrade(\n                'necroSummon',\n                'Raise Dead',\n                'Necromancer: ' + this.game.config.upgrades.necroSummon.desc,\n                '💀',\n                'fabricator',\n                (state) => true,\n                (stats, additiveStats, multiplicitiveStats) => {\n                    stats.summonChance = 1;\n                    if(!additiveStats.summonChance) additiveStats.summonChance = [];\n                    additiveStats['summonChance'].push(this.game.config.upgrades.necroSummon.summonChance);\n                }\n            ),\n\n            // Shadow Turret Upgrades\n            new Upgrade(\n                'overCharge',\n                'Overcharge',\n                'Tesla Coil: ' + this.game.config.upgrades.overCharge.desc,\n                '📏',\n                'teslaCoil',\n                (state) => true,\n                (stats, additiveStats, multiplicitiveStats) => {\n                    additiveStats['range'].push(this.game.config.upgrades.overCharge.range);\n                }\n            ),\n\n            // Soul Pyre Upgrades\n            new Upgrade(\n                'pyreSoul',\n                'Radiant Soul',\n                'Soul Pyre: ' + this.game.config.upgrades.pyreSoul.desc,\n                '💉',\n                'soulPyre',\n                (state) => true,\n                (stats, additiveStats, multiplicitiveStats) => {\n                    additiveStats['splashRadius'].push(this.game.config.upgrades.pyreSoul.splashRadius);\n                }\n            ),\n\n            // Mist Shrine Upgrades\n            new Upgrade(\n                'mistSlow',\n                'Chilling Mist',\n                'Mist Shrine: ' + this.game.config.upgrades.mistSlow.desc,\n                '❄️',\n                'mistShrine',\n                (state) => true,\n                (stats, additiveStats, multiplicitiveStats) => {\n                    multiplicitiveStats['slowEffect'].push(this.game.config.upgrades.mistSlow.slowEffect);\n                }\n            ),\n            // Global Upgrades\n            new Upgrade(\n                'homeReinforcement',\n                'Reinforcement',\n                this.game.config.upgrades.bloodCore.desc,\n                '🛡️',\n                'global',\n                (state) => true,\n                (stats) => {\n                    stats.maxBloodCoreHP *= this.game.config.upgrades.bloodCore.maxHpMultiplier;\n                },\n                (state) => {\n                    state.bloodCoreHP = Math.min(state.stats.maxBloodCoreHP, state.bloodCoreHP + this.game.config.upgrades.bloodCore.healAmount);\n                }\n            ),\n            new Upgrade(\n                'essenceExtraction',\n                'Essence Extraction',\n                this.game.config.upgrades.essenceExtraction.desc,\n                '🔮',\n                'global',\n                (state) => true,\n                (stats) => {\n                    stats.essenceMultiplier *= this.game.config.upgrades.essenceExtraction.value;\n                }\n            ),\n            new Upgrade(\n                'essenceOverflow',\n                'Essence Overflow',\n                this.game.config.upgrades.essenceOverflow.desc,\n                '🔮',\n                'global',\n                (state) => state.bloodCoreHP > state.stats.maxBloodCoreHP / 2,\n                (stats) => {\n                    stats.essenceMultiplier *= this.game.config.upgrades.essenceOverflow.value;\n                }\n            ),\n\n        ];\n\n    }"
       },
       "waveManager": {
         "title": "Wave Manager",
@@ -28005,6 +28013,24 @@ const DEFAULT_PROJECT_CONFIG = {
         "title": "AI Prompt Panel",
         "html": "<h2>AI Object Generator</h2>\n                <div class=\"form-group\">\n                    <label for=\"ai-prompt-textarea\">Prompt:</label>\n                    <textarea id=\"ai-prompt-textarea\" rows=\"6\" placeholder=\"Enter your AI generation prompt\"></textarea>\n                    <textarea id=\"ai-pre-prompt-textarea\" rows=\"6\" placeholder=\"context\"></textarea>\n                </div>\n                <div class=\"actions\">\n                    <button id=\"send-ai-prompt-btn\" class=\"primary\">Send to AI</button>\n                    <button id=\"close-ai-prompt-modal\">Cancel</button>\n                </div>\n                <div class=\"preview-section\">\n                    <h3>AI Response Preview</h3>\n                    <textarea id=\"ai-response-preview\" rows=\"6\"></textarea>\n                    <div class=\"preview-actions\">\n                        <button id=\"apply-ai-response-btn\" class=\"primary\" style=\"display:none;\">Apply Response</button>\n                    </div>\n                </div>"
       }
+    },
+    "inputElementTypes": {
+      "text": {
+        "title": "text",
+        "tag": "input"
+      },
+      "textarea": {
+        "title": "Text Area",
+        "tag": "textarea"
+      }
+    },
+    "inputDataTypes": {
+      "json": {
+        "title": "JSON"
+      },
+      "string": {
+        "title": "String"
+      }
     }
   },
   "objectTypeDefinitions": [
@@ -28150,6 +28176,18 @@ const DEFAULT_PROJECT_CONFIG = {
       "name": "Modals",
       "singular": "Modal",
       "category": "Scripts"
+    },
+    {
+      "id": "inputElementTypes",
+      "name": "Input Elements",
+      "singular": "Input Element",
+      "category": "Settings"
+    },
+    {
+      "id": "inputDataTypes",
+      "name": "Input Data Types",
+      "singular": "Input Data Type",
+      "category": "Settings"
     }
   ]
 }; 
