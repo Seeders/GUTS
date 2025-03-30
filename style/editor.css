@@ -42,7 +42,7 @@ h1,h2,h3,h4 {
 }
 .sidebar img {
     width: 125px;
-    margin: auto;
+    margin: 1em auto;
 }
 .sidebar-actions {
     margin-top: auto; 
