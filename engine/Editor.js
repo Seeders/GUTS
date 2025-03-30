@@ -339,7 +339,7 @@ class Editor {
             <div class="actions">
                 <div>
                     <button class="primary" id="save-object-btn">Save ${singularType}</button>
-                    <button id="duplicate-object-btn">Duplicate Object</button>
+                    <button id="duplicate-object-btn">Duplicate ${singularType}</button>
                     <button id="revert-changes-btn">Revert Changes</button>                    
                     <button class="danger" id="delete-object-btn">Delete ${singularType}</button>
                 </div>
@@ -987,7 +987,13 @@ class Editor {
             this.elements.mainContentConainer.innerHTML += html;
    
             document.body.addEventListener(`save${module.propertyName}`, (event) => {
-                this.elements.editor.querySelector(`#${module.propertyName}-value`).value = JSON.stringify(event.detail);
+                let valEl = this.elements.editor.querySelector(`#${module.propertyName}-value`);
+                if(module.inputDataType == "json"){
+                    valEl.value = JSON.stringify(event.detail);
+                } else {
+                    valEl.value = event.detail;
+                }
+                this.saveObject();
             });
 
             if(css) {
