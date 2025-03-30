@@ -2,7 +2,7 @@ const DEFAULT_PROJECT_CONFIG = {
   "objectTypes": {
     "configs": {
       "game": {
-        "gridSize": 48,
+        "gridSize": 24,
         "imageSize": 128,
         "canvasWidth": 1536,
         "canvasHeight": 768,
