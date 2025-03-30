@@ -1,6 +1,6 @@
 import { Entity } from "./Entity.js";
 import { Component } from "./Component.js";
-import { DEFAULT_PROJECT_CONFIG } from "../config/game_config.js";
+import { DEFAULT_PROJECT_CONFIG } from "../config/default_app_config.js";
 import { ImageManager } from "./ImageManager.js";
 import { CoordinateTranslator } from "./CoordinateTranslator.js";
 import { TileMap } from "./TileMap.js";
@@ -23,133 +23,8 @@ class GameEditor {
         this.engineClasses = {"THREE": THREE, "OrbitControls": OrbitControls, "ImageManager": ImageManager, "TileMap": TileMap, "TerrainImageProcessor": TerrainImageProcessor, "CoordinateTranslator": CoordinateTranslator};
         // Application state
         this.state = {
-            project: {
-                objectTypes: {
-                    configs: {                    
-                        "game": {
-                            "gridSize": 48,
-                            "imageSize": 128,
-                            "canvasWidth": 1536,
-                            "canvasHeight": 768,
-                            "html": "<div id=\"gameContainer\"></div>",
-                            "css": "",
-                            "title": "My TD Game",
-                            "isIsometric": false,
-                            "libraries": []
-                        },
-                        "editor": {
-                            "title": "Editor Config",
-                            "editorCategories": "",
-                            "theme": "default"
-                        },
-                        "ai": {
-                            "title": "AI",
-                            "aiEndPoint": "http://10.0.0.178:11434/api/generate",
-                            "aiModel": "deepseek-r1:32b",
-                            "defaultPrompt": "Help me make this better"
-                        },
-                        "state": {
-                            "level": "level1",
-                        }
-                    },
-                    "entities": {
-                        "game": {
-                            "components": ["game"]
-                        }
-                    },
-                    "components": {
-                        "game": {
-                            "script" : "init(){}"
-                        }
-                    },
-                    "renderers": {
-                        "renderer": {}
-                    },
-                    "functions": {},
-                    "environment": {},
-                    "levels": {},
-                    "themes": {
-                        "default" : {
-                            "css" : ""
-                        }
-                    },
-                    "sounds": {},
-                    "libraries": {},
-                },
-                objectTypeDefinitions:  [
-                    {
-                      "id": "configs",
-                      "name": "Configs",
-                      "singular": "Config",
-                      "category": "Settings",
-                      "isCore": true
-                    },
-                    {
-                      "id": "entities",
-                      "name": "Entities",
-                      "singular": "Entity",
-                      "category": "Scripts",
-                      "isCore": true
-                    },
-                    {
-                      "id": "components",
-                      "name": "Components",
-                      "singular": "Component",
-                      "category": "Scripts",
-                      "isCore": true
-                    },
-                    {
-                      "id": "renderers",
-                      "name": "Renderers",
-                      "singular": "Renderer",
-                      "category": "Scripts",
-                      "isCore": true
-                    },
-                    {
-                      "id": "functions",
-                      "name": "Functions",
-                      "singular": "Function",
-                      "category": "Scripts",
-                      "isCore": true
-                    },
-                    {
-                      "id": "environment",
-                      "name": "Environment",
-                      "singular": "Environment",
-                      "category": "Visuals",
-                      "isCore": true
-                    },
-                    {
-                      "id": "levels",
-                      "name": "Levels",
-                      "singular": "Level",
-                      "category": "Terrain",
-                      "isCore": true
-                    },
-                    {
-                      "id": "themes",
-                      "name": "Themes",
-                      "singular": "Theme",
-                      "category": "Settings",
-                      "isCore": true
-                    },
-                    {
-                      "id": "sounds",
-                      "name": "Sounds",
-                      "singular": "Sound",
-                      "category": "Audio",
-                      "isCore": true
-                    },
-                    {
-                      "id": "libraries",
-                      "name": "Libraries",
-                      "singular": "Library",
-                      "category": "Scripts",
-                      "isCore": true
-                    }
-                  ]
-            },
-            selectedType: 'enemies',
+            project: {},
+            selectedType: 'configs',
             selectedObject: null,
             isDragging: false,
             objectPosition: { x: 300, y: 120 }
@@ -1015,16 +890,10 @@ class GameEditor {
         this.dispatchHook('toggleEditor', this.getHookDetail({arguments}));
         if(this.elements.editor.offsetParent === null){
             this.elements.editor.setAttribute('style', 'display: block');
-            this.elements.terrainEditorContainer.setAttribute('style', 'height: 50vh');
-            this.elements.graphicsEditorContainer.setAttribute('style', 'height: 50vh');
-            this.elements.scriptEditorContainer.setAttribute('style', 'height: 50vh');   
-            this.elements.audioEditorContainer.setAttribute('style', 'height: 50vh');   
+            this.elements.mainContentConainer.setAttribute('style', 'height: 50vh');
         } else {
             this.elements.editor.setAttribute('style', 'display: none');
-            this.elements.terrainEditorContainer.setAttribute('style', 'height: 100vh');
-            this.elements.graphicsEditorContainer.setAttribute('style', 'height: 100vh');   
-            this.elements.scriptEditorContainer.setAttribute('style', 'height: 100vh');     
-            this.elements.audioEditorContainer.setAttribute('style', 'height: 100vh');        
+            this.elements.mainContentConainer.setAttribute('style', 'height: 100vh');       
         }
     }
 
@@ -1250,7 +1119,12 @@ class GameEditor {
             }
         );
         
-        if (!matchingProperty) return;
+        if (!matchingProperty) {            
+            this.elements.editor.setAttribute('style', 'display: block');
+            this.elements.mainContentConainer.setAttribute('style', 'display: none');
+            return;
+        }
+        this.elements.mainContentConainer.removeAttribute('style');
         
         const moduleInfo = this.getCollections().propertyModules[matchingProperty];
         document.getElementById(moduleInfo.container).classList.add('show');

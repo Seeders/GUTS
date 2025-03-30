@@ -30,7 +30,14 @@ h1,h2,h3,h4 {
     flex-direction: column;
     overflow-y: auto;
 }
-
+.sidebar-actions {
+    margin-top: auto; 
+    padding-top: 10px;
+}
+.sidebar-actions button {
+    width: 100%; 
+    margin-top: 10px;
+}
 .main-content {
     flex: 1;
     display: flex;
@@ -291,14 +298,19 @@ button:after {
     border-radius: 0;
 }
 
-.main-content-container {
-    display: none;
+#main-content-container {
+    display: flex;
     height: 50vh;
     overflow: hidden;
+}
+
+#main-content-container > div {
+    display: none;
+    height: 100vh;
     position: relative;
 }
 
-.main-content-container.show {
+#main-content-container > div.show {
     display: flex;
 }
 
