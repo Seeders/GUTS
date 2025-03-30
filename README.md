@@ -31,7 +31,7 @@ https://seeders.github.io/GUTS/editor.html
 
 ![image](https://github.com/user-attachments/assets/136fbb71-47e6-4e08-b663-ecce43fc2219)
 
-Customize your theme however you want:
+Customize your theme, your tools, ALL the guts:
 ![Editor Screenshot](https://github.com/user-attachments/assets/77f5a78d-bbfe-4d62-b26e-9479ca03dd84)
 ![Game Screenshot](https://github.com/user-attachments/assets/3f63d70f-cdd1-43f6-97fc-65805144735d)
 
