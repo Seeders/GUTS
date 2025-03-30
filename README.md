@@ -1,6 +1,7 @@
 
 <p align="center">
-   ![logo](https://github.com/user-attachments/assets/96dd3525-2a3e-4141-80e0-b7602301e831) 
+   ![logo](https://github.com/user-attachments/assets/c69f593d-ee9c-4a77-a609-b21c96f52223)
+
 </p>
 
 # GUTS - Gamedev Ultimate Toolkit System
