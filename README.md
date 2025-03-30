@@ -8,6 +8,8 @@
 
 GUTS is a comprehensive toolkit for game development, providing a flexible framework to create and edit games with ease. It comes with a pre-packaged tower defense game and sample assets to help you get started.
 
+More samples will be on the way.  It's easy!
+
 ## Local Installation
 
 1. Install dependencies:
@@ -43,6 +45,10 @@ Customize your theme, your tools, ALL the guts:
 
 ## Features
 
+GUTS has any feature you have the GUTS to implement.  haha this never gets old. No but seriously, GUTS is extremely versatile and is built to be customized.
+
+Does it support volumetric fog?  Absolutely.  Quantum AGI?  Look, the moment someone figures that out, GUTS will have it available.
+
 GUTS includes a simple tower defense game and various assets to demonstrate its capabilities. The toolkit is built around the following core object types:
 
 ### Core Object Types
@@ -52,6 +58,7 @@ GUTS includes a simple tower defense game and various assets to demonstrate its 
 - **Components**: Standalone behaviors with an `update()` function.
 - **Renderers**: Visual components with a `draw()` function.
 - **Functions**: Global utility functions for use in Components and Renderers.
+- **Libraries**: Want to use Box2D include it.  Want to use Planck?  Sure.  Any library can be included.
 - **Levels (Terrain)**: Tilemaps that render as level terrain.
 - **Visual Objects**: Data for game entities (e.g., Players, Allies, Enemies, Projectiles) with stats (health, speed) and render objects (3D models, animations). These can be used to create Entities.
 - **Data**: Global collections of non-visual game data (e.g., upgrades, effects).
