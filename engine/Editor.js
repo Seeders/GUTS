@@ -1,6 +1,7 @@
 import { Entity } from "./Entity.js";
 import { Component } from "./Component.js";
 import { DEFAULT_PROJECT_CONFIG } from "../config/default_app_config.js";
+import { TOWER_DEFENSE_CONFIG } from "../config/game_td_config.js";
 import { ImageManager } from "./ImageManager.js";
 import { CoordinateTranslator } from "./CoordinateTranslator.js";
 import { TileMap } from "./TileMap.js";
@@ -129,21 +130,40 @@ class Editor {
     init() {
         this.dispatchHook('init', this.getHookDetail({arguments}));
         
-        let config = localStorage.getItem("project");
-
-        if( !config ) {
-            this.state.project = DEFAULT_PROJECT_CONFIG;
-        } else {
-            this.state.project = JSON.parse(config);   
-        }
+        // Define default projects
+        this.defaultProjects = {
+          "default_project": DEFAULT_PROJECT_CONFIG,
+          "td_game": TOWER_DEFENSE_CONFIG,
+        };
+      
+        // Initialize default projects if they don't exist
+        Object.keys(this.defaultProjects).forEach((key) => {
+          if (!localStorage.getItem(key)) {
+            localStorage.setItem(key, JSON.stringify(this.defaultProjects[key]));
+          }
+        });
+      
+        // Initialize project selector
+        this.initProjectSelector();
+        this.setupProjectManagement();
+      
+        // Load saved project or default
+        const savedProject = localStorage.getItem("currentProject");
+        const initialProject = savedProject && this.listProjects().includes(savedProject) 
+          ? savedProject 
+          : "default_project";
         
-        this.configLoaded();
+        this.loadProject(initialProject);
+      
+        requestAnimationFrame(() => {
+          document.body.classList.remove('loading');
+        });
     }
     
     saveConfigFile() {
         this.dispatchHook('saveConfigFile', this.getHookDetail({arguments}));
         const configText = JSON.stringify(this.state.project);
-        localStorage.setItem("project", configText);
+        localStorage.setItem(this.state.currentProject, configText);
 
         if(localStorage.getItem("saveToFile") == 1) {
             fetch('/save-config', {
@@ -164,6 +184,185 @@ class Editor {
                 });
         }
     }
+
+    isDefaultProject(name) {
+        return Object.keys(this.defaultProjects).includes(name);
+    }
+
+    addProject(name, config) {
+        if (!name || typeof name !== 'string') {
+            return { success: false, message: 'Invalid project name' };
+        }
+        
+        if (this.isDefaultProject(name)) {
+            return { success: false, message: 'Cannot override default projects' };
+        }
+        
+        if (localStorage.getItem(name)) {
+            return { success: false, message: 'Project already exists' };
+        }
+        
+        try {
+            localStorage.setItem(name, JSON.stringify(config));
+            
+            const projects = JSON.parse(localStorage.getItem("projects") || []);
+            if (!projects.includes(name)) {
+                projects.push(name);
+                localStorage.setItem('projects', JSON.stringify(projects));
+            }
+            
+            return { success: true, message: 'Project added successfully' };
+        } catch (error) {
+            return { success: false, message: 'Failed to add project' };
+        }
+    }
+
+    deleteProject(name) {
+        if (this.isDefaultProject(name)) {
+            return { success: false, message: 'Cannot delete default projects' };
+        }
+        
+        if (!localStorage.getItem(name)) {
+            return { success: false, message: 'Project not found' };
+        }
+        
+        try {
+            localStorage.removeItem(name);
+            
+            const projects = JSON.parse(localStorage.getItem("projects") || []).filter(p => p !== name);
+            localStorage.setItem('projects', JSON.stringify(projects));
+            
+            return { success: true, message: 'Project deleted successfully' };
+        } catch (error) {
+            return { success: false, message: 'Failed to delete project' };
+        }
+    }
+
+    listProjects() {
+        const projects = JSON.parse(localStorage.getItem('projects') || '["default_project","td_game"]');
+        return Array.isArray(projects) ? projects : [];
+    }
+    initProjectSelector() {
+        const projectSelector = document.getElementById("project-selector");
+        const deleteBtn = document.getElementById("delete-project-btn");
+        
+        // Clear existing options except the "create new" option
+        while (projectSelector.options.length > 1) {
+          projectSelector.remove(1);
+        }
+        
+        // Add all projects to the selector
+        this.listProjects().forEach(project => {
+          const option = document.createElement('option');
+          option.value = project;
+          option.textContent = project;
+          projectSelector.appendChild(option);
+        });
+        // Set current project if available
+        if (this.state.currentProject) {
+          projectSelector.value = this.state.currentProject;
+        }
+        
+        // Update delete button state
+        deleteBtn.disabled = this.isDefaultProject(this.state.currentProject);
+    }
+      
+    setupProjectManagement() {
+        const projectSelector = document.getElementById("project-selector");
+        const deleteBtn = document.getElementById("delete-project-btn");
+        const newProjectModal = document.getElementById("new-project-modal");
+        const createBtn = document.getElementById("create-project-btn");
+        const cancelBtn = document.getElementById("cancel-project-btn");
+        
+        // Project selector change handler
+        projectSelector.addEventListener('change', (e) => {
+          if (e.target.value === "__create_new__") {
+            // Show create project modal
+            document.getElementById("new-project-name").value = "";
+            newProjectModal.classList.add('show');
+            // Reset selector to current project
+            e.target.value = this.state.currentProject || "";
+          } else {
+            this.loadProject(e.target.value);
+          }
+        });
+        
+        // Delete button handler
+        deleteBtn.addEventListener('click', () => {
+          if (this.isDefaultProject(this.state.currentProject)) return;
+          
+          if (confirm(`Are you sure you want to delete "${this.state.currentProject}"? This cannot be undone.`)) {
+            const result = this.deleteProject(this.state.currentProject);
+            if (result.success) {
+              // Switch to default project after deletion
+              this.loadProject("default_project");
+            } else {
+              alert(result.message);
+            }
+          }
+        });
+        
+        // Create project handler
+        createBtn.addEventListener('click', () => {
+          const name = document.getElementById("new-project-name").value.trim();
+          if (!name) {
+            alert("Please enter a project name");
+            return;
+          }
+          
+          const result = this.addProject(name, DEFAULT_PROJECT_CONFIG);
+          if (result.success) {
+            newProjectModal.classList.remove('show');
+            this.loadProject(name);
+          } else {
+            alert(result.message);
+          }
+        });
+        
+        // Cancel button handler
+        cancelBtn.addEventListener('click', () => {
+          newProjectModal.classList.remove('show');
+        });
+    }
+      
+    loadProject(name) {
+        const config = localStorage.getItem(name);
+        
+        if (!config) {                
+          // Fallback to default project if selected doesn't exist
+          this.state.currentProject = "default_project";
+          this.state.project = DEFAULT_PROJECT_CONFIG;
+        } else {
+          this.state.currentProject = name;
+          this.state.project = JSON.parse(config);
+        }
+        
+        localStorage.setItem("currentProject", this.state.currentProject);
+        this.initProjectSelector(); // Update UI
+        this.configLoaded();
+    }
+      
+    deleteProject(name) {
+        if (this.isDefaultProject(name)) {
+          return { success: false, message: 'Cannot delete default projects' };
+        }
+        
+        if (!localStorage.getItem(name)) {
+          return { success: false, message: 'Project not found' };
+        }
+        
+        try {
+          localStorage.removeItem(name);
+          
+          const projects = this.listProjects().filter(p => p !== name);
+          localStorage.setItem('projects', JSON.stringify(projects));
+          
+          return { success: true, message: 'Project deleted successfully' };
+        } catch (error) {
+          return { success: false, message: 'Failed to delete project' };
+        }
+    }
+
     getCollections() {
         return this.state.project.objectTypes;
     }
@@ -1147,8 +1346,23 @@ class Editor {
             document.body.dispatchEvent(customEvent);
         });
     }
+    updateProjectSelectors() {
+        const projects = this.listProjects();
+        const projectSelector = document.getElementById("project-selector");
+        
+        // Clear existing options
+        projectSelector.innerHTML = '';
+        
+        projects.forEach(project => {
+            const option = document.createElement('option');
+            option.value = project;
+            option.textContent = project;
+            projectSelector.appendChild(option);            
+        });
+    }
     setupEventListeners() {
         this.dispatchHook('setupEventListeners', this.getHookDetail({arguments}));
+      
         // Import/Export handling
         document.getElementById('import-export-btn').addEventListener('click', () => {
             this.elements.exportTextarea.value = this.generateConfigCode();
@@ -1224,9 +1438,7 @@ class Editor {
         // Render initial UI
         this.renderObjectList();
         this.updateSidebarButtons();            
-        requestAnimationFrame(() => {
-            document.body.classList.remove('loading');
-        });
+
     }
 }
 

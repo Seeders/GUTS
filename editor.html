@@ -18,20 +18,20 @@
         <div class="sidebar">
             <img src="./logo.png" />
 
-            <div id="project-list">
-                <div class="form-group">
-                    <label for="project-selector">Projects</label>
-                    <select id="project-selector"></select>
-                </div>
-            </div>
-
+            <div class="project-selector-container">
+                <select id="project-selector">
+                  <!-- Options will be populated by JavaScript -->
+                  <option value="__create_new__">+ Create New Project</option>
+                </select>
+                <button id="delete-project-btn" class="danger" title="Delete current project">🗑️</button>
+            </div>            
             <div class="object-list" id="object-list">
                 <!-- Object list will be dynamically populated -->
             </div>
             <div class="sidebar-actions">
                 <button class="primary" id="add-object-btn">Add New Object</button>
                 <button id="import-export-btn">Import/Export Config</button>  
-                <button id="launch-game-btn">Launch Game</button>              
+                <button id="launch-game-btn">Launch Game</button>           
             </div>
         </div>
         
@@ -49,6 +49,19 @@
         </div>
     </div>
     <div id="modals">
+        <div id="new-project-modal" class="modal">
+            <div class="modal-content">
+              <h2>Create New Project</h2>
+              <div class="form-group">
+                <label for="new-project-name">Project Name:</label>
+                <input type="text" id="new-project-name" placeholder="My Awesome Game">
+              </div>
+              <div class="actions">
+                <button id="create-project-btn" class="primary">Create</button>
+                <button id="cancel-project-btn">Cancel</button>
+              </div>
+            </div>
+          </div>
         <!-- Import/Export Modal -->
         <div class="modal" id="import-export-modal">
             <div class="modal-content">

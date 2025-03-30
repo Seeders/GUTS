@@ -1,8 +1,8 @@
-const DEFAULT_PROJECT_CONFIG = {
+const TOWER_DEFENSE_CONFIG = {
   "objectTypes": {
     "configs": {
       "game": {
-        "gridSize": 24,
+        "gridSize": 48,
         "imageSize": 128,
         "canvasWidth": 1536,
         "canvasHeight": 768,
@@ -28203,4 +28203,4 @@ const DEFAULT_PROJECT_CONFIG = {
   ]
 }; 
 
- export { DEFAULT_PROJECT_CONFIG };
+ export { TOWER_DEFENSE_CONFIG };

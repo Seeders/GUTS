@@ -571,3 +571,16 @@ button:after {
     width: 360px;
     padding: 10px;
 }
+
+.project-selector-container {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  
+  #project-selector {
+    flex-grow: 1;
+    padding: 8px;
+  }
+  
