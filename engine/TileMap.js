@@ -173,7 +173,7 @@ class TileMap {
 		threeCornerBotTexture.setAttribute('willReadFrequently', true); 
 
 		// Set the texture sizes
-		const spriteResolution = sprites[0].width;
+		const spriteResolution = this.tileSize / 2;
 		const finalTileBaseResolution = spriteResolution * 2;
 
 		fullTexture.width = spriteResolution;
