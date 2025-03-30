@@ -43,6 +43,8 @@ Customize your theme, your tools, ALL the guts:
 
 ## Features
 
+GUTS has any feature you have the GUTS to implement.  haha this never gets old. No but seriously, GUTS is extremely versatile and is built to be customized.
+
 GUTS includes a simple tower defense game and various assets to demonstrate its capabilities. The toolkit is built around the following core object types:
 
 ### Core Object Types
