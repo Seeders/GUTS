@@ -968,7 +968,6 @@ class Editor {
                 if (!moduleClass) {
                     throw new Error(`Module class ${moduleClassName} not found in global scope`);
                 }
-                console.log('instantiating', moduleId);
                 this.modules[moduleId] = new moduleClass(this, config, this.engineClasses);                        
                 
                 pendingModules.delete(moduleId);
@@ -1102,7 +1101,6 @@ class Editor {
         Object.values(this.getCollections().propertyModules).forEach(module => {
             const container = document.getElementById(module.container);
             if (container) {
-                console.log('hiding', module.container);
                 container.classList.remove('show');
             }
         });
