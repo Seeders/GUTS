@@ -7,11 +7,17 @@ class ModuleLoader {
         this.atLeastOneModuleAdded = false;
         this.engineClasses = engineClasses;
         this.libraries = {};
+        this.instances = {};
     }
 //modules depend on libraries, they are not the same thing.
     async loadModules(modules) {
         if (!modules) return;
         window.loadingLibraries = {};
+        window.require = (f) => { 
+            window.module = {};
+            window.exports = {};
+            return window[f] || window[this.libraries[f]]
+        };
         const pendingLibraries = new Set();
 
         // Function to instantiate a library once its script is loaded
@@ -43,7 +49,9 @@ class ModuleLoader {
                     let scriptTag = document.createElement("script");
                     scriptTag.setAttribute('id', `${library}-script`);
                     let scriptUrl = "";
-
+                    if(libraryDef.isModule) {
+                        scriptTag.setAttribute("type", "module");
+                    }
                     if (libraryDef.script) {
                         const scriptContent = `window.loadingLibraries.${libraryDef.className} = ${libraryDef.script};`;
                         const blob = new Blob([scriptContent], { type: 'application/javascript' });
@@ -58,6 +66,9 @@ class ModuleLoader {
                     } else if (libraryDef.href) {
                         scriptTag.src = libraryDef.href;
                         scriptTag.onload = () => {
+                            if(libraryDef.requireName) {
+                                this.libraries[libraryDef.requireName] = libraryDef.className;
+                            }
                             resolve();
                         };
                     }
@@ -161,7 +172,7 @@ class ModuleLoader {
                 const libName = module.library;
                 if (classLibrary[libName]) {
                     try {
-                        instances[libName] = new classLibrary[libName](
+                        this.instances[libName] = new classLibrary[libName](
                             app, 
                             module,
                             {...engineClasses, ...classLibrary}
@@ -178,7 +189,7 @@ class ModuleLoader {
                 module.libraries.forEach((library) => {
                     if (classLibrary[library]) {
                         try {
-                            instances[library] = new classLibrary[library](
+                            this.instances[library] = new classLibrary[library](
                                 app,
                                 module,
                                 {...engineClasses, ...classLibrary}
@@ -195,7 +206,7 @@ class ModuleLoader {
                // console.warn(`Module ${moduleId} has no valid library configuration`);
                 try {
                     if (classLibrary[moduleId]) {
-                        instances[moduleId] = new classLibrary[moduleId](
+                        this.instances[moduleId] = new classLibrary[moduleId](
                             app,
                             {},
                             {...engineClasses, ...classLibrary}
@@ -208,7 +219,7 @@ class ModuleLoader {
                 }
             }
         });
-        return instances;
+        return this.instances;
     }
 
 }

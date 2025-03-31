@@ -6,7 +6,6 @@ import { TOWER_DEFENSE_CONFIG } from "../config/game_td_config.js";
 import { CoordinateTranslator } from "./CoordinateTranslator.js";
 import { TileMap } from "./TileMap.js";
 import { TerrainImageProcessor } from "./TerrainImageProcessor.js";
-import { OrbitControls } from '../library/three.orbitControls.js';
 
 class Editor {
     constructor() {
@@ -20,7 +19,7 @@ class Editor {
             DEFAULT_TILEMAP: {},
             DEFAULT_SCRIPT: 'init(){\n\n}'
         };
-        this.engineClasses = {"OrbitControls": OrbitControls, "TileMap": TileMap, "TerrainImageProcessor": TerrainImageProcessor, "CoordinateTranslator": CoordinateTranslator};
+        this.engineClasses = {"TileMap": TileMap, "TerrainImageProcessor": TerrainImageProcessor, "CoordinateTranslator": CoordinateTranslator};
         // Application state
         this.state = {
             project: {},
