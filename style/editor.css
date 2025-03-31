@@ -23,11 +23,19 @@ body {
 h1,h2,h3,h4 {
     font-size: 1em;
 }
-.container {
+#container {
     display: flex;
     gap: 20px;
     height: calc(100vh - 40px);
 }
+.hidden {
+    display: none;
+  }
+  
+.full-height {
+    flex: none;
+    height: calc(100% - 40px); /* Accounts for handle height when present */
+  }
 .highlight {
     border-left: 3px solid #4682b4;
     padding-left: 10px;
@@ -53,11 +61,13 @@ h1,h2,h3,h4 {
     margin-top: 10px;
 }
 .main-content {
-    flex: 1;
+    width: 100%;
+    height: calc(100vh - 40px);
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    overflow-y: auto;
+    overflow: hidden;
+    flex: 1; /* Takes available space */
+    min-height: 100px; /* Minimum height */
 }
 
 .object-list {
@@ -75,10 +85,13 @@ h1,h2,h3,h4 {
 }
 
 .editor {
+    width: 100%;
     border-radius: 0;
     padding: 20px;
-    flex: 1;
     overflow-y: auto;
+
+    flex: 1; /* Takes available space */
+    min-height: 100px; /* Minimum height */
 }
 
 #three-js-container {
@@ -312,9 +325,9 @@ button:after {
 }
 
 #main-content-container {
-    display: flex;
-    height: 50vh;
-    overflow: hidden;
+    flex: 1; /* Takes available space */
+    min-height: 100px; /* Minimum height */
+    overflow: auto;
 }
 
 #main-content-container > div {
@@ -583,4 +596,3 @@ button:after {
     flex-grow: 1;
     padding: 8px;
   }
-  

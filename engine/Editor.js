@@ -34,6 +34,7 @@ class Editor {
         this.elements = {
             objectList: document.getElementById('object-list'),
             editor: document.getElementById('editor'),
+            handle: document.getElementById('toggleEditorButton'),
             importExportModal: document.getElementById('import-export-modal'),
             importTextarea: document.getElementById('import-textarea'),
             exportTextarea: document.getElementById('export-textarea'),
@@ -1091,11 +1092,11 @@ class Editor {
     toggleEditor() {
         this.dispatchHook('toggleEditor', this.getHookDetail({arguments}));
         if(this.elements.editor.offsetParent === null){
-            this.elements.editor.setAttribute('style', 'display: block');
-            this.elements.mainContentConainer.setAttribute('style', 'height: 50vh');
+        //    this.elements.editor.setAttribute('style', 'display: block');
+        //    this.elements.mainContentConainer.setAttribute('style', 'height: 50vh');
         } else {
-            this.elements.editor.setAttribute('style', 'display: none');
-            this.elements.mainContentConainer.setAttribute('style', 'height: 100vh');       
+          //  this.elements.editor.setAttribute('style', 'display: none');
+         //   this.elements.mainContentConainer.setAttribute('style', 'height: 100vh');       
         }
     }
 
@@ -1203,7 +1204,25 @@ class Editor {
         });
 
     }
-
+    hideEditor() {
+        this.elements.editor.classList.add('hidden');
+        this.elements.handle.classList.add('hidden');
+        this.elements.mainContentConainer.classList.add('full-height');
+        this.elements.mainContentConainer.style.height = '100%';
+    }
+    
+    showContent() {
+        this.elements.mainContentConainer.classList.remove('hidden');
+        this.elements.handle.classList.remove('hidden');
+        this.elements.editor.classList.remove('full-height');
+        this.elements.mainContentConainer.removeAttribute('style');
+    }
+    hideContent() {
+        this.elements.mainContentConainer.classList.add('hidden');
+        this.elements.handle.classList.add('hidden');
+        this.elements.editor.classList.add('full-height');
+        this.elements.editor.style.height = '100%';
+    }
     // Updated drawObject to work with the new module system
     drawObject(object) {
         this.dispatchHook('drawObject', this.getHookDetail({arguments}));
@@ -1218,11 +1237,12 @@ class Editor {
         );
         
         if (!matchingProperty) {            
-            this.elements.editor.setAttribute('style', 'display: block');
-            this.elements.mainContentConainer.setAttribute('style', 'display: none');
+            this.hideContent();
+           // this.elements.editor.setAttribute('style', 'display: flex');
+            //this.elements.mainContentConainer.setAttribute('style', 'display: none');
             return;
-        }
-        this.elements.mainContentConainer.removeAttribute('style');
+        } 
+        this.showContent();
         
         const moduleInfo = this.getCollections().propertyModules[matchingProperty];
         document.getElementById(moduleInfo.container).classList.add('show');
@@ -1296,8 +1316,49 @@ class Editor {
 
         document.getElementById('create-duplicate-object-btn').addEventListener('click', () => this.duplicateObject());
 
-        document.getElementById('toggleEditorButton').addEventListener('click', () => this.toggleEditor());
-
+        //document.getElementById('toggleEditorButton').addEventListener('click', () => this.toggleEditor());
+        this.isDragging = false;
+        let startY;
+        let startHeightContent;
+        let startHeightEditor;
+        document.getElementById('toggleEditorButton').addEventListener('mousedown', (e) => {
+            this.isDragging = true;
+            startY = e.clientY;
+            startHeightContent = this.elements.mainContentConainer.offsetHeight;
+            startHeightEditor = this.elements.editor.offsetHeight;
+            e.preventDefault();
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+            if (!this.isDragging) return;
+        
+            const delta = e.clientY - startY;
+            const containerHeight = document.getElementById('toggleEditorButton').parentElement.offsetHeight;
+            const handleHeight = document.getElementById('toggleEditorButton').offsetHeight;
+            
+            // Calculate new heights with minimum constraints
+            let newContentHeight = startHeightContent + delta;
+            let newEditorHeight = startHeightEditor - delta;
+            
+            // Enforce minimum heights
+            if (newContentHeight < 100) {
+              newContentHeight = 100;
+              newEditorHeight = containerHeight - newContentHeight - handleHeight;
+            }
+            if (newEditorHeight < 100) {
+              newEditorHeight = 100;
+              newContentHeight = containerHeight - newEditorHeight - handleHeight;
+            }
+        
+            this.elements.mainContentConainer.style.height = `${newContentHeight}px`;
+            this.elements.editor.style.height = `${newEditorHeight}px`;
+            this.elements.mainContentConainer.style.flex = 'none'; // Override flex property
+            this.elements.editor.style.flex = 'none';  // Override flex property
+        });
+        
+        document.addEventListener('mouseup', () => {
+            this.isDragging = false;
+        });
         // Tab navigation
         this.elements.tabs.forEach(tab => {
             tab.addEventListener('click', () => {
@@ -1344,7 +1405,11 @@ class Editor {
         try {   
             this.libraryClasses = await this.moduleLoader.loadModules(collections.libraries);
         //    this.libraryInstances = this.instantiateCollection(collections.libraries, this.libraryModuleClasses, this.libraryInstances);  
-            this.propertyModuleClasses = await this.moduleLoader.loadModules(collections.propertyModules);             
+            let editorModules = {};
+            collections.configs.editor.propertyModules.forEach((pm) => {
+                editorModules[pm] = collections.propertyModules[pm]
+            });
+            this.propertyModuleClasses = await this.moduleLoader.loadModules(editorModules);             
             this.propertyModuleInstances = this.moduleLoader.instantiateCollection(this, collections.propertyModules, this.propertyModuleClasses, this.engineClasses);      
             
         } catch(e) {
