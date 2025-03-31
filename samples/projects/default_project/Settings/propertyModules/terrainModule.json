@@ -1,0 +1,20 @@
+{
+  "title": "Terrain Module",
+  "container": "level-editor-container",
+  "eventName": "editTileMap",
+  "libraries": [
+    "threejs",
+    "ShapeFactory",
+    "CoordinateTranslator",
+    "ImageManager",
+    "CanvasUtility",
+    "TerrainImageProcessor",
+    "TileMap",
+    "terrainMapEditor"
+  ],
+  "propertyName": "tileMap",
+  "className": "TerrainMapEditor",
+  "interface": "terrainEditor",
+  "inputElement": "textarea",
+  "inputDataType": "json"
+}

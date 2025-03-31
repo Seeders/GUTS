@@ -1,0 +1,6 @@
+{
+  "customRenderer": "lightning",
+  "damageType": "electric",
+  "speed": 5,
+  "title": "Lightning"
+}

@@ -1,0 +1,24 @@
+{
+  "render": {
+    "animations": {
+      "idle": [
+        {
+          "shapes": [
+            {
+              "type": "sphere",
+              "size": 6,
+              "x": 0,
+              "y": 5,
+              "z": 0,
+              "rotationX": 90,
+              "color": "#ee6060"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "speed": 25,
+  "damageType": "physical",
+  "title": "Nano Orb"
+}

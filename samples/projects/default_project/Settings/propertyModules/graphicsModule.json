@@ -1,0 +1,17 @@
+{
+  "title": "Graphics Module",
+  "container": "graphics-editor-container",
+  "eventName": "renderObject",
+  "libraries": [
+    "threejs",
+    "three.OrbitControls",
+    "GLTFLoader",
+    "ShapeFactory",
+    "graphicsEditor"
+  ],
+  "propertyName": "render",
+  "className": "GraphicsEditor",
+  "interface": "graphicsEditor",
+  "inputElement": "textarea",
+  "inputDataType": "json"
+}

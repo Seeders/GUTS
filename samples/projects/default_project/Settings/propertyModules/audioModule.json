@@ -1,0 +1,11 @@
+{
+  "title": "Audio Module",
+  "container": "audio-editor-container",
+  "eventName": "editAudio",
+  "library": "audioEditor",
+  "propertyName": "audio",
+  "className": "AudioEditor",
+  "interface": "audioEditor",
+  "inputElement": "text",
+  "inputDataType": "string"
+}

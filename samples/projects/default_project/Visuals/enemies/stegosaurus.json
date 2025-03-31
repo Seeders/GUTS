@@ -1,0 +1,1265 @@
+{
+  "speed": 1,
+  "hp": 30,
+  "essence": 10,
+  "value": 5,
+  "render": {
+    "animations": {
+      "idle": [
+        {
+          "shapes": [
+            {
+              "type": "box",
+              "width": 24,
+              "height": 12,
+              "depth": 32,
+              "x": 0,
+              "y": 18,
+              "z": 0,
+              "color": "#5D8233",
+              "name": "body"
+            },
+            {
+              "type": "box",
+              "width": 16,
+              "height": 12,
+              "depth": 22,
+              "x": 0,
+              "y": 28,
+              "z": 24,
+              "color": "#5D8233",
+              "name": "head"
+            },
+            {
+              "type": "box",
+              "width": 14,
+              "height": 5,
+              "depth": 20,
+              "x": 0,
+              "y": 23,
+              "z": 26,
+              "color": "#4E6C2A",
+              "name": "jaw"
+            },
+            {
+              "type": "box",
+              "width": 12,
+              "height": 2,
+              "depth": 1,
+              "x": 0,
+              "y": 23,
+              "z": 36,
+              "color": "#FFFFFF",
+              "name": "teeth"
+            },
+            {
+              "type": "sphere",
+              "size": 4,
+              "x": -9,
+              "y": 32,
+              "z": 28,
+              "color": "#FFFF00",
+              "name": "eye-right"
+            },
+            {
+              "type": "sphere",
+              "size": 2,
+              "x": -10,
+              "y": 32,
+              "z": 29,
+              "color": "#000000",
+              "name": "pupil-right"
+            },
+            {
+              "type": "sphere",
+              "size": 4,
+              "x": 9,
+              "y": 32,
+              "z": 28,
+              "color": "#FFFF00",
+              "name": "eye-left"
+            },
+            {
+              "type": "sphere",
+              "size": 2,
+              "x": 10,
+              "y": 32,
+              "z": 29,
+              "color": "#000000",
+              "name": "pupil-left"
+            },
+            {
+              "type": "box",
+              "width": 8,
+              "height": 6,
+              "depth": 20,
+              "x": 0,
+              "y": 16,
+              "z": -20,
+              "color": "#5D8233",
+              "name": "tail-base"
+            },
+            {
+              "type": "box",
+              "width": 6,
+              "height": 4,
+              "depth": 16,
+              "x": 0,
+              "y": 15,
+              "z": -38,
+              "rotationY": 0,
+              "color": "#5D8233",
+              "name": "tail-tip"
+            },
+            {
+              "type": "box",
+              "width": 6,
+              "height": 12,
+              "depth": 6,
+              "x": 10,
+              "y": 10,
+              "z": 10,
+              "color": "#4E6C2A",
+              "name": "leg-front-left"
+            },
+            {
+              "type": "box",
+              "width": 6,
+              "height": 12,
+              "depth": 6,
+              "x": 10,
+              "y": 10,
+              "z": -10,
+              "color": "#4E6C2A",
+              "name": "leg-back-left"
+            },
+            {
+              "type": "box",
+              "width": 6,
+              "height": 12,
+              "depth": 6,
+              "x": -10,
+              "y": 10,
+              "z": 10,
+              "color": "#4E6C2A",
+              "name": "leg-front-right"
+            },
+            {
+              "type": "box",
+              "width": 6,
+              "height": 12,
+              "depth": 6,
+              "x": -10,
+              "y": 10,
+              "z": -10,
+              "color": "#4E6C2A",
+              "name": "leg-back-right"
+            },
+            {
+              "type": "box",
+              "width": 8,
+              "height": 3,
+              "depth": 10,
+              "x": 10,
+              "y": 3,
+              "z": 12,
+              "color": "#4E6C2A",
+              "name": "foot-front-left"
+            },
+            {
+              "type": "box",
+              "width": 8,
+              "height": 3,
+              "depth": 10,
+              "x": 10,
+              "y": 3,
+              "z": -8,
+              "color": "#4E6C2A",
+              "name": "foot-back-left"
+            },
+            {
+              "type": "box",
+              "width": 8,
+              "height": 3,
+              "depth": 10,
+              "x": -10,
+              "y": 3,
+              "z": 12,
+              "color": "#4E6C2A",
+              "name": "foot-front-right"
+            },
+            {
+              "type": "box",
+              "width": 8,
+              "height": 3,
+              "depth": 10,
+              "x": -10,
+              "y": 3,
+              "z": -8,
+              "color": "#4E6C2A",
+              "name": "foot-back-right"
+            },
+            {
+              "type": "cone",
+              "size": 6,
+              "height": 8,
+              "x": 0,
+              "y": 27,
+              "z": 0,
+              "rotationX": 0,
+              "color": "#436026",
+              "name": "spike-back-1"
+            },
+            {
+              "type": "cone",
+              "size": 6,
+              "height": 8,
+              "x": 0,
+              "y": 26,
+              "z": -10,
+              "rotationX": 0,
+              "color": "#436026",
+              "name": "spike-back-2"
+            },
+            {
+              "type": "cone",
+              "size": 5,
+              "height": 6,
+              "x": 0,
+              "y": 22,
+              "z": -24,
+              "rotationX": 0,
+              "color": "#436026",
+              "name": "spike-tail-base"
+            },
+            {
+              "type": "cone",
+              "size": 4,
+              "height": 5,
+              "x": 0,
+              "y": 20,
+              "z": -36,
+              "rotationX": 0,
+              "color": "#436026",
+              "name": "spike-tail-tip"
+            },
+            {
+              "type": "cone",
+              "size": 6,
+              "height": 8,
+              "x": 0,
+              "y": 34,
+              "z": 20,
+              "rotationX": 0,
+              "color": "#436026",
+              "name": "spike-head"
+            }
+          ]
+        }
+      ],
+      "walk": [
+        {
+          "shapes": [
+            {
+              "type": "box",
+              "width": 24,
+              "height": 12,
+              "depth": 32,
+              "x": 0,
+              "y": 18,
+              "z": 0,
+              "color": "#5D8233",
+              "name": "body"
+            },
+            {
+              "type": "box",
+              "width": 16,
+              "height": 12,
+              "depth": 22,
+              "x": 1,
+              "y": 28,
+              "z": 24,
+              "color": "#5D8233",
+              "name": "head"
+            },
+            {
+              "type": "box",
+              "width": 14,
+              "height": 5,
+              "depth": 20,
+              "x": 1,
+              "y": 23,
+              "z": 26,
+              "color": "#4E6C2A",
+              "name": "jaw"
+            },
+            {
+              "type": "box",
+              "width": 12,
+              "height": 2,
+              "depth": 1,
+              "x": 1,
+              "y": 23,
+              "z": 36,
+              "color": "#FFFFFF",
+              "name": "teeth"
+            },
+            {
+              "type": "sphere",
+              "size": 4,
+              "x": -8,
+              "y": 32,
+              "z": 28,
+              "color": "#FFFF00",
+              "name": "eye-right"
+            },
+            {
+              "type": "sphere",
+              "size": 2,
+              "x": -9,
+              "y": 32,
+              "z": 29,
+              "color": "#000000",
+              "name": "pupil-right"
+            },
+            {
+              "type": "sphere",
+              "size": 4,
+              "x": 10,
+              "y": 32,
+              "z": 28,
+              "color": "#FFFF00",
+              "name": "eye-left"
+            },
+            {
+              "type": "sphere",
+              "size": 2,
+              "x": 11,
+              "y": 32,
+              "z": 29,
+              "color": "#000000",
+              "name": "pupil-left"
+            },
+            {
+              "type": "box",
+              "width": 8,
+              "height": 6,
+              "depth": 20,
+              "x": -2,
+              "y": 16,
+              "z": -20,
+              "color": "#5D8233",
+              "name": "tail-base"
+            },
+            {
+              "type": "box",
+              "width": 6,
+              "height": 4,
+              "depth": 16,
+              "x": -6,
+              "y": 15,
+              "z": -38,
+              "rotationY": 15,
+              "color": "#5D8233",
+              "name": "tail-tip"
+            },
+            {
+              "type": "box",
+              "width": 6,
+              "height": 12,
+              "depth": 6,
+              "x": 10,
+              "y": 9,
+              "z": 10,
+              "color": "#4E6C2A",
+              "name": "leg-front-left"
+            },
+            {
+              "type": "box",
+              "width": 6,
+              "height": 12,
+              "depth": 6,
+              "x": 10,
+              "y": 12,
+              "z": -10,
+              "color": "#4E6C2A",
+              "name": "leg-back-left"
+            },
+            {
+              "type": "box",
+              "width": 6,
+              "height": 12,
+              "depth": 6,
+              "x": -10,
+              "y": 12,
+              "z": 10,
+              "color": "#4E6C2A",
+              "name": "leg-front-right"
+            },
+            {
+              "type": "box",
+              "width": 6,
+              "height": 12,
+              "depth": 6,
+              "x": -10,
+              "y": 9,
+              "z": -10,
+              "color": "#4E6C2A",
+              "name": "leg-back-right"
+            },
+            {
+              "type": "box",
+              "width": 8,
+              "height": 3,
+              "depth": 10,
+              "x": 10,
+              "y": 2,
+              "z": 12,
+              "color": "#4E6C2A",
+              "name": "foot-front-left"
+            },
+            {
+              "type": "box",
+              "width": 8,
+              "height": 3,
+              "depth": 10,
+              "x": 10,
+              "y": 5,
+              "z": -8,
+              "color": "#4E6C2A",
+              "name": "foot-back-left"
+            },
+            {
+              "type": "box",
+              "width": 8,
+              "height": 3,
+              "depth": 10,
+              "x": -10,
+              "y": 5,
+              "z": 12,
+              "color": "#4E6C2A",
+              "name": "foot-front-right"
+            },
+            {
+              "type": "box",
+              "width": 8,
+              "height": 3,
+              "depth": 10,
+              "x": -10,
+              "y": 2,
+              "z": -8,
+              "color": "#4E6C2A",
+              "name": "foot-back-right"
+            },
+            {
+              "type": "cone",
+              "size": 6,
+              "height": 8,
+              "x": 0,
+              "y": 27,
+              "z": 0,
+              "rotationX": 0,
+              "color": "#436026",
+              "name": "spike-back-1"
+            },
+            {
+              "type": "cone",
+              "size": 6,
+              "height": 8,
+              "x": 0,
+              "y": 26,
+              "z": -10,
+              "rotationX": 0,
+              "color": "#436026",
+              "name": "spike-back-2"
+            },
+            {
+              "type": "cone",
+              "size": 5,
+              "height": 6,
+              "x": -2,
+              "y": 22,
+              "z": -24,
+              "rotationX": 0,
+              "color": "#436026",
+              "name": "spike-tail-base"
+            },
+            {
+              "type": "cone",
+              "size": 4,
+              "height": 5,
+              "x": -6,
+              "y": 20,
+              "z": -36,
+              "rotationX": 15,
+              "color": "#436026",
+              "name": "spike-tail-tip"
+            },
+            {
+              "type": "cone",
+              "size": 6,
+              "height": 8,
+              "x": 1,
+              "y": 34,
+              "z": 20,
+              "rotationX": 0,
+              "color": "#436026",
+              "name": "spike-head"
+            }
+          ]
+        },
+        {
+          "shapes": [
+            {
+              "type": "box",
+              "width": 24,
+              "height": 12,
+              "depth": 32,
+              "x": 0,
+              "y": 18,
+              "z": 0,
+              "color": "#5D8233",
+              "name": "body"
+            },
+            {
+              "type": "box",
+              "width": 16,
+              "height": 12,
+              "depth": 22,
+              "x": -1,
+              "y": 28,
+              "z": 24,
+              "color": "#5D8233",
+              "name": "head"
+            },
+            {
+              "type": "box",
+              "width": 14,
+              "height": 5,
+              "depth": 20,
+              "x": -1,
+              "y": 23,
+              "z": 26,
+              "color": "#4E6C2A",
+              "name": "jaw"
+            },
+            {
+              "type": "box",
+              "width": 12,
+              "height": 2,
+              "depth": 1,
+              "x": -1,
+              "y": 23,
+              "z": 36,
+              "color": "#FFFFFF",
+              "name": "teeth"
+            },
+            {
+              "type": "sphere",
+              "size": 4,
+              "x": -10,
+              "y": 32,
+              "z": 28,
+              "color": "#FFFF00",
+              "name": "eye-right"
+            },
+            {
+              "type": "sphere",
+              "size": 2,
+              "x": -11,
+              "y": 32,
+              "z": 29,
+              "color": "#000000",
+              "name": "pupil-right"
+            },
+            {
+              "type": "sphere",
+              "size": 4,
+              "x": 8,
+              "y": 32,
+              "z": 28,
+              "color": "#FFFF00",
+              "name": "eye-left"
+            },
+            {
+              "type": "sphere",
+              "size": 2,
+              "x": 9,
+              "y": 32,
+              "z": 29,
+              "color": "#000000",
+              "name": "pupil-left"
+            },
+            {
+              "type": "box",
+              "width": 8,
+              "height": 6,
+              "depth": 20,
+              "x": 2,
+              "y": 16,
+              "z": -20,
+              "color": "#5D8233",
+              "name": "tail-base"
+            },
+            {
+              "type": "box",
+              "width": 6,
+              "height": 4,
+              "depth": 16,
+              "x": 6,
+              "y": 15,
+              "z": -38,
+              "rotationY": -15,
+              "color": "#5D8233",
+              "name": "tail-tip"
+            },
+            {
+              "type": "box",
+              "width": 6,
+              "height": 12,
+              "depth": 6,
+              "x": 10,
+              "y": 12,
+              "z": 10,
+              "color": "#4E6C2A",
+              "name": "leg-front-left"
+            },
+            {
+              "type": "box",
+              "width": 6,
+              "height": 12,
+              "depth": 6,
+              "x": 10,
+              "y": 9,
+              "z": -10,
+              "color": "#4E6C2A",
+              "name": "leg-back-left"
+            },
+            {
+              "type": "box",
+              "width": 6,
+              "height": 12,
+              "depth": 6,
+              "x": -10,
+              "y": 9,
+              "z": 10,
+              "color": "#4E6C2A",
+              "name": "leg-front-right"
+            },
+            {
+              "type": "box",
+              "width": 6,
+              "height": 12,
+              "depth": 6,
+              "x": -10,
+              "y": 12,
+              "z": -10,
+              "color": "#4E6C2A",
+              "name": "leg-back-right"
+            },
+            {
+              "type": "box",
+              "width": 8,
+              "height": 3,
+              "depth": 10,
+              "x": 10,
+              "y": 5,
+              "z": 12,
+              "color": "#4E6C2A",
+              "name": "foot-front-left"
+            },
+            {
+              "type": "box",
+              "width": 8,
+              "height": 3,
+              "depth": 10,
+              "x": 10,
+              "y": 2,
+              "z": -8,
+              "color": "#4E6C2A",
+              "name": "foot-back-left"
+            },
+            {
+              "type": "box",
+              "width": 8,
+              "height": 3,
+              "depth": 10,
+              "x": -10,
+              "y": 2,
+              "z": 12,
+              "color": "#4E6C2A",
+              "name": "foot-front-right"
+            },
+            {
+              "type": "box",
+              "width": 8,
+              "height": 3,
+              "depth": 10,
+              "x": -10,
+              "y": 5,
+              "z": -8,
+              "color": "#4E6C2A",
+              "name": "foot-back-right"
+            },
+            {
+              "type": "cone",
+              "size": 6,
+              "height": 8,
+              "x": 0,
+              "y": 27,
+              "z": 0,
+              "rotationX": 0,
+              "color": "#436026",
+              "name": "spike-back-1"
+            },
+            {
+              "type": "cone",
+              "size": 6,
+              "height": 8,
+              "x": 0,
+              "y": 26,
+              "z": -10,
+              "rotationX": 0,
+              "color": "#436026",
+              "name": "spike-back-2"
+            },
+            {
+              "type": "cone",
+              "size": 5,
+              "height": 6,
+              "x": 2,
+              "y": 22,
+              "z": -24,
+              "rotationX": 0,
+              "color": "#436026",
+              "name": "spike-tail-base"
+            },
+            {
+              "type": "cone",
+              "size": 4,
+              "height": 5,
+              "x": 6,
+              "y": 20,
+              "z": -36,
+              "rotationX": -15,
+              "color": "#436026",
+              "name": "spike-tail-tip"
+            },
+            {
+              "type": "cone",
+              "size": 6,
+              "height": 8,
+              "x": -1,
+              "y": 34,
+              "z": 20,
+              "rotationX": 0,
+              "color": "#436026",
+              "name": "spike-head"
+            }
+          ]
+        },
+        {
+          "shapes": [
+            {
+              "type": "box",
+              "width": 24,
+              "height": 12,
+              "depth": 32,
+              "x": 0,
+              "y": 18,
+              "z": 0,
+              "color": "#5D8233",
+              "name": "body"
+            },
+            {
+              "type": "box",
+              "width": 16,
+              "height": 12,
+              "depth": 22,
+              "x": 1,
+              "y": 28,
+              "z": 24,
+              "color": "#5D8233",
+              "name": "head"
+            },
+            {
+              "type": "box",
+              "width": 14,
+              "height": 5,
+              "depth": 20,
+              "x": 1,
+              "y": 23,
+              "z": 26,
+              "color": "#4E6C2A",
+              "name": "jaw"
+            },
+            {
+              "type": "box",
+              "width": 12,
+              "height": 2,
+              "depth": 1,
+              "x": 1,
+              "y": 23,
+              "z": 36,
+              "color": "#FFFFFF",
+              "name": "teeth"
+            },
+            {
+              "type": "sphere",
+              "size": 4,
+              "x": -8,
+              "y": 32,
+              "z": 28,
+              "color": "#FFFF00",
+              "name": "eye-right"
+            },
+            {
+              "type": "sphere",
+              "size": 2,
+              "x": -9,
+              "y": 32,
+              "z": 29,
+              "color": "#000000",
+              "name": "pupil-right"
+            },
+            {
+              "type": "sphere",
+              "size": 4,
+              "x": 10,
+              "y": 32,
+              "z": 28,
+              "color": "#FFFF00",
+              "name": "eye-left"
+            },
+            {
+              "type": "sphere",
+              "size": 2,
+              "x": 11,
+              "y": 32,
+              "z": 29,
+              "color": "#000000",
+              "name": "pupil-left"
+            },
+            {
+              "type": "box",
+              "width": 8,
+              "height": 6,
+              "depth": 20,
+              "x": -2,
+              "y": 16,
+              "z": -20,
+              "color": "#5D8233",
+              "name": "tail-base"
+            },
+            {
+              "type": "box",
+              "width": 6,
+              "height": 4,
+              "depth": 16,
+              "x": -6,
+              "y": 15,
+              "z": -38,
+              "rotationY": 15,
+              "color": "#5D8233",
+              "name": "tail-tip"
+            },
+            {
+              "type": "box",
+              "width": 6,
+              "height": 12,
+              "depth": 6,
+              "x": 10,
+              "y": 12,
+              "z": 10,
+              "color": "#4E6C2A",
+              "name": "leg-front-left"
+            },
+            {
+              "type": "box",
+              "width": 6,
+              "height": 12,
+              "depth": 6,
+              "x": 10,
+              "y": 9,
+              "z": -10,
+              "color": "#4E6C2A",
+              "name": "leg-back-left"
+            },
+            {
+              "type": "box",
+              "width": 6,
+              "height": 12,
+              "depth": 6,
+              "x": -10,
+              "y": 9,
+              "z": 10,
+              "color": "#4E6C2A",
+              "name": "leg-front-right"
+            },
+            {
+              "type": "box",
+              "width": 6,
+              "height": 12,
+              "depth": 6,
+              "x": -10,
+              "y": 12,
+              "z": -10,
+              "color": "#4E6C2A",
+              "name": "leg-back-right"
+            },
+            {
+              "type": "box",
+              "width": 8,
+              "height": 3,
+              "depth": 10,
+              "x": 10,
+              "y": 5,
+              "z": 12,
+              "color": "#4E6C2A",
+              "name": "foot-front-left"
+            },
+            {
+              "type": "box",
+              "width": 8,
+              "height": 3,
+              "depth": 10,
+              "x": 10,
+              "y": 2,
+              "z": -8,
+              "color": "#4E6C2A",
+              "name": "foot-back-left"
+            },
+            {
+              "type": "box",
+              "width": 8,
+              "height": 3,
+              "depth": 10,
+              "x": -10,
+              "y": 2,
+              "z": 12,
+              "color": "#4E6C2A",
+              "name": "foot-front-right"
+            },
+            {
+              "type": "box",
+              "width": 8,
+              "height": 3,
+              "depth": 10,
+              "x": -10,
+              "y": 5,
+              "z": -8,
+              "color": "#4E6C2A",
+              "name": "foot-back-right"
+            },
+            {
+              "type": "cone",
+              "size": 6,
+              "height": 8,
+              "x": 0,
+              "y": 27,
+              "z": 0,
+              "rotationX": 0,
+              "color": "#436026",
+              "name": "spike-back-1"
+            },
+            {
+              "type": "cone",
+              "size": 6,
+              "height": 8,
+              "x": 0,
+              "y": 26,
+              "z": -10,
+              "rotationX": 0,
+              "color": "#436026",
+              "name": "spike-back-2"
+            },
+            {
+              "type": "cone",
+              "size": 5,
+              "height": 6,
+              "x": -2,
+              "y": 22,
+              "z": -24,
+              "rotationX": 0,
+              "color": "#436026",
+              "name": "spike-tail-base"
+            },
+            {
+              "type": "cone",
+              "size": 4,
+              "height": 5,
+              "x": -6,
+              "y": 20,
+              "z": -36,
+              "rotationX": 15,
+              "color": "#436026",
+              "name": "spike-tail-tip"
+            },
+            {
+              "type": "cone",
+              "size": 6,
+              "height": 8,
+              "x": 1,
+              "y": 34,
+              "z": 20,
+              "rotationX": 0,
+              "color": "#436026",
+              "name": "spike-head"
+            }
+          ]
+        },
+        {
+          "shapes": [
+            {
+              "type": "box",
+              "width": 24,
+              "height": 12,
+              "depth": 32,
+              "x": 0,
+              "y": 18,
+              "z": 0,
+              "color": "#5D8233",
+              "name": "body"
+            },
+            {
+              "type": "box",
+              "width": 16,
+              "height": 12,
+              "depth": 22,
+              "x": -1,
+              "y": 28,
+              "z": 24,
+              "color": "#5D8233",
+              "name": "head"
+            },
+            {
+              "type": "box",
+              "width": 14,
+              "height": 5,
+              "depth": 20,
+              "x": -1,
+              "y": 23,
+              "z": 26,
+              "color": "#4E6C2A",
+              "name": "jaw"
+            },
+            {
+              "type": "box",
+              "width": 12,
+              "height": 2,
+              "depth": 1,
+              "x": -1,
+              "y": 23,
+              "z": 36,
+              "color": "#FFFFFF",
+              "name": "teeth"
+            },
+            {
+              "type": "sphere",
+              "size": 4,
+              "x": -10,
+              "y": 32,
+              "z": 28,
+              "color": "#FFFF00",
+              "name": "eye-right"
+            },
+            {
+              "type": "sphere",
+              "size": 2,
+              "x": -11,
+              "y": 32,
+              "z": 29,
+              "color": "#000000",
+              "name": "pupil-right"
+            },
+            {
+              "type": "sphere",
+              "size": 4,
+              "x": 8,
+              "y": 32,
+              "z": 28,
+              "color": "#FFFF00",
+              "name": "eye-left"
+            },
+            {
+              "type": "sphere",
+              "size": 2,
+              "x": 9,
+              "y": 32,
+              "z": 29,
+              "color": "#000000",
+              "name": "pupil-left"
+            },
+            {
+              "type": "box",
+              "width": 8,
+              "height": 6,
+              "depth": 20,
+              "x": 2,
+              "y": 16,
+              "z": -20,
+              "color": "#5D8233",
+              "name": "tail-base"
+            },
+            {
+              "type": "box",
+              "width": 6,
+              "height": 4,
+              "depth": 16,
+              "x": 6,
+              "y": 15,
+              "z": -38,
+              "rotationY": -15,
+              "color": "#5D8233",
+              "name": "tail-tip"
+            },
+            {
+              "type": "box",
+              "width": 6,
+              "height": 12,
+              "depth": 6,
+              "x": 10,
+              "y": 9,
+              "z": 10,
+              "color": "#4E6C2A",
+              "name": "leg-front-left"
+            },
+            {
+              "type": "box",
+              "width": 6,
+              "height": 12,
+              "depth": 6,
+              "x": 10,
+              "y": 12,
+              "z": -10,
+              "color": "#4E6C2A",
+              "name": "leg-back-left"
+            },
+            {
+              "type": "box",
+              "width": 6,
+              "height": 12,
+              "depth": 6,
+              "x": -10,
+              "y": 12,
+              "z": 10,
+              "color": "#4E6C2A",
+              "name": "leg-front-right"
+            },
+            {
+              "type": "box",
+              "width": 6,
+              "height": 12,
+              "depth": 6,
+              "x": -10,
+              "y": 9,
+              "z": -10,
+              "color": "#4E6C2A",
+              "name": "leg-back-right"
+            },
+            {
+              "type": "box",
+              "width": 8,
+              "height": 3,
+              "depth": 10,
+              "x": 10,
+              "y": 2,
+              "z": 12,
+              "color": "#4E6C2A",
+              "name": "foot-front-left"
+            },
+            {
+              "type": "box",
+              "width": 8,
+              "height": 3,
+              "depth": 10,
+              "x": 10,
+              "y": 5,
+              "z": -8,
+              "color": "#4E6C2A",
+              "name": "foot-back-left"
+            },
+            {
+              "type": "box",
+              "width": 8,
+              "height": 3,
+              "depth": 10,
+              "x": -10,
+              "y": 5,
+              "z": 12,
+              "color": "#4E6C2A",
+              "name": "foot-front-right"
+            },
+            {
+              "type": "box",
+              "width": 8,
+              "height": 3,
+              "depth": 10,
+              "x": -10,
+              "y": 2,
+              "z": -8,
+              "color": "#4E6C2A",
+              "name": "foot-back-right"
+            },
+            {
+              "type": "cone",
+              "size": 6,
+              "height": 8,
+              "x": 0,
+              "y": 27,
+              "z": 0,
+              "rotationX": 0,
+              "color": "#436026",
+              "name": "spike-back-1"
+            },
+            {
+              "type": "cone",
+              "size": 6,
+              "height": 8,
+              "x": 0,
+              "y": 26,
+              "z": -10,
+              "rotationX": 0,
+              "color": "#436026",
+              "name": "spike-back-2"
+            },
+            {
+              "type": "cone",
+              "size": 5,
+              "height": 6,
+              "x": 2,
+              "y": 22,
+              "z": -24,
+              "rotationX": 0,
+              "color": "#436026",
+              "name": "spike-tail-base"
+            },
+            {
+              "type": "cone",
+              "size": 4,
+              "height": 5,
+              "x": 6,
+              "y": 20,
+              "z": -36,
+              "rotationX": -15,
+              "color": "#436026",
+              "name": "spike-tail-tip"
+            },
+            {
+              "type": "cone",
+              "size": 6,
+              "height": 8,
+              "x": -1,
+              "y": 34,
+              "z": 20,
+              "rotationX": 0,
+              "color": "#436026",
+              "name": "spike-head"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "title": "stegosaurus"
+}

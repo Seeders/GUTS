@@ -1,0 +1,229 @@
+{
+  "damageType": "fire",
+  "render": {
+    "animations": {
+      "idle": [
+        {
+          "shapes": [
+            {
+              "type": "cylinder",
+              "size": 5,
+              "color": "#888888",
+              "x": 0,
+              "y": 0,
+              "z": -1.4,
+              "rotationX": 90,
+              "rotationY": 0,
+              "rotationZ": 0,
+              "height": 25
+            },
+            {
+              "type": "cone",
+              "size": 5,
+              "color": "#ff1117",
+              "x": 0,
+              "y": 0,
+              "z": 13.6,
+              "rotationX": 90,
+              "rotationY": 0,
+              "rotationZ": 0,
+              "height": 5
+            },
+            {
+              "type": "cone",
+              "size": 2.5,
+              "color": "#ff1117",
+              "x": 0,
+              "y": 0,
+              "z": -13.881250000000001,
+              "rotationX": 90,
+              "rotationY": 0,
+              "rotationZ": 0,
+              "height": 2.5
+            },
+            {
+              "type": "cylinder",
+              "size": 6.25,
+              "color": "#888888",
+              "x": 0,
+              "y": 0,
+              "z": -11.131250000000001,
+              "rotationX": 90,
+              "rotationY": 0,
+              "rotationZ": 0,
+              "height": 5
+            },
+            {
+              "type": "box",
+              "size": 5,
+              "color": "#888888",
+              "x": 0,
+              "y": 3,
+              "z": -11.631250000000001,
+              "rotationX": 45,
+              "rotationY": 0,
+              "rotationZ": 0,
+              "width": 0.25,
+              "height": 2.5,
+              "depth": 8.5
+            },
+            {
+              "type": "box",
+              "size": 5,
+              "color": "#888888",
+              "x": 0,
+              "y": -3,
+              "z": -11.631250000000001,
+              "rotationX": -45,
+              "rotationY": 0,
+              "rotationZ": 0,
+              "width": 0.25,
+              "height": 2.5,
+              "depth": 8.5
+            },
+            {
+              "type": "box",
+              "size": 5,
+              "color": "#888888",
+              "x": -3,
+              "y": 0,
+              "z": -11.631250000000001,
+              "rotationX": 0,
+              "rotationY": 45,
+              "rotationZ": 90,
+              "width": 0.25,
+              "height": 2.5,
+              "depth": 8.5
+            },
+            {
+              "type": "box",
+              "size": 5,
+              "color": "#888888",
+              "x": 3,
+              "y": 0,
+              "z": -11.631250000000001,
+              "rotationX": 0,
+              "rotationY": -45,
+              "rotationZ": -90,
+              "width": 0.25,
+              "height": 2.5,
+              "depth": 8.5
+            }
+          ]
+        },
+        {
+          "shapes": [
+            {
+              "type": "cylinder",
+              "size": 5,
+              "color": "#888888",
+              "x": 0,
+              "y": 0,
+              "z": -1.4,
+              "rotationX": 90,
+              "rotationY": 0,
+              "rotationZ": 0,
+              "height": 25
+            },
+            {
+              "type": "cone",
+              "size": 5,
+              "color": "#ff1117",
+              "x": 0,
+              "y": 0,
+              "z": 13.6,
+              "rotationX": 90,
+              "rotationY": 0,
+              "rotationZ": 0,
+              "height": 5
+            },
+            {
+              "type": "cone",
+              "size": 2.5,
+              "color": "#ff1117",
+              "x": 0,
+              "y": 0,
+              "z": -13.881250000000001,
+              "rotationX": 90,
+              "rotationY": 0,
+              "rotationZ": 0,
+              "height": 2.5
+            },
+            {
+              "type": "cylinder",
+              "size": 6.25,
+              "color": "#888888",
+              "x": 0,
+              "y": 0,
+              "z": -11.131250000000001,
+              "rotationX": 90,
+              "rotationY": 0,
+              "rotationZ": 0,
+              "height": 5
+            },
+            {
+              "type": "box",
+              "size": 5,
+              "color": "#888888",
+              "x": -2.5,
+              "y": 2.5,
+              "z": -12,
+              "rotationX": 30,
+              "rotationY": 30,
+              "rotationZ": 45,
+              "width": 0.25,
+              "height": 2.5,
+              "depth": 8.5
+            },
+            {
+              "type": "box",
+              "size": 5,
+              "color": "#888888",
+              "x": 2.5,
+              "y": -2.5,
+              "z": -12,
+              "rotationX": -30,
+              "rotationY": -30,
+              "rotationZ": -135,
+              "width": 0.25,
+              "height": 2.5,
+              "depth": 8.5
+            },
+            {
+              "type": "box",
+              "size": 5,
+              "color": "#888888",
+              "x": -2.5,
+              "y": -2.5,
+              "z": -12,
+              "rotationX": -30,
+              "rotationY": 30,
+              "rotationZ": 135,
+              "width": 0.25,
+              "height": 2.5,
+              "depth": 8.5
+            },
+            {
+              "type": "box",
+              "size": 5,
+              "color": "#888888",
+              "x": 2.5,
+              "y": 2.5,
+              "z": -12,
+              "rotationX": 30,
+              "rotationY": -30,
+              "rotationZ": -45,
+              "width": 0.25,
+              "height": 2.5,
+              "depth": 8.5
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "speed": 1,
+  "title": "Missile",
+  "isBallistic": true,
+  "particle": "smoke"
+}
