@@ -332,8 +332,11 @@ class Editor {
           this.state.currentProject = name;
           this.state.project = JSON.parse(config);
         }
-        
-        localStorage.setItem("currentProject", this.state.currentProject);
+        try {
+            localStorage.setItem("currentProject", this.state.currentProject);
+        } catch(e) {
+            console.warn('error saving to localStorage, you probably need to export/import instead because your project is too big.', e);
+        }
         this.initProjectSelector(); // Update UI
         await this.configLoaded();
     }
