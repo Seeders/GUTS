@@ -23,7 +23,6 @@ class Engine {
             console.error("Failed to load game configuration");
             return;
         }
-        this.state = new (this.libraryClasses.GameState)(this.config);  
         let projectConfig = this.config.configs.game;
         if( projectConfig.libraries ) {
             this.moduleLoader = new ModuleLoader(this, this.config, document.body, document.body, this.engineClasses);           
@@ -32,6 +31,7 @@ class Engine {
 
         await this.loadAssets();
 
+        this.state = new (this.libraryClasses.GameState)(this.config);  
         this.isometric = this.config.configs.game.isIsometric || false;
         this.setupHTML();
         this.state.tileMapData = this.config.levels[this.state.level].tileMap;   
