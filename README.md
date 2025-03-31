@@ -85,4 +85,4 @@ GUTS includes a simple tower defense game and various assets to demonstrate its 
 
 ## Contributing
 
-Feel free to submit issues or pull requests to improve GUTS. Contributions are welcome under the GPL v3 license.
+Feel free to submit issues or pull requests to improve GUTS. Contributions are welcome under the MIT Open Source license.
