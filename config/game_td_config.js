@@ -28286,4 +28286,4 @@ const TOWER_DEFENSE_CONFIG = {
   }
 }; 
 
- export { DEFAULT_PROJECT_CONFIG };
+ export { TOWER_DEFENSE_CONFIG };
