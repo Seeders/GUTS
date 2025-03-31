@@ -139,6 +139,87 @@ class ModuleLoader {
             console.error("Error during sequential library loading:", error);
         });
     }
+
+    
+    instantiateCollection(app, collection, classLibrary, engineClasses) {
+        let instances = {};
+        if (!collection || typeof collection !== 'object') {
+            console.error('Invalid collection parameter');
+            return;
+        }
+    
+        if (!classLibrary || typeof classLibrary !== 'object') {
+            console.error('Invalid classLibrary parameter');
+            return;
+        }
+    
+        Object.keys(collection).forEach((moduleId) => {
+            let module = collection[moduleId];
+            if (!module) {
+                console.warn(`Module ${moduleId} is undefined`);
+                return;
+            }
+    
+            // Handle single library case
+            if (module.library) {
+                const libName = module.library;
+                if (classLibrary[libName]) {
+                    try {
+                        console.log(`Creating instance of ${libName}`);
+                        instances[libName] = new classLibrary[libName](
+                            app, 
+                            module,
+                            {...engineClasses, ...classLibrary}
+                        );
+                    } catch (e) {
+                        console.error(`Failed to instantiate ${libName}:`, e);
+                    }
+                } else {
+                    console.warn(`Library ${libName} not found in classLibrary`, classLibrary);
+                }
+            }
+            // Handle multiple libraries case
+            else if (Array.isArray(module.libraries)) {
+                module.libraries.forEach((library) => {
+                    if (classLibrary[library]) {
+                        try {
+                            console.log(`Creating instance of ${library}`);
+                            console.log(this);
+                            instances[library] = new classLibrary[library](
+                                app,
+                                module,
+                                {...engineClasses, ...classLibrary}
+                            );
+                        } catch (e) {
+                            console.error(`Failed to instantiate ${library}:`, e);
+                        }
+                    } else {
+                        console.warn(`Library ${library} not found in classLibrary`, classLibrary, classLibrary[library]);
+                    }
+                });
+            } else {
+                //this means we are just a library not a module.
+                console.warn(`Module ${moduleId} has no valid library configuration`);
+                try {
+                    if (classLibrary[moduleId]) {
+                        console.log(`Creating instance of ${moduleId} with default config`);
+                        console.log(this);
+                        instances[moduleId] = new classLibrary[moduleId](
+                            app,
+                            {},
+                            {...engineClasses, ...classLibrary}
+                        );
+                    } else {
+                        console.warn(`Module ${moduleId} not found in classLibrary`, classLibrary, classLibrary[moduleId]);
+                    }
+                } catch (e) {
+                    console.error(`Failed to instantiate ${moduleId}:`, e);
+                }
+            }
+        });
+        return instances;
+    }
+
 }
 
 export { ModuleLoader }

@@ -1330,86 +1330,6 @@ class Editor {
         });
     }
 
-    instantiateCollection(collection, classLibrary) {
-        console.log("instantiate collection", classLibrary['ImageManager'], this.libraryClasses['ImageManager']);
-        
-        if (!collection || typeof collection !== 'object') {
-            console.error('Invalid collection parameter');
-            return;
-        }
-    
-        if (!classLibrary || typeof classLibrary !== 'object') {
-            console.error('Invalid classLibrary parameter');
-            return;
-        }
-    
-        Object.keys(collection).forEach((moduleId) => {
-            let module = collection[moduleId];
-            if (!module) {
-                console.warn(`Module ${moduleId} is undefined`);
-                return;
-            }
-    
-            // Handle single library case
-            if (module.library) {
-                const libName = module.library;
-                if (classLibrary[libName]) {
-                    try {
-                        console.log(`Creating instance of ${libName}`);
-                        console.log(this);
-                        this.propertyModuleInstances[libName] = new classLibrary[libName](
-                            this, 
-                            module,
-                            {...this.engineClasses, ...this.libraryClasses}
-                        );
-                    } catch (e) {
-                        console.error(`Failed to instantiate ${libName}:`, e);
-                    }
-                } else {
-                    console.warn(`Library ${libName} not found in classLibrary`, classLibrary, classLibrary[libName]);
-                }
-            }
-            // Handle multiple libraries case
-            else if (Array.isArray(module.libraries)) {
-                module.libraries.forEach((library) => {
-                    if (classLibrary[library]) {
-                        try {
-                            console.log(`Creating instance of ${library}`);
-                            console.log(this);
-                            this.propertyModuleInstances[library] = new classLibrary[library](
-                                this,
-                                module,
-                                {...this.engineClasses, ...this.libraryClasses}
-                            );
-                        } catch (e) {
-                            console.error(`Failed to instantiate ${library}:`, e);
-                        }
-                    } else {
-                        console.warn(`Library ${library} not found in classLibrary`, classLibrary, classLibrary[library]);
-                    }
-                });
-            } else {
-                //this means we are just a library not a module.
-                console.warn(`Module ${moduleId} has no valid library configuration`);
-                try {
-                    if (classLibrary[moduleId]) {
-                        console.log(`Creating instance of ${moduleId} with default config`);
-                        console.log(this);
-                        this.propertyModuleInstances[moduleId] = new classLibrary[moduleId](
-                            this,
-                            {},
-                            {...this.engineClasses, ...this.libraryClasses}
-                        );
-                    } else {
-                        console.warn(`Module ${moduleId} not found in classLibrary`, classLibrary, classLibrary[moduleId]);
-                    }
-                } catch (e) {
-                    console.error(`Failed to instantiate ${moduleId}:`, e);
-                }
-            }
-        });
-    }
-
     async configLoaded() {
         this.dispatchHook('configLoaded', this.getHookDetail({arguments}));
         const collections = this.getCollections();
@@ -1424,9 +1344,8 @@ class Editor {
         try {   
             this.libraryClasses = await this.moduleLoader.loadModules(collections.libraries);
         //    this.libraryInstances = this.instantiateCollection(collections.libraries, this.libraryModuleClasses, this.libraryInstances);  
-            this.propertyModuleClasses = await this.moduleLoader.loadModules(collections.propertyModules);
-            this.propertyModuleInstances = {};
-            this.instantiateCollection(collections.propertyModules, this.propertyModuleClasses);      
+            this.propertyModuleClasses = await this.moduleLoader.loadModules(collections.propertyModules);             
+            this.propertyModuleInstances = this.moduleLoader.instantiateCollection(this, collections.propertyModules, this.propertyModuleClasses, this.engineClasses);      
             
         } catch(e) {
             console.error(e);
