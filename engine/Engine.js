@@ -1,12 +1,13 @@
 import { Entity } from "./Entity.js";
 import { Component } from "./Component.js";
 import { SpatialGrid } from "./SpatialGrid.js";
-import { ImageManager } from "./ImageManager.js";
 import { CoordinateTranslator } from './CoordinateTranslator.js';
 import { GameState } from "./GameState.js";
 import { DEFAULT_PROJECT_CONFIG } from "../config/default_app_config.js";
 import { TOWER_DEFENSE_CONFIG } from "../config/game_td_config.js";
 import { TileMap } from "./TileMap.js";
+import { ModuleLoader } from "./ModuleLoader.js";
+
 class Engine {
     constructor(target) {
         this.entityId = 0;
@@ -17,23 +18,22 @@ class Engine {
         this.currentTime = Date.now();
         this.lastTime = Date.now();
         this.deltaTime = 0;
+        this.engineClasses = [Entity, Component, SpatialGrid, CoordinateTranslator, GameState, TileMap];
+        this.libraries = {};
     }
 
     async init() {
         this.displayLoadScreen();
         this.config = this.loadConfig();
+      
         if (!this.config) {
             console.error("Failed to load game configuration");
             return;
         }
         this.state = new GameState(this.config);  
-        
         if( this.config.configs.game.libraries ) {
-            this.config.configs.game.libraries.forEach((library) => {
-                let scriptTag = document.createElement("script");
-                scriptTag.innerText = this.config.libraries[library].script;
-                document.head.appendChild(scriptTag);
-            });
+            this.moduleLoader = new ModuleLoader(this, this.config, document.body, document.body, this.engineClasses);           
+            await this.moduleLoader.loadModules({ "game" : this.config.configs.game });
         }
 
         await this.loadAssets();
@@ -58,8 +58,8 @@ class Engine {
     }
 
     async loadAssets() {
-        this.imageManager = new ImageManager(this.config.configs.game.imageSize);    
-
+        this.imageManager = this.libraries.ImageManager;    
+        this.imageManager.init(this, this.config.configs.game.imageSize);
         // Load all images
         for(let objectType in this.config) {
             await this.imageManager.loadImages(objectType, this.config[objectType]);
@@ -360,6 +360,8 @@ class Engine {
         } else {
             config = JSON.parse(localStorage.getItem(config));   
         }
+
+
         return config.objectTypes;
         
     }
