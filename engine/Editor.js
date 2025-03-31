@@ -29,7 +29,6 @@ class Editor {
             objectList: document.getElementById('object-list'),
             editor: document.getElementById('editor'),
             handle: document.getElementById('toggleEditorButton'),
-            importExportModal: document.getElementById('import-export-modal'),
             importTextarea: document.getElementById('import-textarea'),
             exportTextarea: document.getElementById('export-textarea'),
             newObjectModal: document.getElementById('new-object-modal'),
@@ -41,7 +40,8 @@ class Editor {
             tabs: document.querySelectorAll('.tab'),
             launchGameBtn: document.getElementById('launch-game-btn'),
             modalContainer: document.getElementById('modals'),
-            mainContentConainer: document.getElementById('main-content-container')
+            mainContentConainer: document.getElementById('main-content-container'),
+            sidebar: document.querySelector('#container .sidebar')
         };
         this.registeredModules = {};
         this.modules = {};
@@ -366,17 +366,41 @@ class Editor {
     getCollectionDefs() {
         return this.state.project.objectTypeDefinitions;
     }
+    getCollectionDefs() {
+        return this.state.project.objectTypeDefinitions;
+    }
+    
     // Helper methods
     getSingularType(typeId) {
         const typeDef = this.getCollectionDefs().find(t => t.id === typeId);
         return typeDef ? typeDef.singular : typeId.slice(0, -1);
     }
-
+    
     getPluralType(typeId) {
         const typeDef = this.getCollectionDefs().find(t => t.id === typeId);
         return typeDef ? typeDef.name : typeId;
     }
-
+    
+    // Get all collection definitions for a given category
+    getCollectionDefsByCategory(category) {
+        return this.getCollectionDefs().filter(typeDef => typeDef.category === category);
+    }
+    
+    // Get all collections for a given category
+    getCollectionsByCategory(category) {
+        const defs = this.getCollectionDefsByCategory(category);
+        return defs.reduce((collections, typeDef) => {
+            const collectionKey = typeDef.id; // e.g., "configs", "entities"
+            if (this.state.project.objectTypes[collectionKey]) {
+                collections[collectionKey] = this.state.project.objectTypes[collectionKey];
+            }
+            return collections;
+        }, {});
+    }
+    getCategoryByType(objectType) {
+        const typeDef = this.getCollectionDefs().find(t => t.id === objectType);
+        return typeDef ? typeDef.category : null; // Return null if not found
+    }
     // Rendering methods
     renderTypeSelector() {
         this.dispatchHook('renderTypeSelector', this.getHookDetail({arguments}));
@@ -1079,7 +1103,6 @@ class Editor {
         this.dispatchHook('updateSidebarButtons', this.getHookDetail({arguments}));
         const singularType = this.getSingularType(this.state.selectedType);
         document.getElementById('add-object-btn').textContent = `Add New ${singularType}`;
-        document.getElementById('import-export-btn').textContent = `Import/Export ${this.getPluralType(this.state.selectedType)}`;
     }
 
 
@@ -1271,22 +1294,11 @@ class Editor {
         this.dispatchHook('setupEventListeners', this.getHookDetail({arguments}));
       
         // Import/Export handling
-        document.getElementById('import-export-btn').addEventListener('click', () => {
-            this.elements.exportTextarea.value = this.generateConfigCode();
-            this.elements.importExportModal.classList.add('show');
-        });
+        // document.getElementById('import-export-btn').addEventListener('click', () => {
+        //     this.elements.exportTextarea.value = this.generateConfigCode();
+        //     this.elements.importExportModal.classList.add('show');
+        // });
 
-        document.getElementById('close-import-export-modal').addEventListener('click', () => {
-            this.elements.importExportModal.classList.remove('show');
-        });
-        
-        document.getElementById('close-export-modal').addEventListener('click', () => {
-            this.elements.importExportModal.classList.remove('show');
-        });
-        
-        document.getElementById('copy-export-btn').addEventListener('click', () => this.copyExportToClipboard());
-        
-        document.getElementById('import-btn').addEventListener('click', () => this.importConfig());
         
         // New object handling
         document.getElementById('add-object-btn').addEventListener('click', () => {
@@ -1382,6 +1394,9 @@ class Editor {
                     valEl.value = event.detail;
                 }
                 this.saveObject();
+            });
+            document.body.addEventListener(`updateCurrentObject`, (event) => {                
+                this.selectObject(this.state.selectedObject);
             });
         });
     }

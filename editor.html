@@ -30,7 +30,6 @@
             </div>
             <div class="sidebar-actions">
                 <button class="primary" id="add-object-btn">Add New Object</button>
-                <button id="import-export-btn">Import/Export Config</button>  
                 <button id="launch-game-btn">Launch Game</button>           
             </div>
         </div>
@@ -62,35 +61,7 @@
               </div>
             </div>
           </div>
-        <!-- Import/Export Modal -->
-        <div class="modal" id="import-export-modal">
-            <div class="modal-content">
-                <h2>Import/Export Configuration</h2>
-                
-                <div class="tab-navigation">
-                    <div class="tab active" data-tab="import">Import</div>
-                    <div class="tab" data-tab="export">Export</div>
-                </div>
-                
-                <div class="tab-content active" id="import-tab">
-                    <p>Paste your tower configuration below:</p>
-                    <textarea id="import-textarea" rows="15"></textarea>
-                    <div class="actions">
-                        <button class="primary" id="import-btn">Import Configuration</button>
-                        <button id="close-import-export-modal">Cancel</button>
-                    </div>
-                </div>
-                
-                <div class="tab-content" id="export-tab">
-                    <p>Copy your tower configuration:</p>
-                    <textarea id="export-textarea" rows="15" readonly></textarea>
-                    <div class="actions">
-                        <button class="primary" id="copy-export-btn">Copy to Clipboard</button>
-                        <button id="close-export-modal">Close</button>
-                    </div>
-                </div>
-            </div>
-        </div>    
+        <!-- Import/Export Modal -->  
         <div class="modal" id="new-object-modal">
             <div class="modal-content">
                 <h2>Create New Object</h2>
