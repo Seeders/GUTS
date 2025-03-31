@@ -37,7 +37,8 @@ https://seeders.github.io/GUTS/editor.html
 
 ## Screenshots
 
-![image](https://github.com/user-attachments/assets/136fbb71-47e6-4e08-b663-ecce43fc2219)
+![image](https://github.com/user-attachments/assets/efcaa562-b040-4789-a5a4-14e14ddbe2a0)
+
 
 Customize your theme, your tools, ALL the guts:
 ![Editor Screenshot](https://github.com/user-attachments/assets/77f5a78d-bbfe-4d62-b26e-9479ca03dd84)
