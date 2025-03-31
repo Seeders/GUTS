@@ -156,8 +156,11 @@ class Editor {
     saveConfigFile() {
         this.dispatchHook('saveConfigFile', this.getHookDetail({arguments}));
         const configText = JSON.stringify(this.state.project);
-        localStorage.setItem(this.state.currentProject, configText);
+        try {
+            localStorage.setItem(this.state.currentProject, configText);
+        } catch(e) {
 
+        }
         if(localStorage.getItem("saveToFile") == 1) {
             fetch('/save-config', {
                     method: 'POST',
