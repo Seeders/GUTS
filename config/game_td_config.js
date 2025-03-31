@@ -1,4 +1,4 @@
-const DEFAULT_PROJECT_CONFIG = {
+const TOWER_DEFENSE_CONFIG = {
   "objectTypes": {
     "configs": {
       "game": {
