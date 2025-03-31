@@ -71,6 +71,8 @@ class ModuleLoader {
                             }
                             resolve();
                         };
+                    } else {
+                        resolve();
                     }
 
                     scriptTag.onerror = (error) => {

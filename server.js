@@ -4,7 +4,7 @@ const multer = require('multer');
 const path = require('path');
 const app = express();
 const upload = multer({ dest: 'uploads/' });
-const MODELS_DIR = path.join(__dirname, 'samples/models');
+const MODELS_DIR = 'samples/models';
 
 // Increase the limit for JSON payloads (e.g., 10MB)
 app.use(express.json({ limit: '10mb' }));
@@ -46,18 +46,10 @@ app.post('/upload-model', upload.single('gltfFile'), async (req, res) => {
         const modelName = path.basename(req.file.originalname, '.gltf');
         const modelFolder = path.join(MODELS_DIR, modelName);
 
-        // Get the relative path from the client (or fallback to a constructed one)
-        const relativePath = req.body.relativePath || `/samples/models/${modelName}/${req.file.originalname}`;
-
         // Create the game data JSON object
         const gameData = {
-            metadata: {
-                name: `${modelName} Model`,
-                uploaded: new Date().toISOString()
-            },
-            relativePath: relativePath, // Return the relative path
-            fileName: req.file.originalname,
-            tempPath: req.file.path // Temporary path for debugging (optional)
+            filePath: `${MODELS_DIR}/${modelName}/${req.file.originalname}`, // Return the relative path
+            fileName: req.file.originalname,            
         };
 
         // Clean up the uploaded file
