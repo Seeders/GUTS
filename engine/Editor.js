@@ -1,11 +1,6 @@
 import { ModuleLoader } from "./ModuleLoader.js";
-import { Entity } from "./Entity.js";
-import { Component } from "./Component.js";
 import { DEFAULT_PROJECT_CONFIG } from "../config/default_app_config.js";
 import { TOWER_DEFENSE_CONFIG } from "../config/game_td_config.js";
-import { CoordinateTranslator } from "./CoordinateTranslator.js";
-import { TileMap } from "./TileMap.js";
-import { TerrainImageProcessor } from "./TerrainImageProcessor.js";
 
 class Editor {
     constructor() {
@@ -19,7 +14,7 @@ class Editor {
             DEFAULT_TILEMAP: {},
             DEFAULT_SCRIPT: 'init(){\n\n}'
         };
-        this.engineClasses = {"TileMap": TileMap, "TerrainImageProcessor": TerrainImageProcessor, "CoordinateTranslator": CoordinateTranslator};
+        this.engineClasses = {};
         // Application state
         this.state = {
             project: {},
@@ -103,7 +98,7 @@ class Editor {
             return ScriptClass;
         } catch (error) {
             console.error(`Error compiling script for ${typeName}:`, error);
-            return Component; // Fallback to base Component
+            return this.libraryClasses.Component; // Fallback to base Component
         }
     }
 
@@ -112,8 +107,6 @@ class Editor {
         // Safe execution context with all imported modules
         this.scriptContext = {
             game: this,
-            Entity: Entity,
-            Component: Component,
             getFunction: (typeName) => this.scriptCache.get(typeName) || this.compileScript(this.getCollections().functions[typeName].script, typeName),
             // Add a way to access other compiled scripts
             getComponent: (typeName) => this.scriptCache.get(typeName) || this.compileScript(this.getCollections().components[typeName].script, typeName),

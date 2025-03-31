@@ -1,10 +1,4 @@
-import { Entity } from "./Entity.js";
-import { Component } from "./Component.js";
-import { CoordinateTranslator } from './CoordinateTranslator.js';
-import { GameState } from "./GameState.js";
-import { DEFAULT_PROJECT_CONFIG } from "../config/default_app_config.js";
 import { TOWER_DEFENSE_CONFIG } from "../config/game_td_config.js";
-import { TileMap } from "./TileMap.js";
 import { ModuleLoader } from "./ModuleLoader.js";
 
 class Engine {
@@ -17,7 +11,7 @@ class Engine {
         this.currentTime = Date.now();
         this.lastTime = Date.now();
         this.deltaTime = 0;
-        this.engineClasses = [Entity, Component, CoordinateTranslator, GameState, TileMap];
+        this.engineClasses = [];
         this.libraries = {};
     }
 
@@ -29,7 +23,7 @@ class Engine {
             console.error("Failed to load game configuration");
             return;
         }
-        this.state = new GameState(this.config);  
+        this.state = new (this.libraryClasses.GameState)(this.config);  
         let projectConfig = this.config.configs.game;
         if( projectConfig.libraries ) {
             this.moduleLoader = new ModuleLoader(this, this.config, document.body, document.body, this.engineClasses);           
@@ -42,11 +36,11 @@ class Engine {
         this.setupHTML();
         this.state.tileMapData = this.config.levels[this.state.level].tileMap;   
  
-        this.translator = new CoordinateTranslator(this.config.configs.game, this.config.levels[this.state.level].tileMap.terrainMap.length, this.isometric);
+        this.translator = new (this.libraryClasses.CoordinateTranslator)(this.config.configs.game, this.config.levels[this.state.level].tileMap.terrainMap.length, this.isometric);
         this.spatialGrid = new (this.libraryClasses.SpatialGrid)(this.config.levels[this.state.level].tileMap.terrainMap.length, this.config.configs.game.gridSize);
         const terrainImages = this.imageManager.getImages("levels", this.state.level);
-        this.terrainTileMapper = new TileMap(this.terrainCanvasBuffer, this.config.configs.game.gridSize, terrainImages, this.isometric);
-
+        this.terrainTileMapper = new (this.libraryClasses.TileMap)(this, {}, {CanvasUtility: this.libraryClasses.CanvasUtility});
+        this.terrainTileMapper.init(this.terrainCanvasBuffer, this.config.configs.game.gridSize, terrainImages, this.isometric);
         this.scriptCache = new Map(); // Cache compiled scripts
         this.setupScriptEnvironment();
         this.preCompileScripts();
@@ -174,8 +168,8 @@ class Engine {
         // Safe execution context with all imported modules
         this.scriptContext = {
             game: this,
-            Entity: Entity,
-            Component: Component,
+            Entity: this.libraryClasses.Entity,
+            Component: this.libraryClasses.Component,
             getFunction: (typeName) => this.scriptCache.get(typeName) || this.compileScript(this.config.functions[typeName].script, typeName),
             // Add a way to access other compiled scripts
             getComponent: (typeName) => this.scriptCache.get(typeName) || this.compileScript(this.config.components[typeName].script, typeName),
@@ -272,7 +266,7 @@ class Engine {
             return ScriptClass;
         } catch (error) {
             console.error(`Error compiling script for ${typeName}:`, error);
-            return Component; // Fallback to base Component
+            return this.libraryClasses.Component; // Fallback to base Component
         }
     }
 
@@ -366,7 +360,7 @@ class Engine {
     }
 
     createEntity(x, y, type) {
-        const entity = new Entity(this, x, y, type);
+        const entity = new (this.libraryClasses.Entity)(this, x, y, type);
         return entity;
     }
 
