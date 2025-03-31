@@ -51,7 +51,6 @@ class ModuleLoader {
                         scriptTag.src = scriptUrl;
 
                         scriptTag.onload = () => {
-                            console.log('loaded', library, moduleConfig);
                             URL.revokeObjectURL(scriptUrl);
                             instantiateModuleFromLibrary(library, moduleConfig);
                             resolve();
@@ -59,7 +58,6 @@ class ModuleLoader {
                     } else if (libraryDef.href) {
                         scriptTag.src = libraryDef.href;
                         scriptTag.onload = () => {
-                            console.log('loaded', library);   
                             resolve();
                         };
                     }
@@ -73,7 +71,6 @@ class ModuleLoader {
 
                     document.head.appendChild(scriptTag);
                 } else {
-                    console.log('already loaded', library);
                     resolve();
                 }
             });
@@ -133,7 +130,6 @@ class ModuleLoader {
         // Return a promise that resolves when all libraries are loaded
         return await loadLibrariesInOrder().then(() => {
             window.loadingLibraries = {};
-            console.log('loaded all modules', this.libraries);
             return this.libraries;
         }).catch((error) => {
             console.error("Error during sequential library loading:", error);
@@ -156,7 +152,7 @@ class ModuleLoader {
         Object.keys(collection).forEach((moduleId) => {
             let module = collection[moduleId];
             if (!module) {
-                console.warn(`Module ${moduleId} is undefined`);
+               // console.warn(`Module ${moduleId} is undefined`);
                 return;
             }
     
@@ -165,7 +161,6 @@ class ModuleLoader {
                 const libName = module.library;
                 if (classLibrary[libName]) {
                     try {
-                        console.log(`Creating instance of ${libName}`);
                         instances[libName] = new classLibrary[libName](
                             app, 
                             module,
@@ -175,7 +170,7 @@ class ModuleLoader {
                         console.error(`Failed to instantiate ${libName}:`, e);
                     }
                 } else {
-                    console.warn(`Library ${libName} not found in classLibrary`, classLibrary);
+                  //  console.warn(`Library ${libName} not found in classLibrary`, classLibrary);
                 }
             }
             // Handle multiple libraries case
@@ -183,8 +178,6 @@ class ModuleLoader {
                 module.libraries.forEach((library) => {
                     if (classLibrary[library]) {
                         try {
-                            console.log(`Creating instance of ${library}`);
-                            console.log(this);
                             instances[library] = new classLibrary[library](
                                 app,
                                 module,
@@ -194,23 +187,21 @@ class ModuleLoader {
                             console.error(`Failed to instantiate ${library}:`, e);
                         }
                     } else {
-                        console.warn(`Library ${library} not found in classLibrary`, classLibrary, classLibrary[library]);
+                       // console.warn(`Library ${library} not found in classLibrary`, classLibrary, classLibrary[library]);
                     }
                 });
             } else {
                 //this means we are just a library not a module.
-                console.warn(`Module ${moduleId} has no valid library configuration`);
+               // console.warn(`Module ${moduleId} has no valid library configuration`);
                 try {
                     if (classLibrary[moduleId]) {
-                        console.log(`Creating instance of ${moduleId} with default config`);
-                        console.log(this);
                         instances[moduleId] = new classLibrary[moduleId](
                             app,
                             {},
                             {...engineClasses, ...classLibrary}
                         );
                     } else {
-                        console.warn(`Module ${moduleId} not found in classLibrary`, classLibrary, classLibrary[moduleId]);
+                      //  console.warn(`Module ${moduleId} not found in classLibrary`, classLibrary, classLibrary[moduleId]);
                     }
                 } catch (e) {
                     console.error(`Failed to instantiate ${moduleId}:`, e);

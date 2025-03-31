@@ -43,10 +43,9 @@ class Engine {
         this.state.tileMapData = this.config.levels[this.state.level].tileMap;   
  
         this.translator = new CoordinateTranslator(this.config.configs.game, this.config.levels[this.state.level].tileMap.terrainMap.length, this.isometric);
-        this.spatialGrid = new SpatialGrid(this.config.levels[this.state.level].tileMap.terrainMap.length, this.config.configs.game.gridSize);
+        this.spatialGrid = new (this.libraryClasses.SpatialGrid)(this.config.levels[this.state.level].tileMap.terrainMap.length, this.config.configs.game.gridSize);
         const terrainImages = this.imageManager.getImages("levels", this.state.level);
         this.terrainTileMapper = new TileMap(this.terrainCanvasBuffer, this.config.configs.game.gridSize, terrainImages, this.isometric);
-        this.imageManager.dispose();
 
         this.scriptCache = new Map(); // Cache compiled scripts
         this.setupScriptEnvironment();
@@ -54,12 +53,12 @@ class Engine {
         this.gameEntity = this.createEntityFromConfig(0, 0, 'game', { gameConfig: this.config.configs.game, terrainCanvasBuffer: this.terrainCanvasBuffer, canvasBuffer: this.canvasBuffer, environment: this.config.environment, imageManager: this.imageManager, levelName: this.state.level, level: this.config.levels[this.state.level] });
         this.animationFrameId = requestAnimationFrame(() => this.gameLoop());
         this.setupEventListeners();
+        this.imageManager.dispose();
 
     }
 
     async loadAssets() {
-        this.imageManager = this.libraries.ImageManager;    
-        this.imageManager.init(this, this.config.configs.game.imageSize);
+        this.imageManager = new (this.libraryClasses.ImageManager)(this, {imageSize: this.config.configs.game.imageSize}, { ShapeFactory: this.libraryClasses.ShapeFactory});    
         // Load all images
         for(let objectType in this.config) {
             await this.imageManager.loadImages(objectType, this.config[objectType]);
@@ -294,7 +293,7 @@ class Engine {
        
         // Sort entities by y position for proper drawing order
         this.state.entities.sort((a, b) => {
-            return (b.position.y * this.state.tileMap.length + b.position.x) - (a.position.y * this.state.tileMap.length + a.position.x)
+            return (a.position.y * this.state.tileMap.length + a.position.x) - (b.position.y * this.state.tileMap.length + b.position.x)
         });
     
         this.gameEntity.update();
