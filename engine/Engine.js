@@ -1,6 +1,5 @@
 import { Entity } from "./Entity.js";
 import { Component } from "./Component.js";
-import { SpatialGrid } from "./SpatialGrid.js";
 import { CoordinateTranslator } from './CoordinateTranslator.js';
 import { GameState } from "./GameState.js";
 import { DEFAULT_PROJECT_CONFIG } from "../config/default_app_config.js";
@@ -18,7 +17,7 @@ class Engine {
         this.currentTime = Date.now();
         this.lastTime = Date.now();
         this.deltaTime = 0;
-        this.engineClasses = [Entity, Component, SpatialGrid, CoordinateTranslator, GameState, TileMap];
+        this.engineClasses = [Entity, Component, CoordinateTranslator, GameState, TileMap];
         this.libraries = {};
     }
 
@@ -31,9 +30,10 @@ class Engine {
             return;
         }
         this.state = new GameState(this.config);  
-        if( this.config.configs.game.libraries ) {
+        let projectConfig = this.config.configs.game;
+        if( projectConfig.libraries ) {
             this.moduleLoader = new ModuleLoader(this, this.config, document.body, document.body, this.engineClasses);           
-            await this.moduleLoader.loadModules({ "game" : this.config.configs.game });
+            this.libraryClasses = await this.moduleLoader.loadModules({ "game" : projectConfig });
         }
 
         await this.loadAssets();
