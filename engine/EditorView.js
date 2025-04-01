@@ -1,11 +1,11 @@
 import { DEFAULT_PROJECT_CONFIG } from "../config/default_app_config.js";
 
-export class EditorUI {
-    constructor(editor) {
-      this.editor = editor;
-      this.core = editor.core;
-      this.moduleManager = editor.moduleManager;
-      this.elements = editor.elements;
+export class EditorView {
+    constructor(controller) {
+      this.controller = controller;
+      this.model = controller.model;
+      this.moduleManager = controller.moduleManager;
+      this.elements = controller.elements;
       this.isDragging = false;
       this.dragState = {};
       
@@ -19,13 +19,13 @@ export class EditorUI {
     // Main rendering methods
     renderObjectList() {
         this.dispatchHook('renderObjectList', this.getHookDetail({arguments}));
-      const currentTypeDef = this.core.getCollectionDefs().find(
-        type => type.id === this.core.state.selectedType && this.core.state.selectedObject
+      const currentTypeDef = this.model.getCollectionDefs().find(
+        type => type.id === this.model.state.selectedType && this.model.state.selectedObject
       ) || {};
       
       // Group object types by category
       const categories = {};
-      this.core.getCollectionDefs().forEach(type => {
+      this.model.getCollectionDefs().forEach(type => {
         const category = type.category || 'Uncategorized';
         if (!categories[category]) {
           categories[category] = [];
@@ -34,17 +34,17 @@ export class EditorUI {
       });
   
       // Initialize expanded categories if needed
-      if (!this.core.state.expandedCategories) {
-        this.core.state.expandedCategories = {};
+      if (!this.model.state.expandedCategories) {
+        this.model.state.expandedCategories = {};
         for (const category in categories) {
-          this.core.state.expandedCategories[category] = category === currentTypeDef.category;
+          this.model.state.expandedCategories[category] = category === currentTypeDef.category;
         }
       }
   
       // Generate HTML
       let html = `<div class="type-selector">`;
       for (const [category, types] of Object.entries(categories)) {
-        const isExpanded = this.core.state.expandedCategories[category];
+        const isExpanded = this.model.state.expandedCategories[category];
         const isCurrentCategory = category === currentTypeDef.category;
         
         html += `
@@ -53,7 +53,7 @@ export class EditorUI {
             <div class="category-types" style="display: ${isExpanded ? 'block' : 'none'};">`;
         
         types.forEach(type => {
-          const isSelected = this.core.state.selectedType === type.id;
+          const isSelected = this.model.state.selectedType === type.id;
           html += `
             <div class="object-type-item ${isSelected ? 'selected' : ''}" data-type="${type.id}">
               ${type.name}
@@ -61,10 +61,10 @@ export class EditorUI {
   
           if (isSelected) {
             html += `<div class="object-list">`;
-            Object.keys(this.core.getCollections()[type.id] || {}).forEach(objId => {
-              const obj = this.core.getCollections()[type.id][objId];
+            Object.keys(this.model.getCollections()[type.id] || {}).forEach(objId => {
+              const obj = this.model.getCollections()[type.id][objId];
               html += `
-                <div class="object-item ${this.core.state.selectedObject === objId ? 'selected' : ''}" 
+                <div class="object-item ${this.model.state.selectedObject === objId ? 'selected' : ''}" 
                      data-object="${objId}">
                   ${obj.title || objId}
                 </div>`;
@@ -80,7 +80,7 @@ export class EditorUI {
       html += `
         <div class="type-actions">
           <button id="add-type-btn" class="small-btn">Add Type</button>
-          ${this.core.getCollectionDefs().length > 1 && !currentTypeDef.isCore ? 
+          ${this.model.getCollectionDefs().length > 1 && !currentTypeDef.isCore ? 
             `<button id="remove-type-btn" class="small-btn danger">Remove Type</button>` : ''}
         </div>`;
   
@@ -91,8 +91,8 @@ export class EditorUI {
   
     renderEditor() {
         this.dispatchHook('renderEditor', this.getHookDetail({arguments}));
-      if (!this.core.state.selectedObject) {
-        const singularType = this.core.getSingularType(this.core.state.selectedType);
+      if (!this.model.state.selectedObject) {
+        const singularType = this.model.getSingularType(this.model.state.selectedType);
         this.elements.editor.innerHTML = `
           <div class="instructions">
             Select a ${singularType} from the sidebar or create a new one to start editing.
@@ -101,11 +101,11 @@ export class EditorUI {
         return;
       }
   
-      const singularType = this.core.getSingularType(this.core.state.selectedType);
-      const currentObject = this.core.getCurrentObject();
+      const singularType = this.model.getSingularType(this.model.state.selectedType);
+      const currentObject = this.model.getCurrentObject();
   
       this.elements.editor.innerHTML = `
-        <h2>Editing: ${currentObject.title || this.core.state.selectedObject} (${singularType})</h2>
+        <h2>Editing: ${currentObject.title || this.model.state.selectedObject} (${singularType})</h2>
         
         <div class="tab-content active" id="advanced-tab">  
           <h3>Properties</h3>
@@ -200,13 +200,13 @@ export class EditorUI {
     }
     
     findMatchingTypes(key) {
-        const matchingTypePlural = this.core.getCollectionDefs().find(t => 
+        const matchingTypePlural = this.model.getCollectionDefs().find(t => 
             t.id.toLowerCase() === key.toLowerCase());
         
-        const matchingTypeSingular = this.core.getCollectionDefs().find(t => 
+        const matchingTypeSingular = this.model.getCollectionDefs().find(t => 
             t.singular.replace(/ /g,'').toLowerCase() === key.toLowerCase());
         
-        const matchingModuleType = Object.values(this.core.getCollections().propertyModules).find((t) => {
+        const matchingModuleType = Object.values(this.model.getCollections().propertyModules).find((t) => {
             return (t.propertyName && t.propertyName.toLowerCase() === key.toLowerCase()) ||
                   (t.propertyNames && this.parsePropertyNames(t.propertyNames).some(name => 
                       name.toLowerCase() === key.toLowerCase()));
@@ -277,7 +277,7 @@ export class EditorUI {
         editButton.innerText = "edit";
         editButton.addEventListener('click', () => {
             const customEvent = new CustomEvent(matchingModuleType.loadHook, {
-              detail: { data: this.core.getCurrentObject()[key], propertyName: key, config: this.core.getCollections().configs.game },
+              detail: { data: this.model.getCurrentObject()[key], propertyName: key, config: this.model.getCollections().configs.game },
               bubbles: true,
               cancelable: true
             });
@@ -345,7 +345,7 @@ export class EditorUI {
     }
     
     populateSelectOptions(selectElement, typeId) {
-        const collection = this.core.getCollections()[typeId] || {};
+        const collection = this.model.getCollections()[typeId] || {};
         
         Object.keys(collection).forEach(objId => {
             const option = document.createElement('option');
@@ -400,7 +400,7 @@ export class EditorUI {
 
     selectObject(obj) {
         this.dispatchHook('selectObject', this.getHookDetail({arguments}));
-        this.core.selectObject(obj);
+        this.model.selectObject(obj);
         
         this.elements.handle.style = "";
          
@@ -412,7 +412,7 @@ export class EditorUI {
     saveObject() {
         this.dispatchHook('saveObject', this.getHookDetail({arguments}));
   
-        if (!this.core.state.selectedObject) return;
+        if (!this.model.state.selectedObject) return;
         
         const completeObj = {}; 
         
@@ -423,7 +423,7 @@ export class EditorUI {
             
             if (keyInput.value && valueInput) {
                 let value = valueInput.value;
-                const matchingTypePlural = this.core.getCollectionDefs().find(
+                const matchingTypePlural = this.model.getCollectionDefs().find(
                     t => t.id.toLowerCase() === keyInput.value.toLowerCase()
                 );
                 // Try to parse value types for non-reference fields
@@ -449,7 +449,7 @@ export class EditorUI {
         
         
         // Delegate to core
-        const result = this.core.saveObject(completeObj);
+        const result = this.model.saveObject(completeObj);
         
         if (result.success) {
             this.showSuccessMessage('Changes saved!');
@@ -463,7 +463,7 @@ export class EditorUI {
         if (!moduleDef.saveHook) return;
 
         document.body.addEventListener(`${moduleDef.saveHook}`, (event) => {
-            const result = this.core.updateObject({[event.detail.propertyName]: event.detail.data});
+            const result = this.model.updateObject({[event.detail.propertyName]: event.detail.data});
             if (result.success) {
                 this.showSuccessMessage('Changes saved!');
                 this.renderObjectList();
@@ -472,7 +472,7 @@ export class EditorUI {
         });
 
         document.body.addEventListener(`updateCurrentObject`, () => {
-          this.core.selectObject(this.core.state.selectedObject);
+          this.model.selectObject(this.model.state.selectedObject);
         });
       });
     }
@@ -492,7 +492,7 @@ export class EditorUI {
         }
         
         // Handle reference arrays
-        const isPluralType = this.core.getCollectionDefs().some(
+        const isPluralType = this.model.getCollectionDefs().some(
             t => t.id.toLowerCase() === key.toLowerCase()
         );
         if (isPluralType) {
@@ -507,14 +507,14 @@ export class EditorUI {
         this.dispatchHook('renderObject', this.getHookDetail({arguments}));
         
         // Hide all module containers first
-        Object.values(this.core.getCollections().propertyModules).forEach(module => {
+        Object.values(this.model.getCollections().propertyModules).forEach(module => {
             const container = document.getElementById(module.container);
             if (container) {
                 container.classList.remove('show');
             }
         });
         
-        let object = this.core.getCurrentObject();
+        let object = this.model.getCurrentObject();
         if (!object) {
             this.hideContent();
             return;
@@ -525,8 +525,8 @@ export class EditorUI {
         let matchingProperty = null;
         
         // Check all property modules to find the first matching one
-        for (const moduleId in this.core.getCollections().propertyModules) {
-            const module = this.core.getCollections().propertyModules[moduleId];
+        for (const moduleId in this.model.getCollections().propertyModules) {
+            const module = this.model.getCollections().propertyModules[moduleId];
             
             // Check for single propertyName match
             if (module.propertyName && object.hasOwnProperty(module.propertyName)) {
@@ -569,7 +569,7 @@ export class EditorUI {
                 detail: { 
                     data: object[matchingProperty], 
                     propertyName: matchingProperty, 
-                    config: this.core.getCollections().configs.game 
+                    config: this.model.getCollections().configs.game 
                 },
                 bubbles: true,
                 cancelable: true
@@ -610,12 +610,12 @@ export class EditorUI {
     
     updateSidebarButtons() {
         this.dispatchHook('updateSidebarButtons', this.getHookDetail({arguments}));
-      const singularType = this.core.getSingularType(this.core.state.selectedType);
+      const singularType = this.model.getSingularType(this.model.state.selectedType);
       document.getElementById('add-object-btn').textContent = `Add New ${singularType}`;
     }
   
     updateNewObjectModal() {
-      const singularType = this.core.getSingularType(this.core.state.selectedType);
+      const singularType = this.model.getSingularType(this.model.state.selectedType);
       const title = singularType.charAt(0).toUpperCase() + singularType.slice(1);
       this.elements.newObjectModal.querySelector('h2').textContent = `Create New ${title}`;
       this.elements.newObjectModal.querySelector('label[for="new-object-id"]').textContent = `${title} ID:`;
@@ -623,7 +623,7 @@ export class EditorUI {
     }
   
     updateDuplicateObjectModal() {
-      const singularType = this.core.getSingularType(this.core.state.selectedType);
+      const singularType = this.model.getSingularType(this.model.state.selectedType);
       const title = singularType.charAt(0).toUpperCase() + singularType.slice(1);
       this.elements.duplicateObjectModal.querySelector('h2').textContent = `Duplicate ${title}`;
       this.elements.duplicateObjectModal.querySelector('label[for="duplicate-object-id"]').textContent = `New ${title} ID:`;
@@ -642,13 +642,13 @@ export class EditorUI {
       // Type selection
       document.querySelectorAll('.object-type-item').forEach(item => {
         item.addEventListener('click', () => {
-          this.core.state.selectedType = item.dataset.type;
-          this.core.state.selectedObject = null;
+          this.model.state.selectedType = item.dataset.type;
+          this.model.state.selectedObject = null;
           this.renderObjectList();
           this.updateSidebarButtons();
   
           // Auto-select first object if available
-          const objects = this.core.getCollections()[this.core.state.selectedType];
+          const objects = this.model.getCollections()[this.model.state.selectedType];
           if (objects && Object.keys(objects).length > 0) {
             this.selectObject(Object.keys(objects)[0]);
           }
@@ -666,18 +666,18 @@ export class EditorUI {
       document.querySelectorAll('.category-header').forEach(header => {
         header.addEventListener('click', () => {
           const category = header.textContent.trim();
-          const isOpened = this.core.state.expandedCategories[category];
+          const isOpened = this.model.state.expandedCategories[category];
           
           // Collapse all except clicked
-          for (const cat in this.core.state.expandedCategories) {
-            this.core.state.expandedCategories[cat] = false;
+          for (const cat in this.model.state.expandedCategories) {
+            this.model.state.expandedCategories[cat] = false;
           }
           
           if (!isOpened) {
             this.selectObject(null);
           }
           
-          this.core.state.expandedCategories[category] = !isOpened;
+          this.model.state.expandedCategories[category] = !isOpened;
           this.renderObjectList();
         });
       });
@@ -690,7 +690,7 @@ export class EditorUI {
     setupEditorEventListeners() {
       document.getElementById('save-object-btn')?.addEventListener('click', () => this.saveObject());
       document.getElementById('revert-changes-btn')?.addEventListener('click', () => {
-        this.selectObject(this.core.state.selectedObject);
+        this.selectObject(this.model.state.selectedObject);
       });
       document.getElementById('delete-object-btn')?.addEventListener('click', () => this.deleteObject());
       document.getElementById('duplicate-object-btn')?.addEventListener('click', () => this.showDuplicateModal());
@@ -701,13 +701,13 @@ export class EditorUI {
         this.addCustomProperty(propsContainer, '', '');
       });
       document.getElementById('add-renderer-btn')?.addEventListener('click', () => {
-        this.addCustomProperty(propsContainer, 'render', JSON.stringify(this.core.CONFIG.DEFAULT_RENDER));
+        this.addCustomProperty(propsContainer, 'render', JSON.stringify(this.model.CONFIG.DEFAULT_RENDER));
       });
       document.getElementById('add-tileMap-btn')?.addEventListener('click', () => {
-        this.addCustomProperty(propsContainer, 'tileMap', this.core.CONFIG.DEFAULT_TILEMAP);
+        this.addCustomProperty(propsContainer, 'tileMap', this.model.CONFIG.DEFAULT_TILEMAP);
       });
       document.getElementById('add-script-btn')?.addEventListener('click', () => {
-        this.addCustomProperty(propsContainer, 'script', this.core.CONFIG.DEFAULT_SCRIPT);
+        this.addCustomProperty(propsContainer, 'script', this.model.CONFIG.DEFAULT_SCRIPT);
       });
     }
     setupModalEventListeners() {
@@ -721,8 +721,8 @@ export class EditorUI {
             return;
           }
           
-          const result = this.core.createObject(
-            this.core.state.selectedType,
+          const result = this.model.createObject(
+            this.model.state.selectedType,
             id,
             { title: name || id }
           );
@@ -745,7 +745,7 @@ export class EditorUI {
             return;
           }
           
-          const result = this.core.duplicateObject(newId, newName);
+          const result = this.model.duplicateObject(newId, newName);
           if (result.success) {
             this.elements.duplicateObjectModal.classList.remove('show');
             this.selectObject(newId);
@@ -763,17 +763,17 @@ export class EditorUI {
             this.showNewProjectModal();
           } else {
             this.elements.app.style.display = 'none';
-            this.editor.loadProject(e.target.value);
+            this.controller.loadProject(e.target.value);
             window.location.reload();
           }
         });
       
         // Delete project button
         this.elements.deleteProjectBtn?.addEventListener('click', () => {
-          if (confirm(`Delete project "${this.core.state.currentProject}"?`)) {
-            this.core.deleteProject(this.core.state.currentProject);
+          if (confirm(`Delete project "${this.model.state.currentProject}"?`)) {
+            this.model.deleteProject(this.model.state.currentProject);
             this.elements.app.style.display = 'none';
-            this.editor.loadProject("default_project");
+            this.controller.loadProject("default_project");
             window.location.reload();
           }
         });
@@ -790,7 +790,7 @@ export class EditorUI {
             return;
           }
           
-          const result = this.core.createProject(name, DEFAULT_PROJECT_CONFIG);
+          const result = this.model.createProject(name, DEFAULT_PROJECT_CONFIG);
           if (result.success) {
             newProjectModal.classList.remove('show');
             this.loadProject(name);
@@ -908,7 +908,7 @@ export class EditorUI {
             return;
             }
     
-            const result = this.core.createType(typeId, typeName, typeSingular, typeCategory);
+            const result = this.model.createType(typeId, typeName, typeSingular, typeCategory);
             if (result.success) {
             modal.classList.remove('show');
             this.renderObjectList();
@@ -932,7 +932,7 @@ export class EditorUI {
     }
     updateProjectSelectors() {
         this.dispatchHook('updateProjectSelectors', this.getHookDetail({arguments}));
-        const projects = this.core.listProjects();
+        const projects = this.model.listProjects();
         const projectSelector = document.getElementById("project-selector");
         
                // Clear existing options except the "create new" option
@@ -942,7 +942,7 @@ export class EditorUI {
         
         projects.forEach(project => {
             const option = document.createElement('option');
-            if(project == this.core.state.currentProject){
+            if(project == this.model.state.currentProject){
               option.selected = true;
             }
             option.value = project;
@@ -954,21 +954,21 @@ export class EditorUI {
     deleteObject() {
         
         this.dispatchHook('deleteObject', this.getHookDetail({arguments}));
-        if (!this.core.state.selectedObject) return;
+        if (!this.model.state.selectedObject) return;
         
-        const singularType = this.core.getSingularType(this.core.state.selectedType);
-        const objName = this.core.getCurrentObject().title || this.core.state.selectedObject;
+        const singularType = this.model.getSingularType(this.model.state.selectedType);
+        const objName = this.model.getCurrentObject().title || this.model.state.selectedObject;
         
         if (confirm(`Delete ${singularType} "${objName}"?`)) {
-          this.core.deleteObject();
+          this.model.deleteObject();
           this.renderObjectList();
         }
     }
     showDuplicateModal() {
-        if (!this.core.state.selectedObject) return;
+        if (!this.model.state.selectedObject) return;
         
-        this.elements.duplicateObjectIdInput.value = `${this.core.state.selectedObject}_copy`;
-        this.elements.duplicateObjectNameInput.value = `Copy of ${this.core.getCurrentObject().title || this.core.state.selectedObject}`;
+        this.elements.duplicateObjectIdInput.value = `${this.model.state.selectedObject}_copy`;
+        this.elements.duplicateObjectNameInput.value = `Copy of ${this.model.getCurrentObject().title || this.model.state.selectedObject}`;
         this.updateDuplicateObjectModal();
         this.elements.duplicateObjectModal.classList.add('show');
     }
@@ -990,7 +990,7 @@ export class EditorUI {
 
     
     getHookDetail(params, result) {
-        return { selectedType: this.core.state.selectedType, selectedObject: this.core.state.selectedObject, params: params.arguments, result: result };
+        return { selectedType: this.model.state.selectedType, selectedObject: this.model.state.selectedObject, params: params.arguments, result: result };
     }
     dispatchHook(hookName, detail = {}) {
         requestAnimationFrame(() => {

@@ -1,12 +1,12 @@
-import { EditorCore } from './EditorCore.js';
-import { EditorUI } from './EditorUI.js';
+import { EditorModel } from './EditorModel.js';
+import { EditorView } from './EditorView.js';
 import { ModuleManager } from './ModuleManager.js';
 import { DEFAULT_PROJECT_CONFIG } from '../config/default_app_config.js';
 
-export class EditorMain {
+export class EditorController {
   constructor() {
     // Initialize core systems
-    this.core = new EditorCore();
+    this.model = new EditorModel();
     
     // Cache DOM elements
     this.elements = {
@@ -30,7 +30,7 @@ export class EditorMain {
     };
 
     // Initialize UI after core systems
-    this.ui = new EditorUI(this);
+    this.view = new EditorView(this);
   }
 
   async init() {
@@ -46,33 +46,53 @@ export class EditorMain {
   }
 
   initializeDefaultProjects() {
-    Object.keys(this.core.defaultProjects).forEach((key) => {
+    Object.keys(this.model.defaultProjects).forEach((key) => {
       if (!localStorage.getItem(key)) {
-        localStorage.setItem(key, JSON.stringify(this.core.defaultProjects[key]));
+        localStorage.setItem(key, JSON.stringify(this.model.defaultProjects[key]));
       }
     });
   }
 
+  getCurrentObjectContext() {
+    const { selectedType, selectedObject } = this.model.state;
+    return { selectedType, selectedObject };
+  }
+  getCurrentObject() {
+    return this.model.getCurrentObject();
+  }
+  getSingularType(typeId) {
+    return this.model.getSingularType(typeId);
+  }
+
+  getPluralType(typeId) {
+    return this.model.getPluralType(typeId);
+  }
+
+
   getCollections() {
-    return this.core.getCollections();
+    return this.model.getCollections();
   }
 
   getCollectionDefs() {
-    return this.core.getCollectionDefs();
+    return this.model.getCollectionDefs();
   }
+
+
   getInitialProject() {
     const savedProject = localStorage.getItem("currentProject");
-    return savedProject && this.core.listProjects().includes(savedProject) 
+    return savedProject && this.model.listProjects().includes(savedProject) 
       ? savedProject 
       : "default_project";
   }
 
+
+
   async loadProject(name) {
     // Load project data
-    const project = await this.core.loadProject(name);
+    const project = await this.model.loadProject(name);
 
     
-    this.moduleManager = new ModuleManager(this.core, project.objectTypes, this.elements.mainContentContainer, this.elements.modalContainer);
+    this.moduleManager = new ModuleManager(this.model, project.objectTypes, this.elements.mainContentContainer, this.elements.modalContainer);
     
     try {
       // Load libraries first
@@ -95,7 +115,7 @@ export class EditorMain {
         this.scriptContext = await this.moduleManager.setupScriptEnvironment(this);
     
         this.propertyModuleInstances = this.moduleManager.instantiateCollection(this, project.objectTypes.propertyModules, this.propertyModuleClasses);      
-        this.ui.setupModuleEventListeners(project.objectTypes.propertyModules);
+        this.view.setupModuleEventListeners(project.objectTypes.propertyModules);
       }
       
       // Apply theme if specified
@@ -107,9 +127,9 @@ export class EditorMain {
     }
 
     // Update UI
-    this.ui.renderObjectList();
-    this.ui.updateSidebarButtons();
-    this.ui.updateProjectSelectors();
+    this.view.renderObjectList();
+    this.view.updateSidebarButtons();
+    this.view.updateProjectSelectors();
     
     // Select first available object
     this.selectInitialObject();
@@ -123,14 +143,14 @@ export class EditorMain {
   }
 
   selectInitialObject() {
-    const collections = this.core.getCollections();
-    const currentType = this.core.state.selectedType;
+    const collections = this.model.getCollections();
+    const currentType = this.model.state.selectedType;
     
     if (collections[currentType] && Object.keys(collections[currentType]).length > 0) {
-      this.core.selectObject(Object.keys(collections[currentType])[0]);
+      this.model.selectObject(Object.keys(collections[currentType])[0]);
     } else {
-      this.core.state.selectedObject = null;
-      this.ui.renderEditor();
+      this.model.state.selectedObject = null;
+      this.view.renderEditor();
     }
   }
 
@@ -156,10 +176,10 @@ export class EditorMain {
 
     // Delete project button
     this.elements.deleteProjectBtn.addEventListener('click', () => {
-      if (this.core.isDefaultProject(this.core.state.currentProject)) return;
+      if (this.model.isDefaultProject(this.model.state.currentProject)) return;
       
-      if (confirm(`Delete "${this.core.state.currentProject}" permanently?`)) {
-        const result = this.core.deleteProject(this.core.state.currentProject);
+      if (confirm(`Delete "${this.model.state.currentProject}" permanently?`)) {
+        const result = this.model.deleteProject(this.model.state.currentProject);
         if (result.success) {
           this.loadProject("default_project");
         } else {
@@ -173,11 +193,14 @@ export class EditorMain {
       document.getElementById('new-project-modal').classList.add('show');
   }
 
+  saveObject(data) {
+    this.model.saveObject(data);
+  }
   // Proxy methods to core systems
   saveProject() {
-    const success = this.core.saveProject();
+    const success = this.model.saveProject();
     if (success) {
-      this.ui.showSuccessMessage('Project saved successfully!');
+      this.view.showSuccessMessage('Project saved successfully!');
     }
     return success;
   }
@@ -187,6 +210,6 @@ export class EditorMain {
 
 // Initialize the application when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-  const editor = new EditorMain();
+  const editor = new EditorController();
   editor.init();
 });

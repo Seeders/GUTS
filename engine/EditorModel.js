@@ -1,7 +1,7 @@
 import { DEFAULT_PROJECT_CONFIG } from "../config/default_app_config.js";
 import { TOWER_DEFENSE_CONFIG } from "../config/game_td_config.js";
 
-export class EditorCore {
+export class EditorModel {
   constructor() {
     // Configuration constants
     this.CONFIG = {
@@ -197,6 +197,9 @@ export class EditorCore {
     return typeDef ? typeDef.category : null;
   }
 
+  getCurrentProject() {
+    return this.state.currentProject;
+  }
   // Object management
   selectObject(objId) {
     this.state.selectedObject = objId;
