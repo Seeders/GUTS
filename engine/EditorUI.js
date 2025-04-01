@@ -148,154 +148,252 @@ export class EditorUI {
     }
   
     addCustomProperty(container, key, value) {
-        this.dispatchHook('addCustomProperty', this.getHookDetail({arguments}));
+      this.dispatchHook('addCustomProperty', this.getHookDetail({arguments}));
+      
+      const propertyItem = this.createPropertyItemElement();
+      const keyInput = this.createKeyInputElement(key);
+      propertyItem.appendChild(keyInput);
+      
+      // Get matching types for special handling
+      const { matchingTypePlural, matchingTypeSingular, matchingModuleType } = this.findMatchingTypes(key);
+      
+      // Create value input based on property type
+      if (key === 'color') {
+          this.appendColorInput(propertyItem, value);
+      } else if (typeof value === 'boolean') {
+          this.appendBooleanSelect(propertyItem, value);
+      } else if (matchingModuleType) {
+          this.appendModuleTypeInput(propertyItem, key, value, matchingModuleType);
+      } else if (matchingTypeSingular) {
+          this.appendSingularTypeSelect(propertyItem, value, matchingTypeSingular, matchingTypePlural);
+      } else if (matchingTypePlural) {
+          this.appendPluralTypeSelect(propertyItem, value, matchingTypePlural);
+      } else {
+          this.appendDefaultTextInput(propertyItem, value);
+      }
+      
+      // Add remove button
+      this.appendRemoveButton(propertyItem, container);
+      
+      container.appendChild(propertyItem);
+    }
+    
+    createPropertyItemElement() {
         const propertyItem = document.createElement('div');
         propertyItem.className = 'property-item';
-        
-        // Key input
+        return propertyItem;
+    }
+    
+    createKeyInputElement(key) {
         const keyInput = document.createElement('input');
         keyInput.type = 'text';
         keyInput.placeholder = 'Property Name';
         keyInput.value = key;
         keyInput.className = 'property-key';
-        propertyItem.appendChild(keyInput);
+        return keyInput;
+    }
     
-        // Value input (default to text input)
-        let valueInput = document.createElement('input');
+    createValueContainer() {
+        const valueContainer = document.createElement('div');
+        valueContainer.className = 'property-value-container';
+        return valueContainer;
+    }
+    
+    findMatchingTypes(key) {
+        const matchingTypePlural = this.core.getCollectionDefs().find(t => 
+            t.id.toLowerCase() === key.toLowerCase());
+        
+        const matchingTypeSingular = this.core.getCollectionDefs().find(t => 
+            t.singular.replace(/ /g,'').toLowerCase() === key.toLowerCase());
+        
+        const matchingModuleType = Object.values(this.core.getCollections().propertyModules).find((t) => {
+            return (t.propertyName && t.propertyName.toLowerCase() === key.toLowerCase()) ||
+                  (t.propertyNames && this.parsePropertyNames(t.propertyNames).some(name => 
+                      name.toLowerCase() === key.toLowerCase()));
+        });
+        
+        return { matchingTypePlural, matchingTypeSingular, matchingModuleType };
+    }
+    
+    parsePropertyNames(propertyNames) {
+        // Handle propertyNames safely, checking if it's already an array or needs parsing
+        if (Array.isArray(propertyNames)) {
+            return propertyNames;
+        }
+        
+        try {
+            return JSON.parse(propertyNames);
+        } catch (e) {
+            console.error("Error parsing propertyNames:", e);
+            return [];
+        }
+    }
+    
+    appendColorInput(propertyItem, value) {
+        const valueContainer = this.createValueContainer();
+        const valueInput = document.createElement('input');
+        valueInput.type = 'color';
+        valueInput.value = value;
+        valueInput.className = 'property-value';
+        valueContainer.appendChild(valueInput);
+        propertyItem.appendChild(valueContainer);
+    }
+    
+    appendBooleanSelect(propertyItem, value) {
+        const valueContainer = this.createValueContainer();
+        const valueInput = document.createElement('select');
+        valueInput.innerHTML = `
+            <option value="true" ${value ? 'selected' : ''}>true</option>
+            <option value="false" ${!value ? 'selected' : ''}>false</option>
+        `;
+        valueInput.className = 'property-value';
+        valueContainer.appendChild(valueInput);
+        propertyItem.appendChild(valueContainer);
+    }
+    
+    appendModuleTypeInput(propertyItem, key, value, matchingModuleType) {
+        const valueContainer = this.createValueContainer();
+        const moduleInputElementType = matchingModuleType.inputElement || 'input';
+        const moduleDataType = matchingModuleType.inputDataType;
+        
+        const valueInput = document.createElement(moduleInputElementType);
+        valueInput.className = 'property-value';
+        
+        let processedValue = value;
+        if (moduleDataType === 'json') {
+            processedValue = JSON.stringify(value);
+        }
+        
+        if (moduleInputElementType === 'textarea') {
+            valueInput.textContent = processedValue;
+        } else {
+            valueInput.value = processedValue;
+        }
+        
+        valueInput.setAttribute('id', `${key}-value`);
+        valueContainer.appendChild(valueInput);
+        
+        const editButton = document.createElement('button');
+        editButton.innerText = "edit";
+        editButton.addEventListener('click', () => {
+            const customEvent = new CustomEvent(matchingModuleType.loadHook, {
+              detail: { data: this.core.getCurrentObject()[key], propertyName: key, config: this.core.getCollections().configs.game },
+              bubbles: true,
+              cancelable: true
+            });
+            document.body.dispatchEvent(customEvent);
+        });
+      
+        valueContainer.appendChild(editButton);
+        
+        propertyItem.appendChild(valueContainer);
+    }
+    
+    appendSingularTypeSelect(propertyItem, value, matchingTypeSingular, matchingTypePlural) {
+        const refContainer = this.createValueContainer();
+        const selectElement = document.createElement('select');
+        selectElement.className = 'ref-select property-value';
+        
+        // Determine which type we're referencing
+        const typeId = matchingTypePlural ? matchingTypePlural.id : matchingTypeSingular.id;
+        const typeSingular = matchingTypePlural ? matchingTypePlural.singular : matchingTypeSingular.singular;
+        
+        // Add default option
+        selectElement.innerHTML = `<option value="">-- Select ${typeSingular} --</option>`;
+        
+        // Add options for each object of this type
+        this.populateSelectOptions(selectElement, typeId);
+        
+        selectElement.value = value;
+        refContainer.appendChild(selectElement);
+        propertyItem.appendChild(refContainer);
+    }
+    
+    appendPluralTypeSelect(propertyItem, value, matchingTypePlural) {
+        const valueContainer = this.createValueContainer();
+        const refContainer = document.createElement('div');
+        refContainer.className = 'ref-container';
+        
+        const selectElement = document.createElement('select');
+        selectElement.className = 'ref-select';
+        
+        // Determine type and add default option
+        const typeId = matchingTypePlural.id;
+        selectElement.innerHTML = `<option value="">-- Select ${matchingTypePlural.singular} --</option>`;
+        
+        // Add options for each object of this type
+        this.populateSelectOptions(selectElement, typeId);
+        
+        // Create hidden input for storing the value
+        const valueInput = document.createElement('input');
+        valueInput.type = 'text';
+        valueInput.className = 'property-value';
+        
+        // Convert value to array if it's a plural reference
+        const valueArray = Array.isArray(value) ? value : (value ? [value] : []);
+        valueInput.value = JSON.stringify(valueArray);
+        
+        // Add insert button
+        const insertBtn = this.createInsertButton(selectElement, valueInput, matchingTypePlural);
+        
+        // Assemble the components
+        refContainer.appendChild(selectElement);
+        refContainer.appendChild(insertBtn);
+        valueContainer.appendChild(valueInput);
+        valueContainer.appendChild(refContainer);
+        propertyItem.appendChild(valueContainer);
+    }
+    
+    populateSelectOptions(selectElement, typeId) {
+        const collection = this.core.getCollections()[typeId] || {};
+        
+        Object.keys(collection).forEach(objId => {
+            const option = document.createElement('option');
+            option.value = objId;
+            option.textContent = collection[objId].title || objId;
+            selectElement.appendChild(option);
+        });
+    }
+    
+    createInsertButton(selectElement, valueInput, matchingTypePlural) {
+        const insertBtn = document.createElement('button');
+        insertBtn.textContent = 'Insert';
+        insertBtn.className = 'small-btn';
+        
+        insertBtn.addEventListener('click', () => {
+            const selectedValue = selectElement.value;
+            if (!selectedValue) return;
+            
+            if (matchingTypePlural) {
+                // For plural (array) references
+                let currentValues = JSON.parse(valueInput.value || '[]');
+                currentValues.push(selectedValue);
+                valueInput.value = JSON.stringify(currentValues);
+            } else {
+                // For singular references
+                valueInput.value = selectedValue;
+            }
+        });
+        
+        return insertBtn;
+    }
+    
+    appendDefaultTextInput(propertyItem, value) {
+        const valueContainer = this.createValueContainer();
+        const valueInput = document.createElement('input');
         valueInput.type = 'text';
         valueInput.value = typeof value === 'object' ? JSON.stringify(value) : value;
         valueInput.className = 'property-value';
-        const matchingTypePlural = this.core.getCollectionDefs().find(t => t.id.toLowerCase() === key.toLowerCase());
-        const matchingTypeSingular = this.core.getCollectionDefs().find(t => t.singular.replace(/ /g,'').toLowerCase() === key.toLowerCase());
-          
-        // Special handling for certain property types
-        const matchingModuleType = Object.values(this.core.getCollections().propertyModules).find((t) => {
-          return t.propertyName && t.propertyName.toLowerCase() === key.toLowerCase()
-      });
-        if (key === 'color') {
-          valueInput.type = 'color';
-          valueInput.value = value;
-        } else if (typeof value === 'boolean') {
-          valueInput = document.createElement('select');
-          valueInput.innerHTML = `
-            <option value="true" ${value ? 'selected' : ''}>true</option>
-            <option value="false" ${!value ? 'selected' : ''}>false</option>
-          `;
-          valueInput.className = 'property-value';
-        } else if (matchingModuleType) {
-          let moduleInputElementType = matchingModuleType.inputElement || type;
-          let moduleDataType = matchingModuleType.inputDataType;
-          valueInput = document.createElement(moduleInputElementType);
-          if(moduleDataType == 'json') {
-              value = JSON.stringify(value);
-          } 
-          if(moduleInputElementType == 'textarea') {
-              valueInput.textContent = value;
-          } else {
-              valueInput.value = value;
-          }
-          valueInput.setAttribute('id', `${matchingModuleType.propertyName}-value`);
-        } 
+        valueContainer.appendChild(valueInput);
+        propertyItem.appendChild(valueContainer);
+    }
     
-      
-        if( matchingTypeSingular ) {
-            // Create a container for the reference selector and value display
-
-            const refContainer = document.createElement('div');
-            refContainer.className = 'property-value-container';
-
-            // Create a select element for choosing objects
-            const selectElement = document.createElement('select');
-            selectElement.className = 'ref-select property-value';
-
-            // Determine which type we're referencing
-            const typeId = matchingTypePlural ? matchingTypePlural.id : matchingTypeSingular.id;
-
-            // Add options based on available objects of that type
-            selectElement.innerHTML = `<option value="">-- Select ${matchingTypePlural ? matchingTypePlural.singular : matchingTypeSingular.singular} --</option>`;
-
-            Object.keys(this.core.getCollections()[typeId] || {}).forEach(objId => {
-                const option = document.createElement('option');
-                option.value = objId;
-                option.textContent = this.core.getCollections()[typeId][objId].title || objId;
-                selectElement.appendChild(option);
-            });
-            selectElement.value = value;
-            // Add the select to the container
-            
-            refContainer.appendChild(selectElement);    
-            propertyItem.appendChild(refContainer);
-        } else if (matchingTypePlural) {
-            // Create a container for the reference selector and value display
-            const valueContainer = document.createElement('div');
-            valueContainer.className = 'property-value-container';
-            const refContainer = document.createElement('div');
-            refContainer.className = 'ref-container';
-            
-            // Create a select element for choosing objects
-            const selectElement = document.createElement('select');
-            selectElement.className = 'ref-select';
-            
-            // Determine which type we're referencing
-            const typeId = matchingTypePlural ? matchingTypePlural.id : matchingTypeSingular.id;
-            
-            // Add options based on available objects of that type
-            selectElement.innerHTML = `<option value="">-- Select ${matchingTypePlural ? matchingTypePlural.singular : matchingTypeSingular.singular} --</option>`;
-            
-            Object.keys(this.core.getCollections()[typeId] || {}).forEach(objId => {
-                const option = document.createElement('option');
-                option.value = objId;
-                option.textContent = this.core.getCollections()[typeId][objId].title || objId;
-                selectElement.appendChild(option);
-            });
-            
-            // Add the select to the container     
-          
-            // Convert value to array if it's a plural reference
-            const valueArray = matchingTypePlural ? (Array.isArray(value) ? value : (value ? [value] : [])) : value;
-            
-            valueInput.value = matchingTypePlural ? JSON.stringify(valueArray) : valueArray || '';
-            
-            // Add button for inserting selected reference
-            const insertBtn = document.createElement('button');
-            insertBtn.textContent = 'Insert';
-            insertBtn.className = 'small-btn';
-            insertBtn.addEventListener('click', () => {
-                const selectedValue = selectElement.value;
-                if (!selectedValue) return;
-                
-                if (matchingTypePlural) {
-                    // For plural (array) references
-                    let currentValues = JSON.parse(valueInput.value || '[]');  
-                    currentValues.push(selectedValue);
-                    valueInput.value = JSON.stringify(currentValues);                
-                } else {
-                    // For singular references
-                    valueInput.value = selectedValue;
-                }
-            });                  
-            
-            // Add elements to the container
-            refContainer.appendChild(selectElement);  
-            refContainer.appendChild(insertBtn);    
-            valueContainer.appendChild(valueInput);
-            valueContainer.appendChild(refContainer);
-            propertyItem.appendChild(valueContainer);
-        } else {          
-            const valueContainer = document.createElement('div');
-            valueContainer.className = 'property-value-container';
-            valueContainer.appendChild(valueInput);
-            propertyItem.appendChild(valueContainer);
-        }
-    
-        // Remove button
+    appendRemoveButton(propertyItem, container) {
         const removeBtn = document.createElement('button');
         removeBtn.textContent = 'Remove';
         removeBtn.className = 'danger';
         removeBtn.addEventListener('click', () => container.removeChild(propertyItem));
         propertyItem.appendChild(removeBtn);
-    
-        container.appendChild(propertyItem);
     }
   
 
@@ -316,23 +414,42 @@ export class EditorUI {
   
         if (!this.core.state.selectedObject) return;
         
-        const updates = {};
+        const completeObj = {}; 
         
-        // Process all property inputs
-        document.querySelectorAll('.property-item').forEach(item => {
+        // Collect custom properties
+        this.elements.editor.querySelectorAll('.property-item').forEach(item => {
             const keyInput = item.querySelector('.property-key');
             const valueInput = item.querySelector('.property-value');
             
             if (keyInput.value && valueInput) {
-                updates[keyInput.value] = this.parsePropertyValue(
-                keyInput.value, 
-                valueInput.value
+                let value = valueInput.value;
+                const matchingTypePlural = this.core.getCollectionDefs().find(
+                    t => t.id.toLowerCase() === keyInput.value.toLowerCase()
                 );
+                // Try to parse value types for non-reference fields
+                if (!isNaN(parseFloat(value)) && isFinite(value)) {
+                    value = parseFloat(value);
+                } else if (value.toLowerCase() === 'true') {
+                    value = true;
+                } else if (value.toLowerCase() === 'false') {
+                    value = false;
+                }
+                
+                if (keyInput.value === "render") {
+                    value = JSON.parse(value);
+                } else if(keyInput.value === "tileMap") {
+                    value = JSON.parse(value);
+                } else if(matchingTypePlural) {
+                    value = JSON.parse(value || '[]');
+                }
+
+                completeObj[keyInput.value] = value;
             }
         });
         
+        
         // Delegate to core
-        const result = this.core.updateObject(updates);
+        const result = this.core.saveObject(completeObj);
         
         if (result.success) {
             this.showSuccessMessage('Changes saved!');
@@ -340,7 +457,25 @@ export class EditorUI {
             this.renderObject();
         }
     }
-    
+      // Event handling setup for modules
+    setupModuleEventListeners(modules) {
+      Object.entries(modules).forEach(([moduleId, moduleDef]) => {
+        if (!moduleDef.saveHook) return;
+
+        document.body.addEventListener(`${moduleDef.saveHook}`, (event) => {
+            const result = this.core.updateObject({[event.detail.propertyName]: event.detail.data});
+            if (result.success) {
+                this.showSuccessMessage('Changes saved!');
+                this.renderObjectList();
+                this.renderObject();
+            }        
+        });
+
+        document.body.addEventListener(`updateCurrentObject`, () => {
+          this.core.selectObject(this.core.state.selectedObject);
+        });
+      });
+    }
     // Helper method
     parsePropertyValue(key, value) {
         // Handle numeric values
@@ -370,42 +505,72 @@ export class EditorUI {
 
     renderObject() {
         this.dispatchHook('renderObject', this.getHookDetail({arguments}));
+        
+        // Hide all module containers first
         Object.values(this.core.getCollections().propertyModules).forEach(module => {
             const container = document.getElementById(module.container);
             if (container) {
                 container.classList.remove('show');
             }
         });
+        
         let object = this.core.getCurrentObject();
         if (!object) {
             this.hideContent();
             return;
         }
-
         
         // Find the first matching property with a module handler
-        const matchingProperty = Object.keys(this.core.getCollections().propertyModules).find(
-            (moduleId) => {
-                let module = this.core.getCollections().propertyModules[moduleId];
-                return typeof object[module.propertyName] !== "undefined"
-            }
-        );
+        let matchingModule = null;
+        let matchingProperty = null;
         
-        if (!matchingProperty) {            
+        // Check all property modules to find the first matching one
+        for (const moduleId in this.core.getCollections().propertyModules) {
+            const module = this.core.getCollections().propertyModules[moduleId];
+            
+            // Check for single propertyName match
+            if (module.propertyName && object.hasOwnProperty(module.propertyName)) {
+                matchingModule = module;
+                matchingProperty = module.propertyName;
+                break;
+            }
+            
+            // Check for match in propertyNames array
+            if (module.propertyNames) {
+                // Safely parse propertyNames if it's a string
+                const propertyNames = Array.isArray(module.propertyNames) ? 
+                    module.propertyNames : 
+                    this.parsePropertyNames(module.propertyNames);
+                
+                // Find the first property in the array that exists in the object
+                const foundProperty = propertyNames.find(propName => object.hasOwnProperty(propName));
+                
+                if (foundProperty) {
+                    matchingModule = module;
+                    matchingProperty = foundProperty;
+                    break;
+                }
+            }
+        }
+        
+        if (!matchingModule) {
             this.hideContent();
-           // this.elements.editor.setAttribute('style', 'display: flex');
-            //this.elements.mainContentContainer.setAttribute('style', 'display: none');
             return;
-        } 
+        }
+        
         this.showContent();
         
-        const moduleInfo = this.core.getCollections().propertyModules[matchingProperty];
-        document.getElementById(moduleInfo.container).classList.add('show');
+        // Show the matching module's container
+        document.getElementById(matchingModule.container).classList.add('show');
         
         requestAnimationFrame(() => {
-            // Create and dispatch the event
-            const customEvent = new CustomEvent(moduleInfo.eventName, {
-                detail: { data: object[moduleInfo.propertyName], config: this.core.getCollections().configs.game },
+            // Create and dispatch the event with the matching property
+            const customEvent = new CustomEvent(matchingModule.loadHook, {
+                detail: { 
+                    data: object[matchingProperty], 
+                    propertyName: matchingProperty, 
+                    config: this.core.getCollections().configs.game 
+                },
                 bubbles: true,
                 cancelable: true
             });
@@ -644,30 +809,6 @@ export class EditorUI {
         // Launch game button
         this.elements.launchGameBtn?.addEventListener('click', () => {
             window.open("index.html", "_blank");
-        });
-
-        // Save object button
-        document.getElementById('save-object-btn')?.addEventListener('click', () => {
-            const properties = {};
-            
-            document.querySelectorAll('.property-item').forEach(item => {
-            const key = item.querySelector('.property-key').value;
-            let value = item.querySelector('.property-value').value;
-            
-            // Parse value types
-            if (!isNaN(value)) value = Number(value);
-            else if (value === 'true') value = true;
-            else if (value === 'false') value = false;
-            else if (key === 'render' || key === 'tileMap') {
-                try { value = JSON.parse(value); } 
-                catch (e) { console.error("Invalid JSON", e); }
-            }
-            
-            if (key) properties[key] = value;
-            });
-            
-            this.core.updateObject(properties);
-            this.showSuccessMessage("Changes saved!");
         });
     }
 
