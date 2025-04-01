@@ -64,11 +64,16 @@ export class EditorController {
      * If not found, creates them from template data
      */
     initializeDefaultProjects() {
+      let defaultProjects = [];
         Object.keys(this.model.defaultProjects).forEach((key) => {
+          defaultProjects.push(key);
             if (!localStorage.getItem(key)) {
                 localStorage.setItem(key, JSON.stringify(this.model.defaultProjects[key]));
             }
         });
+        if(!localStorage.getItem('projects')){
+          localStorage.setItem('projects', JSON.stringify(defaultProjects));
+        }
     }
 
     /**

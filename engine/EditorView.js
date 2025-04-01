@@ -799,7 +799,7 @@ export class EditorView {
           const result = this.model.createProject(name, DEFAULT_PROJECT_CONFIG);
           if (result.success) {
             newProjectModal.classList.remove('show');
-            this.loadProject(name);
+            this.controller.loadProject(name);
           } else {
             alert(result.message);
           }
