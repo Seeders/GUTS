@@ -1,5 +1,5 @@
 import { TOWER_DEFENSE_CONFIG } from "../config/game_td_config.js";
-import { ModuleLoader } from "./ModuleLoader.js";
+import { ModuleManager } from "./ModuleManager.js";
 
 class Engine {
     constructor(target) {
@@ -23,10 +23,14 @@ class Engine {
             console.error("Failed to load game configuration");
             return;
         }
+
+        // Initialize ModuleManager
+        this.moduleManager = new ModuleManager(this, this.config, document.body, document.body);
+        
         let projectConfig = this.config.configs.game;
-        if( projectConfig.libraries ) {
-            this.moduleLoader = new ModuleLoader(this, this.config, document.body, document.body, this.engineClasses);           
-            this.libraryClasses = await this.moduleLoader.loadModules({ "game" : projectConfig });
+        if (projectConfig.libraries) {
+            // Use ModuleManager to load modules
+            this.libraryClasses = await this.moduleManager.loadModules({ "game": projectConfig });
         }
 
         await this.loadAssets();
@@ -41,14 +45,18 @@ class Engine {
         const terrainImages = this.imageManager.getImages("levels", this.state.level);
         this.terrainTileMapper = new (this.libraryClasses.TileMap)(this, {}, {CanvasUtility: this.libraryClasses.CanvasUtility});
         this.terrainTileMapper.init(this.terrainCanvasBuffer, this.config.configs.game.gridSize, terrainImages, this.isometric);
-        this.scriptCache = new Map(); // Cache compiled scripts
+        
+        // Use ModuleManager's script environment
         this.setupScriptEnvironment();
         this.preCompileScripts();
         this.gameEntity = this.createEntityFromConfig(0, 0, 'game', { gameConfig: this.config.configs.game, terrainCanvasBuffer: this.terrainCanvasBuffer, canvasBuffer: this.canvasBuffer, environment: this.config.environment, imageManager: this.imageManager, levelName: this.state.level, level: this.config.levels[this.state.level] });
         this.animationFrameId = requestAnimationFrame(() => this.gameLoop());
         this.setupEventListeners();
         this.imageManager.dispose();
-
+    }
+    
+    getCollections() {
+        return this.config;
     }
 
     async loadAssets() {
@@ -161,25 +169,12 @@ class Engine {
     }
 
     reset() {
-
+        // Implementation remains the same
     }
 
     setupScriptEnvironment() {
-        // Safe execution context with all imported modules
-        this.scriptContext = {
-            game: this,
-            Entity: this.libraryClasses.Entity,
-            Component: this.libraryClasses.Component,
-            getFunction: (typeName) => this.scriptCache.get(typeName) || this.compileScript(this.config.functions[typeName].script, typeName),
-            // Add a way to access other compiled scripts
-            getComponent: (typeName) => this.scriptCache.get(typeName) || this.compileScript(this.config.components[typeName].script, typeName),
-            getRenderer: (typeName) => this.scriptCache.get(typeName) || this.compileScript(this.config.renderers[typeName].script, typeName),
-            Math: Math,
-            console: {
-                log: (...args) => console.log('[Script]', ...args),
-                error: (...args) => console.error('[Script]', ...args)
-            }
-        };
+        // Use ModuleManager's script environment setup
+        this.scriptContext = this.moduleManager.setupScriptEnvironment(this);
     }
 
     // Pre-compile all scripts to ensure availability
@@ -187,18 +182,18 @@ class Engine {
         for (let componentType in this.config.components) {
             const componentDef = this.config.components[componentType];
             if (componentDef.script) {
-                this.compileScript(componentDef.script, componentType);
+                this.moduleManager.compileScript(componentDef.script, componentType);
             }
         }
         for (let componentType in this.config.renderers) {
             const componentDef = this.config.renderers[componentType];
             if (componentDef.script) {
-                this.compileScript(componentDef.script, componentType);
+                this.moduleManager.compileScript(componentDef.script, componentType);
             }
         }
-        for( let func in this.config.functions) {
-            const compiledFunction = new Function('return ' + this.config.functions[func].script)();
-            this.scriptCache.set(func, compiledFunction);
+        for( let funcType in this.config.functions) {            
+            const funcDef = this.config.functions[funcType];
+            this.moduleManager.compileFunction(funcDef.script, funcType);
         }
     }
     
@@ -214,7 +209,7 @@ class Engine {
             def.components.forEach((componentType) => {
                 const componentDef = this.config.components[componentType];
                 if (componentDef.script) {
-                    const ScriptComponent = this.scriptCache.get(componentType);
+                    const ScriptComponent = this.moduleManager.getCompiledScript(componentType, 'components');
                     if (ScriptComponent) {
                         entity.addComponent(ScriptComponent, params);                  
                     }
@@ -225,7 +220,7 @@ class Engine {
             def.renderers.forEach((rendererType) => {
                 const componentDef = this.config.renderers[rendererType];
                 if (componentDef.script) {
-                    const ScriptComponent = this.scriptCache.get(rendererType);
+                    const ScriptComponent = this.moduleManager.getCompiledScript(rendererType, 'renderers');
                     if (ScriptComponent) {
                         entity.addRenderer(ScriptComponent, params);                  
                     }
@@ -233,41 +228,6 @@ class Engine {
             });
         }
         return entity;
-    }
-
-
-    compileScript(scriptText, typeName) {
-        if (this.scriptCache.has(typeName)) {
-            return this.scriptCache.get(typeName);
-        }
-
-        try {
-            const defaultConstructor = `
-                constructor(game, parent, params) {
-                    super(game, parent, params);
-                }
-            `;
-
-            const constructorMatch = scriptText.match(/constructor\s*\([^)]*\)\s*{[^}]*}/);
-            let classBody = constructorMatch ? scriptText : `${defaultConstructor}\n${scriptText}`;
-
-            // Inject scriptContext into the Function scope
-            const scriptFunction = new Function(
-                'engine',
-                `
-                    return class ${typeName} extends engine.Component {
-                        ${classBody}
-                    }
-                `
-            );
-
-            const ScriptClass = scriptFunction(this.scriptContext);
-            this.scriptCache.set(typeName, ScriptClass);
-            return ScriptClass;
-        } catch (error) {
-            console.error(`Error compiling script for ${typeName}:`, error);
-            return this.libraryClasses.Component; // Fallback to base Component
-        }
     }
 
     update() {
@@ -333,30 +293,29 @@ class Engine {
         this.finalCtx.drawImage(this.canvasBuffer, 0, 0);
         this.animationFrameId = requestAnimationFrame(() => this.gameLoop());
     }
+
     stopGameLoop() {
         if (this.animationFrameId) {
             cancelAnimationFrame(this.animationFrameId);
             this.animationFrameId = null;
         }
     }
+
     addEntity(entity) {
         this.entitiesToAdd.push(entity);
         return entity;
     }
 
     loadConfig() {
-               
         let config = localStorage.getItem("currentProject");
 
-        if( !config ) {
+        if (!config) {
             config = TOWER_DEFENSE_CONFIG;
         } else {
             config = JSON.parse(localStorage.getItem(config));   
         }
 
-
         return config.objectTypes;
-        
     }
 
     createEntity(x, y, type) {
@@ -366,6 +325,7 @@ class Engine {
 
     // Abstract UI drawing method to be implemented by subclasses
     drawUI() {
+        // Implementation remains the same
     }
 }
 
