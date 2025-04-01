@@ -592,7 +592,7 @@ export class EditorUI {
     setupActionEventListeners() {
         // Launch game button
         this.elements.launchGameBtn?.addEventListener('click', () => {
-            window.open("game.html", "_blank");
+            window.open("index.html", "_blank");
         });
 
         // Save object button
