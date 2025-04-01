@@ -170,8 +170,7 @@ export class EditorMain {
   }
 
   showNewProjectModal() {
-    // Implementation would create/show the new project modal
-    // Similar to other modal handling in EditorUI
+      document.getElementById('new-project-modal').classList.add('show');
   }
 
   // Proxy methods to core systems
