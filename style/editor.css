@@ -34,7 +34,8 @@ h1,h2,h3,h4 {
   
 .full-height {
     flex: none;
-    height: calc(100% - 40px); /* Accounts for handle height when present */
+    height: calc(100% - 62px); /* Accounts for handle height when present */
+    margin-top: 20px;
   }
 .highlight {
     border-left: 3px solid #4682b4;
@@ -62,12 +63,13 @@ h1,h2,h3,h4 {
 }
 .main-content {
     width: 100%;
-    height: calc(100vh - 40px);
+    height: calc(100vh - 20px);
     display: flex;
     flex-direction: column;
     overflow: hidden;
     flex: 1; /* Takes available space */
     min-height: 100px; /* Minimum height */
+    margin-top: -20px;
 }
 
 .object-list {
@@ -99,9 +101,6 @@ h1,h2,h3,h4 {
 
 #main-content-container > div.show {
     display: flex;
-}
-#toggleEditorButton {
-    padding: 12px 0;
 }
 .editor {
     width: 100%;
