@@ -420,11 +420,11 @@ export class ModuleManager {
   // Event handling setup for modules
   setupModuleEventListeners(modules) {
     Object.entries(modules).forEach(([moduleId, moduleDef]) => {
-      if (!moduleDef.propertyName) return;
+      if (!moduleDef.saveHook) return;
 
-      document.body.addEventListener(`save${moduleDef.propertyName}`, (event) => {
+      document.body.addEventListener(`${moduleDef.saveHook}`, (event) => {
         this.core.updateObject({
-          [moduleDef.propertyName]: event.detail
+          [event.detail.propertyName]: event.detail.data
         });
       });
 

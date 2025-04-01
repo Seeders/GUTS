@@ -241,6 +241,16 @@ export class EditorCore {
     return { success: true, object: this.getCurrentObject() };
   }
 
+  saveObject(complete) {
+    if (!this.state.selectedType || !this.state.selectedObject) {
+      return { success: false, message: 'No object selected' };
+    }
+    this.getCollections()[this.state.selectedType][this.state.selectedObject] = complete;
+
+    this.saveProject();
+    return { success: true, object: this.getCurrentObject() };
+  }
+
   deleteObject() {
     if (!this.state.selectedType || !this.state.selectedObject) {
       return { success: false, message: 'No object selected' };

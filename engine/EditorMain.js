@@ -95,7 +95,7 @@ export class EditorMain {
         this.scriptContext = await this.moduleManager.setupScriptEnvironment(this);
     
         this.propertyModuleInstances = this.moduleManager.instantiateCollection(this, project.objectTypes.propertyModules, this.propertyModuleClasses);      
-        this.moduleManager.setupModuleEventListeners(project.objectTypes.propertyModules);
+        this.ui.setupModuleEventListeners(project.objectTypes.propertyModules);
       }
       
       // Apply theme if specified
