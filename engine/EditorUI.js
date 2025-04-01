@@ -291,6 +291,9 @@ export class EditorUI {
     selectObject(obj) {
         this.dispatchHook('selectObject', this.getHookDetail({arguments}));
         this.core.selectObject(obj);
+        
+        this.elements.handle.style = "";
+         
         this.renderObjectList();
         this.renderEditor();
         this.renderObject();
@@ -627,36 +630,41 @@ export class EditorUI {
 
     setupDragResize() {
         this.isDragging = false;
-        let startY;
-        let startHeightContent;
-        let startHeightEditor;
+        this.startY;
+        this.startHeightContent;
+        this.startHeightEditor;
         this.elements.handle.addEventListener('mousedown', (e) => {
+            if( this.elements.editor.classList.contains('full-height') )  {
+              return;
+            }
             this.isDragging = true;
-            startY = e.clientY;
-            startHeightContent = this.elements.mainContentContainer.offsetHeight;
-            startHeightEditor = this.elements.editor.offsetHeight;
+            this.startY = e.clientY;
+            this.startHeightContent = this.elements.mainContentContainer.offsetHeight;
+            this.startHeightEditor = this.elements.editor.offsetHeight;
             e.preventDefault();
         });
         
         document.addEventListener('mousemove', (e) => {
-            if (!this.isDragging) return;
-        
-            const delta = e.clientY - startY;
+            if (!this.isDragging) return;  
+            if( this.elements.editor.classList.contains('full-height') )  {
+              return;
+            }      
+
+            const delta = e.clientY + this.elements.handle.offsetHeight / 2 - this.startY;
             const containerHeight = this.elements.handle.parentElement.offsetHeight;
-            const handleHeight = `32px`;
             
             // Calculate new heights with minimum constraints
-            let newContentHeight = startHeightContent + delta;
-            let newEditorHeight = startHeightEditor - delta;
+            let newContentHeight = this.startHeightContent + delta;
+            let newEditorHeight = this.startHeightEditor - delta;
             
             // Enforce minimum heights
             if (newContentHeight < 100) {
               newContentHeight = 100;
-              newEditorHeight = containerHeight - newContentHeight - handleHeight;
+              newEditorHeight = containerHeight - newContentHeight;
             }
             if (newEditorHeight < 100) {
               newEditorHeight = 100;
-              newContentHeight = containerHeight - newEditorHeight - handleHeight;
+              newContentHeight = containerHeight - newEditorHeight;
             }
             this.elements.mainContentContainer.style.height = `${newContentHeight}px`;
             this.elements.editor.style.height = `${newEditorHeight}px`;
