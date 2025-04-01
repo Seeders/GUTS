@@ -44,7 +44,7 @@ export class ModuleManager {
         log: (...args) => console.log('[Script]', ...args),
         error: (...args) => console.error('[Script]', ...args)
       },
-      ...this.libraryClasses
+      ...app.libraryClasses
     };
     return this.scriptContext;
   }
@@ -62,6 +62,11 @@ export class ModuleManager {
 
     const scriptText = collections[collectionType][typeName].script;
     return this.compileScript(scriptText, typeName);
+  }
+
+  compileFunction(scriptText, typeName) {    
+    const compiledFunction = new Function('return ' + scriptText)();
+    this.scriptCache.set(typeName, compiledFunction);
   }
 
   compileScript(scriptText, typeName) {
@@ -417,20 +422,5 @@ export class ModuleManager {
     return instances;
   }
 
-  // Event handling setup for modules
-  setupModuleEventListeners(modules) {
-    Object.entries(modules).forEach(([moduleId, moduleDef]) => {
-      if (!moduleDef.saveHook) return;
 
-      document.body.addEventListener(`${moduleDef.saveHook}`, (event) => {
-        this.core.updateObject({
-          [event.detail.propertyName]: event.detail.data
-        });
-      });
-
-      document.body.addEventListener(`updateCurrentObject`, () => {
-        this.core.selectObject(this.core.state.selectedObject);
-      });
-    });
-  }
 }
