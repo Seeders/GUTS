@@ -278,7 +278,7 @@ button:after {
 .property-item .property-value-container {
     flex: 1;
     display: flex;
-    gap: 5px;
+    gap: 10px;
 }
 .property-item button {
     padding: 4px 8px;
@@ -445,7 +445,7 @@ button:after {
 
 .ref-container {
     display: flex;
-    gap: 5px;
+    gap: 10px;
 }
 
 .ref-select {
