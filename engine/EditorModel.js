@@ -1,5 +1,6 @@
 import { DEFAULT_PROJECT_CONFIG } from "../config/default_app_config.js";
 import { TOWER_DEFENSE_CONFIG } from "../config/game_td_config.js";
+import { VERSION } from "../config/version.js";
 
 /**
  * Model class for the editor application.
@@ -23,7 +24,8 @@ export class EditorModel {
         };
 
         // Application state tracks selections and project data
-        this.state = {
+        this.state = {          
+            currentVersion: VERSION,
             project: {
                 objectTypes: {},
                 objectTypeDefinitions: []
@@ -41,6 +43,9 @@ export class EditorModel {
         };
     }
 
+    getCurrentVersion() {
+      return this.state.currentVersion;
+    }
     /**
      * Loads a project from localStorage by name
      * Sets it as the current project in application state
