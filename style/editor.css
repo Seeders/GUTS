@@ -279,6 +279,7 @@ button:after {
     flex: 1;
     display: flex;
     gap: 10px;
+    align-items: center;
 }
 .property-item button {
     padding: 4px 8px;
