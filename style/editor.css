@@ -451,7 +451,6 @@ button:after {
 .ref-select {
     flex: 1;
     min-width: 150px;
-    padding: 5px;
 }
 
 .ref-values {
