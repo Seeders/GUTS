@@ -95,7 +95,7 @@ export class EditorCore {
  * @param {object} config - Project configuration (optional)
  * @returns {object} { success: boolean, message: string }
  */
-createProject(name, config = null) {
+  createProject(name, config = null) {
     // Validate name
     if (!name || typeof name !== 'string') {
       return { success: false, message: 'Invalid project name' };
@@ -107,19 +107,11 @@ createProject(name, config = null) {
     }
   
     // Use provided config or default template
-    const projectConfig = config || JSON.parse(JSON.stringify(DEFAULT_PROJECT_CONFIG));
+    const projectConfig = config;
   
     try {
       // Save project
-      localStorage.setItem(name, JSON.stringify(projectConfig));
-      
-      // Update projects list
-      const projects = JSON.parse(localStorage.getItem("projects") || []);
-      if (!projects.includes(name)) {
-        projects.push(name);
-        localStorage.setItem('projects', JSON.stringify(projects));
-      }
-      
+      localStorage.setItem(name, JSON.stringify(projectConfig)); 
       // Set metadata
       localStorage.setItem(
         `${name}_metadata`,
@@ -199,7 +191,7 @@ createProject(name, config = null) {
           return collections;
       }, {});
   }
-  
+
   getCategoryByType(objectType) {
     const typeDef = this.getCollectionDefs().find(t => t.id === objectType);
     return typeDef ? typeDef.category : null;

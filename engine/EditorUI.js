@@ -1,3 +1,5 @@
+import { DEFAULT_PROJECT_CONFIG } from "../config/default_app_config.js";
+
 export class EditorUI {
     constructor(editor) {
       this.editor = editor;
@@ -580,6 +582,7 @@ export class EditorUI {
     }
 
     setupProjectEventListeners() {
+  
         // Project selector
         this.elements.projectSelector?.addEventListener('change', (e) => {
           if (e.target.value === "__create_new__") {
@@ -599,6 +602,32 @@ export class EditorUI {
             this.editor.loadProject("default_project");
             window.location.reload();
           }
+        });
+            
+        const newProjectModal = document.getElementById("new-project-modal");
+        const createBtn = document.getElementById("create-project-btn");
+        const cancelBtn = document.getElementById("cancel-project-btn");
+        
+        // Create project handler
+        createBtn.addEventListener('click', () => {
+          const name = document.getElementById("new-project-name").value.trim();
+          if (!name) {
+            alert("Please enter a project name");
+            return;
+          }
+          
+          const result = this.core.createProject(name, DEFAULT_PROJECT_CONFIG);
+          if (result.success) {
+            newProjectModal.classList.remove('show');
+            this.loadProject(name);
+          } else {
+            alert(result.message);
+          }
+        });
+        
+        // Cancel button handler
+        cancelBtn.addEventListener('click', () => {
+          newProjectModal.classList.remove('show');
         });
     }
 
@@ -748,7 +777,7 @@ export class EditorUI {
   
     showNewProjectModal() {
         this.dispatchHook('showNewProjectModal', this.getHookDetail({arguments}));
-        const modal = document.getElementById('new-project-modal') || this.createNewProjectModal();
+        const modal = document.getElementById('new-project-modal');
         modal.classList.add('show');
     }
     updateProjectSelectors() {
@@ -756,8 +785,10 @@ export class EditorUI {
         const projects = this.core.listProjects();
         const projectSelector = document.getElementById("project-selector");
         
-        // Clear existing options
-        projectSelector.innerHTML = '';
+               // Clear existing options except the "create new" option
+          while (this.elements.projectSelector.options.length > 1) {
+            projectSelector.remove(1);
+          }
         
         projects.forEach(project => {
             const option = document.createElement('option');
@@ -769,56 +800,7 @@ export class EditorUI {
             projectSelector.appendChild(option);            
         });
     }
-    createNewProjectModal() {
-        
-        this.dispatchHook('createNewProjectModal', this.getHookDetail({arguments}));
-        const modal = document.createElement('div');
-        modal.className = 'modal';
-        modal.id = 'new-project-modal';
-        modal.innerHTML = `
-            <div class="modal-content">
-            <h2>Create New Project</h2>
-            <div class="form-group">
-                <label for="new-project-name">Project Name:</label>
-                <input type="text" id="new-project-name" placeholder="My Awesome Game">
-            </div>
-            <div class="form-group">
-                <label for="project-template">Template:</label>
-                <select id="project-template">
-                ${Object.keys(this.core.defaultProjects).map(name => `
-                    <option value="${name}">${name.replace(/_/g, ' ')}</option>
-                `).join('')}
-                </select>
-            </div>
-            <div class="actions">
-                <button class="primary" id="confirm-new-project">Create</button>
-                <button id="cancel-new-project">Cancel</button>
-            </div>
-            </div>
-        `;
-        
-        document.body.appendChild(modal);
-        
-        // Event listeners
-        document.getElementById('confirm-new-project').addEventListener('click', () => {
-            const name = document.getElementById('new-project-name').value.trim();
-            const template = document.getElementById('project-template').value;
-            
-            if (!name) {
-            alert("Please enter a project name");
-            return;
-            }
-            
-            this.core.createProject(name, this.core.defaultProjects[template]);
-            modal.classList.remove('show');
-        });
-        
-        document.getElementById('cancel-new-project').addEventListener('click', () => {
-            modal.classList.remove('show');
-        });
-        
-        return modal;
-    }
+
     deleteObject() {
         
         this.dispatchHook('deleteObject', this.getHookDetail({arguments}));
@@ -842,17 +824,18 @@ export class EditorUI {
     }
     // Utility methods
     showSuccessMessage(message) {
-      const actions = document.querySelector('.actions');
-      const successMsg = document.createElement('span');
-      successMsg.textContent = message;
-      successMsg.className = 'success-message';
-      actions.appendChild(successMsg);
       
       setTimeout(() => {
-        if (actions.contains(successMsg)) {
-          actions.removeChild(successMsg);
-        }
-      }, 2000);
+        const container = this.elements.editor;
+        const successMsg = document.createElement('div');
+        successMsg.textContent = message;
+        successMsg.className = 'success-message';
+        container.append(successMsg);
+
+        setTimeout(() => {
+          successMsg.remove();
+        }, 20000);
+      }, 100);
     }
 
     
