@@ -585,8 +585,14 @@ export class EditorView {
         this.elements.mainContentContainer.classList.remove('hidden');
 
         if( this.elements.editor.classList.contains('full-height') ) {
-          this.elements.editor.style.height = '45vh';
-          this.elements.mainContentContainer.style.height = '65vh';          
+          console.log('show', this.lastHeights);
+          if(this.lastHeights) {
+            this.elements.editor.style.height = this.lastHeights.editor;
+            this.elements.mainContentContainer.style.height = this.lastHeights.content;        
+          } else {
+            this.elements.editor.style.height = '45vh';
+            this.elements.mainContentContainer.style.height = '65vh';          
+          }
         }
         this.elements.handle.classList.remove('hidden');
         this.elements.editor.classList.remove('full-height');
@@ -825,6 +831,7 @@ export class EditorView {
             this.startY = e.clientY;
             this.startHeightContent = this.elements.mainContentContainer.offsetHeight;
             this.startHeightEditor = this.elements.editor.offsetHeight;
+           
             e.preventDefault();
         });
         
@@ -855,6 +862,13 @@ export class EditorView {
         });
         
         document.addEventListener('mouseup', () => {
+            if(this.isDragging){
+              this.lastHeights = {
+                editor: this.elements.editor.style.height,
+                content: this.elements.mainContentContainer.style.height,
+              }
+              console.log(this.lastHeights);
+            }
             this.isDragging = false;
         });
       }
