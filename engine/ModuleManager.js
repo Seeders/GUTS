@@ -44,7 +44,7 @@ export class ModuleManager {
         log: (...args) => console.log('[Script]', ...args),
         error: (...args) => console.error('[Script]', ...args)
       },
-      ...app.libraryClasses
+      ...this.registeredLibraries
     };
     return this.scriptContext;
   }
