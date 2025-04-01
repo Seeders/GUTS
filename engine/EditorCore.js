@@ -182,10 +182,24 @@ createProject(name, config = null) {
     return typeDef ? typeDef.name : typeId;
   }
 
+    
+    // Get all collection definitions for a given category
   getCollectionDefsByCategory(category) {
-    return this.getCollectionDefs().filter(typeDef => typeDef.category === category);
+      return this.getCollectionDefs().filter(typeDef => typeDef.category === category);
   }
-
+  
+  // Get all collections for a given category
+  getCollectionsByCategory(category) {
+      const defs = this.getCollectionDefsByCategory(category);
+      return defs.reduce((collections, typeDef) => {
+          const collectionKey = typeDef.id; // e.g., "configs", "entities"
+          if (this.state.project.objectTypes[collectionKey]) {
+              collections[collectionKey] = this.state.project.objectTypes[collectionKey];
+          }
+          return collections;
+      }, {});
+  }
+  
   getCategoryByType(objectType) {
     const typeDef = this.getCollectionDefs().find(t => t.id === objectType);
     return typeDef ? typeDef.category : null;
@@ -331,5 +345,5 @@ createProject(name, config = null) {
   saveToLocalStorage() {
     this.dispatchHook('saveToLocalStorage', this.getHookDetail({arguments}));
     this.saveConfigFile();
-}
+  }
 }
