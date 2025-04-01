@@ -40,7 +40,7 @@ class Editor {
             tabs: document.querySelectorAll('.tab'),
             launchGameBtn: document.getElementById('launch-game-btn'),
             modalContainer: document.getElementById('modals'),
-            mainContentConainer: document.getElementById('main-content-container'),
+            mainContentContainer: document.getElementById('main-content-container'),
             sidebar: document.querySelector('#container .sidebar')
         };
         this.registeredModules = {};
@@ -1114,10 +1114,10 @@ class Editor {
         this.dispatchHook('toggleEditor', this.getHookDetail({arguments}));
         if(this.elements.editor.offsetParent === null){
         //    this.elements.editor.setAttribute('style', 'display: block');
-        //    this.elements.mainContentConainer.setAttribute('style', 'height: 50vh');
+        //    this.elements.mainContentContainer.setAttribute('style', 'height: 50vh');
         } else {
           //  this.elements.editor.setAttribute('style', 'display: none');
-         //   this.elements.mainContentConainer.setAttribute('style', 'height: 100vh');       
+         //   this.elements.mainContentContainer.setAttribute('style', 'height: 100vh');       
         }
     }
 
@@ -1228,18 +1228,18 @@ class Editor {
     hideEditor() {
         this.elements.editor.classList.add('hidden');
         this.elements.handle.classList.add('hidden');
-        this.elements.mainContentConainer.classList.add('full-height');
-        this.elements.mainContentConainer.style.height = '100%';
+        this.elements.mainContentContainer.classList.add('full-height');
+        this.elements.mainContentContainer.style.height = '100%';
     }
     
     showContent() {
-        this.elements.mainContentConainer.classList.remove('hidden');
+        this.elements.mainContentContainer.classList.remove('hidden');
         this.elements.handle.classList.remove('hidden');
         this.elements.editor.classList.remove('full-height');
-        this.elements.mainContentConainer.removeAttribute('style');
+        this.elements.mainContentContainer.removeAttribute('style');
     }
     hideContent() {
-        this.elements.mainContentConainer.classList.add('hidden');
+        this.elements.mainContentContainer.classList.add('hidden');
         this.elements.handle.classList.add('hidden');
         this.elements.editor.classList.add('full-height');
         this.elements.editor.style.height = '100%';
@@ -1260,7 +1260,7 @@ class Editor {
         if (!matchingProperty) {            
             this.hideContent();
            // this.elements.editor.setAttribute('style', 'display: flex');
-            //this.elements.mainContentConainer.setAttribute('style', 'display: none');
+            //this.elements.mainContentContainer.setAttribute('style', 'display: none');
             return;
         } 
         this.showContent();
@@ -1277,20 +1277,6 @@ class Editor {
             });
             
             document.body.dispatchEvent(customEvent);
-        });
-    }
-    updateProjectSelectors() {
-        const projects = this.listProjects();
-        const projectSelector = document.getElementById("project-selector");
-        
-        // Clear existing options
-        projectSelector.innerHTML = '';
-        
-        projects.forEach(project => {
-            const option = document.createElement('option');
-            option.value = project;
-            option.textContent = project;
-            projectSelector.appendChild(option);            
         });
     }
     setupEventListeners() {
@@ -1334,7 +1320,7 @@ class Editor {
         document.getElementById('toggleEditorButton').addEventListener('mousedown', (e) => {
             this.isDragging = true;
             startY = e.clientY;
-            startHeightContent = this.elements.mainContentConainer.offsetHeight;
+            startHeightContent = this.elements.mainContentContainer.offsetHeight;
             startHeightEditor = this.elements.editor.offsetHeight;
             e.preventDefault();
         });
@@ -1360,9 +1346,9 @@ class Editor {
               newContentHeight = containerHeight - newEditorHeight - handleHeight;
             }
         
-            this.elements.mainContentConainer.style.height = `${newContentHeight}px`;
+            this.elements.mainContentContainer.style.height = `${newContentHeight}px`;
             this.elements.editor.style.height = `${newEditorHeight}px`;
-            this.elements.mainContentConainer.style.flex = 'none'; // Override flex property
+            this.elements.mainContentContainer.style.flex = 'none'; // Override flex property
             this.elements.editor.style.flex = 'none';  // Override flex property
         });
         
@@ -1412,7 +1398,7 @@ class Editor {
             styleTag.innerHTML = collections.themes[collections.configs.editor.theme].css;
         }
         this.setupScriptEnvironment();
-        this.moduleLoader = new ModuleLoader(this, collections, this.elements.mainContentConainer, this.elements.modalContainer, this.engineClasses);
+        this.moduleLoader = new ModuleLoader(this, collections, this.elements.mainContentContainer, this.elements.modalContainer, this.engineClasses);
 
     
         try {   
