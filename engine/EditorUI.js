@@ -197,17 +197,16 @@ export class EditorUI {
           valueInput.setAttribute('id', `${matchingModuleType.propertyName}-value`);
         } 
     
-        propertyItem.appendChild(valueInput);
       
         if( matchingTypeSingular ) {
             // Create a container for the reference selector and value display
+
             const refContainer = document.createElement('div');
-            refContainer.className = 'ref-container';
+            refContainer.className = 'property-value-container';
 
             // Create a select element for choosing objects
             const selectElement = document.createElement('select');
             selectElement.className = 'ref-select property-value';
-            valueInput.remove();
 
             // Determine which type we're referencing
             const typeId = matchingTypePlural ? matchingTypePlural.id : matchingTypeSingular.id;
@@ -223,10 +222,13 @@ export class EditorUI {
             });
             selectElement.value = value;
             // Add the select to the container
+            
             refContainer.appendChild(selectElement);    
             propertyItem.appendChild(refContainer);
         } else if (matchingTypePlural) {
             // Create a container for the reference selector and value display
+            const valueContainer = document.createElement('div');
+            valueContainer.className = 'property-value-container';
             const refContainer = document.createElement('div');
             refContainer.className = 'ref-container';
             
@@ -247,8 +249,7 @@ export class EditorUI {
                 selectElement.appendChild(option);
             });
             
-            // Add the select to the container
-            refContainer.appendChild(selectElement);            
+            // Add the select to the container     
           
             // Convert value to array if it's a plural reference
             const valueArray = matchingTypePlural ? (Array.isArray(value) ? value : (value ? [value] : [])) : value;
@@ -275,9 +276,17 @@ export class EditorUI {
             });                  
             
             // Add elements to the container
-            refContainer.appendChild(insertBtn);
-            propertyItem.appendChild(refContainer);
-        } 
+            refContainer.appendChild(selectElement);  
+            refContainer.appendChild(insertBtn);    
+            valueContainer.appendChild(valueInput);
+            valueContainer.appendChild(refContainer);
+            propertyItem.appendChild(valueContainer);
+        } else {          
+            const valueContainer = document.createElement('div');
+            valueContainer.className = 'property-value-container';
+            valueContainer.appendChild(valueInput);
+            propertyItem.appendChild(valueContainer);
+        }
     
         // Remove button
         const removeBtn = document.createElement('button');
