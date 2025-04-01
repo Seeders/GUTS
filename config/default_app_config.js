@@ -28,7 +28,7 @@ const DEFAULT_PROJECT_CONFIG = {
       "editor": {
         "title": "Editor Config",
         "editorCategories": "",
-        "theme": "claude2",
+        "theme": "professional2",
         "propertyModules": [
           "terrainModule",
           "graphicsModule",
