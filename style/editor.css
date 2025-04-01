@@ -250,7 +250,7 @@ button:after {
     align-items: center;
 }
 
-.property-item input {
+.property-item input, .property-item select , .property-item textarea {
     flex: 1;
 }
 
