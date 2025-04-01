@@ -134,7 +134,10 @@ export class EditorModel {
         if (localStorage.getItem(name)) {
             return { success: false, message: 'Project already exists' };
         }
-    
+
+        let currentProjects = JSON.parse(localStorage.getItem('projects'));
+        currentProjects.push(name);
+        localStorage.setItem("projects", JSON.stringify(currentProjects));
         // Use provided config or default template
         const projectConfig = config;
     
