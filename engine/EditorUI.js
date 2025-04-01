@@ -403,9 +403,14 @@ export class EditorUI {
     showContent() {
         this.dispatchHook('showContent', this.getHookDetail({arguments}));
         this.elements.mainContentContainer.classList.remove('hidden');
+
+        if( this.elements.editor.classList.contains('full-height') ) {
+          this.elements.editor.style.height = '45vh';
+          this.elements.mainContentContainer.style.height = '65vh';          
+        }
         this.elements.handle.classList.remove('hidden');
         this.elements.editor.classList.remove('full-height');
-        this.elements.mainContentContainer.removeAttribute('style');
+
     }
     hideContent() {
         this.dispatchHook('hideContent', this.getHookDetail({arguments}));
@@ -625,7 +630,7 @@ export class EditorUI {
         let startY;
         let startHeightContent;
         let startHeightEditor;
-        document.getElementById('toggleEditorButton').addEventListener('mousedown', (e) => {
+        this.elements.handle.addEventListener('mousedown', (e) => {
             this.isDragging = true;
             startY = e.clientY;
             startHeightContent = this.elements.mainContentContainer.offsetHeight;
@@ -637,8 +642,8 @@ export class EditorUI {
             if (!this.isDragging) return;
         
             const delta = e.clientY - startY;
-            const containerHeight = document.getElementById('toggleEditorButton').parentElement.offsetHeight;
-            const handleHeight = document.getElementById('toggleEditorButton').offsetHeight;
+            const containerHeight = this.elements.handle.parentElement.offsetHeight;
+            const handleHeight = `32px`;
             
             // Calculate new heights with minimum constraints
             let newContentHeight = startHeightContent + delta;
@@ -653,11 +658,8 @@ export class EditorUI {
               newEditorHeight = 100;
               newContentHeight = containerHeight - newEditorHeight - handleHeight;
             }
-        
             this.elements.mainContentContainer.style.height = `${newContentHeight}px`;
             this.elements.editor.style.height = `${newEditorHeight}px`;
-            this.elements.mainContentContainer.style.flex = 'none'; // Override flex property
-            this.elements.editor.style.flex = 'none';  // Override flex property
         });
         
         document.addEventListener('mouseup', () => {

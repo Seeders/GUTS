@@ -84,14 +84,30 @@ h1,h2,h3,h4 {
     font-size: 0.85em;
 }
 
+
+#main-content-container {
+    overflow-y: auto;
+}
+
+#main-content-container > div {
+    display: none;
+    height: 100%;
+    width: 100%;
+    position: relative;
+    overflow-y: auto;
+}
+
+#main-content-container > div.show {
+    display: flex;
+}
+#toggleEditorButton {
+    padding: 12px 0;
+}
 .editor {
     width: 100%;
     border-radius: 0;
     padding: 20px;
     overflow-y: auto;
-
-    flex: 1; /* Takes available space */
-    min-height: 100px; /* Minimum height */
 }
 
 #three-js-container {
@@ -324,23 +340,6 @@ button:after {
     border-radius: 0;
 }
 
-#main-content-container {
-    flex: 1; /* Takes available space */
-    min-height: 100px; /* Minimum height */
-    overflow: auto;
-}
-
-#main-content-container > div {
-    display: none;
-    height: 100vh;
-    width: 100%;
-    position: relative;
-}
-
-#main-content-container > div.show {
-    display: flex;
-}
-
 .content-sidebar {
     width: 360px;
     display: flex;
@@ -557,7 +556,6 @@ button:after {
     overflow-y: auto !important; /* Enable vertical scrolling */
     -ms-overflow-style: auto !important; /* IE and Edge */
     scrollbar-width: auto !important; /* Firefox */
-    height: calc(100% - 90px) !important;
 }
 
 /* Container and layout */
