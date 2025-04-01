@@ -1,7 +1,6 @@
 import { EditorModel } from './EditorModel.js';
 import { EditorView } from './EditorView.js';
 import { ModuleManager } from './ModuleManager.js';
-import { DEFAULT_PROJECT_CONFIG } from '../config/default_app_config.js';
 
 /**
  * Main controller class for the editor application.
@@ -13,7 +12,6 @@ export class EditorController {
      * Initializes the editor controller, sets up model, and caches DOM elements
      */
     constructor() {
-        this.currentVersion = '0.0.1';
         // Initialize the data model for managing application state
         this.model = new EditorModel();
         
@@ -60,17 +58,20 @@ export class EditorController {
         this.finalizeSetup();
     }
 
+    getCurrentVersion() {
+      return this.model.getCurrentVersion();
+    }
     /**
      * Ensures default projects exist in localStorage
      * If not found, creates them from template data
      */
     initializeDefaultProjects() {
       
-      if(localStorage.getItem('version') != this.currentVersion){
+      if(localStorage.getItem('version') != this.getCurrentVersion()){
         Object.keys(this.model.defaultProjects).forEach((key) => {
           localStorage.removeItem(key);  
         });
-        localStorage.setItem('version', this.currentVersion);
+        localStorage.setItem('version', this.getCurrentVersion());
       }
       let defaultProjects = [];
         Object.keys(this.model.defaultProjects).forEach((key) => {
