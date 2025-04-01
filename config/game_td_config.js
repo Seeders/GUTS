@@ -28,7 +28,7 @@ const TOWER_DEFENSE_CONFIG = {
       "editor": {
         "title": "Editor Config",
         "editorCategories": "",
-        "theme": "videoGame2",
+        "theme": "professional",
         "propertyModules": [
           "terrainModule",
           "graphicsModule",
