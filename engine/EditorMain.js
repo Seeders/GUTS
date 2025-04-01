@@ -10,6 +10,7 @@ export class EditorMain {
     
     // Cache DOM elements
     this.elements = {
+      app: document.getElementById("container"),
       objectList: document.getElementById('object-list'),
       editor: document.getElementById('editor'),
       handle: document.getElementById('toggleEditorButton'),
@@ -29,7 +30,7 @@ export class EditorMain {
     };
 
     // Initialize UI after core systems
-    this.ui = new EditorUI(this.core, this.moduleManager, this.elements);
+    this.ui = new EditorUI(this);
   }
 
   async init() {

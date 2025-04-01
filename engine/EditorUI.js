@@ -1,8 +1,9 @@
 export class EditorUI {
-    constructor(editorCore, moduleManager, elements) {
-      this.core = editorCore;
-      this.moduleManager = moduleManager;
-      this.elements = elements;
+    constructor(editor) {
+      this.editor = editor;
+      this.core = editor.core;
+      this.moduleManager = editor.moduleManager;
+      this.elements = editor.elements;
       this.isDragging = false;
       this.dragState = {};
       
@@ -584,7 +585,9 @@ export class EditorUI {
           if (e.target.value === "__create_new__") {
             this.showNewProjectModal();
           } else {
-            this.core.loadProject(e.target.value);
+            this.elements.app.style.display = 'none';
+            this.editor.loadProject(e.target.value);
+            window.location.reload();
           }
         });
       
@@ -592,7 +595,9 @@ export class EditorUI {
         this.elements.deleteProjectBtn?.addEventListener('click', () => {
           if (confirm(`Delete project "${this.core.state.currentProject}"?`)) {
             this.core.deleteProject(this.core.state.currentProject);
-            this.core.loadProject("default_project");
+            this.elements.app.style.display = 'none';
+            this.editor.loadProject("default_project");
+            window.location.reload();
           }
         });
     }
@@ -756,6 +761,9 @@ export class EditorUI {
         
         projects.forEach(project => {
             const option = document.createElement('option');
+            if(project == this.core.state.currentProject){
+              option.selected = true;
+            }
             option.value = project;
             option.textContent = project;
             projectSelector.appendChild(option);            
