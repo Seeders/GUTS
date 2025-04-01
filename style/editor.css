@@ -103,8 +103,10 @@ h1,h2,h3,h4 {
 #main-content-container > div.show {
     display: flex;
 }
+#toggleEditorButton {
+    margin: 0;
+}
 .editor {
-    width: 100%;
     border-radius: 0;
     padding: 20px;
     overflow-y: auto;
