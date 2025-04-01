@@ -83,6 +83,9 @@ export class EditorController {
         if(!localStorage.getItem('projects')){
           localStorage.setItem('projects', JSON.stringify(defaultProjects));
         }
+        if(window.location.hostname == "localhost"){
+          localStorage.setItem('saveToFile',1);
+        }
     }
 
     /**
