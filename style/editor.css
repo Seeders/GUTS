@@ -35,6 +35,7 @@ h1,h2,h3,h4 {
 .full-height {
     flex: none;
     height: calc(100% - 62px); /* Accounts for handle height when present */
+    max-height: calc(100% - 62px) !important;
     margin-top: 20px;
   }
 .highlight {
