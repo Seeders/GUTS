@@ -470,7 +470,7 @@ export class EditorView {
         this.controller.dispatchHook('renderObject', arguments);
         
         // Hide all module containers first
-        Object.values(this.model.getCollections().propertyModules).forEach(module => {
+        Object.values(this.model.getCollections().editorModules).forEach(module => {
             const container = document.getElementById(module.container);
             if (container) {
                 container.classList.remove('show');
@@ -488,8 +488,8 @@ export class EditorView {
         let matchingProperty = null;
         
         // Check all property modules to find the first matching one
-        for (const moduleId in this.model.getCollections().propertyModules) {
-            const module = this.model.getCollections().propertyModules[moduleId];
+        for (const moduleId in this.model.getCollections().editorModules) {
+            const module = this.model.getCollections().editorModules[moduleId];
             
             // Check for single propertyName match
             if (module.propertyName && object.hasOwnProperty(module.propertyName)) {

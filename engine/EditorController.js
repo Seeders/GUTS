@@ -158,27 +158,27 @@ export class EditorController {
             if (editorConfig) {
                 // Filter property modules to only those specified in editor config
                 const editorModules = {};
-                editorConfig.propertyModules.forEach((pm) => {
-                    if (project.objectTypes.propertyModules[pm]) {
-                        editorModules[pm] = project.objectTypes.propertyModules[pm];
+                editorConfig.editorModules.forEach((pm) => {
+                    if (project.objectTypes.editorModules[pm]) {
+                        editorModules[pm] = project.objectTypes.editorModules[pm];
                     }
                 });
                 
                 // Load property module classes dynamically
-                this.propertyModuleClasses = await this.moduleManager.loadModules(editorModules);
+                this.editorModuleClasses = await this.moduleManager.loadModules(editorModules);
                 
                 // Setup script execution environment for modules
                 this.scriptContext = await this.moduleManager.setupScriptEnvironment(this);
                 
                 // Instantiate property modules with controller context
-                this.propertyModuleInstances = this.moduleManager.instantiateCollection(
+                this.editorModuleInstances = this.moduleManager.instantiateCollection(
                     this, 
-                    project.objectTypes.propertyModules, 
-                    this.propertyModuleClasses
+                    project.objectTypes.editorModules, 
+                    this.editorModuleClasses
                 );
                         
                 // Set up event listeners for module UI interactions
-                this.view.setupModuleEventListeners(project.objectTypes.propertyModules);
+                this.view.setupModuleEventListeners(project.objectTypes.editorModules);
             }
             
             // Apply theme if specified in editor config
