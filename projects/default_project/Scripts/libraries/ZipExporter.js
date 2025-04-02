@@ -2,7 +2,9 @@ class ZipExporter {
     constructor(gameEditor) {
         this.gameEditor = gameEditor;
         this.elements = {};
-        this.init();
+        if(window.location.hostname != "localhost") {
+            this.init();
+        }
     }
 
     init(aiConfig) {
