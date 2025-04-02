@@ -320,13 +320,14 @@ export class ModuleManager {
       return this.moduleInstances;
   }
 
-  async loadLibraryModule(moduleDef) {
+  async loadESModule(moduleDef) {
     if (!moduleDef.href) {
       console.error('Library module missing source');
       return null;
     }
 
     try {
+      debugger;
       // Dynamic import for ES modules
       const module = await import(moduleDef.source);
       const moduleClass = module.default || module[moduleDef.className];
@@ -346,82 +347,5 @@ export class ModuleManager {
       return null;
     }
   }
-
-  async loadPropertyModule(moduleDef) {
-    if (!moduleDef.script) {
-      console.error('Property module missing source');
-      return null;
-    }
-
-    try {
-      // Dynamic import for ES modules
-      const module = await import(moduleDef.script);
-      const moduleClass = module.default || module[moduleDef.className];
-      
-      if (!moduleClass) {
-        throw new Error(`Module class ${moduleDef.className} not found`);
-      }
-
-      // Instantiate the module with required context
-      const moduleInstance = new moduleClass({
-        editor: this.core,
-        container: moduleDef.container,
-        propertyName: moduleDef.propertyName
-      });
-
-      // Register the module
-      this.registerModule(moduleDef.propertyName, moduleInstance);
-      return moduleInstance;
-    } catch (error) {
-      console.error(`Error loading property module ${moduleDef.title}:`, error);
-      return null;
-    }
-  }
-
-  // CommonJS compatibility (for older modules)
-  loadCommonJSModule(source) {
-    const module = { exports: {} };
-    const require = (dep) => {
-      if (this.libraryClasses[dep]) {
-        return this.libraryClasses[dep];
-      }
-      throw new Error(`Dependency ${dep} not found`);
-    };
-
-    try {
-      const pluginCode = `
-        (function(require, module) {
-          ${source}
-        })(require, module);
-        return module.exports;
-      `;
-
-      const pluginFunction = new Function("require", "module", pluginCode);
-      return pluginFunction(require, module);
-    } catch (error) {
-      console.error('Error loading CommonJS module:', error);
-      return null;
-    }
-  }
-
-  // Module instance management
-  instantiateModules(moduleClasses, context = {}) {
-    const instances = {};
-    
-    for (const [moduleId, ModuleClass] of Object.entries(moduleClasses)) {
-      try {
-        instances[moduleId] = new ModuleClass({
-          editor: this.core,
-          ...context
-        });
-      } catch (error) {
-        console.error(`Error instantiating module ${moduleId}:`, error);
-        instances[moduleId] = null;
-      }
-    }
-
-    return instances;
-  }
-
 
 }
