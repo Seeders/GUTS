@@ -11,7 +11,9 @@ class FileSystemSyncService {
         this.lastSyncTime = Date.now();
         this.pendingChanges = {};
 
-        this.init();
+        if(window.location.hostname == 'localhost'){
+            this.init();
+        }
     }
 
     init() {
@@ -77,7 +79,6 @@ class FileSystemSyncService {
             closeBtn: modal.querySelector('#close-fs-settings'),
             closeX: modal.querySelector('.close')
         };
-
         if (this.elements.fsyncBtn) this.elements.fsyncBtn.remove();
         this.elements.fsyncBtn = document.createElement('button');
         this.elements.fsyncBtn.innerHTML = "FS Sync";
@@ -91,7 +92,7 @@ class FileSystemSyncService {
         this.elements.syncIndicator.className = this.syncConfig.enabled ? 'active' : 'inactive';
         this.elements.syncIndicator.title = this.syncConfig.enabled ? 'Sync Active' : 'Sync Inactive';
         this.elements.fsyncBtn.appendChild(this.elements.syncIndicator);
-
+    
         this.setupEventListeners();
     }
 
@@ -228,7 +229,7 @@ class FileSystemSyncService {
         this.syncFromFilesystem();
     }
 
-		saveProjectToFilesystem() {
+	saveProjectToFilesystem() {
         const projectId = this.gameEditor.model.getCurrentProject();
         if (!projectId) {
             console.log('No project ID available');
