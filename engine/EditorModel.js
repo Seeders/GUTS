@@ -46,6 +46,43 @@ export class EditorModel {
     getCurrentVersion() {
       return this.state.currentVersion;
     }
+    initializeDefaultProjects() {
+      
+        if(localStorage.getItem('version') != this.getCurrentVersion()){
+          Object.keys(this.defaultProjects).forEach((key) => {
+            localStorage.removeItem(key);  
+          });
+          localStorage.setItem('version', this.getCurrentVersion());
+        }
+        let defaultProjects = [];
+          Object.keys(this.defaultProjects).forEach((key) => {
+            defaultProjects.push(key);
+              if (!localStorage.getItem(key)) {
+                  localStorage.setItem(key, JSON.stringify(this.defaultProjects[key]));
+              }
+          });
+          if(!localStorage.getItem('projects')){
+            localStorage.setItem('projects', JSON.stringify(defaultProjects));
+          }
+          if(window.location.hostname == "localhost"){
+            localStorage.setItem('saveToFile',1);
+          }
+    }
+
+
+    /**
+     * Determines which project to load initially
+     * Checks localStorage for last used project
+     * Falls back to default if needed
+     * @returns {string} Project ID to load
+     */
+    getInitialProject() {
+        const savedProject = localStorage.getItem("currentProject");
+        return savedProject && this.listProjects().includes(savedProject) 
+            ? savedProject 
+            : "default_project";
+    }
+
     /**
      * Loads a project from localStorage by name
      * Sets it as the current project in application state
@@ -361,6 +398,15 @@ export class EditorModel {
      */
     getCurrentProject() {
         return this.state.currentProject;
+    }
+    /**
+     * Returns current selection context including type and object
+     * Used by modules and views to determine what's selected
+     * @returns {Object} Selected type and object
+     */
+    getCurrentObjectContext() {
+        const { selectedType, selectedObject } = this.state;
+        return { selectedType, selectedObject };
     }
 
     /**

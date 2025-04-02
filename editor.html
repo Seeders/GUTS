@@ -18,19 +18,20 @@
         <div class="sidebar">
             <img src="./logo.png" />
 
-            <div class="project-selector-container">
+            <div class="project-selector-container" style="display: flex; flex-direction: column; align-items: start;">
                 <select id="project-selector">
                   <!-- Options will be populated by JavaScript -->
                   <option value="__create_new__">+ Create New Project</option>
-                </select>
-                <button id="delete-project-btn" class="danger" title="Delete current project">🗑️</button>
+                </select>                
             </div>            
             <div class="object-list" id="object-list">
                 <!-- Object list will be dynamically populated -->
             </div>
             <div class="sidebar-actions">
                 <button class="primary" id="add-object-btn">Add New Object</button>
-                <button id="launch-game-btn">Launch Game</button>           
+                <button id="launch-game-btn">Launch Game</button>      
+                
+                <button id="delete-project-btn" class="danger hidden" title="Delete current project">delete project</button>     
             </div>
         </div>
         
@@ -96,8 +97,6 @@
                 </div>
             </div>
         </div>
-        
-        
     </div>
     <script src="engine/EditorController.js" type="module" ></script>
     

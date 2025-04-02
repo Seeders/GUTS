@@ -369,9 +369,8 @@ export class EditorView {
   
 
 
-    selectObject(obj) {
+    selectObject() {
         this.dispatchHook('selectObject', this.getHookDetail({arguments}));
-        this.model.selectObject(obj);
         
         this.elements.handle.style = "";
          
@@ -626,7 +625,7 @@ export class EditorView {
           // Auto-select first object if available
           const objects = this.model.getCollections()[this.model.state.selectedType];
           if (objects && Object.keys(objects).length > 0) {
-            this.selectObject(Object.keys(objects)[0]);
+            this.controller.selectObject(Object.keys(objects)[0]);
           }
         });
       });
@@ -634,7 +633,7 @@ export class EditorView {
       // Object selection
       document.querySelectorAll('.object-item').forEach(item => {
         item.addEventListener('click', () => {
-          this.selectObject(item.dataset.object);
+          this.controller.selectObject(item.dataset.object);
         });
       });
   
@@ -650,7 +649,7 @@ export class EditorView {
           }
           
           if (!isOpened) {
-            this.selectObject(null);
+            this.controller.selectObject(null);
           }
           
           this.model.state.expandedCategories[category] = !isOpened;
@@ -705,7 +704,7 @@ export class EditorView {
           
           if (result.success) {
             this.elements.newObjectModal.classList.remove('show');
-            this.selectObject(id);
+            this.controller.selectObject(id);
           } else {
             alert(result.message);
           }
@@ -724,7 +723,7 @@ export class EditorView {
           const result = this.model.duplicateObject(newId, newName);
           if (result.success) {
             this.elements.duplicateObjectModal.classList.remove('show');
-            this.selectObject(newId);
+            this.controller.selectObject(newId);
           } else {
             alert(result.message);
           }
