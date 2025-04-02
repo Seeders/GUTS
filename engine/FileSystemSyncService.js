@@ -17,13 +17,13 @@ export class FileSystemSyncService {
     }
 
     init() {
-        this.setupUI();
+      //  this.setupUI();
         this.setupHooks();
-        this.loadSyncConfig();
+       // this.loadSyncConfig();
         
-        if (this.syncConfig.enabled && this.syncConfig.autoSync) {
-            this.startSync();
-        }
+      //  if (this.syncConfig.enabled && this.syncConfig.autoSync) {
+      //     this.startSync();
+      //  }
     }
 
     setupUI() {
@@ -115,10 +115,10 @@ export class FileSystemSyncService {
 
     setupHooks() {
         document.body.addEventListener('saveProject', () => {
-            if (this.syncConfig.enabled) this.queueSync();
+            this.queueSync();
         });
         document.body.addEventListener('saveObject', () => {
-            if (this.syncConfig.enabled) this.queueSync();
+            this.queueSync();
         });
     }
 
