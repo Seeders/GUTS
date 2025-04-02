@@ -1,0 +1,23 @@
+{
+  "gridSize": 48,
+  "imageSize": 128,
+  "canvasWidth": 1536,
+  "canvasHeight": 768,
+  "title": "Default Project 2",
+  "isIsometric": false,
+  "libraries": [
+    "threejs",
+    "GLTFLoader",
+    "ShapeFactory",
+    "ImageManager",
+    "SpatialGrid",
+    "CoordinateTranslator",
+    "CanvasUtility",
+    "TerrainImageProcessor",
+    "TileMap",
+    "Entity",
+    "Component",
+    "GameState"
+  ],
+  "fileName": "game"
+}

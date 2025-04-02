@@ -44,6 +44,7 @@ export class EditorModel {
     getCurrentVersion() {
       return this.state.currentVersion;
     }
+    
     initializeDefaultProjects() {
       
         if(localStorage.getItem('version') != this.getCurrentVersion()){

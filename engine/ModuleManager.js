@@ -76,22 +76,10 @@ export class ModuleManager {
     }
 
     try {
-      const defaultConstructor = `
-          constructor(game, parent, params) {
-              super(game, parent, params);
-          }
-      `;
-
-      const constructorMatch = scriptText.match(/constructor\s*\([^)]*\)\s*{[^}]*}/);
-      let classBody = constructorMatch ? scriptText : `${defaultConstructor}\n${scriptText}`;
-
       // Inject scriptContext into the Function scope
       const scriptFunction = new Function(
           'engine',
-          ` return class ${typeName} extends engine.Component {
-                  ${classBody}
-              }
-          `
+          `return ${scriptText}`
       );
 
       const ScriptClass = scriptFunction(this.scriptContext);
