@@ -6,7 +6,7 @@
 
 # GUTS - Gamedev Ultimate Toolkit System
 
-GUTS is a comprehensive toolkit for game development, providing a flexible framework to create and edit games with ease. It comes with a pre-packaged tower defense game and sample assets to help you get started.
+GUTS is a comprehensive data-driven toolkit for game development, providing a flexible framework to create and edit games with ease. It comes with a pre-packaged tower defense game and sample assets to help you get started.
 
 More samples will be on the way.  It's easy!
 
