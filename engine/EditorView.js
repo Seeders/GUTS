@@ -13,12 +13,12 @@ export class EditorView {
       this.setupEventListeners();
       this.renderObjectList();
       this.updateSidebarButtons();
-      this.dispatchHook('EditorUI', this.getHookDetail({arguments}));
+      this.controller.dispatchHook('EditorUI', arguments);
     }
   
     // Main rendering methods
     renderObjectList() {
-        this.dispatchHook('renderObjectList', this.getHookDetail({arguments}));
+        this.controller.dispatchHook('renderObjectList', arguments);
       const currentTypeDef = this.model.getCollectionDefs().find(
         type => type.id === this.model.state.selectedType && this.model.state.selectedObject
       ) || {};
@@ -90,7 +90,7 @@ export class EditorView {
     }
   
     renderEditor() {
-        this.dispatchHook('renderEditor', this.getHookDetail({arguments}));
+        this.controller.dispatchHook('renderEditor', arguments);
       if (!this.model.state.selectedObject) {
         const singularType = this.model.getSingularType(this.model.state.selectedType);
         this.elements.editor.innerHTML = `
@@ -139,7 +139,7 @@ export class EditorView {
     }
   
     renderCustomProperties(container, object) {
-        this.dispatchHook('renderCustomProperties', this.getHookDetail({arguments}));
+        this.controller.dispatchHook('renderCustomProperties', arguments);
       container.innerHTML = '';
   
       Object.entries(object).forEach(([key, value]) => {
@@ -148,7 +148,7 @@ export class EditorView {
     }
   
     addCustomProperty(container, key, value) {
-      this.dispatchHook('addCustomProperty', this.getHookDetail({arguments}));
+      this.controller.dispatchHook('addCustomProperty', arguments);
       
       const propertyItem = this.createPropertyItemElement();
       const keyInput = this.createKeyInputElement(key);
@@ -370,7 +370,6 @@ export class EditorView {
 
 
     selectObject() {
-        this.dispatchHook('selectObject', this.getHookDetail({arguments}));
         
         this.elements.handle.style = "";
          
@@ -379,11 +378,8 @@ export class EditorView {
         this.renderObject();
     }
 
-    saveObject() {
-        this.dispatchHook('saveObject', this.getHookDetail({arguments}));
+    readObject() {
   
-        if (!this.model.state.selectedObject) return;
-        
         const completeObj = {}; 
         
         // Collect custom properties
@@ -417,15 +413,12 @@ export class EditorView {
             }
         });
         
-        
-        // Delegate to core
-        const result = this.model.saveObject(completeObj);
-        
-        if (result.success) {
-            this.showSuccessMessage('Changes saved!');
-            this.renderObjectList();
-            this.renderObject();
-        }
+        return completeObj;
+      }
+    saveObject() {  
+        this.showSuccessMessage('Changes saved!');
+        this.renderObjectList();
+        this.renderObject();    
     }
       // Event handling setup for modules
     setupModuleEventListeners(modules) {
@@ -474,7 +467,7 @@ export class EditorView {
     }
 
     renderObject() {
-        this.dispatchHook('renderObject', this.getHookDetail({arguments}));
+        this.controller.dispatchHook('renderObject', arguments);
         
         // Hide all module containers first
         Object.values(this.model.getCollections().propertyModules).forEach(module => {
@@ -550,7 +543,7 @@ export class EditorView {
   
     // UI state management
     showContent() {
-        this.dispatchHook('showContent', this.getHookDetail({arguments}));
+        this.controller.dispatchHook('showContent', arguments);
         this.elements.mainContentContainer.classList.remove('hidden');
 
         if( this.elements.editor.classList.contains('full-height') ) {
@@ -568,7 +561,7 @@ export class EditorView {
 
     }
     hideContent() {
-        this.dispatchHook('hideContent', this.getHookDetail({arguments}));
+        this.controller.dispatchHook('hideContent', arguments);
         this.elements.mainContentContainer.classList.add('hidden');
         this.elements.handle.classList.add('hidden');
         this.elements.editor.classList.add('full-height');
@@ -576,7 +569,7 @@ export class EditorView {
     }
   
     hideEditor() {
-        this.dispatchHook('hideEditor', this.getHookDetail({arguments}));
+        this.controller.dispatchHook('hideEditor', arguments);
         this.elements.editor.classList.add('hidden');
         this.elements.handle.classList.add('hidden');
         this.elements.mainContentContainer.classList.add('full-height');
@@ -584,7 +577,7 @@ export class EditorView {
     }
     
     updateSidebarButtons() {
-        this.dispatchHook('updateSidebarButtons', this.getHookDetail({arguments}));
+        this.controller.dispatchHook('updateSidebarButtons', arguments);
       const singularType = this.model.getSingularType(this.model.state.selectedType);
       document.getElementById('add-object-btn').textContent = `Add New ${singularType}`;
     }
@@ -663,7 +656,7 @@ export class EditorView {
     }
   
     setupEditorEventListeners() {
-      document.getElementById('save-object-btn')?.addEventListener('click', () => this.saveObject());
+      document.getElementById('save-object-btn')?.addEventListener('click', () => this.controller.saveObject(this.readObject()));
       document.getElementById('revert-changes-btn')?.addEventListener('click', () => {
         this.selectObject(this.model.state.selectedObject);
       });
@@ -709,7 +702,7 @@ export class EditorView {
             alert(result.message);
           }
         });
-      
+        
         // Duplicate modal
         document.getElementById('create-duplicate-object-btn')?.addEventListener('click', () => {
           const newId = this.elements.duplicateObjectIdInput.value.trim();
@@ -727,6 +720,9 @@ export class EditorView {
           } else {
             alert(result.message);
           }
+        }); 
+        document.getElementById('close-duplicate-object-modal')?.addEventListener('click', () => {
+            this.elements.duplicateObjectModal.classList.remove('show');
         });
     }
 
@@ -844,7 +840,7 @@ export class EditorView {
   
     // Modal handling
     showAddTypeModal() {
-        this.dispatchHook('showAddTypeModal', this.getHookDetail({arguments}));
+        this.controller.dispatchHook('showAddTypeModal', arguments);
         const modal = document.getElementById('add-type-modal') || this.createAddTypeModal();
         modal.classList.add('show');
     }
@@ -909,12 +905,12 @@ export class EditorView {
     }
   
     showNewProjectModal() {
-        this.dispatchHook('showNewProjectModal', this.getHookDetail({arguments}));
+        this.controller.dispatchHook('showNewProjectModal', arguments);
         const modal = document.getElementById('new-project-modal');
         modal.classList.add('show');
     }
     updateProjectSelectors() {
-        this.dispatchHook('updateProjectSelectors', this.getHookDetail({arguments}));
+        this.controller.dispatchHook('updateProjectSelectors', arguments);
         const projects = this.model.listProjects();
         const projectSelector = document.getElementById("project-selector");
         
@@ -936,7 +932,7 @@ export class EditorView {
 
     deleteObject() {
         
-        this.dispatchHook('deleteObject', this.getHookDetail({arguments}));
+        this.controller.dispatchHook('deleteObject', arguments);
         if (!this.model.state.selectedObject) return;
         
         const singularType = this.model.getSingularType(this.model.state.selectedType);
@@ -973,14 +969,9 @@ export class EditorView {
 
     
     getHookDetail(params, result) {
-        return { selectedType: this.model.state.selectedType, selectedObject: this.model.state.selectedObject, params: params.arguments, result: result };
+        return this.controller.getHookDetail(params, result);
     }
     dispatchHook(hookName, detail = {}) {
-        requestAnimationFrame(() => {
-            const customEvent = new CustomEvent(hookName, {
-                detail: { ...detail, timestamp: Date.now() }
-            });
-            document.body.dispatchEvent(customEvent);
-        });
+        this.controller.dispatchHook(hookName, detail);
     }
   }

@@ -108,7 +108,17 @@ export class EditorController {
         return this.model.getCollectionDefs();
     }
 
-
+    dispatchHook(hookName, params) {
+        requestAnimationFrame(() => {
+            const customEvent = new CustomEvent(hookName, {
+                detail: this.getHookDetail({params}),  
+            });
+            document.body.dispatchEvent(customEvent);
+        });
+    }
+    getHookDetail(params, result) {
+        return { selectedType: this.model.state.selectedType, selectedObject: this.model.state.selectedObject, params: params.arguments, result: result };
+    }
     /**
      * Loads a project by name, including all associated modules and configurations
      * Central method that coordinates project initialization
@@ -180,6 +190,7 @@ export class EditorController {
         
         // Select first available object to show in editor
         this.selectInitialObject();
+        this.dispatchHook('loadProject', arguments);
     }
 
     /**
@@ -198,6 +209,7 @@ export class EditorController {
     selectObject(obj){
         this.model.selectObject(obj);
         this.view.selectObject(obj);
+        this.dispatchHook('selectObject', arguments);
     }
     /**
      * Selects the first object in the current collection
@@ -234,7 +246,11 @@ export class EditorController {
      * @param {Object} data - Object data to save
      */
     saveObject(data) {
-        this.model.saveObject(data);
+        let result = this.model.saveObject(data);
+        if( result.success ) {
+            this.view.saveObject(data);
+            this.dispatchHook('saveObject', arguments);
+        }
     }
 
     /**
@@ -246,6 +262,7 @@ export class EditorController {
         const success = this.model.saveProject();
         if (success) {
             this.view.showSuccessMessage('Project saved successfully!');
+            this.dispatchHook('saveProject', arguments);
         }
         return success;
     }
