@@ -1,0 +1,11 @@
+{
+  "title": "Preview Tower",
+  "components": [
+    "stats",
+    "animator"
+  ],
+  "renderers": [
+    "renderer",
+    "rangeIndicator"
+  ]
+}

@@ -1,0 +1,647 @@
+{
+  "hp": 20,
+  "speed": 1.2,
+  "value": 7,
+  "essence": 12,
+  "render": {
+    "animations": {
+      "idle": [
+        {
+          "shapes": [
+            {
+              "type": "sphere",
+              "size": 14,
+              "color": "#E0DED8",
+              "x": 0,
+              "y": 41,
+              "z": 0,
+              "name": "head"
+            },
+            {
+              "type": "box",
+              "width": 16,
+              "height": 20,
+              "depth": 8,
+              "color": "#CFCBC0",
+              "x": 0,
+              "y": 24,
+              "z": 0,
+              "name": "body"
+            },
+            {
+              "type": "sphere",
+              "size": 3,
+              "color": "#000000",
+              "x": 4,
+              "y": 42,
+              "z": 5,
+              "name": "eye-left"
+            },
+            {
+              "type": "sphere",
+              "size": 3,
+              "color": "#000000",
+              "x": -4,
+              "y": 42,
+              "z": 5,
+              "name": "eye-right"
+            },
+            {
+              "type": "cylinder",
+              "size": 3,
+              "height": 18,
+              "color": "#E0DED8",
+              "x": 8,
+              "y": 27,
+              "z": 10,
+              "rotationX": 105,
+              "rotationZ": 15,
+              "name": "arm-left"
+            },
+            {
+              "type": "cylinder",
+              "size": 3,
+              "height": 18,
+              "color": "#E0DED8",
+              "x": -8,
+              "y": 27,
+              "z": 10,
+              "rotationX": 105,
+              "rotationZ": -15,
+              "name": "arm-right"
+            },
+            {
+              "type": "sphere",
+              "size": 5,
+              "color": "#E0DED8",
+              "x": 6,
+              "y": 25,
+              "z": 20,
+              "name": "hand-left"
+            },
+            {
+              "type": "sphere",
+              "size": 5,
+              "color": "#E0DED8",
+              "x": -6,
+              "y": 25,
+              "z": 20,
+              "name": "hand-right"
+            },
+            {
+              "type": "cylinder",
+              "size": 3,
+              "height": 22,
+              "color": "#E0DED8",
+              "x": 5,
+              "y": 14,
+              "z": 0,
+              "rotationZ": 0,
+              "name": "leg-left",
+              "rotationX": 0
+            },
+            {
+              "type": "cylinder",
+              "size": 3,
+              "height": 22,
+              "color": "#E0DED8",
+              "x": -5,
+              "y": 14,
+              "z": 0,
+              "rotationZ": 0,
+              "name": "leg-right"
+            },
+            {
+              "type": "sphere",
+              "size": 5,
+              "color": "#E0DED8",
+              "x": 5,
+              "y": 2,
+              "z": 0,
+              "name": "foot-left"
+            },
+            {
+              "type": "sphere",
+              "size": 5,
+              "color": "#E0DED8",
+              "x": -5,
+              "y": 2,
+              "z": 0,
+              "name": "foot-right"
+            }
+          ]
+        }
+      ],
+      "walk": [
+        {
+          "shapes": [
+            {
+              "type": "sphere",
+              "size": 14,
+              "color": "#E0DED8",
+              "x": 0,
+              "y": 41,
+              "z": 0,
+              "name": "head"
+            },
+            {
+              "type": "box",
+              "width": 16,
+              "height": 20,
+              "depth": 8,
+              "color": "#CFCBC0",
+              "x": 0,
+              "y": 24,
+              "z": 0,
+              "name": "body"
+            },
+            {
+              "type": "sphere",
+              "size": 3,
+              "color": "#000000",
+              "x": 4,
+              "y": 42,
+              "z": 5,
+              "name": "eye-left"
+            },
+            {
+              "type": "sphere",
+              "size": 3,
+              "color": "#000000",
+              "x": -4,
+              "y": 42,
+              "z": 5,
+              "name": "eye-right"
+            },
+            {
+              "type": "cylinder",
+              "size": 3,
+              "height": 18,
+              "color": "#E0DED8",
+              "x": 8,
+              "y": 27,
+              "z": 10,
+              "rotationX": 105,
+              "rotationZ": 15,
+              "name": "arm-left"
+            },
+            {
+              "type": "cylinder",
+              "size": 3,
+              "height": 18,
+              "color": "#E0DED8",
+              "x": -8,
+              "y": 27,
+              "z": 10,
+              "rotationX": 105,
+              "rotationZ": -15,
+              "name": "arm-right"
+            },
+            {
+              "type": "sphere",
+              "size": 5,
+              "color": "#E0DED8",
+              "x": 6,
+              "y": 25,
+              "z": 20,
+              "name": "hand-left"
+            },
+            {
+              "type": "sphere",
+              "size": 5,
+              "color": "#E0DED8",
+              "x": -6,
+              "y": 25,
+              "z": 20,
+              "name": "hand-right"
+            },
+            {
+              "type": "cylinder",
+              "size": 3,
+              "height": 22,
+              "color": "#E0DED8",
+              "x": 5,
+              "y": 14,
+              "z": 0,
+              "rotationZ": 0,
+              "name": "leg-left",
+              "rotationX": 0
+            },
+            {
+              "type": "cylinder",
+              "size": 3,
+              "height": 22,
+              "color": "#E0DED8",
+              "x": -5,
+              "y": 14,
+              "z": 0,
+              "rotationZ": 0,
+              "name": "leg-right"
+            },
+            {
+              "type": "sphere",
+              "size": 5,
+              "color": "#E0DED8",
+              "x": 5,
+              "y": 2,
+              "z": 0,
+              "name": "foot-left"
+            },
+            {
+              "type": "sphere",
+              "size": 5,
+              "color": "#E0DED8",
+              "x": -5,
+              "y": 2,
+              "z": 0,
+              "name": "foot-right"
+            }
+          ]
+        },
+        {
+          "shapes": [
+            {
+              "type": "sphere",
+              "size": 14,
+              "color": "#E0DED8",
+              "x": 0,
+              "y": 40,
+              "z": 0,
+              "name": "head"
+            },
+            {
+              "type": "box",
+              "width": 16,
+              "height": 20,
+              "depth": 8,
+              "color": "#CFCBC0",
+              "x": 0,
+              "y": 24,
+              "z": 0,
+              "name": "body",
+              "rotationZ": 0,
+              "rotationY": 10
+            },
+            {
+              "type": "sphere",
+              "size": 3,
+              "color": "#000000",
+              "x": 4,
+              "y": 41,
+              "z": 5,
+              "name": "eye-left"
+            },
+            {
+              "type": "sphere",
+              "size": 3,
+              "color": "#000000",
+              "x": -4,
+              "y": 41,
+              "z": 5,
+              "name": "eye-right"
+            },
+            {
+              "type": "cylinder",
+              "size": 3,
+              "height": 18,
+              "color": "#E0DED8",
+              "x": 8,
+              "y": 29,
+              "z": 10,
+              "rotationX": 90,
+              "rotationZ": 15,
+              "name": "arm-left"
+            },
+            {
+              "type": "cylinder",
+              "size": 3,
+              "height": 18,
+              "color": "#E0DED8",
+              "x": -8,
+              "y": 25,
+              "z": 10,
+              "rotationX": 120,
+              "rotationZ": -15,
+              "name": "arm-right"
+            },
+            {
+              "type": "sphere",
+              "size": 5,
+              "color": "#E0DED8",
+              "x": 6,
+              "y": 29,
+              "z": 20,
+              "name": "hand-left"
+            },
+            {
+              "type": "sphere",
+              "size": 5,
+              "color": "#E0DED8",
+              "x": -6,
+              "y": 20,
+              "z": 20,
+              "name": "hand-right"
+            },
+            {
+              "type": "cylinder",
+              "size": 3,
+              "height": 22,
+              "color": "#E0DED8",
+              "x": 5,
+              "y": 14,
+              "z": -2,
+              "rotationZ": 0,
+              "name": "leg-left",
+              "rotationX": 15,
+              "rotationY": 0
+            },
+            {
+              "type": "cylinder",
+              "size": 3,
+              "height": 22,
+              "color": "#E0DED8",
+              "x": -5,
+              "y": 14,
+              "z": 2,
+              "rotationZ": 0,
+              "name": "leg-right",
+              "rotationX": -15
+            },
+            {
+              "type": "sphere",
+              "size": 5,
+              "color": "#E0DED8",
+              "x": 5,
+              "y": 2,
+              "z": -4,
+              "name": "foot-left"
+            },
+            {
+              "type": "sphere",
+              "size": 5,
+              "color": "#E0DED8",
+              "x": -5,
+              "y": 2,
+              "z": 6,
+              "name": "foot-right"
+            }
+          ]
+        },
+        {
+          "shapes": [
+            {
+              "type": "sphere",
+              "size": 14,
+              "color": "#E0DED8",
+              "x": 0,
+              "y": 41,
+              "z": 0,
+              "name": "head"
+            },
+            {
+              "type": "box",
+              "width": 16,
+              "height": 20,
+              "depth": 8,
+              "color": "#CFCBC0",
+              "x": 0,
+              "y": 24,
+              "z": 0,
+              "name": "body"
+            },
+            {
+              "type": "sphere",
+              "size": 3,
+              "color": "#000000",
+              "x": 4,
+              "y": 42,
+              "z": 5,
+              "name": "eye-left"
+            },
+            {
+              "type": "sphere",
+              "size": 3,
+              "color": "#000000",
+              "x": -4,
+              "y": 42,
+              "z": 5,
+              "name": "eye-right"
+            },
+            {
+              "type": "cylinder",
+              "size": 3,
+              "height": 18,
+              "color": "#E0DED8",
+              "x": 8,
+              "y": 27,
+              "z": 10,
+              "rotationX": 105,
+              "rotationZ": 15,
+              "name": "arm-left"
+            },
+            {
+              "type": "cylinder",
+              "size": 3,
+              "height": 18,
+              "color": "#E0DED8",
+              "x": -8,
+              "y": 27,
+              "z": 10,
+              "rotationX": 105,
+              "rotationZ": -15,
+              "name": "arm-right"
+            },
+            {
+              "type": "sphere",
+              "size": 5,
+              "color": "#E0DED8",
+              "x": 6,
+              "y": 25,
+              "z": 20,
+              "name": "hand-left"
+            },
+            {
+              "type": "sphere",
+              "size": 5,
+              "color": "#E0DED8",
+              "x": -6,
+              "y": 25,
+              "z": 20,
+              "name": "hand-right"
+            },
+            {
+              "type": "cylinder",
+              "size": 3,
+              "height": 22,
+              "color": "#E0DED8",
+              "x": 5,
+              "y": 14,
+              "z": 0,
+              "rotationZ": 0,
+              "name": "leg-left",
+              "rotationX": 0
+            },
+            {
+              "type": "cylinder",
+              "size": 3,
+              "height": 22,
+              "color": "#E0DED8",
+              "x": -5,
+              "y": 14,
+              "z": 0,
+              "rotationZ": 0,
+              "name": "leg-right"
+            },
+            {
+              "type": "sphere",
+              "size": 5,
+              "color": "#E0DED8",
+              "x": 5,
+              "y": 2,
+              "z": 0,
+              "name": "foot-left"
+            },
+            {
+              "type": "sphere",
+              "size": 5,
+              "color": "#E0DED8",
+              "x": -5,
+              "y": 2,
+              "z": 0,
+              "name": "foot-right"
+            }
+          ]
+        },
+        {
+          "shapes": [
+            {
+              "type": "sphere",
+              "size": 14,
+              "color": "#E0DED8",
+              "x": 0,
+              "y": 40,
+              "z": 0,
+              "name": "head"
+            },
+            {
+              "type": "box",
+              "width": 16,
+              "height": 20,
+              "depth": 8,
+              "color": "#CFCBC0",
+              "x": 0,
+              "y": 24,
+              "z": 0,
+              "name": "body",
+              "rotationY": -10
+            },
+            {
+              "type": "sphere",
+              "size": 3,
+              "color": "#000000",
+              "x": 4,
+              "y": 41,
+              "z": 5,
+              "name": "eye-left"
+            },
+            {
+              "type": "sphere",
+              "size": 3,
+              "color": "#000000",
+              "x": -4,
+              "y": 41,
+              "z": 5,
+              "name": "eye-right"
+            },
+            {
+              "type": "cylinder",
+              "size": 3,
+              "height": 18,
+              "color": "#E0DED8",
+              "x": 8,
+              "y": 25,
+              "z": 10,
+              "rotationX": 120,
+              "rotationZ": 15,
+              "name": "arm-left"
+            },
+            {
+              "type": "cylinder",
+              "size": 3,
+              "height": 18,
+              "color": "#E0DED8",
+              "x": -8,
+              "y": 29,
+              "z": 10,
+              "rotationX": 90,
+              "rotationZ": -15,
+              "name": "arm-right"
+            },
+            {
+              "type": "sphere",
+              "size": 5,
+              "color": "#E0DED8",
+              "x": 6,
+              "y": 20,
+              "z": 20,
+              "name": "hand-left"
+            },
+            {
+              "type": "sphere",
+              "size": 5,
+              "color": "#E0DED8",
+              "x": -6,
+              "y": 29,
+              "z": 20,
+              "name": "hand-right"
+            },
+            {
+              "type": "cylinder",
+              "size": 3,
+              "height": 22,
+              "color": "#E0DED8",
+              "x": 5,
+              "y": 14,
+              "z": 2,
+              "rotationZ": 0,
+              "name": "leg-left",
+              "rotationX": -15
+            },
+            {
+              "type": "cylinder",
+              "size": 3,
+              "height": 22,
+              "color": "#E0DED8",
+              "x": -5,
+              "y": 14,
+              "z": -2,
+              "rotationZ": 0,
+              "name": "leg-right",
+              "rotationX": 15
+            },
+            {
+              "type": "sphere",
+              "size": 5,
+              "color": "#E0DED8",
+              "x": 5,
+              "y": 2,
+              "z": 6,
+              "name": "foot-left"
+            },
+            {
+              "type": "sphere",
+              "size": 5,
+              "color": "#E0DED8",
+              "x": -5,
+              "y": 2,
+              "z": -4,
+              "name": "foot-right"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "electricResistance": 75,
+  "title": "skeleton"
+}

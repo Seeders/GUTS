@@ -1,0 +1,5 @@
+{
+  "title": "Script Editor",
+  "html": "            <div id=\"script-editor-container\" class=\"main-content-container\">\n                <div id=\"script-editor-sidebar\" class=\"content-sidebar\">                    \n                    <h3>Script Editor</h3>\n                    <button id=\"save-script-btn\">Save Script</button>\n                </div>\n                <div class=\"grid-background\">\n                    <div>\n                        <textarea id=\"script-editor\" class=\"script-editor\" placeholder=\"Enter your script here...\"></textarea>                    \n                        <div class=\"handle\"></div>\n                    </div>\n                </div>\n            </div>\n",
+  "css": ""
+}

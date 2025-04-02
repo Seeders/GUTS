@@ -1,0 +1,16 @@
+{
+  "title": "Tower",
+  "components": [
+    "stats",
+    "animator",
+    "arrayTracker",
+    "leveler",
+    "buildable",
+    "populationBurden",
+    "attacker"
+  ],
+  "renderers": [
+    "renderer",
+    "rangeIndicator"
+  ]
+}

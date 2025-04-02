@@ -1,0 +1,92 @@
+{
+  "title": "Smoke",
+  "render": {
+    "animations": {
+      "idle": [
+        {
+          "shapes": []
+        },
+        {
+          "shapes": [
+            {
+              "type": "sphere",
+              "size": 5,
+              "color": "#1c1c24",
+              "x": null,
+              "y": 0,
+              "z": 0,
+              "rotationX": 0,
+              "rotationY": 0,
+              "rotationZ": 0
+            }
+          ]
+        },
+        {
+          "shapes": [
+            {
+              "type": "sphere",
+              "size": 10,
+              "color": "#63637e",
+              "x": null,
+              "y": 0,
+              "z": 0,
+              "rotationX": 0,
+              "rotationY": 0,
+              "rotationZ": 0
+            }
+          ]
+        },
+        {
+          "shapes": [
+            {
+              "type": "sphere",
+              "size": 12,
+              "color": "#63637e",
+              "x": null,
+              "y": 0,
+              "z": 0,
+              "rotationX": 0,
+              "rotationY": 0,
+              "rotationZ": 0
+            }
+          ]
+        }
+      ],
+      "emerge": [
+        {
+          "shapes": [
+            {
+              "type": "sphere",
+              "size": 0,
+              "color": "#000000",
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "rotationX": 0,
+              "rotationY": 0,
+              "rotationZ": 0,
+              "alpha": 0
+            }
+          ]
+        },
+        {
+          "shapes": [
+            {
+              "type": "sphere",
+              "size": 5,
+              "color": "#000000",
+              "x": 0,
+              "y": 24,
+              "z": 0,
+              "rotationX": 0,
+              "rotationY": 0,
+              "rotationZ": 0,
+              "alpha": 1
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "lifeSpan": 0.66
+}

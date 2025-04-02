@@ -1,0 +1,238 @@
+{
+  "title": "Barracks",
+  "info": "Provides 5 additional max population.",
+  "cost": 100,
+  "attackSpeed": 1000,
+  "critChance": 0.1,
+  "critMultiplier": 2,
+  "supply": 5,
+  "render": {
+    "animations": {
+      "idle": [
+        {
+          "shapes": [
+            {
+              "type": "box",
+              "width": 40,
+              "height": 4,
+              "depth": 40,
+              "color": "#303040",
+              "x": 0,
+              "y": 2,
+              "z": 0
+            },
+            {
+              "type": "box",
+              "width": 36,
+              "height": 12,
+              "depth": 36,
+              "color": "#404050",
+              "x": 0,
+              "y": 10,
+              "z": 0
+            },
+            {
+              "type": "box",
+              "width": 40,
+              "height": 2,
+              "depth": 40,
+              "color": "#505060",
+              "x": 0,
+              "y": 17,
+              "z": 0
+            },
+            {
+              "type": "cylinder",
+              "size": 12,
+              "height": 12,
+              "color": "#2288cc",
+              "x": -16,
+              "y": 24,
+              "z": 0
+            },
+            {
+              "type": "torus",
+              "size": 12,
+              "tubeSize": 1,
+              "color": "#44aaff",
+              "x": -16,
+              "y": 24,
+              "z": 0,
+              "rotationX": 90
+            },
+            {
+              "type": "torus",
+              "size": 12,
+              "tubeSize": 1,
+              "color": "#44aaff",
+              "x": -16,
+              "y": 28,
+              "z": 0,
+              "rotationX": 90
+            },
+            {
+              "type": "torus",
+              "size": 12,
+              "tubeSize": 1,
+              "color": "#44aaff",
+              "x": -16,
+              "y": 20,
+              "z": 0,
+              "rotationX": 90
+            },
+            {
+              "type": "cylinder",
+              "size": 12,
+              "height": 12,
+              "color": "#2288cc",
+              "x": 16,
+              "y": 24,
+              "z": 0
+            },
+            {
+              "type": "torus",
+              "size": 12,
+              "tubeSize": 1,
+              "color": "#44aaff",
+              "x": 16,
+              "y": 24,
+              "z": 0,
+              "rotationX": 90
+            },
+            {
+              "type": "torus",
+              "size": 12,
+              "tubeSize": 1,
+              "color": "#44aaff",
+              "x": 16,
+              "y": 28,
+              "z": 0,
+              "rotationX": 90
+            },
+            {
+              "type": "torus",
+              "size": 12,
+              "tubeSize": 1,
+              "color": "#44aaff",
+              "x": 16,
+              "y": 20,
+              "z": 0,
+              "rotationX": 90
+            },
+            {
+              "type": "cylinder",
+              "size": 16,
+              "height": 6,
+              "color": "#333333",
+              "x": 0,
+              "y": 20,
+              "z": 0
+            },
+            {
+              "type": "cylinder",
+              "size": 14,
+              "height": 2,
+              "color": "#444444",
+              "x": 0,
+              "y": 24,
+              "z": 0
+            },
+            {
+              "type": "cylinder",
+              "size": 12,
+              "height": 2,
+              "color": "#2288cc",
+              "x": 0,
+              "y": 26,
+              "z": 0
+            },
+            {
+              "type": "box",
+              "width": 6,
+              "height": 6,
+              "depth": 6,
+              "color": "#cc2200",
+              "x": -14,
+              "y": 9,
+              "z": -14
+            },
+            {
+              "type": "box",
+              "width": 6,
+              "height": 6,
+              "depth": 6,
+              "color": "#cc6600",
+              "x": 0,
+              "y": 9,
+              "z": -14
+            },
+            {
+              "type": "box",
+              "width": 6,
+              "height": 6,
+              "depth": 6,
+              "color": "#ccaa00",
+              "x": 14,
+              "y": 9,
+              "z": -14
+            },
+            {
+              "type": "sphere",
+              "size": 3,
+              "color": "#44aaff",
+              "x": 0,
+              "y": 28,
+              "z": 0
+            },
+            {
+              "type": "box",
+              "width": 40,
+              "height": 1,
+              "depth": 24,
+              "color": "#444455",
+              "x": 0,
+              "y": 18.5,
+              "z": 0
+            },
+            {
+              "type": "cylinder",
+              "size": 2,
+              "height": 4,
+              "color": "#aa0000",
+              "x": -18,
+              "y": 20.5,
+              "z": -8
+            },
+            {
+              "type": "cylinder",
+              "size": 2,
+              "height": 4,
+              "color": "#aa0000",
+              "x": 18,
+              "y": 20.5,
+              "z": -8
+            },
+            {
+              "type": "cylinder",
+              "size": 2,
+              "height": 4,
+              "color": "#aa0000",
+              "x": -18,
+              "y": 20.5,
+              "z": 8
+            },
+            {
+              "type": "cylinder",
+              "size": 2,
+              "height": 4,
+              "color": "#aa0000",
+              "x": 18,
+              "y": 20.5,
+              "z": 8
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

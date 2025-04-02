@@ -1,0 +1,3 @@
+  init() {        
+        this.placed = false;
+    }

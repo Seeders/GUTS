@@ -1,0 +1,4 @@
+{
+  "desc": "Towers take 20% less damage from enemy abilities",
+  "towerDamageReduction": 0.8
+}

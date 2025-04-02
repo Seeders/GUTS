@@ -1,0 +1,130 @@
+{
+  "title": "Chrono Defibrilator",
+  "info": "Projectiles explode in AoE and slow.",
+  "cost": 100,
+  "population": 3,
+  "range": 90,
+  "damage": 2,
+  "attackSpeed": 0.5,
+  "projectile": "cryoMist",
+  "critMultiplier": 1,
+  "splashRadius": 2,
+  "slowEffect": 0.7,
+  "render": {
+    "animations": {
+      "idle": [
+        {
+          "shapes": [
+            {
+              "type": "torus",
+              "size": 36,
+              "tubeSize": 4,
+              "x": 0,
+              "y": 16,
+              "z": 0,
+              "rotationX": 60,
+              "color": "#50D0FF"
+            },
+            {
+              "type": "torus",
+              "size": 36,
+              "tubeSize": 4,
+              "x": 0,
+              "y": 16,
+              "z": 0,
+              "rotationY": 60,
+              "color": "#50D0FF"
+            },
+            {
+              "type": "cylinder",
+              "size": 22,
+              "height": 10,
+              "x": 0,
+              "y": 5,
+              "z": 0,
+              "color": "#333333"
+            },
+            {
+              "type": "cylinder",
+              "size": 16,
+              "height": 14,
+              "x": 0,
+              "y": 17,
+              "z": 0,
+              "color": "#222222"
+            },
+            {
+              "type": "sphere",
+              "size": 12,
+              "x": 0,
+              "y": 16,
+              "z": 0,
+              "color": "#A0E6FF"
+            },
+            {
+              "type": "tetrahedron",
+              "size": 10,
+              "x": 0,
+              "y": 16,
+              "z": 0,
+              "rotationY": 45,
+              "color": "#203040"
+            },
+            {
+              "type": "cone",
+              "size": 8,
+              "height": 16,
+              "x": 0,
+              "y": 32,
+              "z": 0,
+              "rotationX": 180,
+              "color": "#444444"
+            },
+            {
+              "type": "box",
+              "width": 38,
+              "height": 4,
+              "depth": 38,
+              "x": 0,
+              "y": 2,
+              "z": 0,
+              "color": "#555555"
+            },
+            {
+              "type": "sphere",
+              "size": 4,
+              "x": 14,
+              "y": 12,
+              "z": 14,
+              "color": "#C0FFFF"
+            },
+            {
+              "type": "sphere",
+              "size": 4,
+              "x": -14,
+              "y": 12,
+              "z": 14,
+              "color": "#C0FFFF"
+            },
+            {
+              "type": "sphere",
+              "size": 4,
+              "x": 14,
+              "y": 12,
+              "z": -14,
+              "color": "#C0FFFF"
+            },
+            {
+              "type": "sphere",
+              "size": 4,
+              "x": -14,
+              "y": 12,
+              "z": -14,
+              "color": "#C0FFFF"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

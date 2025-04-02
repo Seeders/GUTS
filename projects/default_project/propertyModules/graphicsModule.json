@@ -1,0 +1,18 @@
+{
+  "title": "Graphics Editor",
+  "container": "graphics-editor-container",
+  "libraries": [
+    "threejs",
+    "three.OrbitControls",
+    "GLTFLoader",
+    "ShapeFactory",
+    "graphicsEditor"
+  ],
+  "propertyName": "render",
+  "className": "GraphicsEditor",
+  "interface": "graphicsEditor",
+  "inputElement": "textarea",
+  "inputDataType": "json",
+  "loadHook": "renderGraphicsObject",
+  "saveHook": "saveGraphicsObject"
+}

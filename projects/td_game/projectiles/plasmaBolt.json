@@ -1,0 +1,63 @@
+{
+  "damageType": "physical",
+  "render": {
+    "animations": {
+      "idle": [
+        {
+          "shapes": [
+            {
+              "type": "cube",
+              "size": 6,
+              "x": 0,
+              "y": 24,
+              "z": 0,
+              "rotationX": 90,
+              "color": "#ee6060"
+            }
+          ]
+        },
+        {
+          "shapes": [
+            {
+              "type": "sphere",
+              "size": 6,
+              "x": 0,
+              "y": 24,
+              "z": 0,
+              "rotationX": 90,
+              "color": "#ee6060"
+            }
+          ]
+        },
+        {
+          "shapes": [
+            {
+              "type": "cube",
+              "size": 8,
+              "x": 0,
+              "y": 24,
+              "z": 0,
+              "rotationX": 90,
+              "color": "#ee6060"
+            }
+          ]
+        },
+        {
+          "shapes": [
+            {
+              "type": "sphere",
+              "size": 8,
+              "x": 0,
+              "y": 24,
+              "z": 0,
+              "rotationX": 90,
+              "color": "#ee6060"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "speed": 50,
+  "title": "Plasma Bolt"
+}
