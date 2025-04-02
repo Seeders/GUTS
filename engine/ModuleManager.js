@@ -191,8 +191,9 @@ export class ModuleManager {
             let html = ui.html;
             let css = ui.css;
             let modals = ui.modals;
-            this.mainContentContainer.innerHTML += html;
-
+            if( html ) {
+              this.mainContentContainer.innerHTML += html;
+            }
             if (css) {
                 let styleTag = document.createElement('style');
                 styleTag.innerHTML = css;
