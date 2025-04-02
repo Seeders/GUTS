@@ -280,6 +280,81 @@ export class EditorModel {
         return typeDef ? typeDef.category : null;
     }
 
+    
+    findMatchingTypes(key) {
+      const matchingTypePlural = this.getCollectionDefs().find(t => 
+          t.id.toLowerCase() === key.toLowerCase());
+      
+      const matchingTypeSingular = this.getCollectionDefs().find(t => 
+          t.singular.replace(/ /g,'').toLowerCase() === key.toLowerCase());
+      
+      const matchingModuleType = Object.values(this.getCollections().propertyModules).find((t) => {
+          return (t.propertyName && t.propertyName.toLowerCase() === key.toLowerCase()) ||
+                (t.propertyNames && JSON.parse(t.propertyNames).some(name => 
+                    name.toLowerCase() === key.toLowerCase()));
+      });
+      
+      return { matchingTypePlural, matchingTypeSingular, matchingModuleType };
+    }
+
+    /**
+     * Searches for references to a specific object property across all collections
+     * @param {string} objectType - Type of the object (e.g. 'configs')
+     * @param {string} objectId - ID of the object (e.g. 'game')
+     * @param {string} propertyName - Name of the property to search for (e.g. 'canvasWidth')
+     * @returns {Array} Array of references found with their locations and context
+     */
+    findPropertyReferences(objectType, objectId, propertyName) {
+      // Get all collections from the current project
+      const collections = this.getCollections();
+      const collectionDefs = this.getCollectionDefs();
+      const references = [];
+      
+      // Find the singular and plural forms for the object type
+      const typeDef = collectionDefs.find(def => def.id === objectType);
+      const pluralType = typeDef ? typeDef.name : objectType;
+      const singularType = typeDef ? typeDef.singular : objectType.slice(0, -1);
+            
+      // Recursive function to search an object for references
+      const searchObject = (obj, path, parentObj) => {
+          if (!obj || typeof obj !== 'object') return;
+          
+          // Check if this is the source property itself to avoid self-references
+          if (path === `${objectType}.${objectId}` || 
+              path === `${objectType}.${objectId}.${propertyName}`) {
+              return;
+          }
+          
+          // Check each property of the object
+          for (const [key, value] of Object.entries(obj)) {
+              const currentPath = path ? `${path}.${key}` : key;
+              
+              // Check if this is a string that contains our reference
+              if (typeof value === 'string') {
+
+                    if (value.includes(propertyName)) {
+                        references.push({
+                            path: currentPath,
+                            value: value
+                        });
+                    }
+                
+              } 
+              // Continue searching recursively if it's an object
+              else if (typeof value === 'object' && value !== null) {
+                  searchObject(value, currentPath, obj);
+              }
+          }
+      };
+      
+      // Search through all collections
+      for (const [typeId, typeObjects] of Object.entries(collections)) {
+          searchObject(typeObjects, typeId, collections);
+      }
+      
+      return references;
+    }
+
     /**
      * Returns the identifier of the current project
      * @returns {string} Current project identifier
