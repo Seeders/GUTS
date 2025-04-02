@@ -155,7 +155,7 @@ export class EditorView {
       propertyItem.appendChild(keyInput);
       
       // Get matching types for special handling
-      const { matchingTypePlural, matchingTypeSingular, matchingModuleType } = this.findMatchingTypes(key);
+      const { matchingTypePlural, matchingTypeSingular, matchingModuleType } = this.model.findMatchingTypes(key);
       
       // Create value input based on property type
       if (key === 'color') {
@@ -199,35 +199,6 @@ export class EditorView {
         return valueContainer;
     }
     
-    findMatchingTypes(key) {
-        const matchingTypePlural = this.model.getCollectionDefs().find(t => 
-            t.id.toLowerCase() === key.toLowerCase());
-        
-        const matchingTypeSingular = this.model.getCollectionDefs().find(t => 
-            t.singular.replace(/ /g,'').toLowerCase() === key.toLowerCase());
-        
-        const matchingModuleType = Object.values(this.model.getCollections().propertyModules).find((t) => {
-            return (t.propertyName && t.propertyName.toLowerCase() === key.toLowerCase()) ||
-                  (t.propertyNames && this.parsePropertyNames(t.propertyNames).some(name => 
-                      name.toLowerCase() === key.toLowerCase()));
-        });
-        
-        return { matchingTypePlural, matchingTypeSingular, matchingModuleType };
-    }
-    
-    parsePropertyNames(propertyNames) {
-        // Handle propertyNames safely, checking if it's already an array or needs parsing
-        if (Array.isArray(propertyNames)) {
-            return propertyNames;
-        }
-        
-        try {
-            return JSON.parse(propertyNames);
-        } catch (e) {
-            console.error("Error parsing propertyNames:", e);
-            return [];
-        }
-    }
     
     appendColorInput(propertyItem, value) {
         const valueContainer = this.createValueContainer();
@@ -539,8 +510,7 @@ export class EditorView {
             if (module.propertyNames) {
                 // Safely parse propertyNames if it's a string
                 const propertyNames = Array.isArray(module.propertyNames) ? 
-                    module.propertyNames : 
-                    this.parsePropertyNames(module.propertyNames);
+                    module.propertyNames : JSON.parse(module.propertyNames);
                 
                 // Find the first property in the array that exists in the object
                 const foundProperty = propertyNames.find(propName => object.hasOwnProperty(propName));
