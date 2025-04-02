@@ -1,16 +1,16 @@
 {
   "title": "Enemy",
   "components": [
-    "stats",
-    "animator",
-    "essenceBounty",
-    "followPath",
-    "spacialGridEntity",
-    "arrayTracker"
+    "Stats",
+    "Animator",
+    "EssenceBounty",
+    "FollowPath",
+    "SpacialGridEntity",
+    "ArrayTracker"
   ],
   "renderers": [
-    "renderer",
-    "health",
-    "energyShield"
+    "Renderer",
+    "Health",
+    "EnergyShield"
   ]
 }

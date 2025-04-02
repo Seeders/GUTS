@@ -1,11 +1,11 @@
 {
   "title": "Particle",
   "components": [
-    "stats",
-    "lifeSpan",
-    "animator"
+    "Stats",
+    "LifeSpan",
+    "Animator"
   ],
   "renderers": [
-    "renderer"
+    "Renderer"
   ]
 }

@@ -1,12 +1,12 @@
 {
   "title": "Projectile",
   "components": [
-    "stats",
-    "animator",
-    "arrayTracker",
-    "projectile"
+    "Stats",
+    "Animator",
+    "ArrayTracker",
+    "Projectile"
   ],
   "renderers": [
-    "renderer"
+    "Renderer"
   ]
 }

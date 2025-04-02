@@ -169,7 +169,7 @@ class TerrainMapEditor {
             this.terrainTileMapper = this.gameEditor.editorModuleInstances.TileMap;
             this.terrainTileMapper.init(this.terrainCanvasBuffer, this.gameEditor.getCollections().configs.game.gridSize, terrainImages, this.gameEditor.getCollections().configs.game.isIsometric);
             this.game = { state: {}, terrainTileMapper: this.terrainTileMapper, config: this.gameEditor.getCollections(), translator: this.translator };
-            this.mapRenderer = new (this.gameEditor.scriptContext.getRenderer("mapRenderer"))(this.game, null,
+            this.mapRenderer = new (this.gameEditor.scriptContext.getRenderer("MapRenderer"))(this.game, null,
                 { 
                     gameConfig: this.config, 
                     terrainCanvasBuffer: this.terrainCanvasBuffer, 
@@ -561,7 +561,7 @@ class TerrainMapEditor {
             this.terrainCanvasBuffer = document.createElement('canvas');
             this.terrainCanvasBuffer.width = this.canvasEl.width;
             this.terrainCanvasBuffer.height = this.canvasEl.height;
-            this.mapRenderer = new (this.gameEditor.scriptContext.getRenderer("mapRenderer"))(this.game, null,
+            this.mapRenderer = new (this.gameEditor.scriptContext.getRenderer("MapRenderer"))(this.game, null,
                 { 
                     gameConfig: this.config, 
                     terrainCanvasBuffer: this.terrainCanvasBuffer, 
@@ -613,7 +613,7 @@ class TerrainMapEditor {
 
     updateCanvasWithData() {
         if(this.tileMap.terrainMap.length > 0){
-            this.mapManager = new (this.gameEditor.scriptContext.getComponent("mapManager"))(this.game, null, { level: { tileMap: this.tileMap } });
+            this.mapManager = new (this.gameEditor.scriptContext.getComponent("MapManager"))(this.game, null, { level: { tileMap: this.tileMap } });
             this.mapRenderer.isMapCached = false;
             let map = this.mapManager.generateMap(this.tileMap);
             this.mapRenderer.renderBG({}, this.tileMap, map.tileMap, [], true);

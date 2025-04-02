@@ -2,6 +2,6 @@
   "title": "Explosion",
   "components": [],
   "renderers": [
-    "explosion"
+    "Explosion"
   ]
 }

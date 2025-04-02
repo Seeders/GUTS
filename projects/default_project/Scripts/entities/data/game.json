@@ -1,13 +1,13 @@
 {
   "title": "Game",
   "components": [
-    "mapManager",
-    "waveManager",
-    "upgradeManager",
-    "game"
+    "MapManager",
+    "WaveManager",
+    "UpgradeManager",
+    "Game"
   ],
   "renderers": [
-    "mapRenderer",
-    "uiManager"
+    "MapRenderer",
+    "UiManager"
   ]
 }
