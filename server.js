@@ -29,14 +29,12 @@ const fileTimestamps = new Map();
 app.post('/save-config', async (req, res) => {
     const config = req.body;
     const filePath1 = path.join(CONFIG_DIR, 'default_app_config.js');
-    const filePath2 = path.join(CONFIG_DIR, 'game_td_config.js');
 
     try {
         if (!fsSync.existsSync(CONFIG_DIR)) {
             await fs.mkdir(CONFIG_DIR, { recursive: true });
         }
         await fs.writeFile(filePath1, "const DEFAULT_PROJECT_CONFIG = " + JSON.stringify(config, null, 2) + "; \n\n export { DEFAULT_PROJECT_CONFIG };", 'utf8');
-        await fs.writeFile(filePath2, "const TOWER_DEFENSE_CONFIG = " + JSON.stringify(config, null, 2) + "; \n\n export { TOWER_DEFENSE_CONFIG };", 'utf8');
         res.status(200).send('Config saved successfully!');
     } catch (error) {
         console.error('Error saving config:', error);

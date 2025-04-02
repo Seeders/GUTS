@@ -55,18 +55,19 @@ export class EditorModel {
           localStorage.setItem('version', this.getCurrentVersion());
         }
         let defaultProjects = [];
-          Object.keys(this.defaultProjects).forEach((key) => {
+        Object.keys(this.defaultProjects).forEach((key) => {
             defaultProjects.push(key);
-              if (!localStorage.getItem(key)) {
-                  localStorage.setItem(key, JSON.stringify(this.defaultProjects[key]));
-              }
-          });
-          if(!localStorage.getItem('projects')){
+            if (!localStorage.getItem(key) && window.location.hostname != "localhost") {
+                localStorage.setItem(key, JSON.stringify(this.defaultProjects[key]));
+            }
+        });
+        if(!localStorage.getItem('projects')){
             localStorage.setItem('projects', JSON.stringify(defaultProjects));
-          }
-          if(window.location.hostname == "localhost"){
+        }
+        if(window.location.hostname == "localhost"){
             localStorage.setItem('saveToFile',1);
-          }
+            return;
+        }
     }
 
 
@@ -90,22 +91,27 @@ export class EditorModel {
      * @returns {Object} The loaded project data
      */
     async loadProject(name) {
-        const config = localStorage.getItem(name);
-        
-        if (!config) {
-            // Fallback to default project if selected doesn't exist
-            this.state.currentProject = "default_project";
-            this.state.project = DEFAULT_PROJECT_CONFIG;
-        } else {
-            this.state.currentProject = name;
-            this.state.project = JSON.parse(config);
-        }
+        if(window.location.hostname != "localhost") {
+            const config = localStorage.getItem(name);
+            
+            if (!config) {
+                // Fallback to default project if selected doesn't exist
+                this.state.currentProject = "default_project";
+                this.state.project = DEFAULT_PROJECT_CONFIG;
+            } else {
+                this.state.currentProject = name;
+                this.state.project = JSON.parse(config);
+            }
 
-        try {
-            // Remember current project for next session
-            localStorage.setItem("currentProject", this.state.currentProject);
-        } catch (e) {
-            console.warn('Error saving to localStorage:', e);
+            try {
+                // Remember current project for next session
+                localStorage.setItem("currentProject", this.state.currentProject);
+            } catch (e) {
+                console.warn('Error saving to localStorage:', e);
+            }
+        } else {
+            this.state.currentProject = this.getInitialProject();
+            this.state.project = DEFAULT_PROJECT_CONFIG;
         }
 
         return this.state.project;
@@ -121,11 +127,13 @@ export class EditorModel {
 
         const configText = JSON.stringify(this.state.project);
         try {
-            // Save to localStorage
-            localStorage.setItem(this.state.currentProject, configText);
             
+            if(window.location.hostname != "localhost") {
+                // Save to localStorage
+                localStorage.setItem(this.state.currentProject, configText);
+            } else {
             // If server saving is enabled, send config to server
-            if (localStorage.getItem("saveToFile") == 1) {
+            
                 fetch('/save-config', {
                     method: 'POST',
                     headers: {
@@ -147,6 +155,7 @@ export class EditorModel {
             console.error('Failed to save project:', e);
             return false;
         }
+        
         return true;
     }
 

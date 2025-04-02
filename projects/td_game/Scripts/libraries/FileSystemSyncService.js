@@ -388,16 +388,55 @@ class FileSystemSyncService {
         })
         .catch(error => console.error('Error listing files:', error));
     }
-    loadFilesForObject(collectionId, objectId, files) {
+    loadFilesForObject(collectionIdFromPath, objectId, files) {
         const currentCollections = this.gameEditor.model.getCollections();
-        if (!currentCollections[collectionId]) currentCollections[collectionId] = {};
-        let objectData = currentCollections[collectionId][objectId] || {};
-
-        // Process each file for this object
+        const filePathParts = files[0].name.split('/');
+        const fsCategory = filePathParts[filePathParts.length - 3]; // e.g., "Scripts"
+        const fsTypeFolder = filePathParts[filePathParts.length - 2]; // e.g., "things"
+    
+        // Default to the filesystem folder name as the new collectionId
+        const newCollectionId = fsTypeFolder;
+        if (!currentCollections[newCollectionId]) currentCollections[newCollectionId] = {};
+        let objectData = currentCollections[newCollectionId][objectId] || {};
+    
+        // Get type definitions
+        const typeDefs = this.gameEditor.model.getCollectionDefs();
+        const oldTypeDef = typeDefs.find(t => t.id === collectionIdFromPath);
+    
+        // If the folder name differs from the original typeId, update the typeDef
+        if (oldTypeDef && oldTypeDef.id !== fsTypeFolder) {
+            console.log(`Renaming collection from ${oldTypeDef.id} to ${fsTypeFolder}`);
+    
+            // Move collection data from old to new typeId
+            if (currentCollections[oldTypeDef.id]) {
+                currentCollections[newCollectionId] = { ...currentCollections[oldTypeDef.id] };
+                delete currentCollections[oldTypeDef.id];
+            }
+    
+            // Update the typeDef
+            const newName = fsTypeFolder.charAt(0).toUpperCase() + fsTypeFolder.slice(1); // e.g., "Things"
+            const newSingular = oldTypeDef.singular || (fsTypeFolder.endsWith('s') ? fsTypeFolder.slice(0, -1) : fsTypeFolder); // e.g., "Thing"
+            oldTypeDef.id = fsTypeFolder;
+            oldTypeDef.name = newName; // Update plural form
+            oldTypeDef.singular = newSingular; // Preserve or regenerate singular
+            console.log(`Updated typeDef: id: ${fsTypeFolder}, name: ${newName}, singular: ${newSingular}`);
+        }
+    
+        // Update category if it differs
+        const currentCategory = this.gameEditor.model.getCategoryByType(newCollectionId);
+        if (currentCategory !== fsCategory) {
+            const typeDef = typeDefs.find(t => t.id === newCollectionId);
+            if (typeDef) {
+                typeDef.category = fsCategory;
+                console.log(`Updated category for ${newCollectionId} to ${fsCategory}`);
+            }
+        }
+    
+        // Process each file
         const promises = files.map(fileInfo => {
             const filePath = fileInfo.name;
             const fileExt = filePath.substring(filePath.lastIndexOf('.') + 1);
-
+    
             return fetch('/read-file', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -409,27 +448,25 @@ class FileSystemSyncService {
             })
             .then(content => {
                 if (fileExt === 'js') {
-                    // Update only the script property
                     objectData.script = content;
                 } else if (fileExt === 'json') {
-                    // Update all properties except script
                     const newData = JSON.parse(content);
                     const existingScript = objectData.script;
                     objectData = { ...newData };
-                    if (existingScript) objectData.script = existingScript; // Preserve script if it exists
+                    if (existingScript) objectData.script = existingScript;
                 }
             });
         });
-
+    
         Promise.all(promises)
             .then(() => {
-                currentCollections[collectionId][objectId] = objectData;
+                currentCollections[newCollectionId][objectId] = objectData;
                 this.gameEditor.model.saveProject();
                 const updateEvent = new CustomEvent('projectUpdated', { cancelable: true });
                 document.body.dispatchEvent(updateEvent);
-                console.log(`Updated object ${collectionId}/${objectId} in editor`);
+                console.log(`Updated object ${newCollectionId}/${objectId} in editor`);
             })
-            .catch(error => console.error(`Error loading files for ${collectionId}/${objectId}:`, error));
+            .catch(error => console.error(`Error loading files for ${newCollectionId}/${objectId}:`, error));
     }
 
     loadFileFromFilesystem(collectionId, folderPath, fileInfo) {
