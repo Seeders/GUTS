@@ -1,0 +1,474 @@
+class FileSystemSyncService {
+    constructor(gameEditor) {
+        this.gameEditor = gameEditor;
+        this.elements = {};
+        this.syncConfig = {
+            enabled: false,
+            autoSync: true,
+            syncInterval: 3000
+        };
+        this.intervalId = null;
+        this.lastSyncTime = Date.now();
+        this.pendingChanges = {};
+
+        this.init();
+    }
+
+    init() {
+        this.setupUI();
+        this.setupHooks();
+        this.loadSyncConfig();
+        
+        if (this.syncConfig.enabled && this.syncConfig.autoSync) {
+            this.startSync();
+        }
+    }
+
+    setupUI() {
+        const modal = document.createElement('div');
+        modal.id = 'modal-FileSystemSyncPanel';
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Filesystem Sync Settings</h2>
+                    <span class="close">×</span>
+                </div>
+                <div class="modal-body">
+                    <div class="settings-form">
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="fs-sync-enabled"> 
+                                Enable Filesystem Sync
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="fs-auto-sync"> 
+                                Auto-sync Changes
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label for="fs-sync-interval">Sync Interval (ms):</label>
+                            <input type="number" id="fs-sync-interval" min="1000" step="500" value="3000">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="save-fs-settings" class="btn primary">Save Settings</button>
+                    <button id="sync-now-btn" class="btn">Sync Now</button>
+                    <button id="save-project-btn" class="btn">Save Project to FS</button>
+                    <button id="import-project-btn" class="btn">Import Project from FS</button>
+                    <button id="close-fs-settings" class="btn">Cancel</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        this.elements = {
+            modal: modal,
+            enabledCheckbox: modal.querySelector('#fs-sync-enabled'),
+            autoSyncCheckbox: modal.querySelector('#fs-auto-sync'),
+            syncIntervalInput: modal.querySelector('#fs-sync-interval'),
+            saveSettingsBtn: modal.querySelector('#save-fs-settings'),
+            syncNowBtn: modal.querySelector('#sync-now-btn'),
+            saveProjectBtn: modal.querySelector('#save-project-btn'),
+            importProjectBtn: modal.querySelector('#import-project-btn'),
+            closeBtn: modal.querySelector('#close-fs-settings'),
+            closeX: modal.querySelector('.close')
+        };
+
+        if (this.elements.fsyncBtn) this.elements.fsyncBtn.remove();
+        this.elements.fsyncBtn = document.createElement('button');
+        this.elements.fsyncBtn.innerHTML = "FS Sync";
+        this.elements.fsyncBtn.id = 'fs-sync-btn';
+        this.elements.fsyncBtn.title = "Configure Filesystem Sync";
+        this.gameEditor.elements.sidebar.querySelector(".sidebar-actions>.primary")?.after(this.elements.fsyncBtn);
+
+        if (this.elements.syncIndicator) this.elements.syncIndicator.remove();
+        this.elements.syncIndicator = document.createElement('span');
+        this.elements.syncIndicator.id = 'fs-sync-indicator';
+        this.elements.syncIndicator.className = this.syncConfig.enabled ? 'active' : 'inactive';
+        this.elements.syncIndicator.title = this.syncConfig.enabled ? 'Sync Active' : 'Sync Inactive';
+        this.elements.fsyncBtn.appendChild(this.elements.syncIndicator);
+
+        this.setupEventListeners();
+    }
+
+    setupEventListeners() {
+        this.elements.fsyncBtn.addEventListener('click', () => this.showSettings());
+        this.elements.closeBtn.addEventListener('click', () => this.hideSettings());
+        this.elements.closeX.addEventListener('click', () => this.hideSettings());
+        this.elements.saveSettingsBtn.addEventListener('click', () => {
+            this.saveSettings();
+            this.hideSettings();
+        });
+        this.elements.syncNowBtn.addEventListener('click', () => this.syncNow());
+        this.elements.saveProjectBtn.addEventListener('click', () => this.saveProjectToFilesystem());
+        this.elements.importProjectBtn.addEventListener('click', () => this.importProjectFromFilesystem());
+
+        window.addEventListener('click', (event) => {
+            if (event.target === this.elements.modal) {
+                this.hideSettings();
+            }
+        });
+    }
+
+    setupHooks() {
+        document.body.addEventListener('saveProject', () => {
+            if (this.syncConfig.enabled) this.queueSync();
+        });
+        document.body.addEventListener('saveObject', () => {
+            if (this.syncConfig.enabled) this.queueSync();
+        });
+        document.body.addEventListener('loadProject', () => {
+            if (this.syncConfig.enabled) {
+                this.loadSyncConfig();
+                this.syncNow();
+            }
+        });
+    }
+
+    showSettings() {
+        this.elements.enabledCheckbox.checked = this.syncConfig.enabled;
+        this.elements.autoSyncCheckbox.checked = this.syncConfig.autoSync;
+        this.elements.syncIntervalInput.value = this.syncConfig.syncInterval;
+        this.elements.modal.classList.add('show');
+    }
+
+    hideSettings() {
+        this.elements.modal.classList.remove('show');
+    }
+
+    saveSettings() {
+        this.syncConfig.enabled = this.elements.enabledCheckbox.checked;
+        this.syncConfig.autoSync = this.elements.autoSyncCheckbox.checked;
+        this.syncConfig.syncInterval = parseInt(this.elements.syncIntervalInput.value) || 3000;
+
+        this.saveSyncConfig();
+
+        if (this.syncConfig.enabled && this.syncConfig.autoSync) {
+            this.startSync();
+        } else {
+            this.stopSync();
+        }
+
+        this.elements.syncIndicator.className = this.syncConfig.enabled ? 'active' : 'inactive';
+        this.elements.syncIndicator.title = this.syncConfig.enabled ? 'Sync Active' : 'Sync Inactive';
+
+        if (this.syncConfig.enabled) {
+            this.syncNow();
+        }
+    }
+
+    loadSyncConfig() {
+        const projectId = this.gameEditor.model.getCurrentProject();
+        const savedConfig = localStorage.getItem(`${projectId}_fs_sync_config`);
+        
+        if (savedConfig) {
+            try {
+                this.syncConfig = JSON.parse(savedConfig);
+            } catch (e) {
+                console.error('Failed to parse saved sync config:', e);
+            }
+        }
+    }
+
+    saveSyncConfig() {
+        const projectId = this.gameEditor.model.getCurrentProject();
+        localStorage.setItem(`${projectId}_fs_sync_config`, JSON.stringify(this.syncConfig));
+    }
+
+    startSync() {
+        this.stopSync();
+        
+        this.intervalId = setInterval(() => {
+            this.processPendingChanges();
+        }, this.syncConfig.syncInterval);
+        
+        console.log(`Filesystem sync started with ${this.syncConfig.syncInterval}ms interval`);
+    }
+
+    stopSync() {
+        if (this.intervalId) {
+            clearInterval(this.intervalId);
+            this.intervalId = null;
+            console.log('Filesystem sync stopped');
+        }
+    }
+
+    queueSync() {
+        const { selectedType, selectedObject } = this.gameEditor.model.getCurrentObjectContext();
+        if (selectedType && selectedObject) {
+            this.pendingChanges[`${selectedType}/${selectedObject}`] = {
+                type: selectedType,
+                id: selectedObject,
+                data: this.gameEditor.model.getCurrentObject(),
+                timestamp: Date.now()
+            };
+        }
+    }
+
+    processPendingChanges() {
+        const changesKeys = Object.keys(this.pendingChanges);
+        if (changesKeys.length === 0) return;
+        
+        console.log(`Processing ${changesKeys.length} pending changes`);
+        
+        changesKeys.forEach(key => {
+            const change = this.pendingChanges[key];
+            this.syncObjectToFilesystem(change.type, change.id, change.data);
+        });
+        
+        this.pendingChanges = {};
+    }
+
+    syncNow() {
+        this.processPendingChanges();
+        this.syncFromFilesystem();
+    }
+
+		saveProjectToFilesystem() {
+        const projectId = this.gameEditor.model.getCurrentProject();
+        if (!projectId) {
+            console.log('No project ID available');
+            return;
+        }
+
+        const collections = this.gameEditor.model.getCollections();
+        console.log('Saving entire project to filesystem:', projectId);
+
+        Object.entries(collections).forEach(([type, objects]) => {
+            const category = this.gameEditor.model.getCategoryByType(type) || 'uncategorized';
+            Object.entries(objects).forEach(([id, data]) => {
+                this.syncObjectToFilesystem(type, id, data);
+            });
+        });
+    }
+    importProjectFromFilesystem() {
+        const projectId = this.gameEditor.model.getCurrentProject();
+        if (!projectId) {
+            console.log('No project ID available');
+            return;
+        }
+
+        const projectPath = `${projectId}`;
+        console.log('Importing project from filesystem:', projectPath);
+
+        fetch('/list-files', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                path: projectPath,
+                since: 0 // Get all files
+            })
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Failed to list files');
+            return response.json();
+        })
+        .then(files => {
+            console.log('Found files:', files);
+            const fileGroups = {};
+
+            files.forEach(file => {
+                const parts = file.name.split('/');
+                if (parts.length >= 3) { // Expecting projectId/category/type/id.ext
+                    const category = parts[parts.length - 3];
+                    const collectionId = parts[parts.length - 2];
+                    const fileName = parts[parts.length - 1];
+                    const objectId = fileName.substring(0, fileName.lastIndexOf('.'));
+                    const key = `${category}/${collectionId}/${objectId}`;
+                    if (!fileGroups[key]) fileGroups[key] = { category, collectionId, objectId, files: [] };
+                    fileGroups[key].files.push(file);
+                }
+            });
+
+            Object.values(fileGroups).forEach(group => {
+                this.loadFilesForObject(group.collectionId, group.objectId, group.files);
+            });
+        })
+        .catch(error => console.error('Error importing project:', error));
+    }
+
+    syncObjectToFilesystem(type, id, data) {
+        const projectId = this.gameEditor.model.getCurrentProject();
+        if (!projectId) {
+            console.log('No project ID available');
+            return;
+        }
+
+        const category = this.gameEditor.model.getCategoryByType(type) || 'uncategorized'; // Fallback to 'uncategorized' if no category
+        const basePath = `${projectId}/${category}/${type}/${id}`;
+        const isScript = data && typeof data.script === 'string';
+
+        // Save JSON file (all properties except script)
+        const jsonData = { ...data };
+        if (isScript) delete jsonData.script; // Remove script from JSON data
+        const jsonContent = JSON.stringify(jsonData, null, 2);
+        const jsonFilePath = `${basePath}.json`;
+
+        fetch('/save-file', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ path: jsonFilePath, content: jsonContent })
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Failed to save JSON file');
+            console.log(`JSON file saved: ${jsonFilePath}`);
+        })
+        .catch(error => console.error('Error saving JSON file:', error));
+
+        // Save JS file if script exists
+        if (isScript) {
+            const jsFilePath = `${basePath}.js`;
+            const jsContent = data.script;
+
+            fetch('/save-file', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ path: jsFilePath, content: jsContent })
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Failed to save JS file');
+                console.log(`JS file saved: ${jsFilePath}`);
+            })
+            .catch(error => console.error('Error saving JS file:', error));
+        }
+    }
+
+    syncFromFilesystem() {
+        const projectId = this.gameEditor.model.getCurrentProject();
+        if (!projectId) {
+            console.log('No project ID available');
+            return;
+        }
+
+        const projectPath = `${projectId}`;
+        console.log('Checking filesystem for changes in:', projectPath);
+
+        fetch('/list-files', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                path: projectPath,
+                since: this.lastSyncTime
+            })
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Failed to list files');
+            return response.json();
+        })
+        .then(files => {
+            if (files.length > 0) {
+                console.log('Files changed since last sync:', files);
+                const fileGroups = {};
+
+                // Group files by object ID (including category and type in path)
+                files.forEach(file => {
+                    const parts = file.name.split('/');
+                    if (parts.length >= 3) { // Expecting projectId/category/type/id.ext
+                        const category = parts[parts.length - 3];
+                        const collectionId = parts[parts.length - 2];
+                        const fileName = parts[parts.length - 1];
+                        const objectId = fileName.substring(0, fileName.lastIndexOf('.'));
+                        const key = `${category}/${collectionId}/${objectId}`;
+                        if (!fileGroups[key]) fileGroups[key] = { category, collectionId, objectId, files: [] };
+                        fileGroups[key].files.push(file);
+                    }
+                });
+
+                Object.values(fileGroups).forEach(group => {
+                    this.loadFilesForObject(group.collectionId, group.objectId, group.files);
+                });
+            } else {
+                console.log('No changes detected in filesystem');
+            }
+            this.lastSyncTime = Date.now();
+        })
+        .catch(error => console.error('Error listing files:', error));
+    }
+    loadFilesForObject(collectionId, objectId, files) {
+        const currentCollections = this.gameEditor.model.getCollections();
+        if (!currentCollections[collectionId]) currentCollections[collectionId] = {};
+        let objectData = currentCollections[collectionId][objectId] || {};
+
+        // Process each file for this object
+        const promises = files.map(fileInfo => {
+            const filePath = fileInfo.name;
+            const fileExt = filePath.substring(filePath.lastIndexOf('.') + 1);
+
+            return fetch('/read-file', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ path: filePath })
+            })
+            .then(response => {
+                if (!response.ok) throw new Error(`Failed to read file: ${response.status}`);
+                return response.text();
+            })
+            .then(content => {
+                if (fileExt === 'js') {
+                    // Update only the script property
+                    objectData.script = content;
+                } else if (fileExt === 'json') {
+                    // Update all properties except script
+                    const newData = JSON.parse(content);
+                    const existingScript = objectData.script;
+                    objectData = { ...newData };
+                    if (existingScript) objectData.script = existingScript; // Preserve script if it exists
+                }
+            });
+        });
+
+        Promise.all(promises)
+            .then(() => {
+                currentCollections[collectionId][objectId] = objectData;
+                this.gameEditor.model.saveProject();
+                const updateEvent = new CustomEvent('projectUpdated', { cancelable: true });
+                document.body.dispatchEvent(updateEvent);
+                console.log(`Updated object ${collectionId}/${objectId} in editor`);
+            })
+            .catch(error => console.error(`Error loading files for ${collectionId}/${objectId}:`, error));
+    }
+
+    loadFileFromFilesystem(collectionId, folderPath, fileInfo) {
+        const filePath = fileInfo.name; // Use fileInfo.name directly, no folderPath prefix
+        const objectId = fileInfo.name.substring(fileInfo.name.lastIndexOf('/') + 1, fileInfo.name.lastIndexOf('.'));
+        const fileExt = fileInfo.name.substring(fileInfo.name.lastIndexOf('.') + 1);
+        
+        console.log(`Loading ${filePath}`);
+        
+        fetch('/read-file', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ path: filePath })
+        })
+        .then(response => {
+            if (!response.ok) throw new Error(`Failed to read file: ${response.status}`);
+            return response.text();
+        })
+        .then(content => {
+            let objectData;
+            
+            if (fileExt === 'js') {
+                objectData = { script: content };
+            } else if (fileExt === 'json') {
+                objectData = JSON.parse(content);
+            } else {
+                return;
+            }
+            
+            if (!this.gameEditor.model.getCollections()[collectionId]) {
+                this.gameEditor.model.getCollections()[collectionId] = {};
+            }
+            
+            this.gameEditor.model.getCollections()[collectionId][objectId] = objectData;
+            this.gameEditor.model.saveProject();
+            
+            const updateEvent = new CustomEvent('projectUpdated', { cancelable: true });
+            document.body.dispatchEvent(updateEvent);
+        })
+        .catch(error => console.error('Error reading file:', error));
+    }
+}
