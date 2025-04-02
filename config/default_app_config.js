@@ -156,7 +156,8 @@ const DEFAULT_PROJECT_CONFIG = {
       "FileSystemSyncServiceModule": {
         "title": "File Sync",
         "library": "FileSystemSyncService",
-        "className": "FileSystemSyncService"
+        "className": "FileSystemSyncService",
+        "This won't work on GitHub pages, it only works locally.  Use the export and import project buttons in the side bar instead.": "Unless you're a local :P"
       }
     },
     "entities": {
