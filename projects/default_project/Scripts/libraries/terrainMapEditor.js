@@ -166,7 +166,7 @@ class TerrainMapEditor {
 
             const terrainImages = this.imageManager.getImages("levels", "level");
 
-            this.terrainTileMapper = this.gameEditor.propertyModuleInstances.TileMap;
+            this.terrainTileMapper = this.gameEditor.editorModuleInstances.TileMap;
             this.terrainTileMapper.init(this.terrainCanvasBuffer, this.gameEditor.getCollections().configs.game.gridSize, terrainImages, this.gameEditor.getCollections().configs.game.isIsometric);
             this.game = { state: {}, terrainTileMapper: this.terrainTileMapper, config: this.gameEditor.getCollections(), translator: this.translator };
             this.mapRenderer = new (this.gameEditor.scriptContext.getRenderer("mapRenderer"))(this.game, null,

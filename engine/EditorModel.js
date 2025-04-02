@@ -329,7 +329,7 @@ export class EditorModel {
       const matchingTypeSingular = this.getCollectionDefs().find(t => 
           t.singular.replace(/ /g,'').toLowerCase() === key.toLowerCase());
       
-      const matchingModuleType = Object.values(this.getCollections().propertyModules).find((t) => {
+      const matchingModuleType = Object.values(this.getCollections().editorModules).find((t) => {
           return (t.propertyName && t.propertyName.toLowerCase() === key.toLowerCase()) ||
                 (t.propertyNames && JSON.parse(t.propertyNames).some(name => 
                     name.toLowerCase() === key.toLowerCase()));
