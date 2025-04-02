@@ -1,5 +1,4 @@
 import { DEFAULT_PROJECT_CONFIG } from "../config/default_app_config.js";
-import { TOWER_DEFENSE_CONFIG } from "../config/game_td_config.js";
 import { VERSION } from "../config/version.js";
 
 /**
@@ -38,8 +37,7 @@ export class EditorModel {
 
         // Define default projects that come pre-installed
         this.defaultProjects = {
-            "default_project": DEFAULT_PROJECT_CONFIG,
-            "td_game": TOWER_DEFENSE_CONFIG
+            "default_project": DEFAULT_PROJECT_CONFIG
         };
     }
 
@@ -91,28 +89,25 @@ export class EditorModel {
      * @returns {Object} The loaded project data
      */
     async loadProject(name) {
-        if(window.location.hostname != "localhost") {
-            const config = localStorage.getItem(name);
-            
-            if (!config) {
-                // Fallback to default project if selected doesn't exist
-                this.state.currentProject = "default_project";
-                this.state.project = DEFAULT_PROJECT_CONFIG;
-            } else {
-                this.state.currentProject = name;
-                this.state.project = JSON.parse(config);
-            }
-
-            try {
-                // Remember current project for next session
-                localStorage.setItem("currentProject", this.state.currentProject);
-            } catch (e) {
-                console.warn('Error saving to localStorage:', e);
-            }
-        } else {
-            this.state.currentProject = this.getInitialProject();
+  
+        const config = localStorage.getItem(name);
+        
+        if (!config) {
+            // Fallback to default project if selected doesn't exist
+            this.state.currentProject = "default_project";
             this.state.project = DEFAULT_PROJECT_CONFIG;
+        } else {
+            this.state.currentProject = name;
+            this.state.project = JSON.parse(config);
         }
+
+        try {
+            // Remember current project for next session
+            localStorage.setItem("currentProject", this.state.currentProject);
+        } catch (e) {
+            console.warn('Error saving to localStorage:', e);
+        }
+    
 
         return this.state.project;
     }
@@ -247,7 +242,7 @@ export class EditorModel {
      * @returns {Array} List of project identifiers
      */
     listProjects() {
-        const projects = JSON.parse(localStorage.getItem('projects') || '["default_project","td_game"]');
+        const projects = JSON.parse(localStorage.getItem('projects') || '["default_project"]');
         return Array.isArray(projects) ? projects : [];
     }
 

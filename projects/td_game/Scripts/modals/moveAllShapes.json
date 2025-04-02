@@ -1,4 +1,0 @@
-{
-  "title": "Move All Shapes",
-  "html": "\n                <h3>Move All Shapes</h3>\n                <div class=\"form-row\">\n                    <label for=\"move-x\">X Offset:</label>\n                    <input type=\"number\" id=\"move-x\" value=\"0\" step=\"0.5\">\n                </div>\n                <div class=\"form-row\">\n                    <label for=\"move-y\">Y Offset:</label>\n                    <input type=\"number\" id=\"move-y\" value=\"0\" step=\"0.5\">\n                </div>\n                <div class=\"form-row\">\n                    <label for=\"move-z\">Z Offset:</label>\n                    <input type=\"number\" id=\"move-z\" value=\"0\" step=\"0.5\">\n                </div>\n                <div style=\"display: flex; gap: 10px; margin-top: 20px;\">\n                    <button id=\"move-cancel\">Cancel</button>\n                    <button id=\"move-apply\">Apply</button>\n                </div>\n"
-}

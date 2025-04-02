@@ -1,4 +1,0 @@
-{
-  "title": "Rotate Shapes",
-  "html": "\n                <h3>Rotate All Shapes</h3>\n                <div class=\"form-row\">\n                    <label for=\"rotate-angle\">Angle (degrees):</label>\n                    <input type=\"number\" id=\"rotate-angle\" value=\"0\" step=\"1\">\n                </div>\n                <div class=\"form-row\">\n                    <label for=\"rotate-axis\">Axis:</label>\n                    <select id=\"rotate-axis\">\n                        <option value=\"x\">X</option>\n                        <option value=\"y\" selected>Y</option>\n                        <option value=\"z\">Z</option>\n                    </select>\n                </div>\n                <div style=\"display: flex; gap: 10px; margin-top: 20px;\">\n                    <button id=\"rotate-cancel\">Cancel</button>\n                    <button id=\"rotate-apply\">Apply</button>\n                </div>\n"
-}

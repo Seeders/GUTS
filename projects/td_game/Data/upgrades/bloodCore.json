@@ -1,5 +1,0 @@
-{
-  "desc": "Increase max Core HP by 20% and heal 30 HP",
-  "maxHpMultiplier": 1.2,
-  "healAmount": 30
-}

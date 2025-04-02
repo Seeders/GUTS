@@ -1,4 +1,4 @@
-import { TOWER_DEFENSE_CONFIG } from "../config/game_td_config.js";
+import { DEFAULT_PROJECT_CONFIG } from "../config/default_app_config.js";
 import { ModuleManager } from "./ModuleManager.js";
 
 class Engine {
@@ -310,7 +310,7 @@ class Engine {
         let config = localStorage.getItem("currentProject");
 
         if (!config) {
-            config = TOWER_DEFENSE_CONFIG;
+            config = DEFAULT_PROJECT_CONFIG;
         } else {
             config = JSON.parse(localStorage.getItem(config));   
         }

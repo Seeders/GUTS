@@ -36,7 +36,7 @@
             {
               "type": "sphere",
               "size": 5,
-              "color": "#FFFFFF",
+              "color": "#FF0000",
               "x": 4,
               "y": 45,
               "z": 7,

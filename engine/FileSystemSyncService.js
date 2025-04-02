@@ -1,4 +1,4 @@
-class FileSystemSyncService {
+export class FileSystemSyncService {
     constructor(gameEditor) {
         this.gameEditor = gameEditor;
         this.elements = {};
@@ -11,7 +11,9 @@ class FileSystemSyncService {
         this.lastSyncTime = Date.now();
         this.pendingChanges = {};
 
-        this.init();
+        if(window.location.hostname == 'localhost'){
+            this.init();
+        }
     }
 
     init() {
@@ -35,23 +37,21 @@ class FileSystemSyncService {
                     <span class="close">×</span>
                 </div>
                 <div class="modal-body">
-                    <div class="settings-form">
-                        <div class="form-group">
-                            <label>
-                                <input type="checkbox" id="fs-sync-enabled"> 
-                                Enable Filesystem Sync
-                            </label>
-                        </div>
-                        <div class="form-group">
-                            <label>
-                                <input type="checkbox" id="fs-auto-sync"> 
-                                Auto-sync Changes
-                            </label>
-                        </div>
-                        <div class="form-group">
-                            <label for="fs-sync-interval">Sync Interval (ms):</label>
-                            <input type="number" id="fs-sync-interval" min="1000" step="500" value="3000">
-                        </div>
+                    <div class="form-row">
+                        <label>
+                            <input type="checkbox" id="fs-sync-enabled"> 
+                            Enable Filesystem Sync
+                        </label>
+                    </div>
+                    <div class="form-row">
+                        <label>
+                            <input type="checkbox" id="fs-auto-sync"> 
+                            Auto-sync Changes
+                        </label>
+                    </div>
+                    <div class="form-row">
+                        <label for="fs-sync-interval">Sync Interval (ms):</label>
+                        <input type="number" id="fs-sync-interval" min="1000" step="500" value="3000">
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -77,7 +77,6 @@ class FileSystemSyncService {
             closeBtn: modal.querySelector('#close-fs-settings'),
             closeX: modal.querySelector('.close')
         };
-
         if (this.elements.fsyncBtn) this.elements.fsyncBtn.remove();
         this.elements.fsyncBtn = document.createElement('button');
         this.elements.fsyncBtn.innerHTML = "FS Sync";
@@ -91,7 +90,7 @@ class FileSystemSyncService {
         this.elements.syncIndicator.className = this.syncConfig.enabled ? 'active' : 'inactive';
         this.elements.syncIndicator.title = this.syncConfig.enabled ? 'Sync Active' : 'Sync Inactive';
         this.elements.fsyncBtn.appendChild(this.elements.syncIndicator);
-
+    
         this.setupEventListeners();
     }
 
@@ -120,12 +119,6 @@ class FileSystemSyncService {
         });
         document.body.addEventListener('saveObject', () => {
             if (this.syncConfig.enabled) this.queueSync();
-        });
-        document.body.addEventListener('loadProject', () => {
-            if (this.syncConfig.enabled) {
-                this.loadSyncConfig();
-                this.syncNow();
-            }
         });
     }
 
@@ -183,7 +176,7 @@ class FileSystemSyncService {
         this.stopSync();
         
         this.intervalId = setInterval(() => {
-            this.processPendingChanges();
+            this.syncNow();
         }, this.syncConfig.syncInterval);
         
         console.log(`Filesystem sync started with ${this.syncConfig.syncInterval}ms interval`);
@@ -228,7 +221,7 @@ class FileSystemSyncService {
         this.syncFromFilesystem();
     }
 
-		saveProjectToFilesystem() {
+	saveProjectToFilesystem() {
         const projectId = this.gameEditor.model.getCurrentProject();
         if (!projectId) {
             console.log('No project ID available');
@@ -245,32 +238,31 @@ class FileSystemSyncService {
             });
         });
     }
-    importProjectFromFilesystem() {
-        const projectId = this.gameEditor.model.getCurrentProject();
+    async importProjectFromFilesystem(projectId) {        
         if (!projectId) {
             console.log('No project ID available');
             return;
         }
-
-        const projectPath = `${projectId}`;
-        console.log('Importing project from filesystem:', projectPath);
-
-        fetch('/list-files', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                path: projectPath,
-                since: 0 // Get all files
-            })
-        })
-        .then(response => {
+        
+        try {
+            const projectPath = `${projectId}`;
+            console.log('Importing project from filesystem:', projectPath);
+    
+            const response = await fetch('/list-files', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    path: projectPath,
+                    since: 0 // Get all files
+                })
+            });
+            
             if (!response.ok) throw new Error('Failed to list files');
-            return response.json();
-        })
-        .then(files => {
+            const files = await response.json();
+            
             console.log('Found files:', files);
             const fileGroups = {};
-
+    
             files.forEach(file => {
                 const parts = file.name.split('/');
                 if (parts.length >= 3) { // Expecting projectId/category/type/id.ext
@@ -283,12 +275,103 @@ class FileSystemSyncService {
                     fileGroups[key].files.push(file);
                 }
             });
-
-            Object.values(fileGroups).forEach(group => {
-                this.loadFilesForObject(group.collectionId, group.objectId, group.files);
+    
+            // Use Promise.all to wait for all file operations to complete
+            const loadPromises = Object.values(fileGroups).map(group => 
+                this.loadFilesForObject(group.collectionId, group.objectId, group.files)
+            );
+            
+            await Promise.all(loadPromises);
+            this.gameEditor.model.saveProject();
+            console.log('All files successfully imported');
+            
+        } catch (error) {
+            console.error('Error importing project:', error);
+            throw error; // Re-throw so caller can handle it if needed
+        }
+    }
+    async loadFilesForObject(collectionIdFromPath, objectId, files) {
+        const currentCollections = this.gameEditor.model.getCollections();
+        const filePathParts = files[0].name.split('/');
+        const fsCategory = filePathParts[filePathParts.length - 3]; // e.g., "Scripts" 
+        const fsTypeFolder = filePathParts[filePathParts.length - 2]; // e.g., "things"
+    
+        // Default to the filesystem folder name as the new collectionId
+        const newCollectionId = fsTypeFolder;
+        if (!currentCollections[newCollectionId]) currentCollections[newCollectionId] = {};
+        let objectData = currentCollections[newCollectionId][objectId] || {};
+    
+        // Get type definitions
+        const typeDefs = this.gameEditor.model.getCollectionDefs();
+        const oldTypeDef = typeDefs.find(t => t.id === collectionIdFromPath);
+    
+        // If the folder name differs from the original typeId, update the typeDef
+        if (oldTypeDef && oldTypeDef.id !== fsTypeFolder) {
+            console.log(`Renaming collection from ${oldTypeDef.id} to ${fsTypeFolder}`);
+    
+            // Move collection data from old to new typeId
+            if (currentCollections[oldTypeDef.id]) {
+                currentCollections[newCollectionId] = { ...currentCollections[oldTypeDef.id] };
+                delete currentCollections[oldTypeDef.id];
+            }
+    
+            // Update the typeDef
+            const newName = fsTypeFolder.charAt(0).toUpperCase() + fsTypeFolder.slice(1); // e.g., "Things"
+            const newSingular = oldTypeDef.singular || (fsTypeFolder.endsWith('s') ? fsTypeFolder.slice(0, -1) : fsTypeFolder); // e.g., "Thing"
+            oldTypeDef.id = fsTypeFolder;
+            oldTypeDef.name = newName; // Update plural form
+            oldTypeDef.singular = newSingular; // Preserve or regenerate singular
+            console.log(`Updated typeDef: id: ${fsTypeFolder}, name: ${newName}, singular: ${newSingular}`);
+        }
+    
+        // Update category if it differs
+        const currentCategory = this.gameEditor.model.getCategoryByType(newCollectionId);
+        if (currentCategory !== fsCategory) {
+            const typeDef = typeDefs.find(t => t.id === newCollectionId);
+            if (typeDef) {
+                typeDef.category = fsCategory;
+                console.log(`Updated category for ${newCollectionId} to ${fsCategory}`);
+            }
+        }
+    
+        // Process each file
+        const promises = files.map(fileInfo => {
+            const filePath = fileInfo.name;
+            const fileExt = filePath.substring(filePath.lastIndexOf('.') + 1);
+    
+            return fetch('/read-file', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ path: filePath })
+            })
+            .then(response => {
+                if (!response.ok) throw new Error(`Failed to read file: ${response.status}`);
+                return response.text();
+            })
+            .then(content => {
+                if (fileExt === 'js') {
+                    objectData.script = content;
+                } else if (fileExt === 'json') {
+                    const newData = JSON.parse(content);
+                    const existingScript = objectData.script;
+                    objectData = { ...newData };
+                    if (existingScript) objectData.script = existingScript;
+                }
             });
-        })
-        .catch(error => console.error('Error importing project:', error));
+        });
+    
+        // Return the promise so the calling function can await it
+        return Promise.all(promises)
+            .then(() => {
+                currentCollections[newCollectionId][objectId] = objectData;
+                const updateEvent = new CustomEvent('projectUpdated', { cancelable: true });
+                document.body.dispatchEvent(updateEvent);
+                console.log(`Updated object ${newCollectionId}/${objectId} in editor`);
+            })
+            .catch(error => {
+                console.error(`Error loading files for ${newCollectionId}/${objectId}:`, error);
+                throw error; // Re-throw so the caller can catch it
+            });
     }
 
     syncObjectToFilesystem(type, id, data) {
@@ -388,87 +471,7 @@ class FileSystemSyncService {
         })
         .catch(error => console.error('Error listing files:', error));
     }
-    loadFilesForObject(collectionIdFromPath, objectId, files) {
-        const currentCollections = this.gameEditor.model.getCollections();
-        const filePathParts = files[0].name.split('/');
-        const fsCategory = filePathParts[filePathParts.length - 3]; // e.g., "Scripts"
-        const fsTypeFolder = filePathParts[filePathParts.length - 2]; // e.g., "things"
     
-        // Default to the filesystem folder name as the new collectionId
-        const newCollectionId = fsTypeFolder;
-        if (!currentCollections[newCollectionId]) currentCollections[newCollectionId] = {};
-        let objectData = currentCollections[newCollectionId][objectId] || {};
-    
-        // Get type definitions
-        const typeDefs = this.gameEditor.model.getCollectionDefs();
-        const oldTypeDef = typeDefs.find(t => t.id === collectionIdFromPath);
-    
-        // If the folder name differs from the original typeId, update the typeDef
-        if (oldTypeDef && oldTypeDef.id !== fsTypeFolder) {
-            console.log(`Renaming collection from ${oldTypeDef.id} to ${fsTypeFolder}`);
-    
-            // Move collection data from old to new typeId
-            if (currentCollections[oldTypeDef.id]) {
-                currentCollections[newCollectionId] = { ...currentCollections[oldTypeDef.id] };
-                delete currentCollections[oldTypeDef.id];
-            }
-    
-            // Update the typeDef
-            const newName = fsTypeFolder.charAt(0).toUpperCase() + fsTypeFolder.slice(1); // e.g., "Things"
-            const newSingular = oldTypeDef.singular || (fsTypeFolder.endsWith('s') ? fsTypeFolder.slice(0, -1) : fsTypeFolder); // e.g., "Thing"
-            oldTypeDef.id = fsTypeFolder;
-            oldTypeDef.name = newName; // Update plural form
-            oldTypeDef.singular = newSingular; // Preserve or regenerate singular
-            console.log(`Updated typeDef: id: ${fsTypeFolder}, name: ${newName}, singular: ${newSingular}`);
-        }
-    
-        // Update category if it differs
-        const currentCategory = this.gameEditor.model.getCategoryByType(newCollectionId);
-        if (currentCategory !== fsCategory) {
-            const typeDef = typeDefs.find(t => t.id === newCollectionId);
-            if (typeDef) {
-                typeDef.category = fsCategory;
-                console.log(`Updated category for ${newCollectionId} to ${fsCategory}`);
-            }
-        }
-    
-        // Process each file
-        const promises = files.map(fileInfo => {
-            const filePath = fileInfo.name;
-            const fileExt = filePath.substring(filePath.lastIndexOf('.') + 1);
-    
-            return fetch('/read-file', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ path: filePath })
-            })
-            .then(response => {
-                if (!response.ok) throw new Error(`Failed to read file: ${response.status}`);
-                return response.text();
-            })
-            .then(content => {
-                if (fileExt === 'js') {
-                    objectData.script = content;
-                } else if (fileExt === 'json') {
-                    const newData = JSON.parse(content);
-                    const existingScript = objectData.script;
-                    objectData = { ...newData };
-                    if (existingScript) objectData.script = existingScript;
-                }
-            });
-        });
-    
-        Promise.all(promises)
-            .then(() => {
-                currentCollections[newCollectionId][objectId] = objectData;
-                this.gameEditor.model.saveProject();
-                const updateEvent = new CustomEvent('projectUpdated', { cancelable: true });
-                document.body.dispatchEvent(updateEvent);
-                console.log(`Updated object ${newCollectionId}/${objectId} in editor`);
-            })
-            .catch(error => console.error(`Error loading files for ${newCollectionId}/${objectId}:`, error));
-    }
-
     loadFileFromFilesystem(collectionId, folderPath, fileInfo) {
         const filePath = fileInfo.name; // Use fileInfo.name directly, no folderPath prefix
         const objectId = fileInfo.name.substring(fileInfo.name.lastIndexOf('/') + 1, fileInfo.name.lastIndexOf('.'));

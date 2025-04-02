@@ -1,8 +1,0 @@
-{
-  "title": "Multi-Shot Projectile",
-  "components": [
-    "stats",
-    "multishotProjectile"
-  ],
-  "renderers": []
-}

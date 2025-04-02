@@ -1,6 +1,8 @@
 import { EditorModel } from './EditorModel.js';
 import { EditorView } from './EditorView.js';
 import { ModuleManager } from './ModuleManager.js';
+import { FileSystemSyncService } from './FileSystemSyncService.js';
+import { DEFAULT_PROJECT_CONFIG } from "../config/default_app_config.js";
 
 /**
  * Main controller class for the editor application.
@@ -40,6 +42,7 @@ export class EditorController {
         // Initialize the view after the model is ready
         // View handles all UI rendering and updates
         this.view = new EditorView(this);
+        this.fs = new FileSystemSyncService(this);
     }
 
     /**
@@ -125,50 +128,57 @@ export class EditorController {
      * @param {string} name - Project identifier to load
      */
     async loadProject(name) {
-        // Load project data from storage via the model
-        const project = await this.model.loadProject(name);
-            
-            // Initialize module manager for handling dynamic modules
-            this.moduleManager = new ModuleManager(
-                this.model, 
-                project.objectTypes, 
-                this.elements.mainContentContainer, 
-                this.elements.modalContainer
+  
+        if(window.location.hostname == "localhost") {
+            // Load project data from storage via the model
+            this.model.state.currentProject = name;            
+            this.model.state.project = DEFAULT_PROJECT_CONFIG;
+            await this.fs.importProjectFromFilesystem(name);
+        } else {
+            await this.model.loadProject(name);
+        }
+        const project = this.model.state.project;
+        // Initialize module manager for handling dynamic modules
+        this.moduleManager = new ModuleManager(
+            this.model, 
+            project.objectTypes, 
+            this.elements.mainContentContainer, 
+            this.elements.modalContainer
+        );
+        
+        try {
+            // First load all required library modules
+            // Libraries provide common functionality needed by other modules
+            this.moduleManager.libraryClasses = await this.moduleManager.loadModules(
+                project.objectTypes.libraries
             );
             
-            try {
-                // First load all required library modules
-                // Libraries provide common functionality needed by other modules
-                this.moduleManager.libraryClasses = await this.moduleManager.loadModules(
-                    project.objectTypes.libraries
-                );
+            // Then load property editor modules based on editor configuration
+            const editorConfig = project.objectTypes.configs?.editor;
+            if (editorConfig) {
+                // Filter property modules to only those specified in editor config
+                const editorModules = {};
+                editorConfig.propertyModules.forEach((pm) => {
+                    if (project.objectTypes.propertyModules[pm]) {
+                        editorModules[pm] = project.objectTypes.propertyModules[pm];
+                    }
+                });
                 
-                // Then load property editor modules based on editor configuration
-                const editorConfig = project.objectTypes.configs?.editor;
-        if (editorConfig) {
-            // Filter property modules to only those specified in editor config
-            const editorModules = {};
-            editorConfig.propertyModules.forEach((pm) => {
-                if (project.objectTypes.propertyModules[pm]) {
-                    editorModules[pm] = project.objectTypes.propertyModules[pm];
-                }
-            });
-            
-            // Load property module classes dynamically
-            this.propertyModuleClasses = await this.moduleManager.loadModules(editorModules);
-            
-            // Setup script execution environment for modules
-            this.scriptContext = await this.moduleManager.setupScriptEnvironment(this);
-            
-            // Instantiate property modules with controller context
-            this.propertyModuleInstances = this.moduleManager.instantiateCollection(
-                this, 
-                project.objectTypes.propertyModules, 
-                this.propertyModuleClasses
-            );
-                    
-            // Set up event listeners for module UI interactions
-            this.view.setupModuleEventListeners(project.objectTypes.propertyModules);
+                // Load property module classes dynamically
+                this.propertyModuleClasses = await this.moduleManager.loadModules(editorModules);
+                
+                // Setup script execution environment for modules
+                this.scriptContext = await this.moduleManager.setupScriptEnvironment(this);
+                
+                // Instantiate property modules with controller context
+                this.propertyModuleInstances = this.moduleManager.instantiateCollection(
+                    this, 
+                    project.objectTypes.propertyModules, 
+                    this.propertyModuleClasses
+                );
+                        
+                // Set up event listeners for module UI interactions
+                this.view.setupModuleEventListeners(project.objectTypes.propertyModules);
             }
             
             // Apply theme if specified in editor config
