@@ -106,7 +106,7 @@ export class EditorView {
       this.elements.editor.innerHTML = `
         <h2>Editing: ${currentObject.title || this.controller.getSelectedObject()} (${singularType})</h2>
         
-        <div class="tab-content active" id="advanced-tab">  
+        <div id="editor-properties-container">  
           <h3>Properties</h3>
           <div class="property-list" id="custom-properties"></div>
         </div>            

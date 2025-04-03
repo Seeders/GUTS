@@ -3,7 +3,7 @@
   "imageSize": 128,
   "canvasWidth": 1536,
   "canvasHeight": 768,
-  "title": "Default Project 2",
+  "title": "Default Project",
   "isIsometric": false,
   "libraries": [
     "threejs",

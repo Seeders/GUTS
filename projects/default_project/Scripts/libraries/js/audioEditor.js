@@ -1,8 +1,8 @@
 class AudioEditor {
     constructor(gameEditor) {
         this.gameEditor = gameEditor;
-        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        this.sampleRate = 44100; // Standard CD-quality sample rate
+        this.audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 96000 }); // Higher sample rate
+        this.sampleRate = 96000; // 96 kHz for professional quality
         this.masterGainNode = this.audioContext.createGain();
         this.masterGainNode.connect(this.audioContext.destination);
         this.currentSource = null;
@@ -14,21 +14,29 @@ class AudioEditor {
     }
 
     setupEffects() {
-        // Create audio effects nodes
+        // Enhanced compressor settings
         this.compressor = this.audioContext.createDynamicsCompressor();
+        this.compressor.threshold.value = -24; // dB
+        this.compressor.knee.value = 30; // dB
+        this.compressor.ratio.value = 12; // 12:1
+        this.compressor.attack.value = 0.003; // seconds
+        this.compressor.release.value = 0.25; // seconds
+
+        // High-quality biquad filter
         this.biquadFilter = this.audioContext.createBiquadFilter();
         this.biquadFilter.type = "lowpass";
         this.biquadFilter.frequency.value = 1000;
-        
-        // Delay effect
+        this.biquadFilter.Q.value = 1.0; // Add resonance control
+
+        // Delay with feedback limiting
         this.delay = this.audioContext.createDelay(5.0);
         this.delay.delayTime.value = 0.3;
         this.delayGain = this.audioContext.createGain();
         this.delayGain.gain.value = 0.3;
-        
-        // Connect effect chain
+
+        // Connect effect chain with feedback loop
         this.delay.connect(this.delayGain);
-        this.delayGain.connect(this.delay);
+        this.delayGain.connect(this.delay); // Feedback loop
         this.delayGain.connect(this.masterGainNode);
     }
 
@@ -42,110 +50,143 @@ class AudioEditor {
     }
 
     setupEventListeners() {
+        // Helper function to update status message
+        const updateStatus = (message, type = 'default') => {
+            const status = document.getElementById('status-message');
+            if (status) {
+                status.textContent = message;
+                status.className = type === 'success' ? 'success' : type === 'error' ? 'error' : '';
+            }
+        };
+
+        // Update slider displays dynamically
+        const updateSliderDisplay = (sliderId, formatFn) => {
+            const slider = document.getElementById(sliderId);
+            if (slider) {
+                slider.addEventListener('input', (e) => {
+                    const display = slider.nextElementSibling;
+                    if (display && display.classList.contains('value-display')) {
+                        display.textContent = formatFn(parseFloat(e.target.value));
+                    }
+                });
+            }
+        };
+
         // Import audio event
         document.body.addEventListener('editAudio', async (event) => {
-            this.stopAudio(); // Stop any currently playing audio
+            this.stopAudio();
             this.audioDataBase64 = event.detail.data;
             this.savePropertyName = event.detail.propertyName;
-            this.audioBuffer = await this.importFromBase64(this.audioDataBase64);
-            
-            // Update UI with audio data
-            this.updateUIFromAudio();
-            
-            // Play the imported audio
-            this.playAudioBuffer(this.audioBuffer);
-            
-            // Draw waveform if visualizer is set up
-            if (this.visualizer) {
-                this.visualizer.drawWaveform(this.audioBuffer);
+            try {
+                this.audioBuffer = await this.importFromBase64(this.audioDataBase64);
+                this.updateUIFromAudio();
+                this.playAudioBuffer(this.audioBuffer);
+                if (this.visualizer) this.visualizer.drawWaveform(this.audioBuffer);
+                updateStatus('Audio imported and playing', 'success');
+            } catch (err) {
+                updateStatus('Error importing audio', 'error');
             }
         });
 
         // Play button event
-        document.getElementById('playBtn').addEventListener('click', () => {
-            this.stopAudio(); // Stop any currently playing sound
-            
+        const playBtn = document.getElementById('playBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        playBtn?.addEventListener('click', () => {
+            this.stopAudio();
             const waveform = document.getElementById('waveform').value;
             const frequency = parseFloat(document.getElementById('frequency').value);
             const duration = parseFloat(document.getElementById('duration').value);
-            
-            // Get ADSR values
             const attack = parseFloat(document.getElementById('attack').value || 0.01);
             const decay = parseFloat(document.getElementById('decay').value || 0.1);
             const sustain = parseFloat(document.getElementById('sustain').value || 0.7);
             const release = parseFloat(document.getElementById('release').value || 0.3);
-            
+
             this.playAudio(waveform, frequency, duration, { attack, decay, sustain, release });
+            updateStatus('Playing audio...');
+            playBtn.disabled = true;
+            stopBtn.disabled = false;
         });
 
         // Stop button event
-        document.getElementById('stopBtn').addEventListener('click', () => {
+        stopBtn?.addEventListener('click', () => {
             this.stopAudio();
+            updateStatus('Audio stopped');
+            playBtn.disabled = false;
+            stopBtn.disabled = true;
         });
 
         // Export button event
-        document.getElementById('exportBtn').addEventListener('click', () => {
+        document.getElementById('exportBtn')?.addEventListener('click', () => {
             const waveform = document.getElementById('waveform').value;
             const frequency = parseFloat(document.getElementById('frequency').value);
             const duration = parseFloat(document.getElementById('duration').value);
-            
-            // Get ADSR values
             const attack = parseFloat(document.getElementById('attack').value || 0.01);
             const decay = parseFloat(document.getElementById('decay').value || 0.1);
             const sustain = parseFloat(document.getElementById('sustain').value || 0.7);
             const release = parseFloat(document.getElementById('release').value || 0.3);
-            
-            // Get effects settings
             const effects = this.getEffectsSettings();
-            
-            const base64String = this.exportToBase64(waveform, frequency, duration, 
-                { attack, decay, sustain, release }, effects);
-            
+
+            const base64String = this.exportToBase64(waveform, frequency, duration, { attack, decay, sustain, release }, effects);
             document.getElementById('jsonOutput').value = base64String;
             this.saveAudio(base64String);
+            updateStatus('Audio saved successfully', 'success');
         });
 
-        // Volume slider event
-        document.getElementById('volume').addEventListener('input', (e) => {
+        // Volume slider
+        updateSliderDisplay('volume', (val) => `${Math.round(val * 100)}%`);
+        document.getElementById('volume')?.addEventListener('input', (e) => {
             const volume = parseFloat(e.target.value);
-            this.masterGainNode.gain.value = volume;
+            this.masterGainNode.gain.setValueAtTime(volume, this.audioContext.currentTime);
         });
 
-        // Filter cutoff event
-        document.getElementById('filterCutoff').addEventListener('input', (e) => {
+        // Other sliders
+        updateSliderDisplay('frequency', (val) => `${val} Hz`);
+        updateSliderDisplay('duration', (val) => `${val.toFixed(1)} s`);
+        updateSliderDisplay('attack', (val) => `${val.toFixed(2)} s`);
+        updateSliderDisplay('decay', (val) => `${val.toFixed(2)} s`);
+        updateSliderDisplay('sustain', (val) => `${Math.round(val * 100)}%`);
+        updateSliderDisplay('release', (val) => `${val.toFixed(2)} s`);
+        updateSliderDisplay('filterCutoff', (val) => `${val} Hz`);
+        updateSliderDisplay('delayAmount', (val) => `${Math.round(val * 100)}%`);
+
+        // Filter cutoff
+        document.getElementById('filterCutoff')?.addEventListener('input', (e) => {
             this.biquadFilter.frequency.value = parseFloat(e.target.value);
         });
 
-        // Delay amount event
-        document.getElementById('delayAmount').addEventListener('input', (e) => {
+        // Delay amount
+        document.getElementById('delayAmount')?.addEventListener('input', (e) => {
             this.delayGain.gain.value = parseFloat(e.target.value);
         });
 
         // Preset selection
-        document.getElementById('presetSelect').addEventListener('change', (e) => {
+        document.getElementById('presetSelect')?.addEventListener('change', (e) => {
             const presetName = e.target.value;
             if (presetName && this.presets[presetName]) {
                 this.loadPreset(presetName);
+                updateStatus(`Loaded preset: ${presetName}`, 'success');
             }
         });
 
         // Save preset button
-        document.getElementById('savePresetBtn').addEventListener('click', () => {
+        document.getElementById('savePresetBtn')?.addEventListener('click', () => {
             const presetName = document.getElementById('presetName').value.trim();
             if (presetName) {
                 this.savePreset(presetName);
+                updateStatus(`Preset "${presetName}" saved`, 'success');
             } else {
-                alert("Please enter a preset name");
+                updateStatus('Please enter a preset name', 'error');
             }
         });
 
-        // Initialize visualizer if canvas exists
+        // Initialize visualizer
         const canvas = document.getElementById('waveformCanvas');
         if (canvas) {
             this.visualizer = new AudioVisualizer(canvas, this.audioContext);
         }
     }
 
+   
     getEffectsSettings() {
         return {
             filter: {
@@ -251,114 +292,123 @@ class AudioEditor {
             this.currentSource = null;
         }
         this.isPlaying = false;
-        
-        // Update play button text/icon
         const playBtn = document.getElementById('playBtn');
-        if (playBtn) {
-            playBtn.textContent = "Play Sound";
-        }
+        const stopBtn = document.getElementById('stopBtn');
+        if (playBtn) playBtn.disabled = false;
+        if (stopBtn) stopBtn.disabled = true;
     }
 
-    // Play audio buffer (for imported audio)
     playAudioBuffer(buffer) {
         this.stopAudio();
-        
+
         const source = this.audioContext.createBufferSource();
         source.buffer = buffer;
-        
-        // Set up processing chain
-        source.connect(this.biquadFilter);
-        this.biquadFilter.connect(this.compressor);
-        this.compressor.connect(this.masterGainNode);
-        
-        // Connect delay if enabled
+
+        // Connect processing chain correctly
+        source.connect(this.biquadFilter); // Start with filter
+        // biquadFilter -> compressor -> masterGainNode (already connected in setupEffects)
         if (parseFloat(document.getElementById('delayAmount').value) > 0) {
-            this.compressor.connect(this.delay);
+            this.compressor.connect(this.delay); // Add delay if enabled
         }
-        
-        // Start playback
+
         source.start();
         this.currentSource = source;
         this.isPlaying = true;
-        
-        // Connect to visualizer if available
+
         if (this.visualizer) {
             this.visualizer.connectSource(source);
         }
-        
-        // Update play button
+
         const playBtn = document.getElementById('playBtn');
-        if (playBtn) {
-            playBtn.textContent = "Playing...";
-        }
-        
-        // Auto-stop when finished
+        if (playBtn) playBtn.textContent = "Playing...";
+
         source.onended = () => {
             this.isPlaying = false;
             this.currentSource = null;
-            if (playBtn) {
-                playBtn.textContent = "Play Sound";
-            }
+            if (playBtn) playBtn.textContent = "Play";
         };
     }
 
-    // Play a synthesized sound with given parameters
     playAudio(waveform, frequency, duration, envelope) {
         this.stopAudio();
-        
-        // Create oscillator
+
         const oscillator = this.audioContext.createOscillator();
         oscillator.type = waveform;
-        oscillator.frequency.setValueAtTime(frequency, this.audioContext.currentTime);
-        
-        // Create envelope
-        const envelopeGain = this.audioContext.createGain();
-        envelopeGain.gain.setValueAtTime(0, this.audioContext.currentTime);
-        
-        // ADSR envelope implementation
+
         const now = this.audioContext.currentTime;
-        envelopeGain.gain.linearRampToValueAtTime(1, now + envelope.attack);
+        oscillator.frequency.setValueAtTime(frequency, now);
+        oscillator.frequency.exponentialRampToValueAtTime(frequency * 0.9, now + duration);
+
+        const envelopeGain = this.audioContext.createGain();
+        envelopeGain.gain.setValueAtTime(0, now);
+        envelopeGain.gain.linearRampToValueAtTime(1, now + envelope.attack + 0.005); // 5ms fade-in
         envelopeGain.gain.linearRampToValueAtTime(envelope.sustain, now + envelope.attack + envelope.decay);
         envelopeGain.gain.setValueAtTime(envelope.sustain, now + duration);
-        envelopeGain.gain.linearRampToValueAtTime(0, now + duration + envelope.release);
-        
+        const releaseEndTime = now + duration + envelope.release + 0.2; // 200ms buffer
+        envelopeGain.gain.linearRampToValueAtTime(0, releaseEndTime);
+
+        // Set filter and delay
+        this.biquadFilter.frequency.value = parseFloat(document.getElementById('filterCutoff').value) || 1000;
+        this.delay.delayTime.value = 0.25;
+        const initialDelayGain = parseFloat(document.getElementById('delayAmount').value) || 0;
+        this.delayGain.gain.setValueAtTime(initialDelayGain, now);
+
         // Connect processing chain
         oscillator.connect(envelopeGain);
         envelopeGain.connect(this.biquadFilter);
         this.biquadFilter.connect(this.compressor);
         this.compressor.connect(this.masterGainNode);
-        
-        // Connect delay if enabled
-        if (parseFloat(document.getElementById('delayAmount').value) > 0) {
-            this.compressor.connect(this.delay);
-        }
-        
-        // Start and schedule stop
-        oscillator.start();
-        oscillator.stop(this.audioContext.currentTime + duration + envelope.release);
-        
+        this.compressor.connect(this.delay);
+        this.delay.connect(this.delayGain);
+        this.delayGain.connect(this.masterGainNode); // Ensure delay output goes to master
+
+        // Start oscillator
+        oscillator.start(now);
+        const stopTime = releaseEndTime + 0.2; // 200ms after envelope fade
+        oscillator.stop(stopTime);
+
+        // Fade out delay and master gain, extending to cover release
+        const fadeOutTime = now + duration + envelope.release + 1.0; // 1-second fade-out
+        this.delayGain.gain.linearRampToValueAtTime(0, fadeOutTime);
+        this.masterGainNode.gain.linearRampToValueAtTime(0, fadeOutTime);
+        this.masterGainNode.gain.linearRampToValueAtTime(
+            parseFloat(document.getElementById('volume').value) || 0.7,
+            fadeOutTime + 0.1
+        ); // Restore volume
+
         this.currentSource = oscillator;
         this.isPlaying = true;
-        
-        // Connect to visualizer if available
+
         if (this.visualizer) {
             this.visualizer.connectSource(oscillator);
         }
-        
-        // Update UI
+
         const playBtn = document.getElementById('playBtn');
-        if (playBtn) {
-            playBtn.textContent = "Playing...";
-        }
-        
-        // Reset UI when finished
+        const stopBtn = document.getElementById('stopBtn');
+        if (playBtn) playBtn.disabled = true;
+        if (stopBtn) stopBtn.disabled = false;
+
         oscillator.onended = () => {
             this.isPlaying = false;
             this.currentSource = null;
-            if (playBtn) {
-                playBtn.textContent = "Play Sound";
+            if (playBtn) playBtn.disabled = false;
+            if (stopBtn) stopBtn.disabled = true;
+
+            // Safe cleanup
+            envelopeGain.gain.setValueAtTime(0.001, this.audioContext.currentTime);
+            this.delayGain.gain.setValueAtTime(0.001, this.audioContext.currentTime);
+            try {
+                this.delay.disconnect(this.delayGain); 
+            } catch (e) {
+                console.log("Delay disconnect skipped:", e.message); // Log if already disconnected
             }
         };
+
+        // Debug logging
+        console.log("Now:", now);
+        console.log("Release End:", releaseEndTime);
+        console.log("Stop Time:", stopTime);
+        console.log("Fade Out Time:", fadeOutTime);
     }
 
     // Export audio as Base64-encoded JSON
@@ -389,53 +439,97 @@ class AudioEditor {
         // Return just the base64 string (metadata could be included as needed)
         return base64String;
     }
-    
+    polyBLEP(t, dt) {
+        if (t < dt) {
+            const x = t / dt;
+            return x + x - x * x - 1;
+        } else if (t > 1 - dt) {
+            const x = (t - 1) / dt;
+            return x + x + x * x + 1;
+        }
+        return 0;
+    }
+    downsampleBuffer(buffer, factor) {
+        const targetLength = Math.floor(buffer.length / factor);
+        const result = new Float32Array(targetLength);
+
+        for (let i = 0; i < targetLength; i++) {
+            const srcIdx = i * factor;
+            result[i] = buffer[srcIdx]; // Basic decimation (could use better filtering)
+        }
+        return result;
+    }
     generateAudioBuffer(waveform, frequency, duration, envelope) {
-        const totalSamples = Math.floor(this.sampleRate * (duration + envelope.release));
+        const oversampleFactor = 4;
+        const totalSamples = Math.floor(this.sampleRate * (duration + envelope.release) * oversampleFactor);
         const buffer = new Float32Array(totalSamples);
-        
-        const attackSamples = Math.floor(this.sampleRate * envelope.attack);
-        const decaySamples = Math.floor(this.sampleRate * envelope.decay);
-        const sustainSamples = Math.floor(this.sampleRate * (duration - envelope.attack - envelope.decay));
-        const releaseSamples = Math.floor(this.sampleRate * envelope.release);
-        
-        for (let i = 0; i < buffer.length; i++) {
-            const t = i / this.sampleRate;
+
+        const attackSamples = Math.floor(this.sampleRate * envelope.attack * oversampleFactor);
+        const decaySamples = Math.floor(this.sampleRate * envelope.decay * oversampleFactor);
+        const sustainSamples = Math.floor(this.sampleRate * (duration - envelope.attack - envelope.decay) * oversampleFactor);
+        const releaseSamples = Math.floor(this.sampleRate * envelope.release * oversampleFactor);
+
+        for (let i = 0; i < totalSamples; i++) {
+            const t = i / (this.sampleRate * oversampleFactor);
             let amplitude = 0;
-            
-            // Apply ADSR envelope
+
             if (i < attackSamples) {
-                // Attack phase
                 amplitude = i / attackSamples;
             } else if (i < attackSamples + decaySamples) {
-                // Decay phase
                 const decayProgress = (i - attackSamples) / decaySamples;
                 amplitude = 1 - (1 - envelope.sustain) * decayProgress;
             } else if (i < attackSamples + decaySamples + sustainSamples) {
-                // Sustain phase
                 amplitude = envelope.sustain;
             } else {
-                // Release phase
                 const releaseProgress = (i - (attackSamples + decaySamples + sustainSamples)) / releaseSamples;
                 amplitude = envelope.sustain * (1 - releaseProgress);
             }
-            
-            buffer[i] = this.generateWaveform(waveform, frequency, t) * amplitude;
+
+            buffer[i] = this.generateWaveform(waveform, frequency, t, oversampleFactor) * amplitude;
         }
-        
-        return buffer;
+
+        // Downsample to target sample rate
+        return this.downsampleBuffer(buffer, oversampleFactor);
     }
-    
+
     applyEffectsToBuffer(buffer, effects) {
-        // This is a simplified version - in a real app, these would be proper DSP implementations
-        // For now, we'll just return the original buffer
-        return buffer;
-        
-        // Real implementation would apply filter, delay, etc. using DSP algorithms
-        // Example (pseudocode):
-        // let processedBuffer = applyFilter(buffer, effects.filter);
-        // processedBuffer = applyDelay(processedBuffer, effects.delay);
-        // return processedBuffer;
+        let processedBuffer = new Float32Array(buffer);
+
+        // Apply filter (simplified IIR lowpass for demonstration)
+        if (effects.filter && effects.filter.frequency < 20000) {
+            const cutoff = effects.filter.frequency / this.sampleRate;
+            const alpha = Math.sin(Math.PI * cutoff) / (2 * 0.707); // Q = 0.707
+            const cosw = Math.cos(Math.PI * cutoff);
+            const a0 = 1 + alpha;
+            const b0 = ((1 - cosw) / 2) / a0;
+            const b1 = (1 - cosw) / a0;
+            const b2 = b0;
+            const a1 = (-2 * cosw) / a0;
+            const a2 = (1 - alpha) / a0;
+
+            const output = new Float32Array(buffer.length);
+            output[0] = b0 * buffer[0];
+            output[1] = b0 * buffer[1] + b1 * buffer[0] - a1 * output[0];
+
+            for (let i = 2; i < buffer.length; i++) {
+                output[i] = (b0 * buffer[i] + b1 * buffer[i - 1] + b2 * buffer[i - 2] -
+                            a1 * output[i - 1] - a2 * output[i - 2]);
+            }
+            processedBuffer = output;
+        }
+
+        // Apply delay (simplified)
+        if (effects.delay && effects.delay.feedback > 0) {
+            const delaySamples = Math.floor(this.sampleRate * effects.delay.time);
+            const output = new Float32Array(processedBuffer.length);
+            for (let i = 0; i < processedBuffer.length; i++) {
+                const delayedIdx = i - delaySamples;
+                output[i] = processedBuffer[i] + (delayedIdx >= 0 ? effects.delay.feedback * output[delayedIdx] : 0);
+            }
+            processedBuffer = output;
+        }
+
+        return processedBuffer;
     }
 
     async importFromBase64(base64String, mimeType = "audio/wav") {
@@ -469,19 +563,24 @@ class AudioEditor {
     }
 
     // Generate waveform sample
-    generateWaveform(type, frequency, t) {
+    generateWaveform(type, frequency, t, oversampleFactor = 4) {
+        const effectiveSampleRate = this.sampleRate * oversampleFactor;
         const angularFrequency = 2 * Math.PI * frequency;
+
         switch (type) {
             case 'sine':
                 return Math.sin(angularFrequency * t);
             case 'square':
-                return Math.sin(angularFrequency * t) > 0 ? 1 : -1;
+                const sine = Math.sin(angularFrequency * t);
+                const p = 2 * frequency / effectiveSampleRate;
+                return sine > 0 ? 1 - this.polyBLEP(t, p) : -1 + this.polyBLEP(t, p);
             case 'sawtooth':
-                return 2 * (t * frequency - Math.floor(t * frequency + 0.5));
+                const saw = 2 * (t * frequency - Math.floor(t * frequency + 0.5));
+                return saw - this.polyBLEP(t, frequency / effectiveSampleRate);
             case 'triangle':
                 return 2 * Math.abs(2 * (t * frequency - Math.floor(t * frequency + 0.5))) - 1;
             case 'noise':
-                return Math.random() * 2 - 1; // White noise
+                return Math.random() * 2 - 1;
             default:
                 return 0;
         }
@@ -490,9 +589,9 @@ class AudioEditor {
     // Create WAV file (mono, 16-bit PCM)
     createWavFile(buffer, sampleRate) {
         const numSamples = buffer.length;
-        const byteRate = sampleRate * 2; // 16-bit mono
-        const blockAlign = 2; // 16-bit mono
-        const dataSize = numSamples * 2;
+        const byteRate = sampleRate * 3; // 24-bit mono
+        const blockAlign = 3; // 24-bit mono
+        const dataSize = numSamples * 3;
 
         const arrayBuffer = new ArrayBuffer(44 + dataSize);
         const view = new DataView(arrayBuffer);
@@ -504,22 +603,25 @@ class AudioEditor {
 
         // fmt chunk
         this.writeString(view, 12, 'fmt ');
-        view.setUint32(16, 16, true); // Subchunk size
-        view.setUint16(20, 1, true); // PCM format
+        view.setUint32(16, 16, true);
+        view.setUint16(20, 1, true); // PCM
         view.setUint16(22, 1, true); // Mono
         view.setUint32(24, sampleRate, true);
         view.setUint32(28, byteRate, true);
         view.setUint16(32, blockAlign, true);
-        view.setUint16(34, 16, true); // Bits per sample
+        view.setUint16(34, 24, true); // 24-bit
 
         // data chunk
         this.writeString(view, 36, 'data');
         view.setUint32(40, dataSize, true);
 
-        // Write PCM samples with clipping prevention
+        // Write 24-bit PCM samples
         for (let i = 0; i < numSamples; i++) {
             const sample = Math.max(-1, Math.min(1, buffer[i]));
-            view.setInt16(44 + i * 2, sample * 0x7FFF, true);
+            const intSample = Math.floor(sample * 0x7FFFFF); // 24-bit range
+            view.setUint8(44 + i * 3, intSample & 0xFF);
+            view.setUint8(45 + i * 3, (intSample >> 8) & 0xFF);
+            view.setUint8(46 + i * 3, (intSample >> 16) & 0xFF);
         }
 
         return String.fromCharCode.apply(null, new Uint8Array(arrayBuffer));
