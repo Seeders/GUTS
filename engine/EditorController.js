@@ -276,6 +276,74 @@ export class EditorController {
         }
         return success;
     }
+
+    setSelectedType(type) {
+        this.model.setSelectedType(type);
+    }
+    getSelectedType() {
+        return this.model.getSelectedType();
+    }
+
+    getSelectedObject() {
+        return this.model.state.selectedObject;
+    }
+
+    getExpandedCategories() {
+        return this.model.state.expandedCategories;
+    }
+
+    setExpandedCategories(categories) {
+        this.model.state.expandedCategories = categories;
+    }
+
+    findMatchingTypes(key) {
+        return this.model.findMatchingTypes(key);
+    }
+
+    updateObject(data) {
+        return this.model.updateObject(data);
+    }
+
+    selectObject(objectId) {
+        this.model.selectObject(objectId);
+        this.view.selectObject(); // Assuming this updates the UI
+    }
+
+    createObject(type, id, data) {
+        return this.model.createObject(type, id, data);
+    }
+
+    duplicateObject(newId, newName) {
+        return this.model.duplicateObject(newId, newName);
+    }
+
+    deleteObject() {
+        this.model.deleteObject();
+    }
+
+    createProject(name, config) {
+        return this.model.createProject(name, config);
+    }
+
+    listProjects() {
+        return this.model.listProjects();
+    }
+
+    getCurrentProject() {
+        return this.model.state.currentProject;
+    }
+
+    getDefaultRender() {
+        return this.model.CONFIG.DEFAULT_RENDER;
+    }
+
+    getDefaultTileMap() {
+        return this.model.CONFIG.DEFAULT_TILEMAP;
+    }
+
+    getDefaultScript() {
+        return this.model.CONFIG.DEFAULT_SCRIPT;
+    }
 }
 
 // Initialize the application when DOM is fully loaded

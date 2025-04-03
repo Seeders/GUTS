@@ -69,7 +69,12 @@ export class EditorModel {
         }
     }
 
-
+    setSelectedType(type){
+        this.state.selectedType = type;
+    }
+    getSelectedType(){
+        return this.state.selectedType;
+    }
     /**
      * Determines which project to load initially
      * Checks localStorage for last used project
@@ -510,7 +515,7 @@ export class EditorModel {
 
         // Remove object from collection
         delete this.getCollections()[this.state.selectedType][this.state.selectedObject];
-        this.state.selectedObject = null;
+        this.selectObject(null);
         return { success: true };
     }
 
@@ -581,8 +586,8 @@ export class EditorModel {
         
         // Reset selection if deleting currently selected type
         if (this.state.selectedType === typeId) {
-            this.state.selectedType = this.getCollectionDefs()[0].id;
-            this.state.selectedObject = null;
+            this.setSelectedType(this.getCollectionDefs()[0].id);
+            this.selectObject(null);
         }
 
         return { success: true };
