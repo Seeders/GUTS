@@ -25,6 +25,9 @@ const watchers = new Map();
 // Map of file timestamps
 const fileTimestamps = new Map();
 
+// Supported file extensions (aligned with FileSystemSyncService.propertyConfig)
+const SUPPORTED_EXTENSIONS = ['.json', '.js', '.html', '.css']; // Add more if needed
+
 // Endpoint to save the config
 app.post('/save-config', async (req, res) => {
     const config = req.body;
@@ -114,7 +117,6 @@ app.post('/read-file', async (req, res) => {
     }
 });
 
-// Recursive function to list all files in a directory and its subdirectories
 async function getAllFiles(dirPath, baseDir) {
     const entries = await fs.readdir(dirPath, { withFileTypes: true });
     const files = await Promise.all(
@@ -122,7 +124,7 @@ async function getAllFiles(dirPath, baseDir) {
             const fullPath = path.join(dirPath, entry.name);
             if (entry.isDirectory()) {
                 return getAllFiles(fullPath, baseDir);
-            } else if (entry.isFile() && (entry.name.endsWith('.json') || entry.name.endsWith('.js'))) {
+            } else if (entry.isFile() && SUPPORTED_EXTENSIONS.some(ext => entry.name.endsWith(ext))) {
                 const stats = await fs.stat(fullPath);
                 const timestamp = fileTimestamps.get(fullPath) || stats.mtimeMs;
                 const relativePath = path.relative(baseDir, fullPath).replace(/\\/g, '/');
@@ -144,15 +146,15 @@ app.post('/list-files', async (req, res) => {
     dirPath = path.join(PROJS_DIR, dirPath);
     const sinceTimestamp = since || 0;
     console.log('Listing files in:', dirPath);
-    
+
     try {
         if (!fsSync.existsSync(dirPath)) {
             console.log('Directory does not exist yet:', dirPath);
             return res.json([]);
         }
-        
+
         setupWatcher(dirPath);
-        
+
         const fileDetails = await getAllFiles(dirPath, PROJS_DIR);
         console.log('All files found:', JSON.stringify(fileDetails));
         const filteredFiles = fileDetails.filter(file => file.modified > sinceTimestamp);
@@ -163,6 +165,45 @@ app.post('/list-files', async (req, res) => {
         res.status(500).send({ success: false, error: error.message });
     }
 });
+
+// File watcher setup
+function setupWatcher(dirPath) {
+    if (watchers.has(dirPath)) {
+        return;
+    }
+
+    console.log(`Setting up watcher for ${dirPath}`);
+
+    if (!fsSync.existsSync(dirPath)) {
+        fsSync.mkdirSync(dirPath, { recursive: true });
+    }
+
+    const watcher = chokidar.watch(dirPath, {
+        ignored: /(^|[\/\\])\../, // Ignore dotfiles
+        persistent: true
+    });
+
+    watcher
+        .on('add', filePath => {
+            if (SUPPORTED_EXTENSIONS.some(ext => filePath.endsWith(ext))) {
+                console.log(`File added: ${filePath}`);
+                fileTimestamps.set(filePath, Date.now());
+            }
+        })
+        .on('change', filePath => {
+            if (SUPPORTED_EXTENSIONS.some(ext => filePath.endsWith(ext))) {
+                console.log(`File changed: ${filePath}`);
+                fileTimestamps.set(filePath, Date.now());
+            }
+        })
+        .on('unlink', filePath => {
+            console.log(`File removed: ${filePath}`);
+            fileTimestamps.delete(filePath);
+        });
+
+    watchers.set(dirPath, watcher);
+}
+
 
 app.get('/browse-directory', (req, res) => {
     const directories = [
@@ -177,39 +218,6 @@ app.get('/browse-directory', (req, res) => {
     });
 });
 
-// File watcher setup
-function setupWatcher(dirPath) {
-    if (watchers.has(dirPath)) {
-        return;
-    }
-    
-    console.log(`Setting up watcher for ${dirPath}`);
-    
-    if (!fsSync.existsSync(dirPath)) {
-        fsSync.mkdirSync(dirPath, { recursive: true });
-    }
-    
-    const watcher = chokidar.watch(dirPath, {
-        ignored: /(^|[\/\\])\../,
-        persistent: true
-    });
-    
-    watcher
-        .on('add', filePath => {
-            console.log(`File added: ${filePath}`);
-            fileTimestamps.set(filePath, Date.now());
-        })
-        .on('change', filePath => {
-            console.log(`File changed: ${filePath}`);
-            fileTimestamps.set(filePath, Date.now());
-        })
-        .on('unlink', filePath => {
-            console.log(`File removed: ${filePath}`);
-            fileTimestamps.delete(filePath);
-        });
-    
-    watchers.set(dirPath, watcher);
-}
 
 // Start the server
 const PORT = process.env.PORT || 5000;

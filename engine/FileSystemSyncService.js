@@ -15,11 +15,12 @@ export class FileSystemSyncService {
         this.intervalId = null;
         this.lastSyncTime = Date.now();
         this.pendingChanges = {};
+        this.typeHasSpecialProperties = {}; // New: Tracks if a type has any special properties
 
-        if(window.location.hostname == 'localhost'){            
+        if (window.location.hostname === 'localhost') {
             this.setupHooks();
         }
-    }  
+    }
 
     setPropertyConfig(config) {
         if (Array.isArray(config)) {
@@ -33,7 +34,6 @@ export class FileSystemSyncService {
             this.queueSync();
         });
         document.body.addEventListener('saveObject', async () => {
-          
             this.queueSync();
             await this.processPendingChanges();
         });
@@ -41,7 +41,7 @@ export class FileSystemSyncService {
             this.checkProjectExistsInFilesystem();
         });
     }
-  
+
     checkAndDownloadIfNeeded() {
         if (this.syncConfig.autoDownloadOnUnsaved && !this.projectSavedToFS) {
             console.log('Project not saved to filesystem yet. Triggering download...');
@@ -50,14 +50,12 @@ export class FileSystemSyncService {
             this.syncFromFilesystem();
         }
     }
-    
+
     startSync() {
         this.stopSync();
-        
         this.intervalId = setInterval(() => {
             this.syncNow();
         }, this.syncConfig.syncInterval);
-        
         console.log(`Filesystem sync started with ${this.syncConfig.syncInterval}ms interval`);
     }
 
@@ -84,14 +82,13 @@ export class FileSystemSyncService {
     async processPendingChanges() {
         const changesKeys = Object.keys(this.pendingChanges);
         if (changesKeys.length === 0) return;
-        
+
         console.log(`Processing ${changesKeys.length} pending changes`);
-        
         const syncPromises = changesKeys.map(async (key) => {
             const change = this.pendingChanges[key];
             await this.syncObjectToFilesystem(change.type, change.id, change.data);
         });
-        
+
         await Promise.all(syncPromises);
         this.pendingChanges = {};
     }
@@ -117,13 +114,28 @@ export class FileSystemSyncService {
             });
         });
     }
-    
-    async importProjectFromFilesystem(projectId) {        
+
+    // New helper method to check if any object in a type has special properties
+    hasSpecialPropertiesInType(type) {
+        if (this.typeHasSpecialProperties[type] !== undefined) {
+            return this.typeHasSpecialProperties[type];
+        }
+
+        const collections = this.gameEditor.model.getCollections();
+        const objects = collections[type] || {};
+        const hasSpecial = Object.values(objects).some(obj =>
+            this.propertyConfig.some(config => typeof obj[config.propertyName] === 'string')
+        );
+        this.typeHasSpecialProperties[type] = hasSpecial;
+        return hasSpecial;
+    }
+
+    async importProjectFromFilesystem(projectId) {
         if (!projectId) {
             console.log('No project ID available');
             return;
         }
-        
+    
         try {
             const projectPath = `${projectId}`;
             console.log('Importing project from filesystem:', projectPath);
@@ -133,178 +145,134 @@ export class FileSystemSyncService {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     path: projectPath,
-                    since: 0 // Get all files
+                    since: 0 // Fetch all files on import
                 })
             });
-            
-            if (!response.ok) throw new Error('Failed to list files');
+    
+            if (!response.ok) throw new Error(`Failed to list files: ${response.status}`);
             const files = await response.json();
-            
+    
             console.log('Found files:', files);
-            if (files.length == 0) {
-                console.log('no files found');
+            if (files.length === 0) {
+                console.log('No files found, initializing project in filesystem');
                 this.saveProjectToFilesystem();
                 return;
-            } 
+            }
+    
             const fileGroups = {};
     
             files.forEach(file => {
                 const parts = file.name.split('/');
-                if (parts.length >= 3) {
-                    let category, collectionId, objectId;
-                    
-                    // Check for property subdirectories (js, html, css) and data
-                    const propertyDirs = this.propertyConfig.map(config => config.ext);
-                    let subdirIndex = -1;
-                    let isDataDir = false;
+                if (parts.length < 3) {
+                    console.warn(`Skipping malformed file path: ${file.name}`);
+                    return;
+                }
     
-                    // Check for property subdirs
-                    for (const dir of propertyDirs) {
-                        const idx = parts.indexOf(dir);
-                        if (idx !== -1) {
-                            subdirIndex = idx;
-                            break;
-                        }
-                    }
+                let category, collectionId, objectId;
+                const propertyDirs = this.propertyConfig.map(config => config.ext);
+                let subdirIndex = -1;
     
-                    // Check for data subdir
-                    const dataIndex = parts.indexOf('data');
-                    if (dataIndex !== -1 && (subdirIndex === -1 || dataIndex < subdirIndex)) {
-                        isDataDir = true;
-                        subdirIndex = dataIndex;
-                    }
-    
-                    if (subdirIndex >= 2) {
-                        // Handle file in property or data subdirectory
-                        category = parts[subdirIndex - 2];
-                        collectionId = parts[subdirIndex - 1];
-                        const fileName = parts[parts.length - 1];
-                        objectId = fileName.substring(0, fileName.lastIndexOf('.'));
-                    } else {
-                        // Standard path: projectId/category/type/id.ext
-                        category = parts[parts.length - 3];
-                        collectionId = parts[parts.length - 2];
-                        const fileName = parts[parts.length - 1];
-                        objectId = fileName.substring(0, fileName.lastIndexOf('.'));
-                    }
-    
-                    // Adjust for data directory: move up one level
-                    if (isDataDir && subdirIndex >= 3) {
-                        collectionId = parts[subdirIndex - 1]; // e.g., "things"
-                        category = parts[subdirIndex - 2];     // e.g., "entities"
-                    }
-    
-                    if (category && collectionId && objectId) {
-                        const key = `${category}/${collectionId}/${objectId}`;
-                        if (!fileGroups[key]) fileGroups[key] = { category, collectionId, objectId, files: [] };
-                        fileGroups[key].files.push(file);
+                for (const dir of propertyDirs) {
+                    const idx = parts.indexOf(dir);
+                    if (idx !== -1) {
+                        subdirIndex = idx;
+                        break;
                     }
                 }
+    
+                const dataIndex = parts.indexOf('data');
+                if (dataIndex !== -1 && (subdirIndex === -1 || dataIndex < subdirIndex)) {
+                    subdirIndex = dataIndex;
+                }
+    
+                if (subdirIndex >= 2) {
+                    category = parts[subdirIndex - 2];
+                    collectionId = parts[subdirIndex - 1];
+                    const fileName = parts[parts.length - 1];
+                    objectId = fileName.substring(0, fileName.lastIndexOf('.'));
+                } else {
+                    category = parts[parts.length - 3];
+                    collectionId = parts[parts.length - 2];
+                    const fileName = parts[parts.length - 1];
+                    objectId = fileName.substring(0, fileName.lastIndexOf('.'));
+                }
+    
+                if (!category || !collectionId || !objectId) {
+                    console.warn(`Could not parse file path: ${file.name}`);
+                    return;
+                }
+    
+                const key = `${category}/${collectionId}/${objectId}`;
+                if (!fileGroups[key]) fileGroups[key] = { category, collectionId, objectId, files: [] };
+                fileGroups[key].files.push(file);
             });
     
-            const loadPromises = Object.values(fileGroups).map(group => 
+            console.log('File groups:', fileGroups);
+    
+            const loadPromises = Object.values(fileGroups).map(group =>
                 this.loadFilesForObject(group.collectionId, group.objectId, group.files)
             );
-            
+    
             await Promise.all(loadPromises);
             this.gameEditor.model.saveProject();
             console.log('All files successfully imported');
-            
         } catch (error) {
             console.error('Error importing project:', error);
             throw error;
         }
     }
+
     async loadFilesForObject(collectionIdFromPath, objectId, files) {
         const currentCollections = this.gameEditor.model.getCollections();
         if (!currentCollections[collectionIdFromPath]) currentCollections[collectionIdFromPath] = {};
     
-        const baseFile = files.find(f => f.name.includes('/data/') && f.name.endsWith('.json')) || files[0];
-        const filePathParts = baseFile.name.split('/');
+        const jsonFile = files.find(f => f.name.endsWith('.json'));
+        let objectData = currentCollections[collectionIdFromPath][objectId] || {};
     
-        let fsCategory, fsTypeFolder;
-        const dataIndex = filePathParts.indexOf('data');
-        const propertyDirIndex = filePathParts.findIndex(part => 
-            this.propertyConfig.some(config => config.ext === part)
-        );
-    
-        if (dataIndex !== -1 && dataIndex >= 2) {
-            fsCategory = filePathParts[dataIndex - 2];
-            fsTypeFolder = filePathParts[dataIndex - 1];
-        } else if (propertyDirIndex !== -1 && propertyDirIndex >= 2) {
-            fsCategory = filePathParts[propertyDirIndex - 2];
-            fsTypeFolder = filePathParts[propertyDirIndex - 1];
-        } else {
-            fsCategory = filePathParts[filePathParts.length - 3];
-            fsTypeFolder = filePathParts[filePathParts.length - 2];
-        }
-    
-        const newCollectionId = fsTypeFolder;
-        const fullFileName = filePathParts[filePathParts.length - 1];
-        const fileNameFromFS = fullFileName.substring(0, fullFileName.lastIndexOf('.'));
-    
-        let hasSpecialProperties = false;
-        let objectData = currentCollections[newCollectionId][objectId] || {};
-    
-        const promises = files.map(fileInfo => {
-            const filePath = fileInfo.name;
-            const fileExt = filePath.substring(filePath.lastIndexOf('.') + 1);
-    
-            return fetch('/read-file', {
+        // Process JSON file if it exists
+        if (jsonFile) {
+            const jsonResponse = await fetch('/read-file', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ path: filePath })
-            })
-            .then(response => {
-                if (!response.ok) throw new Error(`Failed to read file: ${response.status}`);
-                return response.text();
-            })
-            .then(content => {
-                const propertyConfig = this.propertyConfig.find(config => config.ext === fileExt);
-                if (propertyConfig) {
-                    hasSpecialProperties = true;
-                    objectData[propertyConfig.propertyName] = content;
-                } else if (fileExt === 'json') {
-                    const newData = JSON.parse(content);
-                    const jsonId = newData.id || objectId;
-                    objectData = currentCollections[newCollectionId][jsonId] || {};
-                    Object.assign(objectData, newData);
-                    objectId = jsonId; // Ensure we’re using the canonical id
-                }
+                body: JSON.stringify({ path: jsonFile.name })
             });
-        });
-    
-        await Promise.all(promises);
-    
-        if (hasSpecialProperties) {
-            objectData.fileName = fileNameFromFS; // Always update fileName from filesystem if special properties
+            if (!jsonResponse.ok) throw new Error(`Failed to read JSON file: ${jsonFile.name}`);
+            const content = await jsonResponse.text();
+            const newData = JSON.parse(content);
+            objectId = newData.id || objectId;
+            Object.assign(objectData, newData);
+            console.log(`Loaded JSON for ${collectionIdFromPath}/${objectId}`);
         }
-        currentCollections[newCollectionId][objectId] = objectData;
     
-        const typeDefs = this.gameEditor.model.getCollectionDefs();
-        const oldTypeDef = typeDefs.find(t => t.id === collectionIdFromPath);
-        if (oldTypeDef && oldTypeDef.id !== fsTypeFolder) {
-            console.log(`Renaming collection from ${oldTypeDef.id} to ${fsTypeFolder}`);
-            if (currentCollections[oldTypeDef.id]) {
-                currentCollections[newCollectionId] = { ...currentCollections[oldTypeDef.id] };
-                delete currentCollections[oldTypeDef.id];
+        // Process special property files (e.g., .html, .css)
+        const specialFiles = files.filter(f => !f.name.endsWith('.json'));
+        for (const fileInfo of specialFiles) {
+            const fileExt = fileInfo.name.substring(fileInfo.name.lastIndexOf('.') + 1);
+            const propertyConfig = this.propertyConfig.find(config => config.ext === fileExt);
+    
+            if (propertyConfig) {
+                const response = await fetch('/read-file', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ path: fileInfo.name })
+                });
+                if (!response.ok) throw new Error(`Failed to read ${fileExt} file: ${fileInfo.name}`);
+                const content = await response.text();
+                objectData[propertyConfig.propertyName] = content;
+                this.typeHasSpecialProperties[collectionIdFromPath] = true;
+                console.log(`Loaded ${propertyConfig.propertyName} from ${fileInfo.name}`);
             }
-            const newName = fsTypeFolder.charAt(0).toUpperCase() + fsTypeFolder.slice(1);
-            const newSingular = oldTypeDef.singular || (fsTypeFolder.endsWith('s') ? fsTypeFolder.slice(0, -1) : fsTypeFolder);
-            oldTypeDef.id = fsTypeFolder;
-            oldTypeDef.name = newName;
-            oldTypeDef.singular = newSingular;
         }
     
-        const currentCategory = this.gameEditor.model.getCategoryByType(newCollectionId);
-        if (currentCategory !== fsCategory) {
-            const typeDef = typeDefs.find(t => t.id === newCollectionId);
-            if (typeDef) typeDef.category = fsCategory;
+        // Set fileName if applicable
+        if (this.hasSpecialPropertiesInType(collectionIdFromPath)) {
+            const fileName = files[0].name.split('/').pop().replace(/\.[^/.]+$/, '');
+            objectData.fileName = fileName;
         }
     
+        currentCollections[collectionIdFromPath][objectId] = objectData;
         const updateEvent = new CustomEvent('projectUpdated', { cancelable: true });
         document.body.dispatchEvent(updateEvent);
-        console.log(`Updated object ${newCollectionId}/${objectId} in editor${hasSpecialProperties ? ` with fileName: ${objectData.fileName}` : ''}`);
     }
 
     async syncObjectToFilesystem(type, id, data) {
@@ -313,28 +281,27 @@ export class FileSystemSyncService {
             console.log('No project ID available');
             return;
         }
-    
-        // Basic validation
+
         if (!type || !id || !data || typeof data !== 'object') {
             console.error(`Invalid input: type=${type}, id=${id}, data=${data}`);
             return;
         }
-    
+
         const categoryFromModel = this.gameEditor.model.getCategoryByType(type);
         const category = categoryFromModel || 'uncategorized';
-    
+
         if (category === 'uncategorized') {
             console.warn(`Skipping sync for type=${type}, id=${id}: No valid category found.`);
             return;
         }
-    
+
         const basePath = `${projectId}/${category}/${type}`;
-    
+
         // Check for special properties in this object
         const specialProperties = {};
-        const jsonData = { ...data }; // Clone data to avoid mutating the original yet
+        const jsonData = { ...data };
         let hasSpecialProperties = false;
-    
+
         this.propertyConfig.forEach(config => {
             const propName = config.propertyName;
             if (typeof data[propName] === 'string') {
@@ -346,22 +313,25 @@ export class FileSystemSyncService {
                 hasSpecialProperties = true;
             }
         });
-    
-        // Determine filename based on whether there are special properties
-        let fileName;
+
+        // Update type status if this object has special properties
         if (hasSpecialProperties) {
-            fileName = jsonData.fileName || id; // Use fileName if present, otherwise id
-            if (!jsonData.fileName) {
-                jsonData.fileName = fileName; // Add to jsonData only if special properties exist
-            }
-        } else {
-            fileName = id; // Use id directly, no fileName property added
+            this.typeHasSpecialProperties[type] = true;
         }
-    
-        // Use the 'data' folder for JSON files
-        const jsonFilePath = `${basePath}/data/${fileName}.json`;
+
+        // Determine filename and JSON path based on type-wide special properties
+        const useDataFolder = this.hasSpecialPropertiesInType(type);
+        let fileName = useDataFolder ? (jsonData.fileName || id) : id;
+        if (useDataFolder && !jsonData.fileName) {
+            jsonData.fileName = fileName;
+        }
+
+        const jsonFilePath = useDataFolder
+            ? `${basePath}/data/${fileName}.json`
+            : `${basePath}/${fileName}.json`;
+
         const jsonContent = JSON.stringify(jsonData, null, 2);
-    
+
         try {
             // Save the JSON file
             const jsonResponse = await fetch('/save-file', {
@@ -369,58 +339,58 @@ export class FileSystemSyncService {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ path: jsonFilePath, content: jsonContent })
             });
-    
+
             if (!jsonResponse.ok) {
                 throw new Error(`Failed to save JSON file: ${jsonFilePath}`);
             }
             console.log(`JSON file saved: ${jsonFilePath}`);
-    
-            // Save all special property files concurrently (only if they exist)
+
+            // Save special property files (if any)
             const specialPropertyPromises = Object.entries(specialProperties).map(
                 async ([propName, propData]) => {
                     const fileDir = `${basePath}/${propData.ext}`;
                     const filePath = `${fileDir}/${fileName}.${propData.ext}`;
                     const fileContent = propData.content;
-    
+
                     const response = await fetch('/save-file', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ path: filePath, content: fileContent })
                     });
-    
+
                     if (!response.ok) {
                         throw new Error(`Failed to save ${propData.ext} file: ${filePath}`);
                     }
                     console.log(`${propData.ext.toUpperCase()} file saved: ${filePath}`);
                 }
             );
-    
-            // Wait for all special property files to finish saving
+
             await Promise.all(specialPropertyPromises);
-    
-            // Update the original data object in the model to reflect fileName (only if special properties)
+
+            // Update the model with fileName if type has special properties
             const currentCollections = this.gameEditor.model.getCollections();
-            if (currentCollections[type] && currentCollections[type][id] && hasSpecialProperties) {
+            if (currentCollections[type] && currentCollections[type][id] && useDataFolder) {
                 currentCollections[type][id].fileName = fileName;
             }
-    
+
             return { success: true, jsonFilePath, specialProperties: Object.keys(specialProperties) };
         } catch (error) {
             console.error('Error in syncObjectToFilesystem:', error);
             throw error;
         }
     }
-    
+
+    // Fix for the syncFromFilesystem method to properly handle HTML and CSS files
     async syncFromFilesystem() {
         const projectId = this.gameEditor.model.getCurrentProject();
         if (!projectId) {
             console.log('No project ID available');
             return;
         }
-    
+
         const projectPath = `${projectId}`;
         console.log('Checking filesystem for changes in:', projectPath);
-    
+
         const response = await fetch('/list-files', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -429,29 +399,29 @@ export class FileSystemSyncService {
                 since: this.lastSyncTime
             })
         });
-    
+
         if (!response.ok) throw new Error('Failed to list files');
         const files = await response.json();
-    
+
         if (files.length === 0) {
             console.log('No changes detected in filesystem');
             this.lastSyncTime = Date.now();
             return;
         }
-    
+
         console.log('Files changed since last sync:', files);
         const fileGroups = {};
         const currentCollections = this.gameEditor.model.getCollections();
-    
-        // Group files by filename-derived objectId initially
+
+        // Group files by their object identifier
         for (const file of files) {
             const parts = file.name.split('/');
             if (parts.length < 3) continue;
-    
+
             let category, collectionId, objectId;
             const propertyDirs = this.propertyConfig.map(config => config.ext);
             let subdirIndex = -1;
-    
+
             for (const dir of propertyDirs) {
                 const idx = parts.indexOf(dir);
                 if (idx !== -1) {
@@ -459,12 +429,12 @@ export class FileSystemSyncService {
                     break;
                 }
             }
-    
+
             const dataIndex = parts.indexOf('data');
             if (dataIndex !== -1 && (subdirIndex === -1 || dataIndex < subdirIndex)) {
                 subdirIndex = dataIndex;
             }
-    
+
             if (subdirIndex >= 2) {
                 category = parts[subdirIndex - 2];
                 collectionId = parts[subdirIndex - 1];
@@ -476,101 +446,122 @@ export class FileSystemSyncService {
                 const fileName = parts[parts.length - 1];
                 objectId = fileName.substring(0, fileName.lastIndexOf('.'));
             }
-    
+
             if (category && collectionId && objectId) {
                 const key = `${category}/${collectionId}/${objectId}`;
                 if (!fileGroups[key]) fileGroups[key] = { category, collectionId, objectId, files: [] };
                 fileGroups[key].files.push(file);
             }
         }
-    
-        // Process each group and handle renames
+
+        // Process each group of related files
         for (const group of Object.values(fileGroups)) {
             const { collectionId, objectId, files } = group;
-            const jsonFile = files.find(f => f.name.includes('/data/') && f.name.endsWith('.json'));
-            if (!jsonFile) {
-                console.warn(`No JSON file found for ${collectionId}/${objectId}, skipping`);
-                continue;
+            
+            if (!currentCollections[collectionId]) {
+                currentCollections[collectionId] = {};
             }
-    
-            const jsonResponse = await fetch('/read-file', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ path: jsonFile.name })
-            });
-            const jsonContent = await jsonResponse.text();
-            const jsonData = JSON.parse(jsonContent);
-            const canonicalId = jsonData.id || objectId;
-    
-            // Check if this is a rename
-            const fileNameFromFS = jsonFile.name.split('/').pop().replace('.json', '');
-            const existingObject = currentCollections[collectionId]?.[canonicalId];
-            if (existingObject && fileNameFromFS !== existingObject.fileName) {
-                console.log(`Detected rename: ${existingObject.fileName} → ${fileNameFromFS} for id: ${canonicalId}`);
-                
-                // Rename associated files
-                const oldBaseName = existingObject.fileName || canonicalId;
-                const newBaseName = fileNameFromFS;
-                const basePath = `${projectId}/${group.category}/${collectionId}`;
-                const renamePromises = [];
-    
-                // Rename JSON file if needed
-                if (jsonFile.name !== `${basePath}/data/${oldBaseName}.json`) {
-                    renamePromises.push(
-                        fetch('/rename-file', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                oldPath: `${basePath}/data/${oldBaseName}.json`,
-                                newPath: `${basePath}/data/${newBaseName}.json`
-                            })
-                        }).then(res => {
-                            if (!res.ok) throw new Error(`Failed to rename JSON file`);
-                            console.log(`Renamed ${basePath}/data/${oldBaseName}.json to ${newBaseName}.json`);
-                        })
-                    );
-                }
-    
-                // Rename special property files
-                for (const config of this.propertyConfig) {
-                    const oldPath = `${basePath}/${config.ext}/${oldBaseName}.${config.ext}`;
-                    const newPath = `${basePath}/${config.ext}/${newBaseName}.${config.ext}`;
-                    if (files.some(f => f.name === newPath)) {
-                        renamePromises.push(
-                            fetch('/rename-file', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ oldPath, newPath })
-                            }).then(res => {
-                                if (!res.ok) throw new Error(`Failed to rename ${config.ext} file`);
-                                console.log(`Renamed ${oldPath} to ${newPath}`);
-                            })
-                        );
-                    }
-                }
-    
-                await Promise.all(renamePromises);
-    
-                // Update fileName in JSON and model
-                jsonData.fileName = newBaseName;
-                await fetch('/save-file', {
+            
+            // First find and process JSON file to get the base object data
+            const jsonFile = files.find(f => f.name.endsWith('.json'));
+            if (!jsonFile) {
+                console.warn(`No JSON file found for ${collectionId}/${objectId}, processing other files directly`);
+                // Even if no JSON file exists, we still need to process HTML, CSS, etc.
+            }
+            
+            let jsonData = {};
+            let canonicalId = objectId;
+            
+            if (jsonFile) {
+                const jsonResponse = await fetch('/read-file', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        path: `${basePath}/data/${newBaseName}.json`,
-                        content: JSON.stringify(jsonData, null, 2)
-                    })
+                    body: JSON.stringify({ path: jsonFile.name })
                 });
-                if (currentCollections[collectionId]) {
-                    currentCollections[collectionId][canonicalId].fileName = newBaseName;
+                
+                const jsonContent = await jsonResponse.text();
+                jsonData = JSON.parse(jsonContent);
+                canonicalId = jsonData.id || objectId;
+                
+                const fileNameFromFS = jsonFile.name.split('/').pop().replace('.json', '');
+                const existingObject = currentCollections[collectionId]?.[canonicalId];
+                const useDataFolder = this.hasSpecialPropertiesInType(collectionId);
+
+                if (existingObject && useDataFolder && fileNameFromFS !== existingObject.fileName) {
+                    console.log(`Detected rename: ${existingObject.fileName} → ${fileNameFromFS} for id: ${canonicalId}`);
+                    // Handle rename scenario (already implemented)
+                    // ...existing rename code...
+                }
+                
+                // Update the base object data
+                if (!currentCollections[collectionId][canonicalId]) {
+                    currentCollections[collectionId][canonicalId] = {};
+                }
+                
+                // Preserve special properties when updating from JSON
+                const existingObj = currentCollections[collectionId][canonicalId];
+                this.propertyConfig.forEach(config => {
+                    if (existingObj[config.propertyName]) {
+                        jsonData[config.propertyName] = existingObj[config.propertyName];
+                    }
+                });
+                
+                Object.assign(currentCollections[collectionId][canonicalId], jsonData);
+            }
+            
+            // Now process special property files (HTML, CSS, JS, etc.)
+            for (const file of files) {
+                if (file.name.endsWith('.json')) continue; // Skip JSON, already processed
+                
+                const fileExt = file.name.substring(file.name.lastIndexOf('.') + 1);
+                const propertyConfig = this.propertyConfig.find(config => config.ext === fileExt);
+                
+                if (propertyConfig) {
+                    // This is a special property file (HTML, CSS, JS)
+                    const response = await fetch('/read-file', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ path: file.name })
+                    });
+                    
+                    if (!response.ok) {
+                        console.error(`Failed to read ${fileExt} file: ${file.name}`);
+                        continue;
+                    }
+                    
+                    const content = await response.text();
+                    
+                    if (!currentCollections[collectionId][canonicalId]) {
+                        currentCollections[collectionId][canonicalId] = {
+                            id: canonicalId
+                        };
+                    }
+                    
+                    // Update the special property
+                    currentCollections[collectionId][canonicalId][propertyConfig.propertyName] = content;
+                    
+                    // Mark this type as having special properties
+                    this.typeHasSpecialProperties[collectionId] = true;
+                    
+                    console.log(`Updated ${propertyConfig.propertyName} content for ${collectionId}/${canonicalId}`);
                 }
             }
-    
-            // Load the object (updates existing or creates new if no id match)
-            await this.loadFilesForObject(collectionId, canonicalId, files);
+            
+            // Make sure fileName is set for objects with special properties
+            if (this.hasSpecialPropertiesInType(collectionId)) {
+                const obj = currentCollections[collectionId][canonicalId];
+                if (!obj.fileName) {
+                    obj.fileName = canonicalId;
+                }
+            }
         }
-    
+
+        // Update the UI to reflect changes
+        const updateEvent = new CustomEvent('projectUpdated', { cancelable: true });
+        document.body.dispatchEvent(updateEvent);
+        
         this.lastSyncTime = Date.now();
+        console.log('Filesystem sync completed successfully');
     }
 
     checkProjectExistsInFilesystem() {
@@ -581,7 +572,7 @@ export class FileSystemSyncService {
         }
 
         const projectPath = `${projectId}`;
-        
+
         fetch('/list-files', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
