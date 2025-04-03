@@ -313,7 +313,6 @@ export class ModuleManager {
     }
 
     try {
-      debugger;
       // Dynamic import for ES modules
       const module = await import(moduleDef.source);
       const moduleClass = module.default || module[moduleDef.className];
