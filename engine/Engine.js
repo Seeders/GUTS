@@ -69,9 +69,10 @@ class Engine {
 
     setupHTML() {      
         document.body.style = "";  
-        this.applicationTarget.innerHTML = this.config.configs.game.html; 
+        const gameInterface = this.config.configs.game.interface;
+        this.applicationTarget.innerHTML = gameInterface.html; 
         const styleEl = document.createElement("style");
-        styleEl.innerHTML = this.config.configs.game.css;
+        styleEl.innerHTML = gameInterface.css;
         document.head.appendChild(styleEl);
         this.setupCanvas();
     }
