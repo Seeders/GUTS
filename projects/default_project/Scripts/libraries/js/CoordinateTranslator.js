@@ -41,7 +41,7 @@ class CoordinateTranslator {
         if(!this.isometric){
             return {
                 x: pixelX + ( this.canvasWidth - this.mapSize * this.tileWidth) / 2,
-                y: pixelY
+                y: pixelY + ( this.canvasHeight - this.mapSize * this.tileWidth) / 2
             }
         }
         const grid = this.pixelToGrid(pixelX, pixelY);

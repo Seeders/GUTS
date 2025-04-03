@@ -100,8 +100,8 @@ class Engine {
             const scaleY = this.canvas.height / rect.height; // Ratio of canvas pixel height to CSS height
             
             // Calculate mouse position relative to canvas with scaling
-            const mouseX = (e.clientX - rect.left) * scaleX + (this.isometric ? 0 : -( this.canvas.width - this.state.tileMapData.size *  this.config.configs.game.gridSize) / 2);
-            const mouseY = (e.clientY - rect.top) * scaleY;
+            const mouseX = (e.clientX - rect.left) * scaleX + (this.isometric ? 0 : -( this.canvas.width - this.state.tileMapData.size * this.config.configs.game.gridSize) / 2);
+            const mouseY = (e.clientY - rect.top) * scaleY + (this.isometric ? 0 : -( this.canvas.height - this.state.tileMapData.size * this.config.configs.game.gridSize) / 2);
     
             // Convert to isometric and grid coordinates
             const gridPos = this.translator.isoToGrid(mouseX, mouseY);

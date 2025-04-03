@@ -61,8 +61,8 @@ class MapRenderer extends engine.Component {
               ? 0 
               : ( this.terrainCanvas.width - tileMapData.terrainMap.length * this.config.gridSize) / 2,
           this.isometric 
-              ? -tileMapData.terrainMap.length * this.config.gridSize / 4 
-              : 0
+              ? (this.terrainCanvas.height / 4) - ((tileMapData.terrainMap.length * this.config.gridSize) / 4)
+              : ( this.terrainCanvas.height - tileMapData.terrainMap.length * this.config.gridSize) / 2
       );
        //this.ctx.drawImage(this.terrainCanvas, 0, 0);
         //this.ctx.drawImage(this.mapCacheCanvas, 0,  -this.config.canvasHeight / 2);

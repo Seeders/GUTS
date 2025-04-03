@@ -2,9 +2,9 @@
   "gridSize": 48,
   "imageSize": 128,
   "canvasWidth": 1536,
-  "canvasHeight": 768,
+  "canvasHeight": 1536,
   "title": "Default Project",
-  "isIsometric": true,
+  "isIsometric": false,
   "libraries": [
     "threejs",
     "GLTFLoader",
