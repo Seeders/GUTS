@@ -1,24 +1,131 @@
-            <div id="audio-editor-container" class="main-content-container">
-                <h2>Sound Synthesis Tool (Module)</h2>
-                <label>
-                    Waveform:
-                    <select id="waveform">
-                        <option value="sine">Sine</option>
-                        <option value="square">Square</option>
-                        <option value="sawtooth">Sawtooth</option>
-                        <option value="triangle">Triangle</option>
-                    </select>
-                </label>
-                <label>
-                    Frequency (Hz, 20-2000):
-                    <input type="number" id="frequency" value="440" min="20" max="2000">
-                </label>
-                <label>
-                    Duration (seconds, 0.1-5):
-                    <input type="number" id="duration" value="1" min="0.1" max="5" step="0.1">
-                </label>
-                <button id="playBtn">Play Sound</button>
-                <button id="exportBtn">Export to JSON (Base64)</button>
-                <label>Base64 JSON Output:</label>
-                <textarea id="jsonOutput" readonly></textarea>
-            </div>
+<div id="audio-editor-container" class="main-content-container">
+  
+	<div style="display:flex">
+   
+    
+    <!-- Waveform Visualizer -->
+    <div class="visualizer-container">
+        <canvas id="waveformCanvas" width="600" height="150"></canvas>
+    </div>
+    
+    <!-- Basic Parameters -->
+    <div class="parameters-container">
+        <h3>Basic Parameters</h3>
+        <div class="parameter-group">
+            <label>
+                Waveform:
+                <select id="waveform">
+                    <option value="sine">Sine</option>
+                    <option value="square">Square</option>
+                    <option value="sawtooth">Sawtooth</option>
+                    <option value="triangle">Triangle</option>
+                    <option value="noise">Noise</option>
+                </select>
+            </label>
+            
+            <label>
+                Frequency (Hz):
+                <input type="range" id="frequency" min="20" max="2000" value="440" step="1">
+                <span class="value-display">440 Hz</span>
+            </label>
+            
+            <label>
+                Duration (seconds):
+                <input type="range" id="duration" min="0.1" max="5" value="1" step="0.1">
+                <span class="value-display">1.0 s</span>
+            </label>
+            
+            <label>
+                Volume:
+                <input type="range" id="volume" min="0" max="1" value="0.7" step="0.01">
+                <span class="value-display">70%</span>
+            </label>
+        </div>
+    </div>
+    
+    <!-- ADSR Envelope -->
+    <div class="parameters-container">
+        <h3>Envelope (ADSR)</h3>
+        <div class="parameter-group">
+            <label>
+                Attack:
+                <input type="range" id="attack" min="0.001" max="2" value="0.01" step="0.001">
+                <span class="value-display">0.01 s</span>
+            </label>
+            
+            <label>
+                Decay:
+                <input type="range" id="decay" min="0.001" max="2" value="0.1" step="0.001">
+                <span class="value-display">0.1 s</span>
+            </label>
+            
+            <label>
+                Sustain:
+                <input type="range" id="sustain" min="0" max="1" value="0.7" step="0.01">
+                <span class="value-display">70%</span>
+            </label>
+            
+            <label>
+                Release:
+                <input type="range" id="release" min="0.001" max="5" value="0.3" step="0.001">
+                <span class="value-display">0.3 s</span>
+            </label>
+        </div>
+    </div>
+    
+    <!-- Effects -->
+    <div class="parameters-container">
+        <h3>Effects</h3>
+        <div class="parameter-group">
+            <label>
+                Filter Type:
+                <select id="filterType">
+                    <option value="lowpass">Low Pass</option>
+                    <option value="highpass">High Pass</option>
+                    <option value="bandpass">Band Pass</option>
+                    <option value="notch">Notch</option>
+                </select>
+            </label>
+            
+            <label>
+                Filter Cutoff:
+                <input type="range" id="filterCutoff" min="20" max="20000" value="1000" step="1">
+                <span class="value-display">1000 Hz</span>
+            </label>
+            
+            <label>
+                Delay Amount:
+                <input type="range" id="delayAmount" min="0" max="0.9" value="0" step="0.01">
+                <span class="value-display">0%</span>
+            </label>
+        </div>
+    </div>
+    
+    <!-- Presets -->
+    <div class="presets-container">
+        <h3>Presets</h3>
+        <div class="preset-controls">
+            <select id="presetSelect">
+                <option value="">-- Select Preset --</option>
+                <!-- Presets will be populated by JavaScript -->
+            </select>
+            
+            <input type="text" id="presetName" placeholder="New preset name">
+            <button id="savePresetBtn">Save Preset</button>
+        </div>
+    </div>
+    
+    <!-- Playback Controls -->
+    <div class="control-buttons">
+        <button id="playBtn" class="primary-button">Play Sound</button>
+        <button id="stopBtn">Stop</button>
+        <button id="exportBtn">Export</button>
+    </div>
+    
+    <!-- Output Display -->
+    <div class="output-container">
+        <h3>Export Data</h3>
+        <textarea id="jsonOutput" readonly rows="5"></textarea>
+    </div>
+</div>
+</div>

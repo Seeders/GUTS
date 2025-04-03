@@ -1,4 +1,5 @@
 {
   "title": "Code Mirror",
-  "theme": "codeMirrorTheme"
+  "theme": "codeMirrorTheme",
+  "fileName": "codeMirror"
 }

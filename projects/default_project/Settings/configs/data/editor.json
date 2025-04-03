@@ -10,5 +10,6 @@
     "audioModule",
     "exportScriptModule"
   ],
-  "path": "/"
+  "path": "/",
+  "fileName": "editor"
 }

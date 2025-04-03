@@ -22,5 +22,6 @@
   "victory": false,
   "round": 0,
   "waveDelay": 1,
-  "modifierSet": "global"
+  "modifierSet": "global",
+  "fileName": "state"
 }
