@@ -623,7 +623,7 @@ class TerrainMapEditor {
     exportMap() {
         // Create a custom event with data
         const myCustomEvent = new CustomEvent('saveTileMap', {
-            detail: { data: this.tileMap, propertyName: this.savePropertyName },
+            detail: { data: this.tileMap, propertyName: this.savePropertyName, refresh: false },
             bubbles: true,
             cancelable: true
         });
