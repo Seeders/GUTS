@@ -41,20 +41,29 @@ init({level}) {
         let paths = [];
         let starts = [];
         let endPoint = {x: 0, y: 0};
+
+        // Find START and END tile types by their IDs
+        const startTypeId = terrainTypes.findIndex(t => t.type === "start");
+        const endTypeId = terrainTypes.findIndex(t => t.type === "end");
+        
         // Create the tile map using the provided terrainMap
         const tileMap = terrainMap.map((row, y) => 
-            row.map((terrainType, x) => {
+            row.map((terrainId, x) => {
                 // Find the terrain object to get color information
-                const terrain = terrainTypes.find(t => t.type === terrainType);                
-                if(terrainType == "start") {
-                    starts.push({x: x, y:y });
-                } else if(terrainType == "end") {
+                const terrain = terrainTypes.find(t => t.id === terrainId);  
+                
+                // Check for start/end points using IDs
+                if(terrainId === startTypeId) {
+                    starts.push({x: x, y: y});
+                } else if(terrainId === endTypeId) {
                     endPoint = {x: x, y: y};
                 }
+                
                 return { 
-                    type: terrainType, 
+                    type: terrain ? terrain.type : 'unknown',
+                    typeId: terrainId,
                     color: terrain ? terrain.color : '#8bc34a', // Default to grass color if not found
-                    buildable: terrain.buildable
+                    buildable: terrain ? terrain.buildable : false
                 };
             })
         );        
@@ -63,20 +72,12 @@ init({level}) {
             paths.push(this.findPath(startPoint, endPoint, terrainMap));
         });
 
-
         return { tileMap, paths };
     }
 
     findPath(startPoint, endPoint, tileMap) {
-        
         return this.aStar(startPoint, endPoint, tileMap);
     }
-    /**
-     * A* Pathfinding Algorithm Implementation
-     * Finds the shortest path between two points on a 2D tile map,
-     * with a strong preference for "path" type tiles.
-     */
-
     
     /**
      * A* pathfinding algorithm
@@ -187,12 +188,17 @@ init({level}) {
     /**
      * Calculate movement cost based on tile type
      * Path tiles are heavily favored
-     * @param {string} tileType - Type of the tile
+     * @param {number} tileTypeId - ID of the tile type
      * @returns {number} - Movement cost
      */
-    calculateMovementCost(tileType) {
-        // Heavily favor "path" type tiles
-        if (tileType.toLowerCase() === 'path' || tileType.toLowerCase() === 'end') {
+    calculateMovementCost(tileTypeId) {
+        // Find path and end type IDs
+        const { terrainTypes } = this.tileMap;
+        const pathTypeId = terrainTypes.findIndex(t => t.type === "path");
+        const endTypeId = terrainTypes.findIndex(t => t.type === "end");
+        
+        // Heavily favor "path" and "end" type tiles
+        if (tileTypeId === pathTypeId || tileTypeId === endTypeId) {
             return 1;
         } else {
             // Make non-path tiles much less desirable
@@ -230,6 +236,4 @@ init({level}) {
         
         return path;
     }
-    
-
 }

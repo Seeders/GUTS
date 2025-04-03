@@ -6,7 +6,7 @@ class MapRenderer extends engine.Component {
     
     
     init({canvasBuffer, terrainCanvasBuffer, environment, imageManager, levelName, gameConfig, level}) {   
-        
+
         this.config = gameConfig;
         this.imageManager = imageManager;
         this.environment = environment;
@@ -46,11 +46,11 @@ class MapRenderer extends engine.Component {
     }
 
     draw(){}
-    renderBG(state, tileMapData, tileMap, paths) {
+    renderBG(tileMapData, paths) {
         this.clearMap(tileMapData);
         // Generate cache if not already done
         if (!this.isMapCached) {
-            this.cacheMap(tileMapData, tileMap, paths, this.isometric);            
+            this.cacheMap(tileMapData, paths, this.isometric);            
         }        
   
         // Draw cached map image to main canvas
@@ -59,9 +59,9 @@ class MapRenderer extends engine.Component {
           this.terrainCanvas, 
           this.isometric 
               ? 0 
-              : ( this.terrainCanvas.width - tileMap.length * this.config.gridSize) / 2,
+              : ( this.terrainCanvas.width - tileMapData.terrainMap.length * this.config.gridSize) / 2,
           this.isometric 
-              ? -tileMap.length * this.config.gridSize / 4 
+              ? -tileMapData.terrainMap.length * this.config.gridSize / 4 
               : 0
       );
        //this.ctx.drawImage(this.terrainCanvas, 0, 0);
@@ -78,23 +78,7 @@ class MapRenderer extends engine.Component {
     }
 
     drawTileMap(tileMapData, isometric) {
-        let terrainLayers = [];        
-        tileMapData.terrainTypes.forEach((terrainType) => {
-            terrainLayers.push(terrainType.type);
-        });
-        let mapSize = tileMapData.terrainMap.length;
-        let mapByLayer = [];
-        for(let i = 0; i < mapSize; i++) {
-            mapByLayer[i] = [];
-            for( let j = 0; j < mapSize; j++ ) {
-                let tile = tileMapData.terrainMap[i][j];
-                let tileIndex = terrainLayers.indexOf(tile);
-                mapByLayer[i][j] = tileIndex;
-            }
-        }
-
-
-        this.terrainTileMapper.draw(mapByLayer);
+        this.terrainTileMapper.draw(tileMapData.terrainMap);
     }
     clearMap(tileMapData) {
         this.ctx.clearRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);
@@ -102,7 +86,7 @@ class MapRenderer extends engine.Component {
         this.ctx.fillRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);
     }
     // Call this when map data changes or on initialization
-    cacheMap(tileMapData, tileMap, paths, isometric) {
+    cacheMap(tileMapData, paths, isometric) {
         this.terrainCtx.clearRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);
                    
         // Clear the cache canvas
@@ -111,7 +95,7 @@ class MapRenderer extends engine.Component {
         // Draw the map onto the cache canvas
         this.drawTileMap(tileMapData, isometric);
         this.drawPaths(this.mapCacheCtx, paths);
-        this.drawEnvironment(tileMap.length, tileMap.length * tileMap.length);
+        this.drawEnvironment(tileMapData.terrainMap.length, tileMapData.terrainMap.length * tileMapData.terrainMap.length);
         
         // Mark cache as valid
         this.isMapCached = true;

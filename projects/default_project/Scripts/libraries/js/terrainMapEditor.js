@@ -1,4 +1,3 @@
-
 class TerrainMapEditor {
     constructor(gameEditor, config = {}, { TileMap, TerrainImageProcessor, CoordinateTranslator, ImageManager, ShapeFactory }) {
         this.gameEditor = gameEditor;
@@ -22,19 +21,19 @@ class TerrainMapEditor {
         // Grid and terrain configuration
         this.defaultMapSize = 16;
         this.mapSize = this.defaultMapSize;
-        this.currentTerrainType = 'grass';
+        this.currentTerrainId = 3; // Default to grass (id: 3)
         this.isMouseDown = false;
         
-        // Terrain map structure
+        // Terrain map structure with IDs instead of string types
         this.tileMap = {
             size: 16,
             terrainTypes: [
-                { type: "start", color: "#ffff00", image: [] },
-                { type: "end", color: "#ff0000", image: [] },
-                { type: "path", color: "#eeae9e", image: [] },
-                { type: "grass", color: "#8bc34a", image: [] },
-                { type: "water", color: "#64b5f6", image: [] },
-                { type: "rock", color: "#9e9e9e", image: [] }
+                { id: 0, type: "start", color: "#ffff00", image: [] },
+                { id: 1, type: "end", color: "#ff0000", image: [] },
+                { id: 2, type: "path", color: "#eeae9e", image: [] },
+                { id: 3, type: "grass", color: "#8bc34a", image: [] },
+                { id: 4, type: "water", color: "#64b5f6", image: [] },
+                { id: 5, type: "rock", color: "#9e9e9e", image: [] }
             ],
             terrainMap: []
         };
@@ -151,16 +150,20 @@ class TerrainMapEditor {
 
         // Handle editTileMap event
         document.body.addEventListener('editTileMap', async (event) => {
-
             this.config = event.detail.config;
             this.tileMap = event.detail.data;
-						this.savePropertyName = event.detail.propertyName;
+            this.savePropertyName = event.detail.propertyName;
             this.canvasEl.width = this.config.canvasWidth;
             this.canvasEl.height = this.config.canvasHeight;
             let bgColor = this.tileMap.terrainBGColor || "#7aad7b";
             document.getElementById('terrainBGColor').value = bgColor;
             this.canvasEl.backgroundColor = bgColor;
-          	
+            
+            // Ensure terrain types have IDs if they don't already
+            this.ensureTerrainIds();
+            
+            // Convert string-based terrainMap to ID-based if needed
+            this.convertTerrainMapToIds();
           
             this.imageManager = new this.engineClasses.ImageManager(this.gameEditor, {imageSize: this.config.imageSize}, {ShapeFactory: this.engineClasses.ShapeFactory});
           
@@ -171,6 +174,7 @@ class TerrainMapEditor {
             this.terrainTileMapper = this.gameEditor.editorModuleInstances.TileMap;
             this.terrainTileMapper.init(this.terrainCanvasBuffer, this.gameEditor.getCollections().configs.game.gridSize, terrainImages, this.gameEditor.getCollections().configs.game.isIsometric);
             this.game = { state: {}, terrainTileMapper: this.terrainTileMapper, config: this.gameEditor.getCollections(), translator: this.translator };
+
             this.mapRenderer = new (this.gameEditor.scriptContext.getRenderer("MapRenderer"))(this.game, null,
                 { 
                     gameConfig: this.config, 
@@ -194,13 +198,58 @@ class TerrainMapEditor {
             
             document.getElementById('terrainMapSize').value = this.mapSize;
             requestAnimationFrame(() => {
-            // Load terrain types if provided
-            this.updateTerrainStyles();
-            this.setupTerrainTypesUI();
-            this.initGridCanvas();
+                // Load terrain types if provided
+                this.updateTerrainStyles();
+                this.setupTerrainTypesUI();
+                this.initGridCanvas();
             });
         });
     }
+
+    // New method to ensure all terrain types have IDs
+    ensureTerrainIds() {
+        // If terrainTypes doesn't have IDs, add them
+        let hasIds = this.tileMap.terrainTypes.every(terrain => terrain.hasOwnProperty('id'));
+        
+        if (!hasIds) {
+            this.tileMap.terrainTypes.forEach((terrain, index) => {
+                terrain.id = index;
+            });
+        }
+        
+        // Set default terrain ID
+        const grassType = this.tileMap.terrainTypes.find(t => t.type === "grass");
+        this.currentTerrainId = grassType ? grassType.id : 0;
+    }
+    
+    // New method to convert string-based terrainMap to ID-based
+    convertTerrainMapToIds() {
+        // Skip if terrainMap is empty
+        if (!this.tileMap.terrainMap || this.tileMap.terrainMap.length === 0) {
+            return;
+        }
+        
+        // Check if first cell is a string (needs conversion) or already numeric
+        const firstCell = this.tileMap.terrainMap[0][0];
+        if (typeof firstCell === 'number') {
+            return; // Already using IDs
+        }
+        
+        // Create a mapping of type names to IDs
+        const typeToIdMap = {};
+        this.tileMap.terrainTypes.forEach(terrain => {
+            typeToIdMap[terrain.type] = terrain.id;
+        });
+        
+        // Convert all cells from type names to IDs
+        for (let y = 0; y < this.tileMap.terrainMap.length; y++) {
+            for (let x = 0; x < this.tileMap.terrainMap[y].length; x++) {
+                const terrainType = this.tileMap.terrainMap[y][x];
+                this.tileMap.terrainMap[y][x] = typeToIdMap[terrainType] || 0;
+            }
+        }
+    }
+
     setupTerrainImageProcessor() {
         const processor = new this.engineClasses.TerrainImageProcessor();
         processor.initialize(
@@ -239,11 +288,12 @@ class TerrainMapEditor {
             // Color option
             const option = document.createElement('div');
             option.className = 'color-option';
+            option.dataset.id = terrain.id;
             option.dataset.type = terrain.type;
             option.style.backgroundColor = terrain.color;
             
             // Set the first one as active by default (or current selected if updating)
-            if (terrain.type === this.currentTerrainType) {
+            if (terrain.id === this.currentTerrainId) {
                 option.classList.add('active');
             }
             
@@ -253,7 +303,7 @@ class TerrainMapEditor {
                     opt.classList.remove('active');
                 });
                 option.classList.add('active');
-                this.currentTerrainType = option.dataset.type;
+                this.currentTerrainId = parseInt(option.dataset.id);
             });
             
             // Label for the terrain type
@@ -278,7 +328,7 @@ class TerrainMapEditor {
             deleteBtn.className = 'delete-terrain-btn';
             deleteBtn.innerHTML = '❌';
             deleteBtn.title = 'Delete terrain';
-            deleteBtn.addEventListener('click', () => this.deleteTerrain(terrain.type));
+            deleteBtn.addEventListener('click', () => this.deleteTerrain(terrain.id));
             buttonContainer.appendChild(deleteBtn);
             
             // Assemble the terrain item
@@ -349,7 +399,7 @@ class TerrainMapEditor {
         const form = document.getElementById('terrainForm');
         form.classList.add('show');
         document.getElementById('formTitle').textContent = 'Add Terrain Type';
-        document.getElementById('editingType').value = '';
+        document.getElementById('editingId').value = ''; // New form field for ID
         document.getElementById('terrainType').value = '';
         document.getElementById('terrainColor').value = '#cccccc';
         document.getElementById('terrainColorText').value = '#cccccc';  
@@ -361,7 +411,7 @@ class TerrainMapEditor {
         const form = document.getElementById('terrainForm');
         form.classList.add('show');
         document.getElementById('formTitle').textContent = 'Edit Terrain Type';
-        document.getElementById('editingType').value = terrain.type;
+        document.getElementById('editingId').value = terrain.id; // Use ID instead of type
         document.getElementById('terrainType').value = terrain.type;
         document.getElementById('terrainColor').value = terrain.color;
         document.getElementById('terrainColorText').value = terrain.color;
@@ -383,7 +433,7 @@ class TerrainMapEditor {
     }
 
     saveTerrainType() {
-        const editingType = document.getElementById('editingType').value;
+        const editingId = document.getElementById('editingId').value;
         const newType = document.getElementById('terrainType').value.trim();
         const newColor = document.getElementById('terrainColorText').value;
         const newImage = JSON.parse(document.getElementById('terrainImage').value);
@@ -394,38 +444,32 @@ class TerrainMapEditor {
             return;
         }
         
-        if (editingType) {
+        if (editingId !== '') {
             // Editing existing terrain
-            const index = this.tileMap.terrainTypes.findIndex(t => t.type === editingType);
+            const id = parseInt(editingId);
+            const index = this.tileMap.terrainTypes.findIndex(t => t.id === id);
             if (index !== -1) {
-                // If type name is changing, update all map references
-                if (editingType !== newType) {
-                    // Check if new type name already exists
-                    if (this.tileMap.terrainTypes.some(t => t.type === newType)) {
-                        alert('A terrain type with this name already exists');
-                        return;
-                    }
-                    
-                    // Update terrainMap
-                    for (let y = 0; y < this.tileMap.terrainMap.length; y++) {
-                        for (let x = 0; x < this.tileMap.terrainMap[y].length; x++) {
-                            if (this.tileMap.terrainMap[y][x] === editingType) {
-                                this.tileMap.terrainMap[y][x] = newType;
-                            }
-                        }
-                    }
-                    
-                    // Update current terrain type if selected
-                    if (this.currentTerrainType === editingType) {
-                        this.currentTerrainType = newType;
-                    }
+                // Check if new type name already exists (but not this one)
+                const duplicateType = this.tileMap.terrainTypes.find(t => t.type === newType && t.id !== id);
+                if (duplicateType) {
+                    alert('A terrain type with this name already exists');
+                    return;
                 }
                 
                 // Update the terrain type
-                this.tileMap.terrainTypes[index] = { type: newType, color: newColor, image: newImage, buildable: newBuildable };
+                this.tileMap.terrainTypes[index] = { 
+                    id: id, 
+                    type: newType, 
+                    color: newColor, 
+                    image: newImage, 
+                    buildable: newBuildable 
+                };
             }
         } else {
-            // Adding new terrain
+            // Adding new terrain - find next available ID
+            const maxId = Math.max(...this.tileMap.terrainTypes.map(t => t.id), -1);
+            const newId = maxId + 1;
+            
             // Check if type already exists
             if (this.tileMap.terrainTypes.some(t => t.type === newType)) {
                 alert('A terrain type with this name already exists');
@@ -433,7 +477,13 @@ class TerrainMapEditor {
             }
             
             // Add new terrain type
-            this.tileMap.terrainTypes.push({ type: newType, color: newColor, image: newImage, buildable: newBuildable });
+            this.tileMap.terrainTypes.push({ 
+                id: newId, 
+                type: newType, 
+                color: newColor, 
+                image: newImage, 
+                buildable: newBuildable 
+            });
         }
         
         // Update UI and CSS
@@ -448,39 +498,44 @@ class TerrainMapEditor {
         this.exportMap();
     }
 
-    deleteTerrain(typeToDelete) {
+    deleteTerrain(idToDelete) {
         // Don't allow deleting if it's the last terrain type
         if (this.tileMap.terrainTypes.length <= 1) {
             alert('Cannot delete the last terrain type');
             return;
         }
         
+        // Find the terrain by ID
+        const terrainToDelete = this.tileMap.terrainTypes.find(t => t.id === idToDelete);
+        if (!terrainToDelete) return;
+        
         // Confirm deletion
-        if (!confirm(`Are you sure you want to delete the "${typeToDelete}" terrain type? All instances will be converted to grass.`)) {
+        if (!confirm(`Are you sure you want to delete the "${terrainToDelete.type}" terrain type? All instances will be converted to the default terrain.`)) {
             return;
         }
         
-        // Find the default terrain to replace with (grass or first available)
-        const defaultType = this.tileMap.terrainTypes.find(t => t.type === 'grass') || this.tileMap.terrainTypes[0];
+        // Find the default terrain ID to replace with (grass or first available)
+        const defaultTerrainId = this.tileMap.terrainTypes.find(t => t.type === 'grass')?.id || 
+                               this.tileMap.terrainTypes[0].id;
         
         // Remove from terrainTypes array
-        const index = this.tileMap.terrainTypes.findIndex(t => t.type === typeToDelete);
+        const index = this.tileMap.terrainTypes.findIndex(t => t.id === idToDelete);
         if (index !== -1) {
             this.tileMap.terrainTypes.splice(index, 1);
         }
         
-        // Update terrainMap - replace all instances with defaultType
+        // Update terrainMap - replace all instances with defaultTerrainId
         for (let y = 0; y < this.tileMap.terrainMap.length; y++) {
             for (let x = 0; x < this.tileMap.terrainMap[y].length; x++) {
-                if (this.tileMap.terrainMap[y][x] === typeToDelete) {
-                    this.tileMap.terrainMap[y][x] = defaultType.type;
+                if (this.tileMap.terrainMap[y][x] === idToDelete) {
+                    this.tileMap.terrainMap[y][x] = defaultTerrainId;
                 }
             }
         }
         
-        // Update current terrain type if selected
-        if (this.currentTerrainType === typeToDelete) {
-            this.currentTerrainType = defaultType.type;
+        // Update current terrain ID if selected
+        if (this.currentTerrainId === idToDelete) {
+            this.currentTerrainId = defaultTerrainId;
         }
         
         // Update UI and CSS
@@ -506,12 +561,11 @@ class TerrainMapEditor {
         // Generate CSS for each terrain type
         let css = '';
         this.tileMap.terrainTypes.forEach(terrain => {
-            css += `#level-editor-container .color-option.${terrain.type} { background-color: ${terrain.color}; }\n`;
+            css += `#level-editor-container .color-option[data-id="${terrain.id}"] { background-color: ${terrain.color}; }\n`;
         });
         
         styleElem.textContent = css;
     }
-
 
     translateMap(deltaX, deltaY) {
         const gridSize = this.tileMap.size;
@@ -563,6 +617,7 @@ class TerrainMapEditor {
             this.terrainCanvasBuffer = document.createElement('canvas');
             this.terrainCanvasBuffer.width = this.canvasEl.width;
             this.terrainCanvasBuffer.height = this.canvasEl.height;
+
             this.mapRenderer = new (this.gameEditor.scriptContext.getRenderer("MapRenderer"))(this.game, null,
                 { 
                     gameConfig: this.config, 
@@ -602,8 +657,8 @@ class TerrainMapEditor {
         if (snappedGrid.x >= 0 && snappedGrid.x < this.mapSize && 
             snappedGrid.y >= 0 && snappedGrid.y < this.mapSize) {
             
-            // Update terrain map with selected terrain type
-            this.tileMap.terrainMap[snappedGrid.y][snappedGrid.x] = this.currentTerrainType;
+            // Update terrain map with selected terrain ID
+            this.tileMap.terrainMap[snappedGrid.y][snappedGrid.x] = this.currentTerrainId;
             
             // Update the map rendering
             this.updateCanvasWithData();
@@ -615,11 +670,39 @@ class TerrainMapEditor {
 
     updateCanvasWithData() {
         if(this.tileMap.terrainMap.length > 0){
-            this.mapManager = new (this.gameEditor.scriptContext.getComponent("MapManager"))(this.game, null, { level: { tileMap: this.tileMap } });
+            // Make a copy of the tileMap for rendering that translates IDs to types
+            const displayTileMap = this.prepareDisplayTileMap();
+            
+            this.mapManager = new (this.gameEditor.scriptContext.getComponent("MapManager"))(this.game, null, { level: { tileMap: displayTileMap } });
             this.mapRenderer.isMapCached = false;
-            let map = this.mapManager.generateMap(this.tileMap);
-            this.mapRenderer.renderBG({}, this.tileMap, map.tileMap, [], true);
+            let map = this.mapManager.generateMap(displayTileMap);
+            this.mapRenderer.renderBG(this.tileMap, []);
         }
+    }
+    
+    // Helper method to create a display version of the tileMap for rendering
+    prepareDisplayTileMap() {
+        // Create a mapping of IDs to types
+        const idToTypeMap = {};
+        this.tileMap.terrainTypes.forEach(terrain => {
+            idToTypeMap[terrain.id] = terrain.type;
+        });
+        
+        // Create a deep copy of the tileMap
+        const displayTileMap = JSON.parse(JSON.stringify(this.tileMap));
+        
+        // For display purposes, we need the MapRenderer to have type strings not IDs
+        if (displayTileMap.terrainMap && displayTileMap.terrainMap.length > 0) {
+            // Convert all cells from IDs to type names for display
+            for (let y = 0; y < displayTileMap.terrainMap.length; y++) {
+                for (let x = 0; x < displayTileMap.terrainMap[y].length; x++) {
+                    const terrainId = displayTileMap.terrainMap[y][x];
+                    displayTileMap.terrainMap[y][x] = idToTypeMap[terrainId] || idToTypeMap[0];
+                }
+            }
+        }
+        
+        return displayTileMap;
     }
 
     exportMap() {
@@ -633,5 +716,4 @@ class TerrainMapEditor {
         // Dispatch the event
         document.body.dispatchEvent(myCustomEvent);
     }
-
 }
