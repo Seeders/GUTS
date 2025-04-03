@@ -779,7 +779,7 @@ export class EditorView {
     setupActionEventListeners() {
         // Launch game button
         this.elements.launchGameBtn?.addEventListener('click', () => {
-            window.open("index.html", "_blank");
+            window.open("game.html", "_blank");
         });
     }
 

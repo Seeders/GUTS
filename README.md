@@ -23,17 +23,17 @@ More samples will be on the way.  It's easy!
    ```
 
 3. Open in your browser:
-   - Editor: `http://localhost:5000/editor.html`
-   - Game: `http://localhost:5000/index.html`
+   - Editor: `http://localhost:5000/index.html`
+   - Game: `http://localhost:5000/game.html`
 
 ## License
 
-GUTS is available under the GNU General Public License v3. See [LICENSE.GPL](LICENSE.GPL) for details.
+GUTS is available under the MIT license as open source software.
 
 ## Try it yourself:
 https://seeders.github.io/GUTS/index.html
 
-https://seeders.github.io/GUTS/editor.html
+https://seeders.github.io/GUTS/game.html
 
 ## Screenshots
 

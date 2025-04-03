@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tower Defense</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
+</head>
+<body style="background-color: black;">
+    <div id='loading-screen' style='
+    border: none;
+    border-radius: 1.5em;
+    background: #2d2d2d;
+    color: #ffffff;
+    width: 600px;
+    height: 400px;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    margin: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+  '>
+    <div style='
+      position: relative;
+      font-family: Arial, sans-serif;
+      font-size: 1.5em;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    '>
+      Loading
+      <span style='
+        animation: dots 1.5s infinite;
+      '>
+        <span style='opacity: 0.5; animation: dotFade 1.5s infinite 0s;'>.</span>
+        <span style='opacity: 0.5; animation: dotFade 1.5s infinite 0.2s;'>.</span>
+        <span style='opacity: 0.5; animation: dotFade 1.5s infinite 0.4s;'>.</span>
+      </span>
+    </div>
+    <style>
+      @keyframes dotFade {
+        0% { opacity: 0.5; }
+        50% { opacity: 1; }
+        100% { opacity: 0.5; }
+      }
+    </style>
+  </div>
+<div id="appContainer" style="display: none;">
+    
+</div>
+<script type="module">        
+    import { Engine } from './engine/Engine.js';
+
+    const game = new Engine("appContainer");  
+    async function main() {  
+        await game.init();
+
+    }
+
+    function resetGame() {
+        game.reset();
+    }
+
+    window.onload = main; // Or attach to a start button
+</script>
+	
+	
+</body>
+
+</html>
