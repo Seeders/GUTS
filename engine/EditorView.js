@@ -426,7 +426,8 @@ export class EditorView {
 
         document.body.addEventListener(`${moduleDef.saveHook}`, (event) => {
             const result = this.controller.updateObject({[event.detail.propertyName]: event.detail.data});
-            if (result.success) {
+            this.renderEditor();
+            if (result.success && event.detail.refresh != false) {
                 this.showSuccessMessage('Changes saved!');
                 this.renderObjectList();
                 this.renderObject();
