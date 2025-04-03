@@ -2,9 +2,9 @@
   "gridSize": 48,
   "imageSize": 128,
   "canvasWidth": 1536,
-  "canvasHeight": 1536,
+  "canvasHeight": 768,
   "title": "Default Project",
-  "isIsometric": false,
+  "isIsometric": true,
   "libraries": [
     "threejs",
     "GLTFLoader",
@@ -19,5 +19,6 @@
     "Component",
     "GameState"
   ],
-  "fileName": "game"
+  "fileName": "game",
+  "interface": "main"
 }
