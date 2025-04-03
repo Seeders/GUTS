@@ -45,6 +45,8 @@ class TerrainMapEditor {
 
         // DOM elements
         this.canvasEl = document.getElementById('grid');
+        this.canvasEl.width = this.config.canvasWidth;
+        this.canvasEl.height = this.config.canvasHeight;
         // Managers and renderers
 
         this.imageManager = new this.engineClasses.ImageManager(this.gameEditor, {imageSize: this.config.imageSize}, {ShapeFactory});
