@@ -16,7 +16,6 @@ class Engine {
     }
 
     async init() {
-        this.displayLoadScreen();
         this.config = this.loadConfig();
       
         if (!this.config) {
@@ -25,7 +24,7 @@ class Engine {
         }
 
         // Initialize ModuleManager
-        this.moduleManager = new ModuleManager(this, this.config, document.body, document.body);
+        this.moduleManager = new ModuleManager(this, this.config, this.applicationTarget, this.applicationTarget);
         
         let projectConfig = this.config.configs.game;
         if (projectConfig.libraries) {
@@ -69,12 +68,12 @@ class Engine {
 
     setupHTML() {      
         document.body.style = "";  
-        const gameInterface = this.config.configs.game.interface;
-        this.applicationTarget.innerHTML = gameInterface.html; 
-        const styleEl = document.createElement("style");
-        styleEl.innerHTML = gameInterface.css;
-        document.head.appendChild(styleEl);
+        document.getElementById('loading-screen').style = 'display: none;';    
         this.setupCanvas();
+        requestAnimationFrame(() => {
+            
+            this.applicationTarget.style = '';
+        });
     }
 
     setupCanvas() {
@@ -119,54 +118,6 @@ class Engine {
                 gridY: snappedGrid.y 
             };
         });
-    }
-
-    displayLoadScreen() {
-        this.applicationTarget.innerHTML = `
-        <div class='loading-screen' style='
-      border: none;
-      border-radius: 1.5em;
-      background: #2d2d2d;
-      color: #ffffff;
-      width: 600px;
-      height: 400px;
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      top: 0;
-      margin: auto;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-      overflow: hidden;
-    '>
-      <div style='
-        position: relative;
-        font-family: Arial, sans-serif;
-        font-size: 1.5em;
-        letter-spacing: 2px;
-        text-transform: uppercase;
-      '>
-        Loading
-        <span style='
-          animation: dots 1.5s infinite;
-        '>
-          <span style='opacity: 0.5; animation: dotFade 1.5s infinite 0s;'>.</span>
-          <span style='opacity: 0.5; animation: dotFade 1.5s infinite 0.2s;'>.</span>
-          <span style='opacity: 0.5; animation: dotFade 1.5s infinite 0.4s;'>.</span>
-        </span>
-      </div>
-      <style>
-        @keyframes dotFade {
-          0% { opacity: 0.5; }
-          50% { opacity: 1; }
-          100% { opacity: 0.5; }
-        }
-      </style>
-    </div>
-        `;
     }
 
     reset() {
