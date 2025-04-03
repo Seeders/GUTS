@@ -23,7 +23,7 @@ class Stats extends engine.Component {
         this.defaultStats[statName] = statValue;
     }
     addEffect(effectConfig, effectFn, effectAmt) {        
-        this.activeEffects[effectConfig.id] = this.parent.addComponent(engine.getComponent("effect"), { config: effectConfig, applyFn: effectFn, amount: effectAmt });
+        this.activeEffects[effectConfig.id] = this.parent.addComponent("effect", { config: effectConfig, applyFn: effectFn, amount: effectAmt });
     }
     applyEffects() {
         let effectArr = [];

@@ -8,18 +8,69 @@ class Game extends engine.Component {
     
 init() {
         this.initEffectsAndUpgrades();
+		this.gridSize = this.game.config.configs.game.gridSize;
         let endPath = this.game.state.paths[0][this.game.state.paths[0].length - 1];
         let endY = endPath.y;
         let endX = endPath.x;
-		this.gridSize = this.game.config.configs.game.gridSize;
-    this.keep = this.game.spawn(endX * this.gridSize + this.gridSize / 2, 
+        this.keep = this.game.spawn(endX * this.gridSize + this.gridSize / 2, 
                                 endY * this.gridSize + this.gridSize / 2, "tower",
                                 { spawnType: 'keep', objectType: 'towers', setDirection: 1});
         this.keep.placed = true;
 }
 
 update() {
-   this.game.state.stats = {...this.game.state.defaultStats};
+
+
+    this.mapRenderer.renderBG(this.game.state.tileMapData, this.game.state.paths);
+    
+    if (!this.game.state.isPaused) {
+        this.currentTime = Date.now();
+
+        // Only update if a reasonable amount of time has passed
+        const timeSinceLastUpdate = this.currentTime - this.lastTime;
+
+        // Skip update if more than 1 second has passed (tab was inactive)
+        if (timeSinceLastUpdate > 1000) {
+            this.lastTime = this.currentTime; // Reset timer without updating
+            return;
+        }
+
+        this.deltaTime = Math.min(1/30, timeSinceLastUpdate / 1000); // Cap at 1/30th of a second        
+        this.lastTime = this.currentTime;
+
+        // Sort entities by y position for proper drawing order
+        this.game.state.entities.sort((a, b) => {
+            return (a.position.y * this.game.state.tileMap.length + a.position.x) - (b.position.y * this.game.state.tileMap.length + b.position.x)
+        });
+
+        this.game.state.stats = {...this.game.state.defaultStats};//reset stats to recalculate upgrades from base stats.
+        // Single loop through entities for update, draw and postUpdate
+        const entitiesToKeep = [];
+        for(let i = 0; i < this.game.state.entities.length; i++) {
+            let e = this.game.state.entities[i];
+            let result = e.update();    
+            
+            if(result) {
+                entitiesToKeep.push(e);
+                e.draw();
+                e.postUpdate();
+            }
+        }
+        
+        // Replace the entities array with only entities that should be kept
+        this.game.state.entities = entitiesToKeep;
+        
+        this.postUpdate();
+        this.draw();
+        
+        // Add any new entities
+        this.entitiesToAdd.forEach((entity) => this.game.state.addEntity(entity));
+        this.entitiesToAdd = [];
+    }     
+    
+    this.mapRenderer.renderFG();
+    
+    
 }
 
 postUpdate() {
@@ -37,7 +88,7 @@ postUpdate() {
     gameOver() {
         this.game.state.gameOver = true;
         this.game.state.isPaused = true;
-        gameOverWave.textContent = this.state.round + 1;
+        gameOverWave.textContent = this.game.state.round + 1;
         gameOverMenu.style.display = 'block';
         overlay.style.display = 'block';
     }

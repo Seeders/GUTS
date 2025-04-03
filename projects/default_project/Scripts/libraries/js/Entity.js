@@ -21,7 +21,8 @@ class Entity {
         this.renderers.push(renderer);
         return renderer;
     }
-    addComponent(ComponentClass, params) {
+    addComponent(ComponentClassName, params) {
+        const ComponentClass = engine.getComponent(ComponentClassName);
         const component = new ComponentClass(this.game, this, params);
         this.components[ComponentClass.name.toLowerCase()] = component;
         return component;
