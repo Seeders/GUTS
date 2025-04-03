@@ -3,76 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tower Defense</title>
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
+    <title>GUTS Editor</title>
+    <script src="library/codemirror.core.min.js" type="text/javascript"></script>
+    <script src="library/codemirror.js.min.js" type="text/javascript"></script>
+    <script src="library/codemirror.showhint.min.js" type="text/javascript"></script>
+    <script src="library/codemirror.hint.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="style/editor.css" />
+    <link rel="stylesheet" href="library/codemirror.css" />
+    <style id="theme_style"></style>
 </head>
-<body style="background-color: black;">
-    <div id='loading-screen' style='
-    border: none;
-    border-radius: 1.5em;
-    background: #2d2d2d;
-    color: #ffffff;
-    width: 600px;
-    height: 400px;
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    top: 0;
-    margin: auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    overflow: hidden;
-  '>
-    <div style='
-      position: relative;
-      font-family: Arial, sans-serif;
-      font-size: 1.5em;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-    '>
-      Loading
-      <span style='
-        animation: dots 1.5s infinite;
-      '>
-        <span style='opacity: 0.5; animation: dotFade 1.5s infinite 0s;'>.</span>
-        <span style='opacity: 0.5; animation: dotFade 1.5s infinite 0.2s;'>.</span>
-        <span style='opacity: 0.5; animation: dotFade 1.5s infinite 0.4s;'>.</span>
-      </span>
+<body class="loading">
+    <div id="container">
+        <div class="sidebar">
+            <img src="./logo.png" />
+
+            <div class="project-selector-container" style="display: flex; flex-direction: column; align-items: start;">
+                <select id="project-selector">
+                  <!-- Options will be populated by JavaScript -->
+                  <option value="__create_new__">+ Create New Project</option>
+                </select>  
+                <button id="launch-game-btn" class="primary">Launch Project</button>                    
+            </div>            
+            <div class="object-list" id="object-list">
+                <!-- Object list will be dynamically populated -->
+            </div>
+            <div class="sidebar-actions">
+                <button class="primary" id="add-object-btn">Add New Object</button>
+                
+                <button id="delete-project-btn" class="danger hidden" title="Delete current project">delete project</button>     
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div id="main-content-container">
+
+            </div>    
+            <button id="toggleEditorButton" style="display:none">drag</button>
+            <div class="editor full-height" id="editor">      
+                <div class="instructions">
+                    Select a tower from the sidebar or create a new one to start editing.
+                </div>        
+                <!-- Editor form will be dynamically populated -->
+            </div>
+        </div>
     </div>
-    <style>
-      @keyframes dotFade {
-        0% { opacity: 0.5; }
-        50% { opacity: 1; }
-        100% { opacity: 0.5; }
-      }
-    </style>
-  </div>
-<div id="appContainer" style="display: none;">
+    <div id="modals">
+        <div id="new-project-modal" class="modal">
+            <div class="modal-content">
+              <h2>Create New Project</h2>
+              <div class="form-group">
+                <label for="new-project-name">Project Name:</label>
+                <input type="text" id="new-project-name" placeholder="My Awesome Game">
+              </div>
+              <div class="actions">
+                <button id="create-project-btn" class="primary">Create</button>
+                <button id="cancel-project-btn">Cancel</button>
+              </div>
+            </div>
+          </div>
+        <!-- Import/Export Modal -->  
+        <div class="modal" id="new-object-modal">
+            <div class="modal-content">
+                <h2>Create New Object</h2>
+                <div class="form-group">
+                    <label for="new-object-id">Object ID:</label>
+                    <input type="text" id="new-object-id" placeholder="e.g. fireTower">
+                </div>
+                <div class="form-group">
+                    <label for="new-object-name">Display Name:</label>
+                    <input type="text" id="new-object-name" placeholder="e.g. Fire Tower">
+                </div>
+                <div class="actions">
+                    <button class="primary" id="create-object-btn">Create Tower</button>
+                    <button id="close-new-object-modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+        <div class="modal" id="duplicate-object-modal">
+            <div class="modal-content">
+                <h2>Create Duplicate Object</h2>
+                <div class="form-group">
+                    <label for="duplicate-object-id">Object ID:</label>
+                    <input type="text" id="duplicate-object-id" placeholder="e.g. fireTower">
+                </div>
+                <div class="form-group">
+                    <label for="duplicate-object-name">Display Name:</label>
+                    <input type="text" id="duplicate-object-name" placeholder="e.g. Fire Tower">
+                </div>
+                <div class="actions">
+                    <button class="primary" id="create-duplicate-object-btn">Duplicate Object</button>
+                    <button id="close-duplicate-object-modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="engine/EditorController.js" type="module" ></script>
     
-</div>
-<script type="module">        
-    import { Engine } from './engine/Engine.js';
-
-    const game = new Engine("appContainer");  
-    async function main() {  
-        await game.init();
-
-    }
-
-    function resetGame() {
-        game.reset();
-    }
-
-    window.onload = main; // Or attach to a start button
-</script>
-	
-	
 </body>
-
 </html>
