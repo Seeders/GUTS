@@ -3,7 +3,6 @@
   "container": "audio-editor-container",
   "library": "audioEditor",
   "propertyName": "audio",
-  "className": "AudioEditor",
   "interface": "audioEditor",
   "inputElement": "text",
   "inputDataType": "string",

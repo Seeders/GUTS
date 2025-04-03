@@ -9,7 +9,6 @@
     "graphicsEditor"
   ],
   "propertyName": "render",
-  "className": "GraphicsEditor",
   "interface": "graphicsEditor",
   "inputElement": "textarea",
   "inputDataType": "json",

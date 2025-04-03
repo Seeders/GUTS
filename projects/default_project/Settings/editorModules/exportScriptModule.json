@@ -1,5 +1,4 @@
 {
   "title": "Export Scripts Module",
-  "library": "ZipExporter",
-  "className": "ZipExporterPanel"
+  "library": "ZipExporter"
 }

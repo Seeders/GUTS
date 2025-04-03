@@ -12,7 +12,6 @@
     "terrainMapEditor"
   ],
   "propertyName": "tileMap",
-  "className": "TerrainMapEditor",
   "interface": "terrainEditor",
   "inputElement": "textarea",
   "inputDataType": "json",
