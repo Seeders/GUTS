@@ -95,7 +95,6 @@ const DEFAULT_PROJECT_CONFIG = {
           "terrainMapEditor"
         ],
         "propertyName": "tileMap",
-        "className": "TerrainMapEditor",
         "interface": "terrainEditor",
         "inputElement": "textarea",
         "inputDataType": "json",
@@ -113,7 +112,6 @@ const DEFAULT_PROJECT_CONFIG = {
           "graphicsEditor"
         ],
         "propertyName": "render",
-        "className": "GraphicsEditor",
         "interface": "graphicsEditor",
         "inputElement": "textarea",
         "inputDataType": "json",
@@ -123,7 +121,6 @@ const DEFAULT_PROJECT_CONFIG = {
       "scriptModule": {
         "title": "Script Editor",
         "container": "script-editor-container",
-        "className": "ScriptEditor",
         "interface": "scriptEditor",
         "inputElement": "textarea",
         "inputDataType": "string",
@@ -137,7 +134,6 @@ const DEFAULT_PROJECT_CONFIG = {
       "aiPromptModule": {
         "title": "AI Prompt Modal",
         "library": "aiPromptPanel",
-        "className": "AIPromptPanel",
         "interface": "aiPromptPanel"
       },
       "audioModule": {
@@ -145,7 +141,6 @@ const DEFAULT_PROJECT_CONFIG = {
         "container": "audio-editor-container",
         "library": "audioEditor",
         "propertyName": "audio",
-        "className": "AudioEditor",
         "interface": "audioEditor",
         "inputElement": "text",
         "inputDataType": "string",
@@ -154,8 +149,7 @@ const DEFAULT_PROJECT_CONFIG = {
       },
       "exportScriptModule": {
         "title": "Export Scripts Module",
-        "library": "ZipExporter",
-        "className": "ZipExporterPanel"
+        "library": "ZipExporter"
       }
     },
     "entities": {
