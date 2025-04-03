@@ -1,4 +1,4 @@
-import { DEFAULT_PROJECT_CONFIG } from "../config/default_app_config.js.bak";
+import { DEFAULT_PROJECT_CONFIG } from "../config/default_app_config.js";
 import { ModuleManager } from "./ModuleManager.js";
 
 class Engine {
