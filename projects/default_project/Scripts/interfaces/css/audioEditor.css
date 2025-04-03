@@ -8,12 +8,12 @@
     margin: 0 auto;
 }
 
-h2, h3 {
+#audio-editor-container h2, #audio-editor-container h3 {
     color: #333;
     margin-top: 0;
 }
 
-.visualizer-container {
+#audio-editor-container .visualizer-container {
     margin-bottom: 20px;
     background: #fff;
     border-radius: 4px;
@@ -27,7 +27,7 @@ h2, h3 {
     background: #f0f0f0;
 }
 
-.parameters-container {
+#audio-editor-container .parameters-container {
     background: #fff;
     padding: 15px;
     border-radius: 4px;
@@ -35,13 +35,13 @@ h2, h3 {
     box-shadow: 0 1px 3px rgba(0,0,0.1);
 }
 
-.parameter-group {
+#audio-editor-container .parameter-group {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 10px;
 }
 
-label {
+#audio-editor-container label {
     display: block;
     margin-bottom: 5px;
     font-weight: bold;
@@ -49,7 +49,7 @@ label {
     color: #555;
 }
 
-input[type="range"] {
+#audio-editor-container input[type="range"] {
     width: 100%;
     margin-right: 10px;
     vertical-align: middle;
@@ -60,7 +60,7 @@ input[type="range"] {
     color: #666;
 }
 
-select, input[type="number"], input[type="text"] {
+#audio-editor-container select, #audio-editor-container input[type="number"], #audio-editor-container input[type="text"] {
     width: 100%;
     padding: 8px;
     border: 1px solid #ccc;
@@ -68,7 +68,7 @@ select, input[type="number"], input[type="text"] {
     font-size: 14px;
 }
 
-.presets-container {
+#audio-editor-container .presets-container {
     background: #fff;
     padding: 15px;
     border-radius: 4px;
@@ -76,20 +76,20 @@ select, input[type="number"], input[type="text"] {
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
-.preset-controls {
+#audio-editor-container .preset-controls {
     display: flex;
     gap: 10px;
     align-items: center;
     flex-wrap: wrap;
 }
 
-.control-buttons {
+#audio-editor-container .control-buttons {
     display: flex;
     gap: 10px;
     margin: 20px 0;
 }
 
-button {
+#audio-editor-container button {
     padding: 10px 15px;
     border: none;
     border-radius: 4px;
@@ -98,27 +98,27 @@ button {
     transition: background 0.2s;
 }
 
-#playBtn {
+#audio-editor-container #playBtn {
     background: #4CAF50;
     color: white;
     flex: 1;
 }
 
-#stopBtn {
+#audio-editor-container #stopBtn {
     background: #f44336;
     color: white;
 }
 
-#exportBtn {
+#audio-editor-container #exportBtn {
     background: #2196F3;
     color: white;
 }
 
-button:hover {
+#audio-editor-container button:hover {
     opacity: 0.9;
 }
 
-.output-container {
+#audio-editor-container .output-container {
     background: #fff;
     padding: 15px;
     border-radius: 4px;
@@ -126,7 +126,7 @@ button:hover {
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
-#jsonOutput {
+#audio-editor-container #jsonOutput {
     width: 100%;
     padding: 10px;
     font-family: monospace;
@@ -137,16 +137,16 @@ button:hover {
 
 /* Responsive adjustments */
 @media (max-width: 600px) {
-    .parameter-group {
+    #audio-editor-container .parameter-group {
         grid-template-columns: 1fr;
     }
     
-    .preset-controls {
+    #audio-editor-container .preset-controls {
         flex-direction: column;
         align-items: stretch;
     }
     
-    .control-buttons {
+    #audio-editor-container .control-buttons {
         flex-direction: column;
     }
 }
