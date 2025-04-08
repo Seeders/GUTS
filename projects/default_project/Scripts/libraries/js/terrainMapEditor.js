@@ -56,6 +56,7 @@ class TerrainMapEditor {
         this.terrainCanvasBuffer = document.createElement('canvas');
         this.terrainCanvasBuffer.width = this.canvasEl.width;
         this.terrainCanvasBuffer.height = this.canvasEl.height;
+        this.modalId = 'modal-addTerrainType';
         // Bind methods to maintain correct context
         this.init();
     }
@@ -396,7 +397,7 @@ class TerrainMapEditor {
     }
 
     showAddTerrainForm() {
-        const form = document.getElementById('terrainForm');
+        const form = document.getElementById(this.modalId);
         form.classList.add('show');
         document.getElementById('formTitle').textContent = 'Add Terrain Type';
         document.getElementById('editingId').value = ''; // New form field for ID
@@ -408,7 +409,7 @@ class TerrainMapEditor {
     }
 
     showTerrainEditForm(terrain) {
-        const form = document.getElementById('terrainForm');
+        const form = document.getElementById(this.modalId);
         form.classList.add('show');
         document.getElementById('formTitle').textContent = 'Edit Terrain Type';
         document.getElementById('editingId').value = terrain.id; // Use ID instead of type
@@ -429,7 +430,7 @@ class TerrainMapEditor {
     }
 
     hideTerrainForm() {
-        document.getElementById('terrainForm').classList.remove('show');
+        document.getElementById(this.modalId).classList.remove('show');
     }
 
     saveTerrainType() {

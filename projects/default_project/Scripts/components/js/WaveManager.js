@@ -5,7 +5,7 @@ class WaveManager extends engine.Component {
     }
     
     
-init() {   
+    init() {   
         
         this.resetWaveState();
     }
@@ -35,9 +35,10 @@ init() {
             // Skip if still in start delay
             if (waveSet.startDelay && this.game.state.startDelayTimer < waveSet.startDelay) continue;
             
+            if(this.game.deltaTime){
             // Update individual spawn timer for this waveset
-            this.game.state.spawnTimers[i] += this.game.deltaTime;
-
+                this.game.state.spawnTimers[i] += this.game.deltaTime;
+            }
             // If this waveset still has enemies to spawn
             if (this.game.state.enemiesSpawned[i] < this.game.state.currentWaveEnemies[i].length) {
                 if (this.game.state.spawnTimers[i] >= this.game.state.spawnRate) {

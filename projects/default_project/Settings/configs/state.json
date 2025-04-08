@@ -23,5 +23,6 @@
   "round": 0,
   "waveDelay": 1,
   "modifierSet": "global",
-  "fileName": "state"
+  "fileName": "state",
+  "population": 0
 }

@@ -7,10 +7,11 @@ class Entity {
         this.destroyed = false;        
         this.id = ++game.entityId;
         this.type = type;
+        this.gridPosition = { x: 0, y: 0};
+        this.drawPosition = { x: 0, y: 0};
         this.lastPosition = {...this.position};
         this.lastGridPosition = {...this.gridPosition};
         this.lastDrawPosition = {...this.drawPosition};
-        this.setGridPosition();
     }
 
     getComponent(name) {
@@ -21,8 +22,7 @@ class Entity {
         this.renderers.push(renderer);
         return renderer;
     }
-    addComponent(ComponentClassName, params) {
-        const ComponentClass = engine.getComponent(ComponentClassName);
+    addComponent(ComponentClass, params) {
         const component = new ComponentClass(this.game, this, params);
         this.components[ComponentClass.name.toLowerCase()] = component;
         return component;

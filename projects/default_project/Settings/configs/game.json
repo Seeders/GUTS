@@ -1,8 +1,8 @@
 {
   "gridSize": 48,
   "imageSize": 128,
-  "canvasWidth": 1536,
-  "canvasHeight": 1536,
+  "canvasWidth": 900,
+  "canvasHeight": 900,
   "title": "Default Project",
   "isIsometric": false,
   "libraries": [
@@ -20,5 +20,7 @@
     "GameState"
   ],
   "fileName": "game",
-  "interface": "main"
+  "interface": "main",
+  "loaderComponent": "GameLoader",
+  "loaderEntity": "GameLoader"
 }

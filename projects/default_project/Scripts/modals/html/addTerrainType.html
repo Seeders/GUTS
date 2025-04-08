@@ -1,30 +1,31 @@
 
-                <h4 id="formTitle">Add Terrain Type</h4>
-                <input type="hidden" id="editingType" value="">
-                <div class="form-group">
-                    <label for="terrainType">Type:</label>
-                    <input type="text" id="terrainType" placeholder="grass, water, etc.">
-                </div>
-                <div class="form-group">
-                    <label for="terrainColor">Color:</label>
-                    <input type="text" id="terrainColorText">
-                    <input type="color" id="terrainColor">
-                </div>
-                <div class="form-group">
-                    <label for="terrainImage">Sprite Sheet:</label>
-                    <input type="textarea" id="terrainImage">
-                </div>
-                <div class="form-group">
-                    <input type="file" id="terrain-image-upload" accept="image/*">
-                    <div class="canvas-container" style="position: relative; display: inline-block;">
-                        <img id="terrain-image-display" alt="Terrain Image">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="terrainBuildable">Buildable:</label>
-                    <input type="checkbox" id="terrainBuildable">
-                </div>
-                <div class="form-actions">
-                    <button id="saveTerrainBtn" class="primary">Save</button>
-                    <button id="cancelTerrainBtn">Cancel</button>
-                </div>
+<h4 id="formTitle">Add Terrain Type</h4>
+<input type="hidden" id="editingType" value="">
+<div class="form-group">
+    <label for="terrainType">Type:</label>
+    <input type="text" id="terrainType" placeholder="grass, water, etc.">
+</div>
+<div class="form-group">
+    <label for="terrainColor">Color:</label>
+    <input type="text" id="terrainColorText">
+    <input type="color" id="terrainColor">
+</div>
+<div class="form-group">
+    <label for="terrainImage">Sprite Sheet:</label>
+    <input type="textarea" id="terrainImage">
+</div>
+<div class="form-group">
+    <input type="file" id="terrain-image-upload" accept="image/*">
+    <div class="canvas-container" style="position: relative; display: inline-block;">
+        <img id="terrain-image-display" alt="Terrain Image">
+    </div>
+</div>
+<div class="form-group">
+    <label for="terrainBuildable">Buildable:</label>
+    <input type="checkbox" id="terrainBuildable">
+</div>
+<div class="form-actions">
+    <button id="saveTerrainBtn" class="primary">Save</button>
+    <button id="cancelTerrainBtn">Cancel</button>
+</div>
+<input type="hidden" id="editingId">

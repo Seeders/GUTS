@@ -62,8 +62,8 @@
                     const index = row * this.cols + col;
                     if (index >= 0 && index < this.grid.length) {
                         for (let entity of this.grid[index]) {
-                            const dx = entity.gridPosition.x - x;
-                            const dy = entity.gridPosition.y - y;
+                            const dx = (entity.gridPosition.x) - (x + .5);
+                            const dy = (entity.gridPosition.y) - (y + .5);
                             const distSquared = dx * dx + dy * dy;
                             
                             if (distSquared <= radius * radius) {

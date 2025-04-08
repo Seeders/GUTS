@@ -19,7 +19,7 @@ class RangeIndicator extends engine.Component {
     }
 
     drawRangeIndicator(range) {    
-        const drawRage = range - 1;        
+        const drawRage = range;        
         const pixelX = this.parent.position.x;
         const pixelY = this.parent.position.y;
         let gridPos = this.translator.pixelToGrid(pixelX, pixelY);
@@ -27,7 +27,7 @@ class RangeIndicator extends engine.Component {
         const isoPos = this.translator.pixelToIso(pixelX, pixelY);
     
         const isoRangeX = drawRage * this.game.config.configs.game.gridSize;  // Matches gridToIso X scaling
-        const isoRangeY = drawRage * this.game.config.configs.game.gridSize * 0.5; // Matches gridToIso Y scaling
+        const isoRangeY = drawRage * this.game.config.configs.game.gridSize * (this.game.state.isometric ? 0.5 : 1); // Matches gridToIso Y scaling
     
         if (gridPos.x === this.game.state.mousePosition.gridX && gridPos.y === this.game.state.mousePosition.gridY) {
             this.ctx.save();

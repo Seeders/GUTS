@@ -7,21 +7,23 @@ class Game extends engine.Component {
     
     
 init() {
-        this.initEffectsAndUpgrades();
-		this.gridSize = this.game.config.configs.game.gridSize;
-        let endPath = this.game.state.paths[0][this.game.state.paths[0].length - 1];
-        let endY = endPath.y;
-        let endX = endPath.x;
-        this.keep = this.game.spawn(endX * this.gridSize + this.gridSize / 2, 
-                                endY * this.gridSize + this.gridSize / 2, "tower",
-                                { spawnType: 'keep', objectType: 'towers', setDirection: 1});
-        this.keep.placed = true;
+    this.initEffectsAndUpgrades();
+    this.gridSize = this.game.config.configs.game.gridSize;
+    let endPath = this.game.state.paths[0][this.game.state.paths[0].length - 1];
+    let endY = endPath.y;
+    let endX = endPath.x;
+    this.keep = this.game.spawn(endX * this.gridSize + this.gridSize / 2, 
+                            endY * this.gridSize + this.gridSize / 2, "tower",
+                            { spawnType: 'keep', objectType: 'towers', setDirection: 1});
+    this.keep.placed = true;
+
+
 }
 
 update() {
+    this.getComponent("UiManager")?.clearCanvas();
 
-
-    this.mapRenderer.renderBG(this.game.state.tileMapData, this.game.state.paths);
+    this.getComponent("MapRenderer")?.renderBG(this.game.state.tileMapData, this.game.state.paths);
     
     if (!this.game.state.isPaused) {
         this.currentTime = Date.now();
@@ -35,7 +37,7 @@ update() {
             return;
         }
 
-        this.deltaTime = Math.min(1/30, timeSinceLastUpdate / 1000); // Cap at 1/30th of a second        
+        this.game.deltaTime = Math.min(1/30, timeSinceLastUpdate / 1000); // Cap at 1/30th of a second        
         this.lastTime = this.currentTime;
 
         // Sort entities by y position for proper drawing order
@@ -61,15 +63,12 @@ update() {
         this.game.state.entities = entitiesToKeep;
         
         this.postUpdate();
-        this.draw();
-        
         // Add any new entities
-        this.entitiesToAdd.forEach((entity) => this.game.state.addEntity(entity));
-        this.entitiesToAdd = [];
+        this.game.entitiesToAdd.forEach((entity) => this.game.state.addEntity(entity));
+        this.game.entitiesToAdd = [];
     }     
     
-    this.mapRenderer.renderFG();
-    
+    this.getComponent("MapRenderer")?.renderFG();
     
 }
 

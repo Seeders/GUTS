@@ -5,11 +5,15 @@ class UiManager extends engine.Component {
     }
     
     
-    init() {
-        this.canvas = this.game.canvas;
-        this.ctx = this.game.ctx;
-        this.gridSize = this.game.config.configs.game.gridSize;
-        this.game.uiManager = this;
+    init({ canvas, canvasBuffer, terrainCanvasBuffer }) {
+        this.canvas = canvas;
+        this.finalCtx = this.canvas.getContext("2d");
+        this.canvasBuffer = canvasBuffer;
+        this.ctx = this.canvasBuffer.getContext("2d");
+        this.terrainCanvasBuffer = terrainCanvasBuffer;
+        this.projectConfig = this.game.config.configs.game;
+        this.gridSize = this.projectConfig.gridSize;
+        this.isometric = this.projectConfig.isIsometric || false;
         this.upgradeMenu = document.getElementById('upgradeMenu');
         this.upgradeOptionsDiv = document.getElementById('upgradeOptions');
         this.overlay = document.getElementById('overlay');
@@ -35,9 +39,45 @@ class UiManager extends engine.Component {
             }
         }
         this.towerMenu.innerHTML = towerMenuOptions;
-       this.setupTowerPlacement();
-       this.setupEventListeners();
+        this.setupTowerPlacement();
+        this.setupEventListeners();
+        this.game.uiManager = this;
        
+    }
+    clearCanvas() {
+        this.ctx.clearRect(0, 0, this.canvasBuffer.width, this.canvasBuffer.height);
+        this.finalCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);    
+    }
+    renderCanvas() {      
+        this.finalCtx.drawImage(this.canvasBuffer, 0, 0);
+    }
+
+    setMousePosition(clientX, clientY) {
+        const rect = this.canvas.getBoundingClientRect();
+            
+        // Account for canvas scaling and offset
+        const scaleX = this.canvas.width / rect.width;   // Ratio of canvas pixel width to CSS width
+        const scaleY = this.canvas.height / rect.height; // Ratio of canvas pixel height to CSS height
+        
+        const mapGridWidth = this.game.state.tileMap.length;
+        // Calculate mouse position relative to canvas with scaling
+        const mouseX = (clientX - rect.left) * scaleX + (this.isometric ? 0 : -( this.canvas.width - mapGridWidth * this.game.config.configs.game.gridSize) / 2);
+        const mouseY = (clientY - rect.top) * scaleY + (this.isometric ? 0 : -( this.canvas.height - mapGridWidth * this.game.config.configs.game.gridSize) / 2);
+
+        // Convert to isometric and grid coordinates
+        const gridPos = this.game.translator.isoToGrid(mouseX, mouseY);
+        const snappedGrid = this.game.translator.snapToGrid(gridPos.x, gridPos.y);
+        const pixelIsoPos = this.game.translator.pixelToIso(mouseX, mouseY);
+
+        // Update state with corrected coordinates
+        this.game.state.mousePosition = { 
+            x: mouseX, 
+            y: mouseY, 
+            isoX: pixelIsoPos.x, 
+            isoY: pixelIsoPos.y, 
+            gridX: snappedGrid.x, 
+            gridY: snappedGrid.y 
+        };
     }
 
   setupEventListeners() {
@@ -53,14 +93,16 @@ class UiManager extends engine.Component {
         document.querySelector("#victoryMenu .menu-button").addEventListener("click", (e) => {
             this.game.reset();
         });
-this.game.canvas.addEventListener('mousemove', (e) => {
+        this.canvas.addEventListener('mousemove', (e) => {
+            this.setMousePosition(e.clientX, e.clientY);
+
             if (!this.game.state.selectedTowerType && !this.game.state.towers.length) return;
 
             if (this.game.state.selectedTowerType && this.game.state.previewTower) {
                 this.game.state.previewTower.position.x = this.game.state.mousePosition.gridX * this.gridSize + this.gridSize / 2;
                 this.game.state.previewTower.position.y = this.game.state.mousePosition.gridY * this.gridSize + this.gridSize / 2;
                 const isValidPosition = this.checkValidTowerPosition(this.game.state.mousePosition.gridX, this.game.state.mousePosition.gridY);
-                this.game.canvas.style.cursor = isValidPosition ? 'pointer' : 'not-allowed';
+                this.canvas.style.cursor = isValidPosition ? 'pointer' : 'not-allowed';
             }
 
             let hoveredTower = null;
@@ -96,11 +138,11 @@ this.game.canvas.addEventListener('mousemove', (e) => {
             }
         });
 
-        this.game.canvas.addEventListener('mouseout', () => {
+        this.canvas.addEventListener('mouseout', () => {
             this.hideTooltip();
         });
         
-        this.game.canvas.addEventListener('click', (e) => {
+        this.canvas.addEventListener('click', (e) => {
             if (!this.game.state.selectedTowerType) return;
             
 
@@ -123,17 +165,17 @@ this.game.canvas.addEventListener('mousemove', (e) => {
                     this.game.state.previewTower = null;
                     // Clear selection
                     this.game.state.selectedTowerType = null;
-                    this.game.canvas.style.cursor = 'default';
+                    this.canvas.style.cursor = 'default';
                 }
             }
         });
         
         // Cancel tower placement with right click
-        this.game.canvas.addEventListener('contextmenu', (e) => {
+        this.canvas.addEventListener('contextmenu', (e) => {
             e.preventDefault();
             if (this.game.state.selectedTowerType) {
                 this.game.state.selectedTowerType = null;
-                this.game.canvas.style.cursor = 'default';
+                this.canvas.style.cursor = 'default';
             }
         });
 }
@@ -196,7 +238,7 @@ this.game.canvas.addEventListener('mousemove', (e) => {
 
 
     draw() {
-       this.shardsDisplay.textContent = Math.floor(this.game.state.bloodShards);
+        this.shardsDisplay.textContent = Math.floor(this.game.state.bloodShards);
         this.essenceDisplay.textContent = Math.floor(this.game.state.essence);
         this.essenceNeededDisplay.textContent = Math.floor(this.game.state.essenceToNextLevel);
         this.hpDisplay.textContent = Math.floor(this.game.state.bloodCoreHP);
@@ -209,6 +251,8 @@ this.game.canvas.addEventListener('mousemove', (e) => {
             this.ctx.textAlign = 'center';
             this.ctx.fillText(`Next Wave in ${countdown}...`, this.canvas.width / 2, 50);
         }  
+
+        this.renderCanvas();
 }
 
     updateWaveDisplay(waveNumber) {
