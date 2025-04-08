@@ -50,8 +50,8 @@ class GameLoader extends engine.Component {
         this.canvas.setAttribute('height', canvasHeight);  
         
         this.terrainCanvasBuffer = document.createElement('canvas');
-        this.terrainCanvasBuffer.width = this.canvas.width;
-        this.terrainCanvasBuffer.height = this.canvas.height;
+        this.terrainCanvasBuffer.width = this.config.configs.game.gridSize * this.config.levels[this.state.level].tileMap.terrainMap[0].length;
+        this.terrainCanvasBuffer.height = this.config.configs.game.gridSize * this.config.levels[this.state.level].tileMap.terrainMap.length;
 
         this.game.canvas = this.canvas;
         this.game.finalCtx = this.finalCtx;

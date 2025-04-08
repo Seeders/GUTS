@@ -36,8 +36,8 @@ class MapRenderer extends engine.Component {
         this.envCacheCtxFG = this.envCacheCanvasFG.getContext('2d');
 
         this.terrainCanvas = terrainCanvasBuffer;
-        this.terrainCanvas.width = this.config.canvasWidth;
-        this.terrainCanvas.height = this.config.canvasHeight;
+        this.terrainCanvas.width = this.tileMap.size * this.config.gridSize;
+        this.terrainCanvas.height = this.tileMap.size * this.config.gridSize;
         this.terrainCtx = this.terrainCanvas.getContext('2d');
         
         this.terrainTileMapper = this.game.terrainTileMapper;
@@ -55,15 +55,8 @@ class MapRenderer extends engine.Component {
   
         // Draw cached map image to main canvas
       
-       this.ctx.drawImage(
-          this.terrainCanvas, 
-          this.isometric 
-              ? 0 
-              : ( this.terrainCanvas.width - tileMapData.terrainMap.length * this.config.gridSize) / 2,
-          this.isometric 
-              ? (this.terrainCanvas.height / 4) - ((tileMapData.terrainMap.length * this.config.gridSize) / 4)
-              : ( this.terrainCanvas.height - tileMapData.terrainMap.length * this.config.gridSize) / 2
-      );
+       this.ctx.drawImage( this.terrainCanvas, ( this.config.canvasWidth - this.terrainCanvas.width) / 2, ( this.config.canvasHeight - this.terrainCanvas.height) / 2 );
+
        //this.ctx.drawImage(this.terrainCanvas, 0, 0);
         //this.ctx.drawImage(this.mapCacheCanvas, 0,  -this.config.canvasHeight / 2);
         this.ctx.drawImage(this.envCacheCanvasBG, 0, 0);

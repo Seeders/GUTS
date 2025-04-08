@@ -54,8 +54,8 @@ class TerrainMapEditor {
 
         this.translator = new this.engineClasses.CoordinateTranslator(this.config, this.tileMap.size, this.gameEditor.getCollections().configs.game.isIsometric);
         this.terrainCanvasBuffer = document.createElement('canvas');
-        this.terrainCanvasBuffer.width = this.canvasEl.width;
-        this.terrainCanvasBuffer.height = this.canvasEl.height;
+        this.terrainCanvasBuffer.width = this.tileMap.size * this.gameEditor.getCollections().configs.game.gridSize;
+        this.terrainCanvasBuffer.height =  this.tileMap.size * this.gameEditor.getCollections().configs.game.gridSize;
         this.modalId = 'modal-addTerrainType';
         // Bind methods to maintain correct context
         this.init();
@@ -165,7 +165,7 @@ class TerrainMapEditor {
             
             // Convert string-based terrainMap to ID-based if needed
             this.convertTerrainMapToIds();
-          
+    
             this.imageManager = new this.engineClasses.ImageManager(this.gameEditor, {imageSize: this.config.imageSize}, {ShapeFactory: this.engineClasses.ShapeFactory});
           
             await this.imageManager.loadImages("levels", { level: { tileMap: this.tileMap }});
@@ -173,6 +173,9 @@ class TerrainMapEditor {
             const terrainImages = this.imageManager.getImages("levels", "level");
 
             this.terrainTileMapper = this.gameEditor.editorModuleInstances.TileMap;
+            this.terrainCanvasBuffer.width = this.tileMap.size * this.gameEditor.getCollections().configs.game.gridSize;
+            this.terrainCanvasBuffer.height =  this.tileMap.size * this.gameEditor.getCollections().configs.game.gridSize;
+
             this.terrainTileMapper.init(this.terrainCanvasBuffer, this.gameEditor.getCollections().configs.game.gridSize, terrainImages, this.gameEditor.getCollections().configs.game.isIsometric);
             this.game = { state: {}, terrainTileMapper: this.terrainTileMapper, config: this.gameEditor.getCollections(), translator: this.translator };
 
@@ -616,9 +619,8 @@ class TerrainMapEditor {
         // Initialize the map renderer
         if (!this.mapRenderer) {
             this.terrainCanvasBuffer = document.createElement('canvas');
-            this.terrainCanvasBuffer.width = this.canvasEl.width;
-            this.terrainCanvasBuffer.height = this.canvasEl.height;
-
+            this.terrainCanvasBuffer.width = this.tileMap.size * this.gameEditor.getCollections().configs.game.gridSize;
+            this.terrainCanvasBuffer.height =  this.tileMap.size * this.gameEditor.getCollections().configs.game.gridSize;
             this.mapRenderer = new (this.gameEditor.scriptContext.getRenderer("MapRenderer"))(this.game, null,
                 { 
                     gameConfig: this.config, 
