@@ -45,13 +45,12 @@ init({level}) {
         // Find START and END tile types by their IDs
         const startTypeId = terrainTypes.findIndex(t => t.type === "start");
         const endTypeId = terrainTypes.findIndex(t => t.type === "end");
-        
+        console.log(terrainTypes);
         // Create the tile map using the provided terrainMap
         const tileMap = terrainMap.map((row, y) => 
             row.map((terrainId, x) => {
                 // Find the terrain object to get color information
-                const terrain = terrainTypes.find(t => t.id === terrainId);  
-                
+                const terrain = terrainTypes[terrainId]; 
                 // Check for start/end points using IDs
                 if(terrainId === startTypeId) {
                     starts.push({x: x, y: y});
