@@ -317,7 +317,7 @@ class ImageManager {
         this.scene.add(this.lightGroup);
         
         // Create objects from the JSON data
-        const objectGroup = this.createObjectsFromJSON(shapeData, this.scene);
+        const objectGroup = await this.createObjectsFromJSON(shapeData, this.scene);
         
         
         const images = [];
@@ -381,8 +381,8 @@ class ImageManager {
      * @returns {THREE.Group} - A group containing all 3D objects.
      */
   
-    createObjectsFromJSON(shapeData, scene) {
-        const group = this.shapeFactory.createFromJSON(shapeData);
+    async createObjectsFromJSON(shapeData, scene) {
+        const group = await this.shapeFactory.createFromJSON(shapeData);
         group.traverse((child) => {
             if (child.isMesh) {
                 child.castShadow = true; // or set this selectively for objects that should cast shadows

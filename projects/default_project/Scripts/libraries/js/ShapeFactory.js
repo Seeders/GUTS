@@ -1,25 +1,26 @@
- class ShapeFactory {
+class ShapeFactory {
     constructor() {
         this.gltfCache = new Map();
         this.gltfLoader = new THREE.GLTFLoader();
     }
 
-    createFromJSON(shapeData) {
+    async createFromJSON(shapeData) {
         const group = new THREE.Group();
-        
         group.userData.isShape = true; // Mark the group itself
-        shapeData.shapes.forEach((shape, index) => {
+
+        // Use Promise.all with map instead of forEach to properly await all shapes
+        await Promise.all(shapeData.shapes.map(async (shape, index) => {
             if (shape.type === 'gltf') {
-                this.handleGLTFShape(shape, index, group);
+                await this.handleGLTFShape(shape, index, group);
             } else {
                 this.handlePrimitiveShape(shape, group);
             }
-        });
+        }));
 
         return group;
     }
 
-    handleGLTFShape(shape, index, group) {
+    async handleGLTFShape(shape, index, group) {
         const applyTransformations = (model) => {
             model.position.set(shape.x || 0, shape.y || 0, shape.z || 0);
             model.scale.set(
@@ -56,11 +57,22 @@
         const cached = this.gltfCache.get(shape.url);
         if (cached) {
             applyTransformations(cached.scene.clone());
-        } else if( shape.url) {
-          	
-            this.gltfLoader.load(shape.url, (gltf) => {
-                this.gltfCache.set(shape.url, gltf);
-                applyTransformations(gltf.scene.clone());
+        } else if (shape.url) {
+            // Wrap gltfLoader.load in a Promise to properly await it
+            await new Promise((resolve, reject) => {
+                this.gltfLoader.load(
+                    shape.url,
+                    (gltf) => {
+                        this.gltfCache.set(shape.url, gltf);
+                        applyTransformations(gltf.scene.clone());
+                        resolve();
+                    },
+                    undefined, // onProgress callback (optional)
+                    (error) => {
+                        console.error(`Failed to load GLTF model at ${shape.url}:`, error);
+                        reject(error);
+                    }
+                );
             });
         }
     }

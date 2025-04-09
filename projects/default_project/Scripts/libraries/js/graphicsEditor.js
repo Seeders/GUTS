@@ -209,9 +209,9 @@ class GraphicsEditor {
         this.highlightSelectedShape();
     }
 
-    togglePreview(e) {
+    async togglePreview(e) {
         this.isPreviewingAnimation = !this.isPreviewingAnimation;
-        this.animatePreview();
+        await this.animatePreview();
         this.setPreviewAnimationState(this.isPreviewingAnimation);            
     }
 
@@ -226,10 +226,10 @@ class GraphicsEditor {
         }
     }
 
-    animatePreview() {
+    async animatePreview() {
         if (!this.isPreviewingAnimation) return;
         this.currentFrame = (this.currentFrame + 1) % this.renderData.animations[this.currentAnimation].length;
-        this.renderShapes(false);
+        await this.renderShapes(false);
         setTimeout(this.animatePreview.bind(this), 166); // ~6 FPS, adjust as needed
     }
 
@@ -291,7 +291,7 @@ class GraphicsEditor {
             this.scene.add(outline);
         });
     }
-    renderShapes(fireSave = true) {
+    async renderShapes(fireSave = true) {
         // Remove only top-level shape groups
         const objectsToRemove = this.scene.children.filter(obj => obj.userData.isShape);
         objectsToRemove.forEach(obj => {
@@ -313,7 +313,7 @@ class GraphicsEditor {
         }
 
         const currentShapes = this.renderData.animations[this.currentAnimation][this.currentFrame];
-        this.createObjectsFromJSON(currentShapes, this.scene);
+        await this.createObjectsFromJSON(currentShapes, this.scene);
 
         document.getElementById('shape-count').textContent = currentShapes.shapes.length;
         document.getElementById('json-content').value = JSON.stringify(this.renderData, null, 2);
@@ -335,8 +335,8 @@ class GraphicsEditor {
         this.highlightSelectedShape();
     }
 //gltf
-   createObjectsFromJSON(shapeData, scene) {
-        const group = this.shapeFactory.createFromJSON(shapeData);
+   async createObjectsFromJSON(shapeData, scene) {
+        const group = await this.shapeFactory.createFromJSON(shapeData);
         scene.add(group);
     }
 //gltf
