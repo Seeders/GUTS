@@ -15,6 +15,7 @@ const MODELS_DIR = path.join(BASE_DIR, 'samples/models');
 const CONFIG_DIR = path.join(BASE_DIR, 'config');
 const upload = multer({ dest: path.join(BASE_DIR, 'uploads') });
 
+const CACHE_DIR = path.join(__dirname, 'cache');
 // Configure Express server
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(express.json({ limit: '10mb' }));
@@ -218,6 +219,41 @@ app.get('/browse-directory', (req, res) => {
     });
 });
 
+async function ensureCacheDir() {
+    try {
+        await fs.mkdir(CACHE_DIR, { recursive: true });
+    } catch (error) {
+        if (error.code !== 'EEXIST') throw error;
+    }
+}
+
+// Get cached images
+app.get('/api/cache/:prefix', async (req, res) => {
+    const { prefix } = req.params;
+    const cacheFile = path.join(CACHE_DIR, `${prefix}.json`);
+    
+    try {
+        const data = await fs.readFile(cacheFile, 'utf8');
+        res.json(JSON.parse(data));
+    } catch (error) {
+        res.status(404).json({ error: 'Cache not found' });
+    }
+});
+
+// Save cached images
+app.post('/api/cache', async (req, res) => {
+    const { prefix, images } = req.body;
+    const cacheFile = path.join(CACHE_DIR, `${prefix}.json`);
+    
+    try {
+        await ensureCacheDir();
+        await fs.writeFile(cacheFile, JSON.stringify({ images }, null, 2));
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error saving cache:', error);
+        res.status(500).json({ error: 'Failed to save cache' });
+    }
+});
 
 // Start the server
 const PORT = process.env.PORT || 5000;

@@ -1,7 +1,6 @@
 
 class ImageManager {
-    constructor(app, {imageSize}, {ShapeFactory}) {
-        
+    constructor(app, imageSize, ShapeFactory) {
         this.app = app;
         this.images = {};
         this.imageSize = imageSize || 128;
@@ -99,65 +98,186 @@ class ImageManager {
     }
 
     async loadImages(prefix, config) {
+        if (!prefix || !config || typeof config !== 'object') {
+            throw new Error('Invalid prefix or config provided to loadImages');
+        }
+    
+        const cachedImages = await this.checkCache(prefix);
+        if (cachedImages) {
+            this.images = { ...this.images, ...cachedImages };
+            return;
+        }
+    
         for (const [type, cfg] of Object.entries(config)) {
             if (cfg.render && cfg.render.animations) {
                 this.images[`${prefix}_${type}`] = await this.createAnimatedPlaceholder(cfg);
             } else if (cfg.tileMap && cfg.tileMap.terrainTypes) {
                 console.log(`${prefix}_${type}`);
-                this.images[`${prefix}_${type}`] = this.createTerrainImages(cfg);
+                this.images[`${prefix}_${type}`] = await this.createTerrainImages(cfg);
             }
+        }
+    
+        await this.cacheImages(prefix);
+    }
+    
+    async checkCache(prefix) {
+        try {
+            const response = await fetch(`/api/cache/${prefix}`);
+            if (response.ok) {
+                const cacheData = await response.json();
+                // Convert base64 cached images back to canvases
+                return await this.convertBase64ToCanvases(cacheData.images);
+            }
+            return null;
+        } catch (error) {
+            console.log('No cache found or error checking cache:', error);
+            return null;
         }
     }
 
-    createTerrainImages(config) {
-        let terrainTiles = [];
-        config.tileMap.terrainTypes.forEach((terrainType) => {   
-            let tileWidth = 24;
-            let sprites = [];
-            sprites.length = 8;
-            const pixelData = terrainType.image; // Single 2D array with all sprites
-            if(pixelData){
-                // Create 8 sprite canvases from different regions
-                for (let spriteIdx = 0; spriteIdx < pixelData.length; spriteIdx++) {
-                 
-                    let imagePixelData = pixelData[spriteIdx];
-                                        // Create an Image object
-                    const img = new Image();
-                    img.setAttribute("data-index", spriteIdx);
-                    // When the image loads, draw it on the canvas
-                    img.onload = function() {
+    async convertBase64ToCanvases(cachedImages) {
+        const convertedImages = {};
+        
+        for (const [key, value] of Object.entries(cachedImages)) {
+            if (Array.isArray(value)) {
+                // Handle terrain tiles
+                convertedImages[key] = await Promise.all(value.map(async (terrain) => {
+                    const sprites = await Promise.all(terrain.sprites.map(async (base64) => {
                         const canvas = document.createElement('canvas');
-                        canvas.width = canvas.height = tileWidth;
-                        let ctx = canvas.getContext('2d');
-                        // Set canvas dimensions to match the image
-                        canvas.width = img.width;
-                        canvas.height = img.height;
-                
-                        // Draw the image on the canvas
-                        ctx.drawImage(img, 0, 0);
-                        sprites[parseInt(img.getAttribute("data-index"))] = canvas;
+                        canvas.width = canvas.height = 24; // Match tileWidth from createTerrainImages
+                        const ctx = canvas.getContext('2d');
+                        const img = new Image();
+                        
+                        await new Promise((resolve, reject) => {
+                            img.onload = () => {
+                                ctx.drawImage(img, 0, 0);
+                                resolve();
+                            };
+                            img.onerror = reject;
+                            img.src = base64;
+                        });
+                        
+                        return canvas;
+                    }));
+                    
+                    return {
+                        type: terrain.type,
+                        sprites
                     };
+                }));
+            } else if (typeof value === 'object') {
+                // Handle animations
+                const animations = {};
+                for (const [animType, frames] of Object.entries(value)) {
+                    animations[animType] = await Promise.all(frames.map(async (frameSet) => {
+                        return Promise.all(frameSet.map(async (base64) => {
+                            const canvas = document.createElement('canvas');
+                            canvas.width = canvas.height = this.imageSize;
+                            const ctx = canvas.getContext('2d');
+                            const img = new Image();
+                            
+                            await new Promise((resolve, reject) => {
+                                img.onload = () => {
+                                    ctx.drawImage(img, 0, 0);
+                                    resolve();
+                                };
+                                img.onerror = reject;
+                                img.src = base64;
+                            });
+                            
+                            return canvas;
+                        }));
+                    }));
+                }
+                convertedImages[key] = animations;
+            }
+        }
+        
+        return convertedImages;
+    }
+    async cacheImages(prefix) {
+        const base64Images = {};
+        
+        for (const [key, value] of Object.entries(this.images)) {
+            if (key.startsWith(prefix)) {
+                console.log('caching', prefix);
+                if (Array.isArray(value) && value[0]?.type && value[0]?.sprites) {
+                    // Handle terrain tiles
+                    console.log('terrain tiles', value);
+                    base64Images[key] = value.map(terrain => ({
+                        type: terrain.type,
+                        sprites: terrain.sprites.map(canvas => canvas.toDataURL('image/png'))
+                    }));
+                } else if (typeof value === 'object' && value !== null) {
+                    console.log('animations');
+                    // Handle animations
+                    const animationData = {};
+                    for (const [animType, frames] of Object.entries(value)) {
+                        animationData[animType] = frames.map(frameSet => 
+                            frameSet.map(canvas => canvas.toDataURL('image/png'))
+                        );
+                    }
+                    base64Images[key] = animationData;
+                }
+            }
+        }
+
+        try {
+            await fetch('/api/cache', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    prefix,
+                    images: base64Images
+                })
+            });
+        } catch (error) {
+            console.error('Error caching images:', error);
+        }
+    }
+    async createTerrainImages(config) {
+        let terrainTiles = [];
+        const tileWidth = 24;
+    
+        await Promise.all(config.tileMap.terrainTypes.map(async (terrainType) => {   
+            const pixelData = terrainType.image;
+            if (pixelData) {
+                let sprites = new Array(8);
                 
-                    // Handle errors in case the Base64 string is invalid
-                    img.onerror = function() {
-                        console.error("Failed to load image from Base64 string.");
-                    };
-                
-                    // Set the Base64 string as the image source
-                    // Add the data URL prefix if it's not already present
+                await Promise.all(pixelData.map(async (imagePixelData, spriteIdx) => {
+                    const img = new Image();
+                    const canvas = document.createElement('canvas');
+                    canvas.width = canvas.height = tileWidth;
+                    const ctx = canvas.getContext('2d');
+    
                     if (!imagePixelData.startsWith('data:image/')) {
                         imagePixelData = 'data:image/png;base64,' + imagePixelData;
                     }
-
                     img.src = imagePixelData;
-                }
-                
+    
+                    await new Promise((resolve, reject) => {
+                        img.onload = () => {
+                            ctx.drawImage(img, 0, 0);
+                            sprites[spriteIdx] = canvas;
+                            resolve();
+                        };
+                        img.onerror = () => {
+                            console.error(`Failed to load image for ${terrainType.type} at index ${spriteIdx}`);
+                            sprites[spriteIdx] = canvas; // Store empty canvas on error
+                            reject();
+                        };
+                    });
+                }));
+    
                 terrainTiles.push({ 
                     type: terrainType.type, 
                     sprites: sprites 
                 });
             }
-        });
+        }));
+    
         return terrainTiles;
     }
     async createAnimatedPlaceholder(config) {

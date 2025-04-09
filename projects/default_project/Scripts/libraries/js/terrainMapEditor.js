@@ -48,7 +48,7 @@ class TerrainMapEditor {
         this.canvasEl.height = this.config.canvasHeight;
         // Managers and renderers
 
-        this.imageManager = new this.engineClasses.ImageManager(this.gameEditor, {imageSize: this.config.imageSize}, {ShapeFactory});
+        this.imageManager = new this.engineClasses.ImageManager(this.gameEditor, this.config.imageSize, ShapeFactory);
         this.mapRenderer = null;
         this.mapManager = null;
 
@@ -166,7 +166,7 @@ class TerrainMapEditor {
             // Convert string-based terrainMap to ID-based if needed
             this.convertTerrainMapToIds();
     
-            this.imageManager = new this.engineClasses.ImageManager(this.gameEditor, {imageSize: this.config.imageSize}, {ShapeFactory: this.engineClasses.ShapeFactory});
+            this.imageManager = new this.engineClasses.ImageManager(this.gameEditor, this.config.imageSize, this.engineClasses.ShapeFactory);
           
             await this.imageManager.loadImages("levels", { level: { tileMap: this.tileMap }});
 
