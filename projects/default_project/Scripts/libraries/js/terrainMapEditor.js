@@ -147,9 +147,6 @@ class TerrainMapEditor {
             document.getElementById('terrainBGColor').value = bgColor;
             this.canvasEl.backgroundColor = bgColor;
         
-            // Log the raw loaded data
-            console.log('Loaded tileMap:', JSON.stringify(this.tileMap, null, 2));
-        
             // Strip id from terrainTypes if present, assume order is correct
             this.tileMap.terrainTypes = this.tileMap.terrainTypes.map(terrain => {
                 if (terrain.id !== undefined) {
@@ -206,7 +203,7 @@ class TerrainMapEditor {
         }
         this.terrainCanvasBuffer.width = this.tileMap.size * this.gameEditor.getCollections().configs.game.gridSize;
         this.terrainCanvasBuffer.height =  this.tileMap.size * this.gameEditor.getCollections().configs.game.gridSize;
-console.log(terrainImages);
+
         this.terrainTileMapper.init(this.terrainCanvasBuffer, this.gameEditor.getCollections().configs.game.gridSize, terrainImages, this.gameEditor.getCollections().configs.game.isIsometric);
         this.game = { state: {}, terrainTileMapper: this.terrainTileMapper, config: this.gameEditor.getCollections(), translator: this.translator };
 

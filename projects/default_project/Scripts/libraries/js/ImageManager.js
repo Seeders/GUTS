@@ -117,7 +117,6 @@ class ImageManager {
             if (cfg.render && cfg.render.animations) {
                 this.images[`${prefix}_${type}`] = await this.createAnimatedPlaceholder(cfg);
             } else if (cfg.tileMap && cfg.tileMap.terrainTypes) {
-                console.log(`${prefix}_${type}`);
                 this.images[`${prefix}_${type}`] = await this.createTerrainImages(cfg);
             }
         }
@@ -135,7 +134,6 @@ class ImageManager {
             }
             return null;
         } catch (error) {
-            console.log('No cache found or error checking cache:', error);
             return null;
         }
     }
@@ -205,16 +203,13 @@ class ImageManager {
         
         for (const [key, value] of Object.entries(this.images)) {
             if (key.startsWith(prefix)) {
-                console.log('caching', prefix);
                 if (Array.isArray(value) && value[0]?.type && value[0]?.sprites) {
                     // Handle terrain tiles
-                    console.log('terrain tiles', value);
                     base64Images[key] = value.map(terrain => ({
                         type: terrain.type,
                         sprites: terrain.sprites.map(canvas => canvas.toDataURL('image/png'))
                     }));
                 } else if (typeof value === 'object' && value !== null) {
-                    console.log('animations');
                     // Handle animations
                     const animationData = {};
                     for (const [animType, frames] of Object.entries(value)) {
