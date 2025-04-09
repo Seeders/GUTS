@@ -122,7 +122,7 @@ class GraphicsEditor {
         
         // Move modal listeners
         document.getElementById('move-cancel').addEventListener('click', () => {
-            document.getElementById('move-modal').classList.remove('show');
+            document.getElementById('modal-moveAllShapes').classList.remove('show');
         });
 
         document.getElementById('move-apply').addEventListener('click', this.applyMoveModal.bind(this));
@@ -162,7 +162,7 @@ class GraphicsEditor {
         this.refreshShapes(true);
         
         // Hide the modal
-        document.getElementById('move-modal').classList.remove('show');
+        document.getElementById('modal-moveAllShapes').classList.remove('show');
     }
 
     handleMouseDown(event) {
@@ -500,7 +500,7 @@ class GraphicsEditor {
 
     moveAllShapes() {
         if (this.renderData.animations[this.currentAnimation][this.currentFrame].shapes.length === 0) return;
-        document.getElementById('move-modal').classList.add('show');
+        document.getElementById('modal-moveAllShapes').classList.add('show');
         document.getElementById('move-x').value = '0';
         document.getElementById('move-y').value = '0';
         document.getElementById('move-z').value = '0';

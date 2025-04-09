@@ -1,6 +1,6 @@
 
 class ImageManager {
-    constructor(app, imageSize, ShapeFactory) {
+    constructor(app, {imageSize}, {ShapeFactory}) {
         this.app = app;
         this.images = {};
         this.imageSize = imageSize || 128;

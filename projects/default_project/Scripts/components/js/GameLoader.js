@@ -60,7 +60,7 @@ class GameLoader extends engine.Component {
         this.game.terrainCanvasBuffer = this.terrainCanvasBuffer;
     }
     async loadAssets() {
-        this.game.imageManager = new (this.game.libraryClasses.ImageManager)(this, this.config.configs.game.imageSize, this.game.libraryClasses.ShapeFactory);    
+        this.game.imageManager = new (this.game.libraryClasses.ImageManager)(this, { imageSize: this.config.configs.game.imageSize}, {ShapeFactory: this.game.libraryClasses.ShapeFactory});    
         // Load all images
         for(let objectType in this.config) {
             await this.game.imageManager.loadImages(objectType, this.config[objectType]);
