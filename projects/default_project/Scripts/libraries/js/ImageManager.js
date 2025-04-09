@@ -76,6 +76,10 @@ class ImageManager {
         this.ground.receiveShadow = true;
     }
 
+    clear() {
+        images = {};
+    }
+
     dispose() {
         // Proper cleanup when the manager is no longer needed
         if (this.renderer) {
@@ -238,13 +242,17 @@ class ImageManager {
             console.error('Error caching images:', error);
         }
     }
+    // In the ImageManager class
     async createTerrainImages(config) {
         let terrainTiles = [];
         const tileWidth = 24;
-    
-        await Promise.all(config.tileMap.terrainTypes.map(async (terrainType) => {   
+
+        // Create a map of terrain type to its image data first
+        const terrainMap = {};
+        
+        await Promise.all(config.tileMap.terrainTypes.map(async (terrainType, terrainIndex) => {
             const pixelData = terrainType.image;
-            if (pixelData) {
+            if (pixelData && pixelData.length > 0) {
                 let sprites = new Array(8);
                 
                 await Promise.all(pixelData.map(async (imagePixelData, spriteIdx) => {
@@ -252,12 +260,12 @@ class ImageManager {
                     const canvas = document.createElement('canvas');
                     canvas.width = canvas.height = tileWidth;
                     const ctx = canvas.getContext('2d');
-    
+
                     if (!imagePixelData.startsWith('data:image/')) {
                         imagePixelData = 'data:image/png;base64,' + imagePixelData;
                     }
                     img.src = imagePixelData;
-    
+
                     await new Promise((resolve, reject) => {
                         img.onload = () => {
                             ctx.drawImage(img, 0, 0);
@@ -267,19 +275,36 @@ class ImageManager {
                         img.onerror = () => {
                             console.error(`Failed to load image for ${terrainType.type} at index ${spriteIdx}`);
                             sprites[spriteIdx] = canvas; // Store empty canvas on error
-                            reject();
+                            resolve(); // Don't reject, just move on
                         };
                     });
                 }));
-    
-                terrainTiles.push({ 
-                    type: terrainType.type, 
+
+                // Store by index and type for more reliable lookup
+                terrainTiles[terrainIndex] = { 
+                    type: terrainType.type,
                     sprites: sprites 
+                };
+            } else {
+                // Create a solid color placeholder for types without images
+                const sprites = new Array(8).fill().map(() => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = canvas.height = tileWidth;
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = terrainType.color || '#cccccc';
+                    ctx.fillRect(0, 0, tileWidth, tileWidth);
+                    return canvas;
                 });
+                
+                terrainTiles[terrainIndex] = {
+                    type: terrainType.type,
+                    sprites: sprites
+                };
             }
         }));
-    
-        return terrainTiles;
+
+        // Make sure there are no gaps in the array
+        return terrainTiles.filter(Boolean);
     }
     async createAnimatedPlaceholder(config) {
         const animations = {};

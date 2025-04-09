@@ -17,6 +17,7 @@ class TileMap {
 		this.numColumns = 0;
 		this.layerSpriteSheets = layerSpriteSheets;
 		this.tileMap = [];
+		this.layerTextures = [];
 		this.canvasUtility = new (this.engineClasses.CanvasUtility)();
 		this.TileAnalysis = class {
 			constructor() {
@@ -93,8 +94,7 @@ class TileMap {
 		this.numColumns = this.tileMap.length;
 		// Load all textures
 
-		if(!this.layerTextures || this.layerTextures.length == 0) {
-			this.layerTextures = []; 
+		if(this.layerTextures.length == 0) {
 	
 			this.layerSpriteSheets.forEach((layerSprites, index) => {      
 				const moleculeData = this.buildBaseMolecules(layerSprites.sprites);
