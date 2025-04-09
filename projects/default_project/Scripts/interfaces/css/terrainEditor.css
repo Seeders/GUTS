@@ -274,7 +274,7 @@
 	color: var(--text);
   }
 
-  #level-editor-container  .status-bar {
+  #level-editor-container .status-bar {
 	position: absolute;
 	bottom: 0;
 	left: 0;
@@ -294,4 +294,247 @@
 	margin-top: 24px;
 	border-top: 1px solid rgba(255, 255, 255, 0.1);
 	padding-top: 16px;
+  }
+
+
+
+  /* Environment Panel Styles */
+  #level-editor-container #environmentPanel {
+	overflow-y: auto;
+	max-height: calc(100vh - 200px);
+  }
+  
+  #level-editor-container .environment-objects-container {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+  }
+  
+  #level-editor-container .environment-objects-container h3 {
+	margin-top: 0;
+	margin-bottom: 12px;
+	color: #e5e7eb;
+	font-size: 16px;
+	border-bottom: 1px solid #374151;
+	padding-bottom: 8px;
+  }
+  
+  #level-editor-container .environment-type {
+	background-color: #1f2937;
+	border-radius: 6px;
+	overflow: hidden;
+	margin-bottom: 8px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+	transition: box-shadow 0.2s ease;
+  }
+  
+  #level-editor-container .environment-type:hover {
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  }
+  
+  #level-editor-container .environment-type-header {
+	padding: 10px 12px;
+	font-weight: 500;
+	cursor: pointer;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	background-color: #2d3748;
+	color: #e5e7eb;
+	position: relative;
+	text-transform: capitalize;
+  }
+  
+  #level-editor-container .environment-type-header::after {
+	content: '▼';
+	font-size: 10px;
+	transition: transform 0.2s ease;
+  }
+  
+  #level-editor-container .environment-type-header.open::after {
+	transform: rotate(180deg);
+  }
+  
+  #level-editor-container .environment-items {
+	padding: 10px;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 3px;
+	background-color: #1f2937;
+  }
+  
+  #level-editor-container .environment-item {
+	width: 128px;
+	height: 128px;
+	border: 2px solid #4b5563;
+	border-radius: 4px;
+	cursor: pointer;
+	padding: 2px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background-color: #374151;
+	transition: all 0.2s ease;
+	position: relative;
+  }
+  
+  #level-editor-container .environment-item:hover {
+	border-color: #9ca3af;
+	transform: translateY(-2px);
+  }
+  
+  #level-editor-container .environment-item.active {
+	border-color: #3b82f6;
+	box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+  }
+  
+  #level-editor-container .environment-item canvas {
+	max-width: 100%;
+	max-height: 100%;
+	object-fit: contain;
+  }
+  
+  /* Tooltip for environment items */
+  #level-editor-container .environment-item::before {
+	content: attr(data-name);
+	position: absolute;
+	bottom: calc(100% + 5px);
+	left: 50%;
+	transform: translateX(-50%);
+	background-color: #111827;
+	color: white;
+	text-align: center;
+	border-radius: 4px;
+	padding: 4px 8px;
+	font-size: 12px;
+	white-space: nowrap;
+	visibility: hidden;
+	opacity: 0;
+	transition: all 0.2s ease;
+	z-index: 10;
+	pointer-events: none;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+  
+  #level-editor-container .environment-item:hover::before {
+	visibility: visible;
+	opacity: 1;
+  }
+  
+  /* Indicator for placement mode */
+  #level-editor-container .placement-mode-indicator {
+	position: absolute;
+	top: 10px;
+	left: 50%;
+	transform: translateX(-50%);
+	background-color: rgba(17, 24, 39, 0.8);
+	color: white;
+	padding: 5px 10px;
+	border-radius: 4px;
+	font-size: 14px;
+	pointer-events: none;
+	transition: opacity 0.3s ease;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+	z-index: 100;
+  }
+  
+  /* Improved toolbar buttons */
+  #level-editor-container .toolbar .btn {
+	padding: 8px 16px;
+	border: none;
+	background-color: #374151;
+	color: #e5e7eb;
+	cursor: pointer;
+	border-radius: 4px;
+	font-weight: 500;
+	transition: all 0.2s ease;
+  }
+  
+  #level-editor-container .toolbar .btn:hover {
+	background-color: #4b5563;
+  }
+  
+  #level-editor-container .toolbar .btn.active {
+	background-color: #3b82f6;
+	color: white;
+  }
+  
+  /* Better spacing for the tools panels */
+  #level-editor-container .tools > div {
+	margin-bottom: 20px;
+  }
+  
+  /* Environment object count badge */
+  #level-editor-container .environment-type-header .object-count-container {
+	flex: 1;
+	margin-left: 8px;
+  }
+  #level-editor-container .environment-type-header .object-count {
+	background-color: #4b5563;
+	color: white;
+	padding: 2px 6px;
+	border-radius: 10px;
+	font-size: 12px;
+  }
+  
+  /* Empty state for environment types */
+  #level-editor-container .environment-items.empty {
+	padding: 20px;
+	text-align: center;
+	color: #9ca3af;
+	font-style: italic;
+  }
+  
+  /* Styles for delete mode */
+  #level-editor-container .delete-mode-active .grid-container {
+	cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="red" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/><path d="M10 11v6M14 11v6"/></svg>'), auto;
+  }
+  
+  /* Object control panel */
+  #level-editor-container .object-controls {
+	display: flex;
+	justify-content: space-between;
+	padding: 10px;
+	background-color: #1f2937;
+	border-radius: 6px;
+	margin-bottom: 10px;
+	gap: 8px;
+  }
+  
+  #level-editor-container .object-controls button {
+	background-color: #374151;
+	color: #e5e7eb;
+	border: none;
+	padding: 6px 12px;
+	border-radius: 4px;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	transition: background-color 0.2s;
+  }
+  
+  #level-editor-container .object-controls button:hover {
+	background-color: #4b5563;
+  }
+  
+  #level-editor-container .object-controls button.delete-mode {
+	background-color: #ef4444;
+	color: white;
+  }
+  
+  #level-editor-container .object-controls button.delete-mode:hover {
+	background-color: #dc2626;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+	#level-editor-container .environment-items {
+	  justify-content: center;
+	}
+	
+	#level-editor-container .environment-item {
+	  width: 56px;
+	  height: 56px;
+	}
   }

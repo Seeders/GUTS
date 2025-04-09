@@ -101,7 +101,7 @@ class ImageManager {
         this.ambientLight = null;
     }
 
-    async loadImages(prefix, config, checkCache = true) {
+    async loadImages(prefix, config, checkCache = true, cacheResult = true) {
         if (!prefix || !config || typeof config !== 'object') {
             throw new Error('Invalid prefix or config provided to loadImages');
         }
@@ -120,8 +120,9 @@ class ImageManager {
                 this.images[`${prefix}_${type}`] = await this.createTerrainImages(cfg);
             }
         }
-    
-        await this.cacheImages(prefix);
+        if(cacheResult) {
+            await this.cacheImages(prefix);
+        }
     }
     
     async checkCache(prefix) {

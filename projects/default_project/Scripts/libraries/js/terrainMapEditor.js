@@ -23,7 +23,10 @@ class TerrainMapEditor {
             ],
             terrainMap: []
         };
-
+        this.environmentObjects = this.tileMap.environmentObjects || [];
+        this.selectedEnvironmentType = null;
+        this.selectedEnvironmentItem = null;
+        this.placementMode = 'terrain'; // can be 'terrain' or 'environment'
         this.environment = this.gameEditor.getCollections().environment;
         this.terrainTypesContainer = null;
         this.draggedItem = null;
@@ -50,6 +53,7 @@ class TerrainMapEditor {
 
     init() {
         this.setupTerrainTypesUI();
+        this.setupEnvironmentPanel();
         this.setupEventListeners();
         this.updateTerrainStyles();
         this.setupTerrainImageProcessor();
@@ -119,8 +123,14 @@ class TerrainMapEditor {
 
         // Add mouse down event for canvas
         this.canvasEl.addEventListener('mousedown', (e) => {
-            this.isMouseDown = true;
-            this.handleCanvasInteraction(e);
+            if (e.button === 0) { // Left click
+                if (this.deleteMode && this.tileMap.environmentObjects) {
+                    this.deleteEnvironmentObjectAt(e);
+                } else {
+                    this.isMouseDown = true;
+                    this.handleCanvasInteraction(e);
+                }
+            }
         });
         
         // Add mouse move event for drawing while dragging
@@ -146,7 +156,9 @@ class TerrainMapEditor {
             let bgColor = this.tileMap.terrainBGColor || "#7aad7b";
             document.getElementById('terrainBGColor').value = bgColor;
             this.canvasEl.backgroundColor = bgColor;
-        
+            if (!this.tileMap.environmentObjects) {
+                this.tileMap.environmentObjects = [];
+            }
             // Strip id from terrainTypes if present, assume order is correct
             this.tileMap.terrainTypes = this.tileMap.terrainTypes.map(terrain => {
                 if (terrain.id !== undefined) {
@@ -187,13 +199,61 @@ class TerrainMapEditor {
                 this.initGridCanvas();
             });
         });
+
+        document.getElementById('terrainsBtn').addEventListener('click', () => {
+            document.getElementById('terrainsBtn').classList.add('active');
+            document.getElementById('entitiesBtn').classList.remove('active');
+            document.getElementById('layersBtn').classList.remove('active');
+            
+            document.getElementById('terrainsPanel').style.display = 'block';
+            document.getElementById('environmentPanel').style.display = 'none';
+            this.placementMode = 'terrain';
+            
+            // Update placement indicator
+            this.placementModeIndicator.textContent = 'Placement Mode: Terrain';
+            this.placementModeIndicator.style.opacity = '1';
+            
+            // Hide indicator after a delay
+            clearTimeout(this.indicatorTimeout);
+            this.indicatorTimeout = setTimeout(() => {
+                this.placementModeIndicator.style.opacity = '0';
+            }, 2000);
+        });
+        
+        document.getElementById('entitiesBtn').addEventListener('click', () => {
+            document.getElementById('terrainsBtn').classList.remove('active');
+            document.getElementById('entitiesBtn').classList.add('active');
+            document.getElementById('layersBtn').classList.remove('active');
+            
+            document.getElementById('terrainsPanel').style.display = 'none';
+            document.getElementById('environmentPanel').style.display = 'block';
+            this.placementMode = 'environment';
+            
+            // Make sure environment panel is set up
+            this.setupEnvironmentPanel();
+            this.placementModeIndicator.textContent = 'Placement Mode: Environment';
+            this.placementModeIndicator.style.opacity = '1';
+            
+            // Hide indicator after a delay
+            clearTimeout(this.indicatorTimeout);
+            this.indicatorTimeout = setTimeout(() => {
+                this.placementModeIndicator.style.opacity = '0';
+            }, 2000);
+        });
+        this.canvasEl.addEventListener('contextmenu', (e) => {
+            e.preventDefault(); // Prevent default context menu
+            
+            if (this.placementMode === 'environment' && this.tileMap.environmentObjects) {
+                this.deleteEnvironmentObjectAt(e);
+            }
+        });
     }
 
     async initImageManager() {
         this.imageManager = new this.engineClasses.ImageManager(this.gameEditor, { imageSize: this.config.imageSize }, { ShapeFactory: this.engineClasses.ShapeFactory });
-        await this.imageManager.loadImages("levels", { level: { tileMap: this.tileMap } }, false);
+        await this.imageManager.loadImages("levels", { level: { tileMap: this.tileMap } }, false, false);
         if(this.environment){
-            await this.imageManager.loadImages("environment", this.environment, false);
+            await this.imageManager.loadImages("environment", this.environment, false, false);
         }
         const terrainImages = this.imageManager.getImages("levels", "level");
 
@@ -308,7 +368,259 @@ class TerrainMapEditor {
         document.getElementById('saveTerrainBtn').addEventListener('click', this.saveTerrainType.bind(this));
         document.getElementById('cancelTerrainBtn').addEventListener('click', this.hideTerrainForm.bind(this));
     }
-
+    setupEnvironmentPanel() {
+        const environmentPanel = document.getElementById('environmentPanel');
+        if (!environmentPanel) {
+            // Create the panel if it doesn't exist
+            const panel = document.createElement('div');
+            panel.id = 'environmentPanel';
+            panel.style.display = 'none'; // Hidden by default
+            document.querySelector('.tools').appendChild(panel);
+        } else {
+            // Clear existing content
+            environmentPanel.innerHTML = '';
+        }
+    
+        // Create object controls
+        const controlsDiv = document.createElement('div');
+        controlsDiv.className = 'object-controls';
+        
+        const deleteButton = document.createElement('button');
+        deleteButton.className = 'delete-btn';
+        deleteButton.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/><path d="M10 11v6M14 11v6"/></svg> Delete Mode';
+        deleteButton.addEventListener('click', () => {
+            deleteButton.classList.toggle('delete-mode');
+            document.body.classList.toggle('delete-mode-active');
+            this.deleteMode = deleteButton.classList.contains('delete-mode');
+        });
+        
+        const clearButton = document.createElement('button');
+        clearButton.className = 'clear-all-btn';
+        clearButton.innerHTML = 'Clear All Objects';
+        clearButton.addEventListener('click', () => {
+            if (confirm('Are you sure you want to remove all environment objects?')) {
+                this.tileMap.environmentObjects = [];
+                this.updateCanvasWithData();
+                this.exportMap();
+                this.updateObjectCounts();
+            }
+        });
+        
+        controlsDiv.appendChild(deleteButton);
+        controlsDiv.appendChild(clearButton);
+        environmentPanel.appendChild(controlsDiv);
+        
+        // Create placement mode indicator (hidden by default)
+        const indicator = document.createElement('div');
+        indicator.className = 'placement-mode-indicator';
+        indicator.style.opacity = '0';
+        indicator.textContent = 'Placement Mode: Terrain';
+        document.querySelector('.grid-container').appendChild(indicator);
+        this.placementModeIndicator = indicator;
+    
+        // Create environment object selector
+        if (this.environment) {
+            const container = document.createElement('div');
+            container.className = 'environment-objects-container';
+            
+            // Add header
+            const header = document.createElement('h3');
+            header.textContent = 'Environment Objects';
+            container.appendChild(header);
+            
+            // Create object type list
+            for (const type in this.environment) {
+                const typeContainer = document.createElement('div');
+                typeContainer.className = 'environment-type';
+                
+                // Count objects of this type
+                const objectCount = (this.tileMap.environmentObjects || [])
+                    .filter(obj => obj.type === type).length;
+                
+                const typeHeader = document.createElement('div');
+                typeHeader.className = 'environment-type-header';
+                typeHeader.textContent = type;
+                
+                // Add count badge
+                const countBadgeContainer = document.createElement('span');
+                countBadgeContainer.className = 'object-count-container';
+                const countBadge = document.createElement('span');
+                countBadge.className = 'object-count';
+                countBadge.textContent = objectCount;
+                countBadgeContainer.appendChild(countBadge);
+                typeHeader.appendChild(countBadgeContainer);
+                
+                typeHeader.addEventListener('click', () => {
+                    const content = typeContainer.querySelector('.environment-items');
+                    const isOpen = content.style.display !== 'none';
+                    content.style.display = isOpen ? 'none' : 'flex';
+                    typeHeader.classList.toggle('open', !isOpen);
+                });
+                typeContainer.appendChild(typeHeader);
+                
+                const itemsContainer = document.createElement('div');
+                itemsContainer.className = 'environment-items';
+                itemsContainer.style.display = 'none';
+                
+                // Get images for this type
+                const images = this.imageManager.getImages("environment", type);
+                if (images && images.idle && images.idle[0] && images.idle[0].length > 0) {
+                    images.idle[0].forEach((image, imageIndex) => {
+                        const item = document.createElement('div');
+                        item.className = 'environment-item';
+                        item.dataset.name = `${type} ${imageIndex + 1}`;
+                        
+                        const preview = document.createElement('canvas');
+                        preview.width = this.config.imageSize;
+                        preview.height = this.config.imageSize;
+                        const ctx = preview.getContext('2d');
+                        
+                        // Draw scaled down version of the image for preview with proper centering
+                        const scale = Math.min(this.config.imageSize / image.width, this.config.imageSize / image.height);
+                        ctx.drawImage(
+                            image, 
+                            (this.config.imageSize - image.width * scale) / 2, 
+                            (this.config.imageSize - image.height * scale) / 2, 
+                            image.width * scale, 
+                            image.height * scale
+                        );
+                        
+                        item.appendChild(preview);
+                        
+                        item.addEventListener('click', () => {
+                            // Deselect any previously selected items
+                            document.querySelectorAll('.environment-item').forEach(i => i.classList.remove('active'));
+                            
+                            // Select this item
+                            item.classList.add('active');
+                            this.selectedEnvironmentType = type;
+                            this.selectedEnvironmentItem = imageIndex;
+                            this.placementMode = 'environment';
+                            
+                            // Update placement indicator
+                            this.placementModeIndicator.textContent = `Placing: ${type} ${imageIndex + 1}`;
+                            this.placementModeIndicator.style.opacity = '1';
+                            
+                            // Auto-disable delete mode when selecting an object
+                            if (this.deleteMode) {
+                                deleteButton.classList.remove('delete-mode');
+                                document.body.classList.remove('delete-mode-active');
+                                this.deleteMode = false;
+                            }
+                            
+                            // Hide indicator after a delay
+                            clearTimeout(this.indicatorTimeout);
+                            this.indicatorTimeout = setTimeout(() => {
+                                this.placementModeIndicator.style.opacity = '0';
+                            }, 2000);
+                        });
+                        
+                        itemsContainer.appendChild(item);
+                    });
+                } else {
+                    // Empty state
+                    itemsContainer.classList.add('empty');
+                    const emptyMsg = document.createElement('div');
+                    emptyMsg.textContent = 'No objects available for this type';
+                    itemsContainer.appendChild(emptyMsg);
+                }
+                
+                typeContainer.appendChild(itemsContainer);
+                container.appendChild(typeContainer);
+            }
+            
+            environmentPanel.appendChild(container);
+        } else {
+            const message = document.createElement('p');
+            message.textContent = 'No environment objects available.';
+            environmentPanel.appendChild(message);
+        }
+    }
+    deleteEnvironmentObjectAt(e) {
+        // Get mouse position and convert to game coordinates
+        const rect = this.canvasEl.getBoundingClientRect();
+        let mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        
+        if(!this.gameEditor.getCollections().configs.game.isIsometric) {
+            mouseX -= (this.canvasEl.width - this.mapSize * this.config.gridSize) / 2;
+        }
+        
+        const isoPos = { x: mouseX, y: mouseY };
+        const pixelPos = this.translator.isoToPixel(isoPos.x, isoPos.y);
+        
+        // Find and remove any environment object near the click position
+        const clickRadius = 30; // Radius for detecting objects to delete (in pixels)
+        let deletedObject = false;
+        
+        for (let i = this.tileMap.environmentObjects.length - 1; i >= 0; i--) {
+            const obj = this.tileMap.environmentObjects[i];
+            const dx = obj.x - pixelPos.x;
+            const dy = obj.y - pixelPos.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance < clickRadius) {
+                // Remove this object
+                const deleted = this.tileMap.environmentObjects.splice(i, 1)[0];
+                deletedObject = true;
+                
+                // Show feedback
+                this.placementModeIndicator.textContent = `Deleted: ${deleted.type}`;
+                this.placementModeIndicator.style.opacity = '1';
+                
+                // Hide indicator after a delay
+                clearTimeout(this.indicatorTimeout);
+                this.indicatorTimeout = setTimeout(() => {
+                    this.placementModeIndicator.style.opacity = '0';
+                }, 1500);
+                
+                // Update the map rendering
+                this.updateCanvasWithData();
+                
+                // Update object counts
+                this.updateObjectCounts();
+                
+                // Export the updated map
+                this.exportMap();
+                break; // Only remove one object at a time
+            }
+        }
+        
+        // Show feedback if no object was found to delete
+        if (!deletedObject && this.deleteMode) {
+            this.placementModeIndicator.textContent = 'No object found at this location';
+            this.placementModeIndicator.style.opacity = '1';
+            
+            // Hide indicator after a delay
+            clearTimeout(this.indicatorTimeout);
+            this.indicatorTimeout = setTimeout(() => {
+                this.placementModeIndicator.style.opacity = '0';
+            }, 1500);
+        }
+    }
+    updateObjectCounts() {
+        if (!document.getElementById('environmentPanel')) return;
+        
+        // Update count badges
+        for (const type in this.environment) {
+            const objectCount = (this.tileMap.environmentObjects || [])
+                .filter(obj => obj.type === type).length;
+            
+            // Find all headers first
+            const headers = document.querySelectorAll('.environment-type-header');
+            // Find the specific header containing the type name
+            for (const header of headers) {
+                if (header.textContent.includes(type)) {
+                    // Get the count badge within this header
+                    const countBadge = header.querySelector('.object-count');
+                    if (countBadge) {
+                        countBadge.textContent = objectCount;
+                    }
+                    break; // Found the right header, no need to continue
+                }
+            }
+        }
+    }
     // Improved drag and drop handlers
     handleDragStart(e) {
         this.draggedItem = e.currentTarget;
@@ -614,21 +926,51 @@ class TerrainMapEditor {
         let mouseX = event.clientX - rect.left;
         const mouseY = event.clientY - rect.top;
         
-        if(!this.gameEditor.getCollections().configs.game.isIsometric ) {
-            mouseX -= ( this.canvasEl.width - this.mapSize *  this.config.gridSize) / 2;
+        if(!this.gameEditor.getCollections().configs.game.isIsometric) {
+            mouseX -= (this.canvasEl.width - this.mapSize * this.config.gridSize) / 2;
         }
-        // Convert from isometric to grid coordinates
-        const gridPos = this.translator.isoToGrid(mouseX, mouseY);
         
-        // Snap to grid
-        const snappedGrid = this.translator.snapToGrid(gridPos.x, gridPos.y);
-        
-        // Check if coordinates are within bounds
-        if (snappedGrid.x >= 0 && snappedGrid.x < this.mapSize && 
-            snappedGrid.y >= 0 && snappedGrid.y < this.mapSize) {
+        if (this.placementMode === 'terrain') {
+            // Original terrain placement logic
+            const gridPos = this.translator.isoToGrid(mouseX, mouseY);
+            const snappedGrid = this.translator.snapToGrid(gridPos.x, gridPos.y);
             
-            // Update terrain map with selected terrain ID
-            this.tileMap.terrainMap[snappedGrid.y][snappedGrid.x] = this.currentTerrainId;
+            // Check if coordinates are within bounds
+            if (snappedGrid.x >= 0 && snappedGrid.x < this.mapSize && 
+                snappedGrid.y >= 0 && snappedGrid.y < this.mapSize) {
+                
+                // Update terrain map with selected terrain ID
+                this.tileMap.terrainMap[snappedGrid.y][snappedGrid.x] = this.currentTerrainId;
+                
+                // Update the map rendering
+                this.updateCanvasWithData();
+                
+                // Export the updated map
+                this.exportMap();
+            }
+        } else if (this.placementMode === 'environment' && this.selectedEnvironmentType && 
+                   this.selectedEnvironmentItem !== null) {
+            // Environment object placement logic
+            const isoPos = { x: mouseX, y: mouseY };
+            const pixelPos = this.translator.isoToPixel(isoPos.x, isoPos.y);
+            
+            // Get the image to calculate its size
+            const images = this.imageManager.getImages("environment", this.selectedEnvironmentType);
+            const image = images.idle[0][this.selectedEnvironmentItem];
+            
+            // Create new environment object
+            const newObject = {
+                type: this.selectedEnvironmentType,
+                imageIndex: this.selectedEnvironmentItem,
+                x: pixelPos.x,
+                y: pixelPos.y
+            };
+            
+            // Add to environment objects array
+            if (!this.tileMap.environmentObjects) {
+                this.tileMap.environmentObjects = [];
+            }
+            this.tileMap.environmentObjects.push(newObject);
             
             // Update the map rendering
             this.updateCanvasWithData();
@@ -642,6 +984,7 @@ class TerrainMapEditor {
         if(this.tileMap.terrainMap.length > 0){
             this.mapRenderer.isMapCached = false;
             this.mapRenderer.renderBG(this.tileMap, []);
+            this.mapRenderer.renderFG();
         }
     }
 

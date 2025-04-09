@@ -26,7 +26,7 @@ class GameLoader extends engine.Component {
         this.game.translator = new (this.game.libraryClasses.CoordinateTranslator)(this.config.configs.game, this.config.levels[this.state.level].tileMap.terrainMap.length, this.isometric);
         this.game.spatialGrid = new (this.game.libraryClasses.SpatialGrid)(this.config.levels[this.state.level].tileMap.terrainMap.length, this.config.configs.game.gridSize);
         const terrainImages = this.game.imageManager.getImages("levels", this.state.level);
-   
+
         this.setupCanvas(this.config.configs.game.canvasWidth, this.config.configs.game.canvasHeight);
         // Use ModuleManager's script environment
         this.game.terrainTileMapper = new (this.game.libraryClasses.TileMap)(this, {}, {CanvasUtility: this.game.libraryClasses.CanvasUtility});
@@ -63,6 +63,7 @@ class GameLoader extends engine.Component {
         this.game.imageManager = new (this.game.libraryClasses.ImageManager)(this, { imageSize: this.config.configs.game.imageSize}, {ShapeFactory: this.game.libraryClasses.ShapeFactory});    
         // Load all images
         for(let objectType in this.config) {
+            console.log('loading', objectType);
             await this.game.imageManager.loadImages(objectType, this.config[objectType]);
         }  
     }
