@@ -97,15 +97,16 @@ class ImageManager {
         this.ambientLight = null;
     }
 
-    async loadImages(prefix, config) {
+    async loadImages(prefix, config, checkCache = true) {
         if (!prefix || !config || typeof config !== 'object') {
             throw new Error('Invalid prefix or config provided to loadImages');
         }
-    
-        const cachedImages = await this.checkCache(prefix);
-        if (cachedImages) {
-            this.images = { ...this.images, ...cachedImages };
-            return;
+        if( checkCache ) {
+            const cachedImages = await this.checkCache(prefix);
+            if (cachedImages) {
+                this.images = { ...this.images, ...cachedImages };
+                return;
+            }
         }
     
         for (const [type, cfg] of Object.entries(config)) {

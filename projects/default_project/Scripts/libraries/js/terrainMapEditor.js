@@ -168,7 +168,7 @@ class TerrainMapEditor {
     
             this.imageManager = new this.engineClasses.ImageManager(this.gameEditor,  { imageSize: this.config.imageSize}, {ShapeFactory: this.engineClasses.ShapeFactory});
           
-            await this.imageManager.loadImages("levels", { level: { tileMap: this.tileMap }});
+            await this.imageManager.loadImages("levels", { level: { tileMap: this.tileMap }}, false);
 
             const terrainImages = this.imageManager.getImages("levels", "level");
 
