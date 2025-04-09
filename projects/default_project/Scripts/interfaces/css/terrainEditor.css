@@ -1,154 +1,297 @@
-#level-editor-container {
-	gap: 20px;
-	height: 50vh;
-	overflow: hidden;
-	background-color: #080815;
-	color: #00f0ff;
-	position: relative;
-	padding: .5em .5em 0 .5em;
-}
+#level-editor-container :root {
+	--primary: #6366f1;
+	--primary-dark: #4f46e5;
+	--secondary: #10b981;
+	--dark: #1e293b;
+	--darker: #0f172a;
+	--light: #e2e8f0;
+	--accent: #8b5cf6;
+	--danger: #ef4444;
+	--text: #f8fafc;
+	--text-muted: #94a3b8;
+	--border-radius: 8px;
+	--shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
 
-#level-editor-container.show {
+  #level-editor-container * {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+	font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  #level-editor-container {
+	background-color: var(--darker);
+	color: var(--text);
+  }
+
+  #level-editor-container button {
+	cursor: pointer;
+	border: none;
+	border-radius: var(--border-radius);
+	padding: 8px 12px;
+	font-weight: 500;
+	transition: all 0.2s ease;
+  }
+
+  #level-editor-container button:hover {
+	opacity: 0.9;
+	transform: translateY(-1px);
+  }
+
+  #level-editor-container button:active {
+	transform: translateY(0);
+  }
+
+  #level-editor-container input {
+	background-color: var(--dark);
+	border: 1px solid #334155;
+	color: var(--text);
+	border-radius: var(--border-radius);
+	padding: 8px 12px;
+	outline: none;
+  }
+
+  #level-editor-container input:focus {
+	border-color: var(--primary);
+	box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+  }
+
+  #level-editor-container input[type="number"] {
+	width: 80px;
+  }
+
+  #level-editor-container input[type="color"] {
+	width: 40px;
+	height: 40px;
+	padding: 2px;
+	cursor: pointer;
+  }
+
+  #level-editor-container {
 	display: flex;
-}
-
-.grid-container {
+	gap: 24px;
+	height: 90vh;
+	overflow: hidden;
+	background-color: var(--darker);
+	color: var(--text);
 	position: relative;
-}
+  }
 
-/* Add these to your existing levelEditor.css file */
-/* Terrain type management */
-#level-editor-container .terrain-types-container {
+  #level-editor-container .content-sidebar {
 	display: flex;
 	flex-direction: column;
-	gap: 8px;
-	margin-top: 10px;
-}
+	width: 320px;
+	background-color: var(--dark);
+	border-radius: var(--border-radius);
+	box-shadow: var(--shadow);
+	overflow: hidden;
+  }
 
-#level-editor-container .terrain-item {
+  #level-editor-container .toolbar {
+	display: flex;
+	padding: 16px;
+	background-color: rgba(255, 255, 255, 0.03);
+	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  #level-editor-container .toolbar button {
+	background-color: transparent;
+	color: var(--text-muted);
+	font-weight: 600;
+	padding: 8px 16px;
+	border-radius: var(--border-radius);
+  }
+
+  #level-editor-container .toolbar button.active {
+	background-color: var(--primary);
+	color: white;
+  }
+
+  #level-editor-container .tools {
+	padding: 20px;
+	flex-grow: 1;
+	overflow-y: auto;
+  }
+
+  #level-editor-container .form-row {
 	display: flex;
 	align-items: center;
-	gap: 10px;
-	padding: 5px;
-	border-radius: 4px;
-}
+	justify-content: space-between;
+	margin-bottom: 16px;
+  }
 
-#level-editor-container .color-option {
-	width: 30px;
-	height: 30px;
-	border-radius: 4px;
-	cursor: pointer;
-	border: 2px solid transparent;
-	flex-shrink: 0;
-}
+  #level-editor-container .form-row label {
+	color: var(--text-muted);
+	font-size: 14px;
+	flex: 1;
+  }
 
-#level-editor-container .color-option:hover {
-	opacity: 0.8;
-}
+  #level-editor-container h3 {
+	color: var(--light);
+	font-size: 18px;
+	margin-bottom: 24px;
+	font-weight: 600;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+	padding-bottom: 12px;
+  }
 
-#level-editor-container .terrain-label {
+  #level-editor-container h4 {
+	color: var(--text-muted);
+	font-size: 16px;
+	margin: 24px 0 16px;
+	font-weight: 600;
+  }
+
+  #level-editor-container .grid-container {
 	flex-grow: 1;
-}
+	position: relative;
+	background-color: var(--dark);
+	border-radius: var(--border-radius);
+	overflow: hidden;
+	box-shadow: var(--shadow);
+  }
 
-#level-editor-container .terrain-buttons {
-	display: flex;
-	gap: 5px;
-}
+  #level-editor-container .grid-background {
+	background-image: 
+	  linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+	  linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+	background-size: 20px 20px;
+  }
 
-.translation-controls {
+  #level-editor-container #grid {
+	display: block;
+	image-rendering: pixelated;
+  }
+
+  #level-editor-container .translation-controls {
 	position: absolute;
-	left: 10px;
-	top: 10px;
+	right: 20px;
+	bottom: 20px;
 	display: grid;
-	grid-template-columns: repeat(2, 32px);
-	grid-template-rows: repeat(2, 32px);
-	gap: 5px;
-}
+	grid-template-columns: repeat(3, 40px);
+	grid-template-rows: repeat(3, 40px);
+	gap: 4px;
+	z-index: 10;
+  }
 
-.translation-controls button {
-	width: 32px;
-	height: 32px;
+  #level-editor-container .translation-controls button {
+	width: 40px;
+	height: 40px;
+	background-color: rgba(15, 23, 42, 0.8);
+	color: var(--light);
+	border: 1px solid rgba(255, 255, 255, 0.1);
 	font-size: 18px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	cursor: pointer;
-	border-radius: 4px;
-}
+  }
 
-.translation-controls button span {
-	display: inline-block;
-	transform: rotate(45deg);
-	/* Rotate arrows 45 degrees */
-}
-
-#translate-up {
+  #level-editor-container #translate-up {
 	grid-column: 2;
 	grid-row: 1;
-}
+  }
 
-#translate-left {
+  #level-editor-container #translate-left {
 	grid-column: 1;
-	grid-row: 1;
-}
+	grid-row: 2;
+  }
 
-#translate-right {
+  #level-editor-container #translate-right {
+	grid-column: 3;
+	grid-row: 2;
+  }
+
+  #level-editor-container #translate-down {
 	grid-column: 2;
-	grid-row: 2;
-}
+	grid-row: 3;
+  }
 
-#translate-down {
-	grid-column: 1;
-	grid-row: 2;
-}
+  /* Terrain item styling */
+  #level-editor-container .terrain-types-container {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	margin-top: 16px;
+  }
 
-#terrain-image-editor {
-	border: 1px solid black;
-	image-rendering: pixelated;
-	width: 960px;
-	height: 480px;
-}
-
-#terrainForm .modal-content {
-	max-width: 960px;
-}
-
-.terrain-item {
-	/* Your existing styles */
+  #level-editor-container .terrain-item {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 12px;
+	border-radius: var(--border-radius);
+	background-color: rgba(255, 255, 255, 0.03);
+	border: 1px solid rgba(255, 255, 255, 0.1);
 	cursor: move;
-	/* Shows it's draggable */
 	user-select: none;
-	/* Prevents text selection while dragging */
-}
+	transition: all 0.2s ease;
+  }
 
-.terrain-item:hover {
-	/* Optional: Add a hover effect to indicate draggability */
-	opacity: 0.8;
-}
+  #level-editor-container .terrain-item:hover {
+	background-color: rgba(255, 255, 255, 0.05);
+	transform: translateY(-2px);
+  }
 
-.canvas-container {
-	position: relative;
-}
+  #level-editor-container .color-option {
+	width: 36px;
+	height: 36px;
+	border-radius: var(--border-radius);
+	cursor: pointer;
+	border: 2px solid transparent;
+	flex-shrink: 0;
+  }
 
-#terrain-image-editor {
-	position: relative;
-	z-index: 1;
-}
+  #level-editor-container .color-option.active {
+	border-color: var(--primary);
+	box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
+  }
 
-#terrain-grid-canvas {
-	image-rendering: pixelated;
+  #level-editor-container  .terrain-label {
+	flex-grow: 1;
+	font-weight: 500;
+  }
+
+  #level-editor-container .terrain-buttons {
+	display: flex;
+	gap: 8px;
+  }
+
+  #level-editor-container .terrain-buttons button {
+	width: 30px;
+	height: 30px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+	background-color: transparent;
+	color: var(--text-muted);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  #level-editor-container  .terrain-buttons button:hover {
+	background-color: rgba(255, 255, 255, 0.05);
+	color: var(--text);
+  }
+
+  #level-editor-container  .status-bar {
 	position: absolute;
-	top: 0;
+	bottom: 0;
 	left: 0;
-	pointer-events: none;
-	/* Allow clicks to pass through */
-	z-index: 10;
-	/* Ensure it's above the pixel canvas */
-	width: 960px;
-	height: 480px;
-}
+	right: 0;
+	height: 28px;
+	background-color: rgba(15, 23, 42, 0.9);
+	display: flex;
+	align-items: center;
+	padding: 0 16px;
+	font-size: 13px;
+	color: var(--text-muted);
+	border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
 
-#terrain-image-display {
-	width: 960px;
-	image-rendering: pixelated;
-}
+  /* Add a terrainsPanel container */
+  #level-editor-container  #terrainsPanel {
+	margin-top: 24px;
+	border-top: 1px solid rgba(255, 255, 255, 0.1);
+	padding-top: 16px;
+  }

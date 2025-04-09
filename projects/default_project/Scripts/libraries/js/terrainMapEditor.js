@@ -239,7 +239,11 @@ class TerrainMapEditor {
     
         this.terrainTypesContainer = document.createElement('div');
         this.terrainTypesContainer.className = 'terrain-types-container';
-    
+        const addNewBtn = document.createElement('button');
+        addNewBtn.className = 'add-terrain-btn';
+        addNewBtn.innerHTML = '+ Add Layer';
+        addNewBtn.addEventListener('click', this.showAddTerrainForm.bind(this));
+        this.terrainTypesContainer.appendChild(addNewBtn);
         this.tileMap.terrainTypes.forEach((terrain, index) => {
             const terrainItem = document.createElement('div');
             terrainItem.className = 'terrain-item';
@@ -297,11 +301,7 @@ class TerrainMapEditor {
             this.terrainTypesContainer.appendChild(terrainItem);
         });
     
-        const addNewBtn = document.createElement('button');
-        addNewBtn.className = 'add-terrain-btn';
-        addNewBtn.innerHTML = '+ Add Terrain';
-        addNewBtn.addEventListener('click', this.showAddTerrainForm.bind(this));
-        this.terrainTypesContainer.appendChild(addNewBtn);
+
     
         terrainsPanel.appendChild(this.terrainTypesContainer);
     
