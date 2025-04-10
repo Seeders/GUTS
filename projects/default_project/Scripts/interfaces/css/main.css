@@ -51,24 +51,25 @@ body {
 }
 
 #gameContainer {
-	position: relative;
-	width: 100vw;
-	height: 100vh;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	gap: 1.5rem;
+    position: relative;
+    width: 100vw;
+    height: 100vh;
 }
 
-canvas {
-	border: 2px solid var(--accent-color);
-	box-shadow: 0 0 30px var(--shadow-color);
-	background-color: var(--secondary-bg);
-	max-width: 90%;
-	border-radius: 8px;
-	transition: transform 0.3s ease;
+canvas { 
+    background-color: var(--secondary-bg);
+    transition: transform 0.3s ease;
+    width: 100vw;
+    height: 100vh;
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    margin: 0;
+    z-index: 0;
 }
+
 
 #towerMenu {
 	width: 800px;
@@ -84,6 +85,12 @@ canvas {
 	border-opacity: var(--low-transparent);
 	/* Note: This won't work directly; see below */
 	backdrop-filter: blur(5px);
+	position: absolute;
+	z-index: 1;
+	margin: 1em auto;
+	left: 0;
+	right: 0;
+	bottom: 0;	
 }
 
 .tower-option {
@@ -128,6 +135,11 @@ canvas {
 	border-opacity: var(--low-transparent);
 	/* Note: This won't work directly; see below */
 	backdrop-filter: blur(5px);
+	position: absolute;
+	z-index: 1;
+	margin: 1em auto;
+	left: 0;
+	right: 0;
 }
 
 #stats {
