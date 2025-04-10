@@ -122,7 +122,7 @@ class Engine {
                 if (componentDef.script) {
                     const ScriptComponent = this.moduleManager.getCompiledScript(componentType, 'components');
                     if (ScriptComponent) {
-                        entity.addComponent(ScriptComponent, params);                  
+                        entity.addComponent(componentType, params);                  
                     }
                 }
             });
@@ -133,7 +133,7 @@ class Engine {
                 if (componentDef.script) {
                     const ScriptComponent = this.moduleManager.getCompiledScript(rendererType, 'renderers');
                     if (ScriptComponent) {
-                        entity.addRenderer(ScriptComponent, params);                  
+                        entity.addRenderer(rendererType, params);                  
                     }
                 }
             });
