@@ -199,22 +199,35 @@ class GraphicsEditor {
 
     handleMouseUp(event) {
         if (this.isDragging) return;
-
+    
         const rect = this.canvas.getBoundingClientRect();
         this.mouse.x = ((event.clientX - rect.left) / this.canvas.clientWidth) * 2 - 1;
         this.mouse.y = -((event.clientY - rect.top) / this.canvas.clientHeight) * 2 + 1;
-
+    
         this.raycaster.setFromCamera(this.mouse, this.camera);
-
-        const shapes = this.scene.children.filter(obj => obj.userData.isShape);
-        const intersects = this.raycaster.intersectObjects(shapes, true);
-
+    
+        // Instead of looking only at scene.children, search through all descendant meshes
+        const meshes = [];
+        this.rootGroup.traverse(obj => {
+            if (obj.isMesh && obj.userData.isShape) {
+                meshes.push(obj);
+            }
+        });
+    
+        const intersects = this.raycaster.intersectObjects(meshes, true);
+    
         if (intersects.length > 0) {
-            const index = intersects[0].object.userData.index;
-            this.selectShape(index);
+            // Find the parent mesh with the isShape flag if we've hit a child mesh
+            let hitObject = intersects[0].object;
+            while (hitObject && !hitObject.userData.isShape) {
+                hitObject = hitObject.parent;
+            }
+            
+            if (hitObject && hitObject.userData.index !== undefined) {
+                this.selectShape(hitObject.userData.index);
+            }
         }
     }
-
     animate() {
         requestAnimationFrame(this.animate.bind(this));
         this.controls.update();
