@@ -510,7 +510,7 @@ class GraphicsEditor {
         document.getElementById('modal-generateIsoSprites').classList.add('show');
     }
 
-    generateIsometricSprites() {
+    async generateIsometricSprites() {
         const frustumSize = parseFloat(document.getElementById('iso-frustum').value) || 48;
         const cameraDistance = parseFloat(document.getElementById('iso-distance').value) || 100;
         const size = parseFloat(document.getElementById('iso-size').value) || 64;
@@ -547,17 +547,18 @@ class GraphicsEditor {
        
         for (const animType in this.renderData.animations) {
             sprites[animType] = [];
-            this.renderData.animations[animType].forEach(frame => {
+            for (let frameIndex = 0; frameIndex < this.renderData.animations[animType].length; frameIndex++) {
+                const frame = this.renderData.animations[animType][frameIndex];
                 const scene = new window.THREE.Scene();
-                const ambientLight = new window.THREE.AmbientLight(0xffffff, 0.6);
-                ambientLight.name = 'ambient-light';
-                scene.add(ambientLight);
                 
-                const directionalLight = new window.THREE.DirectionalLight(0xffffff, 0.8);
+                // Add lights
+                const ambientLight = new window.THREE.AmbientLight(0xffffff, 0.8);
+                scene.add(ambientLight);
+                const directionalLight = new window.THREE.DirectionalLight(0xffffff, 1.0);
                 directionalLight.position.set(5, 10, 7.5);
-                directionalLight.name = 'dir-light';
                 scene.add(directionalLight);
-                this.createObjectsFromJSON(frame, scene);
+
+                await this.createObjectsFromJSON(frame, scene);
     
                 const frameSprites = [];
                 for (const camera of cameras) {
@@ -581,9 +582,8 @@ class GraphicsEditor {
                     frameSprites.push(canvas.toDataURL());
                 }
                 sprites[animType].push(frameSprites);
-            });
+            }
         }
-    
         tempRenderer.setRenderTarget(null);
         tempRenderer.dispose();
         renderTarget.dispose();
