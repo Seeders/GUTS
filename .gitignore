@@ -1,6 +1,5 @@
 # Node.js dependencies
 node_modules/
-cache/
 # Logs
 logs
 *.log
