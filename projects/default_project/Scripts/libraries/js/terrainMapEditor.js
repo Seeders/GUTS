@@ -36,8 +36,12 @@ class TerrainMapEditor {
         this.canvasEl = document.getElementById('grid');
         this.canvasEl.width = this.config.canvasWidth;
         this.canvasEl.height = this.config.canvasHeight;
-        // Managers and renderers
 
+        // Preview elements for cursor
+        this.previewCanvas = null;
+        this.currentPreviewImage = null;
+
+        // Managers and renderers
         this.imageManager = new this.engineClasses.ImageManager(this.gameEditor,  { imageSize: this.config.imageSize}, {ShapeFactory: ShapeFactory});
         this.mapRenderer = null;
         this.mapManager = null;
@@ -54,6 +58,7 @@ class TerrainMapEditor {
     init() {
         this.setupTerrainTypesUI();
         this.setupEnvironmentPanel();
+        this.createPreviewCanvas();
         this.setupEventListeners();
         this.updateTerrainStyles();
         this.setupTerrainImageProcessor();
@@ -135,6 +140,8 @@ class TerrainMapEditor {
         
         // Add mouse move event for drawing while dragging
         this.canvasEl.addEventListener('mousemove', (e) => {
+            this.updatePreviewPosition(e);
+            
             if (this.isMouseDown) {
                 this.handleCanvasInteraction(e);
             }
@@ -208,7 +215,7 @@ class TerrainMapEditor {
             document.getElementById('terrainsPanel').style.display = 'block';
             document.getElementById('environmentPanel').style.display = 'none';
             this.placementMode = 'terrain';
-            
+            this.previewCanvas.style.display = 'none';
             // Update placement indicator
             this.placementModeIndicator.textContent = 'Placement Mode: Terrain';
             this.placementModeIndicator.style.opacity = '1';
@@ -279,7 +286,72 @@ class TerrainMapEditor {
             }
         );
     }
-
+    updatePreviewImage() {
+        if (!this.selectedEnvironmentType || this.selectedEnvironmentItem === null) {
+            this.currentPreviewImage = null;
+            return;
+        }
+        
+        const images = this.imageManager.getImages("environment", this.selectedEnvironmentType);
+        if (!images || !images.idle || !images.idle[0] || !images.idle[0][this.selectedEnvironmentItem]) {
+            this.currentPreviewImage = null;
+            return;
+        }
+        
+        const image = images.idle[0][this.selectedEnvironmentItem];
+        this.currentPreviewImage = image;
+        
+        // Resize preview canvas if needed
+        const maxDimension = Math.max(image.width, image.height);
+        const scale = this.config.imageSize / maxDimension;
+        
+        this.previewCanvas.width = image.width * scale;
+        this.previewCanvas.height = image.height * scale;
+        
+        const ctx = this.previewCanvas.getContext('2d');
+        ctx.clearRect(0, 0, this.previewCanvas.width, this.previewCanvas.height);
+        ctx.drawImage(image, 0, 0, this.previewCanvas.width, this.previewCanvas.height);
+    }
+    updatePreviewPosition(e) {
+        if (this.placementMode !== 'environment' || 
+            !this.selectedEnvironmentType || 
+            this.selectedEnvironmentItem === null || 
+            this.deleteMode || 
+            !this.currentPreviewImage) {
+            this.previewCanvas.style.display = 'none';
+            return;
+        }
+        
+        // Get mouse position relative to canvas
+        const rect = this.canvasEl.getBoundingClientRect();
+        let mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        
+        if (!this.gameEditor.getCollections().configs.game.isIsometric) {
+            mouseX -= (this.canvasEl.width - this.mapSize * this.config.gridSize) / 2;
+        }
+        
+        // For isometric view, we need to convert cursor position to actual object position
+        let posX, posY;
+        if (this.gameEditor.getCollections().configs.game.isIsometric) {
+            const isoPos = { x: mouseX, y: mouseY };
+            const pixelPos = this.translator.isoToPixel(isoPos.x, isoPos.y);
+            
+            // Convert back to screen coordinates
+            const screenPos = this.translator.pixelToIso(pixelPos.x, pixelPos.y);
+            posX = screenPos.x + rect.left;
+            posY = screenPos.y + rect.top;
+        } else {
+            // For non-isometric, just use the mouse position
+            posX = e.clientX;
+            posY = e.clientY;
+        }
+        posX = e.clientX;
+        posY = e.clientY;
+        // Center the preview on the cursor
+        this.previewCanvas.style.transform = `translate(${posX - this.previewCanvas.width / 2}px, ${posY - this.previewCanvas.height / 2}px)`;
+        this.previewCanvas.style.display = 'block';
+    }
     setupTerrainImageProcessor() {
         const processor = new this.engineClasses.TerrainImageProcessor();
         processor.initialize(
@@ -368,6 +440,22 @@ class TerrainMapEditor {
         document.getElementById('saveTerrainBtn').addEventListener('click', this.saveTerrainType.bind(this));
         document.getElementById('cancelTerrainBtn').addEventListener('click', this.hideTerrainForm.bind(this));
     }
+    
+    createPreviewCanvas() {
+        if (this.previewCanvas) {
+            document.body.removeChild(this.previewCanvas);
+        }
+        
+        this.previewCanvas = document.createElement('canvas');
+        this.previewCanvas.id = 'object-preview-canvas';
+        this.previewCanvas.width = this.config.imageSize;
+        this.previewCanvas.height = this.config.imageSize;
+        this.previewCanvas.style.display = 'none'; // Hidden by default
+        
+        document.body.prepend(this.previewCanvas);
+
+    }
+
     setupEnvironmentPanel() {
         const environmentPanel = document.getElementById('environmentPanel');
         if (!environmentPanel) {
@@ -392,6 +480,13 @@ class TerrainMapEditor {
             deleteButton.classList.toggle('delete-mode');
             document.body.classList.toggle('delete-mode-active');
             this.deleteMode = deleteButton.classList.contains('delete-mode');
+            if (this.deleteMode) {
+                this.previewCanvas.style.display = 'none';
+            } else if (this.placementMode === 'environment' && 
+                      this.selectedEnvironmentType && 
+                      this.selectedEnvironmentItem !== null) {
+                this.updatePreviewImage();
+            }
         });
         
         const clearButton = document.createElement('button');
@@ -496,7 +591,8 @@ class TerrainMapEditor {
                             this.selectedEnvironmentType = type;
                             this.selectedEnvironmentItem = imageIndex;
                             this.placementMode = 'environment';
-                            
+                              // Update preview image for cursor
+                            this.updatePreviewImage();
                             // Update placement indicator
                             this.placementModeIndicator.textContent = `Placing: ${type} ${imageIndex + 1}`;
                             this.placementModeIndicator.style.opacity = '1';
