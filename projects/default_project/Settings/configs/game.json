@@ -4,7 +4,7 @@
   "canvasWidth": 1920,
   "canvasHeight": 1200,
   "title": "Default Project",
-  "isIsometric": false,
+  "isIsometric": true,
   "libraries": [
     "threejs",
     "GLTFLoader",

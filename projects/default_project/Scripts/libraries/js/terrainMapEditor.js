@@ -209,8 +209,7 @@ class TerrainMapEditor {
 
         document.getElementById('terrainsBtn').addEventListener('click', () => {
             document.getElementById('terrainsBtn').classList.add('active');
-            document.getElementById('entitiesBtn').classList.remove('active');
-            document.getElementById('layersBtn').classList.remove('active');
+            document.getElementById('environmentBtn').classList.remove('active');
             
             document.getElementById('terrainsPanel').style.display = 'block';
             document.getElementById('environmentPanel').style.display = 'none';
@@ -227,11 +226,9 @@ class TerrainMapEditor {
             }, 2000);
         });
         
-        document.getElementById('entitiesBtn').addEventListener('click', () => {
+        document.getElementById('environmentBtn').addEventListener('click', () => {
             document.getElementById('terrainsBtn').classList.remove('active');
-            document.getElementById('entitiesBtn').classList.add('active');
-            document.getElementById('layersBtn').classList.remove('active');
-            
+            document.getElementById('environmentBtn').classList.add('active');
             document.getElementById('terrainsPanel').style.display = 'none';
             document.getElementById('environmentPanel').style.display = 'block';
             this.placementMode = 'environment';

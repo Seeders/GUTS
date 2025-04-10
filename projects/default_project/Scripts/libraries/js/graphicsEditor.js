@@ -258,7 +258,9 @@ class GraphicsEditor {
         // Find all meshes belonging to the selected shape (including GLTF children)
         const selectedMeshes = [];
         this.scene.traverse(obj => {
-            if (obj.userData.isShape && obj.userData.index === this.selectedShapeIndex && obj.isMesh) {
+            if (obj.isMesh && ((obj.userData.isShape && obj.userData.index === this.selectedShapeIndex) || 
+                               (obj.parent && obj.parent.userData.isShape && obj.parent.userData.index === this.selectedShapeIndex) ||
+                               (obj.userData.isGLTFChild && obj.parent && obj.parent.userData.index === this.selectedShapeIndex))) {
                 selectedMeshes.push(obj);
             }
         });
@@ -288,6 +290,8 @@ class GraphicsEditor {
             outline.scale.multiplyScalar(1.05);
             outline.userData.isOutline = true;
             
+            // Check if the mesh is a child of another object
+           
             this.scene.add(outline);
         });
     }

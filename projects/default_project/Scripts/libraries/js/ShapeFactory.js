@@ -13,7 +13,7 @@ class ShapeFactory {
             if (shape.type === 'gltf') {
                 await this.handleGLTFShape(shape, index, group);
             } else {
-                this.handlePrimitiveShape(shape, group);
+                this.handlePrimitiveShape(shape, index, group);
             }
         }));
 
@@ -77,7 +77,7 @@ class ShapeFactory {
         }
     }
 
-    handlePrimitiveShape(shape, group) {
+    handlePrimitiveShape(shape, index, group) {
         let geometry, material;
 
         // Create material with specified color
@@ -110,7 +110,7 @@ class ShapeFactory {
         }
 
         const mesh = new THREE.Mesh(geometry, material);
-        mesh.userData = { isShape: true, castShadow: true };
+        mesh.userData = { isShape: true, castShadow: true, index: index };
         
         // Position and rotation
         mesh.position.set(shape.x || 0, shape.y || 0, shape.z || 0);
