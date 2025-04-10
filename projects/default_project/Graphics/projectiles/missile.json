@@ -661,5 +661,6 @@
   "speed": 1,
   "title": "Missile",
   "isBallistic": true,
-  "particle": "smoke"
+  "particle": "smoke",
+  "shadows": false
 }

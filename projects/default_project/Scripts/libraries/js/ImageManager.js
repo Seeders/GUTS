@@ -304,6 +304,12 @@ class ImageManager {
     }
     async createAnimatedPlaceholder(config) {
         const animations = {};
+        
+        if(config.shadows === false) {
+            this.ground.receiveShadow = false;
+        } else {
+            this.ground.receiveShadow = true;
+        }
         for (const [animType, frames] of Object.entries(config.render.animations)) {
             animations[animType] = [];
             let i = 0;
@@ -340,7 +346,7 @@ class ImageManager {
         
         // Create objects from the JSON data
         const objectGroup = await this.createObjectsFromJSON(shapeData, this.scene);
-        
+
         
         const images = [];
         
