@@ -873,6 +873,224 @@
             }
           ]
         }
+      ],
+      "land": [
+        {
+          "shapes": [
+            {
+              "type": "cylinder",
+              "size": 5,
+              "color": "#888888",
+              "x": 0,
+              "y": 17.39978677321895,
+              "z": 0.024433369012196865,
+              "rotationX": -179,
+              "rotationY": 0,
+              "rotationZ": 0,
+              "height": 25
+            },
+            {
+              "type": "cone",
+              "size": 5,
+              "color": "#ff1117",
+              "x": 0,
+              "y": 2.402071345873079,
+              "z": -0.23735272754705528,
+              "rotationX": -179,
+              "rotationY": 0,
+              "rotationZ": 0,
+              "height": 5
+            },
+            {
+              "type": "cone",
+              "size": 2.5,
+              "color": "#ff1117",
+              "x": 0,
+              "y": 29.7978981931582,
+              "z": 0.240843208834512,
+              "rotationX": -179,
+              "rotationY": 0,
+              "rotationZ": 0,
+              "height": 2.5
+            },
+            {
+              "type": "cylinder",
+              "size": 6.25,
+              "color": "#888888",
+              "x": 0,
+              "y": 26.998324646720306,
+              "z": 0.19197647081011826,
+              "rotationX": -179,
+              "rotationY": 0,
+              "rotationZ": 0,
+              "height": 5
+            },
+            {
+              "type": "box",
+              "size": 5,
+              "color": "#888888",
+              "x": 0,
+              "y": 27.577121284975924,
+              "z": 3.2025363878428275,
+              "rotationX": 136,
+              "rotationY": 0,
+              "rotationZ": 0,
+              "width": 0.25,
+              "height": 2.5,
+              "depth": 8.5
+            },
+            {
+              "type": "box",
+              "size": 5,
+              "color": "#888888",
+              "x": 0,
+              "y": 27.681835723599626,
+              "z": -2.7965497830955206,
+              "rotationX": 46,
+              "rotationY": 0,
+              "rotationZ": 0,
+              "width": 0.25,
+              "height": 2.5,
+              "depth": 8.5
+            },
+            {
+              "type": "box",
+              "size": 5,
+              "color": "#888888",
+              "x": -3,
+              "y": 27.629478504287775,
+              "z": 0.20299330237365346,
+              "rotationX": 91,
+              "rotationY": 45,
+              "rotationZ": 90,
+              "width": 0.25,
+              "height": 2.5,
+              "depth": 8.5
+            },
+            {
+              "type": "box",
+              "size": 5,
+              "color": "#888888",
+              "x": 3,
+              "y": 27.629478504287775,
+              "z": 0.20299330237365346,
+              "rotationX": 91,
+              "rotationY": -45,
+              "rotationZ": -90,
+              "width": 0.25,
+              "height": 2.5,
+              "depth": 8.5
+            }
+          ]
+        },
+        {
+          "shapes": [
+            {
+              "type": "cylinder",
+              "size": 5,
+              "color": "#888888",
+              "x": 0,
+              "y": 17.39978677321895,
+              "z": 0.024433369012196865,
+              "rotationX": -179,
+              "rotationY": 0,
+              "rotationZ": 0,
+              "height": 25
+            },
+            {
+              "type": "cone",
+              "size": 5,
+              "color": "#ff1117",
+              "x": 0,
+              "y": 2.402071345873079,
+              "z": -0.23735272754705528,
+              "rotationX": -179,
+              "rotationY": 0,
+              "rotationZ": 0,
+              "height": 5
+            },
+            {
+              "type": "cone",
+              "size": 2.5,
+              "color": "#ff1117",
+              "x": 0,
+              "y": 29.7978981931582,
+              "z": 0.240843208834512,
+              "rotationX": 179,
+              "rotationY": 0,
+              "rotationZ": 0,
+              "height": 2.5
+            },
+            {
+              "type": "cylinder",
+              "size": 6.25,
+              "color": "#888888",
+              "x": 0,
+              "y": 26.998324646720306,
+              "z": 0.19197647081011826,
+              "rotationX": 179,
+              "rotationY": 0,
+              "rotationZ": 0,
+              "height": 5
+            },
+            {
+              "type": "box",
+              "size": 5,
+              "color": "#888888",
+              "x": -2.5,
+              "y": 28.041803357969904,
+              "z": 2.290190360643564,
+              "rotationX": 119,
+              "rotationY": 30,
+              "rotationZ": 45,
+              "width": 0.25,
+              "height": 2.5,
+              "depth": 8.5
+            },
+            {
+              "type": "box",
+              "size": 5,
+              "color": "#888888",
+              "x": 2.5,
+              "y": 27.954541325783488,
+              "z": -2.7090481151383945,
+              "rotationX": 59,
+              "rotationY": -30,
+              "rotationZ": -135,
+              "width": 0.25,
+              "height": 2.5,
+              "depth": 8.5
+            },
+            {
+              "type": "box",
+              "size": 5,
+              "color": "#888888",
+              "x": -2.5,
+              "y": 27.954541325783488,
+              "z": -2.7090481151383945,
+              "rotationX": 59,
+              "rotationY": 30,
+              "rotationZ": 135,
+              "width": 0.25,
+              "height": 2.5,
+              "depth": 8.5
+            },
+            {
+              "type": "box",
+              "size": 5,
+              "color": "#888888",
+              "x": 2.5,
+              "y": 28.041803357969904,
+              "z": 2.290190360643564,
+              "rotationX": 119,
+              "rotationY": -30,
+              "rotationZ": -45,
+              "width": 0.25,
+              "height": 2.5,
+              "depth": 8.5
+            }
+          ]
+        }
       ]
     }
   },

@@ -71,7 +71,17 @@ update() {
     const distanceFromPeak = Math.abs(this.positionZ - this.maxHeight);
     
     // Check if animation state needs to change based on z movement and proximity to peak
-    if (distanceFromPeak <= this.peakThreshold) {
+    if( xyprogressToTarget < .075 ) {
+        if (this.currentAnimState !== 'launch') {
+            this.animator.setAnimation('launch');
+            this.currentAnimState = 'launch';
+        }
+    // } else if( xyprogressToTarget > .95 ) {
+    //     if (this.currentAnimState !== 'land') {
+    //         this.animator.setAnimation('land');
+    //         this.currentAnimState = 'land';
+    //     }
+    } else if (distanceFromPeak <= this.peakThreshold) {
         // We're near the peak of the trajectory
         if (this.currentAnimState !== 'idle') {
             this.animator.setAnimation('idle');

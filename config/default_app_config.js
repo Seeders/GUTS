@@ -319,7 +319,7 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "Attacker"
       },
       "BallisticProjectile": {
-        "script": "class BallisticProjectile extends engine.Component {\n    \n    constructor(game, parent, params) {\n        super(game, parent, params);\n    }\n    \n    \ninit({ spawnType, owner, target, stats }) {\n    this.type = spawnType;\n    this.def = this.game.config.projectiles[this.type];\n    this.owner = owner;\n    this.target = target;\n    this.stats = stats;\n    this.piercedEnemies = [];\n    this.ownerStats = this.owner.getComponent(\"stats\").stats;\n    this.animator = this.getComponent(\"animator\");\n    this.distanceTraveled = 0;\n    this.distanceToSpawnParticle = 24;\n    \n    // Ballistic trajectory variables\n    this.startPosition = { ...this.parent.position, z: 10 }; // Start 10 units above ground\n    this.targetPosition = { ...this.target.position, z: 0 };\n    this.time = 0;\n    \n    this.totalDist = Math.sqrt(\n        (this.targetPosition.x - this.startPosition.x) ** 2 + \n        (this.targetPosition.y - this.startPosition.y) ** 2\n    );\n    this.maxHeight = this.totalDist / Math.PI;\n    \n    // Initialize position with Z component\n    this.parent.position.z = this.startPosition.z;\n    this.positionZ = this.startPosition.z;\n    \n    // Animation state variables\n    this.lastZPosition = this.positionZ;\n    this.animator.setAnimation('ascend');\n    this.peakThreshold = this.maxHeight * 0.1; // 10% threshold for idle at peak\n    this.currentAnimState = 'ascend';\n}\n\nupdate() {\n    this.parent.position.z = this.positionZ;\n    \n    // Save previous z position to detect direction change\n    this.lastZPosition = this.positionZ;\n\n    // Calculate progress (0 to 1)\n    this.time += this.game.deltaTime;\n    const dx = this.targetPosition.x - this.parent.position.x;\n    const dy = this.targetPosition.y - this.parent.position.y;\n    const distSq = dx * dx + dy * dy;\n    let dist = Math.sqrt(distSq);\n    const speed = this.stats.speed;\n    this.parent.position.x += (dx / dist) * speed / (Math.PI);\n    this.parent.position.y += (dy / dist) * speed / (Math.PI);\n\n\n    const currentDist = Math.sqrt(\n        (this.parent.position.x - this.startPosition.x) ** 2 + \n        (this.parent.position.y - this.startPosition.y) ** 2\n    );\n    const xyprogressToTarget = Math.min(1, currentDist / this.totalDist);\n\n    // Parabolic trajectory calculation (2:1 isometric adjusted)\n    this.parent.position.z = this.maxHeight * (1 - Math.pow(2 * xyprogressToTarget - 1, 2));\n\n    this.positionZ = this.parent.position.z;\n    \n    // Calculate distance from peak height to determine if we're near the top\n    const distanceFromPeak = Math.abs(this.positionZ - this.maxHeight);\n    \n    // Check if animation state needs to change based on z movement and proximity to peak\n    if (distanceFromPeak <= this.peakThreshold) {\n        // We're near the peak of the trajectory\n        if (this.currentAnimState !== 'idle') {\n            this.animator.setAnimation('idle');\n            this.currentAnimState = 'idle';\n        }\n    } else if (this.positionZ < this.lastZPosition) {\n        // We're descending and not near the peak\n        if (this.currentAnimState !== 'descend') {\n            this.animator.setAnimation('descend');\n            this.currentAnimState = 'descend';\n        }\n    } else if (this.positionZ > this.lastZPosition) {\n        // We're ascending and not near the peak\n        if (this.currentAnimState !== 'ascend') {\n            this.animator.setAnimation('ascend');\n            this.currentAnimState = 'ascend';\n        }\n    }\n    \n    // Check if we've hit the ground (Z <= 0)\n    if (this.parent.position.z <= 0) {\n        this.parent.position.z = 0; // Snap to ground\n\n        // Hit detection - same as before but at current position\n        const targetDistSq = (this.parent.position.x - this.target.position.x) ** 2 + \n                            (this.parent.position.y - this.target.position.y) ** 2;\n\n\n\n            // We missed the target but hit the ground - maybe still do splash damage\n        if (this.stats.splashRadius > 0) {\n            this.processSplashDamage();\n        }\n        this.parent.destroy();\n\n\n        return;\n    }\n    \n    // Update distance traveled for particles\n    const tDx = this.parent.lastPosition.x - this.parent.position.x;\n    const tDy = this.parent.lastPosition.y - this.parent.position.y;\n    const tDist = Math.sqrt(tDx * tDx + tDy * tDy);\n    this.distanceTraveled += tDist;\n    \n    if (this.def.particle && this.distanceTraveled > this.distanceToSpawnParticle) {\n\n        let particle = this.game.spawn(this.parent.lastPosition.x + Math.random() * 4 - 2, this.parent.lastPosition.y + Math.random() * 4 - 2, \"particle\", { objectType: \"particles\", spawnType: this.def.particle });\n        particle.position.z = this.parent.position.z + Math.random() * 4 - 2;\n        this.distanceTraveled = 0;\n        this.distanceToSpawnParticle += Math.random() * 2;\n    }\n}\n\n\nprocessSplashDamage() {\n    const nearbyEnemies = this.game.spatialGrid.getNearbyEntities(\n        this.parent.gridPosition.x, \n        this.parent.gridPosition.y, \n        this.stats.splashRadius,\n        \"enemy\"\n    );\n    let explosion = this.game.spawn(this.parent.position.x, this.parent.position.y, \"explosion\", { radius: this.stats.splashRadius });\n    for (const enemy of nearbyEnemies) {\n        if (enemy.isDead) continue;\n        \n        const dx = enemy.position.x - this.parent.position.x;\n        const dy = enemy.position.y - this.parent.position.y;\n        const distSq = dx * dx + dy * dy;\n        \n        let gridSize = this.game.config.configs.game.gridSize;\n        const splashRadiusSq = this.stats.splashRadius * this.stats.splashRadius * gridSize * gridSize;\n        \n        if (distSq <= splashRadiusSq) {\n            let enemyHealth = enemy.getComponent(\"health\");\n            let enemyEnergyShield = enemy.getComponent(\"energyshield\");\n            let enemyStats = enemy.getComponent(\"stats\");\n            let enemyStatClone = { ...enemyStats.stats };\n            enemyStatClone.energyShield = enemyEnergyShield.energyShield;\n            \n            let damageResult = engine.getFunction(\"calculateDamage\")(this.stats, enemyStatClone);\n            if (!damageResult.wasEvaded) {\n                enemyHealth.hp -= damageResult.damageDealt;\n                enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);\n                this.game.spawn(enemy.position.x, enemy.position.y, \"hitEffect\", { damageType: this.stats.damageType , lifeSpan: .3});\n                if (this.ownerStats.slowEffect) {\n                    enemyStats.addEffect(this.game.config.effects.slow, this.game.effects.slow, this.ownerStats.slowEffect);\n                }\n            }\n        }\n    }\n}\n}",
+        "script": "class BallisticProjectile extends engine.Component {\n    \n    constructor(game, parent, params) {\n        super(game, parent, params);\n    }\n    \n    \ninit({ spawnType, owner, target, stats }) {\n    this.type = spawnType;\n    this.def = this.game.config.projectiles[this.type];\n    this.owner = owner;\n    this.target = target;\n    this.stats = stats;\n    this.piercedEnemies = [];\n    this.ownerStats = this.owner.getComponent(\"stats\").stats;\n    this.animator = this.getComponent(\"animator\");\n    this.distanceTraveled = 0;\n    this.distanceToSpawnParticle = 24;\n    \n    // Ballistic trajectory variables\n    this.startPosition = { ...this.parent.position, z: 10 }; // Start 10 units above ground\n    this.targetPosition = { ...this.target.position, z: 0 };\n    this.time = 0;\n    \n    this.totalDist = Math.sqrt(\n        (this.targetPosition.x - this.startPosition.x) ** 2 + \n        (this.targetPosition.y - this.startPosition.y) ** 2\n    );\n    this.maxHeight = this.totalDist / Math.PI;\n    \n    // Initialize position with Z component\n    this.parent.position.z = this.startPosition.z;\n    this.positionZ = this.startPosition.z;\n    \n    // Animation state variables\n    this.lastZPosition = this.positionZ;\n    this.animator.setAnimation('ascend');\n    this.peakThreshold = this.maxHeight * 0.1; // 10% threshold for idle at peak\n    this.currentAnimState = 'ascend';\n}\n\nupdate() {\n    this.parent.position.z = this.positionZ;\n    \n    // Save previous z position to detect direction change\n    this.lastZPosition = this.positionZ;\n\n    // Calculate progress (0 to 1)\n    this.time += this.game.deltaTime;\n    const dx = this.targetPosition.x - this.parent.position.x;\n    const dy = this.targetPosition.y - this.parent.position.y;\n    const distSq = dx * dx + dy * dy;\n    let dist = Math.sqrt(distSq);\n    const speed = this.stats.speed;\n    this.parent.position.x += (dx / dist) * speed / (Math.PI);\n    this.parent.position.y += (dy / dist) * speed / (Math.PI);\n\n\n    const currentDist = Math.sqrt(\n        (this.parent.position.x - this.startPosition.x) ** 2 + \n        (this.parent.position.y - this.startPosition.y) ** 2\n    );\n    const xyprogressToTarget = Math.min(1, currentDist / this.totalDist);\n\n    // Parabolic trajectory calculation (2:1 isometric adjusted)\n    this.parent.position.z = this.maxHeight * (1 - Math.pow(2 * xyprogressToTarget - 1, 2));\n\n    this.positionZ = this.parent.position.z;\n    \n    // Calculate distance from peak height to determine if we're near the top\n    const distanceFromPeak = Math.abs(this.positionZ - this.maxHeight);\n    \n    // Check if animation state needs to change based on z movement and proximity to peak\n    if( xyprogressToTarget < .075 ) {\n        if (this.currentAnimState !== 'launch') {\n            this.animator.setAnimation('launch');\n            this.currentAnimState = 'launch';\n        }\n    // } else if( xyprogressToTarget > .95 ) {\n    //     if (this.currentAnimState !== 'land') {\n    //         this.animator.setAnimation('land');\n    //         this.currentAnimState = 'land';\n    //     }\n    } else if (distanceFromPeak <= this.peakThreshold) {\n        // We're near the peak of the trajectory\n        if (this.currentAnimState !== 'idle') {\n            this.animator.setAnimation('idle');\n            this.currentAnimState = 'idle';\n        }\n    } else if (this.positionZ < this.lastZPosition) {\n        // We're descending and not near the peak\n        if (this.currentAnimState !== 'descend') {\n            this.animator.setAnimation('descend');\n            this.currentAnimState = 'descend';\n        }\n    } else if (this.positionZ > this.lastZPosition) {\n        // We're ascending and not near the peak\n        if (this.currentAnimState !== 'ascend') {\n            this.animator.setAnimation('ascend');\n            this.currentAnimState = 'ascend';\n        }\n    }\n    \n    // Check if we've hit the ground (Z <= 0)\n    if (this.parent.position.z <= 0) {\n        this.parent.position.z = 0; // Snap to ground\n\n        // Hit detection - same as before but at current position\n        const targetDistSq = (this.parent.position.x - this.target.position.x) ** 2 + \n                            (this.parent.position.y - this.target.position.y) ** 2;\n\n\n\n            // We missed the target but hit the ground - maybe still do splash damage\n        if (this.stats.splashRadius > 0) {\n            this.processSplashDamage();\n        }\n        this.parent.destroy();\n\n\n        return;\n    }\n    \n    // Update distance traveled for particles\n    const tDx = this.parent.lastPosition.x - this.parent.position.x;\n    const tDy = this.parent.lastPosition.y - this.parent.position.y;\n    const tDist = Math.sqrt(tDx * tDx + tDy * tDy);\n    this.distanceTraveled += tDist;\n    \n    if (this.def.particle && this.distanceTraveled > this.distanceToSpawnParticle) {\n\n        let particle = this.game.spawn(this.parent.lastPosition.x + Math.random() * 4 - 2, this.parent.lastPosition.y + Math.random() * 4 - 2, \"particle\", { objectType: \"particles\", spawnType: this.def.particle });\n        particle.position.z = this.parent.position.z + Math.random() * 4 - 2;\n        this.distanceTraveled = 0;\n        this.distanceToSpawnParticle += Math.random() * 2;\n    }\n}\n\n\nprocessSplashDamage() {\n    const nearbyEnemies = this.game.spatialGrid.getNearbyEntities(\n        this.parent.gridPosition.x, \n        this.parent.gridPosition.y, \n        this.stats.splashRadius,\n        \"enemy\"\n    );\n    let explosion = this.game.spawn(this.parent.position.x, this.parent.position.y, \"explosion\", { radius: this.stats.splashRadius });\n    for (const enemy of nearbyEnemies) {\n        if (enemy.isDead) continue;\n        \n        const dx = enemy.position.x - this.parent.position.x;\n        const dy = enemy.position.y - this.parent.position.y;\n        const distSq = dx * dx + dy * dy;\n        \n        let gridSize = this.game.config.configs.game.gridSize;\n        const splashRadiusSq = this.stats.splashRadius * this.stats.splashRadius * gridSize * gridSize;\n        \n        if (distSq <= splashRadiusSq) {\n            let enemyHealth = enemy.getComponent(\"health\");\n            let enemyEnergyShield = enemy.getComponent(\"energyshield\");\n            let enemyStats = enemy.getComponent(\"stats\");\n            let enemyStatClone = { ...enemyStats.stats };\n            enemyStatClone.energyShield = enemyEnergyShield.energyShield;\n            \n            let damageResult = engine.getFunction(\"calculateDamage\")(this.stats, enemyStatClone);\n            if (!damageResult.wasEvaded) {\n                enemyHealth.hp -= damageResult.damageDealt;\n                enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);\n                this.game.spawn(enemy.position.x, enemy.position.y, \"hitEffect\", { damageType: this.stats.damageType , lifeSpan: .3});\n                if (this.ownerStats.slowEffect) {\n                    enemyStats.addEffect(this.game.config.effects.slow, this.game.effects.slow, this.ownerStats.slowEffect);\n                }\n            }\n        }\n    }\n}\n}",
         "fileName": "BallisticProjectile"
       },
       "Buildable": {
@@ -1435,6 +1435,224 @@ const DEFAULT_PROJECT_CONFIG = {
                     "y": 3.9200613340145978,
                     "z": -2.0796831071177135,
                     "rotationX": -62,
+                    "rotationY": -30,
+                    "rotationZ": -45,
+                    "width": 0.25,
+                    "height": 2.5,
+                    "depth": 8.5
+                  }
+                ]
+              }
+            ],
+            "land": [
+              {
+                "shapes": [
+                  {
+                    "type": "cylinder",
+                    "size": 5,
+                    "color": "#888888",
+                    "x": 0,
+                    "y": 17.39978677321895,
+                    "z": 0.024433369012196865,
+                    "rotationX": -179,
+                    "rotationY": 0,
+                    "rotationZ": 0,
+                    "height": 25
+                  },
+                  {
+                    "type": "cone",
+                    "size": 5,
+                    "color": "#ff1117",
+                    "x": 0,
+                    "y": 2.402071345873079,
+                    "z": -0.23735272754705528,
+                    "rotationX": -179,
+                    "rotationY": 0,
+                    "rotationZ": 0,
+                    "height": 5
+                  },
+                  {
+                    "type": "cone",
+                    "size": 2.5,
+                    "color": "#ff1117",
+                    "x": 0,
+                    "y": 29.7978981931582,
+                    "z": 0.240843208834512,
+                    "rotationX": -179,
+                    "rotationY": 0,
+                    "rotationZ": 0,
+                    "height": 2.5
+                  },
+                  {
+                    "type": "cylinder",
+                    "size": 6.25,
+                    "color": "#888888",
+                    "x": 0,
+                    "y": 26.998324646720306,
+                    "z": 0.19197647081011826,
+                    "rotationX": -179,
+                    "rotationY": 0,
+                    "rotationZ": 0,
+                    "height": 5
+                  },
+                  {
+                    "type": "box",
+                    "size": 5,
+                    "color": "#888888",
+                    "x": 0,
+                    "y": 27.577121284975924,
+                    "z": 3.2025363878428275,
+                    "rotationX": 136,
+                    "rotationY": 0,
+                    "rotationZ": 0,
+                    "width": 0.25,
+                    "height": 2.5,
+                    "depth": 8.5
+                  },
+                  {
+                    "type": "box",
+                    "size": 5,
+                    "color": "#888888",
+                    "x": 0,
+                    "y": 27.681835723599626,
+                    "z": -2.7965497830955206,
+                    "rotationX": 46,
+                    "rotationY": 0,
+                    "rotationZ": 0,
+                    "width": 0.25,
+                    "height": 2.5,
+                    "depth": 8.5
+                  },
+                  {
+                    "type": "box",
+                    "size": 5,
+                    "color": "#888888",
+                    "x": -3,
+                    "y": 27.629478504287775,
+                    "z": 0.20299330237365346,
+                    "rotationX": 91,
+                    "rotationY": 45,
+                    "rotationZ": 90,
+                    "width": 0.25,
+                    "height": 2.5,
+                    "depth": 8.5
+                  },
+                  {
+                    "type": "box",
+                    "size": 5,
+                    "color": "#888888",
+                    "x": 3,
+                    "y": 27.629478504287775,
+                    "z": 0.20299330237365346,
+                    "rotationX": 91,
+                    "rotationY": -45,
+                    "rotationZ": -90,
+                    "width": 0.25,
+                    "height": 2.5,
+                    "depth": 8.5
+                  }
+                ]
+              },
+              {
+                "shapes": [
+                  {
+                    "type": "cylinder",
+                    "size": 5,
+                    "color": "#888888",
+                    "x": 0,
+                    "y": 17.39978677321895,
+                    "z": 0.024433369012196865,
+                    "rotationX": -179,
+                    "rotationY": 0,
+                    "rotationZ": 0,
+                    "height": 25
+                  },
+                  {
+                    "type": "cone",
+                    "size": 5,
+                    "color": "#ff1117",
+                    "x": 0,
+                    "y": 2.402071345873079,
+                    "z": -0.23735272754705528,
+                    "rotationX": -179,
+                    "rotationY": 0,
+                    "rotationZ": 0,
+                    "height": 5
+                  },
+                  {
+                    "type": "cone",
+                    "size": 2.5,
+                    "color": "#ff1117",
+                    "x": 0,
+                    "y": 29.7978981931582,
+                    "z": 0.240843208834512,
+                    "rotationX": 179,
+                    "rotationY": 0,
+                    "rotationZ": 0,
+                    "height": 2.5
+                  },
+                  {
+                    "type": "cylinder",
+                    "size": 6.25,
+                    "color": "#888888",
+                    "x": 0,
+                    "y": 26.998324646720306,
+                    "z": 0.19197647081011826,
+                    "rotationX": 179,
+                    "rotationY": 0,
+                    "rotationZ": 0,
+                    "height": 5
+                  },
+                  {
+                    "type": "box",
+                    "size": 5,
+                    "color": "#888888",
+                    "x": -2.5,
+                    "y": 28.041803357969904,
+                    "z": 2.290190360643564,
+                    "rotationX": 119,
+                    "rotationY": 30,
+                    "rotationZ": 45,
+                    "width": 0.25,
+                    "height": 2.5,
+                    "depth": 8.5
+                  },
+                  {
+                    "type": "box",
+                    "size": 5,
+                    "color": "#888888",
+                    "x": 2.5,
+                    "y": 27.954541325783488,
+                    "z": -2.7090481151383945,
+                    "rotationX": 59,
+                    "rotationY": -30,
+                    "rotationZ": -135,
+                    "width": 0.25,
+                    "height": 2.5,
+                    "depth": 8.5
+                  },
+                  {
+                    "type": "box",
+                    "size": 5,
+                    "color": "#888888",
+                    "x": -2.5,
+                    "y": 27.954541325783488,
+                    "z": -2.7090481151383945,
+                    "rotationX": 59,
+                    "rotationY": 30,
+                    "rotationZ": 135,
+                    "width": 0.25,
+                    "height": 2.5,
+                    "depth": 8.5
+                  },
+                  {
+                    "type": "box",
+                    "size": 5,
+                    "color": "#888888",
+                    "x": 2.5,
+                    "y": 28.041803357969904,
+                    "z": 2.290190360643564,
+                    "rotationX": 119,
                     "rotationY": -30,
                     "rotationZ": -45,
                     "width": 0.25,
