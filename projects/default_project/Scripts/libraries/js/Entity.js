@@ -1,6 +1,7 @@
 class Entity {
     constructor(game, x, y, type) {
         this.game = game;
+        this.moduleManager = game.moduleManager;
         this.position = { x: x, y: y };
         this.components = [];
         this.renderers = [];
@@ -17,12 +18,15 @@ class Entity {
     getComponent(name) {
         return this.components[name.toLowerCase()] || this.components[`${name.toLowerCase()}`];
     }
-    addRenderer(ComponentClass, params) {
-        let renderer = this.addComponent(ComponentClass, params);
-        this.renderers.push(renderer);
+    addRenderer(RendererClassName, params) {
+        const RendererClass = this.moduleManager.getCompiledScript(RendererClassName, 'renderers');
+        const renderer = new RendererClass(this.game, this, params);
+        this.renderers[RendererClass.name.toLowerCase()] = renderer;
+        this.components[RendererClass.name.toLowerCase()] = renderer;
         return renderer;
     }
-    addComponent(ComponentClass, params) {
+    addComponent(ComponentClassName, params) {        
+        const ComponentClass = this.moduleManager.getCompiledScript(ComponentClassName, 'components');
         const component = new ComponentClass(this.game, this, params);
         this.components[ComponentClass.name.toLowerCase()] = component;
         return component;
@@ -62,14 +66,19 @@ class Entity {
     draw() {
         const isoPos = this.game.translator.pixelToIso(this.position.x, this.position.y);    
         this.drawPosition = { x: isoPos.x, y: isoPos.y };
-        if( this.renderers.length ) {
-            this.renderers.forEach( (r) => r.draw() );
-        }   
+
+        for(let r in this.renderers) {
+            this.renderers[r].draw();  
+        }
+
     }
     destroy() {
         this.destroyed = true;
         for(let c in this.components) {
             this.components[c].destroy();   
+        }   
+        for(let r in this.renderers) {
+            this.renderers[r].destroy();   
         }   
     }
 }

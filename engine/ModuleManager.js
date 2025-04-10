@@ -50,23 +50,24 @@ export class ModuleManager {
   }
 
   getCompiledScript(typeName, collectionType) {
-    if (this.scriptCache.has(typeName)) {
-      return this.scriptCache.get(typeName);
+    let formattedName = typeName.toLowerCase();
+    if (this.scriptCache.has(formattedName)) {
+      return this.scriptCache.get(formattedName);
     }
 
     const collections = this.core.getCollections();
     if (!collections[collectionType] || !collections[collectionType][typeName]) {
-      console.error(`Script ${typeName} not found in ${collectionType}`);
+      console.error(`Script ${formattedName} not found in ${collectionType}`);
       return null;
     }
 
     const scriptText = collections[collectionType][typeName].script;
-    return this.compileScript(scriptText, typeName);
+    return this.compileScript(scriptText, formattedName);
   }
 
   compileFunction(scriptText, typeName) {    
     const compiledFunction = new Function('return ' + scriptText)();
-    this.scriptCache.set(typeName, compiledFunction);
+    this.scriptCache.set(typeName.toLowerCase(), compiledFunction);
   }
 
   compileScript(scriptText, typeName) {
@@ -83,7 +84,7 @@ export class ModuleManager {
       );
 
       const ScriptClass = scriptFunction(this.scriptContext);
-      this.scriptCache.set(typeName, ScriptClass);
+      this.scriptCache.set(typeName.toLowerCase(), ScriptClass);
       return ScriptClass;
     } catch (error) {
       console.error(`Error compiling script for ${typeName}:`, error);

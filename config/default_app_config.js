@@ -4077,20 +4077,12 @@ const DEFAULT_PROJECT_CONFIG = {
                     "size": 36,
                     "tubeSize": 4,
                     "x": 0,
-                    "y": 16,
+                    "y": 8,
                     "z": 0,
-                    "rotationX": 60,
-                    "color": "#50D0FF"
-                  },
-                  {
-                    "type": "torus",
-                    "size": 36,
-                    "tubeSize": 4,
-                    "x": 0,
-                    "y": 16,
-                    "z": 0,
-                    "rotationY": 60,
-                    "color": "#50D0FF"
+                    "rotationY": 0,
+                    "color": "#50D0FF",
+                    "rotationZ": 0,
+                    "rotationX": 90
                   },
                   {
                     "type": "cylinder",
@@ -4134,7 +4126,7 @@ const DEFAULT_PROJECT_CONFIG = {
                     "x": 0,
                     "y": 32,
                     "z": 0,
-                    "rotationX": 180,
+                    "rotationX": 0,
                     "color": "#444444"
                   },
                   {
@@ -4150,34 +4142,391 @@ const DEFAULT_PROJECT_CONFIG = {
                   {
                     "type": "sphere",
                     "size": 4,
-                    "x": 14,
-                    "y": 12,
-                    "z": 14,
+                    "x": 24,
+                    "y": 24,
+                    "z": 24,
                     "color": "#C0FFFF"
                   },
                   {
                     "type": "sphere",
                     "size": 4,
-                    "x": -14,
-                    "y": 12,
-                    "z": 14,
+                    "x": -24,
+                    "y": 24,
+                    "z": 24,
                     "color": "#C0FFFF"
                   },
                   {
                     "type": "sphere",
                     "size": 4,
-                    "x": 14,
-                    "y": 12,
-                    "z": -14,
+                    "x": 24,
+                    "y": 24,
+                    "z": -24,
                     "color": "#C0FFFF"
                   },
                   {
                     "type": "sphere",
                     "size": 4,
-                    "x": -14,
-                    "y": 12,
-                    "z": -14,
+                    "x": -24,
+                    "y": 24,
+                    "z": -24,
                     "color": "#C0FFFF"
+                  },
+                  {
+                    "type": "torus",
+                    "size": 48,
+                    "color": "#00a2df",
+                    "x": 0,
+                    "y": 38,
+                    "z": 0,
+                    "rotationX": 90,
+                    "rotationY": 0,
+                    "rotationZ": 0,
+                    "tubeSize": 2
+                  }
+                ]
+              },
+              {
+                "shapes": [
+                  {
+                    "type": "torus",
+                    "size": 36,
+                    "tubeSize": 4,
+                    "x": 0,
+                    "y": 8,
+                    "z": 0,
+                    "rotationY": 0,
+                    "color": "#50D0FF",
+                    "rotationZ": 0,
+                    "rotationX": 90
+                  },
+                  {
+                    "type": "cylinder",
+                    "size": 22,
+                    "height": 10,
+                    "x": 0,
+                    "y": 5,
+                    "z": 0,
+                    "color": "#333333"
+                  },
+                  {
+                    "type": "cylinder",
+                    "size": 16,
+                    "height": 14,
+                    "x": 0,
+                    "y": 17,
+                    "z": 0,
+                    "color": "#222222"
+                  },
+                  {
+                    "type": "sphere",
+                    "size": 12,
+                    "x": 0,
+                    "y": 16,
+                    "z": 0,
+                    "color": "#A0E6FF"
+                  },
+                  {
+                    "type": "tetrahedron",
+                    "size": 10,
+                    "x": 0,
+                    "y": 16,
+                    "z": 0,
+                    "rotationY": 45,
+                    "color": "#203040"
+                  },
+                  {
+                    "type": "cone",
+                    "size": 8,
+                    "height": 16,
+                    "x": 0,
+                    "y": 32,
+                    "z": 0,
+                    "rotationX": 0,
+                    "color": "#444444"
+                  },
+                  {
+                    "type": "box",
+                    "width": 38,
+                    "height": 4,
+                    "depth": 38,
+                    "x": 0,
+                    "y": 2,
+                    "z": 0,
+                    "color": "#555555"
+                  },
+                  {
+                    "type": "sphere",
+                    "size": 4,
+                    "x": 12,
+                    "y": 24,
+                    "z": 32,
+                    "color": "#C0FFFF"
+                  },
+                  {
+                    "type": "sphere",
+                    "size": 4,
+                    "x": -32,
+                    "y": 24,
+                    "z": 12,
+                    "color": "#C0FFFF"
+                  },
+                  {
+                    "type": "sphere",
+                    "size": 4,
+                    "x": 32,
+                    "y": 24,
+                    "z": -12,
+                    "color": "#C0FFFF"
+                  },
+                  {
+                    "type": "sphere",
+                    "size": 4,
+                    "x": -12,
+                    "y": 24,
+                    "z": -32,
+                    "color": "#C0FFFF"
+                  },
+                  {
+                    "type": "torus",
+                    "size": 48,
+                    "color": "#00a2df",
+                    "x": 0,
+                    "y": 38,
+                    "z": 0,
+                    "rotationX": 90,
+                    "rotationY": 0,
+                    "rotationZ": 0,
+                    "tubeSize": 2
+                  }
+                ]
+              },
+              {
+                "shapes": [
+                  {
+                    "type": "torus",
+                    "size": 36,
+                    "tubeSize": 4,
+                    "x": 0,
+                    "y": 8,
+                    "z": 0,
+                    "rotationY": 0,
+                    "color": "#50D0FF",
+                    "rotationZ": 0,
+                    "rotationX": 90
+                  },
+                  {
+                    "type": "cylinder",
+                    "size": 22,
+                    "height": 10,
+                    "x": 0,
+                    "y": 5,
+                    "z": 0,
+                    "color": "#333333"
+                  },
+                  {
+                    "type": "cylinder",
+                    "size": 16,
+                    "height": 14,
+                    "x": 0,
+                    "y": 17,
+                    "z": 0,
+                    "color": "#222222"
+                  },
+                  {
+                    "type": "sphere",
+                    "size": 12,
+                    "x": 0,
+                    "y": 16,
+                    "z": 0,
+                    "color": "#A0E6FF"
+                  },
+                  {
+                    "type": "tetrahedron",
+                    "size": 10,
+                    "x": 0,
+                    "y": 16,
+                    "z": 0,
+                    "rotationY": 45,
+                    "color": "#203040"
+                  },
+                  {
+                    "type": "cone",
+                    "size": 8,
+                    "height": 16,
+                    "x": 0,
+                    "y": 32,
+                    "z": 0,
+                    "rotationX": 0,
+                    "color": "#444444"
+                  },
+                  {
+                    "type": "box",
+                    "width": 38,
+                    "height": 4,
+                    "depth": 38,
+                    "x": 0,
+                    "y": 2,
+                    "z": 0,
+                    "color": "#555555"
+                  },
+                  {
+                    "type": "sphere",
+                    "size": 4,
+                    "x": -34,
+                    "y": 24,
+                    "z": 0,
+                    "color": "#C0FFFF"
+                  },
+                  {
+                    "type": "sphere",
+                    "size": 4,
+                    "x": 0,
+                    "y": 24,
+                    "z": 34,
+                    "color": "#C0FFFF"
+                  },
+                  {
+                    "type": "sphere",
+                    "size": 4,
+                    "x": 34,
+                    "y": 24,
+                    "z": 0,
+                    "color": "#C0FFFF"
+                  },
+                  {
+                    "type": "sphere",
+                    "size": 4,
+                    "x": 0,
+                    "y": 24,
+                    "z": -34,
+                    "color": "#C0FFFF"
+                  },
+                  {
+                    "type": "torus",
+                    "size": 48,
+                    "color": "#00a2df",
+                    "x": 0,
+                    "y": 38,
+                    "z": 0,
+                    "rotationX": 90,
+                    "rotationY": 0,
+                    "rotationZ": 0,
+                    "tubeSize": 2
+                  }
+                ]
+              },
+              {
+                "shapes": [
+                  {
+                    "type": "torus",
+                    "size": 36,
+                    "tubeSize": 4,
+                    "x": 0,
+                    "y": 8,
+                    "z": 0,
+                    "rotationY": 0,
+                    "color": "#50D0FF",
+                    "rotationZ": 0,
+                    "rotationX": 90
+                  },
+                  {
+                    "type": "cylinder",
+                    "size": 22,
+                    "height": 10,
+                    "x": 0,
+                    "y": 5,
+                    "z": 0,
+                    "color": "#333333"
+                  },
+                  {
+                    "type": "cylinder",
+                    "size": 16,
+                    "height": 14,
+                    "x": 0,
+                    "y": 17,
+                    "z": 0,
+                    "color": "#222222"
+                  },
+                  {
+                    "type": "sphere",
+                    "size": 12,
+                    "x": 0,
+                    "y": 16,
+                    "z": 0,
+                    "color": "#A0E6FF"
+                  },
+                  {
+                    "type": "tetrahedron",
+                    "size": 10,
+                    "x": 0,
+                    "y": 16,
+                    "z": 0,
+                    "rotationY": 45,
+                    "color": "#203040"
+                  },
+                  {
+                    "type": "cone",
+                    "size": 8,
+                    "height": 16,
+                    "x": 0,
+                    "y": 32,
+                    "z": 0,
+                    "rotationX": 0,
+                    "color": "#444444"
+                  },
+                  {
+                    "type": "box",
+                    "width": 38,
+                    "height": 4,
+                    "depth": 38,
+                    "x": 0,
+                    "y": 2,
+                    "z": 0,
+                    "color": "#555555"
+                  },
+                  {
+                    "type": "sphere",
+                    "size": 4,
+                    "x": -32,
+                    "y": 24,
+                    "z": -12,
+                    "color": "#C0FFFF"
+                  },
+                  {
+                    "type": "sphere",
+                    "size": 4,
+                    "x": -12,
+                    "y": 24,
+                    "z": 32,
+                    "color": "#C0FFFF"
+                  },
+                  {
+                    "type": "sphere",
+                    "size": 4,
+                    "x": 32,
+                    "y": 24,
+                    "z": 12,
+                    "color": "#C0FFFF"
+                  },
+                  {
+                    "type": "sphere",
+                    "size": 4,
+                    "x": 12,
+                    "y": 24,
+                    "z": -32,
+                    "color": "#C0FFFF"
+                  },
+                  {
+                    "type": "torus",
+                    "size": 48,
+                    "color": "#00a2df",
+                    "x": 0,
+                    "y": 38,
+                    "z": 0,
+                    "rotationX": 90,
+                    "rotationY": 0,
+                    "rotationZ": 0,
+                    "tubeSize": 2
                   }
                 ]
               }
@@ -30560,7 +30909,7 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "Component"
       },
       "Entity": {
-        "script": "class Entity {\r\n    constructor(game, x, y, type) {\r\n        this.game = game;\r\n        this.position = { x: x, y: y };\r\n        this.components = [];\r\n        this.renderers = [];\r\n        this.destroyed = false;        \r\n        this.id = ++game.entityId;\r\n        this.type = type;\r\n        this.gridPosition = { x: 0, y: 0};\r\n        this.drawPosition = { x: 0, y: 0};\r\n        this.lastPosition = {...this.position};\r\n        this.lastGridPosition = {...this.gridPosition};\r\n        this.lastDrawPosition = {...this.drawPosition};\r\n    }\r\n\r\n    getComponent(name) {\r\n        return this.components[name.toLowerCase()] || this.components[`${name.toLowerCase()}`];\r\n    }\r\n    addRenderer(ComponentClass, params) {\r\n        let renderer = this.addComponent(ComponentClass, params);\r\n        this.renderers.push(renderer);\r\n        return renderer;\r\n    }\r\n    addComponent(ComponentClass, params) {\r\n        const component = new ComponentClass(this.game, this, params);\r\n        this.components[ComponentClass.name.toLowerCase()] = component;\r\n        return component;\r\n    }\r\n    removeComponent(component) {\r\n        let index = this.components.indexOf(component);\r\n        if( index >= 0 ) {\r\n            this.components.splice(index, 1);\r\n        }\r\n    }\r\n    setGridPosition() {\r\n        let gridPosition = this.game.translator.pixelToGrid( this.position.x, this.position.y ); \r\n        this.gridPosition = this.game.translator.snapToGrid(gridPosition.x, gridPosition.y);   \r\n    }\r\n    updateLastPositions() {\r\n        this.lastPosition = {...this.position};\r\n        this.lastGridPosition = {...this.gridPosition};\r\n        this.lastDrawPosition = {...this.drawPosition};         \r\n    }\r\n    update() {    \r\n        this.setGridPosition();\r\n        for(let c in this.components) {\r\n            this.components[c].update();   \r\n            this.setGridPosition();\r\n            if(this.destroyed) break;\r\n        }                \r\n        return !this.destroyed;\r\n    }\r\n    postUpdate() {\r\n        for(let c in this.components) {\r\n            this.components[c].postUpdate();   \r\n            if(this.destroyed) break;\r\n        }     \r\n        this.updateLastPositions(); \r\n        return !this.destroyed;\r\n    }\r\n    draw() {\r\n        const isoPos = this.game.translator.pixelToIso(this.position.x, this.position.y);    \r\n        this.drawPosition = { x: isoPos.x, y: isoPos.y };\r\n        if( this.renderers.length ) {\r\n            this.renderers.forEach( (r) => r.draw() );\r\n        }   \r\n    }\r\n    destroy() {\r\n        this.destroyed = true;\r\n        for(let c in this.components) {\r\n            this.components[c].destroy();   \r\n        }   \r\n    }\r\n}",
+        "script": "class Entity {\r\n    constructor(game, x, y, type) {\r\n        this.game = game;\r\n        this.moduleManager = game.moduleManager;\r\n        this.position = { x: x, y: y };\r\n        this.components = [];\r\n        this.renderers = [];\r\n        this.destroyed = false;        \r\n        this.id = ++game.entityId;\r\n        this.type = type;\r\n        this.gridPosition = { x: 0, y: 0};\r\n        this.drawPosition = { x: 0, y: 0};\r\n        this.lastPosition = {...this.position};\r\n        this.lastGridPosition = {...this.gridPosition};\r\n        this.lastDrawPosition = {...this.drawPosition};\r\n    }\r\n\r\n    getComponent(name) {\r\n        return this.components[name.toLowerCase()] || this.components[`${name.toLowerCase()}`];\r\n    }\r\n    addRenderer(RendererClassName, params) {\r\n        const RendererClass = this.moduleManager.getCompiledScript(RendererClassName, 'renderers');\r\n        const renderer = new RendererClass(this.game, this, params);\r\n        this.renderers[RendererClass.name.toLowerCase()] = renderer;\r\n        this.components[RendererClass.name.toLowerCase()] = renderer;\r\n        return renderer;\r\n    }\r\n    addComponent(ComponentClassName, params) {        \r\n        const ComponentClass = this.moduleManager.getCompiledScript(ComponentClassName, 'components');\r\n        const component = new ComponentClass(this.game, this, params);\r\n        this.components[ComponentClass.name.toLowerCase()] = component;\r\n        return component;\r\n    }\r\n    removeComponent(component) {\r\n        let index = this.components.indexOf(component);\r\n        if( index >= 0 ) {\r\n            this.components.splice(index, 1);\r\n        }\r\n    }\r\n    setGridPosition() {\r\n        let gridPosition = this.game.translator.pixelToGrid( this.position.x, this.position.y ); \r\n        this.gridPosition = this.game.translator.snapToGrid(gridPosition.x, gridPosition.y);   \r\n    }\r\n    updateLastPositions() {\r\n        this.lastPosition = {...this.position};\r\n        this.lastGridPosition = {...this.gridPosition};\r\n        this.lastDrawPosition = {...this.drawPosition};         \r\n    }\r\n    update() {    \r\n        this.setGridPosition();\r\n        for(let c in this.components) {\r\n            this.components[c].update();   \r\n            this.setGridPosition();\r\n            if(this.destroyed) break;\r\n        }                \r\n        return !this.destroyed;\r\n    }\r\n    postUpdate() {\r\n        for(let c in this.components) {\r\n            this.components[c].postUpdate();   \r\n            if(this.destroyed) break;\r\n        }     \r\n        this.updateLastPositions(); \r\n        return !this.destroyed;\r\n    }\r\n    draw() {\r\n        const isoPos = this.game.translator.pixelToIso(this.position.x, this.position.y);    \r\n        this.drawPosition = { x: isoPos.x, y: isoPos.y };\r\n\r\n        for(let r in this.renderers) {\r\n            this.renderers[r].draw();  \r\n        }\r\n\r\n    }\r\n    destroy() {\r\n        this.destroyed = true;\r\n        for(let c in this.components) {\r\n            this.components[c].destroy();   \r\n        }   \r\n        for(let r in this.renderers) {\r\n            this.renderers[r].destroy();   \r\n        }   \r\n    }\r\n}",
         "fileName": "Entity"
       },
       "GameState": {
