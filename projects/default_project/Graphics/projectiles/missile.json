@@ -655,6 +655,224 @@
             }
           ]
         }
+      ],
+      "launch": [
+        {
+          "shapes": [
+            {
+              "type": "cylinder",
+              "size": 5,
+              "color": "#888888",
+              "x": 0,
+              "y": 14.6,
+              "z": 2.5717582782094415e-16,
+              "rotationX": 0,
+              "rotationY": 0,
+              "rotationZ": 0,
+              "height": 25
+            },
+            {
+              "type": "cone",
+              "size": 5,
+              "color": "#ff1117",
+              "x": 0,
+              "y": 29.6,
+              "z": -2.4982794702606003e-15,
+              "rotationX": 0,
+              "rotationY": 0,
+              "rotationZ": 0,
+              "height": 5
+            },
+            {
+              "type": "cone",
+              "size": 2.5,
+              "color": "#ff1117",
+              "x": 0,
+              "y": 2.1999999999999993,
+              "z": 2.535018874235021e-15,
+              "rotationX": 0,
+              "rotationY": 0,
+              "rotationZ": 0,
+              "height": 2.5
+            },
+            {
+              "type": "cylinder",
+              "size": 6.25,
+              "color": "#888888",
+              "x": 0,
+              "y": 5,
+              "z": 2.0206672185931327e-15,
+              "rotationX": 0,
+              "rotationY": 0,
+              "rotationZ": 0,
+              "height": 5
+            },
+            {
+              "type": "box",
+              "size": 5,
+              "color": "#888888",
+              "x": 0,
+              "y": 4.368749999999999,
+              "z": -2.999999999999998,
+              "rotationX": -45,
+              "rotationY": 0,
+              "rotationZ": 0,
+              "width": 0.25,
+              "height": 2.5,
+              "depth": 8.5
+            },
+            {
+              "type": "box",
+              "size": 5,
+              "color": "#888888",
+              "x": 0,
+              "y": 4.368749999999999,
+              "z": 3.000000000000002,
+              "rotationX": -135,
+              "rotationY": 0,
+              "rotationZ": 0,
+              "width": 0.25,
+              "height": 2.5,
+              "depth": 8.5
+            },
+            {
+              "type": "box",
+              "size": 5,
+              "color": "#888888",
+              "x": -3,
+              "y": 4.368749999999999,
+              "z": 2.136625962387398e-15,
+              "rotationX": -90,
+              "rotationY": 45,
+              "rotationZ": 90,
+              "width": 0.25,
+              "height": 2.5,
+              "depth": 8.5
+            },
+            {
+              "type": "box",
+              "size": 5,
+              "color": "#888888",
+              "x": 3,
+              "y": 4.368749999999999,
+              "z": 2.136625962387398e-15,
+              "rotationX": -90,
+              "rotationY": -45,
+              "rotationZ": -90,
+              "width": 0.25,
+              "height": 2.5,
+              "depth": 8.5
+            }
+          ]
+        },
+        {
+          "shapes": [
+            {
+              "type": "cylinder",
+              "size": 5,
+              "color": "#888888",
+              "x": 0,
+              "y": 14.6,
+              "z": 2.5717582782094415e-16,
+              "rotationX": 0,
+              "rotationY": 0,
+              "rotationZ": 0,
+              "height": 25
+            },
+            {
+              "type": "cone",
+              "size": 5,
+              "color": "#ff1117",
+              "x": 0,
+              "y": 29.6,
+              "z": -2.4982794702606003e-15,
+              "rotationX": 0,
+              "rotationY": 0,
+              "rotationZ": 0,
+              "height": 5
+            },
+            {
+              "type": "cone",
+              "size": 2.5,
+              "color": "#ff1117",
+              "x": 0,
+              "y": 2.1999999999999993,
+              "z": 2.535018874235021e-15,
+              "rotationX": -2,
+              "rotationY": 0,
+              "rotationZ": 0,
+              "height": 2.5
+            },
+            {
+              "type": "cylinder",
+              "size": 6.25,
+              "color": "#888888",
+              "x": 0,
+              "y": 5,
+              "z": 2.0206672185931327e-15,
+              "rotationX": -2,
+              "rotationY": 0,
+              "rotationZ": 0,
+              "height": 5
+            },
+            {
+              "type": "box",
+              "size": 5,
+              "color": "#888888",
+              "x": -2.5,
+              "y": 3.9200613340145978,
+              "z": -2.0796831071177135,
+              "rotationX": -62,
+              "rotationY": 30,
+              "rotationZ": 45,
+              "width": 0.25,
+              "height": 2.5,
+              "depth": 8.5
+            },
+            {
+              "type": "box",
+              "size": 5,
+              "color": "#888888",
+              "x": 2.5,
+              "y": 4.094558817527105,
+              "z": 2.9172710279777667,
+              "rotationX": -122,
+              "rotationY": -30,
+              "rotationZ": -135,
+              "width": 0.25,
+              "height": 2.5,
+              "depth": 8.5
+            },
+            {
+              "type": "box",
+              "size": 5,
+              "color": "#888888",
+              "x": -2.5,
+              "y": 4.094558817527105,
+              "z": 2.9172710279777667,
+              "rotationX": -122,
+              "rotationY": 30,
+              "rotationZ": 135,
+              "width": 0.25,
+              "height": 2.5,
+              "depth": 8.5
+            },
+            {
+              "type": "box",
+              "size": 5,
+              "color": "#888888",
+              "x": 2.5,
+              "y": 3.9200613340145978,
+              "z": -2.0796831071177135,
+              "rotationX": -62,
+              "rotationY": -30,
+              "rotationZ": -45,
+              "width": 0.25,
+              "height": 2.5,
+              "depth": 8.5
+            }
+          ]
+        }
       ]
     }
   },
