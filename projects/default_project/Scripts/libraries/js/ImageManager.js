@@ -127,7 +127,7 @@ class ImageManager {
     
     async checkCache(prefix) {
         try {
-            const response = await fetch(`/api/cache/${prefix}`);
+            const response = await fetch(`api/cache/${prefix}`);
             if (response.ok) {
                 const cacheData = await response.json();
                 // Convert base64 cached images back to canvases
