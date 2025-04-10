@@ -35,7 +35,11 @@ class GraphicsEditor {
         this.isDragging = false;
         this.clickStartTime = 0;
         this.isPreviewingAnimation = false;
-        
+
+        this.rootGroup = new window.THREE.Group(); // Main container for all shapes
+        this.groupRotation = { x: 0, y: 0, z: 0 }; // Track group rotation values
+        this.frameRotations = {}; // Will store rotation data for each animation and frame
+    
         this.init();
     }
 
@@ -49,6 +53,10 @@ class GraphicsEditor {
     initThreeJS() {
         // Scene setup
         this.scene = new window.THREE.Scene();
+        
+        // Add the root group to the scene
+        this.rootGroup = new window.THREE.Group();
+        this.scene.add(this.rootGroup);
 
         // Camera setup
         this.camera = new window.THREE.PerspectiveCamera(
@@ -83,7 +91,20 @@ class GraphicsEditor {
         // Resize handling
         window.addEventListener('resize', this.handleResize.bind(this));
     }
-
+    initFrameRotations() {
+        // Create rotation entries for all animations and frames
+        Object.keys(this.renderData.animations).forEach(animName => {
+            if (!this.frameRotations[animName]) {
+                this.frameRotations[animName] = [];
+            }
+            
+            // Ensure we have rotation data for each frame
+            while (this.frameRotations[animName].length < this.renderData.animations[animName].length) {
+                this.frameRotations[animName].push({ x: 0, y: 0, z: 0 });
+            }
+        });
+    }
+    
     handleResize() {
         this.camera.aspect = this.canvas.clientWidth / this.canvas.clientHeight;
         this.camera.updateProjectionMatrix();
@@ -100,13 +121,13 @@ class GraphicsEditor {
             'scale-all': this.scaleAllShapes.bind(this),
             'rotate-all': this.rotateAllShapes.bind(this),
             'move-all': this.moveAllShapes.bind(this),
+            'rotate-group': this.rotateGroup.bind(this), // New button for group rotation
             'generate-isometric': this.showIsometricModal.bind(this),
             'add-animation': this.addNewAnimation.bind(this),
             'delete-animation': this.deleteAnimation.bind(this),
             'duplicate-frame': this.duplicateFrame.bind(this),
             'delete-frame': this.deleteFrame.bind(this)
         };
-
         Object.entries(buttonMappings).forEach(([id, handler]) => {
             const button = document.getElementById(id);
             if (button) button.addEventListener('click', handler);
@@ -296,15 +317,14 @@ class GraphicsEditor {
         });
     }
     async renderShapes(fireSave = true) {
-        // Remove only top-level shape groups
-        const objectsToRemove = this.scene.children.filter(obj => obj.userData.isShape);
-        objectsToRemove.forEach(obj => {
-            // Dispose of all resources in the hierarchy
-            this.shapeFactory.disposeObject(obj); // Use ShapeFactory's dispose method
+        // Clear the root group
+        while (this.rootGroup.children.length > 0) {
+            const obj = this.rootGroup.children[0];
+            this.shapeFactory.disposeObject(obj);
             this.originalMaterials.delete(obj);
-            this.scene.remove(obj);
-        });
-
+            this.rootGroup.remove(obj);
+        }
+    
         // Add lights if they don't exist
         if (!this.scene.getObjectByName('ambient-light')) {
             const ambientLight = new window.THREE.AmbientLight(0xffffff, 0.6);
@@ -315,14 +335,28 @@ class GraphicsEditor {
             directionalLight.name = 'dir-light';
             this.scene.add(directionalLight);
         }
-
+        
+        // Initialize the frameRotations object if needed
+        if (!this.frameRotations[this.currentAnimation]) {
+            this.initFrameRotations();
+        }
+    
         const currentShapes = this.renderData.animations[this.currentAnimation][this.currentFrame];
-        await this.createObjectsFromJSON(currentShapes, this.scene);
-
+        const group = await this.shapeFactory.createFromJSON(currentShapes);
+        
+        // Add the shapes to the root group
+        this.rootGroup.add(group);
+        
+        // Apply the rotation for the current frame only
+        const frameRotation = this.frameRotations[this.currentAnimation][this.currentFrame];
+        this.rootGroup.rotation.x = frameRotation.x;
+        this.rootGroup.rotation.y = frameRotation.y;
+        this.rootGroup.rotation.z = frameRotation.z;
+    
         document.getElementById('shape-count').textContent = currentShapes.shapes.length;
         document.getElementById('json-content').value = JSON.stringify(this.renderData, null, 2);
-
-        if( fireSave) {
+    
+        if (fireSave) {
             const myCustomEvent = new CustomEvent('saveGraphicsObject', {
                 detail: { data: this.renderData, propertyName: 'render' },
                 bubbles: true,
@@ -331,12 +365,195 @@ class GraphicsEditor {
             document.body.dispatchEvent(myCustomEvent);
         } else {
             let valEl = this.gameEditor.elements.editor.querySelector(`#render-value`);
-            if( valEl ) {
+            if (valEl) {
                 valEl.value = JSON.stringify(this.renderData);
             }
         }
-
+    
         this.highlightSelectedShape();
+    }
+    createRotateGroupModal() {
+        // Make sure frameRotations is initialized
+        if (!this.frameRotations[this.currentAnimation]) {
+            this.initFrameRotations();
+        }
+        
+        // Get current frame rotation
+        const frameRotation = this.frameRotations[this.currentAnimation][this.currentFrame];
+        
+        const modal = document.createElement('div');
+        modal.id = 'rotate-group-modal';
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h2>Rotate Current Frame</h2>
+                <div class="form-row">
+                    <label>X Rotation:</label>
+                    <input type="range" id="group-rotate-x" min="0" max="360" value="${this.radToDeg(frameRotation.x)}">
+                    <span id="group-rotate-x-value">${this.radToDeg(frameRotation.x)}°</span>
+                </div>
+                <div class="form-row">
+                    <label>Y Rotation:</label>
+                    <input type="range" id="group-rotate-y" min="0" max="360" value="${this.radToDeg(frameRotation.y)}">
+                    <span id="group-rotate-y-value">${this.radToDeg(frameRotation.y)}°</span>
+                </div>
+                <div class="form-row">
+                    <label>Z Rotation:</label>
+                    <input type="range" id="group-rotate-z" min="0" max="360" value="${this.radToDeg(frameRotation.z)}">
+                    <span id="group-rotate-z-value">${this.radToDeg(frameRotation.z)}°</span>
+                </div>
+                <div class="button-row">
+                    <button id="group-rotate-reset">Reset</button>
+                    <button id="group-rotate-apply">Apply</button>
+                    <button id="group-rotate-cancel">Cancel</button>
+                    <button id="group-rotate-bake">Bake Into Shapes</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Add event listeners
+        document.getElementById('group-rotate-x').addEventListener('input', this.updateGroupRotationPreview.bind(this));
+        document.getElementById('group-rotate-y').addEventListener('input', this.updateGroupRotationPreview.bind(this));
+        document.getElementById('group-rotate-z').addEventListener('input', this.updateGroupRotationPreview.bind(this));
+        
+        document.getElementById('group-rotate-reset').addEventListener('click', () => {
+            // Reset just the current frame rotation
+            this.frameRotations[this.currentAnimation][this.currentFrame] = { x: 0, y: 0, z: 0 };
+            this.rootGroup.rotation.set(0, 0, 0);
+            modal.classList.remove('show');
+        });
+        
+        document.getElementById('group-rotate-apply').addEventListener('click', () => {
+            // Update the frame rotation with current values
+            this.frameRotations[this.currentAnimation][this.currentFrame] = {
+                x: this.degToRad(document.getElementById('group-rotate-x').value),
+                y: this.degToRad(document.getElementById('group-rotate-y').value),
+                z: this.degToRad(document.getElementById('group-rotate-z').value)
+            };
+            
+            // Apply rotation to the root group
+            const frameRotation = this.frameRotations[this.currentAnimation][this.currentFrame];
+            this.rootGroup.rotation.set(
+                frameRotation.x,
+                frameRotation.y,
+                frameRotation.z
+            );
+            
+            modal.classList.remove('show');
+        });
+        
+        document.getElementById('group-rotate-cancel').addEventListener('click', () => {
+            // Restore original rotation
+            const frameRotation = this.frameRotations[this.currentAnimation][this.currentFrame];
+            this.rootGroup.rotation.set(
+                frameRotation.x,
+                frameRotation.y,
+                frameRotation.z
+            );
+            modal.classList.remove('show');
+        });
+        
+        document.getElementById('group-rotate-bake').addEventListener('click', () => {
+            // Apply the rotation to the individual shapes
+            this.applyGroupRotationToShapes();
+            modal.classList.remove('show');
+        });
+        
+        return modal;
+    }
+    
+    rotateGroup() {
+        // Create modal for group rotation
+        const rotateModal = document.getElementById('rotate-group-modal') || this.createRotateGroupModal();
+        rotateModal.classList.add('show');
+    }
+    // Helper method to update the rotation preview in real-time
+    updateGroupRotationPreview() {
+        const xDeg = document.getElementById('group-rotate-x').value;
+        const yDeg = document.getElementById('group-rotate-y').value;
+        const zDeg = document.getElementById('group-rotate-z').value;
+        
+        document.getElementById('group-rotate-x-value').textContent = `${xDeg}°`;
+        document.getElementById('group-rotate-y-value').textContent = `${yDeg}°`;
+        document.getElementById('group-rotate-z-value').textContent = `${zDeg}°`;
+        
+        // Update the rotation of the root group in real-time
+        this.rootGroup.rotation.set(
+            this.degToRad(xDeg),
+            this.degToRad(yDeg),
+            this.degToRad(zDeg)
+        );
+    }
+    // Add a method to save group rotation to the data 
+    // Only call this when you want to "bake" the rotation into the individual shapes
+    applyGroupRotationToShapes() {
+        const frameRotation = this.frameRotations[this.currentAnimation][this.currentFrame];
+        
+        // Skip if no rotation has been applied
+        if (frameRotation.x === 0 && frameRotation.y === 0 && frameRotation.z === 0) {
+            return;
+        }
+        
+        // Create a rotation matrix from the current frame rotation
+        const rotationMatrix = new window.THREE.Matrix4();
+        rotationMatrix.makeRotationFromEuler(new window.THREE.Euler(
+            frameRotation.x,
+            frameRotation.y,
+            frameRotation.z
+        ));
+        
+        // Apply the rotation to each shape's position in the current frame only
+        const currentShapes = this.renderData.animations[this.currentAnimation][this.currentFrame].shapes;
+        const centerPoint = new window.THREE.Vector3(0, 0, 0);
+        
+        currentShapes.forEach(shape => {
+            // Create a vector for the shape's position
+            const position = new window.THREE.Vector3(
+                shape.x || 0,
+                shape.y || 0,
+                shape.z || 0
+            );
+            
+            // Apply rotation around the center
+            position.sub(centerPoint); // Translate to origin
+            position.applyMatrix4(rotationMatrix); // Apply rotation
+            position.add(centerPoint); // Translate back
+            
+            // Update shape data
+            shape.x = position.x;
+            shape.y = position.y;
+            shape.z = position.z;
+            
+            // Also update the rotation of the shape itself
+            const rotation = new window.THREE.Euler(
+                this.degToRad(shape.rotationX || 0),
+                this.degToRad(shape.rotationY || 0),
+                this.degToRad(shape.rotationZ || 0)
+            );
+            
+            // Apply group rotation to shape's own rotation
+            const quaternion = new window.THREE.Quaternion().setFromEuler(rotation);
+            const groupQuaternion = new window.THREE.Quaternion().setFromEuler(
+                new window.THREE.Euler(frameRotation.x, frameRotation.y, frameRotation.z)
+            );
+            quaternion.premultiply(groupQuaternion);
+            
+            // Convert back to Euler angles
+            const newRotation = new window.THREE.Euler().setFromQuaternion(quaternion);
+            
+            // Update shape rotation data
+            shape.rotationX = this.radToDeg(newRotation.x);
+            shape.rotationY = this.radToDeg(newRotation.y);
+            shape.rotationZ = this.radToDeg(newRotation.z);
+        });
+        
+        // Reset the frame rotation after applying it to shapes
+        this.frameRotations[this.currentAnimation][this.currentFrame] = { x: 0, y: 0, z: 0 };
+        this.rootGroup.rotation.set(0, 0, 0);
+        
+        this.refreshShapes(true);
     }
 //gltf
    async createObjectsFromJSON(shapeData, scene) {
@@ -665,6 +882,10 @@ class GraphicsEditor {
             this.renderData.animations[animName] = [ ...this.renderData.animations["idle"] ];
             this.currentAnimation = animName;
             this.currentFrame = 0;
+            
+            // Initialize rotation data for the new animation
+            this.frameRotations[animName] = this.renderData.animations[animName].map(() => ({ x: 0, y: 0, z: 0 }));
+            
             this.refreshShapes(true);
         }
     }
@@ -684,6 +905,17 @@ class GraphicsEditor {
             const currentShapes = this.renderData.animations[this.currentAnimation][this.currentFrame];
             const newFrame = { shapes: JSON.parse(JSON.stringify(currentShapes.shapes)) };
             this.renderData.animations[this.currentAnimation].splice(this.currentFrame + 1, 0, newFrame);
+            
+            // Duplicate the rotation data for the new frame
+            if (this.frameRotations[this.currentAnimation]) {
+                const currentRotation = this.frameRotations[this.currentAnimation][this.currentFrame];
+                this.frameRotations[this.currentAnimation].splice(this.currentFrame + 1, 0, {
+                    x: currentRotation.x,
+                    y: currentRotation.y,
+                    z: currentRotation.z
+                });
+            }
+            
             this.currentFrame++;
             this.refreshShapes(true);
         }
@@ -692,11 +924,23 @@ class GraphicsEditor {
     deleteFrame() {
         if (this.renderData.animations[this.currentAnimation].length > 1) {
             this.renderData.animations[this.currentAnimation].splice(this.currentFrame, 1);
+            
+            // Remove the rotation data for the deleted frame
+            if (this.frameRotations[this.currentAnimation]) {
+                this.frameRotations[this.currentAnimation].splice(this.currentFrame, 1);
+            }
+            
             this.currentFrame = Math.min(this.currentFrame, this.renderData.animations[this.currentAnimation].length - 1);
             this.refreshShapes(true);
         }
     }
-
+    degToRad(degrees) {
+        return degrees * Math.PI / 180;
+    }
+    
+    radToDeg(radians) {
+        return Math.round(radians * 180 / Math.PI);
+    }
     refreshShapes(param) {
         this.updateShapeList();
         this.renderShapes(param);
@@ -738,6 +982,13 @@ class GraphicsEditor {
             frameItem.addEventListener('click', () => {
                 this.setPreviewAnimationState(false);
                 this.currentFrame = index;
+                
+                // Make sure frameRotations is initialized for the new frame
+                if (!this.frameRotations[this.currentAnimation] || 
+                    !this.frameRotations[this.currentAnimation][this.currentFrame]) {
+                    this.initFrameRotations();
+                }
+                
                 this.refreshShapes(false);
             });
             frameList.appendChild(frameItem);

@@ -93,3 +93,36 @@
     padding: 0 3px;
     font-size: 14px;
 }
+
+#rotate-group-modal .modal-content {
+    width: 400px;
+    padding: 20px;
+}
+
+#rotate-group-modal .form-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+#rotate-group-modal label {
+    width: 100px;
+    display: inline-block;
+}
+
+#rotate-group-modal input[type="range"] {
+    flex-grow: 1;
+    margin: 0 10px;
+}
+
+#rotate-group-modal .button-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+#rotate-group-modal button {
+    margin-left: 10px;
+    padding: 6px 12px;
+    cursor: pointer;
+}

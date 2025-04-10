@@ -1,8 +1,8 @@
 {
   "gridSize": 48,
   "imageSize": 128,
-  "canvasWidth": 1920,
-  "canvasHeight": 1200,
+  "canvasWidth": 2560,
+  "canvasHeight": 1440,
   "title": "Default Project",
   "isIsometric": true,
   "libraries": [

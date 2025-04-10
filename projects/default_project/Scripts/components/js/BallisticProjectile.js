@@ -13,6 +13,7 @@ init({ spawnType, owner, target, stats }) {
     this.stats = stats;
     this.piercedEnemies = [];
     this.ownerStats = this.owner.getComponent("stats").stats;
+    this.animator = this.getComponent("animator");
     this.distanceTraveled = 0;
     this.distanceToSpawnParticle = 24;
     
@@ -30,49 +31,83 @@ init({ spawnType, owner, target, stats }) {
     // Initialize position with Z component
     this.parent.position.z = this.startPosition.z;
     this.positionZ = this.startPosition.z;
+    
+    // Animation state variables
+    this.lastZPosition = this.positionZ;
+    this.animator.setAnimation('ascend');
+    this.peakThreshold = this.maxHeight * 0.1; // 10% threshold for idle at peak
+    this.currentAnimState = 'ascend';
 }
 
 update() {
-this.parent.position.z = this.positionZ;
+    this.parent.position.z = this.positionZ;
     
+    // Save previous z position to detect direction change
+    this.lastZPosition = this.positionZ;
+
     // Calculate progress (0 to 1)
     this.time += this.game.deltaTime;
-       const dx = this.targetPosition.x - this.parent.position.x;
-        const dy = this.targetPosition.y - this.parent.position.y;
-        const distSq = dx * dx + dy * dy;
-        let dist = Math.sqrt(distSq);
+    const dx = this.targetPosition.x - this.parent.position.x;
+    const dy = this.targetPosition.y - this.parent.position.y;
+    const distSq = dx * dx + dy * dy;
+    let dist = Math.sqrt(distSq);
     const speed = this.stats.speed;
     this.parent.position.x += (dx / dist) * speed / (Math.PI);
     this.parent.position.y += (dy / dist) * speed / (Math.PI);
 
 
-     const currentDist = Math.sqrt(
+    const currentDist = Math.sqrt(
         (this.parent.position.x - this.startPosition.x) ** 2 + 
         (this.parent.position.y - this.startPosition.y) ** 2
     );
     const xyprogressToTarget = Math.min(1, currentDist / this.totalDist);
 
     // Parabolic trajectory calculation (2:1 isometric adjusted)
-     this.parent.position.z = this.maxHeight * (1 - Math.pow(2 * xyprogressToTarget - 1, 2));
-    
+    this.parent.position.z = this.maxHeight * (1 - Math.pow(2 * xyprogressToTarget - 1, 2));
+
     this.positionZ = this.parent.position.z;
+    
+    // Calculate distance from peak height to determine if we're near the top
+    const distanceFromPeak = Math.abs(this.positionZ - this.maxHeight);
+    
+    // Check if animation state needs to change based on z movement and proximity to peak
+    if (distanceFromPeak <= this.peakThreshold) {
+        // We're near the peak of the trajectory
+        if (this.currentAnimState !== 'idle') {
+            this.animator.setAnimation('idle');
+            this.currentAnimState = 'idle';
+        }
+    } else if (this.positionZ < this.lastZPosition) {
+        // We're descending and not near the peak
+        if (this.currentAnimState !== 'descend') {
+            this.animator.setAnimation('descend');
+            this.currentAnimState = 'descend';
+        }
+    } else if (this.positionZ > this.lastZPosition) {
+        // We're ascending and not near the peak
+        if (this.currentAnimState !== 'ascend') {
+            this.animator.setAnimation('ascend');
+            this.currentAnimState = 'ascend';
+        }
+    }
+    
     // Check if we've hit the ground (Z <= 0)
     if (this.parent.position.z <= 0) {
         this.parent.position.z = 0; // Snap to ground
-        
+
         // Hit detection - same as before but at current position
         const targetDistSq = (this.parent.position.x - this.target.position.x) ** 2 + 
-                           (this.parent.position.y - this.target.position.y) ** 2;
-        
-        
-     
+                            (this.parent.position.y - this.target.position.y) ** 2;
+
+
+
             // We missed the target but hit the ground - maybe still do splash damage
-       if (this.stats.splashRadius > 0) {
-           this.processSplashDamage();
-       }
-       this.parent.destroy();
-        
-        
+        if (this.stats.splashRadius > 0) {
+            this.processSplashDamage();
+        }
+        this.parent.destroy();
+
+
         return;
     }
     
