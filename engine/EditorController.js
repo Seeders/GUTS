@@ -203,6 +203,10 @@ export class EditorController {
         this.dispatchHook('loadProject', arguments);
     }
 
+    renderObjectList() {
+        this.view.renderObjectList();    
+    }
+
     /**
      * Applies CSS theme to the application
      * Injects theme CSS into document head

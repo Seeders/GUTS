@@ -669,13 +669,13 @@ export class EditorView {
         this.addCustomProperty(propsContainer, '', '');
       });
       document.getElementById('add-renderer-btn')?.addEventListener('click', () => {
-        this.addCustomProperty(propsContainer, 'render', JSON.stringify(this.controller.CONFIG.DEFAULT_RENDER));
+        this.addCustomProperty(propsContainer, 'render', JSON.stringify(this.controller.model.CONFIG.DEFAULT_RENDER));
       });
       document.getElementById('add-tileMap-btn')?.addEventListener('click', () => {
-        this.addCustomProperty(propsContainer, 'tileMap', this.controller.CONFIG.DEFAULT_TILEMAP);
+        this.addCustomProperty(propsContainer, 'tileMap', this.controller.model.CONFIG.DEFAULT_TILEMAP);
       });
       document.getElementById('add-script-btn')?.addEventListener('click', () => {
-        this.addCustomProperty(propsContainer, 'script', this.controller.CONFIG.DEFAULT_SCRIPT);
+        this.addCustomProperty(propsContainer, 'script', this.controller.model.CONFIG.DEFAULT_SCRIPT);
       });
     }
     setupModalEventListeners() {
