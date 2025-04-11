@@ -61,9 +61,13 @@ class AIPromptPanel {
     }
 
     generateContextPrompt(object) {
-        const type = this.gameEditor.core.getSingularType(this.gameEditor.core.state.selectedType);
+        const type = this.gameEditor.model.getSingularType(this.gameEditor.model.state.selectedType);
 		let defaultPrompt = this.config.defaultPrompt.trim().replace(/\$\{type\}/g, type);
-        return `${defaultPrompt}\n\nContext Object: \n\n${JSON.stringify(object, null, 2)}`;
+        let outputObj = {...object};
+        const { selectedObject } = this.gameEditor.model.state;
+        outputObj.id = selectedObject;
+        
+        return `${defaultPrompt}\n\nContext Object: \n\n${JSON.stringify(outputObj, null, 2)}`;
 		
     }
 
@@ -179,12 +183,11 @@ class AIPromptPanel {
                 return;
             }
 
-            const { selectedType } = this.gameEditor.core.state;
-            this.gameEditor.state.project.objectTypes[selectedType][parsedResponse.id] = parsedResponse;
+            const { selectedType } = this.gameEditor.model.state;
+            this.gameEditor.model.getCollections()[selectedType][parsedResponse.id] = parsedResponse;
 
             this.gameEditor.renderObjectList();
             this.gameEditor.selectObject(parsedResponse.id); // Use new id instead of old selectedObject
-            this.gameEditor.saveToLocalStorage();
 
             this.elements.aiPromptModal.classList.remove('show');
         } catch (error) {

@@ -16,7 +16,8 @@
               "x": 0,
               "y": 6,
               "z": 0,
-              "scaleX": 1
+              "scaleX": 1,
+              "name": "base"
             },
             {
               "type": "box",
@@ -26,7 +27,8 @@
               "color": "#707070",
               "x": 0,
               "y": 22,
-              "z": 0
+              "z": 0,
+              "name": "main structure"
             },
             {
               "type": "sphere",
@@ -37,7 +39,8 @@
               "x": 0,
               "y": 32,
               "z": 0,
-              "size": 24
+              "size": 24,
+              "name": "dome"
             },
             {
               "type": "cylinder",
@@ -46,7 +49,8 @@
               "color": "#D8D8D8",
               "x": 0,
               "y": 42,
-              "z": 0
+              "z": 0,
+              "name": "spire"
             },
             {
               "type": "cone",
@@ -55,7 +59,8 @@
               "color": "#6f1eb0",
               "x": 0,
               "y": 62,
-              "z": 0
+              "z": 0,
+              "name": "spire roof"
             },
             {
               "type": "cylinder",
@@ -64,7 +69,8 @@
               "color": "#C0C0C0",
               "x": 16,
               "y": 22,
-              "z": 16
+              "z": 16,
+              "name": "tower1"
             },
             {
               "type": "cylinder",
@@ -73,7 +79,8 @@
               "color": "#C0C0C0",
               "x": -16,
               "y": 22,
-              "z": 16
+              "z": 16,
+              "name": "tower2"
             },
             {
               "type": "cylinder",
@@ -82,7 +89,8 @@
               "color": "#C0C0C0",
               "x": 16,
               "y": 22,
-              "z": -16
+              "z": -16,
+              "name": "tower3"
             },
             {
               "type": "cylinder",
@@ -91,7 +99,8 @@
               "color": "#C0C0C0",
               "x": -16,
               "y": 22,
-              "z": -16
+              "z": -16,
+              "name": "tower4"
             },
             {
               "type": "cone",
@@ -100,7 +109,8 @@
               "color": "#4ade43",
               "x": 16,
               "y": 42,
-              "z": 16
+              "z": 16,
+              "name": "tower1roof"
             },
             {
               "type": "cone",
@@ -109,7 +119,8 @@
               "color": "#fff422",
               "x": -16,
               "y": 42,
-              "z": 16
+              "z": 16,
+              "name": "tower2roof"
             },
             {
               "type": "cone",
@@ -118,7 +129,8 @@
               "color": "#4169E1",
               "x": 16,
               "y": 42,
-              "z": -16
+              "z": -16,
+              "name": "tower3roof"
             },
             {
               "type": "cone",
@@ -127,7 +139,8 @@
               "color": "#ff2227",
               "x": -16,
               "y": 42,
-              "z": -16
+              "z": -16,
+              "name": "tower4roof"
             },
             {
               "type": "box",
@@ -137,7 +150,8 @@
               "color": "#696969",
               "x": 0,
               "y": 2,
-              "z": 0
+              "z": 0,
+              "name": "foundation"
             }
           ]
         }
