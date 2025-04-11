@@ -5421,10 +5421,19 @@ const DEFAULT_PROJECT_CONFIG = {
           }
         }
       },
-      "laser-turret": {
+      "laserTurret": {
         "title": "Laser Turret",
-        "mineAmt": 1,
-        "attackSpeed": 2,
+        "info": "Fires focused laser beams dealing high damage at short range.",
+        "cost": 120,
+        "population": 3,
+        "range": 8,
+        "damage": 150,
+        "attackSpeed": 6,
+        "projectile": "",
+        "critChance": 0,
+        "critMultiplier": 0,
+        "splashRadius": 0,
+        "burnDamage": 0,
         "render": {
           "animations": {
             "idle": [
@@ -5432,99 +5441,126 @@ const DEFAULT_PROJECT_CONFIG = {
                 "shapes": [
                   {
                     "type": "box",
-                    "width": 40,
-                    "height": 12,
-                    "depth": 40,
-                    "color": "#3a3a3a",
+                    "width": 32,
+                    "height": 8,
+                    "depth": 32,
                     "x": 0,
-                    "y": 6,
-                    "z": 0,
-                    "scaleX": 1,
+                    "y": 4,
+                    "z": 1.8,
+                    "color": "#4B4B4B",
                     "name": "base"
                   },
                   {
+                    "type": "cylinder",
+                    "size": 22,
+                    "height": 10,
+                    "x": 0,
+                    "y": 14,
+                    "z": 1.8,
+                    "color": "#333333",
+                    "name": "core"
+                  },
+                  {
                     "type": "box",
-                    "width": 28,
-                    "height": 40,
-                    "depth": 28,
-                    "color": "#5a5a5a",
+                    "width": 18,
+                    "height": 12,
+                    "depth": 18,
+                    "x": 0,
+                    "y": 24,
+                    "z": 1.8,
+                    "color": "#2A2A2A",
+                    "rotationX": 12,
+                    "name": "cannon-head"
+                  },
+                  {
+                    "type": "cylinder",
+                    "size": 6,
+                    "height": 18,
+                    "x": 0,
+                    "y": 28,
+                    "z": 12,
+                    "rotationX": 90,
+                    "color": "#1A1A1A",
+                    "name": "plasma-barrel"
+                  },
+                  {
+                    "type": "cone",
+                    "size": 5,
+                    "height": 8,
+                    "x": 0,
+                    "y": 28,
+                    "z": 20,
+                    "rotationX": 90,
+                    "color": "#00FFFF",
+                    "name": "plasma-emitter"
+                  },
+                  {
+                    "type": "cylinder",
+                    "size": 3,
+                    "height": 10,
+                    "x": -8,
+                    "y": 20,
+                    "z": 1.8,
+                    "color": "#00FFFF",
+                    "name": "left-energy-coil"
+                  },
+                  {
+                    "type": "cylinder",
+                    "size": 3,
+                    "height": 10,
+                    "x": 8,
+                    "y": 20,
+                    "z": 1.8,
+                    "color": "#00FFFF",
+                    "name": "right-energy-coil"
+                  },
+                  {
+                    "type": "sphere",
+                    "size": 4,
+                    "x": 0,
+                    "y": 28,
+                    "z": 20,
+                    "color": "#ff00ff",
+                    "name": "charge-orb"
+                  },
+                  {
+                    "type": "box",
+                    "width": 6,
+                    "height": 6,
+                    "depth": 24,
+                    "x": -12,
+                    "y": 14,
+                    "z": 1.8,
+                    "color": "#00FFFF",
+                    "name": "left-glow-panel"
+                  },
+                  {
+                    "type": "box",
+                    "width": 6,
+                    "height": 6,
+                    "depth": 24,
+                    "x": 12,
+                    "y": 14,
+                    "z": 1.8,
+                    "color": "#00FFFF",
+                    "name": "right-glow-panel"
+                  },
+                  {
+                    "type": "cylinder",
+                    "size": 8,
+                    "height": 4,
                     "x": 0,
                     "y": 32,
-                    "z": 0,
-                    "name": "main-structure"
-                  },
-                  {
-                    "type": "cylinder",
-                    "radius": 10,
-                    "height": 60,
-                    "color": "#ff1a1a",
-                    "x": 0,
-                    "y": 0,
-                    "z": 0,
-                    "name": "laser-emitter",
-                    "size": 3
-                  },
-                  {
-                    "type": "cylinder",
-                    "radius": 4,
-                    "height": 50,
-                    "color": "#4a4a4a",
-                    "x": 16,
-                    "y": 20,
-                    "z": 0,
-                    "name": "support-beam-1",
-                    "size": 4
-                  },
-                  {
-                    "type": "cylinder",
-                    "radius": 4,
-                    "height": 50,
-                    "color": "#4a4a4a",
-                    "x": -16,
-                    "y": 20,
-                    "z": 0,
-                    "name": "support-beam-2",
-                    "size": 4
-                  },
-                  {
-                    "type": "cylinder",
-                    "radius": 4,
-                    "height": 50,
-                    "color": "#4a4a4a",
-                    "x": 0,
-                    "y": 20,
-                    "z": 16,
-                    "name": "support-beam-3",
-                    "size": 4
-                  },
-                  {
-                    "type": "cylinder",
-                    "radius": 4,
-                    "height": 50,
-                    "color": "#666666",
-                    "x": 0,
-                    "y": 20,
-                    "z": -16,
-                    "name": "support-beam-4",
-                    "size": 4
-                  },
-                  {
-                    "type": "cylinder",
-                    "radius": 2,
-                    "height": 40,
-                    "color": "#00ffff",
-                    "x": 0,
-                    "y": 50,
-                    "z": 0,
-                    "name": "glow-effect",
-                    "size": 4
+                    "z": 1.8,
+                    "color": "#FF00FF",
+                    "name": "top-energy-ring"
                   }
                 ]
               }
             ]
           }
         },
-        "id": "laser-turret"
+        "id": "laserTurret"
       }
     },
     "enemies": {
