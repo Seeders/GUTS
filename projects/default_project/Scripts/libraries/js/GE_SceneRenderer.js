@@ -21,8 +21,7 @@ class GE_SceneRenderer {
         this.scene = new window.THREE.Scene();
         
         // Add the root group to the scene
-        this.rootGroup = this.graphicsEditor.rootGroup;
-        this.scene.add(this.rootGroup);
+        this.scene.add(this.graphicsEditor.rootGroup);
 
         // Camera setup
         this.camera = new window.THREE.PerspectiveCamera(

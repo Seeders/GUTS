@@ -8,7 +8,8 @@ class GameLoader extends engine.Component {
     
     async load({config}){
         this.config = config;        
-      
+        this.config.configs.game.canvasWidth = window.outerWidth;
+        this.config.configs.game.canvasHeight = window.outerHeight;
         this.state = new (this.game.libraryClasses.GameState)(this.config);  
         this.game.state = this.state;
 

@@ -16,7 +16,7 @@ class GE_AnimationManager {
             'preview-animation': this.togglePreview.bind(this),
             'add-animation': this.addNewAnimation.bind(this),
             'delete-animation': this.deleteAnimation.bind(this),
-            'duplicate-frame': this.duplicateFrame.bind(this),
+            'add-frame': this.addFrame.bind(this),
             'delete-frame': this.deleteFrame.bind(this)
         };
         Object.entries(buttonMappings).forEach(([id, handler]) => {
@@ -76,13 +76,13 @@ class GE_AnimationManager {
         }
     }
 
-    duplicateFrame() {
+    addFrame() {
         if (this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation].length > 0) {
             const currentShapes = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame];
             const newFrame = { shapes: JSON.parse(JSON.stringify(currentShapes.shapes)) };
             this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation].splice(this.graphicsEditor.state.currentFrame + 1, 0, newFrame);
             
-            // Duplicate the rotation data for the new frame
+            // add the rotation data for the new frame
             if (this.graphicsEditor.frameRotations[this.graphicsEditor.state.currentAnimation]) {
                 const currentRotation = this.graphicsEditor.frameRotations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame];
                 this.graphicsEditor.frameRotations[this.graphicsEditor.state.currentAnimation].splice(this.graphicsEditor.state.currentFrame + 1, 0, {

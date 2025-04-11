@@ -4,6 +4,8 @@ class GE_ShapeManager {
         this.graphicsEditor = graphicsEditor;
         this.shapeFactory = graphicsEditor.shapeFactory;
         this.originalMaterials = new Map();
+        this.originalScale = new window.THREE.Vector3(1, 1, 1); // Store original scale
+        this.originalPosition = new window.THREE.Vector3(0, 0, 0); // Store original position
     }    
 
     init() {   
@@ -14,21 +16,20 @@ class GE_ShapeManager {
     initEventListeners() {
         // Button event listeners
         const buttonMappings = {
-            'add-shape': this.addNewShape.bind(this),
-            'duplicate-shape': this.duplicateSelectedShape.bind(this),
+            'add-shape': this.addSelectedShape.bind(this),
             'delete-shape': this.deleteSelectedShape.bind(this),
             'scale-all': this.scaleAllShapes.bind(this),
-            'rotate-all': this.rotateAllShapes.bind(this),
             'move-all': this.moveAllShapes.bind(this),
-            'move-apply': this.applyMoveModal.bind(this)
+            'rotate-all': this.rotateAllShapes.bind(this), // New button for group rotation
         };
         Object.entries(buttonMappings).forEach(([id, handler]) => {
             const button = document.getElementById(id);
             if (button) button.addEventListener('click', handler);
         });
         
-        document.getElementById('move-cancel').addEventListener('click', () => {
-            document.getElementById('modal-moveAllShapes').classList.remove('show');
+        document.getElementById('move-cancel').addEventListener('click', () => {            
+            const inspector = document.getElementById('inspector');
+            inspector.innerHTML = ``;
         });
 
     }
@@ -42,24 +43,6 @@ class GE_ShapeManager {
         this.updateShapeList();
         this.highlightSelectedShape();
     }
-
-    applyMoveModal() {
-        const xOffset = parseFloat(document.getElementById('move-x').value) || 0;
-        const yOffset = parseFloat(document.getElementById('move-y').value) || 0;
-        const zOffset = parseFloat(document.getElementById('move-z').value) || 0;
-        
-        // Apply the offset to all shapes
-        this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes.forEach(shape => {
-            shape.x = (shape.x || 0) + xOffset;
-            shape.y = (shape.y || 0) + yOffset;
-            shape.z = (shape.z || 0) + zOffset;
-        });
-        this.graphicsEditor.refreshShapes(true);
-        
-        // Hide the modal
-        document.getElementById('modal-moveAllShapes').classList.remove('show');
-    }
-    
 
     highlightSelectedShape() {
         // Remove existing outlines
@@ -125,10 +108,9 @@ class GE_ShapeManager {
     }
     addNewShape() {
         const newShape = {
-            type: 'gltf',            
-            url: 'samples/models/Avocado/Avocado.gltf',
+            type: 'sphere',            
             size: 2,
-            color: '#3498db',
+            color: '#ff0000',
             x: 0,
             y: 0,
             z: 0,
@@ -141,13 +123,15 @@ class GE_ShapeManager {
         this.graphicsEditor.refreshShapes(true);
     }
 
-    duplicateSelectedShape() {
+    addSelectedShape() {
         if (this.graphicsEditor.state.selectedShapeIndex >= 0) {
             const originalShape = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes[this.graphicsEditor.state.selectedShapeIndex];
             const newShape = JSON.parse(JSON.stringify(originalShape));
             this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes.push(newShape);
             this.graphicsEditor.state.selectedShapeIndex = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes.length - 1;
             this.graphicsEditor.refreshShapes(true);
+        } else {
+            this.addNewShape();
         }
     }
 
@@ -162,143 +146,6 @@ class GE_ShapeManager {
             this.graphicsEditor.refreshShapes(true);
         }
     }
-
-    scaleAllShapes() {
-        const currentShapes = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes;
-        if (currentShapes.length === 0) return;
-        const scaleFactor = parseFloat(prompt("Enter scale factor (e.g. 2 for double size, 0.5 for half size):", "1"));
-        if (isNaN(scaleFactor) || scaleFactor <= 0) {
-            alert("Please enter a valid positive number");
-            return;
-        }
-        let centerX = 0, centerY = 0, centerZ = 0;
-        currentShapes.forEach(shape => {
-            centerX += shape.x || 0;
-            centerY += shape.y || 0;
-            centerZ += shape.z || 0;
-        });
-        centerX /= currentShapes.length;
-        centerY /= currentShapes.length;
-        centerZ /= currentShapes.length;
-        currentShapes.forEach(shape => {
-            if (shape.size) shape.size *= scaleFactor;
-            if (shape.width) shape.width *= scaleFactor;
-            if (shape.height) shape.height *= scaleFactor;
-            if (shape.depth) shape.depth *= scaleFactor;
-            if (shape.tubeSize) shape.tubeSize *= scaleFactor;
-            shape.x = centerX + ((shape.x || 0) - centerX) * scaleFactor;
-            shape.y = centerY + ((shape.y || 0) - centerY) * scaleFactor;
-            shape.z = centerZ + ((shape.z || 0) - centerZ) * scaleFactor;
-        });
-        this.graphicsEditor.refreshShapes(true);
-    }
-
-    rotateAllShapes() {
-        const currentShapes = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes;
-        if (currentShapes.length === 0) return;
-
-        // Get modal elements
-        const rotateModal = document.getElementById('rotate-modal');
-        const rotateAngleInput = document.getElementById('rotate-angle');
-        const rotateAxisSelect = document.getElementById('rotate-axis');
-        const rotateCancelBtn = document.getElementById('rotate-cancel');
-        const rotateApplyBtn = document.getElementById('rotate-apply');
-
-        // Reset inputs to default values
-        rotateAngleInput.value = "0";
-        rotateAxisSelect.value = "y"; // Default to Y-axis
-
-        // Show the modal
-        rotateModal.classList.add('show');
-
-        // Cancel button handler
-        rotateCancelBtn.onclick = () => {
-            rotateModal.classList.remove('show');
-        };
-
-        // Apply button handler
-        rotateApplyBtn.onclick = () => {
-            const angleDeg = parseFloat(rotateAngleInput.value);
-            if (isNaN(angleDeg)) {
-                alert("Please enter a valid angle");
-                return;
-            }
-
-            const axis = rotateAxisSelect.value;
-            const angleRad = angleDeg * Math.PI / 180;
-
-            // Calculate the center of all shapes in the current frame
-            let centerX = 0, centerY = 0, centerZ = 0;
-            currentShapes.forEach(shape => {
-                centerX += shape.x || 0;
-                centerY += shape.y || 0;
-                centerZ += shape.z || 0;
-            });
-            centerX /= currentShapes.length;
-            centerY /= currentShapes.length;
-            centerZ /= currentShapes.length;
-
-            // Rotate shapes around the group center by adjusting positions
-            currentShapes.forEach(shape => {
-                const x = shape.x || 0;
-                const y = shape.y || 0;
-                const z = shape.z || 0;
-
-                // Translate to origin relative to center
-                const relX = x - centerX;
-                const relY = y - centerY;
-                const relZ = z - centerZ;
-
-                // Apply rotation around the chosen axis
-                if (axis === 'x') {
-                    // X-axis rotation (y-z plane)
-                    const newRelY = relY * Math.cos(angleRad) - relZ * Math.sin(angleRad);
-                    const newRelZ = relY * Math.sin(angleRad) + relZ * Math.cos(angleRad);
-                    shape.y = centerY + newRelY;
-                    shape.z = centerZ + newRelZ;
-                    // x remains unchanged
-                } else if (axis === 'y') {
-                    // Y-axis rotation (x-z plane)
-                    const newRelX = relX * Math.cos(angleRad) + relZ * Math.sin(angleRad);
-                    const newRelZ = -relX * Math.sin(angleRad) + relZ * Math.cos(angleRad);
-                    shape.x = centerX + newRelX;
-                    shape.z = centerZ + newRelZ;
-                    // y remains unchanged
-                } else if (axis === 'z') {
-                    // Z-axis rotation (x-y plane)
-                    const newRelX = relX * Math.cos(angleRad) - relY * Math.sin(angleRad);
-                    const newRelY = relX * Math.sin(angleRad) + relY * Math.cos(angleRad);
-                    shape.x = centerX + newRelX;
-                    shape.y = centerY + newRelY;
-                    // z remains unchanged
-                }
-                // Individual rotations (rotationX, rotationY, rotationZ) are preserved
-            });
-
-            // Update the scene and hide the modal
-            this.graphicsEditor.refreshShapes(true);
-            rotateModal.classList.remove('show');
-        };
-    }
-
-    moveAllShapes() {
-        if (this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes.length === 0) return;
-        document.getElementById('modal-moveAllShapes').classList.add('show');
-        document.getElementById('move-x').value = '0';
-        document.getElementById('move-y').value = '0';
-        document.getElementById('move-z').value = '0';
-    }
-
-    
-    degToRad(degrees) {
-        return degrees * Math.PI / 180;
-    }
-    
-    radToDeg(radians) {
-        return Math.round(radians * 180 / Math.PI);
-    }
-
-    
 
     updateShapeList() {
         const shapeList = document.getElementById('shape-list');
@@ -397,17 +244,349 @@ class GE_ShapeManager {
         }
     }
 
-    applyJSON() {
-        try {
-            const newData = JSON.parse(document.getElementById('json-content').value);
-            this.graphicsEditor.state.renderData = newData;
-            this.graphicsEditor.state.selectedShapeIndex = this.graphicsEditor.state.renderData.animations.idle[0].shapes.length > 0 ? 0 : -1;
-            
-            this.graphicsEditor.refreshShapes(true);
-        } catch (error) {
-            alert('Invalid JSON: ' + error.message);
+    scaleAllShapes() {
+        const currentShapes = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes;
+        if (currentShapes.length === 0) return;
+        
+        // Store the original scale of the rootGroup
+        this.originalScale.copy(this.graphicsEditor.rootGroup.scale);
+        
+        const inspector = document.getElementById('inspector');
+        inspector.className = 'inspector';
+        inspector.innerHTML = `
+            <h2>Scale All Shapes</h2>
+            <div class="form-row">
+                <label>Scale Factor:</label>
+                <input type="number" id="scale-factor" step="0.1" min="0.1" value="1.0">
+            </div>
+            <div class="button-row">
+                <button id="scale-apply">Apply</button>
+                <button id="scale-reset">Reset</button>
+                <button id="scale-cancel">Cancel</button>
+            </div>
+        `;
+        
+        // Add event listener for live preview
+        document.getElementById('scale-factor').addEventListener('input', this.updateScalePreview.bind(this));
+        
+        // Reset button
+        document.getElementById('scale-reset').addEventListener('click', () => {
+            document.getElementById('scale-factor').value = '1.0';
+            this.graphicsEditor.rootGroup.scale.copy(this.originalScale);
+        });
+        
+        // Apply button
+        document.getElementById('scale-apply').addEventListener('click', this.applyScaleToShapes.bind(this));
+        
+        // Cancel button
+        document.getElementById('scale-cancel').addEventListener('click', () => {
+            // Restore original scale
+            this.graphicsEditor.rootGroup.scale.copy(this.originalScale);
+            inspector.innerHTML = '';
+        });
+    }
+    
+    updateScalePreview() {
+        const scaleFactor = parseFloat(document.getElementById('scale-factor').value);
+        if (!isNaN(scaleFactor) && scaleFactor > 0) {
+            // Apply scale to rootGroup for preview
+            this.graphicsEditor.rootGroup.scale.set(
+                this.originalScale.x * scaleFactor,
+                this.originalScale.y * scaleFactor,
+                this.originalScale.z * scaleFactor
+            );
         }
     }
+    
+    applyScaleToShapes() {
+        const scaleFactor = parseFloat(document.getElementById('scale-factor').value);
+        if (isNaN(scaleFactor) || scaleFactor <= 0) {
+            alert("Please enter a valid positive number");
+            return;
+        }
+        
+        const currentShapes = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes;
+        let centerX = 0, centerY = 0, centerZ = 0;
+        
+        // Calculate center point
+        currentShapes.forEach(shape => {
+            centerX += shape.x || 0;
+            centerY += shape.y || 0;
+            centerZ += shape.z || 0;
+        });
+        centerX /= currentShapes.length;
+        centerY /= currentShapes.length;
+        centerZ /= currentShapes.length;
+        
+        // Apply scaling to each shape's data
+        currentShapes.forEach(shape => {
+            if (shape.size) shape.size *= scaleFactor;
+            if (shape.width) shape.width *= scaleFactor;
+            if (shape.height) shape.height *= scaleFactor;
+            if (shape.depth) shape.depth *= scaleFactor;
+            if (shape.tubeSize) shape.tubeSize *= scaleFactor;
+            shape.x = centerX + ((shape.x || 0) - centerX) * scaleFactor;
+            shape.y = centerY + ((shape.y || 0) - centerY) * scaleFactor;
+            shape.z = centerZ + ((shape.z || 0) - centerZ) * scaleFactor;
+        });
+        
+        // Reset rootGroup scale back to original
+        this.graphicsEditor.rootGroup.scale.copy(this.originalScale);
+        
+        // Refresh shapes with the new data
+        this.graphicsEditor.refreshShapes(true);
+        
+        // Clear the inspector
+        document.getElementById('inspector').innerHTML = '';
+    }
 
+    moveAllShapes() {
+        const currentShapes = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes;
+        if (currentShapes.length === 0) return;
+        
+        // Store the original position of the rootGroup
+        this.originalPosition.copy(this.graphicsEditor.rootGroup.position);
+        
+        const inspector = document.getElementById('inspector');
+        inspector.className = 'inspector';
+        inspector.innerHTML = `
+            <h2>Move All Shapes</h2>
+            <div class="form-row">
+                <label>X Offset:</label>
+                <input type="number" id="move-x" step="0.5" value="0">
+            </div>
+            <div class="form-row">
+                <label>Y Offset:</label>
+                <input type="number" id="move-y" step="0.5" value="0">
+            </div>
+            <div class="form-row">
+                <label>Z Offset:</label>
+                <input type="number" id="move-z" step="0.5" value="0">
+            </div>
+            <div class="button-row">
+                <button id="move-apply">Apply</button>
+                <button id="move-reset">Reset</button>
+                <button id="move-cancel">Cancel</button>
+            </div>
+        `;
+        
+        // Add event listeners for live preview
+        document.getElementById('move-x').addEventListener('input', this.updateMovePreview.bind(this));
+        document.getElementById('move-y').addEventListener('input', this.updateMovePreview.bind(this));
+        document.getElementById('move-z').addEventListener('input', this.updateMovePreview.bind(this));
+        
+        // Reset button
+        document.getElementById('move-reset').addEventListener('click', () => {
+            document.getElementById('move-x').value = '0';
+            document.getElementById('move-y').value = '0';
+            document.getElementById('move-z').value = '0';
+            this.graphicsEditor.rootGroup.position.copy(this.originalPosition);
+        });
+        
+        // Apply button
+        document.getElementById('move-apply').addEventListener('click', this.applyMoveToShapes.bind(this));
+        
+        // Cancel button
+        document.getElementById('move-cancel').addEventListener('click', () => {
+            // Restore original position
+            this.graphicsEditor.rootGroup.position.copy(this.originalPosition);
+            inspector.innerHTML = '';
+        });
+    }
+    
+    updateMovePreview() {
+        const xOffset = parseFloat(document.getElementById('move-x').value) || 0;
+        const yOffset = parseFloat(document.getElementById('move-y').value) || 0;
+        const zOffset = parseFloat(document.getElementById('move-z').value) || 0;
+        
+        // Apply position offset to rootGroup for preview
+        this.graphicsEditor.rootGroup.position.set(
+            this.originalPosition.x + xOffset,
+            this.originalPosition.y + yOffset,
+            this.originalPosition.z + zOffset
+        );
+    }
+    
+    applyMoveToShapes() {
+        const xOffset = parseFloat(document.getElementById('move-x').value) || 0;
+        const yOffset = parseFloat(document.getElementById('move-y').value) || 0;
+        const zOffset = parseFloat(document.getElementById('move-z').value) || 0;
+        
+        // Apply the offset to all shapes
+        const currentShapes = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes;
+        currentShapes.forEach(shape => {
+            shape.x = (shape.x || 0) + xOffset;
+            shape.y = (shape.y || 0) + yOffset;
+            shape.z = (shape.z || 0) + zOffset;
+        });
+        
+        // Reset rootGroup position back to original
+        this.graphicsEditor.rootGroup.position.copy(this.originalPosition);
+        
+        // Refresh shapes with the new data
+        this.graphicsEditor.refreshShapes(true);
+        
+        // Clear the inspector
+        document.getElementById('inspector').innerHTML = '';
+    }  
 
+    rotateAllShapes() {
+        // Make sure frameRotations is initialized
+        if (!this.graphicsEditor.frameRotations[this.graphicsEditor.state.currentAnimation]) {
+            this.graphicsEditor.initFrameRotations();
+        }
+        
+        // Get current frame rotation
+        const frameRotation = this.graphicsEditor.frameRotations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame];
+        
+        const inspector = document.getElementById('inspector');
+        inspector.className = 'inspector';
+        inspector.innerHTML = `
+            <h2>Rotate Current Frame</h2>
+            <div class="form-row">
+                <label>X Rotation:</label>
+                <input type="number" id="group-rotate-x" step="1" value="${this.graphicsEditor.rotationUtils.radToDeg(frameRotation.x)}">
+            </div>
+            <div class="form-row">
+                <label>Y Rotation:</label>
+                <input type="number" id="group-rotate-y" step="1" value="${this.graphicsEditor.rotationUtils.radToDeg(frameRotation.y)}">
+            </div>
+            <div class="form-row">
+                <label>Z Rotation:</label>
+                <input type="number" id="group-rotate-z" step="1" value="${this.graphicsEditor.rotationUtils.radToDeg(frameRotation.z)}">
+            </div>
+            <div class="button-row">
+                <button id="group-rotate-reset">Reset</button>
+                <button id="group-rotate-apply">Apply</button>
+                <button id="group-rotate-cancel">Cancel</button>
+            </div>
+        `;
+        
+        
+        // Add event listeners
+        document.getElementById('group-rotate-x').addEventListener('input', this.updateRotatePreview.bind(this));
+        document.getElementById('group-rotate-y').addEventListener('input', this.updateRotatePreview.bind(this));
+        document.getElementById('group-rotate-z').addEventListener('input', this.updateRotatePreview.bind(this));
+        
+        document.getElementById('group-rotate-reset').addEventListener('click', () => {
+            // Reset just the current frame rotation
+            this.graphicsEditor.frameRotations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame] = { x: 0, y: 0, z: 0 };
+            this.graphicsEditor.rootGroup.rotation.set(0, 0, 0);
+            this.rotateAllShapes();
+        });
+        
+        document.getElementById('group-rotate-apply').addEventListener('click', () => {
+            // Update the frame rotation with current values
+            this.graphicsEditor.frameRotations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame] = {
+                x: this.graphicsEditor.rotationUtils.degToRad(document.getElementById('group-rotate-x').value),
+                y: this.graphicsEditor.rotationUtils.degToRad(document.getElementById('group-rotate-y').value),
+                z: this.graphicsEditor.rotationUtils.degToRad(document.getElementById('group-rotate-z').value)
+            };
+            
+            // Apply rotation to the root group
+            const frameRotation = this.graphicsEditor.frameRotations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame];
+            this.graphicsEditor.rootGroup.rotation.set(
+                frameRotation.x,
+                frameRotation.y,
+                frameRotation.z
+            );
+            
+            this.applyRotationToShapes();
+        });
+        
+        document.getElementById('group-rotate-cancel').addEventListener('click', () => {
+            // Restore original rotation
+            const frameRotation = this.graphicsEditor.frameRotations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame];
+            this.graphicsEditor.rootGroup.rotation.set(
+                frameRotation.x,
+                frameRotation.y,
+                frameRotation.z
+            );
+            const inspector = document.getElementById('inspector');
+            inspector.innerHTML = ``;
+        });        
+    }
+
+    updateRotatePreview() {
+        const xDeg = document.getElementById('group-rotate-x').value;
+        const yDeg = document.getElementById('group-rotate-y').value;
+        const zDeg = document.getElementById('group-rotate-z').value;
+        
+        // Update the rotation of the root group in real-time
+        this.graphicsEditor.rootGroup.rotation.set(
+            this.graphicsEditor.rotationUtils.degToRad(xDeg),
+            this.graphicsEditor.rotationUtils.degToRad(yDeg),
+            this.graphicsEditor.rotationUtils.degToRad(zDeg)
+        );
+    } 
+    
+    applyRotationToShapes() {
+        let currentAnimation = this.graphicsEditor.state.currentAnimation;
+        let currentFrame = this.graphicsEditor.state.currentFrame;
+        const frameRotation = this.graphicsEditor.frameRotations[currentAnimation][currentFrame];
+        
+        // Skip if no rotation has been applied
+        if (frameRotation.x === 0 && frameRotation.y === 0 && frameRotation.z === 0) {
+            return;
+        }
+        
+        // Create a rotation matrix from the current frame rotation
+        const rotationMatrix = new window.THREE.Matrix4();
+        rotationMatrix.makeRotationFromEuler(new window.THREE.Euler(
+            frameRotation.x,
+            frameRotation.y,
+            frameRotation.z
+        ));
+        
+        // Apply the rotation to each shape's position in the current frame only
+        const currentShapes = this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame].shapes;
+        const centerPoint = new window.THREE.Vector3(0, 0, 0);
+        
+        currentShapes.forEach(shape => {
+            // Create a vector for the shape's position
+            const position = new window.THREE.Vector3(
+                shape.x || 0,
+                shape.y || 0,
+                shape.z || 0
+            );
+            
+            // Apply rotation around the center
+            position.sub(centerPoint); // Translate to origin
+            position.applyMatrix4(rotationMatrix); // Apply rotation
+            position.add(centerPoint); // Translate back
+            
+            // Update shape data
+            shape.x = position.x;
+            shape.y = position.y;
+            shape.z = position.z;
+            
+            // Also update the rotation of the shape itself
+            const rotation = new window.THREE.Euler(
+                this.graphicsEditor.rotationUtils.degToRad(shape.rotationX || 0),
+                this.graphicsEditor.rotationUtils.degToRad(shape.rotationY || 0),
+                this.graphicsEditor.rotationUtils.degToRad(shape.rotationZ || 0)
+            );
+            
+            // Apply group rotation to shape's own rotation
+            const quaternion = new window.THREE.Quaternion().setFromEuler(rotation);
+            const groupQuaternion = new window.THREE.Quaternion().setFromEuler(
+                new window.THREE.Euler(frameRotation.x, frameRotation.y, frameRotation.z)
+            );
+            quaternion.premultiply(groupQuaternion);
+            
+            // Convert back to Euler angles
+            const newRotation = new window.THREE.Euler().setFromQuaternion(quaternion);
+            
+            // Update shape rotation data
+            shape.rotationX = this.graphicsEditor.rotationUtils.radToDeg(newRotation.x);
+            shape.rotationY = this.graphicsEditor.rotationUtils.radToDeg(newRotation.y);
+            shape.rotationZ = this.graphicsEditor.rotationUtils.radToDeg(newRotation.z);
+        });
+        
+        // Reset the frame rotation after applying it to shapes
+        this.graphicsEditor.frameRotations[currentAnimation][currentFrame] = { x: 0, y: 0, z: 0 };
+        this.graphicsEditor.rootGroup.rotation.set(0, 0, 0);
+        
+        this.graphicsEditor.refreshShapes(true);
+    }
 }

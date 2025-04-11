@@ -18,7 +18,6 @@ class GE_UIManager {
     initEventListeners() {
         // Button event listeners
         const buttonMappings = {
-            'rotate-group': this.rotateGroup.bind(this), // New button for group rotation
             'generate-isometric': this.showIsometricModal.bind(this),
         };
         Object.entries(buttonMappings).forEach(([id, handler]) => {
@@ -83,106 +82,8 @@ class GE_UIManager {
             }
         }
     }
-
     
-    rotateGroup() {
-        // Create modal for group rotation
-        const rotateModal = document.getElementById('rotate-group-modal') || this.createRotateGroupModal();
-        rotateModal.classList.add('show');
-    }
-    createRotateGroupModal() {
-        // Make sure frameRotations is initialized
-        if (!this.graphicsEditor.frameRotations[this.graphicsEditor.state.currentAnimation]) {
-            this.graphicsEditor.initFrameRotations();
-        }
-        
-        // Get current frame rotation
-        const frameRotation = this.graphicsEditor.frameRotations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame];
-        
-        const modal = document.createElement('div');
-        modal.id = 'rotate-group-modal';
-        modal.className = 'modal';
-        modal.innerHTML = `
-            <div class="modal-content">
-                <h2>Rotate Current Frame</h2>
-                <div class="form-row">
-                    <label>X Rotation:</label>
-                    <input type="range" id="group-rotate-x" min="0" max="360" value="${this.graphicsEditor.rotationUtils.radToDeg(frameRotation.x)}">
-                    <span id="group-rotate-x-value">${this.graphicsEditor.rotationUtils.radToDeg(frameRotation.x)}°</span>
-                </div>
-                <div class="form-row">
-                    <label>Y Rotation:</label>
-                    <input type="range" id="group-rotate-y" min="0" max="360" value="${this.graphicsEditor.rotationUtils.radToDeg(frameRotation.y)}">
-                    <span id="group-rotate-y-value">${this.graphicsEditor.rotationUtils.radToDeg(frameRotation.y)}°</span>
-                </div>
-                <div class="form-row">
-                    <label>Z Rotation:</label>
-                    <input type="range" id="group-rotate-z" min="0" max="360" value="${this.graphicsEditor.rotationUtils.radToDeg(frameRotation.z)}">
-                    <span id="group-rotate-z-value">${this.graphicsEditor.rotationUtils.radToDeg(frameRotation.z)}°</span>
-                </div>
-                <div class="button-row">
-                    <button id="group-rotate-reset">Reset</button>
-                    <button id="group-rotate-apply">Apply</button>
-                    <button id="group-rotate-cancel">Cancel</button>
-                    <button id="group-rotate-bake">Bake Into Shapes</button>
-                </div>
-            </div>
-        `;
-        
-        document.body.appendChild(modal);
-        
-        // Add event listeners
-        document.getElementById('group-rotate-x').addEventListener('input', this.graphicsEditor.updateGroupRotationPreview.bind(this.graphicsEditor));
-        document.getElementById('group-rotate-y').addEventListener('input', this.graphicsEditor.updateGroupRotationPreview.bind(this.graphicsEditor));
-        document.getElementById('group-rotate-z').addEventListener('input', this.graphicsEditor.updateGroupRotationPreview.bind(this.graphicsEditor));
-        
-        document.getElementById('group-rotate-reset').addEventListener('click', () => {
-            // Reset just the current frame rotation
-            this.graphicsEditor.frameRotations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame] = { x: 0, y: 0, z: 0 };
-            this.rootGroup.rotation.set(0, 0, 0);
-            modal.classList.remove('show');
-        });
-        
-        document.getElementById('group-rotate-apply').addEventListener('click', () => {
-            // Update the frame rotation with current values
-            this.graphicsEditor.frameRotations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame] = {
-                x: this.graphicsEditor.rotationUtils.degToRad(document.getElementById('group-rotate-x').value),
-                y: this.graphicsEditor.rotationUtils.degToRad(document.getElementById('group-rotate-y').value),
-                z: this.graphicsEditor.rotationUtils.degToRad(document.getElementById('group-rotate-z').value)
-            };
-            
-            // Apply rotation to the root group
-            const frameRotation = this.graphicsEditor.frameRotations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame];
-            this.graphicsEditor.rootGroup.rotation.set(
-                frameRotation.x,
-                frameRotation.y,
-                frameRotation.z
-            );
-            
-            modal.classList.remove('show');
-        });
-        
-        document.getElementById('group-rotate-cancel').addEventListener('click', () => {
-            // Restore original rotation
-            const frameRotation = this.graphicsEditor.frameRotations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame];
-            this.graphicsEditor.rootGroup.rotation.set(
-                frameRotation.x,
-                frameRotation.y,
-                frameRotation.z
-            );
-            modal.classList.remove('show');
-        });
-        
-        document.getElementById('group-rotate-bake').addEventListener('click', () => {
-            // Apply the rotation to the individual shapes
-            this.graphicsEditor.applyGroupRotationToShapes();
-            modal.classList.remove('show');
-        });
-        
-        return modal;
-    }
 
-    
     showIsometricModal() {
         document.getElementById('modal-generateIsoSprites').classList.add('show');
     }

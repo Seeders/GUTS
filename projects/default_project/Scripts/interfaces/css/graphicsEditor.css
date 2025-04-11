@@ -29,9 +29,18 @@
 
 .toolbar {
     display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
+    flex-direction: column;
     padding: 10px 5px;
+    gap: 5px;
+}
+.toolbar > div {
+    display: flex;
+    gap: 7px;
+    justify-content: space-between;
+}
+.toolbar > div > div {
+    display: flex;
+    gap: 5px;
 }
 
 #shape-list {
