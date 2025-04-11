@@ -6,6 +6,16 @@ class GE_ShapeManager {
         this.originalMaterials = new Map();
         this.originalScale = new window.THREE.Vector3(1, 1, 1); // Store original scale
         this.originalPosition = new window.THREE.Vector3(0, 0, 0); // Store original position
+        this.originalRotation = new window.THREE.Vector3(0, 0, 0); // Store original rotation
+       
+        // Gizmo-related properties
+        this.gizmoGroup = null; // Group to hold gizmo elements
+        this.gizmoMode = "translate"; // Current mode: "translate", "rotate", or "scale"
+        this.selectedAxis = null; // Current axis being dragged (e.g., "x", "y", "z")
+        this.isDragging = false; // Whether the user is currently dragging
+        this.raycaster = new window.THREE.Raycaster();
+        this.mouse = new window.THREE.Vector2();
+        this.lastMouse = new window.THREE.Vector2();
     }    
 
     init() {   
@@ -18,9 +28,9 @@ class GE_ShapeManager {
         const buttonMappings = {
             'add-shape': this.addSelectedShape.bind(this),
             'delete-shape': this.deleteSelectedShape.bind(this),
-            'scale-all': this.scaleAllShapes.bind(this),
-            'move-all': this.moveAllShapes.bind(this),
-            'rotate-all': this.rotateAllShapes.bind(this), // New button for group rotation
+            'scale-all': this.transformGroup.bind(this),
+            'move-all': this.transformGroup.bind(this),
+            'rotate-all': this.transformGroup.bind(this), // New button for group rotation
         };
         Object.entries(buttonMappings).forEach(([id, handler]) => {
             const button = document.getElementById(id);
@@ -32,9 +42,335 @@ class GE_ShapeManager {
             inspector.innerHTML = ``;
         });
 
+        const canvas = this.graphicsEditor.sceneRenderer.renderer.domElement;
+        canvas.addEventListener('mousedown', this.onMouseDown.bind(this));
+        canvas.addEventListener('mousemove', this.onMouseMove.bind(this));
+        canvas.addEventListener('mouseup', this.onMouseUp.bind(this));
     }
-    
+     // Create the gizmo for translation, rotation, or scaling
+     createGizmo() {
+        if (this.gizmoGroup) {
+            this.graphicsEditor.sceneRenderer.scene.remove(this.gizmoGroup);
+            this.gizmoGroup = null;
+        }
 
+        this.gizmoGroup = new window.THREE.Group();
+        this.gizmoGroup.position.copy(this.graphicsEditor.rootGroup.position);
+        this.graphicsEditor.sceneRenderer.scene.add(this.gizmoGroup);
+
+        if (this.gizmoMode === "translate") {
+            // Translation arrows (X: red, Y: green, Z: blue)
+            const arrowLength = 2;
+            const arrowHeadLength = 0.3;
+            const arrowHeadWidth = 0.2;
+
+            // X-axis (red)
+            const xArrow = new window.THREE.ArrowHelper(
+                new window.THREE.Vector3(1, 0, 0),
+                new window.THREE.Vector3(0, 0, 0),
+                arrowLength,
+                0xff0000,
+                arrowHeadLength,
+                arrowHeadWidth
+            );
+            xArrow.name = "translate-x";
+            this.gizmoGroup.add(xArrow);
+
+            // Y-axis (green)
+            const yArrow = new window.THREE.ArrowHelper(
+                new window.THREE.Vector3(0, 1, 0),
+                new window.THREE.Vector3(0, 0, 0),
+                arrowLength,
+                0x00ff00,
+                arrowHeadLength,
+                arrowHeadWidth
+            );
+            yArrow.name = "translate-y";
+            this.gizmoGroup.add(yArrow);
+
+            // Z-axis (blue)
+            const zArrow = new window.THREE.ArrowHelper(
+                new window.THREE.Vector3(0, 0, 1),
+                new window.THREE.Vector3(0, 0, 0),
+                arrowLength,
+                0x0000ff,
+                arrowHeadLength,
+                arrowHeadWidth
+            );
+            zArrow.name = "translate-z";
+            this.gizmoGroup.add(zArrow);
+
+        } else if (this.gizmoMode === "rotate") {
+            // Rotation rings (X: red, Y: green, Z: blue)
+            const ringRadius = 2;
+            const ringTube = 0.05;
+
+            // X-axis (red)
+            const xRingGeometry = new window.THREE.TorusGeometry(ringRadius, ringTube, 16, 100);
+            const xRingMaterial = new window.THREE.MeshBasicMaterial({ color: 0xff0000 });
+            const xRing = new window.THREE.Mesh(xRingGeometry, xRingMaterial);
+            xRing.rotation.y = Math.PI / 2; // Rotate to align with X-axis
+            xRing.name = "rotate-x";
+            this.gizmoGroup.add(xRing);
+
+            // Y-axis (green)
+            const yRingGeometry = new window.THREE.TorusGeometry(ringRadius, ringTube, 16, 100);
+            const yRingMaterial = new window.THREE.MeshBasicMaterial({ color: 0x00ff00 });
+            const yRing = new window.THREE.Mesh(yRingGeometry, yRingMaterial);
+            yRing.rotation.x = Math.PI / 2; // Rotate to align with Y-axis
+            yRing.name = "rotate-y";
+            this.gizmoGroup.add(yRing);
+
+            // Z-axis (blue)
+            const zRingGeometry = new window.THREE.TorusGeometry(ringRadius, ringTube, 16, 100);
+            const zRingMaterial = new window.THREE.MeshBasicMaterial({ color: 0x0000ff });
+            const zRing = new window.THREE.Mesh(zRingGeometry, zRingMaterial);
+            zRing.name = "rotate-z";
+            this.gizmoGroup.add(zRing);
+
+        } else if (this.gizmoMode === "scale") {
+            // Scale boxes (X: red, Y: green, Z: blue)
+            const boxSize = 0.3;
+            const boxDistance = 2;
+
+            // X-axis (red)
+            const xBoxGeometry = new window.THREE.BoxGeometry(boxSize, boxSize, boxSize);
+            const xBoxMaterial = new window.THREE.MeshBasicMaterial({ color: 0xff0000 });
+            const xBox = new window.THREE.Mesh(xBoxGeometry, xBoxMaterial);
+            xBox.position.set(boxDistance, 0, 0);
+            xBox.name = "scale-x";
+            this.gizmoGroup.add(xBox);
+
+            // Y-axis (green)
+            const yBoxGeometry = new window.THREE.BoxGeometry(boxSize, boxSize, boxSize);
+            const yBoxMaterial = new window.THREE.MeshBasicMaterial({ color: 0x00ff00 });
+            const yBox = new window.THREE.Mesh(yBoxGeometry, yBoxMaterial);
+            yBox.position.set(0, boxDistance, 0);
+            yBox.name = "scale-y";
+            this.gizmoGroup.add(yBox);
+
+            // Z-axis (blue)
+            const zBoxGeometry = new window.THREE.BoxGeometry(boxSize, boxSize, boxSize);
+            const zBoxMaterial = new window.THREE.MeshBasicMaterial({ color: 0x0000ff });
+            const zBox = new window.THREE.Mesh(zBoxGeometry, zBoxMaterial);
+            zBox.position.set(0, 0, boxDistance);
+            zBox.name = "scale-z";
+            this.gizmoGroup.add(zBox);
+        }
+    }
+
+     // Mouse event handlers for gizmo interaction
+     onMouseDown(event) {
+        if (!this.gizmoGroup) return;
+
+        const canvas = this.graphicsEditor.sceneRenderer.renderer.domElement;
+        const rect = canvas.getBoundingClientRect();
+        this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+        this.raycaster.setFromCamera(this.mouse, this.graphicsEditor.sceneRenderer.camera);
+        const intersects = this.raycaster.intersectObjects(this.gizmoGroup.children, true);
+
+        if (intersects.length > 0) {
+            const object = intersects[0].object;
+            this.selectedAxis = object.name.split('-')[1]; // e.g., "x", "y", "z"
+            this.isDragging = true;
+
+            // Disable orbit controls (if they exist) during dragging
+            if (this.graphicsEditor.sceneRenderer.controls) {
+                this.graphicsEditor.sceneRenderer.controls.enabled = false;
+            }
+
+            // Store the initial mouse position
+            this.lastMouse.copy(this.mouse);
+        }
+    }
+
+    onMouseMove(event) {
+        if (!this.isDragging || !this.selectedAxis) return;
+
+        const canvas = this.graphicsEditor.sceneRenderer.renderer.domElement;
+        const rect = canvas.getBoundingClientRect();
+        this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+        const deltaMouse = this.mouse.clone().sub(this.lastMouse);
+
+        if (this.gizmoMode === "translate") {
+            // Move the rootGroup along the selected axis
+            const moveSpeed = 5; // Adjust sensitivity
+            if (this.selectedAxis === "x") {
+                this.graphicsEditor.rootGroup.position.x += deltaMouse.x * moveSpeed;
+            } else if (this.selectedAxis === "y") {
+                this.graphicsEditor.rootGroup.position.y += deltaMouse.y * moveSpeed;
+            } else if (this.selectedAxis === "z") {
+                this.graphicsEditor.rootGroup.position.z += deltaMouse.x * moveSpeed; // Using x for Z to match typical 2D mouse movement
+            }
+            this.gizmoGroup.position.copy(this.graphicsEditor.rootGroup.position);
+
+        } else if (this.gizmoMode === "rotate") {
+            // Rotate the rootGroup around the selected axis
+            const rotateSpeed = 2 * Math.PI; // Adjust sensitivity
+            if (this.selectedAxis === "x") {
+                this.graphicsEditor.rootGroup.rotation.x += deltaMouse.y * rotateSpeed;
+            } else if (this.selectedAxis === "y") {
+                this.graphicsEditor.rootGroup.rotation.y += deltaMouse.x * rotateSpeed;
+            } else if (this.selectedAxis === "z") {
+                this.graphicsEditor.rootGroup.rotation.z += deltaMouse.x * rotateSpeed;
+            }
+
+        } else if (this.gizmoMode === "scale") {
+            // Scale the rootGroup along the selected axis
+            const scaleSpeed = 2; // Adjust sensitivity
+            if (this.selectedAxis === "x") {
+                this.graphicsEditor.rootGroup.scale.x += deltaMouse.x * scaleSpeed;
+                if (this.graphicsEditor.rootGroup.scale.x < 0.1) this.graphicsEditor.rootGroup.scale.x = 0.1; // Prevent flipping
+            } else if (this.selectedAxis === "y") {
+                this.graphicsEditor.rootGroup.scale.y += deltaMouse.y * scaleSpeed;
+                if (this.graphicsEditor.rootGroup.scale.y < 0.1) this.graphicsEditor.rootGroup.scale.y = 0.1;
+            } else if (this.selectedAxis === "z") {
+                this.graphicsEditor.rootGroup.scale.z += deltaMouse.x * scaleSpeed;
+                if (this.graphicsEditor.rootGroup.scale.z < 0.1) this.graphicsEditor.rootGroup.scale.z = 0.1;
+            }
+        }
+
+        this.lastMouse.copy(this.mouse);
+    }
+
+    onMouseUp() {
+        this.isDragging = false;
+        this.selectedAxis = null;
+
+        // Re-enable orbit controls (if they exist)
+        if (this.graphicsEditor.sceneRenderer.controls) {
+            this.graphicsEditor.sceneRenderer.controls.enabled = true;
+        }
+    }
+    transformGroup() {
+        const currentShapes = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes;
+        if (currentShapes.length === 0) return;
+
+        // Store the original transform of the rootGroup
+        this.originalPosition.copy(this.graphicsEditor.rootGroup.position);
+        this.originalRotation.copy(this.graphicsEditor.rootGroup.rotation);
+        this.originalScale.copy(this.graphicsEditor.rootGroup.scale);
+
+        // Create the gizmo
+        this.createGizmo();
+
+        // Create the UI for mode switching and applying/canceling
+        const inspector = document.getElementById('inspector');
+        inspector.className = 'inspector';
+        inspector.innerHTML = `
+            <h2>Transform Current Frame</h2>
+            <div class="form-row">
+                <label>Mode:</label>
+                <select id="transform-mode">
+                    <option value="translate" ${this.gizmoMode === "translate" ? "selected" : ""}>Translate</option>
+                    <option value="rotate" ${this.gizmoMode === "rotate" ? "selected" : ""}>Rotate</option>
+                    <option value="scale" ${this.gizmoMode === "scale" ? "selected" : ""}>Scale</option>
+                </select>
+            </div>
+            <div class="button-row">
+                <button id="transform-apply">Apply</button>
+                <button id="transform-reset">Reset</button>
+                <button id="transform-cancel">Cancel</button>
+            </div>
+        `;
+
+        // Mode switcher
+        document.getElementById('transform-mode').addEventListener('change', (event) => {
+            this.gizmoMode = event.target.value;
+            this.createGizmo();
+        });
+
+        // Apply button
+        document.getElementById('transform-apply').addEventListener('click', () => {
+            this.applyTransformToShapes();
+            this.graphicsEditor.sceneRenderer.scene.remove(this.gizmoGroup);
+            this.gizmoGroup = null;
+            inspector.innerHTML = '';
+        });
+
+        // Reset button
+        document.getElementById('transform-reset').addEventListener('click', () => {
+            this.graphicsEditor.rootGroup.position.copy(this.originalPosition);
+            this.graphicsEditor.rootGroup.rotation.copy(this.originalRotation);
+            this.graphicsEditor.rootGroup.scale.copy(this.originalScale);
+            this.gizmoGroup.position.copy(this.graphicsEditor.rootGroup.position);
+        });
+
+        // Cancel button
+        document.getElementById('transform-cancel').addEventListener('click', () => {
+            this.graphicsEditor.rootGroup.position.copy(this.originalPosition);
+            this.graphicsEditor.rootGroup.rotation.copy(this.originalRotation);
+            this.graphicsEditor.rootGroup.scale.copy(this.originalScale);
+            this.graphicsEditor.sceneRenderer.scene.remove(this.gizmoGroup);
+            this.gizmoGroup = null;
+            inspector.innerHTML = '';
+        });
+    }
+    applyTransformToShapes() {
+        const currentShapes = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes;
+
+        const positionOffset = this.graphicsEditor.rootGroup.position.clone();
+        const rotationEuler = this.graphicsEditor.rootGroup.rotation.clone();
+        const scaleFactor = this.graphicsEditor.rootGroup.scale.clone();
+
+        const transformMatrix = new window.THREE.Matrix4();
+        transformMatrix.compose(
+            positionOffset,
+            new window.THREE.Quaternion().setFromEuler(rotationEuler),
+            scaleFactor
+        );
+
+        let centerX = 0, centerY = 0, centerZ = 0;
+        currentShapes.forEach(shape => {
+            centerX += shape.x || 0;
+            centerY += shape.y || 0;
+            centerZ += shape.z || 0;
+        });
+        centerX /= currentShapes.length;
+        centerY /= currentShapes.length;
+        centerZ /= currentShapes.length;
+        const centerPoint = new window.THREE.Vector3(centerX, centerY, centerZ);
+
+        currentShapes.forEach(shape => {
+            const position = new window.THREE.Vector3(shape.x || 0, shape.y || 0, shape.z || 0);
+            position.sub(centerPoint);
+            position.applyMatrix4(transformMatrix);
+            position.add(centerPoint);
+
+            shape.x = position.x;
+            shape.y = position.y;
+            shape.z = position.z;
+
+            const shapeRotation = new window.THREE.Euler(
+                this.graphicsEditor.rotationUtils.degToRad(shape.rotationX || 0),
+                this.graphicsEditor.rotationUtils.degToRad(shape.rotationY || 0),
+                this.graphicsEditor.rotationUtils.degToRad(shape.rotationZ || 0)
+            );
+            const quaternion = new window.THREE.Quaternion().setFromEuler(shapeRotation);
+            const groupQuaternion = new window.THREE.Quaternion().setFromEuler(rotationEuler);
+            quaternion.premultiply(groupQuaternion);
+            const newRotation = new window.THREE.Euler().setFromQuaternion(quaternion);
+            shape.rotationX = this.graphicsEditor.rotationUtils.radToDeg(newRotation.x);
+            shape.rotationY = this.graphicsEditor.rotationUtils.radToDeg(newRotation.y);
+            shape.rotationZ = this.graphicsEditor.rotationUtils.radToDeg(newRotation.z);
+
+            if (shape.size) shape.size *= scaleFactor.x;
+            if (shape.width) shape.width *= scaleFactor.x;
+            if (shape.height) shape.height *= scaleFactor.y;
+            if (shape.depth) shape.depth *= scaleFactor.z;
+            if (shape.tubeSize) shape.tubeSize *= scaleFactor.x;
+        });
+
+        this.graphicsEditor.rootGroup.position.set(0, 0, 0);
+        this.graphicsEditor.rootGroup.rotation.set(0, 0, 0);
+        this.graphicsEditor.rootGroup.scale.set(1, 1, 1);
+
+        this.graphicsEditor.refreshShapes(true);
+    }
     selectShape(index) {
         if(this.graphicsEditor.animationManager.isPreviewingAnimation){
             this.graphicsEditor.setPreviewAnimationState(false);
@@ -148,6 +484,10 @@ class GE_ShapeManager {
     }
 
     updateShapeList() {
+        if (this.gizmoGroup) {
+            this.graphicsEditor.sceneRenderer.scene.remove(this.gizmoGroup);
+            this.gizmoGroup = null;
+        }
         const shapeList = document.getElementById('shape-list');
         shapeList.innerHTML = '';
     
