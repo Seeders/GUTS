@@ -18,7 +18,7 @@ class GraphicsEditor {
             currentAnimation: "idle",
             selectedGroup: "main",
             currentFrame: 0,
-            renderData: { animations: { idle: [{ main: { shapes: [] }, position: {x: 0, y: 0, z: 0}, rotation: {x:0,y:0,z:0}, scale: {x:1, y:1, z:1} }] } }
+            renderData: { animations: { idle: [{ main: { shapes: [], position: {x: 0, y: 0, z: 0}, rotation: {x:0,y:0,z:0}, scale: {x:1, y:1, z:1}} }] } }
         };
         
         this.rootGroup = new window.THREE.Group(); // Main container for all shapes

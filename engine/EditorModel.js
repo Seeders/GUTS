@@ -17,7 +17,7 @@ export class EditorModel {
             GRID_SIZE: 40,
             DEFAULT_TOWER_SIZE: 30,
             DEFAULT_TOWER_COLOR: '#ffffff',
-            DEFAULT_RENDER: { animations: { idle: [{ shapes: [] }] } },
+            DEFAULT_RENDER: { animations: { idle: [{ main: { shapes: [] }, position: {x: 0, y: 0, z: 0}, rotation: {x:0,y:0,z:0}, scale: {x:1, y:1, z:1} }] } },
             DEFAULT_TILEMAP: {},
             DEFAULT_SCRIPT: 'init(){\n\n}'
         };

@@ -14,6 +14,14 @@ class GE_SceneRenderer {
     }
     initEventListeners() {
         document.body.addEventListener('renderGraphicsObject', this.handleRenderObject.bind(this));
+        document.body.addEventListener('resizedEditor', () => { 
+            console.log('resized');
+            this.graphicsEditor.canvas.width = this.gameEditor.getCollections().configs.game.canvasWidth;
+            this.graphicsEditor.canvas.height = this.gameEditor.getCollections().configs.game.canvasHeight;
+            this.graphicsEditor.canvas.setAttribute('style','');
+            this.handleResize();  
+            this.graphicsEditor.refreshShapes(false); 
+        });
         document.getElementById('iso-generate').addEventListener('click', this.generateIsometricSprites.bind(this));
     }
     initThreeJS() {

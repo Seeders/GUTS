@@ -832,7 +832,7 @@ export class EditorView {
                 editor: this.elements.editor.style.height,
                 content: this.elements.mainContentContainer.style.height,
               }
-              console.log(this.lastHeights);
+              this.controller.dispatchHook('resizedEditor', arguments);
             }
             this.isDragging = false;
         });
