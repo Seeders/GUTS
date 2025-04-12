@@ -9,6 +9,7 @@
     "CanvasUtility",
     "TerrainImageProcessor",
     "TileMap",
+    "GE_GroupManager",
     "terrainMapEditor"
   ],
   "propertyName": "tileMap",

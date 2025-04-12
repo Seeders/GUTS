@@ -136,3 +136,86 @@
     padding: 6px 12px;
     cursor: pointer;
 }
+
+/* Base styling for shape list */
+#shape-list {
+    padding: 10px;
+    user-select: none; /* Prevent text selection during drag */
+  }
+  
+  /* Common styles for items */
+  .shape-item, .group-item {
+    padding: 8px;
+    margin: 5px 0;
+    border-radius: 4px;
+    cursor: grab;
+    border: 1px solid transparent;
+    transition: border-color 0.2s;
+  }
+  
+  /* Shapes styling */
+  .shape-item {
+    border-left: 1px solid #555;
+  }
+  
+  .shape-item:active {
+    cursor: grabbing;
+  }
+  
+  /* Group styling */
+  .group-item {
+    border-left: 4px solid #007bff; /* Visual distinction for groups */
+    font-weight: 500;
+  }
+  
+  /* Selected states - use border instead of background */
+  .shape-item.selected, 
+  .group-item.selected {
+    border-color: #4080ff;
+  }
+  
+  /* Drag-over states */
+  .group-item.drag-over,
+  #shape-list.drag-over {
+    border-color: #40a040;
+    box-shadow: 0 0 3px rgba(0, 100, 0, 0.5);
+  }
+  
+  /* Animation for when dragging */
+  .shape-item.dragging {
+    opacity: 0.7;
+  }
+  
+  /* Group shapes container */
+  .group-shapes {
+    margin-left: 15px;
+    padding: 5px;
+    border-left: 2px dashed #666;
+  }
+  
+  /* Ungrouped shapes section */
+  #shape-list .ungrouped-shapes {
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px dashed #666;
+  }
+
+  .transform-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.transform-buttons button {
+    flex: 1;
+    padding: 8px;
+    background: #444;
+    border: 1px solid #666;
+    color: white;
+    cursor: pointer;
+}
+
+.transform-buttons button.active {
+    background: #0066cc;
+    border-color: #0088ff;
+}

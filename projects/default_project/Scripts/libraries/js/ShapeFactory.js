@@ -4,19 +4,28 @@ class ShapeFactory {
         this.gltfLoader = new THREE.GLTFLoader();
     }
 
-    async createFromJSON(shapeData) {
+    async createGroupFromJSON(groupData) {
         const group = new THREE.Group();
-        group.userData.isShape = true; // Mark the group itself
-
+        group.userData = { isGroup: true };
         // Use Promise.all with map instead of forEach to properly await all shapes
-        await Promise.all(shapeData.shapes.map(async (shape, index) => {
+        await Promise.all(groupData.shapes.map(async (shape, index) => {
             if (shape.type === 'gltf') {
                 await this.handleGLTFShape(shape, index, group);
             } else {
                 this.handlePrimitiveShape(shape, index, group);
             }
         }));
+        group.position.x = groupData.position.x;
+        group.position.y = groupData.position.y;
+        group.position.z = groupData.position.z;
+        
+        group.rotation.x = groupData.rotation.x;
+        group.rotation.y = groupData.rotation.y;
+        group.rotation.z = groupData.rotation.z;
 
+        group.scale.x = groupData.scale.x;
+        group.scale.y = groupData.scale.y;
+        group.scale.z = groupData.scale.z;
         return group;
     }
 
@@ -119,7 +128,11 @@ class ShapeFactory {
             (shape.rotationY || 0) * Math.PI / 180,
             (shape.rotationZ || 0) * Math.PI / 180
         );
-
+        mesh.scale.set(
+            shape.scaleX || 1,
+            shape.scaleY || 1,
+            shape.scaleZ || 1
+        );
         group.add(mesh);
     }
 

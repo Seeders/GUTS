@@ -1,15 +1,15 @@
 {
   "title": "Laser Turret",
-  "info": "Fires focused laser beams dealing high damage at short range.",
+  "info": "Fires focused laser beams dealing high damage at mid range.",
   "cost": 120,
   "population": 3,
-  "range": 8,
-  "damage": 150,
-  "attackSpeed": 6,
-  "projectile": "",
+  "range": 5,
+  "damage": 20,
+  "attackSpeed": 0.5,
+  "projectile": "lightning",
   "critChance": 0,
   "critMultiplier": 0,
-  "splashRadius": 0,
+  "piercing": 0,
   "burnDamage": 0,
   "render": {
     "animations": {
@@ -39,7 +39,7 @@
             },
             {
               "type": "box",
-              "width": 18,
+              "width": 12,
               "height": 12,
               "depth": 18,
               "x": 0,
@@ -66,7 +66,7 @@
               "height": 8,
               "x": 0,
               "y": 28,
-              "z": 19,
+              "z": 20,
               "rotationX": 90,
               "color": "#00FFFF",
               "name": "plasma-emitter"
@@ -97,7 +97,7 @@
               "x": 0,
               "y": 28,
               "z": 20,
-              "color": "#FFFFFF",
+              "color": "#ff00ff",
               "name": "charge-orb"
             },
             {
@@ -136,6 +136,5 @@
         }
       ]
     }
-  },
-  "id": "laserTurret"
+  }
 }

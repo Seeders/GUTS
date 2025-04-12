@@ -85,7 +85,7 @@ class GE_SceneRenderer {
     }
 
     async createObjectsFromJSON(shapeData, scene) {
-        const group = await this.shapeFactory.createFromJSON(shapeData);
+        const group = await this.graphicsEditor.shapeFactory.createGroupFromJSON(shapeData);
         scene.add(group);
     }
 
@@ -167,6 +167,6 @@ class GE_SceneRenderer {
         tempRenderer.setRenderTarget(null);
         tempRenderer.dispose();
         renderTarget.dispose();
-        this.displayIsometricSprites(sprites);
+        this.graphicsEditor.displayIsometricSprites(sprites);
     }
 }

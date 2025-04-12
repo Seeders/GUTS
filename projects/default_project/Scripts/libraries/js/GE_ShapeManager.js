@@ -2,24 +2,22 @@ class GE_ShapeManager {
     constructor(gameEditor, graphicsEditor) {
         this.gameEditor = gameEditor;
         this.graphicsEditor = graphicsEditor;
-        this.shapeFactory = graphicsEditor.shapeFactory;
         this.originalMaterials = new Map();
-        this.originalScale = new window.THREE.Vector3(1, 1, 1); // Store original scale
-        this.originalPosition = new window.THREE.Vector3(0, 0, 0); // Store original position
-        this.originalRotation = new window.THREE.Vector3(0, 0, 0); // Store original rotation
-       
-        // Gizmo-related properties
-        this.gizmoGroup = null; // Group to hold gizmo elements
-        this.gizmoMode = "translate"; // Current mode: "translate", "rotate", or "scale"
-        this.selectedAxis = null; // Current axis being dragged (e.g., "x", "y", "z")
-        this.isDragging = false; // Whether the user is currently dragging
+        this.originalScale = new window.THREE.Vector3(1, 1, 1);
+        this.originalPosition = new window.THREE.Vector3(0, 0, 0);
+        this.originalRotation = new window.THREE.Vector3(0, 0, 0);
+        
+        this.gizmoGroup = null;
+        this.gizmoMode = "translate";
+        this.selectedAxis = null;
+        this.isDragging = false;
         this.raycaster = new window.THREE.Raycaster();
         this.mouse = new window.THREE.Vector2();
         this.lastMouse = new window.THREE.Vector2();
     }    
 
     init() {   
-        this.graphicsEditor.refreshShapes(false);
+     //   this.graphicsEditor.refreshShapes(false);
         this.initEventListeners();
 
     }
@@ -28,9 +26,9 @@ class GE_ShapeManager {
         const buttonMappings = {
             'add-shape': this.addSelectedShape.bind(this),
             'delete-shape': this.deleteSelectedShape.bind(this),
-            'scale-all': this.transformGroup.bind(this),
-            'move-all': this.transformGroup.bind(this),
-            'rotate-all': this.transformGroup.bind(this), // New button for group rotation
+            'scale-all': () => { this.gizmoMode = "scale"; this.transformGroup(this.getSelectedGroupOrRoot()); },
+            'move-all': () => {  this.gizmoMode = "translate"; this.transformGroup(this.getSelectedGroupOrRoot()); },
+            'rotate-all': () => {  this.gizmoMode = "rotate"; this.transformGroup(this.getSelectedGroupOrRoot()); }, // New button for group rotation
         };
         Object.entries(buttonMappings).forEach(([id, handler]) => {
             const button = document.getElementById(id);
@@ -50,226 +48,520 @@ class GE_ShapeManager {
      // Create the gizmo for translation, rotation, or scaling
      createGizmo() {
         if (this.gizmoGroup) {
+            this.gizmoGroup.children.forEach(child => {
+                if (child.geometry) child.geometry.dispose();
+                if (child.material) child.material.dispose();
+            });
             this.graphicsEditor.sceneRenderer.scene.remove(this.gizmoGroup);
             this.gizmoGroup = null;
         }
-
+    
         this.gizmoGroup = new window.THREE.Group();
-        this.gizmoGroup.position.copy(this.graphicsEditor.rootGroup.position);
         this.graphicsEditor.sceneRenderer.scene.add(this.gizmoGroup);
-
+    
+        let center = new window.THREE.Vector3();
+        let xOffset = 1, yOffset = 1, zOffset = 1;
+    
+        if (this.currentTransformTarget.children.length > 0) {
+            const boundingBox = new window.THREE.Box3().setFromObject(this.currentTransformTarget);
+            const size = new window.THREE.Vector3();
+            if (!boundingBox.isEmpty() && isFinite(boundingBox.min.x)) {
+                boundingBox.getSize(size);
+                boundingBox.getCenter(center);
+                xOffset = size.x / 2 + 1;
+                yOffset = size.y / 2 + 1;
+                zOffset = size.z / 2 + 1;
+            } else {
+                this.currentTransformTarget.getWorldPosition(center);
+                console.warn("Invalid bounding box; using group position.");
+            }
+        } else {
+            const boundingBox = new window.THREE.Box3().setFromObject(this.currentTransformTarget);
+            const size = new window.THREE.Vector3();
+            if (!boundingBox.isEmpty() && isFinite(boundingBox.min.x)) {
+                boundingBox.getSize(size);
+                boundingBox.getCenter(center);
+                xOffset = size.x / 2 + 1;
+                yOffset = size.y / 2 + 1;
+                zOffset = size.z / 2 + 1;
+            } else {
+                this.currentTransformTarget.getWorldPosition(center);
+                console.warn("Invalid bounding box; using group position.");
+            }
+        }
+    
+        this.gizmoGroup.position.copy(center);
+    
         if (this.gizmoMode === "translate") {
-            // Translation arrows (X: red, Y: green, Z: blue)
-            const arrowLength = 2;
-            const arrowHeadLength = 0.3;
-            const arrowHeadWidth = 0.2;
-
+            const arrowLength = 5;
+            const arrowHeadLength = 2;
+            const arrowHeadWidth = 1;
+    
             // X-axis (red)
-            const xArrow = new window.THREE.ArrowHelper(
-                new window.THREE.Vector3(1, 0, 0),
-                new window.THREE.Vector3(0, 0, 0),
-                arrowLength,
-                0xff0000,
-                arrowHeadLength,
-                arrowHeadWidth
-            );
-            xArrow.name = "translate-x";
-            this.gizmoGroup.add(xArrow);
-
+            const xCylinderGeometry = new window.THREE.CylinderGeometry(0.5, 0.5, arrowLength - arrowHeadLength, 8);
+            const xCylinderMaterial = new window.THREE.MeshBasicMaterial({ color: 0xff0000 });
+            const xCylinder = new window.THREE.Mesh(xCylinderGeometry, xCylinderMaterial);
+            xCylinder.rotation.z = Math.PI / 2;
+            xCylinder.position.x = xOffset + (arrowLength - arrowHeadLength) / 2;
+            xCylinder.name = "translate-x";
+            this.gizmoGroup.add(xCylinder);
+    
+            const xConeGeometry = new window.THREE.ConeGeometry(arrowHeadWidth, arrowHeadLength, 8);
+            const xConeMaterial = new window.THREE.MeshBasicMaterial({ color: 0xff0000 });
+            const xCone = new window.THREE.Mesh(xConeGeometry, xConeMaterial);
+            xCone.rotation.z = 3 * Math.PI / 2;
+            xCone.position.x = xOffset + arrowLength - arrowHeadLength / 2;
+            xCone.name = "translate-x";
+            this.gizmoGroup.add(xCone);
+    
             // Y-axis (green)
-            const yArrow = new window.THREE.ArrowHelper(
-                new window.THREE.Vector3(0, 1, 0),
-                new window.THREE.Vector3(0, 0, 0),
-                arrowLength,
-                0x00ff00,
-                arrowHeadLength,
-                arrowHeadWidth
-            );
-            yArrow.name = "translate-y";
-            this.gizmoGroup.add(yArrow);
-
+            const yCylinderGeometry = new window.THREE.CylinderGeometry(0.5, 0.5, arrowLength - arrowHeadLength, 8);
+            const yCylinderMaterial = new window.THREE.MeshBasicMaterial({ color: 0x00ff00 });
+            const yCylinder = new window.THREE.Mesh(yCylinderGeometry, yCylinderMaterial);
+            yCylinder.position.y = yOffset + (arrowLength - arrowHeadLength) / 2;
+            yCylinder.name = "translate-y";
+            this.gizmoGroup.add(yCylinder);
+    
+            const yConeGeometry = new window.THREE.ConeGeometry(arrowHeadWidth, arrowHeadLength, 8);
+            const yConeMaterial = new window.THREE.MeshBasicMaterial({ color: 0x00ff00 });
+            const yCone = new window.THREE.Mesh(yConeGeometry, yConeMaterial);
+            yCone.position.y = yOffset + arrowLength - arrowHeadLength / 2;
+            yCone.name = "translate-y";
+            this.gizmoGroup.add(yCone);
+    
             // Z-axis (blue)
-            const zArrow = new window.THREE.ArrowHelper(
-                new window.THREE.Vector3(0, 0, 1),
-                new window.THREE.Vector3(0, 0, 0),
-                arrowLength,
-                0x0000ff,
-                arrowHeadLength,
-                arrowHeadWidth
-            );
-            zArrow.name = "translate-z";
-            this.gizmoGroup.add(zArrow);
-
+            const zCylinderGeometry = new window.THREE.CylinderGeometry(0.5, 0.5, arrowLength - arrowHeadLength, 8);
+            const zCylinderMaterial = new window.THREE.MeshBasicMaterial({ color: 0x0000ff });
+            const zCylinder = new window.THREE.Mesh(zCylinderGeometry, zCylinderMaterial);
+            zCylinder.rotation.x = Math.PI / 2;
+            zCylinder.position.z = zOffset + (arrowLength - arrowHeadLength) / 2;
+            zCylinder.name = "translate-z";
+            this.gizmoGroup.add(zCylinder);
+    
+            const zConeGeometry = new window.THREE.ConeGeometry(arrowHeadWidth, arrowHeadLength, 8);
+            const zConeMaterial = new window.THREE.MeshBasicMaterial({ color: 0x0000ff });
+            const zCone = new window.THREE.Mesh(zConeGeometry, zConeMaterial);
+            zCone.rotation.x = Math.PI / 2;
+            zCone.position.z = zOffset + arrowLength - arrowHeadLength / 2;
+            zCone.name = "translate-z";
+            this.gizmoGroup.add(zCone);
         } else if (this.gizmoMode === "rotate") {
-            // Rotation rings (X: red, Y: green, Z: blue)
-            const ringRadius = 2;
-            const ringTube = 0.05;
-
+            const ringRadius = 4;
+            const ringTube = 0.5;
+    
             // X-axis (red)
             const xRingGeometry = new window.THREE.TorusGeometry(ringRadius, ringTube, 16, 100);
             const xRingMaterial = new window.THREE.MeshBasicMaterial({ color: 0xff0000 });
             const xRing = new window.THREE.Mesh(xRingGeometry, xRingMaterial);
-            xRing.rotation.y = Math.PI / 2; // Rotate to align with X-axis
+            xRing.rotation.y = Math.PI / 2;
+            xRing.position.x = xOffset;
             xRing.name = "rotate-x";
             this.gizmoGroup.add(xRing);
-
+    
             // Y-axis (green)
             const yRingGeometry = new window.THREE.TorusGeometry(ringRadius, ringTube, 16, 100);
             const yRingMaterial = new window.THREE.MeshBasicMaterial({ color: 0x00ff00 });
             const yRing = new window.THREE.Mesh(yRingGeometry, yRingMaterial);
-            yRing.rotation.x = Math.PI / 2; // Rotate to align with Y-axis
+            yRing.rotation.x = Math.PI / 2;
+            yRing.position.y = yOffset;
             yRing.name = "rotate-y";
             this.gizmoGroup.add(yRing);
-
+    
             // Z-axis (blue)
             const zRingGeometry = new window.THREE.TorusGeometry(ringRadius, ringTube, 16, 100);
             const zRingMaterial = new window.THREE.MeshBasicMaterial({ color: 0x0000ff });
             const zRing = new window.THREE.Mesh(zRingGeometry, zRingMaterial);
+            zRing.position.z = zOffset;
             zRing.name = "rotate-z";
             this.gizmoGroup.add(zRing);
-
         } else if (this.gizmoMode === "scale") {
-            // Scale boxes (X: red, Y: green, Z: blue)
-            const boxSize = 0.3;
-            const boxDistance = 2;
-
+            const boxSize = 2;
+    
             // X-axis (red)
             const xBoxGeometry = new window.THREE.BoxGeometry(boxSize, boxSize, boxSize);
             const xBoxMaterial = new window.THREE.MeshBasicMaterial({ color: 0xff0000 });
             const xBox = new window.THREE.Mesh(xBoxGeometry, xBoxMaterial);
-            xBox.position.set(boxDistance, 0, 0);
+            xBox.position.set(xOffset, 0, 0);
             xBox.name = "scale-x";
             this.gizmoGroup.add(xBox);
-
+    
             // Y-axis (green)
             const yBoxGeometry = new window.THREE.BoxGeometry(boxSize, boxSize, boxSize);
             const yBoxMaterial = new window.THREE.MeshBasicMaterial({ color: 0x00ff00 });
             const yBox = new window.THREE.Mesh(yBoxGeometry, yBoxMaterial);
-            yBox.position.set(0, boxDistance, 0);
+            yBox.position.set(0, yOffset, 0);
             yBox.name = "scale-y";
             this.gizmoGroup.add(yBox);
-
+    
             // Z-axis (blue)
             const zBoxGeometry = new window.THREE.BoxGeometry(boxSize, boxSize, boxSize);
             const zBoxMaterial = new window.THREE.MeshBasicMaterial({ color: 0x0000ff });
             const zBox = new window.THREE.Mesh(zBoxGeometry, zBoxMaterial);
-            zBox.position.set(0, 0, boxDistance);
+            zBox.position.set(0, 0, zOffset);
             zBox.name = "scale-z";
             this.gizmoGroup.add(zBox);
         }
     }
-
+    updateInspectorValues() {
+        if (!this.currentTransformTarget) return;
+        
+        // Update all relevant input fields
+        const updateInput = (property, value) => {
+            const input = document.querySelector(`[data-property="${property}"]`);
+            if (input) input.value = value;
+        };
+        
+        // Position
+        updateInput('x', this.currentTransformTarget.position.x);
+        updateInput('y', this.currentTransformTarget.position.y);
+        updateInput('z', this.currentTransformTarget.position.z);
+        
+        // Rotation (convert to degrees)
+        updateInput('rotationX', this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.x));
+        updateInput('rotationY', this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.y));
+        updateInput('rotationZ', this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.z));
+        
+        // Scale
+        updateInput('scaleX', this.currentTransformTarget.scale.x);
+        updateInput('scaleY', this.currentTransformTarget.scale.y);
+        updateInput('scaleZ', this.currentTransformTarget.scale.z);
+    }
      // Mouse event handlers for gizmo interaction
      onMouseDown(event) {
-        if (!this.gizmoGroup) return;
-
+        if (!this.gizmoGroup) {
+            console.log("Gizmo group not present");
+            return;
+        }
+    
         const canvas = this.graphicsEditor.sceneRenderer.renderer.domElement;
         const rect = canvas.getBoundingClientRect();
         this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
         this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
+    
         this.raycaster.setFromCamera(this.mouse, this.graphicsEditor.sceneRenderer.camera);
         const intersects = this.raycaster.intersectObjects(this.gizmoGroup.children, true);
-
+    
         if (intersects.length > 0) {
             const object = intersects[0].object;
-            this.selectedAxis = object.name.split('-')[1]; // e.g., "x", "y", "z"
+            this.selectedAxis = object.name.split('-')[1];
             this.isDragging = true;
-
-            // Disable orbit controls (if they exist) during dragging
+            console.log(`Dragging started on axis: ${this.selectedAxis}`, object);
+    
             if (this.graphicsEditor.sceneRenderer.controls) {
                 this.graphicsEditor.sceneRenderer.controls.enabled = false;
             }
-
-            // Store the initial mouse position
+    
             this.lastMouse.copy(this.mouse);
+        } else {
+            console.log("No intersection with gizmo");
         }
     }
 
     onMouseMove(event) {
-        if (!this.isDragging || !this.selectedAxis) return;
-
+        if (!this.isDragging || !this.selectedAxis || !this.currentTransformTarget) return;
+        
         const canvas = this.graphicsEditor.sceneRenderer.renderer.domElement;
         const rect = canvas.getBoundingClientRect();
         this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
         this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
         const deltaMouse = this.mouse.clone().sub(this.lastMouse);
-
+        
+        const camera = this.graphicsEditor.sceneRenderer.camera;
+        const cameraPosition = camera.position.clone();
+        const objectPosition = this.currentTransformTarget.position.clone();
+        
+        const cameraRight = new window.THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+        const cameraUp = new window.THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion);
+        const cameraForward = new window.THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+        const cameraToObject = objectPosition.clone().sub(cameraPosition);
+        
         if (this.gizmoMode === "translate") {
-            // Move the rootGroup along the selected axis
-            const moveSpeed = 5; // Adjust sensitivity
+            const moveSpeed = 100;
+            
             if (this.selectedAxis === "x") {
-                this.graphicsEditor.rootGroup.position.x += deltaMouse.x * moveSpeed;
+                const worldX = new window.THREE.Vector3(1, 0, 0);
+                const dotProduct = worldX.dot(cameraRight);
+                const moveFactor = Math.sign(dotProduct) * deltaMouse.x * moveSpeed;
+                this.currentTransformTarget.position.x += moveFactor;
             } else if (this.selectedAxis === "y") {
-                this.graphicsEditor.rootGroup.position.y += deltaMouse.y * moveSpeed;
+                const worldY = new window.THREE.Vector3(0, 1, 0);
+                const dotProduct = worldY.dot(cameraUp);
+                const moveFactor = Math.sign(dotProduct) * deltaMouse.y * moveSpeed;
+                this.currentTransformTarget.position.y += moveFactor;
             } else if (this.selectedAxis === "z") {
-                this.graphicsEditor.rootGroup.position.z += deltaMouse.x * moveSpeed; // Using x for Z to match typical 2D mouse movement
+                const worldZ = new window.THREE.Vector3(0, 0, 1);
+                const cameraRightXZ = new window.THREE.Vector3(cameraRight.x, 0, cameraRight.z).normalize();
+                const dotProduct = worldZ.dot(cameraRightXZ);
+                const moveFactor = Math.sign(dotProduct) * deltaMouse.x * moveSpeed;
+                this.currentTransformTarget.position.z += moveFactor;
             }
-            this.gizmoGroup.position.copy(this.graphicsEditor.rootGroup.position);
-
         } else if (this.gizmoMode === "rotate") {
-            // Rotate the rootGroup around the selected axis
-            const rotateSpeed = 2 * Math.PI; // Adjust sensitivity
+            const rotateSpeed = 2 * Math.PI;
+            
             if (this.selectedAxis === "x") {
-                this.graphicsEditor.rootGroup.rotation.x += deltaMouse.y * rotateSpeed;
+                const worldX = new window.THREE.Vector3(1, 0, 0);
+                const dotProduct = worldX.dot(cameraRight);
+                const rotateFactor = -Math.sign(dotProduct) * deltaMouse.x * rotateSpeed;
+                this.currentTransformTarget.rotation.x += rotateFactor;
             } else if (this.selectedAxis === "y") {
-                this.graphicsEditor.rootGroup.rotation.y += deltaMouse.x * rotateSpeed;
+                const worldY = new window.THREE.Vector3(0, 1, 0);
+                const dotProduct = worldY.dot(cameraUp);
+                const rotateFactor = Math.sign(dotProduct) * deltaMouse.x * rotateSpeed;
+                this.currentTransformTarget.rotation.y += rotateFactor;
             } else if (this.selectedAxis === "z") {
-                this.graphicsEditor.rootGroup.rotation.z += deltaMouse.x * rotateSpeed;
+                const worldZ = new window.THREE.Vector3(0, 0, 1);
+                const dotProduct = cameraToObject.normalize().dot(worldZ);
+                const rotateFactor = Math.sign(dotProduct) * deltaMouse.x * rotateSpeed;
+                this.currentTransformTarget.rotation.z += rotateFactor;
             }
-
         } else if (this.gizmoMode === "scale") {
-            // Scale the rootGroup along the selected axis
-            const scaleSpeed = 2; // Adjust sensitivity
+            const scaleSpeed = 2;
+            let scaleFactor = 0;
+            
             if (this.selectedAxis === "x") {
-                this.graphicsEditor.rootGroup.scale.x += deltaMouse.x * scaleSpeed;
-                if (this.graphicsEditor.rootGroup.scale.x < 0.1) this.graphicsEditor.rootGroup.scale.x = 0.1; // Prevent flipping
+                const worldX = new window.THREE.Vector3(1, 0, 0);
+                const dotProduct = worldX.dot(cameraRight);
+                scaleFactor = Math.sign(dotProduct) * deltaMouse.x * scaleSpeed;
             } else if (this.selectedAxis === "y") {
-                this.graphicsEditor.rootGroup.scale.y += deltaMouse.y * scaleSpeed;
-                if (this.graphicsEditor.rootGroup.scale.y < 0.1) this.graphicsEditor.rootGroup.scale.y = 0.1;
+                const worldY = new window.THREE.Vector3(0, 1, 0);
+                const dotProduct = worldY.dot(cameraUp);
+                scaleFactor = Math.sign(dotProduct) * deltaMouse.y * scaleSpeed;
             } else if (this.selectedAxis === "z") {
-                this.graphicsEditor.rootGroup.scale.z += deltaMouse.x * scaleSpeed;
-                if (this.graphicsEditor.rootGroup.scale.z < 0.1) this.graphicsEditor.rootGroup.scale.z = 0.1;
+                const worldZ = new window.THREE.Vector3(0, 0, 1);
+                const cameraRightXZ = new window.THREE.Vector3(cameraRight.x, 0, cameraRight.z).normalize();
+                const dotProduct = worldZ.dot(cameraRightXZ);
+                scaleFactor = Math.sign(dotProduct) * deltaMouse.x * scaleSpeed;
+            }
+            
+            if (this.selectedAxis === "x") {
+                this.currentTransformTarget.scale.x += scaleFactor;
+                if (this.currentTransformTarget.scale.x < 0.1) this.currentTransformTarget.scale.x = 0.1;
+            } else if (this.selectedAxis === "y") {
+                this.currentTransformTarget.scale.y += scaleFactor;
+                if (this.currentTransformTarget.scale.y < 0.1) this.currentTransformTarget.scale.y = 0.1;
+            } else if (this.selectedAxis === "z") {
+                this.currentTransformTarget.scale.z += scaleFactor;
+                if (this.currentTransformTarget.scale.z < 0.1) this.currentTransformTarget.scale.z = 0.1;
             }
         }
-
+        this.updateGizmoPosition();
         this.lastMouse.copy(this.mouse);
+        this.applyCurrentTransform(); // New method to update data model
+        this.updateInspectorValues(); // Keep UI in sync
+    }
+    applyCurrentTransform() {
+        if (!this.currentTransformTarget) return;
+    
+        // For groups
+        if (this.currentTransformTarget.userData?.isGroup) {
+            const groupId = this.currentTransformTarget.name;
+            const groupData = this.graphicsEditor.groupManager.getGroupData(groupId);
+            
+            // Directly update group transform without full refresh
+            groupData.position = {
+                x: this.currentTransformTarget.position.x,
+                y: this.currentTransformTarget.position.y,
+                z: this.currentTransformTarget.position.z
+            };
+            groupData.rotation = {
+                x: this.currentTransformTarget.rotation.x,
+                y: this.currentTransformTarget.rotation.y,
+                z: this.currentTransformTarget.rotation.z
+            };
+            groupData.scale = {
+                x: this.currentTransformTarget.scale.x,
+                y: this.currentTransformTarget.scale.y,
+                z: this.currentTransformTarget.scale.z
+            };
+            
+            // Only update the transform, not the entire scene
+            this.updateGizmoPosition();
+            return;
+        }
+        // For individual shapes
+        else if (this.graphicsEditor.state.selectedShapeIndex >= 0) {
+            const shape = this.getCurrentShape();
+            if (shape) {
+                shape.x = this.currentTransformTarget.position.x;
+                shape.y = this.currentTransformTarget.position.y;
+                shape.z = this.currentTransformTarget.position.z;
+                
+                shape.rotationX = this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.x);
+                shape.rotationY = this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.y);
+                shape.rotationZ = this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.z);
+                
+                shape.scaleX = this.currentTransformTarget.scale.x;
+                shape.scaleY = this.currentTransformTarget.scale.y;
+                shape.scaleZ = this.currentTransformTarget.scale.z;
+            }
+        }
+        
+        // Optional: Auto-save or trigger update
+        this.graphicsEditor.refreshShapes(false);
+    }
+    updateGizmoPosition() {
+        if (!this.currentTransformTarget || !this.gizmoGroup) return;
+    
+        let center = new window.THREE.Vector3();
+        let xOffset = 1, yOffset = 1, zOffset = 1;
+    
+        if (this.currentTransformTarget.children.length > 0) {
+            const boundingBox = new window.THREE.Box3().setFromObject(this.currentTransformTarget);
+            const size = new window.THREE.Vector3();
+            if (!boundingBox.isEmpty() && isFinite(boundingBox.min.x)) {
+                boundingBox.getSize(size);
+                boundingBox.getCenter(center);
+                xOffset = size.x / 2 + 1;
+                yOffset = size.y / 2 + 1;
+                zOffset = size.z / 2 + 1;
+            } else {
+                this.currentTransformTarget.getWorldPosition(center);
+                console.warn("Invalid bounding box; using group position.");
+            }
+        } else {
+            const boundingBox = new window.THREE.Box3().setFromObject(this.currentTransformTarget);
+            const size = new window.THREE.Vector3();
+            if (!boundingBox.isEmpty() && isFinite(boundingBox.min.x)) {
+                boundingBox.getSize(size);
+                boundingBox.getCenter(center);
+                xOffset = size.x / 2 + 1;
+                yOffset = size.y / 2 + 1;
+                zOffset = size.z / 2 + 1;
+            } else {
+                this.currentTransformTarget.getWorldPosition(center);
+                console.warn("Invalid bounding box; using group position.");
+            }
+        }
+    
+        this.gizmoGroup.position.copy(center);
+    
+        this.gizmoGroup.children.forEach(child => {
+            const name = child.name;
+            if (!name) return;
+    
+            child.position.set(0, 0, 0);
+    
+            if (name.startsWith("translate-")) {
+                const arrowLength = 5;
+                const arrowHeadLength = 2;
+                if (name === "translate-x") {
+                    child.position.x = xOffset + (child.geometry.type === "CylinderGeometry" ? (arrowLength - arrowHeadLength) / 2 : arrowLength - arrowHeadLength / 2);
+                } else if (name === "translate-y") {
+                    child.position.y = yOffset + (child.geometry.type === "CylinderGeometry" ? (arrowLength - arrowHeadLength) / 2 : arrowLength - arrowHeadLength / 2);
+                } else if (name === "translate-z") {
+                    child.position.z = zOffset + (child.geometry.type === "CylinderGeometry" ? (arrowLength - arrowHeadLength) / 2 : arrowLength - arrowHeadLength / 2);
+                }
+            } else if (name.startsWith("rotate-")) {
+                if (name === "rotate-x") child.position.x = xOffset;
+                else if (name === "rotate-y") child.position.y = yOffset;
+                else if (name === "rotate-z") child.position.z = zOffset;
+            } else if (name.startsWith("scale-")) {
+                if (name === "scale-x") child.position.x = xOffset;
+                else if (name === "scale-y") child.position.y = yOffset;
+                else if (name === "scale-z") child.position.z = zOffset;
+            }
+        });
+    
+        // Ensure gizmoGroup is in scene (not rootGroup, as it’s a UI overlay)
+        if (!this.graphicsEditor.sceneRenderer.scene.children.includes(this.gizmoGroup)) {
+            this.graphicsEditor.sceneRenderer.scene.add(this.gizmoGroup);
+            console.warn("Gizmo was removed from scene; re-added.");
+        }
     }
 
     onMouseUp() {
         this.isDragging = false;
         this.selectedAxis = null;
 
-        // Re-enable orbit controls (if they exist)
         if (this.graphicsEditor.sceneRenderer.controls) {
             this.graphicsEditor.sceneRenderer.controls.enabled = true;
         }
     }
-    transformGroup() {
-        const currentShapes = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes;
-        if (currentShapes.length === 0) return;
-
-        // Store the original transform of the rootGroup
-        this.originalPosition.copy(this.graphicsEditor.rootGroup.position);
-        this.originalRotation.copy(this.graphicsEditor.rootGroup.rotation);
-        this.originalScale.copy(this.graphicsEditor.rootGroup.scale);
-
-        // Create the gizmo
-        this.createGizmo();
-
-        // Create the UI for mode switching and applying/canceling
+    getSelectedGroupOrRoot() {
+        const selectedGroupName = this.graphicsEditor.groupManager.selectedGroupName;
+        if (selectedGroupName) {
+            let foundGroup = null;
+            this.graphicsEditor.rootGroup.traverse(obj => {
+                if (obj.isGroup && obj.name === selectedGroupName && obj.userData.isGroup) {
+                    foundGroup = obj;
+                }
+            });
+            let foundShape = null;
+            if(foundGroup){
+                foundGroup.traverse(obj => {
+                    if (obj.userData.isShape && obj.userData.index == this.graphicsEditor.state.selectedShapeIndex) {
+                        foundShape = obj;
+                    }
+                });
+            }
+            return foundShape || foundGroup || this.graphicsEditor.rootGroup;
+        }
+        return this.graphicsEditor.rootGroup;
+    }
+    transformGroup(targetObject) {
+        // Determine the target object - prioritize the passed target, then selected group, then rootGroup
+        let target;
+        if (targetObject) {
+            target = targetObject;
+        } else {
+            // Try to get the currently selected group
+            const selectedGroupName = this.graphicsEditor.groupManager.selectedGroupName;
+            if (selectedGroupName) {
+                // Find the group in the scene
+                this.graphicsEditor.rootGroup.traverse(obj => {
+                    if (obj.isGroup && obj.name === selectedGroupName && obj.userData.isGroup) {
+                        target = obj;
+                    }
+                });
+            }
+            
+            // Fall back to rootGroup if no selected group found
+            if (!target) {
+                target = this.graphicsEditor.rootGroup;
+            }
+        }
+    
+        // If we still don't have a target, return
+        if (!target) return;
+    
+        this.currentTransformTarget = target;
+    
+        // If target is a group, ensure it's in rootGroup and populated
+        if (this.currentTransformTarget.userData?.isGroup) {
+            const groupId = this.currentTransformTarget.userData.groupId;
+            const group = this.graphicsEditor.groupManager.getGroupObject(groupId);
+            if (group) {
+                // Ensure group is in rootGroup
+                if (this.currentTransformTarget.parent !== this.graphicsEditor.rootGroup) {
+                    if (this.currentTransformTarget.parent) {
+                        this.currentTransformTarget.parent.remove(this.currentTransformTarget);
+                    }
+                    this.graphicsEditor.rootGroup.add(this.currentTransformTarget);
+                }    
+            }
+        }
+    
+        this.originalPosition.copy(this.currentTransformTarget.position);
+        this.originalRotation.copy(this.currentTransformTarget.rotation);
+        this.originalScale.copy(this.currentTransformTarget.scale);
+        
+        // Inject transform controls into inspector instead of creating separate UI
+        this.injectTransformControlsToInspector();
+    }
+    
+    // New method to inject transform controls into the inspector
+    injectTransformControlsToInspector() {
         const inspector = document.getElementById('inspector');
-        inspector.className = 'inspector';
-        inspector.innerHTML = `
-            <h2>Transform Current Frame</h2>
-            <div class="form-row">
-                <label>Mode:</label>
-                <select id="transform-mode">
-                    <option value="translate" ${this.gizmoMode === "translate" ? "selected" : ""}>Translate</option>
-                    <option value="rotate" ${this.gizmoMode === "rotate" ? "selected" : ""}>Rotate</option>
-                    <option value="scale" ${this.gizmoMode === "scale" ? "selected" : ""}>Scale</option>
-                </select>
+        
+        // Create transform controls section
+        const transformSection = document.createElement('div');
+        transformSection.className = 'transform-controls-section';
+        transformSection.innerHTML = `
+            <h3>Transform ${this.currentTransformTarget.name || 'Current Frame'}</h3>
+            <div class="transform-buttons">
+                <button id="translate-btn" class="${this.gizmoMode === 'translate' ? 'active' : ''}">Translate</button>
+                <button id="rotate-btn" class="${this.gizmoMode === 'rotate' ? 'active' : ''}">Rotate</button>
+                <button id="scale-btn" class="${this.gizmoMode === 'scale' ? 'active' : ''}">Scale</button>
             </div>
             <div class="button-row">
                 <button id="transform-apply">Apply</button>
@@ -277,107 +569,196 @@ class GE_ShapeManager {
                 <button id="transform-cancel">Cancel</button>
             </div>
         `;
-
-        // Mode switcher
-        document.getElementById('transform-mode').addEventListener('change', (event) => {
-            this.gizmoMode = event.target.value;
-            this.createGizmo();
+        
+        // Insert at the top of the inspector
+        if (inspector.firstChild) {
+            inspector.insertBefore(transformSection, inspector.firstChild);
+        } else {
+            inspector.appendChild(transformSection);
+        }
+        
+        // Add event listeners for transform mode buttons
+        document.getElementById('translate-btn').addEventListener('click', () => {
+            this.setGizmoMode('translate');
+            this.updateModeButtonsUI();
         });
-
-        // Apply button
+        
+        document.getElementById('rotate-btn').addEventListener('click', () => {
+            this.setGizmoMode('rotate');
+            this.updateModeButtonsUI();
+        });
+        
+        document.getElementById('scale-btn').addEventListener('click', () => {
+            this.setGizmoMode('scale');
+            this.updateModeButtonsUI();
+        });
+        
         document.getElementById('transform-apply').addEventListener('click', () => {
             this.applyTransformToShapes();
             this.graphicsEditor.sceneRenderer.scene.remove(this.gizmoGroup);
             this.gizmoGroup = null;
-            inspector.innerHTML = '';
+            this.currentTransformTarget = null;
+            this.removeTransformControlsFromInspector();
         });
-
-        // Reset button
+        
         document.getElementById('transform-reset').addEventListener('click', () => {
-            this.graphicsEditor.rootGroup.position.copy(this.originalPosition);
-            this.graphicsEditor.rootGroup.rotation.copy(this.originalRotation);
-            this.graphicsEditor.rootGroup.scale.copy(this.originalScale);
-            this.gizmoGroup.position.copy(this.graphicsEditor.rootGroup.position);
+            this.currentTransformTarget.position.copy(this.originalPosition);
+            this.currentTransformTarget.rotation.copy(this.originalRotation);
+            this.currentTransformTarget.scale.copy(this.originalScale);
+            this.updateGizmoPosition();
+            this.updateInspectorValues();
         });
-
-        // Cancel button
+        
         document.getElementById('transform-cancel').addEventListener('click', () => {
-            this.graphicsEditor.rootGroup.position.copy(this.originalPosition);
-            this.graphicsEditor.rootGroup.rotation.copy(this.originalRotation);
-            this.graphicsEditor.rootGroup.scale.copy(this.originalScale);
+            this.currentTransformTarget.position.copy(this.originalPosition);
+            this.currentTransformTarget.rotation.copy(this.originalRotation);
+            this.currentTransformTarget.scale.copy(this.originalScale);
             this.graphicsEditor.sceneRenderer.scene.remove(this.gizmoGroup);
             this.gizmoGroup = null;
-            inspector.innerHTML = '';
+            this.currentTransformTarget = null;
+            this.removeTransformControlsFromInspector();
         });
+        
+        this.createGizmo();
+        this.updateInspectorValues();
+    }
+    
+    // New helper method to set gizmo mode
+    setGizmoMode(mode) {
+        this.gizmoMode = mode;
+        this.createGizmo();
+    }
+    
+    // New helper method to update button UI for transform modes
+    updateModeButtonsUI() {
+        const translateBtn = document.getElementById('translate-btn');
+        const rotateBtn = document.getElementById('rotate-btn');
+        const scaleBtn = document.getElementById('scale-btn');
+        
+        translateBtn.className = this.gizmoMode === 'translate' ? 'active' : '';
+        rotateBtn.className = this.gizmoMode === 'rotate' ? 'active' : '';
+        scaleBtn.className = this.gizmoMode === 'scale' ? 'active' : '';
+    }
+    
+    // New helper method to remove transform controls from inspector
+    removeTransformControlsFromInspector() {
+        const transformSection = document.querySelector('.transform-controls-section');
+        if (transformSection) {
+            transformSection.remove();
+        }
     }
     applyTransformToShapes() {
-        const currentShapes = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes;
+        if (!this.currentTransformTarget) return;
 
-        const positionOffset = this.graphicsEditor.rootGroup.position.clone();
-        const rotationEuler = this.graphicsEditor.rootGroup.rotation.clone();
-        const scaleFactor = this.graphicsEditor.rootGroup.scale.clone();
+        // If transforming the root group, apply to all shapes
+        if (this.currentTransformTarget === this.graphicsEditor.rootGroup) {
+            const currentShapes = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes;
 
-        const transformMatrix = new window.THREE.Matrix4();
-        transformMatrix.compose(
-            positionOffset,
-            new window.THREE.Quaternion().setFromEuler(rotationEuler),
-            scaleFactor
-        );
+            const positionOffset = this.currentTransformTarget.position.clone();
+            const rotationEuler = this.currentTransformTarget.rotation.clone();
+            const scaleFactor = this.currentTransformTarget.scale.clone();
 
-        let centerX = 0, centerY = 0, centerZ = 0;
-        currentShapes.forEach(shape => {
-            centerX += shape.x || 0;
-            centerY += shape.y || 0;
-            centerZ += shape.z || 0;
-        });
-        centerX /= currentShapes.length;
-        centerY /= currentShapes.length;
-        centerZ /= currentShapes.length;
-        const centerPoint = new window.THREE.Vector3(centerX, centerY, centerZ);
-
-        currentShapes.forEach(shape => {
-            const position = new window.THREE.Vector3(shape.x || 0, shape.y || 0, shape.z || 0);
-            position.sub(centerPoint);
-            position.applyMatrix4(transformMatrix);
-            position.add(centerPoint);
-
-            shape.x = position.x;
-            shape.y = position.y;
-            shape.z = position.z;
-
-            const shapeRotation = new window.THREE.Euler(
-                this.graphicsEditor.rotationUtils.degToRad(shape.rotationX || 0),
-                this.graphicsEditor.rotationUtils.degToRad(shape.rotationY || 0),
-                this.graphicsEditor.rotationUtils.degToRad(shape.rotationZ || 0)
+            const transformMatrix = new window.THREE.Matrix4();
+            transformMatrix.compose(
+                positionOffset,
+                new window.THREE.Quaternion().setFromEuler(rotationEuler),
+                scaleFactor
             );
-            const quaternion = new window.THREE.Quaternion().setFromEuler(shapeRotation);
-            const groupQuaternion = new window.THREE.Quaternion().setFromEuler(rotationEuler);
-            quaternion.premultiply(groupQuaternion);
-            const newRotation = new window.THREE.Euler().setFromQuaternion(quaternion);
-            shape.rotationX = this.graphicsEditor.rotationUtils.radToDeg(newRotation.x);
-            shape.rotationY = this.graphicsEditor.rotationUtils.radToDeg(newRotation.y);
-            shape.rotationZ = this.graphicsEditor.rotationUtils.radToDeg(newRotation.z);
 
-            if (shape.size) shape.size *= scaleFactor.x;
-            if (shape.width) shape.width *= scaleFactor.x;
-            if (shape.height) shape.height *= scaleFactor.y;
-            if (shape.depth) shape.depth *= scaleFactor.z;
-            if (shape.tubeSize) shape.tubeSize *= scaleFactor.x;
-        });
+            let centerX = 0, centerY = 0, centerZ = 0;
+            currentShapes.forEach(shape => {
+                centerX += shape.x || 0;
+                centerY += shape.y || 0;
+                centerZ += shape.z || 0;
+            });
+            centerX /= currentShapes.length;
+            centerY /= currentShapes.length;
+            centerZ /= currentShapes.length;
+            const centerPoint = new window.THREE.Vector3(centerX, centerY, centerZ);
 
-        this.graphicsEditor.rootGroup.position.set(0, 0, 0);
-        this.graphicsEditor.rootGroup.rotation.set(0, 0, 0);
-        this.graphicsEditor.rootGroup.scale.set(1, 1, 1);
+            currentShapes.forEach(shape => {
+                const position = new window.THREE.Vector3(shape.x || 0, shape.y || 0, shape.z || 0);
+                position.sub(centerPoint);
+                position.applyMatrix4(transformMatrix);
+                position.add(centerPoint);
+
+                shape.x = position.x;
+                shape.y = position.y;
+                shape.z = position.z;
+
+                const shapeRotation = new window.THREE.Euler(
+                    this.graphicsEditor.rotationUtils.degToRad(shape.rotationX || 0),
+                    this.graphicsEditor.rotationUtils.degToRad(shape.rotationY || 0),
+                    this.graphicsEditor.rotationUtils.degToRad(shape.rotationZ || 0)
+                );
+                const quaternion = new window.THREE.Quaternion().setFromEuler(shapeRotation);
+                const groupQuaternion = new window.THREE.Quaternion().setFromEuler(rotationEuler);
+                quaternion.premultiply(groupQuaternion);
+                const newRotation = new window.THREE.Euler().setFromQuaternion(quaternion);
+                shape.rotationX = this.graphicsEditor.rotationUtils.radToDeg(newRotation.x);
+                shape.rotationY = this.graphicsEditor.rotationUtils.radToDeg(newRotation.y);
+                shape.rotationZ = this.graphicsEditor.rotationUtils.radToDeg(newRotation.z);
+
+                if (shape.size) shape.size *= scaleFactor.x;
+                if (shape.width) shape.width *= scaleFactor.x;
+                if (shape.height) shape.height *= scaleFactor.y;
+                if (shape.depth) shape.depth *= scaleFactor.z;
+                if (shape.tubeSize) shape.tubeSize *= scaleFactor.x;
+            });
+
+            this.currentTransformTarget.position.set(0, 0, 0);
+            this.currentTransformTarget.rotation.set(0, 0, 0);
+            this.currentTransformTarget.scale.set(1, 1, 1);
+        } else {
+            // If transforming a group, update group data in groupManager
+            const groupId = this.currentTransformTarget.name;
+            if (groupId) {
+                this.graphicsEditor.groupManager.applyGroupTransform(
+                    groupId,
+                    this.currentTransformTarget.position,
+                    this.currentTransformTarget.rotation,
+                    this.currentTransformTarget.scale
+                );
+            }
+        }
 
         this.graphicsEditor.refreshShapes(true);
     }
     selectShape(index) {
-        if(this.graphicsEditor.animationManager.isPreviewingAnimation){
+        if (this.graphicsEditor.animationManager.isPreviewingAnimation) {
             this.graphicsEditor.setPreviewAnimationState(false);
         }
+        
+        // Toggle selection if clicking the same shape
         this.graphicsEditor.state.selectedShapeIndex = (this.graphicsEditor.state.selectedShapeIndex === index) ? -1 : index;
+        this.graphicsEditor.state.currentGroup = this.graphicsEditor.groupManager.selectedGroupName;
+        
+        // Update shape list and highlighting
         this.updateShapeList();
         this.highlightSelectedShape();
+        
+        // Show inspector for selected shape
+        const shape = this.getCurrentShape();
+        if (shape) {
+            this.graphicsEditor.createInspector(shape);
+            this.transformGroup(this.getSelectedGroupOrRoot())
+        }
+    }
+
+    getCurrentShape() {
+        if (this.graphicsEditor.state.selectedShapeIndex >= 0) {
+            const currentFrame = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame];
+            const selectedGroup = this.graphicsEditor.state.currentGroup;
+            const shapes = currentFrame[selectedGroup].shapes || [];
+            
+            if (this.graphicsEditor.state.selectedShapeIndex < shapes.length) {
+                const shape = shapes[this.graphicsEditor.state.selectedShapeIndex];
+                if (shape) {
+                    return shape;
+                }
+            }
+        }
+        return null;
     }
 
     highlightSelectedShape() {
@@ -389,62 +770,102 @@ class GE_ShapeManager {
                 if (obj.material) obj.material.dispose();
             }
         });
-        
+    
         // Reset any highlighted materials
         this.originalMaterials.forEach((material, object) => {
             object.material = material;
         });
         this.originalMaterials.clear();
-        
-        // If no shape is selected, return
-        if (this.graphicsEditor.state.selectedShapeIndex < 0 || 
-            this.graphicsEditor.state.selectedShapeIndex >= this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes.length) {
+    
+        // If no shape is selected or invalid selection, return
+        if (this.graphicsEditor.state.selectedShapeIndex < 0) {
             return;
         }
     
-        // Find all meshes belonging to the selected shape (including GLTF children)
+        // Get the selected group name from state (or groupManager if needed)
+        const selectedGroupName = this.graphicsEditor.state.currentGroup || this.graphicsEditor.groupManager.selectedGroupName;
+        if (!selectedGroupName) {
+            console.warn("No group selected");
+            return;
+        }
+    
+        // Find the THREE.Group with matching name under rootGroup
+        let selectedGroup = null;
+        this.graphicsEditor.rootGroup.traverse(obj => {
+            if (obj.isGroup && obj.name === selectedGroupName) {
+                selectedGroup = obj;
+            }
+        });
+    
+        if (!selectedGroup) {
+            console.warn(`No group found with name ${selectedGroupName}`);
+            return;
+        }
+    
+        const currentAnimation = this.graphicsEditor.state.currentAnimation;
+        const currentFrame = this.graphicsEditor.state.currentFrame;
+        const currentFrameData = this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame];
+    
+        if (!currentFrameData) {
+            console.warn("No frame data found");
+            return;
+        }
+    
+        const groupShapes = currentFrameData[selectedGroupName];
+    
+        if (!groupShapes || this.graphicsEditor.state.selectedShapeIndex >= groupShapes.length) {
+            console.warn(`Invalid shape index ${this.graphicsEditor.state.selectedShapeIndex} for group ${selectedGroupName}`);
+            return;
+        }
+    
+        // Find all meshes belonging to the selected shape within the group
         const selectedMeshes = [];
-        this.graphicsEditor.sceneRenderer.scene.traverse(obj => {
-            if (obj.isMesh && ((obj.userData.isShape && obj.userData.index === this.graphicsEditor.state.selectedShapeIndex) || 
-                               (obj.parent && obj.parent.userData.isShape && obj.parent.userData.index === this.graphicsEditor.state.selectedShapeIndex) ||
-                               (obj.userData.isGLTFChild && obj.parent && obj.parent.userData.index === this.graphicsEditor.state.selectedShapeIndex))) {
+        selectedGroup.traverse(obj => {
+            if (obj.isMesh && (
+                // Direct shape object that matches the index
+                (obj.userData.isShape &&
+                 obj.userData.index === this.graphicsEditor.state.selectedShapeIndex) ||
+                // Parent is a shape object that matches the index
+                (obj.parent &&
+                 obj.parent.userData.isShape &&
+                 obj.parent.userData.index === this.graphicsEditor.state.selectedShapeIndex) ||
+                // GLTF child of selected shape that matches the index
+                (obj.userData.isGLTFChild &&
+                 obj.parent &&
+                 obj.parent.userData.index === this.graphicsEditor.state.selectedShapeIndex)
+            )) {
                 selectedMeshes.push(obj);
             }
         });
     
         // Handle highlighting for all relevant meshes
         selectedMeshes.forEach(mesh => {
-            // Store original material
             this.originalMaterials.set(mesh, mesh.material);
-            
-            // Create highlight material
+    
             const highlightMaterial = mesh.material.clone();
             highlightMaterial.emissive = new window.THREE.Color(0x555555);
             highlightMaterial.emissiveIntensity = 0.5;
             mesh.material = highlightMaterial;
-            
-            // Create outline for each mesh component
+    
             const outlineGeometry = mesh.geometry.clone();
-            const outlineMaterial = new window.THREE.MeshBasicMaterial({ 
+            const outlineMaterial = new window.THREE.MeshBasicMaterial({
                 color: 0xffff00,
                 side: window.THREE.BackSide
             });
-            
+    
             const outline = new window.THREE.Mesh(outlineGeometry, outlineMaterial);
             outline.position.copy(mesh.position);
             outline.rotation.copy(mesh.rotation);
             outline.scale.copy(mesh.scale);
             outline.scale.multiplyScalar(1.05);
             outline.userData.isOutline = true;
-            
-            // Check if the mesh is a child of another object
-           
+    
             this.graphicsEditor.sceneRenderer.scene.add(outline);
         });
     }
     addNewShape() {
         const newShape = {
-            type: 'sphere',            
+            type: 'sphere',
             size: 2,
             color: '#ff0000',
             x: 0,
@@ -456,7 +877,7 @@ class GE_ShapeManager {
         };
         this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes.push(newShape);
         this.graphicsEditor.state.selectedShapeIndex = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes.length - 1;
-        this.graphicsEditor.refreshShapes(true);
+        this.graphicsEditor.refreshShapes(true); // Relies on refreshShapes to add to rootGroup
     }
 
     addSelectedShape() {
@@ -484,449 +905,110 @@ class GE_ShapeManager {
     }
 
     updateShapeList() {
-        if (this.gizmoGroup) {
-            this.graphicsEditor.sceneRenderer.scene.remove(this.gizmoGroup);
-            this.gizmoGroup = null;
-        }
         const shapeList = document.getElementById('shape-list');
+        if (!shapeList) return;
+       
         shapeList.innerHTML = '';
-    
-        // Animation selector
-        const animSelector = document.createElement('select');
-        animSelector.style.marginBottom = '10px';
-        Object.keys(this.graphicsEditor.state.renderData.animations).forEach(anim => {
-            const option = document.createElement('option');
-            option.value = anim;
-            option.textContent = anim;
-            if (anim === this.graphicsEditor.state.currentAnimation) option.selected = true;
-            animSelector.appendChild(option);
-        });
-        animSelector.addEventListener('change', () => {
-            this.graphicsEditor.setPreviewAnimationState(false);
-            this.graphicsEditor.state.currentAnimation = animSelector.value;
-            this.graphicsEditor.state.currentFrame = 0;
-            this.graphicsEditor.state.selectedShapeIndex = -1;
-            
-            this.graphicsEditor.refreshShapes(false);
-        });
-        shapeList.appendChild(animSelector);
-    
-        // Frame list
-        const frameList = document.createElement('div');
-        frameList.style.marginBottom = '10px';
-        this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation].forEach((frame, index) => {
-            const frameItem = document.createElement('div');
-            frameItem.textContent = `Frame ${index + 1}`;
-            frameItem.style.padding = '5px';
-            frameItem.style.cursor = 'pointer';
-            if (index === this.graphicsEditor.state.currentFrame) frameItem.style.backgroundColor = '#555';
-            frameItem.addEventListener('click', () => {
-                this.graphicsEditor.setPreviewAnimationState(false);
-                this.graphicsEditor.state.currentFrame = index;
-                
-                // Make sure frameRotations is initialized for the new frame
-                if (!this.graphicsEditor.frameRotations[this.graphicsEditor.state.currentAnimation] || 
-                    !this.graphicsEditor.frameRotations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame]) {
-                    this.graphicsEditor.initFrameRotations();
-                }
-                
-                this.graphicsEditor.refreshShapes(false);
-            });
-            frameList.appendChild(frameItem);
-        });
-        shapeList.appendChild(frameList);
-    
-        // Shape list for current frame
-        const currentShapes = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes;
-        if (currentShapes.length === 0) {
-            const emptyMessage = document.createElement('div');
-            emptyMessage.textContent = 'No shapes in this frame.';
-            emptyMessage.style.padding = '10px';
-            emptyMessage.style.color = '#777';
-            shapeList.appendChild(emptyMessage);
-            document.getElementById('selected-shape').textContent = 'None';
-            return;
-        }
-    
-        currentShapes.forEach((shape, index) => {
+       
+        // Get the current frame data
+        const currentFrame = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame];
+       
+        // Get shapes from the currently selected group
+        const selectedGroupName = this.graphicsEditor.groupManager.selectedGroupName;
+        const selectedGroup = currentFrame[selectedGroupName]
+        const shapes = selectedGroup ? selectedGroup.shapes : [];
+       
+        // Create shape list items
+        for (let i = 0; i < shapes.length; i++) {
+            const shape = shapes[i];
+            if (!shape) continue;
+           
             const shapeItem = document.createElement('div');
-            shapeItem.className = 'shape-item';
-            if (index === this.graphicsEditor.state.selectedShapeIndex) {
-                shapeItem.classList.add('active');
-                document.getElementById('selected-shape').textContent = `${shape.type} (${index})`;
+            shapeItem.classList.add('shape-item');
+           
+            // Mark as selected if this shape is the selected one and we're in the right group
+            if (i === this.graphicsEditor.state.selectedShapeIndex &&
+                this.graphicsEditor.groupManager.selectedGroupName === this.graphicsEditor.state.currentGroup) {
+                shapeItem.classList.add('selected');
             }
-            const title = document.createElement('div');
-            title.textContent = `${index + 1}. ${shape.name || shape.type} ${shape.color}`;
-            title.style.fontWeight = 'bold';
-            title.style.marginBottom = '5px';
-            shapeItem.appendChild(title);
-            const position = document.createElement('div');
-            position.textContent = `Position: X=${shape.x || 0}, Y=${shape.y || 0}, Z=${shape.z || 0}`;
-            position.style.fontSize = '12px';
-            shapeItem.appendChild(position);
+           
+            shapeItem.textContent = `${shape.type || 'Shape'} ${i}`;
             shapeItem.addEventListener('click', () => {
-                this.selectShape(index);
-                this.graphicsEditor.createInspector(shape);
+                this.graphicsEditor.state.currentGroup = this.graphicsEditor.groupManager.selectedGroupName;
+                this.selectShape(i);
             });
+           
+            // Make the shape draggable
+            shapeItem.draggable = true;
+            shapeItem.dataset.index = i;
+            shapeItem.dataset.group = selectedGroupName;
+            
+            // Add dragstart event to set the drag data
+            shapeItem.addEventListener('dragstart', (e) => {
+                // Store only the selected shape's index and source group
+                const data = {
+                    shapeIndex: i,
+                    sourceGroup: selectedGroupName
+                };
+                
+                // Set the drag data
+                e.dataTransfer.setData('text/plain', JSON.stringify(data));
+                
+                // Add a visual indicator
+                shapeItem.classList.add('dragging');
+                
+                // Set drag effect
+                e.dataTransfer.effectAllowed = 'move';
+            });
+            
+            // Add dragend event to clean up
+            shapeItem.addEventListener('dragend', () => {
+                shapeItem.classList.remove('dragging');
+            });
+           
             shapeList.appendChild(shapeItem);
-        });
-    
-        if (this.graphicsEditor.state.selectedShapeIndex >= 0) {
-            let shape = currentShapes[this.graphicsEditor.state.selectedShapeIndex];
-            if (shape) {
-                this.graphicsEditor.createInspector(shape);
-            } else {
-                const inspector = document.getElementById('inspector');
-                inspector.innerHTML = "";
-                this.graphicsEditor.state.selectedShapeIndex = -1;
-                this.graphicsEditor.refreshShapes(true);
+        }
+        
+        // Set up the shape list container as a drop target
+        shapeList.addEventListener('dragover', (e) => {
+            // Only respond if we're dragging over the shape list itself, not an individual shape
+            if (e.target === shapeList) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                shapeList.classList.add('drag-over');
             }
-        }
+        });
+        
+        shapeList.addEventListener('dragleave', (e) => {
+            // Only respond if we're leaving the shape list
+            if (e.target === shapeList) {
+                shapeList.classList.remove('drag-over');
+            }
+        });
+        
+        shapeList.addEventListener('drop', (e) => {
+            e.preventDefault();
+            shapeList.classList.remove('drag-over');
+            
+            const data = e.dataTransfer.getData('text/plain');
+            if (!data) return;
+            
+            try {
+                const dragData = JSON.parse(data);
+                const { shapeIndex, sourceGroup } = dragData;
+                
+                // Only process if this is a different group
+                if (sourceGroup && sourceGroup !== selectedGroupName) {
+                    this.graphicsEditor.groupManager.moveToGroup(
+                        parseInt(shapeIndex),
+                        sourceGroup,
+                        selectedGroupName
+                    );
+                }
+            } catch (err) {
+                console.error('Error processing drop in shape list:', err);
+            }
+        });
     }
 
-    scaleAllShapes() {
-        const currentShapes = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes;
-        if (currentShapes.length === 0) return;
-        
-        // Store the original scale of the rootGroup
-        this.originalScale.copy(this.graphicsEditor.rootGroup.scale);
-        
-        const inspector = document.getElementById('inspector');
-        inspector.className = 'inspector';
-        inspector.innerHTML = `
-            <h2>Scale All Shapes</h2>
-            <div class="form-row">
-                <label>Scale Factor:</label>
-                <input type="number" id="scale-factor" step="0.1" min="0.1" value="1.0">
-            </div>
-            <div class="button-row">
-                <button id="scale-apply">Apply</button>
-                <button id="scale-reset">Reset</button>
-                <button id="scale-cancel">Cancel</button>
-            </div>
-        `;
-        
-        // Add event listener for live preview
-        document.getElementById('scale-factor').addEventListener('input', this.updateScalePreview.bind(this));
-        
-        // Reset button
-        document.getElementById('scale-reset').addEventListener('click', () => {
-            document.getElementById('scale-factor').value = '1.0';
-            this.graphicsEditor.rootGroup.scale.copy(this.originalScale);
-        });
-        
-        // Apply button
-        document.getElementById('scale-apply').addEventListener('click', this.applyScaleToShapes.bind(this));
-        
-        // Cancel button
-        document.getElementById('scale-cancel').addEventListener('click', () => {
-            // Restore original scale
-            this.graphicsEditor.rootGroup.scale.copy(this.originalScale);
-            inspector.innerHTML = '';
-        });
-    }
-    
-    updateScalePreview() {
-        const scaleFactor = parseFloat(document.getElementById('scale-factor').value);
-        if (!isNaN(scaleFactor) && scaleFactor > 0) {
-            // Apply scale to rootGroup for preview
-            this.graphicsEditor.rootGroup.scale.set(
-                this.originalScale.x * scaleFactor,
-                this.originalScale.y * scaleFactor,
-                this.originalScale.z * scaleFactor
-            );
-        }
-    }
-    
-    applyScaleToShapes() {
-        const scaleFactor = parseFloat(document.getElementById('scale-factor').value);
-        if (isNaN(scaleFactor) || scaleFactor <= 0) {
-            alert("Please enter a valid positive number");
-            return;
-        }
-        
-        const currentShapes = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes;
-        let centerX = 0, centerY = 0, centerZ = 0;
-        
-        // Calculate center point
-        currentShapes.forEach(shape => {
-            centerX += shape.x || 0;
-            centerY += shape.y || 0;
-            centerZ += shape.z || 0;
-        });
-        centerX /= currentShapes.length;
-        centerY /= currentShapes.length;
-        centerZ /= currentShapes.length;
-        
-        // Apply scaling to each shape's data
-        currentShapes.forEach(shape => {
-            if (shape.size) shape.size *= scaleFactor;
-            if (shape.width) shape.width *= scaleFactor;
-            if (shape.height) shape.height *= scaleFactor;
-            if (shape.depth) shape.depth *= scaleFactor;
-            if (shape.tubeSize) shape.tubeSize *= scaleFactor;
-            shape.x = centerX + ((shape.x || 0) - centerX) * scaleFactor;
-            shape.y = centerY + ((shape.y || 0) - centerY) * scaleFactor;
-            shape.z = centerZ + ((shape.z || 0) - centerZ) * scaleFactor;
-        });
-        
-        // Reset rootGroup scale back to original
-        this.graphicsEditor.rootGroup.scale.copy(this.originalScale);
-        
-        // Refresh shapes with the new data
-        this.graphicsEditor.refreshShapes(true);
-        
-        // Clear the inspector
-        document.getElementById('inspector').innerHTML = '';
-    }
-
-    moveAllShapes() {
-        const currentShapes = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes;
-        if (currentShapes.length === 0) return;
-        
-        // Store the original position of the rootGroup
-        this.originalPosition.copy(this.graphicsEditor.rootGroup.position);
-        
-        const inspector = document.getElementById('inspector');
-        inspector.className = 'inspector';
-        inspector.innerHTML = `
-            <h2>Move All Shapes</h2>
-            <div class="form-row">
-                <label>X Offset:</label>
-                <input type="number" id="move-x" step="0.5" value="0">
-            </div>
-            <div class="form-row">
-                <label>Y Offset:</label>
-                <input type="number" id="move-y" step="0.5" value="0">
-            </div>
-            <div class="form-row">
-                <label>Z Offset:</label>
-                <input type="number" id="move-z" step="0.5" value="0">
-            </div>
-            <div class="button-row">
-                <button id="move-apply">Apply</button>
-                <button id="move-reset">Reset</button>
-                <button id="move-cancel">Cancel</button>
-            </div>
-        `;
-        
-        // Add event listeners for live preview
-        document.getElementById('move-x').addEventListener('input', this.updateMovePreview.bind(this));
-        document.getElementById('move-y').addEventListener('input', this.updateMovePreview.bind(this));
-        document.getElementById('move-z').addEventListener('input', this.updateMovePreview.bind(this));
-        
-        // Reset button
-        document.getElementById('move-reset').addEventListener('click', () => {
-            document.getElementById('move-x').value = '0';
-            document.getElementById('move-y').value = '0';
-            document.getElementById('move-z').value = '0';
-            this.graphicsEditor.rootGroup.position.copy(this.originalPosition);
-        });
-        
-        // Apply button
-        document.getElementById('move-apply').addEventListener('click', this.applyMoveToShapes.bind(this));
-        
-        // Cancel button
-        document.getElementById('move-cancel').addEventListener('click', () => {
-            // Restore original position
-            this.graphicsEditor.rootGroup.position.copy(this.originalPosition);
-            inspector.innerHTML = '';
-        });
-    }
-    
-    updateMovePreview() {
-        const xOffset = parseFloat(document.getElementById('move-x').value) || 0;
-        const yOffset = parseFloat(document.getElementById('move-y').value) || 0;
-        const zOffset = parseFloat(document.getElementById('move-z').value) || 0;
-        
-        // Apply position offset to rootGroup for preview
-        this.graphicsEditor.rootGroup.position.set(
-            this.originalPosition.x + xOffset,
-            this.originalPosition.y + yOffset,
-            this.originalPosition.z + zOffset
-        );
-    }
-    
-    applyMoveToShapes() {
-        const xOffset = parseFloat(document.getElementById('move-x').value) || 0;
-        const yOffset = parseFloat(document.getElementById('move-y').value) || 0;
-        const zOffset = parseFloat(document.getElementById('move-z').value) || 0;
-        
-        // Apply the offset to all shapes
-        const currentShapes = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes;
-        currentShapes.forEach(shape => {
-            shape.x = (shape.x || 0) + xOffset;
-            shape.y = (shape.y || 0) + yOffset;
-            shape.z = (shape.z || 0) + zOffset;
-        });
-        
-        // Reset rootGroup position back to original
-        this.graphicsEditor.rootGroup.position.copy(this.originalPosition);
-        
-        // Refresh shapes with the new data
-        this.graphicsEditor.refreshShapes(true);
-        
-        // Clear the inspector
-        document.getElementById('inspector').innerHTML = '';
-    }  
-
-    rotateAllShapes() {
-        // Make sure frameRotations is initialized
-        if (!this.graphicsEditor.frameRotations[this.graphicsEditor.state.currentAnimation]) {
-            this.graphicsEditor.initFrameRotations();
-        }
-        
-        // Get current frame rotation
-        const frameRotation = this.graphicsEditor.frameRotations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame];
-        
-        const inspector = document.getElementById('inspector');
-        inspector.className = 'inspector';
-        inspector.innerHTML = `
-            <h2>Rotate Current Frame</h2>
-            <div class="form-row">
-                <label>X Rotation:</label>
-                <input type="number" id="group-rotate-x" step="1" value="${this.graphicsEditor.rotationUtils.radToDeg(frameRotation.x)}">
-            </div>
-            <div class="form-row">
-                <label>Y Rotation:</label>
-                <input type="number" id="group-rotate-y" step="1" value="${this.graphicsEditor.rotationUtils.radToDeg(frameRotation.y)}">
-            </div>
-            <div class="form-row">
-                <label>Z Rotation:</label>
-                <input type="number" id="group-rotate-z" step="1" value="${this.graphicsEditor.rotationUtils.radToDeg(frameRotation.z)}">
-            </div>
-            <div class="button-row">
-                <button id="group-rotate-reset">Reset</button>
-                <button id="group-rotate-apply">Apply</button>
-                <button id="group-rotate-cancel">Cancel</button>
-            </div>
-        `;
-        
-        
-        // Add event listeners
-        document.getElementById('group-rotate-x').addEventListener('input', this.updateRotatePreview.bind(this));
-        document.getElementById('group-rotate-y').addEventListener('input', this.updateRotatePreview.bind(this));
-        document.getElementById('group-rotate-z').addEventListener('input', this.updateRotatePreview.bind(this));
-        
-        document.getElementById('group-rotate-reset').addEventListener('click', () => {
-            // Reset just the current frame rotation
-            this.graphicsEditor.frameRotations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame] = { x: 0, y: 0, z: 0 };
-            this.graphicsEditor.rootGroup.rotation.set(0, 0, 0);
-            this.rotateAllShapes();
-        });
-        
-        document.getElementById('group-rotate-apply').addEventListener('click', () => {
-            // Update the frame rotation with current values
-            this.graphicsEditor.frameRotations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame] = {
-                x: this.graphicsEditor.rotationUtils.degToRad(document.getElementById('group-rotate-x').value),
-                y: this.graphicsEditor.rotationUtils.degToRad(document.getElementById('group-rotate-y').value),
-                z: this.graphicsEditor.rotationUtils.degToRad(document.getElementById('group-rotate-z').value)
-            };
-            
-            // Apply rotation to the root group
-            const frameRotation = this.graphicsEditor.frameRotations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame];
-            this.graphicsEditor.rootGroup.rotation.set(
-                frameRotation.x,
-                frameRotation.y,
-                frameRotation.z
-            );
-            
-            this.applyRotationToShapes();
-        });
-        
-        document.getElementById('group-rotate-cancel').addEventListener('click', () => {
-            // Restore original rotation
-            const frameRotation = this.graphicsEditor.frameRotations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame];
-            this.graphicsEditor.rootGroup.rotation.set(
-                frameRotation.x,
-                frameRotation.y,
-                frameRotation.z
-            );
-            const inspector = document.getElementById('inspector');
-            inspector.innerHTML = ``;
-        });        
-    }
-
-    updateRotatePreview() {
-        const xDeg = document.getElementById('group-rotate-x').value;
-        const yDeg = document.getElementById('group-rotate-y').value;
-        const zDeg = document.getElementById('group-rotate-z').value;
-        
-        // Update the rotation of the root group in real-time
-        this.graphicsEditor.rootGroup.rotation.set(
-            this.graphicsEditor.rotationUtils.degToRad(xDeg),
-            this.graphicsEditor.rotationUtils.degToRad(yDeg),
-            this.graphicsEditor.rotationUtils.degToRad(zDeg)
-        );
-    } 
-    
-    applyRotationToShapes() {
-        let currentAnimation = this.graphicsEditor.state.currentAnimation;
-        let currentFrame = this.graphicsEditor.state.currentFrame;
-        const frameRotation = this.graphicsEditor.frameRotations[currentAnimation][currentFrame];
-        
-        // Skip if no rotation has been applied
-        if (frameRotation.x === 0 && frameRotation.y === 0 && frameRotation.z === 0) {
-            return;
-        }
-        
-        // Create a rotation matrix from the current frame rotation
-        const rotationMatrix = new window.THREE.Matrix4();
-        rotationMatrix.makeRotationFromEuler(new window.THREE.Euler(
-            frameRotation.x,
-            frameRotation.y,
-            frameRotation.z
-        ));
-        
-        // Apply the rotation to each shape's position in the current frame only
-        const currentShapes = this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame].shapes;
-        const centerPoint = new window.THREE.Vector3(0, 0, 0);
-        
-        currentShapes.forEach(shape => {
-            // Create a vector for the shape's position
-            const position = new window.THREE.Vector3(
-                shape.x || 0,
-                shape.y || 0,
-                shape.z || 0
-            );
-            
-            // Apply rotation around the center
-            position.sub(centerPoint); // Translate to origin
-            position.applyMatrix4(rotationMatrix); // Apply rotation
-            position.add(centerPoint); // Translate back
-            
-            // Update shape data
-            shape.x = position.x;
-            shape.y = position.y;
-            shape.z = position.z;
-            
-            // Also update the rotation of the shape itself
-            const rotation = new window.THREE.Euler(
-                this.graphicsEditor.rotationUtils.degToRad(shape.rotationX || 0),
-                this.graphicsEditor.rotationUtils.degToRad(shape.rotationY || 0),
-                this.graphicsEditor.rotationUtils.degToRad(shape.rotationZ || 0)
-            );
-            
-            // Apply group rotation to shape's own rotation
-            const quaternion = new window.THREE.Quaternion().setFromEuler(rotation);
-            const groupQuaternion = new window.THREE.Quaternion().setFromEuler(
-                new window.THREE.Euler(frameRotation.x, frameRotation.y, frameRotation.z)
-            );
-            quaternion.premultiply(groupQuaternion);
-            
-            // Convert back to Euler angles
-            const newRotation = new window.THREE.Euler().setFromQuaternion(quaternion);
-            
-            // Update shape rotation data
-            shape.rotationX = this.graphicsEditor.rotationUtils.radToDeg(newRotation.x);
-            shape.rotationY = this.graphicsEditor.rotationUtils.radToDeg(newRotation.y);
-            shape.rotationZ = this.graphicsEditor.rotationUtils.radToDeg(newRotation.z);
-        });
-        
-        // Reset the frame rotation after applying it to shapes
-        this.graphicsEditor.frameRotations[currentAnimation][currentFrame] = { x: 0, y: 0, z: 0 };
-        this.graphicsEditor.rootGroup.rotation.set(0, 0, 0);
-        
-        this.graphicsEditor.refreshShapes(true);
-    }
 }

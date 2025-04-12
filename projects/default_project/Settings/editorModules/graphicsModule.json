@@ -6,7 +6,7 @@
     "three.OrbitControls",
     "GLTFLoader",
     "ShapeFactory",
-    "graphicsEditor"
+    "GraphicsEditor"
   ],
   "propertyName": "render",
   "interface": "graphicsEditor",

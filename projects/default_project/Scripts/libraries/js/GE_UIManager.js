@@ -153,7 +153,27 @@ class GE_UIManager {
         document.body.appendChild(modal);
     }
     
-    
+    createGroupInspector(group) {
+        const inspector = document.getElementById('inspector');
+        inspector.innerHTML = "";
+        inspector.className = 'inspector';
+
+        
+        this.addFormRow(inspector, 'X Scale', 'number', 'scaleX', group.scale.x || 1, { min: 0.1, step: 0.1 });
+        this.addFormRow(inspector, 'Y Scale', 'number', 'scaleY', group.scale.y || 1, { min: 0.1, step: 0.1 });
+        this.addFormRow(inspector, 'Z Scale', 'number', 'scaleZ', group.scale.z || 1, { min: 0.1, step: 0.1 });
+        // Position inputs
+        this.addFormRow(inspector, 'X Position', 'number', 'x', group.position.x || 0, { step: 0.1 });
+        this.addFormRow(inspector, 'Y Position', 'number', 'y', group.position.y || 0, { step: 0.1 });
+        this.addFormRow(inspector, 'Z Position', 'number', 'z', group.position.z || 0, { step: 0.1 });
+        
+        // Rotation inputs
+        this.addFormRow(inspector, 'X Rotation', 'number', 'rotationX', group.rotation.x || 0, { step: 5 });
+        this.addFormRow(inspector, 'Y Rotation', 'number', 'rotationY', group.rotation.y || 0, { step: 5 });
+        this.addFormRow(inspector, 'Z Rotation', 'number', 'rotationZ', group.rotation.z || 0, { step: 5 });
+        
+    }
+
     createInspector(shape) {
         const inspector = document.getElementById('inspector');
         inspector.innerHTML = "";
@@ -168,10 +188,10 @@ class GE_UIManager {
         
                 let newValue = e.target.value;
                 if (newValue != 'gltf') {
-                    delete this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes[this.graphicsEditor.state.selectedShapeIndex].url
+                    delete this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][this.graphicsEditor.state.currentGroup].shapes[this.graphicsEditor.state.selectedShapeIndex].url
                 } 
                 
-                this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes[this.graphicsEditor.state.selectedShapeIndex]['type'] = newValue;
+                this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][this.graphicsEditor.state.currentGroup].shapes[this.graphicsEditor.state.selectedShapeIndex]['type'] = newValue;
                 this.graphicsEditor.refreshShapes(false);
             }
         });
@@ -199,7 +219,7 @@ class GE_UIManager {
 
                      const result = await response.json();
                      shape.url = result.filePath; 
-                     this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes[this.graphicsEditor.state.selectedShapeIndex][property] = result.filePath;
+                     this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][this.graphicsEditor.state.currentGroup].shapes[this.graphicsEditor.state.selectedShapeIndex][property] = result.filePath;
                      this.graphicsEditor.refreshShapes(false);
                 } catch (error) {
                      console.error('Error uploading file:', error);
@@ -257,6 +277,7 @@ class GE_UIManager {
         
         if (type === 'select') {
             input = document.createElement('select');
+            input.setAttribute('data-property', property);
             (options.options || []).forEach(optionValue => {
                 const option = document.createElement('option');
                 option.value = optionValue;
@@ -270,13 +291,16 @@ class GE_UIManager {
             input = document.createElement('input');
             input.type = "text";
             input.value = value;
+            input.setAttribute('data-property', property);
+            
             let colorInput = document.createElement('input');
             colorInput.type = "color";
             colorInput.value = value;
-
+            colorInput.setAttribute('data-property', property + '-color');
+    
             colorInput.addEventListener('change', () => {
                 let newValue = colorInput.value;                
-                this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes[this.graphicsEditor.state.selectedShapeIndex][property] = newValue;
+                this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][this.graphicsEditor.state.currentGroup].shapes[this.graphicsEditor.state.selectedShapeIndex][property] = newValue;
                 this.graphicsEditor.refreshShapes(true);
             });
             row.appendChild(colorInput);
@@ -286,6 +310,7 @@ class GE_UIManager {
             input = document.createElement('input');
             input.style = "width: calc(100% - 18px);"
             input.type = type;
+            input.setAttribute('data-property', property);
             inputContainer.appendChild(input);
             if( value ) {
                 let urlName = document.createElement('span');
@@ -300,6 +325,7 @@ class GE_UIManager {
             input = document.createElement('input');
             input.type = type;
             input.value = value;
+            input.setAttribute('data-property', property);
             
             if (type === 'number') {
                 input.min = options.min !== undefined ? options.min : -64;
@@ -309,20 +335,57 @@ class GE_UIManager {
         }
         
         input.addEventListener('change', options.change || ((e) => {
-        
             let newValue = e.target.value;
             if (type === 'number') {
                 newValue = parseFloat(newValue);
+                
+                // If we're editing a transform property, also update the transform target
+                if (this.currentTransformTarget && ['x', 'y', 'z', 'rotationX', 'rotationY', 'rotationZ', 'scaleX', 'scaleY', 'scaleZ'].includes(property)) {
+                    if (property === 'x') this.currentTransformTarget.position.x = newValue;
+                    if (property === 'y') this.currentTransformTarget.position.y = newValue;
+                    if (property === 'z') this.currentTransformTarget.position.z = newValue;
+                    
+                    if (property === 'rotationX') this.currentTransformTarget.rotation.x = this.graphicsEditor.rotationUtils.degToRad(newValue);
+                    if (property === 'rotationY') this.currentTransformTarget.rotation.y = this.graphicsEditor.rotationUtils.degToRad(newValue);
+                    if (property === 'rotationZ') this.currentTransformTarget.rotation.z = this.graphicsEditor.rotationUtils.degToRad(newValue);
+                    
+                    if (property === 'scaleX') this.currentTransformTarget.scale.x = newValue;
+                    if (property === 'scaleY') this.currentTransformTarget.scale.y = newValue;
+                    if (property === 'scaleZ') this.currentTransformTarget.scale.z = newValue;
+                    
+                    // Update gizmo position after directly changing values
+                    this.updateGizmoPosition();
+                }
             } else if(type === 'file') {
                 return;
             }
             
-            this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes[this.graphicsEditor.state.selectedShapeIndex][property] = newValue;
+            this.updatePropertyValue(property, newValue);
             this.graphicsEditor.refreshShapes(false);
         }));
         
         row.appendChild(input);
         container.appendChild(row);
         return input;
+    }
+    updatePropertyValue(property, value) {
+        const { currentAnimation, currentFrame, currentGroup, selectedShapeIndex, renderData } = this.graphicsEditor.state;
+        const groupData = renderData.animations[currentAnimation][currentFrame][currentGroup];
+        
+        if (selectedShapeIndex >= 0) {
+            groupData.shapes[selectedShapeIndex][property] = value;
+            return;
+        }
+        
+        // Handle transform properties
+        if (property.startsWith('scale')) {
+            const axis = property.charAt(property.length - 1).toLowerCase();
+            groupData.scale[axis] = value;
+        } else if (property.startsWith('rotation')) {
+            const axis = property.charAt(property.length - 1).toLowerCase();
+            groupData.rotation[axis] = value;
+        } else if (['x', 'y', 'z'].includes(property)) {
+            groupData.position[property] = value;
+        }
     }
 }

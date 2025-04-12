@@ -1,6 +1,6 @@
 // Core structure
 class GraphicsEditor {
-    constructor(gameEditor, config, {ShapeFactory, GE_SceneRenderer, GE_ShapeManager, GE_AnimationManager, GE_RotationUtils, GE_UIManager}) {
+    constructor(gameEditor, config, {ShapeFactory, GE_SceneRenderer, GE_ShapeManager, GE_AnimationManager, GE_RotationUtils, GE_UIManager, GE_GroupManager}) {
         this.gameEditor = gameEditor;
         this.config = config;
         this.shapeFactory = new ShapeFactory();
@@ -10,17 +10,19 @@ class GraphicsEditor {
         this.shapeManager = new GE_ShapeManager(gameEditor, this);
         this.uiManager = new GE_UIManager(gameEditor, this);
         this.animationManager = new GE_AnimationManager(gameEditor, this);
+        this.groupManager = new GE_GroupManager(gameEditor, this);
         this.rotationUtils = GE_RotationUtils;
         // State management (simplified)
         this.state = {
             selectedShapeIndex: -1,
             currentAnimation: "idle",
+            selectedGroup: "main",
             currentFrame: 0,
-            renderData: { animations: { "idle": [{ shapes: [] }] } }
+            renderData: { animations: { idle: [{ main: { shapes: [] }, position: {x: 0, y: 0, z: 0}, rotation: {x:0,y:0,z:0}, scale: {x:1, y:1, z:1} }] } }
         };
         
         this.rootGroup = new window.THREE.Group(); // Main container for all shapes
-        this.frameRotations = {};
+        this.rootGroup.name = "rootGroup";
 
         this.init();
     }
@@ -30,9 +32,12 @@ class GraphicsEditor {
         this.uiManager.init();
         this.shapeManager.init();
         this.animationManager.init();
+        this.groupManager.init();
         this.sceneRenderer.animate();
     }
-    
+    displayIsometricSprites(sprites){
+        this.uiManager.displayIsometricSprites(sprites);
+    }
     async renderShapes(fireSave = true) {
         // Clear the root group
         while (this.rootGroup.children.length > 0) {
@@ -52,25 +57,55 @@ class GraphicsEditor {
             directionalLight.name = 'dir-light';
             this.sceneRenderer.scene.add(directionalLight);
         }
+            
+        const currentAnimation = this.state.currentAnimation;
+        const currentFrame = this.state.currentFrame;
         
-        // Initialize the frameRotations object if needed
-        if (!this.frameRotations[this.state.currentAnimation] || !this.frameRotations[this.state.currentAnimation][this.state.currentFrame]) {
-            this.initFrameRotations();
+        // Ensure animation and frame exist
+        if (!this.state.renderData.animations[currentAnimation] || 
+            !this.state.renderData.animations[currentAnimation][currentFrame]) {
+            console.warn("Animation or frame doesn't exist:", currentAnimation, currentFrame);
+            return;
         }
-    
-        const currentShapes = this.state.renderData.animations[this.state.currentAnimation][this.state.currentFrame];
-        const group = await this.shapeFactory.createFromJSON(currentShapes);
         
-        // Add the shapes to the root group
-        this.rootGroup.add(group);
+        let frameData = this.state.renderData.animations[currentAnimation][currentFrame];
         
-        // Apply the rotation for the current frame only
-        const frameRotation = this.frameRotations[this.state.currentAnimation][this.state.currentFrame];
-        this.rootGroup.rotation.x = frameRotation.x;
-        this.rootGroup.rotation.y = frameRotation.y;
-        this.rootGroup.rotation.z = frameRotation.z;
-    
-        document.getElementById('shape-count').textContent = currentShapes.shapes.length;
+        // Backward compatibility: If frameData is not structured as groups
+        if (Array.isArray(frameData)) {
+            console.warn("Old format detected, converting to new group format");
+            this.state.renderData.animations[currentAnimation][currentFrame] = { shapes: frameData };
+            frameData = this.state.renderData.animations[currentAnimation][currentFrame];
+        }
+        
+        // Create a group for each group in the frame
+        for (const groupName in frameData) {
+            if (Array.isArray(frameData[groupName])) {
+                let shapes = frameData[groupName];
+                let newGroup = {...this.groupManager.DEFAULT_GROUP};
+                newGroup.shapes = shapes;
+                this.state.renderData.animations[currentAnimation][currentFrame][groupName] = newGroup;
+                frameData = this.state.renderData.animations[currentAnimation][currentFrame];
+            }
+            
+            
+            // Create objects for this group
+            const groupData = frameData[groupName];
+            let threeGroup = await this.shapeFactory.createGroupFromJSON(groupData); 
+            threeGroup.name = groupName;
+            // Add the group to the root group
+            this.rootGroup.add(threeGroup);
+        }
+            
+        // Count total shapes for display
+        let totalShapes = 0;
+        for (const groupName in frameData) {
+            if (Array.isArray(frameData[groupName].shapes)) {
+                totalShapes += frameData[groupName].shapes.length;
+            }
+        }
+        document.getElementById('shape-count').textContent = totalShapes;
+        
+        // Update JSON display
         document.getElementById('json-content').value = JSON.stringify(this.state.renderData, null, 2);
     
         if (fireSave) {
@@ -87,26 +122,14 @@ class GraphicsEditor {
             }
         }
     
+        // Highlight the selected shape if any
         this.shapeManager.highlightSelectedShape();
-    }
-    
-    initFrameRotations() {
-        // Create rotation entries for all animations and frames
-        Object.keys(this.state.renderData.animations).forEach(animName => {
-            if (!this.frameRotations[animName]) {
-                this.frameRotations[animName] = [];
-            }
-            
-            // Ensure we have rotation data for each frame
-            while (this.frameRotations[animName].length < this.state.renderData.animations[animName].length) {
-                this.frameRotations[animName].push({ x: 0, y: 0, z: 0 });
-            }
-        });
     }
     
 
     refreshShapes(param) {
         this.shapeManager.updateShapeList();
+        this.groupManager.updateGroupList();
         this.renderShapes(param);
     }
 
