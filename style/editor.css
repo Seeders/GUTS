@@ -104,7 +104,9 @@
   #main-content-container > div.show {
     display: flex;
   }
-  
+  #toggleEditorButton {
+    margin: 0;
+  }
   .editor {
     border-radius: 0;
     padding: 20px;
