@@ -21,8 +21,7 @@
           "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC",
           "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC"
         ],
-        "buildable": false,
-        "id": 0
+        "buildable": false
       },
       {
         "type": "rock",
@@ -37,8 +36,7 @@
           "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAQElEQVRIS2OcN2/efwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFAB7VMRQSdQqICRQv0EtQ99CwDb3jkNHe23xQAAAABJRU5ErkJggg==",
           "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2OcN2/efwYqgqSkJEZk4xhHLUAP3dEgIpjeRoNoNIgIhgBBBaOpaDSICIYAXgXoKQikmGo1GjbDwRZQ5mbCukctIBhGAC4oUBlpvrH3AAAAAElFTkSuQmCC"
         ],
-        "buildable": false,
-        "id": 1
+        "buildable": false
       },
       {
         "type": "grass",
@@ -53,8 +51,7 @@
           "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2P0qon8z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCpgJKiCQgWjFhAMQJoHEQCyWyhTURksDgAAAABJRU5ErkJggg==",
           "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2P0qon8z0AlsK1lOSO6UYyjFiAHyWgQEUxro0E0GkQEQ4CggtFUNMyDCFsEg7xMlQoHl+FgCwgGLIUKRi0gGIA0DyIAQT9MGVwsaTUAAAAASUVORK5CYII="
         ],
-        "buildable": true,
-        "id": 2
+        "buildable": true
       },
       {
         "type": "forest",
@@ -69,8 +66,7 @@
           "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2OUSbH4z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCpgJKiCQgWjFhAMQJoHEQBLXiCu2Bx7HwAAAABJRU5ErkJggg==",
           "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2OUSbH4z0Al8GTOCUZ0oxhHLUAOktEgIpjWRoNoNIgIhgBBBaOpaJgHEbYIBnmZKhUOLsPBFhAMWAoVjFpAMABpHkQAAPlMGX+pQM0AAAAASUVORK5CYII="
         ],
-        "buildable": true,
-        "id": 3
+        "buildable": true
       },
       {
         "type": "path",
@@ -85,8 +81,7 @@
           "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2P8em3WfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFABI0EVFCoYtYBgANI8iAAWGUCFGtCTSgAAAABJRU5ErkJggg==",
           "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2P8em3WfwYqAW6tNEZ0oxhHLUAOktEgIpjWRoNoNIgIhgBBBaOpaJgHEbYIBnmZKhUOLsPBFhAMWAoVjFpAMABpHkQAYThMGX3v4DMAAAAASUVORK5CYII="
         ],
-        "buildable": false,
-        "id": 4
+        "buildable": false
       },
       {
         "type": "lava",
@@ -101,8 +96,7 @@
           "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2M8kyz6n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABABafNmFbBL82AAAAAElFTkSuQmCC",
           "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2M8kyz6n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABABafNmFbBL82AAAAAElFTkSuQmCC"
         ],
-        "buildable": false,
-        "id": 5
+        "buildable": false
       },
       {
         "type": "end",
@@ -117,8 +111,7 @@
           "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC",
           "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC"
         ],
-        "buildable": false,
-        "id": 6
+        "buildable": false
       },
       {
         "type": "start",
@@ -133,8 +126,7 @@
           "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII=",
           "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII="
         ],
-        "buildable": false,
-        "id": 7
+        "buildable": false
       }
     ],
     "terrainMap": [
@@ -1227,6 +1219,7 @@
         2
       ]
     ],
-    "terrainBGColor": "#467554"
+    "terrainBGColor": "#467554",
+    "environmentObjects": []
   }
 }

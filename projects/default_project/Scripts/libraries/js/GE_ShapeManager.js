@@ -25,10 +25,7 @@ class GE_ShapeManager {
         // Button event listeners
         const buttonMappings = {
             'add-shape': this.addSelectedShape.bind(this),
-            'delete-shape': this.deleteSelectedShape.bind(this),
-            'scale-all': () => { this.gizmoMode = "scale"; this.transformGroup(this.getSelectedGroupOrRoot()); },
-            'move-all': () => {  this.gizmoMode = "translate"; this.transformGroup(this.getSelectedGroupOrRoot()); },
-            'rotate-all': () => {  this.gizmoMode = "rotate"; this.transformGroup(this.getSelectedGroupOrRoot()); }, // New button for group rotation
+            'delete-shape': this.deleteSelectedShape.bind(this)
         };
         Object.entries(buttonMappings).forEach(([id, handler]) => {
             const button = document.getElementById(id);
