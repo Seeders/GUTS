@@ -4,30 +4,48 @@
     "animations": {
       "idle": [
         {
-          "shapes": [
-            {
-              "type": "tetrahedron",
-              "size": 16,
-              "color": "#666666",
-              "x": 3.5,
-              "y": 2,
-              "z": 2.5,
-              "rotationX": 50,
-              "rotationY": 140,
-              "rotationZ": 10
+          "shapes": {
+            "shapes": [
+              {
+                "type": "tetrahedron",
+                "size": 16,
+                "color": "#666666",
+                "x": 3.5,
+                "y": 2,
+                "z": 2.5,
+                "rotationX": 50,
+                "rotationY": 140,
+                "rotationZ": 10,
+                "scaleX": 1
+              },
+              {
+                "type": "tetrahedron",
+                "size": 12,
+                "color": "#5b5b5b",
+                "x": 10.5,
+                "y": 2,
+                "z": 7.5,
+                "rotationX": 50,
+                "rotationY": 150,
+                "rotationZ": 10
+              }
+            ],
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
             },
-            {
-              "type": "tetrahedron",
-              "size": 12,
-              "color": "#5b5b5b",
-              "x": 10.5,
-              "y": 2,
-              "z": 7.5,
-              "rotationX": 50,
-              "rotationY": 150,
-              "rotationZ": 10
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
             }
-          ]
+          }
         }
       ]
     }

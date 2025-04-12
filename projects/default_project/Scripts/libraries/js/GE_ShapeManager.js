@@ -394,6 +394,7 @@ class GE_ShapeManager {
                 shape.scaleY = this.currentTransformTarget.scale.y;
                 shape.scaleZ = this.currentTransformTarget.scale.z;
             }
+            this.updateGizmoPosition();
         }
         
         // Optional: Auto-save or trigger update
@@ -401,7 +402,7 @@ class GE_ShapeManager {
     }
     updateGizmoPosition() {
         if (!this.currentTransformTarget || !this.gizmoGroup) return;
-    
+
         let center = new window.THREE.Vector3();
         let xOffset = 1, yOffset = 1, zOffset = 1;
     
@@ -563,20 +564,13 @@ class GE_ShapeManager {
                 <button id="rotate-btn" class="${this.gizmoMode === 'rotate' ? 'active' : ''}">Rotate</button>
                 <button id="scale-btn" class="${this.gizmoMode === 'scale' ? 'active' : ''}">Scale</button>
             </div>
-            <div class="button-row">
-                <button id="transform-apply">Apply</button>
-                <button id="transform-reset">Reset</button>
-                <button id="transform-cancel">Cancel</button>
-            </div>
         `;
-        
         // Insert at the top of the inspector
         if (inspector.firstChild) {
             inspector.insertBefore(transformSection, inspector.firstChild);
         } else {
             inspector.appendChild(transformSection);
-        }
-        
+        }      
         // Add event listeners for transform mode buttons
         document.getElementById('translate-btn').addEventListener('click', () => {
             this.setGizmoMode('translate');
@@ -593,34 +587,9 @@ class GE_ShapeManager {
             this.updateModeButtonsUI();
         });
         
-        document.getElementById('transform-apply').addEventListener('click', () => {
-            this.applyTransformToShapes();
-            this.graphicsEditor.sceneRenderer.scene.remove(this.gizmoGroup);
-            this.gizmoGroup = null;
-            this.currentTransformTarget = null;
-            this.removeTransformControlsFromInspector();
-        });
-        
-        document.getElementById('transform-reset').addEventListener('click', () => {
-            this.currentTransformTarget.position.copy(this.originalPosition);
-            this.currentTransformTarget.rotation.copy(this.originalRotation);
-            this.currentTransformTarget.scale.copy(this.originalScale);
-            this.updateGizmoPosition();
-            this.updateInspectorValues();
-        });
-        
-        document.getElementById('transform-cancel').addEventListener('click', () => {
-            this.currentTransformTarget.position.copy(this.originalPosition);
-            this.currentTransformTarget.rotation.copy(this.originalRotation);
-            this.currentTransformTarget.scale.copy(this.originalScale);
-            this.graphicsEditor.sceneRenderer.scene.remove(this.gizmoGroup);
-            this.gizmoGroup = null;
-            this.currentTransformTarget = null;
-            this.removeTransformControlsFromInspector();
-        });
-        
-        this.createGizmo();
         this.updateInspectorValues();
+        this.setGizmoMode('translate');
+        this.updateModeButtonsUI();
     }
     
     // New helper method to set gizmo mode
@@ -734,14 +703,14 @@ class GE_ShapeManager {
         this.graphicsEditor.state.currentGroup = this.graphicsEditor.groupManager.selectedGroupName;
         
         // Update shape list and highlighting
-        this.updateShapeList();
+        this.updateList();
         this.highlightSelectedShape();
         
         // Show inspector for selected shape
         const shape = this.getCurrentShape();
         if (shape) {
             this.graphicsEditor.createInspector(shape);
-            this.transformGroup(this.getSelectedGroupOrRoot())
+            this.transformGroup(this.getSelectedGroupOrRoot());
         }
     }
 
@@ -782,7 +751,7 @@ class GE_ShapeManager {
             return;
         }
     
-        // Get the selected group name from state (or groupManager if needed)
+        // Get the selected group name from state
         const selectedGroupName = this.graphicsEditor.state.currentGroup || this.graphicsEditor.groupManager.selectedGroupName;
         if (!selectedGroupName) {
             console.warn("No group selected");
@@ -840,27 +809,71 @@ class GE_ShapeManager {
     
         // Handle highlighting for all relevant meshes
         selectedMeshes.forEach(mesh => {
+            // Apply emissive highlight to original mesh
             this.originalMaterials.set(mesh, mesh.material);
-    
             const highlightMaterial = mesh.material.clone();
             highlightMaterial.emissive = new window.THREE.Color(0x555555);
             highlightMaterial.emissiveIntensity = 0.5;
             mesh.material = highlightMaterial;
     
+            // Create the outline geometry
             const outlineGeometry = mesh.geometry.clone();
             const outlineMaterial = new window.THREE.MeshBasicMaterial({
                 color: 0xffff00,
                 side: window.THREE.BackSide
             });
     
+            // Create the outline mesh
             const outline = new window.THREE.Mesh(outlineGeometry, outlineMaterial);
+            outline.userData.isOutline = true;
+            
+            // Create a new group to hold the outline
+            let outlineGroup = new window.THREE.Group();
+            outlineGroup.userData.isOutline = true;
+            
+            // Add the outline to the group
+            outlineGroup.add(outline);
+            
+            // Find all parent groups up to rootGroup and copy their transformations
+            let currentParent = mesh.parent;
+            let transformChain = [];
+            
+            while (currentParent && currentParent !== this.graphicsEditor.rootGroup) {
+                transformChain.unshift({
+                    position: currentParent.position.clone(),
+                    rotation: currentParent.rotation.clone(),
+                    scale: currentParent.scale.clone(),
+                    quaternion: currentParent.quaternion.clone()
+                });
+                currentParent = currentParent.parent;
+            }
+            
+            // Apply all parent transformations to our outline group
+            transformChain.forEach(transform => {
+                // Create a temporary group to apply each parent's transform
+                const tempGroup = new window.THREE.Group();
+                tempGroup.position.copy(transform.position);
+                tempGroup.rotation.copy(transform.rotation);
+                tempGroup.scale.copy(transform.scale);
+                
+                // Add our current group to this temp group
+                tempGroup.add(outlineGroup);
+                
+                // Move outlineGroup up one level
+                outlineGroup = tempGroup;
+                outlineGroup.userData.isOutline = true;
+            });
+            
+            // Add mesh's local transform
             outline.position.copy(mesh.position);
             outline.rotation.copy(mesh.rotation);
             outline.scale.copy(mesh.scale);
+            
+            // Scale the outline slightly larger (in local space)
             outline.scale.multiplyScalar(1.05);
-            outline.userData.isOutline = true;
-    
-            this.graphicsEditor.sceneRenderer.scene.add(outline);
+            
+            // Add the complete outline group to the scene
+            this.graphicsEditor.sceneRenderer.scene.add(outlineGroup);
         });
     }
     addNewShape() {
@@ -904,11 +917,21 @@ class GE_ShapeManager {
         }
     }
 
-    updateShapeList() {
+    updateList() {
+        const frameList = document.getElementById('frame-list');
+        frameList.innerHTML = '';
+        const groupList = document.getElementById('group-list');
+        groupList.innerHTML = '';
         const shapeList = document.getElementById('shape-list');
-        if (!shapeList) return;
-       
         shapeList.innerHTML = '';
+        this.updateFrameList();
+        this.graphicsEditor.groupManager.updateGroupList();
+        this.updateShapeList();
+        this.updateGizmoPosition();
+    }
+
+    updateFrameList() {
+        const list = document.getElementById('frame-list');
         // Animation selector
         const animSelector = document.createElement('select');
         animSelector.style.marginBottom = '10px';
@@ -927,7 +950,7 @@ class GE_ShapeManager {
             
             this.graphicsEditor.refreshShapes(false);
         });
-        shapeList.appendChild(animSelector);
+        list.appendChild(animSelector);
     
         // Frame list
         const frameList = document.createElement('div');
@@ -945,7 +968,13 @@ class GE_ShapeManager {
             });
             frameList.appendChild(frameItem);
         });
-        shapeList.appendChild(frameList);
+        list.appendChild(frameList);
+    }
+
+    updateShapeList() {
+        const list = document.getElementById('shape-list');
+        if (!list) return;
+        
         // Get the current frame data
         const currentFrame = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame];
        
@@ -1002,29 +1031,29 @@ class GE_ShapeManager {
                 shapeItem.classList.remove('dragging');
             });
            
-            shapeList.appendChild(shapeItem);
+            list.appendChild(shapeItem);
         }
         
         // Set up the shape list container as a drop target
-        shapeList.addEventListener('dragover', (e) => {
+        list.addEventListener('dragover', (e) => {
             // Only respond if we're dragging over the shape list itself, not an individual shape
-            if (e.target === shapeList) {
+            if (e.target === list) {
                 e.preventDefault();
                 e.dataTransfer.dropEffect = 'move';
-                shapeList.classList.add('drag-over');
+                list.classList.add('drag-over');
             }
         });
         
-        shapeList.addEventListener('dragleave', (e) => {
+        list.addEventListener('dragleave', (e) => {
             // Only respond if we're leaving the shape list
-            if (e.target === shapeList) {
-                shapeList.classList.remove('drag-over');
+            if (e.target === list) {
+                list.classList.remove('drag-over');
             }
         });
         
-        shapeList.addEventListener('drop', (e) => {
+        list.addEventListener('drop', (e) => {
             e.preventDefault();
-            shapeList.classList.remove('drag-over');
+            list.classList.remove('drag-over');
             
             const data = e.dataTransfer.getData('text/plain');
             if (!data) return;

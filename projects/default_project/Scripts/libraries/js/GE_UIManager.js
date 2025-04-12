@@ -340,21 +340,20 @@ class GE_UIManager {
                 newValue = parseFloat(newValue);
                 
                 // If we're editing a transform property, also update the transform target
-                if (this.currentTransformTarget && ['x', 'y', 'z', 'rotationX', 'rotationY', 'rotationZ', 'scaleX', 'scaleY', 'scaleZ'].includes(property)) {
-                    if (property === 'x') this.currentTransformTarget.position.x = newValue;
-                    if (property === 'y') this.currentTransformTarget.position.y = newValue;
-                    if (property === 'z') this.currentTransformTarget.position.z = newValue;
+                if (this.graphicsEditor.shapeManager.currentTransformTarget && ['x', 'y', 'z', 'rotationX', 'rotationY', 'rotationZ', 'scaleX', 'scaleY', 'scaleZ'].includes(property)) {
+                    if (property === 'x') this.graphicsEditor.shapeManager.currentTransformTarget.position.x = newValue;
+                    if (property === 'y') this.graphicsEditor.shapeManager.currentTransformTarget.position.y = newValue;
+                    if (property === 'z') this.graphicsEditor.shapeManager.currentTransformTarget.position.z = newValue;
                     
-                    if (property === 'rotationX') this.currentTransformTarget.rotation.x = this.graphicsEditor.rotationUtils.degToRad(newValue);
-                    if (property === 'rotationY') this.currentTransformTarget.rotation.y = this.graphicsEditor.rotationUtils.degToRad(newValue);
-                    if (property === 'rotationZ') this.currentTransformTarget.rotation.z = this.graphicsEditor.rotationUtils.degToRad(newValue);
+                    if (property === 'rotationX') this.graphicsEditor.shapeManager.currentTransformTarget.rotation.x = this.graphicsEditor.rotationUtils.degToRad(newValue);
+                    if (property === 'rotationY') this.graphicsEditor.shapeManager.currentTransformTarget.rotation.y = this.graphicsEditor.rotationUtils.degToRad(newValue);
+                    if (property === 'rotationZ') this.graphicsEditor.shapeManager.currentTransformTarget.rotation.z = this.graphicsEditor.rotationUtils.degToRad(newValue);
                     
-                    if (property === 'scaleX') this.currentTransformTarget.scale.x = newValue;
-                    if (property === 'scaleY') this.currentTransformTarget.scale.y = newValue;
-                    if (property === 'scaleZ') this.currentTransformTarget.scale.z = newValue;
+                    if (property === 'scaleX') this.graphicsEditor.shapeManager.currentTransformTarget.scale.x = newValue;
+                    if (property === 'scaleY') this.graphicsEditor.shapeManager.currentTransformTarget.scale.y = newValue;
+                    if (property === 'scaleZ') this.graphicsEditor.shapeManager.currentTransformTarget.scale.z = newValue;
                     
                     // Update gizmo position after directly changing values
-                    this.updateGizmoPosition();
                 }
             } else if(type === 'file') {
                 return;

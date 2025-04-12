@@ -15,18 +15,7 @@ class GE_GroupManager {
         document.getElementById('create-group').addEventListener('click', this.createGroup.bind(this));
         document.getElementById('ungroup').addEventListener('click', this.ungroup.bind(this));
         
-        // Initialize the groups list if it doesn't exist
-        if (!document.getElementById('group-list')) {
-            const shapeListParent = document.getElementById('shape-list').parentElement;
-            const groupListContainer = document.createElement('div');
-            groupListContainer.className = 'group-list-container';
-            groupListContainer.innerHTML = `
-                <h3>Groups</h3>
-                <div id="group-list" class="group-list"></div>
-            `;
-            shapeListParent.insertBefore(groupListContainer, document.getElementById('shape-list'));
-        }
-        
+       
         // Update the group list initially
         this.updateGroupList();
         
@@ -127,8 +116,7 @@ class GE_GroupManager {
         this.selectedGroupName = groupName;
         
         // Refresh UI
-        this.updateGroupList();
-        this.graphicsEditor.shapeManager.updateShapeList();
+        this.graphicsEditor.shapeManager.updateList()();
         this.graphicsEditor.refreshShapes(true);
     }
 
@@ -183,7 +171,7 @@ class GE_GroupManager {
         this.graphicsEditor.state.selectedShapeIndex = -1;
         let groupData = this.getGroupData(groupName);
         // Update the UI to show shapes in this group
-        this.graphicsEditor.shapeManager.updateShapeList();
+        this.graphicsEditor.shapeManager.updateList();
         this.graphicsEditor.shapeManager.highlightSelectedShape();
         this.graphicsEditor.uiManager.createGroupInspector(groupData);
         this.graphicsEditor.shapeManager.transformGroup(this.getGroupObject(groupName));
@@ -299,13 +287,13 @@ class GE_GroupManager {
     }
     // Update the group list in the UI
     updateGroupList() {
-        const groupListElement = document.getElementById('group-list');
-        if (!groupListElement) {
+        const list = document.getElementById('group-list');
+        if (!list) {
             console.warn("Group list element not found");
             return;
         }
         
-        groupListElement.innerHTML = '';
+        list.innerHTML = '';
         
         const groups = this.getGroups();
         for (const group of groups) {
@@ -321,7 +309,7 @@ class GE_GroupManager {
             // Make it a valid drop target for drag and drop
             groupItem.dataset.group = group;
             
-            groupListElement.appendChild(groupItem);
+            list.appendChild(groupItem);
         }
     }
 }

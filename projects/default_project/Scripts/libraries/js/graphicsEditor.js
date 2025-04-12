@@ -124,12 +124,12 @@ class GraphicsEditor {
     
         // Highlight the selected shape if any
         this.shapeManager.highlightSelectedShape();
+        this.shapeManager.updateGizmoPosition();
     }
     
 
     refreshShapes(param) {
-        this.shapeManager.updateShapeList();
-        this.groupManager.updateGroupList();
+        this.shapeManager.updateList();
         this.renderShapes(param);
     }
 
