@@ -114,12 +114,13 @@ class GE_GroupManager {
         
         // Ensure we have current frame data
         if (!this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame]) {
-            this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame] = { group: this.DEFAULT_GROUP };
+            this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame] = {};
         }
         
         // Initialize group if it doesn't exist
         if (!this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame][groupName]) {
-            this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame][groupName] = this.DEFAULT_GROUP;
+            // Using JSON parse/stringify for deep copying
+            this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame][groupName] = JSON.parse(JSON.stringify(this.DEFAULT_GROUP));
         }
         
         // Switch selection to the new group
@@ -152,7 +153,7 @@ class GE_GroupManager {
         }
         
         // Remove from source group
-        sourceGroup.splice(shapeIndex, 1);
+        sourceGroup.shapes.splice(shapeIndex, 1);
         
         // Ensure target group exists
         if (!currentFrameData[toGroupName]) {

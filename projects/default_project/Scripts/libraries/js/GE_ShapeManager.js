@@ -932,7 +932,7 @@ class GE_ShapeManager {
                 shapeItem.classList.add('selected');
             }
            
-            shapeItem.textContent = `${shape.type || 'Shape'} ${i}`;
+            shapeItem.textContent = `${shape.name} - ${shape.type || 'Shape'}`;
             shapeItem.addEventListener('click', () => {
                 this.graphicsEditor.state.currentGroup = this.graphicsEditor.groupManager.selectedGroupName;
                 this.selectShape(i);

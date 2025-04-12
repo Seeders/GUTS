@@ -31,6 +31,17 @@
                 "name": "spire"
               },
               {
+                "type": "box",
+                "width": 32,
+                "height": 20,
+                "depth": 32,
+                "color": "#707070",
+                "x": 0,
+                "y": 22,
+                "z": 0,
+                "name": "main structure"
+              },
+              {
                 "type": "cone",
                 "size": 14,
                 "height": 20,
@@ -39,7 +50,68 @@
                 "y": 62,
                 "z": 0,
                 "name": "spire roof"
+              }
+            ],
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 0.48509485094850957,
+              "z": 1
+            }
+          },
+          "base": {
+            "shapes": [
+              {
+                "type": "box",
+                "width": 40,
+                "height": 12,
+                "depth": 40,
+                "color": "#414141",
+                "x": 0,
+                "y": 6,
+                "z": 0,
+                "scaleX": 1,
+                "name": "base"
               },
+              {
+                "type": "box",
+                "width": 44,
+                "height": 4,
+                "depth": 44,
+                "color": "#696969",
+                "x": 0,
+                "y": 2,
+                "z": 0,
+                "name": "foundation"
+              }
+            ],
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          },
+          "towers": {
+            "shapes": [
               {
                 "type": "cylinder",
                 "size": 6,
@@ -84,7 +156,7 @@
                 "type": "cone",
                 "size": 8,
                 "height": 10,
-                "color": "#4ade43",
+                "color": "#4169E1",
                 "x": 16,
                 "y": 42,
                 "z": 16,
@@ -94,7 +166,7 @@
                 "type": "cone",
                 "size": 8,
                 "height": 10,
-                "color": "#fff422",
+                "color": "#4169E1",
                 "x": -16,
                 "y": 42,
                 "z": 16,
@@ -114,22 +186,11 @@
                 "type": "cone",
                 "size": 8,
                 "height": 10,
-                "color": "#ff2227",
+                "color": "#4169E1",
                 "x": -16,
                 "y": 42,
                 "z": -16,
                 "name": "tower4roof"
-              },
-              {
-                "type": "box",
-                "width": 44,
-                "height": 4,
-                "depth": 44,
-                "color": "#696969",
-                "x": 0,
-                "y": 2,
-                "z": 0,
-                "name": "foundation"
               }
             ],
             "position": {
@@ -144,49 +205,7 @@
             },
             "scale": {
               "x": 1,
-              "y": 1,
-              "z": 1
-            }
-          },
-          "base": {
-            "shapes": [
-              {
-                "type": "box",
-                "width": 40,
-                "height": 12,
-                "depth": 40,
-                "color": "#414141",
-                "x": 0,
-                "y": 6,
-                "z": 0,
-                "scaleX": 1,
-                "name": "base"
-              },
-              {
-                "type": "box",
-                "width": 32,
-                "height": 20,
-                "depth": 32,
-                "color": "#707070",
-                "x": 0,
-                "y": 22,
-                "z": 0,
-                "name": "main structure"
-              }
-            ],
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
+              "y": 0.6260162601626016,
               "z": 1
             }
           }

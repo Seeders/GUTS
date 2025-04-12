@@ -84,9 +84,11 @@ class GE_SceneRenderer {
         this.renderer.render(this.scene, this.camera);
     }
 
-    async createObjectsFromJSON(shapeData, scene) {
-        const group = await this.graphicsEditor.shapeFactory.createGroupFromJSON(shapeData);
-        scene.add(group);
+    async createObjectsFromJSON(frameData, scene) {
+        for(const groupName in frameData) {
+            const group = await this.graphicsEditor.shapeFactory.createGroupFromJSON(frameData[groupName]);
+            scene.add(group);
+        }
     }
 
     
