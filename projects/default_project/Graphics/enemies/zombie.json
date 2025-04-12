@@ -7,570 +7,657 @@
     "animations": {
       "idle": [
         {
-          "shapes": [
-            {
-              "type": "gltf",
-              "size": 16,
-              "color": "#60A060",
+          "shapes": {
+            "shapes": [
+              {
+                "type": "gltf",
+                "size": 16,
+                "color": "#60A060",
+                "x": 0,
+                "y": 32,
+                "z": 0,
+                "name": "head",
+                "scaleX": 500,
+                "scaleY": 500,
+                "scaleZ": 500,
+                "url": "samples/models/Avocado/Avocado.gltf"
+              },
+              {
+                "type": "cylinder",
+                "width": 20,
+                "height": 24,
+                "depth": 10,
+                "color": "#506050",
+                "x": 0,
+                "y": 24,
+                "z": 0,
+                "size": 16,
+                "name": "body",
+                "scaleX": 1
+              },
+              {
+                "type": "sphere",
+                "size": 5,
+                "color": "#ffffff",
+                "x": 4,
+                "y": 45,
+                "z": 7,
+                "name": "eye-left",
+                "scaleX": 1
+              },
+              {
+                "type": "sphere",
+                "size": 5,
+                "color": "#FFFFFF",
+                "x": -4,
+                "y": 45,
+                "z": 7,
+                "name": "eye-right"
+              },
+              {
+                "type": "sphere",
+                "size": 2,
+                "color": "#000000",
+                "x": 4,
+                "y": 45,
+                "z": 9,
+                "name": "pupil-left"
+              },
+              {
+                "type": "sphere",
+                "size": 2,
+                "color": "#000000",
+                "x": -4,
+                "y": 45,
+                "z": 9,
+                "name": "pupil-right"
+              },
+              {
+                "type": "cylinder",
+                "size": 4,
+                "height": 20,
+                "color": "#60A060",
+                "x": 8,
+                "y": 29,
+                "z": 10,
+                "rotationX": 90,
+                "rotationZ": 0,
+                "name": "arm-left"
+              },
+              {
+                "type": "cylinder",
+                "size": 4,
+                "height": 20,
+                "color": "#60A060",
+                "x": -8,
+                "y": 29,
+                "z": 10,
+                "rotationX": 90,
+                "rotationZ": 0,
+                "name": "arm-right"
+              },
+              {
+                "type": "cylinder",
+                "size": 4,
+                "height": 24,
+                "color": "#60A060",
+                "x": 5,
+                "y": 12,
+                "z": 0,
+                "rotationZ": 0,
+                "name": "leg-left"
+              },
+              {
+                "type": "cylinder",
+                "size": 4,
+                "height": 24,
+                "color": "#60A060",
+                "x": -5,
+                "y": 12,
+                "z": 0,
+                "rotationZ": 0,
+                "rotationX": 0,
+                "name": "leg-right"
+              }
+            ],
+            "position": {
               "x": 0,
-              "y": 32,
-              "z": 0,
-              "name": "head",
-              "scaleX": 500,
-              "scaleY": 500,
-              "scaleZ": 500,
-              "url": "samples/models/Avocado/Avocado.gltf"
+              "y": 0,
+              "z": 0
             },
-            {
-              "type": "cylinder",
-              "width": 20,
-              "height": 24,
-              "depth": 10,
-              "color": "#506050",
+            "rotation": {
               "x": 0,
-              "y": 24,
-              "z": 0,
-              "size": 16,
-              "name": "body"
+              "y": 0,
+              "z": 0
             },
-            {
-              "type": "sphere",
-              "size": 5,
-              "color": "#ffffff",
-              "x": 4,
-              "y": 45,
-              "z": 7,
-              "name": "eye-left"
-            },
-            {
-              "type": "sphere",
-              "size": 5,
-              "color": "#FFFFFF",
-              "x": -4,
-              "y": 45,
-              "z": 7,
-              "name": "eye-right"
-            },
-            {
-              "type": "sphere",
-              "size": 2,
-              "color": "#000000",
-              "x": 4,
-              "y": 45,
-              "z": 9,
-              "name": "pupil-left"
-            },
-            {
-              "type": "sphere",
-              "size": 2,
-              "color": "#000000",
-              "x": -4,
-              "y": 45,
-              "z": 9,
-              "name": "pupil-right"
-            },
-            {
-              "type": "cylinder",
-              "size": 4,
-              "height": 20,
-              "color": "#60A060",
-              "x": 8,
-              "y": 29,
-              "z": 10,
-              "rotationX": 90,
-              "rotationZ": 0,
-              "name": "arm-left"
-            },
-            {
-              "type": "cylinder",
-              "size": 4,
-              "height": 20,
-              "color": "#60A060",
-              "x": -8,
-              "y": 29,
-              "z": 10,
-              "rotationX": 90,
-              "rotationZ": 0,
-              "name": "arm-right"
-            },
-            {
-              "type": "cylinder",
-              "size": 4,
-              "height": 24,
-              "color": "#60A060",
-              "x": 5,
-              "y": 12,
-              "z": 0,
-              "rotationZ": 0,
-              "name": "leg-left"
-            },
-            {
-              "type": "cylinder",
-              "size": 4,
-              "height": 24,
-              "color": "#60A060",
-              "x": -5,
-              "y": 12,
-              "z": 0,
-              "rotationZ": 0,
-              "rotationX": 0,
-              "name": "leg-right"
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
             }
-          ]
+          }
         }
       ],
       "walk": [
         {
-          "shapes": [
-            {
-              "type": "gltf",
-              "size": 16,
-              "color": "#60A060",
+          "shapes": {
+            "shapes": [
+              {
+                "type": "gltf",
+                "size": 16,
+                "color": "#60A060",
+                "x": 0,
+                "y": 32,
+                "z": 0,
+                "name": "head",
+                "url": "samples/models/Avocado/Avocado.gltf",
+                "scaleX": 500,
+                "scaleY": 500,
+                "scaleZ": 500
+              },
+              {
+                "type": "cylinder",
+                "width": 20,
+                "height": 24,
+                "depth": 10,
+                "color": "#506050",
+                "x": 0,
+                "y": 24,
+                "z": 0,
+                "size": 16,
+                "name": "body"
+              },
+              {
+                "type": "sphere",
+                "size": 5,
+                "color": "#FFFFFF",
+                "x": 4,
+                "y": 45,
+                "z": 7,
+                "name": "eye-left"
+              },
+              {
+                "type": "sphere",
+                "size": 5,
+                "color": "#FFFFFF",
+                "x": -4,
+                "y": 45,
+                "z": 7,
+                "name": "eye-right"
+              },
+              {
+                "type": "sphere",
+                "size": 2,
+                "color": "#000000",
+                "x": 4,
+                "y": 45,
+                "z": 9,
+                "name": "pupil-left"
+              },
+              {
+                "type": "sphere",
+                "size": 2,
+                "color": "#000000",
+                "x": -4,
+                "y": 45,
+                "z": 9,
+                "name": "pupil-right"
+              },
+              {
+                "type": "cylinder",
+                "size": 4,
+                "height": 20,
+                "color": "#60A060",
+                "x": 12,
+                "y": 29,
+                "z": 10,
+                "rotationX": 90,
+                "rotationZ": -20,
+                "name": "arm-left"
+              },
+              {
+                "type": "cylinder",
+                "size": 4,
+                "height": 20,
+                "color": "#60A060",
+                "x": -12,
+                "y": 29,
+                "z": 10,
+                "rotationX": 90,
+                "rotationZ": 20,
+                "name": "arm-right"
+              },
+              {
+                "type": "cylinder",
+                "size": 4,
+                "height": 20,
+                "color": "#60A060",
+                "x": 5,
+                "y": 10,
+                "z": -2,
+                "rotationX": 30,
+                "rotationZ": 0,
+                "name": "leg-left"
+              },
+              {
+                "type": "cylinder",
+                "size": 4,
+                "height": 24,
+                "color": "#60A060",
+                "x": -5,
+                "y": 12,
+                "z": 0,
+                "rotationX": -10,
+                "rotationZ": 0,
+                "name": "leg-right"
+              }
+            ],
+            "position": {
               "x": 0,
-              "y": 32,
-              "z": 0,
-              "name": "head",
-              "url": "samples/models/Avocado/Avocado.gltf",
-              "scaleX": 500,
-              "scaleY": 500,
-              "scaleZ": 500
+              "y": 0,
+              "z": 0
             },
-            {
-              "type": "cylinder",
-              "width": 20,
-              "height": 24,
-              "depth": 10,
-              "color": "#506050",
+            "rotation": {
               "x": 0,
-              "y": 24,
-              "z": 0,
-              "size": 16,
-              "name": "body"
+              "y": 0,
+              "z": 0
             },
-            {
-              "type": "sphere",
-              "size": 5,
-              "color": "#FFFFFF",
-              "x": 4,
-              "y": 45,
-              "z": 7,
-              "name": "eye-left"
-            },
-            {
-              "type": "sphere",
-              "size": 5,
-              "color": "#FFFFFF",
-              "x": -4,
-              "y": 45,
-              "z": 7,
-              "name": "eye-right"
-            },
-            {
-              "type": "sphere",
-              "size": 2,
-              "color": "#000000",
-              "x": 4,
-              "y": 45,
-              "z": 9,
-              "name": "pupil-left"
-            },
-            {
-              "type": "sphere",
-              "size": 2,
-              "color": "#000000",
-              "x": -4,
-              "y": 45,
-              "z": 9,
-              "name": "pupil-right"
-            },
-            {
-              "type": "cylinder",
-              "size": 4,
-              "height": 20,
-              "color": "#60A060",
-              "x": 12,
-              "y": 29,
-              "z": 10,
-              "rotationX": 90,
-              "rotationZ": -20,
-              "name": "arm-left"
-            },
-            {
-              "type": "cylinder",
-              "size": 4,
-              "height": 20,
-              "color": "#60A060",
-              "x": -12,
-              "y": 29,
-              "z": 10,
-              "rotationX": 90,
-              "rotationZ": 20,
-              "name": "arm-right"
-            },
-            {
-              "type": "cylinder",
-              "size": 4,
-              "height": 20,
-              "color": "#60A060",
-              "x": 5,
-              "y": 10,
-              "z": -2,
-              "rotationX": 30,
-              "rotationZ": 0,
-              "name": "leg-left"
-            },
-            {
-              "type": "cylinder",
-              "size": 4,
-              "height": 24,
-              "color": "#60A060",
-              "x": -5,
-              "y": 12,
-              "z": 0,
-              "rotationX": -10,
-              "rotationZ": 0,
-              "name": "leg-right"
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
             }
-          ]
+          }
         },
         {
-          "shapes": [
-            {
-              "type": "gltf",
-              "size": 16,
-              "color": "#60A060",
+          "shapes": {
+            "shapes": [
+              {
+                "type": "gltf",
+                "size": 16,
+                "color": "#60A060",
+                "x": 0,
+                "y": 33,
+                "z": 0,
+                "name": "head",
+                "url": "samples/models/Avocado/Avocado.gltf",
+                "scaleX": 500,
+                "scaleY": 500,
+                "scaleZ": 500
+              },
+              {
+                "type": "cylinder",
+                "width": 20,
+                "height": 24,
+                "depth": 10,
+                "color": "#506050",
+                "x": 0,
+                "y": 25,
+                "z": 0,
+                "size": 16,
+                "name": "body"
+              },
+              {
+                "type": "sphere",
+                "size": 5,
+                "color": "#FFFFFF",
+                "x": 4,
+                "y": 46,
+                "z": 7,
+                "name": "eye-left"
+              },
+              {
+                "type": "sphere",
+                "size": 5,
+                "color": "#FFFFFF",
+                "x": -4,
+                "y": 46,
+                "z": 7,
+                "name": "eye-right"
+              },
+              {
+                "type": "sphere",
+                "size": 2,
+                "color": "#000000",
+                "x": 4,
+                "y": 46,
+                "z": 9,
+                "name": "pupil-left"
+              },
+              {
+                "type": "sphere",
+                "size": 2,
+                "color": "#000000",
+                "x": -4,
+                "y": 46,
+                "z": 9,
+                "name": "pupil-right"
+              },
+              {
+                "type": "cylinder",
+                "size": 4,
+                "height": 20,
+                "color": "#60A060",
+                "x": 10,
+                "y": 29,
+                "z": 10,
+                "rotationX": 90,
+                "rotationZ": 0,
+                "name": "arm-left"
+              },
+              {
+                "type": "cylinder",
+                "size": 4,
+                "height": 20,
+                "color": "#60A060",
+                "x": -10,
+                "y": 29,
+                "z": 10,
+                "rotationX": 90,
+                "rotationZ": 0,
+                "name": "arm-right"
+              },
+              {
+                "type": "cylinder",
+                "size": 4,
+                "height": 24,
+                "color": "#60A060",
+                "x": 5,
+                "y": 10,
+                "z": -2,
+                "rotationX": 30,
+                "rotationZ": 0,
+                "name": "leg-left"
+              },
+              {
+                "type": "cylinder",
+                "size": 4,
+                "height": 20,
+                "color": "#60A060",
+                "x": -5,
+                "y": 10,
+                "z": -2,
+                "rotationX": 30,
+                "rotationZ": 0,
+                "name": "leg-right"
+              }
+            ],
+            "position": {
               "x": 0,
-              "y": 33,
-              "z": 0,
-              "name": "head",
-              "url": "samples/models/Avocado/Avocado.gltf",
-              "scaleX": 500,
-              "scaleY": 500,
-              "scaleZ": 500
+              "y": 0,
+              "z": 0
             },
-            {
-              "type": "cylinder",
-              "width": 20,
-              "height": 24,
-              "depth": 10,
-              "color": "#506050",
+            "rotation": {
               "x": 0,
-              "y": 25,
-              "z": 0,
-              "size": 16,
-              "name": "body"
+              "y": 0,
+              "z": 0
             },
-            {
-              "type": "sphere",
-              "size": 5,
-              "color": "#FFFFFF",
-              "x": 4,
-              "y": 46,
-              "z": 7,
-              "name": "eye-left"
-            },
-            {
-              "type": "sphere",
-              "size": 5,
-              "color": "#FFFFFF",
-              "x": -4,
-              "y": 46,
-              "z": 7,
-              "name": "eye-right"
-            },
-            {
-              "type": "sphere",
-              "size": 2,
-              "color": "#000000",
-              "x": 4,
-              "y": 46,
-              "z": 9,
-              "name": "pupil-left"
-            },
-            {
-              "type": "sphere",
-              "size": 2,
-              "color": "#000000",
-              "x": -4,
-              "y": 46,
-              "z": 9,
-              "name": "pupil-right"
-            },
-            {
-              "type": "cylinder",
-              "size": 4,
-              "height": 20,
-              "color": "#60A060",
-              "x": 10,
-              "y": 29,
-              "z": 10,
-              "rotationX": 90,
-              "rotationZ": 0,
-              "name": "arm-left"
-            },
-            {
-              "type": "cylinder",
-              "size": 4,
-              "height": 20,
-              "color": "#60A060",
-              "x": -10,
-              "y": 29,
-              "z": 10,
-              "rotationX": 90,
-              "rotationZ": 0,
-              "name": "arm-right"
-            },
-            {
-              "type": "cylinder",
-              "size": 4,
-              "height": 24,
-              "color": "#60A060",
-              "x": 5,
-              "y": 10,
-              "z": -2,
-              "rotationX": 30,
-              "rotationZ": 0,
-              "name": "leg-left"
-            },
-            {
-              "type": "cylinder",
-              "size": 4,
-              "height": 20,
-              "color": "#60A060",
-              "x": -5,
-              "y": 10,
-              "z": -2,
-              "rotationX": 30,
-              "rotationZ": 0,
-              "name": "leg-right"
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
             }
-          ]
+          }
         },
         {
-          "shapes": [
-            {
-              "type": "gltf",
-              "size": 16,
-              "color": "#60A060",
+          "shapes": {
+            "shapes": [
+              {
+                "type": "gltf",
+                "size": 16,
+                "color": "#60A060",
+                "x": 0,
+                "y": 33,
+                "z": 0,
+                "name": "head",
+                "url": "samples/models/Avocado/Avocado.gltf",
+                "scaleX": 500,
+                "scaleY": 500,
+                "scaleZ": 500
+              },
+              {
+                "type": "cylinder",
+                "width": 20,
+                "height": 24,
+                "depth": 10,
+                "color": "#506050",
+                "x": 0,
+                "y": 24,
+                "z": 0,
+                "size": 16,
+                "name": "body"
+              },
+              {
+                "type": "sphere",
+                "size": 5,
+                "color": "#FFFFFF",
+                "x": 4,
+                "y": 46,
+                "z": 7,
+                "name": "eye-left"
+              },
+              {
+                "type": "sphere",
+                "size": 5,
+                "color": "#FFFFFF",
+                "x": -4,
+                "y": 46,
+                "z": 7,
+                "name": "eye-right"
+              },
+              {
+                "type": "sphere",
+                "size": 2,
+                "color": "#000000",
+                "x": 4,
+                "y": 46,
+                "z": 9,
+                "name": "pupil-left"
+              },
+              {
+                "type": "sphere",
+                "size": 2,
+                "color": "#000000",
+                "x": -4,
+                "y": 46,
+                "z": 9,
+                "name": "pupil-right"
+              },
+              {
+                "type": "cylinder",
+                "size": 4,
+                "height": 20,
+                "color": "#60A060",
+                "x": 8,
+                "y": 29,
+                "z": 10,
+                "rotationX": 90,
+                "rotationZ": 20,
+                "name": "arm-left"
+              },
+              {
+                "type": "cylinder",
+                "size": 4,
+                "height": 20,
+                "color": "#60A060",
+                "x": -8,
+                "y": 29,
+                "z": 10,
+                "rotationX": 90,
+                "rotationZ": -20,
+                "name": "arm-right"
+              },
+              {
+                "type": "cylinder",
+                "size": 4,
+                "height": 24,
+                "color": "#60A060",
+                "x": 5,
+                "y": 10,
+                "z": -2,
+                "rotationX": 30,
+                "rotationZ": 0,
+                "name": "leg-left"
+              },
+              {
+                "type": "cylinder",
+                "size": 4,
+                "height": 20,
+                "color": "#60A060",
+                "x": -5,
+                "y": 10,
+                "z": -2,
+                "rotationX": 30,
+                "rotationZ": 0,
+                "name": "leg-right"
+              }
+            ],
+            "position": {
               "x": 0,
-              "y": 33,
-              "z": 0,
-              "name": "head",
-              "url": "samples/models/Avocado/Avocado.gltf",
-              "scaleX": 500,
-              "scaleY": 500,
-              "scaleZ": 500
+              "y": 0,
+              "z": 0
             },
-            {
-              "type": "cylinder",
-              "width": 20,
-              "height": 24,
-              "depth": 10,
-              "color": "#506050",
+            "rotation": {
               "x": 0,
-              "y": 24,
-              "z": 0,
-              "size": 16,
-              "name": "body"
+              "y": 0,
+              "z": 0
             },
-            {
-              "type": "sphere",
-              "size": 5,
-              "color": "#FFFFFF",
-              "x": 4,
-              "y": 46,
-              "z": 7,
-              "name": "eye-left"
-            },
-            {
-              "type": "sphere",
-              "size": 5,
-              "color": "#FFFFFF",
-              "x": -4,
-              "y": 46,
-              "z": 7,
-              "name": "eye-right"
-            },
-            {
-              "type": "sphere",
-              "size": 2,
-              "color": "#000000",
-              "x": 4,
-              "y": 46,
-              "z": 9,
-              "name": "pupil-left"
-            },
-            {
-              "type": "sphere",
-              "size": 2,
-              "color": "#000000",
-              "x": -4,
-              "y": 46,
-              "z": 9,
-              "name": "pupil-right"
-            },
-            {
-              "type": "cylinder",
-              "size": 4,
-              "height": 20,
-              "color": "#60A060",
-              "x": 8,
-              "y": 29,
-              "z": 10,
-              "rotationX": 90,
-              "rotationZ": 20,
-              "name": "arm-left"
-            },
-            {
-              "type": "cylinder",
-              "size": 4,
-              "height": 20,
-              "color": "#60A060",
-              "x": -8,
-              "y": 29,
-              "z": 10,
-              "rotationX": 90,
-              "rotationZ": -20,
-              "name": "arm-right"
-            },
-            {
-              "type": "cylinder",
-              "size": 4,
-              "height": 24,
-              "color": "#60A060",
-              "x": 5,
-              "y": 10,
-              "z": -2,
-              "rotationX": 30,
-              "rotationZ": 0,
-              "name": "leg-left"
-            },
-            {
-              "type": "cylinder",
-              "size": 4,
-              "height": 20,
-              "color": "#60A060",
-              "x": -5,
-              "y": 10,
-              "z": -2,
-              "rotationX": 30,
-              "rotationZ": 0,
-              "name": "leg-right"
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
             }
-          ]
+          }
         },
         {
-          "shapes": [
-            {
-              "type": "gltf",
-              "size": 16,
-              "color": "#60A060",
+          "shapes": {
+            "shapes": [
+              {
+                "type": "gltf",
+                "size": 16,
+                "color": "#60A060",
+                "x": 0,
+                "y": 32,
+                "z": 0,
+                "name": "head",
+                "url": "samples/models/Avocado/Avocado.gltf",
+                "scaleX": 500,
+                "scaleY": 500,
+                "scaleZ": 500
+              },
+              {
+                "type": "cylinder",
+                "width": 20,
+                "height": 24,
+                "depth": 10,
+                "color": "#506050",
+                "x": 0,
+                "y": 25,
+                "z": 0,
+                "size": 16,
+                "name": "body"
+              },
+              {
+                "type": "sphere",
+                "size": 5,
+                "color": "#FFFFFF",
+                "x": 4,
+                "y": 45,
+                "z": 7,
+                "name": "eye-left"
+              },
+              {
+                "type": "sphere",
+                "size": 5,
+                "color": "#FFFFFF",
+                "x": -4,
+                "y": 45,
+                "z": 7,
+                "name": "eye-right"
+              },
+              {
+                "type": "sphere",
+                "size": 2,
+                "color": "#000000",
+                "x": 4,
+                "y": 45,
+                "z": 9,
+                "name": "pupil-left"
+              },
+              {
+                "type": "sphere",
+                "size": 2,
+                "color": "#000000",
+                "x": -4,
+                "y": 45,
+                "z": 9,
+                "name": "pupil-right"
+              },
+              {
+                "type": "cylinder",
+                "size": 4,
+                "height": 20,
+                "color": "#60A060",
+                "x": 10,
+                "y": 29,
+                "z": 10,
+                "rotationX": 90,
+                "rotationZ": 0,
+                "name": "arm-left"
+              },
+              {
+                "type": "cylinder",
+                "size": 4,
+                "height": 20,
+                "color": "#60A060",
+                "x": -10,
+                "y": 29,
+                "z": 10,
+                "rotationX": 90,
+                "rotationZ": 0,
+                "name": "arm-right"
+              },
+              {
+                "type": "cylinder",
+                "size": 4,
+                "height": 20,
+                "color": "#60A060",
+                "x": 5,
+                "y": 10,
+                "z": -2,
+                "rotationX": 30,
+                "rotationZ": 0,
+                "name": "leg-left"
+              },
+              {
+                "type": "cylinder",
+                "size": 4,
+                "height": 24,
+                "color": "#60A060",
+                "x": -5,
+                "y": 12,
+                "z": 0,
+                "rotationX": 10,
+                "rotationZ": 0,
+                "name": "leg-right"
+              }
+            ],
+            "position": {
               "x": 0,
-              "y": 32,
-              "z": 0,
-              "name": "head",
-              "url": "samples/models/Avocado/Avocado.gltf",
-              "scaleX": 500,
-              "scaleY": 500,
-              "scaleZ": 500
+              "y": 0,
+              "z": 0
             },
-            {
-              "type": "cylinder",
-              "width": 20,
-              "height": 24,
-              "depth": 10,
-              "color": "#506050",
+            "rotation": {
               "x": 0,
-              "y": 25,
-              "z": 0,
-              "size": 16,
-              "name": "body"
+              "y": 0,
+              "z": 0
             },
-            {
-              "type": "sphere",
-              "size": 5,
-              "color": "#FFFFFF",
-              "x": 4,
-              "y": 45,
-              "z": 7,
-              "name": "eye-left"
-            },
-            {
-              "type": "sphere",
-              "size": 5,
-              "color": "#FFFFFF",
-              "x": -4,
-              "y": 45,
-              "z": 7,
-              "name": "eye-right"
-            },
-            {
-              "type": "sphere",
-              "size": 2,
-              "color": "#000000",
-              "x": 4,
-              "y": 45,
-              "z": 9,
-              "name": "pupil-left"
-            },
-            {
-              "type": "sphere",
-              "size": 2,
-              "color": "#000000",
-              "x": -4,
-              "y": 45,
-              "z": 9,
-              "name": "pupil-right"
-            },
-            {
-              "type": "cylinder",
-              "size": 4,
-              "height": 20,
-              "color": "#60A060",
-              "x": 10,
-              "y": 29,
-              "z": 10,
-              "rotationX": 90,
-              "rotationZ": 0,
-              "name": "arm-left"
-            },
-            {
-              "type": "cylinder",
-              "size": 4,
-              "height": 20,
-              "color": "#60A060",
-              "x": -10,
-              "y": 29,
-              "z": 10,
-              "rotationX": 90,
-              "rotationZ": 0,
-              "name": "arm-right"
-            },
-            {
-              "type": "cylinder",
-              "size": 4,
-              "height": 20,
-              "color": "#60A060",
-              "x": 5,
-              "y": 10,
-              "z": -2,
-              "rotationX": 30,
-              "rotationZ": 0,
-              "name": "leg-left"
-            },
-            {
-              "type": "cylinder",
-              "size": 4,
-              "height": 24,
-              "color": "#60A060",
-              "x": -5,
-              "y": 12,
-              "z": 0,
-              "rotationX": 10,
-              "rotationZ": 0,
-              "name": "leg-right"
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
             }
-          ]
+          }
         }
       ]
     }

@@ -8,571 +8,657 @@
     "animations": {
       "idle": [
         {
-          "shapes": [
-            {
-              "type": "sphere",
-              "size": 12,
-              "color": "#BCA9DF",
+          "shapes": {
+            "shapes": [
+              {
+                "type": "sphere",
+                "size": 12,
+                "color": "#BCA9DF",
+                "x": 0,
+                "y": 36,
+                "z": 2,
+                "scaleX": 1
+              },
+              {
+                "type": "cone",
+                "size": 16,
+                "height": 30,
+                "color": "#9F8AC7",
+                "x": 0,
+                "y": 18,
+                "z": 0,
+                "rotationX": 180
+              },
+              {
+                "type": "sphere",
+                "size": 4,
+                "color": "#FF3366",
+                "x": 4,
+                "y": 36,
+                "z": 7
+              },
+              {
+                "type": "sphere",
+                "size": 4,
+                "color": "#FF3366",
+                "x": -4,
+                "y": 36,
+                "z": 7
+              },
+              {
+                "type": "cylinder",
+                "size": 3,
+                "height": 16,
+                "color": "#BCA9DF",
+                "x": -8,
+                "y": 28,
+                "z": 10,
+                "rotationX": 90,
+                "rotationZ": 30
+              },
+              {
+                "type": "cylinder",
+                "size": 3,
+                "height": 16,
+                "color": "#BCA9DF",
+                "x": 8,
+                "y": 28,
+                "z": 10,
+                "rotationX": 90,
+                "rotationZ": -30
+              },
+              {
+                "type": "cylinder",
+                "size": 2,
+                "height": 12,
+                "color": "#BCA9DF",
+                "x": 3,
+                "y": 33,
+                "z": -10,
+                "rotationX": -40
+              },
+              {
+                "type": "cylinder",
+                "size": 2,
+                "height": 12,
+                "color": "#BCA9DF",
+                "x": -3,
+                "y": 33,
+                "z": -10,
+                "rotationX": -40
+              },
+              {
+                "type": "sphere",
+                "size": 6,
+                "color": "#000000",
+                "x": 0,
+                "y": 32,
+                "z": 7.8,
+                "rotationX": 45
+              },
+              {
+                "type": "sphere",
+                "size": 6,
+                "color": "#BCA9DF",
+                "x": 15,
+                "y": 18,
+                "z": 0
+              },
+              {
+                "type": "sphere",
+                "size": 6,
+                "color": "#BCA9DF",
+                "x": -15,
+                "y": 18,
+                "z": 0
+              },
+              {
+                "type": "sphere",
+                "size": 6,
+                "color": "#BCA9DF",
+                "x": 0,
+                "y": 18,
+                "z": -15
+              }
+            ],
+            "position": {
               "x": 0,
-              "y": 36,
-              "z": 2
-            },
-            {
-              "type": "cone",
-              "size": 16,
-              "height": 30,
-              "color": "#9F8AC7",
-              "x": 0,
-              "y": 18,
-              "z": 0,
-              "rotationX": 180
-            },
-            {
-              "type": "sphere",
-              "size": 4,
-              "color": "#FF3366",
-              "x": 4,
-              "y": 36,
-              "z": 7
-            },
-            {
-              "type": "sphere",
-              "size": 4,
-              "color": "#FF3366",
-              "x": -4,
-              "y": 36,
-              "z": 7
-            },
-            {
-              "type": "cylinder",
-              "size": 3,
-              "height": 16,
-              "color": "#BCA9DF",
-              "x": -8,
-              "y": 28,
-              "z": 10,
-              "rotationX": 90,
-              "rotationZ": 30
-            },
-            {
-              "type": "cylinder",
-              "size": 3,
-              "height": 16,
-              "color": "#BCA9DF",
-              "x": 8,
-              "y": 28,
-              "z": 10,
-              "rotationX": 90,
-              "rotationZ": -30
-            },
-            {
-              "type": "cylinder",
-              "size": 2,
-              "height": 12,
-              "color": "#BCA9DF",
-              "x": 3,
-              "y": 33,
-              "z": -10,
-              "rotationX": -40
-            },
-            {
-              "type": "cylinder",
-              "size": 2,
-              "height": 12,
-              "color": "#BCA9DF",
-              "x": -3,
-              "y": 33,
-              "z": -10,
-              "rotationX": -40
-            },
-            {
-              "type": "sphere",
-              "size": 6,
-              "color": "#000000",
-              "x": 0,
-              "y": 32,
-              "z": 7.8,
-              "rotationX": 45
-            },
-            {
-              "type": "sphere",
-              "size": 6,
-              "color": "#BCA9DF",
-              "x": 15,
-              "y": 18,
+              "y": 0,
               "z": 0
             },
-            {
-              "type": "sphere",
-              "size": 6,
-              "color": "#BCA9DF",
-              "x": -15,
-              "y": 18,
+            "rotation": {
+              "x": 0,
+              "y": 0,
               "z": 0
             },
-            {
-              "type": "sphere",
-              "size": 6,
-              "color": "#BCA9DF",
-              "x": 0,
-              "y": 18,
-              "z": -15
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
             }
-          ]
+          }
         }
       ],
       "walk": [
         {
-          "shapes": [
-            {
-              "type": "sphere",
-              "size": 12,
-              "color": "#BCA9DF",
+          "shapes": {
+            "shapes": [
+              {
+                "type": "sphere",
+                "size": 12,
+                "color": "#BCA9DF",
+                "x": 0,
+                "y": 36,
+                "z": 2
+              },
+              {
+                "type": "cone",
+                "size": 16,
+                "height": 30,
+                "color": "#9F8AC7",
+                "x": 0,
+                "y": 18,
+                "z": 0,
+                "rotationX": 180
+              },
+              {
+                "type": "sphere",
+                "size": 4,
+                "color": "#FF3366",
+                "x": 4,
+                "y": 36,
+                "z": 7
+              },
+              {
+                "type": "sphere",
+                "size": 4,
+                "color": "#FF3366",
+                "x": -4,
+                "y": 36,
+                "z": 7
+              },
+              {
+                "type": "cylinder",
+                "size": 3,
+                "height": 16,
+                "color": "#BCA9DF",
+                "x": -8,
+                "y": 28,
+                "z": 10,
+                "rotationX": 90,
+                "rotationZ": 30
+              },
+              {
+                "type": "cylinder",
+                "size": 3,
+                "height": 16,
+                "color": "#BCA9DF",
+                "x": 8,
+                "y": 28,
+                "z": 10,
+                "rotationX": 90,
+                "rotationZ": -30
+              },
+              {
+                "type": "cylinder",
+                "size": 2,
+                "height": 12,
+                "color": "#BCA9DF",
+                "x": 3,
+                "y": 33,
+                "z": -10,
+                "rotationX": -40
+              },
+              {
+                "type": "cylinder",
+                "size": 2,
+                "height": 12,
+                "color": "#BCA9DF",
+                "x": -3,
+                "y": 33,
+                "z": -10,
+                "rotationX": -40
+              },
+              {
+                "type": "sphere",
+                "size": 6,
+                "color": "#000000",
+                "x": 0,
+                "y": 32,
+                "z": 7.8,
+                "rotationX": 45
+              },
+              {
+                "type": "sphere",
+                "size": 6,
+                "color": "#BCA9DF",
+                "x": 15,
+                "y": 18,
+                "z": 0
+              },
+              {
+                "type": "sphere",
+                "size": 6,
+                "color": "#BCA9DF",
+                "x": -15,
+                "y": 18,
+                "z": 0
+              },
+              {
+                "type": "sphere",
+                "size": 6,
+                "color": "#BCA9DF",
+                "x": 0,
+                "y": 18,
+                "z": -15
+              }
+            ],
+            "position": {
               "x": 0,
-              "y": 36,
-              "z": 2
-            },
-            {
-              "type": "cone",
-              "size": 16,
-              "height": 30,
-              "color": "#9F8AC7",
-              "x": 0,
-              "y": 18,
-              "z": 0,
-              "rotationX": 180
-            },
-            {
-              "type": "sphere",
-              "size": 4,
-              "color": "#FF3366",
-              "x": 4,
-              "y": 36,
-              "z": 7
-            },
-            {
-              "type": "sphere",
-              "size": 4,
-              "color": "#FF3366",
-              "x": -4,
-              "y": 36,
-              "z": 7
-            },
-            {
-              "type": "cylinder",
-              "size": 3,
-              "height": 16,
-              "color": "#BCA9DF",
-              "x": -8,
-              "y": 28,
-              "z": 10,
-              "rotationX": 90,
-              "rotationZ": 30
-            },
-            {
-              "type": "cylinder",
-              "size": 3,
-              "height": 16,
-              "color": "#BCA9DF",
-              "x": 8,
-              "y": 28,
-              "z": 10,
-              "rotationX": 90,
-              "rotationZ": -30
-            },
-            {
-              "type": "cylinder",
-              "size": 2,
-              "height": 12,
-              "color": "#BCA9DF",
-              "x": 3,
-              "y": 33,
-              "z": -10,
-              "rotationX": -40
-            },
-            {
-              "type": "cylinder",
-              "size": 2,
-              "height": 12,
-              "color": "#BCA9DF",
-              "x": -3,
-              "y": 33,
-              "z": -10,
-              "rotationX": -40
-            },
-            {
-              "type": "sphere",
-              "size": 6,
-              "color": "#000000",
-              "x": 0,
-              "y": 32,
-              "z": 7.8,
-              "rotationX": 45
-            },
-            {
-              "type": "sphere",
-              "size": 6,
-              "color": "#BCA9DF",
-              "x": 15,
-              "y": 18,
+              "y": 0,
               "z": 0
             },
-            {
-              "type": "sphere",
-              "size": 6,
-              "color": "#BCA9DF",
-              "x": -15,
-              "y": 18,
+            "rotation": {
+              "x": 0,
+              "y": 0,
               "z": 0
             },
-            {
-              "type": "sphere",
-              "size": 6,
-              "color": "#BCA9DF",
-              "x": 0,
-              "y": 18,
-              "z": -15
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
             }
-          ]
+          }
         },
         {
-          "shapes": [
-            {
-              "type": "sphere",
-              "size": 12,
-              "color": "#BCA9DF",
+          "shapes": {
+            "shapes": [
+              {
+                "type": "sphere",
+                "size": 12,
+                "color": "#BCA9DF",
+                "x": 0,
+                "y": 36,
+                "z": 2
+              },
+              {
+                "type": "cone",
+                "size": 16,
+                "height": 30,
+                "color": "#9F8AC7",
+                "x": 0,
+                "y": 18,
+                "z": 0,
+                "rotationX": 180
+              },
+              {
+                "type": "sphere",
+                "size": 4,
+                "color": "#FF3366",
+                "x": 4,
+                "y": 36,
+                "z": 7
+              },
+              {
+                "type": "sphere",
+                "size": 4,
+                "color": "#FF3366",
+                "x": -4,
+                "y": 36,
+                "z": 7
+              },
+              {
+                "type": "cylinder",
+                "size": 3,
+                "height": 16,
+                "color": "#BCA9DF",
+                "x": -8,
+                "y": 28,
+                "z": 10,
+                "rotationX": 90,
+                "rotationZ": 30
+              },
+              {
+                "type": "cylinder",
+                "size": 3,
+                "height": 16,
+                "color": "#BCA9DF",
+                "x": 8,
+                "y": 28,
+                "z": 10,
+                "rotationX": 90,
+                "rotationZ": -30
+              },
+              {
+                "type": "cylinder",
+                "size": 2,
+                "height": 12,
+                "color": "#BCA9DF",
+                "x": 3,
+                "y": 33,
+                "z": -10,
+                "rotationX": -40
+              },
+              {
+                "type": "cylinder",
+                "size": 2,
+                "height": 12,
+                "color": "#BCA9DF",
+                "x": -3,
+                "y": 33,
+                "z": -10,
+                "rotationX": -40
+              },
+              {
+                "type": "sphere",
+                "size": 6,
+                "color": "#000000",
+                "x": 0,
+                "y": 32,
+                "z": 7.8,
+                "rotationX": 45
+              },
+              {
+                "type": "sphere",
+                "size": 6,
+                "color": "#BCA9DF",
+                "x": 15,
+                "y": 18,
+                "z": 0
+              },
+              {
+                "type": "sphere",
+                "size": 6,
+                "color": "#BCA9DF",
+                "x": -15,
+                "y": 18,
+                "z": 0
+              },
+              {
+                "type": "sphere",
+                "size": 6,
+                "color": "#BCA9DF",
+                "x": 0,
+                "y": 18,
+                "z": -15
+              }
+            ],
+            "position": {
               "x": 0,
-              "y": 36,
-              "z": 2
-            },
-            {
-              "type": "cone",
-              "size": 16,
-              "height": 30,
-              "color": "#9F8AC7",
-              "x": 0,
-              "y": 18,
-              "z": 0,
-              "rotationX": 180
-            },
-            {
-              "type": "sphere",
-              "size": 4,
-              "color": "#FF3366",
-              "x": 4,
-              "y": 36,
-              "z": 7
-            },
-            {
-              "type": "sphere",
-              "size": 4,
-              "color": "#FF3366",
-              "x": -4,
-              "y": 36,
-              "z": 7
-            },
-            {
-              "type": "cylinder",
-              "size": 3,
-              "height": 16,
-              "color": "#BCA9DF",
-              "x": -8,
-              "y": 28,
-              "z": 10,
-              "rotationX": 90,
-              "rotationZ": 30
-            },
-            {
-              "type": "cylinder",
-              "size": 3,
-              "height": 16,
-              "color": "#BCA9DF",
-              "x": 8,
-              "y": 28,
-              "z": 10,
-              "rotationX": 90,
-              "rotationZ": -30
-            },
-            {
-              "type": "cylinder",
-              "size": 2,
-              "height": 12,
-              "color": "#BCA9DF",
-              "x": 3,
-              "y": 33,
-              "z": -10,
-              "rotationX": -40
-            },
-            {
-              "type": "cylinder",
-              "size": 2,
-              "height": 12,
-              "color": "#BCA9DF",
-              "x": -3,
-              "y": 33,
-              "z": -10,
-              "rotationX": -40
-            },
-            {
-              "type": "sphere",
-              "size": 6,
-              "color": "#000000",
-              "x": 0,
-              "y": 32,
-              "z": 7.8,
-              "rotationX": 45
-            },
-            {
-              "type": "sphere",
-              "size": 6,
-              "color": "#BCA9DF",
-              "x": 15,
-              "y": 18,
+              "y": 0,
               "z": 0
             },
-            {
-              "type": "sphere",
-              "size": 6,
-              "color": "#BCA9DF",
-              "x": -15,
-              "y": 18,
+            "rotation": {
+              "x": 0,
+              "y": 0,
               "z": 0
             },
-            {
-              "type": "sphere",
-              "size": 6,
-              "color": "#BCA9DF",
-              "x": 0,
-              "y": 18,
-              "z": -15
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
             }
-          ]
+          }
         },
         {
-          "shapes": [
-            {
-              "type": "sphere",
-              "size": 12,
-              "color": "#BCA9DF",
+          "shapes": {
+            "shapes": [
+              {
+                "type": "sphere",
+                "size": 12,
+                "color": "#BCA9DF",
+                "x": 0,
+                "y": 38,
+                "z": 2
+              },
+              {
+                "type": "cone",
+                "size": 16,
+                "height": 30,
+                "color": "#9F8AC7",
+                "x": 0,
+                "y": 20,
+                "z": 0,
+                "rotationX": 180
+              },
+              {
+                "type": "sphere",
+                "size": 4,
+                "color": "#FF3366",
+                "x": 4,
+                "y": 38,
+                "z": 7
+              },
+              {
+                "type": "sphere",
+                "size": 4,
+                "color": "#FF3366",
+                "x": -4,
+                "y": 38,
+                "z": 7
+              },
+              {
+                "type": "cylinder",
+                "size": 3,
+                "height": 16,
+                "color": "#BCA9DF",
+                "x": -8,
+                "y": 30,
+                "z": 10,
+                "rotationX": 90,
+                "rotationZ": 30
+              },
+              {
+                "type": "cylinder",
+                "size": 3,
+                "height": 16,
+                "color": "#BCA9DF",
+                "x": 8,
+                "y": 30,
+                "z": 10,
+                "rotationX": 90,
+                "rotationZ": -30
+              },
+              {
+                "type": "cylinder",
+                "size": 2,
+                "height": 12,
+                "color": "#BCA9DF",
+                "x": 3,
+                "y": 35,
+                "z": -10,
+                "rotationX": -40
+              },
+              {
+                "type": "cylinder",
+                "size": 2,
+                "height": 12,
+                "color": "#BCA9DF",
+                "x": -3,
+                "y": 35,
+                "z": -10,
+                "rotationX": -40
+              },
+              {
+                "type": "sphere",
+                "size": 6,
+                "color": "#000000",
+                "x": 0,
+                "y": 34,
+                "z": 7.8,
+                "rotationX": 45
+              },
+              {
+                "type": "sphere",
+                "size": 6,
+                "color": "#BCA9DF",
+                "x": 15,
+                "y": 20,
+                "z": 0
+              },
+              {
+                "type": "sphere",
+                "size": 6,
+                "color": "#BCA9DF",
+                "x": -15,
+                "y": 20,
+                "z": 0
+              },
+              {
+                "type": "sphere",
+                "size": 6,
+                "color": "#BCA9DF",
+                "x": 0,
+                "y": 20,
+                "z": -15
+              }
+            ],
+            "position": {
               "x": 0,
-              "y": 38,
-              "z": 2
-            },
-            {
-              "type": "cone",
-              "size": 16,
-              "height": 30,
-              "color": "#9F8AC7",
-              "x": 0,
-              "y": 20,
-              "z": 0,
-              "rotationX": 180
-            },
-            {
-              "type": "sphere",
-              "size": 4,
-              "color": "#FF3366",
-              "x": 4,
-              "y": 38,
-              "z": 7
-            },
-            {
-              "type": "sphere",
-              "size": 4,
-              "color": "#FF3366",
-              "x": -4,
-              "y": 38,
-              "z": 7
-            },
-            {
-              "type": "cylinder",
-              "size": 3,
-              "height": 16,
-              "color": "#BCA9DF",
-              "x": -8,
-              "y": 30,
-              "z": 10,
-              "rotationX": 90,
-              "rotationZ": 30
-            },
-            {
-              "type": "cylinder",
-              "size": 3,
-              "height": 16,
-              "color": "#BCA9DF",
-              "x": 8,
-              "y": 30,
-              "z": 10,
-              "rotationX": 90,
-              "rotationZ": -30
-            },
-            {
-              "type": "cylinder",
-              "size": 2,
-              "height": 12,
-              "color": "#BCA9DF",
-              "x": 3,
-              "y": 35,
-              "z": -10,
-              "rotationX": -40
-            },
-            {
-              "type": "cylinder",
-              "size": 2,
-              "height": 12,
-              "color": "#BCA9DF",
-              "x": -3,
-              "y": 35,
-              "z": -10,
-              "rotationX": -40
-            },
-            {
-              "type": "sphere",
-              "size": 6,
-              "color": "#000000",
-              "x": 0,
-              "y": 34,
-              "z": 7.8,
-              "rotationX": 45
-            },
-            {
-              "type": "sphere",
-              "size": 6,
-              "color": "#BCA9DF",
-              "x": 15,
-              "y": 20,
+              "y": 0,
               "z": 0
             },
-            {
-              "type": "sphere",
-              "size": 6,
-              "color": "#BCA9DF",
-              "x": -15,
-              "y": 20,
+            "rotation": {
+              "x": 0,
+              "y": 0,
               "z": 0
             },
-            {
-              "type": "sphere",
-              "size": 6,
-              "color": "#BCA9DF",
-              "x": 0,
-              "y": 20,
-              "z": -15
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
             }
-          ]
+          }
         },
         {
-          "shapes": [
-            {
-              "type": "sphere",
-              "size": 12,
-              "color": "#BCA9DF",
+          "shapes": {
+            "shapes": [
+              {
+                "type": "sphere",
+                "size": 12,
+                "color": "#BCA9DF",
+                "x": 0,
+                "y": 38,
+                "z": 2
+              },
+              {
+                "type": "cone",
+                "size": 16,
+                "height": 30,
+                "color": "#9F8AC7",
+                "x": 0,
+                "y": 20,
+                "z": 0,
+                "rotationX": 180
+              },
+              {
+                "type": "sphere",
+                "size": 4,
+                "color": "#FF3366",
+                "x": 4,
+                "y": 38,
+                "z": 7
+              },
+              {
+                "type": "sphere",
+                "size": 4,
+                "color": "#FF3366",
+                "x": -4,
+                "y": 38,
+                "z": 7
+              },
+              {
+                "type": "cylinder",
+                "size": 3,
+                "height": 16,
+                "color": "#BCA9DF",
+                "x": -8,
+                "y": 30,
+                "z": 10,
+                "rotationX": 90,
+                "rotationZ": 30
+              },
+              {
+                "type": "cylinder",
+                "size": 3,
+                "height": 16,
+                "color": "#BCA9DF",
+                "x": 8,
+                "y": 30,
+                "z": 10,
+                "rotationX": 90,
+                "rotationZ": -30
+              },
+              {
+                "type": "cylinder",
+                "size": 2,
+                "height": 12,
+                "color": "#BCA9DF",
+                "x": 3,
+                "y": 35,
+                "z": -10,
+                "rotationX": -40
+              },
+              {
+                "type": "cylinder",
+                "size": 2,
+                "height": 12,
+                "color": "#BCA9DF",
+                "x": -3,
+                "y": 35,
+                "z": -10,
+                "rotationX": -40
+              },
+              {
+                "type": "sphere",
+                "size": 6,
+                "color": "#000000",
+                "x": 0,
+                "y": 34,
+                "z": 7.8,
+                "rotationX": 45
+              },
+              {
+                "type": "sphere",
+                "size": 6,
+                "color": "#BCA9DF",
+                "x": 15,
+                "y": 20,
+                "z": 0
+              },
+              {
+                "type": "sphere",
+                "size": 6,
+                "color": "#BCA9DF",
+                "x": -15,
+                "y": 20,
+                "z": 0
+              },
+              {
+                "type": "sphere",
+                "size": 6,
+                "color": "#BCA9DF",
+                "x": 0,
+                "y": 20,
+                "z": -15
+              }
+            ],
+            "position": {
               "x": 0,
-              "y": 38,
-              "z": 2
-            },
-            {
-              "type": "cone",
-              "size": 16,
-              "height": 30,
-              "color": "#9F8AC7",
-              "x": 0,
-              "y": 20,
-              "z": 0,
-              "rotationX": 180
-            },
-            {
-              "type": "sphere",
-              "size": 4,
-              "color": "#FF3366",
-              "x": 4,
-              "y": 38,
-              "z": 7
-            },
-            {
-              "type": "sphere",
-              "size": 4,
-              "color": "#FF3366",
-              "x": -4,
-              "y": 38,
-              "z": 7
-            },
-            {
-              "type": "cylinder",
-              "size": 3,
-              "height": 16,
-              "color": "#BCA9DF",
-              "x": -8,
-              "y": 30,
-              "z": 10,
-              "rotationX": 90,
-              "rotationZ": 30
-            },
-            {
-              "type": "cylinder",
-              "size": 3,
-              "height": 16,
-              "color": "#BCA9DF",
-              "x": 8,
-              "y": 30,
-              "z": 10,
-              "rotationX": 90,
-              "rotationZ": -30
-            },
-            {
-              "type": "cylinder",
-              "size": 2,
-              "height": 12,
-              "color": "#BCA9DF",
-              "x": 3,
-              "y": 35,
-              "z": -10,
-              "rotationX": -40
-            },
-            {
-              "type": "cylinder",
-              "size": 2,
-              "height": 12,
-              "color": "#BCA9DF",
-              "x": -3,
-              "y": 35,
-              "z": -10,
-              "rotationX": -40
-            },
-            {
-              "type": "sphere",
-              "size": 6,
-              "color": "#000000",
-              "x": 0,
-              "y": 34,
-              "z": 7.8,
-              "rotationX": 45
-            },
-            {
-              "type": "sphere",
-              "size": 6,
-              "color": "#BCA9DF",
-              "x": 15,
-              "y": 20,
+              "y": 0,
               "z": 0
             },
-            {
-              "type": "sphere",
-              "size": 6,
-              "color": "#BCA9DF",
-              "x": -15,
-              "y": 20,
+            "rotation": {
+              "x": 0,
+              "y": 0,
               "z": 0
             },
-            {
-              "type": "sphere",
-              "size": 6,
-              "color": "#BCA9DF",
-              "x": 0,
-              "y": 20,
-              "z": -15
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
             }
-          ]
+          }
         }
       ]
     }

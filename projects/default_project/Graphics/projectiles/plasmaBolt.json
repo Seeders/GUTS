@@ -4,56 +4,125 @@
     "animations": {
       "idle": [
         {
-          "shapes": [
-            {
-              "type": "cube",
-              "size": 6,
+          "shapes": {
+            "shapes": [
+              {
+                "type": "cube",
+                "size": 6,
+                "x": 0,
+                "y": 24,
+                "z": 0,
+                "rotationX": 90,
+                "color": "#ee6060",
+                "scaleX": 1
+              }
+            ],
+            "position": {
               "x": 0,
-              "y": 24,
-              "z": 0,
-              "rotationX": 90,
-              "color": "#ee6060"
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
             }
-          ]
+          }
         },
         {
-          "shapes": [
-            {
-              "type": "sphere",
-              "size": 6,
+          "shapes": {
+            "shapes": [
+              {
+                "type": "sphere",
+                "size": 6,
+                "x": 0,
+                "y": 24,
+                "z": 0,
+                "rotationX": 90,
+                "color": "#ee6060"
+              }
+            ],
+            "position": {
               "x": 0,
-              "y": 24,
-              "z": 0,
-              "rotationX": 90,
-              "color": "#ee6060"
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
             }
-          ]
+          }
         },
         {
-          "shapes": [
-            {
-              "type": "cube",
-              "size": 8,
+          "shapes": {
+            "shapes": [
+              {
+                "type": "cube",
+                "size": 8,
+                "x": 0,
+                "y": 24,
+                "z": 0,
+                "rotationX": 90,
+                "color": "#ee6060"
+              }
+            ],
+            "position": {
               "x": 0,
-              "y": 24,
-              "z": 0,
-              "rotationX": 90,
-              "color": "#ee6060"
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
             }
-          ]
+          }
         },
         {
-          "shapes": [
-            {
-              "type": "sphere",
-              "size": 8,
+          "shapes": {
+            "shapes": [
+              {
+                "type": "sphere",
+                "size": 8,
+                "x": 0,
+                "y": 24,
+                "z": 0,
+                "rotationX": 90,
+                "color": "#ee6060"
+              }
+            ],
+            "position": {
               "x": 0,
-              "y": 24,
-              "z": 0,
-              "rotationX": 90,
-              "color": "#ee6060"
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
             }
-          ]
+          }
         }
       ]
     }
