@@ -13,7 +13,7 @@ class GE_GroupManager {
 
     init() {
         document.getElementById('create-group').addEventListener('click', this.createGroup.bind(this));
-        document.getElementById('ungroup').addEventListener('click', this.ungroup.bind(this));
+        document.getElementById('delete-group').addEventListener('click', this.deleteGroup.bind(this));
         
        
         // Update the group list initially
@@ -196,30 +196,19 @@ class GE_GroupManager {
         }
     }
     // Remove a group and place its contents back in the shapes group
-    ungroup() {
-        if (this.selectedGroupName === "shapes") {
-            alert("Cannot ungroup the default 'shapes' group");
-            return;
-        }
+    deleteGroup() {
         
         const currentAnimation = this.graphicsEditor.state.currentAnimation;
         const currentFrame = this.graphicsEditor.state.currentFrame;
         const currentFrameData = this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame];
         
         // Get shapes from the selected group
-        const groupShapes = currentFrameData[this.selectedGroupName];
-        if (!groupShapes || groupShapes.length === 0) return;
-        
-        // Ensure shapes group exists
-        if (!currentFrameData.shapes) {
-            currentFrameData.shapes = [];
+        const groupShapes = currentFrameData[this.selectedGroupName].shapes;
+        if (groupShapes.length > 0) {
+            alert('Group must be empty to delete.');
+            return;
         }
-        
-        // Move all shapes to the shapes group
-        for (const shape of groupShapes) {
-            currentFrameData.shapes.push(shape);
-        }
-        
+                        
         // Remove the group
         delete currentFrameData[this.selectedGroupName];
         
