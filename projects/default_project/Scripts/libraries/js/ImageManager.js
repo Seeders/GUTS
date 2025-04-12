@@ -405,20 +405,27 @@ class ImageManager {
 
     /**
      * Creates 3D objects from shape data.
-     * @param {Object} shapeData - The JSON object containing shape definitions.
+     * @param {Object} frameData - The JSON object containing frame definitions.
      * @returns {THREE.Group} - A group containing all 3D objects.
      */
   
-    async createObjectsFromJSON(shapeData, scene) {
-        const group = await this.shapeFactory.createGroupFromJSON(shapeData);
-        group.traverse((child) => {
-            if (child.isMesh) {
-                child.castShadow = true; // or set this selectively for objects that should cast shadows
-                child.receiveShadow = true; // for objects that should receive shadows
-            }
-        });
-        scene.add(group);
-        return group;
+    async createObjectsFromJSON(frameData, scene) {
+        const rootGroup = new THREE.Group();
+        
+        for(const groupName in frameData) {
+            const group = await this.shapeFactory.createGroupFromJSON(frameData[groupName]);
+            group.traverse((child) => {
+                if (child.isMesh) {
+                    child.castShadow = true; // or set this selectively for objects that should cast shadows
+                    child.receiveShadow = true; // for objects that should receive shadows
+                }
+            });
+            rootGroup.add(group);
+        }
+
+        scene.add(rootGroup);
+    
+        return rootGroup;
     }
    
 }

@@ -909,14 +909,50 @@ class GE_ShapeManager {
         if (!shapeList) return;
        
         shapeList.innerHTML = '';
-       
+        // Animation selector
+        const animSelector = document.createElement('select');
+        animSelector.style.marginBottom = '10px';
+        Object.keys(this.graphicsEditor.state.renderData.animations).forEach(anim => {
+            const option = document.createElement('option');
+            option.value = anim;
+            option.textContent = anim;
+            if (anim === this.graphicsEditor.state.currentAnimation) option.selected = true;
+            animSelector.appendChild(option);
+        });
+        animSelector.addEventListener('change', () => {
+            this.graphicsEditor.setPreviewAnimationState(false);
+            this.graphicsEditor.state.currentAnimation = animSelector.value;
+            this.graphicsEditor.state.currentFrame = 0;
+            this.graphicsEditor.state.selectedShapeIndex = -1;
+            
+            this.graphicsEditor.refreshShapes(false);
+        });
+        shapeList.appendChild(animSelector);
+    
+        // Frame list
+        const frameList = document.createElement('div');
+        frameList.style.marginBottom = '10px';
+        this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation].forEach((frame, index) => {
+            const frameItem = document.createElement('div');
+            frameItem.textContent = `Frame ${index + 1}`;
+            frameItem.style.padding = '5px';
+            frameItem.style.cursor = 'pointer';
+            if (index === this.graphicsEditor.state.currentFrame) frameItem.style.backgroundColor = '#555';
+            frameItem.addEventListener('click', () => {
+                this.graphicsEditor.setPreviewAnimationState(false);
+                this.graphicsEditor.state.currentFrame = index;                                
+                this.graphicsEditor.refreshShapes(false);
+            });
+            frameList.appendChild(frameItem);
+        });
+        shapeList.appendChild(frameList);
         // Get the current frame data
         const currentFrame = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame];
        
         // Get shapes from the currently selected group
         const selectedGroupName = this.graphicsEditor.groupManager.selectedGroupName;
         const selectedGroup = currentFrame[selectedGroupName]
-        const shapes = selectedGroup ? selectedGroup.shapes : [];
+        const shapes = selectedGroup && selectedGroup.shapes ? selectedGroup.shapes : selectedGroup || [];
        
         // Create shape list items
         for (let i = 0; i < shapes.length; i++) {
