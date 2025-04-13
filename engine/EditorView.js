@@ -403,8 +403,8 @@ export class EditorView {
                 const editorModules = this.controller.model.getCollections().editorModules;
                 
                 for (const [moduleKey, module] of Object.entries(editorModules)) {
-                  if (module.propertyName === keyInput.value && module.inputDataType.toLowerCase() === 'json') {
-                    value = JSON.parse(value);
+                  if (module.propertyName === keyInput.value && module.inputDataType.toLowerCase() === 'json') {                    
+                    value = JSON.parse(value || '{}');
                     parsed = true;
                     break;
                   }
