@@ -2,7 +2,8 @@
   "title": "Multi-Shot Projectile",
   "components": [
     "Stats",
-    "MultishotProjectile"
+    "MultishotProjectile",
+    "AudioPlayer"
   ],
   "renderers": []
 }

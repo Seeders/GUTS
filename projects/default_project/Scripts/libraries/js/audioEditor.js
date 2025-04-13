@@ -19,7 +19,7 @@ class AudioEditor {
                 this.setupEffects();
                 this.loadPresetsFromStorage();
                 this.setupEventListeners();
-                this.setupKeyboard();
+           //     this.setupKeyboard();
             } else if (this.audioContext.state === 'suspended') {
                 this.audioContext.resume().then(() => {
                     this.isContextSuspended = false;

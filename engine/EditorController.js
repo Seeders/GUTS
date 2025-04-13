@@ -348,6 +348,10 @@ export class EditorController {
     getDefaultScript() {
         return this.model.CONFIG.DEFAULT_SCRIPT;
     }
+
+    createType(typeId, typeName, typeSingular, typeCategory) {
+        return this.model.createType(typeId, typeName, typeSingular, typeCategory);
+    }
 }
 
 // Initialize the application when DOM is fully loaded

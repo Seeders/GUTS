@@ -27,7 +27,6 @@ class AudioPlayer extends engine.Component {
             this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
             this.sampleRate = this.audioContext.sampleRate;
             this.masterGainNode = this.audioContext.createGain();
-            this.masterGainNode.connect(this.audioContext.destination);
             this.currentSource = null;
             this.isPlaying = false;
             
@@ -271,13 +270,11 @@ class AudioPlayer extends engine.Component {
     }
     
     playAudio(settings) {
-        this.stopAllAudio();
-        let volume = this.masterGainNode.gain.value;      
-        this.masterGainNode = this.audioContext.createGain();
-        this.masterGainNode.gain.value = volume;
+        this.masterGainNode = this.audioContext.createGain(); // Creates a NEW gain node
+        this.masterGainNode.gain.value = 1;
         const now = this.audioContext.currentTime;
         const oscillator = this.createOscillator(settings);
-        oscillator.connect(this.filter).connect(this.masterGainNode).connect(this.audioContext.destination);
+        oscillator.connect(this.masterGainNode).connect(this.audioContext.destination);
         oscillator.start(now);
         oscillator.stop(now + settings.duration + (settings.envelope.release || 0.3));
         this.currentSource = oscillator;

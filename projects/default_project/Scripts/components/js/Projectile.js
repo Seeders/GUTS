@@ -19,8 +19,10 @@ init({ spawnType, owner, target, targetPosition, stats }) {
 
   // Add lifespan for projectile (e.g., 5 seconds)
   this.maxLifespan = this.stats.lifespan || 5; // Default to 5 seconds, adjust as needed
-  this.currentLifespan = 0;
-
+  this.currentLifespan = 0;  
+  if(this.stats.attackSound){
+      this.getComponent('audioPlayer').play(this.game.config.attackSounds[this.stats.attackSound].audio);
+  }
 }
 
 update() {
@@ -72,6 +74,9 @@ update() {
 
       if (enemyDistSq <= hitRadiusSq) {
         // Hit detected
+        if(this.stats.hitSound && !hitDetected){
+          enemy.getComponent('audioPlayer').play(this.game.config.hitSounds[this.stats.hitSound].audio);
+        }
         hitDetected = true;
         let enemyHealth = enemy.getComponent("health");
         let enemyEnergyShield = enemy.getComponent("energyshield");
@@ -134,6 +139,9 @@ update() {
     // Apply damage and effects (unchanged from your original code)
     let damageResult = engine.getFunction("calculateDamage")(this.stats, targetStatClone);
     if (!damageResult.wasEvaded) {
+      if(this.stats.hitSound){
+        this.target.getComponent('audioPlayer').play(this.game.config.hitSounds[this.stats.hitSound].audio);
+      }
       targetHealth.hp -= damageResult.damageDealt;
       targetEnergyShield.absorbDamage(damageResult.damageAbsorbed);
       this.game.spawn(this.target.position.x, this.target.position.y, "hitEffect", {

@@ -3,7 +3,8 @@
   "components": [
     "Stats",
     "ArrayTracker",
-    "ChainProjectile"
+    "ChainProjectile",
+    "AudioPlayer"
   ],
   "renderers": [
     "LightningRenderer"
