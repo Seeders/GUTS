@@ -49,12 +49,20 @@ class AudioManager extends engine.Component {
                     delayGain: this.audioContext.createGain(),
                     convolver: this.audioContext.createConvolver(),
                     reverbGain: this.audioContext.createGain(),
+                    noiseFilter: this.audioContext.createBiquadFilter(),
+                    noiseGain: this.audioContext.createGain(),
                     destination: this.destination
                 };
 
                 source.filter.type = 'lowpass';
                 source.filter.frequency.setValueAtTime(20000, this.audioContext.currentTime);
                 source.filter.Q.setValueAtTime(0.5, this.audioContext.currentTime);
+
+                source.noiseFilter.type = 'lowpass';
+                source.noiseFilter.frequency.setValueAtTime(2000, this.audioContext.currentTime);
+                source.noiseFilter.Q.setValueAtTime(1, this.audioContext.currentTime);
+                
+                source.noiseGain.gain.setValueAtTime(0, this.audioContext.currentTime);
 
                 source.distortion.curve = null;
                 source.distortion.oversample = '4x';
@@ -112,6 +120,7 @@ class AudioManager extends engine.Component {
                     source.envelopeGain.gain.setValueAtTime(0, this.audioContext.currentTime);
                     source.delayGain.gain.setValueAtTime(0, this.audioContext.currentTime);
                     source.reverbGain.gain.setValueAtTime(0, this.audioContext.currentTime);
+                    source.noiseGain.gain.setValueAtTime(0, this.audioContext.currentTime);
                 }
                 return source;
             }
@@ -131,8 +140,9 @@ class AudioManager extends engine.Component {
                     source.gainNode.gain.setValueAtTime(1, now);
                     source.delayGain.gain.setValueAtTime(0, now);
                     source.reverbGain.gain.setValueAtTime(0, now);
+                    source.noiseGain.gain.setValueAtTime(0, now);
             
-                    // Disconnect and clear source if it exists
+                    // Disconnect and clear sources if they exist
                     if (source.source) {
                         try {
                             source.source.stop(now);
@@ -141,6 +151,16 @@ class AudioManager extends engine.Component {
                             console.warn('Error stopping source:', e);
                         }
                         source.source = null;
+                    }
+                    
+                    if (source.noiseSource) {
+                        try {
+                            source.noiseSource.stop(now);
+                            source.noiseSource.disconnect();
+                        } catch (e) {
+                            console.warn('Error stopping noise source:', e);
+                        }
+                        source.noiseSource = null;
                     }
             
                     source.lastUsed = now;
@@ -159,6 +179,8 @@ class AudioManager extends engine.Component {
                     source.delayGain.disconnect();
                     source.convolver.disconnect();
                     source.reverbGain.disconnect();
+                    source.noiseFilter.disconnect();
+                    source.noiseGain.disconnect();
                 });
                 this.sources = [];
             }
@@ -261,9 +283,15 @@ class AudioManager extends engine.Component {
         sound.id = soundId;
         sound.category = category;
         
+        // Create main oscillator
         const oscillator = this.createSynthSource(soundConfig);
         sound.source = oscillator;
         oscillator.connect(sound.envelopeGain);
+        
+        // Add noise generator if configured
+        if (soundConfig.noise && soundConfig.noise.amount > 0) {
+            this.applyNoiseToSound(sound, soundConfig.noise);
+        }
         
         this.createEnvelopeFromConfig(soundConfig.envelope, sound.envelopeGain, soundConfig.duration);
         
@@ -275,6 +303,11 @@ class AudioManager extends engine.Component {
         
         const now = this.audioContext.currentTime;
         oscillator.start(now);
+        
+        // Start noise generator if it exists
+        if (sound.noiseSource) {
+            sound.noiseSource.start(now);
+        }
         
         const duration = soundConfig.duration || 1;
         const release = (soundConfig.envelope?.release) || 0.3;
@@ -288,6 +321,9 @@ class AudioManager extends engine.Component {
         }
         
         oscillator.stop(now + totalDuration + 0.02);
+        if (sound.noiseSource) {
+            sound.noiseSource.stop(now + totalDuration + 0.02);
+        }
         
         this.activeSounds.add(sound);
         
@@ -303,8 +339,9 @@ class AudioManager extends engine.Component {
     }
 
     createSynthSource(config) {
+        // Default to oscillator unless waveform is 'noise'
         const oscillator = config.waveform === 'noise'
-            ? this.createNoiseSource()
+            ? this.createNoiseSource('white') 
             : this.audioContext.createOscillator();
     
         if (config.waveform !== 'noise') {
@@ -313,7 +350,7 @@ class AudioManager extends engine.Component {
             const now = this.audioContext.currentTime;
     
             // Initialize frequency
-            oscillator.frequency.cancelScheduledValues(now); // Clear any previous schedules
+            oscillator.frequency.cancelScheduledValues(now);
             oscillator.frequency.setValueAtTime(baseFreq, now);
     
             // Apply pitch envelope if defined
@@ -327,7 +364,6 @@ class AudioManager extends engine.Component {
                     const endFreq = baseFreq * endMultiplier;
     
                     oscillator.frequency.setValueAtTime(startFreq, now);
-                    // Use exponential ramp for smooth pitch changes, avoid zero/negative
                     oscillator.frequency.exponentialRampToValueAtTime(
                         Math.max(endFreq, 0.01),
                         now + envelopeTime
@@ -339,13 +375,50 @@ class AudioManager extends engine.Component {
         return oscillator;
     }
 
-    createNoiseSource() {
+    applyNoiseToSound(sound, noiseConfig) {
+        if (!noiseConfig || noiseConfig.amount <= 0) return;
+
+        const noiseType = noiseConfig.type || 'white';
+        const noiseAmount = Math.min(1, Math.max(0, noiseConfig.amount));
+        
+        // Create the noise source
+        sound.noiseSource = this.createNoiseSource(noiseType);
+        
+        // Configure noise filter if specified
+        if (noiseConfig.filter && noiseConfig.filter.type !== 'none') {
+            sound.noiseFilter.type = noiseConfig.filter.type || 'lowpass';
+            sound.noiseFilter.frequency.setValueAtTime(
+                noiseConfig.filter.frequency || 2000, 
+                this.audioContext.currentTime
+            );
+        }
+        
+        // Set noise gain based on the amount
+        sound.noiseGain.gain.setValueAtTime(noiseAmount, this.audioContext.currentTime);
+        
+        // Connect noise through the filter and envelope
+        sound.noiseSource.connect(sound.noiseFilter);
+        sound.noiseFilter.connect(sound.noiseGain);
+        sound.noiseGain.connect(sound.envelopeGain);
+    }
+
+    createNoiseSource(noiseType = 'white') {
         const bufferSize = this.audioContext.sampleRate * 2;
         const noiseBuffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
         const output = noiseBuffer.getChannelData(0);
         
-        for (let i = 0; i < bufferSize; i++) {
-            output[i] = Math.random() * 2 - 1;
+        // Generate different types of noise
+        switch (noiseType) {
+            case 'pink':
+                this.generatePinkNoise(output);
+                break;
+            case 'brown':
+                this.generateBrownNoise(output);
+                break;
+            case 'white':
+            default:
+                this.generateWhiteNoise(output);
+                break;
         }
         
         const source = this.audioContext.createBufferSource();
@@ -353,6 +426,54 @@ class AudioManager extends engine.Component {
         source.loop = true;
         
         return source;
+    }
+
+    generateWhiteNoise(output) {
+        for (let i = 0; i < output.length; i++) {
+            output[i] = Math.random() * 2 - 1;
+        }
+    }
+
+    generatePinkNoise(output) {
+        // Pink noise algorithm (approximation using Paul Kellet's method)
+        let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+        
+        for (let i = 0; i < output.length; i++) {
+            const white = Math.random() * 2 - 1;
+            
+            // Filter white noise to create pink noise
+            b0 = 0.99886 * b0 + white * 0.0555179;
+            b1 = 0.99332 * b1 + white * 0.0750759;
+            b2 = 0.96900 * b2 + white * 0.1538520;
+            b3 = 0.86650 * b3 + white * 0.3104856;
+            b4 = 0.55000 * b4 + white * 0.5329522;
+            b5 = -0.7616 * b5 - white * 0.0168980;
+            
+            output[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.11;
+            b6 = white * 0.115926;
+        }
+    }
+
+    generateBrownNoise(output) {
+        // Brown noise algorithm (random walk)
+        let lastValue = 0;
+        
+        for (let i = 0; i < output.length; i++) {
+            // Small random change from previous value
+            const white = Math.random() * 2 - 1;
+            lastValue = (lastValue + (0.02 * white)) / 1.02;
+            
+            // Keep within range
+            output[i] = lastValue * 3.5; // Amplify to make it audible
+        }
+        
+        // Normalize to prevent clipping
+        const max = Math.max(...Array.from(output).map(Math.abs));
+        if (max > 0) {
+            for (let i = 0; i < output.length; i++) {
+                output[i] /= max;
+            }
+        }
     }
 
     createEnvelopeFromConfig(envelope, gainNode, duration = 1) {
@@ -375,7 +496,6 @@ class AudioManager extends engine.Component {
         gainNode.gain.setValueAtTime(sustain, now + duration);
         gainNode.gain.setTargetAtTime(0.0001, now + duration, release / 3);
         gainNode.gain.setValueAtTime(0, now + duration + release); // Absolute zero
-        
     }
 
     applySynthEffects(sound, effectsConfig, soundConfig) {
@@ -505,6 +625,14 @@ class AudioManager extends engine.Component {
                 sound.source.stop(now + 0.06);
             } catch (e) {
                 console.warn('Error stopping source:', e);
+            }
+        }
+        
+        if (sound.noiseSource) {
+            try {
+                sound.noiseSource.stop(now + 0.06);
+            } catch (e) {
+                console.warn('Error stopping noise source:', e);
             }
         }
         

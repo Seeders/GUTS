@@ -6,14 +6,13 @@
         </div>
 
         <!-- Waveform Visualizer -->
-        <div class="visualizer-container" style="flex: 1; min-width: 300px;">
-            <canvas id="waveformCanvas" width="600" height="150" style="border: 1px solid #ccc; width: 100%;"></canvas>
-
+        <div class="visualizer-container" style="flex: 1; min-width: 300px;">        
             <!-- Playback Controls -->
             <div class="control-buttons" style="margin-top: 10px; display: flex; gap: 10px;">
                 <button id="playBtn" class="primary-button">Play</button>
                 <button id="stopBtn" disabled>Stop</button>
                 <button id="exportBtn">Save</button>
+                <button id="randomSoundBtn">🎲 Randomize Sound</button>
             </div>
 
             <!-- Presets -->
@@ -59,6 +58,7 @@
                     <span class="value-display">70%</span>
                 </label>
             </div>
+            
         </div>
 
         <!-- ADSR Envelope -->
@@ -159,12 +159,6 @@
                     <span class="value-display">Center</span>
                 </label>
             </div>
-        </div>
-
-        <!-- Virtual Keyboard -->
-        <div class="keyboard-container" style="width: 100%; margin-top: 20px;">
-            <h3>Keyboard</h3>
-            <div id="keyboard" style="display: flex; gap: 2px; flex-wrap: wrap;"></div>
         </div>
 
         <!-- Output Display -->

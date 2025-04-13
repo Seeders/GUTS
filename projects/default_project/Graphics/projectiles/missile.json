@@ -1270,5 +1270,6 @@
   "isBallistic": true,
   "particle": "smoke",
   "shadows": false,
-  "hitSound": "explosion"
+  "hitSound": "explosion",
+  "attackSound": "missileLaunch"
 }

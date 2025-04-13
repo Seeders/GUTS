@@ -4,6 +4,14 @@
     "waveform": "noise",
     "frequency": 100,
     "duration": 1,
+    "noise": {
+      "type": "white",
+      "amount": 0,
+      "filter": {
+        "type": "none",
+        "frequency": 2000
+      }
+    },
     "envelope": {
       "attack": 0.005,
       "decay": 0.2,
@@ -13,7 +21,7 @@
     "pitchEnvelope": {
       "start": 2,
       "end": 0.5,
-      "time": 0.5
+      "time": 1
     },
     "effects": {
       "filter": {
@@ -21,12 +29,13 @@
         "frequency": 800,
         "Q": 1
       },
-      "distortion": 2.5,
+      "distortion": 3,
       "delay": {
         "time": 0.15,
         "feedback": 0.25
       },
       "reverb": 0.5,
+      "bitcrusher": 0.5,
       "pan": 0
     }
   }

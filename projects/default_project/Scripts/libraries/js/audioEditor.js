@@ -2,13 +2,11 @@ class AudioEditor {
     constructor(gameEditor, config, {}) {
         this.gameEditor = gameEditor;
         let configObj = { state: {}, config: this.gameEditor.getCollections() };
-
         this.audioManager = new (this.gameEditor.scriptContext.getComponent("AudioManager"))(configObj, null, {} );
         this.audioManager.init();
         this.volume = 1;
-
-        this.loadPresetsFromStorage();
         this.setupEventListeners();
+        this.updateNoiseUI(); 
     }
 
     setupEventListeners() {
@@ -61,32 +59,8 @@ class AudioEditor {
 
         this.setupUIControls(updateSliderDisplay);
 
-        document.getElementById('presetSelect')?.addEventListener('change', (e) => {
-            const presetName = e.target.value;
-            if (presetName && this.presets[presetName]) {
-                this.loadPreset(presetName);
-                updateStatus(`Loaded preset: ${presetName}`, 'success');
-            }
-        });
 
-        document.getElementById('savePresetBtn')?.addEventListener('click', () => {
-            const presetName = document.getElementById('presetName').value.trim();
-            if (presetName) {
-                this.savePreset(presetName);
-                updateStatus(`Preset "${presetName}" saved`, 'success');
-                this.updatePresetsDropdown();
-                document.getElementById('presetSelect').value = presetName;
-            } else {
-                updateStatus('Please enter a preset name', 'error');
-            }
-        });
 
-        const canvas = document.getElementById('waveformCanvas');
-        if (canvas) {
-           // this.visualizer = new AudioVisualizer(canvas, this.audioContext);
-        }
-        
-        this.updatePresetsDropdown();
     }
     setVolume(value) {
         this.volume = value;
@@ -142,6 +116,14 @@ class AudioEditor {
             waveform: document.getElementById('waveform')?.value || 'sine',
             frequency: parseFloat(document.getElementById('frequency')?.value || 440),
             duration: parseFloat(document.getElementById('duration')?.value || 1),
+            noise: {
+                type: document.getElementById('noiseType')?.value || 'white',
+                amount: parseFloat(document.getElementById('noiseAmount')?.value || 0),
+                filter: {
+                    type: document.getElementById('noiseFilterType')?.value || 'none',
+                    frequency: parseFloat(document.getElementById('noiseFilterFreq')?.value || 2000)
+                }
+            },
             envelope: {
                 attack: parseFloat(document.getElementById('attack')?.value || 0.01),
                 decay: parseFloat(document.getElementById('decay')?.value || 0.1),
@@ -211,59 +193,170 @@ class AudioEditor {
 
             this.setElementValue('panning', settings.effects.pan);
         }
-        
+        if (settings.noise) {
+            this.setElementValue('noiseType', settings.noise.type);
+            this.setElementValue('noiseAmount', settings.noise.amount);
+            
+            if (settings.noise.filter) {
+                this.setElementValue('noiseFilterType', settings.noise.filter.type);
+                this.setElementValue('noiseFilterFreq', settings.noise.filter.frequency);
+            }
+        }
         document.querySelectorAll('input[type="range"]').forEach(el => {
             el.dispatchEvent(new Event('input'));
         });
+        document.getElementById('randomSoundBtn')?.addEventListener('click', () => {
+            this.generateRandomSound();
+            this.playCurrentSound();
+        });
+    }
+    generateRandomSound() {
+        // Waveform options (including noise)
+        const waveforms = ['sine', 'square', 'sawtooth', 'triangle', 'noise'];
+        
+        // Noise types
+        const noiseTypes = ['white', 'pink', 'brown'];
+        
+        // Filter types
+        const filterTypes = ['lowpass', 'highpass', 'bandpass', 'none'];
+        
+        // Random helpers
+        const random = (min, max) => Math.random() * (max - min) + min;
+        const randomInt = (min, max) => Math.floor(random(min, max + 1));
+        const randomItem = (arr) => arr[randomInt(0, arr.length - 1)];
+        
+        // Generate random settings
+        const settings = {
+            waveform: randomItem(waveforms),
+            frequency: random(50, 2000),
+            duration: random(0.1, 3),
+            noise: {
+                type: randomItem(noiseTypes),
+                amount: random(0, 0), // Keep below 1.0 to avoid overpowering
+                filter: {
+                    type: randomItem(filterTypes),
+                    frequency: random(100, 10000),
+                    Q: random(0.5, 5)
+                }
+            },
+            envelope: {
+                attack: random(0.001, 0.5),
+                decay: random(0.01, 1),
+                sustain: random(0, 1),
+                release: random(0.01, 2)
+            },
+            pitchEnvelope: {
+                start: random(0.5, 2),
+                end: random(0.5, 2),
+                time: random(0.1, 2)
+            },
+            effects: {
+                filter: {
+                    type: randomItem(filterTypes),
+                    frequency: random(50, 10000),
+                    Q: random(0.5, 5)
+                },
+                distortion: random(0, 0.8),
+                delay: {
+                    time: random(0, 1),
+                    feedback: random(0, 0.7) // Avoid infinite feedback
+                },
+                reverb: random(0, 0.7),
+                bitcrusher: random(0, 0.5),
+                pan: random(-1, 1)
+            }
+        };
+
+        // Special case: If waveform is noise, disable oscillator frequency
+        if (settings.waveform === 'noise') {
+            settings.noise.amount = 1.0; // Full noise when selected
+            settings.frequency = 440; // Dummy value (unused)
+        }
+
+        // Ensure noise filter isn't "none" if noise is active
+        if (settings.noise.amount > 0 && settings.noise.filter.type === 'none') {
+            settings.noise.filter.type = randomItem(filterTypes.filter(t => t !== 'none'));
+        }
+
+        // Update UI with the new random sound
+        this.updateUIFromSettings(settings);
+        return settings;
     }
 
+    updateNoiseUI() {
+        // Find the Basic Parameters container
+        const basicParamsContainer = document.querySelector('.parameters-container');
+        if (!basicParamsContainer) return;
+        
+        // Create a new noise settings section
+        const noiseSection = document.createElement('div');
+        noiseSection.className = 'parameters-container';
+        noiseSection.innerHTML = `
+            <h3>Noise Generator</h3>
+            <div class="parameter-group" style="display: grid; gap: 10px;">
+                <label style="display: flex; align-items: center; gap: 10px;">
+                    Noise Type:
+                    <select id="noiseType">
+                        <option value="white">White</option>
+                        <option value="pink">Pink</option>
+                        <option value="brown">Brown</option>
+                    </select>
+                </label>
+                <label style="display: flex; align-items: center; gap: 10px;">
+                    Noise Amount:
+                    <input type="range" id="noiseAmount" min="0" max="1" value="0" step="0.01">
+                    <span class="value-display">0%</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 10px;">
+                    Noise Filter:
+                    <select id="noiseFilterType">
+                        <option value="none">None</option>
+                        <option value="lowpass">Low Pass</option>
+                        <option value="highpass">High Pass</option>
+                        <option value="bandpass">Band Pass</option>
+                    </select>
+                </label>
+                <label style="display: flex; align-items: center; gap: 10px;">
+                    Noise Filter Freq:
+                    <input type="range" id="noiseFilterFreq" min="20" max="20000" value="2000" step="1">
+                    <span class="value-display">2000 Hz</span>
+                </label>
+            </div>
+        `;
+        
+        // Insert after the Basic Parameters section
+        basicParamsContainer.parentNode.insertBefore(noiseSection, basicParamsContainer.nextSibling);
+        
+        // Setup the slider display update
+        this.setupNoiseControls();
+    }
+    
+    setupNoiseControls() {
+        const updateSliderDisplay = (sliderId, formatFn) => {
+            const slider = document.getElementById(sliderId);
+            if (slider) {
+                const updateDisplayValue = () => {
+                    const display = slider.nextElementSibling;
+                    if (display && display.classList.contains('value-display')) {
+                        display.textContent = formatFn(parseFloat(slider.value));
+                    }
+                };
+                
+                slider.addEventListener('input', updateDisplayValue);
+                updateDisplayValue();
+            }
+        };
+    
+        updateSliderDisplay('noiseAmount', (val) => `${Math.round(val * 100)}%`);
+        updateSliderDisplay('noiseFilterFreq', (val) => `${val} Hz`);
+    }
 
     setElementValue(id, value) {
         const element = document.getElementById(id);
         if (element) element.value = value;
     }
 
-    loadPresetsFromStorage() {
-        try {
-            const savedPresets = localStorage.getItem('audioEditorPresets');
-            this.presets = savedPresets ? JSON.parse(savedPresets) : this.createDefaultPresets();
-        } catch (e) {
-            console.error("Error loading presets:", e);
-            this.presets = this.createDefaultPresets();
-        }
-    }
 
-    savePreset(presetName) {
-        const settings = this.getUISettings();
-        this.presets[presetName] = settings;
-        
-        try {
-            localStorage.setItem('audioEditorPresets', JSON.stringify(this.presets));
-        } catch (e) {
-            console.error("Error saving preset:", e);
-        }
-    }
-
-    loadPreset(presetName) {
-        const preset = this.presets[presetName];
-        if (preset) {
-            this.updateUIFromSettings(preset);
-            this.playCurrentSound();
-        }
-    }
-
-    updatePresetsDropdown() {
-        const select = document.getElementById('presetSelect');
-        if (!select) return;
-        
-        select.innerHTML = '<option value="">Select Preset</option>';
-        Object.keys(this.presets).forEach(presetName => {
-            const option = document.createElement('option');
-            option.value = presetName;
-            option.textContent = presetName;
-            select.appendChild(option);
-        });
-    }
     saveAudio(settingsObj) {
         document.body.dispatchEvent(new CustomEvent('saveAudio', {   
             detail: { data: settingsObj, propertyName: 'audio' },
@@ -275,322 +368,385 @@ class AudioEditor {
         this.audioManager.playSynthSound('audioEditorSound', settings);
     }
     
- 
-    connectVisualizer(source) {
-        if (this.visualizer) {
-            this.visualizer.connectSource(source);
-        }
-    }
-    
-    
-    createDefaultPresets() {
-        return {
-            "Laser": {
-              "waveform": "triangle",
-              "frequency": 197,
-              "duration": 0.3,
-              "envelope": {
-                "attack": 0.001,
-                "decay": 0.076,
-                "sustain": 0.9,
-                "release": 0.001
-              },
-              "pitchEnvelope": {
-                "start": 3.41,
-                "end": 0.23,
-                "time": 0.3
-              },
-              "effects": {
-                "filter": {
-                  "type": "lowpass",
-                  "frequency": 400,
-                  "Q": 1
-                },
-                "distortion": 100,
-                "delay": {
-                  "time": 0.27,
-                  "feedback": 0.17
-                },
-                "reverb": 0,
-                "bitcrusher": 0.28,
-                "pan": 0
-              }
-            },
-            "Explosion": {
-              "waveform": "noise",
-              "frequency": 100,
-              "duration": 1,
-              "envelope": {
-                "attack": 0.005,
-                "decay": 0.2,
-                "sustain": 0.3,
-                "release": 0.3
-              },
-              "pitchEnvelope": {
-                "start": 2,
-                "end": 0.5,
-                "time": 1
-              },
-              "effects": {
-                "filter": {
-                  "type": "lowpass",
-                  "frequency": 800,
-                  "Q": 1
-                },
-                "distortion": 3,
-                "delay": {
-                  "time": 0.15,
-                  "feedback": 0.25
-                },
-                "reverb": 0.5,
-                "bitcrusher": 0.5,
-                "pan": 0
-              }
-            },
-            "Jump": {
-              "waveform": "sine",
-              "frequency": 197,
-              "duration": 0.2,
-              "envelope": {
-                "attack": 0.005,
-                "decay": 0.05,
-                "sustain": 0,
-                "release": 0.05
-              },
-              "pitchEnvelope": {
-                "start": 1,
-                "end": 2,
-                "time": 0.2
-              },
-              "effects": {
-                "filter": {
-                  "type": "highpass",
-                  "frequency": 800,
-                  "Q": 0.5
-                },
-                "distortion": 2,
-                "delay": {
-                  "time": 0,
-                  "feedback": 0
-                },
-                "reverb": 0,
-                "bitcrusher": 0.5,
-                "pan": 0
-              }
-            },
-            "Coin": {
-              "waveform": "sine",
-              "frequency": 1047,
-              "duration": 0.1,
-              "envelope": {
-                "attack": 0.001,
-                "decay": 0.08,
-                "sustain": 0,
-                "release": 0.01
-              },
-              "pitchEnvelope": {
-                "start": 1,
-                "end": 1.5,
-                "time": 0.1
-              },
-              "effects": {
-                "filter": {
-                  "type": "bandpass",
-                  "frequency": 1300,
-                  "Q": 1
-                },
-                "distortion": 0,
-                "delay": {
-                  "time": 0,
-                  "feedback": 0
-                },
-                "reverb": 0,
-                "bitcrusher": 0.5,
-                "pan": 0
-              }
-            },
-            "Hit": {
-              "waveform": "triangle",
-              "frequency": 200,
-              "duration": 0.1,
-              "envelope": {
-                "attack": 0.001,
-                "decay": 0,
-                "sustain": 0,
-                "release": 0.001
-              },
-              "pitchEnvelope": {
-                "start": 0.73,
-                "end": 0.28,
-                "time": 0.1
-              },
-              "effects": {
-                "filter": {
-                  "type": "lowpass",
-                  "frequency": 400,
-                  "Q": 1
-                },
-                "distortion": 20,
-                "delay": {
-                  "time": 0,
-                  "feedback": 0.2
-                },
-                "reverb": 0,
-                "bitcrusher": 0.1,
-                "pan": 0
-              }
-            },
-            "Attack": {
-              "waveform": "triangle",
-              "frequency": 200,
-              "duration": 0.1,
-              "envelope": {
-                "attack": 0.001,
-                "decay": 0,
-                "sustain": 0,
-                "release": 0.001
-              },
-              "pitchEnvelope": {
-                "start": 0.34,
-                "end": 1.89,
-                "time": 0.1
-              },
-              "effects": {
-                "filter": {
-                  "type": "lowpass",
-                  "frequency": 400,
-                  "Q": 1
-                },
-                "distortion": 20,
-                "delay": {
-                  "time": 0,
-                  "feedback": 0.2
-                },
-                "reverb": 0,
-                "bitcrusher": 0.1,
-                "pan": 0
-              }
-            }
-          };
-    }
-    
-    setupKeyboard() {
-        const keyboard = document.getElementById('keyboard');
-        if (!keyboard) return;
-        
-        keyboard.innerHTML = '';
-        
-        const keyboardLayout = [
-            { note: 'C4', key: 'a', frequency: 261.63, type: 'white' },
-            { note: 'C#4', key: 'w', frequency: 277.18, type: 'black' },
-            { note: 'D4', key: 's', frequency: 293.66, type: 'white' },
-            { note: 'D#4', key: 'e', frequency: 311.13, type: 'black' },
-            { note: 'E4', key: 'd', frequency: 329.63, type: 'white' },
-            { note: 'F4', key: 'f', frequency: 349.23, type: 'white' },
-            { note: 'F#4', key: 't', frequency: 369.99, type: 'black' },
-            { note: 'G4', key: 'g', frequency: 392.00, type: 'white' },
-            { note: 'G#4', key: 'y', frequency: 415.30, type: 'black' },
-            { note: 'A4', key: 'h', frequency: 440.00, type: 'white' },
-            { note: 'A#4', key: 'u', frequency: 466.16, type: 'black' },
-            { note: 'B4', key: 'j', frequency: 493.88, type: 'white' },
-            { note: 'C5', key: 'k', frequency: 523.25, type: 'white' }
-        ];
-        
-        keyboardLayout.forEach(note => {
-            const key = document.createElement('div');
-            key.className = `key ${note.type}`;
-            key.dataset.note = note.note;
-            key.dataset.frequency = note.frequency;
-            key.innerHTML = `<span>${note.note}</span><span class="key-label">${note.key}</span>`;
-            
-            key.addEventListener('mousedown', () => {
-                key.classList.add('active');
-                this.playNote(note.frequency);
-            });
-            key.addEventListener('mouseup', () => {
-                key.classList.remove('active');
-                this.stopNote(note.frequency);
-            });
-            key.addEventListener('mouseleave', () => {
-                if (key.classList.contains('active')) {
-                    key.classList.remove('active');
-                    this.stopNote(note.frequency);
-                }
-            });
-            
-            keyboard.appendChild(key);
-        });
-        
-        const keyToNote = {};
-        keyboardLayout.forEach(note => {
-            keyToNote[note.key] = note.frequency;
-        });
-        
-        window.addEventListener('keydown', (e) => {
-            if (e.repeat) return;
-            const key = e.key.toLowerCase();
-            if (keyToNote[key]) {
-                this.playNote(keyToNote[key]);
-                const keyElement = Array.from(keyboard.children).find(
-                    k => k.dataset.frequency == keyToNote[key]
-                );
-                if (keyElement) keyElement.classList.add('active');
-            }
-        });
-        
-        window.addEventListener('keyup', (e) => {
-            const key = e.key.toLowerCase();
-            if (keyToNote[key]) {
-                this.stopNote(keyToNote[key]);
-                const keyElement = Array.from(keyboard.children).find(
-                    k => k.dataset.frequency == keyToNote[key]
-                );
-                if (keyElement) keyElement.classList.remove('active');
-            }
-        });
-    }
-    
-    stopNote(frequency) {
-        if (!this.activeNotes.has(frequency)) return;
-        
-        const note = this.activeNotes.get(frequency);
-        const now = this.audioContext.currentTime;
-        const settings = this.getUISettings();
-        const release = settings.envelope.release;
-        
-        note.envelopeGain.gain.cancelScheduledValues(now);
-        note.envelopeGain.gain.setValueAtTime(note.envelopeGain.gain.value, now);
-        note.envelopeGain.gain.linearRampToValueAtTime(0, now + release);
-        
-        note.oscillator.stop(now + release + 0.1);
-        
-        setTimeout(() => {
-            this.activeNotes.delete(frequency);
-        }, (release + 0.2) * 1000);
-    }
-    playNote(frequency) {
-        if (this.activeNotes.has(frequency)) {
-            this.stopNote(frequency);
-        }
-        
-        const settings = this.getUISettings();
-        settings.frequency = frequency;
-        
-        const now = this.audioContext.currentTime;
-        const oscillator = this.createOscillator(settings);
-        oscillator.connect(this.filter);
-        oscillator.start(now);
-        
-        this.activeNotes.set(frequency, {
-            oscillator,
-            envelopeGain: this.masterGainNode,
-            startTime: now
-        });
-        
-        this.connectVisualizer(oscillator);
-    }
 }
 
+// document.getElementById('presetSelect')?.addEventListener('change', (e) => {
+//     const presetName = e.target.value;
+//     if (presetName && this.presets[presetName]) {
+//         this.loadPreset(presetName);
+//         updateStatus(`Loaded preset: ${presetName}`, 'success');
+//     }
+// });
+
+// document.getElementById('savePresetBtn')?.addEventListener('click', () => {
+//     const presetName = document.getElementById('presetName').value.trim();
+//     if (presetName) {
+//         this.savePreset(presetName);
+//         updateStatus(`Preset "${presetName}" saved`, 'success');
+//         this.updatePresetsDropdown();
+//         document.getElementById('presetSelect').value = presetName;
+//     } else {
+//         updateStatus('Please enter a preset name', 'error');
+//     }
+// });
+// const canvas = document.getElementById('waveformCanvas');
+// if (canvas) {
+//    // this.visualizer = new AudioVisualizer(canvas, this.audioContext);
+// }
+
+// this.updatePresetsDropdown();
+// loadPresetsFromStorage() {
+//     try {
+//         const savedPresets = localStorage.getItem('audioEditorPresets');
+//         this.presets = savedPresets ? JSON.parse(savedPresets) : this.createDefaultPresets();
+//     } catch (e) {
+//         console.error("Error loading presets:", e);
+//         this.presets = this.createDefaultPresets();
+//     }
+// }
+
+// savePreset(presetName) {
+//     const settings = this.getUISettings();
+//     this.presets[presetName] = settings;
+    
+//     try {
+//         localStorage.setItem('audioEditorPresets', JSON.stringify(this.presets));
+//     } catch (e) {
+//         console.error("Error saving preset:", e);
+//     }
+// }
+
+// loadPreset(presetName) {
+//     const preset = this.presets[presetName];
+//     if (preset) {
+//         this.updateUIFromSettings(preset);
+//         this.playCurrentSound();
+//     }
+// }
+
+// updatePresetsDropdown() {
+//     const select = document.getElementById('presetSelect');
+//     if (!select) return;
+    
+//     select.innerHTML = '<option value="">Select Preset</option>';
+//     Object.keys(this.presets).forEach(presetName => {
+//         const option = document.createElement('option');
+//         option.value = presetName;
+//         option.textContent = presetName;
+//         select.appendChild(option);
+//     });
+// }
+// connectVisualizer(source) {
+//     if (this.visualizer) {
+//         this.visualizer.connectSource(source);
+//     }
+// }
+// createDefaultPresets() {
+   
+// }
+// return {
+//     "Laser": {
+//     "waveform": "triangle",
+//     "frequency": 197,
+//     "duration": 0.3,
+//     "envelope": {
+//         "attack": 0.001,
+//         "decay": 0.076,
+//         "sustain": 0.9,
+//         "release": 0.001
+//     },
+//     "pitchEnvelope": {
+//         "start": 3.41,
+//         "end": 0.23,
+//         "time": 0.3
+//     },
+//     "effects": {
+//         "filter": {
+//         "type": "lowpass",
+//         "frequency": 400,
+//         "Q": 1
+//         },
+//         "distortion": 100,
+//         "delay": {
+//         "time": 0.27,
+//         "feedback": 0.17
+//         },
+//         "reverb": 0,
+//         "bitcrusher": 0.28,
+//         "pan": 0
+//     }
+//     },
+//     "Explosion": {
+//     "waveform": "noise",
+//     "frequency": 100,
+//     "duration": 1,
+//     "envelope": {
+//         "attack": 0.005,
+//         "decay": 0.2,
+//         "sustain": 0.3,
+//         "release": 0.3
+//     },
+//     "pitchEnvelope": {
+//         "start": 2,
+//         "end": 0.5,
+//         "time": 1
+//     },
+//     "effects": {
+//         "filter": {
+//         "type": "lowpass",
+//         "frequency": 800,
+//         "Q": 1
+//         },
+//         "distortion": 3,
+//         "delay": {
+//         "time": 0.15,
+//         "feedback": 0.25
+//         },
+//         "reverb": 0.5,
+//         "bitcrusher": 0.5,
+//         "pan": 0
+//     }
+//     },
+//     "Jump": {
+//     "waveform": "sine",
+//     "frequency": 197,
+//     "duration": 0.2,
+//     "envelope": {
+//         "attack": 0.005,
+//         "decay": 0.05,
+//         "sustain": 0,
+//         "release": 0.05
+//     },
+//     "pitchEnvelope": {
+//         "start": 1,
+//         "end": 2,
+//         "time": 0.2
+//     },
+//     "effects": {
+//         "filter": {
+//         "type": "highpass",
+//         "frequency": 800,
+//         "Q": 0.5
+//         },
+//         "distortion": 2,
+//         "delay": {
+//         "time": 0,
+//         "feedback": 0
+//         },
+//         "reverb": 0,
+//         "bitcrusher": 0.5,
+//         "pan": 0
+//     }
+//     },
+//     "Coin": {
+//     "waveform": "sine",
+//     "frequency": 1047,
+//     "duration": 0.1,
+//     "envelope": {
+//         "attack": 0.001,
+//         "decay": 0.08,
+//         "sustain": 0,
+//         "release": 0.01
+//     },
+//     "pitchEnvelope": {
+//         "start": 1,
+//         "end": 1.5,
+//         "time": 0.1
+//     },
+//     "effects": {
+//         "filter": {
+//         "type": "bandpass",
+//         "frequency": 1300,
+//         "Q": 1
+//         },
+//         "distortion": 0,
+//         "delay": {
+//         "time": 0,
+//         "feedback": 0
+//         },
+//         "reverb": 0,
+//         "bitcrusher": 0.5,
+//         "pan": 0
+//     }
+//     },
+//     "Hit": {
+//     "waveform": "triangle",
+//     "frequency": 200,
+//     "duration": 0.1,
+//     "envelope": {
+//         "attack": 0.001,
+//         "decay": 0,
+//         "sustain": 0,
+//         "release": 0.001
+//     },
+//     "pitchEnvelope": {
+//         "start": 0.73,
+//         "end": 0.28,
+//         "time": 0.1
+//     },
+//     "effects": {
+//         "filter": {
+//         "type": "lowpass",
+//         "frequency": 400,
+//         "Q": 1
+//         },
+//         "distortion": 20,
+//         "delay": {
+//         "time": 0,
+//         "feedback": 0.2
+//         },
+//         "reverb": 0,
+//         "bitcrusher": 0.1,
+//         "pan": 0
+//     }
+//     },
+//     "Attack": {
+//     "waveform": "triangle",
+//     "frequency": 200,
+//     "duration": 0.1,
+//     "envelope": {
+//         "attack": 0.001,
+//         "decay": 0,
+//         "sustain": 0,
+//         "release": 0.001
+//     },
+//     "pitchEnvelope": {
+//         "start": 0.34,
+//         "end": 1.89,
+//         "time": 0.1
+//     },
+//     "effects": {
+//         "filter": {
+//         "type": "lowpass",
+//         "frequency": 400,
+//         "Q": 1
+//         },
+//         "distortion": 20,
+//         "delay": {
+//         "time": 0,
+//         "feedback": 0.2
+//         },
+//         "reverb": 0,
+//         "bitcrusher": 0.1,
+//         "pan": 0
+//     }
+//     }
+// };
+// setupKeyboard() {
+//     const keyboard = document.getElementById('keyboard');
+//     if (!keyboard) return;
+    
+//     keyboard.innerHTML = '';
+    
+//     const keyboardLayout = [
+//         { note: 'C4', key: 'a', frequency: 261.63, type: 'white' },
+//         { note: 'C#4', key: 'w', frequency: 277.18, type: 'black' },
+//         { note: 'D4', key: 's', frequency: 293.66, type: 'white' },
+//         { note: 'D#4', key: 'e', frequency: 311.13, type: 'black' },
+//         { note: 'E4', key: 'd', frequency: 329.63, type: 'white' },
+//         { note: 'F4', key: 'f', frequency: 349.23, type: 'white' },
+//         { note: 'F#4', key: 't', frequency: 369.99, type: 'black' },
+//         { note: 'G4', key: 'g', frequency: 392.00, type: 'white' },
+//         { note: 'G#4', key: 'y', frequency: 415.30, type: 'black' },
+//         { note: 'A4', key: 'h', frequency: 440.00, type: 'white' },
+//         { note: 'A#4', key: 'u', frequency: 466.16, type: 'black' },
+//         { note: 'B4', key: 'j', frequency: 493.88, type: 'white' },
+//         { note: 'C5', key: 'k', frequency: 523.25, type: 'white' }
+//     ];
+    
+//     keyboardLayout.forEach(note => {
+//         const key = document.createElement('div');
+//         key.className = `key ${note.type}`;
+//         key.dataset.note = note.note;
+//         key.dataset.frequency = note.frequency;
+//         key.innerHTML = `<span>${note.note}</span><span class="key-label">${note.key}</span>`;
+        
+//         key.addEventListener('mousedown', () => {
+//             key.classList.add('active');
+//             this.playNote(note.frequency);
+//         });
+//         key.addEventListener('mouseup', () => {
+//             key.classList.remove('active');
+//             this.stopNote(note.frequency);
+//         });
+//         key.addEventListener('mouseleave', () => {
+//             if (key.classList.contains('active')) {
+//                 key.classList.remove('active');
+//                 this.stopNote(note.frequency);
+//             }
+//         });
+        
+//         keyboard.appendChild(key);
+//     });
+    
+//     const keyToNote = {};
+//     keyboardLayout.forEach(note => {
+//         keyToNote[note.key] = note.frequency;
+//     });
+    
+//     window.addEventListener('keydown', (e) => {
+//         if (e.repeat) return;
+//         const key = e.key.toLowerCase();
+//         if (keyToNote[key]) {
+//             this.playNote(keyToNote[key]);
+//             const keyElement = Array.from(keyboard.children).find(
+//                 k => k.dataset.frequency == keyToNote[key]
+//             );
+//             if (keyElement) keyElement.classList.add('active');
+//         }
+//     });
+    
+//     window.addEventListener('keyup', (e) => {
+//         const key = e.key.toLowerCase();
+//         if (keyToNote[key]) {
+//             this.stopNote(keyToNote[key]);
+//             const keyElement = Array.from(keyboard.children).find(
+//                 k => k.dataset.frequency == keyToNote[key]
+//             );
+//             if (keyElement) keyElement.classList.remove('active');
+//         }
+//     });
+// }
+
+// stopNote(frequency) {
+//     if (!this.activeNotes.has(frequency)) return;
+    
+//     const note = this.activeNotes.get(frequency);
+//     const now = this.audioContext.currentTime;
+//     const settings = this.getUISettings();
+//     const release = settings.envelope.release;
+    
+//     note.envelopeGain.gain.cancelScheduledValues(now);
+//     note.envelopeGain.gain.setValueAtTime(note.envelopeGain.gain.value, now);
+//     note.envelopeGain.gain.linearRampToValueAtTime(0, now + release);
+    
+//     note.oscillator.stop(now + release + 0.1);
+    
+//     setTimeout(() => {
+//         this.activeNotes.delete(frequency);
+//     }, (release + 0.2) * 1000);
+// }
+// playNote(frequency) {
+//     if (this.activeNotes.has(frequency)) {
+//         this.stopNote(frequency);
+//     }
+    
+//     const settings = this.getUISettings();
+//     settings.frequency = frequency;
+    
+//     const now = this.audioContext.currentTime;
+//     const oscillator = this.createOscillator(settings);
+//     oscillator.connect(this.filter);
+//     oscillator.start(now);
+    
+//     this.activeNotes.set(frequency, {
+//         oscillator,
+//         envelopeGain: this.masterGainNode,
+//         startTime: now
+//     });
+    
+//     this.connectVisualizer(oscillator);
+// }
 // Audio Visualizer class
 class AudioVisualizer {
     constructor(canvas, audioContext) {

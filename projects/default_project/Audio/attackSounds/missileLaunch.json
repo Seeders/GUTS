@@ -1,41 +1,40 @@
 {
-  "title": "test",
+  "title": "Missile Launch",
   "audio": {
     "waveform": "noise",
-    "frequency": 440,
-    "duration": 0.6,
+    "frequency": 341,
+    "duration": 0.4,
     "noise": {
-      "type": "pink",
-      "amount": 1,
+      "type": "brown",
+      "amount": 0.63,
       "filter": {
         "type": "bandpass",
-        "frequency": 1200,
-        "Q": 1.8
+        "frequency": 20
       }
     },
     "envelope": {
-      "attack": 0.02,
+      "attack": 0.252,
       "decay": 0.4,
       "sustain": 0,
-      "release": 0
+      "release": 0.001
     },
     "pitchEnvelope": {
-      "start": 1.8,
-      "end": 0.4,
-      "time": 0.5
+      "start": 3.38,
+      "end": 0.59,
+      "time": 0.4
     },
     "effects": {
       "filter": {
-        "type": "none",
+        "type": "lowpass",
         "frequency": 20000,
         "Q": 1
       },
-      "distortion": 0.2,
+      "distortion": 0,
       "delay": {
         "time": 0,
         "feedback": 0
       },
-      "reverb": 0.15,
+      "reverb": 0.11,
       "bitcrusher": 0,
       "pan": 0
     }

@@ -37,6 +37,9 @@ init({ spawnType, owner, target, stats }) {
     this.animator.setAnimation('ascend');
     this.peakThreshold = this.maxHeight * 0.1; // 10% threshold for idle at peak
     this.currentAnimState = 'ascend';
+    if(this.stats.attackSound){
+        this.game.audioManager.playSound('attackSounds', this.stats.attackSound);
+    }
 }
 
 update() {
