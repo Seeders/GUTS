@@ -23,8 +23,8 @@
       },
       "distortion": 5,
       "delay": {
-        "time": 0.27,
-        "feedback": 0.09
+        "time": 0,
+        "feedback": 0
       },
       "reverb": 0,
       "bitcrusher": 0,

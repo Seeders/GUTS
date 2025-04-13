@@ -4,6 +4,7 @@
     "MapManager",
     "WaveManager",
     "UpgradeManager",
+    "AudioManager",
     "Game"
   ],
   "renderers": [

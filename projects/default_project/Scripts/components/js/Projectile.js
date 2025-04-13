@@ -21,11 +21,12 @@ init({ spawnType, owner, target, targetPosition, stats }) {
   this.maxLifespan = this.stats.lifespan || 5; // Default to 5 seconds, adjust as needed
   this.currentLifespan = 0;  
   if(this.stats.attackSound){
-      this.getComponent('audioPlayer').play(this.game.config.attackSounds[this.stats.attackSound].audio);
+    this.game.audioManager.playSound('attackSounds', this.stats.attackSound);
   }
 }
 
 update() {
+  let hitSoundPlayed = false;
   if(this.target) this.targetCurrentPosition = {...this.target.position };
   // Update lifespan and destroy if expired
   this.currentLifespan += this.game.deltaTime; // Assuming deltaTime is in seconds
@@ -74,8 +75,9 @@ update() {
 
       if (enemyDistSq <= hitRadiusSq) {
         // Hit detected
-        if(this.stats.hitSound && !hitDetected){
-          enemy.getComponent('audioPlayer').play(this.game.config.hitSounds[this.stats.hitSound].audio);
+        if(this.stats.hitSound && !hitDetected && !hitSoundPlayed){
+          this.game.audioManager.playSound('hitSounds', this.stats.hitSound);
+          hitSoundPlayed = true;
         }
         hitDetected = true;
         let enemyHealth = enemy.getComponent("health");
@@ -139,8 +141,9 @@ update() {
     // Apply damage and effects (unchanged from your original code)
     let damageResult = engine.getFunction("calculateDamage")(this.stats, targetStatClone);
     if (!damageResult.wasEvaded) {
-      if(this.stats.hitSound){
-        this.target.getComponent('audioPlayer').play(this.game.config.hitSounds[this.stats.hitSound].audio);
+      if(this.stats.hitSound && !hitSoundPlayed){
+        this.game.audioManager.playSound('hitSounds', this.stats.hitSound);
+        hitSoundPlayed = true;
       }
       targetHealth.hp -= damageResult.damageDealt;
       targetEnergyShield.absorbDamage(damageResult.damageAbsorbed);

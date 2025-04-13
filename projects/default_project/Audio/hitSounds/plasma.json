@@ -24,7 +24,7 @@
       "distortion": 20,
       "delay": {
         "time": 0,
-        "feedback": 0.2
+        "feedback": 0
       },
       "reverb": 0,
       "bitcrusher": 0.1,
