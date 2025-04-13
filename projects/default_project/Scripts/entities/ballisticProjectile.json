@@ -4,8 +4,7 @@
     "Stats",
     "Animator",
     "ArrayTracker",
-    "BallisticProjectile",
-    "AudioPlayer"
+    "BallisticProjectile"
   ],
   "renderers": [
     "Renderer"

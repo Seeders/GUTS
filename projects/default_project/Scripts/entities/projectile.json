@@ -4,7 +4,6 @@
     "Stats",
     "Animator",
     "ArrayTracker",
-    "AudioPlayer",
     "Projectile"
   ],
   "renderers": [

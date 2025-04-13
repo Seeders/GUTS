@@ -6,8 +6,7 @@
     "EssenceBounty",
     "FollowPath",
     "SpacialGridEntity",
-    "ArrayTracker",
-    "AudioPlayer"
+    "ArrayTracker"
   ],
   "renderers": [
     "Renderer",
