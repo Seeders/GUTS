@@ -3,98 +3,146 @@ class AudioManager extends engine.Component {
         super(game, parent, params);
     }
 
-    init(){
+    init() {
         this.isInitialized = false;
-        // Initialize once user interacts
         this.bindInitialization();
     }
-    
+
     bindInitialization() {
         const initHandler = () => {
             if (!this.isInitialized) {
-                this.initialize();            }
+                this.initialize();
+            }
         };
         
         document.addEventListener('click', initHandler, { once: true });
         document.addEventListener('keydown', initHandler, { once: true });
     }
-    
-    async initialize() {
 
+    async initialize() {
         class SoundPool {
             constructor(audioContext, destination, poolSize = 8) {
                 this.audioContext = audioContext;
                 this.destination = destination;
                 this.poolSize = poolSize;
                 this.sources = [];
-                
-                // Initialize pool
                 this.initializePool();
             }
-            
+
             initializePool() {
                 for (let i = 0; i < this.poolSize; i++) {
                     this.sources.push(this.createSource());
                 }
             }
-            
+
             createSource() {
                 const source = {
                     active: false,
                     id: null,
                     gainNode: this.audioContext.createGain(),
-                    pannerNode: this.audioContext.createPanner(),
+                    filter: this.audioContext.createBiquadFilter(),
+                    distortion: this.audioContext.createWaveShaper(),
+                    compressor: this.audioContext.createDynamicsCompressor(),
+                    pannerNode: this.audioContext.createStereoPanner(),
+                    delay: this.audioContext.createDelay(5.0),
+                    delayGain: this.audioContext.createGain(),
+                    convolver: this.audioContext.createConvolver(),
+                    reverbGain: this.audioContext.createGain(),
                     destination: this.destination
                 };
-                
-                // Configure panner for 3D audio
-                source.pannerNode.panningModel = 'HRTF';
-                source.pannerNode.distanceModel = 'inverse';
-                source.pannerNode.refDistance = 1;
-                source.pannerNode.maxDistance = 10000;
-                source.pannerNode.rolloffFactor = 1;
-                
-                // Connect nodes
-                source.gainNode.connect(source.pannerNode);
+
+                // Initialize effect parameters
+                source.filter.type = 'lowpass';
+                source.filter.frequency.setValueAtTime(20000, this.audioContext.currentTime); // Wide open by default
+                source.filter.Q.setValueAtTime(1, this.audioContext.currentTime);
+
+                source.distortion.curve = null; // No distortion by default
+                source.distortion.oversample = '4x';
+
+                source.compressor.threshold.setValueAtTime(-24, this.audioContext.currentTime);
+                source.compressor.knee.setValueAtTime(30, this.audioContext.currentTime);
+                source.compressor.ratio.setValueAtTime(12, this.audioContext.currentTime);
+                source.compressor.attack.setValueAtTime(0.003, this.audioContext.currentTime);
+                source.compressor.release.setValueAtTime(0.25, this.audioContext.currentTime);
+
+                source.pannerNode.pan.setValueAtTime(0, this.audioContext.currentTime); // Center
+
+                source.delay.delayTime.setValueAtTime(0.3, this.audioContext.currentTime);
+                source.delayGain.gain.setValueAtTime(0, this.audioContext.currentTime); // Off by default
+
+                source.reverbGain.gain.setValueAtTime(0, this.audioContext.currentTime); // Off by default
+
+                // Connect main signal chain
+                const chain = [
+                    source.gainNode,
+                    source.filter,
+                    source.distortion,
+                    source.compressor,
+                    source.pannerNode
+                ];
+
+                for (let i = 0; i < chain.length - 1; i++) {
+                    chain[i].connect(chain[i + 1]);
+                }
+
+                // Setup parallel effects
+                source.gainNode.connect(source.delay);
+                source.delay.connect(source.delayGain);
+                source.delayGain.connect(source.delay); // Feedback loop
+                source.delayGain.connect(source.pannerNode);
+
+                source.gainNode.connect(source.convolver);
+                source.convolver.connect(source.reverbGain);
+                source.reverbGain.connect(source.pannerNode);
+
+                // Connect to destination
                 source.pannerNode.connect(source.destination);
-                
+
                 return source;
             }
-            
+
             getSource() {
-                // Find an inactive source
                 let source = this.sources.find(src => !src.active);
                 
                 if (!source) {
-                    // All sources are active, create a new one if below max pool size
                     if (this.sources.length < this.poolSize * 2) {
                         source = this.createSource();
                         this.sources.push(source);
                     } else {
-                        // Return null if we hit the limit
+                        console.warn('No available sources in pool');
                         return null;
                     }
                 }
                 
-                // Mark as active and reset properties
                 source.active = true;
-                source.gainNode.gain.value = 1;
-                
+                source.gainNode.gain.setValueAtTime(1, this.audioContext.currentTime);
                 return source;
             }
-            
+
             releaseSource(source) {
                 if (source) {
                     source.active = false;
                     source.id = null;
+                    // Reset effects to defaults
+                    source.filter.frequency.setValueAtTime(20000, this.audioContext.currentTime);
+                    source.distortion.curve = null;
+                    source.delayGain.gain.setValueAtTime(0, this.audioContext.currentTime);
+                    source.reverbGain.gain.setValueAtTime(0, this.audioContext.currentTime);
+                    source.pannerNode.pan.setValueAtTime(0, this.audioContext.currentTime);
                 }
             }
-            
+
             destroy() {
-                // Disconnect all nodes
                 this.sources.forEach(source => {
                     source.gainNode.disconnect();
+                    source.filter.disconnect();
+                    source.distortion.disconnect();
+                    source.compressor.disconnect();
                     source.pannerNode.disconnect();
+                    source.delay.disconnect();
+                    source.delayGain.disconnect();
+                    source.convolver.disconnect();
+                    source.reverbGain.disconnect();
                 });
                 this.sources = [];
             }
@@ -114,9 +162,6 @@ class AudioManager extends engine.Component {
         this.uiBus.connect(this.masterBus);
         this.masterBus.connect(this.audioContext.destination);
         
-        // Add compression
-        this.setupCompression();
-        
         // Sound pools
         this.soundPools = {
             sfx: new SoundPool(this.audioContext, this.sfxBus.input, 6),
@@ -124,17 +169,15 @@ class AudioManager extends engine.Component {
             ui: new SoundPool(this.audioContext, this.uiBus.input, 3)
         };
         
-        // Sound buffers cache
-        this.buffers = {};        
-
-        // Currently active sounds
+        this.buffers = {};
         this.activeSounds = new Set();
+
         if (this.audioContext.state === 'suspended') {
             await this.audioContext.resume();
         }
         this.isInitialized = true;
     }
-    
+
     createAudioBus(name) {
         const bus = {
             name,
@@ -143,58 +186,43 @@ class AudioManager extends engine.Component {
             output: this.audioContext.createGain()
         };
         
-        // Set up internal routing
         bus.input.connect(bus.compressor);
         bus.compressor.connect(bus.output);
         
-        // Helper method to connect this bus to another destination
         bus.connect = (destination) => {
             bus.output.connect(destination.input || destination);
         };
         
-        // Volume control
         bus.setVolume = (value) => {
-            bus.output.gain.setValueAtTime(value, this.audioContext.currentTime);
+            const now = this.audioContext.currentTime;
+            bus.output.gain.cancelScheduledValues(now);
+            bus.output.gain.setTargetAtTime(
+                value <= 0 ? 0.000001 : value,
+                now,
+                0.02
+            );
         };
         
         return bus;
     }
-    
-    setupCompression() {
-        // Configure master compressor to prevent clipping
-        const master = this.masterBus.compressor;
-        master.threshold.setValueAtTime(-15, this.audioContext.currentTime);
-        master.knee.setValueAtTime(30, this.audioContext.currentTime);
-        master.ratio.setValueAtTime(12, this.audioContext.currentTime);
-        master.attack.setValueAtTime(0.003, this.audioContext.currentTime);
-        master.release.setValueAtTime(0.25, this.audioContext.currentTime);
-        
-        // Configure SFX compressor for explosions, impacts, etc.
-        const sfx = this.sfxBus.compressor;
-        sfx.threshold.setValueAtTime(-20, this.audioContext.currentTime);
-        sfx.knee.setValueAtTime(10, this.audioContext.currentTime);
-        sfx.ratio.setValueAtTime(5, this.audioContext.currentTime);
-        sfx.attack.setValueAtTime(0.01, this.audioContext.currentTime);
-        sfx.release.setValueAtTime(0.2, this.audioContext.currentTime);
-    }
 
-    getSynthSound(soundCollectionName, soundName) {        
-        if(this.game.config[soundCollectionName][soundName]){
-            const data = this.game.config[soundCollectionName][soundName].audio;
-            return data;
+    getSynthSound(soundCollectionName, soundName) {
+        if (this.game.config[soundCollectionName]?.[soundName]) {
+            return this.game.config[soundCollectionName][soundName].audio;
         }
         console.warn('sound not found', soundCollectionName, soundName);
         return null;
     }
 
-    playSound(soundCollectionName, soundName){
+    playSound(soundCollectionName, soundName) {
         let data = this.getSynthSound(soundCollectionName, soundName);
-        this.playSynthSound(`${soundCollectionName}_${soundName}`, data);
+        if (data) {
+            this.playSynthSound(`${soundCollectionName}_${soundName}`, data);
+        }
     }
-    
+
     playSynthSound(soundId, soundConfig, options = {}) {
         if (!this.isInitialized) {
-            // Initialize and then retry
             this.initialize();
             return this.playSynthSound(soundId, soundConfig, options);
         }
@@ -207,97 +235,98 @@ class AudioManager extends engine.Component {
             return null;
         }
         
-        // Check if we're already playing too many of this sound
         let instanceCount = 0;
         this.activeSounds.forEach(sound => {
             if (sound.id === soundId) instanceCount++;
         });
         
         if (instanceCount >= (options.maxInstances || 3)) {
-            // Too many instances already playing, skip this one
+            console.warn(`Max instances reached for sound ${soundId}`);
             return null;
         }
         
-        // Get a source from the pool
         const sound = pool.getSource();
-        
         if (!sound) {
-            // No available sources in the pool
+            console.warn(`No available source for sound ${soundId}`);
             return null;
         }
         
-        // Configure the sound
         sound.id = soundId;
         sound.category = category;
         
-        // Create oscillator and connect to sound's gain node
         const oscillator = this.createSynthSource(soundConfig);
-        
-        // Apply envelope to gain node
-        this.createEnvelopeFromConfig(soundConfig.envelope, sound.gainNode, soundConfig.duration);
-        
-        // Connect the oscillator to the sound's gain node
         oscillator.connect(sound.gainNode);
         
-        // Apply effects from config
+        this.createEnvelopeFromConfig(soundConfig.envelope, sound.gainNode, soundConfig.duration);
+        
         if (soundConfig.effects) {
             this.applySynthEffects(sound, soundConfig.effects);
+            console.log(`Applied effects for ${soundId}:`, soundConfig.effects);
+        } else {
+            console.log(`No effects specified for ${soundId}`);
         }
         
-        // Apply additional options
         this.configureSoundInstance(sound, options);
         
-        // Start playback
         const now = this.audioContext.currentTime;
         oscillator.start(now);
         
-        // Calculate total sound duration
         const duration = soundConfig.duration || 1;
-        const release = (soundConfig.envelope && soundConfig.envelope.release) || 0.3;
-        const totalDuration = duration + release;
+        const release = (soundConfig.envelope?.release) || 0.3;
+        let totalDuration = duration + release;
+           // Extend duration for delay tail if needed
+        if (soundConfig.effects?.delay?.time) {
+            const delayTail = soundConfig.effects.delay.time * 3; // Allow 3 echoes
+            totalDuration += delayTail;
+        }
         
-        // Stop after duration + release
         oscillator.stop(now + totalDuration);
-        sound.source = oscillator; // Store reference to stop it later
+        sound.source = oscillator;
         
         this.activeSounds.add(sound);
         
-        // Handle sound ending
         oscillator.onended = () => {
-            sound.active = false;
-            this.activeSounds.delete(sound);
+            // Delay release to allow delay tail
+            setTimeout(() => {
+                sound.active = false;
+                this.activeSounds.delete(sound);
+                pool.releaseSource(sound);
+                console.log(`Sound ${soundId} ended`);
+            }, (soundConfig.effects?.delay?.time || 0) * 1000 * 2); // Wait for 2 delay cycles
         };
         
+        
+        console.log(`Playing sound ${soundId} with duration ${totalDuration}s`);
         return sound;
     }
-    
+
     createSynthSource(config) {
-        const oscillator = config.waveform === 'noise' 
-            ? this.createNoiseSource() 
+        const oscillator = config.waveform === 'noise'
+            ? this.createNoiseSource()
             : this.audioContext.createOscillator();
         
         if (config.waveform !== 'noise') {
-            oscillator.type = config.waveform;
-            oscillator.frequency.value = config.frequency;
+            oscillator.type = config.waveform || 'sine';
+            oscillator.frequency.setValueAtTime(config.frequency || 440, this.audioContext.currentTime);
             
-            // Apply pitch envelope if configured
             if (config.pitchEnvelope && (config.pitchEnvelope.start !== 1 || config.pitchEnvelope.end !== 1)) {
-                const startFreq = config.frequency * config.pitchEnvelope.start;
-                const endFreq = config.frequency * config.pitchEnvelope.end;
-                const duration = config.pitchEnvelope.time || config.duration;
+                const startFreq = (config.frequency || 440) * config.pitchEnvelope.start;
+                const endFreq = (config.frequency || 440) * config.pitchEnvelope.end;
+                const duration = config.pitchEnvelope.time || config.duration || 1;
                 const now = this.audioContext.currentTime;
                 
                 oscillator.frequency.setValueAtTime(startFreq, now);
                 oscillator.frequency.exponentialRampToValueAtTime(
-                    Math.max(endFreq, 0.01), 
+                    Math.max(endFreq, 0.01),
                     now + duration
                 );
+                console.log(`Pitch envelope applied: ${startFreq}Hz to ${endFreq}Hz over ${duration}s`);
             }
         }
         
         return oscillator;
     }
-    
+
     createNoiseSource() {
         const bufferSize = this.audioContext.sampleRate * 2;
         const noiseBuffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
@@ -313,9 +342,12 @@ class AudioManager extends engine.Component {
         
         return source;
     }
-    
+
     createEnvelopeFromConfig(envelope, gainNode, duration = 1) {
-        if (!envelope) return;
+        if (!envelope) {
+            console.warn('No envelope provided, using default');
+            envelope = { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.3 };
+        }
         
         const now = this.audioContext.currentTime;
         
@@ -324,170 +356,144 @@ class AudioManager extends engine.Component {
         const sustain = Math.max(0, Math.min(1, envelope.sustain || 0.7));
         const release = Math.max(0.001, envelope.release || 0.3);
         
+        gainNode.gain.cancelScheduledValues(now);
         gainNode.gain.setValueAtTime(0, now);
         gainNode.gain.linearRampToValueAtTime(1, now + attack);
         gainNode.gain.linearRampToValueAtTime(sustain, now + attack + decay);
         gainNode.gain.setValueAtTime(sustain, now + duration);
         gainNode.gain.linearRampToValueAtTime(0, now + duration + release);
+        
+        console.log(`Envelope applied: A=${attack}, D=${decay}, S=${sustain}, R=${release}`);
     }
-    
+
+    applySynthEffects(sound, effectsConfig) {
+        const now = this.audioContext.currentTime;
+        
+        // Filter
+        if (effectsConfig.filter) {
+            sound.filter.type = effectsConfig.filter.type || 'lowpass';
+            sound.filter.frequency.setValueAtTime(effectsConfig.filter.frequency || 20000, now);
+            sound.filter.Q.setValueAtTime(effectsConfig.filter.Q || 1, now);
+            console.log(`Filter: ${sound.filter.type}, ${effectsConfig.filter.frequency}Hz, Q=${effectsConfig.filter.Q}`);
+        }
+        
+        // Distortion
+        if (effectsConfig.distortion && effectsConfig.distortion > 0) {
+            sound.distortion.curve = this.makeDistortionCurve(effectsConfig.distortion);
+            console.log(`Distortion: ${effectsConfig.distortion}`);
+        } else {
+            sound.distortion.curve = null;
+        }
+        
+        // Delay
+        if (effectsConfig.delay && effectsConfig.delay.feedback > 0) {
+            sound.delay.delayTime.setValueAtTime(effectsConfig.delay.time || 0.3, now);
+            sound.delayGain.gain.setValueAtTime(Math.min(effectsConfig.delay.feedback || 0, 0.8), now); // Prevent runaway feedback
+            console.log(`Delay: ${effectsConfig.delay.time}s, feedback=${effectsConfig.delay.feedback}`);
+        } else {
+            sound.delayGain.gain.setValueAtTime(0, now);
+        }
+        
+        // Reverb
+        if (effectsConfig.reverb && effectsConfig.reverb > 0) {
+            this.generateImpulseResponse(sound.convolver);
+            sound.reverbGain.gain.setValueAtTime(Math.min(effectsConfig.reverb, 1), now);
+            console.log(`Reverb: ${effectsConfig.reverb}`);
+        } else {
+            sound.reverbGain.gain.setValueAtTime(0, now);
+        }
+        
+        // Panning
+        if (effectsConfig.pan !== undefined) {
+            sound.pannerNode.pan.setValueAtTime(Math.max(-1, Math.min(1, effectsConfig.pan)), now);
+            console.log(`Pan: ${effectsConfig.pan}`);
+        }
+    }
+
     configureSoundInstance(sound, options) {
         const now = this.audioContext.currentTime;
         
-        // Apply volume
         if (options.volume !== undefined) {
-            sound.gainNode.gain.setValueAtTime(options.volume, now);
+            sound.gainNode.gain.cancelScheduledValues(now);
+            sound.gainNode.gain.setTargetAtTime(
+                options.volume <= 0 ? 0.000001 : Math.max(0, Math.min(options.volume, 1)),
+                now,
+                0.02
+            );
+            console.log(`Volume: ${options.volume}`);
         }
         
-        // Apply position if specified
-        if (options.position && sound.pannerNode) {
+        if (options.position && sound.pannerNode.positionX) {
             const pos = options.position;
             sound.pannerNode.positionX.setValueAtTime(pos.x || 0, now);
             sound.pannerNode.positionY.setValueAtTime(pos.y || 0, now);
             sound.pannerNode.positionZ.setValueAtTime(pos.z || 0, now);
+            console.log(`Position: x=${pos.x}, y=${pos.y}, z=${pos.z}`);
         }
         
-        // Apply pitch if specified
         if (options.pitch && sound.source && sound.source.playbackRate) {
             sound.source.playbackRate.setValueAtTime(options.pitch, now);
+            console.log(`Pitch: ${options.pitch}`);
         }
     }
-    
-    applySynthEffects(sound, effectsConfig) {
-        // Create temporary effect nodes for this sound instance
-        const filter = this.audioContext.createBiquadFilter();
-        const distortion = this.audioContext.createWaveShaper();
-        const panner = this.audioContext.createStereoPanner();
-        const delay = this.audioContext.createDelay(5.0);
-        const delayGain = this.audioContext.createGain();
-        const reverbGain = this.audioContext.createGain();
-        const convolver = this.audioContext.createConvolver();
-        
-        // Configure filter
-        if (effectsConfig.filter) {
-            filter.type = effectsConfig.filter.type || 'lowpass';
-            filter.frequency.value = effectsConfig.filter.frequency || 1000;
-            filter.Q.value = effectsConfig.filter.Q || 1;
-        }
-        
-        // Configure distortion
-        if (effectsConfig.distortion) {
-            distortion.curve = this.makeDistortionCurve(effectsConfig.distortion);
-        }
-        
-        // Configure panning
-        if (effectsConfig.pan !== undefined) {
-            panner.pan.value = effectsConfig.pan;
-        }
-        
-        // Configure delay
-        if (effectsConfig.delay) {
-            delay.delayTime.value = effectsConfig.delay.time || 0.3;
-            delayGain.gain.value = effectsConfig.delay.feedback || 0;
-        }
-        
-        // Configure reverb (if available)
-        if (effectsConfig.reverb) {
-            reverbGain.gain.value = effectsConfig.reverb;
-            this.generateImpulseResponse(convolver);
-        }
-        
-        // Build effect chain
-        const chain = [
-            sound.gainNode,
-            filter,
-            distortion,
-            panner
-        ];
-        
-        // Connect main effect chain
-        for (let i = 0; i < chain.length - 1; i++) {
-            chain[i].connect(chain[i+1]);
-        }
-        
-        // Connect last node to destination
-        chain[chain.length - 1].connect(sound.destination || this.sfxBus.input);
-        
-        // Setup parallel effects (delay and reverb)
-        if (effectsConfig.delay && effectsConfig.delay.feedback > 0) {
-            sound.gainNode.connect(delay);
-            delay.connect(delayGain);
-            delayGain.connect(delay); // Feedback loop
-            delayGain.connect(panner);
-        }
-        
-        if (effectsConfig.reverb > 0) {
-            sound.gainNode.connect(convolver);
-            convolver.connect(reverbGain);
-            reverbGain.connect(panner);
-        }
-        
-        // Store references to nodes for cleanup
-        sound.effectNodes = [...chain, delay, delayGain, reverbGain, convolver];
-    }
-    
+
     generateImpulseResponse(convolver) {
-        const length = this.audioContext.sampleRate * 2; // 2 seconds
+        const length = this.audioContext.sampleRate * 2;
         const impulse = this.audioContext.createBuffer(2, length, this.audioContext.sampleRate);
         
         for (let channel = 0; channel < 2; channel++) {
             const impulseData = impulse.getChannelData(channel);
-            
             for (let i = 0; i < length; i++) {
-                // Decay curve
                 const decay = Math.pow(1 - i / length, 2);
-                // Random values between -1 and 1
                 impulseData[i] = (Math.random() * 2 - 1) * decay;
             }
         }
         
         convolver.buffer = impulse;
+        console.log('Reverb impulse response generated');
     }
-    
+
     makeDistortionCurve(amount) {
-        amount = Math.min(Math.max(amount, 0), 100);
-        const k = amount / 100;
+        const k = Math.max(amount, 0) * 10; 
         const n_samples = 44100;
         const curve = new Float32Array(n_samples);
         const deg = Math.PI / 180;
-        
         for (let i = 0; i < n_samples; i++) {
-            const x = i * 2 / n_samples - 1;
+            const x = (i * 2) / n_samples - 1;
             curve[i] = (3 + k) * x * 20 * deg / (Math.PI + k * Math.abs(x));
         }
-        
         return curve;
     }
-    
+
     stopSound(sound) {
         if (!sound) return;
         
         const now = this.audioContext.currentTime;
         
-        // Fade out to avoid clicks
         if (sound.gainNode) {
             sound.gainNode.gain.cancelScheduledValues(now);
             sound.gainNode.gain.setValueAtTime(sound.gainNode.gain.value || 0, now);
             sound.gainNode.gain.linearRampToValueAtTime(0, now + 0.05);
         }
         
-        // Stop the source after fade out
         if (sound.source) {
             try {
                 sound.source.stop(now + 0.06);
             } catch (e) {
-                // Source might already be stopped
+                console.warn('Error stopping source:', e);
             }
         }
         
         sound.active = false;
         this.activeSounds.delete(sound);
+        console.log(`Stopped sound ${sound.id}`);
     }
-    
+
     stopAllSounds() {
         this.activeSounds.forEach(sound => {
             this.stopSound(sound);
         });
         this.activeSounds.clear();
+        console.log('All sounds stopped');
     }
 }
