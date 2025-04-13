@@ -1,0 +1,33 @@
+{
+  "title": "Explosion",
+  "audio": {
+    "waveform": "noise",
+    "frequency": 100,
+    "duration": 1,
+    "envelope": {
+      "attack": 0.005,
+      "decay": 0.2,
+      "sustain": 0.3,
+      "release": 0.3
+    },
+    "pitchEnvelope": {
+      "start": 2,
+      "end": 0.5,
+      "time": 0.5
+    },
+    "effects": {
+      "filter": {
+        "type": "lowpass",
+        "frequency": 800,
+        "Q": 1
+      },
+      "distortion": 2.5,
+      "delay": {
+        "time": 0.15,
+        "feedback": 0.25
+      },
+      "reverb": 0.5,
+      "pan": 0
+    }
+  }
+}

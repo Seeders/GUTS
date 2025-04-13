@@ -116,7 +116,9 @@ update() {
             this.processSplashDamage();
         }
         this.parent.destroy();
-
+        if(this.stats.hitSound){
+            this.game.audioManager.playSound('hitSounds', this.stats.hitSound);
+        }
 
         return;
     }

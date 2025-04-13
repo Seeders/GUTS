@@ -1,33 +1,32 @@
 {
-  "title": "Plasma",
+  "title": "test",
   "audio": {
-    "waveform": "noise",
-    "frequency": 73,
+    "waveform": "sine",
+    "frequency": 1047,
     "duration": 0.1,
     "envelope": {
       "attack": 0.001,
-      "decay": 2,
+      "decay": 0.08,
       "sustain": 0,
-      "release": 0.001
+      "release": 0.01
     },
     "pitchEnvelope": {
-      "start": 0.97,
-      "end": 1.01,
-      "time": 0.1
+      "start": 1,
+      "end": 1.5,
+      "time": 0.08
     },
     "effects": {
       "filter": {
-        "type": "lowpass",
-        "frequency": 70,
-        "Q": 2
+        "type": "bandpass",
+        "frequency": 1300,
+        "Q": 1
       },
-      "distortion": 3,
+      "distortion": 0,
       "delay": {
         "time": 0,
         "feedback": 0
       },
       "reverb": 0,
-      "bitcrusher": 0.1,
       "pan": 0
     }
   }

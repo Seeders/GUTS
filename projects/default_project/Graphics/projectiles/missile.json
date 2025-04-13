@@ -1269,5 +1269,6 @@
   "title": "Missile",
   "isBallistic": true,
   "particle": "smoke",
-  "shadows": false
+  "shadows": false,
+  "hitSound": "explosion"
 }

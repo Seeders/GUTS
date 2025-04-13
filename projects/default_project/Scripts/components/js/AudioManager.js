@@ -54,7 +54,7 @@ class AudioManager extends engine.Component {
 
                 source.filter.type = 'lowpass';
                 source.filter.frequency.setValueAtTime(20000, this.audioContext.currentTime);
-                source.filter.Q.setValueAtTime(1, this.audioContext.currentTime);
+                source.filter.Q.setValueAtTime(0.5, this.audioContext.currentTime);
 
                 source.distortion.curve = null;
                 source.distortion.oversample = '4x';
@@ -85,12 +85,13 @@ class AudioManager extends engine.Component {
                     chain[i].connect(chain[i + 1]);
                 }
 
-                source.gainNode.connect(source.delay);
+                // Route delay and reverb after filter
+                source.filter.connect(source.delay);
                 source.delay.connect(source.delayGain);
                 source.delayGain.connect(source.delay);
                 source.delayGain.connect(source.pannerNode);
 
-                source.gainNode.connect(source.convolver);
+                source.filter.connect(source.convolver);
                 source.convolver.connect(source.reverbGain);
                 source.reverbGain.connect(source.pannerNode);
 
@@ -108,7 +109,9 @@ class AudioManager extends engine.Component {
                 if (source) {
                     source.active = true;
                     source.gainNode.gain.setValueAtTime(1, this.audioContext.currentTime);
-                    source.envelopeGain.gain.setValueAtTime(0, this.audioContext.currentTime); // Start at 0
+                    source.envelopeGain.gain.setValueAtTime(0, this.audioContext.currentTime);
+                    source.delayGain.gain.setValueAtTime(0, this.audioContext.currentTime);
+                    source.reverbGain.gain.setValueAtTime(0, this.audioContext.currentTime);
                 }
                 return source;
             }
@@ -117,10 +120,30 @@ class AudioManager extends engine.Component {
                 if (source) {
                     source.active = false;
                     source.id = null;
-                    source.filter.frequency.setValueAtTime(20000, this.audioContext.currentTime);
+                    const now = this.audioContext.currentTime;
+            
+                    // Reset all nodes
+                    source.filter.frequency.cancelScheduledValues(now);
+                    source.filter.frequency.setValueAtTime(20000, now);
                     source.distortion.curve = null;
-                    source.pannerNode.pan.setValueAtTime(0, this.audioContext.currentTime);
-                    source.lastUsed = this.audioContext.currentTime;
+                    source.pannerNode.pan.setValueAtTime(0, now);
+                    source.envelopeGain.gain.setValueAtTime(0, now);
+                    source.gainNode.gain.setValueAtTime(1, now);
+                    source.delayGain.gain.setValueAtTime(0, now);
+                    source.reverbGain.gain.setValueAtTime(0, now);
+            
+                    // Disconnect and clear source if it exists
+                    if (source.source) {
+                        try {
+                            source.source.stop(now);
+                            source.source.disconnect();
+                        } catch (e) {
+                            console.warn('Error stopping source:', e);
+                        }
+                        source.source = null;
+                    }
+            
+                    source.lastUsed = now;
                 }
             }
 
@@ -140,7 +163,6 @@ class AudioManager extends engine.Component {
                 this.sources = [];
             }
         }
-
         this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
         this.masterBus = this.createAudioBus('master');
         this.musicBus = this.createAudioBus('music');
@@ -240,16 +262,14 @@ class AudioManager extends engine.Component {
         sound.category = category;
         
         const oscillator = this.createSynthSource(soundConfig);
+        sound.source = oscillator;
         oscillator.connect(sound.envelopeGain);
         
         this.createEnvelopeFromConfig(soundConfig.envelope, sound.envelopeGain, soundConfig.duration);
         
         if (soundConfig.effects) {
-            this.applySynthEffects(sound, soundConfig.effects);
-            console.log(`Applied effects for ${soundId}:`, soundConfig.effects);
-        } else {
-            console.log(`No effects specified for ${soundId}`);
-        }
+            this.applySynthEffects(sound, soundConfig.effects, soundConfig);
+        } 
         
         this.configureSoundInstance(sound, options);
         
@@ -260,18 +280,14 @@ class AudioManager extends engine.Component {
         const release = (soundConfig.envelope?.release) || 0.3;
         let totalDuration = duration + release;
         
-        // Extend duration for delay tail
         if (soundConfig.effects?.delay?.time) {
             const delayTail = soundConfig.effects.delay.time * 3;
             if (totalDuration < delayTail) {
                 totalDuration = delayTail;
-                console.log(`Extended duration to ${totalDuration}s to accommodate delay tail`);
             }
         }
         
-        // Add small buffer to ensure envelope completes
         oscillator.stop(now + totalDuration + 0.02);
-        sound.source = oscillator;
         
         this.activeSounds.add(sound);
         
@@ -280,11 +296,9 @@ class AudioManager extends engine.Component {
                 sound.active = false;
                 this.activeSounds.delete(sound);
                 pool.releaseSource(sound);
-                console.log(`Sound ${soundId} ended`);
-            }, (soundConfig.effects?.delay?.time || 0) * 1000 * 3); // Wait for 3 delay cycles
+            }, (soundConfig.effects?.delay?.time || 0) * 1000 * 3);
         };
         
-        console.log(`Playing sound ${soundId} with duration ${totalDuration}s`);
         return sound;
     }
 
@@ -292,26 +306,36 @@ class AudioManager extends engine.Component {
         const oscillator = config.waveform === 'noise'
             ? this.createNoiseSource()
             : this.audioContext.createOscillator();
-        
+    
         if (config.waveform !== 'noise') {
             oscillator.type = config.waveform || 'sine';
-            oscillator.frequency.setValueAtTime(config.frequency || 440, this.audioContext.currentTime);
-            
-            if (config.pitchEnvelope && (config.pitchEnvelope.start !== 1 || config.pitchEnvelope.end !== 1)) {
-                const startFreq = (config.frequency || 440) * config.pitchEnvelope.start;
-                const endFreq = (config.frequency || 440) * config.pitchEnvelope.end;
-                const duration = config.pitchEnvelope.time || config.duration || 1;
-                const now = this.audioContext.currentTime;
-                
-                oscillator.frequency.setValueAtTime(startFreq, now);
-                oscillator.frequency.exponentialRampToValueAtTime(
-                    Math.max(endFreq, 0.01),
-                    now + duration
-                );
-                console.log(`Pitch envelope applied: ${startFreq}Hz to ${endFreq}Hz over ${duration}s`);
+            const baseFreq = config.frequency || 440;
+            const now = this.audioContext.currentTime;
+    
+            // Initialize frequency
+            oscillator.frequency.cancelScheduledValues(now); // Clear any previous schedules
+            oscillator.frequency.setValueAtTime(baseFreq, now);
+    
+            // Apply pitch envelope if defined
+            if (config.pitchEnvelope) {
+                const startMultiplier = config.pitchEnvelope.start ?? 1;
+                const endMultiplier = config.pitchEnvelope.end ?? 1;
+                const envelopeTime = config.pitchEnvelope.time ?? config.duration ?? 1;
+    
+                if (startMultiplier !== 1 || endMultiplier !== 1) {
+                    const startFreq = baseFreq * startMultiplier;
+                    const endFreq = baseFreq * endMultiplier;
+    
+                    oscillator.frequency.setValueAtTime(startFreq, now);
+                    // Use exponential ramp for smooth pitch changes, avoid zero/negative
+                    oscillator.frequency.exponentialRampToValueAtTime(
+                        Math.max(endFreq, 0.01),
+                        now + envelopeTime
+                    );
+                }
             }
         }
-        
+    
         return oscillator;
     }
 
@@ -339,57 +363,78 @@ class AudioManager extends engine.Component {
         
         const now = this.audioContext.currentTime;
         
-        const attack = Math.max(0.001, envelope.attack || 0.01);
+        const attack = Math.max(0.01, envelope.attack || 0.01);
         const decay = Math.max(0, envelope.decay || 0.1);
         const sustain = Math.max(0, Math.min(1, envelope.sustain || 0.7));
-        const release = Math.max(0.02, envelope.release || 0.3); // Minimum 20ms release
+        const release = Math.max(0.02, envelope.release || 0.3);
         
         gainNode.gain.cancelScheduledValues(now);
         gainNode.gain.setValueAtTime(0, now);
         gainNode.gain.linearRampToValueAtTime(1, now + attack);
         gainNode.gain.linearRampToValueAtTime(sustain, now + attack + decay);
         gainNode.gain.setValueAtTime(sustain, now + duration);
-        gainNode.gain.setTargetAtTime(0, now + duration, release / 4); // Smooth exponential decay
+        gainNode.gain.setTargetAtTime(0.0001, now + duration, release / 3);
+        gainNode.gain.setValueAtTime(0, now + duration + release); // Absolute zero
         
-        console.log(`Envelope applied: A=${attack}, D=${decay}, S=${sustain}, R=${release}`);
     }
 
-    applySynthEffects(sound, effectsConfig) {
+    applySynthEffects(sound, effectsConfig, soundConfig) {
         const now = this.audioContext.currentTime;
         
+        // Filter
         if (effectsConfig.filter) {
             sound.filter.type = effectsConfig.filter.type || 'lowpass';
             sound.filter.frequency.setValueAtTime(effectsConfig.filter.frequency || 20000, now);
-            sound.filter.Q.setValueAtTime(effectsConfig.filter.Q || 1, now);
-            console.log(`Filter: ${sound.filter.type}, ${effectsConfig.filter.frequency}Hz, Q=${effectsConfig.filter.Q}`);
+            sound.filter.Q.setValueAtTime(effectsConfig.filter.Q || 0.5, now);
+            
+            // Apply pitch envelope to filter for noise waveforms
+            if (sound.source.buffer && soundConfig.pitchEnvelope && (soundConfig.pitchEnvelope.start !== 1 || soundConfig.pitchEnvelope.end !== 1)) {
+                const baseFreq = soundConfig.frequency || 100;
+                const startFreq = baseFreq * (soundConfig.pitchEnvelope.start + 1);
+                const endFreq = baseFreq * soundConfig.pitchEnvelope.end;
+                const duration = soundConfig.pitchEnvelope.time || soundConfig.duration || 1;
+                
+                sound.filter.frequency.cancelScheduledValues(now);
+                sound.filter.frequency.setValueAtTime(startFreq, now);
+                sound.filter.frequency.exponentialRampToValueAtTime(
+                    Math.max(endFreq, 0.01),
+                    now + duration
+                );
+                sound.filter.frequency.exponentialRampToValueAtTime(
+                    Math.max(endFreq * 0.5, 0.01),
+                    now + soundConfig.duration + (soundConfig.envelope?.release || 0.3)
+                );
+            }
         }
         
+        // Distortion
         if (effectsConfig.distortion && effectsConfig.distortion > 0) {
             sound.distortion.curve = this.makeDistortionCurve(effectsConfig.distortion);
-            console.log(`Distortion: ${effectsConfig.distortion}`);
         } else {
             sound.distortion.curve = null;
         }
         
+        // Delay
         if (effectsConfig.delay && effectsConfig.delay.feedback > 0) {
             sound.delay.delayTime.setValueAtTime(effectsConfig.delay.time || 0.3, now);
             sound.delayGain.gain.setValueAtTime(Math.min(effectsConfig.delay.feedback || 0, 0.8), now);
-            console.log(`Delay: ${effectsConfig.delay.time}s, feedback=${effectsConfig.delay.feedback}`);
+            sound.delayGain.gain.setTargetAtTime(0, now + soundConfig.duration + (soundConfig.envelope?.release || 0.3), 0.1);
         } else {
             sound.delayGain.gain.setValueAtTime(0, now);
         }
         
+        // Reverb
         if (effectsConfig.reverb && effectsConfig.reverb > 0) {
             this.generateImpulseResponse(sound.convolver);
             sound.reverbGain.gain.setValueAtTime(Math.min(effectsConfig.reverb, 1), now);
-            console.log(`Reverb: ${effectsConfig.reverb}`);
+            sound.reverbGain.gain.setTargetAtTime(0, now + soundConfig.duration + (soundConfig.envelope?.release || 0.3), 0.2);
         } else {
             sound.reverbGain.gain.setValueAtTime(0, now);
         }
         
+        // Panning
         if (effectsConfig.pan !== undefined) {
             sound.pannerNode.pan.setValueAtTime(Math.max(-1, Math.min(1, effectsConfig.pan)), now);
-            console.log(`Pan: ${effectsConfig.pan}`);
         }
     }
 
@@ -403,7 +448,6 @@ class AudioManager extends engine.Component {
                 now,
                 0.02
             );
-            console.log(`Volume: ${options.volume}`);
         }
         
         if (options.position && sound.pannerNode.positionX) {
@@ -411,17 +455,15 @@ class AudioManager extends engine.Component {
             sound.pannerNode.positionX.setValueAtTime(pos.x || 0, now);
             sound.pannerNode.positionY.setValueAtTime(pos.y || 0, now);
             sound.pannerNode.positionZ.setValueAtTime(pos.z || 0, now);
-            console.log(`Position: x=${pos.x}, y=${pos.y}, z=${pos.z}`);
         }
         
         if (options.pitch && sound.source && sound.source.playbackRate) {
             sound.source.playbackRate.setValueAtTime(options.pitch, now);
-            console.log(`Pitch: ${options.pitch}`);
         }
     }
 
     generateImpulseResponse(convolver) {
-        const length = this.audioContext.sampleRate * 2;
+        const length = this.audioContext.sampleRate * 1.5; // Shorter impulse
         const impulse = this.audioContext.createBuffer(2, length, this.audioContext.sampleRate);
         
         for (let channel = 0; channel < 2; channel++) {
@@ -433,7 +475,6 @@ class AudioManager extends engine.Component {
         }
         
         convolver.buffer = impulse;
-        console.log('Reverb impulse response generated');
     }
 
     makeDistortionCurve(amount) {
@@ -469,7 +510,6 @@ class AudioManager extends engine.Component {
         
         sound.active = false;
         this.activeSounds.delete(sound);
-        console.log(`Stopped sound ${sound.id}`);
     }
 
     stopAllSounds() {
@@ -477,6 +517,5 @@ class AudioManager extends engine.Component {
             this.stopSound(sound);
         });
         this.activeSounds.clear();
-        console.log('All sounds stopped');
     }
 }
