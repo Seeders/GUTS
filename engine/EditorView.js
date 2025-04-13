@@ -588,14 +588,6 @@ export class EditorView {
       document.getElementById('add-object-btn').textContent = `Add New ${singularType}`;
     }
   
-    updateNewObjectModal() {
-      const singularType = this.controller.getSingularType(this.controller.getSelectedType());
-      const title = singularType.charAt(0).toUpperCase() + singularType.slice(1);
-      this.elements.newObjectModal.querySelector('h2').textContent = `Create New ${title}`;
-      this.elements.newObjectModal.querySelector('label[for="new-object-id"]').textContent = `${title} ID:`;
-      this.elements.newObjectModal.querySelector('#create-object-btn').textContent = `Create ${title}`;
-    }
-  
     updateDuplicateObjectModal() {
       const singularType = this.controller.getSingularType(this.controller.getSelectedType());
       const title = singularType.charAt(0).toUpperCase() + singularType.slice(1);
@@ -656,6 +648,7 @@ export class EditorView {
         });
       });
   
+      document.getElementById('add-object-btn')?.addEventListener('click', () => this.showAddObjectModal());
       // Type actions
       document.getElementById('add-type-btn')?.addEventListener('click', () => this.showAddTypeModal());
       document.getElementById('remove-type-btn')?.addEventListener('click', () => this.showRemoveTypeModal());
@@ -845,12 +838,20 @@ export class EditorView {
       }
   
     // Modal handling
-    showAddTypeModal() {
-        this.controller.dispatchHook('showAddTypeModal', arguments);
-        const modal = document.getElementById('add-type-modal') || this.createAddTypeModal();
-        modal.classList.add('show');
+    showAddObjectModal() {
+        this.controller.dispatchHook('showAddObjectModal', arguments);
+        const singularType = this.controller.getSingularType(this.controller.getSelectedType());
+        const title = singularType.charAt(0).toUpperCase() + singularType.slice(1);
+        this.elements.newObjectModal.querySelector('h2').textContent = `Create New ${title}`;
+        this.elements.newObjectModal.querySelector('label[for="new-object-id"]').textContent = `${title} ID:`;
+        this.elements.newObjectModal.querySelector('#create-object-btn').textContent = `Create ${title}`;
+        this.elements.newObjectModal.classList.add('show');
     }
-  
+    showAddTypeModal() {
+      this.controller.dispatchHook('showAddTypeModal', arguments);
+      const modal = document.getElementById('add-type-modal') || this.createAddTypeModal();
+      modal.classList.add('show');
+  }
     createAddTypeModal() {
         const modal = document.createElement('div');
         modal.className = 'modal';
