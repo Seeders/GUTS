@@ -484,7 +484,7 @@ class AudioEditor {
         this.masterGainNode.gain.value = volume;
         const now = this.audioContext.currentTime;
         const oscillator = this.createOscillator(settings);
-        oscillator.connect(this.masterGainNode).connect(this.filter).connect(this.audioContext.destination);
+        oscillator.connect(this.masterGainNode).connect(this.filter);
         oscillator.start(now);
         oscillator.stop(now + settings.duration + (settings.envelope.release || 0.3));
         this.currentSource = oscillator;
@@ -571,7 +571,8 @@ class AudioEditor {
             this.filter,
             this.distortion,
             this.compressor,
-            this.panner
+            this.panner,
+            this.audioContext.destination
         ];
         
         // Connect them in order
@@ -591,8 +592,6 @@ class AudioEditor {
         this.delayGain = this.audioContext.createGain();
         this.convolver = this.audioContext.createConvolver();
         this.reverbGain = this.audioContext.createGain();
-      //  this.bitcrusher = this.createBitcrusher();
-     //   this.bitcrusherGain = this.audioContext.createGain();
     
         // Build reverb impulse response
         this.buildImpulseResponse(2, 2);
@@ -600,7 +599,6 @@ class AudioEditor {
         const parallelEffects = [
             { node: this.delay, gain: this.delayGain },
             { node: this.convolver, gain: this.reverbGain }
-          //  { node: this.bitcrusher, gain: this.bitcrusherGain }
         ];
     
         parallelEffects.forEach(effect => {
@@ -620,7 +618,6 @@ class AudioEditor {
         // Initialize gain values
         this.delayGain.gain.value = 0;
         this.reverbGain.gain.value = 0;
-      //  this.bitcrusherGain.gain.value = 0;
     }
     createOscillator(settings) {
         const oscillator = settings.waveform === 'noise' 
