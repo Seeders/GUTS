@@ -7,7 +7,8 @@
     "Leveler",
     "Buildable",
     "PopulationBurden",
-    "Attacker"
+    "Attacker",
+    "AudioPlayer"
   ],
   "renderers": [
     "Renderer",

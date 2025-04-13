@@ -4,8 +4,8 @@
   "library": "audioEditor",
   "propertyName": "audio",
   "interface": "audioEditor",
-  "inputElement": "text",
-  "inputDataType": "string",
+  "inputElement": "textarea",
+  "inputDataType": "json",
   "loadHook": "editAudio",
   "saveHook": "saveAudio"
 }

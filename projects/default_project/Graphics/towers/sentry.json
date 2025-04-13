@@ -200,5 +200,6 @@
     }
   },
   "projectileCount": 0,
-  "projectileAngle": 10
+  "projectileAngle": 10,
+  "sound": "laser"
 }

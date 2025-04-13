@@ -1,25 +1,32 @@
 #audio-editor-container {
     padding: 20px;
     margin: 0 auto;
+    border-radius: 8px;
 }
 
 #audio-editor-container h2, #audio-editor-container h3 {
-    margin-top: 0;
+    margin: 0 0 10px;
+    font-size: 1.2em;
 }
 
 #audio-editor-container .visualizer-container {
     margin-bottom: 20px;
-    padding: 10px;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-#waveformCanvas {
+#audio-editor-container #waveformCanvas {
     width: 100%;
     height: 150px;
+    border: 1px solid #ccc;
 }
 
 #audio-editor-container .parameters-container {
     padding: 15px;
-    margin-bottom: 15px;
+    margin: 10px 0;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 #audio-editor-container .parameter-group {
@@ -28,17 +35,31 @@
     gap: 10px;
 }
 
-#audio-editor-container label {
-    display: block;
-    margin-bottom: 5px;
+#audio-editor-container .parameter-group label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9em;
 }
 
 #audio-editor-container input[type="range"] {
-    width: 100%;
-    margin-right: 10px;
+    width: 100px;
+    margin: 0 10px;
     vertical-align: middle;
 }
 
+#audio-editor-container .value-display {
+    display: inline-block;
+    min-width: 60px;
+    text-align: right;
+    font-family: monospace;
+}
+
+#audio-editor-container select, #audio-editor-container input[type="text"] {
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
 
 #audio-editor-container .preset-controls {
     display: flex;
@@ -49,28 +70,39 @@
 
 #audio-editor-container .control-buttons {
     display: flex;
-    flex-direction: row;
     gap: 10px;
     margin: 20px 0;
     align-items: flex-start;
 }
 
 #audio-editor-container button {
-    padding: 10px 15px;
+    padding: 8px 16px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     font-weight: bold;
-    transition: background 0.2s;
+    transition: opacity 0.2s;
 }
 
+#audio-editor-container .primary-button, #audio-editor-container button {
+    background: #007bff;
+    color: #fff;
+}
 
-#audio-editor-container button:hover {
+#audio-editor-container .primary-button:hover, #audio-editor-container button:hover {
     opacity: 0.9;
 }
 
+#audio-editor-container button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #ccc;
+}
+
 #audio-editor-container .output-container {
-    display: none;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 #audio-editor-container #jsonOutput {
@@ -78,25 +110,82 @@
     padding: 10px;
     border-radius: 4px;
     resize: vertical;
+    font-family: monospace;
 }
-#audio-editor-container #status-message.success { color: #28a745; }
-#audio-editor-container #status-message.error { color: #dc3545; }
-#audio-editor-container .primary-button:disabled { opacity: 0.5; cursor: not-allowed; }
-#audio-editor-container .control-buttons button { margin-right: 5px; }
-#audio-editor-container .parameters-container { margin: 10px; }
-#audio-editor-container .value-display { display: inline-block; width: 60px; text-align: right; }
+
+#audio-editor-container #status-message.success {
+    color: #28a745;
+}
+
+#audio-editor-container #status-message.error {
+    color: #dc3545;
+}
+
+#audio-editor-container #keyboard {
+    user-select: none;
+    display: flex;
+    gap: 2px;
+    flex-wrap: wrap;
+}
+
+#audio-editor-container .key {
+    position: relative;
+    width: 40px;
+    height: 120px;
+    border: 1px solid #333;
+    border-radius: 4px;
+    background: #fff;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+#audio-editor-container .key.black {
+    width: 30px;
+    height: 80px;
+    background: #333;
+    color: #fff;
+    margin: 0 -15px;
+    z-index: 1;
+}
+
+#audio-editor-container .key.active {
+    background: #007bff;
+    color: #fff;
+}
+
+#audio-editor-container .key-label {
+    font-size: 0.8em;
+    opacity: 0.7;
+}
+
 /* Responsive adjustments */
 @media (max-width: 600px) {
     #audio-editor-container .parameter-group {
         grid-template-columns: 1fr;
     }
-    
+
     #audio-editor-container .preset-controls {
         flex-direction: column;
         align-items: stretch;
     }
-    
+
     #audio-editor-container .control-buttons {
         flex-direction: column;
+    }
+
+    #audio-editor-container .key {
+        width: 30px;
+        height: 100px;
+    }
+
+    #audio-editor-container .key.black {
+        width: 20px;
+        height: 60px;
+        margin: 0 -10px;
     }
 }

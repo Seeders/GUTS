@@ -228,7 +228,7 @@ export class EditorView {
         
         const valueInput = document.createElement(moduleInputElementType);
         valueInput.className = 'property-value';
-        
+        console.log(value);
         let processedValue = value;
         if (moduleDataType === 'json') {
             processedValue = JSON.stringify(value);
@@ -399,13 +399,19 @@ export class EditorView {
                 } else if (value.toLowerCase() === 'false') {
                     value = false;
                 }
+                let parsed = false;
+                const editorModules = this.controller.model.getCollections().editorModules;
                 
-                if (keyInput.value === "render") {
+                for (const [moduleKey, module] of Object.entries(editorModules)) {
+                  if (module.propertyName === keyInput.value && module.inputDataType.toLowerCase() === 'json') {
                     value = JSON.parse(value);
-                } else if(keyInput.value === "tileMap") {
-                    value = JSON.parse(value);
-                } else if(matchingTypePlural) {
-                    value = JSON.parse(value || '[]');
+                    parsed = true;
+                    break;
+                  }
+                }
+                
+                if (!parsed && matchingTypePlural) {
+                  value = JSON.parse(value || '[]');
                 }
 
                 completeObj[keyInput.value] = value;

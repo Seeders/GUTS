@@ -1,5 +1,5 @@
 {
-  "title": "Hit",
+  "title": "Pickup",
   "audio": {
     "waveform": "triangle",
     "frequency": 200,
@@ -11,8 +11,8 @@
       "release": 0.001
     },
     "pitchEnvelope": {
-      "start": 0.73,
-      "end": 0.28,
+      "start": 0.34,
+      "end": 1.89,
       "time": 0.1
     },
     "effects": {

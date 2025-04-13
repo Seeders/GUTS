@@ -80,6 +80,8 @@ class Attacker extends engine.Component {
     }
     
     launchProjectile() {
+        this.audioPlayer = this.getComponent('audioPlayer');   
+        this.audioPlayer?.play();
         this.stats = this.getComponent('stats').stats;    
         let projectileType = this.stats.projectile;
         let projectileDef = this.game.config.projectiles[projectileType];

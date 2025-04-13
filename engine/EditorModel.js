@@ -474,7 +474,6 @@ export class EditorModel {
         if (!this.state.selectedType || !this.state.selectedObject) {
             return { success: false, message: 'No object selected' };
         }
-
         // Merge current object with updates
         const currentObj = this.getCurrentObject();
         this.getCollections()[this.state.selectedType][this.state.selectedObject] = {

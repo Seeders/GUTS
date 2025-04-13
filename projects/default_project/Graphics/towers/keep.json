@@ -18,7 +18,8 @@
                 "y": 32,
                 "z": 0,
                 "size": 24,
-                "name": "dome"
+                "name": "dome",
+                "scaleX": 1
               },
               {
                 "type": "cylinder",
