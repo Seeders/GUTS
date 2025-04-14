@@ -450,7 +450,7 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "RangeIndicator"
       },
       "UiManager": {
-        "script": "class UiManager extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init({ canvas, canvasBuffer, terrainCanvasBuffer }) {\r\n        this.canvas = canvas;\r\n        this.finalCtx = this.canvas.getContext(\"2d\");\r\n        this.canvasBuffer = canvasBuffer;\r\n        this.ctx = this.canvasBuffer.getContext(\"2d\");\r\n        this.terrainCanvasBuffer = terrainCanvasBuffer;\r\n        this.projectConfig = this.game.config.configs.game;\r\n        this.gridSize = this.projectConfig.gridSize;\r\n        this.isometric = this.projectConfig.isIsometric || false;\r\n        this.upgradeMenu = document.getElementById('upgradeMenu');\r\n        this.upgradeOptionsDiv = document.getElementById('upgradeOptions');\r\n        this.overlay = document.getElementById('overlay');\r\n        this.tooltip = document.getElementById('tooltip');\r\n        this.gameOverMenu = document.getElementById('gameOverMenu');\r\n        this.victoryMenu = document.getElementById('victoryMenu');\r\n\r\n        // Stats displays\r\n        this.shardsDisplay = document.getElementById('shardsDisplay');\r\n        this.essenceDisplay = document.getElementById('essenceDisplay');\r\n        this.essenceNeededDisplay = document.getElementById('essenceNeededDisplay');\r\n        this.populationDisplay = document.getElementById('populationDisplay');\r\n        this.maxPopulationDisplay = document.getElementById('maxPopulationDisplay');\r\n        this.hpDisplay = document.getElementById('hpDisplay');\r\n        this.waveDisplay = document.getElementById('waveDisplay');\r\n        this.waveProgress = document.getElementById('waveProgress');\r\n        this.gameOverWave = document.getElementById('gameOverWave');\r\n        this.towerMenu = document.getElementById('towerMenu');\r\n        let towerMenuOptions = '';\r\n        for(let type in this.game.config.towers) {\r\n            if(this.game.config.towers[type].cost > 0){\r\n                towerMenuOptions += `<div class=\"tower-option\" data-type=\"${type}\">${this.game.config.towers[type].title} (${this.game.config.towers[type].cost})</div>`;\r\n            }\r\n        }\r\n        this.towerMenu.innerHTML = towerMenuOptions;\r\n        this.setupTowerPlacement();\r\n        this.setupEventListeners();\r\n        this.game.uiManager = this;\r\n       \r\n    }\r\n    clearCanvas() {\r\n        this.ctx.clearRect(0, 0, this.canvasBuffer.width, this.canvasBuffer.height);\r\n        this.finalCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);    \r\n    }\r\n    renderCanvas() {      \r\n        this.finalCtx.drawImage(this.canvasBuffer, 0, 0);\r\n    }\r\n\r\n    setMousePosition(clientX, clientY) {\r\n        const rect = this.canvas.getBoundingClientRect();\r\n            \r\n        // Account for canvas scaling and offset\r\n        const scaleX = this.canvas.width / rect.width;   // Ratio of canvas pixel width to CSS width\r\n        const scaleY = this.canvas.height / rect.height; // Ratio of canvas pixel height to CSS height\r\n        \r\n        const mapGridWidth = this.game.state.tileMap.length;\r\n        // Calculate mouse position relative to canvas with scaling\r\n        const mouseX = (clientX - rect.left) * scaleX + (this.isometric ? 0 : -( this.canvas.width - mapGridWidth * this.game.config.configs.game.gridSize) / 2);\r\n        const mouseY = (clientY - rect.top) * scaleY + (this.isometric ? 0 : -( this.canvas.height - mapGridWidth * this.game.config.configs.game.gridSize) / 2);\r\n\r\n        // Convert to isometric and grid coordinates\r\n        const gridPos = this.game.translator.isoToGrid(mouseX, mouseY);\r\n        const snappedGrid = this.game.translator.snapToGrid(gridPos.x, gridPos.y);\r\n        const pixelIsoPos = this.game.translator.pixelToIso(mouseX, mouseY);\r\n\r\n        // Update state with corrected coordinates\r\n        this.game.state.mousePosition = { \r\n            x: mouseX, \r\n            y: mouseY, \r\n            isoX: pixelIsoPos.x, \r\n            isoY: pixelIsoPos.y, \r\n            gridX: snappedGrid.x, \r\n            gridY: snappedGrid.y \r\n        };\r\n    }\r\n\r\n  setupEventListeners() {\r\n        document.getElementById('startGameBtn').removeAttribute('style');\r\n        document.getElementById('startGameBtn').addEventListener('click', (e) => {    \r\n            this.game.state.isPaused = false;\r\n            e.target.setAttribute('style','display:none;');\r\n        });\r\n        document.querySelector(\"#gameOverMenu .menu-button\").addEventListener(\"click\", (e) => {\r\n            this.game.reset();\r\n        });\r\n        \r\n        document.querySelector(\"#victoryMenu .menu-button\").addEventListener(\"click\", (e) => {\r\n            this.game.reset();\r\n        });\r\n        this.canvas.addEventListener('mousemove', (e) => {\r\n            this.setMousePosition(e.clientX, e.clientY);\r\n\r\n            if (!this.game.state.selectedTowerType && !this.game.state.towers.length) return;\r\n\r\n            if (this.game.state.selectedTowerType && this.game.state.previewTower) {\r\n                this.game.state.previewTower.position.x = this.game.state.mousePosition.gridX * this.gridSize + this.gridSize / 2;\r\n                this.game.state.previewTower.position.y = this.game.state.mousePosition.gridY * this.gridSize + this.gridSize / 2;\r\n                const isValidPosition = this.checkValidTowerPosition(this.game.state.mousePosition.gridX, this.game.state.mousePosition.gridY);\r\n                this.canvas.style.cursor = isValidPosition ? 'pointer' : 'not-allowed';\r\n            }\r\n\r\n            let hoveredTower = null;\r\n            for (const tower of this.game.state.towers) {\r\n                const dist = Math.hypot(tower.gridPosition.x - this.game.state.mousePosition.gridX, tower.gridPosition.y + this.game.translator.tileHeight / 2 - this.game.state.mousePosition.gridY);\r\n                if (dist < 20) {\r\n                    hoveredTower = tower;\r\n                    break;\r\n                }\r\n            }\r\n\r\n            if (hoveredTower && hoveredTower.stats) {\r\n                let info = `${hoveredTower.type} (Level ${hoveredTower.level})\\n`;\r\n                info += `Damage: ${Math.round(hoveredTower.stats.damage * this.game.state.stats.damageMultiplier * 10) / 10}\\n`;\r\n                info += `Attack Speed: ${Math.round(1000 / hoveredTower.stats.attackSpeed)} per sec\\n`;\r\n                info += `Range: ${hoveredTower.stats.range}\\n`;\r\n                info += `Crit Chance: ${Math.round(hoveredTower.stats.critChance * 100)}%\\n`;\r\n                if (hoveredTower.stats.leech > 0) {\r\n                    info += `Life Leech: ${Math.round(hoveredTower.stats.leech * 100 * this.game.state.stats.healingMultiplier) / 100} HP per hit\\n`;\r\n                }\r\n                if (hoveredTower.stats.piercing > 0) {\r\n                    info += `Piercing: ${hoveredTower.stats.piercing} enemies\\n`;\r\n                }\r\n                if (hoveredTower.stats.summonChance > 0) {\r\n                    info += `Summon Chance: ${Math.round(hoveredTower.stats.summonChance * 100)}%\\n`;\r\n                }\r\n\r\n                this.showTooltip(e.clientX, e.clientY, info);\r\n                hoveredTower.showRange = true;\r\n            } else {\r\n                this.hideTooltip();\r\n                this.game.state.towers.forEach(t => t.showRange = false);\r\n            }\r\n        });\r\n\r\n        this.canvas.addEventListener('mouseout', () => {\r\n            this.hideTooltip();\r\n        });\r\n        \r\n        this.canvas.addEventListener('click', (e) => {\r\n            if (!this.game.state.selectedTowerType) return;\r\n            \r\n\r\n            if (this.checkValidTowerPosition(this.game.state.mousePosition.gridX, this.game.state.mousePosition.gridY)) {\r\n                // Create the tower\r\n                let cost = this.game.config.towers[this.game.state.selectedTowerType].cost;\r\n                let populationCost = this.game.config.towers[this.game.state.selectedTowerType].population || 0;\r\n                \r\n                const finalCost = Math.floor(cost * this.game.state.stats.towerCostMod);\r\n                \r\n                if (this.game.state.bloodShards >= finalCost && this.game.state.stats.population + populationCost <= this.game.state.stats.maxPopulation) {\r\n          \r\n                    const tower = this.game.spawn(this.game.state.mousePosition.gridX * this.gridSize + this.gridSize / 2, \r\n                                                 this.game.state.mousePosition.gridY * this.gridSize + this.gridSize / 2, \"tower\", { objectType: \"towers\", spawnType: this.game.state.selectedTowerType, setDirection: 1});\r\n                    tower.placed = true;\r\n                    this.game.state.tileMap[this.game.state.mousePosition.gridY][this.game.state.mousePosition.gridX].buildable = false;\r\n                    this.game.state.tileMap[this.game.state.mousePosition.gridY][this.game.state.mousePosition.gridX].tower = tower;\r\n                    this.game.state.bloodShards -= finalCost;\r\n                    this.game.state.previewTower.destroy();\r\n                    this.game.state.previewTower = null;\r\n                    // Clear selection\r\n                    this.game.state.selectedTowerType = null;\r\n                    this.canvas.style.cursor = 'default';\r\n                }\r\n            }\r\n        });\r\n        \r\n        // Cancel tower placement with right click\r\n        this.canvas.addEventListener('contextmenu', (e) => {\r\n            e.preventDefault();\r\n            if (this.game.state.selectedTowerType) {\r\n                this.game.state.selectedTowerType = null;\r\n                this.canvas.style.cursor = 'default';\r\n            }\r\n        });\r\n}\r\n\r\n  setupTowerPlacement() {\r\n\r\n        \r\n        const towerButtons = document.querySelectorAll('.tower-option');\r\n        towerButtons.forEach(button => {\r\n            button.addEventListener('click', () => {\r\n\r\n                if(this.game.state.isPaused) return;\r\n                \r\n                const type = button.getAttribute('data-type');\r\n                let cost = this.game.config.towers[type].cost;\r\n                const finalCost = Math.floor(cost * this.game.state.stats.towerCostMod);\r\n                \r\n                let populationCost = this.game.config.towers[type].population || 0;\r\n                if (this.game.state.bloodShards >= finalCost && this.game.state.stats.population + populationCost <= this.game.state.stats.maxPopulation) {\r\n                    this.game.state.selectedTowerType = type;\r\n                    if(this.game.state.previewTower) {\r\n                        this.game.state.previewTower.destroy();\r\n                    }\r\n                    this.game.state.previewTower = this.game.spawn(-100, -100, 'previewTower', { objectType: \"towers\", spawnType: this.game.state.selectedTowerType});\r\n                }\r\n            });\r\n            \r\n            // Show tooltip with info\r\n            button.addEventListener('mouseover', (e) => {\r\n                const type = button.getAttribute('data-type');\r\n                let info = this.game.config.towers[type].info;\r\n                \r\n                this.showTooltip(e.clientX, e.clientY, info);\r\n            });\r\n            \r\n            button.addEventListener('mouseout', () => {\r\n                this.hideTooltip();\r\n            });\r\n        });\r\n        \r\n        \r\n    }\r\n\r\n    checkValidTowerPosition(posX, posY) {\r\n        if(posX >= 0 && posY >= 0 && this.game.state.tileMap.length > posY && this.game.state.tileMap[posY].length > posX){\r\n            return this.game.state.tileMap[posY][posX].buildable;            \r\n        }\r\n        return false;\r\n    }\r\n\r\n    reset() {\r\n        this.gameOverMenu.style.display = 'none';\r\n        this.victoryMenu.style.display = 'none';\r\n        this.overlay.style.display = 'none';\r\n        this.waveDisplay.textContent = '1';\r\n        this.waveProgress.style.width = '0%';        \r\n\r\n\r\n    }\r\n\r\n\r\n    draw() {\r\n        this.shardsDisplay.textContent = Math.floor(this.game.state.bloodShards);\r\n        this.essenceDisplay.textContent = Math.floor(this.game.state.essence);\r\n        this.essenceNeededDisplay.textContent = Math.floor(this.game.state.essenceToNextLevel);\r\n        this.hpDisplay.textContent = Math.floor(this.game.state.bloodCoreHP);\r\n        this.populationDisplay.textContent = Math.floor(this.game.state.stats.population);\r\n        this.maxPopulationDisplay.textContent = Math.floor(this.game.state.stats.maxPopulation);  \r\n        if (this.game.state.enemies.length === 0 && this.game.state.enemiesSpawned >= this.game.state.numEnemiesInWave && !this.game.state.victory) {\r\n            const countdown = Math.ceil((this.game.state.waveDelay - this.game.state.waveTimer) / 60);\r\n            this.ctx.fillStyle = 'white';\r\n            this.ctx.font = '20px Arial';\r\n            this.ctx.textAlign = 'center';\r\n            this.ctx.fillText(`Next Wave in ${countdown}...`, this.canvas.width / 2, 50);\r\n        }  \r\n\r\n        this.renderCanvas();\r\n}\r\n\r\n    updateWaveDisplay(waveNumber) {\r\n        this.waveDisplay.textContent = waveNumber;\r\n    }\r\n\r\n\r\n    showTooltip(x, y, text) {\r\n        const tooltip = document.getElementById('tooltip');\r\n        tooltip.style.display = 'block';\r\n        tooltip.style.left = (x + 10) + 'px';\r\n        tooltip.style.top = (y + 10) + 'px';\r\n        tooltip.textContent = text;\r\n    }\r\n\r\n    hideTooltip() {\r\n        const tooltip = document.getElementById('tooltip');\r\n        tooltip.style.display = 'none';\r\n    }\r\n}",
+        "script": "class UiManager extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init({ canvas, canvasBuffer, terrainCanvasBuffer }) {\r\n        this.canvas = canvas;\r\n        this.finalCtx = this.canvas.getContext(\"2d\");\r\n        this.canvasBuffer = canvasBuffer;\r\n        this.ctx = this.canvasBuffer.getContext(\"2d\");\r\n        this.terrainCanvasBuffer = terrainCanvasBuffer;\r\n        this.projectConfig = this.game.config.configs.game;\r\n        this.gridSize = this.projectConfig.gridSize;\r\n        this.isometric = this.projectConfig.isIsometric || false;\r\n        this.upgradeMenu = document.getElementById('upgradeMenu');\r\n        this.upgradeOptionsDiv = document.getElementById('upgradeOptions');\r\n        this.overlay = document.getElementById('overlay');\r\n        this.tooltip = document.getElementById('tooltip');\r\n        this.gameOverMenu = document.getElementById('gameOverMenu');\r\n        this.victoryMenu = document.getElementById('victoryMenu');\r\n\r\n        // Stats displays\r\n        this.shardsDisplay = document.getElementById('shardsDisplay');\r\n        this.essenceDisplay = document.getElementById('essenceDisplay');\r\n        this.essenceNeededDisplay = document.getElementById('essenceNeededDisplay');\r\n        this.populationDisplay = document.getElementById('populationDisplay');\r\n        this.maxPopulationDisplay = document.getElementById('maxPopulationDisplay');\r\n        this.hpDisplay = document.getElementById('hpDisplay');\r\n        this.waveDisplay = document.getElementById('waveDisplay');\r\n        this.waveProgress = document.getElementById('waveProgress');\r\n        this.gameOverWave = document.getElementById('gameOverWave');\r\n        this.towerMenu = document.getElementById('towerMenu');\r\n        let towerMenuOptions = '';\r\n        for(let type in this.game.config.towers) {\r\n            if(this.game.config.towers[type].cost > 0){\r\n                towerMenuOptions += `<div class=\"tower-option\" data-type=\"${type}\">${this.game.config.towers[type].title} (${this.game.config.towers[type].cost})</div>`;\r\n            }\r\n        }\r\n        this.towerMenu.innerHTML = towerMenuOptions;\r\n        this.setupTowerPlacement();\r\n        this.setupEventListeners();\r\n        this.game.uiManager = this;\r\n       \r\n    }\r\n    clearCanvas() {\r\n        this.ctx.clearRect(0, 0, this.canvasBuffer.width, this.canvasBuffer.height);\r\n        this.finalCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);    \r\n    }\r\n    renderCanvas() {      \r\n        this.finalCtx.drawImage(this.canvasBuffer, 0, 0);\r\n    }\r\n\r\n    setMousePosition(clientX, clientY) {\r\n        const rect = this.canvas.getBoundingClientRect();\r\n            \r\n        // Account for canvas scaling and offset\r\n        const scaleX = this.canvas.width / rect.width;   // Ratio of canvas pixel width to CSS width\r\n        const scaleY = this.canvas.height / rect.height; // Ratio of canvas pixel height to CSS height\r\n        \r\n        const mapGridWidth = this.game.state.tileMap.length;\r\n        // Calculate mouse position relative to canvas with scaling\r\n        const mouseX = (clientX - rect.left) * scaleX + (this.isometric ? 0 : -( this.canvas.width - mapGridWidth * this.game.config.configs.game.gridSize) / 2);\r\n        const mouseY = (clientY - rect.top) * scaleY + (this.isometric ? 0 : -( this.canvas.height - mapGridWidth * this.game.config.configs.game.gridSize) / 2);\r\n\r\n        // Convert to isometric and grid coordinates\r\n        const gridPos = this.game.translator.isoToGrid(mouseX, mouseY);\r\n        const snappedGrid = this.game.translator.snapToGrid(gridPos.x, gridPos.y);\r\n        const pixelIsoPos = this.game.translator.pixelToIso(mouseX, mouseY);\r\n\r\n        // Update state with corrected coordinates\r\n        this.game.state.mousePosition = { \r\n            x: mouseX, \r\n            y: mouseY, \r\n            isoX: pixelIsoPos.x, \r\n            isoY: pixelIsoPos.y, \r\n            gridX: snappedGrid.x, \r\n            gridY: snappedGrid.y \r\n        };\r\n    }\r\n\r\n  setupEventListeners() {\r\n        document.getElementById('startGameBtn').removeAttribute('style');\r\n        document.getElementById('startGameBtn').addEventListener('click', (e) => {    \r\n            this.game.state.isPaused = false;\r\n            e.target.setAttribute('style','display:none;');\r\n        });\r\n        document.querySelector(\"#gameOverMenu .menu-button\").addEventListener(\"click\", (e) => {\r\n            this.game.reset();\r\n        });\r\n        \r\n        document.querySelector(\"#victoryMenu .menu-button\").addEventListener(\"click\", (e) => {\r\n            this.game.reset();\r\n        });\r\n        this.canvas.addEventListener('mousemove', (e) => {\r\n            this.setMousePosition(e.clientX, e.clientY);\r\n\r\n            if (!this.game.state.selectedTowerType && !this.game.state.towers.length) return;\r\n\r\n            if (this.game.state.selectedTowerType && this.game.state.previewTower) {\r\n                this.game.state.previewTower.position.x = this.game.state.mousePosition.gridX * this.gridSize + this.gridSize / 2;\r\n                this.game.state.previewTower.position.y = this.game.state.mousePosition.gridY * this.gridSize + this.gridSize / 2;\r\n                const isValidPosition = this.checkValidTowerPosition(this.game.state.mousePosition.gridX, this.game.state.mousePosition.gridY);\r\n                this.canvas.style.cursor = isValidPosition ? 'pointer' : 'not-allowed';\r\n            }\r\n\r\n            let hoveredTower = null;\r\n            for (const tower of this.game.state.towers) {\r\n                const dist = Math.hypot(tower.gridPosition.x - this.game.state.mousePosition.gridX, tower.gridPosition.y + this.game.translator.tileHeight / 2 - this.game.state.mousePosition.gridY);\r\n                if (dist < 20) {\r\n                    hoveredTower = tower;\r\n                    break;\r\n                }\r\n            }\r\n\r\n            if (hoveredTower && hoveredTower.stats) {\r\n                let info = `${hoveredTower.type} (Level ${hoveredTower.level})\\n`;\r\n                info += `Damage: ${Math.round(hoveredTower.stats.damage * this.game.state.stats.damageMultiplier * 10) / 10}\\n`;\r\n                info += `Attack Speed: ${Math.round(1000 / hoveredTower.stats.attackSpeed)} per sec\\n`;\r\n                info += `Range: ${hoveredTower.stats.range}\\n`;\r\n                info += `Crit Chance: ${Math.round(hoveredTower.stats.critChance * 100)}%\\n`;\r\n                if (hoveredTower.stats.leech > 0) {\r\n                    info += `Life Leech: ${Math.round(hoveredTower.stats.leech * 100 * this.game.state.stats.healingMultiplier) / 100} HP per hit\\n`;\r\n                }\r\n                if (hoveredTower.stats.piercing > 0) {\r\n                    info += `Piercing: ${hoveredTower.stats.piercing} enemies\\n`;\r\n                }\r\n                if (hoveredTower.stats.summonChance > 0) {\r\n                    info += `Summon Chance: ${Math.round(hoveredTower.stats.summonChance * 100)}%\\n`;\r\n                }\r\n\r\n                this.showTooltip(e.clientX, e.clientY, info);\r\n                hoveredTower.showRange = true;\r\n            } else {\r\n                this.hideTooltip();\r\n                this.game.state.towers.forEach(t => t.showRange = false);\r\n            }\r\n        });\r\n\r\n        this.canvas.addEventListener('mouseout', () => {\r\n            this.hideTooltip();\r\n        });\r\n        \r\n        this.canvas.addEventListener('click', (e) => {\r\n            if (!this.game.state.selectedTowerType) return;\r\n            \r\n\r\n            if (this.checkValidTowerPosition(this.game.state.mousePosition.gridX, this.game.state.mousePosition.gridY)) {\r\n                // Create the tower\r\n                let cost = this.game.config.towers[this.game.state.selectedTowerType].cost;\r\n                let populationCost = this.game.config.towers[this.game.state.selectedTowerType].population || 0;\r\n                \r\n                const finalCost = Math.floor(cost * this.game.state.stats.towerCostMod);\r\n                \r\n                if (this.game.state.bloodShards >= finalCost && this.game.state.stats.population + populationCost <= this.game.state.stats.maxPopulation) {\r\n          \r\n                    const tower = this.game.spawn(this.game.state.mousePosition.gridX * this.gridSize + this.gridSize / 2, \r\n                                                 this.game.state.mousePosition.gridY * this.gridSize + this.gridSize / 2, \"tower\", { objectType: \"towers\", spawnType: this.game.state.selectedTowerType, setDirection: 1});\r\n                    tower.placed = true;\r\n                    this.game.state.tileMap[this.game.state.mousePosition.gridY][this.game.state.mousePosition.gridX].buildable = false;\r\n                    this.game.state.tileMap[this.game.state.mousePosition.gridY][this.game.state.mousePosition.gridX].tower = tower;\r\n                    this.game.state.bloodShards -= finalCost;\r\n                    this.game.state.previewTower.destroy();\r\n                    this.game.state.previewTower = null;\r\n                    const gameEventData = this.game.config.gameEvents['placeTower'];\r\n                    const audioData = this.game.config.sounds[gameEventData.sound].audio;\r\n                    this.game.audioManager.playSynthSound('placeTower', audioData);\r\n                    // Clear selection\r\n                    this.game.state.selectedTowerType = null;\r\n                    this.canvas.style.cursor = 'default';\r\n                }\r\n            }\r\n        });\r\n        \r\n        // Cancel tower placement with right click\r\n        this.canvas.addEventListener('contextmenu', (e) => {\r\n            e.preventDefault();\r\n            if (this.game.state.selectedTowerType) {\r\n                this.game.state.selectedTowerType = null;\r\n                this.canvas.style.cursor = 'default';\r\n            }\r\n        });\r\n}\r\n\r\n  setupTowerPlacement() {\r\n\r\n        \r\n        const towerButtons = document.querySelectorAll('.tower-option');\r\n        towerButtons.forEach(button => {\r\n            button.addEventListener('click', () => {\r\n\r\n                if(this.game.state.isPaused) return;\r\n                \r\n                const type = button.getAttribute('data-type');\r\n                let cost = this.game.config.towers[type].cost;\r\n                const finalCost = Math.floor(cost * this.game.state.stats.towerCostMod);\r\n                \r\n                let populationCost = this.game.config.towers[type].population || 0;\r\n                if (this.game.state.bloodShards >= finalCost && this.game.state.stats.population + populationCost <= this.game.state.stats.maxPopulation) {\r\n                    this.game.state.selectedTowerType = type;\r\n                    if(this.game.state.previewTower) {\r\n                        this.game.state.previewTower.destroy();\r\n                    }\r\n                    this.game.state.previewTower = this.game.spawn(-100, -100, 'previewTower', { objectType: \"towers\", spawnType: this.game.state.selectedTowerType});\r\n                }\r\n            });\r\n            \r\n            // Show tooltip with info\r\n            button.addEventListener('mouseover', (e) => {\r\n                const type = button.getAttribute('data-type');\r\n                let info = this.game.config.towers[type].info;\r\n                \r\n                this.showTooltip(e.clientX, e.clientY, info);\r\n            });\r\n            \r\n            button.addEventListener('mouseout', () => {\r\n                this.hideTooltip();\r\n            });\r\n        });\r\n        \r\n        \r\n    }\r\n\r\n    checkValidTowerPosition(posX, posY) {\r\n        if(posX >= 0 && posY >= 0 && this.game.state.tileMap.length > posY && this.game.state.tileMap[posY].length > posX){\r\n            return this.game.state.tileMap[posY][posX].buildable;            \r\n        }\r\n        return false;\r\n    }\r\n\r\n    reset() {\r\n        this.gameOverMenu.style.display = 'none';\r\n        this.victoryMenu.style.display = 'none';\r\n        this.overlay.style.display = 'none';\r\n        this.waveDisplay.textContent = '1';\r\n        this.waveProgress.style.width = '0%';        \r\n\r\n\r\n    }\r\n\r\n\r\n    draw() {\r\n        this.shardsDisplay.textContent = Math.floor(this.game.state.bloodShards);\r\n        this.essenceDisplay.textContent = Math.floor(this.game.state.essence);\r\n        this.essenceNeededDisplay.textContent = Math.floor(this.game.state.essenceToNextLevel);\r\n        this.hpDisplay.textContent = Math.floor(this.game.state.bloodCoreHP);\r\n        this.populationDisplay.textContent = Math.floor(this.game.state.stats.population);\r\n        this.maxPopulationDisplay.textContent = Math.floor(this.game.state.stats.maxPopulation);  \r\n        if (this.game.state.enemies.length === 0 && this.game.state.enemiesSpawned >= this.game.state.numEnemiesInWave && !this.game.state.victory) {\r\n            const countdown = Math.ceil((this.game.state.waveDelay - this.game.state.waveTimer) / 60);\r\n            this.ctx.fillStyle = 'white';\r\n            this.ctx.font = '20px Arial';\r\n            this.ctx.textAlign = 'center';\r\n            this.ctx.fillText(`Next Wave in ${countdown}...`, this.canvas.width / 2, 50);\r\n        }  \r\n\r\n        this.renderCanvas();\r\n}\r\n\r\n    updateWaveDisplay(waveNumber) {\r\n        this.waveDisplay.textContent = waveNumber;\r\n    }\r\n\r\n\r\n    showTooltip(x, y, text) {\r\n        const tooltip = document.getElementById('tooltip');\r\n        tooltip.style.display = 'block';\r\n        tooltip.style.left = (x + 10) + 'px';\r\n        tooltip.style.top = (y + 10) + 'px';\r\n        tooltip.textContent = text;\r\n    }\r\n\r\n    hideTooltip() {\r\n        const tooltip = document.getElementById('tooltip');\r\n        tooltip.style.display = 'none';\r\n    }\r\n}",
         "fileName": "UiManager"
       }
     },
@@ -2426,8 +2426,7 @@ const DEFAULT_PROJECT_CONFIG = {
           }
         },
         "projectileCount": 0,
-        "projectileAngle": 10,
-        "attackSound": "plasma"
+        "projectileAngle": 10
       },
       "fusionCore": {
         "title": "Fusion Core",
@@ -28344,6 +28343,4691 @@ const DEFAULT_PROJECT_CONFIG = {
         "title": "spike_ball",
         "description": "A rolling spike ball monster with spinning spikes",
         "id": "spike_ball"
+      },
+      "new_trex": {
+        "title": "New T-Rex",
+        "hp": 200,
+        "speed": 1.5,
+        "value": 10,
+        "essence": 15,
+        "render": {
+          "animations": {
+            "idle": [
+              {
+                "head": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 16,
+                      "height": 14,
+                      "depth": 22,
+                      "x": 0,
+                      "y": 42,
+                      "z": 14,
+                      "color": "#556B2F",
+                      "name": "head-main",
+                      "texture": "scales",
+                      "roughness": 0.8
+                    },
+                    {
+                      "type": "sphere",
+                      "size": 4.5,
+                      "x": -8,
+                      "y": 46,
+                      "z": 16,
+                      "color": "#DAA520",
+                      "name": "eye-right",
+                      "emissive": "#B8860B"
+                    },
+                    {
+                      "type": "sphere",
+                      "size": 2.2,
+                      "x": -8,
+                      "y": 46,
+                      "z": 17.5,
+                      "color": "#000000",
+                      "name": "pupil-right"
+                    },
+                    {
+                      "type": "sphere",
+                      "size": 4.5,
+                      "x": 8,
+                      "y": 46,
+                      "z": 16,
+                      "color": "#DAA520",
+                      "name": "eye-left",
+                      "emissive": "#B8860B"
+                    },
+                    {
+                      "type": "sphere",
+                      "size": 2.2,
+                      "x": 8,
+                      "y": 46,
+                      "z": 17.5,
+                      "color": "#000000",
+                      "name": "pupil-left"
+                    },
+                    {
+                      "type": "box",
+                      "width": 16,
+                      "height": 2,
+                      "depth": 6,
+                      "x": 0,
+                      "y": 50,
+                      "z": 14,
+                      "color": "#3D4D1E",
+                      "name": "brow-ridge",
+                      "texture": "rough"
+                    },
+                    {
+                      "type": "sphere",
+                      "size": 2,
+                      "x": -4.5,
+                      "y": 48.7,
+                      "z": 23.6,
+                      "color": "#556B2F",
+                      "name": "nostril-right",
+                      "rotationX": 0,
+                      "rotationY": 0,
+                      "rotationZ": 0,
+                      "scaleX": 1,
+                      "scaleY": 1,
+                      "scaleZ": 1
+                    },
+                    {
+                      "type": "sphere",
+                      "size": 2,
+                      "x": 4.5,
+                      "y": 48.7,
+                      "z": 23.6,
+                      "color": "#556B2F",
+                      "name": "nostril-left",
+                      "rotationX": 0,
+                      "rotationY": 0,
+                      "rotationZ": 0,
+                      "scaleX": 1,
+                      "scaleY": 1,
+                      "scaleZ": 1
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 2.5,
+                    "z": 18.5
+                  },
+                  "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "jaw": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 18.3,
+                      "height": 6,
+                      "depth": 20,
+                      "x": 0,
+                      "y": 30,
+                      "z": 16,
+                      "color": "#4D6227",
+                      "name": "jaw-main",
+                      "texture": "rough"
+                    },
+                    {
+                      "type": "box",
+                      "width": 12,
+                      "height": 2,
+                      "depth": 2,
+                      "x": 0,
+                      "y": 32.5,
+                      "z": 24.7,
+                      "color": "#A52A2A",
+                      "name": "gums",
+                      "roughness": 0.7
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.8,
+                      "height": 4,
+                      "depth": 1.8,
+                      "x": -5,
+                      "y": 33,
+                      "z": 25,
+                      "color": "#F8F8FF",
+                      "name": "tooth-front-right",
+                      "shininess": 90
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.8,
+                      "height": 4,
+                      "depth": 1.8,
+                      "x": 0,
+                      "y": 33,
+                      "z": 25,
+                      "color": "#F8F8FF",
+                      "name": "tooth-front-middle",
+                      "shininess": 90
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.8,
+                      "height": 4,
+                      "depth": 1.8,
+                      "x": 5,
+                      "y": 33,
+                      "z": 25,
+                      "color": "#F8F8FF",
+                      "name": "tooth-front-left",
+                      "shininess": 90
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.5,
+                      "height": 3,
+                      "depth": 1.5,
+                      "x": -7,
+                      "y": 33,
+                      "z": 22,
+                      "color": "#F8F8FF",
+                      "name": "tooth-side-right1",
+                      "shininess": 90
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.5,
+                      "height": 3,
+                      "depth": 1.5,
+                      "x": 7,
+                      "y": 33,
+                      "z": 22,
+                      "color": "#F8F8FF",
+                      "name": "tooth-side-left1",
+                      "shininess": 90
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 10,
+                    "z": 7.8
+                  },
+                  "rotation": {
+                    "x": 0.3121059368272202,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "left arm": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 5,
+                      "height": 8,
+                      "depth": 5,
+                      "x": 11,
+                      "y": 28,
+                      "z": 0,
+                      "rotationX": -45,
+                      "color": "#4D6227",
+                      "name": "upper-arm-left",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "box",
+                      "width": 4,
+                      "height": 6,
+                      "depth": 4,
+                      "x": 11,
+                      "y": 24,
+                      "z": 4,
+                      "rotationX": -20,
+                      "color": "#485A22",
+                      "name": "lower-arm-left",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "box",
+                      "width": 3.8,
+                      "height": 3.5,
+                      "depth": 3,
+                      "x": 11,
+                      "y": 22,
+                      "z": 6,
+                      "color": "#707070",
+                      "name": "hand-left",
+                      "metalness": 0.5,
+                      "roughness": 0.7
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.2,
+                      "height": 3,
+                      "depth": 1.2,
+                      "x": 12.5,
+                      "y": 21,
+                      "z": 8,
+                      "color": "#C0C0C0",
+                      "name": "claw-left-1",
+                      "metalness": 0.6
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.2,
+                      "height": 2.5,
+                      "depth": 1.2,
+                      "x": 9.5,
+                      "y": 21.5,
+                      "z": 7.5,
+                      "color": "#C0C0C0",
+                      "name": "claw-left-2",
+                      "metalness": 0.6
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": -2.7,
+                    "z": 10
+                  },
+                  "rotation": {
+                    "x": 0.18890622492173986,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "right arm": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 5,
+                      "height": 8,
+                      "depth": 5,
+                      "x": -11,
+                      "y": 28,
+                      "z": 0,
+                      "rotationX": -45,
+                      "color": "#4D6227",
+                      "name": "upper-arm-right",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "box",
+                      "width": 4,
+                      "height": 6,
+                      "depth": 4,
+                      "x": -11,
+                      "y": 24,
+                      "z": 4,
+                      "rotationX": -20,
+                      "color": "#485A22",
+                      "name": "lower-arm-right",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "box",
+                      "width": 3.8,
+                      "height": 3.5,
+                      "depth": 3,
+                      "x": -11,
+                      "y": 22,
+                      "z": 6,
+                      "color": "#707070",
+                      "name": "hand-right",
+                      "metalness": 0.5,
+                      "roughness": 0.7
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.2,
+                      "height": 3,
+                      "depth": 1.2,
+                      "x": -12.5,
+                      "y": 21,
+                      "z": 8,
+                      "color": "#C0C0C0",
+                      "name": "claw-right-1",
+                      "metalness": 0.6
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.2,
+                      "height": 2.5,
+                      "depth": 1.2,
+                      "x": -9.5,
+                      "y": 21.5,
+                      "z": 7.5,
+                      "color": "#C0C0C0",
+                      "name": "claw-right-2",
+                      "metalness": 0.6
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": -2.7,
+                    "z": 10
+                  },
+                  "rotation": {
+                    "x": 0.19949192295270599,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "left leg": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 8,
+                      "height": 14,
+                      "depth": 10,
+                      "x": 9,
+                      "y": 20,
+                      "z": 0,
+                      "color": "#4A5D25",
+                      "name": "thigh-left",
+                      "texture": "scales",
+                      "roughness": 0.7,
+                      "rotationX": -15,
+                      "rotationY": 0,
+                      "rotationZ": 0,
+                      "scaleX": 1,
+                      "scaleY": 1,
+                      "scaleZ": 1
+                    },
+                    {
+                      "type": "box",
+                      "width": 7,
+                      "height": 16,
+                      "depth": 7,
+                      "x": 9,
+                      "y": 9,
+                      "z": 0,
+                      "color": "#556B2F",
+                      "name": "shin-left",
+                      "texture": "scales",
+                      "rotationX": 30
+                    },
+                    {
+                      "type": "box",
+                      "width": 10,
+                      "height": 4,
+                      "depth": 16,
+                      "x": 9,
+                      "y": 1,
+                      "z": 0,
+                      "color": "#3D4D1E",
+                      "name": "foot-left",
+                      "roughness": 0.8,
+                      "rotationX": 20,
+                      "rotationY": 0,
+                      "rotationZ": 0,
+                      "scaleX": 1,
+                      "scaleY": 1,
+                      "scaleZ": 1
+                    },
+                    {
+                      "type": "cone",
+                      "size": 2.5,
+                      "height": 5,
+                      "x": 6,
+                      "y": -2,
+                      "z": 8.5,
+                      "rotationX": 90,
+                      "color": "#606060",
+                      "name": "toe-left-1",
+                      "metalness": 0.3
+                    },
+                    {
+                      "type": "cone",
+                      "size": 2.5,
+                      "height": 5,
+                      "x": 12,
+                      "y": -2,
+                      "z": 8.5,
+                      "rotationX": 90,
+                      "color": "#606060",
+                      "name": "toe-left-2",
+                      "metalness": 0.3
+                    },
+                    {
+                      "type": "cone",
+                      "size": 2.5,
+                      "height": 5,
+                      "x": 9,
+                      "y": -2,
+                      "z": 9,
+                      "rotationX": 90,
+                      "color": "#606060",
+                      "name": "toe-left-3",
+                      "metalness": 0.3
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 2.5,
+                    "z": 0
+                  },
+                  "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "right leg": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 8,
+                      "height": 14,
+                      "depth": 10,
+                      "x": -9,
+                      "y": 20,
+                      "z": 0,
+                      "color": "#4A5D25",
+                      "name": "thigh-right",
+                      "texture": "scales",
+                      "roughness": 0.7,
+                      "rotationX": -15,
+                      "rotationY": 0,
+                      "rotationZ": 0,
+                      "scaleX": 1,
+                      "scaleY": 1,
+                      "scaleZ": 1
+                    },
+                    {
+                      "type": "box",
+                      "width": 7,
+                      "height": 16,
+                      "depth": 7,
+                      "x": -9,
+                      "y": 9,
+                      "z": 0,
+                      "color": "#556B2F",
+                      "name": "shin-right",
+                      "texture": "scales",
+                      "rotationX": 30,
+                      "rotationY": 0,
+                      "rotationZ": 0,
+                      "scaleX": 1,
+                      "scaleY": 1,
+                      "scaleZ": 1
+                    },
+                    {
+                      "type": "box",
+                      "width": 10,
+                      "height": 4,
+                      "depth": 16,
+                      "x": -9,
+                      "y": 1,
+                      "z": 0,
+                      "color": "#3D4D1E",
+                      "name": "foot-right",
+                      "roughness": 0.8,
+                      "rotationX": 20
+                    },
+                    {
+                      "type": "cone",
+                      "size": 2.5,
+                      "height": 5,
+                      "x": -6,
+                      "y": -2,
+                      "z": 8.5,
+                      "rotationX": 90,
+                      "color": "#606060",
+                      "name": "toe-right-1",
+                      "metalness": 0.3
+                    },
+                    {
+                      "type": "cone",
+                      "size": 2.5,
+                      "height": 5,
+                      "x": -12,
+                      "y": -2,
+                      "z": 8.5,
+                      "rotationX": 90,
+                      "color": "#606060",
+                      "name": "toe-right-2",
+                      "metalness": 0.3
+                    },
+                    {
+                      "type": "cone",
+                      "size": 2.5,
+                      "height": 5,
+                      "x": -9,
+                      "y": -2,
+                      "z": 9,
+                      "rotationX": 90,
+                      "color": "#606060",
+                      "name": "toe-right-3",
+                      "metalness": 0.3
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 2.5,
+                    "z": 0
+                  },
+                  "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "body": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 18,
+                      "height": 32,
+                      "depth": 16,
+                      "x": 0,
+                      "y": 24,
+                      "z": -3,
+                      "rotationX": 40,
+                      "color": "#556B2F",
+                      "name": "torso-main",
+                      "texture": "scales",
+                      "roughness": 0.7
+                    },
+                    {
+                      "type": "box",
+                      "width": 13,
+                      "height": 11.5,
+                      "depth": 12.8,
+                      "x": 0,
+                      "y": 38,
+                      "z": 7.3,
+                      "rotationX": 10,
+                      "color": "#4D6227",
+                      "name": "neck",
+                      "texture": "scales",
+                      "rotationY": 0,
+                      "rotationZ": 0,
+                      "scaleX": 1,
+                      "scaleY": 1,
+                      "scaleZ": 1
+                    },
+                    {
+                      "type": "cone",
+                      "size": 6,
+                      "height": 10,
+                      "x": 0,
+                      "y": 40,
+                      "z": -5,
+                      "rotationX": -55,
+                      "color": "#3D4D1E",
+                      "name": "dorsal-spike-1",
+                      "metalness": 0.3,
+                      "roughness": 0.8
+                    },
+                    {
+                      "type": "cone",
+                      "size": 5.5,
+                      "height": 9,
+                      "x": 0,
+                      "y": 34,
+                      "z": -10,
+                      "rotationX": -50,
+                      "color": "#3A4A1D",
+                      "name": "dorsal-spike-2",
+                      "metalness": 0.3,
+                      "roughness": 0.8
+                    },
+                    {
+                      "type": "cone",
+                      "size": 5,
+                      "height": 8,
+                      "x": 0,
+                      "y": 28,
+                      "z": -14,
+                      "rotationX": -45,
+                      "color": "#384919",
+                      "name": "dorsal-spike-3",
+                      "metalness": 0.3,
+                      "roughness": 0.8
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 9.5,
+                    "z": -10
+                  },
+                  "rotation": {
+                    "x": 0.7145583290517965,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "tail base": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 10,
+                      "height": 8,
+                      "depth": 18,
+                      "x": 0,
+                      "y": 20,
+                      "z": -20,
+                      "rotationX": -20,
+                      "color": "#4D6227",
+                      "name": "tail-base-segment",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "cone",
+                      "size": 5,
+                      "height": 8,
+                      "x": 0,
+                      "y": 24,
+                      "z": -22,
+                      "rotationX": -25,
+                      "color": "#3A4A1D",
+                      "name": "tail-spike-1",
+                      "metalness": 0.3,
+                      "roughness": 0.8
+                    },
+                    {
+                      "type": "box",
+                      "width": 8,
+                      "height": 6,
+                      "depth": 16,
+                      "x": 0,
+                      "y": 18,
+                      "z": -36,
+                      "rotationX": -15,
+                      "color": "#4A5D25",
+                      "name": "tail-mid-segment",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "cone",
+                      "size": 4,
+                      "height": 7,
+                      "x": 0,
+                      "y": 22,
+                      "z": -38,
+                      "rotationX": -20,
+                      "color": "#384919",
+                      "name": "tail-spike-2",
+                      "metalness": 0.3,
+                      "roughness": 0.8
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 5,
+                    "z": 0
+                  },
+                  "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "tail tip": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 6,
+                      "height": 5,
+                      "depth": 14,
+                      "x": 0,
+                      "y": 16,
+                      "z": -50,
+                      "rotationX": -10,
+                      "color": "#556B2F",
+                      "name": "tail-end-segment",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "cone",
+                      "size": 3.5,
+                      "height": 6,
+                      "x": 0,
+                      "y": 19,
+                      "z": -52,
+                      "rotationX": -15,
+                      "color": "#384919",
+                      "name": "tail-spike-3",
+                      "metalness": 0.3,
+                      "roughness": 0.8
+                    },
+                    {
+                      "type": "box",
+                      "width": 4,
+                      "height": 3,
+                      "depth": 10,
+                      "x": 0,
+                      "y": 14.5,
+                      "z": -62,
+                      "rotationX": -5,
+                      "color": "#4D6227",
+                      "name": "tail-tip-segment",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "cone",
+                      "size": 2.5,
+                      "height": 4,
+                      "x": 0,
+                      "y": 16.5,
+                      "z": -64,
+                      "rotationX": -10,
+                      "color": "#384919",
+                      "name": "tail-spike-4",
+                      "metalness": 0.3,
+                      "roughness": 0.8
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 5,
+                    "z": 0
+                  },
+                  "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                }
+              }
+            ],
+            "walk": [
+              {
+                "head": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 16,
+                      "height": 14,
+                      "depth": 22,
+                      "x": 0,
+                      "y": 42,
+                      "z": 14,
+                      "color": "#556B2F",
+                      "name": "head-main",
+                      "texture": "scales",
+                      "roughness": 0.8
+                    },
+                    {
+                      "type": "sphere",
+                      "size": 4.5,
+                      "x": -8,
+                      "y": 46,
+                      "z": 16,
+                      "color": "#DAA520",
+                      "name": "eye-right",
+                      "emissive": "#B8860B"
+                    },
+                    {
+                      "type": "sphere",
+                      "size": 2.2,
+                      "x": -8,
+                      "y": 46,
+                      "z": 17.5,
+                      "color": "#000000",
+                      "name": "pupil-right"
+                    },
+                    {
+                      "type": "sphere",
+                      "size": 4.5,
+                      "x": 8,
+                      "y": 46,
+                      "z": 16,
+                      "color": "#DAA520",
+                      "name": "eye-left",
+                      "emissive": "#B8860B"
+                    },
+                    {
+                      "type": "sphere",
+                      "size": 2.2,
+                      "x": 8,
+                      "y": 46,
+                      "z": 17.5,
+                      "color": "#000000",
+                      "name": "pupil-left"
+                    },
+                    {
+                      "type": "box",
+                      "width": 16,
+                      "height": 2,
+                      "depth": 6,
+                      "x": 0,
+                      "y": 50,
+                      "z": 14,
+                      "color": "#3D4D1E",
+                      "name": "brow-ridge",
+                      "texture": "rough"
+                    },
+                    {
+                      "type": "sphere",
+                      "size": 2,
+                      "x": -4.5,
+                      "y": 48.7,
+                      "z": 23.6,
+                      "color": "#556B2F",
+                      "name": "nostril-right",
+                      "rotationX": 0,
+                      "rotationY": 0,
+                      "rotationZ": 0,
+                      "scaleX": 1,
+                      "scaleY": 1,
+                      "scaleZ": 1
+                    },
+                    {
+                      "type": "sphere",
+                      "size": 2,
+                      "x": 4.5,
+                      "y": 48.7,
+                      "z": 23.6,
+                      "color": "#556B2F",
+                      "name": "nostril-left",
+                      "rotationX": 0,
+                      "rotationY": 0,
+                      "rotationZ": 0,
+                      "scaleX": 1,
+                      "scaleY": 1,
+                      "scaleZ": 1
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 2.5,
+                    "z": 18.5
+                  },
+                  "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "jaw": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 18.3,
+                      "height": 6,
+                      "depth": 20,
+                      "x": 0,
+                      "y": 30,
+                      "z": 16,
+                      "color": "#4D6227",
+                      "name": "jaw-main",
+                      "texture": "rough"
+                    },
+                    {
+                      "type": "box",
+                      "width": 12,
+                      "height": 2,
+                      "depth": 2,
+                      "x": 0,
+                      "y": 32.5,
+                      "z": 24.7,
+                      "color": "#A52A2A",
+                      "name": "gums",
+                      "roughness": 0.7
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.8,
+                      "height": 4,
+                      "depth": 1.8,
+                      "x": -5,
+                      "y": 33,
+                      "z": 25,
+                      "color": "#F8F8FF",
+                      "name": "tooth-front-right",
+                      "shininess": 90
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.8,
+                      "height": 4,
+                      "depth": 1.8,
+                      "x": 0,
+                      "y": 33,
+                      "z": 25,
+                      "color": "#F8F8FF",
+                      "name": "tooth-front-middle",
+                      "shininess": 90
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.8,
+                      "height": 4,
+                      "depth": 1.8,
+                      "x": 5,
+                      "y": 33,
+                      "z": 25,
+                      "color": "#F8F8FF",
+                      "name": "tooth-front-left",
+                      "shininess": 90
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.5,
+                      "height": 3,
+                      "depth": 1.5,
+                      "x": -7,
+                      "y": 33,
+                      "z": 22,
+                      "color": "#F8F8FF",
+                      "name": "tooth-side-right1",
+                      "shininess": 90
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.5,
+                      "height": 3,
+                      "depth": 1.5,
+                      "x": 7,
+                      "y": 33,
+                      "z": 22,
+                      "color": "#F8F8FF",
+                      "name": "tooth-side-left1",
+                      "shininess": 90
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 10,
+                    "z": 7.8
+                  },
+                  "rotation": {
+                    "x": 0.3121059368272202,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "left arm": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 5,
+                      "height": 8,
+                      "depth": 5,
+                      "x": 11,
+                      "y": 28,
+                      "z": 0,
+                      "rotationX": -45,
+                      "color": "#4D6227",
+                      "name": "upper-arm-left",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "box",
+                      "width": 4,
+                      "height": 6,
+                      "depth": 4,
+                      "x": 11,
+                      "y": 24,
+                      "z": 4,
+                      "rotationX": -20,
+                      "color": "#485A22",
+                      "name": "lower-arm-left",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "box",
+                      "width": 3.8,
+                      "height": 3.5,
+                      "depth": 3,
+                      "x": 11,
+                      "y": 22,
+                      "z": 6,
+                      "color": "#707070",
+                      "name": "hand-left",
+                      "metalness": 0.5,
+                      "roughness": 0.7
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.2,
+                      "height": 3,
+                      "depth": 1.2,
+                      "x": 12.5,
+                      "y": 21,
+                      "z": 8,
+                      "color": "#C0C0C0",
+                      "name": "claw-left-1",
+                      "metalness": 0.6
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.2,
+                      "height": 2.5,
+                      "depth": 1.2,
+                      "x": 9.5,
+                      "y": 21.5,
+                      "z": 7.5,
+                      "color": "#C0C0C0",
+                      "name": "claw-left-2",
+                      "metalness": 0.6
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": -2.7,
+                    "z": 10
+                  },
+                  "rotation": {
+                    "x": 0.18890622492173986,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "right arm": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 5,
+                      "height": 8,
+                      "depth": 5,
+                      "x": -11,
+                      "y": 28,
+                      "z": 0,
+                      "rotationX": -45,
+                      "color": "#4D6227",
+                      "name": "upper-arm-right",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "box",
+                      "width": 4,
+                      "height": 6,
+                      "depth": 4,
+                      "x": -11,
+                      "y": 24,
+                      "z": 4,
+                      "rotationX": -20,
+                      "color": "#485A22",
+                      "name": "lower-arm-right",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "box",
+                      "width": 3.8,
+                      "height": 3.5,
+                      "depth": 3,
+                      "x": -11,
+                      "y": 22,
+                      "z": 6,
+                      "color": "#707070",
+                      "name": "hand-right",
+                      "metalness": 0.5,
+                      "roughness": 0.7
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.2,
+                      "height": 3,
+                      "depth": 1.2,
+                      "x": -12.5,
+                      "y": 21,
+                      "z": 8,
+                      "color": "#C0C0C0",
+                      "name": "claw-right-1",
+                      "metalness": 0.6
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.2,
+                      "height": 2.5,
+                      "depth": 1.2,
+                      "x": -9.5,
+                      "y": 21.5,
+                      "z": 7.5,
+                      "color": "#C0C0C0",
+                      "name": "claw-right-2",
+                      "metalness": 0.6
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": -2.7,
+                    "z": 10
+                  },
+                  "rotation": {
+                    "x": 0.19949192295270599,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "left leg": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 8,
+                      "height": 14,
+                      "depth": 10,
+                      "x": 9,
+                      "y": 20,
+                      "z": 0,
+                      "color": "#4A5D25",
+                      "name": "thigh-left",
+                      "texture": "scales",
+                      "roughness": 0.7,
+                      "rotationX": -15,
+                      "rotationY": 0,
+                      "rotationZ": 0,
+                      "scaleX": 1,
+                      "scaleY": 1,
+                      "scaleZ": 1
+                    },
+                    {
+                      "type": "box",
+                      "width": 7,
+                      "height": 16,
+                      "depth": 7,
+                      "x": 9,
+                      "y": 9,
+                      "z": 0,
+                      "color": "#556B2F",
+                      "name": "shin-left",
+                      "texture": "scales",
+                      "rotationX": 30
+                    },
+                    {
+                      "type": "box",
+                      "width": 10,
+                      "height": 4,
+                      "depth": 16,
+                      "x": 9,
+                      "y": 1,
+                      "z": 0,
+                      "color": "#3D4D1E",
+                      "name": "foot-left",
+                      "roughness": 0.8,
+                      "rotationX": 20,
+                      "rotationY": 0,
+                      "rotationZ": 0,
+                      "scaleX": 1,
+                      "scaleY": 1,
+                      "scaleZ": 1
+                    },
+                    {
+                      "type": "cone",
+                      "size": 2.5,
+                      "height": 5,
+                      "x": 6,
+                      "y": -2,
+                      "z": 8.5,
+                      "rotationX": 90,
+                      "color": "#606060",
+                      "name": "toe-left-1",
+                      "metalness": 0.3
+                    },
+                    {
+                      "type": "cone",
+                      "size": 2.5,
+                      "height": 5,
+                      "x": 12,
+                      "y": -2,
+                      "z": 8.5,
+                      "rotationX": 90,
+                      "color": "#606060",
+                      "name": "toe-left-2",
+                      "metalness": 0.3
+                    },
+                    {
+                      "type": "cone",
+                      "size": 2.5,
+                      "height": 5,
+                      "x": 9,
+                      "y": -2,
+                      "z": 9,
+                      "rotationX": 90,
+                      "color": "#606060",
+                      "name": "toe-left-3",
+                      "metalness": 0.3
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 2.5,
+                    "z": 0
+                  },
+                  "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "right leg": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 8,
+                      "height": 14,
+                      "depth": 10,
+                      "x": -9,
+                      "y": 20,
+                      "z": 0,
+                      "color": "#4A5D25",
+                      "name": "thigh-right",
+                      "texture": "scales",
+                      "roughness": 0.7,
+                      "rotationX": -15,
+                      "rotationY": 0,
+                      "rotationZ": 0,
+                      "scaleX": 1,
+                      "scaleY": 1,
+                      "scaleZ": 1
+                    },
+                    {
+                      "type": "box",
+                      "width": 7,
+                      "height": 16,
+                      "depth": 7,
+                      "x": -9,
+                      "y": 9,
+                      "z": 0,
+                      "color": "#556B2F",
+                      "name": "shin-right",
+                      "texture": "scales",
+                      "rotationX": 30,
+                      "rotationY": 0,
+                      "rotationZ": 0,
+                      "scaleX": 1,
+                      "scaleY": 1,
+                      "scaleZ": 1
+                    },
+                    {
+                      "type": "box",
+                      "width": 10,
+                      "height": 4,
+                      "depth": 16,
+                      "x": -9,
+                      "y": 1,
+                      "z": 0,
+                      "color": "#3D4D1E",
+                      "name": "foot-right",
+                      "roughness": 0.8,
+                      "rotationX": 20
+                    },
+                    {
+                      "type": "cone",
+                      "size": 2.5,
+                      "height": 5,
+                      "x": -6,
+                      "y": -2,
+                      "z": 8.5,
+                      "rotationX": 90,
+                      "color": "#606060",
+                      "name": "toe-right-1",
+                      "metalness": 0.3
+                    },
+                    {
+                      "type": "cone",
+                      "size": 2.5,
+                      "height": 5,
+                      "x": -12,
+                      "y": -2,
+                      "z": 8.5,
+                      "rotationX": 90,
+                      "color": "#606060",
+                      "name": "toe-right-2",
+                      "metalness": 0.3
+                    },
+                    {
+                      "type": "cone",
+                      "size": 2.5,
+                      "height": 5,
+                      "x": -9,
+                      "y": -2,
+                      "z": 9,
+                      "rotationX": 90,
+                      "color": "#606060",
+                      "name": "toe-right-3",
+                      "metalness": 0.3
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 2.5,
+                    "z": 0
+                  },
+                  "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "body": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 18,
+                      "height": 32,
+                      "depth": 16,
+                      "x": 0,
+                      "y": 24,
+                      "z": -3,
+                      "rotationX": 40,
+                      "color": "#556B2F",
+                      "name": "torso-main",
+                      "texture": "scales",
+                      "roughness": 0.7
+                    },
+                    {
+                      "type": "box",
+                      "width": 13,
+                      "height": 11.5,
+                      "depth": 12.8,
+                      "x": 0,
+                      "y": 38,
+                      "z": 7.3,
+                      "rotationX": 10,
+                      "color": "#4D6227",
+                      "name": "neck",
+                      "texture": "scales",
+                      "rotationY": 0,
+                      "rotationZ": 0,
+                      "scaleX": 1,
+                      "scaleY": 1,
+                      "scaleZ": 1
+                    },
+                    {
+                      "type": "cone",
+                      "size": 6,
+                      "height": 10,
+                      "x": 0,
+                      "y": 40,
+                      "z": -5,
+                      "rotationX": -55,
+                      "color": "#3D4D1E",
+                      "name": "dorsal-spike-1",
+                      "metalness": 0.3,
+                      "roughness": 0.8
+                    },
+                    {
+                      "type": "cone",
+                      "size": 5.5,
+                      "height": 9,
+                      "x": 0,
+                      "y": 34,
+                      "z": -10,
+                      "rotationX": -50,
+                      "color": "#3A4A1D",
+                      "name": "dorsal-spike-2",
+                      "metalness": 0.3,
+                      "roughness": 0.8
+                    },
+                    {
+                      "type": "cone",
+                      "size": 5,
+                      "height": 8,
+                      "x": 0,
+                      "y": 28,
+                      "z": -14,
+                      "rotationX": -45,
+                      "color": "#384919",
+                      "name": "dorsal-spike-3",
+                      "metalness": 0.3,
+                      "roughness": 0.8
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 9.5,
+                    "z": -10
+                  },
+                  "rotation": {
+                    "x": 0.7145583290517965,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "tail base": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 10,
+                      "height": 8,
+                      "depth": 18,
+                      "x": 0,
+                      "y": 20,
+                      "z": -20,
+                      "rotationX": -20,
+                      "color": "#4D6227",
+                      "name": "tail-base-segment",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "cone",
+                      "size": 5,
+                      "height": 8,
+                      "x": 0,
+                      "y": 24,
+                      "z": -22,
+                      "rotationX": -25,
+                      "color": "#3A4A1D",
+                      "name": "tail-spike-1",
+                      "metalness": 0.3,
+                      "roughness": 0.8
+                    },
+                    {
+                      "type": "box",
+                      "width": 8,
+                      "height": 6,
+                      "depth": 16,
+                      "x": 0,
+                      "y": 18,
+                      "z": -36,
+                      "rotationX": -15,
+                      "color": "#4A5D25",
+                      "name": "tail-mid-segment",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "cone",
+                      "size": 4,
+                      "height": 7,
+                      "x": 0,
+                      "y": 22,
+                      "z": -38,
+                      "rotationX": -20,
+                      "color": "#384919",
+                      "name": "tail-spike-2",
+                      "metalness": 0.3,
+                      "roughness": 0.8
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 5,
+                    "z": 0
+                  },
+                  "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "tail tip": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 6,
+                      "height": 5,
+                      "depth": 14,
+                      "x": 0,
+                      "y": 16,
+                      "z": -50,
+                      "rotationX": -10,
+                      "color": "#556B2F",
+                      "name": "tail-end-segment",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "cone",
+                      "size": 3.5,
+                      "height": 6,
+                      "x": 0,
+                      "y": 19,
+                      "z": -52,
+                      "rotationX": -15,
+                      "color": "#384919",
+                      "name": "tail-spike-3",
+                      "metalness": 0.3,
+                      "roughness": 0.8
+                    },
+                    {
+                      "type": "box",
+                      "width": 4,
+                      "height": 3,
+                      "depth": 10,
+                      "x": 0,
+                      "y": 14.5,
+                      "z": -62,
+                      "rotationX": -5,
+                      "color": "#4D6227",
+                      "name": "tail-tip-segment",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "cone",
+                      "size": 2.5,
+                      "height": 4,
+                      "x": 0,
+                      "y": 16.5,
+                      "z": -64,
+                      "rotationX": -10,
+                      "color": "#384919",
+                      "name": "tail-spike-4",
+                      "metalness": 0.3,
+                      "roughness": 0.8
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 5,
+                    "z": 0
+                  },
+                  "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                }
+              },
+              {
+                "head": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 16,
+                      "height": 14,
+                      "depth": 22,
+                      "x": 0,
+                      "y": 42,
+                      "z": 14,
+                      "color": "#556B2F",
+                      "name": "head-main",
+                      "texture": "scales",
+                      "roughness": 0.8
+                    },
+                    {
+                      "type": "sphere",
+                      "size": 4.5,
+                      "x": -8,
+                      "y": 46,
+                      "z": 16,
+                      "color": "#DAA520",
+                      "name": "eye-right",
+                      "emissive": "#B8860B"
+                    },
+                    {
+                      "type": "sphere",
+                      "size": 2.2,
+                      "x": -8,
+                      "y": 46,
+                      "z": 17.5,
+                      "color": "#000000",
+                      "name": "pupil-right"
+                    },
+                    {
+                      "type": "sphere",
+                      "size": 4.5,
+                      "x": 8,
+                      "y": 46,
+                      "z": 16,
+                      "color": "#DAA520",
+                      "name": "eye-left",
+                      "emissive": "#B8860B"
+                    },
+                    {
+                      "type": "sphere",
+                      "size": 2.2,
+                      "x": 8,
+                      "y": 46,
+                      "z": 17.5,
+                      "color": "#000000",
+                      "name": "pupil-left"
+                    },
+                    {
+                      "type": "box",
+                      "width": 16,
+                      "height": 2,
+                      "depth": 6,
+                      "x": 0,
+                      "y": 50,
+                      "z": 14,
+                      "color": "#3D4D1E",
+                      "name": "brow-ridge",
+                      "texture": "rough"
+                    },
+                    {
+                      "type": "sphere",
+                      "size": 2,
+                      "x": -4.5,
+                      "y": 48.7,
+                      "z": 23.6,
+                      "color": "#556B2F",
+                      "name": "nostril-right",
+                      "rotationX": 0,
+                      "rotationY": 0,
+                      "rotationZ": 0,
+                      "scaleX": 1,
+                      "scaleY": 1,
+                      "scaleZ": 1
+                    },
+                    {
+                      "type": "sphere",
+                      "size": 2,
+                      "x": 4.5,
+                      "y": 48.7,
+                      "z": 23.6,
+                      "color": "#556B2F",
+                      "name": "nostril-left",
+                      "rotationX": 0,
+                      "rotationY": 0,
+                      "rotationZ": 0,
+                      "scaleX": 1,
+                      "scaleY": 1,
+                      "scaleZ": 1
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 2.5,
+                    "z": 18.5
+                  },
+                  "rotation": {
+                    "x": 0,
+                    "y": 0.1,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "jaw": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 18.3,
+                      "height": 6,
+                      "depth": 20,
+                      "x": 0,
+                      "y": 30,
+                      "z": 16,
+                      "color": "#4D6227",
+                      "name": "jaw-main",
+                      "texture": "rough"
+                    },
+                    {
+                      "type": "box",
+                      "width": 12,
+                      "height": 2,
+                      "depth": 2,
+                      "x": 0,
+                      "y": 32.5,
+                      "z": 24.7,
+                      "color": "#A52A2A",
+                      "name": "gums",
+                      "roughness": 0.7
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.8,
+                      "height": 4,
+                      "depth": 1.8,
+                      "x": -5,
+                      "y": 33,
+                      "z": 25,
+                      "color": "#F8F8FF",
+                      "name": "tooth-front-right",
+                      "shininess": 90
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.8,
+                      "height": 4,
+                      "depth": 1.8,
+                      "x": 0,
+                      "y": 33,
+                      "z": 25,
+                      "color": "#F8F8FF",
+                      "name": "tooth-front-middle",
+                      "shininess": 90
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.8,
+                      "height": 4,
+                      "depth": 1.8,
+                      "x": 5,
+                      "y": 33,
+                      "z": 25,
+                      "color": "#F8F8FF",
+                      "name": "tooth-front-left",
+                      "shininess": 90
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.5,
+                      "height": 3,
+                      "depth": 1.5,
+                      "x": -7,
+                      "y": 33,
+                      "z": 22,
+                      "color": "#F8F8FF",
+                      "name": "tooth-side-right1",
+                      "shininess": 90
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.5,
+                      "height": 3,
+                      "depth": 1.5,
+                      "x": 7,
+                      "y": 33,
+                      "z": 22,
+                      "color": "#F8F8FF",
+                      "name": "tooth-side-left1",
+                      "shininess": 90
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 10,
+                    "z": 7.8
+                  },
+                  "rotation": {
+                    "x": 0.3,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "left arm": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 5,
+                      "height": 8,
+                      "depth": 5,
+                      "x": 11,
+                      "y": 28,
+                      "z": 0,
+                      "rotationX": -45,
+                      "color": "#4D6227",
+                      "name": "upper-arm-left",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "box",
+                      "width": 4,
+                      "height": 6,
+                      "depth": 4,
+                      "x": 11,
+                      "y": 24,
+                      "z": 4,
+                      "rotationX": -20,
+                      "color": "#485A22",
+                      "name": "lower-arm-left",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "box",
+                      "width": 3.8,
+                      "height": 3.5,
+                      "depth": 3,
+                      "x": 11,
+                      "y": 22,
+                      "z": 6,
+                      "color": "#707070",
+                      "name": "hand-left",
+                      "metalness": 0.5,
+                      "roughness": 0.7
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.2,
+                      "height": 3,
+                      "depth": 1.2,
+                      "x": 12.5,
+                      "y": 21,
+                      "z": 8,
+                      "color": "#C0C0C0",
+                      "name": "claw-left-1",
+                      "metalness": 0.6
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.2,
+                      "height": 2.5,
+                      "depth": 1.2,
+                      "x": 9.5,
+                      "y": 21.5,
+                      "z": 7.5,
+                      "color": "#C0C0C0",
+                      "name": "claw-left-2",
+                      "metalness": 0.6
+                    }
+                  ],
+                  "position": {
+                    "x": 1.5,
+                    "y": -2.7,
+                    "z": 0
+                  },
+                  "rotation": {
+                    "x": 0.5,
+                    "y": 0,
+                    "z": 0.1
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "right arm": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 5,
+                      "height": 8,
+                      "depth": 5,
+                      "x": -11,
+                      "y": 28,
+                      "z": 0,
+                      "rotationX": -45,
+                      "color": "#4D6227",
+                      "name": "upper-arm-right",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "box",
+                      "width": 4,
+                      "height": 6,
+                      "depth": 4,
+                      "x": -11,
+                      "y": 24,
+                      "z": 4,
+                      "rotationX": -20,
+                      "color": "#485A22",
+                      "name": "lower-arm-right",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "box",
+                      "width": 3.8,
+                      "height": 3.5,
+                      "depth": 3,
+                      "x": -11,
+                      "y": 22,
+                      "z": 6,
+                      "color": "#707070",
+                      "name": "hand-right",
+                      "metalness": 0.5,
+                      "roughness": 0.7
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.2,
+                      "height": 3,
+                      "depth": 1.2,
+                      "x": -12.5,
+                      "y": 21,
+                      "z": 8,
+                      "color": "#C0C0C0",
+                      "name": "claw-right-1",
+                      "metalness": 0.6
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.2,
+                      "height": 2.5,
+                      "depth": 1.2,
+                      "x": -9.5,
+                      "y": 21.5,
+                      "z": 7.5,
+                      "color": "#C0C0C0",
+                      "name": "claw-right-2",
+                      "metalness": 0.6
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": -2.7,
+                    "z": 15
+                  },
+                  "rotation": {
+                    "x": -0.2,
+                    "y": 0,
+                    "z": -0.1
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "left leg": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 8,
+                      "height": 14,
+                      "depth": 10,
+                      "x": 9,
+                      "y": 20,
+                      "z": 0,
+                      "color": "#4A5D25",
+                      "name": "thigh-left",
+                      "texture": "scales",
+                      "roughness": 0.7,
+                      "rotationX": -15,
+                      "rotationY": 0,
+                      "rotationZ": 0,
+                      "scaleX": 1,
+                      "scaleY": 1,
+                      "scaleZ": 1
+                    },
+                    {
+                      "type": "box",
+                      "width": 7,
+                      "height": 16,
+                      "depth": 7,
+                      "x": 9,
+                      "y": 9,
+                      "z": 0,
+                      "color": "#556B2F",
+                      "name": "shin-left",
+                      "texture": "scales",
+                      "rotationX": 30
+                    },
+                    {
+                      "type": "box",
+                      "width": 10,
+                      "height": 4,
+                      "depth": 16,
+                      "x": 9,
+                      "y": 1,
+                      "z": 0,
+                      "color": "#3D4D1E",
+                      "name": "foot-left",
+                      "roughness": 0.8,
+                      "rotationX": 20,
+                      "rotationY": 0,
+                      "rotationZ": 0,
+                      "scaleX": 1,
+                      "scaleY": 1,
+                      "scaleZ": 1
+                    },
+                    {
+                      "type": "cone",
+                      "size": 2.5,
+                      "height": 5,
+                      "x": 6,
+                      "y": -2,
+                      "z": 8.5,
+                      "rotationX": 90,
+                      "color": "#606060",
+                      "name": "toe-left-1",
+                      "metalness": 0.3
+                    },
+                    {
+                      "type": "cone",
+                      "size": 2.5,
+                      "height": 5,
+                      "x": 12,
+                      "y": -2,
+                      "z": 8.5,
+                      "rotationX": 90,
+                      "color": "#606060",
+                      "name": "toe-left-2",
+                      "metalness": 0.3
+                    },
+                    {
+                      "type": "cone",
+                      "size": 2.5,
+                      "height": 5,
+                      "x": 9,
+                      "y": -2,
+                      "z": 9,
+                      "rotationX": 90,
+                      "color": "#606060",
+                      "name": "toe-left-3",
+                      "metalness": 0.3
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 5,
+                    "z": -15
+                  },
+                  "rotation": {
+                    "x": 0.4,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "right leg": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 8,
+                      "height": 14,
+                      "depth": 10,
+                      "x": -9,
+                      "y": 20,
+                      "z": 0,
+                      "color": "#4A5D25",
+                      "name": "thigh-right",
+                      "texture": "scales",
+                      "roughness": 0.7,
+                      "rotationX": -15,
+                      "rotationY": 0,
+                      "rotationZ": 0,
+                      "scaleX": 1,
+                      "scaleY": 1,
+                      "scaleZ": 1
+                    },
+                    {
+                      "type": "box",
+                      "width": 7,
+                      "height": 16,
+                      "depth": 7,
+                      "x": -9,
+                      "y": 9,
+                      "z": 0,
+                      "color": "#556B2F",
+                      "name": "shin-right",
+                      "texture": "scales",
+                      "rotationX": 30,
+                      "rotationY": 0,
+                      "rotationZ": 0,
+                      "scaleX": 1,
+                      "scaleY": 1,
+                      "scaleZ": 1
+                    },
+                    {
+                      "type": "box",
+                      "width": 10,
+                      "height": 4,
+                      "depth": 16,
+                      "x": -9,
+                      "y": 1,
+                      "z": 0,
+                      "color": "#3D4D1E",
+                      "name": "foot-right",
+                      "roughness": 0.8,
+                      "rotationX": 20
+                    },
+                    {
+                      "type": "cone",
+                      "size": 2.5,
+                      "height": 5,
+                      "x": -6,
+                      "y": -2,
+                      "z": 8.5,
+                      "rotationX": 90,
+                      "color": "#606060",
+                      "name": "toe-right-1",
+                      "metalness": 0.3
+                    },
+                    {
+                      "type": "cone",
+                      "size": 2.5,
+                      "height": 5,
+                      "x": -12,
+                      "y": -2,
+                      "z": 8.5,
+                      "rotationX": 90,
+                      "color": "#606060",
+                      "name": "toe-right-2",
+                      "metalness": 0.3
+                    },
+                    {
+                      "type": "cone",
+                      "size": 2.5,
+                      "height": 5,
+                      "x": -9,
+                      "y": -2,
+                      "z": 9,
+                      "rotationX": 90,
+                      "color": "#606060",
+                      "name": "toe-right-3",
+                      "metalness": 0.3
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 2.5,
+                    "z": 8
+                  },
+                  "rotation": {
+                    "x": -0.3,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "body": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 18,
+                      "height": 32,
+                      "depth": 16,
+                      "x": 0,
+                      "y": 24,
+                      "z": -3,
+                      "rotationX": 40,
+                      "color": "#556B2F",
+                      "name": "torso-main",
+                      "texture": "scales",
+                      "roughness": 0.7
+                    },
+                    {
+                      "type": "box",
+                      "width": 13,
+                      "height": 11.5,
+                      "depth": 12.8,
+                      "x": 0,
+                      "y": 38,
+                      "z": 7.3,
+                      "rotationX": 10,
+                      "color": "#4D6227",
+                      "name": "neck",
+                      "texture": "scales",
+                      "rotationY": 0,
+                      "rotationZ": 0,
+                      "scaleX": 1,
+                      "scaleY": 1,
+                      "scaleZ": 1
+                    },
+                    {
+                      "type": "cone",
+                      "size": 6,
+                      "height": 10,
+                      "x": 0,
+                      "y": 40,
+                      "z": -5,
+                      "rotationX": -55,
+                      "color": "#3D4D1E",
+                      "name": "dorsal-spike-1",
+                      "metalness": 0.3,
+                      "roughness": 0.8
+                    },
+                    {
+                      "type": "cone",
+                      "size": 5.5,
+                      "height": 9,
+                      "x": 0,
+                      "y": 34,
+                      "z": -10,
+                      "rotationX": -50,
+                      "color": "#3A4A1D",
+                      "name": "dorsal-spike-2",
+                      "metalness": 0.3,
+                      "roughness": 0.8
+                    },
+                    {
+                      "type": "cone",
+                      "size": 5,
+                      "height": 8,
+                      "x": 0,
+                      "y": 28,
+                      "z": -14,
+                      "rotationX": -45,
+                      "color": "#384919",
+                      "name": "dorsal-spike-3",
+                      "metalness": 0.3,
+                      "roughness": 0.8
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 9.5,
+                    "z": -10
+                  },
+                  "rotation": {
+                    "x": 0.7,
+                    "y": 0.05,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "tail base": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 10,
+                      "height": 8,
+                      "depth": 18,
+                      "x": 0,
+                      "y": 20,
+                      "z": -20,
+                      "rotationX": -20,
+                      "color": "#4D6227",
+                      "name": "tail-base-segment",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "cone",
+                      "size": 5,
+                      "height": 8,
+                      "x": 0,
+                      "y": 24,
+                      "z": -22,
+                      "rotationX": -25,
+                      "color": "#3A4A1D",
+                      "name": "tail-spike-1",
+                      "metalness": 0.3,
+                      "roughness": 0.8
+                    },
+                    {
+                      "type": "box",
+                      "width": 8,
+                      "height": 6,
+                      "depth": 16,
+                      "x": 0,
+                      "y": 18,
+                      "z": -36,
+                      "rotationX": -15,
+                      "color": "#4A5D25",
+                      "name": "tail-mid-segment",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "cone",
+                      "size": 4,
+                      "height": 7,
+                      "x": 0,
+                      "y": 22,
+                      "z": -38,
+                      "rotationX": -20,
+                      "color": "#384919",
+                      "name": "tail-spike-2",
+                      "metalness": 0.3,
+                      "roughness": 0.8
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 5,
+                    "z": 0
+                  },
+                  "rotation": {
+                    "x": 0.1,
+                    "y": 0.2,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "tail tip": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 6,
+                      "height": 5,
+                      "depth": 14,
+                      "x": 0,
+                      "y": 16,
+                      "z": -50,
+                      "rotationX": -10,
+                      "color": "#556B2F",
+                      "name": "tail-end-segment",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "cone",
+                      "size": 3.5,
+                      "height": 6,
+                      "x": 0,
+                      "y": 19,
+                      "z": -52,
+                      "rotationX": -15,
+                      "color": "#384919",
+                      "name": "tail-spike-3",
+                      "metalness": 0.3,
+                      "roughness": 0.8
+                    },
+                    {
+                      "type": "box",
+                      "width": 4,
+                      "height": 3,
+                      "depth": 10,
+                      "x": 0,
+                      "y": 14.5,
+                      "z": -62,
+                      "rotationX": -5,
+                      "color": "#4D6227",
+                      "name": "tail-tip-segment",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "cone",
+                      "size": 2.5,
+                      "height": 4,
+                      "x": 0,
+                      "y": 16.5,
+                      "z": -64,
+                      "rotationX": -10,
+                      "color": "#384919",
+                      "name": "tail-spike-4",
+                      "metalness": 0.3,
+                      "roughness": 0.8
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 5,
+                    "z": 0
+                  },
+                  "rotation": {
+                    "x": 0.05,
+                    "y": 0.3,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                }
+              },
+              {
+                "head": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 16,
+                      "height": 14,
+                      "depth": 22,
+                      "x": 0,
+                      "y": 42,
+                      "z": 14,
+                      "color": "#556B2F",
+                      "name": "head-main",
+                      "texture": "scales",
+                      "roughness": 0.8
+                    },
+                    {
+                      "type": "sphere",
+                      "size": 4.5,
+                      "x": -8,
+                      "y": 46,
+                      "z": 16,
+                      "color": "#DAA520",
+                      "name": "eye-right",
+                      "emissive": "#B8860B"
+                    },
+                    {
+                      "type": "sphere",
+                      "size": 2.2,
+                      "x": -8,
+                      "y": 46,
+                      "z": 17.5,
+                      "color": "#000000",
+                      "name": "pupil-right"
+                    },
+                    {
+                      "type": "sphere",
+                      "size": 4.5,
+                      "x": 8,
+                      "y": 46,
+                      "z": 16,
+                      "color": "#DAA520",
+                      "name": "eye-left",
+                      "emissive": "#B8860B"
+                    },
+                    {
+                      "type": "sphere",
+                      "size": 2.2,
+                      "x": 8,
+                      "y": 46,
+                      "z": 17.5,
+                      "color": "#000000",
+                      "name": "pupil-left"
+                    },
+                    {
+                      "type": "box",
+                      "width": 16,
+                      "height": 2,
+                      "depth": 6,
+                      "x": 0,
+                      "y": 50,
+                      "z": 14,
+                      "color": "#3D4D1E",
+                      "name": "brow-ridge",
+                      "texture": "rough"
+                    },
+                    {
+                      "type": "sphere",
+                      "size": 2,
+                      "x": -4.5,
+                      "y": 48.7,
+                      "z": 23.6,
+                      "color": "#556B2F",
+                      "name": "nostril-right",
+                      "rotationX": 0,
+                      "rotationY": 0,
+                      "rotationZ": 0,
+                      "scaleX": 1,
+                      "scaleY": 1,
+                      "scaleZ": 1
+                    },
+                    {
+                      "type": "sphere",
+                      "size": 2,
+                      "x": 4.5,
+                      "y": 48.7,
+                      "z": 23.6,
+                      "color": "#556B2F",
+                      "name": "nostril-left",
+                      "rotationX": 0,
+                      "rotationY": 0,
+                      "rotationZ": 0,
+                      "scaleX": 1,
+                      "scaleY": 1,
+                      "scaleZ": 1
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 2.5,
+                    "z": 18.5
+                  },
+                  "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "jaw": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 18.3,
+                      "height": 6,
+                      "depth": 20,
+                      "x": 0,
+                      "y": 30,
+                      "z": 16,
+                      "color": "#4D6227",
+                      "name": "jaw-main",
+                      "texture": "rough"
+                    },
+                    {
+                      "type": "box",
+                      "width": 12,
+                      "height": 2,
+                      "depth": 2,
+                      "x": 0,
+                      "y": 32.5,
+                      "z": 24.7,
+                      "color": "#A52A2A",
+                      "name": "gums",
+                      "roughness": 0.7
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.8,
+                      "height": 4,
+                      "depth": 1.8,
+                      "x": -5,
+                      "y": 33,
+                      "z": 25,
+                      "color": "#F8F8FF",
+                      "name": "tooth-front-right",
+                      "shininess": 90
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.8,
+                      "height": 4,
+                      "depth": 1.8,
+                      "x": 0,
+                      "y": 33,
+                      "z": 25,
+                      "color": "#F8F8FF",
+                      "name": "tooth-front-middle",
+                      "shininess": 90
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.8,
+                      "height": 4,
+                      "depth": 1.8,
+                      "x": 5,
+                      "y": 33,
+                      "z": 25,
+                      "color": "#F8F8FF",
+                      "name": "tooth-front-left",
+                      "shininess": 90
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.5,
+                      "height": 3,
+                      "depth": 1.5,
+                      "x": -7,
+                      "y": 33,
+                      "z": 22,
+                      "color": "#F8F8FF",
+                      "name": "tooth-side-right1",
+                      "shininess": 90
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.5,
+                      "height": 3,
+                      "depth": 1.5,
+                      "x": 7,
+                      "y": 33,
+                      "z": 22,
+                      "color": "#F8F8FF",
+                      "name": "tooth-side-left1",
+                      "shininess": 90
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 10,
+                    "z": 7.8
+                  },
+                  "rotation": {
+                    "x": 0.3121059368272202,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "left arm": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 5,
+                      "height": 8,
+                      "depth": 5,
+                      "x": 11,
+                      "y": 28,
+                      "z": 0,
+                      "rotationX": -45,
+                      "color": "#4D6227",
+                      "name": "upper-arm-left",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "box",
+                      "width": 4,
+                      "height": 6,
+                      "depth": 4,
+                      "x": 11,
+                      "y": 24,
+                      "z": 4,
+                      "rotationX": -20,
+                      "color": "#485A22",
+                      "name": "lower-arm-left",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "box",
+                      "width": 3.8,
+                      "height": 3.5,
+                      "depth": 3,
+                      "x": 11,
+                      "y": 22,
+                      "z": 6,
+                      "color": "#707070",
+                      "name": "hand-left",
+                      "metalness": 0.5,
+                      "roughness": 0.7
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.2,
+                      "height": 3,
+                      "depth": 1.2,
+                      "x": 12.5,
+                      "y": 21,
+                      "z": 8,
+                      "color": "#C0C0C0",
+                      "name": "claw-left-1",
+                      "metalness": 0.6
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.2,
+                      "height": 2.5,
+                      "depth": 1.2,
+                      "x": 9.5,
+                      "y": 21.5,
+                      "z": 7.5,
+                      "color": "#C0C0C0",
+                      "name": "claw-left-2",
+                      "metalness": 0.6
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": -2.7,
+                    "z": 10
+                  },
+                  "rotation": {
+                    "x": 0.18890622492173986,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "right arm": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 5,
+                      "height": 8,
+                      "depth": 5,
+                      "x": -11,
+                      "y": 28,
+                      "z": 0,
+                      "rotationX": -45,
+                      "color": "#4D6227",
+                      "name": "upper-arm-right",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "box",
+                      "width": 4,
+                      "height": 6,
+                      "depth": 4,
+                      "x": -11,
+                      "y": 24,
+                      "z": 4,
+                      "rotationX": -20,
+                      "color": "#485A22",
+                      "name": "lower-arm-right",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "box",
+                      "width": 3.8,
+                      "height": 3.5,
+                      "depth": 3,
+                      "x": -11,
+                      "y": 22,
+                      "z": 6,
+                      "color": "#707070",
+                      "name": "hand-right",
+                      "metalness": 0.5,
+                      "roughness": 0.7
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.2,
+                      "height": 3,
+                      "depth": 1.2,
+                      "x": -12.5,
+                      "y": 21,
+                      "z": 8,
+                      "color": "#C0C0C0",
+                      "name": "claw-right-1",
+                      "metalness": 0.6
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.2,
+                      "height": 2.5,
+                      "depth": 1.2,
+                      "x": -9.5,
+                      "y": 21.5,
+                      "z": 7.5,
+                      "color": "#C0C0C0",
+                      "name": "claw-right-2",
+                      "metalness": 0.6
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": -2.7,
+                    "z": 10
+                  },
+                  "rotation": {
+                    "x": 0.19949192295270599,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "left leg": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 8,
+                      "height": 14,
+                      "depth": 10,
+                      "x": 9,
+                      "y": 20,
+                      "z": 0,
+                      "color": "#4A5D25",
+                      "name": "thigh-left",
+                      "texture": "scales",
+                      "roughness": 0.7,
+                      "rotationX": -15,
+                      "rotationY": 0,
+                      "rotationZ": 0,
+                      "scaleX": 1,
+                      "scaleY": 1,
+                      "scaleZ": 1
+                    },
+                    {
+                      "type": "box",
+                      "width": 7,
+                      "height": 16,
+                      "depth": 7,
+                      "x": 9,
+                      "y": 9,
+                      "z": 0,
+                      "color": "#556B2F",
+                      "name": "shin-left",
+                      "texture": "scales",
+                      "rotationX": 30
+                    },
+                    {
+                      "type": "box",
+                      "width": 10,
+                      "height": 4,
+                      "depth": 16,
+                      "x": 9,
+                      "y": 1,
+                      "z": 0,
+                      "color": "#3D4D1E",
+                      "name": "foot-left",
+                      "roughness": 0.8,
+                      "rotationX": 20,
+                      "rotationY": 0,
+                      "rotationZ": 0,
+                      "scaleX": 1,
+                      "scaleY": 1,
+                      "scaleZ": 1
+                    },
+                    {
+                      "type": "cone",
+                      "size": 2.5,
+                      "height": 5,
+                      "x": 6,
+                      "y": -2,
+                      "z": 8.5,
+                      "rotationX": 90,
+                      "color": "#606060",
+                      "name": "toe-left-1",
+                      "metalness": 0.3
+                    },
+                    {
+                      "type": "cone",
+                      "size": 2.5,
+                      "height": 5,
+                      "x": 12,
+                      "y": -2,
+                      "z": 8.5,
+                      "rotationX": 90,
+                      "color": "#606060",
+                      "name": "toe-left-2",
+                      "metalness": 0.3
+                    },
+                    {
+                      "type": "cone",
+                      "size": 2.5,
+                      "height": 5,
+                      "x": 9,
+                      "y": -2,
+                      "z": 9,
+                      "rotationX": 90,
+                      "color": "#606060",
+                      "name": "toe-left-3",
+                      "metalness": 0.3
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 2.5,
+                    "z": 0
+                  },
+                  "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "right leg": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 8,
+                      "height": 14,
+                      "depth": 10,
+                      "x": -9,
+                      "y": 20,
+                      "z": 0,
+                      "color": "#4A5D25",
+                      "name": "thigh-right",
+                      "texture": "scales",
+                      "roughness": 0.7,
+                      "rotationX": -15,
+                      "rotationY": 0,
+                      "rotationZ": 0,
+                      "scaleX": 1,
+                      "scaleY": 1,
+                      "scaleZ": 1
+                    },
+                    {
+                      "type": "box",
+                      "width": 7,
+                      "height": 16,
+                      "depth": 7,
+                      "x": -9,
+                      "y": 9,
+                      "z": 0,
+                      "color": "#556B2F",
+                      "name": "shin-right",
+                      "texture": "scales",
+                      "rotationX": 30,
+                      "rotationY": 0,
+                      "rotationZ": 0,
+                      "scaleX": 1,
+                      "scaleY": 1,
+                      "scaleZ": 1
+                    },
+                    {
+                      "type": "box",
+                      "width": 10,
+                      "height": 4,
+                      "depth": 16,
+                      "x": -9,
+                      "y": 1,
+                      "z": 0,
+                      "color": "#3D4D1E",
+                      "name": "foot-right",
+                      "roughness": 0.8,
+                      "rotationX": 20
+                    },
+                    {
+                      "type": "cone",
+                      "size": 2.5,
+                      "height": 5,
+                      "x": -6,
+                      "y": -2,
+                      "z": 8.5,
+                      "rotationX": 90,
+                      "color": "#606060",
+                      "name": "toe-right-1",
+                      "metalness": 0.3
+                    },
+                    {
+                      "type": "cone",
+                      "size": 2.5,
+                      "height": 5,
+                      "x": -12,
+                      "y": -2,
+                      "z": 8.5,
+                      "rotationX": 90,
+                      "color": "#606060",
+                      "name": "toe-right-2",
+                      "metalness": 0.3
+                    },
+                    {
+                      "type": "cone",
+                      "size": 2.5,
+                      "height": 5,
+                      "x": -9,
+                      "y": -2,
+                      "z": 9,
+                      "rotationX": 90,
+                      "color": "#606060",
+                      "name": "toe-right-3",
+                      "metalness": 0.3
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 2.5,
+                    "z": 0
+                  },
+                  "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "body": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 18,
+                      "height": 32,
+                      "depth": 16,
+                      "x": 0,
+                      "y": 24,
+                      "z": -3,
+                      "rotationX": 40,
+                      "color": "#556B2F",
+                      "name": "torso-main",
+                      "texture": "scales",
+                      "roughness": 0.7
+                    },
+                    {
+                      "type": "box",
+                      "width": 13,
+                      "height": 11.5,
+                      "depth": 12.8,
+                      "x": 0,
+                      "y": 38,
+                      "z": 7.3,
+                      "rotationX": 10,
+                      "color": "#4D6227",
+                      "name": "neck",
+                      "texture": "scales",
+                      "rotationY": 0,
+                      "rotationZ": 0,
+                      "scaleX": 1,
+                      "scaleY": 1,
+                      "scaleZ": 1
+                    },
+                    {
+                      "type": "cone",
+                      "size": 6,
+                      "height": 10,
+                      "x": 0,
+                      "y": 40,
+                      "z": -5,
+                      "rotationX": -55,
+                      "color": "#3D4D1E",
+                      "name": "dorsal-spike-1",
+                      "metalness": 0.3,
+                      "roughness": 0.8
+                    },
+                    {
+                      "type": "cone",
+                      "size": 5.5,
+                      "height": 9,
+                      "x": 0,
+                      "y": 34,
+                      "z": -10,
+                      "rotationX": -50,
+                      "color": "#3A4A1D",
+                      "name": "dorsal-spike-2",
+                      "metalness": 0.3,
+                      "roughness": 0.8
+                    },
+                    {
+                      "type": "cone",
+                      "size": 5,
+                      "height": 8,
+                      "x": 0,
+                      "y": 28,
+                      "z": -14,
+                      "rotationX": -45,
+                      "color": "#384919",
+                      "name": "dorsal-spike-3",
+                      "metalness": 0.3,
+                      "roughness": 0.8
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 9.5,
+                    "z": -10
+                  },
+                  "rotation": {
+                    "x": 0.7145583290517965,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "tail base": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 10,
+                      "height": 8,
+                      "depth": 18,
+                      "x": 0,
+                      "y": 20,
+                      "z": -20,
+                      "rotationX": -20,
+                      "color": "#4D6227",
+                      "name": "tail-base-segment",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "cone",
+                      "size": 5,
+                      "height": 8,
+                      "x": 0,
+                      "y": 24,
+                      "z": -22,
+                      "rotationX": -25,
+                      "color": "#3A4A1D",
+                      "name": "tail-spike-1",
+                      "metalness": 0.3,
+                      "roughness": 0.8
+                    },
+                    {
+                      "type": "box",
+                      "width": 8,
+                      "height": 6,
+                      "depth": 16,
+                      "x": 0,
+                      "y": 18,
+                      "z": -36,
+                      "rotationX": -15,
+                      "color": "#4A5D25",
+                      "name": "tail-mid-segment",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "cone",
+                      "size": 4,
+                      "height": 7,
+                      "x": 0,
+                      "y": 22,
+                      "z": -38,
+                      "rotationX": -20,
+                      "color": "#384919",
+                      "name": "tail-spike-2",
+                      "metalness": 0.3,
+                      "roughness": 0.8
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 5,
+                    "z": 0
+                  },
+                  "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "tail tip": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 6,
+                      "height": 5,
+                      "depth": 14,
+                      "x": 0,
+                      "y": 16,
+                      "z": -50,
+                      "rotationX": -10,
+                      "color": "#556B2F",
+                      "name": "tail-end-segment",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "cone",
+                      "size": 3.5,
+                      "height": 6,
+                      "x": 0,
+                      "y": 19,
+                      "z": -52,
+                      "rotationX": -15,
+                      "color": "#384919",
+                      "name": "tail-spike-3",
+                      "metalness": 0.3,
+                      "roughness": 0.8
+                    },
+                    {
+                      "type": "box",
+                      "width": 4,
+                      "height": 3,
+                      "depth": 10,
+                      "x": 0,
+                      "y": 14.5,
+                      "z": -62,
+                      "rotationX": -5,
+                      "color": "#4D6227",
+                      "name": "tail-tip-segment",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "cone",
+                      "size": 2.5,
+                      "height": 4,
+                      "x": 0,
+                      "y": 16.5,
+                      "z": -64,
+                      "rotationX": -10,
+                      "color": "#384919",
+                      "name": "tail-spike-4",
+                      "metalness": 0.3,
+                      "roughness": 0.8
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 5,
+                    "z": 0
+                  },
+                  "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                }
+              },
+              {
+                "head": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 16,
+                      "height": 14,
+                      "depth": 22,
+                      "x": 0,
+                      "y": 42,
+                      "z": 14,
+                      "color": "#556B2F",
+                      "name": "head-main",
+                      "texture": "scales",
+                      "roughness": 0.8
+                    },
+                    {
+                      "type": "sphere",
+                      "size": 4.5,
+                      "x": -8,
+                      "y": 46,
+                      "z": 16,
+                      "color": "#DAA520",
+                      "name": "eye-right",
+                      "emissive": "#B8860B"
+                    },
+                    {
+                      "type": "sphere",
+                      "size": 2.2,
+                      "x": -8,
+                      "y": 46,
+                      "z": 17.5,
+                      "color": "#000000",
+                      "name": "pupil-right"
+                    },
+                    {
+                      "type": "sphere",
+                      "size": 4.5,
+                      "x": 8,
+                      "y": 46,
+                      "z": 16,
+                      "color": "#DAA520",
+                      "name": "eye-left",
+                      "emissive": "#B8860B"
+                    },
+                    {
+                      "type": "sphere",
+                      "size": 2.2,
+                      "x": 8,
+                      "y": 46,
+                      "z": 17.5,
+                      "color": "#000000",
+                      "name": "pupil-left"
+                    },
+                    {
+                      "type": "box",
+                      "width": 16,
+                      "height": 2,
+                      "depth": 6,
+                      "x": 0,
+                      "y": 50,
+                      "z": 14,
+                      "color": "#3D4D1E",
+                      "name": "brow-ridge",
+                      "texture": "rough"
+                    },
+                    {
+                      "type": "sphere",
+                      "size": 2,
+                      "x": -4.5,
+                      "y": 48.7,
+                      "z": 23.6,
+                      "color": "#556B2F",
+                      "name": "nostril-right",
+                      "rotationX": 0,
+                      "rotationY": 0,
+                      "rotationZ": 0,
+                      "scaleX": 1,
+                      "scaleY": 1,
+                      "scaleZ": 1
+                    },
+                    {
+                      "type": "sphere",
+                      "size": 2,
+                      "x": 4.5,
+                      "y": 48.7,
+                      "z": 23.6,
+                      "color": "#556B2F",
+                      "name": "nostril-left",
+                      "rotationX": 0,
+                      "rotationY": 0,
+                      "rotationZ": 0,
+                      "scaleX": 1,
+                      "scaleY": 1,
+                      "scaleZ": 1
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 2.3,
+                    "z": 18.5
+                  },
+                  "rotation": {
+                    "x": 0,
+                    "y": -0.1,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "jaw": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 18.3,
+                      "height": 6,
+                      "depth": 20,
+                      "x": 0,
+                      "y": 30,
+                      "z": 16,
+                      "color": "#4D6227",
+                      "name": "jaw-main",
+                      "texture": "rough"
+                    },
+                    {
+                      "type": "box",
+                      "width": 12,
+                      "height": 2,
+                      "depth": 2,
+                      "x": 0,
+                      "y": 32.5,
+                      "z": 24.7,
+                      "color": "#A52A2A",
+                      "name": "gums",
+                      "roughness": 0.7
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.8,
+                      "height": 4,
+                      "depth": 1.8,
+                      "x": -5,
+                      "y": 33,
+                      "z": 25,
+                      "color": "#F8F8FF",
+                      "name": "tooth-front-right",
+                      "shininess": 90
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.8,
+                      "height": 4,
+                      "depth": 1.8,
+                      "x": 0,
+                      "y": 33,
+                      "z": 25,
+                      "color": "#F8F8FF",
+                      "name": "tooth-front-middle",
+                      "shininess": 90
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.8,
+                      "height": 4,
+                      "depth": 1.8,
+                      "x": 5,
+                      "y": 33,
+                      "z": 25,
+                      "color": "#F8F8FF",
+                      "name": "tooth-front-left",
+                      "shininess": 90
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.5,
+                      "height": 3,
+                      "depth": 1.5,
+                      "x": -7,
+                      "y": 33,
+                      "z": 22,
+                      "color": "#F8F8FF",
+                      "name": "tooth-side-right1",
+                      "shininess": 90
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.5,
+                      "height": 3,
+                      "depth": 1.5,
+                      "x": 7,
+                      "y": 33,
+                      "z": 22,
+                      "color": "#F8F8FF",
+                      "name": "tooth-side-left1",
+                      "shininess": 90
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 9.8,
+                    "z": 7.8
+                  },
+                  "rotation": {
+                    "x": 0.3,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "left arm": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 5,
+                      "height": 8,
+                      "depth": 5,
+                      "x": 11,
+                      "y": 28,
+                      "z": 0,
+                      "rotationX": -45,
+                      "color": "#4D6227",
+                      "name": "upper-arm-left",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "box",
+                      "width": 4,
+                      "height": 6,
+                      "depth": 4,
+                      "x": 11,
+                      "y": 24,
+                      "z": 4,
+                      "rotationX": -20,
+                      "color": "#485A22",
+                      "name": "lower-arm-left",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "box",
+                      "width": 3.8,
+                      "height": 3.5,
+                      "depth": 3,
+                      "x": 11,
+                      "y": 22,
+                      "z": 6,
+                      "color": "#707070",
+                      "name": "hand-left",
+                      "metalness": 0.5,
+                      "roughness": 0.7
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.2,
+                      "height": 3,
+                      "depth": 1.2,
+                      "x": 12.5,
+                      "y": 21,
+                      "z": 8,
+                      "color": "#C0C0C0",
+                      "name": "claw-left-1",
+                      "metalness": 0.6
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.2,
+                      "height": 2.5,
+                      "depth": 1.2,
+                      "x": 9.5,
+                      "y": 21.5,
+                      "z": 7.5,
+                      "color": "#C0C0C0",
+                      "name": "claw-left-2",
+                      "metalness": 0.6
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": -2.7,
+                    "z": 15
+                  },
+                  "rotation": {
+                    "x": -0.2,
+                    "y": 0,
+                    "z": 0.1028404567909271
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "right arm": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 5,
+                      "height": 8,
+                      "depth": 5,
+                      "x": -11,
+                      "y": 28,
+                      "z": 0,
+                      "rotationX": -45,
+                      "color": "#4D6227",
+                      "name": "upper-arm-right",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "box",
+                      "width": 4,
+                      "height": 6,
+                      "depth": 4,
+                      "x": -11,
+                      "y": 24,
+                      "z": 4,
+                      "rotationX": -20,
+                      "color": "#485A22",
+                      "name": "lower-arm-right",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "box",
+                      "width": 3.8,
+                      "height": 3.5,
+                      "depth": 3,
+                      "x": -11,
+                      "y": 22,
+                      "z": 6,
+                      "color": "#707070",
+                      "name": "hand-right",
+                      "metalness": 0.5,
+                      "roughness": 0.7
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.2,
+                      "height": 3,
+                      "depth": 1.2,
+                      "x": -12.5,
+                      "y": 21,
+                      "z": 8,
+                      "color": "#C0C0C0",
+                      "name": "claw-right-1",
+                      "metalness": 0.6
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.2,
+                      "height": 2.5,
+                      "depth": 1.2,
+                      "x": -9.5,
+                      "y": 21.5,
+                      "z": 7.5,
+                      "color": "#C0C0C0",
+                      "name": "claw-right-2",
+                      "metalness": 0.6
+                    }
+                  ],
+                  "position": {
+                    "x": -1.5,
+                    "y": -2.7,
+                    "z": 0
+                  },
+                  "rotation": {
+                    "x": 0.5,
+                    "y": 0,
+                    "z": -0.1
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "left leg": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 8,
+                      "height": 14,
+                      "depth": 10,
+                      "x": 9,
+                      "y": 20,
+                      "z": 0,
+                      "color": "#4A5D25",
+                      "name": "thigh-left",
+                      "texture": "scales",
+                      "roughness": 0.7,
+                      "rotationX": -15,
+                      "rotationY": 0,
+                      "rotationZ": 0,
+                      "scaleX": 1,
+                      "scaleY": 1,
+                      "scaleZ": 1
+                    },
+                    {
+                      "type": "box",
+                      "width": 7,
+                      "height": 16,
+                      "depth": 7,
+                      "x": 9,
+                      "y": 9,
+                      "z": 0,
+                      "color": "#556B2F",
+                      "name": "shin-left",
+                      "texture": "scales",
+                      "rotationX": 30
+                    },
+                    {
+                      "type": "box",
+                      "width": 10,
+                      "height": 4,
+                      "depth": 16,
+                      "x": 9,
+                      "y": 1,
+                      "z": 0,
+                      "color": "#3D4D1E",
+                      "name": "foot-left",
+                      "roughness": 0.8,
+                      "rotationX": 20,
+                      "rotationY": 0,
+                      "rotationZ": 0,
+                      "scaleX": 1,
+                      "scaleY": 1,
+                      "scaleZ": 1
+                    },
+                    {
+                      "type": "cone",
+                      "size": 2.5,
+                      "height": 5,
+                      "x": 6,
+                      "y": -2,
+                      "z": 8.5,
+                      "rotationX": 90,
+                      "color": "#606060",
+                      "name": "toe-left-1",
+                      "metalness": 0.3
+                    },
+                    {
+                      "type": "cone",
+                      "size": 2.5,
+                      "height": 5,
+                      "x": 12,
+                      "y": -2,
+                      "z": 8.5,
+                      "rotationX": 90,
+                      "color": "#606060",
+                      "name": "toe-left-2",
+                      "metalness": 0.3
+                    },
+                    {
+                      "type": "cone",
+                      "size": 2.5,
+                      "height": 5,
+                      "x": 9,
+                      "y": -2,
+                      "z": 9,
+                      "rotationX": 90,
+                      "color": "#606060",
+                      "name": "toe-left-3",
+                      "metalness": 0.3
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 2.7,
+                    "z": 8
+                  },
+                  "rotation": {
+                    "x": -0.2956793085731574,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "right leg": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 8,
+                      "height": 14,
+                      "depth": 10,
+                      "x": -9,
+                      "y": 20,
+                      "z": 0,
+                      "color": "#4A5D25",
+                      "name": "thigh-right",
+                      "texture": "scales",
+                      "roughness": 0.7,
+                      "rotationX": -15,
+                      "rotationY": 0,
+                      "rotationZ": 0,
+                      "scaleX": 1,
+                      "scaleY": 1,
+                      "scaleZ": 1
+                    },
+                    {
+                      "type": "box",
+                      "width": 7,
+                      "height": 16,
+                      "depth": 7,
+                      "x": -9,
+                      "y": 9,
+                      "z": 0,
+                      "color": "#556B2F",
+                      "name": "shin-right",
+                      "texture": "scales",
+                      "rotationX": 30,
+                      "rotationY": 0,
+                      "rotationZ": 0,
+                      "scaleX": 1,
+                      "scaleY": 1,
+                      "scaleZ": 1
+                    },
+                    {
+                      "type": "box",
+                      "width": 10,
+                      "height": 4,
+                      "depth": 16,
+                      "x": -9,
+                      "y": 1,
+                      "z": 0,
+                      "color": "#3D4D1E",
+                      "name": "foot-right",
+                      "roughness": 0.8,
+                      "rotationX": 20
+                    },
+                    {
+                      "type": "cone",
+                      "size": 2.5,
+                      "height": 5,
+                      "x": -6,
+                      "y": -2,
+                      "z": 8.5,
+                      "rotationX": 90,
+                      "color": "#606060",
+                      "name": "toe-right-1",
+                      "metalness": 0.3
+                    },
+                    {
+                      "type": "cone",
+                      "size": 2.5,
+                      "height": 5,
+                      "x": -12,
+                      "y": -2,
+                      "z": 8.5,
+                      "rotationX": 90,
+                      "color": "#606060",
+                      "name": "toe-right-2",
+                      "metalness": 0.3
+                    },
+                    {
+                      "type": "cone",
+                      "size": 2.5,
+                      "height": 5,
+                      "x": -9,
+                      "y": -2,
+                      "z": 9,
+                      "rotationX": 90,
+                      "color": "#606060",
+                      "name": "toe-right-3",
+                      "metalness": 0.3
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 5,
+                    "z": -15
+                  },
+                  "rotation": {
+                    "x": 0.4,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "body": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 18,
+                      "height": 32,
+                      "depth": 16,
+                      "x": 0,
+                      "y": 24,
+                      "z": -3,
+                      "rotationX": 40,
+                      "color": "#556B2F",
+                      "name": "torso-main",
+                      "texture": "scales",
+                      "roughness": 0.7
+                    },
+                    {
+                      "type": "box",
+                      "width": 13,
+                      "height": 11.5,
+                      "depth": 12.8,
+                      "x": 0,
+                      "y": 38,
+                      "z": 7.3,
+                      "rotationX": 10,
+                      "color": "#4D6227",
+                      "name": "neck",
+                      "texture": "scales",
+                      "rotationY": 0,
+                      "rotationZ": 0,
+                      "scaleX": 1,
+                      "scaleY": 1,
+                      "scaleZ": 1
+                    },
+                    {
+                      "type": "cone",
+                      "size": 6,
+                      "height": 10,
+                      "x": 0,
+                      "y": 40,
+                      "z": -5,
+                      "rotationX": -55,
+                      "color": "#3D4D1E",
+                      "name": "dorsal-spike-1",
+                      "metalness": 0.3,
+                      "roughness": 0.8
+                    },
+                    {
+                      "type": "cone",
+                      "size": 5.5,
+                      "height": 9,
+                      "x": 0,
+                      "y": 34,
+                      "z": -10,
+                      "rotationX": -50,
+                      "color": "#3A4A1D",
+                      "name": "dorsal-spike-2",
+                      "metalness": 0.3,
+                      "roughness": 0.8
+                    },
+                    {
+                      "type": "cone",
+                      "size": 5,
+                      "height": 8,
+                      "x": 0,
+                      "y": 28,
+                      "z": -14,
+                      "rotationX": -45,
+                      "color": "#384919",
+                      "name": "dorsal-spike-3",
+                      "metalness": 0.3,
+                      "roughness": 0.8
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 9.3,
+                    "z": -10
+                  },
+                  "rotation": {
+                    "x": 0.7,
+                    "y": -0.05,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "tail base": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 10,
+                      "height": 8,
+                      "depth": 18,
+                      "x": 0,
+                      "y": 20,
+                      "z": -20,
+                      "rotationX": -20,
+                      "color": "#4D6227",
+                      "name": "tail-base-segment",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "cone",
+                      "size": 5,
+                      "height": 8,
+                      "x": 0,
+                      "y": 24,
+                      "z": -22,
+                      "rotationX": -25,
+                      "color": "#3A4A1D",
+                      "name": "tail-spike-1",
+                      "metalness": 0.3,
+                      "roughness": 0.8
+                    },
+                    {
+                      "type": "box",
+                      "width": 8,
+                      "height": 6,
+                      "depth": 16,
+                      "x": 0,
+                      "y": 18,
+                      "z": -36,
+                      "rotationX": -15,
+                      "color": "#4A5D25",
+                      "name": "tail-mid-segment",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "cone",
+                      "size": 4,
+                      "height": 7,
+                      "x": 0,
+                      "y": 22,
+                      "z": -38,
+                      "rotationX": -20,
+                      "color": "#384919",
+                      "name": "tail-spike-2",
+                      "metalness": 0.3,
+                      "roughness": 0.8
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 5,
+                    "z": 0
+                  },
+                  "rotation": {
+                    "x": 0.1,
+                    "y": -0.2,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "tail tip": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 6,
+                      "height": 5,
+                      "depth": 14,
+                      "x": 0,
+                      "y": 16,
+                      "z": -50,
+                      "rotationX": -10,
+                      "color": "#556B2F",
+                      "name": "tail-end-segment",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "cone",
+                      "size": 3.5,
+                      "height": 6,
+                      "x": 0,
+                      "y": 19,
+                      "z": -52,
+                      "rotationX": -15,
+                      "color": "#384919",
+                      "name": "tail-spike-3",
+                      "metalness": 0.3,
+                      "roughness": 0.8
+                    },
+                    {
+                      "type": "box",
+                      "width": 4,
+                      "height": 3,
+                      "depth": 10,
+                      "x": 0,
+                      "y": 14.5,
+                      "z": -62,
+                      "rotationX": -5,
+                      "color": "#4D6227",
+                      "name": "tail-tip-segment",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "cone",
+                      "size": 2.5,
+                      "height": 4,
+                      "x": 0,
+                      "y": 16.5,
+                      "z": -64,
+                      "rotationX": -10,
+                      "color": "#384919",
+                      "name": "tail-spike-4",
+                      "metalness": 0.3,
+                      "roughness": 0.8
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 5,
+                    "z": 0
+                  },
+                  "rotation": {
+                    "x": 0.05,
+                    "y": -0.3,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "alpha_rex": {
+        "title": "Alpha Rex",
+        "hp": 50,
+        "speed": 1.5,
+        "value": 10,
+        "essence": 15,
+        "render": {
+          "animations": {
+            "idle": [
+              {
+                "head": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 14,
+                      "height": 12,
+                      "depth": 18,
+                      "x": 0,
+                      "y": 40,
+                      "z": 14,
+                      "color": "#4A7028",
+                      "name": "head-top",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "sphere",
+                      "size": 4,
+                      "x": -8,
+                      "y": 45,
+                      "z": 16,
+                      "color": "#FFD700",
+                      "name": "eye-right",
+                      "emissive": "#FFA500"
+                    },
+                    {
+                      "type": "sphere",
+                      "size": 2,
+                      "x": -8,
+                      "y": 45,
+                      "z": 17,
+                      "color": "#000000",
+                      "name": "pupil-right"
+                    },
+                    {
+                      "type": "sphere",
+                      "size": 4,
+                      "x": 8,
+                      "y": 45,
+                      "z": 16,
+                      "color": "#FFD700",
+                      "name": "eye-left",
+                      "emissive": "#FFA500"
+                    },
+                    {
+                      "type": "sphere",
+                      "size": 2,
+                      "x": 8,
+                      "y": 45,
+                      "z": 17,
+                      "color": "#000000",
+                      "name": "pupil-left"
+                    },
+                    {
+                      "type": "box",
+                      "width": 12,
+                      "height": 1,
+                      "depth": 1,
+                      "x": 0,
+                      "y": 38,
+                      "z": 22,
+                      "color": "#8B0000",
+                      "name": "scar"
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "jaw": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 12,
+                      "height": 5,
+                      "depth": 16,
+                      "x": 0,
+                      "y": 30,
+                      "z": 16,
+                      "color": "#3A5A20",
+                      "name": "jaw",
+                      "texture": "rough"
+                    },
+                    {
+                      "type": "box",
+                      "width": 10,
+                      "height": 1.5,
+                      "depth": 1.5,
+                      "x": 0,
+                      "y": 32,
+                      "z": 22,
+                      "color": "#DC143C",
+                      "name": "gums"
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.5,
+                      "height": 3,
+                      "depth": 1.5,
+                      "x": -4,
+                      "y": 32,
+                      "z": 22,
+                      "color": "#F5F5F5",
+                      "name": "tooth-right",
+                      "shininess": 100
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.5,
+                      "height": 3,
+                      "depth": 1.5,
+                      "x": 0,
+                      "y": 32,
+                      "z": 22,
+                      "color": "#F5F5F5",
+                      "name": "tooth-middle",
+                      "shininess": 100
+                    },
+                    {
+                      "type": "box",
+                      "width": 1.5,
+                      "height": 3,
+                      "depth": 1.5,
+                      "x": 4,
+                      "y": 32,
+                      "z": 22,
+                      "color": "#F5F5F5",
+                      "name": "tooth-left",
+                      "shininess": 100
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "left arm": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 4,
+                      "height": 6,
+                      "depth": 4,
+                      "x": 10,
+                      "y": 28,
+                      "z": 0,
+                      "rotationX": -40,
+                      "color": "#3A5A20",
+                      "name": "arm-left",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "box",
+                      "width": 3,
+                      "height": 3,
+                      "depth": 2,
+                      "x": 10,
+                      "y": 25,
+                      "z": 4,
+                      "color": "#808080",
+                      "name": "hand-left",
+                      "metalness": 0.8
+                    },
+                    {
+                      "type": "box",
+                      "width": 1,
+                      "height": 2,
+                      "depth": 1,
+                      "x": 10,
+                      "y": 24,
+                      "z": 5,
+                      "color": "#C0C0C0",
+                      "name": "claw-1"
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "right arm": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 4,
+                      "height": 6,
+                      "depth": 4,
+                      "x": -10,
+                      "y": 28,
+                      "z": 0,
+                      "rotationX": -40,
+                      "color": "#3A5A20",
+                      "name": "arm-right",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "box",
+                      "width": 3,
+                      "height": 3,
+                      "depth": 2,
+                      "x": -10,
+                      "y": 25,
+                      "z": 4,
+                      "color": "#808080",
+                      "name": "hand-right",
+                      "metalness": 0.8
+                    },
+                    {
+                      "type": "box",
+                      "width": 1,
+                      "height": 2,
+                      "depth": 1,
+                      "x": -10,
+                      "y": 24,
+                      "z": 5,
+                      "color": "#C0C0C0",
+                      "name": "claw-1"
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "left leg": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 6,
+                      "height": 18,
+                      "depth": 6,
+                      "x": 8,
+                      "y": 12,
+                      "z": 0,
+                      "color": "#3A5A20",
+                      "name": "leg-left",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "box",
+                      "width": 8,
+                      "height": 3,
+                      "depth": 12,
+                      "x": 8,
+                      "y": 1,
+                      "z": 0,
+                      "color": "#2D4A18",
+                      "name": "foot-left"
+                    },
+                    {
+                      "type": "cone",
+                      "size": 2,
+                      "height": 4,
+                      "x": 6,
+                      "y": 1,
+                      "z": -5,
+                      "rotationX": 45,
+                      "color": "#606060",
+                      "name": "toe-1"
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "right leg": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 6,
+                      "height": 18,
+                      "depth": 6,
+                      "x": -8,
+                      "y": 12,
+                      "z": 0,
+                      "color": "#3A5A20",
+                      "name": "leg-right",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "box",
+                      "width": 8,
+                      "height": 3,
+                      "depth": 12,
+                      "x": -8,
+                      "y": 1,
+                      "z": 0,
+                      "color": "#2D4A18",
+                      "name": "foot-right"
+                    },
+                    {
+                      "type": "cone",
+                      "size": 2,
+                      "height": 4,
+                      "x": -6,
+                      "y": 1,
+                      "z": -5,
+                      "rotationX": 45,
+                      "color": "#606060",
+                      "name": "toe-1"
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "body": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 14,
+                      "height": 28,
+                      "depth": 14,
+                      "x": 0,
+                      "y": 24,
+                      "z": -3,
+                      "rotationX": 46,
+                      "color": "#4A7028",
+                      "name": "body",
+                      "texture": "scales"
+                    },
+                    {
+                      "type": "cone",
+                      "size": 5,
+                      "height": 8,
+                      "x": 0,
+                      "y": 38,
+                      "z": -3,
+                      "rotationX": -60,
+                      "color": "#3A5A20",
+                      "name": "spike1",
+                      "metalness": 0.3
+                    },
+                    {
+                      "type": "cone",
+                      "size": 5,
+                      "height": 8,
+                      "x": 0,
+                      "y": 30,
+                      "z": -10,
+                      "rotationX": -75,
+                      "color": "#2D4A18",
+                      "name": "spike2",
+                      "metalness": 0.3
+                    },
+                    {
+                      "type": "box",
+                      "width": 14,
+                      "height": 2,
+                      "depth": 14,
+                      "x": 0,
+                      "y": 12,
+                      "z": -3,
+                      "rotationX": 46,
+                      "color": "#8B0000",
+                      "name": "battle-scar"
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "tail base": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 8,
+                      "height": 6,
+                      "depth": 16,
+                      "x": 0,
+                      "y": 20,
+                      "z": -20,
+                      "rotationX": -20,
+                      "color": "#4A7028",
+                      "name": "tail-base"
+                    },
+                    {
+                      "type": "cone",
+                      "size": 4,
+                      "height": 6,
+                      "x": 0,
+                      "y": 24,
+                      "z": -22,
+                      "rotationX": -25,
+                      "color": "#2D4A18",
+                      "name": "spike3",
+                      "metalness": 0.3
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                },
+                "tail tip": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 6,
+                      "height": 4,
+                      "depth": 12,
+                      "x": 0,
+                      "y": 16,
+                      "z": -32,
+                      "rotationX": -10,
+                      "color": "#4A7028",
+                      "name": "tail-tip"
+                    },
+                    {
+                      "type": "cone",
+                      "size": 3,
+                      "height": 4,
+                      "x": 0,
+                      "y": 20,
+                      "z": -30,
+                      "rotationX": -25,
+                      "color": "#2D4A18",
+                      "name": "spike4",
+                      "metalness": 0.3
+                    },
+                    {
+                      "type": "box",
+                      "width": 6,
+                      "height": 1,
+                      "depth": 12,
+                      "x": 0,
+                      "y": 14,
+                      "z": -32,
+                      "rotationX": -10,
+                      "color": "#8B0000",
+                      "name": "tail-scar"
+                    }
+                  ],
+                  "position": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                }
+              }
+            ]
+          }
+        }
       }
     },
     "environment": {
@@ -28591,28 +33275,30 @@ const DEFAULT_PROJECT_CONFIG = {
       "wave1": {
         "title": "Wave 1",
         "enemies": [
-          "zombie",
-          "zombie",
-          "zombie",
-          "zombie",
-          "zombie",
-          "zombie",
-          "zombie",
-          "zombie",
-          "zombie"
+          "trex",
+          "trex",
+          "trex",
+          "trex",
+          "trex",
+          "trex",
+          "trex",
+          "new_trex"
         ]
       },
       "wave2": {
         "title": "Wave 2",
         "enemies": [
-          "skeleton",
-          "skeleton",
-          "skeleton",
-          "skeleton",
-          "skeleton",
-          "skeleton",
-          "skeleton",
-          "skeleton"
+          "trex",
+          "trex",
+          "trex",
+          "trex",
+          "trex",
+          "trex",
+          "trex",
+          "trex",
+          "trex",
+          "trex",
+          "new_trex"
         ]
       },
       "swarm": {
@@ -28626,6 +33312,7 @@ const DEFAULT_PROJECT_CONFIG = {
           "trex",
           "trex",
           "trex",
+          "new_trex",
           "trex",
           "trex",
           "trex",
@@ -28634,6 +33321,7 @@ const DEFAULT_PROJECT_CONFIG = {
           "trex",
           "trex",
           "trex",
+          "new_trex",
           "trex",
           "trex",
           "trex",
@@ -28642,6 +33330,7 @@ const DEFAULT_PROJECT_CONFIG = {
           "trex",
           "trex",
           "trex",
+          "new_trex",
           "trex",
           "trex",
           "trex",
@@ -28650,6 +33339,7 @@ const DEFAULT_PROJECT_CONFIG = {
           "trex",
           "trex",
           "trex",
+          "new_trex",
           "trex",
           "trex",
           "trex",
@@ -28658,6 +33348,7 @@ const DEFAULT_PROJECT_CONFIG = {
           "trex",
           "trex",
           "trex",
+          "new_trex",
           "trex",
           "trex",
           "trex",
@@ -28666,6 +33357,7 @@ const DEFAULT_PROJECT_CONFIG = {
           "trex",
           "trex",
           "trex",
+          "new_trex",
           "trex",
           "trex",
           "trex",
@@ -28674,6 +33366,7 @@ const DEFAULT_PROJECT_CONFIG = {
           "trex",
           "trex",
           "trex",
+          "new_trex",
           "trex",
           "trex",
           "trex",
@@ -28682,6 +33375,7 @@ const DEFAULT_PROJECT_CONFIG = {
           "trex",
           "trex",
           "trex",
+          "new_trex",
           "trex",
           "trex",
           "trex",
@@ -28690,6 +33384,7 @@ const DEFAULT_PROJECT_CONFIG = {
           "trex",
           "trex",
           "trex",
+          "new_trex",
           "trex",
           "trex",
           "trex",
@@ -28698,6 +33393,7 @@ const DEFAULT_PROJECT_CONFIG = {
           "trex",
           "trex",
           "trex",
+          "new_trex",
           "trex",
           "trex",
           "trex",
@@ -28706,6 +33402,7 @@ const DEFAULT_PROJECT_CONFIG = {
           "trex",
           "trex",
           "trex",
+          "new_trex",
           "trex",
           "trex",
           "trex",
@@ -28714,6 +33411,7 @@ const DEFAULT_PROJECT_CONFIG = {
           "trex",
           "trex",
           "trex",
+          "new_trex",
           "trex",
           "trex",
           "trex",
@@ -28722,6 +33420,7 @@ const DEFAULT_PROJECT_CONFIG = {
           "trex",
           "trex",
           "trex",
+          "new_trex",
           "trex",
           "trex",
           "trex",
@@ -28730,6 +33429,7 @@ const DEFAULT_PROJECT_CONFIG = {
           "trex",
           "trex",
           "trex",
+          "new_trex",
           "trex",
           "trex",
           "trex",
@@ -28738,6 +33438,7 @@ const DEFAULT_PROJECT_CONFIG = {
           "trex",
           "trex",
           "trex",
+          "new_trex",
           "trex",
           "trex",
           "trex",
@@ -28746,6 +33447,7 @@ const DEFAULT_PROJECT_CONFIG = {
           "trex",
           "trex",
           "trex",
+          "new_trex",
           "trex",
           "trex",
           "trex",
@@ -28754,6 +33456,7 @@ const DEFAULT_PROJECT_CONFIG = {
           "trex",
           "trex",
           "trex",
+          "new_trex",
           "trex",
           "trex",
           "trex",
@@ -28762,6 +33465,7 @@ const DEFAULT_PROJECT_CONFIG = {
           "trex",
           "trex",
           "trex",
+          "new_trex",
           "trex",
           "trex",
           "trex",
@@ -28770,6 +33474,7 @@ const DEFAULT_PROJECT_CONFIG = {
           "trex",
           "trex",
           "trex",
+          "new_trex",
           "trex",
           "trex",
           "trex",
@@ -28778,6 +33483,7 @@ const DEFAULT_PROJECT_CONFIG = {
           "trex",
           "trex",
           "trex",
+          "new_trex",
           "trex",
           "trex",
           "trex",
@@ -28786,6 +33492,7 @@ const DEFAULT_PROJECT_CONFIG = {
           "trex",
           "trex",
           "trex",
+          "new_trex",
           "trex",
           "trex",
           "trex",
@@ -28794,6 +33501,7 @@ const DEFAULT_PROJECT_CONFIG = {
           "trex",
           "trex",
           "trex",
+          "new_trex",
           "trex",
           "trex",
           "trex",
@@ -28802,6 +33510,7 @@ const DEFAULT_PROJECT_CONFIG = {
           "trex",
           "trex",
           "trex",
+          "new_trex",
           "trex",
           "trex",
           "trex",
@@ -28810,6 +33519,7 @@ const DEFAULT_PROJECT_CONFIG = {
           "trex",
           "trex",
           "trex",
+          "new_trex",
           "trex",
           "trex",
           "trex",
@@ -28818,6 +33528,7 @@ const DEFAULT_PROJECT_CONFIG = {
           "trex",
           "trex",
           "trex",
+          "new_trex",
           "trex",
           "trex",
           "trex",
@@ -28826,6 +33537,7 @@ const DEFAULT_PROJECT_CONFIG = {
           "trex",
           "trex",
           "trex",
+          "new_trex",
           "trex",
           "trex",
           "trex",
@@ -28834,1122 +33546,7 @@ const DEFAULT_PROJECT_CONFIG = {
           "trex",
           "trex",
           "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex",
-          "trex"
+          "new_trex"
         ],
         "spawnRateMultiplier": 2
       }
@@ -33110,74 +36707,6 @@ const DEFAULT_PROJECT_CONFIG = {
       }
     },
     "sounds": {
-      "TeslaAttack": {
-        "title": "Tesla Attack",
-        "audio": {
-          "waveform": "noise",
-          "frequency": 200,
-          "duration": 0.15,
-          "envelope": {
-            "attack": 0.001,
-            "decay": 0.03,
-            "sustain": 0.4,
-            "release": 0.02
-          },
-          "pitchEnvelope": {
-            "start": 2.5,
-            "end": 0.8,
-            "time": 0.15
-          },
-          "effects": {
-            "filter": {
-              "type": "bandpass",
-              "frequency": 1200,
-              "Q": 3
-            },
-            "distortion": 30,
-            "delay": {
-              "time": 0.05,
-              "feedback": 0.05
-            },
-            "reverb": 0.05,
-            "bitcrusher": 0.5,
-            "pan": 0
-          }
-        }
-      },
-      "laser": {
-        "title": "Laser",
-        "audio": {
-          "waveform": "triangle",
-          "frequency": 197,
-          "duration": 0.1,
-          "envelope": {
-            "attack": 0.001,
-            "decay": 0.076,
-            "sustain": 0.5,
-            "release": 0.001
-          },
-          "pitchEnvelope": {
-            "start": 3.41,
-            "end": 0.23,
-            "time": 0.1
-          },
-          "effects": {
-            "filter": {
-              "type": "lowpass",
-              "frequency": 400,
-              "Q": 1
-            },
-            "distortion": 5,
-            "delay": {
-              "time": 0.27,
-              "feedback": 0.09
-            },
-            "reverb": 0,
-            "bitcrusher": 0,
-            "pan": 0
-          }
-        }
-      },
       "pickup": {
         "title": "Pickup",
         "audio": {
@@ -33208,48 +36737,6 @@ const DEFAULT_PROJECT_CONFIG = {
             },
             "reverb": 0,
             "bitcrusher": 0.1,
-            "pan": 0
-          }
-        }
-      },
-      "Explosion": {
-        "title": "Explosion",
-        "audio": {
-          "waveform": "noise",
-          "frequency": 100,
-          "duration": 1,
-          "noise": {
-            "type": "white",
-            "amount": 0,
-            "filter": {
-              "type": "none",
-              "frequency": 2000
-            }
-          },
-          "envelope": {
-            "attack": 0.005,
-            "decay": 0.2,
-            "sustain": 0.3,
-            "release": 0.3
-          },
-          "pitchEnvelope": {
-            "start": 2,
-            "end": 0.5,
-            "time": 1
-          },
-          "effects": {
-            "filter": {
-              "type": "lowpass",
-              "frequency": 800,
-              "Q": 1
-            },
-            "distortion": 3,
-            "delay": {
-              "time": 0.15,
-              "feedback": 0.25
-            },
-            "reverb": 0.5,
-            "bitcrusher": 0.5,
             "pan": 0
           }
         }
@@ -33297,36 +36784,44 @@ const DEFAULT_PROJECT_CONFIG = {
           }
         }
       },
-      "Attack": {
-        "title": "Pickup",
+      "placeTower": {
+        "title": "Place Tower",
         "audio": {
-          "waveform": "triangle",
-          "frequency": 200,
-          "duration": 0.1,
+          "waveform": "sine",
+          "frequency": 20,
+          "duration": 0.2,
+          "noise": {
+            "type": "pink",
+            "amount": 0.8,
+            "filter": {
+              "type": "lowpass",
+              "frequency": 400
+            }
+          },
           "envelope": {
-            "attack": 0.001,
+            "attack": 0.01,
             "decay": 0,
-            "sustain": 0,
+            "sustain": 0.1,
             "release": 0.001
           },
           "pitchEnvelope": {
-            "start": 0.34,
-            "end": 1.89,
-            "time": 0.1
+            "start": 4,
+            "end": 4,
+            "time": 0.2
           },
           "effects": {
             "filter": {
               "type": "lowpass",
-              "frequency": 400,
+              "frequency": 500,
               "Q": 1
             },
-            "distortion": 20,
+            "distortion": 0,
             "delay": {
-              "time": 0,
+              "time": 0.05,
               "feedback": 0.2
             },
-            "reverb": 0,
-            "bitcrusher": 0.1,
+            "reverb": 0.3,
+            "bitcrusher": 0.4,
             "pan": 0
           }
         }
@@ -33351,7 +36846,7 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "aiPromptPanel"
       },
       "audioEditor": {
-        "script": "class AudioEditor {\r\n    constructor(gameEditor, config, {}) {\r\n        this.gameEditor = gameEditor;\r\n        let configObj = { state: {}, config: this.gameEditor.getCollections() };\r\n        this.audioManager = new (this.gameEditor.scriptContext.getComponent(\"AudioManager\"))(configObj, null, {} );\r\n        this.audioManager.init();\r\n        this.volume = 1;\r\n        this.setupEventListeners();\r\n        this.updateNoiseUI(); \r\n    }\r\n\r\n    setupEventListeners() {\r\n        const updateStatus = (message, type = 'default') => {\r\n            const status = document.getElementById('status-message');\r\n            if (status) {\r\n                status.textContent = message;\r\n                status.className = type === 'success' ? 'success' : type === 'error' ? 'error' : '';\r\n            }\r\n        };\r\n\r\n        const updateSliderDisplay = (sliderId, formatFn) => {\r\n            const slider = document.getElementById(sliderId);\r\n            if (slider) {\r\n                const updateDisplayValue = () => {\r\n                    const display = slider.nextElementSibling;\r\n                    if (display && display.classList.contains('value-display')) {\r\n                        display.textContent = formatFn(parseFloat(slider.value));\r\n                    }\r\n                };\r\n                \r\n                slider.addEventListener('input', updateDisplayValue);\r\n                updateDisplayValue();\r\n            }\r\n        };\r\n\r\n        document.body.addEventListener('editAudio', (event) => {\r\n            try {\r\n                const settings = event.detail.data;\r\n                this.updateUIFromSettings(settings);                \r\n                updateStatus('Audio settings imported', 'success');\r\n            } catch (err) {\r\n                updateStatus('Error importing audio settings: ' + err.message, 'error');\r\n            }\r\n        });\r\n\r\n        const playBtn = document.getElementById('playBtn');\r\n        \r\n        playBtn?.addEventListener('click', () => {\r\n            this.playCurrentSound();\r\n        });\r\n\r\n        document.getElementById('exportBtn')?.addEventListener('click', () => {\r\n            const settings = this.getUISettings();\r\n            this.saveAudio(settings);\r\n            updateStatus('Audio settings exported', 'success');\r\n        });\r\n\r\n        this.setupUIControls(updateSliderDisplay);\r\n\r\n\r\n\r\n    }\r\n    setVolume(value) {\r\n        this.volume = value;\r\n    }\r\n    setupUIControls(updateSliderDisplay) {\r\n        updateSliderDisplay('volume', (val) => `${Math.round(val * 100)}%`);\r\n        document.getElementById('volume')?.addEventListener('input', (e) => {\r\n            const volume = parseFloat(e.target.value);\r\n            this.setVolume(volume, e);\r\n        });\r\n\r\n        updateSliderDisplay('frequency', (val) => `${val} Hz`);\r\n        updateSliderDisplay('duration', (val) => `${val.toFixed(2)} s`);\r\n        \r\n        updateSliderDisplay('attack', (val) => `${val.toFixed(3)} s`);\r\n        updateSliderDisplay('decay', (val) => `${val.toFixed(2)} s`);\r\n        updateSliderDisplay('sustain', (val) => `${Math.round(val * 100)}%`);\r\n        updateSliderDisplay('release', (val) => `${val.toFixed(2)} s`);\r\n        \r\n        updateSliderDisplay('pitchEnvStart', (val) => `${val.toFixed(2)}x`);\r\n        updateSliderDisplay('pitchEnvEnd', (val) => `${val.toFixed(2)}x`);\r\n        \r\n\r\n        updateSliderDisplay('filterFreq', (val) => `${val} Hz`);\r\n\r\n        \r\n        updateSliderDisplay('filterQ', (val) => `Q: ${val.toFixed(1)}`);\r\n        \r\n        updateSliderDisplay('distortion', (val) => `${Math.round(val)}%`);\r\n\r\n        \r\n        updateSliderDisplay('delayTime', (val) => `${val.toFixed(2)} s`);\r\n \r\n        \r\n        updateSliderDisplay('delayFeedback', (val) => `${Math.round(val * 100)}%`);\r\n\r\n        \r\n        updateSliderDisplay('reverbAmount', (val) => `${Math.round(val * 100)}%`);\r\n   \r\n        \r\n        updateSliderDisplay('bitcrusher', (val) => `${Math.round(val * 100)}%`);\r\n\r\n        \r\n        updateSliderDisplay('panning', (val) => {\r\n            if (val === 0) return \"Center\";\r\n            return val < 0 ? `${Math.abs(Math.round(val * 100))}% Left` : `${Math.round(val * 100)}% Right`;\r\n        });\r\n\r\n    }\r\n\r\n    getUISettings() {\r\n        return {\r\n            waveform: document.getElementById('waveform')?.value || 'sine',\r\n            frequency: parseFloat(document.getElementById('frequency')?.value || 440),\r\n            duration: parseFloat(document.getElementById('duration')?.value || 1),\r\n            noise: {\r\n                type: document.getElementById('noiseType')?.value || 'white',\r\n                amount: parseFloat(document.getElementById('noiseAmount')?.value || 0),\r\n                filter: {\r\n                    type: document.getElementById('noiseFilterType')?.value || 'none',\r\n                    frequency: parseFloat(document.getElementById('noiseFilterFreq')?.value || 2000)\r\n                }\r\n            },\r\n            envelope: {\r\n                attack: parseFloat(document.getElementById('attack')?.value || 0.01),\r\n                decay: parseFloat(document.getElementById('decay')?.value || 0.1),\r\n                sustain: parseFloat(document.getElementById('sustain')?.value || 0.7),\r\n                release: parseFloat(document.getElementById('release')?.value || 0.3),\r\n            },\r\n            pitchEnvelope: {\r\n                start: parseFloat(document.getElementById('pitchEnvStart')?.value || 1),\r\n                end: parseFloat(document.getElementById('pitchEnvEnd')?.value || 1),\r\n                time: parseFloat(document.getElementById('duration')?.value || 1)\r\n            },\r\n            effects: {\r\n                filter: {\r\n                    type: document.getElementById('filterType')?.value || 'lowpass',\r\n                    frequency: parseFloat(document.getElementById('filterFreq')?.value || 1000),\r\n                    Q: parseFloat(document.getElementById('filterQ')?.value || 1)\r\n                },\r\n                distortion: parseFloat(document.getElementById('distortion')?.value || 0),\r\n                delay: {\r\n                    time: parseFloat(document.getElementById('delayTime')?.value || 0.3),\r\n                    feedback: parseFloat(document.getElementById('delayFeedback')?.value || 0)\r\n                },\r\n                reverb: parseFloat(document.getElementById('reverbAmount')?.value || 0),\r\n                bitcrusher: parseFloat(document.getElementById('bitcrusher')?.value || 0),\r\n                pan: parseFloat(document.getElementById('panning')?.value || 0)\r\n            }\r\n        };\r\n    }\r\n\r\n    updateUIFromSettings(settings) {\r\n        if (!settings) return;\r\n        \r\n        this.setElementValue('waveform', settings.waveform);\r\n        this.setElementValue('frequency', settings.frequency);\r\n        this.setElementValue('duration', settings.duration);\r\n        \r\n        if (settings.envelope) {\r\n            this.setElementValue('attack', settings.envelope.attack);\r\n            this.setElementValue('decay', settings.envelope.decay);\r\n            this.setElementValue('sustain', settings.envelope.sustain);\r\n            this.setElementValue('release', settings.envelope.release);\r\n        }\r\n        \r\n        if (settings.pitchEnvelope) {\r\n            this.setElementValue('pitchEnvStart', settings.pitchEnvelope.start);\r\n            this.setElementValue('pitchEnvEnd', settings.pitchEnvelope.end);\r\n        }\r\n        \r\n        if (settings.effects) {\r\n            if (settings.effects.filter) {\r\n                this.setElementValue('filterType', settings.effects.filter.type);\r\n                this.setElementValue('filterFreq', settings.effects.filter.frequency);\r\n                this.setElementValue('filterQ', settings.effects.filter.Q);\r\n                \r\n            }\r\n            \r\n            this.setElementValue('distortion', settings.effects.distortion);\r\n            \r\n            if (settings.effects.delay) {\r\n                this.setElementValue('delayTime', settings.effects.delay.time);\r\n                this.setElementValue('delayFeedback', settings.effects.delay.feedback);\r\n            }\r\n            \r\n            this.setElementValue('reverbAmount', settings.effects.reverb);\r\n            \r\n            this.setElementValue('bitcrusher', settings.effects.bitcrusher);\r\n\r\n            this.setElementValue('panning', settings.effects.pan);\r\n        }\r\n        if (settings.noise) {\r\n            this.setElementValue('noiseType', settings.noise.type);\r\n            this.setElementValue('noiseAmount', settings.noise.amount);\r\n            \r\n            if (settings.noise.filter) {\r\n                this.setElementValue('noiseFilterType', settings.noise.filter.type);\r\n                this.setElementValue('noiseFilterFreq', settings.noise.filter.frequency);\r\n            }\r\n        }\r\n        document.querySelectorAll('input[type=\"range\"]').forEach(el => {\r\n            el.dispatchEvent(new Event('input'));\r\n        });\r\n        document.getElementById('randomSoundBtn')?.addEventListener('click', () => {\r\n            this.generateRandomSound();\r\n            this.playCurrentSound();\r\n        });\r\n    }\r\n    generateRandomSound() {\r\n        // Waveform options (including noise)\r\n        const waveforms = ['sine', 'square', 'sawtooth', 'triangle', 'noise'];\r\n        \r\n        // Noise types\r\n        const noiseTypes = ['white', 'pink', 'brown'];\r\n        \r\n        // Filter types\r\n        const filterTypes = ['lowpass', 'highpass', 'bandpass', 'none'];\r\n        \r\n        // Random helpers\r\n        const random = (min, max) => Math.random() * (max - min) + min;\r\n        const randomInt = (min, max) => Math.floor(random(min, max + 1));\r\n        const randomItem = (arr) => arr[randomInt(0, arr.length - 1)];\r\n        \r\n        // Generate random settings\r\n        const settings = {\r\n            waveform: randomItem(waveforms),\r\n            frequency: random(50, 2000),\r\n            duration: random(0.1, 3),\r\n            noise: {\r\n                type: randomItem(noiseTypes),\r\n                amount: random(0, 0), // Keep below 1.0 to avoid overpowering\r\n                filter: {\r\n                    type: randomItem(filterTypes),\r\n                    frequency: random(100, 10000),\r\n                    Q: random(0.5, 5)\r\n                }\r\n            },\r\n            envelope: {\r\n                attack: random(0.001, 0.5),\r\n                decay: random(0.01, 1),\r\n                sustain: random(0, 1),\r\n                release: random(0.01, 2)\r\n            },\r\n            pitchEnvelope: {\r\n                start: random(0.5, 2),\r\n                end: random(0.5, 2),\r\n                time: random(0.1, 2)\r\n            },\r\n            effects: {\r\n                filter: {\r\n                    type: randomItem(filterTypes),\r\n                    frequency: random(50, 10000),\r\n                    Q: random(0.5, 5)\r\n                },\r\n                distortion: random(0, 0.8),\r\n                delay: {\r\n                    time: random(0, 1),\r\n                    feedback: random(0, 0.7) // Avoid infinite feedback\r\n                },\r\n                reverb: random(0, 0.7),\r\n                bitcrusher: random(0, 0.5),\r\n                pan: random(-1, 1)\r\n            }\r\n        };\r\n\r\n        // Special case: If waveform is noise, disable oscillator frequency\r\n        if (settings.waveform === 'noise') {\r\n            settings.noise.amount = 1.0; // Full noise when selected\r\n            settings.frequency = 440; // Dummy value (unused)\r\n        }\r\n\r\n        // Ensure noise filter isn't \"none\" if noise is active\r\n        if (settings.noise.amount > 0 && settings.noise.filter.type === 'none') {\r\n            settings.noise.filter.type = randomItem(filterTypes.filter(t => t !== 'none'));\r\n        }\r\n\r\n        // Update UI with the new random sound\r\n        this.updateUIFromSettings(settings);\r\n        return settings;\r\n    }\r\n\r\n    updateNoiseUI() {\r\n    \r\n        // Setup the slider display update\r\n        this.setupNoiseControls();\r\n    }\r\n    \r\n    setupNoiseControls() {\r\n        const updateSliderDisplay = (sliderId, formatFn) => {\r\n            const slider = document.getElementById(sliderId);\r\n            if (slider) {\r\n                const updateDisplayValue = () => {\r\n                    const display = slider.nextElementSibling;\r\n                    if (display && display.classList.contains('value-display')) {\r\n                        display.textContent = formatFn(parseFloat(slider.value));\r\n                    }\r\n                };\r\n                \r\n                slider.addEventListener('input', updateDisplayValue);\r\n                updateDisplayValue();\r\n            }\r\n        };\r\n    \r\n        updateSliderDisplay('noiseAmount', (val) => `${Math.round(val * 100)}%`);\r\n        updateSliderDisplay('noiseFilterFreq', (val) => `${val} Hz`);\r\n    }\r\n\r\n    setElementValue(id, value) {\r\n        const element = document.getElementById(id);\r\n        if (element) element.value = value;\r\n    }\r\n\r\n\r\n    saveAudio(settingsObj) {\r\n        document.body.dispatchEvent(new CustomEvent('saveAudio', {   \r\n            detail: { data: settingsObj, propertyName: 'audio' },\r\n        }));\r\n    }\r\n\r\n    playCurrentSound() {\r\n        const settings = this.getUISettings();\r\n        this.audioManager.playSynthSound('audioEditorSound', settings);\r\n    }\r\n    \r\n}\r\n\r\n// setupKeyboard() {\r\n//     const keyboard = document.getElementById('keyboard');\r\n//     if (!keyboard) return;\r\n    \r\n//     keyboard.innerHTML = '';\r\n    \r\n//     const keyboardLayout = [\r\n//         { note: 'C4', key: 'a', frequency: 261.63, type: 'white' },\r\n//         { note: 'C#4', key: 'w', frequency: 277.18, type: 'black' },\r\n//         { note: 'D4', key: 's', frequency: 293.66, type: 'white' },\r\n//         { note: 'D#4', key: 'e', frequency: 311.13, type: 'black' },\r\n//         { note: 'E4', key: 'd', frequency: 329.63, type: 'white' },\r\n//         { note: 'F4', key: 'f', frequency: 349.23, type: 'white' },\r\n//         { note: 'F#4', key: 't', frequency: 369.99, type: 'black' },\r\n//         { note: 'G4', key: 'g', frequency: 392.00, type: 'white' },\r\n//         { note: 'G#4', key: 'y', frequency: 415.30, type: 'black' },\r\n//         { note: 'A4', key: 'h', frequency: 440.00, type: 'white' },\r\n//         { note: 'A#4', key: 'u', frequency: 466.16, type: 'black' },\r\n//         { note: 'B4', key: 'j', frequency: 493.88, type: 'white' },\r\n//         { note: 'C5', key: 'k', frequency: 523.25, type: 'white' }\r\n//     ];\r\n    \r\n//     keyboardLayout.forEach(note => {\r\n//         const key = document.createElement('div');\r\n//         key.className = `key ${note.type}`;\r\n//         key.dataset.note = note.note;\r\n//         key.dataset.frequency = note.frequency;\r\n//         key.innerHTML = `<span>${note.note}</span><span class=\"key-label\">${note.key}</span>`;\r\n        \r\n//         key.addEventListener('mousedown', () => {\r\n//             key.classList.add('active');\r\n//             this.playNote(note.frequency);\r\n//         });\r\n//         key.addEventListener('mouseup', () => {\r\n//             key.classList.remove('active');\r\n//             this.stopNote(note.frequency);\r\n//         });\r\n//         key.addEventListener('mouseleave', () => {\r\n//             if (key.classList.contains('active')) {\r\n//                 key.classList.remove('active');\r\n//                 this.stopNote(note.frequency);\r\n//             }\r\n//         });\r\n        \r\n//         keyboard.appendChild(key);\r\n//     });\r\n    \r\n//     const keyToNote = {};\r\n//     keyboardLayout.forEach(note => {\r\n//         keyToNote[note.key] = note.frequency;\r\n//     });\r\n    \r\n//     window.addEventListener('keydown', (e) => {\r\n//         if (e.repeat) return;\r\n//         const key = e.key.toLowerCase();\r\n//         if (keyToNote[key]) {\r\n//             this.playNote(keyToNote[key]);\r\n//             const keyElement = Array.from(keyboard.children).find(\r\n//                 k => k.dataset.frequency == keyToNote[key]\r\n//             );\r\n//             if (keyElement) keyElement.classList.add('active');\r\n//         }\r\n//     });\r\n    \r\n//     window.addEventListener('keyup', (e) => {\r\n//         const key = e.key.toLowerCase();\r\n//         if (keyToNote[key]) {\r\n//             this.stopNote(keyToNote[key]);\r\n//             const keyElement = Array.from(keyboard.children).find(\r\n//                 k => k.dataset.frequency == keyToNote[key]\r\n//             );\r\n//             if (keyElement) keyElement.classList.remove('active');\r\n//         }\r\n//     });\r\n// }\r\n\r\n// stopNote(frequency) {\r\n//     if (!this.activeNotes.has(frequency)) return;\r\n    \r\n//     const note = this.activeNotes.get(frequency);\r\n//     const now = this.audioContext.currentTime;\r\n//     const settings = this.getUISettings();\r\n//     const release = settings.envelope.release;\r\n    \r\n//     note.envelopeGain.gain.cancelScheduledValues(now);\r\n//     note.envelopeGain.gain.setValueAtTime(note.envelopeGain.gain.value, now);\r\n//     note.envelopeGain.gain.linearRampToValueAtTime(0, now + release);\r\n    \r\n//     note.oscillator.stop(now + release + 0.1);\r\n    \r\n//     setTimeout(() => {\r\n//         this.activeNotes.delete(frequency);\r\n//     }, (release + 0.2) * 1000);\r\n// }\r\n// playNote(frequency) {\r\n//     if (this.activeNotes.has(frequency)) {\r\n//         this.stopNote(frequency);\r\n//     }\r\n    \r\n//     const settings = this.getUISettings();\r\n//     settings.frequency = frequency;\r\n    \r\n//     const now = this.audioContext.currentTime;\r\n//     const oscillator = this.createOscillator(settings);\r\n//     oscillator.connect(this.filter);\r\n//     oscillator.start(now);\r\n    \r\n//     this.activeNotes.set(frequency, {\r\n//         oscillator,\r\n//         envelopeGain: this.masterGainNode,\r\n//         startTime: now\r\n//     });\r\n    \r\n//     this.connectVisualizer(oscillator);\r\n// }\r\n// Audio Visualizer class\r\nclass AudioVisualizer {\r\n    constructor(canvas, audioContext) {\r\n        this.canvas = canvas;\r\n        this.ctx = canvas.getContext('2d');\r\n        this.audioContext = audioContext;\r\n        this.analyzer = audioContext.createAnalyser();\r\n        this.analyzer.fftSize = 2048;\r\n        this.bufferLength = this.analyzer.frequencyBinCount;\r\n        this.dataArray = new Uint8Array(this.bufferLength);\r\n        this.analyzer.connect(audioContext.destination);\r\n        \r\n      \r\n        \r\n        // Start visualization loop\r\n        this.visualize();\r\n    }\r\n    \r\n    connectSource(source) {\r\n        source.connect(this.analyzer);\r\n    }\r\n    \r\n    drawWaveform(audioBuffer) {\r\n        const data = audioBuffer.getChannelData(0);\r\n        const step = Math.ceil(data.length / this.canvas.width);\r\n        const amp = this.canvas.height / 2;\r\n        \r\n        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);\r\n        this.ctx.beginPath();\r\n        this.ctx.moveTo(0, amp);\r\n        \r\n        for (let i = 0; i < this.canvas.width; i++) {\r\n            const idx = Math.floor(i * step);\r\n            const y = amp + data[idx] * amp;\r\n            this.ctx.lineTo(i, y);\r\n        }\r\n        \r\n        this.ctx.strokeStyle = '#2196F3';\r\n        this.ctx.stroke();\r\n    }\r\n    \r\n    visualize() {\r\n        requestAnimationFrame(() => this.visualize());\r\n        \r\n        this.analyzer.getByteTimeDomainData(this.dataArray);\r\n        \r\n        this.ctx.fillStyle = 'rgb(200, 200, 200)';\r\n        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);\r\n        \r\n        this.ctx.lineWidth = 2;\r\n        this.ctx.strokeStyle = 'rgb(0, 0, 0)';\r\n        this.ctx.beginPath();\r\n        \r\n        const sliceWidth = this.canvas.width * 1.0 / this.bufferLength;\r\n        let x = 0;\r\n        \r\n        for (let i = 0; i < this.bufferLength; i++) {\r\n            const v = this.dataArray[i] / 128.0;\r\n            const y = v * this.canvas.height / 2;\r\n            \r\n            if (i === 0) {\r\n                this.ctx.moveTo(x, y);\r\n            } else {\r\n                this.ctx.lineTo(x, y);\r\n            }\r\n            \r\n            x += sliceWidth;\r\n        }\r\n        \r\n        this.ctx.lineTo(this.canvas.width, this.canvas.height / 2);\r\n        this.ctx.stroke();\r\n    }\r\n    \r\n}",
+        "script": "class AudioEditor {\r\n    constructor(gameEditor) {\r\n        this.gameEditor = gameEditor;\r\n        let configObj = { state: {}, config: this.gameEditor.getCollections() };\r\n        this.audioManager = new (this.gameEditor.scriptContext.getComponent(\"AudioManager\"))(configObj, null, {} );\r\n        this.audioManager.init();\r\n        this.volume = 1;\r\n        this.setupEventListeners();\r\n        this.updateNoiseUI(); \r\n    }\r\n\r\n    setupEventListeners() {\r\n        const updateStatus = (message, type = 'default') => {\r\n            const status = document.getElementById('status-message');\r\n            if (status) {\r\n                status.textContent = message;\r\n                status.className = type === 'success' ? 'success' : type === 'error' ? 'error' : '';\r\n            }\r\n        };\r\n\r\n        const updateSliderDisplay = (sliderId, formatFn) => {\r\n            const slider = document.getElementById(sliderId);\r\n            if (slider) {\r\n                const updateDisplayValue = () => {\r\n                    const display = slider.nextElementSibling;\r\n                    if (display && display.classList.contains('value-display')) {\r\n                        display.textContent = formatFn(parseFloat(slider.value));\r\n                    }\r\n                };\r\n                \r\n                slider.addEventListener('input', updateDisplayValue);\r\n                updateDisplayValue();\r\n            }\r\n        };\r\n\r\n        document.body.addEventListener('editAudio', (event) => {\r\n            try {\r\n                const settings = event.detail.data;\r\n                this.updateUIFromSettings(settings);                \r\n                updateStatus('Audio settings imported', 'success');\r\n            } catch (err) {\r\n                updateStatus('Error importing audio settings: ' + err.message, 'error');\r\n            }\r\n        });\r\n\r\n        const playBtn = document.getElementById('playBtn');\r\n        \r\n        playBtn?.addEventListener('click', () => {\r\n            this.playCurrentSound();\r\n        });\r\n\r\n        document.getElementById('exportBtn')?.addEventListener('click', () => {\r\n            const settings = this.getUISettings();\r\n            this.saveAudio(settings);\r\n            updateStatus('Audio settings exported', 'success');\r\n        });\r\n\r\n        this.setupUIControls(updateSliderDisplay);\r\n\r\n\r\n\r\n    }\r\n    setVolume(value) {\r\n        this.volume = value;\r\n    }\r\n    setupUIControls(updateSliderDisplay) {\r\n        updateSliderDisplay('volume', (val) => `${Math.round(val * 100)}%`);\r\n        document.getElementById('volume')?.addEventListener('input', (e) => {\r\n            const volume = parseFloat(e.target.value);\r\n            this.setVolume(volume, e);\r\n        });\r\n\r\n        updateSliderDisplay('frequency', (val) => `${val} Hz`);\r\n        updateSliderDisplay('duration', (val) => `${val.toFixed(2)} s`);\r\n        \r\n        updateSliderDisplay('attack', (val) => `${val.toFixed(3)} s`);\r\n        updateSliderDisplay('decay', (val) => `${val.toFixed(2)} s`);\r\n        updateSliderDisplay('sustain', (val) => `${Math.round(val * 100)}%`);\r\n        updateSliderDisplay('release', (val) => `${val.toFixed(2)} s`);\r\n        \r\n        updateSliderDisplay('pitchEnvStart', (val) => `${val.toFixed(2)}x`);\r\n        updateSliderDisplay('pitchEnvEnd', (val) => `${val.toFixed(2)}x`);\r\n        \r\n\r\n        updateSliderDisplay('filterFreq', (val) => `${val} Hz`);\r\n\r\n        \r\n        updateSliderDisplay('filterQ', (val) => `Q: ${val.toFixed(1)}`);\r\n        \r\n        updateSliderDisplay('distortion', (val) => `${Math.round(val)}%`);\r\n\r\n        \r\n        updateSliderDisplay('delayTime', (val) => `${val.toFixed(2)} s`);\r\n \r\n        \r\n        updateSliderDisplay('delayFeedback', (val) => `${Math.round(val * 100)}%`);\r\n\r\n        \r\n        updateSliderDisplay('reverbAmount', (val) => `${Math.round(val * 100)}%`);\r\n   \r\n        \r\n        updateSliderDisplay('bitcrusher', (val) => `${Math.round(val * 100)}%`);\r\n\r\n        \r\n        updateSliderDisplay('panning', (val) => {\r\n            if (val === 0) return \"Center\";\r\n            return val < 0 ? `${Math.abs(Math.round(val * 100))}% Left` : `${Math.round(val * 100)}% Right`;\r\n        });\r\n\r\n    }\r\n\r\n    getUISettings() {\r\n        return {\r\n            waveform: document.getElementById('waveform')?.value || 'sine',\r\n            frequency: parseFloat(document.getElementById('frequency')?.value || 440),\r\n            duration: parseFloat(document.getElementById('duration')?.value || 1),\r\n            noise: {\r\n                type: document.getElementById('noiseType')?.value || 'white',\r\n                amount: parseFloat(document.getElementById('noiseAmount')?.value || 0),\r\n                filter: {\r\n                    type: document.getElementById('noiseFilterType')?.value || 'none',\r\n                    frequency: parseFloat(document.getElementById('noiseFilterFreq')?.value || 2000)\r\n                }\r\n            },\r\n            envelope: {\r\n                attack: parseFloat(document.getElementById('attack')?.value || 0.01),\r\n                decay: parseFloat(document.getElementById('decay')?.value || 0.1),\r\n                sustain: parseFloat(document.getElementById('sustain')?.value || 0.7),\r\n                release: parseFloat(document.getElementById('release')?.value || 0.3),\r\n            },\r\n            pitchEnvelope: {\r\n                start: parseFloat(document.getElementById('pitchEnvStart')?.value || 1),\r\n                end: parseFloat(document.getElementById('pitchEnvEnd')?.value || 1),\r\n                time: parseFloat(document.getElementById('duration')?.value || 1)\r\n            },\r\n            effects: {\r\n                filter: {\r\n                    type: document.getElementById('filterType')?.value || 'lowpass',\r\n                    frequency: parseFloat(document.getElementById('filterFreq')?.value || 1000),\r\n                    Q: parseFloat(document.getElementById('filterQ')?.value || 1)\r\n                },\r\n                distortion: parseFloat(document.getElementById('distortion')?.value || 0),\r\n                delay: {\r\n                    time: parseFloat(document.getElementById('delayTime')?.value || 0.3),\r\n                    feedback: parseFloat(document.getElementById('delayFeedback')?.value || 0)\r\n                },\r\n                reverb: parseFloat(document.getElementById('reverbAmount')?.value || 0),\r\n                bitcrusher: parseFloat(document.getElementById('bitcrusher')?.value || 0),\r\n                pan: parseFloat(document.getElementById('panning')?.value || 0)\r\n            }\r\n        };\r\n    }\r\n\r\n    updateUIFromSettings(settings) {\r\n        if (!settings) return;\r\n        \r\n        this.setElementValue('waveform', settings.waveform);\r\n        this.setElementValue('frequency', settings.frequency);\r\n        this.setElementValue('duration', settings.duration);\r\n        \r\n        if (settings.envelope) {\r\n            this.setElementValue('attack', settings.envelope.attack);\r\n            this.setElementValue('decay', settings.envelope.decay);\r\n            this.setElementValue('sustain', settings.envelope.sustain);\r\n            this.setElementValue('release', settings.envelope.release);\r\n        }\r\n        \r\n        if (settings.pitchEnvelope) {\r\n            this.setElementValue('pitchEnvStart', settings.pitchEnvelope.start);\r\n            this.setElementValue('pitchEnvEnd', settings.pitchEnvelope.end);\r\n        }\r\n        \r\n        if (settings.effects) {\r\n            if (settings.effects.filter) {\r\n                this.setElementValue('filterType', settings.effects.filter.type);\r\n                this.setElementValue('filterFreq', settings.effects.filter.frequency);\r\n                this.setElementValue('filterQ', settings.effects.filter.Q);\r\n                \r\n            }\r\n            \r\n            this.setElementValue('distortion', settings.effects.distortion);\r\n            \r\n            if (settings.effects.delay) {\r\n                this.setElementValue('delayTime', settings.effects.delay.time);\r\n                this.setElementValue('delayFeedback', settings.effects.delay.feedback);\r\n            }\r\n            \r\n            this.setElementValue('reverbAmount', settings.effects.reverb);\r\n            \r\n            this.setElementValue('bitcrusher', settings.effects.bitcrusher);\r\n\r\n            this.setElementValue('panning', settings.effects.pan);\r\n        }\r\n        if (settings.noise) {\r\n            this.setElementValue('noiseType', settings.noise.type);\r\n            this.setElementValue('noiseAmount', settings.noise.amount);\r\n            \r\n            if (settings.noise.filter) {\r\n                this.setElementValue('noiseFilterType', settings.noise.filter.type);\r\n                this.setElementValue('noiseFilterFreq', settings.noise.filter.frequency);\r\n            }\r\n        }\r\n        document.querySelectorAll('input[type=\"range\"]').forEach(el => {\r\n            el.dispatchEvent(new Event('input'));\r\n        });\r\n        document.getElementById('randomSoundBtn')?.addEventListener('click', () => {\r\n            this.generateRandomSound();\r\n            this.playCurrentSound();\r\n        });\r\n    }\r\n    generateRandomSound() {\r\n        // Waveform options (including noise)\r\n        const waveforms = ['sine', 'square', 'sawtooth', 'triangle', 'noise'];\r\n        \r\n        // Noise types\r\n        const noiseTypes = ['white', 'pink', 'brown'];\r\n        \r\n        // Filter types\r\n        const filterTypes = ['lowpass', 'highpass', 'bandpass', 'none'];\r\n        \r\n        // Random helpers\r\n        const random = (min, max) => Math.random() * (max - min) + min;\r\n        const randomInt = (min, max) => Math.floor(random(min, max + 1));\r\n        const randomItem = (arr) => arr[randomInt(0, arr.length - 1)];\r\n        \r\n        // Generate random settings\r\n        const settings = {\r\n            waveform: randomItem(waveforms),\r\n            frequency: random(50, 2000),\r\n            duration: random(0.1, 3),\r\n            noise: {\r\n                type: randomItem(noiseTypes),\r\n                amount: random(0, 0), // Keep below 1.0 to avoid overpowering\r\n                filter: {\r\n                    type: randomItem(filterTypes),\r\n                    frequency: random(100, 10000),\r\n                    Q: random(0.5, 5)\r\n                }\r\n            },\r\n            envelope: {\r\n                attack: random(0.001, 0.5),\r\n                decay: random(0.01, 1),\r\n                sustain: random(0, 1),\r\n                release: random(0.01, 2)\r\n            },\r\n            pitchEnvelope: {\r\n                start: random(0.5, 2),\r\n                end: random(0.5, 2),\r\n                time: random(0.1, 2)\r\n            },\r\n            effects: {\r\n                filter: {\r\n                    type: randomItem(filterTypes),\r\n                    frequency: random(50, 10000),\r\n                    Q: random(0.5, 5)\r\n                },\r\n                distortion: random(0, 0.8),\r\n                delay: {\r\n                    time: random(0, 1),\r\n                    feedback: random(0, 0.7) // Avoid infinite feedback\r\n                },\r\n                reverb: random(0, 0.7),\r\n                bitcrusher: random(0, 0.5),\r\n                pan: random(-1, 1)\r\n            }\r\n        };\r\n\r\n        // Special case: If waveform is noise, disable oscillator frequency\r\n        if (settings.waveform === 'noise') {\r\n            settings.noise.amount = 1.0; // Full noise when selected\r\n            settings.frequency = 440; // Dummy value (unused)\r\n        }\r\n\r\n        // Ensure noise filter isn't \"none\" if noise is active\r\n        if (settings.noise.amount > 0 && settings.noise.filter.type === 'none') {\r\n            settings.noise.filter.type = randomItem(filterTypes.filter(t => t !== 'none'));\r\n        }\r\n\r\n        // Update UI with the new random sound\r\n        this.updateUIFromSettings(settings);\r\n        return settings;\r\n    }\r\n\r\n    updateNoiseUI() {\r\n    \r\n        // Setup the slider display update\r\n        this.setupNoiseControls();\r\n    }\r\n    \r\n    setupNoiseControls() {\r\n        const updateSliderDisplay = (sliderId, formatFn) => {\r\n            const slider = document.getElementById(sliderId);\r\n            if (slider) {\r\n                const updateDisplayValue = () => {\r\n                    const display = slider.nextElementSibling;\r\n                    if (display && display.classList.contains('value-display')) {\r\n                        display.textContent = formatFn(parseFloat(slider.value));\r\n                    }\r\n                };\r\n                \r\n                slider.addEventListener('input', updateDisplayValue);\r\n                updateDisplayValue();\r\n            }\r\n        };\r\n    \r\n        updateSliderDisplay('noiseAmount', (val) => `${Math.round(val * 100)}%`);\r\n        updateSliderDisplay('noiseFilterFreq', (val) => `${val} Hz`);\r\n    }\r\n\r\n    setElementValue(id, value) {\r\n        const element = document.getElementById(id);\r\n        if (element) element.value = value;\r\n    }\r\n\r\n\r\n    saveAudio(settingsObj) {\r\n        document.body.dispatchEvent(new CustomEvent('saveAudio', {   \r\n            detail: { data: settingsObj, propertyName: 'audio' },\r\n        }));\r\n    }\r\n\r\n    playCurrentSound() {\r\n        const settings = this.getUISettings();\r\n        this.audioManager.playSynthSound('audioEditorSound', settings);\r\n    }\r\n    \r\n}\r\n\r\n// setupKeyboard() {\r\n//     const keyboard = document.getElementById('keyboard');\r\n//     if (!keyboard) return;\r\n    \r\n//     keyboard.innerHTML = '';\r\n    \r\n//     const keyboardLayout = [\r\n//         { note: 'C4', key: 'a', frequency: 261.63, type: 'white' },\r\n//         { note: 'C#4', key: 'w', frequency: 277.18, type: 'black' },\r\n//         { note: 'D4', key: 's', frequency: 293.66, type: 'white' },\r\n//         { note: 'D#4', key: 'e', frequency: 311.13, type: 'black' },\r\n//         { note: 'E4', key: 'd', frequency: 329.63, type: 'white' },\r\n//         { note: 'F4', key: 'f', frequency: 349.23, type: 'white' },\r\n//         { note: 'F#4', key: 't', frequency: 369.99, type: 'black' },\r\n//         { note: 'G4', key: 'g', frequency: 392.00, type: 'white' },\r\n//         { note: 'G#4', key: 'y', frequency: 415.30, type: 'black' },\r\n//         { note: 'A4', key: 'h', frequency: 440.00, type: 'white' },\r\n//         { note: 'A#4', key: 'u', frequency: 466.16, type: 'black' },\r\n//         { note: 'B4', key: 'j', frequency: 493.88, type: 'white' },\r\n//         { note: 'C5', key: 'k', frequency: 523.25, type: 'white' }\r\n//     ];\r\n    \r\n//     keyboardLayout.forEach(note => {\r\n//         const key = document.createElement('div');\r\n//         key.className = `key ${note.type}`;\r\n//         key.dataset.note = note.note;\r\n//         key.dataset.frequency = note.frequency;\r\n//         key.innerHTML = `<span>${note.note}</span><span class=\"key-label\">${note.key}</span>`;\r\n        \r\n//         key.addEventListener('mousedown', () => {\r\n//             key.classList.add('active');\r\n//             this.playNote(note.frequency);\r\n//         });\r\n//         key.addEventListener('mouseup', () => {\r\n//             key.classList.remove('active');\r\n//             this.stopNote(note.frequency);\r\n//         });\r\n//         key.addEventListener('mouseleave', () => {\r\n//             if (key.classList.contains('active')) {\r\n//                 key.classList.remove('active');\r\n//                 this.stopNote(note.frequency);\r\n//             }\r\n//         });\r\n        \r\n//         keyboard.appendChild(key);\r\n//     });\r\n    \r\n//     const keyToNote = {};\r\n//     keyboardLayout.forEach(note => {\r\n//         keyToNote[note.key] = note.frequency;\r\n//     });\r\n    \r\n//     window.addEventListener('keydown', (e) => {\r\n//         if (e.repeat) return;\r\n//         const key = e.key.toLowerCase();\r\n//         if (keyToNote[key]) {\r\n//             this.playNote(keyToNote[key]);\r\n//             const keyElement = Array.from(keyboard.children).find(\r\n//                 k => k.dataset.frequency == keyToNote[key]\r\n//             );\r\n//             if (keyElement) keyElement.classList.add('active');\r\n//         }\r\n//     });\r\n    \r\n//     window.addEventListener('keyup', (e) => {\r\n//         const key = e.key.toLowerCase();\r\n//         if (keyToNote[key]) {\r\n//             this.stopNote(keyToNote[key]);\r\n//             const keyElement = Array.from(keyboard.children).find(\r\n//                 k => k.dataset.frequency == keyToNote[key]\r\n//             );\r\n//             if (keyElement) keyElement.classList.remove('active');\r\n//         }\r\n//     });\r\n// }\r\n\r\n// stopNote(frequency) {\r\n//     if (!this.activeNotes.has(frequency)) return;\r\n    \r\n//     const note = this.activeNotes.get(frequency);\r\n//     const now = this.audioContext.currentTime;\r\n//     const settings = this.getUISettings();\r\n//     const release = settings.envelope.release;\r\n    \r\n//     note.envelopeGain.gain.cancelScheduledValues(now);\r\n//     note.envelopeGain.gain.setValueAtTime(note.envelopeGain.gain.value, now);\r\n//     note.envelopeGain.gain.linearRampToValueAtTime(0, now + release);\r\n    \r\n//     note.oscillator.stop(now + release + 0.1);\r\n    \r\n//     setTimeout(() => {\r\n//         this.activeNotes.delete(frequency);\r\n//     }, (release + 0.2) * 1000);\r\n// }\r\n// playNote(frequency) {\r\n//     if (this.activeNotes.has(frequency)) {\r\n//         this.stopNote(frequency);\r\n//     }\r\n    \r\n//     const settings = this.getUISettings();\r\n//     settings.frequency = frequency;\r\n    \r\n//     const now = this.audioContext.currentTime;\r\n//     const oscillator = this.createOscillator(settings);\r\n//     oscillator.connect(this.filter);\r\n//     oscillator.start(now);\r\n    \r\n//     this.activeNotes.set(frequency, {\r\n//         oscillator,\r\n//         envelopeGain: this.masterGainNode,\r\n//         startTime: now\r\n//     });\r\n    \r\n//     this.connectVisualizer(oscillator);\r\n// }\r\n// Audio Visualizer class\r\nclass AudioVisualizer {\r\n    constructor(canvas, audioContext) {\r\n        this.canvas = canvas;\r\n        this.ctx = canvas.getContext('2d');\r\n        this.audioContext = audioContext;\r\n        this.analyzer = audioContext.createAnalyser();\r\n        this.analyzer.fftSize = 2048;\r\n        this.bufferLength = this.analyzer.frequencyBinCount;\r\n        this.dataArray = new Uint8Array(this.bufferLength);\r\n        this.analyzer.connect(audioContext.destination);\r\n        \r\n      \r\n        \r\n        // Start visualization loop\r\n        this.visualize();\r\n    }\r\n    \r\n    connectSource(source) {\r\n        source.connect(this.analyzer);\r\n    }\r\n    \r\n    drawWaveform(audioBuffer) {\r\n        const data = audioBuffer.getChannelData(0);\r\n        const step = Math.ceil(data.length / this.canvas.width);\r\n        const amp = this.canvas.height / 2;\r\n        \r\n        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);\r\n        this.ctx.beginPath();\r\n        this.ctx.moveTo(0, amp);\r\n        \r\n        for (let i = 0; i < this.canvas.width; i++) {\r\n            const idx = Math.floor(i * step);\r\n            const y = amp + data[idx] * amp;\r\n            this.ctx.lineTo(i, y);\r\n        }\r\n        \r\n        this.ctx.strokeStyle = '#2196F3';\r\n        this.ctx.stroke();\r\n    }\r\n    \r\n    visualize() {\r\n        requestAnimationFrame(() => this.visualize());\r\n        \r\n        this.analyzer.getByteTimeDomainData(this.dataArray);\r\n        \r\n        this.ctx.fillStyle = 'rgb(200, 200, 200)';\r\n        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);\r\n        \r\n        this.ctx.lineWidth = 2;\r\n        this.ctx.strokeStyle = 'rgb(0, 0, 0)';\r\n        this.ctx.beginPath();\r\n        \r\n        const sliceWidth = this.canvas.width * 1.0 / this.bufferLength;\r\n        let x = 0;\r\n        \r\n        for (let i = 0; i < this.bufferLength; i++) {\r\n            const v = this.dataArray[i] / 128.0;\r\n            const y = v * this.canvas.height / 2;\r\n            \r\n            if (i === 0) {\r\n                this.ctx.moveTo(x, y);\r\n            } else {\r\n                this.ctx.lineTo(x, y);\r\n            }\r\n            \r\n            x += sliceWidth;\r\n        }\r\n        \r\n        this.ctx.lineTo(this.canvas.width, this.canvas.height / 2);\r\n        this.ctx.stroke();\r\n    }\r\n    \r\n}",
         "fileName": "audioEditor"
       },
       "threejs": {
@@ -33462,16 +36957,16 @@ const DEFAULT_PROJECT_CONFIG = {
       "GE_SceneRenderer": {
         "title": "GE_SceneRenderer",
         "fileName": "GE_SceneRenderer",
-        "script": "class GE_SceneRenderer {\r\n    constructor(gameEditor, graphicsEditor) {\r\n        this.gameEditor = gameEditor;\r\n        this.graphicsEditor = graphicsEditor;\r\n        this.scene = null;\r\n        this.camera = null;\r\n        this.renderer = null;\r\n        this.controls = null;\r\n    }    \r\n\r\n    init() {        \r\n        this.initThreeJS();\r\n        this.initEventListeners();\r\n    }\r\n    initEventListeners() {\r\n        document.body.addEventListener('renderGraphicsObject', this.handleRenderObject.bind(this));\r\n        document.body.addEventListener('resizedEditor', () => { \r\n            console.log('resized');\r\n            this.graphicsEditor.canvas.width = this.gameEditor.getCollections().configs.game.canvasWidth;\r\n            this.graphicsEditor.canvas.height = this.gameEditor.getCollections().configs.game.canvasHeight;\r\n            this.graphicsEditor.canvas.setAttribute('style','');\r\n            this.handleResize();  \r\n            this.graphicsEditor.refreshShapes(false); \r\n        });\r\n        document.getElementById('iso-generate').addEventListener('click', this.generateIsometricSprites.bind(this));\r\n    }\r\n    initThreeJS() {\r\n        // Scene setup\r\n        this.scene = new window.THREE.Scene();\r\n        \r\n        // Add the root group to the scene\r\n        this.scene.add(this.graphicsEditor.rootGroup);\r\n\r\n        // Camera setup\r\n        this.camera = new window.THREE.PerspectiveCamera(\r\n            75, \r\n            this.graphicsEditor.canvas.clientWidth / this.graphicsEditor.canvas.clientHeight, \r\n            0.1, \r\n            1000\r\n        );\r\n        this.camera.position.set(100, 100, 100);\r\n        this.camera.lookAt(0, 0, 0);\r\n\r\n        // Renderer setup\r\n        this.renderer = new window.THREE.WebGLRenderer({ \r\n            canvas: this.graphicsEditor.canvas, \r\n            antialias: false, \r\n            alpha: true \r\n        });\r\n        this.renderer.setSize(this.graphicsEditor.canvas.clientWidth, this.graphicsEditor.canvas.clientHeight);\r\n\r\n        // Add helpers\r\n        const gridHelper = new window.THREE.GridHelper(100, 100);\r\n        this.scene.add(gridHelper);\r\n\r\n        const axesHelper = new window.THREE.AxesHelper(5);\r\n        this.scene.add(axesHelper);\r\n\r\n        // Orbit controls\r\n        this.controls = new window.THREE.OrbitControls(this.camera, this.renderer.domElement);\r\n        this.controls.enableDamping = true;\r\n        this.controls.dampingFactor = 0.25;\r\n\r\n        // Resize handling\r\n        window.addEventListener('resize', this.handleResize.bind(this));\r\n    }\r\n    \r\n    handleResize() {\r\n        this.camera.aspect = this.graphicsEditor.canvas.clientWidth / this.graphicsEditor.canvas.clientHeight;\r\n        this.camera.updateProjectionMatrix();\r\n        this.renderer.setSize(this.graphicsEditor.canvas.clientWidth, this.graphicsEditor.canvas.clientHeight);\r\n    }\r\n    \r\n    handleRenderObject(event) {\r\n\r\n        this.graphicsEditor.canvas.width = this.gameEditor.getCollections().configs.game.canvasWidth;\r\n        this.graphicsEditor.canvas.height = this.gameEditor.getCollections().configs.game.canvasHeight;\r\n        this.graphicsEditor.canvas.setAttribute('style','');\r\n        this.graphicsEditor.setPreviewAnimationState(false);\r\n        this.graphicsEditor.state.renderData = event.detail.data;\r\n        document.getElementById('json-content').value = JSON.stringify(this.graphicsEditor.state.renderData, null, 2);\r\n        this.graphicsEditor.state.currentAnimation = \"idle\";\r\n        this.graphicsEditor.state.selectedShapeIndex = this.graphicsEditor.state.renderData.animations.idle[0].shapes.length > 0 ? 0 : -1;                \r\n        this.graphicsEditor.refreshShapes(false);\r\n        this.handleResize();\r\n    }\r\n\r\n\r\n    animate() {\r\n        requestAnimationFrame(this.animate.bind(this));\r\n        this.controls.update();\r\n        this.renderer.render(this.scene, this.camera);\r\n    }\r\n\r\n    async createObjectsFromJSON(frameData, scene) {\r\n        for(const groupName in frameData) {\r\n            const group = await this.graphicsEditor.shapeFactory.createGroupFromJSON(frameData[groupName]);\r\n            scene.add(group);\r\n        }\r\n    }\r\n\r\n    \r\n    async generateIsometricSprites() {\r\n        const frustumSize = parseFloat(document.getElementById('iso-frustum').value) || 48;\r\n        const cameraDistance = parseFloat(document.getElementById('iso-distance').value) || 100;\r\n        const size = parseFloat(document.getElementById('iso-size').value) || 64;\r\n        const aspect = 1;\r\n        const tempRenderer = new window.THREE.WebGLRenderer({ antialias: false, alpha: true });\r\n        tempRenderer.setSize(size, size);\r\n        document.getElementById('modal-generateIsoSprites').classList.remove('show');\r\n    \r\n        const renderTarget = new window.THREE.WebGLRenderTarget(size, size);\r\n        const cameras = [\r\n            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),\r\n            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),\r\n            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),\r\n            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),\r\n            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),\r\n            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),\r\n            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),\r\n            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000)\r\n        ];\r\n    \r\n        // Position cameras at 8 angles (45° increments)\r\n        cameras[0].position.set(cameraDistance, cameraDistance, cameraDistance);           // NE up\r\n        cameras[1].position.set(0, cameraDistance, cameraDistance);                       // N up\r\n        cameras[2].position.set(-cameraDistance, cameraDistance, cameraDistance);         // NW up\r\n        cameras[3].position.set(-cameraDistance, cameraDistance, 0);                      // W up\r\n        cameras[4].position.set(-cameraDistance, cameraDistance, -cameraDistance);        // SW up\r\n        cameras[5].position.set(0, cameraDistance, -cameraDistance);                      // S up\r\n        cameras[6].position.set(cameraDistance, cameraDistance, -cameraDistance);         // SE up\r\n        cameras[7].position.set(cameraDistance, cameraDistance, 0);                       // E up\r\n        \r\n        cameras.forEach(camera => camera.lookAt(0, 0, 0));\r\n    \r\n        const sprites = {};     \r\n       \r\n        for (const animType in this.graphicsEditor.state.renderData.animations) {\r\n            sprites[animType] = [];\r\n            for (let frameIndex = 0; frameIndex < this.graphicsEditor.state.renderData.animations[animType].length; frameIndex++) {\r\n                const frame = this.graphicsEditor.state.renderData.animations[animType][frameIndex];\r\n                const scene = new window.THREE.Scene();\r\n                \r\n                // Add lights\r\n                const ambientLight = new window.THREE.AmbientLight(0xffffff, 0.8);\r\n                scene.add(ambientLight);\r\n                const directionalLight = new window.THREE.DirectionalLight(0xffffff, 1.0);\r\n                directionalLight.position.set(5, 10, 7.5);\r\n                scene.add(directionalLight);\r\n\r\n                await this.createObjectsFromJSON(frame, scene);\r\n    \r\n                const frameSprites = [];\r\n                for (const camera of cameras) {\r\n                    tempRenderer.setRenderTarget(renderTarget);\r\n                    tempRenderer.render(scene, camera);\r\n                    const buffer = new Uint8Array(size * size * 4);\r\n                    tempRenderer.readRenderTargetPixels(renderTarget, 0, 0, size, size, buffer);\r\n                    const flippedBuffer = new Uint8Array(size * size * 4);\r\n                    for (let y = 0; y < size; y++) {\r\n                        const srcRowStart = y * size * 4;\r\n                        const destRowStart = (size - 1 - y) * size * 4;\r\n                        flippedBuffer.set(buffer.subarray(srcRowStart, srcRowStart + size * 4), destRowStart);\r\n                    }\r\n                    const canvas = document.createElement('canvas');\r\n                    canvas.width = size;\r\n                    canvas.height = size;\r\n                    const ctx = canvas.getContext('2d');\r\n                    const imageData = ctx.createImageData(size, size);\r\n                    imageData.data.set(flippedBuffer);\r\n                    ctx.putImageData(imageData, 0, 0);\r\n                    frameSprites.push(canvas.toDataURL());\r\n                }\r\n                sprites[animType].push(frameSprites);\r\n            }\r\n        }\r\n        tempRenderer.setRenderTarget(null);\r\n        tempRenderer.dispose();\r\n        renderTarget.dispose();\r\n        this.graphicsEditor.displayIsometricSprites(sprites);\r\n    }\r\n}"
+        "script": "class GE_SceneRenderer {\r\n    constructor(gameEditor, graphicsEditor) {\r\n        this.gameEditor = gameEditor;\r\n        this.graphicsEditor = graphicsEditor;\r\n        this.scene = null;\r\n        this.camera = null;\r\n        this.renderer = null;\r\n        this.controls = null;\r\n    }    \r\n\r\n    init() {        \r\n        this.initThreeJS();\r\n        this.initEventListeners();\r\n    }\r\n    initEventListeners() {\r\n        document.body.addEventListener('renderGraphicsObject', this.handleRenderObject.bind(this));\r\n        document.body.addEventListener('resizedEditor', () => { \r\n            console.log('resized');\r\n            this.graphicsEditor.canvas.width = this.gameEditor.getCollections().configs.game.canvasWidth;\r\n            this.graphicsEditor.canvas.height = this.gameEditor.getCollections().configs.game.canvasHeight;\r\n            this.graphicsEditor.canvas.setAttribute('style','');\r\n            this.handleResize();  \r\n            this.graphicsEditor.refreshShapes(false); \r\n        });\r\n        document.getElementById('iso-generate').addEventListener('click', this.generateIsometricSprites.bind(this));\r\n    }\r\n    initThreeJS() {\r\n        // Scene setup\r\n        this.scene = new window.THREE.Scene();\r\n        \r\n        // Add the root group to the scene\r\n        this.scene.add(this.graphicsEditor.rootGroup);\r\n\r\n        // Camera setup\r\n        this.camera = new window.THREE.PerspectiveCamera(\r\n            75, \r\n            this.graphicsEditor.canvas.clientWidth / this.graphicsEditor.canvas.clientHeight, \r\n            0.1, \r\n            1000\r\n        );\r\n        this.camera.position.set(100, 100, 100);\r\n        this.camera.lookAt(0, 0, 0);\r\n\r\n        // Renderer setup\r\n        this.renderer = new window.THREE.WebGLRenderer({ \r\n            canvas: this.graphicsEditor.canvas, \r\n            antialias: false, \r\n            alpha: true \r\n        });\r\n        this.renderer.setSize(this.graphicsEditor.canvas.clientWidth, this.graphicsEditor.canvas.clientHeight);\r\n\r\n        // Add helpers\r\n        const gridHelper = new window.THREE.GridHelper(100, 100);\r\n        this.scene.add(gridHelper);\r\n\r\n        const axesHelper = new window.THREE.AxesHelper(5);\r\n        this.scene.add(axesHelper);\r\n\r\n        // Orbit controls\r\n        this.controls = new window.THREE.OrbitControls(this.camera, this.renderer.domElement);\r\n        this.controls.enableDamping = true;\r\n        this.controls.dampingFactor = 0.25;\r\n\r\n        // Resize handling\r\n        window.addEventListener('resize', this.handleResize.bind(this));\r\n    }\r\n    \r\n    handleResize() {\r\n        this.camera.aspect = this.graphicsEditor.canvas.clientWidth / this.graphicsEditor.canvas.clientHeight;\r\n        this.camera.updateProjectionMatrix();\r\n        this.renderer.setSize(this.graphicsEditor.canvas.clientWidth, this.graphicsEditor.canvas.clientHeight);\r\n    }\r\n    \r\n    handleRenderObject(event) {\r\n        this.graphicsEditor.canvas.width = this.gameEditor.getCollections().configs.game.canvasWidth;\r\n        this.graphicsEditor.canvas.height = this.gameEditor.getCollections().configs.game.canvasHeight;\r\n        this.graphicsEditor.canvas.setAttribute('style','');\r\n        this.graphicsEditor.setPreviewAnimationState(false);\r\n        this.graphicsEditor.state.renderData = event.detail.data;\r\n        document.getElementById('json-content').value = JSON.stringify(this.graphicsEditor.state.renderData, null, 2);\r\n        \r\n        // Safely get first animation name\r\n        const animations = this.graphicsEditor.state.renderData.animations;\r\n        const firstAnimation = Object.keys(animations)[0] || '';\r\n        this.graphicsEditor.state.currentAnimation = firstAnimation;\r\n        \r\n        // Safely get first frame's shapes\r\n        const frames = animations[firstAnimation] || [];\r\n        const firstFrame = frames[0] || {};\r\n        const shapes = Object.keys(firstFrame)[0].shapes || [];\r\n        \r\n        this.graphicsEditor.state.selectedShapeIndex = shapes.length > 0 ? 0 : -1;\r\n        this.graphicsEditor.refreshShapes(false);\r\n        this.handleResize();\r\n    }\r\n\r\n\r\n    animate() {\r\n        requestAnimationFrame(this.animate.bind(this));\r\n        this.controls.update();\r\n        this.renderer.render(this.scene, this.camera);\r\n    }\r\n\r\n    async createObjectsFromJSON(frameData, scene) {\r\n        for(const groupName in frameData) {\r\n            const group = await this.graphicsEditor.shapeFactory.createGroupFromJSON(frameData[groupName]);\r\n            scene.add(group);\r\n        }\r\n    }\r\n\r\n    \r\n    async generateIsometricSprites() {\r\n        const frustumSize = parseFloat(document.getElementById('iso-frustum').value) || 48;\r\n        const cameraDistance = parseFloat(document.getElementById('iso-distance').value) || 100;\r\n        const size = parseFloat(document.getElementById('iso-size').value) || 64;\r\n        const aspect = 1;\r\n        const tempRenderer = new window.THREE.WebGLRenderer({ antialias: false, alpha: true });\r\n        tempRenderer.setSize(size, size);\r\n        document.getElementById('modal-generateIsoSprites').classList.remove('show');\r\n    \r\n        const renderTarget = new window.THREE.WebGLRenderTarget(size, size);\r\n        const cameras = [\r\n            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),\r\n            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),\r\n            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),\r\n            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),\r\n            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),\r\n            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),\r\n            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),\r\n            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000)\r\n        ];\r\n    \r\n        // Position cameras at 8 angles (45° increments)\r\n        cameras[0].position.set(cameraDistance, cameraDistance, cameraDistance);           // NE up\r\n        cameras[1].position.set(0, cameraDistance, cameraDistance);                       // N up\r\n        cameras[2].position.set(-cameraDistance, cameraDistance, cameraDistance);         // NW up\r\n        cameras[3].position.set(-cameraDistance, cameraDistance, 0);                      // W up\r\n        cameras[4].position.set(-cameraDistance, cameraDistance, -cameraDistance);        // SW up\r\n        cameras[5].position.set(0, cameraDistance, -cameraDistance);                      // S up\r\n        cameras[6].position.set(cameraDistance, cameraDistance, -cameraDistance);         // SE up\r\n        cameras[7].position.set(cameraDistance, cameraDistance, 0);                       // E up\r\n        \r\n        cameras.forEach(camera => camera.lookAt(0, 0, 0));\r\n    \r\n        const sprites = {};     \r\n       \r\n        for (const animType in this.graphicsEditor.state.renderData.animations) {\r\n            sprites[animType] = [];\r\n            for (let frameIndex = 0; frameIndex < this.graphicsEditor.state.renderData.animations[animType].length; frameIndex++) {\r\n                const frame = this.graphicsEditor.state.renderData.animations[animType][frameIndex];\r\n                const scene = new window.THREE.Scene();\r\n                \r\n                // Add lights\r\n                const ambientLight = new window.THREE.AmbientLight(0xffffff, 0.8);\r\n                scene.add(ambientLight);\r\n                const directionalLight = new window.THREE.DirectionalLight(0xffffff, 1.0);\r\n                directionalLight.position.set(5, 10, 7.5);\r\n                scene.add(directionalLight);\r\n\r\n                await this.createObjectsFromJSON(frame, scene);\r\n    \r\n                const frameSprites = [];\r\n                for (const camera of cameras) {\r\n                    tempRenderer.setRenderTarget(renderTarget);\r\n                    tempRenderer.render(scene, camera);\r\n                    const buffer = new Uint8Array(size * size * 4);\r\n                    tempRenderer.readRenderTargetPixels(renderTarget, 0, 0, size, size, buffer);\r\n                    const flippedBuffer = new Uint8Array(size * size * 4);\r\n                    for (let y = 0; y < size; y++) {\r\n                        const srcRowStart = y * size * 4;\r\n                        const destRowStart = (size - 1 - y) * size * 4;\r\n                        flippedBuffer.set(buffer.subarray(srcRowStart, srcRowStart + size * 4), destRowStart);\r\n                    }\r\n                    const canvas = document.createElement('canvas');\r\n                    canvas.width = size;\r\n                    canvas.height = size;\r\n                    const ctx = canvas.getContext('2d');\r\n                    const imageData = ctx.createImageData(size, size);\r\n                    imageData.data.set(flippedBuffer);\r\n                    ctx.putImageData(imageData, 0, 0);\r\n                    frameSprites.push(canvas.toDataURL());\r\n                }\r\n                sprites[animType].push(frameSprites);\r\n            }\r\n        }\r\n        tempRenderer.setRenderTarget(null);\r\n        tempRenderer.dispose();\r\n        renderTarget.dispose();\r\n        this.graphicsEditor.displayIsometricSprites(sprites);\r\n    }\r\n}"
       },
       "GE_ShapeManager": {
         "title": "GE_ShapeManager",
         "fileName": "GE_ShapeManager",
-        "script": "class GE_ShapeManager {\r\n    constructor(gameEditor, graphicsEditor) {\r\n        this.gameEditor = gameEditor;\r\n        this.graphicsEditor = graphicsEditor;\r\n        this.originalMaterials = new Map();\r\n        this.originalScale = new window.THREE.Vector3(1, 1, 1);\r\n        this.originalPosition = new window.THREE.Vector3(0, 0, 0);\r\n        this.originalRotation = new window.THREE.Vector3(0, 0, 0);\r\n        \r\n        this.gizmoGroup = null;\r\n        this.gizmoMode = \"translate\";\r\n        this.selectedAxis = null;\r\n        this.isDragging = false;\r\n        this.raycaster = new window.THREE.Raycaster();\r\n        this.mouse = new window.THREE.Vector2();\r\n        this.lastMouse = new window.THREE.Vector2();\r\n    }    \r\n\r\n    init() {   \r\n     //   this.graphicsEditor.refreshShapes(false);\r\n        this.initEventListeners();\r\n\r\n    }\r\n    initEventListeners() {\r\n        // Button event listeners\r\n        const buttonMappings = {\r\n            'add-shape': this.addSelectedShape.bind(this),\r\n            'delete-shape': this.deleteSelectedShape.bind(this)\r\n        };\r\n        Object.entries(buttonMappings).forEach(([id, handler]) => {\r\n            const button = document.getElementById(id);\r\n            if (button) button.addEventListener('click', handler);\r\n        });\r\n        \r\n        document.getElementById('move-cancel').addEventListener('click', () => {            \r\n            const inspector = document.getElementById('inspector');\r\n            inspector.innerHTML = ``;\r\n        });\r\n\r\n        const canvas = this.graphicsEditor.sceneRenderer.renderer.domElement;\r\n        canvas.addEventListener('mousedown', this.onMouseDown.bind(this));\r\n        canvas.addEventListener('mousemove', this.onMouseMove.bind(this));\r\n        canvas.addEventListener('mouseup', this.onMouseUp.bind(this));\r\n    }\r\n     // Create the gizmo for translation, rotation, or scaling\r\n     createGizmo() {\r\n        if (this.gizmoGroup) {\r\n            this.gizmoGroup.children.forEach(child => {\r\n                if (child.geometry) child.geometry.dispose();\r\n                if (child.material) child.material.dispose();\r\n            });\r\n            this.graphicsEditor.sceneRenderer.scene.remove(this.gizmoGroup);\r\n            this.gizmoGroup = null;\r\n        }\r\n    \r\n        this.gizmoGroup = new window.THREE.Group();\r\n        this.graphicsEditor.sceneRenderer.scene.add(this.gizmoGroup);\r\n    \r\n        let center = new window.THREE.Vector3();\r\n        let xOffset = 1, yOffset = 1, zOffset = 1;\r\n    \r\n        if (this.currentTransformTarget.children.length > 0) {\r\n            const boundingBox = new window.THREE.Box3().setFromObject(this.currentTransformTarget);\r\n            const size = new window.THREE.Vector3();\r\n            if (!boundingBox.isEmpty() && isFinite(boundingBox.min.x)) {\r\n                boundingBox.getSize(size);\r\n                boundingBox.getCenter(center);\r\n                xOffset = size.x / 2 + 1;\r\n                yOffset = size.y / 2 + 1;\r\n                zOffset = size.z / 2 + 1;\r\n            } else {\r\n                this.currentTransformTarget.getWorldPosition(center);\r\n                console.warn(\"Invalid bounding box; using group position.\");\r\n            }\r\n        } else {\r\n            const boundingBox = new window.THREE.Box3().setFromObject(this.currentTransformTarget);\r\n            const size = new window.THREE.Vector3();\r\n            if (!boundingBox.isEmpty() && isFinite(boundingBox.min.x)) {\r\n                boundingBox.getSize(size);\r\n                boundingBox.getCenter(center);\r\n                xOffset = size.x / 2 + 1;\r\n                yOffset = size.y / 2 + 1;\r\n                zOffset = size.z / 2 + 1;\r\n            } else {\r\n                this.currentTransformTarget.getWorldPosition(center);\r\n                console.warn(\"Invalid bounding box; using group position.\");\r\n            }\r\n        }\r\n    \r\n        this.gizmoGroup.position.copy(center);\r\n    \r\n        if (this.gizmoMode === \"translate\") {\r\n            const arrowLength = 5;\r\n            const arrowHeadLength = 2;\r\n            const arrowHeadWidth = 1;\r\n    \r\n            // X-axis (red)\r\n            const xCylinderGeometry = new window.THREE.CylinderGeometry(0.5, 0.5, arrowLength - arrowHeadLength, 8);\r\n            const xCylinderMaterial = new window.THREE.MeshBasicMaterial({ color: 0xff0000 });\r\n            const xCylinder = new window.THREE.Mesh(xCylinderGeometry, xCylinderMaterial);\r\n            xCylinder.rotation.z = Math.PI / 2;\r\n            xCylinder.position.x = xOffset + (arrowLength - arrowHeadLength) / 2;\r\n            xCylinder.name = \"translate-x\";\r\n            this.gizmoGroup.add(xCylinder);\r\n    \r\n            const xConeGeometry = new window.THREE.ConeGeometry(arrowHeadWidth, arrowHeadLength, 8);\r\n            const xConeMaterial = new window.THREE.MeshBasicMaterial({ color: 0xff0000 });\r\n            const xCone = new window.THREE.Mesh(xConeGeometry, xConeMaterial);\r\n            xCone.rotation.z = 3 * Math.PI / 2;\r\n            xCone.position.x = xOffset + arrowLength - arrowHeadLength / 2;\r\n            xCone.name = \"translate-x\";\r\n            this.gizmoGroup.add(xCone);\r\n    \r\n            // Y-axis (green)\r\n            const yCylinderGeometry = new window.THREE.CylinderGeometry(0.5, 0.5, arrowLength - arrowHeadLength, 8);\r\n            const yCylinderMaterial = new window.THREE.MeshBasicMaterial({ color: 0x00ff00 });\r\n            const yCylinder = new window.THREE.Mesh(yCylinderGeometry, yCylinderMaterial);\r\n            yCylinder.position.y = yOffset + (arrowLength - arrowHeadLength) / 2;\r\n            yCylinder.name = \"translate-y\";\r\n            this.gizmoGroup.add(yCylinder);\r\n    \r\n            const yConeGeometry = new window.THREE.ConeGeometry(arrowHeadWidth, arrowHeadLength, 8);\r\n            const yConeMaterial = new window.THREE.MeshBasicMaterial({ color: 0x00ff00 });\r\n            const yCone = new window.THREE.Mesh(yConeGeometry, yConeMaterial);\r\n            yCone.position.y = yOffset + arrowLength - arrowHeadLength / 2;\r\n            yCone.name = \"translate-y\";\r\n            this.gizmoGroup.add(yCone);\r\n    \r\n            // Z-axis (blue)\r\n            const zCylinderGeometry = new window.THREE.CylinderGeometry(0.5, 0.5, arrowLength - arrowHeadLength, 8);\r\n            const zCylinderMaterial = new window.THREE.MeshBasicMaterial({ color: 0x0000ff });\r\n            const zCylinder = new window.THREE.Mesh(zCylinderGeometry, zCylinderMaterial);\r\n            zCylinder.rotation.x = Math.PI / 2;\r\n            zCylinder.position.z = zOffset + (arrowLength - arrowHeadLength) / 2;\r\n            zCylinder.name = \"translate-z\";\r\n            this.gizmoGroup.add(zCylinder);\r\n    \r\n            const zConeGeometry = new window.THREE.ConeGeometry(arrowHeadWidth, arrowHeadLength, 8);\r\n            const zConeMaterial = new window.THREE.MeshBasicMaterial({ color: 0x0000ff });\r\n            const zCone = new window.THREE.Mesh(zConeGeometry, zConeMaterial);\r\n            zCone.rotation.x = Math.PI / 2;\r\n            zCone.position.z = zOffset + arrowLength - arrowHeadLength / 2;\r\n            zCone.name = \"translate-z\";\r\n            this.gizmoGroup.add(zCone);\r\n        } else if (this.gizmoMode === \"rotate\") {\r\n            const ringRadius = 4;\r\n            const ringTube = 0.5;\r\n    \r\n            // X-axis (red)\r\n            const xRingGeometry = new window.THREE.TorusGeometry(ringRadius, ringTube, 16, 100);\r\n            const xRingMaterial = new window.THREE.MeshBasicMaterial({ color: 0xff0000 });\r\n            const xRing = new window.THREE.Mesh(xRingGeometry, xRingMaterial);\r\n            xRing.rotation.y = Math.PI / 2;\r\n            xRing.position.x = xOffset;\r\n            xRing.name = \"rotate-x\";\r\n            this.gizmoGroup.add(xRing);\r\n    \r\n            // Y-axis (green)\r\n            const yRingGeometry = new window.THREE.TorusGeometry(ringRadius, ringTube, 16, 100);\r\n            const yRingMaterial = new window.THREE.MeshBasicMaterial({ color: 0x00ff00 });\r\n            const yRing = new window.THREE.Mesh(yRingGeometry, yRingMaterial);\r\n            yRing.rotation.x = Math.PI / 2;\r\n            yRing.position.y = yOffset;\r\n            yRing.name = \"rotate-y\";\r\n            this.gizmoGroup.add(yRing);\r\n    \r\n            // Z-axis (blue)\r\n            const zRingGeometry = new window.THREE.TorusGeometry(ringRadius, ringTube, 16, 100);\r\n            const zRingMaterial = new window.THREE.MeshBasicMaterial({ color: 0x0000ff });\r\n            const zRing = new window.THREE.Mesh(zRingGeometry, zRingMaterial);\r\n            zRing.position.z = zOffset;\r\n            zRing.name = \"rotate-z\";\r\n            this.gizmoGroup.add(zRing);\r\n        } else if (this.gizmoMode === \"scale\") {\r\n            const boxSize = 2;\r\n    \r\n            // X-axis (red)\r\n            const xBoxGeometry = new window.THREE.BoxGeometry(boxSize, boxSize, boxSize);\r\n            const xBoxMaterial = new window.THREE.MeshBasicMaterial({ color: 0xff0000 });\r\n            const xBox = new window.THREE.Mesh(xBoxGeometry, xBoxMaterial);\r\n            xBox.position.set(xOffset, 0, 0);\r\n            xBox.name = \"scale-x\";\r\n            this.gizmoGroup.add(xBox);\r\n    \r\n            // Y-axis (green)\r\n            const yBoxGeometry = new window.THREE.BoxGeometry(boxSize, boxSize, boxSize);\r\n            const yBoxMaterial = new window.THREE.MeshBasicMaterial({ color: 0x00ff00 });\r\n            const yBox = new window.THREE.Mesh(yBoxGeometry, yBoxMaterial);\r\n            yBox.position.set(0, yOffset, 0);\r\n            yBox.name = \"scale-y\";\r\n            this.gizmoGroup.add(yBox);\r\n    \r\n            // Z-axis (blue)\r\n            const zBoxGeometry = new window.THREE.BoxGeometry(boxSize, boxSize, boxSize);\r\n            const zBoxMaterial = new window.THREE.MeshBasicMaterial({ color: 0x0000ff });\r\n            const zBox = new window.THREE.Mesh(zBoxGeometry, zBoxMaterial);\r\n            zBox.position.set(0, 0, zOffset);\r\n            zBox.name = \"scale-z\";\r\n            this.gizmoGroup.add(zBox);\r\n        }\r\n    }\r\n    updateInspectorValues() {\r\n        if (!this.currentTransformTarget) return;\r\n        \r\n        // Update all relevant input fields\r\n        const updateInput = (property, value) => {\r\n            const input = document.querySelector(`[data-property=\"${property}\"]`);\r\n            if (input) input.value = value;\r\n        };\r\n        \r\n        // Position\r\n        updateInput('x', this.currentTransformTarget.position.x);\r\n        updateInput('y', this.currentTransformTarget.position.y);\r\n        updateInput('z', this.currentTransformTarget.position.z);\r\n        \r\n        // Rotation (convert to degrees)\r\n        updateInput('rotationX', this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.x));\r\n        updateInput('rotationY', this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.y));\r\n        updateInput('rotationZ', this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.z));\r\n        \r\n        // Scale\r\n        updateInput('scaleX', this.currentTransformTarget.scale.x);\r\n        updateInput('scaleY', this.currentTransformTarget.scale.y);\r\n        updateInput('scaleZ', this.currentTransformTarget.scale.z);\r\n    }\r\n     // Mouse event handlers for gizmo interaction\r\n     onMouseDown(event) {\r\n        if (!this.gizmoGroup) {\r\n            console.log(\"Gizmo group not present\");\r\n            return;\r\n        }\r\n    \r\n        const canvas = this.graphicsEditor.sceneRenderer.renderer.domElement;\r\n        const rect = canvas.getBoundingClientRect();\r\n        this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;\r\n        this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;\r\n    \r\n        this.raycaster.setFromCamera(this.mouse, this.graphicsEditor.sceneRenderer.camera);\r\n        const intersects = this.raycaster.intersectObjects(this.gizmoGroup.children, true);\r\n    \r\n        if (intersects.length > 0) {\r\n            const object = intersects[0].object;\r\n            this.selectedAxis = object.name.split('-')[1];\r\n            this.isDragging = true;\r\n            console.log(`Dragging started on axis: ${this.selectedAxis}`, object);\r\n    \r\n            if (this.graphicsEditor.sceneRenderer.controls) {\r\n                this.graphicsEditor.sceneRenderer.controls.enabled = false;\r\n            }\r\n    \r\n            this.lastMouse.copy(this.mouse);\r\n        } else {\r\n            console.log(\"No intersection with gizmo\");\r\n        }\r\n    }\r\n\r\n    onMouseMove(event) {\r\n        if (!this.isDragging || !this.selectedAxis || !this.currentTransformTarget) return;\r\n        \r\n        const canvas = this.graphicsEditor.sceneRenderer.renderer.domElement;\r\n        const rect = canvas.getBoundingClientRect();\r\n        this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;\r\n        this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;\r\n        const deltaMouse = this.mouse.clone().sub(this.lastMouse);\r\n        \r\n        const camera = this.graphicsEditor.sceneRenderer.camera;\r\n        const cameraPosition = camera.position.clone();\r\n        const objectPosition = this.currentTransformTarget.position.clone();\r\n        \r\n        const cameraRight = new window.THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);\r\n        const cameraUp = new window.THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion);\r\n        const cameraForward = new window.THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);\r\n        const cameraToObject = objectPosition.clone().sub(cameraPosition);\r\n        \r\n        if (this.gizmoMode === \"translate\") {\r\n            const moveSpeed = 100;\r\n            \r\n            if (this.selectedAxis === \"x\") {\r\n                const worldX = new window.THREE.Vector3(1, 0, 0);\r\n                const dotProduct = worldX.dot(cameraRight);\r\n                const moveFactor = Math.sign(dotProduct) * deltaMouse.x * moveSpeed;\r\n                this.currentTransformTarget.position.x += moveFactor;\r\n            } else if (this.selectedAxis === \"y\") {\r\n                const worldY = new window.THREE.Vector3(0, 1, 0);\r\n                const dotProduct = worldY.dot(cameraUp);\r\n                const moveFactor = Math.sign(dotProduct) * deltaMouse.y * moveSpeed;\r\n                this.currentTransformTarget.position.y += moveFactor;\r\n            } else if (this.selectedAxis === \"z\") {\r\n                const worldZ = new window.THREE.Vector3(0, 0, 1);\r\n                const cameraRightXZ = new window.THREE.Vector3(cameraRight.x, 0, cameraRight.z).normalize();\r\n                const dotProduct = worldZ.dot(cameraRightXZ);\r\n                const moveFactor = Math.sign(dotProduct) * deltaMouse.x * moveSpeed;\r\n                this.currentTransformTarget.position.z += moveFactor;\r\n            }\r\n        } else if (this.gizmoMode === \"rotate\") {\r\n            const rotateSpeed = 2 * Math.PI;\r\n            \r\n            if (this.selectedAxis === \"x\") {\r\n                const worldX = new window.THREE.Vector3(1, 0, 0);\r\n                const dotProduct = worldX.dot(cameraRight);\r\n                const rotateFactor = -Math.sign(dotProduct) * deltaMouse.x * rotateSpeed;\r\n                this.currentTransformTarget.rotation.x += rotateFactor;\r\n            } else if (this.selectedAxis === \"y\") {\r\n                const worldY = new window.THREE.Vector3(0, 1, 0);\r\n                const dotProduct = worldY.dot(cameraUp);\r\n                const rotateFactor = Math.sign(dotProduct) * deltaMouse.x * rotateSpeed;\r\n                this.currentTransformTarget.rotation.y += rotateFactor;\r\n            } else if (this.selectedAxis === \"z\") {\r\n                const worldZ = new window.THREE.Vector3(0, 0, 1);\r\n                const dotProduct = cameraToObject.normalize().dot(worldZ);\r\n                const rotateFactor = Math.sign(dotProduct) * deltaMouse.x * rotateSpeed;\r\n                this.currentTransformTarget.rotation.z += rotateFactor;\r\n            }\r\n        } else if (this.gizmoMode === \"scale\") {\r\n            const scaleSpeed = 2;\r\n            let scaleFactor = 0;\r\n            \r\n            if (this.selectedAxis === \"x\") {\r\n                const worldX = new window.THREE.Vector3(1, 0, 0);\r\n                const dotProduct = worldX.dot(cameraRight);\r\n                scaleFactor = Math.sign(dotProduct) * deltaMouse.x * scaleSpeed;\r\n            } else if (this.selectedAxis === \"y\") {\r\n                const worldY = new window.THREE.Vector3(0, 1, 0);\r\n                const dotProduct = worldY.dot(cameraUp);\r\n                scaleFactor = Math.sign(dotProduct) * deltaMouse.y * scaleSpeed;\r\n            } else if (this.selectedAxis === \"z\") {\r\n                const worldZ = new window.THREE.Vector3(0, 0, 1);\r\n                const cameraRightXZ = new window.THREE.Vector3(cameraRight.x, 0, cameraRight.z).normalize();\r\n                const dotProduct = worldZ.dot(cameraRightXZ);\r\n                scaleFactor = Math.sign(dotProduct) * deltaMouse.x * scaleSpeed;\r\n            }\r\n            \r\n            if (this.selectedAxis === \"x\") {\r\n                this.currentTransformTarget.scale.x += scaleFactor;\r\n                if (this.currentTransformTarget.scale.x < 0.1) this.currentTransformTarget.scale.x = 0.1;\r\n            } else if (this.selectedAxis === \"y\") {\r\n                this.currentTransformTarget.scale.y += scaleFactor;\r\n                if (this.currentTransformTarget.scale.y < 0.1) this.currentTransformTarget.scale.y = 0.1;\r\n            } else if (this.selectedAxis === \"z\") {\r\n                this.currentTransformTarget.scale.z += scaleFactor;\r\n                if (this.currentTransformTarget.scale.z < 0.1) this.currentTransformTarget.scale.z = 0.1;\r\n            }\r\n        }\r\n        this.updateGizmoPosition();\r\n        this.lastMouse.copy(this.mouse);\r\n        this.applyCurrentTransform(); // New method to update data model\r\n        this.updateInspectorValues(); // Keep UI in sync\r\n    }\r\n    applyCurrentTransform() {\r\n        if (!this.currentTransformTarget) return;\r\n    \r\n        // For groups\r\n        if (this.currentTransformTarget.userData?.isGroup) {\r\n            const groupId = this.currentTransformTarget.name;\r\n            const groupData = this.graphicsEditor.groupManager.getGroupData(groupId);\r\n            \r\n            // Directly update group transform without full refresh\r\n            groupData.position = {\r\n                x: this.currentTransformTarget.position.x,\r\n                y: this.currentTransformTarget.position.y,\r\n                z: this.currentTransformTarget.position.z\r\n            };\r\n            groupData.rotation = {\r\n                x: this.currentTransformTarget.rotation.x,\r\n                y: this.currentTransformTarget.rotation.y,\r\n                z: this.currentTransformTarget.rotation.z\r\n            };\r\n            groupData.scale = {\r\n                x: this.currentTransformTarget.scale.x,\r\n                y: this.currentTransformTarget.scale.y,\r\n                z: this.currentTransformTarget.scale.z\r\n            };\r\n            \r\n            // Only update the transform, not the entire scene\r\n            this.updateGizmoPosition();\r\n            return;\r\n        }\r\n        // For individual shapes\r\n        else if (this.graphicsEditor.state.selectedShapeIndex >= 0) {\r\n            const shape = this.getCurrentShape();\r\n            if (shape) {\r\n                shape.x = this.currentTransformTarget.position.x;\r\n                shape.y = this.currentTransformTarget.position.y;\r\n                shape.z = this.currentTransformTarget.position.z;\r\n                \r\n                shape.rotationX = this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.x);\r\n                shape.rotationY = this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.y);\r\n                shape.rotationZ = this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.z);\r\n                \r\n                shape.scaleX = this.currentTransformTarget.scale.x;\r\n                shape.scaleY = this.currentTransformTarget.scale.y;\r\n                shape.scaleZ = this.currentTransformTarget.scale.z;\r\n            }\r\n            this.updateGizmoPosition();\r\n        }\r\n        \r\n        // Optional: Auto-save or trigger update\r\n        this.graphicsEditor.refreshShapes(false);\r\n    }\r\n    updateGizmoPosition() {\r\n        if (!this.currentTransformTarget || !this.gizmoGroup) return;\r\n\r\n        let center = new window.THREE.Vector3();\r\n        let xOffset = 1, yOffset = 1, zOffset = 1;\r\n    \r\n        if (this.currentTransformTarget.children.length > 0) {\r\n            const boundingBox = new window.THREE.Box3().setFromObject(this.currentTransformTarget);\r\n            const size = new window.THREE.Vector3();\r\n            if (!boundingBox.isEmpty() && isFinite(boundingBox.min.x)) {\r\n                boundingBox.getSize(size);\r\n                boundingBox.getCenter(center);\r\n                xOffset = size.x / 2 + 1;\r\n                yOffset = size.y / 2 + 1;\r\n                zOffset = size.z / 2 + 1;\r\n            } else {\r\n                this.currentTransformTarget.getWorldPosition(center);\r\n                console.warn(\"Invalid bounding box; using group position.\");\r\n            }\r\n        } else {\r\n            const boundingBox = new window.THREE.Box3().setFromObject(this.currentTransformTarget);\r\n            const size = new window.THREE.Vector3();\r\n            if (!boundingBox.isEmpty() && isFinite(boundingBox.min.x)) {\r\n                boundingBox.getSize(size);\r\n                boundingBox.getCenter(center);\r\n                xOffset = size.x / 2 + 1;\r\n                yOffset = size.y / 2 + 1;\r\n                zOffset = size.z / 2 + 1;\r\n            } else {\r\n                this.currentTransformTarget.getWorldPosition(center);\r\n                console.warn(\"Invalid bounding box; using group position.\");\r\n            }\r\n        }\r\n    \r\n        this.gizmoGroup.position.copy(center);\r\n    \r\n        this.gizmoGroup.children.forEach(child => {\r\n            const name = child.name;\r\n            if (!name) return;\r\n    \r\n            child.position.set(0, 0, 0);\r\n    \r\n            if (name.startsWith(\"translate-\")) {\r\n                const arrowLength = 5;\r\n                const arrowHeadLength = 2;\r\n                if (name === \"translate-x\") {\r\n                    child.position.x = xOffset + (child.geometry.type === \"CylinderGeometry\" ? (arrowLength - arrowHeadLength) / 2 : arrowLength - arrowHeadLength / 2);\r\n                } else if (name === \"translate-y\") {\r\n                    child.position.y = yOffset + (child.geometry.type === \"CylinderGeometry\" ? (arrowLength - arrowHeadLength) / 2 : arrowLength - arrowHeadLength / 2);\r\n                } else if (name === \"translate-z\") {\r\n                    child.position.z = zOffset + (child.geometry.type === \"CylinderGeometry\" ? (arrowLength - arrowHeadLength) / 2 : arrowLength - arrowHeadLength / 2);\r\n                }\r\n            } else if (name.startsWith(\"rotate-\")) {\r\n                if (name === \"rotate-x\") child.position.x = xOffset;\r\n                else if (name === \"rotate-y\") child.position.y = yOffset;\r\n                else if (name === \"rotate-z\") child.position.z = zOffset;\r\n            } else if (name.startsWith(\"scale-\")) {\r\n                if (name === \"scale-x\") child.position.x = xOffset;\r\n                else if (name === \"scale-y\") child.position.y = yOffset;\r\n                else if (name === \"scale-z\") child.position.z = zOffset;\r\n            }\r\n        });\r\n    \r\n        // Ensure gizmoGroup is in scene (not rootGroup, as it’s a UI overlay)\r\n        if (!this.graphicsEditor.sceneRenderer.scene.children.includes(this.gizmoGroup)) {\r\n            this.graphicsEditor.sceneRenderer.scene.add(this.gizmoGroup);\r\n            console.warn(\"Gizmo was removed from scene; re-added.\");\r\n        }\r\n    }\r\n\r\n    onMouseUp() {\r\n        this.isDragging = false;\r\n        this.selectedAxis = null;\r\n\r\n        if (this.graphicsEditor.sceneRenderer.controls) {\r\n            this.graphicsEditor.sceneRenderer.controls.enabled = true;\r\n        }\r\n    }\r\n    getSelectedGroupOrRoot() {\r\n        const selectedGroupName = this.graphicsEditor.groupManager.selectedGroupName;\r\n        if (selectedGroupName) {\r\n            let foundGroup = null;\r\n            this.graphicsEditor.rootGroup.traverse(obj => {\r\n                if (obj.isGroup && obj.name === selectedGroupName && obj.userData.isGroup) {\r\n                    foundGroup = obj;\r\n                }\r\n            });\r\n            let foundShape = null;\r\n            if(foundGroup){\r\n                foundGroup.traverse(obj => {\r\n                    if (obj.userData.isShape && obj.userData.index == this.graphicsEditor.state.selectedShapeIndex) {\r\n                        foundShape = obj;\r\n                    }\r\n                });\r\n            }\r\n            return foundShape || foundGroup || this.graphicsEditor.rootGroup;\r\n        }\r\n        return this.graphicsEditor.rootGroup;\r\n    }\r\n    transformGroup(targetObject) {\r\n        // Determine the target object - prioritize the passed target, then selected group, then rootGroup\r\n        let target;\r\n        if (targetObject) {\r\n            target = targetObject;\r\n        } else {\r\n            // Try to get the currently selected group\r\n            const selectedGroupName = this.graphicsEditor.groupManager.selectedGroupName;\r\n            if (selectedGroupName) {\r\n                // Find the group in the scene\r\n                this.graphicsEditor.rootGroup.traverse(obj => {\r\n                    if (obj.isGroup && obj.name === selectedGroupName && obj.userData.isGroup) {\r\n                        target = obj;\r\n                    }\r\n                });\r\n            }\r\n            \r\n            // Fall back to rootGroup if no selected group found\r\n            if (!target) {\r\n                target = this.graphicsEditor.rootGroup;\r\n            }\r\n        }\r\n    \r\n        // If we still don't have a target, return\r\n        if (!target) return;\r\n    \r\n        this.currentTransformTarget = target;\r\n    \r\n        // If target is a group, ensure it's in rootGroup and populated\r\n        if (this.currentTransformTarget.userData?.isGroup) {\r\n            const groupId = this.currentTransformTarget.userData.groupId;\r\n            const group = this.graphicsEditor.groupManager.getGroupObject(groupId);\r\n            if (group) {\r\n                // Ensure group is in rootGroup\r\n                if (this.currentTransformTarget.parent !== this.graphicsEditor.rootGroup) {\r\n                    if (this.currentTransformTarget.parent) {\r\n                        this.currentTransformTarget.parent.remove(this.currentTransformTarget);\r\n                    }\r\n                    this.graphicsEditor.rootGroup.add(this.currentTransformTarget);\r\n                }    \r\n            }\r\n        }\r\n    \r\n        this.originalPosition.copy(this.currentTransformTarget.position);\r\n        this.originalRotation.copy(this.currentTransformTarget.rotation);\r\n        this.originalScale.copy(this.currentTransformTarget.scale);\r\n        \r\n        // Inject transform controls into inspector instead of creating separate UI\r\n        this.injectTransformControlsToInspector();\r\n    }\r\n    \r\n    // New method to inject transform controls into the inspector\r\n    injectTransformControlsToInspector() {\r\n        const inspector = document.getElementById('inspector');\r\n        \r\n        // Create transform controls section\r\n        const transformSection = document.createElement('div');\r\n        transformSection.className = 'transform-controls-section';\r\n        transformSection.innerHTML = `\r\n            <h3>Transform ${this.currentTransformTarget.name || 'Current Frame'}</h3>\r\n            <div class=\"transform-buttons\">\r\n                <button id=\"translate-btn\" class=\"${this.gizmoMode === 'translate' ? 'active' : ''}\">Translate</button>\r\n                <button id=\"rotate-btn\" class=\"${this.gizmoMode === 'rotate' ? 'active' : ''}\">Rotate</button>\r\n                <button id=\"scale-btn\" class=\"${this.gizmoMode === 'scale' ? 'active' : ''}\">Scale</button>\r\n            </div>\r\n        `;\r\n        // Insert at the top of the inspector\r\n        if (inspector.firstChild) {\r\n            inspector.insertBefore(transformSection, inspector.firstChild);\r\n        } else {\r\n            inspector.appendChild(transformSection);\r\n        }      \r\n        // Add event listeners for transform mode buttons\r\n        document.getElementById('translate-btn').addEventListener('click', () => {\r\n            this.setGizmoMode('translate');\r\n            this.updateModeButtonsUI();\r\n        });\r\n        \r\n        document.getElementById('rotate-btn').addEventListener('click', () => {\r\n            this.setGizmoMode('rotate');\r\n            this.updateModeButtonsUI();\r\n        });\r\n        \r\n        document.getElementById('scale-btn').addEventListener('click', () => {\r\n            this.setGizmoMode('scale');\r\n            this.updateModeButtonsUI();\r\n        });\r\n        \r\n        this.updateInspectorValues();\r\n        this.setGizmoMode('translate');\r\n        this.updateModeButtonsUI();\r\n    }\r\n    \r\n    // New helper method to set gizmo mode\r\n    setGizmoMode(mode) {\r\n        this.gizmoMode = mode;\r\n        this.createGizmo();\r\n    }\r\n    \r\n    // New helper method to update button UI for transform modes\r\n    updateModeButtonsUI() {\r\n        const translateBtn = document.getElementById('translate-btn');\r\n        const rotateBtn = document.getElementById('rotate-btn');\r\n        const scaleBtn = document.getElementById('scale-btn');\r\n        \r\n        translateBtn.className = this.gizmoMode === 'translate' ? 'active' : '';\r\n        rotateBtn.className = this.gizmoMode === 'rotate' ? 'active' : '';\r\n        scaleBtn.className = this.gizmoMode === 'scale' ? 'active' : '';\r\n    }\r\n    \r\n    // New helper method to remove transform controls from inspector\r\n    removeTransformControlsFromInspector() {\r\n        const transformSection = document.querySelector('.transform-controls-section');\r\n        if (transformSection) {\r\n            transformSection.remove();\r\n        }\r\n    }\r\n    applyTransformToShapes() {\r\n        if (!this.currentTransformTarget) return;\r\n\r\n        // If transforming the root group, apply to all shapes\r\n        if (this.currentTransformTarget === this.graphicsEditor.rootGroup) {\r\n            const currentShapes = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes;\r\n\r\n            const positionOffset = this.currentTransformTarget.position.clone();\r\n            const rotationEuler = this.currentTransformTarget.rotation.clone();\r\n            const scaleFactor = this.currentTransformTarget.scale.clone();\r\n\r\n            const transformMatrix = new window.THREE.Matrix4();\r\n            transformMatrix.compose(\r\n                positionOffset,\r\n                new window.THREE.Quaternion().setFromEuler(rotationEuler),\r\n                scaleFactor\r\n            );\r\n\r\n            let centerX = 0, centerY = 0, centerZ = 0;\r\n            currentShapes.forEach(shape => {\r\n                centerX += shape.x || 0;\r\n                centerY += shape.y || 0;\r\n                centerZ += shape.z || 0;\r\n            });\r\n            centerX /= currentShapes.length;\r\n            centerY /= currentShapes.length;\r\n            centerZ /= currentShapes.length;\r\n            const centerPoint = new window.THREE.Vector3(centerX, centerY, centerZ);\r\n\r\n            currentShapes.forEach(shape => {\r\n                const position = new window.THREE.Vector3(shape.x || 0, shape.y || 0, shape.z || 0);\r\n                position.sub(centerPoint);\r\n                position.applyMatrix4(transformMatrix);\r\n                position.add(centerPoint);\r\n\r\n                shape.x = position.x;\r\n                shape.y = position.y;\r\n                shape.z = position.z;\r\n\r\n                const shapeRotation = new window.THREE.Euler(\r\n                    this.graphicsEditor.rotationUtils.degToRad(shape.rotationX || 0),\r\n                    this.graphicsEditor.rotationUtils.degToRad(shape.rotationY || 0),\r\n                    this.graphicsEditor.rotationUtils.degToRad(shape.rotationZ || 0)\r\n                );\r\n                const quaternion = new window.THREE.Quaternion().setFromEuler(shapeRotation);\r\n                const groupQuaternion = new window.THREE.Quaternion().setFromEuler(rotationEuler);\r\n                quaternion.premultiply(groupQuaternion);\r\n                const newRotation = new window.THREE.Euler().setFromQuaternion(quaternion);\r\n                shape.rotationX = this.graphicsEditor.rotationUtils.radToDeg(newRotation.x);\r\n                shape.rotationY = this.graphicsEditor.rotationUtils.radToDeg(newRotation.y);\r\n                shape.rotationZ = this.graphicsEditor.rotationUtils.radToDeg(newRotation.z);\r\n\r\n                if (shape.size) shape.size *= scaleFactor.x;\r\n                if (shape.width) shape.width *= scaleFactor.x;\r\n                if (shape.height) shape.height *= scaleFactor.y;\r\n                if (shape.depth) shape.depth *= scaleFactor.z;\r\n                if (shape.tubeSize) shape.tubeSize *= scaleFactor.x;\r\n            });\r\n\r\n            this.currentTransformTarget.position.set(0, 0, 0);\r\n            this.currentTransformTarget.rotation.set(0, 0, 0);\r\n            this.currentTransformTarget.scale.set(1, 1, 1);\r\n        } else {\r\n            // If transforming a group, update group data in groupManager\r\n            const groupId = this.currentTransformTarget.name;\r\n            if (groupId) {\r\n                this.graphicsEditor.groupManager.applyGroupTransform(\r\n                    groupId,\r\n                    this.currentTransformTarget.position,\r\n                    this.currentTransformTarget.rotation,\r\n                    this.currentTransformTarget.scale\r\n                );\r\n            }\r\n        }\r\n\r\n        this.graphicsEditor.refreshShapes(true);\r\n    }\r\n    selectShape(index) {\r\n        if (this.graphicsEditor.animationManager.isPreviewingAnimation) {\r\n            this.graphicsEditor.setPreviewAnimationState(false);\r\n        }\r\n        \r\n        // Toggle selection if clicking the same shape\r\n        this.graphicsEditor.state.selectedShapeIndex = (this.graphicsEditor.state.selectedShapeIndex === index) ? -1 : index;\r\n        this.graphicsEditor.state.currentGroup = this.graphicsEditor.groupManager.selectedGroupName;\r\n        \r\n        // Update shape list and highlighting\r\n        this.updateList();\r\n        this.highlightSelectedShape();\r\n        \r\n        // Show inspector for selected shape\r\n        const shape = this.getCurrentShape();\r\n        if (shape) {\r\n            this.graphicsEditor.createInspector(shape);\r\n            this.transformGroup(this.getSelectedGroupOrRoot());\r\n        }\r\n    }\r\n\r\n    getCurrentShape() {\r\n        if (this.graphicsEditor.state.selectedShapeIndex >= 0) {\r\n            const currentFrame = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame];\r\n            const selectedGroup = this.graphicsEditor.state.currentGroup;\r\n            const shapes = currentFrame[selectedGroup].shapes || [];\r\n            \r\n            if (this.graphicsEditor.state.selectedShapeIndex < shapes.length) {\r\n                const shape = shapes[this.graphicsEditor.state.selectedShapeIndex];\r\n                if (shape) {\r\n                    return shape;\r\n                }\r\n            }\r\n        }\r\n        return null;\r\n    }\r\n\r\n    highlightSelectedShape() {\r\n        // Remove existing outlines\r\n        this.graphicsEditor.sceneRenderer.scene.children.forEach(obj => {\r\n            if (obj.userData.isOutline) {\r\n                this.graphicsEditor.sceneRenderer.scene.remove(obj);\r\n                if (obj.geometry) obj.geometry.dispose();\r\n                if (obj.material) obj.material.dispose();\r\n            }\r\n        });\r\n    \r\n        // Reset any highlighted materials\r\n        this.originalMaterials.forEach((material, object) => {\r\n            object.material = material;\r\n        });\r\n        this.originalMaterials.clear();\r\n    \r\n        // If no shape is selected or invalid selection, return\r\n        if (this.graphicsEditor.state.selectedShapeIndex < 0) {\r\n            return;\r\n        }\r\n    \r\n        // Get the selected group name from state\r\n        const selectedGroupName = this.graphicsEditor.state.currentGroup || this.graphicsEditor.groupManager.selectedGroupName;\r\n        if (!selectedGroupName) {\r\n            console.warn(\"No group selected\");\r\n            return;\r\n        }\r\n    \r\n        // Find the THREE.Group with matching name under rootGroup\r\n        let selectedGroup = null;\r\n        this.graphicsEditor.rootGroup.traverse(obj => {\r\n            if (obj.isGroup && obj.name === selectedGroupName) {\r\n                selectedGroup = obj;\r\n            }\r\n        });\r\n    \r\n        if (!selectedGroup) {\r\n            console.warn(`No group found with name ${selectedGroupName}`);\r\n            return;\r\n        }\r\n    \r\n        const currentAnimation = this.graphicsEditor.state.currentAnimation;\r\n        const currentFrame = this.graphicsEditor.state.currentFrame;\r\n        const currentFrameData = this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame];\r\n    \r\n        if (!currentFrameData) {\r\n            console.warn(\"No frame data found\");\r\n            return;\r\n        }\r\n    \r\n        const groupShapes = currentFrameData[selectedGroupName];\r\n    \r\n        if (!groupShapes || this.graphicsEditor.state.selectedShapeIndex >= groupShapes.length) {\r\n            console.warn(`Invalid shape index ${this.graphicsEditor.state.selectedShapeIndex} for group ${selectedGroupName}`);\r\n            return;\r\n        }\r\n    \r\n        // Find all meshes belonging to the selected shape within the group\r\n        const selectedMeshes = [];\r\n        selectedGroup.traverse(obj => {\r\n            if (obj.isMesh && (\r\n                // Direct shape object that matches the index\r\n                (obj.userData.isShape &&\r\n                 obj.userData.index === this.graphicsEditor.state.selectedShapeIndex) ||\r\n                // Parent is a shape object that matches the index\r\n                (obj.parent &&\r\n                 obj.parent.userData.isShape &&\r\n                 obj.parent.userData.index === this.graphicsEditor.state.selectedShapeIndex) ||\r\n                // GLTF child of selected shape that matches the index\r\n                (obj.userData.isGLTFChild &&\r\n                 obj.parent &&\r\n                 obj.parent.userData.index === this.graphicsEditor.state.selectedShapeIndex)\r\n            )) {\r\n                selectedMeshes.push(obj);\r\n            }\r\n        });\r\n    \r\n        // Handle highlighting for all relevant meshes\r\n        selectedMeshes.forEach(mesh => {\r\n            // Apply emissive highlight to original mesh\r\n            this.originalMaterials.set(mesh, mesh.material);\r\n            const highlightMaterial = mesh.material.clone();\r\n            highlightMaterial.emissive = new window.THREE.Color(0x555555);\r\n            highlightMaterial.emissiveIntensity = 0.5;\r\n            mesh.material = highlightMaterial;\r\n    \r\n            // Create the outline geometry\r\n            const outlineGeometry = mesh.geometry.clone();\r\n            const outlineMaterial = new window.THREE.MeshBasicMaterial({\r\n                color: 0xffff00,\r\n                side: window.THREE.BackSide\r\n            });\r\n    \r\n            // Create the outline mesh\r\n            const outline = new window.THREE.Mesh(outlineGeometry, outlineMaterial);\r\n            outline.userData.isOutline = true;\r\n            \r\n            // Create a new group to hold the outline\r\n            let outlineGroup = new window.THREE.Group();\r\n            outlineGroup.userData.isOutline = true;\r\n            \r\n            // Add the outline to the group\r\n            outlineGroup.add(outline);\r\n            \r\n            // Find all parent groups up to rootGroup and copy their transformations\r\n            let currentParent = mesh.parent;\r\n            let transformChain = [];\r\n            \r\n            while (currentParent && currentParent !== this.graphicsEditor.rootGroup) {\r\n                transformChain.unshift({\r\n                    position: currentParent.position.clone(),\r\n                    rotation: currentParent.rotation.clone(),\r\n                    scale: currentParent.scale.clone(),\r\n                    quaternion: currentParent.quaternion.clone()\r\n                });\r\n                currentParent = currentParent.parent;\r\n            }\r\n            \r\n            // Apply all parent transformations to our outline group\r\n            transformChain.forEach(transform => {\r\n                // Create a temporary group to apply each parent's transform\r\n                const tempGroup = new window.THREE.Group();\r\n                tempGroup.position.copy(transform.position);\r\n                tempGroup.rotation.copy(transform.rotation);\r\n                tempGroup.scale.copy(transform.scale);\r\n                \r\n                // Add our current group to this temp group\r\n                tempGroup.add(outlineGroup);\r\n                \r\n                // Move outlineGroup up one level\r\n                outlineGroup = tempGroup;\r\n                outlineGroup.userData.isOutline = true;\r\n            });\r\n            \r\n            // Add mesh's local transform\r\n            outline.position.copy(mesh.position);\r\n            outline.rotation.copy(mesh.rotation);\r\n            outline.scale.copy(mesh.scale);\r\n            \r\n            // Scale the outline slightly larger (in local space)\r\n            outline.scale.multiplyScalar(1.05);\r\n            \r\n            // Add the complete outline group to the scene\r\n            this.graphicsEditor.sceneRenderer.scene.add(outlineGroup);\r\n        });\r\n    }\r\n    addNewShape() {\r\n        const newShape = {\r\n            type: 'sphere',\r\n            size: 2,\r\n            color: '#ff0000',\r\n            x: 0,\r\n            y: 0,\r\n            z: 0,\r\n            rotationX: 0,\r\n            rotationY: 0,\r\n            rotationZ: 0\r\n        };\r\n        this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes.push(newShape);\r\n        this.graphicsEditor.state.selectedShapeIndex = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes.length - 1;\r\n        this.graphicsEditor.refreshShapes(true); // Relies on refreshShapes to add to rootGroup\r\n    }\r\n\r\n    addSelectedShape() {\r\n        if (this.graphicsEditor.state.selectedShapeIndex >= 0) {\r\n            const originalShape = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes[this.graphicsEditor.state.selectedShapeIndex];\r\n            const newShape = JSON.parse(JSON.stringify(originalShape));\r\n            this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes.push(newShape);\r\n            this.graphicsEditor.state.selectedShapeIndex = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes.length - 1;\r\n            this.graphicsEditor.refreshShapes(true);\r\n        } else {\r\n            this.addNewShape();\r\n        }\r\n    }\r\n\r\n    deleteSelectedShape() {\r\n        if (this.graphicsEditor.state.selectedShapeIndex >= 0) {\r\n            this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes.splice(this.graphicsEditor.state.selectedShapeIndex, 1);\r\n            if (this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes.length > 0) {\r\n                this.graphicsEditor.state.selectedShapeIndex = Math.min(this.graphicsEditor.state.selectedShapeIndex, this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes.length - 1);\r\n            } else {\r\n                this.graphicsEditor.state.selectedShapeIndex = -1;\r\n            }\r\n            this.graphicsEditor.refreshShapes(true);\r\n        }\r\n    }\r\n\r\n    updateList() {\r\n        const frameList = document.getElementById('frame-list');\r\n        frameList.innerHTML = '';\r\n        const groupList = document.getElementById('group-list');\r\n        groupList.innerHTML = '';\r\n        const shapeList = document.getElementById('shape-list');\r\n        shapeList.innerHTML = '';\r\n        this.updateFrameList();\r\n        this.graphicsEditor.groupManager.updateGroupList();\r\n        this.updateShapeList();\r\n        this.updateGizmoPosition();\r\n    }\r\n\r\n    updateFrameList() {\r\n        const list = document.getElementById('frame-list');\r\n        // Animation selector\r\n        const animSelector = document.createElement('select');\r\n        animSelector.style.marginBottom = '10px';\r\n        Object.keys(this.graphicsEditor.state.renderData.animations).forEach(anim => {\r\n            const option = document.createElement('option');\r\n            option.value = anim;\r\n            option.textContent = anim;\r\n            if (anim === this.graphicsEditor.state.currentAnimation) option.selected = true;\r\n            animSelector.appendChild(option);\r\n        });\r\n        animSelector.addEventListener('change', () => {\r\n            this.graphicsEditor.setPreviewAnimationState(false);\r\n            this.graphicsEditor.state.currentAnimation = animSelector.value;\r\n            this.graphicsEditor.state.currentFrame = 0;\r\n            this.graphicsEditor.state.selectedShapeIndex = -1;\r\n            \r\n            this.graphicsEditor.refreshShapes(false);\r\n        });\r\n        list.appendChild(animSelector);\r\n    \r\n        // Frame list\r\n        const frameList = document.createElement('div');\r\n        frameList.style.marginBottom = '10px';\r\n        this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation].forEach((frame, index) => {\r\n            const frameItem = document.createElement('div');\r\n            frameItem.textContent = `Frame ${index + 1}`;\r\n            frameItem.style.padding = '5px';\r\n            frameItem.style.cursor = 'pointer';\r\n            if (index === this.graphicsEditor.state.currentFrame) frameItem.style.backgroundColor = '#555';\r\n            frameItem.addEventListener('click', () => {\r\n                this.graphicsEditor.setPreviewAnimationState(false);\r\n                this.graphicsEditor.state.currentFrame = index;                                \r\n                this.graphicsEditor.refreshShapes(false);\r\n            });\r\n            frameList.appendChild(frameItem);\r\n        });\r\n        list.appendChild(frameList);\r\n    }\r\n\r\n    updateShapeList() {\r\n        const list = document.getElementById('shape-list');\r\n        if (!list) return;\r\n        \r\n        // Get the current frame data\r\n        const currentFrame = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame];\r\n       \r\n        // Get shapes from the currently selected group\r\n        const selectedGroupName = this.graphicsEditor.groupManager.selectedGroupName;\r\n        const selectedGroup = currentFrame[selectedGroupName]\r\n        const shapes = selectedGroup && selectedGroup.shapes ? selectedGroup.shapes : selectedGroup || [];\r\n       \r\n        // Create shape list items\r\n        for (let i = 0; i < shapes.length; i++) {\r\n            const shape = shapes[i];\r\n            if (!shape) continue;\r\n           \r\n            const shapeItem = document.createElement('div');\r\n            shapeItem.classList.add('shape-item');\r\n           \r\n            // Mark as selected if this shape is the selected one and we're in the right group\r\n            if (i === this.graphicsEditor.state.selectedShapeIndex &&\r\n                this.graphicsEditor.groupManager.selectedGroupName === this.graphicsEditor.state.currentGroup) {\r\n                shapeItem.classList.add('selected');\r\n            }\r\n           \r\n            shapeItem.textContent = `${shape.name} - ${shape.type || 'Shape'}`;\r\n            shapeItem.addEventListener('click', () => {\r\n                this.graphicsEditor.state.currentGroup = this.graphicsEditor.groupManager.selectedGroupName;\r\n                this.selectShape(i);\r\n            });\r\n           \r\n            // Make the shape draggable\r\n            shapeItem.draggable = true;\r\n            shapeItem.dataset.index = i;\r\n            shapeItem.dataset.group = selectedGroupName;\r\n            \r\n            // Add dragstart event to set the drag data\r\n            shapeItem.addEventListener('dragstart', (e) => {\r\n                // Store only the selected shape's index and source group\r\n                const data = {\r\n                    shapeIndex: i,\r\n                    sourceGroup: selectedGroupName\r\n                };\r\n                \r\n                // Set the drag data\r\n                e.dataTransfer.setData('text/plain', JSON.stringify(data));\r\n                \r\n                // Add a visual indicator\r\n                shapeItem.classList.add('dragging');\r\n                \r\n                // Set drag effect\r\n                e.dataTransfer.effectAllowed = 'move';\r\n            });\r\n            \r\n            // Add dragend event to clean up\r\n            shapeItem.addEventListener('dragend', () => {\r\n                shapeItem.classList.remove('dragging');\r\n            });\r\n           \r\n            list.appendChild(shapeItem);\r\n        }\r\n        \r\n        // Set up the shape list container as a drop target\r\n        list.addEventListener('dragover', (e) => {\r\n            // Only respond if we're dragging over the shape list itself, not an individual shape\r\n            if (e.target === list) {\r\n                e.preventDefault();\r\n                e.dataTransfer.dropEffect = 'move';\r\n                list.classList.add('drag-over');\r\n            }\r\n        });\r\n        \r\n        list.addEventListener('dragleave', (e) => {\r\n            // Only respond if we're leaving the shape list\r\n            if (e.target === list) {\r\n                list.classList.remove('drag-over');\r\n            }\r\n        });\r\n        \r\n        list.addEventListener('drop', (e) => {\r\n            e.preventDefault();\r\n            list.classList.remove('drag-over');\r\n            \r\n            const data = e.dataTransfer.getData('text/plain');\r\n            if (!data) return;\r\n            \r\n            try {\r\n                const dragData = JSON.parse(data);\r\n                const { shapeIndex, sourceGroup } = dragData;\r\n                \r\n                // Only process if this is a different group\r\n                if (sourceGroup && sourceGroup !== selectedGroupName) {\r\n                    this.graphicsEditor.groupManager.moveToGroup(\r\n                        parseInt(shapeIndex),\r\n                        sourceGroup,\r\n                        selectedGroupName\r\n                    );\r\n                }\r\n            } catch (err) {\r\n                console.error('Error processing drop in shape list:', err);\r\n            }\r\n        });\r\n    }\r\n\r\n}"
+        "script": "class GE_ShapeManager {\r\n    constructor(gameEditor, graphicsEditor) {\r\n        this.gameEditor = gameEditor;\r\n        this.graphicsEditor = graphicsEditor;\r\n        this.originalMaterials = new Map();\r\n        this.originalScale = new window.THREE.Vector3(1, 1, 1);\r\n        this.originalPosition = new window.THREE.Vector3(0, 0, 0);\r\n        this.originalRotation = new window.THREE.Vector3(0, 0, 0);\r\n        \r\n        this.gizmoGroup = null;\r\n        this.gizmoMode = \"translate\";\r\n        this.selectedAxis = null;\r\n        this.isDragging = false;\r\n        this.raycaster = new window.THREE.Raycaster();\r\n        this.mouse = new window.THREE.Vector2();\r\n        this.lastMouse = new window.THREE.Vector2();\r\n    }    \r\n\r\n    init() {   \r\n     //   this.graphicsEditor.refreshShapes(false);\r\n        this.initEventListeners();\r\n\r\n    }\r\n    initEventListeners() {\r\n        // Button event listeners\r\n        const buttonMappings = {\r\n            'add-shape': this.addSelectedShape.bind(this),\r\n            'delete-shape': this.deleteSelectedShape.bind(this)\r\n        };\r\n        Object.entries(buttonMappings).forEach(([id, handler]) => {\r\n            const button = document.getElementById(id);\r\n            if (button) button.addEventListener('click', handler);\r\n        });\r\n        \r\n        document.getElementById('move-cancel').addEventListener('click', () => {            \r\n            const inspector = document.getElementById('inspector');\r\n            inspector.innerHTML = ``;\r\n        });\r\n\r\n        const canvas = this.graphicsEditor.sceneRenderer.renderer.domElement;\r\n        canvas.addEventListener('mousedown', this.onMouseDown.bind(this));\r\n        canvas.addEventListener('mousemove', this.onMouseMove.bind(this));\r\n        canvas.addEventListener('mouseup', this.onMouseUp.bind(this));\r\n    }\r\n     // Create the gizmo for translation, rotation, or scaling\r\n     createGizmo() {\r\n        if (this.gizmoGroup) {\r\n            this.gizmoGroup.children.forEach(child => {\r\n                if (child.geometry) child.geometry.dispose();\r\n                if (child.material) child.material.dispose();\r\n            });\r\n            this.graphicsEditor.sceneRenderer.scene.remove(this.gizmoGroup);\r\n            this.gizmoGroup = null;\r\n        }\r\n    \r\n        this.gizmoGroup = new window.THREE.Group();\r\n        this.graphicsEditor.sceneRenderer.scene.add(this.gizmoGroup);\r\n    \r\n        let center = new window.THREE.Vector3();\r\n        let xOffset = 1, yOffset = 1, zOffset = 1;\r\n    \r\n        if (this.currentTransformTarget.children.length > 0) {\r\n            const boundingBox = new window.THREE.Box3().setFromObject(this.currentTransformTarget);\r\n            const size = new window.THREE.Vector3();\r\n            if (!boundingBox.isEmpty() && isFinite(boundingBox.min.x)) {\r\n                boundingBox.getSize(size);\r\n                boundingBox.getCenter(center);\r\n                xOffset = size.x / 2 + 1;\r\n                yOffset = size.y / 2 + 1;\r\n                zOffset = size.z / 2 + 1;\r\n            } else {\r\n                this.currentTransformTarget.getWorldPosition(center);\r\n                console.warn(\"Invalid bounding box; using group position.\");\r\n            }\r\n        } else {\r\n            const boundingBox = new window.THREE.Box3().setFromObject(this.currentTransformTarget);\r\n            const size = new window.THREE.Vector3();\r\n            if (!boundingBox.isEmpty() && isFinite(boundingBox.min.x)) {\r\n                boundingBox.getSize(size);\r\n                boundingBox.getCenter(center);\r\n                xOffset = size.x / 2 + 1;\r\n                yOffset = size.y / 2 + 1;\r\n                zOffset = size.z / 2 + 1;\r\n            } else {\r\n                this.currentTransformTarget.getWorldPosition(center);\r\n                console.warn(\"Invalid bounding box; using group position.\");\r\n            }\r\n        }\r\n    \r\n        this.gizmoGroup.position.copy(center);\r\n    \r\n        if (this.gizmoMode === \"translate\") {\r\n            const arrowLength = 5;\r\n            const arrowHeadLength = 2;\r\n            const arrowHeadWidth = 1;\r\n    \r\n            // X-axis (red)\r\n            const xCylinderGeometry = new window.THREE.CylinderGeometry(0.5, 0.5, arrowLength - arrowHeadLength, 8);\r\n            const xCylinderMaterial = new window.THREE.MeshBasicMaterial({ color: 0xff0000 });\r\n            const xCylinder = new window.THREE.Mesh(xCylinderGeometry, xCylinderMaterial);\r\n            xCylinder.rotation.z = Math.PI / 2;\r\n            xCylinder.position.x = xOffset + (arrowLength - arrowHeadLength) / 2;\r\n            xCylinder.name = \"translate-x\";\r\n            this.gizmoGroup.add(xCylinder);\r\n    \r\n            const xConeGeometry = new window.THREE.ConeGeometry(arrowHeadWidth, arrowHeadLength, 8);\r\n            const xConeMaterial = new window.THREE.MeshBasicMaterial({ color: 0xff0000 });\r\n            const xCone = new window.THREE.Mesh(xConeGeometry, xConeMaterial);\r\n            xCone.rotation.z = 3 * Math.PI / 2;\r\n            xCone.position.x = xOffset + arrowLength - arrowHeadLength / 2;\r\n            xCone.name = \"translate-x\";\r\n            this.gizmoGroup.add(xCone);\r\n    \r\n            // Y-axis (green)\r\n            const yCylinderGeometry = new window.THREE.CylinderGeometry(0.5, 0.5, arrowLength - arrowHeadLength, 8);\r\n            const yCylinderMaterial = new window.THREE.MeshBasicMaterial({ color: 0x00ff00 });\r\n            const yCylinder = new window.THREE.Mesh(yCylinderGeometry, yCylinderMaterial);\r\n            yCylinder.position.y = yOffset + (arrowLength - arrowHeadLength) / 2;\r\n            yCylinder.name = \"translate-y\";\r\n            this.gizmoGroup.add(yCylinder);\r\n    \r\n            const yConeGeometry = new window.THREE.ConeGeometry(arrowHeadWidth, arrowHeadLength, 8);\r\n            const yConeMaterial = new window.THREE.MeshBasicMaterial({ color: 0x00ff00 });\r\n            const yCone = new window.THREE.Mesh(yConeGeometry, yConeMaterial);\r\n            yCone.position.y = yOffset + arrowLength - arrowHeadLength / 2;\r\n            yCone.name = \"translate-y\";\r\n            this.gizmoGroup.add(yCone);\r\n    \r\n            // Z-axis (blue)\r\n            const zCylinderGeometry = new window.THREE.CylinderGeometry(0.5, 0.5, arrowLength - arrowHeadLength, 8);\r\n            const zCylinderMaterial = new window.THREE.MeshBasicMaterial({ color: 0x0000ff });\r\n            const zCylinder = new window.THREE.Mesh(zCylinderGeometry, zCylinderMaterial);\r\n            zCylinder.rotation.x = Math.PI / 2;\r\n            zCylinder.position.z = zOffset + (arrowLength - arrowHeadLength) / 2;\r\n            zCylinder.name = \"translate-z\";\r\n            this.gizmoGroup.add(zCylinder);\r\n    \r\n            const zConeGeometry = new window.THREE.ConeGeometry(arrowHeadWidth, arrowHeadLength, 8);\r\n            const zConeMaterial = new window.THREE.MeshBasicMaterial({ color: 0x0000ff });\r\n            const zCone = new window.THREE.Mesh(zConeGeometry, zConeMaterial);\r\n            zCone.rotation.x = Math.PI / 2;\r\n            zCone.position.z = zOffset + arrowLength - arrowHeadLength / 2;\r\n            zCone.name = \"translate-z\";\r\n            this.gizmoGroup.add(zCone);\r\n        } else if (this.gizmoMode === \"rotate\") {\r\n            const ringRadius = 4;\r\n            const ringTube = 0.5;\r\n    \r\n            // X-axis (red)\r\n            const xRingGeometry = new window.THREE.TorusGeometry(ringRadius, ringTube, 16, 100);\r\n            const xRingMaterial = new window.THREE.MeshBasicMaterial({ color: 0xff0000 });\r\n            const xRing = new window.THREE.Mesh(xRingGeometry, xRingMaterial);\r\n            xRing.rotation.y = Math.PI / 2;\r\n            xRing.position.x = xOffset;\r\n            xRing.name = \"rotate-x\";\r\n            this.gizmoGroup.add(xRing);\r\n    \r\n            // Y-axis (green)\r\n            const yRingGeometry = new window.THREE.TorusGeometry(ringRadius, ringTube, 16, 100);\r\n            const yRingMaterial = new window.THREE.MeshBasicMaterial({ color: 0x00ff00 });\r\n            const yRing = new window.THREE.Mesh(yRingGeometry, yRingMaterial);\r\n            yRing.rotation.x = Math.PI / 2;\r\n            yRing.position.y = yOffset;\r\n            yRing.name = \"rotate-y\";\r\n            this.gizmoGroup.add(yRing);\r\n    \r\n            // Z-axis (blue)\r\n            const zRingGeometry = new window.THREE.TorusGeometry(ringRadius, ringTube, 16, 100);\r\n            const zRingMaterial = new window.THREE.MeshBasicMaterial({ color: 0x0000ff });\r\n            const zRing = new window.THREE.Mesh(zRingGeometry, zRingMaterial);\r\n            zRing.position.z = zOffset;\r\n            zRing.name = \"rotate-z\";\r\n            this.gizmoGroup.add(zRing);\r\n        } else if (this.gizmoMode === \"scale\") {\r\n            const boxSize = 2;\r\n    \r\n            // X-axis (red)\r\n            const xBoxGeometry = new window.THREE.BoxGeometry(boxSize, boxSize, boxSize);\r\n            const xBoxMaterial = new window.THREE.MeshBasicMaterial({ color: 0xff0000 });\r\n            const xBox = new window.THREE.Mesh(xBoxGeometry, xBoxMaterial);\r\n            xBox.position.set(xOffset, 0, 0);\r\n            xBox.name = \"scale-x\";\r\n            this.gizmoGroup.add(xBox);\r\n    \r\n            // Y-axis (green)\r\n            const yBoxGeometry = new window.THREE.BoxGeometry(boxSize, boxSize, boxSize);\r\n            const yBoxMaterial = new window.THREE.MeshBasicMaterial({ color: 0x00ff00 });\r\n            const yBox = new window.THREE.Mesh(yBoxGeometry, yBoxMaterial);\r\n            yBox.position.set(0, yOffset, 0);\r\n            yBox.name = \"scale-y\";\r\n            this.gizmoGroup.add(yBox);\r\n    \r\n            // Z-axis (blue)\r\n            const zBoxGeometry = new window.THREE.BoxGeometry(boxSize, boxSize, boxSize);\r\n            const zBoxMaterial = new window.THREE.MeshBasicMaterial({ color: 0x0000ff });\r\n            const zBox = new window.THREE.Mesh(zBoxGeometry, zBoxMaterial);\r\n            zBox.position.set(0, 0, zOffset);\r\n            zBox.name = \"scale-z\";\r\n            this.gizmoGroup.add(zBox);\r\n        }\r\n    }\r\n    updateInspectorValues() {\r\n        if (!this.currentTransformTarget) return;\r\n        \r\n        // Update all relevant input fields\r\n        const updateInput = (property, value) => {\r\n            const input = document.querySelector(`[data-property=\"${property}\"]`);\r\n            if (input) input.value = value;\r\n        };\r\n        \r\n        // Position\r\n        updateInput('x', this.currentTransformTarget.position.x);\r\n        updateInput('y', this.currentTransformTarget.position.y);\r\n        updateInput('z', this.currentTransformTarget.position.z);\r\n        \r\n        // Rotation (convert to degrees)\r\n        updateInput('rotationX', this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.x));\r\n        updateInput('rotationY', this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.y));\r\n        updateInput('rotationZ', this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.z));\r\n        \r\n        // Scale\r\n        updateInput('scaleX', this.currentTransformTarget.scale.x);\r\n        updateInput('scaleY', this.currentTransformTarget.scale.y);\r\n        updateInput('scaleZ', this.currentTransformTarget.scale.z);\r\n    }\r\n     // Mouse event handlers for gizmo interaction\r\n     onMouseDown(event) {\r\n        if (!this.gizmoGroup) {\r\n            console.log(\"Gizmo group not present\");\r\n            return;\r\n        }\r\n    \r\n        const canvas = this.graphicsEditor.sceneRenderer.renderer.domElement;\r\n        const rect = canvas.getBoundingClientRect();\r\n        this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;\r\n        this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;\r\n    \r\n        this.raycaster.setFromCamera(this.mouse, this.graphicsEditor.sceneRenderer.camera);\r\n        const intersects = this.raycaster.intersectObjects(this.gizmoGroup.children, true);\r\n    \r\n        if (intersects.length > 0) {\r\n            const object = intersects[0].object;\r\n            this.selectedAxis = object.name.split('-')[1];\r\n            this.isDragging = true;\r\n            console.log(`Dragging started on axis: ${this.selectedAxis}`, object);\r\n    \r\n            if (this.graphicsEditor.sceneRenderer.controls) {\r\n                this.graphicsEditor.sceneRenderer.controls.enabled = false;\r\n            }\r\n    \r\n            this.lastMouse.copy(this.mouse);\r\n        } else {\r\n            console.log(\"No intersection with gizmo\");\r\n        }\r\n    }\r\n\r\n    onMouseMove(event) {\r\n        if (!this.isDragging || !this.selectedAxis || !this.currentTransformTarget) return;\r\n        \r\n        const canvas = this.graphicsEditor.sceneRenderer.renderer.domElement;\r\n        const rect = canvas.getBoundingClientRect();\r\n        this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;\r\n        this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;\r\n        const deltaMouse = this.mouse.clone().sub(this.lastMouse);\r\n        \r\n        const camera = this.graphicsEditor.sceneRenderer.camera;\r\n        const cameraPosition = camera.position.clone();\r\n        const objectPosition = this.currentTransformTarget.position.clone();\r\n        \r\n        const cameraRight = new window.THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);\r\n        const cameraUp = new window.THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion);\r\n        const cameraForward = new window.THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);\r\n        const cameraToObject = objectPosition.clone().sub(cameraPosition);\r\n        \r\n        if (this.gizmoMode === \"translate\") {\r\n            const moveSpeed = 100;\r\n            \r\n            if (this.selectedAxis === \"x\") {\r\n                const worldX = new window.THREE.Vector3(1, 0, 0);\r\n                const dotProduct = worldX.dot(cameraRight);\r\n                const moveFactor = Math.sign(dotProduct) * deltaMouse.x * moveSpeed;\r\n                this.currentTransformTarget.position.x += moveFactor;\r\n            } else if (this.selectedAxis === \"y\") {\r\n                const worldY = new window.THREE.Vector3(0, 1, 0);\r\n                const dotProduct = worldY.dot(cameraUp);\r\n                const moveFactor = Math.sign(dotProduct) * deltaMouse.y * moveSpeed;\r\n                this.currentTransformTarget.position.y += moveFactor;\r\n            } else if (this.selectedAxis === \"z\") {\r\n                const worldZ = new window.THREE.Vector3(0, 0, 1);\r\n                const cameraRightXZ = new window.THREE.Vector3(cameraRight.x, 0, cameraRight.z).normalize();\r\n                const dotProduct = worldZ.dot(cameraRightXZ);\r\n                const moveFactor = Math.sign(dotProduct) * deltaMouse.x * moveSpeed;\r\n                this.currentTransformTarget.position.z += moveFactor;\r\n            }\r\n        } else if (this.gizmoMode === \"rotate\") {\r\n            const rotateSpeed = 2 * Math.PI;\r\n            \r\n            if (this.selectedAxis === \"x\") {\r\n                const worldX = new window.THREE.Vector3(1, 0, 0);\r\n                const dotProduct = worldX.dot(cameraRight);\r\n                const rotateFactor = -Math.sign(dotProduct) * deltaMouse.x * rotateSpeed;\r\n                this.currentTransformTarget.rotation.x += rotateFactor;\r\n            } else if (this.selectedAxis === \"y\") {\r\n                const worldY = new window.THREE.Vector3(0, 1, 0);\r\n                const dotProduct = worldY.dot(cameraUp);\r\n                const rotateFactor = Math.sign(dotProduct) * deltaMouse.x * rotateSpeed;\r\n                this.currentTransformTarget.rotation.y += rotateFactor;\r\n            } else if (this.selectedAxis === \"z\") {\r\n                const worldZ = new window.THREE.Vector3(0, 0, 1);\r\n                const dotProduct = cameraToObject.normalize().dot(worldZ);\r\n                const rotateFactor = Math.sign(dotProduct) * deltaMouse.x * rotateSpeed;\r\n                this.currentTransformTarget.rotation.z += rotateFactor;\r\n            }\r\n        } else if (this.gizmoMode === \"scale\") {\r\n            const scaleSpeed = 2;\r\n            let scaleFactor = 0;\r\n            \r\n            if (this.selectedAxis === \"x\") {\r\n                const worldX = new window.THREE.Vector3(1, 0, 0);\r\n                const dotProduct = worldX.dot(cameraRight);\r\n                scaleFactor = Math.sign(dotProduct) * deltaMouse.x * scaleSpeed;\r\n            } else if (this.selectedAxis === \"y\") {\r\n                const worldY = new window.THREE.Vector3(0, 1, 0);\r\n                const dotProduct = worldY.dot(cameraUp);\r\n                scaleFactor = Math.sign(dotProduct) * deltaMouse.y * scaleSpeed;\r\n            } else if (this.selectedAxis === \"z\") {\r\n                const worldZ = new window.THREE.Vector3(0, 0, 1);\r\n                const cameraRightXZ = new window.THREE.Vector3(cameraRight.x, 0, cameraRight.z).normalize();\r\n                const dotProduct = worldZ.dot(cameraRightXZ);\r\n                scaleFactor = Math.sign(dotProduct) * deltaMouse.x * scaleSpeed;\r\n            }\r\n            \r\n            if (this.selectedAxis === \"x\") {\r\n                this.currentTransformTarget.scale.x += scaleFactor;\r\n                if (this.currentTransformTarget.scale.x < 0.1) this.currentTransformTarget.scale.x = 0.1;\r\n            } else if (this.selectedAxis === \"y\") {\r\n                this.currentTransformTarget.scale.y += scaleFactor;\r\n                if (this.currentTransformTarget.scale.y < 0.1) this.currentTransformTarget.scale.y = 0.1;\r\n            } else if (this.selectedAxis === \"z\") {\r\n                this.currentTransformTarget.scale.z += scaleFactor;\r\n                if (this.currentTransformTarget.scale.z < 0.1) this.currentTransformTarget.scale.z = 0.1;\r\n            }\r\n        }\r\n        this.updateGizmoPosition();\r\n        this.lastMouse.copy(this.mouse);\r\n        this.applyCurrentTransform(); // New method to update data model\r\n        this.updateInspectorValues(); // Keep UI in sync\r\n    }\r\n    applyCurrentTransform() {\r\n        if (!this.currentTransformTarget) return;\r\n    \r\n        // For groups\r\n        if (this.currentTransformTarget.userData?.isGroup) {\r\n            const groupId = this.currentTransformTarget.name;\r\n            const groupData = this.graphicsEditor.groupManager.getGroupData(groupId);\r\n            \r\n            // Directly update group transform without full refresh\r\n            groupData.position = {\r\n                x: this.currentTransformTarget.position.x,\r\n                y: this.currentTransformTarget.position.y,\r\n                z: this.currentTransformTarget.position.z\r\n            };\r\n            groupData.rotation = {\r\n                x: this.currentTransformTarget.rotation.x,\r\n                y: this.currentTransformTarget.rotation.y,\r\n                z: this.currentTransformTarget.rotation.z\r\n            };\r\n            groupData.scale = {\r\n                x: this.currentTransformTarget.scale.x,\r\n                y: this.currentTransformTarget.scale.y,\r\n                z: this.currentTransformTarget.scale.z\r\n            };\r\n            \r\n            // Only update the transform, not the entire scene\r\n            this.updateGizmoPosition();\r\n            return;\r\n        }\r\n        // For individual shapes\r\n        else if (this.graphicsEditor.state.selectedShapeIndex >= 0) {\r\n            const shape = this.getCurrentShape();\r\n            if (shape) {\r\n                shape.x = this.currentTransformTarget.position.x;\r\n                shape.y = this.currentTransformTarget.position.y;\r\n                shape.z = this.currentTransformTarget.position.z;\r\n                \r\n                shape.rotationX = this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.x);\r\n                shape.rotationY = this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.y);\r\n                shape.rotationZ = this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.z);\r\n                \r\n                shape.scaleX = this.currentTransformTarget.scale.x;\r\n                shape.scaleY = this.currentTransformTarget.scale.y;\r\n                shape.scaleZ = this.currentTransformTarget.scale.z;\r\n            }\r\n            this.updateGizmoPosition();\r\n        }\r\n        \r\n        // Optional: Auto-save or trigger update\r\n        this.graphicsEditor.refreshShapes(false);\r\n    }\r\n    updateGizmoPosition() {\r\n        if (!this.currentTransformTarget || !this.gizmoGroup) return;\r\n\r\n        let center = new window.THREE.Vector3();\r\n        let xOffset = 1, yOffset = 1, zOffset = 1;\r\n    \r\n        if (this.currentTransformTarget.children.length > 0) {\r\n            const boundingBox = new window.THREE.Box3().setFromObject(this.currentTransformTarget);\r\n            const size = new window.THREE.Vector3();\r\n            if (!boundingBox.isEmpty() && isFinite(boundingBox.min.x)) {\r\n                boundingBox.getSize(size);\r\n                boundingBox.getCenter(center);\r\n                xOffset = size.x / 2 + 1;\r\n                yOffset = size.y / 2 + 1;\r\n                zOffset = size.z / 2 + 1;\r\n            } else {\r\n                this.currentTransformTarget.getWorldPosition(center);\r\n                console.warn(\"Invalid bounding box; using group position.\");\r\n            }\r\n        } else {\r\n            const boundingBox = new window.THREE.Box3().setFromObject(this.currentTransformTarget);\r\n            const size = new window.THREE.Vector3();\r\n            if (!boundingBox.isEmpty() && isFinite(boundingBox.min.x)) {\r\n                boundingBox.getSize(size);\r\n                boundingBox.getCenter(center);\r\n                xOffset = size.x / 2 + 1;\r\n                yOffset = size.y / 2 + 1;\r\n                zOffset = size.z / 2 + 1;\r\n            } else {\r\n                this.currentTransformTarget.getWorldPosition(center);\r\n                console.warn(\"Invalid bounding box; using group position.\");\r\n            }\r\n        }\r\n    \r\n        this.gizmoGroup.position.copy(center);\r\n    \r\n        this.gizmoGroup.children.forEach(child => {\r\n            const name = child.name;\r\n            if (!name) return;\r\n    \r\n            child.position.set(0, 0, 0);\r\n    \r\n            if (name.startsWith(\"translate-\")) {\r\n                const arrowLength = 5;\r\n                const arrowHeadLength = 2;\r\n                if (name === \"translate-x\") {\r\n                    child.position.x = xOffset + (child.geometry.type === \"CylinderGeometry\" ? (arrowLength - arrowHeadLength) / 2 : arrowLength - arrowHeadLength / 2);\r\n                } else if (name === \"translate-y\") {\r\n                    child.position.y = yOffset + (child.geometry.type === \"CylinderGeometry\" ? (arrowLength - arrowHeadLength) / 2 : arrowLength - arrowHeadLength / 2);\r\n                } else if (name === \"translate-z\") {\r\n                    child.position.z = zOffset + (child.geometry.type === \"CylinderGeometry\" ? (arrowLength - arrowHeadLength) / 2 : arrowLength - arrowHeadLength / 2);\r\n                }\r\n            } else if (name.startsWith(\"rotate-\")) {\r\n                if (name === \"rotate-x\") child.position.x = xOffset;\r\n                else if (name === \"rotate-y\") child.position.y = yOffset;\r\n                else if (name === \"rotate-z\") child.position.z = zOffset;\r\n            } else if (name.startsWith(\"scale-\")) {\r\n                if (name === \"scale-x\") child.position.x = xOffset;\r\n                else if (name === \"scale-y\") child.position.y = yOffset;\r\n                else if (name === \"scale-z\") child.position.z = zOffset;\r\n            }\r\n        });\r\n    \r\n        // Ensure gizmoGroup is in scene (not rootGroup, as it’s a UI overlay)\r\n        if (!this.graphicsEditor.sceneRenderer.scene.children.includes(this.gizmoGroup)) {\r\n            this.graphicsEditor.sceneRenderer.scene.add(this.gizmoGroup);\r\n            console.warn(\"Gizmo was removed from scene; re-added.\");\r\n        }\r\n    }\r\n\r\n    onMouseUp() {\r\n        this.isDragging = false;\r\n        this.selectedAxis = null;\r\n\r\n        if (this.graphicsEditor.sceneRenderer.controls) {\r\n            this.graphicsEditor.sceneRenderer.controls.enabled = true;\r\n        }\r\n    }\r\n    getSelectedGroupOrRoot() {\r\n        const selectedGroupName = this.graphicsEditor.groupManager.selectedGroupName;\r\n        if (selectedGroupName) {\r\n            let foundGroup = null;\r\n            this.graphicsEditor.rootGroup.traverse(obj => {\r\n                if (obj.isGroup && obj.name === selectedGroupName && obj.userData.isGroup) {\r\n                    foundGroup = obj;\r\n                }\r\n            });\r\n            let foundShape = null;\r\n            if(foundGroup){\r\n                foundGroup.traverse(obj => {\r\n                    if (obj.userData.isShape && obj.userData.index == this.graphicsEditor.state.selectedShapeIndex) {\r\n                        foundShape = obj;\r\n                    }\r\n                });\r\n            }\r\n            return foundShape || foundGroup || this.graphicsEditor.rootGroup;\r\n        }\r\n        return this.graphicsEditor.rootGroup;\r\n    }\r\n    transformGroup(targetObject) {\r\n        // Determine the target object - prioritize the passed target, then selected group, then rootGroup\r\n        let target;\r\n        if (targetObject) {\r\n            target = targetObject;\r\n        } else {\r\n            // Try to get the currently selected group\r\n            const selectedGroupName = this.graphicsEditor.groupManager.selectedGroupName;\r\n            if (selectedGroupName) {\r\n                // Find the group in the scene\r\n                this.graphicsEditor.rootGroup.traverse(obj => {\r\n                    if (obj.isGroup && obj.name === selectedGroupName && obj.userData.isGroup) {\r\n                        target = obj;\r\n                    }\r\n                });\r\n            }\r\n            \r\n            // Fall back to rootGroup if no selected group found\r\n            if (!target) {\r\n                target = this.graphicsEditor.rootGroup;\r\n            }\r\n        }\r\n    \r\n        // If we still don't have a target, return\r\n        if (!target) return;\r\n    \r\n        this.currentTransformTarget = target;\r\n    \r\n        // If target is a group, ensure it's in rootGroup and populated\r\n        if (this.currentTransformTarget.userData?.isGroup) {\r\n            const groupId = this.currentTransformTarget.userData.groupId;\r\n            const group = this.graphicsEditor.groupManager.getGroupObject(groupId);\r\n            if (group) {\r\n                // Ensure group is in rootGroup\r\n                if (this.currentTransformTarget.parent !== this.graphicsEditor.rootGroup) {\r\n                    if (this.currentTransformTarget.parent) {\r\n                        this.currentTransformTarget.parent.remove(this.currentTransformTarget);\r\n                    }\r\n                    this.graphicsEditor.rootGroup.add(this.currentTransformTarget);\r\n                }    \r\n            }\r\n        }\r\n    \r\n        this.originalPosition.copy(this.currentTransformTarget.position);\r\n        this.originalRotation.copy(this.currentTransformTarget.rotation);\r\n        this.originalScale.copy(this.currentTransformTarget.scale);\r\n        \r\n        // Inject transform controls into inspector instead of creating separate UI\r\n        this.injectTransformControlsToInspector();\r\n    }\r\n    \r\n    // New method to inject transform controls into the inspector\r\n    injectTransformControlsToInspector() {\r\n        const inspector = document.getElementById('inspector');\r\n        \r\n        // Create transform controls section\r\n        const transformSection = document.createElement('div');\r\n        transformSection.className = 'transform-controls-section';\r\n        transformSection.innerHTML = `\r\n            <h3>Transform ${this.currentTransformTarget.name || 'Current Frame'}</h3>\r\n            <div class=\"transform-buttons\">\r\n                <button id=\"translate-btn\" class=\"${this.gizmoMode === 'translate' ? 'active' : ''}\">Translate</button>\r\n                <button id=\"rotate-btn\" class=\"${this.gizmoMode === 'rotate' ? 'active' : ''}\">Rotate</button>\r\n                <button id=\"scale-btn\" class=\"${this.gizmoMode === 'scale' ? 'active' : ''}\">Scale</button>\r\n            </div>\r\n        `;\r\n        // Insert at the top of the inspector\r\n        if (inspector.firstChild) {\r\n            inspector.insertBefore(transformSection, inspector.firstChild);\r\n        } else {\r\n            inspector.appendChild(transformSection);\r\n        }      \r\n        // Add event listeners for transform mode buttons\r\n        document.getElementById('translate-btn').addEventListener('click', () => {\r\n            this.setGizmoMode('translate');\r\n            this.updateModeButtonsUI();\r\n        });\r\n        \r\n        document.getElementById('rotate-btn').addEventListener('click', () => {\r\n            this.setGizmoMode('rotate');\r\n            this.updateModeButtonsUI();\r\n        });\r\n        \r\n        document.getElementById('scale-btn').addEventListener('click', () => {\r\n            this.setGizmoMode('scale');\r\n            this.updateModeButtonsUI();\r\n        });\r\n        \r\n        this.updateInspectorValues();\r\n        this.setGizmoMode('translate');\r\n        this.updateModeButtonsUI();\r\n    }\r\n    \r\n    // New helper method to set gizmo mode\r\n    setGizmoMode(mode) {\r\n        this.gizmoMode = mode;\r\n        this.createGizmo();\r\n    }\r\n    \r\n    // New helper method to update button UI for transform modes\r\n    updateModeButtonsUI() {\r\n        const translateBtn = document.getElementById('translate-btn');\r\n        const rotateBtn = document.getElementById('rotate-btn');\r\n        const scaleBtn = document.getElementById('scale-btn');\r\n        \r\n        translateBtn.className = this.gizmoMode === 'translate' ? 'active' : '';\r\n        rotateBtn.className = this.gizmoMode === 'rotate' ? 'active' : '';\r\n        scaleBtn.className = this.gizmoMode === 'scale' ? 'active' : '';\r\n    }\r\n    \r\n    // New helper method to remove transform controls from inspector\r\n    removeTransformControlsFromInspector() {\r\n        const transformSection = document.querySelector('.transform-controls-section');\r\n        if (transformSection) {\r\n            transformSection.remove();\r\n        }\r\n    }\r\n    applyTransformToShapes() {\r\n        if (!this.currentTransformTarget) return;\r\n\r\n        // If transforming the root group, apply to all shapes\r\n        if (this.currentTransformTarget === this.graphicsEditor.rootGroup) {\r\n            const currentShapes = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][this.graphicsEditor.state.currentGroup].shapes;\r\n\r\n            const positionOffset = this.currentTransformTarget.position.clone();\r\n            const rotationEuler = this.currentTransformTarget.rotation.clone();\r\n            const scaleFactor = this.currentTransformTarget.scale.clone();\r\n\r\n            const transformMatrix = new window.THREE.Matrix4();\r\n            transformMatrix.compose(\r\n                positionOffset,\r\n                new window.THREE.Quaternion().setFromEuler(rotationEuler),\r\n                scaleFactor\r\n            );\r\n\r\n            let centerX = 0, centerY = 0, centerZ = 0;\r\n            currentShapes.forEach(shape => {\r\n                centerX += shape.x || 0;\r\n                centerY += shape.y || 0;\r\n                centerZ += shape.z || 0;\r\n            });\r\n            centerX /= currentShapes.length;\r\n            centerY /= currentShapes.length;\r\n            centerZ /= currentShapes.length;\r\n            const centerPoint = new window.THREE.Vector3(centerX, centerY, centerZ);\r\n\r\n            currentShapes.forEach(shape => {\r\n                const position = new window.THREE.Vector3(shape.x || 0, shape.y || 0, shape.z || 0);\r\n                position.sub(centerPoint);\r\n                position.applyMatrix4(transformMatrix);\r\n                position.add(centerPoint);\r\n\r\n                shape.x = position.x;\r\n                shape.y = position.y;\r\n                shape.z = position.z;\r\n\r\n                const shapeRotation = new window.THREE.Euler(\r\n                    this.graphicsEditor.rotationUtils.degToRad(shape.rotationX || 0),\r\n                    this.graphicsEditor.rotationUtils.degToRad(shape.rotationY || 0),\r\n                    this.graphicsEditor.rotationUtils.degToRad(shape.rotationZ || 0)\r\n                );\r\n                const quaternion = new window.THREE.Quaternion().setFromEuler(shapeRotation);\r\n                const groupQuaternion = new window.THREE.Quaternion().setFromEuler(rotationEuler);\r\n                quaternion.premultiply(groupQuaternion);\r\n                const newRotation = new window.THREE.Euler().setFromQuaternion(quaternion);\r\n                shape.rotationX = this.graphicsEditor.rotationUtils.radToDeg(newRotation.x);\r\n                shape.rotationY = this.graphicsEditor.rotationUtils.radToDeg(newRotation.y);\r\n                shape.rotationZ = this.graphicsEditor.rotationUtils.radToDeg(newRotation.z);\r\n\r\n                if (shape.size) shape.size *= scaleFactor.x;\r\n                if (shape.width) shape.width *= scaleFactor.x;\r\n                if (shape.height) shape.height *= scaleFactor.y;\r\n                if (shape.depth) shape.depth *= scaleFactor.z;\r\n                if (shape.tubeSize) shape.tubeSize *= scaleFactor.x;\r\n            });\r\n\r\n            this.currentTransformTarget.position.set(0, 0, 0);\r\n            this.currentTransformTarget.rotation.set(0, 0, 0);\r\n            this.currentTransformTarget.scale.set(1, 1, 1);\r\n        } else {\r\n            // If transforming a group, update group data in groupManager\r\n            const groupId = this.currentTransformTarget.name;\r\n            if (groupId) {\r\n                this.graphicsEditor.groupManager.applyGroupTransform(\r\n                    groupId,\r\n                    this.currentTransformTarget.position,\r\n                    this.currentTransformTarget.rotation,\r\n                    this.currentTransformTarget.scale\r\n                );\r\n            }\r\n        }\r\n\r\n        this.graphicsEditor.refreshShapes(true);\r\n    }\r\n    selectShape(index) {\r\n        if (this.graphicsEditor.animationManager.isPreviewingAnimation) {\r\n            this.graphicsEditor.setPreviewAnimationState(false);\r\n        }\r\n        \r\n        // Toggle selection if clicking the same shape\r\n        this.graphicsEditor.state.selectedShapeIndex = (this.graphicsEditor.state.selectedShapeIndex === index) ? -1 : index;\r\n        this.graphicsEditor.state.currentGroup = this.graphicsEditor.groupManager.selectedGroupName;\r\n        \r\n        // Update shape list and highlighting\r\n        this.updateList();\r\n        this.highlightSelectedShape();\r\n        \r\n        // Show inspector for selected shape\r\n        const shape = this.getCurrentShape();\r\n        if (shape) {\r\n            this.graphicsEditor.createInspector(shape);\r\n            this.transformGroup(this.getSelectedGroupOrRoot());\r\n        }\r\n    }\r\n\r\n    getCurrentShape() {\r\n        if (this.graphicsEditor.state.selectedShapeIndex >= 0) {\r\n            const currentFrame = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame];\r\n            const selectedGroup = this.graphicsEditor.state.currentGroup;\r\n            const shapes = currentFrame[selectedGroup]?.shapes || [];\r\n            \r\n            if (this.graphicsEditor.state.selectedShapeIndex < shapes.length) {\r\n                const shape = shapes[this.graphicsEditor.state.selectedShapeIndex];\r\n                if (shape) {\r\n                    return shape;\r\n                }\r\n            }\r\n        }\r\n        return null;\r\n    }\r\n\r\n    highlightSelectedShape() {\r\n        // Remove existing outlines\r\n        this.graphicsEditor.sceneRenderer.scene.children.forEach(obj => {\r\n            if (obj.userData.isOutline) {\r\n                this.graphicsEditor.sceneRenderer.scene.remove(obj);\r\n                if (obj.geometry) obj.geometry.dispose();\r\n                if (obj.material) obj.material.dispose();\r\n            }\r\n        });\r\n    \r\n        // Reset any highlighted materials\r\n        this.originalMaterials.forEach((material, object) => {\r\n            object.material = material;\r\n        });\r\n        this.originalMaterials.clear();\r\n    \r\n        // If no shape is selected or invalid selection, return\r\n        if (this.graphicsEditor.state.selectedShapeIndex < 0) {\r\n            return;\r\n        }\r\n    \r\n        // Get the selected group name from state\r\n        const selectedGroupName = this.graphicsEditor.state.currentGroup || this.graphicsEditor.groupManager.selectedGroupName;\r\n        if (!selectedGroupName) {\r\n            console.warn(\"No group selected\");\r\n            return;\r\n        }\r\n    \r\n        // Find the THREE.Group with matching name under rootGroup\r\n        let selectedGroup = null;\r\n        this.graphicsEditor.rootGroup.traverse(obj => {\r\n            if (obj.isGroup && obj.name === selectedGroupName) {\r\n                selectedGroup = obj;\r\n            }\r\n        });\r\n    \r\n        if (!selectedGroup) {\r\n            console.warn(`No group found with name ${selectedGroupName}`);\r\n            return;\r\n        }\r\n    \r\n        const currentAnimation = this.graphicsEditor.state.currentAnimation;\r\n        const currentFrame = this.graphicsEditor.state.currentFrame;\r\n        const currentFrameData = this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame];\r\n    \r\n        if (!currentFrameData) {\r\n            console.warn(\"No frame data found\");\r\n            return;\r\n        }\r\n    \r\n        const groupShapes = currentFrameData[selectedGroupName];\r\n    \r\n        if (!groupShapes || this.graphicsEditor.state.selectedShapeIndex >= groupShapes.length) {\r\n            console.warn(`Invalid shape index ${this.graphicsEditor.state.selectedShapeIndex} for group ${selectedGroupName}`);\r\n            return;\r\n        }\r\n    \r\n        // Find all meshes belonging to the selected shape within the group\r\n        const selectedMeshes = [];\r\n        selectedGroup.traverse(obj => {\r\n            if (obj.isMesh && (\r\n                // Direct shape object that matches the index\r\n                (obj.userData.isShape &&\r\n                 obj.userData.index === this.graphicsEditor.state.selectedShapeIndex) ||\r\n                // Parent is a shape object that matches the index\r\n                (obj.parent &&\r\n                 obj.parent.userData.isShape &&\r\n                 obj.parent.userData.index === this.graphicsEditor.state.selectedShapeIndex) ||\r\n                // GLTF child of selected shape that matches the index\r\n                (obj.userData.isGLTFChild &&\r\n                 obj.parent &&\r\n                 obj.parent.userData.index === this.graphicsEditor.state.selectedShapeIndex)\r\n            )) {\r\n                selectedMeshes.push(obj);\r\n            }\r\n        });\r\n    \r\n        // Handle highlighting for all relevant meshes\r\n        selectedMeshes.forEach(mesh => {\r\n            // Apply emissive highlight to original mesh\r\n            this.originalMaterials.set(mesh, mesh.material);\r\n            const highlightMaterial = mesh.material.clone();\r\n            highlightMaterial.emissive = new window.THREE.Color(0x555555);\r\n            highlightMaterial.emissiveIntensity = 0.5;\r\n            mesh.material = highlightMaterial;\r\n    \r\n            // Create the outline geometry\r\n            const outlineGeometry = mesh.geometry.clone();\r\n            const outlineMaterial = new window.THREE.MeshBasicMaterial({\r\n                color: 0xffff00,\r\n                side: window.THREE.BackSide\r\n            });\r\n    \r\n            // Create the outline mesh\r\n            const outline = new window.THREE.Mesh(outlineGeometry, outlineMaterial);\r\n            outline.userData.isOutline = true;\r\n            \r\n            // Create a new group to hold the outline\r\n            let outlineGroup = new window.THREE.Group();\r\n            outlineGroup.userData.isOutline = true;\r\n            \r\n            // Add the outline to the group\r\n            outlineGroup.add(outline);\r\n            \r\n            // Find all parent groups up to rootGroup and copy their transformations\r\n            let currentParent = mesh.parent;\r\n            let transformChain = [];\r\n            \r\n            while (currentParent && currentParent !== this.graphicsEditor.rootGroup) {\r\n                transformChain.unshift({\r\n                    position: currentParent.position.clone(),\r\n                    rotation: currentParent.rotation.clone(),\r\n                    scale: currentParent.scale.clone(),\r\n                    quaternion: currentParent.quaternion.clone()\r\n                });\r\n                currentParent = currentParent.parent;\r\n            }\r\n            \r\n            // Apply all parent transformations to our outline group\r\n            transformChain.forEach(transform => {\r\n                // Create a temporary group to apply each parent's transform\r\n                const tempGroup = new window.THREE.Group();\r\n                tempGroup.position.copy(transform.position);\r\n                tempGroup.rotation.copy(transform.rotation);\r\n                tempGroup.scale.copy(transform.scale);\r\n                \r\n                // Add our current group to this temp group\r\n                tempGroup.add(outlineGroup);\r\n                \r\n                // Move outlineGroup up one level\r\n                outlineGroup = tempGroup;\r\n                outlineGroup.userData.isOutline = true;\r\n            });\r\n            \r\n            // Add mesh's local transform\r\n            outline.position.copy(mesh.position);\r\n            outline.rotation.copy(mesh.rotation);\r\n            outline.scale.copy(mesh.scale);\r\n            \r\n            // Scale the outline slightly larger (in local space)\r\n            outline.scale.multiplyScalar(1.05);\r\n            \r\n            // Add the complete outline group to the scene\r\n            this.graphicsEditor.sceneRenderer.scene.add(outlineGroup);\r\n        });\r\n    }\r\n    addNewShape() {\r\n        const newShape = {\r\n            type: 'sphere',\r\n            size: 2,\r\n            color: '#ff0000',\r\n            x: 0,\r\n            y: 0,\r\n            z: 0,\r\n            rotationX: 0,\r\n            rotationY: 0,\r\n            rotationZ: 0\r\n        };\r\n        this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][this.graphicsEditor.state.currentGroup].shapes.push(newShape);\r\n        this.graphicsEditor.state.selectedShapeIndex = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][this.graphicsEditor.state.currentGroup].shapes.length - 1;\r\n        this.graphicsEditor.refreshShapes(true); // Relies on refreshShapes to add to rootGroup\r\n    }\r\n\r\n    addSelectedShape() {\r\n        if (this.graphicsEditor.state.selectedShapeIndex >= 0) {\r\n            const originalShape = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][this.graphicsEditor.state.currentGroup].shapes[this.graphicsEditor.state.selectedShapeIndex];\r\n            const newShape = JSON.parse(JSON.stringify(originalShape));\r\n            this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][this.graphicsEditor.state.currentGroup].shapes.push(newShape);\r\n            this.graphicsEditor.state.selectedShapeIndex = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][this.graphicsEditor.state.currentGroup].shapes.length - 1;\r\n            this.graphicsEditor.refreshShapes(true);\r\n        } else {\r\n            this.addNewShape();\r\n        }\r\n    }\r\n\r\n    deleteSelectedShape() {\r\n        if (this.graphicsEditor.state.selectedShapeIndex >= 0) {\r\n            this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][this.graphicsEditor.state.currentGroup].shapes.splice(this.graphicsEditor.state.selectedShapeIndex, 1);\r\n            if (this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][this.graphicsEditor.state.currentGroup].shapes.length > 0) {\r\n                this.graphicsEditor.state.selectedShapeIndex = Math.min(this.graphicsEditor.state.selectedShapeIndex, this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][this.graphicsEditor.state.currentGroup].shapes.length - 1);\r\n            } else {\r\n                this.graphicsEditor.state.selectedShapeIndex = -1;\r\n            }\r\n            this.graphicsEditor.refreshShapes(true);\r\n        }\r\n    }\r\n\r\n    updateList() {\r\n        const frameList = document.getElementById('frame-list');\r\n        frameList.innerHTML = '';\r\n        const groupList = document.getElementById('group-list');\r\n        groupList.innerHTML = '';\r\n        const shapeList = document.getElementById('shape-list');\r\n        shapeList.innerHTML = '';\r\n        this.updateFrameList();\r\n        this.graphicsEditor.groupManager.updateGroupList();\r\n        this.updateShapeList();\r\n        this.updateGizmoPosition();\r\n    }\r\n\r\n    updateFrameList() {\r\n        const list = document.getElementById('frame-list');\r\n        // Animation selector\r\n        const animSelector = document.createElement('select');\r\n        animSelector.style.marginBottom = '10px';\r\n        Object.keys(this.graphicsEditor.state.renderData.animations).forEach(anim => {\r\n            const option = document.createElement('option');\r\n            option.value = anim;\r\n            option.textContent = anim;\r\n            if (anim === this.graphicsEditor.state.currentAnimation) option.selected = true;\r\n            animSelector.appendChild(option);\r\n        });\r\n        animSelector.addEventListener('change', () => {\r\n            this.graphicsEditor.setPreviewAnimationState(false);\r\n            this.graphicsEditor.state.currentAnimation = animSelector.value;\r\n            this.graphicsEditor.state.currentFrame = 0;\r\n            this.graphicsEditor.state.selectedShapeIndex = -1;\r\n            \r\n            this.graphicsEditor.refreshShapes(false);\r\n        });\r\n        list.appendChild(animSelector);\r\n    \r\n        // Frame list\r\n        const frameList = document.createElement('div');\r\n        frameList.style.marginBottom = '10px';\r\n        this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation].forEach((frame, index) => {\r\n            const frameItem = document.createElement('div');\r\n            frameItem.textContent = `Frame ${index + 1}`;\r\n            frameItem.style.padding = '5px';\r\n            frameItem.style.cursor = 'pointer';\r\n            if (index === this.graphicsEditor.state.currentFrame) frameItem.style.backgroundColor = '#555';\r\n            frameItem.addEventListener('click', () => {\r\n                this.graphicsEditor.setPreviewAnimationState(false);\r\n                this.graphicsEditor.state.currentFrame = index;                                \r\n                this.graphicsEditor.refreshShapes(false);\r\n            });\r\n            frameList.appendChild(frameItem);\r\n        });\r\n        list.appendChild(frameList);\r\n    }\r\n\r\n    updateShapeList() {\r\n        const list = document.getElementById('shape-list');\r\n        if (!list) return;\r\n        \r\n        // Get the current frame data\r\n        const currentFrame = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame];\r\n       \r\n        // Get shapes from the currently selected group\r\n        const selectedGroupName = this.graphicsEditor.groupManager.selectedGroupName;\r\n        const selectedGroup = currentFrame[selectedGroupName]\r\n        const shapes = selectedGroup && selectedGroup.shapes ? selectedGroup.shapes : selectedGroup || [];\r\n       \r\n        // Create shape list items\r\n        for (let i = 0; i < shapes.length; i++) {\r\n            const shape = shapes[i];\r\n            if (!shape) continue;\r\n           \r\n            const shapeItem = document.createElement('div');\r\n            shapeItem.classList.add('shape-item');\r\n           \r\n            // Mark as selected if this shape is the selected one and we're in the right group\r\n            if (i === this.graphicsEditor.state.selectedShapeIndex &&\r\n                this.graphicsEditor.groupManager.selectedGroupName === this.graphicsEditor.state.currentGroup) {\r\n                shapeItem.classList.add('selected');\r\n            }\r\n           \r\n            shapeItem.textContent = `${shape.name} - ${shape.type || 'Shape'}`;\r\n            shapeItem.addEventListener('click', () => {\r\n                this.graphicsEditor.state.currentGroup = this.graphicsEditor.groupManager.selectedGroupName;\r\n                this.selectShape(i);\r\n            });\r\n           \r\n            // Make the shape draggable\r\n            shapeItem.draggable = true;\r\n            shapeItem.dataset.index = i;\r\n            shapeItem.dataset.group = selectedGroupName;\r\n            \r\n            // Add dragstart event to set the drag data\r\n            shapeItem.addEventListener('dragstart', (e) => {\r\n                // Store only the selected shape's index and source group\r\n                const data = {\r\n                    shapeIndex: i,\r\n                    sourceGroup: selectedGroupName\r\n                };\r\n                \r\n                // Set the drag data\r\n                e.dataTransfer.setData('text/plain', JSON.stringify(data));\r\n                \r\n                // Add a visual indicator\r\n                shapeItem.classList.add('dragging');\r\n                \r\n                // Set drag effect\r\n                e.dataTransfer.effectAllowed = 'move';\r\n            });\r\n            \r\n            // Add dragend event to clean up\r\n            shapeItem.addEventListener('dragend', () => {\r\n                shapeItem.classList.remove('dragging');\r\n            });\r\n           \r\n            list.appendChild(shapeItem);\r\n        }\r\n        \r\n        // Set up the shape list container as a drop target\r\n        list.addEventListener('dragover', (e) => {\r\n            // Only respond if we're dragging over the shape list itself, not an individual shape\r\n            if (e.target === list) {\r\n                e.preventDefault();\r\n                e.dataTransfer.dropEffect = 'move';\r\n                list.classList.add('drag-over');\r\n            }\r\n        });\r\n        \r\n        list.addEventListener('dragleave', (e) => {\r\n            // Only respond if we're leaving the shape list\r\n            if (e.target === list) {\r\n                list.classList.remove('drag-over');\r\n            }\r\n        });\r\n        \r\n        list.addEventListener('drop', (e) => {\r\n            e.preventDefault();\r\n            list.classList.remove('drag-over');\r\n            \r\n            const data = e.dataTransfer.getData('text/plain');\r\n            if (!data) return;\r\n            \r\n            try {\r\n                const dragData = JSON.parse(data);\r\n                const { shapeIndex, sourceGroup } = dragData;\r\n                \r\n                // Only process if this is a different group\r\n                if (sourceGroup && sourceGroup !== selectedGroupName) {\r\n                    this.graphicsEditor.groupManager.moveToGroup(\r\n                        parseInt(shapeIndex),\r\n                        sourceGroup,\r\n                        selectedGroupName\r\n                    );\r\n                }\r\n            } catch (err) {\r\n                console.error('Error processing drop in shape list:', err);\r\n            }\r\n        });\r\n    }\r\n\r\n}"
       },
       "GE_GroupManager": {
         "title": "GE_GroupManager",
-        "script": "class GE_GroupManager {\n    constructor(gameEditor, graphicsEditor) {\n        this.gameEditor = gameEditor;\n        this.graphicsEditor = graphicsEditor;\n        this.selectedGroupName = \"shapes\"; // Default to the shapes group\n        this.DEFAULT_GROUP = {\n            shapes: [],\n            position: { x: 0, y: 0, z: 0 },\n            rotation: { x: 0, y: 0, z: 0 },\n            scale: { x: 1.0, y: 1.0, z: 1.0 }\n        };\n    }\n\n    init() {\n        document.getElementById('create-group').addEventListener('click', this.createGroup.bind(this));\n        document.getElementById('delete-group').addEventListener('click', this.deleteGroup.bind(this));\n        \n       \n        // Update the group list initially\n        this.updateGroupList();\n        \n        // Initialize drag-and-drop\n        this.initDragAndDrop();\n    }\n\n    // Initialize drag and drop functionality\n    initDragAndDrop() {\n        // Make group items drop targets\n        const groupList = document.getElementById('group-list');\n        groupList.addEventListener('dragover', this.handleDragOver.bind(this));\n        groupList.addEventListener('drop', this.handleDrop.bind(this));\n    }\n    \n    handleDragOver(e) {\n        e.preventDefault(); // Allow drop\n        e.dataTransfer.dropEffect = 'move';\n        \n        // Highlight the group being dragged over\n        const groupItem = this.findGroupItemFromEvent(e);\n        if (groupItem) {\n            // Remove highlight from all groups\n            document.querySelectorAll('.group-item').forEach(item => {\n                item.classList.remove('drag-over');\n            });\n            \n            // Add highlight to target group\n            groupItem.classList.add('drag-over');\n        }\n    }\n    \n    handleDrop(e) {\n        e.preventDefault();\n        \n        // Remove all drag-over highlights\n        document.querySelectorAll('.group-item').forEach(item => {\n            item.classList.remove('drag-over');\n        });\n        \n        // Find the target group\n        const groupItem = this.findGroupItemFromEvent(e);\n        if (!groupItem) return;\n        \n        const targetGroup = groupItem.dataset.group;\n        \n        // Get the shape data from dataTransfer\n        const data = e.dataTransfer.getData('text/plain');\n        if (!data) return;\n        \n        try {\n            const dragData = JSON.parse(data);\n            const { shapeIndex, sourceGroup } = dragData;\n            \n            // Don't move if source and target are the same\n            if (sourceGroup === targetGroup) return;\n            \n            // Move the shape to the target group\n            this.moveToGroup(parseInt(shapeIndex), sourceGroup, targetGroup);\n        } catch (err) {\n            console.error('Error processing drop:', err);\n        }\n    }\n    \n    findGroupItemFromEvent(e) {\n        let target = e.target;\n        // Traverse up to find the group-item\n        while (target && !target.classList.contains('group-item')) {\n            target = target.parentElement;\n            if (!target || target === document.body) return null;\n        }\n        return target;\n    }\n\n    // Create a new group at the frame level\n    createGroup() {\n        const groupName = prompt(\"Enter group name:\", \"group_\" + Date.now());\n        if (!groupName || groupName === \"shapes\") {\n            alert(\"Invalid group name or 'shapes' is reserved\");\n            return;\n        }\n\n        const currentAnimation = this.graphicsEditor.state.currentAnimation;\n        const currentFrame = this.graphicsEditor.state.currentFrame;\n        \n        // Ensure we have current frame data\n        if (!this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame]) {\n            this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame] = {};\n        }\n        \n        // Initialize group if it doesn't exist\n        if (!this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame][groupName]) {\n            // Using JSON parse/stringify for deep copying\n            this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame][groupName] = JSON.parse(JSON.stringify(this.DEFAULT_GROUP));\n        }\n        \n        // Switch selection to the new group\n        this.selectedGroupName = groupName;\n        \n        // Refresh UI\n        this.graphicsEditor.shapeManager.updateList()();\n        this.graphicsEditor.refreshShapes(true);\n    }\n\n    // Move an object from one group to another\n    moveToGroup(shapeIndex, fromGroupName, toGroupName) {\n        const currentAnimation = this.graphicsEditor.state.currentAnimation;\n        const currentFrame = this.graphicsEditor.state.currentFrame;\n        const currentFrameData = this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame];\n        \n        // Find the shape in the source group\n        const sourceGroup = currentFrameData[fromGroupName];\n        if (!sourceGroup) {\n            console.warn(`Source group ${fromGroupName} not found`);\n            return;\n        }\n        \n        // Find the shape\n        const shapeToMove = sourceGroup.shapes[shapeIndex];\n        if (!shapeToMove) {\n            console.warn(`Shape at index ${shapeIndex} not found in ${fromGroupName}`);\n            return;\n        }\n        \n        // Remove from source group\n        sourceGroup.shapes.splice(shapeIndex, 1);\n        \n        // Ensure target group exists\n        if (!currentFrameData[toGroupName]) {\n            currentFrameData[toGroupName] = this.DEFAULT_GROUP;\n        }\n        \n        // Add to target group\n        currentFrameData[toGroupName].shapes.push(shapeToMove);\n        \n        // Clear selection\n        this.graphicsEditor.state.selectedShapeIndex = -1;\n        \n        // Update UI\n        this.graphicsEditor.refreshShapes(true);\n    }\n\n    getGroupData(groupName){\n        return this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][groupName];\n    }\n    // Select a group to work with\n    selectGroup(groupName) {\n        if (!groupName) return;\n        \n        // Update the selected group name\n        this.selectedGroupName = groupName;\n        this.graphicsEditor.state.currentGroup = groupName;\n        this.graphicsEditor.state.selectedShapeIndex = -1;\n        let groupData = this.getGroupData(groupName);\n        // Update the UI to show shapes in this group\n        this.graphicsEditor.shapeManager.updateList();\n        this.graphicsEditor.shapeManager.highlightSelectedShape();\n        this.graphicsEditor.uiManager.createGroupInspector(groupData);\n        this.graphicsEditor.shapeManager.transformGroup(this.getGroupObject(groupName));\n        \n        // Update the selected class on group items\n        this.updateSelectedGroupClass(groupName);\n    }\n    updateSelectedGroupClass(groupName) {\n        // Remove selected class from all group items\n        const groupItems = document.querySelectorAll('.group-item');\n        groupItems.forEach(item => {\n            item.classList.remove('selected');\n        });\n        \n        // Add selected class to the newly selected group\n        const selectedGroupItem = Array.from(groupItems).find(\n            item => item.dataset.group === groupName\n        );\n        \n        if (selectedGroupItem) {\n            selectedGroupItem.classList.add('selected');\n        }\n    }\n    // Remove a group and place its contents back in the shapes group\n    deleteGroup() {\n        \n        const currentAnimation = this.graphicsEditor.state.currentAnimation;\n        const currentFrame = this.graphicsEditor.state.currentFrame;\n        const currentFrameData = this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame];\n        \n        // Get shapes from the selected group\n        const groupShapes = currentFrameData[this.selectedGroupName].shapes;\n        if (groupShapes.length > 0) {\n            alert('Group must be empty to delete.');\n            return;\n        }\n                        \n        // Remove the group\n        delete currentFrameData[this.selectedGroupName];\n        \n        // Reset selection to shapes group\n        this.selectedGroupName = \"shapes\";\n        this.graphicsEditor.state.selectedShapeIndex = -1;\n        \n        // Update UI\n        this.updateGroupList();\n        this.graphicsEditor.refreshShapes(true);\n    }\n    getGroupObject(groupName) {\n        let foundGroup = null;\n        this.graphicsEditor.rootGroup.traverse(obj => {\n            if (obj.isGroup && obj.name === groupName && obj.userData.isGroup) {\n                foundGroup = obj;\n            }\n        });\n        return foundGroup;\n    }\n    // Get all available groups in the current frame\n    getGroups() {\n        const currentAnimation = this.graphicsEditor.state.currentAnimation;\n        const currentFrame = this.graphicsEditor.state.currentFrame;\n        \n        if (!this.graphicsEditor.state.renderData.animations[currentAnimation] ||\n            !this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame]) {\n            return [\"shapes\"];\n        }\n        \n        return Object.keys(this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame]);\n    }\n\n    applyGroupTransform(groupName, position, rotation, scale) {\n        // Get the current frame data\n        const currentAnimation = this.graphicsEditor.state.currentAnimation;\n        const currentFrame = this.graphicsEditor.state.currentFrame;\n        const frameData = this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame];\n        \n        // Ensure the group exists in the frame data\n        if (!frameData[groupName]) {\n            console.warn(`Group ${groupName} not found in frame data`);\n            return;\n        }\n \n        // Save transformations to the group data\n        frameData[groupName].position = {\n            x: position.x,\n            y: position.y,\n            z: position.z\n        };\n        frameData[groupName].rotation = {\n            x: rotation.x,\n            y: rotation.y,\n            z: rotation.z\n        };\n        frameData[groupName].scale = {\n            x: scale.x,\n            y: scale.y,\n            z: scale.z\n        };\n    \n        // Refresh the scene to see changes\n        this.graphicsEditor.refreshShapes(true);\n    }\n    // Update the group list in the UI\n    updateGroupList() {\n        const list = document.getElementById('group-list');\n        if (!list) {\n            console.warn(\"Group list element not found\");\n            return;\n        }\n        \n        list.innerHTML = '';\n        \n        const groups = this.getGroups();\n        for (const group of groups) {\n            const groupItem = document.createElement('div');\n            groupItem.classList.add('group-item');\n            if (group === this.selectedGroupName) {\n                groupItem.classList.add('selected');\n            }\n            \n            groupItem.textContent = group;\n            groupItem.addEventListener('click', () => this.selectGroup(group));\n            \n            // Make it a valid drop target for drag and drop\n            groupItem.dataset.group = group;\n            \n            list.appendChild(groupItem);\n        }\n    }\n}",
+        "script": "class GE_GroupManager {\n    constructor(gameEditor, graphicsEditor) {\n        this.gameEditor = gameEditor;\n        this.graphicsEditor = graphicsEditor;\n        this.selectedGroupName = \"shapes\"; // Default to the shapes group\n        this.DEFAULT_GROUP = {\n            shapes: [],\n            position: { x: 0, y: 0, z: 0 },\n            rotation: { x: 0, y: 0, z: 0 },\n            scale: { x: 1.0, y: 1.0, z: 1.0 }\n        };\n    }\n\n    init() {\n        document.getElementById('create-group').addEventListener('click', this.createGroup.bind(this));\n        document.getElementById('delete-group').addEventListener('click', this.deleteGroup.bind(this));\n        \n       \n        // Update the group list initially\n        this.updateGroupList();\n        \n        // Initialize drag-and-drop\n        this.initDragAndDrop();\n    }\n\n    // Initialize drag and drop functionality\n    initDragAndDrop() {\n        // Make group items drop targets\n        const groupList = document.getElementById('group-list');\n        groupList.addEventListener('dragover', this.handleDragOver.bind(this));\n        groupList.addEventListener('drop', this.handleDrop.bind(this));\n    }\n    \n    handleDragOver(e) {\n        e.preventDefault(); // Allow drop\n        e.dataTransfer.dropEffect = 'move';\n        \n        // Highlight the group being dragged over\n        const groupItem = this.findGroupItemFromEvent(e);\n        if (groupItem) {\n            // Remove highlight from all groups\n            document.querySelectorAll('.group-item').forEach(item => {\n                item.classList.remove('drag-over');\n            });\n            \n            // Add highlight to target group\n            groupItem.classList.add('drag-over');\n        }\n    }\n    \n    handleDrop(e) {\n        e.preventDefault();\n        \n        // Remove all drag-over highlights\n        document.querySelectorAll('.group-item').forEach(item => {\n            item.classList.remove('drag-over');\n        });\n        \n        // Find the target group\n        const groupItem = this.findGroupItemFromEvent(e);\n        if (!groupItem) return;\n        \n        const targetGroup = groupItem.dataset.group;\n        \n        // Get the shape data from dataTransfer\n        const data = e.dataTransfer.getData('text/plain');\n        if (!data) return;\n        \n        try {\n            const dragData = JSON.parse(data);\n            const { shapeIndex, sourceGroup } = dragData;\n            \n            // Don't move if source and target are the same\n            if (sourceGroup === targetGroup) return;\n            \n            // Move the shape to the target group\n            this.moveToGroup(parseInt(shapeIndex), sourceGroup, targetGroup);\n        } catch (err) {\n            console.error('Error processing drop:', err);\n        }\n    }\n    \n    findGroupItemFromEvent(e) {\n        let target = e.target;\n        // Traverse up to find the group-item\n        while (target && !target.classList.contains('group-item')) {\n            target = target.parentElement;\n            if (!target || target === document.body) return null;\n        }\n        return target;\n    }\n\n    // Create a new group at the frame level\n    createGroup() {\n        const groupName = prompt(\"Enter group name:\", \"group_\" + Date.now());\n        if (!groupName || groupName === \"shapes\") {\n            alert(\"Invalid group name or 'shapes' is reserved\");\n            return;\n        }\n\n        const currentAnimation = this.graphicsEditor.state.currentAnimation;\n        const currentFrame = this.graphicsEditor.state.currentFrame;\n        \n        // Ensure we have current frame data\n        if (!this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame]) {\n            this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame] = {};\n        }\n        \n        // Initialize group if it doesn't exist\n        if (!this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame][groupName]) {\n            // Using JSON parse/stringify for deep copying\n            this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame][groupName] = JSON.parse(JSON.stringify(this.DEFAULT_GROUP));\n        }\n        \n        // Switch selection to the new group\n        this.selectedGroupName = groupName;\n        \n        // Refresh UI\n        this.graphicsEditor.shapeManager.updateList();\n        this.graphicsEditor.refreshShapes(true);\n    }\n\n    // Move an object from one group to another\n    moveToGroup(shapeIndex, fromGroupName, toGroupName) {\n        const currentAnimation = this.graphicsEditor.state.currentAnimation;\n        const currentFrame = this.graphicsEditor.state.currentFrame;\n        const currentFrameData = this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame];\n        \n        // Find the shape in the source group\n        const sourceGroup = currentFrameData[fromGroupName];\n        if (!sourceGroup) {\n            console.warn(`Source group ${fromGroupName} not found`);\n            return;\n        }\n        \n        // Find the shape\n        const shapeToMove = sourceGroup[fromGroupName][shapeIndex];\n        if (!shapeToMove) {\n            console.warn(`Shape at index ${shapeIndex} not found in ${fromGroupName}`);\n            return;\n        }\n        \n        // Remove from source group\n        sourceGroup[fromGroupName].splice(shapeIndex, 1);\n        \n        // Ensure target group exists\n        if (!currentFrameData[toGroupName]) {\n            currentFrameData[toGroupName] = this.DEFAULT_GROUP;\n        }\n        \n        // Add to target group\n        currentFrameData[toGroupName].shapes.push(shapeToMove);\n        \n        // Clear selection\n        this.graphicsEditor.state.selectedShapeIndex = -1;\n        \n        // Update UI\n        this.graphicsEditor.refreshShapes(true);\n    }\n\n    getGroupData(groupName){\n        return this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][groupName];\n    }\n    // Select a group to work with\n    selectGroup(groupName) {\n        if (!groupName) return;\n        \n        // Update the selected group name\n        this.selectedGroupName = groupName;\n        this.graphicsEditor.state.currentGroup = groupName;\n        this.graphicsEditor.state.selectedShapeIndex = -1;\n        let groupData = this.getGroupData(groupName);\n        // Update the UI to show shapes in this group\n        this.graphicsEditor.shapeManager.updateList();\n        this.graphicsEditor.shapeManager.highlightSelectedShape();\n        this.graphicsEditor.uiManager.createGroupInspector(groupData);\n        this.graphicsEditor.shapeManager.transformGroup(this.getGroupObject(groupName));\n        \n        // Update the selected class on group items\n        this.updateSelectedGroupClass(groupName);\n    }\n    updateSelectedGroupClass(groupName) {\n        // Remove selected class from all group items\n        const groupItems = document.querySelectorAll('.group-item');\n        groupItems.forEach(item => {\n            item.classList.remove('selected');\n        });\n        \n        // Add selected class to the newly selected group\n        const selectedGroupItem = Array.from(groupItems).find(\n            item => item.dataset.group === groupName\n        );\n        \n        if (selectedGroupItem) {\n            selectedGroupItem.classList.add('selected');\n        }\n    }\n    // Remove a group and place its contents back in the shapes group\n    deleteGroup() {\n        \n        const currentAnimation = this.graphicsEditor.state.currentAnimation;\n        const currentFrame = this.graphicsEditor.state.currentFrame;\n        const currentFrameData = this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame];\n        \n        // Get shapes from the selected group\n        const groupShapes = currentFrameData[this.selectedGroupName].shapes;\n        if (groupShapes.length > 0) {\n            alert('Group must be empty to delete.');\n            return;\n        }\n                        \n        // Remove the group\n        delete currentFrameData[this.selectedGroupName];\n        \n        // Reset selection to shapes group\n        this.selectedGroupName = \"shapes\";\n        this.graphicsEditor.state.selectedShapeIndex = -1;\n        \n        // Update UI\n        this.updateGroupList();\n        this.graphicsEditor.refreshShapes(true);\n    }\n    getGroupObject(groupName) {\n        let foundGroup = null;\n        this.graphicsEditor.rootGroup.traverse(obj => {\n            if (obj.isGroup && obj.name === groupName && obj.userData.isGroup) {\n                foundGroup = obj;\n            }\n        });\n        return foundGroup;\n    }\n    // Get all available groups in the current frame\n    getGroups() {\n        const currentAnimation = this.graphicsEditor.state.currentAnimation;\n        const currentFrame = this.graphicsEditor.state.currentFrame;\n        \n        if (!this.graphicsEditor.state.renderData.animations[currentAnimation] ||\n            !this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame]) {\n            return [\"shapes\"];\n        }\n        \n        return Object.keys(this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame]);\n    }\n\n    applyGroupTransform(groupName, position, rotation, scale) {\n        // Get the current frame data\n        const currentAnimation = this.graphicsEditor.state.currentAnimation;\n        const currentFrame = this.graphicsEditor.state.currentFrame;\n        const frameData = this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame];\n        \n        // Ensure the group exists in the frame data\n        if (!frameData[groupName]) {\n            console.warn(`Group ${groupName} not found in frame data`);\n            return;\n        }\n \n        // Save transformations to the group data\n        frameData[groupName].position = {\n            x: position.x,\n            y: position.y,\n            z: position.z\n        };\n        frameData[groupName].rotation = {\n            x: rotation.x,\n            y: rotation.y,\n            z: rotation.z\n        };\n        frameData[groupName].scale = {\n            x: scale.x,\n            y: scale.y,\n            z: scale.z\n        };\n    \n        // Refresh the scene to see changes\n        this.graphicsEditor.refreshShapes(true);\n    }\n    // Update the group list in the UI\n    updateGroupList() {\n        const list = document.getElementById('group-list');\n        if (!list) {\n            console.warn(\"Group list element not found\");\n            return;\n        }\n        \n        list.innerHTML = '';\n        \n        const groups = this.getGroups();\n        for (const group of groups) {\n            const groupItem = document.createElement('div');\n            groupItem.classList.add('group-item');\n            if (group === this.selectedGroupName) {\n                groupItem.classList.add('selected');\n            }\n            \n            groupItem.textContent = group;\n            groupItem.addEventListener('click', () => this.selectGroup(group));\n            \n            // Make it a valid drop target for drag and drop\n            groupItem.dataset.group = group;\n            \n            list.appendChild(groupItem);\n        }\n    }\n}",
         "fileName": "GE_GroupManager"
       }
     },
@@ -33692,6 +37187,74 @@ const DEFAULT_PROJECT_CONFIG = {
             "pan": 0
           }
         }
+      },
+      "TeslaAttack": {
+        "title": "Tesla Attack",
+        "audio": {
+          "waveform": "noise",
+          "frequency": 200,
+          "duration": 0.15,
+          "envelope": {
+            "attack": 0.001,
+            "decay": 0.03,
+            "sustain": 0.4,
+            "release": 0.02
+          },
+          "pitchEnvelope": {
+            "start": 2.5,
+            "end": 0.8,
+            "time": 0.15
+          },
+          "effects": {
+            "filter": {
+              "type": "bandpass",
+              "frequency": 1200,
+              "Q": 3
+            },
+            "distortion": 30,
+            "delay": {
+              "time": 0.05,
+              "feedback": 0.05
+            },
+            "reverb": 0.05,
+            "bitcrusher": 0.5,
+            "pan": 0
+          }
+        }
+      },
+      "laser": {
+        "title": "Laser",
+        "audio": {
+          "waveform": "triangle",
+          "frequency": 197,
+          "duration": 0.1,
+          "envelope": {
+            "attack": 0.001,
+            "decay": 0.076,
+            "sustain": 0.5,
+            "release": 0.001
+          },
+          "pitchEnvelope": {
+            "start": 3.41,
+            "end": 0.23,
+            "time": 0.1
+          },
+          "effects": {
+            "filter": {
+              "type": "lowpass",
+              "frequency": 400,
+              "Q": 1
+            },
+            "distortion": 5,
+            "delay": {
+              "time": 0.27,
+              "feedback": 0.09
+            },
+            "reverb": 0,
+            "bitcrusher": 0,
+            "pan": 0
+          }
+        }
       }
     },
     "hitSounds": {
@@ -33770,6 +37333,12 @@ const DEFAULT_PROJECT_CONFIG = {
             "pan": 0
           }
         }
+      }
+    },
+    "gameEvents": {
+      "placeTower": {
+        "title": "Place Tower",
+        "sound": "placeTower"
       }
     }
   },
@@ -33940,6 +37509,12 @@ const DEFAULT_PROJECT_CONFIG = {
       "name": "Hit Sounds",
       "singular": "hitSound",
       "category": "Audio"
+    },
+    {
+      "id": "gameEvents",
+      "name": "Game Events",
+      "singular": "gameEvent",
+      "category": "Data"
     }
   ]
 }; 
