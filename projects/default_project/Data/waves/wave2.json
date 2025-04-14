@@ -1,13 +1,16 @@
 {
   "title": "Wave 2",
   "enemies": [
-    "skeleton",
-    "skeleton",
-    "skeleton",
-    "skeleton",
-    "skeleton",
-    "skeleton",
-    "skeleton",
-    "skeleton"
+    "trex",
+    "trex",
+    "trex",
+    "trex",
+    "trex",
+    "trex",
+    "trex",
+    "trex",
+    "trex",
+    "trex",
+    "new_trex"
   ]
 }

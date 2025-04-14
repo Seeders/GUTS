@@ -72,15 +72,24 @@ class GE_SceneRenderer {
     }
     
     handleRenderObject(event) {
-
         this.graphicsEditor.canvas.width = this.gameEditor.getCollections().configs.game.canvasWidth;
         this.graphicsEditor.canvas.height = this.gameEditor.getCollections().configs.game.canvasHeight;
         this.graphicsEditor.canvas.setAttribute('style','');
         this.graphicsEditor.setPreviewAnimationState(false);
         this.graphicsEditor.state.renderData = event.detail.data;
         document.getElementById('json-content').value = JSON.stringify(this.graphicsEditor.state.renderData, null, 2);
-        this.graphicsEditor.state.currentAnimation = "idle";
-        this.graphicsEditor.state.selectedShapeIndex = this.graphicsEditor.state.renderData.animations.idle[0].shapes.length > 0 ? 0 : -1;                
+        
+        // Safely get first animation name
+        const animations = this.graphicsEditor.state.renderData.animations;
+        const firstAnimation = Object.keys(animations)[0] || '';
+        this.graphicsEditor.state.currentAnimation = firstAnimation;
+        
+        // Safely get first frame's shapes
+        const frames = animations[firstAnimation] || [];
+        const firstFrame = frames[0] || {};
+        const shapes = Object.keys(firstFrame)[0].shapes || [];
+        
+        this.graphicsEditor.state.selectedShapeIndex = shapes.length > 0 ? 0 : -1;
         this.graphicsEditor.refreshShapes(false);
         this.handleResize();
     }

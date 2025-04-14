@@ -1,5 +1,5 @@
 class AudioEditor {
-    constructor(gameEditor, config, {}) {
+    constructor(gameEditor) {
         this.gameEditor = gameEditor;
         let configObj = { state: {}, config: this.gameEditor.getCollections() };
         this.audioManager = new (this.gameEditor.scriptContext.getComponent("AudioManager"))(configObj, null, {} );

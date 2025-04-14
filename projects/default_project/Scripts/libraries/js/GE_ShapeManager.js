@@ -618,7 +618,7 @@ class GE_ShapeManager {
 
         // If transforming the root group, apply to all shapes
         if (this.currentTransformTarget === this.graphicsEditor.rootGroup) {
-            const currentShapes = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes;
+            const currentShapes = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][this.graphicsEditor.state.currentGroup].shapes;
 
             const positionOffset = this.currentTransformTarget.position.clone();
             const rotationEuler = this.currentTransformTarget.rotation.clone();
@@ -715,7 +715,7 @@ class GE_ShapeManager {
         if (this.graphicsEditor.state.selectedShapeIndex >= 0) {
             const currentFrame = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame];
             const selectedGroup = this.graphicsEditor.state.currentGroup;
-            const shapes = currentFrame[selectedGroup].shapes || [];
+            const shapes = currentFrame[selectedGroup]?.shapes || [];
             
             if (this.graphicsEditor.state.selectedShapeIndex < shapes.length) {
                 const shape = shapes[this.graphicsEditor.state.selectedShapeIndex];
@@ -885,17 +885,17 @@ class GE_ShapeManager {
             rotationY: 0,
             rotationZ: 0
         };
-        this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes.push(newShape);
-        this.graphicsEditor.state.selectedShapeIndex = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes.length - 1;
+        this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][this.graphicsEditor.state.currentGroup].shapes.push(newShape);
+        this.graphicsEditor.state.selectedShapeIndex = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][this.graphicsEditor.state.currentGroup].shapes.length - 1;
         this.graphicsEditor.refreshShapes(true); // Relies on refreshShapes to add to rootGroup
     }
 
     addSelectedShape() {
         if (this.graphicsEditor.state.selectedShapeIndex >= 0) {
-            const originalShape = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes[this.graphicsEditor.state.selectedShapeIndex];
+            const originalShape = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][this.graphicsEditor.state.currentGroup].shapes[this.graphicsEditor.state.selectedShapeIndex];
             const newShape = JSON.parse(JSON.stringify(originalShape));
-            this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes.push(newShape);
-            this.graphicsEditor.state.selectedShapeIndex = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes.length - 1;
+            this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][this.graphicsEditor.state.currentGroup].shapes.push(newShape);
+            this.graphicsEditor.state.selectedShapeIndex = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][this.graphicsEditor.state.currentGroup].shapes.length - 1;
             this.graphicsEditor.refreshShapes(true);
         } else {
             this.addNewShape();
@@ -904,9 +904,9 @@ class GE_ShapeManager {
 
     deleteSelectedShape() {
         if (this.graphicsEditor.state.selectedShapeIndex >= 0) {
-            this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes.splice(this.graphicsEditor.state.selectedShapeIndex, 1);
-            if (this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes.length > 0) {
-                this.graphicsEditor.state.selectedShapeIndex = Math.min(this.graphicsEditor.state.selectedShapeIndex, this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame].shapes.length - 1);
+            this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][this.graphicsEditor.state.currentGroup].shapes.splice(this.graphicsEditor.state.selectedShapeIndex, 1);
+            if (this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][this.graphicsEditor.state.currentGroup].shapes.length > 0) {
+                this.graphicsEditor.state.selectedShapeIndex = Math.min(this.graphicsEditor.state.selectedShapeIndex, this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][this.graphicsEditor.state.currentGroup].shapes.length - 1);
             } else {
                 this.graphicsEditor.state.selectedShapeIndex = -1;
             }

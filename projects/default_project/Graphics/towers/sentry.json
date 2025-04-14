@@ -200,6 +200,5 @@
     }
   },
   "projectileCount": 0,
-  "projectileAngle": 10,
-  "attackSound": "plasma"
+  "projectileAngle": 10
 }

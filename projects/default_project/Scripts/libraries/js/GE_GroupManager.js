@@ -116,7 +116,7 @@ class GE_GroupManager {
         this.selectedGroupName = groupName;
         
         // Refresh UI
-        this.graphicsEditor.shapeManager.updateList()();
+        this.graphicsEditor.shapeManager.updateList();
         this.graphicsEditor.refreshShapes(true);
     }
 
@@ -134,14 +134,14 @@ class GE_GroupManager {
         }
         
         // Find the shape
-        const shapeToMove = sourceGroup.shapes[shapeIndex];
+        const shapeToMove = sourceGroup[fromGroupName][shapeIndex];
         if (!shapeToMove) {
             console.warn(`Shape at index ${shapeIndex} not found in ${fromGroupName}`);
             return;
         }
         
         // Remove from source group
-        sourceGroup.shapes.splice(shapeIndex, 1);
+        sourceGroup[fromGroupName].splice(shapeIndex, 1);
         
         // Ensure target group exists
         if (!currentFrameData[toGroupName]) {

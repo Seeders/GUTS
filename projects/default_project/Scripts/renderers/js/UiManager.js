@@ -163,6 +163,9 @@ class UiManager extends engine.Component {
                     this.game.state.bloodShards -= finalCost;
                     this.game.state.previewTower.destroy();
                     this.game.state.previewTower = null;
+                    const gameEventData = this.game.config.gameEvents['placeTower'];
+                    const audioData = this.game.config.sounds[gameEventData.sound].audio;
+                    this.game.audioManager.playSynthSound('placeTower', audioData);
                     // Clear selection
                     this.game.state.selectedTowerType = null;
                     this.canvas.style.cursor = 'default';

@@ -1,14 +1,13 @@
 {
   "title": "Wave 1",
   "enemies": [
-    "zombie",
-    "zombie",
-    "zombie",
-    "zombie",
-    "zombie",
-    "zombie",
-    "zombie",
-    "zombie",
-    "zombie"
+    "trex",
+    "trex",
+    "trex",
+    "trex",
+    "trex",
+    "trex",
+    "trex",
+    "new_trex"
   ]
 }
