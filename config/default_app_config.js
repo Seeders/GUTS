@@ -2016,41 +2016,7 @@ const DEFAULT_PROJECT_CONFIG = {
             "idle": [
               {
                 "shapes": {
-                  "shapes": [
-                    {
-                      "type": "sphere",
-                      "width": 24,
-                      "height": 16,
-                      "depth": 24,
-                      "color": "#C0C0C0",
-                      "x": 0,
-                      "y": 32,
-                      "z": 0,
-                      "size": 24,
-                      "name": "dome",
-                      "scaleX": 1
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 22,
-                      "color": "#D8D8D8",
-                      "x": 0,
-                      "y": 42,
-                      "z": 0,
-                      "name": "spire"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 14,
-                      "height": 20,
-                      "color": "#6f1eb0",
-                      "x": 0,
-                      "y": 62,
-                      "z": 0,
-                      "name": "spire roof"
-                    }
-                  ],
+                  "shapes": [],
                   "position": {
                     "x": 0,
                     "y": 0,
@@ -2068,42 +2034,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "base": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 40,
-                      "height": 12,
-                      "depth": 40,
-                      "color": "#414141",
-                      "x": 0,
-                      "y": 6,
-                      "z": 0,
-                      "scaleX": 1,
-                      "name": "base"
-                    },
-                    {
-                      "type": "box",
-                      "width": 44,
-                      "height": 4,
-                      "depth": 44,
-                      "color": "#696969",
-                      "x": 0,
-                      "y": 2,
-                      "z": 0,
-                      "name": "foundation"
-                    },
-                    {
-                      "type": "box",
-                      "width": 32,
-                      "height": 12,
-                      "depth": 32,
-                      "color": "#707070",
-                      "x": 0,
-                      "y": 17,
-                      "z": 0,
-                      "name": "main structure"
-                    }
-                  ],
+                  "shapes": [],
                   "position": {
                     "x": 0,
                     "y": 0,
@@ -2121,88 +2052,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "towers": {
-                  "shapes": [
-                    {
-                      "type": "cylinder",
-                      "size": 6,
-                      "height": 30,
-                      "color": "#C0C0C0",
-                      "x": 16,
-                      "y": 22,
-                      "z": 16,
-                      "name": "tower1"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 6,
-                      "height": 30,
-                      "color": "#C0C0C0",
-                      "x": -16,
-                      "y": 22,
-                      "z": 16,
-                      "name": "tower2"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 6,
-                      "height": 30,
-                      "color": "#C0C0C0",
-                      "x": 16,
-                      "y": 22,
-                      "z": -16,
-                      "name": "tower3"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 6,
-                      "height": 30,
-                      "color": "#C0C0C0",
-                      "x": -16,
-                      "y": 22,
-                      "z": -16,
-                      "name": "tower4"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 8,
-                      "height": 10,
-                      "color": "#4169E1",
-                      "x": 16,
-                      "y": 42,
-                      "z": 16,
-                      "name": "tower1roof"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 8,
-                      "height": 10,
-                      "color": "#4169E1",
-                      "x": -16,
-                      "y": 42,
-                      "z": 16,
-                      "name": "tower2roof"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 8,
-                      "height": 10,
-                      "color": "#4169E1",
-                      "x": 16,
-                      "y": 42,
-                      "z": -16,
-                      "name": "tower3roof"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 8,
-                      "height": 10,
-                      "color": "#4169E1",
-                      "x": -16,
-                      "y": 42,
-                      "z": -16,
-                      "name": "tower4roof"
-                    }
-                  ],
+                  "shapes": [],
                   "position": {
                     "x": 0,
                     "y": 0,
@@ -2221,6 +2071,212 @@ const DEFAULT_PROJECT_CONFIG = {
                 }
               }
             ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "sphere",
+                  "width": 24,
+                  "height": 16,
+                  "depth": 24,
+                  "color": "#C0C0C0",
+                  "x": 0,
+                  "y": 32,
+                  "z": 0,
+                  "size": 24,
+                  "name": "dome",
+                  "scaleX": 1
+                },
+                {
+                  "type": "cylinder",
+                  "size": 12,
+                  "height": 22,
+                  "color": "#D8D8D8",
+                  "x": 0,
+                  "y": 42,
+                  "z": 0,
+                  "name": "spire"
+                },
+                {
+                  "type": "cone",
+                  "size": 14,
+                  "height": 20,
+                  "color": "#6f1eb0",
+                  "x": 0,
+                  "y": 62,
+                  "z": 0,
+                  "name": "spire roof"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 0.7,
+                "z": 1
+              }
+            },
+            "base": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 40,
+                  "height": 12,
+                  "depth": 40,
+                  "color": "#414141",
+                  "x": 0,
+                  "y": 6,
+                  "z": 0,
+                  "scaleX": 1,
+                  "name": "base"
+                },
+                {
+                  "type": "box",
+                  "width": 44,
+                  "height": 4,
+                  "depth": 44,
+                  "color": "#696969",
+                  "x": 0,
+                  "y": 2,
+                  "z": 0,
+                  "name": "foundation"
+                },
+                {
+                  "type": "box",
+                  "width": 32,
+                  "height": 12,
+                  "depth": 32,
+                  "color": "#707070",
+                  "x": 0,
+                  "y": 17,
+                  "z": 0,
+                  "name": "main structure"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "towers": {
+              "shapes": [
+                {
+                  "type": "cylinder",
+                  "size": 6,
+                  "height": 30,
+                  "color": "#C0C0C0",
+                  "x": 16,
+                  "y": 22,
+                  "z": 16,
+                  "name": "tower1"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 6,
+                  "height": 30,
+                  "color": "#C0C0C0",
+                  "x": -16,
+                  "y": 22,
+                  "z": 16,
+                  "name": "tower2"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 6,
+                  "height": 30,
+                  "color": "#C0C0C0",
+                  "x": 16,
+                  "y": 22,
+                  "z": -16,
+                  "name": "tower3"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 6,
+                  "height": 30,
+                  "color": "#C0C0C0",
+                  "x": -16,
+                  "y": 22,
+                  "z": -16,
+                  "name": "tower4"
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 10,
+                  "color": "#4169E1",
+                  "x": 16,
+                  "y": 42,
+                  "z": 16,
+                  "name": "tower1roof"
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 10,
+                  "color": "#4169E1",
+                  "x": -16,
+                  "y": 42,
+                  "z": 16,
+                  "name": "tower2roof"
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 10,
+                  "color": "#4169E1",
+                  "x": 16,
+                  "y": 42,
+                  "z": -16,
+                  "name": "tower3roof"
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 10,
+                  "color": "#4169E1",
+                  "x": -16,
+                  "y": 42,
+                  "z": -16,
+                  "name": "tower4roof"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 0.7,
+                "z": 1
+              }
+            }
           }
         }
       },
@@ -2240,34 +2296,7 @@ const DEFAULT_PROJECT_CONFIG = {
             "idle": [
               {
                 "shapes": {
-                  "shapes": [
-                    {
-                      "type": "cylinder",
-                      "size": 20,
-                      "height": 4,
-                      "color": "#696969",
-                      "x": 0,
-                      "y": 2,
-                      "z": 0,
-                      "name": "base",
-                      "rotationX": 0,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "scaleX": 1,
-                      "scaleY": 1,
-                      "scaleZ": 1
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 14,
-                      "height": 26,
-                      "color": "#696969",
-                      "x": 0,
-                      "y": 17,
-                      "z": 0,
-                      "name": "body"
-                    }
-                  ],
+                  "shapes": [],
                   "position": {
                     "x": 0,
                     "y": 0,
@@ -2285,62 +2314,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "rampart": {
-                  "shapes": [
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 8,
-                      "color": "#696969",
-                      "x": 0,
-                      "y": 30,
-                      "z": 0,
-                      "name": "rampartbase"
-                    },
-                    {
-                      "type": "box",
-                      "width": 3,
-                      "height": 5,
-                      "depth": 3,
-                      "color": "#696969",
-                      "x": 4,
-                      "y": 34,
-                      "z": 4,
-                      "name": "rampartblock1"
-                    },
-                    {
-                      "type": "box",
-                      "width": 3,
-                      "height": 5,
-                      "depth": 3,
-                      "color": "#696969",
-                      "x": -4,
-                      "y": 34,
-                      "z": 4,
-                      "name": "rampartblock2"
-                    },
-                    {
-                      "type": "box",
-                      "width": 3,
-                      "height": 5,
-                      "depth": 3,
-                      "color": "#696969",
-                      "x": 4,
-                      "y": 34,
-                      "z": -4,
-                      "name": "rampartblock3"
-                    },
-                    {
-                      "type": "box",
-                      "width": 3,
-                      "height": 5,
-                      "depth": 3,
-                      "color": "#696969",
-                      "x": -4,
-                      "y": 34,
-                      "z": -4,
-                      "name": "rampartblock4"
-                    }
-                  ],
+                  "shapes": [],
                   "position": {
                     "x": 0,
                     "y": 0,
@@ -2358,53 +2332,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "attacker": {
-                  "shapes": [
-                    {
-                      "type": "cylinder",
-                      "size": 5.7,
-                      "height": 14,
-                      "color": "#A9A9A9",
-                      "x": 0,
-                      "y": 39.6,
-                      "z": 0,
-                      "name": "attackerbody"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 6,
-                      "color": "#CD7F32",
-                      "x": 0,
-                      "y": 48.89655172413794,
-                      "z": 0,
-                      "name": "attacker head",
-                      "rotationX": 0,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "scaleX": 1,
-                      "scaleY": 1,
-                      "scaleZ": 1
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2,
-                      "height": 12,
-                      "color": "#A9A9A9",
-                      "x": 0,
-                      "y": 42,
-                      "z": 0,
-                      "rotationX": 90,
-                      "name": "attacker arms"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 3,
-                      "color": "#FF4500",
-                      "x": 0,
-                      "y": 42,
-                      "z": 6,
-                      "name": "attacker weapon"
-                    }
-                  ],
+                  "shapes": [],
                   "position": {
                     "x": 0,
                     "y": 0,
@@ -2423,6 +2351,190 @@ const DEFAULT_PROJECT_CONFIG = {
                 }
               }
             ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "cylinder",
+                  "size": 20,
+                  "height": 4,
+                  "color": "#696969",
+                  "x": 0,
+                  "y": 2,
+                  "z": 0,
+                  "name": "base",
+                  "rotationX": 0,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
+                },
+                {
+                  "type": "cylinder",
+                  "size": 14,
+                  "height": 26,
+                  "color": "#696969",
+                  "x": 0,
+                  "y": 17,
+                  "z": 0,
+                  "name": "body"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "rampart": {
+              "shapes": [
+                {
+                  "type": "cylinder",
+                  "size": 12,
+                  "height": 8,
+                  "color": "#696969",
+                  "x": 0,
+                  "y": 30,
+                  "z": 0,
+                  "name": "rampartbase"
+                },
+                {
+                  "type": "box",
+                  "width": 3,
+                  "height": 5,
+                  "depth": 3,
+                  "color": "#696969",
+                  "x": 4,
+                  "y": 34,
+                  "z": 4,
+                  "name": "rampartblock1"
+                },
+                {
+                  "type": "box",
+                  "width": 3,
+                  "height": 5,
+                  "depth": 3,
+                  "color": "#696969",
+                  "x": -4,
+                  "y": 34,
+                  "z": 4,
+                  "name": "rampartblock2"
+                },
+                {
+                  "type": "box",
+                  "width": 3,
+                  "height": 5,
+                  "depth": 3,
+                  "color": "#696969",
+                  "x": 4,
+                  "y": 34,
+                  "z": -4,
+                  "name": "rampartblock3"
+                },
+                {
+                  "type": "box",
+                  "width": 3,
+                  "height": 5,
+                  "depth": 3,
+                  "color": "#696969",
+                  "x": -4,
+                  "y": 34,
+                  "z": -4,
+                  "name": "rampartblock4"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1.5,
+                "y": 1,
+                "z": 1.5
+              }
+            },
+            "attacker": {
+              "shapes": [
+                {
+                  "type": "cylinder",
+                  "size": 5.7,
+                  "height": 14,
+                  "color": "#A9A9A9",
+                  "x": 0,
+                  "y": 39.6,
+                  "z": 0,
+                  "name": "attackerbody"
+                },
+                {
+                  "type": "sphere",
+                  "size": 6,
+                  "color": "#CD7F32",
+                  "x": 0,
+                  "y": 48.89655172413794,
+                  "z": 0,
+                  "name": "attacker head",
+                  "rotationX": 0,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
+                },
+                {
+                  "type": "cylinder",
+                  "size": 2,
+                  "height": 12,
+                  "color": "#A9A9A9",
+                  "x": 0,
+                  "y": 42,
+                  "z": 0,
+                  "rotationX": 90,
+                  "name": "attacker arms"
+                },
+                {
+                  "type": "sphere",
+                  "size": 3,
+                  "color": "#FF4500",
+                  "x": 0,
+                  "y": 42,
+                  "z": 6,
+                  "name": "attacker weapon"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
           }
         },
         "projectileCount": 0,
@@ -2441,164 +2553,7 @@ const DEFAULT_PROJECT_CONFIG = {
             "idle": [
               {
                 "shapes": {
-                  "shapes": [
-                    {
-                      "type": "cylinder",
-                      "size": 24,
-                      "height": 8,
-                      "color": "#3A3A3A",
-                      "x": 0,
-                      "y": 0,
-                      "z": 0,
-                      "scaleX": 1
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 20,
-                      "height": 12,
-                      "color": "#555555",
-                      "x": 0,
-                      "y": 10,
-                      "z": 0
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 14,
-                      "color": "#4B0082",
-                      "x": 0,
-                      "y": 30,
-                      "z": 0
-                    },
-                    {
-                      "type": "torus",
-                      "size": 22,
-                      "tubeSize": 2,
-                      "color": "#00BFFF",
-                      "x": 0,
-                      "y": 30,
-                      "z": 0,
-                      "rotationX": 30
-                    },
-                    {
-                      "type": "torus",
-                      "size": 22,
-                      "tubeSize": 2,
-                      "color": "#00BFFF",
-                      "x": 0,
-                      "y": 30,
-                      "z": 0,
-                      "rotationX": 105,
-                      "rotationZ": 45
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 4,
-                      "height": 10,
-                      "color": "#666666",
-                      "x": 12,
-                      "y": 6,
-                      "z": 12
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 4,
-                      "height": 10,
-                      "color": "#666666",
-                      "x": -12,
-                      "y": 6,
-                      "z": 12
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 4,
-                      "height": 10,
-                      "color": "#666666",
-                      "x": 12,
-                      "y": 6,
-                      "z": -12
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 4,
-                      "height": 10,
-                      "color": "#666666",
-                      "x": -12,
-                      "y": 6,
-                      "z": -12
-                    },
-                    {
-                      "type": "box",
-                      "width": 8,
-                      "height": 4,
-                      "depth": 8,
-                      "color": "#555555",
-                      "x": 16,
-                      "y": 2,
-                      "z": 0
-                    },
-                    {
-                      "type": "box",
-                      "width": 8,
-                      "height": 4,
-                      "depth": 8,
-                      "color": "#555555",
-                      "x": -16,
-                      "y": 2,
-                      "z": 0
-                    },
-                    {
-                      "type": "box",
-                      "width": 8,
-                      "height": 4,
-                      "depth": 8,
-                      "color": "#555555",
-                      "x": 0,
-                      "y": 2,
-                      "z": 16
-                    },
-                    {
-                      "type": "box",
-                      "width": 8,
-                      "height": 4,
-                      "depth": 8,
-                      "color": "#555555",
-                      "x": 0,
-                      "y": 2,
-                      "z": -16
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 3,
-                      "color": "#00FFFF",
-                      "x": 12,
-                      "y": 12,
-                      "z": 12
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 3,
-                      "color": "#00FFFF",
-                      "x": -12,
-                      "y": 12,
-                      "z": 12
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 3,
-                      "color": "#00FFFF",
-                      "x": 12,
-                      "y": 12,
-                      "z": -12
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 3,
-                      "color": "#00FFFF",
-                      "x": -12,
-                      "y": 12,
-                      "z": -12
-                    }
-                  ],
+                  "shapes": [],
                   "position": {
                     "x": 0,
                     "y": 0,
@@ -2620,162 +2575,13 @@ const DEFAULT_PROJECT_CONFIG = {
                 "shapes": {
                   "shapes": [
                     {
-                      "type": "cylinder",
-                      "size": 24,
-                      "height": 8,
-                      "color": "#3A3A3A",
-                      "x": 0,
-                      "y": 0,
-                      "z": 0,
-                      "scaleX": 1
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 20,
-                      "height": 12,
-                      "color": "#555555",
-                      "x": 0,
-                      "y": 10,
-                      "z": 0
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 14,
-                      "color": "#4B0082",
-                      "x": 0,
-                      "y": 30,
-                      "z": 0
-                    },
-                    {
-                      "type": "torus",
-                      "size": 22,
-                      "tubeSize": 2,
-                      "color": "#00BFFF",
-                      "x": 0,
-                      "y": 30,
-                      "z": 0,
-                      "rotationX": 30,
                       "rotationZ": 0,
-                      "rotationY": 45
+                      "rotationY": 45,
+                      "id": 3
                     },
                     {
-                      "type": "torus",
-                      "size": 22,
-                      "tubeSize": 2,
-                      "color": "#00BFFF",
-                      "x": 0,
-                      "y": 30,
-                      "z": 0,
                       "rotationX": 155,
-                      "rotationZ": 45
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 4,
-                      "height": 10,
-                      "color": "#666666",
-                      "x": 12,
-                      "y": 6,
-                      "z": 12
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 4,
-                      "height": 10,
-                      "color": "#666666",
-                      "x": -12,
-                      "y": 6,
-                      "z": 12
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 4,
-                      "height": 10,
-                      "color": "#666666",
-                      "x": 12,
-                      "y": 6,
-                      "z": -12
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 4,
-                      "height": 10,
-                      "color": "#666666",
-                      "x": -12,
-                      "y": 6,
-                      "z": -12
-                    },
-                    {
-                      "type": "box",
-                      "width": 8,
-                      "height": 4,
-                      "depth": 8,
-                      "color": "#555555",
-                      "x": 16,
-                      "y": 2,
-                      "z": 0
-                    },
-                    {
-                      "type": "box",
-                      "width": 8,
-                      "height": 4,
-                      "depth": 8,
-                      "color": "#555555",
-                      "x": -16,
-                      "y": 2,
-                      "z": 0
-                    },
-                    {
-                      "type": "box",
-                      "width": 8,
-                      "height": 4,
-                      "depth": 8,
-                      "color": "#555555",
-                      "x": 0,
-                      "y": 2,
-                      "z": 16
-                    },
-                    {
-                      "type": "box",
-                      "width": 8,
-                      "height": 4,
-                      "depth": 8,
-                      "color": "#555555",
-                      "x": 0,
-                      "y": 2,
-                      "z": -16
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 3,
-                      "color": "#00FFFF",
-                      "x": 12,
-                      "y": 12,
-                      "z": 12
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 3,
-                      "color": "#00FFFF",
-                      "x": -12,
-                      "y": 12,
-                      "z": 12
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 3,
-                      "color": "#00FFFF",
-                      "x": 12,
-                      "y": 12,
-                      "z": -12
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 3,
-                      "color": "#00FFFF",
-                      "x": -12,
-                      "y": 12,
-                      "z": -12
+                      "id": 4
                     }
                   ],
                   "position": {
@@ -2799,161 +2605,12 @@ const DEFAULT_PROJECT_CONFIG = {
                 "shapes": {
                   "shapes": [
                     {
-                      "type": "cylinder",
-                      "size": 24,
-                      "height": 8,
-                      "color": "#3A3A3A",
-                      "x": 0,
-                      "y": 0,
-                      "z": 0,
-                      "scaleX": 1
+                      "rotationY": 90,
+                      "id": 3
                     },
                     {
-                      "type": "cylinder",
-                      "size": 20,
-                      "height": 12,
-                      "color": "#555555",
-                      "x": 0,
-                      "y": 10,
-                      "z": 0
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 14,
-                      "color": "#4B0082",
-                      "x": 0,
-                      "y": 30,
-                      "z": 0
-                    },
-                    {
-                      "type": "torus",
-                      "size": 22,
-                      "tubeSize": 2,
-                      "color": "#00BFFF",
-                      "x": 0,
-                      "y": 30,
-                      "z": 0,
-                      "rotationX": 30,
-                      "rotationY": 90
-                    },
-                    {
-                      "type": "torus",
-                      "size": 22,
-                      "tubeSize": 2,
-                      "color": "#00BFFF",
-                      "x": 0,
-                      "y": 30,
-                      "z": 0,
                       "rotationX": 200,
-                      "rotationZ": 45
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 4,
-                      "height": 10,
-                      "color": "#666666",
-                      "x": 12,
-                      "y": 6,
-                      "z": 12
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 4,
-                      "height": 10,
-                      "color": "#666666",
-                      "x": -12,
-                      "y": 6,
-                      "z": 12
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 4,
-                      "height": 10,
-                      "color": "#666666",
-                      "x": 12,
-                      "y": 6,
-                      "z": -12
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 4,
-                      "height": 10,
-                      "color": "#666666",
-                      "x": -12,
-                      "y": 6,
-                      "z": -12
-                    },
-                    {
-                      "type": "box",
-                      "width": 8,
-                      "height": 4,
-                      "depth": 8,
-                      "color": "#555555",
-                      "x": 16,
-                      "y": 2,
-                      "z": 0
-                    },
-                    {
-                      "type": "box",
-                      "width": 8,
-                      "height": 4,
-                      "depth": 8,
-                      "color": "#555555",
-                      "x": -16,
-                      "y": 2,
-                      "z": 0
-                    },
-                    {
-                      "type": "box",
-                      "width": 8,
-                      "height": 4,
-                      "depth": 8,
-                      "color": "#555555",
-                      "x": 0,
-                      "y": 2,
-                      "z": 16
-                    },
-                    {
-                      "type": "box",
-                      "width": 8,
-                      "height": 4,
-                      "depth": 8,
-                      "color": "#555555",
-                      "x": 0,
-                      "y": 2,
-                      "z": -16
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 3,
-                      "color": "#00FFFF",
-                      "x": 12,
-                      "y": 12,
-                      "z": 12
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 3,
-                      "color": "#00FFFF",
-                      "x": -12,
-                      "y": 12,
-                      "z": 12
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 3,
-                      "color": "#00FFFF",
-                      "x": 12,
-                      "y": 12,
-                      "z": -12
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 3,
-                      "color": "#00FFFF",
-                      "x": -12,
-                      "y": 12,
-                      "z": -12
+                      "id": 4
                     }
                   ],
                   "position": {
@@ -2977,161 +2634,12 @@ const DEFAULT_PROJECT_CONFIG = {
                 "shapes": {
                   "shapes": [
                     {
-                      "type": "cylinder",
-                      "size": 24,
-                      "height": 8,
-                      "color": "#3A3A3A",
-                      "x": 0,
-                      "y": 0,
-                      "z": 0,
-                      "scaleX": 1
+                      "rotationY": 135,
+                      "id": 3
                     },
                     {
-                      "type": "cylinder",
-                      "size": 20,
-                      "height": 12,
-                      "color": "#555555",
-                      "x": 0,
-                      "y": 10,
-                      "z": 0
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 14,
-                      "color": "#4B0082",
-                      "x": 0,
-                      "y": 30,
-                      "z": 0
-                    },
-                    {
-                      "type": "torus",
-                      "size": 22,
-                      "tubeSize": 2,
-                      "color": "#00BFFF",
-                      "x": 0,
-                      "y": 30,
-                      "z": 0,
-                      "rotationX": 30,
-                      "rotationY": 135
-                    },
-                    {
-                      "type": "torus",
-                      "size": 22,
-                      "tubeSize": 2,
-                      "color": "#00BFFF",
-                      "x": 0,
-                      "y": 30,
-                      "z": 0,
                       "rotationX": 245,
-                      "rotationZ": 45
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 4,
-                      "height": 10,
-                      "color": "#666666",
-                      "x": 12,
-                      "y": 6,
-                      "z": 12
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 4,
-                      "height": 10,
-                      "color": "#666666",
-                      "x": -12,
-                      "y": 6,
-                      "z": 12
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 4,
-                      "height": 10,
-                      "color": "#666666",
-                      "x": 12,
-                      "y": 6,
-                      "z": -12
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 4,
-                      "height": 10,
-                      "color": "#666666",
-                      "x": -12,
-                      "y": 6,
-                      "z": -12
-                    },
-                    {
-                      "type": "box",
-                      "width": 8,
-                      "height": 4,
-                      "depth": 8,
-                      "color": "#555555",
-                      "x": 16,
-                      "y": 2,
-                      "z": 0
-                    },
-                    {
-                      "type": "box",
-                      "width": 8,
-                      "height": 4,
-                      "depth": 8,
-                      "color": "#555555",
-                      "x": -16,
-                      "y": 2,
-                      "z": 0
-                    },
-                    {
-                      "type": "box",
-                      "width": 8,
-                      "height": 4,
-                      "depth": 8,
-                      "color": "#555555",
-                      "x": 0,
-                      "y": 2,
-                      "z": 16
-                    },
-                    {
-                      "type": "box",
-                      "width": 8,
-                      "height": 4,
-                      "depth": 8,
-                      "color": "#555555",
-                      "x": 0,
-                      "y": 2,
-                      "z": -16
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 3,
-                      "color": "#00FFFF",
-                      "x": 12,
-                      "y": 12,
-                      "z": 12
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 3,
-                      "color": "#00FFFF",
-                      "x": -12,
-                      "y": 12,
-                      "z": 12
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 3,
-                      "color": "#00FFFF",
-                      "x": 12,
-                      "y": 12,
-                      "z": -12
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 3,
-                      "color": "#00FFFF",
-                      "x": -12,
-                      "y": 12,
-                      "z": -12
+                      "id": 4
                     }
                   ],
                   "position": {
@@ -3152,6 +2660,183 @@ const DEFAULT_PROJECT_CONFIG = {
                 }
               }
             ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "cylinder",
+                  "size": 24,
+                  "height": 8,
+                  "color": "#3A3A3A",
+                  "x": 0,
+                  "y": 0,
+                  "z": 0,
+                  "scaleX": 1
+                },
+                {
+                  "type": "cylinder",
+                  "size": 20,
+                  "height": 12,
+                  "color": "#555555",
+                  "x": 0,
+                  "y": 10,
+                  "z": 0
+                },
+                {
+                  "type": "sphere",
+                  "size": 14,
+                  "color": "#4B0082",
+                  "x": 0,
+                  "y": 30,
+                  "z": 0
+                },
+                {
+                  "type": "torus",
+                  "size": 22,
+                  "tubeSize": 2,
+                  "color": "#00BFFF",
+                  "x": 0,
+                  "y": 30,
+                  "z": 0,
+                  "rotationX": 30
+                },
+                {
+                  "type": "torus",
+                  "size": 22,
+                  "tubeSize": 2,
+                  "color": "#00BFFF",
+                  "x": 0,
+                  "y": 30,
+                  "z": 0,
+                  "rotationX": 105,
+                  "rotationZ": 45
+                },
+                {
+                  "type": "cylinder",
+                  "size": 4,
+                  "height": 10,
+                  "color": "#666666",
+                  "x": 12,
+                  "y": 6,
+                  "z": 12
+                },
+                {
+                  "type": "cylinder",
+                  "size": 4,
+                  "height": 10,
+                  "color": "#666666",
+                  "x": -12,
+                  "y": 6,
+                  "z": 12
+                },
+                {
+                  "type": "cylinder",
+                  "size": 4,
+                  "height": 10,
+                  "color": "#666666",
+                  "x": 12,
+                  "y": 6,
+                  "z": -12
+                },
+                {
+                  "type": "cylinder",
+                  "size": 4,
+                  "height": 10,
+                  "color": "#666666",
+                  "x": -12,
+                  "y": 6,
+                  "z": -12
+                },
+                {
+                  "type": "box",
+                  "width": 8,
+                  "height": 4,
+                  "depth": 8,
+                  "color": "#555555",
+                  "x": 16,
+                  "y": 2,
+                  "z": 0
+                },
+                {
+                  "type": "box",
+                  "width": 8,
+                  "height": 4,
+                  "depth": 8,
+                  "color": "#555555",
+                  "x": -16,
+                  "y": 2,
+                  "z": 0
+                },
+                {
+                  "type": "box",
+                  "width": 8,
+                  "height": 4,
+                  "depth": 8,
+                  "color": "#555555",
+                  "x": 0,
+                  "y": 2,
+                  "z": 16
+                },
+                {
+                  "type": "box",
+                  "width": 8,
+                  "height": 4,
+                  "depth": 8,
+                  "color": "#555555",
+                  "x": 0,
+                  "y": 2,
+                  "z": -16
+                },
+                {
+                  "type": "sphere",
+                  "size": 3,
+                  "color": "#00FFFF",
+                  "x": 12,
+                  "y": 12,
+                  "z": 12
+                },
+                {
+                  "type": "sphere",
+                  "size": 3,
+                  "color": "#00FFFF",
+                  "x": -12,
+                  "y": 12,
+                  "z": 12
+                },
+                {
+                  "type": "sphere",
+                  "size": 3,
+                  "color": "#00FFFF",
+                  "x": 12,
+                  "y": 12,
+                  "z": -12
+                },
+                {
+                  "type": "sphere",
+                  "size": 3,
+                  "color": "#00FFFF",
+                  "x": -12,
+                  "y": 12,
+                  "z": -12
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
           }
         }
       },
@@ -3168,228 +2853,7 @@ const DEFAULT_PROJECT_CONFIG = {
             "idle": [
               {
                 "shapes": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 40,
-                      "height": 4,
-                      "depth": 40,
-                      "color": "#303040",
-                      "x": 0,
-                      "y": 2,
-                      "z": 0,
-                      "scaleX": 1
-                    },
-                    {
-                      "type": "box",
-                      "width": 36,
-                      "height": 12,
-                      "depth": 36,
-                      "color": "#404050",
-                      "x": 0,
-                      "y": 10,
-                      "z": 0
-                    },
-                    {
-                      "type": "box",
-                      "width": 40,
-                      "height": 2,
-                      "depth": 40,
-                      "color": "#505060",
-                      "x": 0,
-                      "y": 17,
-                      "z": 0
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 12,
-                      "color": "#2288cc",
-                      "x": -16,
-                      "y": 24,
-                      "z": 0
-                    },
-                    {
-                      "type": "torus",
-                      "size": 12,
-                      "tubeSize": 1,
-                      "color": "#44aaff",
-                      "x": -16,
-                      "y": 24,
-                      "z": 0,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "torus",
-                      "size": 12,
-                      "tubeSize": 1,
-                      "color": "#44aaff",
-                      "x": -16,
-                      "y": 28,
-                      "z": 0,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "torus",
-                      "size": 12,
-                      "tubeSize": 1,
-                      "color": "#44aaff",
-                      "x": -16,
-                      "y": 20,
-                      "z": 0,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 12,
-                      "color": "#2288cc",
-                      "x": 16,
-                      "y": 24,
-                      "z": 0
-                    },
-                    {
-                      "type": "torus",
-                      "size": 12,
-                      "tubeSize": 1,
-                      "color": "#44aaff",
-                      "x": 16,
-                      "y": 24,
-                      "z": 0,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "torus",
-                      "size": 12,
-                      "tubeSize": 1,
-                      "color": "#44aaff",
-                      "x": 16,
-                      "y": 28,
-                      "z": 0,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "torus",
-                      "size": 12,
-                      "tubeSize": 1,
-                      "color": "#44aaff",
-                      "x": 16,
-                      "y": 20,
-                      "z": 0,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 16,
-                      "height": 6,
-                      "color": "#333333",
-                      "x": 0,
-                      "y": 20,
-                      "z": 0
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 14,
-                      "height": 2,
-                      "color": "#444444",
-                      "x": 0,
-                      "y": 24,
-                      "z": 0
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 2,
-                      "color": "#2288cc",
-                      "x": 0,
-                      "y": 26,
-                      "z": 0
-                    },
-                    {
-                      "type": "box",
-                      "width": 6,
-                      "height": 6,
-                      "depth": 6,
-                      "color": "#cc2200",
-                      "x": -14,
-                      "y": 9,
-                      "z": -14
-                    },
-                    {
-                      "type": "box",
-                      "width": 6,
-                      "height": 6,
-                      "depth": 6,
-                      "color": "#cc6600",
-                      "x": 0,
-                      "y": 9,
-                      "z": -14
-                    },
-                    {
-                      "type": "box",
-                      "width": 6,
-                      "height": 6,
-                      "depth": 6,
-                      "color": "#ccaa00",
-                      "x": 14,
-                      "y": 9,
-                      "z": -14
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 3,
-                      "color": "#44aaff",
-                      "x": 0,
-                      "y": 28,
-                      "z": 0
-                    },
-                    {
-                      "type": "box",
-                      "width": 40,
-                      "height": 1,
-                      "depth": 24,
-                      "color": "#444455",
-                      "x": 0,
-                      "y": 18.5,
-                      "z": 0
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2,
-                      "height": 4,
-                      "color": "#aa0000",
-                      "x": -18,
-                      "y": 20.5,
-                      "z": -8
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2,
-                      "height": 4,
-                      "color": "#aa0000",
-                      "x": 18,
-                      "y": 20.5,
-                      "z": -8
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2,
-                      "height": 4,
-                      "color": "#aa0000",
-                      "x": -18,
-                      "y": 20.5,
-                      "z": 8
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2,
-                      "height": 4,
-                      "color": "#aa0000",
-                      "x": 18,
-                      "y": 20.5,
-                      "z": 8
-                    }
-                  ],
+                  "shapes": [],
                   "position": {
                     "x": 0,
                     "y": 0,
@@ -3408,6 +2872,247 @@ const DEFAULT_PROJECT_CONFIG = {
                 }
               }
             ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 40,
+                  "height": 4,
+                  "depth": 40,
+                  "color": "#303040",
+                  "x": 0,
+                  "y": 2,
+                  "z": 0,
+                  "scaleX": 1
+                },
+                {
+                  "type": "box",
+                  "width": 36,
+                  "height": 12,
+                  "depth": 36,
+                  "color": "#404050",
+                  "x": 0,
+                  "y": 10,
+                  "z": 0
+                },
+                {
+                  "type": "box",
+                  "width": 40,
+                  "height": 2,
+                  "depth": 40,
+                  "color": "#505060",
+                  "x": 0,
+                  "y": 17,
+                  "z": 0
+                },
+                {
+                  "type": "cylinder",
+                  "size": 12,
+                  "height": 12,
+                  "color": "#2288cc",
+                  "x": -16,
+                  "y": 24,
+                  "z": 0
+                },
+                {
+                  "type": "torus",
+                  "size": 12,
+                  "tubeSize": 1,
+                  "color": "#44aaff",
+                  "x": -16,
+                  "y": 24,
+                  "z": 0,
+                  "rotationX": 90
+                },
+                {
+                  "type": "torus",
+                  "size": 12,
+                  "tubeSize": 1,
+                  "color": "#44aaff",
+                  "x": -16,
+                  "y": 28,
+                  "z": 0,
+                  "rotationX": 90
+                },
+                {
+                  "type": "torus",
+                  "size": 12,
+                  "tubeSize": 1,
+                  "color": "#44aaff",
+                  "x": -16,
+                  "y": 20,
+                  "z": 0,
+                  "rotationX": 90
+                },
+                {
+                  "type": "cylinder",
+                  "size": 12,
+                  "height": 12,
+                  "color": "#2288cc",
+                  "x": 16,
+                  "y": 24,
+                  "z": 0
+                },
+                {
+                  "type": "torus",
+                  "size": 12,
+                  "tubeSize": 1,
+                  "color": "#44aaff",
+                  "x": 16,
+                  "y": 24,
+                  "z": 0,
+                  "rotationX": 90
+                },
+                {
+                  "type": "torus",
+                  "size": 12,
+                  "tubeSize": 1,
+                  "color": "#44aaff",
+                  "x": 16,
+                  "y": 28,
+                  "z": 0,
+                  "rotationX": 90
+                },
+                {
+                  "type": "torus",
+                  "size": 12,
+                  "tubeSize": 1,
+                  "color": "#44aaff",
+                  "x": 16,
+                  "y": 20,
+                  "z": 0,
+                  "rotationX": 90
+                },
+                {
+                  "type": "cylinder",
+                  "size": 16,
+                  "height": 6,
+                  "color": "#333333",
+                  "x": 0,
+                  "y": 20,
+                  "z": 0
+                },
+                {
+                  "type": "cylinder",
+                  "size": 14,
+                  "height": 2,
+                  "color": "#444444",
+                  "x": 0,
+                  "y": 24,
+                  "z": 0
+                },
+                {
+                  "type": "cylinder",
+                  "size": 12,
+                  "height": 2,
+                  "color": "#2288cc",
+                  "x": 0,
+                  "y": 26,
+                  "z": 0
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 6,
+                  "depth": 6,
+                  "color": "#cc2200",
+                  "x": -14,
+                  "y": 9,
+                  "z": -14
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 6,
+                  "depth": 6,
+                  "color": "#cc6600",
+                  "x": 0,
+                  "y": 9,
+                  "z": -14
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 6,
+                  "depth": 6,
+                  "color": "#ccaa00",
+                  "x": 14,
+                  "y": 9,
+                  "z": -14
+                },
+                {
+                  "type": "sphere",
+                  "size": 3,
+                  "color": "#44aaff",
+                  "x": 0,
+                  "y": 28,
+                  "z": 0
+                },
+                {
+                  "type": "box",
+                  "width": 40,
+                  "height": 1,
+                  "depth": 24,
+                  "color": "#444455",
+                  "x": 0,
+                  "y": 18.5,
+                  "z": 0
+                },
+                {
+                  "type": "cylinder",
+                  "size": 2,
+                  "height": 4,
+                  "color": "#aa0000",
+                  "x": -18,
+                  "y": 20.5,
+                  "z": -8
+                },
+                {
+                  "type": "cylinder",
+                  "size": 2,
+                  "height": 4,
+                  "color": "#aa0000",
+                  "x": 18,
+                  "y": 20.5,
+                  "z": -8
+                },
+                {
+                  "type": "cylinder",
+                  "size": 2,
+                  "height": 4,
+                  "color": "#aa0000",
+                  "x": -18,
+                  "y": 20.5,
+                  "z": 8
+                },
+                {
+                  "type": "cylinder",
+                  "size": 2,
+                  "height": 4,
+                  "color": "#aa0000",
+                  "x": 18,
+                  "y": 20.5,
+                  "z": 8
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
           }
         }
       },
@@ -3429,216 +3134,7 @@ const DEFAULT_PROJECT_CONFIG = {
             "idle": [
               {
                 "shapes": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 40,
-                      "height": 6,
-                      "depth": 40,
-                      "x": 0,
-                      "y": 3,
-                      "z": 0,
-                      "color": "#303030"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 36,
-                      "height": 14,
-                      "x": 0,
-                      "y": 13,
-                      "z": 0,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 28,
-                      "height": 4,
-                      "x": 0,
-                      "y": 22,
-                      "z": 0,
-                      "color": "#202020"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 24,
-                      "height": 16,
-                      "x": 0,
-                      "y": 32,
-                      "z": 0,
-                      "color": "#404040"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 20,
-                      "tubeSize": 2,
-                      "x": 0,
-                      "y": 26,
-                      "z": 0,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 14,
-                      "x": 0,
-                      "y": 32,
-                      "z": 0,
-                      "color": "#80FFD0"
-                    },
-                    {
-                      "type": "box",
-                      "width": 6,
-                      "height": 28,
-                      "depth": 6,
-                      "x": 16,
-                      "y": 22,
-                      "z": 16,
-                      "color": "#303030"
-                    },
-                    {
-                      "type": "box",
-                      "width": 6,
-                      "height": 28,
-                      "depth": 6,
-                      "x": -16,
-                      "y": 22,
-                      "z": 16,
-                      "color": "#303030"
-                    },
-                    {
-                      "type": "box",
-                      "width": 6,
-                      "height": 28,
-                      "depth": 6,
-                      "x": 16,
-                      "y": 22,
-                      "z": -16,
-                      "color": "#303030"
-                    },
-                    {
-                      "type": "box",
-                      "width": 6,
-                      "height": 28,
-                      "depth": 6,
-                      "x": -16,
-                      "y": 22,
-                      "z": -16,
-                      "color": "#303030"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4,
-                      "x": 16,
-                      "y": 38,
-                      "z": 16,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4,
-                      "x": -16,
-                      "y": 38,
-                      "z": 16,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4,
-                      "x": 16,
-                      "y": 38,
-                      "z": -16,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4,
-                      "x": -16,
-                      "y": 38,
-                      "z": -16,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 10,
-                      "height": 4,
-                      "x": 0,
-                      "y": 42,
-                      "z": 0,
-                      "color": "#606060"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 6,
-                      "height": 8,
-                      "x": 0,
-                      "y": 48,
-                      "z": 0,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 8,
-                      "tubeSize": 1,
-                      "x": 0,
-                      "y": 46,
-                      "z": 0,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 4,
-                      "tubeSize": 1,
-                      "x": 0,
-                      "y": 32,
-                      "z": 0,
-                      "rotationX": 30,
-                      "rotationY": 45,
-                      "color": "#00FFFF"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 4,
-                      "tubeSize": 1,
-                      "x": 0,
-                      "y": 32,
-                      "z": 0,
-                      "rotationX": 120,
-                      "rotationY": 45,
-                      "color": "#00FFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 2,
-                      "x": 6,
-                      "y": 32,
-                      "z": 0,
-                      "color": "#FFFFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 2,
-                      "x": -6,
-                      "y": 32,
-                      "z": 0,
-                      "color": "#FFFFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 2,
-                      "x": 0,
-                      "y": 32,
-                      "z": 6,
-                      "color": "#FFFFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 2,
-                      "x": 0,
-                      "y": 32,
-                      "z": -6,
-                      "color": "#FFFFFF"
-                    }
-                  ],
+                  "shapes": [],
                   "position": {
                     "x": 0,
                     "y": 0,
@@ -3657,6 +3153,235 @@ const DEFAULT_PROJECT_CONFIG = {
                 }
               }
             ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 40,
+                  "height": 6,
+                  "depth": 40,
+                  "x": 0,
+                  "y": 3,
+                  "z": 0,
+                  "color": "#303030"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 36,
+                  "height": 14,
+                  "x": 0,
+                  "y": 13,
+                  "z": 0,
+                  "color": "#505050"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 28,
+                  "height": 4,
+                  "x": 0,
+                  "y": 22,
+                  "z": 0,
+                  "color": "#202020"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 24,
+                  "height": 16,
+                  "x": 0,
+                  "y": 32,
+                  "z": 0,
+                  "color": "#404040"
+                },
+                {
+                  "type": "torus",
+                  "size": 20,
+                  "tubeSize": 2,
+                  "x": 0,
+                  "y": 26,
+                  "z": 0,
+                  "color": "#00FFAA"
+                },
+                {
+                  "type": "sphere",
+                  "size": 14,
+                  "x": 0,
+                  "y": 32,
+                  "z": 0,
+                  "color": "#80FFD0"
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 28,
+                  "depth": 6,
+                  "x": 16,
+                  "y": 22,
+                  "z": 16,
+                  "color": "#303030"
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 28,
+                  "depth": 6,
+                  "x": -16,
+                  "y": 22,
+                  "z": 16,
+                  "color": "#303030"
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 28,
+                  "depth": 6,
+                  "x": 16,
+                  "y": 22,
+                  "z": -16,
+                  "color": "#303030"
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 28,
+                  "depth": 6,
+                  "x": -16,
+                  "y": 22,
+                  "z": -16,
+                  "color": "#303030"
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "x": 16,
+                  "y": 38,
+                  "z": 16,
+                  "color": "#00FFAA"
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "x": -16,
+                  "y": 38,
+                  "z": 16,
+                  "color": "#00FFAA"
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "x": 16,
+                  "y": 38,
+                  "z": -16,
+                  "color": "#00FFAA"
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "x": -16,
+                  "y": 38,
+                  "z": -16,
+                  "color": "#00FFAA"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 10,
+                  "height": 4,
+                  "x": 0,
+                  "y": 42,
+                  "z": 0,
+                  "color": "#606060"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 6,
+                  "height": 8,
+                  "x": 0,
+                  "y": 48,
+                  "z": 0,
+                  "color": "#505050"
+                },
+                {
+                  "type": "torus",
+                  "size": 8,
+                  "tubeSize": 1,
+                  "x": 0,
+                  "y": 46,
+                  "z": 0,
+                  "rotationX": 90,
+                  "color": "#00FFAA"
+                },
+                {
+                  "type": "torus",
+                  "size": 4,
+                  "tubeSize": 1,
+                  "x": 0,
+                  "y": 32,
+                  "z": 0,
+                  "rotationX": 30,
+                  "rotationY": 45,
+                  "color": "#00FFFF"
+                },
+                {
+                  "type": "torus",
+                  "size": 4,
+                  "tubeSize": 1,
+                  "x": 0,
+                  "y": 32,
+                  "z": 0,
+                  "rotationX": 120,
+                  "rotationY": 45,
+                  "color": "#00FFFF"
+                },
+                {
+                  "type": "sphere",
+                  "size": 2,
+                  "x": 6,
+                  "y": 32,
+                  "z": 0,
+                  "color": "#FFFFFF"
+                },
+                {
+                  "type": "sphere",
+                  "size": 2,
+                  "x": -6,
+                  "y": 32,
+                  "z": 0,
+                  "color": "#FFFFFF"
+                },
+                {
+                  "type": "sphere",
+                  "size": 2,
+                  "x": 0,
+                  "y": 32,
+                  "z": 6,
+                  "color": "#FFFFFF"
+                },
+                {
+                  "type": "sphere",
+                  "size": 2,
+                  "x": 0,
+                  "y": 32,
+                  "z": -6,
+                  "color": "#FFFFFF"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
           }
         }
       },
@@ -3676,201 +3401,7 @@ const DEFAULT_PROJECT_CONFIG = {
             "idle": [
               {
                 "shapes": {
-                  "shapes": [
-                    {
-                      "type": "sphere",
-                      "size": 7.5,
-                      "x": 0,
-                      "y": 33.85714285714286,
-                      "z": 0,
-                      "color": "#3D3D3D",
-                      "scaleX": 1
-                    },
-                    {
-                      "type": "torus",
-                      "size": 9,
-                      "tubeSize": 1.5,
-                      "x": 0,
-                      "y": 33.85714285714286,
-                      "z": 0,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 9,
-                      "tubeSize": 1.5,
-                      "x": 0,
-                      "y": 33.85714285714286,
-                      "z": 0,
-                      "rotationY": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 1.5,
-                      "x": 0,
-                      "y": 38.35714285714286,
-                      "z": 0,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 2.25,
-                      "x": 0,
-                      "y": 39.85714285714286,
-                      "z": 0,
-                      "color": "#00FFDD"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 0.75,
-                      "x": 0,
-                      "y": 32.35714285714286,
-                      "z": 0,
-                      "rotationX": 90,
-                      "rotationY": 0,
-                      "color": "#404040"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 0.75,
-                      "x": 0,
-                      "y": 32.35714285714286,
-                      "z": 0,
-                      "rotationX": 90,
-                      "rotationY": 90,
-                      "color": "#404040"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 0.75,
-                      "x": 10.5,
-                      "y": 32.35714285714286,
-                      "z": 10.5,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 0.75,
-                      "x": -10.5,
-                      "y": 32.35714285714286,
-                      "z": 10.5,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 0.75,
-                      "x": 10.5,
-                      "y": 32.35714285714286,
-                      "z": -10.5,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 0.75,
-                      "x": -10.5,
-                      "y": 32.35714285714286,
-                      "z": -10.5,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 4.5,
-                      "tubeSize": 0.75,
-                      "x": 10.5,
-                      "y": 33.10714285714286,
-                      "z": 10.5,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 4.5,
-                      "tubeSize": 0.75,
-                      "x": -10.5,
-                      "y": 33.10714285714286,
-                      "z": 10.5,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 4.5,
-                      "tubeSize": 0.75,
-                      "x": 10.5,
-                      "y": 33.10714285714286,
-                      "z": -10.5,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 4.5,
-                      "tubeSize": 0.75,
-                      "x": -10.5,
-                      "y": 33.10714285714286,
-                      "z": -10.5,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 0.75,
-                      "height": 3,
-                      "x": 0,
-                      "y": 30.857142857142858,
-                      "z": 0,
-                      "color": "#00FFDD"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 1.5,
-                      "x": 0,
-                      "y": 29.357142857142858,
-                      "z": 0,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 0.75,
-                      "x": 3.75,
-                      "y": 33.85714285714286,
-                      "z": 0,
-                      "color": "#FFFFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 0.75,
-                      "x": -3.75,
-                      "y": 33.85714285714286,
-                      "z": 0,
-                      "color": "#FFFFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 0.75,
-                      "x": 0,
-                      "y": 33.85714285714286,
-                      "z": 3.75,
-                      "color": "#FFFFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 0.75,
-                      "x": 0,
-                      "y": 33.85714285714286,
-                      "z": -3.75,
-                      "color": "#FFFFFF"
-                    }
-                  ],
+                  "shapes": [],
                   "position": {
                     "x": 0,
                     "y": 0,
@@ -3892,200 +3423,27 @@ const DEFAULT_PROJECT_CONFIG = {
             "walk": [
               {
                 "shapes": {
-                  "shapes": [
-                    {
-                      "type": "sphere",
-                      "size": 7.5,
-                      "x": 0,
-                      "y": 33.85714285714286,
-                      "z": 0,
-                      "color": "#3D3D3D"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 9,
-                      "tubeSize": 1.5,
-                      "x": 0,
-                      "y": 33.85714285714286,
-                      "z": 0,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 9,
-                      "tubeSize": 1.5,
-                      "x": 0,
-                      "y": 33.85714285714286,
-                      "z": 0,
-                      "rotationY": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 1.5,
-                      "x": 0,
-                      "y": 38.35714285714286,
-                      "z": 0,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 2.25,
-                      "x": 0,
-                      "y": 39.85714285714286,
-                      "z": 0,
-                      "color": "#00FFDD"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 0.75,
-                      "x": 0,
-                      "y": 32.35714285714286,
-                      "z": 0,
-                      "rotationX": 90,
-                      "rotationY": 0,
-                      "color": "#404040"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 0.75,
-                      "x": 0,
-                      "y": 32.35714285714286,
-                      "z": 0,
-                      "rotationX": 90,
-                      "rotationY": 90,
-                      "color": "#404040"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 0.75,
-                      "x": 10.5,
-                      "y": 32.35714285714286,
-                      "z": 10.5,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 0.75,
-                      "x": -10.5,
-                      "y": 32.35714285714286,
-                      "z": 10.5,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 0.75,
-                      "x": 10.5,
-                      "y": 32.35714285714286,
-                      "z": -10.5,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 0.75,
-                      "x": -10.5,
-                      "y": 32.35714285714286,
-                      "z": -10.5,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 4.5,
-                      "tubeSize": 0.75,
-                      "x": 10.5,
-                      "y": 33.10714285714286,
-                      "z": 10.5,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 4.5,
-                      "tubeSize": 0.75,
-                      "x": -10.5,
-                      "y": 33.10714285714286,
-                      "z": 10.5,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 4.5,
-                      "tubeSize": 0.75,
-                      "x": 10.5,
-                      "y": 33.10714285714286,
-                      "z": -10.5,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 4.5,
-                      "tubeSize": 0.75,
-                      "x": -10.5,
-                      "y": 33.10714285714286,
-                      "z": -10.5,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 0.75,
-                      "height": 3,
-                      "x": 0,
-                      "y": 30.857142857142858,
-                      "z": 0,
-                      "color": "#00FFDD"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 1.5,
-                      "x": 0,
-                      "y": 29.357142857142858,
-                      "z": 0,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 0.75,
-                      "x": 3.75,
-                      "y": 33.85714285714286,
-                      "z": 0,
-                      "color": "#FFFFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 0.75,
-                      "x": -3.75,
-                      "y": 33.85714285714286,
-                      "z": 0,
-                      "color": "#FFFFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 0.75,
-                      "x": 0,
-                      "y": 33.85714285714286,
-                      "z": 3.75,
-                      "color": "#FFFFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 0.75,
-                      "x": 0,
-                      "y": 33.85714285714286,
-                      "z": -3.75,
-                      "color": "#FFFFFF"
-                    }
-                  ],
+                  "shapes": [],
+                  "position": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                }
+              },
+              {
+                "shapes": {
+                  "shapes": [],
                   "position": {
                     "x": 0,
                     "y": 0,
@@ -4107,409 +3465,96 @@ const DEFAULT_PROJECT_CONFIG = {
                 "shapes": {
                   "shapes": [
                     {
-                      "type": "sphere",
-                      "size": 7.5,
-                      "x": 0,
-                      "y": 33.85714285714286,
-                      "z": 0,
-                      "color": "#3D3D3D"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 9,
-                      "tubeSize": 1.5,
-                      "x": 0,
-                      "y": 33.85714285714286,
-                      "z": 0,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 9,
-                      "tubeSize": 1.5,
-                      "x": 0,
-                      "y": 33.85714285714286,
-                      "z": 0,
-                      "rotationY": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 1.5,
-                      "x": 0,
-                      "y": 38.35714285714286,
-                      "z": 0,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 2.25,
-                      "x": 0,
-                      "y": 39.85714285714286,
-                      "z": 0,
-                      "color": "#00FFDD"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 0.75,
-                      "x": 0,
-                      "y": 32.35714285714286,
-                      "z": 0,
-                      "rotationX": 90,
-                      "rotationY": 0,
-                      "color": "#404040"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 0.75,
-                      "x": 0,
-                      "y": 32.35714285714286,
-                      "z": 0,
-                      "rotationX": 90,
-                      "rotationY": 90,
-                      "color": "#404040"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 0.75,
-                      "x": 10.5,
-                      "y": 32.35714285714286,
-                      "z": 10.5,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 0.75,
-                      "x": -10.5,
-                      "y": 32.35714285714286,
-                      "z": 10.5,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 0.75,
-                      "x": 10.5,
-                      "y": 32.35714285714286,
-                      "z": -10.5,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 0.75,
-                      "x": -10.5,
-                      "y": 32.35714285714286,
-                      "z": -10.5,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 4.5,
-                      "tubeSize": 0.75,
-                      "x": 10.5,
-                      "y": 33.10714285714286,
-                      "z": 10.5,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 4.5,
-                      "tubeSize": 0.75,
-                      "x": -10.5,
-                      "y": 33.10714285714286,
-                      "z": 10.5,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 4.5,
-                      "tubeSize": 0.75,
-                      "x": 10.5,
-                      "y": 33.10714285714286,
-                      "z": -10.5,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 4.5,
-                      "tubeSize": 0.75,
-                      "x": -10.5,
-                      "y": 33.10714285714286,
-                      "z": -10.5,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 0.75,
-                      "height": 3,
-                      "x": 0,
-                      "y": 30.857142857142858,
-                      "z": 0,
-                      "color": "#00FFDD"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 1.5,
-                      "x": 0,
-                      "y": 29.357142857142858,
-                      "z": 0,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 0.75,
-                      "x": 3.75,
-                      "y": 33.85714285714286,
-                      "z": 0,
-                      "color": "#FFFFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 0.75,
-                      "x": -3.75,
-                      "y": 33.85714285714286,
-                      "z": 0,
-                      "color": "#FFFFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 0.75,
-                      "x": 0,
-                      "y": 33.85714285714286,
-                      "z": 3.75,
-                      "color": "#FFFFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 0.75,
-                      "x": 0,
-                      "y": 33.85714285714286,
-                      "z": -3.75,
-                      "color": "#FFFFFF"
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "type": "sphere",
-                      "size": 7.5,
-                      "x": 0,
                       "y": 23.85714285714286,
-                      "z": 0,
-                      "color": "#3D3D3D"
+                      "id": 0
                     },
                     {
-                      "type": "torus",
-                      "size": 9,
-                      "tubeSize": 1.5,
-                      "x": 0,
                       "y": 23.85714285714286,
-                      "z": 0,
-                      "rotationX": 90,
-                      "color": "#d2fff0"
+                      "color": "#d2fff0",
+                      "id": 1
                     },
                     {
-                      "type": "torus",
-                      "size": 9,
-                      "tubeSize": 1.5,
-                      "x": 0,
                       "y": 23.85714285714286,
-                      "z": 0,
-                      "rotationY": 90,
-                      "color": "#d2fff0"
+                      "color": "#d2fff0",
+                      "id": 2
                     },
                     {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 1.5,
-                      "x": 0,
                       "y": 28.35714285714286,
-                      "z": 0,
-                      "color": "#505050"
+                      "id": 3
                     },
                     {
-                      "type": "sphere",
-                      "size": 2.25,
-                      "x": 0,
                       "y": 29.85714285714286,
-                      "z": 0,
-                      "color": "#d2fff0"
+                      "color": "#d2fff0",
+                      "id": 4
                     },
                     {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 0.75,
-                      "x": 0,
                       "y": 22.35714285714286,
-                      "z": 0,
-                      "rotationX": 90,
-                      "rotationY": 0,
-                      "color": "#404040"
+                      "id": 5
                     },
                     {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 0.75,
-                      "x": 0,
                       "y": 22.35714285714286,
-                      "z": 0,
-                      "rotationX": 90,
-                      "rotationY": 90,
-                      "color": "#404040"
+                      "id": 6
                     },
                     {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 0.75,
-                      "x": 10.5,
                       "y": 22.35714285714286,
-                      "z": 10.5,
-                      "color": "#505050"
+                      "id": 7
                     },
                     {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 0.75,
-                      "x": -10.5,
                       "y": 22.35714285714286,
-                      "z": 10.5,
-                      "color": "#505050"
+                      "id": 8
                     },
                     {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 0.75,
-                      "x": 10.5,
                       "y": 22.35714285714286,
-                      "z": -10.5,
-                      "color": "#505050"
+                      "id": 9
                     },
                     {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 0.75,
-                      "x": -10.5,
                       "y": 22.35714285714286,
-                      "z": -10.5,
-                      "color": "#505050"
+                      "id": 10
                     },
                     {
-                      "type": "torus",
-                      "size": 4.5,
-                      "tubeSize": 0.75,
-                      "x": 10.5,
                       "y": 23.10714285714286,
-                      "z": 10.5,
-                      "rotationX": 90,
-                      "color": "#d2fff0"
+                      "color": "#d2fff0",
+                      "id": 11
                     },
                     {
-                      "type": "torus",
-                      "size": 4.5,
-                      "tubeSize": 0.75,
-                      "x": -10.5,
                       "y": 23.10714285714286,
-                      "z": 10.5,
-                      "rotationX": 90,
-                      "color": "#d2fff0"
+                      "color": "#d2fff0",
+                      "id": 12
                     },
                     {
-                      "type": "torus",
-                      "size": 4.5,
-                      "tubeSize": 0.75,
-                      "x": 10.5,
                       "y": 23.10714285714286,
-                      "z": -10.5,
-                      "rotationX": 90,
-                      "color": "#d2fff0"
+                      "color": "#d2fff0",
+                      "id": 13
                     },
                     {
-                      "type": "torus",
-                      "size": 4.5,
-                      "tubeSize": 0.75,
-                      "x": -10.5,
                       "y": 23.10714285714286,
-                      "z": -10.5,
-                      "rotationX": 90,
-                      "color": "#d2fff0"
+                      "color": "#d2fff0",
+                      "id": 14
                     },
                     {
-                      "type": "cylinder",
-                      "size": 0.75,
-                      "height": 3,
-                      "x": 0,
                       "y": 20.857142857142858,
-                      "z": 0,
-                      "color": "#d2fff0"
+                      "color": "#d2fff0",
+                      "id": 15
                     },
                     {
-                      "type": "sphere",
-                      "size": 1.5,
-                      "x": 0,
                       "y": 19.357142857142858,
-                      "z": 0,
-                      "color": "#00FFAA"
+                      "id": 16
                     },
                     {
-                      "type": "sphere",
-                      "size": 0.75,
-                      "x": 3.75,
                       "y": 23.85714285714286,
-                      "z": 0,
-                      "color": "#FFFFFF"
+                      "id": 17
                     },
                     {
-                      "type": "sphere",
-                      "size": 0.75,
-                      "x": -3.75,
                       "y": 23.85714285714286,
-                      "z": 0,
-                      "color": "#FFFFFF"
+                      "id": 18
                     },
                     {
-                      "type": "sphere",
-                      "size": 0.75,
-                      "x": 0,
                       "y": 23.85714285714286,
-                      "z": 3.75,
-                      "color": "#FFFFFF"
+                      "id": 19
                     },
                     {
-                      "type": "sphere",
-                      "size": 0.75,
-                      "x": 0,
                       "y": 23.85714285714286,
-                      "z": -3.75,
-                      "color": "#FFFFFF"
+                      "id": 20
                     }
                   ],
                   "position": {
@@ -4533,196 +3578,88 @@ const DEFAULT_PROJECT_CONFIG = {
                 "shapes": {
                   "shapes": [
                     {
-                      "type": "sphere",
-                      "size": 7.5,
-                      "x": 0,
                       "y": 23.85714285714286,
-                      "z": 0,
-                      "color": "#3D3D3D"
+                      "id": 0
                     },
                     {
-                      "type": "torus",
-                      "size": 9,
-                      "tubeSize": 1.5,
-                      "x": 0,
                       "y": 23.85714285714286,
-                      "z": 0,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
+                      "id": 1
                     },
                     {
-                      "type": "torus",
-                      "size": 9,
-                      "tubeSize": 1.5,
-                      "x": 0,
                       "y": 23.85714285714286,
-                      "z": 0,
-                      "rotationY": 90,
-                      "color": "#00FFAA"
+                      "id": 2
                     },
                     {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 1.5,
-                      "x": 0,
                       "y": 28.35714285714286,
-                      "z": 0,
-                      "color": "#505050"
+                      "id": 3
                     },
                     {
-                      "type": "sphere",
-                      "size": 2.25,
-                      "x": 0,
                       "y": 29.85714285714286,
-                      "z": 0,
-                      "color": "#00FFDD"
+                      "id": 4
                     },
                     {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 0.75,
-                      "x": 0,
                       "y": 22.35714285714286,
-                      "z": 0,
-                      "rotationX": 90,
-                      "rotationY": 0,
-                      "color": "#404040"
+                      "id": 5
                     },
                     {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 0.75,
-                      "x": 0,
                       "y": 22.35714285714286,
-                      "z": 0,
-                      "rotationX": 90,
-                      "rotationY": 90,
-                      "color": "#404040"
+                      "id": 6
                     },
                     {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 0.75,
-                      "x": 10.5,
                       "y": 22.35714285714286,
-                      "z": 10.5,
-                      "color": "#505050"
+                      "id": 7
                     },
                     {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 0.75,
-                      "x": -10.5,
                       "y": 22.35714285714286,
-                      "z": 10.5,
-                      "color": "#505050"
+                      "id": 8
                     },
                     {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 0.75,
-                      "x": 10.5,
                       "y": 22.35714285714286,
-                      "z": -10.5,
-                      "color": "#505050"
+                      "id": 9
                     },
                     {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 0.75,
-                      "x": -10.5,
                       "y": 22.35714285714286,
-                      "z": -10.5,
-                      "color": "#505050"
+                      "id": 10
                     },
                     {
-                      "type": "torus",
-                      "size": 4.5,
-                      "tubeSize": 0.75,
-                      "x": 10.5,
                       "y": 23.10714285714286,
-                      "z": 10.5,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
+                      "id": 11
                     },
                     {
-                      "type": "torus",
-                      "size": 4.5,
-                      "tubeSize": 0.75,
-                      "x": -10.5,
                       "y": 23.10714285714286,
-                      "z": 10.5,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
+                      "id": 12
                     },
                     {
-                      "type": "torus",
-                      "size": 4.5,
-                      "tubeSize": 0.75,
-                      "x": 10.5,
                       "y": 23.10714285714286,
-                      "z": -10.5,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
+                      "id": 13
                     },
                     {
-                      "type": "torus",
-                      "size": 4.5,
-                      "tubeSize": 0.75,
-                      "x": -10.5,
                       "y": 23.10714285714286,
-                      "z": -10.5,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
+                      "id": 14
                     },
                     {
-                      "type": "cylinder",
-                      "size": 0.75,
-                      "height": 3,
-                      "x": 0,
                       "y": 20.857142857142858,
-                      "z": 0,
-                      "color": "#00FFDD"
+                      "id": 15
                     },
                     {
-                      "type": "sphere",
-                      "size": 1.5,
-                      "x": 0,
                       "y": 19.357142857142858,
-                      "z": 0,
-                      "color": "#00FFAA"
+                      "id": 16
                     },
                     {
-                      "type": "sphere",
-                      "size": 0.75,
-                      "x": 3.75,
                       "y": 23.85714285714286,
-                      "z": 0,
-                      "color": "#FFFFFF"
+                      "id": 17
                     },
                     {
-                      "type": "sphere",
-                      "size": 0.75,
-                      "x": -3.75,
                       "y": 23.85714285714286,
-                      "z": 0,
-                      "color": "#FFFFFF"
+                      "id": 18
                     },
                     {
-                      "type": "sphere",
-                      "size": 0.75,
-                      "x": 0,
                       "y": 23.85714285714286,
-                      "z": 3.75,
-                      "color": "#FFFFFF"
+                      "id": 19
                     },
                     {
-                      "type": "sphere",
-                      "size": 0.75,
-                      "x": 0,
                       "y": 23.85714285714286,
-                      "z": -3.75,
-                      "color": "#FFFFFF"
+                      "id": 20
                     }
                   ],
                   "position": {
@@ -4743,6 +3680,220 @@ const DEFAULT_PROJECT_CONFIG = {
                 }
               }
             ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "sphere",
+                  "size": 7.5,
+                  "x": 0,
+                  "y": 33.85714285714286,
+                  "z": 0,
+                  "color": "#3D3D3D",
+                  "scaleX": 1
+                },
+                {
+                  "type": "torus",
+                  "size": 9,
+                  "tubeSize": 1.5,
+                  "x": 0,
+                  "y": 33.85714285714286,
+                  "z": 0,
+                  "rotationX": 90,
+                  "color": "#00FFAA"
+                },
+                {
+                  "type": "torus",
+                  "size": 9,
+                  "tubeSize": 1.5,
+                  "x": 0,
+                  "y": 33.85714285714286,
+                  "z": 0,
+                  "rotationY": 90,
+                  "color": "#00FFAA"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 1.5,
+                  "x": 0,
+                  "y": 38.35714285714286,
+                  "z": 0,
+                  "color": "#505050"
+                },
+                {
+                  "type": "sphere",
+                  "size": 2.25,
+                  "x": 0,
+                  "y": 39.85714285714286,
+                  "z": 0,
+                  "color": "#00FFDD"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 12,
+                  "height": 0.75,
+                  "x": 0,
+                  "y": 32.35714285714286,
+                  "z": 0,
+                  "rotationX": 90,
+                  "rotationY": 0,
+                  "color": "#404040"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 12,
+                  "height": 0.75,
+                  "x": 0,
+                  "y": 32.35714285714286,
+                  "z": 0,
+                  "rotationX": 90,
+                  "rotationY": 90,
+                  "color": "#404040"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 0.75,
+                  "x": 10.5,
+                  "y": 32.35714285714286,
+                  "z": 10.5,
+                  "color": "#505050"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 0.75,
+                  "x": -10.5,
+                  "y": 32.35714285714286,
+                  "z": 10.5,
+                  "color": "#505050"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 0.75,
+                  "x": 10.5,
+                  "y": 32.35714285714286,
+                  "z": -10.5,
+                  "color": "#505050"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 0.75,
+                  "x": -10.5,
+                  "y": 32.35714285714286,
+                  "z": -10.5,
+                  "color": "#505050"
+                },
+                {
+                  "type": "torus",
+                  "size": 4.5,
+                  "tubeSize": 0.75,
+                  "x": 10.5,
+                  "y": 33.10714285714286,
+                  "z": 10.5,
+                  "rotationX": 90,
+                  "color": "#00FFAA"
+                },
+                {
+                  "type": "torus",
+                  "size": 4.5,
+                  "tubeSize": 0.75,
+                  "x": -10.5,
+                  "y": 33.10714285714286,
+                  "z": 10.5,
+                  "rotationX": 90,
+                  "color": "#00FFAA"
+                },
+                {
+                  "type": "torus",
+                  "size": 4.5,
+                  "tubeSize": 0.75,
+                  "x": 10.5,
+                  "y": 33.10714285714286,
+                  "z": -10.5,
+                  "rotationX": 90,
+                  "color": "#00FFAA"
+                },
+                {
+                  "type": "torus",
+                  "size": 4.5,
+                  "tubeSize": 0.75,
+                  "x": -10.5,
+                  "y": 33.10714285714286,
+                  "z": -10.5,
+                  "rotationX": 90,
+                  "color": "#00FFAA"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 0.75,
+                  "height": 3,
+                  "x": 0,
+                  "y": 30.857142857142858,
+                  "z": 0,
+                  "color": "#00FFDD"
+                },
+                {
+                  "type": "sphere",
+                  "size": 1.5,
+                  "x": 0,
+                  "y": 29.357142857142858,
+                  "z": 0,
+                  "color": "#00FFAA"
+                },
+                {
+                  "type": "sphere",
+                  "size": 0.75,
+                  "x": 3.75,
+                  "y": 33.85714285714286,
+                  "z": 0,
+                  "color": "#FFFFFF"
+                },
+                {
+                  "type": "sphere",
+                  "size": 0.75,
+                  "x": -3.75,
+                  "y": 33.85714285714286,
+                  "z": 0,
+                  "color": "#FFFFFF"
+                },
+                {
+                  "type": "sphere",
+                  "size": 0.75,
+                  "x": 0,
+                  "y": 33.85714285714286,
+                  "z": 3.75,
+                  "color": "#FFFFFF"
+                },
+                {
+                  "type": "sphere",
+                  "size": 0.75,
+                  "x": 0,
+                  "y": 33.85714285714286,
+                  "z": -3.75,
+                  "color": "#FFFFFF"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
           }
         }
       },
@@ -4764,173 +3915,38 @@ const DEFAULT_PROJECT_CONFIG = {
             "idle": [
               {
                 "shapes": {
+                  "shapes": [],
+                  "position": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                }
+              },
+              {
+                "shapes": {
                   "shapes": [
                     {
-                      "type": "cylinder",
-                      "size": 16,
-                      "height": 4,
-                      "color": "#555555",
-                      "x": 0,
-                      "y": 2,
-                      "z": 0
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 8,
-                      "color": "#777777",
-                      "x": 0,
-                      "y": 8,
-                      "z": 0
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 10,
-                      "height": 20,
-                      "color": "#333333",
-                      "x": 0,
-                      "y": 22,
-                      "z": 0
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 3,
-                      "color": "#444444",
-                      "x": 0,
-                      "y": 33.5,
-                      "z": 0
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 14,
-                      "color": "#66bbff",
-                      "x": 0,
-                      "y": 42,
-                      "z": 0
-                    },
-                    {
-                      "type": "torus",
-                      "size": 20,
-                      "tubeSize": 1.6,
-                      "color": "#66bbff",
-                      "x": 0,
-                      "y": 18,
-                      "z": 0,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "torus",
-                      "size": 18,
-                      "tubeSize": 1.6,
                       "color": "#4499ff",
-                      "x": 0,
-                      "y": 24,
-                      "z": 0,
-                      "rotationX": 90
+                      "id": 5
                     },
                     {
-                      "type": "torus",
-                      "size": 16,
-                      "tubeSize": 1.6,
-                      "color": "#2277ff",
-                      "x": 0,
-                      "y": 30,
-                      "z": 0,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "cone",
-                      "size": 6,
-                      "height": 16,
-                      "color": "#888888",
-                      "x": 7,
-                      "y": 34,
-                      "z": 0,
-                      "rotationZ": -90
-                    },
-                    {
-                      "type": "cone",
-                      "size": 6,
-                      "height": 16,
-                      "color": "#888888",
-                      "x": -7,
-                      "y": 34,
-                      "z": 0,
-                      "rotationZ": 90
-                    },
-                    {
-                      "type": "cone",
-                      "size": 6,
-                      "height": 16,
-                      "color": "#888888",
-                      "x": 0,
-                      "y": 34,
-                      "z": 7,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "cone",
-                      "size": 6,
-                      "height": 16,
-                      "color": "#888888",
-                      "x": 0,
-                      "y": 34,
-                      "z": -7,
-                      "rotationX": -90
-                    },
-                    {
-                      "type": "box",
-                      "width": 3,
-                      "height": 14,
-                      "depth": 3,
-                      "color": "#888888",
-                      "x": 6,
-                      "y": 16,
-                      "z": 6,
-                      "rotationY": 45
-                    },
-                    {
-                      "type": "box",
-                      "width": 3,
-                      "height": 14,
-                      "depth": 3,
-                      "color": "#888888",
-                      "x": -6,
-                      "y": 16,
-                      "z": 6,
-                      "rotationY": -45
-                    },
-                    {
-                      "type": "box",
-                      "width": 3,
-                      "height": 14,
-                      "depth": 3,
-                      "color": "#888888",
-                      "x": 6,
-                      "y": 16,
-                      "z": -6,
-                      "rotationY": -45
-                    },
-                    {
-                      "type": "box",
-                      "width": 3,
-                      "height": 14,
-                      "depth": 3,
-                      "color": "#888888",
-                      "x": -6,
-                      "y": 16,
-                      "z": -6,
-                      "rotationY": 45
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2,
-                      "height": 1,
                       "color": "#66bbff",
-                      "x": 0,
-                      "y": 36,
-                      "z": 0
+                      "id": 6
+                    },
+                    {
+                      "color": "#4499ff",
+                      "id": 7
                     }
                   ],
                   "position": {
@@ -4954,359 +3970,16 @@ const DEFAULT_PROJECT_CONFIG = {
                 "shapes": {
                   "shapes": [
                     {
-                      "type": "cylinder",
-                      "size": 16,
-                      "height": 4,
-                      "color": "#555555",
-                      "x": 0,
-                      "y": 2,
-                      "z": 0
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 8,
-                      "color": "#777777",
-                      "x": 0,
-                      "y": 8,
-                      "z": 0
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 10,
-                      "height": 20,
-                      "color": "#333333",
-                      "x": 0,
-                      "y": 22,
-                      "z": 0
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 3,
-                      "color": "#444444",
-                      "x": 0,
-                      "y": 33.5,
-                      "z": 0
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 14,
-                      "color": "#66bbff",
-                      "x": 0,
-                      "y": 42,
-                      "z": 0
-                    },
-                    {
-                      "type": "torus",
-                      "size": 20,
-                      "tubeSize": 1.6,
-                      "color": "#4499ff",
-                      "x": 0,
-                      "y": 18,
-                      "z": 0,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "torus",
-                      "size": 18,
-                      "tubeSize": 1.6,
-                      "color": "#66bbff",
-                      "x": 0,
-                      "y": 24,
-                      "z": 0,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "torus",
-                      "size": 16,
-                      "tubeSize": 1.6,
-                      "color": "#4499ff",
-                      "x": 0,
-                      "y": 30,
-                      "z": 0,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "cone",
-                      "size": 6,
-                      "height": 16,
-                      "color": "#888888",
-                      "x": 7,
-                      "y": 34,
-                      "z": 0,
-                      "rotationZ": -90
-                    },
-                    {
-                      "type": "cone",
-                      "size": 6,
-                      "height": 16,
-                      "color": "#888888",
-                      "x": -7,
-                      "y": 34,
-                      "z": 0,
-                      "rotationZ": 90
-                    },
-                    {
-                      "type": "cone",
-                      "size": 6,
-                      "height": 16,
-                      "color": "#888888",
-                      "x": 0,
-                      "y": 34,
-                      "z": 7,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "cone",
-                      "size": 6,
-                      "height": 16,
-                      "color": "#888888",
-                      "x": 0,
-                      "y": 34,
-                      "z": -7,
-                      "rotationX": -90
-                    },
-                    {
-                      "type": "box",
-                      "width": 3,
-                      "height": 14,
-                      "depth": 3,
-                      "color": "#888888",
-                      "x": 6,
-                      "y": 16,
-                      "z": 6,
-                      "rotationY": 45
-                    },
-                    {
-                      "type": "box",
-                      "width": 3,
-                      "height": 14,
-                      "depth": 3,
-                      "color": "#888888",
-                      "x": -6,
-                      "y": 16,
-                      "z": 6,
-                      "rotationY": -45
-                    },
-                    {
-                      "type": "box",
-                      "width": 3,
-                      "height": 14,
-                      "depth": 3,
-                      "color": "#888888",
-                      "x": 6,
-                      "y": 16,
-                      "z": -6,
-                      "rotationY": -45
-                    },
-                    {
-                      "type": "box",
-                      "width": 3,
-                      "height": 14,
-                      "depth": 3,
-                      "color": "#888888",
-                      "x": -6,
-                      "y": 16,
-                      "z": -6,
-                      "rotationY": 45
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2,
-                      "height": 1,
-                      "color": "#66bbff",
-                      "x": 0,
-                      "y": 36,
-                      "z": 0
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "type": "cylinder",
-                      "size": 16,
-                      "height": 4,
-                      "color": "#555555",
-                      "x": 0,
-                      "y": 2,
-                      "z": 0
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 8,
-                      "color": "#777777",
-                      "x": 0,
-                      "y": 8,
-                      "z": 0
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 10,
-                      "height": 20,
-                      "color": "#333333",
-                      "x": 0,
-                      "y": 22,
-                      "z": 0
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 3,
-                      "color": "#444444",
-                      "x": 0,
-                      "y": 33.5,
-                      "z": 0
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 14,
                       "color": "#84c8ff",
-                      "x": 0,
-                      "y": 42,
-                      "z": 0
+                      "id": 4
                     },
                     {
-                      "type": "torus",
-                      "size": 20,
-                      "tubeSize": 1.6,
                       "color": "#2277ff",
-                      "x": 0,
-                      "y": 18,
-                      "z": 0,
-                      "rotationX": 90
+                      "id": 5
                     },
                     {
-                      "type": "torus",
-                      "size": 18,
-                      "tubeSize": 1.6,
-                      "color": "#4499ff",
-                      "x": 0,
-                      "y": 24,
-                      "z": 0,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "torus",
-                      "size": 16,
-                      "tubeSize": 1.6,
                       "color": "#66bbff",
-                      "x": 0,
-                      "y": 30,
-                      "z": 0,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "cone",
-                      "size": 6,
-                      "height": 16,
-                      "color": "#888888",
-                      "x": 7,
-                      "y": 34,
-                      "z": 0,
-                      "rotationZ": -90
-                    },
-                    {
-                      "type": "cone",
-                      "size": 6,
-                      "height": 16,
-                      "color": "#888888",
-                      "x": -7,
-                      "y": 34,
-                      "z": 0,
-                      "rotationZ": 90
-                    },
-                    {
-                      "type": "cone",
-                      "size": 6,
-                      "height": 16,
-                      "color": "#888888",
-                      "x": 0,
-                      "y": 34,
-                      "z": 7,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "cone",
-                      "size": 6,
-                      "height": 16,
-                      "color": "#888888",
-                      "x": 0,
-                      "y": 34,
-                      "z": -7,
-                      "rotationX": -90
-                    },
-                    {
-                      "type": "box",
-                      "width": 3,
-                      "height": 14,
-                      "depth": 3,
-                      "color": "#888888",
-                      "x": 6,
-                      "y": 16,
-                      "z": 6,
-                      "rotationY": 45
-                    },
-                    {
-                      "type": "box",
-                      "width": 3,
-                      "height": 14,
-                      "depth": 3,
-                      "color": "#888888",
-                      "x": -6,
-                      "y": 16,
-                      "z": 6,
-                      "rotationY": -45
-                    },
-                    {
-                      "type": "box",
-                      "width": 3,
-                      "height": 14,
-                      "depth": 3,
-                      "color": "#888888",
-                      "x": 6,
-                      "y": 16,
-                      "z": -6,
-                      "rotationY": -45
-                    },
-                    {
-                      "type": "box",
-                      "width": 3,
-                      "height": 14,
-                      "depth": 3,
-                      "color": "#888888",
-                      "x": -6,
-                      "y": 16,
-                      "z": -6,
-                      "rotationY": 45
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2,
-                      "height": 1,
-                      "color": "#66bbff",
-                      "x": 0,
-                      "y": 36,
-                      "z": 0
+                      "id": 7
                     }
                   ],
                   "position": {
@@ -5330,171 +4003,20 @@ const DEFAULT_PROJECT_CONFIG = {
                 "shapes": {
                   "shapes": [
                     {
-                      "type": "cylinder",
-                      "size": 16,
-                      "height": 4,
-                      "color": "#555555",
-                      "x": 0,
-                      "y": 2,
-                      "z": 0
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 8,
-                      "color": "#777777",
-                      "x": 0,
-                      "y": 8,
-                      "z": 0
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 10,
-                      "height": 20,
-                      "color": "#333333",
-                      "x": 0,
-                      "y": 22,
-                      "z": 0
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 3,
-                      "color": "#444444",
-                      "x": 0,
-                      "y": 33.5,
-                      "z": 0
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 14,
                       "color": "#84c8ff",
-                      "x": 0,
-                      "y": 42,
-                      "z": 0
+                      "id": 4
                     },
                     {
-                      "type": "torus",
-                      "size": 20,
-                      "tubeSize": 1.6,
                       "color": "#4499ff",
-                      "x": 0,
-                      "y": 18,
-                      "z": 0,
-                      "rotationX": 90
+                      "id": 5
                     },
                     {
-                      "type": "torus",
-                      "size": 18,
-                      "tubeSize": 1.6,
                       "color": "#2277ff",
-                      "x": 0,
-                      "y": 24,
-                      "z": 0,
-                      "rotationX": 90
+                      "id": 6
                     },
                     {
-                      "type": "torus",
-                      "size": 16,
-                      "tubeSize": 1.6,
                       "color": "#4499ff",
-                      "x": 0,
-                      "y": 30,
-                      "z": 0,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "cone",
-                      "size": 6,
-                      "height": 16,
-                      "color": "#888888",
-                      "x": 7,
-                      "y": 34,
-                      "z": 0,
-                      "rotationZ": -90
-                    },
-                    {
-                      "type": "cone",
-                      "size": 6,
-                      "height": 16,
-                      "color": "#888888",
-                      "x": -7,
-                      "y": 34,
-                      "z": 0,
-                      "rotationZ": 90
-                    },
-                    {
-                      "type": "cone",
-                      "size": 6,
-                      "height": 16,
-                      "color": "#888888",
-                      "x": 0,
-                      "y": 34,
-                      "z": 7,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "cone",
-                      "size": 6,
-                      "height": 16,
-                      "color": "#888888",
-                      "x": 0,
-                      "y": 34,
-                      "z": -7,
-                      "rotationX": -90
-                    },
-                    {
-                      "type": "box",
-                      "width": 3,
-                      "height": 14,
-                      "depth": 3,
-                      "color": "#888888",
-                      "x": 6,
-                      "y": 16,
-                      "z": 6,
-                      "rotationY": 45
-                    },
-                    {
-                      "type": "box",
-                      "width": 3,
-                      "height": 14,
-                      "depth": 3,
-                      "color": "#888888",
-                      "x": -6,
-                      "y": 16,
-                      "z": 6,
-                      "rotationY": -45
-                    },
-                    {
-                      "type": "box",
-                      "width": 3,
-                      "height": 14,
-                      "depth": 3,
-                      "color": "#888888",
-                      "x": 6,
-                      "y": 16,
-                      "z": -6,
-                      "rotationY": -45
-                    },
-                    {
-                      "type": "box",
-                      "width": 3,
-                      "height": 14,
-                      "depth": 3,
-                      "color": "#888888",
-                      "x": -6,
-                      "y": 16,
-                      "z": -6,
-                      "rotationY": 45
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2,
-                      "height": 1,
-                      "color": "#66bbff",
-                      "x": 0,
-                      "y": 36,
-                      "z": 0
+                      "id": 7
                     }
                   ],
                   "position": {
@@ -5515,6 +4037,194 @@ const DEFAULT_PROJECT_CONFIG = {
                 }
               }
             ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "cylinder",
+                  "size": 16,
+                  "height": 4,
+                  "color": "#555555",
+                  "x": 0,
+                  "y": 2,
+                  "z": 0
+                },
+                {
+                  "type": "cylinder",
+                  "size": 12,
+                  "height": 8,
+                  "color": "#777777",
+                  "x": 0,
+                  "y": 8,
+                  "z": 0
+                },
+                {
+                  "type": "cylinder",
+                  "size": 10,
+                  "height": 20,
+                  "color": "#333333",
+                  "x": 0,
+                  "y": 22,
+                  "z": 0
+                },
+                {
+                  "type": "cylinder",
+                  "size": 12,
+                  "height": 3,
+                  "color": "#444444",
+                  "x": 0,
+                  "y": 33.5,
+                  "z": 0
+                },
+                {
+                  "type": "sphere",
+                  "size": 14,
+                  "color": "#66bbff",
+                  "x": 0,
+                  "y": 42,
+                  "z": 0
+                },
+                {
+                  "type": "torus",
+                  "size": 20,
+                  "tubeSize": 1.6,
+                  "color": "#66bbff",
+                  "x": 0,
+                  "y": 18,
+                  "z": 0,
+                  "rotationX": 90
+                },
+                {
+                  "type": "torus",
+                  "size": 18,
+                  "tubeSize": 1.6,
+                  "color": "#4499ff",
+                  "x": 0,
+                  "y": 24,
+                  "z": 0,
+                  "rotationX": 90
+                },
+                {
+                  "type": "torus",
+                  "size": 16,
+                  "tubeSize": 1.6,
+                  "color": "#2277ff",
+                  "x": 0,
+                  "y": 30,
+                  "z": 0,
+                  "rotationX": 90
+                },
+                {
+                  "type": "cone",
+                  "size": 6,
+                  "height": 16,
+                  "color": "#888888",
+                  "x": 7,
+                  "y": 34,
+                  "z": 0,
+                  "rotationZ": -90
+                },
+                {
+                  "type": "cone",
+                  "size": 6,
+                  "height": 16,
+                  "color": "#888888",
+                  "x": -7,
+                  "y": 34,
+                  "z": 0,
+                  "rotationZ": 90
+                },
+                {
+                  "type": "cone",
+                  "size": 6,
+                  "height": 16,
+                  "color": "#888888",
+                  "x": 0,
+                  "y": 34,
+                  "z": 7,
+                  "rotationX": 90
+                },
+                {
+                  "type": "cone",
+                  "size": 6,
+                  "height": 16,
+                  "color": "#888888",
+                  "x": 0,
+                  "y": 34,
+                  "z": -7,
+                  "rotationX": -90
+                },
+                {
+                  "type": "box",
+                  "width": 3,
+                  "height": 14,
+                  "depth": 3,
+                  "color": "#888888",
+                  "x": 6,
+                  "y": 16,
+                  "z": 6,
+                  "rotationY": 45
+                },
+                {
+                  "type": "box",
+                  "width": 3,
+                  "height": 14,
+                  "depth": 3,
+                  "color": "#888888",
+                  "x": -6,
+                  "y": 16,
+                  "z": 6,
+                  "rotationY": -45
+                },
+                {
+                  "type": "box",
+                  "width": 3,
+                  "height": 14,
+                  "depth": 3,
+                  "color": "#888888",
+                  "x": 6,
+                  "y": 16,
+                  "z": -6,
+                  "rotationY": -45
+                },
+                {
+                  "type": "box",
+                  "width": 3,
+                  "height": 14,
+                  "depth": 3,
+                  "color": "#888888",
+                  "x": -6,
+                  "y": 16,
+                  "z": -6,
+                  "rotationY": 45
+                },
+                {
+                  "type": "cylinder",
+                  "size": 2,
+                  "height": 1,
+                  "color": "#66bbff",
+                  "x": 0,
+                  "y": 36,
+                  "z": 0
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
           }
         }
       },
@@ -5536,109 +4246,7 @@ const DEFAULT_PROJECT_CONFIG = {
             "idle": [
               {
                 "shapes": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 30,
-                      "height": 6,
-                      "depth": 30,
-                      "x": 0,
-                      "y": 3,
-                      "z": 1.8,
-                      "color": "#555555",
-                      "name": "base",
-                      "scaleX": 1
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 24,
-                      "height": 7.5,
-                      "x": 0,
-                      "y": 10,
-                      "z": 1.8,
-                      "color": "#444444",
-                      "name": "body"
-                    },
-                    {
-                      "type": "box",
-                      "width": 18,
-                      "height": 10.5,
-                      "depth": 22.5,
-                      "x": 0,
-                      "y": 19.5,
-                      "z": 1.8,
-                      "color": "#3A3A3A",
-                      "rotationX": 15,
-                      "name": "missile-box"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 6,
-                      "height": 27,
-                      "x": -6,
-                      "y": 24,
-                      "z": 3.3,
-                      "rotationX": 105,
-                      "color": "#2A2A2A",
-                      "name": "left missile container"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 6,
-                      "height": 27,
-                      "x": 6,
-                      "y": 24,
-                      "z": 3.3,
-                      "rotationX": 105,
-                      "color": "#2A2A2A",
-                      "name": "right missile container"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 4.5,
-                      "height": 13.5,
-                      "x": -6,
-                      "y": 27,
-                      "z": -7.2,
-                      "rotationX": 105,
-                      "color": "#7f7f7f",
-                      "rotationZ": 0,
-                      "name": "left missile"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 4.5,
-                      "height": 13.5,
-                      "x": 6,
-                      "y": 27,
-                      "z": -7.2,
-                      "rotationX": 105,
-                      "color": "#7f7f7f",
-                      "name": "right missile"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 4.35,
-                      "height": 6,
-                      "x": -6,
-                      "y": 29.4,
-                      "z": -16.2,
-                      "rotationX": -75,
-                      "color": "#D14A4A",
-                      "name": "left missile tip"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 4.35,
-                      "height": 6,
-                      "x": 6,
-                      "y": 29.4,
-                      "z": -16.2,
-                      "rotationX": -75,
-                      "color": "#D14A4A",
-                      "name": "right missile tip"
-                    }
-                  ],
+                  "shapes": [],
                   "position": {
                     "x": 0,
                     "y": 0,
@@ -5657,6 +4265,128 @@ const DEFAULT_PROJECT_CONFIG = {
                 }
               }
             ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 30,
+                  "height": 6,
+                  "depth": 30,
+                  "x": 0,
+                  "y": 3,
+                  "z": 1.8,
+                  "color": "#555555",
+                  "name": "base",
+                  "scaleX": 1
+                },
+                {
+                  "type": "cylinder",
+                  "size": 24,
+                  "height": 7.5,
+                  "x": 0,
+                  "y": 10,
+                  "z": 1.8,
+                  "color": "#444444",
+                  "name": "body"
+                },
+                {
+                  "type": "box",
+                  "width": 18,
+                  "height": 10.5,
+                  "depth": 22.5,
+                  "x": 0,
+                  "y": 19.5,
+                  "z": 1.8,
+                  "color": "#3A3A3A",
+                  "rotationX": 15,
+                  "name": "missile-box"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 6,
+                  "height": 27,
+                  "x": -6,
+                  "y": 24,
+                  "z": 3.3,
+                  "rotationX": 105,
+                  "color": "#2A2A2A",
+                  "name": "left missile container"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 6,
+                  "height": 27,
+                  "x": 6,
+                  "y": 24,
+                  "z": 3.3,
+                  "rotationX": 105,
+                  "color": "#2A2A2A",
+                  "name": "right missile container"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 4.5,
+                  "height": 13.5,
+                  "x": -6,
+                  "y": 27,
+                  "z": -7.2,
+                  "rotationX": 105,
+                  "color": "#7f7f7f",
+                  "rotationZ": 0,
+                  "name": "left missile"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 4.5,
+                  "height": 13.5,
+                  "x": 6,
+                  "y": 27,
+                  "z": -7.2,
+                  "rotationX": 105,
+                  "color": "#7f7f7f",
+                  "name": "right missile"
+                },
+                {
+                  "type": "cone",
+                  "size": 4.35,
+                  "height": 6,
+                  "x": -6,
+                  "y": 29.4,
+                  "z": -16.2,
+                  "rotationX": -75,
+                  "color": "#D14A4A",
+                  "name": "left missile tip"
+                },
+                {
+                  "type": "cone",
+                  "size": 4.35,
+                  "height": 6,
+                  "x": 6,
+                  "y": 29.4,
+                  "z": -16.2,
+                  "rotationX": -75,
+                  "color": "#D14A4A",
+                  "name": "right missile tip"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
           }
         }
       },
@@ -5677,119 +4407,7 @@ const DEFAULT_PROJECT_CONFIG = {
             "idle": [
               {
                 "shapes": {
-                  "shapes": [
-                    {
-                      "type": "torus",
-                      "size": 36,
-                      "tubeSize": 4,
-                      "x": 0,
-                      "y": 8,
-                      "z": 0,
-                      "rotationY": 0,
-                      "color": "#50D0FF",
-                      "rotationZ": 0,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 22,
-                      "height": 10,
-                      "x": 0,
-                      "y": 5,
-                      "z": 0,
-                      "color": "#333333"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 16,
-                      "height": 14,
-                      "x": 0,
-                      "y": 17,
-                      "z": 0,
-                      "color": "#222222"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 12,
-                      "x": 0,
-                      "y": 16,
-                      "z": 0,
-                      "color": "#A0E6FF"
-                    },
-                    {
-                      "type": "tetrahedron",
-                      "size": 10,
-                      "x": 0,
-                      "y": 16,
-                      "z": 0,
-                      "rotationY": 45,
-                      "color": "#203040"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 8,
-                      "height": 16,
-                      "x": 0,
-                      "y": 32,
-                      "z": 0,
-                      "rotationX": 0,
-                      "color": "#444444"
-                    },
-                    {
-                      "type": "box",
-                      "width": 38,
-                      "height": 4,
-                      "depth": 38,
-                      "x": 0,
-                      "y": 2,
-                      "z": 0,
-                      "color": "#555555"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4,
-                      "x": 24,
-                      "y": 24,
-                      "z": 24,
-                      "color": "#C0FFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4,
-                      "x": -24,
-                      "y": 24,
-                      "z": 24,
-                      "color": "#C0FFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4,
-                      "x": 24,
-                      "y": 24,
-                      "z": -24,
-                      "color": "#C0FFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4,
-                      "x": -24,
-                      "y": 24,
-                      "z": -24,
-                      "color": "#C0FFFF"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 48,
-                      "color": "#00a2df",
-                      "x": 0,
-                      "y": 38,
-                      "z": 0,
-                      "rotationX": 90,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "tubeSize": 2
-                    }
-                  ],
+                  "shapes": [],
                   "position": {
                     "x": 0,
                     "y": 0,
@@ -5811,115 +4429,24 @@ const DEFAULT_PROJECT_CONFIG = {
                 "shapes": {
                   "shapes": [
                     {
-                      "type": "torus",
-                      "size": 36,
-                      "tubeSize": 4,
-                      "x": 0,
-                      "y": 8,
-                      "z": 0,
-                      "rotationY": 0,
-                      "color": "#50D0FF",
-                      "rotationZ": 0,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 22,
-                      "height": 10,
-                      "x": 0,
-                      "y": 5,
-                      "z": 0,
-                      "color": "#333333"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 16,
-                      "height": 14,
-                      "x": 0,
-                      "y": 17,
-                      "z": 0,
-                      "color": "#222222"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 12,
-                      "x": 0,
-                      "y": 16,
-                      "z": 0,
-                      "color": "#A0E6FF"
-                    },
-                    {
-                      "type": "tetrahedron",
-                      "size": 10,
-                      "x": 0,
-                      "y": 16,
-                      "z": 0,
-                      "rotationY": 45,
-                      "color": "#203040"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 8,
-                      "height": 16,
-                      "x": 0,
-                      "y": 32,
-                      "z": 0,
-                      "rotationX": 0,
-                      "color": "#444444"
-                    },
-                    {
-                      "type": "box",
-                      "width": 38,
-                      "height": 4,
-                      "depth": 38,
-                      "x": 0,
-                      "y": 2,
-                      "z": 0,
-                      "color": "#555555"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4,
                       "x": 12,
-                      "y": 24,
                       "z": 32,
-                      "color": "#C0FFFF"
+                      "id": 7
                     },
                     {
-                      "type": "sphere",
-                      "size": 4,
                       "x": -32,
-                      "y": 24,
                       "z": 12,
-                      "color": "#C0FFFF"
+                      "id": 8
                     },
                     {
-                      "type": "sphere",
-                      "size": 4,
                       "x": 32,
-                      "y": 24,
                       "z": -12,
-                      "color": "#C0FFFF"
+                      "id": 9
                     },
                     {
-                      "type": "sphere",
-                      "size": 4,
                       "x": -12,
-                      "y": 24,
                       "z": -32,
-                      "color": "#C0FFFF"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 48,
-                      "color": "#00a2df",
-                      "x": 0,
-                      "y": 38,
-                      "z": 0,
-                      "rotationX": 90,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "tubeSize": 2
+                      "id": 10
                     }
                   ],
                   "position": {
@@ -5943,115 +4470,24 @@ const DEFAULT_PROJECT_CONFIG = {
                 "shapes": {
                   "shapes": [
                     {
-                      "type": "torus",
-                      "size": 36,
-                      "tubeSize": 4,
-                      "x": 0,
-                      "y": 8,
-                      "z": 0,
-                      "rotationY": 0,
-                      "color": "#50D0FF",
-                      "rotationZ": 0,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 22,
-                      "height": 10,
-                      "x": 0,
-                      "y": 5,
-                      "z": 0,
-                      "color": "#333333"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 16,
-                      "height": 14,
-                      "x": 0,
-                      "y": 17,
-                      "z": 0,
-                      "color": "#222222"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 12,
-                      "x": 0,
-                      "y": 16,
-                      "z": 0,
-                      "color": "#A0E6FF"
-                    },
-                    {
-                      "type": "tetrahedron",
-                      "size": 10,
-                      "x": 0,
-                      "y": 16,
-                      "z": 0,
-                      "rotationY": 45,
-                      "color": "#203040"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 8,
-                      "height": 16,
-                      "x": 0,
-                      "y": 32,
-                      "z": 0,
-                      "rotationX": 0,
-                      "color": "#444444"
-                    },
-                    {
-                      "type": "box",
-                      "width": 38,
-                      "height": 4,
-                      "depth": 38,
-                      "x": 0,
-                      "y": 2,
-                      "z": 0,
-                      "color": "#555555"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4,
                       "x": -34,
-                      "y": 24,
                       "z": 0,
-                      "color": "#C0FFFF"
+                      "id": 7
                     },
                     {
-                      "type": "sphere",
-                      "size": 4,
                       "x": 0,
-                      "y": 24,
                       "z": 34,
-                      "color": "#C0FFFF"
+                      "id": 8
                     },
                     {
-                      "type": "sphere",
-                      "size": 4,
                       "x": 34,
-                      "y": 24,
                       "z": 0,
-                      "color": "#C0FFFF"
+                      "id": 9
                     },
                     {
-                      "type": "sphere",
-                      "size": 4,
                       "x": 0,
-                      "y": 24,
                       "z": -34,
-                      "color": "#C0FFFF"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 48,
-                      "color": "#00a2df",
-                      "x": 0,
-                      "y": 38,
-                      "z": 0,
-                      "rotationX": 90,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "tubeSize": 2
+                      "id": 10
                     }
                   ],
                   "position": {
@@ -6075,115 +4511,24 @@ const DEFAULT_PROJECT_CONFIG = {
                 "shapes": {
                   "shapes": [
                     {
-                      "type": "torus",
-                      "size": 36,
-                      "tubeSize": 4,
-                      "x": 0,
-                      "y": 8,
-                      "z": 0,
-                      "rotationY": 0,
-                      "color": "#50D0FF",
-                      "rotationZ": 0,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 22,
-                      "height": 10,
-                      "x": 0,
-                      "y": 5,
-                      "z": 0,
-                      "color": "#333333"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 16,
-                      "height": 14,
-                      "x": 0,
-                      "y": 17,
-                      "z": 0,
-                      "color": "#222222"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 12,
-                      "x": 0,
-                      "y": 16,
-                      "z": 0,
-                      "color": "#A0E6FF"
-                    },
-                    {
-                      "type": "tetrahedron",
-                      "size": 10,
-                      "x": 0,
-                      "y": 16,
-                      "z": 0,
-                      "rotationY": 45,
-                      "color": "#203040"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 8,
-                      "height": 16,
-                      "x": 0,
-                      "y": 32,
-                      "z": 0,
-                      "rotationX": 0,
-                      "color": "#444444"
-                    },
-                    {
-                      "type": "box",
-                      "width": 38,
-                      "height": 4,
-                      "depth": 38,
-                      "x": 0,
-                      "y": 2,
-                      "z": 0,
-                      "color": "#555555"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4,
                       "x": -32,
-                      "y": 24,
                       "z": -12,
-                      "color": "#C0FFFF"
+                      "id": 7
                     },
                     {
-                      "type": "sphere",
-                      "size": 4,
                       "x": -12,
-                      "y": 24,
                       "z": 32,
-                      "color": "#C0FFFF"
+                      "id": 8
                     },
                     {
-                      "type": "sphere",
-                      "size": 4,
                       "x": 32,
-                      "y": 24,
                       "z": 12,
-                      "color": "#C0FFFF"
+                      "id": 9
                     },
                     {
-                      "type": "sphere",
-                      "size": 4,
                       "x": 12,
-                      "y": 24,
                       "z": -32,
-                      "color": "#C0FFFF"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 48,
-                      "color": "#00a2df",
-                      "x": 0,
-                      "y": 38,
-                      "z": 0,
-                      "rotationX": 90,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "tubeSize": 2
+                      "id": 10
                     }
                   ],
                   "position": {
@@ -6204,6 +4549,138 @@ const DEFAULT_PROJECT_CONFIG = {
                 }
               }
             ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "torus",
+                  "size": 36,
+                  "tubeSize": 4,
+                  "x": 0,
+                  "y": 8,
+                  "z": 0,
+                  "rotationY": 0,
+                  "color": "#50D0FF",
+                  "rotationZ": 0,
+                  "rotationX": 90
+                },
+                {
+                  "type": "cylinder",
+                  "size": 22,
+                  "height": 10,
+                  "x": 0,
+                  "y": 5,
+                  "z": 0,
+                  "color": "#333333"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 16,
+                  "height": 14,
+                  "x": 0,
+                  "y": 17,
+                  "z": 0,
+                  "color": "#222222"
+                },
+                {
+                  "type": "sphere",
+                  "size": 12,
+                  "x": 0,
+                  "y": 16,
+                  "z": 0,
+                  "color": "#A0E6FF"
+                },
+                {
+                  "type": "tetrahedron",
+                  "size": 10,
+                  "x": 0,
+                  "y": 16,
+                  "z": 0,
+                  "rotationY": 45,
+                  "color": "#203040"
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 16,
+                  "x": 0,
+                  "y": 32,
+                  "z": 0,
+                  "rotationX": 0,
+                  "color": "#444444"
+                },
+                {
+                  "type": "box",
+                  "width": 38,
+                  "height": 4,
+                  "depth": 38,
+                  "x": 0,
+                  "y": 2,
+                  "z": 0,
+                  "color": "#555555"
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "x": 24,
+                  "y": 24,
+                  "z": 24,
+                  "color": "#C0FFFF"
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "x": -24,
+                  "y": 24,
+                  "z": 24,
+                  "color": "#C0FFFF"
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "x": 24,
+                  "y": 24,
+                  "z": -24,
+                  "color": "#C0FFFF"
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "x": -24,
+                  "y": 24,
+                  "z": -24,
+                  "color": "#C0FFFF"
+                },
+                {
+                  "type": "torus",
+                  "size": 48,
+                  "color": "#00a2df",
+                  "x": 0,
+                  "y": 38,
+                  "z": 0,
+                  "rotationX": 90,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "tubeSize": 2
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
           }
         }
       },
@@ -6225,124 +4702,7 @@ const DEFAULT_PROJECT_CONFIG = {
             "idle": [
               {
                 "shapes": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 32,
-                      "height": 8,
-                      "depth": 32,
-                      "x": 0,
-                      "y": 4,
-                      "z": 1.8,
-                      "color": "#4B4B4B",
-                      "name": "base"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 22,
-                      "height": 10,
-                      "x": 0,
-                      "y": 14,
-                      "z": 1.8,
-                      "color": "#333333",
-                      "name": "core"
-                    },
-                    {
-                      "type": "box",
-                      "width": 12,
-                      "height": 12,
-                      "depth": 18,
-                      "x": 0,
-                      "y": 24,
-                      "z": 1.8,
-                      "color": "#2A2A2A",
-                      "rotationX": 12,
-                      "name": "cannon-head"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 6,
-                      "height": 18,
-                      "x": 0,
-                      "y": 28,
-                      "z": 12,
-                      "rotationX": 90,
-                      "color": "#1A1A1A",
-                      "name": "plasma-barrel"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 5,
-                      "height": 8,
-                      "x": 0,
-                      "y": 28,
-                      "z": 20,
-                      "rotationX": 90,
-                      "color": "#00FFFF",
-                      "name": "plasma-emitter"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 10,
-                      "x": -8,
-                      "y": 20,
-                      "z": 1.8,
-                      "color": "#00FFFF",
-                      "name": "left-energy-coil"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 10,
-                      "x": 8,
-                      "y": 20,
-                      "z": 1.8,
-                      "color": "#00FFFF",
-                      "name": "right-energy-coil"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4,
-                      "x": 0,
-                      "y": 28,
-                      "z": 20,
-                      "color": "#ff00ff",
-                      "name": "charge-orb"
-                    },
-                    {
-                      "type": "box",
-                      "width": 6,
-                      "height": 6,
-                      "depth": 24,
-                      "x": -12,
-                      "y": 14,
-                      "z": 1.8,
-                      "color": "#00FFFF",
-                      "name": "left-glow-panel"
-                    },
-                    {
-                      "type": "box",
-                      "width": 6,
-                      "height": 6,
-                      "depth": 24,
-                      "x": 12,
-                      "y": 14,
-                      "z": 1.8,
-                      "color": "#00FFFF",
-                      "name": "right-glow-panel"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 8,
-                      "height": 4,
-                      "x": 0,
-                      "y": 32,
-                      "z": 1.8,
-                      "color": "#FF00FF",
-                      "name": "top-energy-ring"
-                    }
-                  ],
+                  "shapes": [],
                   "position": {
                     "x": 0,
                     "y": 0,
@@ -6361,6 +4721,143 @@ const DEFAULT_PROJECT_CONFIG = {
                 }
               }
             ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 32,
+                  "height": 8,
+                  "depth": 32,
+                  "x": 0,
+                  "y": 4,
+                  "z": 1.8,
+                  "color": "#4B4B4B",
+                  "name": "base"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 22,
+                  "height": 10,
+                  "x": 0,
+                  "y": 14,
+                  "z": 1.8,
+                  "color": "#333333",
+                  "name": "core"
+                },
+                {
+                  "type": "box",
+                  "width": 12,
+                  "height": 12,
+                  "depth": 18,
+                  "x": 0,
+                  "y": 24,
+                  "z": 1.8,
+                  "color": "#2A2A2A",
+                  "rotationX": 12,
+                  "name": "cannon-head"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 6,
+                  "height": 18,
+                  "x": 0,
+                  "y": 28,
+                  "z": 12,
+                  "rotationX": 90,
+                  "color": "#1A1A1A",
+                  "name": "plasma-barrel"
+                },
+                {
+                  "type": "cone",
+                  "size": 5,
+                  "height": 8,
+                  "x": 0,
+                  "y": 28,
+                  "z": 20,
+                  "rotationX": 90,
+                  "color": "#00FFFF",
+                  "name": "plasma-emitter"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 10,
+                  "x": -8,
+                  "y": 20,
+                  "z": 1.8,
+                  "color": "#00FFFF",
+                  "name": "left-energy-coil"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 10,
+                  "x": 8,
+                  "y": 20,
+                  "z": 1.8,
+                  "color": "#00FFFF",
+                  "name": "right-energy-coil"
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "x": 0,
+                  "y": 28,
+                  "z": 20,
+                  "color": "#ff00ff",
+                  "name": "charge-orb"
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 6,
+                  "depth": 24,
+                  "x": -12,
+                  "y": 14,
+                  "z": 1.8,
+                  "color": "#00FFFF",
+                  "name": "left-glow-panel"
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 6,
+                  "depth": 24,
+                  "x": 12,
+                  "y": 14,
+                  "z": 1.8,
+                  "color": "#00FFFF",
+                  "name": "right-glow-panel"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 8,
+                  "height": 4,
+                  "x": 0,
+                  "y": 32,
+                  "z": 1.8,
+                  "color": "#FF00FF",
+                  "name": "top-energy-ring"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
           }
         }
       },
@@ -6384,50 +4881,6 @@ const DEFAULT_PROJECT_CONFIG = {
                 "shapes": {
                   "shapes": [
                     {
-                      "type": "box",
-                      "width": 15,
-                      "height": 30,
-                      "color": "#738884",
-                      "x": 2.25,
-                      "y": 6.75,
-                      "z": 0
-                    },
-                    {
-                      "type": "box",
-                      "x": 0.2,
-                      "y": 21.75,
-                      "width": 10,
-                      "height": 15,
-                      "color": "#73520d",
-                      "z": 0
-                    },
-                    {
-                      "type": "box",
-                      "x": -5.25,
-                      "y": 36.75,
-                      "width": 25,
-                      "height": 5,
-                      "color": "#4a697d",
-                      "z": 0
-                    },
-                    {
-                      "type": "circle",
-                      "radius": 0.5,
-                      "x": -10.25,
-                      "y": 41.75,
-                      "color": "#e6e6fa",
-                      "z": 0
-                    },
-                    {
-                      "type": "circle",
-                      "radius": 0.5,
-                      "x": 9.75,
-                      "y": 41.75,
-                      "color": "#e6e6fa",
-                      "z": 0
-                    },
-                    {
-                      "type": "line",
                       "points": [
                         {
                           "x": -1,
@@ -6438,11 +4891,7 @@ const DEFAULT_PROJECT_CONFIG = {
                           "y": 4
                         }
                       ],
-                      "width": 2,
-                      "color": "#87CEEB",
-                      "x": 2.25,
-                      "y": 6.75,
-                      "z": 0
+                      "id": 5
                     }
                   ],
                   "position": {
@@ -6463,6 +4912,88 @@ const DEFAULT_PROJECT_CONFIG = {
                 }
               }
             ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 15,
+                  "height": 30,
+                  "color": "#738884",
+                  "x": 2.25,
+                  "y": 6.75,
+                  "z": 0
+                },
+                {
+                  "type": "box",
+                  "x": 0.2,
+                  "y": 21.75,
+                  "width": 10,
+                  "height": 15,
+                  "color": "#73520d",
+                  "z": 0
+                },
+                {
+                  "type": "box",
+                  "x": -5.25,
+                  "y": 36.75,
+                  "width": 25,
+                  "height": 5,
+                  "color": "#4a697d",
+                  "z": 0
+                },
+                {
+                  "type": "circle",
+                  "radius": 0.5,
+                  "x": -10.25,
+                  "y": 41.75,
+                  "color": "#e6e6fa",
+                  "z": 0
+                },
+                {
+                  "type": "circle",
+                  "radius": 0.5,
+                  "x": 9.75,
+                  "y": 41.75,
+                  "color": "#e6e6fa",
+                  "z": 0
+                },
+                {
+                  "type": "line",
+                  "points": [
+                    {
+                      "x": -1,
+                      "y": 4
+                    },
+                    {
+                      "x": 1,
+                      "y": 4
+                    }
+                  ],
+                  "width": 2,
+                  "color": "#87CEEB",
+                  "x": 2.25,
+                  "y": 6.75,
+                  "z": 0
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
           }
         }
       }
@@ -6478,118 +5009,7 @@ const DEFAULT_PROJECT_CONFIG = {
             "idle": [
               {
                 "shapes": {
-                  "shapes": [
-                    {
-                      "type": "gltf",
-                      "size": 16,
-                      "color": "#60A060",
-                      "x": 0,
-                      "y": 32,
-                      "z": 0,
-                      "name": "head",
-                      "scaleX": 500,
-                      "scaleY": 500,
-                      "scaleZ": 500,
-                      "url": "samples/models/Avocado/Avocado.gltf"
-                    },
-                    {
-                      "type": "cylinder",
-                      "width": 20,
-                      "height": 24,
-                      "depth": 10,
-                      "color": "#506050",
-                      "x": 0,
-                      "y": 24,
-                      "z": 0,
-                      "size": 16,
-                      "name": "body",
-                      "scaleX": 1
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 5,
-                      "color": "#ffffff",
-                      "x": 4,
-                      "y": 45,
-                      "z": 7,
-                      "name": "eye-left",
-                      "scaleX": 1
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 5,
-                      "color": "#FFFFFF",
-                      "x": -4,
-                      "y": 45,
-                      "z": 7,
-                      "name": "eye-right"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 2,
-                      "color": "#000000",
-                      "x": 4,
-                      "y": 45,
-                      "z": 9,
-                      "name": "pupil-left"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 2,
-                      "color": "#000000",
-                      "x": -4,
-                      "y": 45,
-                      "z": 9,
-                      "name": "pupil-right"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 4,
-                      "height": 20,
-                      "color": "#60A060",
-                      "x": 8,
-                      "y": 29,
-                      "z": 10,
-                      "rotationX": 90,
-                      "rotationZ": 0,
-                      "name": "arm-left"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 4,
-                      "height": 20,
-                      "color": "#60A060",
-                      "x": -8,
-                      "y": 29,
-                      "z": 10,
-                      "rotationX": 90,
-                      "rotationZ": 0,
-                      "name": "arm-right"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 4,
-                      "height": 24,
-                      "color": "#60A060",
-                      "x": 5,
-                      "y": 12,
-                      "z": 0,
-                      "rotationZ": 0,
-                      "name": "leg-left"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 4,
-                      "height": 24,
-                      "color": "#60A060",
-                      "x": -5,
-                      "y": 12,
-                      "z": 0,
-                      "rotationZ": 0,
-                      "rotationX": 0,
-                      "name": "leg-right"
-                    }
-                  ],
+                  "shapes": [],
                   "position": {
                     "x": 0,
                     "y": 0,
@@ -7130,6 +5550,137 @@ const DEFAULT_PROJECT_CONFIG = {
                 }
               }
             ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "gltf",
+                  "size": 16,
+                  "color": "#60A060",
+                  "x": 0,
+                  "y": 32,
+                  "z": 0,
+                  "name": "head",
+                  "scaleX": 500,
+                  "scaleY": 500,
+                  "scaleZ": 500,
+                  "url": "samples/models/Avocado/Avocado.gltf"
+                },
+                {
+                  "type": "cylinder",
+                  "width": 20,
+                  "height": 24,
+                  "depth": 10,
+                  "color": "#506050",
+                  "x": 0,
+                  "y": 24,
+                  "z": 0,
+                  "size": 16,
+                  "name": "body",
+                  "scaleX": 1
+                },
+                {
+                  "type": "sphere",
+                  "size": 5,
+                  "color": "#ffffff",
+                  "x": 4,
+                  "y": 45,
+                  "z": 7,
+                  "name": "eye-left",
+                  "scaleX": 1
+                },
+                {
+                  "type": "sphere",
+                  "size": 5,
+                  "color": "#FFFFFF",
+                  "x": -4,
+                  "y": 45,
+                  "z": 7,
+                  "name": "eye-right"
+                },
+                {
+                  "type": "sphere",
+                  "size": 2,
+                  "color": "#000000",
+                  "x": 4,
+                  "y": 45,
+                  "z": 9,
+                  "name": "pupil-left"
+                },
+                {
+                  "type": "sphere",
+                  "size": 2,
+                  "color": "#000000",
+                  "x": -4,
+                  "y": 45,
+                  "z": 9,
+                  "name": "pupil-right"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 4,
+                  "height": 20,
+                  "color": "#60A060",
+                  "x": 8,
+                  "y": 29,
+                  "z": 10,
+                  "rotationX": 90,
+                  "rotationZ": 0,
+                  "name": "arm-left"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 4,
+                  "height": 20,
+                  "color": "#60A060",
+                  "x": -8,
+                  "y": 29,
+                  "z": 10,
+                  "rotationX": 90,
+                  "rotationZ": 0,
+                  "name": "arm-right"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 4,
+                  "height": 24,
+                  "color": "#60A060",
+                  "x": 5,
+                  "y": 12,
+                  "z": 0,
+                  "rotationZ": 0,
+                  "name": "leg-left"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 4,
+                  "height": 24,
+                  "color": "#60A060",
+                  "x": -5,
+                  "y": 12,
+                  "z": 0,
+                  "rotationZ": 0,
+                  "rotationX": 0,
+                  "name": "leg-right"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
           }
         },
         "title": "zombie"
@@ -7144,130 +5695,7 @@ const DEFAULT_PROJECT_CONFIG = {
             "idle": [
               {
                 "shapes": {
-                  "shapes": [
-                    {
-                      "type": "sphere",
-                      "size": 14,
-                      "color": "#E0DED8",
-                      "x": 0,
-                      "y": 41,
-                      "z": 0,
-                      "name": "head"
-                    },
-                    {
-                      "type": "box",
-                      "width": 16,
-                      "height": 20,
-                      "depth": 8,
-                      "color": "#CFCBC0",
-                      "x": 0,
-                      "y": 24,
-                      "z": 0,
-                      "name": "body",
-                      "scaleX": 1
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 3,
-                      "color": "#000000",
-                      "x": 4,
-                      "y": 42,
-                      "z": 5,
-                      "name": "eye-left"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 3,
-                      "color": "#000000",
-                      "x": -4,
-                      "y": 42,
-                      "z": 5,
-                      "name": "eye-right"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 18,
-                      "color": "#E0DED8",
-                      "x": 8,
-                      "y": 27,
-                      "z": 10,
-                      "rotationX": 105,
-                      "rotationZ": 15,
-                      "name": "arm-left"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 18,
-                      "color": "#E0DED8",
-                      "x": -8,
-                      "y": 27,
-                      "z": 10,
-                      "rotationX": 105,
-                      "rotationZ": -15,
-                      "name": "arm-right"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 5,
-                      "color": "#E0DED8",
-                      "x": 6,
-                      "y": 25,
-                      "z": 20,
-                      "name": "hand-left"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 5,
-                      "color": "#E0DED8",
-                      "x": -6,
-                      "y": 25,
-                      "z": 20,
-                      "name": "hand-right"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 22,
-                      "color": "#E0DED8",
-                      "x": 5,
-                      "y": 14,
-                      "z": 0,
-                      "rotationZ": 0,
-                      "name": "leg-left",
-                      "rotationX": 0
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 22,
-                      "color": "#E0DED8",
-                      "x": -5,
-                      "y": 14,
-                      "z": 0,
-                      "rotationZ": 0,
-                      "name": "leg-right"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 5,
-                      "color": "#E0DED8",
-                      "x": 5,
-                      "y": 2,
-                      "z": 0,
-                      "name": "foot-left"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 5,
-                      "color": "#E0DED8",
-                      "x": -5,
-                      "y": 2,
-                      "z": 0,
-                      "name": "foot-right"
-                    }
-                  ],
+                  "shapes": [],
                   "position": {
                     "x": 0,
                     "y": 0,
@@ -7862,6 +6290,149 @@ const DEFAULT_PROJECT_CONFIG = {
                 }
               }
             ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "sphere",
+                  "size": 14,
+                  "color": "#E0DED8",
+                  "x": 0,
+                  "y": 41,
+                  "z": 0,
+                  "name": "head"
+                },
+                {
+                  "type": "box",
+                  "width": 16,
+                  "height": 20,
+                  "depth": 8,
+                  "color": "#CFCBC0",
+                  "x": 0,
+                  "y": 24,
+                  "z": 0,
+                  "name": "body",
+                  "scaleX": 1
+                },
+                {
+                  "type": "sphere",
+                  "size": 3,
+                  "color": "#000000",
+                  "x": 4,
+                  "y": 42,
+                  "z": 5,
+                  "name": "eye-left"
+                },
+                {
+                  "type": "sphere",
+                  "size": 3,
+                  "color": "#000000",
+                  "x": -4,
+                  "y": 42,
+                  "z": 5,
+                  "name": "eye-right"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 18,
+                  "color": "#E0DED8",
+                  "x": 8,
+                  "y": 27,
+                  "z": 10,
+                  "rotationX": 105,
+                  "rotationZ": 15,
+                  "name": "arm-left"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 18,
+                  "color": "#E0DED8",
+                  "x": -8,
+                  "y": 27,
+                  "z": 10,
+                  "rotationX": 105,
+                  "rotationZ": -15,
+                  "name": "arm-right"
+                },
+                {
+                  "type": "sphere",
+                  "size": 5,
+                  "color": "#E0DED8",
+                  "x": 6,
+                  "y": 25,
+                  "z": 20,
+                  "name": "hand-left"
+                },
+                {
+                  "type": "sphere",
+                  "size": 5,
+                  "color": "#E0DED8",
+                  "x": -6,
+                  "y": 25,
+                  "z": 20,
+                  "name": "hand-right"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 22,
+                  "color": "#E0DED8",
+                  "x": 5,
+                  "y": 14,
+                  "z": 0,
+                  "rotationZ": 0,
+                  "name": "leg-left",
+                  "rotationX": 0
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 22,
+                  "color": "#E0DED8",
+                  "x": -5,
+                  "y": 14,
+                  "z": 0,
+                  "rotationZ": 0,
+                  "name": "leg-right"
+                },
+                {
+                  "type": "sphere",
+                  "size": 5,
+                  "color": "#E0DED8",
+                  "x": 5,
+                  "y": 2,
+                  "z": 0,
+                  "name": "foot-left"
+                },
+                {
+                  "type": "sphere",
+                  "size": 5,
+                  "color": "#E0DED8",
+                  "x": -5,
+                  "y": 2,
+                  "z": 0,
+                  "name": "foot-right"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
           }
         },
         "electricResistance": 75,
@@ -7877,90 +6448,7 @@ const DEFAULT_PROJECT_CONFIG = {
             "idle": [
               {
                 "shapes": {
-                  "shapes": [
-                    {
-                      "type": "sphere",
-                      "size": 16,
-                      "color": "#C2E8F7",
-                      "x": 0,
-                      "y": 31,
-                      "z": 0,
-                      "scaleX": 1
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 14,
-                      "color": "#D8F0F9",
-                      "x": 0,
-                      "y": 21,
-                      "z": 0
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 12,
-                      "color": "#E5F6FC",
-                      "x": 0,
-                      "y": 11,
-                      "z": 0
-                    },
-                    {
-                      "type": "cone",
-                      "size": 8,
-                      "height": 14,
-                      "color": "#E5F6FC",
-                      "x": 6,
-                      "y": 6,
-                      "z": 0,
-                      "rotationX": 180
-                    },
-                    {
-                      "type": "cone",
-                      "size": 8,
-                      "height": 14,
-                      "color": "#E5F6FC",
-                      "x": -6,
-                      "y": 6,
-                      "z": 0,
-                      "rotationX": 180
-                    },
-                    {
-                      "type": "cone",
-                      "size": 8,
-                      "height": 14,
-                      "color": "#E5F6FC",
-                      "x": 0,
-                      "y": 6,
-                      "z": 0,
-                      "rotationX": 180
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4,
-                      "color": "#1A1A1A",
-                      "x": 4,
-                      "y": 31,
-                      "z": 7
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4,
-                      "color": "#1A1A1A",
-                      "x": -4,
-                      "y": 31,
-                      "z": 7
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 8,
-                      "color": "#1A1A1A",
-                      "x": 0,
-                      "y": 28,
-                      "z": 4,
-                      "rotationX": 45,
-                      "rotationY": 0,
-                      "rotationZ": 0
-                    }
-                  ],
+                  "shapes": [],
                   "position": {
                     "x": 0,
                     "y": 0,
@@ -8389,6 +6877,109 @@ const DEFAULT_PROJECT_CONFIG = {
                 }
               }
             ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "sphere",
+                  "size": 16,
+                  "color": "#C2E8F7",
+                  "x": 0,
+                  "y": 31,
+                  "z": 0,
+                  "scaleX": 1
+                },
+                {
+                  "type": "sphere",
+                  "size": 14,
+                  "color": "#D8F0F9",
+                  "x": 0,
+                  "y": 21,
+                  "z": 0
+                },
+                {
+                  "type": "sphere",
+                  "size": 12,
+                  "color": "#E5F6FC",
+                  "x": 0,
+                  "y": 11,
+                  "z": 0
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 14,
+                  "color": "#E5F6FC",
+                  "x": 6,
+                  "y": 6,
+                  "z": 0,
+                  "rotationX": 180
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 14,
+                  "color": "#E5F6FC",
+                  "x": -6,
+                  "y": 6,
+                  "z": 0,
+                  "rotationX": 180
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 14,
+                  "color": "#E5F6FC",
+                  "x": 0,
+                  "y": 6,
+                  "z": 0,
+                  "rotationX": 180
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "color": "#1A1A1A",
+                  "x": 4,
+                  "y": 31,
+                  "z": 7
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "color": "#1A1A1A",
+                  "x": -4,
+                  "y": 31,
+                  "z": 7
+                },
+                {
+                  "type": "sphere",
+                  "size": 8,
+                  "color": "#1A1A1A",
+                  "x": 0,
+                  "y": 28,
+                  "z": 4,
+                  "rotationX": 45,
+                  "rotationY": 0,
+                  "rotationZ": 0
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
           }
         },
         "evasion": 75,
@@ -8406,53 +6997,7 @@ const DEFAULT_PROJECT_CONFIG = {
             "idle": [
               {
                 "shapes": {
-                  "shapes": [
-                    {
-                      "type": "sphere",
-                      "size": 16,
-                      "color": "#3A6A8A",
-                      "x": 0,
-                      "y": 24,
-                      "z": 0,
-                      "scaleX": 1
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 8,
-                      "color": "#FFFFFF",
-                      "x": 0,
-                      "y": 24,
-                      "z": 6
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4,
-                      "color": "#000000",
-                      "x": 0,
-                      "y": 24,
-                      "z": 8.5
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 6,
-                      "height": 4,
-                      "color": "#2A5A7A",
-                      "x": -8,
-                      "y": 22,
-                      "z": 0,
-                      "rotationZ": 30
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 6,
-                      "height": 4,
-                      "color": "#2A5A7A",
-                      "x": 8,
-                      "y": 22,
-                      "z": 0,
-                      "rotationZ": -30
-                    }
-                  ],
+                  "shapes": [],
                   "position": {
                     "x": 0,
                     "y": 0,
@@ -8737,6 +7282,72 @@ const DEFAULT_PROJECT_CONFIG = {
                 }
               }
             ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "sphere",
+                  "size": 16,
+                  "color": "#3A6A8A",
+                  "x": 0,
+                  "y": 24,
+                  "z": 0,
+                  "scaleX": 1
+                },
+                {
+                  "type": "sphere",
+                  "size": 8,
+                  "color": "#FFFFFF",
+                  "x": 0,
+                  "y": 24,
+                  "z": 6
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "color": "#000000",
+                  "x": 0,
+                  "y": 24,
+                  "z": 8.5
+                },
+                {
+                  "type": "cylinder",
+                  "size": 6,
+                  "height": 4,
+                  "color": "#2A5A7A",
+                  "x": -8,
+                  "y": 22,
+                  "z": 0,
+                  "rotationZ": 30
+                },
+                {
+                  "type": "cylinder",
+                  "size": 6,
+                  "height": 4,
+                  "color": "#2A5A7A",
+                  "x": 8,
+                  "y": 22,
+                  "z": 0,
+                  "rotationZ": -30
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
           }
         },
         "energyShield": 50,
@@ -8753,136 +7364,7 @@ const DEFAULT_PROJECT_CONFIG = {
             "idle": [
               {
                 "shapes": {
-                  "shapes": [
-                    {
-                      "type": "sphere",
-                      "width": 26,
-                      "height": 20,
-                      "depth": 24,
-                      "color": "#A52A2A",
-                      "x": 0,
-                      "y": 20,
-                      "z": 0,
-                      "size": 28,
-                      "scaleX": 1
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 18,
-                      "color": "#A52A2A",
-                      "x": 0,
-                      "y": 36,
-                      "z": 0
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 8,
-                      "height": 14,
-                      "color": "#8B4513",
-                      "x": 16,
-                      "y": 24,
-                      "z": 0,
-                      "rotationZ": 45
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 8,
-                      "height": 14,
-                      "color": "#8B4513",
-                      "x": -16,
-                      "y": 24,
-                      "z": 0,
-                      "rotationZ": -45
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 9,
-                      "color": "#A52A2A",
-                      "x": 22,
-                      "y": 18,
-                      "z": 0
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 9,
-                      "color": "#A52A2A",
-                      "x": -22,
-                      "y": 18,
-                      "z": 0
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 8,
-                      "height": 16,
-                      "color": "#8B4513",
-                      "x": 10,
-                      "y": 8,
-                      "z": 0,
-                      "rotationZ": 0
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 8,
-                      "height": 16,
-                      "color": "#8B4513",
-                      "x": -10,
-                      "y": 8,
-                      "z": 0,
-                      "rotationZ": 0
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 6,
-                      "color": "#FFFFFF",
-                      "x": 5,
-                      "y": 38,
-                      "z": 8
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 6,
-                      "color": "#FFFFFF",
-                      "x": -5,
-                      "y": 38,
-                      "z": 8
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 3,
-                      "color": "#000000",
-                      "x": 5,
-                      "y": 38,
-                      "z": 10
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 3,
-                      "color": "#000000",
-                      "x": -5,
-                      "y": 38,
-                      "z": 10
-                    },
-                    {
-                      "type": "cone",
-                      "size": 6,
-                      "height": 12,
-                      "color": "#8B4513",
-                      "x": -10,
-                      "y": 42,
-                      "z": 0,
-                      "rotationZ": 45
-                    },
-                    {
-                      "type": "cone",
-                      "size": 6,
-                      "height": 12,
-                      "color": "#8B4513",
-                      "x": 10,
-                      "y": 42,
-                      "z": 0,
-                      "rotationZ": -45
-                    }
-                  ],
+                  "shapes": [],
                   "position": {
                     "x": 0,
                     "y": 0,
@@ -9499,6 +7981,155 @@ const DEFAULT_PROJECT_CONFIG = {
                 }
               }
             ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "sphere",
+                  "width": 26,
+                  "height": 20,
+                  "depth": 24,
+                  "color": "#A52A2A",
+                  "x": 0,
+                  "y": 20,
+                  "z": 0,
+                  "size": 28,
+                  "scaleX": 1
+                },
+                {
+                  "type": "sphere",
+                  "size": 18,
+                  "color": "#A52A2A",
+                  "x": 0,
+                  "y": 36,
+                  "z": 0
+                },
+                {
+                  "type": "cylinder",
+                  "size": 8,
+                  "height": 14,
+                  "color": "#8B4513",
+                  "x": 16,
+                  "y": 24,
+                  "z": 0,
+                  "rotationZ": 45
+                },
+                {
+                  "type": "cylinder",
+                  "size": 8,
+                  "height": 14,
+                  "color": "#8B4513",
+                  "x": -16,
+                  "y": 24,
+                  "z": 0,
+                  "rotationZ": -45
+                },
+                {
+                  "type": "sphere",
+                  "size": 9,
+                  "color": "#A52A2A",
+                  "x": 22,
+                  "y": 18,
+                  "z": 0
+                },
+                {
+                  "type": "sphere",
+                  "size": 9,
+                  "color": "#A52A2A",
+                  "x": -22,
+                  "y": 18,
+                  "z": 0
+                },
+                {
+                  "type": "cylinder",
+                  "size": 8,
+                  "height": 16,
+                  "color": "#8B4513",
+                  "x": 10,
+                  "y": 8,
+                  "z": 0,
+                  "rotationZ": 0
+                },
+                {
+                  "type": "cylinder",
+                  "size": 8,
+                  "height": 16,
+                  "color": "#8B4513",
+                  "x": -10,
+                  "y": 8,
+                  "z": 0,
+                  "rotationZ": 0
+                },
+                {
+                  "type": "sphere",
+                  "size": 6,
+                  "color": "#FFFFFF",
+                  "x": 5,
+                  "y": 38,
+                  "z": 8
+                },
+                {
+                  "type": "sphere",
+                  "size": 6,
+                  "color": "#FFFFFF",
+                  "x": -5,
+                  "y": 38,
+                  "z": 8
+                },
+                {
+                  "type": "sphere",
+                  "size": 3,
+                  "color": "#000000",
+                  "x": 5,
+                  "y": 38,
+                  "z": 10
+                },
+                {
+                  "type": "sphere",
+                  "size": 3,
+                  "color": "#000000",
+                  "x": -5,
+                  "y": 38,
+                  "z": 10
+                },
+                {
+                  "type": "cone",
+                  "size": 6,
+                  "height": 12,
+                  "color": "#8B4513",
+                  "x": -10,
+                  "y": 42,
+                  "z": 0,
+                  "rotationZ": 45
+                },
+                {
+                  "type": "cone",
+                  "size": 6,
+                  "height": 12,
+                  "color": "#8B4513",
+                  "x": 10,
+                  "y": 42,
+                  "z": 0,
+                  "rotationZ": -45
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
           }
         },
         "armor": 50,
@@ -9515,118 +8146,7 @@ const DEFAULT_PROJECT_CONFIG = {
             "idle": [
               {
                 "shapes": {
-                  "shapes": [
-                    {
-                      "type": "sphere",
-                      "size": 12,
-                      "color": "#BCA9DF",
-                      "x": 0,
-                      "y": 36,
-                      "z": 2,
-                      "scaleX": 1
-                    },
-                    {
-                      "type": "cone",
-                      "size": 16,
-                      "height": 30,
-                      "color": "#9F8AC7",
-                      "x": 0,
-                      "y": 18,
-                      "z": 0,
-                      "rotationX": 180
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4,
-                      "color": "#FF3366",
-                      "x": 4,
-                      "y": 36,
-                      "z": 7
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4,
-                      "color": "#FF3366",
-                      "x": -4,
-                      "y": 36,
-                      "z": 7
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 16,
-                      "color": "#BCA9DF",
-                      "x": -8,
-                      "y": 28,
-                      "z": 10,
-                      "rotationX": 90,
-                      "rotationZ": 30
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 16,
-                      "color": "#BCA9DF",
-                      "x": 8,
-                      "y": 28,
-                      "z": 10,
-                      "rotationX": 90,
-                      "rotationZ": -30
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2,
-                      "height": 12,
-                      "color": "#BCA9DF",
-                      "x": 3,
-                      "y": 33,
-                      "z": -10,
-                      "rotationX": -40
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2,
-                      "height": 12,
-                      "color": "#BCA9DF",
-                      "x": -3,
-                      "y": 33,
-                      "z": -10,
-                      "rotationX": -40
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 6,
-                      "color": "#000000",
-                      "x": 0,
-                      "y": 32,
-                      "z": 7.8,
-                      "rotationX": 45
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 6,
-                      "color": "#BCA9DF",
-                      "x": 15,
-                      "y": 18,
-                      "z": 0
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 6,
-                      "color": "#BCA9DF",
-                      "x": -15,
-                      "y": 18,
-                      "z": 0
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 6,
-                      "color": "#BCA9DF",
-                      "x": 0,
-                      "y": 18,
-                      "z": -15
-                    }
-                  ],
+                  "shapes": [],
                   "position": {
                     "x": 0,
                     "y": 0,
@@ -10167,6 +8687,137 @@ const DEFAULT_PROJECT_CONFIG = {
                 }
               }
             ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "sphere",
+                  "size": 12,
+                  "color": "#BCA9DF",
+                  "x": 0,
+                  "y": 36,
+                  "z": 2,
+                  "scaleX": 1
+                },
+                {
+                  "type": "cone",
+                  "size": 16,
+                  "height": 30,
+                  "color": "#9F8AC7",
+                  "x": 0,
+                  "y": 18,
+                  "z": 0,
+                  "rotationX": 180
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "color": "#FF3366",
+                  "x": 4,
+                  "y": 36,
+                  "z": 7
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "color": "#FF3366",
+                  "x": -4,
+                  "y": 36,
+                  "z": 7
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 16,
+                  "color": "#BCA9DF",
+                  "x": -8,
+                  "y": 28,
+                  "z": 10,
+                  "rotationX": 90,
+                  "rotationZ": 30
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 16,
+                  "color": "#BCA9DF",
+                  "x": 8,
+                  "y": 28,
+                  "z": 10,
+                  "rotationX": 90,
+                  "rotationZ": -30
+                },
+                {
+                  "type": "cylinder",
+                  "size": 2,
+                  "height": 12,
+                  "color": "#BCA9DF",
+                  "x": 3,
+                  "y": 33,
+                  "z": -10,
+                  "rotationX": -40
+                },
+                {
+                  "type": "cylinder",
+                  "size": 2,
+                  "height": 12,
+                  "color": "#BCA9DF",
+                  "x": -3,
+                  "y": 33,
+                  "z": -10,
+                  "rotationX": -40
+                },
+                {
+                  "type": "sphere",
+                  "size": 6,
+                  "color": "#000000",
+                  "x": 0,
+                  "y": 32,
+                  "z": 7.8,
+                  "rotationX": 45
+                },
+                {
+                  "type": "sphere",
+                  "size": 6,
+                  "color": "#BCA9DF",
+                  "x": 15,
+                  "y": 18,
+                  "z": 0
+                },
+                {
+                  "type": "sphere",
+                  "size": 6,
+                  "color": "#BCA9DF",
+                  "x": -15,
+                  "y": 18,
+                  "z": 0
+                },
+                {
+                  "type": "sphere",
+                  "size": 6,
+                  "color": "#BCA9DF",
+                  "x": 0,
+                  "y": 18,
+                  "z": -15
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
           }
         },
         "evasion": 75,
@@ -27448,98 +26099,27 @@ const DEFAULT_PROJECT_CONFIG = {
             "walk": [
               {
                 "shapes": {
-                  "shapes": [
-                    {
-                      "type": "sphere",
-                      "size": 12,
-                      "color": "#800000",
-                      "x": 0,
-                      "y": 24,
-                      "z": 0,
-                      "rotationX": 0,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "name": "core"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": 0,
-                      "y": 24,
-                      "z": -12,
-                      "rotationX": 90,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "name": "spike-1"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": 10.392,
-                      "y": 24,
-                      "z": -6,
-                      "rotationX": 90,
-                      "rotationY": null,
-                      "rotationZ": 60,
-                      "name": "spike-2"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": 10.392,
-                      "y": 24,
-                      "z": 6,
-                      "rotationX": 90,
-                      "rotationY": null,
-                      "rotationZ": 120,
-                      "name": "spike-3"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": -10.392,
-                      "y": 24,
-                      "z": -6,
-                      "rotationX": -90,
-                      "rotationY": null,
-                      "rotationZ": 60,
-                      "name": "spike-4"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": -10.392,
-                      "y": 24,
-                      "z": 6,
-                      "rotationX": 90,
-                      "rotationY": null,
-                      "rotationZ": 240,
-                      "name": "spike-5"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": 0,
-                      "y": 24,
-                      "z": 12,
-                      "rotationX": 90,
-                      "rotationY": 300,
-                      "rotationZ": 0,
-                      "name": "spike-6"
-                    }
-                  ],
+                  "shapes": [],
+                  "position": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                }
+              },
+              {
+                "shapes": {
+                  "shapes": [],
                   "position": {
                     "x": 0,
                     "y": 0,
@@ -27561,205 +26141,32 @@ const DEFAULT_PROJECT_CONFIG = {
                 "shapes": {
                   "shapes": [
                     {
-                      "type": "sphere",
-                      "size": 12,
-                      "color": "#800000",
-                      "x": 0,
-                      "y": 24,
-                      "z": 0,
-                      "rotationX": 0,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "name": "core"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": 0,
-                      "y": 24,
-                      "z": -12,
-                      "rotationX": 90,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "name": "spike-1"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": 10.392,
-                      "y": 24,
-                      "z": -6,
-                      "rotationX": 90,
-                      "rotationY": null,
-                      "rotationZ": 60,
-                      "name": "spike-2"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": 10.392,
-                      "y": 24,
-                      "z": 6,
-                      "rotationX": 90,
-                      "rotationY": null,
-                      "rotationZ": 120,
-                      "name": "spike-3"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": -10.392,
-                      "y": 24,
-                      "z": -6,
-                      "rotationX": -90,
-                      "rotationY": null,
-                      "rotationZ": 60,
-                      "name": "spike-4"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": -10.392,
-                      "y": 24,
-                      "z": 6,
-                      "rotationX": 90,
-                      "rotationY": null,
-                      "rotationZ": 240,
-                      "name": "spike-5"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": 0,
-                      "y": 24,
-                      "z": 12,
-                      "rotationX": 90,
-                      "rotationY": 300,
-                      "rotationZ": 0,
-                      "name": "spike-6"
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "type": "sphere",
-                      "size": 12,
-                      "color": "#800000",
-                      "x": 0,
                       "y": 26,
-                      "z": 0,
-                      "rotationX": 0,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "name": "core"
+                      "id": 0
                     },
                     {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": 0,
                       "y": 26,
-                      "z": -12,
-                      "rotationX": 90,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "name": "spike-1"
+                      "id": 1
                     },
                     {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": 10.392,
                       "y": 26,
-                      "z": -6,
-                      "rotationX": 90,
-                      "rotationY": null,
-                      "rotationZ": 60,
-                      "name": "spike-2"
+                      "id": 2
                     },
                     {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": 10.392,
                       "y": 26,
-                      "z": 6,
-                      "rotationX": 90,
-                      "rotationY": null,
-                      "rotationZ": 120,
-                      "name": "spike-3"
+                      "id": 3
                     },
                     {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": -10.392,
                       "y": 26,
-                      "z": -6,
-                      "rotationX": -90,
-                      "rotationY": null,
-                      "rotationZ": 60,
-                      "name": "spike-4"
+                      "id": 4
                     },
                     {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": -10.392,
                       "y": 26,
-                      "z": 6,
-                      "rotationX": 90,
-                      "rotationY": null,
-                      "rotationZ": 240,
-                      "name": "spike-5"
+                      "id": 5
                     },
                     {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": 0,
                       "y": 26,
-                      "z": 12,
-                      "rotationX": 90,
-                      "rotationY": 300,
-                      "rotationZ": 0,
-                      "name": "spike-6"
+                      "id": 6
                     }
                   ],
                   "position": {
@@ -27894,97 +26301,74 @@ const DEFAULT_PROJECT_CONFIG = {
             "idle": [
               {
                 "shapes": {
+                  "shapes": [],
+                  "position": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                }
+              },
+              {
+                "shapes": {
+                  "shapes": [],
+                  "position": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "scale": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                  }
+                }
+              },
+              {
+                "shapes": {
                   "shapes": [
                     {
-                      "type": "sphere",
-                      "size": 12,
-                      "color": "#800000",
-                      "x": 0,
-                      "y": 24,
-                      "z": 0,
-                      "rotationX": 0,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "name": "core",
-                      "scaleX": 1
+                      "y": 26,
+                      "id": 0
                     },
                     {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": 0,
-                      "y": 24,
-                      "z": -12,
-                      "rotationX": 90,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "name": "spike-1"
+                      "y": 26,
+                      "id": 1
                     },
                     {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": 10.392,
-                      "y": 24,
-                      "z": -6,
-                      "rotationX": 90,
-                      "rotationY": null,
-                      "rotationZ": 60,
-                      "name": "spike-2"
+                      "y": 26,
+                      "id": 2
                     },
                     {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": 10.392,
-                      "y": 24,
-                      "z": 6,
-                      "rotationX": 90,
-                      "rotationY": null,
-                      "rotationZ": 120,
-                      "name": "spike-3"
+                      "y": 26,
+                      "id": 3
                     },
                     {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": -10.392,
-                      "y": 24,
-                      "z": -6,
-                      "rotationX": -90,
-                      "rotationY": null,
-                      "rotationZ": 60,
-                      "name": "spike-4"
+                      "y": 26,
+                      "id": 4
                     },
                     {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": -10.392,
-                      "y": 24,
-                      "z": 6,
-                      "rotationX": 90,
-                      "rotationY": null,
-                      "rotationZ": 240,
-                      "name": "spike-5"
+                      "y": 26,
+                      "id": 5
                     },
                     {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": 0,
-                      "y": 24,
-                      "z": 12,
-                      "rotationX": 90,
-                      "rotationY": 300,
-                      "rotationZ": 0,
-                      "name": "spike-6"
+                      "y": 26,
+                      "id": 6
                     }
                   ],
                   "position": {
@@ -28008,316 +26392,32 @@ const DEFAULT_PROJECT_CONFIG = {
                 "shapes": {
                   "shapes": [
                     {
-                      "type": "sphere",
-                      "size": 12,
-                      "color": "#800000",
-                      "x": 0,
-                      "y": 24,
-                      "z": 0,
-                      "rotationX": 0,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "name": "core"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": 0,
-                      "y": 24,
-                      "z": -12,
-                      "rotationX": 90,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "name": "spike-1"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": 10.392,
-                      "y": 24,
-                      "z": -6,
-                      "rotationX": 90,
-                      "rotationY": null,
-                      "rotationZ": 60,
-                      "name": "spike-2"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": 10.392,
-                      "y": 24,
-                      "z": 6,
-                      "rotationX": 90,
-                      "rotationY": null,
-                      "rotationZ": 120,
-                      "name": "spike-3"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": -10.392,
-                      "y": 24,
-                      "z": -6,
-                      "rotationX": -90,
-                      "rotationY": null,
-                      "rotationZ": 60,
-                      "name": "spike-4"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": -10.392,
-                      "y": 24,
-                      "z": 6,
-                      "rotationX": 90,
-                      "rotationY": null,
-                      "rotationZ": 240,
-                      "name": "spike-5"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": 0,
-                      "y": 24,
-                      "z": 12,
-                      "rotationX": 90,
-                      "rotationY": 300,
-                      "rotationZ": 0,
-                      "name": "spike-6"
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "type": "sphere",
-                      "size": 12,
-                      "color": "#800000",
-                      "x": 0,
                       "y": 26,
-                      "z": 0,
-                      "rotationX": 0,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "name": "core"
+                      "id": 0
                     },
                     {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": 0,
                       "y": 26,
-                      "z": -12,
-                      "rotationX": 90,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "name": "spike-1"
+                      "id": 1
                     },
                     {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": 10.392,
                       "y": 26,
-                      "z": -6,
-                      "rotationX": 90,
-                      "rotationY": null,
-                      "rotationZ": 60,
-                      "name": "spike-2"
+                      "id": 2
                     },
                     {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": 10.392,
                       "y": 26,
-                      "z": 6,
-                      "rotationX": 90,
-                      "rotationY": null,
-                      "rotationZ": 120,
-                      "name": "spike-3"
+                      "id": 3
                     },
                     {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": -10.392,
                       "y": 26,
-                      "z": -6,
-                      "rotationX": -90,
-                      "rotationY": null,
-                      "rotationZ": 60,
-                      "name": "spike-4"
+                      "id": 4
                     },
                     {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": -10.392,
                       "y": 26,
-                      "z": 6,
-                      "rotationX": 90,
-                      "rotationY": null,
-                      "rotationZ": 240,
-                      "name": "spike-5"
+                      "id": 5
                     },
                     {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": 0,
                       "y": 26,
-                      "z": 12,
-                      "rotationX": 90,
-                      "rotationY": 300,
-                      "rotationZ": 0,
-                      "name": "spike-6"
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "type": "sphere",
-                      "size": 12,
-                      "color": "#800000",
-                      "x": 0,
-                      "y": 26,
-                      "z": 0,
-                      "rotationX": 0,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "name": "core"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": 0,
-                      "y": 26,
-                      "z": -12,
-                      "rotationX": 90,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "name": "spike-1"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": 10.392,
-                      "y": 26,
-                      "z": -6,
-                      "rotationX": 90,
-                      "rotationY": null,
-                      "rotationZ": 60,
-                      "name": "spike-2"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": 10.392,
-                      "y": 26,
-                      "z": 6,
-                      "rotationX": 90,
-                      "rotationY": null,
-                      "rotationZ": 120,
-                      "name": "spike-3"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": -10.392,
-                      "y": 26,
-                      "z": -6,
-                      "rotationX": -90,
-                      "rotationY": null,
-                      "rotationZ": 60,
-                      "name": "spike-4"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": -10.392,
-                      "y": 26,
-                      "z": 6,
-                      "rotationX": 90,
-                      "rotationY": null,
-                      "rotationZ": 240,
-                      "name": "spike-5"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2.4,
-                      "height": 4.8,
-                      "color": "#663300",
-                      "x": 0,
-                      "y": 26,
-                      "z": 12,
-                      "rotationX": 90,
-                      "rotationY": 300,
-                      "rotationZ": 0,
-                      "name": "spike-6"
+                      "id": 6
                     }
                   ],
                   "position": {
@@ -28338,6 +26438,118 @@ const DEFAULT_PROJECT_CONFIG = {
                 }
               }
             ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "sphere",
+                  "size": 12,
+                  "color": "#800000",
+                  "x": 0,
+                  "y": 24,
+                  "z": 0,
+                  "rotationX": 0,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "name": "core",
+                  "scaleX": 1
+                },
+                {
+                  "type": "cylinder",
+                  "size": 2.4,
+                  "height": 4.8,
+                  "color": "#663300",
+                  "x": 0,
+                  "y": 24,
+                  "z": -12,
+                  "rotationX": 90,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "name": "spike-1"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 2.4,
+                  "height": 4.8,
+                  "color": "#663300",
+                  "x": 10.392,
+                  "y": 24,
+                  "z": -6,
+                  "rotationX": 90,
+                  "rotationY": null,
+                  "rotationZ": 60,
+                  "name": "spike-2"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 2.4,
+                  "height": 4.8,
+                  "color": "#663300",
+                  "x": 10.392,
+                  "y": 24,
+                  "z": 6,
+                  "rotationX": 90,
+                  "rotationY": null,
+                  "rotationZ": 120,
+                  "name": "spike-3"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 2.4,
+                  "height": 4.8,
+                  "color": "#663300",
+                  "x": -10.392,
+                  "y": 24,
+                  "z": -6,
+                  "rotationX": -90,
+                  "rotationY": null,
+                  "rotationZ": 60,
+                  "name": "spike-4"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 2.4,
+                  "height": 4.8,
+                  "color": "#663300",
+                  "x": -10.392,
+                  "y": 24,
+                  "z": 6,
+                  "rotationX": 90,
+                  "rotationY": null,
+                  "rotationZ": 240,
+                  "name": "spike-5"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 2.4,
+                  "height": 4.8,
+                  "color": "#663300",
+                  "x": 0,
+                  "y": 24,
+                  "z": 12,
+                  "rotationX": 90,
+                  "rotationY": 300,
+                  "rotationZ": 0,
+                  "name": "spike-6"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
           }
         },
         "title": "spike_ball",
@@ -28355,101 +26567,6 @@ const DEFAULT_PROJECT_CONFIG = {
             "idle": [
               {
                 "head": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 16,
-                      "height": 14,
-                      "depth": 22,
-                      "x": 0,
-                      "y": 42,
-                      "z": 14,
-                      "color": "#556B2F",
-                      "name": "head-main",
-                      "texture": "scales",
-                      "roughness": 0.8
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4.5,
-                      "x": -8,
-                      "y": 46,
-                      "z": 16,
-                      "color": "#DAA520",
-                      "name": "eye-right",
-                      "emissive": "#B8860B"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 2.2,
-                      "x": -8,
-                      "y": 46,
-                      "z": 17.5,
-                      "color": "#000000",
-                      "name": "pupil-right"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4.5,
-                      "x": 8,
-                      "y": 46,
-                      "z": 16,
-                      "color": "#DAA520",
-                      "name": "eye-left",
-                      "emissive": "#B8860B"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 2.2,
-                      "x": 8,
-                      "y": 46,
-                      "z": 17.5,
-                      "color": "#000000",
-                      "name": "pupil-left"
-                    },
-                    {
-                      "type": "box",
-                      "width": 16,
-                      "height": 2,
-                      "depth": 6,
-                      "x": 0,
-                      "y": 50,
-                      "z": 14,
-                      "color": "#3D4D1E",
-                      "name": "brow-ridge",
-                      "texture": "rough"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 2,
-                      "x": -4.5,
-                      "y": 48.7,
-                      "z": 23.6,
-                      "color": "#556B2F",
-                      "name": "nostril-right",
-                      "rotationX": 0,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "scaleX": 1,
-                      "scaleY": 1,
-                      "scaleZ": 1
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 2,
-                      "x": 4.5,
-                      "y": 48.7,
-                      "z": 23.6,
-                      "color": "#556B2F",
-                      "name": "nostril-left",
-                      "rotationX": 0,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "scaleX": 1,
-                      "scaleY": 1,
-                      "scaleZ": 1
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": 2.5,
@@ -28467,92 +26584,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "jaw": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 18.3,
-                      "height": 6,
-                      "depth": 20,
-                      "x": 0,
-                      "y": 30,
-                      "z": 16,
-                      "color": "#4D6227",
-                      "name": "jaw-main",
-                      "texture": "rough"
-                    },
-                    {
-                      "type": "box",
-                      "width": 12,
-                      "height": 2,
-                      "depth": 2,
-                      "x": 0,
-                      "y": 32.5,
-                      "z": 24.7,
-                      "color": "#A52A2A",
-                      "name": "gums",
-                      "roughness": 0.7
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.8,
-                      "height": 4,
-                      "depth": 1.8,
-                      "x": -5,
-                      "y": 33,
-                      "z": 25,
-                      "color": "#F8F8FF",
-                      "name": "tooth-front-right",
-                      "shininess": 90
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.8,
-                      "height": 4,
-                      "depth": 1.8,
-                      "x": 0,
-                      "y": 33,
-                      "z": 25,
-                      "color": "#F8F8FF",
-                      "name": "tooth-front-middle",
-                      "shininess": 90
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.8,
-                      "height": 4,
-                      "depth": 1.8,
-                      "x": 5,
-                      "y": 33,
-                      "z": 25,
-                      "color": "#F8F8FF",
-                      "name": "tooth-front-left",
-                      "shininess": 90
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.5,
-                      "height": 3,
-                      "depth": 1.5,
-                      "x": -7,
-                      "y": 33,
-                      "z": 22,
-                      "color": "#F8F8FF",
-                      "name": "tooth-side-right1",
-                      "shininess": 90
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.5,
-                      "height": 3,
-                      "depth": 1.5,
-                      "x": 7,
-                      "y": 33,
-                      "z": 22,
-                      "color": "#F8F8FF",
-                      "name": "tooth-side-left1",
-                      "shininess": 90
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": 10,
@@ -28570,71 +26601,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "left arm": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 5,
-                      "height": 8,
-                      "depth": 5,
-                      "x": 11,
-                      "y": 28,
-                      "z": 0,
-                      "rotationX": -45,
-                      "color": "#4D6227",
-                      "name": "upper-arm-left",
-                      "texture": "scales"
-                    },
-                    {
-                      "type": "box",
-                      "width": 4,
-                      "height": 6,
-                      "depth": 4,
-                      "x": 11,
-                      "y": 24,
-                      "z": 4,
-                      "rotationX": -20,
-                      "color": "#485A22",
-                      "name": "lower-arm-left",
-                      "texture": "scales"
-                    },
-                    {
-                      "type": "box",
-                      "width": 3.8,
-                      "height": 3.5,
-                      "depth": 3,
-                      "x": 11,
-                      "y": 22,
-                      "z": 6,
-                      "color": "#707070",
-                      "name": "hand-left",
-                      "metalness": 0.5,
-                      "roughness": 0.7
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.2,
-                      "height": 3,
-                      "depth": 1.2,
-                      "x": 12.5,
-                      "y": 21,
-                      "z": 8,
-                      "color": "#C0C0C0",
-                      "name": "claw-left-1",
-                      "metalness": 0.6
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.2,
-                      "height": 2.5,
-                      "depth": 1.2,
-                      "x": 9.5,
-                      "y": 21.5,
-                      "z": 7.5,
-                      "color": "#C0C0C0",
-                      "name": "claw-left-2",
-                      "metalness": 0.6
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": -2.7,
@@ -28652,71 +26618,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "right arm": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 5,
-                      "height": 8,
-                      "depth": 5,
-                      "x": -11,
-                      "y": 28,
-                      "z": 0,
-                      "rotationX": -45,
-                      "color": "#4D6227",
-                      "name": "upper-arm-right",
-                      "texture": "scales"
-                    },
-                    {
-                      "type": "box",
-                      "width": 4,
-                      "height": 6,
-                      "depth": 4,
-                      "x": -11,
-                      "y": 24,
-                      "z": 4,
-                      "rotationX": -20,
-                      "color": "#485A22",
-                      "name": "lower-arm-right",
-                      "texture": "scales"
-                    },
-                    {
-                      "type": "box",
-                      "width": 3.8,
-                      "height": 3.5,
-                      "depth": 3,
-                      "x": -11,
-                      "y": 22,
-                      "z": 6,
-                      "color": "#707070",
-                      "name": "hand-right",
-                      "metalness": 0.5,
-                      "roughness": 0.7
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.2,
-                      "height": 3,
-                      "depth": 1.2,
-                      "x": -12.5,
-                      "y": 21,
-                      "z": 8,
-                      "color": "#C0C0C0",
-                      "name": "claw-right-1",
-                      "metalness": 0.6
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.2,
-                      "height": 2.5,
-                      "depth": 1.2,
-                      "x": -9.5,
-                      "y": 21.5,
-                      "z": 7.5,
-                      "color": "#C0C0C0",
-                      "name": "claw-right-2",
-                      "metalness": 0.6
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": -2.7,
@@ -28734,94 +26635,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "left leg": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 8,
-                      "height": 14,
-                      "depth": 10,
-                      "x": 9,
-                      "y": 20,
-                      "z": 0,
-                      "color": "#4A5D25",
-                      "name": "thigh-left",
-                      "texture": "scales",
-                      "roughness": 0.7,
-                      "rotationX": -15,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "scaleX": 1,
-                      "scaleY": 1,
-                      "scaleZ": 1
-                    },
-                    {
-                      "type": "box",
-                      "width": 7,
-                      "height": 16,
-                      "depth": 7,
-                      "x": 9,
-                      "y": 9,
-                      "z": 0,
-                      "color": "#556B2F",
-                      "name": "shin-left",
-                      "texture": "scales",
-                      "rotationX": 30
-                    },
-                    {
-                      "type": "box",
-                      "width": 10,
-                      "height": 4,
-                      "depth": 16,
-                      "x": 9,
-                      "y": 1,
-                      "z": 0,
-                      "color": "#3D4D1E",
-                      "name": "foot-left",
-                      "roughness": 0.8,
-                      "rotationX": 20,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "scaleX": 1,
-                      "scaleY": 1,
-                      "scaleZ": 1
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "height": 5,
-                      "x": 6,
-                      "y": -2,
-                      "z": 8.5,
-                      "rotationX": 90,
-                      "color": "#606060",
-                      "name": "toe-left-1",
-                      "metalness": 0.3
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "height": 5,
-                      "x": 12,
-                      "y": -2,
-                      "z": 8.5,
-                      "rotationX": 90,
-                      "color": "#606060",
-                      "name": "toe-left-2",
-                      "metalness": 0.3
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "height": 5,
-                      "x": 9,
-                      "y": -2,
-                      "z": 9,
-                      "rotationX": 90,
-                      "color": "#606060",
-                      "name": "toe-left-3",
-                      "metalness": 0.3
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": 2.5,
@@ -28839,94 +26652,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "right leg": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 8,
-                      "height": 14,
-                      "depth": 10,
-                      "x": -9,
-                      "y": 20,
-                      "z": 0,
-                      "color": "#4A5D25",
-                      "name": "thigh-right",
-                      "texture": "scales",
-                      "roughness": 0.7,
-                      "rotationX": -15,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "scaleX": 1,
-                      "scaleY": 1,
-                      "scaleZ": 1
-                    },
-                    {
-                      "type": "box",
-                      "width": 7,
-                      "height": 16,
-                      "depth": 7,
-                      "x": -9,
-                      "y": 9,
-                      "z": 0,
-                      "color": "#556B2F",
-                      "name": "shin-right",
-                      "texture": "scales",
-                      "rotationX": 30,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "scaleX": 1,
-                      "scaleY": 1,
-                      "scaleZ": 1
-                    },
-                    {
-                      "type": "box",
-                      "width": 10,
-                      "height": 4,
-                      "depth": 16,
-                      "x": -9,
-                      "y": 1,
-                      "z": 0,
-                      "color": "#3D4D1E",
-                      "name": "foot-right",
-                      "roughness": 0.8,
-                      "rotationX": 20
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "height": 5,
-                      "x": -6,
-                      "y": -2,
-                      "z": 8.5,
-                      "rotationX": 90,
-                      "color": "#606060",
-                      "name": "toe-right-1",
-                      "metalness": 0.3
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "height": 5,
-                      "x": -12,
-                      "y": -2,
-                      "z": 8.5,
-                      "rotationX": 90,
-                      "color": "#606060",
-                      "name": "toe-right-2",
-                      "metalness": 0.3
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "height": 5,
-                      "x": -9,
-                      "y": -2,
-                      "z": 9,
-                      "rotationX": 90,
-                      "color": "#606060",
-                      "name": "toe-right-3",
-                      "metalness": 0.3
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": 2.5,
@@ -28944,79 +26669,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "body": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 18,
-                      "height": 32,
-                      "depth": 16,
-                      "x": 0,
-                      "y": 24,
-                      "z": -3,
-                      "rotationX": 40,
-                      "color": "#556B2F",
-                      "name": "torso-main",
-                      "texture": "scales",
-                      "roughness": 0.7
-                    },
-                    {
-                      "type": "box",
-                      "width": 13,
-                      "height": 11.5,
-                      "depth": 12.8,
-                      "x": 0,
-                      "y": 38,
-                      "z": 7.3,
-                      "rotationX": 10,
-                      "color": "#4D6227",
-                      "name": "neck",
-                      "texture": "scales",
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "scaleX": 1,
-                      "scaleY": 1,
-                      "scaleZ": 1
-                    },
-                    {
-                      "type": "cone",
-                      "size": 6,
-                      "height": 10,
-                      "x": 0,
-                      "y": 40,
-                      "z": -5,
-                      "rotationX": -55,
-                      "color": "#3D4D1E",
-                      "name": "dorsal-spike-1",
-                      "metalness": 0.3,
-                      "roughness": 0.8
-                    },
-                    {
-                      "type": "cone",
-                      "size": 5.5,
-                      "height": 9,
-                      "x": 0,
-                      "y": 34,
-                      "z": -10,
-                      "rotationX": -50,
-                      "color": "#3A4A1D",
-                      "name": "dorsal-spike-2",
-                      "metalness": 0.3,
-                      "roughness": 0.8
-                    },
-                    {
-                      "type": "cone",
-                      "size": 5,
-                      "height": 8,
-                      "x": 0,
-                      "y": 28,
-                      "z": -14,
-                      "rotationX": -45,
-                      "color": "#384919",
-                      "name": "dorsal-spike-3",
-                      "metalness": 0.3,
-                      "roughness": 0.8
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": 9.5,
@@ -29034,60 +26686,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "tail base": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 10,
-                      "height": 8,
-                      "depth": 18,
-                      "x": 0,
-                      "y": 20,
-                      "z": -20,
-                      "rotationX": -20,
-                      "color": "#4D6227",
-                      "name": "tail-base-segment",
-                      "texture": "scales"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 5,
-                      "height": 8,
-                      "x": 0,
-                      "y": 24,
-                      "z": -22,
-                      "rotationX": -25,
-                      "color": "#3A4A1D",
-                      "name": "tail-spike-1",
-                      "metalness": 0.3,
-                      "roughness": 0.8
-                    },
-                    {
-                      "type": "box",
-                      "width": 8,
-                      "height": 6,
-                      "depth": 16,
-                      "x": 0,
-                      "y": 18,
-                      "z": -36,
-                      "rotationX": -15,
-                      "color": "#4A5D25",
-                      "name": "tail-mid-segment",
-                      "texture": "scales"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 4,
-                      "height": 7,
-                      "x": 0,
-                      "y": 22,
-                      "z": -38,
-                      "rotationX": -20,
-                      "color": "#384919",
-                      "name": "tail-spike-2",
-                      "metalness": 0.3,
-                      "roughness": 0.8
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": 5,
@@ -29105,60 +26703,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "tail tip": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 6,
-                      "height": 5,
-                      "depth": 14,
-                      "x": 0,
-                      "y": 16,
-                      "z": -50,
-                      "rotationX": -10,
-                      "color": "#556B2F",
-                      "name": "tail-end-segment",
-                      "texture": "scales"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 3.5,
-                      "height": 6,
-                      "x": 0,
-                      "y": 19,
-                      "z": -52,
-                      "rotationX": -15,
-                      "color": "#384919",
-                      "name": "tail-spike-3",
-                      "metalness": 0.3,
-                      "roughness": 0.8
-                    },
-                    {
-                      "type": "box",
-                      "width": 4,
-                      "height": 3,
-                      "depth": 10,
-                      "x": 0,
-                      "y": 14.5,
-                      "z": -62,
-                      "rotationX": -5,
-                      "color": "#4D6227",
-                      "name": "tail-tip-segment",
-                      "texture": "scales"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "height": 4,
-                      "x": 0,
-                      "y": 16.5,
-                      "z": -64,
-                      "rotationX": -10,
-                      "color": "#384919",
-                      "name": "tail-spike-4",
-                      "metalness": 0.3,
-                      "roughness": 0.8
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": 5,
@@ -29180,101 +26724,6 @@ const DEFAULT_PROJECT_CONFIG = {
             "walk": [
               {
                 "head": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 16,
-                      "height": 14,
-                      "depth": 22,
-                      "x": 0,
-                      "y": 42,
-                      "z": 14,
-                      "color": "#556B2F",
-                      "name": "head-main",
-                      "texture": "scales",
-                      "roughness": 0.8
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4.5,
-                      "x": -8,
-                      "y": 46,
-                      "z": 16,
-                      "color": "#DAA520",
-                      "name": "eye-right",
-                      "emissive": "#B8860B"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 2.2,
-                      "x": -8,
-                      "y": 46,
-                      "z": 17.5,
-                      "color": "#000000",
-                      "name": "pupil-right"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4.5,
-                      "x": 8,
-                      "y": 46,
-                      "z": 16,
-                      "color": "#DAA520",
-                      "name": "eye-left",
-                      "emissive": "#B8860B"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 2.2,
-                      "x": 8,
-                      "y": 46,
-                      "z": 17.5,
-                      "color": "#000000",
-                      "name": "pupil-left"
-                    },
-                    {
-                      "type": "box",
-                      "width": 16,
-                      "height": 2,
-                      "depth": 6,
-                      "x": 0,
-                      "y": 50,
-                      "z": 14,
-                      "color": "#3D4D1E",
-                      "name": "brow-ridge",
-                      "texture": "rough"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 2,
-                      "x": -4.5,
-                      "y": 48.7,
-                      "z": 23.6,
-                      "color": "#556B2F",
-                      "name": "nostril-right",
-                      "rotationX": 0,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "scaleX": 1,
-                      "scaleY": 1,
-                      "scaleZ": 1
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 2,
-                      "x": 4.5,
-                      "y": 48.7,
-                      "z": 23.6,
-                      "color": "#556B2F",
-                      "name": "nostril-left",
-                      "rotationX": 0,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "scaleX": 1,
-                      "scaleY": 1,
-                      "scaleZ": 1
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": 2.5,
@@ -29292,92 +26741,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "jaw": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 18.3,
-                      "height": 6,
-                      "depth": 20,
-                      "x": 0,
-                      "y": 30,
-                      "z": 16,
-                      "color": "#4D6227",
-                      "name": "jaw-main",
-                      "texture": "rough"
-                    },
-                    {
-                      "type": "box",
-                      "width": 12,
-                      "height": 2,
-                      "depth": 2,
-                      "x": 0,
-                      "y": 32.5,
-                      "z": 24.7,
-                      "color": "#A52A2A",
-                      "name": "gums",
-                      "roughness": 0.7
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.8,
-                      "height": 4,
-                      "depth": 1.8,
-                      "x": -5,
-                      "y": 33,
-                      "z": 25,
-                      "color": "#F8F8FF",
-                      "name": "tooth-front-right",
-                      "shininess": 90
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.8,
-                      "height": 4,
-                      "depth": 1.8,
-                      "x": 0,
-                      "y": 33,
-                      "z": 25,
-                      "color": "#F8F8FF",
-                      "name": "tooth-front-middle",
-                      "shininess": 90
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.8,
-                      "height": 4,
-                      "depth": 1.8,
-                      "x": 5,
-                      "y": 33,
-                      "z": 25,
-                      "color": "#F8F8FF",
-                      "name": "tooth-front-left",
-                      "shininess": 90
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.5,
-                      "height": 3,
-                      "depth": 1.5,
-                      "x": -7,
-                      "y": 33,
-                      "z": 22,
-                      "color": "#F8F8FF",
-                      "name": "tooth-side-right1",
-                      "shininess": 90
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.5,
-                      "height": 3,
-                      "depth": 1.5,
-                      "x": 7,
-                      "y": 33,
-                      "z": 22,
-                      "color": "#F8F8FF",
-                      "name": "tooth-side-left1",
-                      "shininess": 90
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": 10,
@@ -29395,71 +26758,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "left arm": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 5,
-                      "height": 8,
-                      "depth": 5,
-                      "x": 11,
-                      "y": 28,
-                      "z": 0,
-                      "rotationX": -45,
-                      "color": "#4D6227",
-                      "name": "upper-arm-left",
-                      "texture": "scales"
-                    },
-                    {
-                      "type": "box",
-                      "width": 4,
-                      "height": 6,
-                      "depth": 4,
-                      "x": 11,
-                      "y": 24,
-                      "z": 4,
-                      "rotationX": -20,
-                      "color": "#485A22",
-                      "name": "lower-arm-left",
-                      "texture": "scales"
-                    },
-                    {
-                      "type": "box",
-                      "width": 3.8,
-                      "height": 3.5,
-                      "depth": 3,
-                      "x": 11,
-                      "y": 22,
-                      "z": 6,
-                      "color": "#707070",
-                      "name": "hand-left",
-                      "metalness": 0.5,
-                      "roughness": 0.7
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.2,
-                      "height": 3,
-                      "depth": 1.2,
-                      "x": 12.5,
-                      "y": 21,
-                      "z": 8,
-                      "color": "#C0C0C0",
-                      "name": "claw-left-1",
-                      "metalness": 0.6
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.2,
-                      "height": 2.5,
-                      "depth": 1.2,
-                      "x": 9.5,
-                      "y": 21.5,
-                      "z": 7.5,
-                      "color": "#C0C0C0",
-                      "name": "claw-left-2",
-                      "metalness": 0.6
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": -2.7,
@@ -29477,71 +26775,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "right arm": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 5,
-                      "height": 8,
-                      "depth": 5,
-                      "x": -11,
-                      "y": 28,
-                      "z": 0,
-                      "rotationX": -45,
-                      "color": "#4D6227",
-                      "name": "upper-arm-right",
-                      "texture": "scales"
-                    },
-                    {
-                      "type": "box",
-                      "width": 4,
-                      "height": 6,
-                      "depth": 4,
-                      "x": -11,
-                      "y": 24,
-                      "z": 4,
-                      "rotationX": -20,
-                      "color": "#485A22",
-                      "name": "lower-arm-right",
-                      "texture": "scales"
-                    },
-                    {
-                      "type": "box",
-                      "width": 3.8,
-                      "height": 3.5,
-                      "depth": 3,
-                      "x": -11,
-                      "y": 22,
-                      "z": 6,
-                      "color": "#707070",
-                      "name": "hand-right",
-                      "metalness": 0.5,
-                      "roughness": 0.7
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.2,
-                      "height": 3,
-                      "depth": 1.2,
-                      "x": -12.5,
-                      "y": 21,
-                      "z": 8,
-                      "color": "#C0C0C0",
-                      "name": "claw-right-1",
-                      "metalness": 0.6
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.2,
-                      "height": 2.5,
-                      "depth": 1.2,
-                      "x": -9.5,
-                      "y": 21.5,
-                      "z": 7.5,
-                      "color": "#C0C0C0",
-                      "name": "claw-right-2",
-                      "metalness": 0.6
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": -2.7,
@@ -29559,94 +26792,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "left leg": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 8,
-                      "height": 14,
-                      "depth": 10,
-                      "x": 9,
-                      "y": 20,
-                      "z": 0,
-                      "color": "#4A5D25",
-                      "name": "thigh-left",
-                      "texture": "scales",
-                      "roughness": 0.7,
-                      "rotationX": -15,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "scaleX": 1,
-                      "scaleY": 1,
-                      "scaleZ": 1
-                    },
-                    {
-                      "type": "box",
-                      "width": 7,
-                      "height": 16,
-                      "depth": 7,
-                      "x": 9,
-                      "y": 9,
-                      "z": 0,
-                      "color": "#556B2F",
-                      "name": "shin-left",
-                      "texture": "scales",
-                      "rotationX": 30
-                    },
-                    {
-                      "type": "box",
-                      "width": 10,
-                      "height": 4,
-                      "depth": 16,
-                      "x": 9,
-                      "y": 1,
-                      "z": 0,
-                      "color": "#3D4D1E",
-                      "name": "foot-left",
-                      "roughness": 0.8,
-                      "rotationX": 20,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "scaleX": 1,
-                      "scaleY": 1,
-                      "scaleZ": 1
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "height": 5,
-                      "x": 6,
-                      "y": -2,
-                      "z": 8.5,
-                      "rotationX": 90,
-                      "color": "#606060",
-                      "name": "toe-left-1",
-                      "metalness": 0.3
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "height": 5,
-                      "x": 12,
-                      "y": -2,
-                      "z": 8.5,
-                      "rotationX": 90,
-                      "color": "#606060",
-                      "name": "toe-left-2",
-                      "metalness": 0.3
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "height": 5,
-                      "x": 9,
-                      "y": -2,
-                      "z": 9,
-                      "rotationX": 90,
-                      "color": "#606060",
-                      "name": "toe-left-3",
-                      "metalness": 0.3
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": 2.5,
@@ -29664,94 +26809,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "right leg": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 8,
-                      "height": 14,
-                      "depth": 10,
-                      "x": -9,
-                      "y": 20,
-                      "z": 0,
-                      "color": "#4A5D25",
-                      "name": "thigh-right",
-                      "texture": "scales",
-                      "roughness": 0.7,
-                      "rotationX": -15,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "scaleX": 1,
-                      "scaleY": 1,
-                      "scaleZ": 1
-                    },
-                    {
-                      "type": "box",
-                      "width": 7,
-                      "height": 16,
-                      "depth": 7,
-                      "x": -9,
-                      "y": 9,
-                      "z": 0,
-                      "color": "#556B2F",
-                      "name": "shin-right",
-                      "texture": "scales",
-                      "rotationX": 30,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "scaleX": 1,
-                      "scaleY": 1,
-                      "scaleZ": 1
-                    },
-                    {
-                      "type": "box",
-                      "width": 10,
-                      "height": 4,
-                      "depth": 16,
-                      "x": -9,
-                      "y": 1,
-                      "z": 0,
-                      "color": "#3D4D1E",
-                      "name": "foot-right",
-                      "roughness": 0.8,
-                      "rotationX": 20
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "height": 5,
-                      "x": -6,
-                      "y": -2,
-                      "z": 8.5,
-                      "rotationX": 90,
-                      "color": "#606060",
-                      "name": "toe-right-1",
-                      "metalness": 0.3
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "height": 5,
-                      "x": -12,
-                      "y": -2,
-                      "z": 8.5,
-                      "rotationX": 90,
-                      "color": "#606060",
-                      "name": "toe-right-2",
-                      "metalness": 0.3
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "height": 5,
-                      "x": -9,
-                      "y": -2,
-                      "z": 9,
-                      "rotationX": 90,
-                      "color": "#606060",
-                      "name": "toe-right-3",
-                      "metalness": 0.3
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": 2.5,
@@ -29769,79 +26826,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "body": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 18,
-                      "height": 32,
-                      "depth": 16,
-                      "x": 0,
-                      "y": 24,
-                      "z": -3,
-                      "rotationX": 40,
-                      "color": "#556B2F",
-                      "name": "torso-main",
-                      "texture": "scales",
-                      "roughness": 0.7
-                    },
-                    {
-                      "type": "box",
-                      "width": 13,
-                      "height": 11.5,
-                      "depth": 12.8,
-                      "x": 0,
-                      "y": 38,
-                      "z": 7.3,
-                      "rotationX": 10,
-                      "color": "#4D6227",
-                      "name": "neck",
-                      "texture": "scales",
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "scaleX": 1,
-                      "scaleY": 1,
-                      "scaleZ": 1
-                    },
-                    {
-                      "type": "cone",
-                      "size": 6,
-                      "height": 10,
-                      "x": 0,
-                      "y": 40,
-                      "z": -5,
-                      "rotationX": -55,
-                      "color": "#3D4D1E",
-                      "name": "dorsal-spike-1",
-                      "metalness": 0.3,
-                      "roughness": 0.8
-                    },
-                    {
-                      "type": "cone",
-                      "size": 5.5,
-                      "height": 9,
-                      "x": 0,
-                      "y": 34,
-                      "z": -10,
-                      "rotationX": -50,
-                      "color": "#3A4A1D",
-                      "name": "dorsal-spike-2",
-                      "metalness": 0.3,
-                      "roughness": 0.8
-                    },
-                    {
-                      "type": "cone",
-                      "size": 5,
-                      "height": 8,
-                      "x": 0,
-                      "y": 28,
-                      "z": -14,
-                      "rotationX": -45,
-                      "color": "#384919",
-                      "name": "dorsal-spike-3",
-                      "metalness": 0.3,
-                      "roughness": 0.8
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": 9.5,
@@ -29859,60 +26843,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "tail base": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 10,
-                      "height": 8,
-                      "depth": 18,
-                      "x": 0,
-                      "y": 20,
-                      "z": -20,
-                      "rotationX": -20,
-                      "color": "#4D6227",
-                      "name": "tail-base-segment",
-                      "texture": "scales"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 5,
-                      "height": 8,
-                      "x": 0,
-                      "y": 24,
-                      "z": -22,
-                      "rotationX": -25,
-                      "color": "#3A4A1D",
-                      "name": "tail-spike-1",
-                      "metalness": 0.3,
-                      "roughness": 0.8
-                    },
-                    {
-                      "type": "box",
-                      "width": 8,
-                      "height": 6,
-                      "depth": 16,
-                      "x": 0,
-                      "y": 18,
-                      "z": -36,
-                      "rotationX": -15,
-                      "color": "#4A5D25",
-                      "name": "tail-mid-segment",
-                      "texture": "scales"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 4,
-                      "height": 7,
-                      "x": 0,
-                      "y": 22,
-                      "z": -38,
-                      "rotationX": -20,
-                      "color": "#384919",
-                      "name": "tail-spike-2",
-                      "metalness": 0.3,
-                      "roughness": 0.8
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": 5,
@@ -29930,60 +26860,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "tail tip": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 6,
-                      "height": 5,
-                      "depth": 14,
-                      "x": 0,
-                      "y": 16,
-                      "z": -50,
-                      "rotationX": -10,
-                      "color": "#556B2F",
-                      "name": "tail-end-segment",
-                      "texture": "scales"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 3.5,
-                      "height": 6,
-                      "x": 0,
-                      "y": 19,
-                      "z": -52,
-                      "rotationX": -15,
-                      "color": "#384919",
-                      "name": "tail-spike-3",
-                      "metalness": 0.3,
-                      "roughness": 0.8
-                    },
-                    {
-                      "type": "box",
-                      "width": 4,
-                      "height": 3,
-                      "depth": 10,
-                      "x": 0,
-                      "y": 14.5,
-                      "z": -62,
-                      "rotationX": -5,
-                      "color": "#4D6227",
-                      "name": "tail-tip-segment",
-                      "texture": "scales"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "height": 4,
-                      "x": 0,
-                      "y": 16.5,
-                      "z": -64,
-                      "rotationX": -10,
-                      "color": "#384919",
-                      "name": "tail-spike-4",
-                      "metalness": 0.3,
-                      "roughness": 0.8
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": 5,
@@ -30003,101 +26879,6 @@ const DEFAULT_PROJECT_CONFIG = {
               },
               {
                 "head": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 16,
-                      "height": 14,
-                      "depth": 22,
-                      "x": 0,
-                      "y": 42,
-                      "z": 14,
-                      "color": "#556B2F",
-                      "name": "head-main",
-                      "texture": "scales",
-                      "roughness": 0.8
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4.5,
-                      "x": -8,
-                      "y": 46,
-                      "z": 16,
-                      "color": "#DAA520",
-                      "name": "eye-right",
-                      "emissive": "#B8860B"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 2.2,
-                      "x": -8,
-                      "y": 46,
-                      "z": 17.5,
-                      "color": "#000000",
-                      "name": "pupil-right"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4.5,
-                      "x": 8,
-                      "y": 46,
-                      "z": 16,
-                      "color": "#DAA520",
-                      "name": "eye-left",
-                      "emissive": "#B8860B"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 2.2,
-                      "x": 8,
-                      "y": 46,
-                      "z": 17.5,
-                      "color": "#000000",
-                      "name": "pupil-left"
-                    },
-                    {
-                      "type": "box",
-                      "width": 16,
-                      "height": 2,
-                      "depth": 6,
-                      "x": 0,
-                      "y": 50,
-                      "z": 14,
-                      "color": "#3D4D1E",
-                      "name": "brow-ridge",
-                      "texture": "rough"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 2,
-                      "x": -4.5,
-                      "y": 48.7,
-                      "z": 23.6,
-                      "color": "#556B2F",
-                      "name": "nostril-right",
-                      "rotationX": 0,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "scaleX": 1,
-                      "scaleY": 1,
-                      "scaleZ": 1
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 2,
-                      "x": 4.5,
-                      "y": 48.7,
-                      "z": 23.6,
-                      "color": "#556B2F",
-                      "name": "nostril-left",
-                      "rotationX": 0,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "scaleX": 1,
-                      "scaleY": 1,
-                      "scaleZ": 1
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": 2.5,
@@ -30115,92 +26896,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "jaw": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 18.3,
-                      "height": 6,
-                      "depth": 20,
-                      "x": 0,
-                      "y": 30,
-                      "z": 16,
-                      "color": "#4D6227",
-                      "name": "jaw-main",
-                      "texture": "rough"
-                    },
-                    {
-                      "type": "box",
-                      "width": 12,
-                      "height": 2,
-                      "depth": 2,
-                      "x": 0,
-                      "y": 32.5,
-                      "z": 24.7,
-                      "color": "#A52A2A",
-                      "name": "gums",
-                      "roughness": 0.7
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.8,
-                      "height": 4,
-                      "depth": 1.8,
-                      "x": -5,
-                      "y": 33,
-                      "z": 25,
-                      "color": "#F8F8FF",
-                      "name": "tooth-front-right",
-                      "shininess": 90
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.8,
-                      "height": 4,
-                      "depth": 1.8,
-                      "x": 0,
-                      "y": 33,
-                      "z": 25,
-                      "color": "#F8F8FF",
-                      "name": "tooth-front-middle",
-                      "shininess": 90
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.8,
-                      "height": 4,
-                      "depth": 1.8,
-                      "x": 5,
-                      "y": 33,
-                      "z": 25,
-                      "color": "#F8F8FF",
-                      "name": "tooth-front-left",
-                      "shininess": 90
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.5,
-                      "height": 3,
-                      "depth": 1.5,
-                      "x": -7,
-                      "y": 33,
-                      "z": 22,
-                      "color": "#F8F8FF",
-                      "name": "tooth-side-right1",
-                      "shininess": 90
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.5,
-                      "height": 3,
-                      "depth": 1.5,
-                      "x": 7,
-                      "y": 33,
-                      "z": 22,
-                      "color": "#F8F8FF",
-                      "name": "tooth-side-left1",
-                      "shininess": 90
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": 10,
@@ -30218,71 +26913,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "left arm": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 5,
-                      "height": 8,
-                      "depth": 5,
-                      "x": 11,
-                      "y": 28,
-                      "z": 0,
-                      "rotationX": -45,
-                      "color": "#4D6227",
-                      "name": "upper-arm-left",
-                      "texture": "scales"
-                    },
-                    {
-                      "type": "box",
-                      "width": 4,
-                      "height": 6,
-                      "depth": 4,
-                      "x": 11,
-                      "y": 24,
-                      "z": 4,
-                      "rotationX": -20,
-                      "color": "#485A22",
-                      "name": "lower-arm-left",
-                      "texture": "scales"
-                    },
-                    {
-                      "type": "box",
-                      "width": 3.8,
-                      "height": 3.5,
-                      "depth": 3,
-                      "x": 11,
-                      "y": 22,
-                      "z": 6,
-                      "color": "#707070",
-                      "name": "hand-left",
-                      "metalness": 0.5,
-                      "roughness": 0.7
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.2,
-                      "height": 3,
-                      "depth": 1.2,
-                      "x": 12.5,
-                      "y": 21,
-                      "z": 8,
-                      "color": "#C0C0C0",
-                      "name": "claw-left-1",
-                      "metalness": 0.6
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.2,
-                      "height": 2.5,
-                      "depth": 1.2,
-                      "x": 9.5,
-                      "y": 21.5,
-                      "z": 7.5,
-                      "color": "#C0C0C0",
-                      "name": "claw-left-2",
-                      "metalness": 0.6
-                    }
-                  ],
                   "position": {
                     "x": 1.5,
                     "y": -2.7,
@@ -30300,71 +26930,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "right arm": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 5,
-                      "height": 8,
-                      "depth": 5,
-                      "x": -11,
-                      "y": 28,
-                      "z": 0,
-                      "rotationX": -45,
-                      "color": "#4D6227",
-                      "name": "upper-arm-right",
-                      "texture": "scales"
-                    },
-                    {
-                      "type": "box",
-                      "width": 4,
-                      "height": 6,
-                      "depth": 4,
-                      "x": -11,
-                      "y": 24,
-                      "z": 4,
-                      "rotationX": -20,
-                      "color": "#485A22",
-                      "name": "lower-arm-right",
-                      "texture": "scales"
-                    },
-                    {
-                      "type": "box",
-                      "width": 3.8,
-                      "height": 3.5,
-                      "depth": 3,
-                      "x": -11,
-                      "y": 22,
-                      "z": 6,
-                      "color": "#707070",
-                      "name": "hand-right",
-                      "metalness": 0.5,
-                      "roughness": 0.7
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.2,
-                      "height": 3,
-                      "depth": 1.2,
-                      "x": -12.5,
-                      "y": 21,
-                      "z": 8,
-                      "color": "#C0C0C0",
-                      "name": "claw-right-1",
-                      "metalness": 0.6
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.2,
-                      "height": 2.5,
-                      "depth": 1.2,
-                      "x": -9.5,
-                      "y": 21.5,
-                      "z": 7.5,
-                      "color": "#C0C0C0",
-                      "name": "claw-right-2",
-                      "metalness": 0.6
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": -2.7,
@@ -30382,94 +26947,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "left leg": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 8,
-                      "height": 14,
-                      "depth": 10,
-                      "x": 9,
-                      "y": 20,
-                      "z": 0,
-                      "color": "#4A5D25",
-                      "name": "thigh-left",
-                      "texture": "scales",
-                      "roughness": 0.7,
-                      "rotationX": -15,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "scaleX": 1,
-                      "scaleY": 1,
-                      "scaleZ": 1
-                    },
-                    {
-                      "type": "box",
-                      "width": 7,
-                      "height": 16,
-                      "depth": 7,
-                      "x": 9,
-                      "y": 9,
-                      "z": 0,
-                      "color": "#556B2F",
-                      "name": "shin-left",
-                      "texture": "scales",
-                      "rotationX": 30
-                    },
-                    {
-                      "type": "box",
-                      "width": 10,
-                      "height": 4,
-                      "depth": 16,
-                      "x": 9,
-                      "y": 1,
-                      "z": 0,
-                      "color": "#3D4D1E",
-                      "name": "foot-left",
-                      "roughness": 0.8,
-                      "rotationX": 20,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "scaleX": 1,
-                      "scaleY": 1,
-                      "scaleZ": 1
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "height": 5,
-                      "x": 6,
-                      "y": -2,
-                      "z": 8.5,
-                      "rotationX": 90,
-                      "color": "#606060",
-                      "name": "toe-left-1",
-                      "metalness": 0.3
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "height": 5,
-                      "x": 12,
-                      "y": -2,
-                      "z": 8.5,
-                      "rotationX": 90,
-                      "color": "#606060",
-                      "name": "toe-left-2",
-                      "metalness": 0.3
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "height": 5,
-                      "x": 9,
-                      "y": -2,
-                      "z": 9,
-                      "rotationX": 90,
-                      "color": "#606060",
-                      "name": "toe-left-3",
-                      "metalness": 0.3
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": 5,
@@ -30487,94 +26964,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "right leg": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 8,
-                      "height": 14,
-                      "depth": 10,
-                      "x": -9,
-                      "y": 20,
-                      "z": 0,
-                      "color": "#4A5D25",
-                      "name": "thigh-right",
-                      "texture": "scales",
-                      "roughness": 0.7,
-                      "rotationX": -15,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "scaleX": 1,
-                      "scaleY": 1,
-                      "scaleZ": 1
-                    },
-                    {
-                      "type": "box",
-                      "width": 7,
-                      "height": 16,
-                      "depth": 7,
-                      "x": -9,
-                      "y": 9,
-                      "z": 0,
-                      "color": "#556B2F",
-                      "name": "shin-right",
-                      "texture": "scales",
-                      "rotationX": 30,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "scaleX": 1,
-                      "scaleY": 1,
-                      "scaleZ": 1
-                    },
-                    {
-                      "type": "box",
-                      "width": 10,
-                      "height": 4,
-                      "depth": 16,
-                      "x": -9,
-                      "y": 1,
-                      "z": 0,
-                      "color": "#3D4D1E",
-                      "name": "foot-right",
-                      "roughness": 0.8,
-                      "rotationX": 20
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "height": 5,
-                      "x": -6,
-                      "y": -2,
-                      "z": 8.5,
-                      "rotationX": 90,
-                      "color": "#606060",
-                      "name": "toe-right-1",
-                      "metalness": 0.3
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "height": 5,
-                      "x": -12,
-                      "y": -2,
-                      "z": 8.5,
-                      "rotationX": 90,
-                      "color": "#606060",
-                      "name": "toe-right-2",
-                      "metalness": 0.3
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "height": 5,
-                      "x": -9,
-                      "y": -2,
-                      "z": 9,
-                      "rotationX": 90,
-                      "color": "#606060",
-                      "name": "toe-right-3",
-                      "metalness": 0.3
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": 2.5,
@@ -30592,79 +26981,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "body": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 18,
-                      "height": 32,
-                      "depth": 16,
-                      "x": 0,
-                      "y": 24,
-                      "z": -3,
-                      "rotationX": 40,
-                      "color": "#556B2F",
-                      "name": "torso-main",
-                      "texture": "scales",
-                      "roughness": 0.7
-                    },
-                    {
-                      "type": "box",
-                      "width": 13,
-                      "height": 11.5,
-                      "depth": 12.8,
-                      "x": 0,
-                      "y": 38,
-                      "z": 7.3,
-                      "rotationX": 10,
-                      "color": "#4D6227",
-                      "name": "neck",
-                      "texture": "scales",
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "scaleX": 1,
-                      "scaleY": 1,
-                      "scaleZ": 1
-                    },
-                    {
-                      "type": "cone",
-                      "size": 6,
-                      "height": 10,
-                      "x": 0,
-                      "y": 40,
-                      "z": -5,
-                      "rotationX": -55,
-                      "color": "#3D4D1E",
-                      "name": "dorsal-spike-1",
-                      "metalness": 0.3,
-                      "roughness": 0.8
-                    },
-                    {
-                      "type": "cone",
-                      "size": 5.5,
-                      "height": 9,
-                      "x": 0,
-                      "y": 34,
-                      "z": -10,
-                      "rotationX": -50,
-                      "color": "#3A4A1D",
-                      "name": "dorsal-spike-2",
-                      "metalness": 0.3,
-                      "roughness": 0.8
-                    },
-                    {
-                      "type": "cone",
-                      "size": 5,
-                      "height": 8,
-                      "x": 0,
-                      "y": 28,
-                      "z": -14,
-                      "rotationX": -45,
-                      "color": "#384919",
-                      "name": "dorsal-spike-3",
-                      "metalness": 0.3,
-                      "roughness": 0.8
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": 9.5,
@@ -30682,60 +26998,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "tail base": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 10,
-                      "height": 8,
-                      "depth": 18,
-                      "x": 0,
-                      "y": 20,
-                      "z": -20,
-                      "rotationX": -20,
-                      "color": "#4D6227",
-                      "name": "tail-base-segment",
-                      "texture": "scales"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 5,
-                      "height": 8,
-                      "x": 0,
-                      "y": 24,
-                      "z": -22,
-                      "rotationX": -25,
-                      "color": "#3A4A1D",
-                      "name": "tail-spike-1",
-                      "metalness": 0.3,
-                      "roughness": 0.8
-                    },
-                    {
-                      "type": "box",
-                      "width": 8,
-                      "height": 6,
-                      "depth": 16,
-                      "x": 0,
-                      "y": 18,
-                      "z": -36,
-                      "rotationX": -15,
-                      "color": "#4A5D25",
-                      "name": "tail-mid-segment",
-                      "texture": "scales"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 4,
-                      "height": 7,
-                      "x": 0,
-                      "y": 22,
-                      "z": -38,
-                      "rotationX": -20,
-                      "color": "#384919",
-                      "name": "tail-spike-2",
-                      "metalness": 0.3,
-                      "roughness": 0.8
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": 5,
@@ -30753,60 +27015,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "tail tip": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 6,
-                      "height": 5,
-                      "depth": 14,
-                      "x": 0,
-                      "y": 16,
-                      "z": -50,
-                      "rotationX": -10,
-                      "color": "#556B2F",
-                      "name": "tail-end-segment",
-                      "texture": "scales"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 3.5,
-                      "height": 6,
-                      "x": 0,
-                      "y": 19,
-                      "z": -52,
-                      "rotationX": -15,
-                      "color": "#384919",
-                      "name": "tail-spike-3",
-                      "metalness": 0.3,
-                      "roughness": 0.8
-                    },
-                    {
-                      "type": "box",
-                      "width": 4,
-                      "height": 3,
-                      "depth": 10,
-                      "x": 0,
-                      "y": 14.5,
-                      "z": -62,
-                      "rotationX": -5,
-                      "color": "#4D6227",
-                      "name": "tail-tip-segment",
-                      "texture": "scales"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "height": 4,
-                      "x": 0,
-                      "y": 16.5,
-                      "z": -64,
-                      "rotationX": -10,
-                      "color": "#384919",
-                      "name": "tail-spike-4",
-                      "metalness": 0.3,
-                      "roughness": 0.8
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": 5,
@@ -30826,101 +27034,6 @@ const DEFAULT_PROJECT_CONFIG = {
               },
               {
                 "head": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 16,
-                      "height": 14,
-                      "depth": 22,
-                      "x": 0,
-                      "y": 42,
-                      "z": 14,
-                      "color": "#556B2F",
-                      "name": "head-main",
-                      "texture": "scales",
-                      "roughness": 0.8
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4.5,
-                      "x": -8,
-                      "y": 46,
-                      "z": 16,
-                      "color": "#DAA520",
-                      "name": "eye-right",
-                      "emissive": "#B8860B"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 2.2,
-                      "x": -8,
-                      "y": 46,
-                      "z": 17.5,
-                      "color": "#000000",
-                      "name": "pupil-right"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4.5,
-                      "x": 8,
-                      "y": 46,
-                      "z": 16,
-                      "color": "#DAA520",
-                      "name": "eye-left",
-                      "emissive": "#B8860B"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 2.2,
-                      "x": 8,
-                      "y": 46,
-                      "z": 17.5,
-                      "color": "#000000",
-                      "name": "pupil-left"
-                    },
-                    {
-                      "type": "box",
-                      "width": 16,
-                      "height": 2,
-                      "depth": 6,
-                      "x": 0,
-                      "y": 50,
-                      "z": 14,
-                      "color": "#3D4D1E",
-                      "name": "brow-ridge",
-                      "texture": "rough"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 2,
-                      "x": -4.5,
-                      "y": 48.7,
-                      "z": 23.6,
-                      "color": "#556B2F",
-                      "name": "nostril-right",
-                      "rotationX": 0,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "scaleX": 1,
-                      "scaleY": 1,
-                      "scaleZ": 1
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 2,
-                      "x": 4.5,
-                      "y": 48.7,
-                      "z": 23.6,
-                      "color": "#556B2F",
-                      "name": "nostril-left",
-                      "rotationX": 0,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "scaleX": 1,
-                      "scaleY": 1,
-                      "scaleZ": 1
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": 2.5,
@@ -30938,92 +27051,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "jaw": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 18.3,
-                      "height": 6,
-                      "depth": 20,
-                      "x": 0,
-                      "y": 30,
-                      "z": 16,
-                      "color": "#4D6227",
-                      "name": "jaw-main",
-                      "texture": "rough"
-                    },
-                    {
-                      "type": "box",
-                      "width": 12,
-                      "height": 2,
-                      "depth": 2,
-                      "x": 0,
-                      "y": 32.5,
-                      "z": 24.7,
-                      "color": "#A52A2A",
-                      "name": "gums",
-                      "roughness": 0.7
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.8,
-                      "height": 4,
-                      "depth": 1.8,
-                      "x": -5,
-                      "y": 33,
-                      "z": 25,
-                      "color": "#F8F8FF",
-                      "name": "tooth-front-right",
-                      "shininess": 90
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.8,
-                      "height": 4,
-                      "depth": 1.8,
-                      "x": 0,
-                      "y": 33,
-                      "z": 25,
-                      "color": "#F8F8FF",
-                      "name": "tooth-front-middle",
-                      "shininess": 90
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.8,
-                      "height": 4,
-                      "depth": 1.8,
-                      "x": 5,
-                      "y": 33,
-                      "z": 25,
-                      "color": "#F8F8FF",
-                      "name": "tooth-front-left",
-                      "shininess": 90
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.5,
-                      "height": 3,
-                      "depth": 1.5,
-                      "x": -7,
-                      "y": 33,
-                      "z": 22,
-                      "color": "#F8F8FF",
-                      "name": "tooth-side-right1",
-                      "shininess": 90
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.5,
-                      "height": 3,
-                      "depth": 1.5,
-                      "x": 7,
-                      "y": 33,
-                      "z": 22,
-                      "color": "#F8F8FF",
-                      "name": "tooth-side-left1",
-                      "shininess": 90
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": 10,
@@ -31041,71 +27068,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "left arm": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 5,
-                      "height": 8,
-                      "depth": 5,
-                      "x": 11,
-                      "y": 28,
-                      "z": 0,
-                      "rotationX": -45,
-                      "color": "#4D6227",
-                      "name": "upper-arm-left",
-                      "texture": "scales"
-                    },
-                    {
-                      "type": "box",
-                      "width": 4,
-                      "height": 6,
-                      "depth": 4,
-                      "x": 11,
-                      "y": 24,
-                      "z": 4,
-                      "rotationX": -20,
-                      "color": "#485A22",
-                      "name": "lower-arm-left",
-                      "texture": "scales"
-                    },
-                    {
-                      "type": "box",
-                      "width": 3.8,
-                      "height": 3.5,
-                      "depth": 3,
-                      "x": 11,
-                      "y": 22,
-                      "z": 6,
-                      "color": "#707070",
-                      "name": "hand-left",
-                      "metalness": 0.5,
-                      "roughness": 0.7
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.2,
-                      "height": 3,
-                      "depth": 1.2,
-                      "x": 12.5,
-                      "y": 21,
-                      "z": 8,
-                      "color": "#C0C0C0",
-                      "name": "claw-left-1",
-                      "metalness": 0.6
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.2,
-                      "height": 2.5,
-                      "depth": 1.2,
-                      "x": 9.5,
-                      "y": 21.5,
-                      "z": 7.5,
-                      "color": "#C0C0C0",
-                      "name": "claw-left-2",
-                      "metalness": 0.6
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": -2.7,
@@ -31123,71 +27085,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "right arm": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 5,
-                      "height": 8,
-                      "depth": 5,
-                      "x": -11,
-                      "y": 28,
-                      "z": 0,
-                      "rotationX": -45,
-                      "color": "#4D6227",
-                      "name": "upper-arm-right",
-                      "texture": "scales"
-                    },
-                    {
-                      "type": "box",
-                      "width": 4,
-                      "height": 6,
-                      "depth": 4,
-                      "x": -11,
-                      "y": 24,
-                      "z": 4,
-                      "rotationX": -20,
-                      "color": "#485A22",
-                      "name": "lower-arm-right",
-                      "texture": "scales"
-                    },
-                    {
-                      "type": "box",
-                      "width": 3.8,
-                      "height": 3.5,
-                      "depth": 3,
-                      "x": -11,
-                      "y": 22,
-                      "z": 6,
-                      "color": "#707070",
-                      "name": "hand-right",
-                      "metalness": 0.5,
-                      "roughness": 0.7
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.2,
-                      "height": 3,
-                      "depth": 1.2,
-                      "x": -12.5,
-                      "y": 21,
-                      "z": 8,
-                      "color": "#C0C0C0",
-                      "name": "claw-right-1",
-                      "metalness": 0.6
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.2,
-                      "height": 2.5,
-                      "depth": 1.2,
-                      "x": -9.5,
-                      "y": 21.5,
-                      "z": 7.5,
-                      "color": "#C0C0C0",
-                      "name": "claw-right-2",
-                      "metalness": 0.6
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": -2.7,
@@ -31205,94 +27102,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "left leg": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 8,
-                      "height": 14,
-                      "depth": 10,
-                      "x": 9,
-                      "y": 20,
-                      "z": 0,
-                      "color": "#4A5D25",
-                      "name": "thigh-left",
-                      "texture": "scales",
-                      "roughness": 0.7,
-                      "rotationX": -15,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "scaleX": 1,
-                      "scaleY": 1,
-                      "scaleZ": 1
-                    },
-                    {
-                      "type": "box",
-                      "width": 7,
-                      "height": 16,
-                      "depth": 7,
-                      "x": 9,
-                      "y": 9,
-                      "z": 0,
-                      "color": "#556B2F",
-                      "name": "shin-left",
-                      "texture": "scales",
-                      "rotationX": 30
-                    },
-                    {
-                      "type": "box",
-                      "width": 10,
-                      "height": 4,
-                      "depth": 16,
-                      "x": 9,
-                      "y": 1,
-                      "z": 0,
-                      "color": "#3D4D1E",
-                      "name": "foot-left",
-                      "roughness": 0.8,
-                      "rotationX": 20,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "scaleX": 1,
-                      "scaleY": 1,
-                      "scaleZ": 1
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "height": 5,
-                      "x": 6,
-                      "y": -2,
-                      "z": 8.5,
-                      "rotationX": 90,
-                      "color": "#606060",
-                      "name": "toe-left-1",
-                      "metalness": 0.3
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "height": 5,
-                      "x": 12,
-                      "y": -2,
-                      "z": 8.5,
-                      "rotationX": 90,
-                      "color": "#606060",
-                      "name": "toe-left-2",
-                      "metalness": 0.3
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "height": 5,
-                      "x": 9,
-                      "y": -2,
-                      "z": 9,
-                      "rotationX": 90,
-                      "color": "#606060",
-                      "name": "toe-left-3",
-                      "metalness": 0.3
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": 2.5,
@@ -31310,94 +27119,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "right leg": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 8,
-                      "height": 14,
-                      "depth": 10,
-                      "x": -9,
-                      "y": 20,
-                      "z": 0,
-                      "color": "#4A5D25",
-                      "name": "thigh-right",
-                      "texture": "scales",
-                      "roughness": 0.7,
-                      "rotationX": -15,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "scaleX": 1,
-                      "scaleY": 1,
-                      "scaleZ": 1
-                    },
-                    {
-                      "type": "box",
-                      "width": 7,
-                      "height": 16,
-                      "depth": 7,
-                      "x": -9,
-                      "y": 9,
-                      "z": 0,
-                      "color": "#556B2F",
-                      "name": "shin-right",
-                      "texture": "scales",
-                      "rotationX": 30,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "scaleX": 1,
-                      "scaleY": 1,
-                      "scaleZ": 1
-                    },
-                    {
-                      "type": "box",
-                      "width": 10,
-                      "height": 4,
-                      "depth": 16,
-                      "x": -9,
-                      "y": 1,
-                      "z": 0,
-                      "color": "#3D4D1E",
-                      "name": "foot-right",
-                      "roughness": 0.8,
-                      "rotationX": 20
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "height": 5,
-                      "x": -6,
-                      "y": -2,
-                      "z": 8.5,
-                      "rotationX": 90,
-                      "color": "#606060",
-                      "name": "toe-right-1",
-                      "metalness": 0.3
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "height": 5,
-                      "x": -12,
-                      "y": -2,
-                      "z": 8.5,
-                      "rotationX": 90,
-                      "color": "#606060",
-                      "name": "toe-right-2",
-                      "metalness": 0.3
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "height": 5,
-                      "x": -9,
-                      "y": -2,
-                      "z": 9,
-                      "rotationX": 90,
-                      "color": "#606060",
-                      "name": "toe-right-3",
-                      "metalness": 0.3
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": 2.5,
@@ -31415,79 +27136,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "body": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 18,
-                      "height": 32,
-                      "depth": 16,
-                      "x": 0,
-                      "y": 24,
-                      "z": -3,
-                      "rotationX": 40,
-                      "color": "#556B2F",
-                      "name": "torso-main",
-                      "texture": "scales",
-                      "roughness": 0.7
-                    },
-                    {
-                      "type": "box",
-                      "width": 13,
-                      "height": 11.5,
-                      "depth": 12.8,
-                      "x": 0,
-                      "y": 38,
-                      "z": 7.3,
-                      "rotationX": 10,
-                      "color": "#4D6227",
-                      "name": "neck",
-                      "texture": "scales",
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "scaleX": 1,
-                      "scaleY": 1,
-                      "scaleZ": 1
-                    },
-                    {
-                      "type": "cone",
-                      "size": 6,
-                      "height": 10,
-                      "x": 0,
-                      "y": 40,
-                      "z": -5,
-                      "rotationX": -55,
-                      "color": "#3D4D1E",
-                      "name": "dorsal-spike-1",
-                      "metalness": 0.3,
-                      "roughness": 0.8
-                    },
-                    {
-                      "type": "cone",
-                      "size": 5.5,
-                      "height": 9,
-                      "x": 0,
-                      "y": 34,
-                      "z": -10,
-                      "rotationX": -50,
-                      "color": "#3A4A1D",
-                      "name": "dorsal-spike-2",
-                      "metalness": 0.3,
-                      "roughness": 0.8
-                    },
-                    {
-                      "type": "cone",
-                      "size": 5,
-                      "height": 8,
-                      "x": 0,
-                      "y": 28,
-                      "z": -14,
-                      "rotationX": -45,
-                      "color": "#384919",
-                      "name": "dorsal-spike-3",
-                      "metalness": 0.3,
-                      "roughness": 0.8
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": 9.5,
@@ -31505,60 +27153,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "tail base": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 10,
-                      "height": 8,
-                      "depth": 18,
-                      "x": 0,
-                      "y": 20,
-                      "z": -20,
-                      "rotationX": -20,
-                      "color": "#4D6227",
-                      "name": "tail-base-segment",
-                      "texture": "scales"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 5,
-                      "height": 8,
-                      "x": 0,
-                      "y": 24,
-                      "z": -22,
-                      "rotationX": -25,
-                      "color": "#3A4A1D",
-                      "name": "tail-spike-1",
-                      "metalness": 0.3,
-                      "roughness": 0.8
-                    },
-                    {
-                      "type": "box",
-                      "width": 8,
-                      "height": 6,
-                      "depth": 16,
-                      "x": 0,
-                      "y": 18,
-                      "z": -36,
-                      "rotationX": -15,
-                      "color": "#4A5D25",
-                      "name": "tail-mid-segment",
-                      "texture": "scales"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 4,
-                      "height": 7,
-                      "x": 0,
-                      "y": 22,
-                      "z": -38,
-                      "rotationX": -20,
-                      "color": "#384919",
-                      "name": "tail-spike-2",
-                      "metalness": 0.3,
-                      "roughness": 0.8
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": 5,
@@ -31576,60 +27170,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "tail tip": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 6,
-                      "height": 5,
-                      "depth": 14,
-                      "x": 0,
-                      "y": 16,
-                      "z": -50,
-                      "rotationX": -10,
-                      "color": "#556B2F",
-                      "name": "tail-end-segment",
-                      "texture": "scales"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 3.5,
-                      "height": 6,
-                      "x": 0,
-                      "y": 19,
-                      "z": -52,
-                      "rotationX": -15,
-                      "color": "#384919",
-                      "name": "tail-spike-3",
-                      "metalness": 0.3,
-                      "roughness": 0.8
-                    },
-                    {
-                      "type": "box",
-                      "width": 4,
-                      "height": 3,
-                      "depth": 10,
-                      "x": 0,
-                      "y": 14.5,
-                      "z": -62,
-                      "rotationX": -5,
-                      "color": "#4D6227",
-                      "name": "tail-tip-segment",
-                      "texture": "scales"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "height": 4,
-                      "x": 0,
-                      "y": 16.5,
-                      "z": -64,
-                      "rotationX": -10,
-                      "color": "#384919",
-                      "name": "tail-spike-4",
-                      "metalness": 0.3,
-                      "roughness": 0.8
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": 5,
@@ -31649,101 +27189,6 @@ const DEFAULT_PROJECT_CONFIG = {
               },
               {
                 "head": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 16,
-                      "height": 14,
-                      "depth": 22,
-                      "x": 0,
-                      "y": 42,
-                      "z": 14,
-                      "color": "#556B2F",
-                      "name": "head-main",
-                      "texture": "scales",
-                      "roughness": 0.8
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4.5,
-                      "x": -8,
-                      "y": 46,
-                      "z": 16,
-                      "color": "#DAA520",
-                      "name": "eye-right",
-                      "emissive": "#B8860B"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 2.2,
-                      "x": -8,
-                      "y": 46,
-                      "z": 17.5,
-                      "color": "#000000",
-                      "name": "pupil-right"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4.5,
-                      "x": 8,
-                      "y": 46,
-                      "z": 16,
-                      "color": "#DAA520",
-                      "name": "eye-left",
-                      "emissive": "#B8860B"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 2.2,
-                      "x": 8,
-                      "y": 46,
-                      "z": 17.5,
-                      "color": "#000000",
-                      "name": "pupil-left"
-                    },
-                    {
-                      "type": "box",
-                      "width": 16,
-                      "height": 2,
-                      "depth": 6,
-                      "x": 0,
-                      "y": 50,
-                      "z": 14,
-                      "color": "#3D4D1E",
-                      "name": "brow-ridge",
-                      "texture": "rough"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 2,
-                      "x": -4.5,
-                      "y": 48.7,
-                      "z": 23.6,
-                      "color": "#556B2F",
-                      "name": "nostril-right",
-                      "rotationX": 0,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "scaleX": 1,
-                      "scaleY": 1,
-                      "scaleZ": 1
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 2,
-                      "x": 4.5,
-                      "y": 48.7,
-                      "z": 23.6,
-                      "color": "#556B2F",
-                      "name": "nostril-left",
-                      "rotationX": 0,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "scaleX": 1,
-                      "scaleY": 1,
-                      "scaleZ": 1
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": 2.3,
@@ -31761,92 +27206,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "jaw": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 18.3,
-                      "height": 6,
-                      "depth": 20,
-                      "x": 0,
-                      "y": 30,
-                      "z": 16,
-                      "color": "#4D6227",
-                      "name": "jaw-main",
-                      "texture": "rough"
-                    },
-                    {
-                      "type": "box",
-                      "width": 12,
-                      "height": 2,
-                      "depth": 2,
-                      "x": 0,
-                      "y": 32.5,
-                      "z": 24.7,
-                      "color": "#A52A2A",
-                      "name": "gums",
-                      "roughness": 0.7
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.8,
-                      "height": 4,
-                      "depth": 1.8,
-                      "x": -5,
-                      "y": 33,
-                      "z": 25,
-                      "color": "#F8F8FF",
-                      "name": "tooth-front-right",
-                      "shininess": 90
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.8,
-                      "height": 4,
-                      "depth": 1.8,
-                      "x": 0,
-                      "y": 33,
-                      "z": 25,
-                      "color": "#F8F8FF",
-                      "name": "tooth-front-middle",
-                      "shininess": 90
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.8,
-                      "height": 4,
-                      "depth": 1.8,
-                      "x": 5,
-                      "y": 33,
-                      "z": 25,
-                      "color": "#F8F8FF",
-                      "name": "tooth-front-left",
-                      "shininess": 90
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.5,
-                      "height": 3,
-                      "depth": 1.5,
-                      "x": -7,
-                      "y": 33,
-                      "z": 22,
-                      "color": "#F8F8FF",
-                      "name": "tooth-side-right1",
-                      "shininess": 90
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.5,
-                      "height": 3,
-                      "depth": 1.5,
-                      "x": 7,
-                      "y": 33,
-                      "z": 22,
-                      "color": "#F8F8FF",
-                      "name": "tooth-side-left1",
-                      "shininess": 90
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": 9.8,
@@ -31864,71 +27223,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "left arm": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 5,
-                      "height": 8,
-                      "depth": 5,
-                      "x": 11,
-                      "y": 28,
-                      "z": 0,
-                      "rotationX": -45,
-                      "color": "#4D6227",
-                      "name": "upper-arm-left",
-                      "texture": "scales"
-                    },
-                    {
-                      "type": "box",
-                      "width": 4,
-                      "height": 6,
-                      "depth": 4,
-                      "x": 11,
-                      "y": 24,
-                      "z": 4,
-                      "rotationX": -20,
-                      "color": "#485A22",
-                      "name": "lower-arm-left",
-                      "texture": "scales"
-                    },
-                    {
-                      "type": "box",
-                      "width": 3.8,
-                      "height": 3.5,
-                      "depth": 3,
-                      "x": 11,
-                      "y": 22,
-                      "z": 6,
-                      "color": "#707070",
-                      "name": "hand-left",
-                      "metalness": 0.5,
-                      "roughness": 0.7
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.2,
-                      "height": 3,
-                      "depth": 1.2,
-                      "x": 12.5,
-                      "y": 21,
-                      "z": 8,
-                      "color": "#C0C0C0",
-                      "name": "claw-left-1",
-                      "metalness": 0.6
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.2,
-                      "height": 2.5,
-                      "depth": 1.2,
-                      "x": 9.5,
-                      "y": 21.5,
-                      "z": 7.5,
-                      "color": "#C0C0C0",
-                      "name": "claw-left-2",
-                      "metalness": 0.6
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": -2.7,
@@ -31946,71 +27240,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "right arm": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 5,
-                      "height": 8,
-                      "depth": 5,
-                      "x": -11,
-                      "y": 28,
-                      "z": 0,
-                      "rotationX": -45,
-                      "color": "#4D6227",
-                      "name": "upper-arm-right",
-                      "texture": "scales"
-                    },
-                    {
-                      "type": "box",
-                      "width": 4,
-                      "height": 6,
-                      "depth": 4,
-                      "x": -11,
-                      "y": 24,
-                      "z": 4,
-                      "rotationX": -20,
-                      "color": "#485A22",
-                      "name": "lower-arm-right",
-                      "texture": "scales"
-                    },
-                    {
-                      "type": "box",
-                      "width": 3.8,
-                      "height": 3.5,
-                      "depth": 3,
-                      "x": -11,
-                      "y": 22,
-                      "z": 6,
-                      "color": "#707070",
-                      "name": "hand-right",
-                      "metalness": 0.5,
-                      "roughness": 0.7
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.2,
-                      "height": 3,
-                      "depth": 1.2,
-                      "x": -12.5,
-                      "y": 21,
-                      "z": 8,
-                      "color": "#C0C0C0",
-                      "name": "claw-right-1",
-                      "metalness": 0.6
-                    },
-                    {
-                      "type": "box",
-                      "width": 1.2,
-                      "height": 2.5,
-                      "depth": 1.2,
-                      "x": -9.5,
-                      "y": 21.5,
-                      "z": 7.5,
-                      "color": "#C0C0C0",
-                      "name": "claw-right-2",
-                      "metalness": 0.6
-                    }
-                  ],
                   "position": {
                     "x": -1.5,
                     "y": -2.7,
@@ -32028,94 +27257,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "left leg": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 8,
-                      "height": 14,
-                      "depth": 10,
-                      "x": 9,
-                      "y": 20,
-                      "z": 0,
-                      "color": "#4A5D25",
-                      "name": "thigh-left",
-                      "texture": "scales",
-                      "roughness": 0.7,
-                      "rotationX": -15,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "scaleX": 1,
-                      "scaleY": 1,
-                      "scaleZ": 1
-                    },
-                    {
-                      "type": "box",
-                      "width": 7,
-                      "height": 16,
-                      "depth": 7,
-                      "x": 9,
-                      "y": 9,
-                      "z": 0,
-                      "color": "#556B2F",
-                      "name": "shin-left",
-                      "texture": "scales",
-                      "rotationX": 30
-                    },
-                    {
-                      "type": "box",
-                      "width": 10,
-                      "height": 4,
-                      "depth": 16,
-                      "x": 9,
-                      "y": 1,
-                      "z": 0,
-                      "color": "#3D4D1E",
-                      "name": "foot-left",
-                      "roughness": 0.8,
-                      "rotationX": 20,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "scaleX": 1,
-                      "scaleY": 1,
-                      "scaleZ": 1
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "height": 5,
-                      "x": 6,
-                      "y": -2,
-                      "z": 8.5,
-                      "rotationX": 90,
-                      "color": "#606060",
-                      "name": "toe-left-1",
-                      "metalness": 0.3
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "height": 5,
-                      "x": 12,
-                      "y": -2,
-                      "z": 8.5,
-                      "rotationX": 90,
-                      "color": "#606060",
-                      "name": "toe-left-2",
-                      "metalness": 0.3
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "height": 5,
-                      "x": 9,
-                      "y": -2,
-                      "z": 9,
-                      "rotationX": 90,
-                      "color": "#606060",
-                      "name": "toe-left-3",
-                      "metalness": 0.3
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": 2.7,
@@ -32133,94 +27274,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "right leg": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 8,
-                      "height": 14,
-                      "depth": 10,
-                      "x": -9,
-                      "y": 20,
-                      "z": 0,
-                      "color": "#4A5D25",
-                      "name": "thigh-right",
-                      "texture": "scales",
-                      "roughness": 0.7,
-                      "rotationX": -15,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "scaleX": 1,
-                      "scaleY": 1,
-                      "scaleZ": 1
-                    },
-                    {
-                      "type": "box",
-                      "width": 7,
-                      "height": 16,
-                      "depth": 7,
-                      "x": -9,
-                      "y": 9,
-                      "z": 0,
-                      "color": "#556B2F",
-                      "name": "shin-right",
-                      "texture": "scales",
-                      "rotationX": 30,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "scaleX": 1,
-                      "scaleY": 1,
-                      "scaleZ": 1
-                    },
-                    {
-                      "type": "box",
-                      "width": 10,
-                      "height": 4,
-                      "depth": 16,
-                      "x": -9,
-                      "y": 1,
-                      "z": 0,
-                      "color": "#3D4D1E",
-                      "name": "foot-right",
-                      "roughness": 0.8,
-                      "rotationX": 20
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "height": 5,
-                      "x": -6,
-                      "y": -2,
-                      "z": 8.5,
-                      "rotationX": 90,
-                      "color": "#606060",
-                      "name": "toe-right-1",
-                      "metalness": 0.3
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "height": 5,
-                      "x": -12,
-                      "y": -2,
-                      "z": 8.5,
-                      "rotationX": 90,
-                      "color": "#606060",
-                      "name": "toe-right-2",
-                      "metalness": 0.3
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "height": 5,
-                      "x": -9,
-                      "y": -2,
-                      "z": 9,
-                      "rotationX": 90,
-                      "color": "#606060",
-                      "name": "toe-right-3",
-                      "metalness": 0.3
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": 5,
@@ -32238,79 +27291,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "body": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 18,
-                      "height": 32,
-                      "depth": 16,
-                      "x": 0,
-                      "y": 24,
-                      "z": -3,
-                      "rotationX": 40,
-                      "color": "#556B2F",
-                      "name": "torso-main",
-                      "texture": "scales",
-                      "roughness": 0.7
-                    },
-                    {
-                      "type": "box",
-                      "width": 13,
-                      "height": 11.5,
-                      "depth": 12.8,
-                      "x": 0,
-                      "y": 38,
-                      "z": 7.3,
-                      "rotationX": 10,
-                      "color": "#4D6227",
-                      "name": "neck",
-                      "texture": "scales",
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "scaleX": 1,
-                      "scaleY": 1,
-                      "scaleZ": 1
-                    },
-                    {
-                      "type": "cone",
-                      "size": 6,
-                      "height": 10,
-                      "x": 0,
-                      "y": 40,
-                      "z": -5,
-                      "rotationX": -55,
-                      "color": "#3D4D1E",
-                      "name": "dorsal-spike-1",
-                      "metalness": 0.3,
-                      "roughness": 0.8
-                    },
-                    {
-                      "type": "cone",
-                      "size": 5.5,
-                      "height": 9,
-                      "x": 0,
-                      "y": 34,
-                      "z": -10,
-                      "rotationX": -50,
-                      "color": "#3A4A1D",
-                      "name": "dorsal-spike-2",
-                      "metalness": 0.3,
-                      "roughness": 0.8
-                    },
-                    {
-                      "type": "cone",
-                      "size": 5,
-                      "height": 8,
-                      "x": 0,
-                      "y": 28,
-                      "z": -14,
-                      "rotationX": -45,
-                      "color": "#384919",
-                      "name": "dorsal-spike-3",
-                      "metalness": 0.3,
-                      "roughness": 0.8
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": 9.3,
@@ -32328,60 +27308,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "tail base": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 10,
-                      "height": 8,
-                      "depth": 18,
-                      "x": 0,
-                      "y": 20,
-                      "z": -20,
-                      "rotationX": -20,
-                      "color": "#4D6227",
-                      "name": "tail-base-segment",
-                      "texture": "scales"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 5,
-                      "height": 8,
-                      "x": 0,
-                      "y": 24,
-                      "z": -22,
-                      "rotationX": -25,
-                      "color": "#3A4A1D",
-                      "name": "tail-spike-1",
-                      "metalness": 0.3,
-                      "roughness": 0.8
-                    },
-                    {
-                      "type": "box",
-                      "width": 8,
-                      "height": 6,
-                      "depth": 16,
-                      "x": 0,
-                      "y": 18,
-                      "z": -36,
-                      "rotationX": -15,
-                      "color": "#4A5D25",
-                      "name": "tail-mid-segment",
-                      "texture": "scales"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 4,
-                      "height": 7,
-                      "x": 0,
-                      "y": 22,
-                      "z": -38,
-                      "rotationX": -20,
-                      "color": "#384919",
-                      "name": "tail-spike-2",
-                      "metalness": 0.3,
-                      "roughness": 0.8
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": 5,
@@ -32399,60 +27325,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 },
                 "tail tip": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 6,
-                      "height": 5,
-                      "depth": 14,
-                      "x": 0,
-                      "y": 16,
-                      "z": -50,
-                      "rotationX": -10,
-                      "color": "#556B2F",
-                      "name": "tail-end-segment",
-                      "texture": "scales"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 3.5,
-                      "height": 6,
-                      "x": 0,
-                      "y": 19,
-                      "z": -52,
-                      "rotationX": -15,
-                      "color": "#384919",
-                      "name": "tail-spike-3",
-                      "metalness": 0.3,
-                      "roughness": 0.8
-                    },
-                    {
-                      "type": "box",
-                      "width": 4,
-                      "height": 3,
-                      "depth": 10,
-                      "x": 0,
-                      "y": 14.5,
-                      "z": -62,
-                      "rotationX": -5,
-                      "color": "#4D6227",
-                      "name": "tail-tip-segment",
-                      "texture": "scales"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "height": 4,
-                      "x": 0,
-                      "y": 16.5,
-                      "z": -64,
-                      "rotationX": -10,
-                      "color": "#384919",
-                      "name": "tail-spike-4",
-                      "metalness": 0.3,
-                      "roughness": 0.8
-                    }
-                  ],
                   "position": {
                     "x": 0,
                     "y": 5,
@@ -32471,6 +27343,829 @@ const DEFAULT_PROJECT_CONFIG = {
                 }
               }
             ]
+          },
+          "model": {
+            "head": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 16,
+                  "height": 14,
+                  "depth": 22,
+                  "x": 0,
+                  "y": 42,
+                  "z": 14,
+                  "color": "#556B2F",
+                  "name": "head-main",
+                  "texture": "scales",
+                  "roughness": 0.8
+                },
+                {
+                  "type": "sphere",
+                  "size": 4.5,
+                  "x": -8,
+                  "y": 46,
+                  "z": 16,
+                  "color": "#DAA520",
+                  "name": "eye-right",
+                  "emissive": "#B8860B"
+                },
+                {
+                  "type": "sphere",
+                  "size": 2.2,
+                  "x": -8,
+                  "y": 46,
+                  "z": 17.5,
+                  "color": "#000000",
+                  "name": "pupil-right"
+                },
+                {
+                  "type": "sphere",
+                  "size": 4.5,
+                  "x": 8,
+                  "y": 46,
+                  "z": 16,
+                  "color": "#DAA520",
+                  "name": "eye-left",
+                  "emissive": "#B8860B"
+                },
+                {
+                  "type": "sphere",
+                  "size": 2.2,
+                  "x": 8,
+                  "y": 46,
+                  "z": 17.5,
+                  "color": "#000000",
+                  "name": "pupil-left"
+                },
+                {
+                  "type": "box",
+                  "width": 16,
+                  "height": 2,
+                  "depth": 6,
+                  "x": 0,
+                  "y": 50,
+                  "z": 14,
+                  "color": "#3D4D1E",
+                  "name": "brow-ridge",
+                  "texture": "rough"
+                },
+                {
+                  "type": "sphere",
+                  "size": 2,
+                  "x": -4.5,
+                  "y": 48.7,
+                  "z": 23.6,
+                  "color": "#556B2F",
+                  "name": "nostril-right",
+                  "rotationX": 0,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
+                },
+                {
+                  "type": "sphere",
+                  "size": 2,
+                  "x": 4.5,
+                  "y": 48.7,
+                  "z": 23.6,
+                  "color": "#556B2F",
+                  "name": "nostril-left",
+                  "rotationX": 0,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 2.5,
+                "z": 18.5
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "jaw": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 18.3,
+                  "height": 6,
+                  "depth": 20,
+                  "x": 0,
+                  "y": 30,
+                  "z": 16,
+                  "color": "#4D6227",
+                  "name": "jaw-main",
+                  "texture": "rough"
+                },
+                {
+                  "type": "box",
+                  "width": 12,
+                  "height": 2,
+                  "depth": 2,
+                  "x": 0,
+                  "y": 32.5,
+                  "z": 24.7,
+                  "color": "#A52A2A",
+                  "name": "gums",
+                  "roughness": 0.7
+                },
+                {
+                  "type": "box",
+                  "width": 1.8,
+                  "height": 4,
+                  "depth": 1.8,
+                  "x": -5,
+                  "y": 33,
+                  "z": 25,
+                  "color": "#F8F8FF",
+                  "name": "tooth-front-right",
+                  "shininess": 90
+                },
+                {
+                  "type": "box",
+                  "width": 1.8,
+                  "height": 4,
+                  "depth": 1.8,
+                  "x": 0,
+                  "y": 33,
+                  "z": 25,
+                  "color": "#F8F8FF",
+                  "name": "tooth-front-middle",
+                  "shininess": 90
+                },
+                {
+                  "type": "box",
+                  "width": 1.8,
+                  "height": 4,
+                  "depth": 1.8,
+                  "x": 5,
+                  "y": 33,
+                  "z": 25,
+                  "color": "#F8F8FF",
+                  "name": "tooth-front-left",
+                  "shininess": 90
+                },
+                {
+                  "type": "box",
+                  "width": 1.5,
+                  "height": 3,
+                  "depth": 1.5,
+                  "x": -7,
+                  "y": 33,
+                  "z": 22,
+                  "color": "#F8F8FF",
+                  "name": "tooth-side-right1",
+                  "shininess": 90
+                },
+                {
+                  "type": "box",
+                  "width": 1.5,
+                  "height": 3,
+                  "depth": 1.5,
+                  "x": 7,
+                  "y": 33,
+                  "z": 22,
+                  "color": "#F8F8FF",
+                  "name": "tooth-side-left1",
+                  "shininess": 90
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 10,
+                "z": 7.8
+              },
+              "rotation": {
+                "x": 0.3121059368272202,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "left arm": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 5,
+                  "height": 8,
+                  "depth": 5,
+                  "x": 11,
+                  "y": 28,
+                  "z": 0,
+                  "rotationX": -45,
+                  "color": "#4D6227",
+                  "name": "upper-arm-left",
+                  "texture": "scales"
+                },
+                {
+                  "type": "box",
+                  "width": 4,
+                  "height": 6,
+                  "depth": 4,
+                  "x": 11,
+                  "y": 24,
+                  "z": 4,
+                  "rotationX": -20,
+                  "color": "#485A22",
+                  "name": "lower-arm-left",
+                  "texture": "scales"
+                },
+                {
+                  "type": "box",
+                  "width": 3.8,
+                  "height": 3.5,
+                  "depth": 3,
+                  "x": 11,
+                  "y": 22,
+                  "z": 6,
+                  "color": "#707070",
+                  "name": "hand-left",
+                  "metalness": 0.5,
+                  "roughness": 0.7
+                },
+                {
+                  "type": "box",
+                  "width": 1.2,
+                  "height": 3,
+                  "depth": 1.2,
+                  "x": 12.5,
+                  "y": 21,
+                  "z": 8,
+                  "color": "#C0C0C0",
+                  "name": "claw-left-1",
+                  "metalness": 0.6
+                },
+                {
+                  "type": "box",
+                  "width": 1.2,
+                  "height": 2.5,
+                  "depth": 1.2,
+                  "x": 9.5,
+                  "y": 21.5,
+                  "z": 7.5,
+                  "color": "#C0C0C0",
+                  "name": "claw-left-2",
+                  "metalness": 0.6
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": -2.7,
+                "z": 10
+              },
+              "rotation": {
+                "x": 0.18890622492173986,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "right arm": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 5,
+                  "height": 8,
+                  "depth": 5,
+                  "x": -11,
+                  "y": 28,
+                  "z": 0,
+                  "rotationX": -45,
+                  "color": "#4D6227",
+                  "name": "upper-arm-right",
+                  "texture": "scales"
+                },
+                {
+                  "type": "box",
+                  "width": 4,
+                  "height": 6,
+                  "depth": 4,
+                  "x": -11,
+                  "y": 24,
+                  "z": 4,
+                  "rotationX": -20,
+                  "color": "#485A22",
+                  "name": "lower-arm-right",
+                  "texture": "scales"
+                },
+                {
+                  "type": "box",
+                  "width": 3.8,
+                  "height": 3.5,
+                  "depth": 3,
+                  "x": -11,
+                  "y": 22,
+                  "z": 6,
+                  "color": "#707070",
+                  "name": "hand-right",
+                  "metalness": 0.5,
+                  "roughness": 0.7
+                },
+                {
+                  "type": "box",
+                  "width": 1.2,
+                  "height": 3,
+                  "depth": 1.2,
+                  "x": -12.5,
+                  "y": 21,
+                  "z": 8,
+                  "color": "#C0C0C0",
+                  "name": "claw-right-1",
+                  "metalness": 0.6
+                },
+                {
+                  "type": "box",
+                  "width": 1.2,
+                  "height": 2.5,
+                  "depth": 1.2,
+                  "x": -9.5,
+                  "y": 21.5,
+                  "z": 7.5,
+                  "color": "#C0C0C0",
+                  "name": "claw-right-2",
+                  "metalness": 0.6
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": -2.7,
+                "z": 10
+              },
+              "rotation": {
+                "x": 0.19949192295270599,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "left leg": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 8,
+                  "height": 14,
+                  "depth": 10,
+                  "x": 9,
+                  "y": 20,
+                  "z": 0,
+                  "color": "#4A5D25",
+                  "name": "thigh-left",
+                  "texture": "scales",
+                  "roughness": 0.7,
+                  "rotationX": -15,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
+                },
+                {
+                  "type": "box",
+                  "width": 7,
+                  "height": 16,
+                  "depth": 7,
+                  "x": 9,
+                  "y": 9,
+                  "z": 0,
+                  "color": "#556B2F",
+                  "name": "shin-left",
+                  "texture": "scales",
+                  "rotationX": 30
+                },
+                {
+                  "type": "box",
+                  "width": 10,
+                  "height": 4,
+                  "depth": 16,
+                  "x": 9,
+                  "y": 1,
+                  "z": 0,
+                  "color": "#3D4D1E",
+                  "name": "foot-left",
+                  "roughness": 0.8,
+                  "rotationX": 20,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
+                },
+                {
+                  "type": "cone",
+                  "size": 2.5,
+                  "height": 5,
+                  "x": 6,
+                  "y": -2,
+                  "z": 8.5,
+                  "rotationX": 90,
+                  "color": "#606060",
+                  "name": "toe-left-1",
+                  "metalness": 0.3
+                },
+                {
+                  "type": "cone",
+                  "size": 2.5,
+                  "height": 5,
+                  "x": 12,
+                  "y": -2,
+                  "z": 8.5,
+                  "rotationX": 90,
+                  "color": "#606060",
+                  "name": "toe-left-2",
+                  "metalness": 0.3
+                },
+                {
+                  "type": "cone",
+                  "size": 2.5,
+                  "height": 5,
+                  "x": 9,
+                  "y": -2,
+                  "z": 9,
+                  "rotationX": 90,
+                  "color": "#606060",
+                  "name": "toe-left-3",
+                  "metalness": 0.3
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 2.5,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "right leg": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 8,
+                  "height": 14,
+                  "depth": 10,
+                  "x": -9,
+                  "y": 20,
+                  "z": 0,
+                  "color": "#4A5D25",
+                  "name": "thigh-right",
+                  "texture": "scales",
+                  "roughness": 0.7,
+                  "rotationX": -15,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
+                },
+                {
+                  "type": "box",
+                  "width": 7,
+                  "height": 16,
+                  "depth": 7,
+                  "x": -9,
+                  "y": 9,
+                  "z": 0,
+                  "color": "#556B2F",
+                  "name": "shin-right",
+                  "texture": "scales",
+                  "rotationX": 30,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
+                },
+                {
+                  "type": "box",
+                  "width": 10,
+                  "height": 4,
+                  "depth": 16,
+                  "x": -9,
+                  "y": 1,
+                  "z": 0,
+                  "color": "#3D4D1E",
+                  "name": "foot-right",
+                  "roughness": 0.8,
+                  "rotationX": 20
+                },
+                {
+                  "type": "cone",
+                  "size": 2.5,
+                  "height": 5,
+                  "x": -6,
+                  "y": -2,
+                  "z": 8.5,
+                  "rotationX": 90,
+                  "color": "#606060",
+                  "name": "toe-right-1",
+                  "metalness": 0.3
+                },
+                {
+                  "type": "cone",
+                  "size": 2.5,
+                  "height": 5,
+                  "x": -12,
+                  "y": -2,
+                  "z": 8.5,
+                  "rotationX": 90,
+                  "color": "#606060",
+                  "name": "toe-right-2",
+                  "metalness": 0.3
+                },
+                {
+                  "type": "cone",
+                  "size": 2.5,
+                  "height": 5,
+                  "x": -9,
+                  "y": -2,
+                  "z": 9,
+                  "rotationX": 90,
+                  "color": "#606060",
+                  "name": "toe-right-3",
+                  "metalness": 0.3
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 2.5,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "body": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 18,
+                  "height": 32,
+                  "depth": 16,
+                  "x": 0,
+                  "y": 24,
+                  "z": -3,
+                  "rotationX": 40,
+                  "color": "#556B2F",
+                  "name": "torso-main",
+                  "texture": "scales",
+                  "roughness": 0.7
+                },
+                {
+                  "type": "box",
+                  "width": 13,
+                  "height": 11.5,
+                  "depth": 12.8,
+                  "x": 0,
+                  "y": 38,
+                  "z": 7.3,
+                  "rotationX": 10,
+                  "color": "#4D6227",
+                  "name": "neck",
+                  "texture": "scales",
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
+                },
+                {
+                  "type": "cone",
+                  "size": 6,
+                  "height": 10,
+                  "x": 0,
+                  "y": 40,
+                  "z": -5,
+                  "rotationX": -55,
+                  "color": "#3D4D1E",
+                  "name": "dorsal-spike-1",
+                  "metalness": 0.3,
+                  "roughness": 0.8
+                },
+                {
+                  "type": "cone",
+                  "size": 5.5,
+                  "height": 9,
+                  "x": 0,
+                  "y": 34,
+                  "z": -10,
+                  "rotationX": -50,
+                  "color": "#3A4A1D",
+                  "name": "dorsal-spike-2",
+                  "metalness": 0.3,
+                  "roughness": 0.8
+                },
+                {
+                  "type": "cone",
+                  "size": 5,
+                  "height": 8,
+                  "x": 0,
+                  "y": 28,
+                  "z": -14,
+                  "rotationX": -45,
+                  "color": "#384919",
+                  "name": "dorsal-spike-3",
+                  "metalness": 0.3,
+                  "roughness": 0.8
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 9.5,
+                "z": -10
+              },
+              "rotation": {
+                "x": 0.7145583290517965,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "tail base": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 10,
+                  "height": 8,
+                  "depth": 18,
+                  "x": 0,
+                  "y": 20,
+                  "z": -20,
+                  "rotationX": -20,
+                  "color": "#4D6227",
+                  "name": "tail-base-segment",
+                  "texture": "scales"
+                },
+                {
+                  "type": "cone",
+                  "size": 5,
+                  "height": 8,
+                  "x": 0,
+                  "y": 24,
+                  "z": -22,
+                  "rotationX": -25,
+                  "color": "#3A4A1D",
+                  "name": "tail-spike-1",
+                  "metalness": 0.3,
+                  "roughness": 0.8
+                },
+                {
+                  "type": "box",
+                  "width": 8,
+                  "height": 6,
+                  "depth": 16,
+                  "x": 0,
+                  "y": 18,
+                  "z": -36,
+                  "rotationX": -15,
+                  "color": "#4A5D25",
+                  "name": "tail-mid-segment",
+                  "texture": "scales"
+                },
+                {
+                  "type": "cone",
+                  "size": 4,
+                  "height": 7,
+                  "x": 0,
+                  "y": 22,
+                  "z": -38,
+                  "rotationX": -20,
+                  "color": "#384919",
+                  "name": "tail-spike-2",
+                  "metalness": 0.3,
+                  "roughness": 0.8
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 5,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "tail tip": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 5,
+                  "depth": 14,
+                  "x": 0,
+                  "y": 16,
+                  "z": -50,
+                  "rotationX": -10,
+                  "color": "#556B2F",
+                  "name": "tail-end-segment",
+                  "texture": "scales"
+                },
+                {
+                  "type": "cone",
+                  "size": 3.5,
+                  "height": 6,
+                  "x": 0,
+                  "y": 19,
+                  "z": -52,
+                  "rotationX": -15,
+                  "color": "#384919",
+                  "name": "tail-spike-3",
+                  "metalness": 0.3,
+                  "roughness": 0.8
+                },
+                {
+                  "type": "box",
+                  "width": 4,
+                  "height": 3,
+                  "depth": 10,
+                  "x": 0,
+                  "y": 14.5,
+                  "z": -62,
+                  "rotationX": -5,
+                  "color": "#4D6227",
+                  "name": "tail-tip-segment",
+                  "texture": "scales"
+                },
+                {
+                  "type": "cone",
+                  "size": 2.5,
+                  "height": 4,
+                  "x": 0,
+                  "y": 16.5,
+                  "z": -64,
+                  "rotationX": -10,
+                  "color": "#384919",
+                  "name": "tail-spike-4",
+                  "metalness": 0.3,
+                  "roughness": 0.8
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 5,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
           }
         }
       },
@@ -33038,57 +28733,7 @@ const DEFAULT_PROJECT_CONFIG = {
             "idle": [
               {
                 "shapes": {
-                  "shapes": [
-                    {
-                      "type": "cylinder",
-                      "size": 10,
-                      "color": "#733f17",
-                      "x": 0,
-                      "y": 10.625,
-                      "z": 0,
-                      "rotationX": 0,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "height": 20,
-                      "scaleX": 1
-                    },
-                    {
-                      "type": "cone",
-                      "size": 40,
-                      "color": "#018314",
-                      "x": 0,
-                      "y": 50.625,
-                      "z": 0,
-                      "rotationX": 0,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "height": 60
-                    },
-                    {
-                      "type": "cone",
-                      "size": 35,
-                      "color": "#018314",
-                      "x": 0,
-                      "y": 60.625,
-                      "z": 0,
-                      "rotationX": 0,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "height": 40
-                    },
-                    {
-                      "type": "cone",
-                      "size": 15,
-                      "color": "#018314",
-                      "x": 0,
-                      "y": 75.625,
-                      "z": 0,
-                      "rotationX": 0,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "height": 15
-                    }
-                  ],
+                  "shapes": [],
                   "position": {
                     "x": 0,
                     "y": 0,
@@ -33107,6 +28752,76 @@ const DEFAULT_PROJECT_CONFIG = {
                 }
               }
             ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "cylinder",
+                  "size": 10,
+                  "color": "#733f17",
+                  "x": 0,
+                  "y": 10.625,
+                  "z": 0,
+                  "rotationX": 0,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "height": 20,
+                  "scaleX": 1
+                },
+                {
+                  "type": "cone",
+                  "size": 40,
+                  "color": "#018314",
+                  "x": 0,
+                  "y": 50.625,
+                  "z": 0,
+                  "rotationX": 0,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "height": 60
+                },
+                {
+                  "type": "cone",
+                  "size": 35,
+                  "color": "#018314",
+                  "x": 0,
+                  "y": 60.625,
+                  "z": 0,
+                  "rotationX": 0,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "height": 40
+                },
+                {
+                  "type": "cone",
+                  "size": 15,
+                  "color": "#018314",
+                  "x": 0,
+                  "y": 75.625,
+                  "z": 0,
+                  "rotationX": 0,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "height": 15
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
           }
         }
       },
@@ -33117,31 +28832,7 @@ const DEFAULT_PROJECT_CONFIG = {
             "idle": [
               {
                 "shapes": {
-                  "shapes": [
-                    {
-                      "type": "tetrahedron",
-                      "size": 16,
-                      "color": "#666666",
-                      "x": 3.5,
-                      "y": 2,
-                      "z": 2.5,
-                      "rotationX": 50,
-                      "rotationY": 140,
-                      "rotationZ": 10,
-                      "scaleX": 1
-                    },
-                    {
-                      "type": "tetrahedron",
-                      "size": 12,
-                      "color": "#5b5b5b",
-                      "x": 10.5,
-                      "y": 2,
-                      "z": 7.5,
-                      "rotationX": 50,
-                      "rotationY": 150,
-                      "rotationZ": 10
-                    }
-                  ],
+                  "shapes": [],
                   "position": {
                     "x": 0,
                     "y": 0,
@@ -33160,6 +28851,50 @@ const DEFAULT_PROJECT_CONFIG = {
                 }
               }
             ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "tetrahedron",
+                  "size": 16,
+                  "color": "#666666",
+                  "x": 3.5,
+                  "y": 2,
+                  "z": 2.5,
+                  "rotationX": 50,
+                  "rotationY": 140,
+                  "rotationZ": 10,
+                  "scaleX": 1
+                },
+                {
+                  "type": "tetrahedron",
+                  "size": 12,
+                  "color": "#5b5b5b",
+                  "x": 10.5,
+                  "y": 2,
+                  "z": 7.5,
+                  "rotationX": 50,
+                  "rotationY": 150,
+                  "rotationZ": 10
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
           }
         }
       }
@@ -36631,6 +32366,26 @@ const DEFAULT_PROJECT_CONFIG = {
                 }
               }
             ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
           }
         },
         "lifeSpan": 0.66
@@ -36829,7 +32584,7 @@ const DEFAULT_PROJECT_CONFIG = {
     },
     "libraries": {
       "GraphicsEditor": {
-        "script": "// Core structure\nclass GraphicsEditor {\n    constructor(gameEditor, config, {ShapeFactory, GE_SceneRenderer, GE_ShapeManager, GE_AnimationManager, GE_RotationUtils, GE_UIManager, GE_GroupManager}) {\n        this.gameEditor = gameEditor;\n        this.config = config;\n        this.shapeFactory = new ShapeFactory();\n        this.canvas = document.getElementById('graphics-editor-canvas');\n        // Initialize sub-modules\n        this.sceneRenderer = new GE_SceneRenderer(gameEditor, this);\n        this.shapeManager = new GE_ShapeManager(gameEditor, this);\n        this.uiManager = new GE_UIManager(gameEditor, this);\n        this.animationManager = new GE_AnimationManager(gameEditor, this);\n        this.groupManager = new GE_GroupManager(gameEditor, this);\n        this.rotationUtils = GE_RotationUtils;\n        // State management (simplified)\n        this.state = {\n            selectedShapeIndex: -1,\n            currentAnimation: \"idle\",\n            selectedGroup: \"main\",\n            currentFrame: 0,\n            renderData: { animations: { idle: [{ main: { shapes: [], position: {x: 0, y: 0, z: 0}, rotation: {x:0,y:0,z:0}, scale: {x:1, y:1, z:1}} }] } }\n        };\n        \n        this.rootGroup = new window.THREE.Group(); // Main container for all shapes\n        this.rootGroup.name = \"rootGroup\";\n\n        this.init();\n    }\n    \n    init() {\n        this.sceneRenderer.init();\n        this.uiManager.init();\n        this.shapeManager.init();\n        this.animationManager.init();\n        this.groupManager.init();\n        this.sceneRenderer.animate();\n    }\n    displayIsometricSprites(sprites){\n        this.uiManager.displayIsometricSprites(sprites);\n    }\n    async renderShapes(fireSave = true) {\n        // Clear the root group\n        while (this.rootGroup.children.length > 0) {\n            const obj = this.rootGroup.children[0];\n            this.shapeFactory.disposeObject(obj);\n            this.shapeManager.originalMaterials.delete(obj);\n            this.rootGroup.remove(obj);\n        }\n    \n        // Add lights if they don't exist\n        if (!this.sceneRenderer.scene.getObjectByName('ambient-light')) {\n            const ambientLight = new window.THREE.AmbientLight(0xffffff, 0.6);\n            ambientLight.name = 'ambient-light';\n            this.sceneRenderer.scene.add(ambientLight);\n            const directionalLight = new window.THREE.DirectionalLight(0xffffff, 0.8);\n            directionalLight.position.set(5, 10, 7.5);\n            directionalLight.name = 'dir-light';\n            this.sceneRenderer.scene.add(directionalLight);\n        }\n            \n        const currentAnimation = this.state.currentAnimation;\n        const currentFrame = this.state.currentFrame;\n        \n        // Ensure animation and frame exist\n        if (!this.state.renderData.animations[currentAnimation] || \n            !this.state.renderData.animations[currentAnimation][currentFrame]) {\n            console.warn(\"Animation or frame doesn't exist:\", currentAnimation, currentFrame);\n            return;\n        }\n        \n        let frameData = this.state.renderData.animations[currentAnimation][currentFrame];\n        \n        // Backward compatibility: If frameData is not structured as groups\n        if (Array.isArray(frameData)) {\n            console.warn(\"Old format detected, converting to new group format\");\n            this.state.renderData.animations[currentAnimation][currentFrame] = { shapes: frameData };\n            frameData = this.state.renderData.animations[currentAnimation][currentFrame];\n        }\n        \n        // Create a group for each group in the frame\n        for (const groupName in frameData) {\n            if (Array.isArray(frameData[groupName])) {\n                let shapes = frameData[groupName];\n                let newGroup = {...this.groupManager.DEFAULT_GROUP};\n                newGroup.shapes = shapes;\n                this.state.renderData.animations[currentAnimation][currentFrame][groupName] = newGroup;\n                frameData = this.state.renderData.animations[currentAnimation][currentFrame];\n            }\n            \n            \n            // Create objects for this group\n            const groupData = frameData[groupName];\n            let threeGroup = await this.shapeFactory.createGroupFromJSON(groupData); \n            threeGroup.name = groupName;\n            // Add the group to the root group\n            this.rootGroup.add(threeGroup);\n        }\n            \n        // Count total shapes for display\n        let totalShapes = 0;\n        for (const groupName in frameData) {\n            if (Array.isArray(frameData[groupName].shapes)) {\n                totalShapes += frameData[groupName].shapes.length;\n            }\n        }\n        document.getElementById('shape-count').textContent = totalShapes;\n        \n        // Update JSON display\n        document.getElementById('json-content').value = JSON.stringify(this.state.renderData, null, 2);\n    \n        if (fireSave) {\n            const myCustomEvent = new CustomEvent('saveGraphicsObject', {\n                detail: { data: this.state.renderData, propertyName: 'render' },\n                bubbles: true,\n                cancelable: true\n            });\n            document.body.dispatchEvent(myCustomEvent);\n        } else {\n            let valEl = this.gameEditor.elements.editor.querySelector(`#render-value`);\n            if (valEl) {\n                valEl.value = JSON.stringify(this.state.renderData);\n            }\n        }\n    \n        // Highlight the selected shape if any\n        this.shapeManager.highlightSelectedShape();\n        this.shapeManager.updateGizmoPosition();\n    }\n    \n\n    refreshShapes(param) {\n        this.shapeManager.updateList();\n        this.renderShapes(param);\n    }\n\n    createInspector(shape) {\n        this.uiManager.createInspector(shape);\n    }\n\n    setPreviewAnimationState(state) {\n        return this.animationManager.setPreviewAnimationState(state);\n    }\n\n    selectShape(index) {\n        return this.shapeManager.selectShape(index);\n    }\n}\n",
+        "script": "// Core structure\nclass GraphicsEditor {\n    constructor(gameEditor, config, {ShapeFactory, GE_SceneRenderer, GE_ShapeManager, GE_AnimationManager, GE_RotationUtils, GE_UIManager, GE_GroupManager}) {\n        this.gameEditor = gameEditor;\n        this.config = config;\n        this.shapeFactory = new ShapeFactory();\n        this.canvas = document.getElementById('graphics-editor-canvas');\n        // Initialize sub-modules\n        this.sceneRenderer = new GE_SceneRenderer(gameEditor, this);\n        this.shapeManager = new GE_ShapeManager(gameEditor, this);\n        this.uiManager = new GE_UIManager(gameEditor, this);\n        this.animationManager = new GE_AnimationManager(gameEditor, this);\n        this.groupManager = new GE_GroupManager(gameEditor, this);\n        this.rotationUtils = GE_RotationUtils;\n        // State management (simplified)\n        this.state = {\n            selectedShapeIndex: -1,\n            currentAnimation: \"idle\",\n            selectedGroup: \"main\",\n            currentFrame: 0,\n            renderData: { model: {}, animations: { idle: [{ main: { shapes: [], position: {x: 0, y: 0, z: 0}, rotation: {x:0,y:0,z:0}, scale: {x:1, y:1, z:1}} }] } }\n        };\n        \n        this.rootGroup = new window.THREE.Group(); // Main container for all shapes\n        this.rootGroup.name = \"rootGroup\";\n\n        this.init();\n    }\n    \n    init() {\n        this.sceneRenderer.init();\n        this.uiManager.init();\n        this.shapeManager.init();\n        this.animationManager.init();\n        this.groupManager.init();\n        this.sceneRenderer.animate();\n    }\n    displayIsometricSprites(sprites){\n        this.uiManager.displayIsometricSprites(sprites);\n    }\n    async renderShapes(fireSave = true) {\n        // Clear the root group\n        while (this.rootGroup.children.length > 0) {\n            const obj = this.rootGroup.children[0];\n            this.shapeFactory.disposeObject(obj);\n            this.shapeManager.originalMaterials.delete(obj);\n            this.rootGroup.remove(obj);\n        }\n    \n        // Add lights if they don't exist\n        if (!this.sceneRenderer.scene.getObjectByName('ambient-light')) {\n            const ambientLight = new window.THREE.AmbientLight(0xffffff, 0.6);\n            ambientLight.name = 'ambient-light';\n            this.sceneRenderer.scene.add(ambientLight);\n            const directionalLight = new window.THREE.DirectionalLight(0xffffff, 0.8);\n            directionalLight.position.set(5, 10, 7.5);\n            directionalLight.name = 'dir-light';\n            this.sceneRenderer.scene.add(directionalLight);\n        }\n            \n        const currentAnimation = this.state.currentAnimation;\n        const currentFrame = this.state.currentFrame;\n        \n        // Ensure animation and frame exist\n        if (!this.state.renderData.animations[currentAnimation] || \n            !this.state.renderData.animations[currentAnimation][currentFrame]) {\n            console.warn(\"Animation or frame doesn't exist:\", currentAnimation, currentFrame);\n            return;\n        }\n        \n        let frameData = this.state.renderData.animations[currentAnimation][currentFrame];\n        //model is a Frame that has named groups as properties.\n        let model = this.state.renderData.model;\n\n   \n        // Backward compatibility: If frameData is not structured as groups\n        if (Array.isArray(frameData)) {\n            console.warn(\"Old format detected, converting to new group format\");\n            let newGroup = {...this.groupManager.DEFAULT_GROUP};\n            newGroup.shapes = frameData;\n            this.state.renderData.animations[currentAnimation][currentFrame] = newGroup;\n            frameData = this.state.renderData.animations[currentAnimation][currentFrame];\n        }\n        if(!model) {\n            this.state.renderData.model = JSON.parse(JSON.stringify(this.state.renderData.animations['idle'][0])); // Deep copy\n            model = this.state.renderData.model;\n        }\n        // Create a group for each group in the frame\n        for (const groupName in frameData) {\n            const frameGroup = frameData[groupName];\n            const modelGroup = model[groupName];\n            if (Array.isArray(frameGroup)) {\n                let shapes = frameGroup;\n                let newGroup = {...this.groupManager.DEFAULT_GROUP};\n                newGroup.shapes = shapes;\n                this.state.renderData.animations[currentAnimation][currentFrame][groupName] = newGroup;\n                frameData = this.state.renderData.animations[currentAnimation][currentFrame];\n            }            \n            let mergedShapes = [];\n            for(let i = 0; i < modelGroup.shapes.length; i++){\n                let modelShape = modelGroup.shapes[i];\n                if(!frameGroup.shapes){\n                    mergedShapes.push(JSON.parse(JSON.stringify(modelShape)));\n                    continue;\n                }\n                if(frameGroup.shapes.length <= i) {\n                    frameGroup.shapes.push({});\n                }\n                let mergedShape = {};\n                if(typeof frameGroup.shapes[i].id == \"undefined\"){\n                    frameGroup.shapes[i].id = i;\n                }\n                for(const key in modelShape) {\n                    let frameShape = frameGroup.shapes.find((shape) => shape.id == i);\n                    if(frameShape && typeof frameShape[key] != \"undefined\" && modelShape[key] === frameShape[key]){\n                        delete frameShape[key];                        \n                        mergedShape[key] = modelShape[key];\n                    } else if(!frameShape || typeof frameShape[key] == \"undefined\"){\n                        mergedShape[key] = modelShape[key];\n                    } else {\n                        mergedShape[key] = frameShape[key];\n                    }\n                }\n                mergedShapes.push(mergedShape);\n            }\n            if(frameGroup.shapes){\n                for(let i = frameGroup.shapes.length - 1; i >= 0; i--){\n                    let shape = frameGroup.shapes[i];\n                    if(Object.keys(shape).length == 1){\n                        frameGroup.shapes.splice(i, 1);\n                    }\n                }  \n            }                         \n            const mergedGroup = {\n                ...modelGroup,\n                ...frameGroup,\n            };\n            mergedGroup.shapes = mergedShapes;\n            let threeGroup = await this.shapeFactory.createGroupFromJSON(mergedGroup); \n            threeGroup.name = groupName;\n            // Add the group to the root group\n            this.rootGroup.add(threeGroup);\n        }\n            \n        // Count total shapes for display\n        let totalShapes = 0;\n        for (const groupName in model) {\n            if (Array.isArray(model[groupName].shapes)) {\n                totalShapes += model[groupName].shapes.length;\n            }\n        }\n        document.getElementById('shape-count').textContent = totalShapes;\n        \n        // Update JSON display\n        document.getElementById('json-content').value = JSON.stringify(this.state.renderData, null, 2);\n    \n        console.log(this.state.renderData);\n        if (fireSave) {\n            const myCustomEvent = new CustomEvent('saveGraphicsObject', {\n                detail: { data: this.state.renderData, propertyName: 'render' },\n                bubbles: true,\n                cancelable: true\n            });\n            document.body.dispatchEvent(myCustomEvent);\n        } else {\n            let valEl = this.gameEditor.elements.editor.querySelector(`#render-value`);\n            if (valEl) {\n                valEl.value = JSON.stringify(this.state.renderData);\n            }\n        }\n    \n        // Highlight the selected shape if any\n        this.shapeManager.highlightSelectedShape();\n        this.shapeManager.updateGizmoPosition();\n    }\n    \n\n    refreshShapes(param) {\n        this.shapeManager.updateList();\n        this.renderShapes(param);\n    }\n\n    createInspector(shape) {\n        this.uiManager.createInspector(shape);\n    }\n\n    setPreviewAnimationState(state) {\n        return this.animationManager.setPreviewAnimationState(state);\n    }\n\n    selectShape(index) {\n        return this.shapeManager.selectShape(index);\n    }\n}\n",
         "fileName": "GraphicsEditor",
         "title": "GraphicsEditor"
       },
@@ -36966,7 +32721,7 @@ const DEFAULT_PROJECT_CONFIG = {
       },
       "GE_GroupManager": {
         "title": "GE_GroupManager",
-        "script": "class GE_GroupManager {\n    constructor(gameEditor, graphicsEditor) {\n        this.gameEditor = gameEditor;\n        this.graphicsEditor = graphicsEditor;\n        this.selectedGroupName = \"shapes\"; // Default to the shapes group\n        this.DEFAULT_GROUP = {\n            shapes: [],\n            position: { x: 0, y: 0, z: 0 },\n            rotation: { x: 0, y: 0, z: 0 },\n            scale: { x: 1.0, y: 1.0, z: 1.0 }\n        };\n    }\n\n    init() {\n        document.getElementById('create-group').addEventListener('click', this.createGroup.bind(this));\n        document.getElementById('delete-group').addEventListener('click', this.deleteGroup.bind(this));\n        \n       \n        // Update the group list initially\n        this.updateGroupList();\n        \n        // Initialize drag-and-drop\n        this.initDragAndDrop();\n    }\n\n    // Initialize drag and drop functionality\n    initDragAndDrop() {\n        // Make group items drop targets\n        const groupList = document.getElementById('group-list');\n        groupList.addEventListener('dragover', this.handleDragOver.bind(this));\n        groupList.addEventListener('drop', this.handleDrop.bind(this));\n    }\n    \n    handleDragOver(e) {\n        e.preventDefault(); // Allow drop\n        e.dataTransfer.dropEffect = 'move';\n        \n        // Highlight the group being dragged over\n        const groupItem = this.findGroupItemFromEvent(e);\n        if (groupItem) {\n            // Remove highlight from all groups\n            document.querySelectorAll('.group-item').forEach(item => {\n                item.classList.remove('drag-over');\n            });\n            \n            // Add highlight to target group\n            groupItem.classList.add('drag-over');\n        }\n    }\n    \n    handleDrop(e) {\n        e.preventDefault();\n        \n        // Remove all drag-over highlights\n        document.querySelectorAll('.group-item').forEach(item => {\n            item.classList.remove('drag-over');\n        });\n        \n        // Find the target group\n        const groupItem = this.findGroupItemFromEvent(e);\n        if (!groupItem) return;\n        \n        const targetGroup = groupItem.dataset.group;\n        \n        // Get the shape data from dataTransfer\n        const data = e.dataTransfer.getData('text/plain');\n        if (!data) return;\n        \n        try {\n            const dragData = JSON.parse(data);\n            const { shapeIndex, sourceGroup } = dragData;\n            \n            // Don't move if source and target are the same\n            if (sourceGroup === targetGroup) return;\n            \n            // Move the shape to the target group\n            this.moveToGroup(parseInt(shapeIndex), sourceGroup, targetGroup);\n        } catch (err) {\n            console.error('Error processing drop:', err);\n        }\n    }\n    \n    findGroupItemFromEvent(e) {\n        let target = e.target;\n        // Traverse up to find the group-item\n        while (target && !target.classList.contains('group-item')) {\n            target = target.parentElement;\n            if (!target || target === document.body) return null;\n        }\n        return target;\n    }\n\n    // Create a new group at the frame level\n    createGroup() {\n        const groupName = prompt(\"Enter group name:\", \"group_\" + Date.now());\n        if (!groupName || groupName === \"shapes\") {\n            alert(\"Invalid group name or 'shapes' is reserved\");\n            return;\n        }\n\n        const currentAnimation = this.graphicsEditor.state.currentAnimation;\n        const currentFrame = this.graphicsEditor.state.currentFrame;\n        \n        // Ensure we have current frame data\n        if (!this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame]) {\n            this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame] = {};\n        }\n        \n        // Initialize group if it doesn't exist\n        if (!this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame][groupName]) {\n            // Using JSON parse/stringify for deep copying\n            this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame][groupName] = JSON.parse(JSON.stringify(this.DEFAULT_GROUP));\n        }\n        \n        // Switch selection to the new group\n        this.selectedGroupName = groupName;\n        \n        // Refresh UI\n        this.graphicsEditor.shapeManager.updateList();\n        this.graphicsEditor.refreshShapes(true);\n    }\n\n    // Move an object from one group to another\n    moveToGroup(shapeIndex, fromGroupName, toGroupName) {\n        const currentAnimation = this.graphicsEditor.state.currentAnimation;\n        const currentFrame = this.graphicsEditor.state.currentFrame;\n        const currentFrameData = this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame];\n        \n        // Find the shape in the source group\n        const sourceGroup = currentFrameData[fromGroupName];\n        if (!sourceGroup) {\n            console.warn(`Source group ${fromGroupName} not found`);\n            return;\n        }\n        \n        // Find the shape\n        const shapeToMove = sourceGroup[fromGroupName][shapeIndex];\n        if (!shapeToMove) {\n            console.warn(`Shape at index ${shapeIndex} not found in ${fromGroupName}`);\n            return;\n        }\n        \n        // Remove from source group\n        sourceGroup[fromGroupName].splice(shapeIndex, 1);\n        \n        // Ensure target group exists\n        if (!currentFrameData[toGroupName]) {\n            currentFrameData[toGroupName] = this.DEFAULT_GROUP;\n        }\n        \n        // Add to target group\n        currentFrameData[toGroupName].shapes.push(shapeToMove);\n        \n        // Clear selection\n        this.graphicsEditor.state.selectedShapeIndex = -1;\n        \n        // Update UI\n        this.graphicsEditor.refreshShapes(true);\n    }\n\n    getGroupData(groupName){\n        return this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][groupName];\n    }\n    // Select a group to work with\n    selectGroup(groupName) {\n        if (!groupName) return;\n        \n        // Update the selected group name\n        this.selectedGroupName = groupName;\n        this.graphicsEditor.state.currentGroup = groupName;\n        this.graphicsEditor.state.selectedShapeIndex = -1;\n        let groupData = this.getGroupData(groupName);\n        // Update the UI to show shapes in this group\n        this.graphicsEditor.shapeManager.updateList();\n        this.graphicsEditor.shapeManager.highlightSelectedShape();\n        this.graphicsEditor.uiManager.createGroupInspector(groupData);\n        this.graphicsEditor.shapeManager.transformGroup(this.getGroupObject(groupName));\n        \n        // Update the selected class on group items\n        this.updateSelectedGroupClass(groupName);\n    }\n    updateSelectedGroupClass(groupName) {\n        // Remove selected class from all group items\n        const groupItems = document.querySelectorAll('.group-item');\n        groupItems.forEach(item => {\n            item.classList.remove('selected');\n        });\n        \n        // Add selected class to the newly selected group\n        const selectedGroupItem = Array.from(groupItems).find(\n            item => item.dataset.group === groupName\n        );\n        \n        if (selectedGroupItem) {\n            selectedGroupItem.classList.add('selected');\n        }\n    }\n    // Remove a group and place its contents back in the shapes group\n    deleteGroup() {\n        \n        const currentAnimation = this.graphicsEditor.state.currentAnimation;\n        const currentFrame = this.graphicsEditor.state.currentFrame;\n        const currentFrameData = this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame];\n        \n        // Get shapes from the selected group\n        const groupShapes = currentFrameData[this.selectedGroupName].shapes;\n        if (groupShapes.length > 0) {\n            alert('Group must be empty to delete.');\n            return;\n        }\n                        \n        // Remove the group\n        delete currentFrameData[this.selectedGroupName];\n        \n        // Reset selection to shapes group\n        this.selectedGroupName = \"shapes\";\n        this.graphicsEditor.state.selectedShapeIndex = -1;\n        \n        // Update UI\n        this.updateGroupList();\n        this.graphicsEditor.refreshShapes(true);\n    }\n    getGroupObject(groupName) {\n        let foundGroup = null;\n        this.graphicsEditor.rootGroup.traverse(obj => {\n            if (obj.isGroup && obj.name === groupName && obj.userData.isGroup) {\n                foundGroup = obj;\n            }\n        });\n        return foundGroup;\n    }\n    // Get all available groups in the current frame\n    getGroups() {\n        const currentAnimation = this.graphicsEditor.state.currentAnimation;\n        const currentFrame = this.graphicsEditor.state.currentFrame;\n        \n        if (!this.graphicsEditor.state.renderData.animations[currentAnimation] ||\n            !this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame]) {\n            return [\"shapes\"];\n        }\n        \n        return Object.keys(this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame]);\n    }\n\n    applyGroupTransform(groupName, position, rotation, scale) {\n        // Get the current frame data\n        const currentAnimation = this.graphicsEditor.state.currentAnimation;\n        const currentFrame = this.graphicsEditor.state.currentFrame;\n        const frameData = this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame];\n        \n        // Ensure the group exists in the frame data\n        if (!frameData[groupName]) {\n            console.warn(`Group ${groupName} not found in frame data`);\n            return;\n        }\n \n        // Save transformations to the group data\n        frameData[groupName].position = {\n            x: position.x,\n            y: position.y,\n            z: position.z\n        };\n        frameData[groupName].rotation = {\n            x: rotation.x,\n            y: rotation.y,\n            z: rotation.z\n        };\n        frameData[groupName].scale = {\n            x: scale.x,\n            y: scale.y,\n            z: scale.z\n        };\n    \n        // Refresh the scene to see changes\n        this.graphicsEditor.refreshShapes(true);\n    }\n    // Update the group list in the UI\n    updateGroupList() {\n        const list = document.getElementById('group-list');\n        if (!list) {\n            console.warn(\"Group list element not found\");\n            return;\n        }\n        \n        list.innerHTML = '';\n        \n        const groups = this.getGroups();\n        for (const group of groups) {\n            const groupItem = document.createElement('div');\n            groupItem.classList.add('group-item');\n            if (group === this.selectedGroupName) {\n                groupItem.classList.add('selected');\n            }\n            \n            groupItem.textContent = group;\n            groupItem.addEventListener('click', () => this.selectGroup(group));\n            \n            // Make it a valid drop target for drag and drop\n            groupItem.dataset.group = group;\n            \n            list.appendChild(groupItem);\n        }\n    }\n}",
+        "script": "class GE_GroupManager {\n    constructor(gameEditor, graphicsEditor) {\n        this.gameEditor = gameEditor;\n        this.graphicsEditor = graphicsEditor;\n        this.selectedGroupName = \"shapes\"; // Default to the shapes group\n        this.DEFAULT_GROUP = {\n            shapes: [],\n            position: { x: 0, y: 0, z: 0 },\n            rotation: { x: 0, y: 0, z: 0 },\n            scale: { x: 1.0, y: 1.0, z: 1.0 }\n        };\n    }\n\n    init() {\n        document.getElementById('create-group').addEventListener('click', this.createGroup.bind(this));\n        document.getElementById('delete-group').addEventListener('click', this.deleteGroup.bind(this));\n        \n       \n        // Update the group list initially\n        this.updateGroupList();\n        \n        // Initialize drag-and-drop\n        this.initDragAndDrop();\n    }\n\n    // Initialize drag and drop functionality\n    initDragAndDrop() {\n        // Make group items drop targets\n        const groupList = document.getElementById('group-list');\n        groupList.addEventListener('dragover', this.handleDragOver.bind(this));\n        groupList.addEventListener('drop', this.handleDrop.bind(this));\n    }\n    \n    handleDragOver(e) {\n        e.preventDefault(); // Allow drop\n        e.dataTransfer.dropEffect = 'move';\n        \n        // Highlight the group being dragged over\n        const groupItem = this.findGroupItemFromEvent(e);\n        if (groupItem) {\n            // Remove highlight from all groups\n            document.querySelectorAll('.group-item').forEach(item => {\n                item.classList.remove('drag-over');\n            });\n            \n            // Add highlight to target group\n            groupItem.classList.add('drag-over');\n        }\n    }\n    \n    handleDrop(e) {\n        e.preventDefault();\n        \n        // Remove all drag-over highlights\n        document.querySelectorAll('.group-item').forEach(item => {\n            item.classList.remove('drag-over');\n        });\n        \n        // Find the target group\n        const groupItem = this.findGroupItemFromEvent(e);\n        if (!groupItem) return;\n        \n        const targetGroup = groupItem.dataset.group;\n        \n        // Get the shape data from dataTransfer\n        const data = e.dataTransfer.getData('text/plain');\n        if (!data) return;\n        \n        try {\n            const dragData = JSON.parse(data);\n            const { shapeIndex, sourceGroup } = dragData;\n            \n            // Don't move if source and target are the same\n            if (sourceGroup === targetGroup) return;\n            \n            // Move the shape to the target group\n            this.moveToGroup(parseInt(shapeIndex), sourceGroup, targetGroup);\n        } catch (err) {\n            console.error('Error processing drop:', err);\n        }\n    }\n    \n    findGroupItemFromEvent(e) {\n        let target = e.target;\n        // Traverse up to find the group-item\n        while (target && !target.classList.contains('group-item')) {\n            target = target.parentElement;\n            if (!target || target === document.body) return null;\n        }\n        return target;\n    }\n\n    // Create a new group at the frame level\n    createGroup() {\n        const groupName = prompt(\"Enter group name:\", \"group_\" + Date.now());\n        if (!groupName || groupName === \"shapes\") {\n            alert(\"Invalid group name or 'shapes' is reserved\");\n            return;\n        }\n\n        const currentAnimation = this.graphicsEditor.state.currentAnimation;\n        const currentFrame = this.graphicsEditor.state.currentFrame;\n        \n        // Ensure we have current frame data\n        if (!this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame]) {\n            this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame] = {};\n        }\n        \n        // Initialize group if it doesn't exist\n        if (!this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame][groupName]) {\n            // Using JSON parse/stringify for deep copying\n            this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame][groupName] = JSON.parse(JSON.stringify(this.DEFAULT_GROUP));\n        }\n        \n        // Switch selection to the new group\n        this.selectedGroupName = groupName;\n        \n        // Refresh UI\n        this.graphicsEditor.shapeManager.updateList();\n        this.graphicsEditor.refreshShapes(true);\n    }\n\n    // Move an object from one group to another\n    moveToGroup(shapeIndex, fromGroupName, toGroupName) {\n        const currentAnimation = this.graphicsEditor.state.currentAnimation;\n        const currentFrame = this.graphicsEditor.state.currentFrame;\n        const currentFrameData = this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame];\n        \n        // Find the shape in the source group\n        const sourceGroup = currentFrameData[fromGroupName];\n        if (!sourceGroup) {\n            console.warn(`Source group ${fromGroupName} not found`);\n            return;\n        }\n        \n        // Find the shape\n        const shapeToMove = sourceGroup[fromGroupName][shapeIndex];\n        if (!shapeToMove) {\n            console.warn(`Shape at index ${shapeIndex} not found in ${fromGroupName}`);\n            return;\n        }\n        \n        // Remove from source group\n        sourceGroup[fromGroupName].splice(shapeIndex, 1);\n        \n        // Ensure target group exists\n        if (!currentFrameData[toGroupName]) {\n            currentFrameData[toGroupName] = this.DEFAULT_GROUP;\n        }\n        \n        // Add to target group\n        currentFrameData[toGroupName].shapes.push(shapeToMove);\n        \n        // Clear selection\n        this.graphicsEditor.state.selectedShapeIndex = -1;\n        \n        // Update UI\n        this.graphicsEditor.refreshShapes(true);\n    }\n\n    getGroupData(groupName){\n        let groupData = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][groupName];\n        let mergedData = { ...JSON.parse(JSON.stringify(this.graphicsEditor.state.renderData.model[groupName])), ...groupData };\n\n        return mergedData;\n    }\n    // Select a group to work with\n    selectGroup(groupName) {\n        if (!groupName) return;\n        \n        // Update the selected group name\n        this.selectedGroupName = groupName;\n        this.graphicsEditor.state.currentGroup = groupName;\n        this.graphicsEditor.state.selectedShapeIndex = -1;\n        let groupData = this.getGroupData(groupName);\n        // Update the UI to show shapes in this group\n        this.graphicsEditor.shapeManager.updateList();\n        this.graphicsEditor.shapeManager.highlightSelectedShape();\n        this.graphicsEditor.uiManager.createGroupInspector(groupData);\n        this.graphicsEditor.shapeManager.transformGroup(this.getGroupObject(groupName));\n        \n        // Update the selected class on group items\n        this.updateSelectedGroupClass(groupName);\n    }\n    updateSelectedGroupClass(groupName) {\n        // Remove selected class from all group items\n        const groupItems = document.querySelectorAll('.group-item');\n        groupItems.forEach(item => {\n            item.classList.remove('selected');\n        });\n        \n        // Add selected class to the newly selected group\n        const selectedGroupItem = Array.from(groupItems).find(\n            item => item.dataset.group === groupName\n        );\n        \n        if (selectedGroupItem) {\n            selectedGroupItem.classList.add('selected');\n        }\n    }\n    // Remove a group and place its contents back in the shapes group\n    deleteGroup() {\n        \n        const currentAnimation = this.graphicsEditor.state.currentAnimation;\n        const currentFrame = this.graphicsEditor.state.currentFrame;\n        const currentFrameData = this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame];\n        \n        // Get shapes from the selected group\n        const groupShapes = currentFrameData[this.selectedGroupName].shapes;\n        if (groupShapes.length > 0) {\n            alert('Group must be empty to delete.');\n            return;\n        }\n                        \n        // Remove the group\n        delete currentFrameData[this.selectedGroupName];\n        \n        // Reset selection to shapes group\n        this.selectedGroupName = \"shapes\";\n        this.graphicsEditor.state.selectedShapeIndex = -1;\n        \n        // Update UI\n        this.updateGroupList();\n        this.graphicsEditor.refreshShapes(true);\n    }\n    getGroupObject(groupName) {\n        let foundGroup = null;\n        this.graphicsEditor.rootGroup.traverse(obj => {\n            if (obj.isGroup && obj.name === groupName && obj.userData.isGroup) {\n                foundGroup = obj;\n            }\n        });\n        return foundGroup;\n    }\n    // Get all available groups in the current frame\n    getGroups() {\n        const currentAnimation = this.graphicsEditor.state.currentAnimation;\n        const currentFrame = this.graphicsEditor.state.currentFrame;\n        \n        if (!this.graphicsEditor.state.renderData.animations[currentAnimation] ||\n            !this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame]) {\n            return [\"shapes\"];\n        }\n        \n        return Object.keys(this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame]);\n    }\n\n    applyGroupTransform(groupName, position, rotation, scale) {\n        // Get the current frame data\n        const currentAnimation = this.graphicsEditor.state.currentAnimation;\n        const currentFrame = this.graphicsEditor.state.currentFrame;\n        const frameData = this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame];\n        \n        // Ensure the group exists in the frame data\n        if (!frameData[groupName]) {\n            console.warn(`Group ${groupName} not found in frame data`);\n            return;\n        }\n \n        // Save transformations to the group data\n        frameData[groupName].position = {\n            x: position.x,\n            y: position.y,\n            z: position.z\n        };\n        frameData[groupName].rotation = {\n            x: rotation.x,\n            y: rotation.y,\n            z: rotation.z\n        };\n        frameData[groupName].scale = {\n            x: scale.x,\n            y: scale.y,\n            z: scale.z\n        };\n    \n        // Refresh the scene to see changes\n        this.graphicsEditor.refreshShapes(true);\n    }\n    // Update the group list in the UI\n    updateGroupList() {\n        const list = document.getElementById('group-list');\n        if (!list) {\n            console.warn(\"Group list element not found\");\n            return;\n        }\n        \n        list.innerHTML = '';\n        \n        const groups = this.getGroups();\n        for (const group of groups) {\n            const groupItem = document.createElement('div');\n            groupItem.classList.add('group-item');\n            if (group === this.selectedGroupName) {\n                groupItem.classList.add('selected');\n            }\n            \n            groupItem.textContent = group;\n            groupItem.addEventListener('click', () => this.selectGroup(group));\n            \n            // Make it a valid drop target for drag and drop\n            groupItem.dataset.group = group;\n            \n            list.appendChild(groupItem);\n        }\n    }\n}",
         "fileName": "GE_GroupManager"
       }
     },

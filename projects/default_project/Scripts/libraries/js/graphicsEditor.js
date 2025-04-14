@@ -18,7 +18,7 @@ class GraphicsEditor {
             currentAnimation: "idle",
             selectedGroup: "main",
             currentFrame: 0,
-            renderData: { animations: { idle: [{ main: { shapes: [], position: {x: 0, y: 0, z: 0}, rotation: {x:0,y:0,z:0}, scale: {x:1, y:1, z:1}} }] } }
+            renderData: { model: {}, animations: { idle: [{ main: { shapes: [], position: {x: 0, y: 0, z: 0}, rotation: {x:0,y:0,z:0}, scale: {x:1, y:1, z:1}} }] } }
         };
         
         this.rootGroup = new window.THREE.Group(); // Main container for all shapes
@@ -69,28 +69,74 @@ class GraphicsEditor {
         }
         
         let frameData = this.state.renderData.animations[currentAnimation][currentFrame];
-        
+        //model is a Frame that has named groups as properties.
+        let model = this.state.renderData.model;
+
+   
         // Backward compatibility: If frameData is not structured as groups
         if (Array.isArray(frameData)) {
             console.warn("Old format detected, converting to new group format");
-            this.state.renderData.animations[currentAnimation][currentFrame] = { shapes: frameData };
+            let newGroup = {...this.groupManager.DEFAULT_GROUP};
+            newGroup.shapes = frameData;
+            this.state.renderData.animations[currentAnimation][currentFrame] = newGroup;
             frameData = this.state.renderData.animations[currentAnimation][currentFrame];
         }
-        
+        if(!model) {
+            this.state.renderData.model = JSON.parse(JSON.stringify(this.state.renderData.animations['idle'][0])); // Deep copy
+            model = this.state.renderData.model;
+        }
         // Create a group for each group in the frame
         for (const groupName in frameData) {
-            if (Array.isArray(frameData[groupName])) {
-                let shapes = frameData[groupName];
+            const frameGroup = frameData[groupName];
+            const modelGroup = model[groupName];
+            if (Array.isArray(frameGroup)) {
+                let shapes = frameGroup;
                 let newGroup = {...this.groupManager.DEFAULT_GROUP};
                 newGroup.shapes = shapes;
                 this.state.renderData.animations[currentAnimation][currentFrame][groupName] = newGroup;
                 frameData = this.state.renderData.animations[currentAnimation][currentFrame];
+            }            
+            let mergedShapes = [];
+            for(let i = 0; i < modelGroup.shapes.length; i++){
+                let modelShape = modelGroup.shapes[i];
+                if(!frameGroup.shapes){
+                    mergedShapes.push(JSON.parse(JSON.stringify(modelShape)));
+                    continue;
+                }
+                if(frameGroup.shapes.length <= i) {
+                    frameGroup.shapes.push({});
+                }
+                let mergedShape = {};
+                if(typeof frameGroup.shapes[i].id == "undefined"){
+                    frameGroup.shapes[i].id = i;
+                }
+                for(const key in modelShape) {
+                    let frameShape = frameGroup.shapes.find((shape) => shape.id == i);
+                    if(frameShape && typeof frameShape[key] != "undefined" && modelShape[key] === frameShape[key]){
+                        delete frameShape[key];                        
+                        mergedShape[key] = modelShape[key];
+                    } else if(!frameShape || typeof frameShape[key] == "undefined"){
+                        mergedShape[key] = modelShape[key];
+                    } else {
+                        mergedShape[key] = frameShape[key];
+                    }
+                }
+                mergedShapes.push(mergedShape);
             }
-            
-            
-            // Create objects for this group
-            const groupData = frameData[groupName];
-            let threeGroup = await this.shapeFactory.createGroupFromJSON(groupData); 
+            if(frameGroup.shapes){
+                for(let i = frameGroup.shapes.length - 1; i >= 0; i--){
+                    let shape = frameGroup.shapes[i];
+                    if(Object.keys(shape).length == 1){
+                        frameGroup.shapes.splice(i, 1);
+                    }
+                }  
+            }                         
+            const mergedGroup = {
+                ...modelGroup,
+                ...frameGroup,
+            };
+            mergedGroup.shapes = mergedShapes;
+            let threeGroup = await this.shapeFactory.createGroupFromJSON(mergedGroup); 
             threeGroup.name = groupName;
             // Add the group to the root group
             this.rootGroup.add(threeGroup);
@@ -98,9 +144,9 @@ class GraphicsEditor {
             
         // Count total shapes for display
         let totalShapes = 0;
-        for (const groupName in frameData) {
-            if (Array.isArray(frameData[groupName].shapes)) {
-                totalShapes += frameData[groupName].shapes.length;
+        for (const groupName in model) {
+            if (Array.isArray(model[groupName].shapes)) {
+                totalShapes += model[groupName].shapes.length;
             }
         }
         document.getElementById('shape-count').textContent = totalShapes;
@@ -108,6 +154,7 @@ class GraphicsEditor {
         // Update JSON display
         document.getElementById('json-content').value = JSON.stringify(this.state.renderData, null, 2);
     
+        console.log(this.state.renderData);
         if (fireSave) {
             const myCustomEvent = new CustomEvent('saveGraphicsObject', {
                 detail: { data: this.state.renderData, propertyName: 'render' },

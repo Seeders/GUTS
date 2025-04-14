@@ -159,7 +159,10 @@ class GE_GroupManager {
     }
 
     getGroupData(groupName){
-        return this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][groupName];
+        let groupData = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][groupName];
+        let mergedData = { ...JSON.parse(JSON.stringify(this.graphicsEditor.state.renderData.model[groupName])), ...groupData };
+
+        return mergedData;
     }
     // Select a group to work with
     selectGroup(groupName) {

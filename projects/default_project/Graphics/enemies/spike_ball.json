@@ -8,98 +8,27 @@
       "walk": [
         {
           "shapes": {
-            "shapes": [
-              {
-                "type": "sphere",
-                "size": 12,
-                "color": "#800000",
-                "x": 0,
-                "y": 24,
-                "z": 0,
-                "rotationX": 0,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "name": "core"
-              },
-              {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": 0,
-                "y": 24,
-                "z": -12,
-                "rotationX": 90,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "name": "spike-1"
-              },
-              {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": 10.392,
-                "y": 24,
-                "z": -6,
-                "rotationX": 90,
-                "rotationY": null,
-                "rotationZ": 60,
-                "name": "spike-2"
-              },
-              {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": 10.392,
-                "y": 24,
-                "z": 6,
-                "rotationX": 90,
-                "rotationY": null,
-                "rotationZ": 120,
-                "name": "spike-3"
-              },
-              {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": -10.392,
-                "y": 24,
-                "z": -6,
-                "rotationX": -90,
-                "rotationY": null,
-                "rotationZ": 60,
-                "name": "spike-4"
-              },
-              {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": -10.392,
-                "y": 24,
-                "z": 6,
-                "rotationX": 90,
-                "rotationY": null,
-                "rotationZ": 240,
-                "name": "spike-5"
-              },
-              {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": 0,
-                "y": 24,
-                "z": 12,
-                "rotationX": 90,
-                "rotationY": 300,
-                "rotationZ": 0,
-                "name": "spike-6"
-              }
-            ],
+            "shapes": [],
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "shapes": {
+            "shapes": [],
             "position": {
               "x": 0,
               "y": 0,
@@ -121,205 +50,32 @@
           "shapes": {
             "shapes": [
               {
-                "type": "sphere",
-                "size": 12,
-                "color": "#800000",
-                "x": 0,
-                "y": 24,
-                "z": 0,
-                "rotationX": 0,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "name": "core"
-              },
-              {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": 0,
-                "y": 24,
-                "z": -12,
-                "rotationX": 90,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "name": "spike-1"
-              },
-              {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": 10.392,
-                "y": 24,
-                "z": -6,
-                "rotationX": 90,
-                "rotationY": null,
-                "rotationZ": 60,
-                "name": "spike-2"
-              },
-              {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": 10.392,
-                "y": 24,
-                "z": 6,
-                "rotationX": 90,
-                "rotationY": null,
-                "rotationZ": 120,
-                "name": "spike-3"
-              },
-              {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": -10.392,
-                "y": 24,
-                "z": -6,
-                "rotationX": -90,
-                "rotationY": null,
-                "rotationZ": 60,
-                "name": "spike-4"
-              },
-              {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": -10.392,
-                "y": 24,
-                "z": 6,
-                "rotationX": 90,
-                "rotationY": null,
-                "rotationZ": 240,
-                "name": "spike-5"
-              },
-              {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": 0,
-                "y": 24,
-                "z": 12,
-                "rotationX": 90,
-                "rotationY": 300,
-                "rotationZ": 0,
-                "name": "spike-6"
-              }
-            ],
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
-          }
-        },
-        {
-          "shapes": {
-            "shapes": [
-              {
-                "type": "sphere",
-                "size": 12,
-                "color": "#800000",
-                "x": 0,
                 "y": 26,
-                "z": 0,
-                "rotationX": 0,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "name": "core"
+                "id": 0
               },
               {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": 0,
                 "y": 26,
-                "z": -12,
-                "rotationX": 90,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "name": "spike-1"
+                "id": 1
               },
               {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": 10.392,
                 "y": 26,
-                "z": -6,
-                "rotationX": 90,
-                "rotationY": null,
-                "rotationZ": 60,
-                "name": "spike-2"
+                "id": 2
               },
               {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": 10.392,
                 "y": 26,
-                "z": 6,
-                "rotationX": 90,
-                "rotationY": null,
-                "rotationZ": 120,
-                "name": "spike-3"
+                "id": 3
               },
               {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": -10.392,
                 "y": 26,
-                "z": -6,
-                "rotationX": -90,
-                "rotationY": null,
-                "rotationZ": 60,
-                "name": "spike-4"
+                "id": 4
               },
               {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": -10.392,
                 "y": 26,
-                "z": 6,
-                "rotationX": 90,
-                "rotationY": null,
-                "rotationZ": 240,
-                "name": "spike-5"
+                "id": 5
               },
               {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": 0,
                 "y": 26,
-                "z": 12,
-                "rotationX": 90,
-                "rotationY": 300,
-                "rotationZ": 0,
-                "name": "spike-6"
+                "id": 6
               }
             ],
             "position": {
@@ -454,97 +210,74 @@
       "idle": [
         {
           "shapes": {
+            "shapes": [],
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "shapes": {
+            "shapes": [],
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "shapes": {
             "shapes": [
               {
-                "type": "sphere",
-                "size": 12,
-                "color": "#800000",
-                "x": 0,
-                "y": 24,
-                "z": 0,
-                "rotationX": 0,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "name": "core",
-                "scaleX": 1
+                "y": 26,
+                "id": 0
               },
               {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": 0,
-                "y": 24,
-                "z": -12,
-                "rotationX": 90,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "name": "spike-1"
+                "y": 26,
+                "id": 1
               },
               {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": 10.392,
-                "y": 24,
-                "z": -6,
-                "rotationX": 90,
-                "rotationY": null,
-                "rotationZ": 60,
-                "name": "spike-2"
+                "y": 26,
+                "id": 2
               },
               {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": 10.392,
-                "y": 24,
-                "z": 6,
-                "rotationX": 90,
-                "rotationY": null,
-                "rotationZ": 120,
-                "name": "spike-3"
+                "y": 26,
+                "id": 3
               },
               {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": -10.392,
-                "y": 24,
-                "z": -6,
-                "rotationX": -90,
-                "rotationY": null,
-                "rotationZ": 60,
-                "name": "spike-4"
+                "y": 26,
+                "id": 4
               },
               {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": -10.392,
-                "y": 24,
-                "z": 6,
-                "rotationX": 90,
-                "rotationY": null,
-                "rotationZ": 240,
-                "name": "spike-5"
+                "y": 26,
+                "id": 5
               },
               {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": 0,
-                "y": 24,
-                "z": 12,
-                "rotationX": 90,
-                "rotationY": 300,
-                "rotationZ": 0,
-                "name": "spike-6"
+                "y": 26,
+                "id": 6
               }
             ],
             "position": {
@@ -568,316 +301,32 @@
           "shapes": {
             "shapes": [
               {
-                "type": "sphere",
-                "size": 12,
-                "color": "#800000",
-                "x": 0,
-                "y": 24,
-                "z": 0,
-                "rotationX": 0,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "name": "core"
-              },
-              {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": 0,
-                "y": 24,
-                "z": -12,
-                "rotationX": 90,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "name": "spike-1"
-              },
-              {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": 10.392,
-                "y": 24,
-                "z": -6,
-                "rotationX": 90,
-                "rotationY": null,
-                "rotationZ": 60,
-                "name": "spike-2"
-              },
-              {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": 10.392,
-                "y": 24,
-                "z": 6,
-                "rotationX": 90,
-                "rotationY": null,
-                "rotationZ": 120,
-                "name": "spike-3"
-              },
-              {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": -10.392,
-                "y": 24,
-                "z": -6,
-                "rotationX": -90,
-                "rotationY": null,
-                "rotationZ": 60,
-                "name": "spike-4"
-              },
-              {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": -10.392,
-                "y": 24,
-                "z": 6,
-                "rotationX": 90,
-                "rotationY": null,
-                "rotationZ": 240,
-                "name": "spike-5"
-              },
-              {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": 0,
-                "y": 24,
-                "z": 12,
-                "rotationX": 90,
-                "rotationY": 300,
-                "rotationZ": 0,
-                "name": "spike-6"
-              }
-            ],
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
-          }
-        },
-        {
-          "shapes": {
-            "shapes": [
-              {
-                "type": "sphere",
-                "size": 12,
-                "color": "#800000",
-                "x": 0,
                 "y": 26,
-                "z": 0,
-                "rotationX": 0,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "name": "core"
+                "id": 0
               },
               {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": 0,
                 "y": 26,
-                "z": -12,
-                "rotationX": 90,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "name": "spike-1"
+                "id": 1
               },
               {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": 10.392,
                 "y": 26,
-                "z": -6,
-                "rotationX": 90,
-                "rotationY": null,
-                "rotationZ": 60,
-                "name": "spike-2"
+                "id": 2
               },
               {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": 10.392,
                 "y": 26,
-                "z": 6,
-                "rotationX": 90,
-                "rotationY": null,
-                "rotationZ": 120,
-                "name": "spike-3"
+                "id": 3
               },
               {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": -10.392,
                 "y": 26,
-                "z": -6,
-                "rotationX": -90,
-                "rotationY": null,
-                "rotationZ": 60,
-                "name": "spike-4"
+                "id": 4
               },
               {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": -10.392,
                 "y": 26,
-                "z": 6,
-                "rotationX": 90,
-                "rotationY": null,
-                "rotationZ": 240,
-                "name": "spike-5"
+                "id": 5
               },
               {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": 0,
                 "y": 26,
-                "z": 12,
-                "rotationX": 90,
-                "rotationY": 300,
-                "rotationZ": 0,
-                "name": "spike-6"
-              }
-            ],
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
-          }
-        },
-        {
-          "shapes": {
-            "shapes": [
-              {
-                "type": "sphere",
-                "size": 12,
-                "color": "#800000",
-                "x": 0,
-                "y": 26,
-                "z": 0,
-                "rotationX": 0,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "name": "core"
-              },
-              {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": 0,
-                "y": 26,
-                "z": -12,
-                "rotationX": 90,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "name": "spike-1"
-              },
-              {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": 10.392,
-                "y": 26,
-                "z": -6,
-                "rotationX": 90,
-                "rotationY": null,
-                "rotationZ": 60,
-                "name": "spike-2"
-              },
-              {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": 10.392,
-                "y": 26,
-                "z": 6,
-                "rotationX": 90,
-                "rotationY": null,
-                "rotationZ": 120,
-                "name": "spike-3"
-              },
-              {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": -10.392,
-                "y": 26,
-                "z": -6,
-                "rotationX": -90,
-                "rotationY": null,
-                "rotationZ": 60,
-                "name": "spike-4"
-              },
-              {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": -10.392,
-                "y": 26,
-                "z": 6,
-                "rotationX": 90,
-                "rotationY": null,
-                "rotationZ": 240,
-                "name": "spike-5"
-              },
-              {
-                "type": "cylinder",
-                "size": 2.4,
-                "height": 4.8,
-                "color": "#663300",
-                "x": 0,
-                "y": 26,
-                "z": 12,
-                "rotationX": 90,
-                "rotationY": 300,
-                "rotationZ": 0,
-                "name": "spike-6"
+                "id": 6
               }
             ],
             "position": {
@@ -898,6 +347,118 @@
           }
         }
       ]
+    },
+    "model": {
+      "shapes": {
+        "shapes": [
+          {
+            "type": "sphere",
+            "size": 12,
+            "color": "#800000",
+            "x": 0,
+            "y": 24,
+            "z": 0,
+            "rotationX": 0,
+            "rotationY": 0,
+            "rotationZ": 0,
+            "name": "core",
+            "scaleX": 1
+          },
+          {
+            "type": "cylinder",
+            "size": 2.4,
+            "height": 4.8,
+            "color": "#663300",
+            "x": 0,
+            "y": 24,
+            "z": -12,
+            "rotationX": 90,
+            "rotationY": 0,
+            "rotationZ": 0,
+            "name": "spike-1"
+          },
+          {
+            "type": "cylinder",
+            "size": 2.4,
+            "height": 4.8,
+            "color": "#663300",
+            "x": 10.392,
+            "y": 24,
+            "z": -6,
+            "rotationX": 90,
+            "rotationY": null,
+            "rotationZ": 60,
+            "name": "spike-2"
+          },
+          {
+            "type": "cylinder",
+            "size": 2.4,
+            "height": 4.8,
+            "color": "#663300",
+            "x": 10.392,
+            "y": 24,
+            "z": 6,
+            "rotationX": 90,
+            "rotationY": null,
+            "rotationZ": 120,
+            "name": "spike-3"
+          },
+          {
+            "type": "cylinder",
+            "size": 2.4,
+            "height": 4.8,
+            "color": "#663300",
+            "x": -10.392,
+            "y": 24,
+            "z": -6,
+            "rotationX": -90,
+            "rotationY": null,
+            "rotationZ": 60,
+            "name": "spike-4"
+          },
+          {
+            "type": "cylinder",
+            "size": 2.4,
+            "height": 4.8,
+            "color": "#663300",
+            "x": -10.392,
+            "y": 24,
+            "z": 6,
+            "rotationX": 90,
+            "rotationY": null,
+            "rotationZ": 240,
+            "name": "spike-5"
+          },
+          {
+            "type": "cylinder",
+            "size": 2.4,
+            "height": 4.8,
+            "color": "#663300",
+            "x": 0,
+            "y": 24,
+            "z": 12,
+            "rotationX": 90,
+            "rotationY": 300,
+            "rotationZ": 0,
+            "name": "spike-6"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      }
     }
   },
   "title": "spike_ball",
