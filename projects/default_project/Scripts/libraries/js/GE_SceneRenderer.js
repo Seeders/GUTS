@@ -87,8 +87,9 @@ class GE_SceneRenderer {
         // Safely get first frame's shapes
         const frames = animations[firstAnimation] || [];
         const firstFrame = frames[0] || {};
-        const shapes = Object.keys(firstFrame)[0].shapes || [];
-        
+        const firstGroup = Object.keys(firstFrame)[0];
+        const shapes = firstFrame[firstGroup].shapes || [];
+        this.graphicsEditor.state.currentGroup = firstGroup;
         this.graphicsEditor.state.selectedShapeIndex = shapes.length > 0 ? 0 : -1;
         this.graphicsEditor.refreshShapes(false);
         this.handleResize();

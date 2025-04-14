@@ -9,281 +9,7 @@
       "idle": [
         {
           "shapes": {
-            "shapes": [
-              {
-                "type": "box",
-                "width": 12,
-                "height": 25,
-                "depth": 12,
-                "x": 0,
-                "y": 22.6,
-                "z": -2.6,
-                "rotationX": 46,
-                "color": "#5D8233",
-                "name": "body",
-                "scaleX": 1
-              },
-              {
-                "type": "box",
-                "width": 12,
-                "height": 10,
-                "depth": 16,
-                "x": 0,
-                "y": 37,
-                "z": 12,
-                "color": "#5D8233",
-                "name": "head-top"
-              },
-              {
-                "type": "box",
-                "width": 10,
-                "height": 4,
-                "depth": 14,
-                "x": 0,
-                "y": 29,
-                "z": 14,
-                "color": "#4E6C2A",
-                "name": "jaw"
-              },
-              {
-                "type": "box",
-                "width": 8,
-                "height": 1,
-                "depth": 1,
-                "x": 0,
-                "y": 31,
-                "z": 20,
-                "color": "#ff3c41",
-                "name": "gums"
-              },
-              {
-                "type": "box",
-                "width": 1,
-                "height": 2,
-                "depth": 1,
-                "x": -3,
-                "y": 31,
-                "z": 20,
-                "color": "#FFFFFF",
-                "name": "tooth-right"
-              },
-              {
-                "type": "box",
-                "width": 1,
-                "height": 2,
-                "depth": 1,
-                "x": 0,
-                "y": 31,
-                "z": 20,
-                "color": "#FFFFFF",
-                "name": "tooth-middle"
-              },
-              {
-                "type": "box",
-                "width": 1,
-                "height": 2,
-                "depth": 1,
-                "x": 3,
-                "y": 31,
-                "z": 20,
-                "color": "#FFFFFF",
-                "name": "tooth-left"
-              },
-              {
-                "type": "sphere",
-                "size": 3,
-                "x": -7,
-                "y": 42,
-                "z": 14,
-                "color": "#FFFF00",
-                "name": "eye-right"
-              },
-              {
-                "type": "sphere",
-                "size": 1.5,
-                "x": -7,
-                "y": 42,
-                "z": 15,
-                "color": "#000000",
-                "name": "pupil-right"
-              },
-              {
-                "type": "sphere",
-                "size": 3,
-                "x": 7,
-                "y": 42,
-                "z": 14,
-                "color": "#FFFF00",
-                "name": "eye-left"
-              },
-              {
-                "type": "sphere",
-                "size": 1.5,
-                "x": 7,
-                "y": 42,
-                "z": 15,
-                "color": "#000000",
-                "name": "pupil-left"
-              },
-              {
-                "type": "box",
-                "width": 6,
-                "height": 4,
-                "depth": 14,
-                "x": 0,
-                "y": 18,
-                "z": -17.9,
-                "rotationX": -20,
-                "color": "#5D8233",
-                "name": "tail-base"
-              },
-              {
-                "type": "box",
-                "width": 4,
-                "height": 3,
-                "depth": 10,
-                "x": 0,
-                "y": 15,
-                "z": -30,
-                "rotationX": -10,
-                "color": "#5D8233",
-                "name": "tail-tip"
-              },
-              {
-                "type": "box",
-                "width": 5,
-                "height": 16,
-                "depth": 5,
-                "x": 6,
-                "y": 10,
-                "z": 0,
-                "color": "#4E6C2A",
-                "name": "leg-left"
-              },
-              {
-                "type": "box",
-                "width": 5,
-                "height": 16,
-                "depth": 5,
-                "x": -6,
-                "y": 10,
-                "z": 0,
-                "color": "#4E6C2A",
-                "name": "leg-right"
-              },
-              {
-                "type": "box",
-                "width": 7,
-                "height": 2,
-                "depth": 9,
-                "x": 6,
-                "y": 1,
-                "z": 0,
-                "color": "#4E6C2A",
-                "name": "foot-left"
-              },
-              {
-                "type": "box",
-                "width": 7,
-                "height": 2,
-                "depth": 9,
-                "x": -6,
-                "y": 1,
-                "z": 0,
-                "color": "#4E6C2A",
-                "name": "foot-right"
-              },
-              {
-                "type": "box",
-                "width": 3,
-                "height": 5,
-                "depth": 3,
-                "x": 8,
-                "y": 26,
-                "z": 0,
-                "rotationX": -40,
-                "color": "#4E6C2A",
-                "name": "arm-left"
-              },
-              {
-                "type": "box",
-                "width": 3,
-                "height": 5,
-                "depth": 3,
-                "x": -8,
-                "y": 26,
-                "z": 0,
-                "rotationX": -40,
-                "color": "#4E6C2A",
-                "name": "arm-right"
-              },
-              {
-                "type": "box",
-                "width": 2,
-                "height": 2,
-                "depth": 1,
-                "x": 8,
-                "y": 24,
-                "z": 3,
-                "color": "#A0A0A0",
-                "name": "hand-left"
-              },
-              {
-                "type": "box",
-                "width": 2,
-                "height": 2,
-                "depth": 1,
-                "x": -8,
-                "y": 24,
-                "z": 3,
-                "color": "#A0A0A0",
-                "name": "hand-right"
-              },
-              {
-                "type": "cone",
-                "size": 4,
-                "height": 6,
-                "x": 0,
-                "y": 35,
-                "z": -2,
-                "rotationX": -60,
-                "color": "#536026",
-                "name": "spike1"
-              },
-              {
-                "type": "cone",
-                "size": 4,
-                "height": 6,
-                "x": 0,
-                "y": 28,
-                "z": -8,
-                "rotationX": -75,
-                "color": "#436026",
-                "name": "spike2"
-              },
-              {
-                "type": "cone",
-                "size": 3,
-                "height": 4,
-                "x": 0,
-                "y": 22,
-                "z": -20,
-                "rotationX": -25,
-                "color": "#436026",
-                "name": "spike3"
-              },
-              {
-                "type": "cone",
-                "size": 2,
-                "height": 3,
-                "x": 0,
-                "y": 18,
-                "z": -28,
-                "rotationX": -25,
-                "color": "#436026",
-                "name": "spike4"
-              }
-            ],
+            "shapes": [],
             "position": {
               "x": 0,
               "y": 0,
@@ -307,284 +33,117 @@
           "shapes": {
             "shapes": [
               {
-                "type": "box",
-                "width": 12,
-                "height": 25,
-                "depth": 12,
-                "x": 0,
                 "y": 23,
-                "z": -2.6,
-                "rotationX": 46,
-                "color": "#5D8233",
-                "name": "body"
+                "id": 0
               },
               {
-                "type": "box",
-                "width": 12,
-                "height": 10,
-                "depth": 16,
-                "x": 0,
                 "y": 37.5,
-                "z": 12,
-                "color": "#5D8233",
-                "name": "head-top"
+                "id": 1
               },
               {
-                "type": "box",
-                "width": 10,
-                "height": 4,
-                "depth": 14,
-                "x": 0,
                 "y": 29.5,
-                "z": 14,
-                "color": "#4E6C2A",
-                "name": "jaw"
+                "id": 2
               },
               {
-                "type": "box",
-                "width": 8,
-                "height": 1,
-                "depth": 1,
-                "x": 0,
                 "y": 31.5,
-                "z": 20,
-                "color": "#ff3c41",
-                "name": "gums"
+                "id": 3
               },
               {
-                "type": "box",
-                "width": 1,
-                "height": 2,
-                "depth": 1,
-                "x": -3,
                 "y": 31.5,
-                "z": 20,
-                "color": "#FFFFFF",
-                "name": "tooth-right"
+                "id": 4
               },
               {
-                "type": "box",
-                "width": 1,
-                "height": 2,
-                "depth": 1,
-                "x": 0,
                 "y": 31.5,
-                "z": 20,
-                "color": "#FFFFFF",
-                "name": "tooth-middle"
+                "id": 5
               },
               {
-                "type": "box",
-                "width": 1,
-                "height": 2,
-                "depth": 1,
-                "x": 3,
                 "y": 31.5,
-                "z": 20,
-                "color": "#FFFFFF",
-                "name": "tooth-left"
+                "id": 6
               },
               {
-                "type": "sphere",
-                "size": 3,
-                "x": -7,
                 "y": 42.5,
-                "z": 14,
-                "color": "#FFFF00",
-                "name": "eye-right"
+                "id": 7
               },
               {
-                "type": "sphere",
-                "size": 1.5,
-                "x": -7,
                 "y": 42.5,
-                "z": 15,
-                "color": "#000000",
-                "name": "pupil-right"
+                "id": 8
               },
               {
-                "type": "sphere",
-                "size": 3,
-                "x": 7,
                 "y": 42.5,
-                "z": 14,
-                "color": "#FFFF00",
-                "name": "eye-left"
+                "id": 9
               },
               {
-                "type": "sphere",
-                "size": 1.5,
-                "x": 7,
                 "y": 42.5,
-                "z": 15,
-                "color": "#000000",
-                "name": "pupil-left"
+                "id": 10
               },
               {
-                "type": "box",
-                "width": 6,
-                "height": 4,
-                "depth": 14,
                 "x": 1.5,
-                "y": 18,
-                "z": -17.9,
-                "rotationX": -20,
                 "rotationZ": 10,
-                "color": "#5D8233",
-                "name": "tail-base"
+                "id": 11
               },
               {
-                "type": "box",
-                "width": 4,
-                "height": 3,
-                "depth": 10,
                 "x": 3,
-                "y": 15,
-                "z": -30,
-                "rotationX": -10,
                 "rotationZ": 15,
-                "color": "#5D8233",
-                "name": "tail-tip"
+                "id": 12
               },
               {
-                "type": "box",
-                "width": 5,
-                "height": 16,
-                "depth": 5,
-                "x": 6,
-                "y": 10,
                 "z": 3,
                 "rotationX": 15,
-                "color": "#4E6C2A",
-                "name": "leg-left"
+                "id": 13
               },
               {
-                "type": "box",
-                "width": 5,
-                "height": 16,
-                "depth": 5,
-                "x": -6,
                 "y": 8,
                 "z": -5,
                 "rotationX": -25,
-                "color": "#4E6C2A",
-                "name": "leg-right"
+                "id": 14
               },
               {
-                "type": "box",
-                "width": 7,
-                "height": 2,
-                "depth": 9,
-                "x": 6,
                 "y": 3,
                 "z": 9,
                 "rotationX": 15,
-                "color": "#4E6C2A",
-                "name": "foot-left"
+                "id": 15
               },
               {
-                "type": "box",
-                "width": 7,
-                "height": 2,
-                "depth": 9,
-                "x": -6,
-                "y": 1,
                 "z": -10,
                 "rotationX": -25,
-                "color": "#4E6C2A",
-                "name": "foot-right"
+                "id": 16
               },
               {
-                "type": "box",
-                "width": 3,
-                "height": 5,
-                "depth": 3,
-                "x": 8,
-                "y": 26,
                 "z": -1,
                 "rotationX": -20,
-                "color": "#4E6C2A",
-                "name": "arm-left"
+                "id": 17
               },
               {
-                "type": "box",
-                "width": 3,
-                "height": 5,
-                "depth": 3,
-                "x": -8,
-                "y": 26,
                 "z": 2,
                 "rotationX": -60,
-                "color": "#4E6C2A",
-                "name": "arm-right"
+                "id": 18
               },
               {
-                "type": "box",
-                "width": 2,
-                "height": 2,
-                "depth": 1,
-                "x": 8,
-                "y": 24,
                 "z": 1,
-                "color": "#A0A0A0",
-                "name": "hand-left"
+                "id": 19
               },
               {
-                "type": "box",
-                "width": 2,
-                "height": 2,
-                "depth": 1,
-                "x": -8,
                 "y": 22,
                 "z": 5,
-                "color": "#A0A0A0",
-                "name": "hand-right"
+                "id": 20
               },
               {
-                "type": "cone",
-                "size": 4,
-                "height": 6,
-                "x": 0,
                 "y": 35.5,
-                "z": -2,
-                "rotationX": -60,
-                "color": "#536026",
-                "name": "spike1"
+                "id": 21
               },
               {
-                "type": "cone",
-                "size": 4,
-                "height": 6,
-                "x": 0,
                 "y": 28.5,
-                "z": -8,
-                "rotationX": -75,
-                "color": "#436026",
-                "name": "spike2"
+                "id": 22
               },
               {
-                "type": "cone",
-                "size": 3,
-                "height": 4,
                 "x": 1.5,
-                "y": 22,
-                "z": -20,
-                "rotationX": -25,
                 "rotationZ": 10,
-                "color": "#436026",
-                "name": "spike3"
+                "id": 23
               },
               {
-                "type": "cone",
-                "size": 2,
-                "height": 3,
                 "x": 3,
-                "y": 18,
-                "z": -28,
-                "rotationX": -25,
                 "rotationZ": 15,
-                "color": "#436026",
-                "name": "spike4"
+                "id": 24
               }
             ],
             "position": {
@@ -608,280 +167,96 @@
           "shapes": {
             "shapes": [
               {
-                "type": "box",
-                "width": 12,
-                "height": 25,
-                "depth": 12,
-                "x": 0,
                 "y": 22.8,
-                "z": -2.6,
-                "rotationX": 46,
-                "color": "#5D8233",
-                "name": "body"
+                "id": 0
               },
               {
-                "type": "box",
-                "width": 12,
-                "height": 10,
-                "depth": 16,
-                "x": 0,
                 "y": 37.3,
-                "z": 12,
-                "color": "#5D8233",
-                "name": "head-top"
+                "id": 1
               },
               {
-                "type": "box",
-                "width": 10,
-                "height": 4,
-                "depth": 14,
-                "x": 0,
                 "y": 29.3,
-                "z": 14,
-                "color": "#4E6C2A",
-                "name": "jaw"
+                "id": 2
               },
               {
-                "type": "box",
-                "width": 8,
-                "height": 1,
-                "depth": 1,
-                "x": 0,
                 "y": 31.3,
-                "z": 20,
-                "color": "#ff3c41",
-                "name": "gums"
+                "id": 3
               },
               {
-                "type": "box",
-                "width": 1,
-                "height": 2,
-                "depth": 1,
-                "x": -3,
                 "y": 31.3,
-                "z": 20,
-                "color": "#FFFFFF",
-                "name": "tooth-right"
+                "id": 4
               },
               {
-                "type": "box",
-                "width": 1,
-                "height": 2,
-                "depth": 1,
-                "x": 0,
                 "y": 31.3,
-                "z": 20,
-                "color": "#FFFFFF",
-                "name": "tooth-middle"
+                "id": 5
               },
               {
-                "type": "box",
-                "width": 1,
-                "height": 2,
-                "depth": 1,
-                "x": 3,
                 "y": 31.3,
-                "z": 20,
-                "color": "#FFFFFF",
-                "name": "tooth-left"
+                "id": 6
               },
               {
-                "type": "sphere",
-                "size": 3,
-                "x": -7,
                 "y": 42.3,
-                "z": 14,
-                "color": "#FFFF00",
-                "name": "eye-right"
+                "id": 7
               },
               {
-                "type": "sphere",
-                "size": 1.5,
-                "x": -7,
                 "y": 42.3,
-                "z": 15,
-                "color": "#000000",
-                "name": "pupil-right"
+                "id": 8
               },
               {
-                "type": "sphere",
-                "size": 3,
-                "x": 7,
                 "y": 42.3,
-                "z": 14,
-                "color": "#FFFF00",
-                "name": "eye-left"
+                "id": 9
               },
               {
-                "type": "sphere",
-                "size": 1.5,
-                "x": 7,
                 "y": 42.3,
-                "z": 15,
-                "color": "#000000",
-                "name": "pupil-left"
+                "id": 10
               },
               {
-                "type": "box",
-                "width": 6,
-                "height": 4,
-                "depth": 14,
-                "x": 0,
-                "y": 18,
-                "z": -17.9,
-                "rotationX": -20,
-                "color": "#5D8233",
-                "name": "tail-base"
-              },
-              {
-                "type": "box",
-                "width": 4,
-                "height": 3,
-                "depth": 10,
-                "x": 0,
-                "y": 15,
-                "z": -30,
-                "rotationX": -10,
-                "color": "#5D8233",
-                "name": "tail-tip"
-              },
-              {
-                "type": "box",
-                "width": 5,
-                "height": 16,
-                "depth": 5,
-                "x": 6,
                 "y": 9,
-                "z": 0,
                 "rotationX": -5,
-                "color": "#4E6C2A",
-                "name": "leg-left"
+                "id": 13
               },
               {
-                "type": "box",
-                "width": 5,
-                "height": 16,
-                "depth": 5,
-                "x": -6,
                 "y": 11,
-                "z": 0,
                 "rotationX": 5,
-                "color": "#4E6C2A",
-                "name": "leg-right"
+                "id": 14
               },
               {
-                "type": "box",
-                "width": 7,
-                "height": 2,
-                "depth": 9,
-                "x": 6,
                 "y": 0.5,
                 "z": -1,
                 "rotationX": -5,
-                "color": "#4E6C2A",
-                "name": "foot-left"
+                "id": 15
               },
               {
-                "type": "box",
-                "width": 7,
-                "height": 2,
-                "depth": 9,
-                "x": -6,
                 "y": 1.5,
                 "z": 1,
                 "rotationX": 5,
-                "color": "#4E6C2A",
-                "name": "foot-right"
+                "id": 16
               },
               {
-                "type": "box",
-                "width": 3,
-                "height": 5,
-                "depth": 3,
-                "x": 8,
-                "y": 26,
-                "z": 0,
                 "rotationX": -50,
-                "color": "#4E6C2A",
-                "name": "arm-left"
+                "id": 17
               },
               {
-                "type": "box",
-                "width": 3,
-                "height": 5,
-                "depth": 3,
-                "x": -8,
-                "y": 26,
-                "z": 0,
                 "rotationX": -30,
-                "color": "#4E6C2A",
-                "name": "arm-right"
+                "id": 18
               },
               {
-                "type": "box",
-                "width": 2,
-                "height": 2,
-                "depth": 1,
-                "x": 8,
                 "y": 23,
                 "z": 4,
-                "color": "#A0A0A0",
-                "name": "hand-left"
+                "id": 19
               },
               {
-                "type": "box",
-                "width": 2,
-                "height": 2,
-                "depth": 1,
-                "x": -8,
                 "y": 25,
                 "z": 2,
-                "color": "#A0A0A0",
-                "name": "hand-right"
+                "id": 20
               },
               {
-                "type": "cone",
-                "size": 4,
-                "height": 6,
-                "x": 0,
                 "y": 35.3,
-                "z": -2,
-                "rotationX": -60,
-                "color": "#536026",
-                "name": "spike1"
+                "id": 21
               },
               {
-                "type": "cone",
-                "size": 4,
-                "height": 6,
-                "x": 0,
                 "y": 28.3,
-                "z": -8,
-                "rotationX": -75,
-                "color": "#436026",
-                "name": "spike2"
-              },
-              {
-                "type": "cone",
-                "size": 3,
-                "height": 4,
-                "x": 0,
-                "y": 22,
-                "z": -20,
-                "rotationX": -25,
-                "color": "#436026",
-                "name": "spike3"
-              },
-              {
-                "type": "cone",
-                "size": 2,
-                "height": 3,
-                "x": 0,
-                "y": 18,
-                "z": -28,
-                "rotationX": -25,
-                "color": "#436026",
-                "name": "spike4"
+                "id": 22
               }
             ],
             "position": {
@@ -905,284 +280,117 @@
           "shapes": {
             "shapes": [
               {
-                "type": "box",
-                "width": 12,
-                "height": 25,
-                "depth": 12,
-                "x": 0,
                 "y": 23,
-                "z": -2.6,
-                "rotationX": 46,
-                "color": "#5D8233",
-                "name": "body"
+                "id": 0
               },
               {
-                "type": "box",
-                "width": 12,
-                "height": 10,
-                "depth": 16,
-                "x": 0,
                 "y": 37.5,
-                "z": 12,
-                "color": "#5D8233",
-                "name": "head-top"
+                "id": 1
               },
               {
-                "type": "box",
-                "width": 10,
-                "height": 4,
-                "depth": 14,
-                "x": 0,
                 "y": 29.5,
-                "z": 14,
-                "color": "#4E6C2A",
-                "name": "jaw"
+                "id": 2
               },
               {
-                "type": "box",
-                "width": 8,
-                "height": 1,
-                "depth": 1,
-                "x": 0,
                 "y": 31.5,
-                "z": 20,
-                "color": "#ff3c41",
-                "name": "gums"
+                "id": 3
               },
               {
-                "type": "box",
-                "width": 1,
-                "height": 2,
-                "depth": 1,
-                "x": -3,
                 "y": 31.5,
-                "z": 20,
-                "color": "#FFFFFF",
-                "name": "tooth-right"
+                "id": 4
               },
               {
-                "type": "box",
-                "width": 1,
-                "height": 2,
-                "depth": 1,
-                "x": 0,
                 "y": 31.5,
-                "z": 20,
-                "color": "#FFFFFF",
-                "name": "tooth-middle"
+                "id": 5
               },
               {
-                "type": "box",
-                "width": 1,
-                "height": 2,
-                "depth": 1,
-                "x": 3,
                 "y": 31.5,
-                "z": 20,
-                "color": "#FFFFFF",
-                "name": "tooth-left"
+                "id": 6
               },
               {
-                "type": "sphere",
-                "size": 3,
-                "x": -7,
                 "y": 42.5,
-                "z": 14,
-                "color": "#FFFF00",
-                "name": "eye-right"
+                "id": 7
               },
               {
-                "type": "sphere",
-                "size": 1.5,
-                "x": -7,
                 "y": 42.5,
-                "z": 15,
-                "color": "#000000",
-                "name": "pupil-right"
+                "id": 8
               },
               {
-                "type": "sphere",
-                "size": 3,
-                "x": 7,
                 "y": 42.5,
-                "z": 14,
-                "color": "#FFFF00",
-                "name": "eye-left"
+                "id": 9
               },
               {
-                "type": "sphere",
-                "size": 1.5,
-                "x": 7,
                 "y": 42.5,
-                "z": 15,
-                "color": "#000000",
-                "name": "pupil-left"
+                "id": 10
               },
               {
-                "type": "box",
-                "width": 6,
-                "height": 4,
-                "depth": 14,
                 "x": -1.5,
-                "y": 18,
-                "z": -17.9,
-                "rotationX": -20,
                 "rotationZ": -10,
-                "color": "#5D8233",
-                "name": "tail-base"
+                "id": 11
               },
               {
-                "type": "box",
-                "width": 4,
-                "height": 3,
-                "depth": 10,
                 "x": -3,
-                "y": 15,
-                "z": -30,
-                "rotationX": -10,
                 "rotationZ": -15,
-                "color": "#5D8233",
-                "name": "tail-tip"
+                "id": 12
               },
               {
-                "type": "box",
-                "width": 5,
-                "height": 16,
-                "depth": 5,
-                "x": 6,
                 "y": 8,
                 "z": -5,
                 "rotationX": -25,
-                "color": "#4E6C2A",
-                "name": "leg-left"
+                "id": 13
               },
               {
-                "type": "box",
-                "width": 5,
-                "height": 16,
-                "depth": 5,
-                "x": -6,
-                "y": 10,
                 "z": 3,
                 "rotationX": 15,
-                "color": "#4E6C2A",
-                "name": "leg-right"
+                "id": 14
               },
               {
-                "type": "box",
-                "width": 7,
-                "height": 2,
-                "depth": 9,
-                "x": 6,
-                "y": 1,
                 "z": -10,
                 "rotationX": -25,
-                "color": "#4E6C2A",
-                "name": "foot-left"
+                "id": 15
               },
               {
-                "type": "box",
-                "width": 7,
-                "height": 2,
-                "depth": 9,
-                "x": -6,
                 "y": 3,
                 "z": 9,
                 "rotationX": 15,
-                "color": "#4E6C2A",
-                "name": "foot-right"
+                "id": 16
               },
               {
-                "type": "box",
-                "width": 3,
-                "height": 5,
-                "depth": 3,
-                "x": 8,
-                "y": 26,
                 "z": 2,
                 "rotationX": -60,
-                "color": "#4E6C2A",
-                "name": "arm-left"
+                "id": 17
               },
               {
-                "type": "box",
-                "width": 3,
-                "height": 5,
-                "depth": 3,
-                "x": -8,
-                "y": 26,
                 "z": -1,
                 "rotationX": -20,
-                "color": "#4E6C2A",
-                "name": "arm-right"
+                "id": 18
               },
               {
-                "type": "box",
-                "width": 2,
-                "height": 2,
-                "depth": 1,
-                "x": 8,
                 "y": 22,
                 "z": 5,
-                "color": "#A0A0A0",
-                "name": "hand-left"
+                "id": 19
               },
               {
-                "type": "box",
-                "width": 2,
-                "height": 2,
-                "depth": 1,
-                "x": -8,
-                "y": 24,
                 "z": 1,
-                "color": "#A0A0A0",
-                "name": "hand-right"
+                "id": 20
               },
               {
-                "type": "cone",
-                "size": 4,
-                "height": 6,
-                "x": 0,
                 "y": 35.5,
-                "z": -2,
-                "rotationX": -60,
-                "color": "#536026",
-                "name": "spike1"
+                "id": 21
               },
               {
-                "type": "cone",
-                "size": 4,
-                "height": 6,
-                "x": 0,
                 "y": 28.5,
-                "z": -8,
-                "rotationX": -75,
-                "color": "#436026",
-                "name": "spike2"
+                "id": 22
               },
               {
-                "type": "cone",
-                "size": 3,
-                "height": 4,
                 "x": -1.5,
-                "y": 22,
-                "z": -20,
-                "rotationX": -25,
                 "rotationZ": -10,
-                "color": "#436026",
-                "name": "spike3"
+                "id": 23
               },
               {
-                "type": "cone",
-                "size": 2,
-                "height": 3,
                 "x": -3,
-                "y": 18,
-                "z": -28,
-                "rotationX": -25,
                 "rotationZ": -15,
-                "color": "#436026",
-                "name": "spike4"
+                "id": 24
               }
             ],
             "position": {
@@ -1206,280 +414,96 @@
           "shapes": {
             "shapes": [
               {
-                "type": "box",
-                "width": 12,
-                "height": 25,
-                "depth": 12,
-                "x": 0,
                 "y": 22.8,
-                "z": -2.6,
-                "rotationX": 46,
-                "color": "#5D8233",
-                "name": "body"
+                "id": 0
               },
               {
-                "type": "box",
-                "width": 12,
-                "height": 10,
-                "depth": 16,
-                "x": 0,
                 "y": 37.3,
-                "z": 12,
-                "color": "#5D8233",
-                "name": "head-top"
+                "id": 1
               },
               {
-                "type": "box",
-                "width": 10,
-                "height": 4,
-                "depth": 14,
-                "x": 0,
                 "y": 29.3,
-                "z": 14,
-                "color": "#4E6C2A",
-                "name": "jaw"
+                "id": 2
               },
               {
-                "type": "box",
-                "width": 8,
-                "height": 1,
-                "depth": 1,
-                "x": 0,
                 "y": 31.3,
-                "z": 20,
-                "color": "#ff3c41",
-                "name": "gums"
+                "id": 3
               },
               {
-                "type": "box",
-                "width": 1,
-                "height": 2,
-                "depth": 1,
-                "x": -3,
                 "y": 31.3,
-                "z": 20,
-                "color": "#FFFFFF",
-                "name": "tooth-right"
+                "id": 4
               },
               {
-                "type": "box",
-                "width": 1,
-                "height": 2,
-                "depth": 1,
-                "x": 0,
                 "y": 31.3,
-                "z": 20,
-                "color": "#FFFFFF",
-                "name": "tooth-middle"
+                "id": 5
               },
               {
-                "type": "box",
-                "width": 1,
-                "height": 2,
-                "depth": 1,
-                "x": 3,
                 "y": 31.3,
-                "z": 20,
-                "color": "#FFFFFF",
-                "name": "tooth-left"
+                "id": 6
               },
               {
-                "type": "sphere",
-                "size": 3,
-                "x": -7,
                 "y": 42.3,
-                "z": 14,
-                "color": "#FFFF00",
-                "name": "eye-right"
+                "id": 7
               },
               {
-                "type": "sphere",
-                "size": 1.5,
-                "x": -7,
                 "y": 42.3,
-                "z": 15,
-                "color": "#000000",
-                "name": "pupil-right"
+                "id": 8
               },
               {
-                "type": "sphere",
-                "size": 3,
-                "x": 7,
                 "y": 42.3,
-                "z": 14,
-                "color": "#FFFF00",
-                "name": "eye-left"
+                "id": 9
               },
               {
-                "type": "sphere",
-                "size": 1.5,
-                "x": 7,
                 "y": 42.3,
-                "z": 15,
-                "color": "#000000",
-                "name": "pupil-left"
+                "id": 10
               },
               {
-                "type": "box",
-                "width": 6,
-                "height": 4,
-                "depth": 14,
-                "x": 0,
-                "y": 18,
-                "z": -17.9,
-                "rotationX": -20,
-                "color": "#5D8233",
-                "name": "tail-base"
-              },
-              {
-                "type": "box",
-                "width": 4,
-                "height": 3,
-                "depth": 10,
-                "x": 0,
-                "y": 15,
-                "z": -30,
-                "rotationX": -10,
-                "color": "#5D8233",
-                "name": "tail-tip"
-              },
-              {
-                "type": "box",
-                "width": 5,
-                "height": 16,
-                "depth": 5,
-                "x": 6,
                 "y": 11,
-                "z": 0,
                 "rotationX": 5,
-                "color": "#4E6C2A",
-                "name": "leg-left"
+                "id": 13
               },
               {
-                "type": "box",
-                "width": 5,
-                "height": 16,
-                "depth": 5,
-                "x": -6,
                 "y": 9,
-                "z": 0,
                 "rotationX": -5,
-                "color": "#4E6C2A",
-                "name": "leg-right"
+                "id": 14
               },
               {
-                "type": "box",
-                "width": 7,
-                "height": 2,
-                "depth": 9,
-                "x": 6,
                 "y": 1.5,
                 "z": 1,
                 "rotationX": 5,
-                "color": "#4E6C2A",
-                "name": "foot-left"
+                "id": 15
               },
               {
-                "type": "box",
-                "width": 7,
-                "height": 2,
-                "depth": 9,
-                "x": -6,
                 "y": 0.5,
                 "z": -1,
                 "rotationX": -5,
-                "color": "#4E6C2A",
-                "name": "foot-right"
+                "id": 16
               },
               {
-                "type": "box",
-                "width": 3,
-                "height": 5,
-                "depth": 3,
-                "x": 8,
-                "y": 26,
-                "z": 0,
                 "rotationX": -30,
-                "color": "#4E6C2A",
-                "name": "arm-left"
+                "id": 17
               },
               {
-                "type": "box",
-                "width": 3,
-                "height": 5,
-                "depth": 3,
-                "x": -8,
-                "y": 26,
-                "z": 0,
                 "rotationX": -50,
-                "color": "#4E6C2A",
-                "name": "arm-right"
+                "id": 18
               },
               {
-                "type": "box",
-                "width": 2,
-                "height": 2,
-                "depth": 1,
-                "x": 8,
                 "y": 25,
                 "z": 2,
-                "color": "#A0A0A0",
-                "name": "hand-left"
+                "id": 19
               },
               {
-                "type": "box",
-                "width": 2,
-                "height": 2,
-                "depth": 1,
-                "x": -8,
                 "y": 23,
                 "z": 4,
-                "color": "#A0A0A0",
-                "name": "hand-right"
+                "id": 20
               },
               {
-                "type": "cone",
-                "size": 4,
-                "height": 6,
-                "x": 0,
                 "y": 35.3,
-                "z": -2,
-                "rotationX": -60,
-                "color": "#536026",
-                "name": "spike1"
+                "id": 21
               },
               {
-                "type": "cone",
-                "size": 4,
-                "height": 6,
-                "x": 0,
                 "y": 28.3,
-                "z": -8,
-                "rotationX": -75,
-                "color": "#436026",
-                "name": "spike2"
-              },
-              {
-                "type": "cone",
-                "size": 3,
-                "height": 4,
-                "x": 0,
-                "y": 22,
-                "z": -20,
-                "rotationX": -25,
-                "color": "#436026",
-                "name": "spike3"
-              },
-              {
-                "type": "cone",
-                "size": 2,
-                "height": 3,
-                "x": 0,
-                "y": 18,
-                "z": -28,
-                "rotationX": -25,
-                "color": "#436026",
-                "name": "spike4"
+                "id": 22
               }
             ],
             "position": {
@@ -1500,6 +524,300 @@
           }
         }
       ]
+    },
+    "model": {
+      "shapes": {
+        "shapes": [
+          {
+            "type": "box",
+            "width": 12,
+            "height": 25,
+            "depth": 12,
+            "x": 0,
+            "y": 22.6,
+            "z": -2.6,
+            "rotationX": 46,
+            "color": "#5D8233",
+            "name": "body",
+            "scaleX": 1
+          },
+          {
+            "type": "box",
+            "width": 12,
+            "height": 10,
+            "depth": 16,
+            "x": 0,
+            "y": 37,
+            "z": 12,
+            "color": "#5D8233",
+            "name": "head-top"
+          },
+          {
+            "type": "box",
+            "width": 10,
+            "height": 4,
+            "depth": 14,
+            "x": 0,
+            "y": 29,
+            "z": 14,
+            "color": "#4E6C2A",
+            "name": "jaw"
+          },
+          {
+            "type": "box",
+            "width": 8,
+            "height": 1,
+            "depth": 1,
+            "x": 0,
+            "y": 31,
+            "z": 20,
+            "color": "#ff3c41",
+            "name": "gums"
+          },
+          {
+            "type": "box",
+            "width": 1,
+            "height": 2,
+            "depth": 1,
+            "x": -3,
+            "y": 31,
+            "z": 20,
+            "color": "#FFFFFF",
+            "name": "tooth-right"
+          },
+          {
+            "type": "box",
+            "width": 1,
+            "height": 2,
+            "depth": 1,
+            "x": 0,
+            "y": 31,
+            "z": 20,
+            "color": "#FFFFFF",
+            "name": "tooth-middle"
+          },
+          {
+            "type": "box",
+            "width": 1,
+            "height": 2,
+            "depth": 1,
+            "x": 3,
+            "y": 31,
+            "z": 20,
+            "color": "#FFFFFF",
+            "name": "tooth-left"
+          },
+          {
+            "type": "sphere",
+            "size": 3,
+            "x": -7,
+            "y": 42,
+            "z": 14,
+            "color": "#FFFF00",
+            "name": "eye-right"
+          },
+          {
+            "type": "sphere",
+            "size": 1.5,
+            "x": -7,
+            "y": 42,
+            "z": 15,
+            "color": "#000000",
+            "name": "pupil-right"
+          },
+          {
+            "type": "sphere",
+            "size": 3,
+            "x": 7,
+            "y": 42,
+            "z": 14,
+            "color": "#FFFF00",
+            "name": "eye-left"
+          },
+          {
+            "type": "sphere",
+            "size": 1.5,
+            "x": 7,
+            "y": 42,
+            "z": 15,
+            "color": "#000000",
+            "name": "pupil-left"
+          },
+          {
+            "type": "box",
+            "width": 6,
+            "height": 4,
+            "depth": 14,
+            "x": 0,
+            "y": 18,
+            "z": -17.9,
+            "rotationX": -20,
+            "color": "#5D8233",
+            "name": "tail-base"
+          },
+          {
+            "type": "box",
+            "width": 4,
+            "height": 3,
+            "depth": 10,
+            "x": 0,
+            "y": 15,
+            "z": -30,
+            "rotationX": -10,
+            "color": "#5D8233",
+            "name": "tail-tip"
+          },
+          {
+            "type": "box",
+            "width": 5,
+            "height": 16,
+            "depth": 5,
+            "x": 6,
+            "y": 10,
+            "z": 0,
+            "color": "#4E6C2A",
+            "name": "leg-left"
+          },
+          {
+            "type": "box",
+            "width": 5,
+            "height": 16,
+            "depth": 5,
+            "x": -6,
+            "y": 10,
+            "z": 0,
+            "color": "#4E6C2A",
+            "name": "leg-right"
+          },
+          {
+            "type": "box",
+            "width": 7,
+            "height": 2,
+            "depth": 9,
+            "x": 6,
+            "y": 1,
+            "z": 0,
+            "color": "#4E6C2A",
+            "name": "foot-left"
+          },
+          {
+            "type": "box",
+            "width": 7,
+            "height": 2,
+            "depth": 9,
+            "x": -6,
+            "y": 1,
+            "z": 0,
+            "color": "#4E6C2A",
+            "name": "foot-right"
+          },
+          {
+            "type": "box",
+            "width": 3,
+            "height": 5,
+            "depth": 3,
+            "x": 8,
+            "y": 26,
+            "z": 0,
+            "rotationX": -40,
+            "color": "#4E6C2A",
+            "name": "arm-left"
+          },
+          {
+            "type": "box",
+            "width": 3,
+            "height": 5,
+            "depth": 3,
+            "x": -8,
+            "y": 26,
+            "z": 0,
+            "rotationX": -40,
+            "color": "#4E6C2A",
+            "name": "arm-right"
+          },
+          {
+            "type": "box",
+            "width": 2,
+            "height": 2,
+            "depth": 1,
+            "x": 8,
+            "y": 24,
+            "z": 3,
+            "color": "#A0A0A0",
+            "name": "hand-left"
+          },
+          {
+            "type": "box",
+            "width": 2,
+            "height": 2,
+            "depth": 1,
+            "x": -8,
+            "y": 24,
+            "z": 3,
+            "color": "#A0A0A0",
+            "name": "hand-right"
+          },
+          {
+            "type": "cone",
+            "size": 4,
+            "height": 6,
+            "x": 0,
+            "y": 35,
+            "z": -2,
+            "rotationX": -60,
+            "color": "#536026",
+            "name": "spike1"
+          },
+          {
+            "type": "cone",
+            "size": 4,
+            "height": 6,
+            "x": 0,
+            "y": 28,
+            "z": -8,
+            "rotationX": -75,
+            "color": "#436026",
+            "name": "spike2"
+          },
+          {
+            "type": "cone",
+            "size": 3,
+            "height": 4,
+            "x": 0,
+            "y": 22,
+            "z": -20,
+            "rotationX": -25,
+            "color": "#436026",
+            "name": "spike3"
+          },
+          {
+            "type": "cone",
+            "size": 2,
+            "height": 3,
+            "x": 0,
+            "y": 18,
+            "z": -28,
+            "rotationX": -25,
+            "color": "#436026",
+            "name": "spike4"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      }
     }
   }
 }

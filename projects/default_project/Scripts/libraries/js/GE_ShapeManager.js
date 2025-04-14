@@ -476,11 +476,11 @@ class GE_ShapeManager {
         }
     }
     getSelectedGroupOrRoot() {
-        const selectedGroupName = this.graphicsEditor.groupManager.selectedGroupName;
-        if (selectedGroupName) {
+        const currentGroup = this.graphicsEditor.state.currentGroup;
+        if (currentGroup) {
             let foundGroup = null;
             this.graphicsEditor.rootGroup.traverse(obj => {
-                if (obj.isGroup && obj.name === selectedGroupName && obj.userData.isGroup) {
+                if (obj.isGroup && obj.name === currentGroup && obj.userData.isGroup) {
                     foundGroup = obj;
                 }
             });
@@ -503,11 +503,11 @@ class GE_ShapeManager {
             target = targetObject;
         } else {
             // Try to get the currently selected group
-            const selectedGroupName = this.graphicsEditor.groupManager.selectedGroupName;
-            if (selectedGroupName) {
+            const currentGroup = this.graphicsEditor.state.currentGroup;
+            if (currentGroup) {
                 // Find the group in the scene
                 this.graphicsEditor.rootGroup.traverse(obj => {
-                    if (obj.isGroup && obj.name === selectedGroupName && obj.userData.isGroup) {
+                    if (obj.isGroup && obj.name === currentGroup && obj.userData.isGroup) {
                         target = obj;
                     }
                 });
@@ -697,8 +697,7 @@ class GE_ShapeManager {
         
         // Toggle selection if clicking the same shape
         this.graphicsEditor.state.selectedShapeIndex = (this.graphicsEditor.state.selectedShapeIndex === index) ? -1 : index;
-        this.graphicsEditor.state.currentGroup = this.graphicsEditor.groupManager.selectedGroupName;
-        
+
         // Update shape list and highlighting
         this.updateList();
         this.highlightSelectedShape();
@@ -749,8 +748,8 @@ class GE_ShapeManager {
         }
     
         // Get the selected group name from state
-        const selectedGroupName = this.graphicsEditor.state.currentGroup || this.graphicsEditor.groupManager.selectedGroupName;
-        if (!selectedGroupName) {
+        const currentGroup = this.graphicsEditor.state.currentGroup;
+        if (!currentGroup) {
             console.warn("No group selected");
             return;
         }
@@ -758,13 +757,13 @@ class GE_ShapeManager {
         // Find the THREE.Group with matching name under rootGroup
         let selectedGroup = null;
         this.graphicsEditor.rootGroup.traverse(obj => {
-            if (obj.isGroup && obj.name === selectedGroupName) {
+            if (obj.isGroup && obj.name === currentGroup) {
                 selectedGroup = obj;
             }
         });
     
         if (!selectedGroup) {
-            console.warn(`No group found with name ${selectedGroupName}`);
+            console.warn(`No group found with name ${currentGroup}`);
             return;
         }
     
@@ -777,10 +776,10 @@ class GE_ShapeManager {
             return;
         }
     
-        const groupShapes = currentFrameData[selectedGroupName];
+        const groupShapes = currentFrameData[currentGroup];
     
         if (!groupShapes || this.graphicsEditor.state.selectedShapeIndex >= groupShapes.length) {
-            console.warn(`Invalid shape index ${this.graphicsEditor.state.selectedShapeIndex} for group ${selectedGroupName}`);
+            console.warn(`Invalid shape index ${this.graphicsEditor.state.selectedShapeIndex} for group ${currentGroup}`);
             return;
         }
     
@@ -968,16 +967,68 @@ class GE_ShapeManager {
         list.appendChild(frameList);
     }
 
+    getMergedGroup(groupName){
+        const currentAnimation = this.graphicsEditor.state.currentAnimation;
+        const currentFrame = this.graphicsEditor.state.currentFrame;
+        let model = this.graphicsEditor.state.renderData.model;
+        if(!model) {
+            this.graphicsEditor.state.renderData.model = JSON.parse(JSON.stringify(this.graphicsEditor.state.renderData.animations['idle'][0])); // Deep copy
+            model = this.graphicsEditor.state.renderData.model;
+        }
+        let frameData = this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame];
+        const frameGroup = frameData[groupName];
+        const modelGroup = model[groupName];
+        let mergedShapes = [];
+        for(let i = 0; i < modelGroup.shapes.length; i++){
+            let modelShape = modelGroup.shapes[i];
+            if(!frameGroup.shapes){
+                mergedShapes.push(JSON.parse(JSON.stringify(modelShape)));
+                continue;
+            }
+            if(frameGroup.shapes.length <= i) {
+                frameGroup.shapes.push({});
+            }
+            let mergedShape = {};
+            if(typeof frameGroup.shapes[i].id == "undefined"){
+                frameGroup.shapes[i].id = i;
+            }
+            for(const key in modelShape) {
+                let frameShape = frameGroup.shapes.find((shape) => shape.id == i);
+                if(frameShape && typeof frameShape[key] != "undefined" && modelShape[key] === frameShape[key]){
+                    delete frameShape[key];                        
+                    mergedShape[key] = modelShape[key];
+                } else if(!frameShape || typeof frameShape[key] == "undefined"){
+                    mergedShape[key] = modelShape[key];
+                } else {
+                    mergedShape[key] = frameShape[key];
+                }
+            }
+            mergedShapes.push(mergedShape);
+        }
+        if(frameGroup.shapes){
+            for(let i = frameGroup.shapes.length - 1; i >= 0; i--){
+                let shape = frameGroup.shapes[i];
+                if(Object.keys(shape).length == 1){
+                    frameGroup.shapes.splice(i, 1);
+                }
+            }  
+        }                         
+        const mergedGroup = {
+            ...modelGroup,
+            ...frameGroup,
+        };
+        mergedGroup.shapes = mergedShapes;
+        return mergedGroup;
+    }
+
     updateShapeList() {
         const list = document.getElementById('shape-list');
         if (!list) return;
         
-        // Get the current frame data
-        const currentFrame = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame];
-       
+
         // Get shapes from the currently selected group
-        const selectedGroupName = this.graphicsEditor.groupManager.selectedGroupName;
-        const selectedGroup = currentFrame[selectedGroupName]
+        const currentGroup = this.graphicsEditor.state.currentGroup;
+        const selectedGroup = this.getMergedGroup(currentGroup);
         const shapes = selectedGroup && selectedGroup.shapes ? selectedGroup.shapes : selectedGroup || [];
        
         // Create shape list items
@@ -989,28 +1040,26 @@ class GE_ShapeManager {
             shapeItem.classList.add('shape-item');
            
             // Mark as selected if this shape is the selected one and we're in the right group
-            if (i === this.graphicsEditor.state.selectedShapeIndex &&
-                this.graphicsEditor.groupManager.selectedGroupName === this.graphicsEditor.state.currentGroup) {
+            if (i === this.graphicsEditor.state.selectedShapeIndex) {
                 shapeItem.classList.add('selected');
             }
            
             shapeItem.textContent = `${shape.name} - ${shape.type || 'Shape'}`;
             shapeItem.addEventListener('click', () => {
-                this.graphicsEditor.state.currentGroup = this.graphicsEditor.groupManager.selectedGroupName;
                 this.selectShape(i);
             });
            
             // Make the shape draggable
             shapeItem.draggable = true;
             shapeItem.dataset.index = i;
-            shapeItem.dataset.group = selectedGroupName;
+            shapeItem.dataset.group = currentGroup;
             
             // Add dragstart event to set the drag data
             shapeItem.addEventListener('dragstart', (e) => {
                 // Store only the selected shape's index and source group
                 const data = {
                     shapeIndex: i,
-                    sourceGroup: selectedGroupName
+                    sourceGroup: currentGroup
                 };
                 
                 // Set the drag data
@@ -1060,11 +1109,11 @@ class GE_ShapeManager {
                 const { shapeIndex, sourceGroup } = dragData;
                 
                 // Only process if this is a different group
-                if (sourceGroup && sourceGroup !== selectedGroupName) {
+                if (sourceGroup && sourceGroup !== currentGroup) {
                     this.graphicsEditor.groupManager.moveToGroup(
                         parseInt(shapeIndex),
                         sourceGroup,
-                        selectedGroupName
+                        currentGroup
                     );
                 }
             } catch (err) {

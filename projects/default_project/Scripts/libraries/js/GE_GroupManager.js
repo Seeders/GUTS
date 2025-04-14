@@ -2,7 +2,6 @@ class GE_GroupManager {
     constructor(gameEditor, graphicsEditor) {
         this.gameEditor = gameEditor;
         this.graphicsEditor = graphicsEditor;
-        this.selectedGroupName = "shapes"; // Default to the shapes group
         this.DEFAULT_GROUP = {
             shapes: [],
             position: { x: 0, y: 0, z: 0 },
@@ -113,7 +112,7 @@ class GE_GroupManager {
         }
         
         // Switch selection to the new group
-        this.selectedGroupName = groupName;
+        this.graphicsEditor.state.currentGroup = groupName;
         
         // Refresh UI
         this.graphicsEditor.shapeManager.updateList();
@@ -169,7 +168,6 @@ class GE_GroupManager {
         if (!groupName) return;
         
         // Update the selected group name
-        this.selectedGroupName = groupName;
         this.graphicsEditor.state.currentGroup = groupName;
         this.graphicsEditor.state.selectedShapeIndex = -1;
         let groupData = this.getGroupData(groupName);
@@ -204,19 +202,19 @@ class GE_GroupManager {
         const currentAnimation = this.graphicsEditor.state.currentAnimation;
         const currentFrame = this.graphicsEditor.state.currentFrame;
         const currentFrameData = this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame];
-        
+        const currentGroup = this.graphicsEditor.state.currentGroup;
         // Get shapes from the selected group
-        const groupShapes = currentFrameData[this.selectedGroupName].shapes;
+        const groupShapes = currentFrameData[currentGroup].shapes;
         if (groupShapes.length > 0) {
             alert('Group must be empty to delete.');
             return;
         }
                         
         // Remove the group
-        delete currentFrameData[this.selectedGroupName];
+        delete currentFrameData[currentGroup];
         
         // Reset selection to shapes group
-        this.selectedGroupName = "shapes";
+        this.graphicsEditor.state.currentGroup = Object.keys(currentFrameData)[0];
         this.graphicsEditor.state.selectedShapeIndex = -1;
         
         // Update UI
@@ -291,7 +289,7 @@ class GE_GroupManager {
         for (const group of groups) {
             const groupItem = document.createElement('div');
             groupItem.classList.add('group-item');
-            if (group === this.selectedGroupName) {
+            if (group === this.graphicsEditor.state.currentGroup) {
                 groupItem.classList.add('selected');
             }
             

@@ -87,55 +87,14 @@ class GraphicsEditor {
         }
         // Create a group for each group in the frame
         for (const groupName in frameData) {
-            const frameGroup = frameData[groupName];
-            const modelGroup = model[groupName];
+            const frameGroup = frameData[groupName];            
             if (Array.isArray(frameGroup)) {
                 let shapes = frameGroup;
                 let newGroup = {...this.groupManager.DEFAULT_GROUP};
                 newGroup.shapes = shapes;
-                this.state.renderData.animations[currentAnimation][currentFrame][groupName] = newGroup;
-                frameData = this.state.renderData.animations[currentAnimation][currentFrame];
+                this.state.renderData.animations[currentAnimation][currentFrame][groupName] = newGroup;                
             }            
-            let mergedShapes = [];
-            for(let i = 0; i < modelGroup.shapes.length; i++){
-                let modelShape = modelGroup.shapes[i];
-                if(!frameGroup.shapes){
-                    mergedShapes.push(JSON.parse(JSON.stringify(modelShape)));
-                    continue;
-                }
-                if(frameGroup.shapes.length <= i) {
-                    frameGroup.shapes.push({});
-                }
-                let mergedShape = {};
-                if(typeof frameGroup.shapes[i].id == "undefined"){
-                    frameGroup.shapes[i].id = i;
-                }
-                for(const key in modelShape) {
-                    let frameShape = frameGroup.shapes.find((shape) => shape.id == i);
-                    if(frameShape && typeof frameShape[key] != "undefined" && modelShape[key] === frameShape[key]){
-                        delete frameShape[key];                        
-                        mergedShape[key] = modelShape[key];
-                    } else if(!frameShape || typeof frameShape[key] == "undefined"){
-                        mergedShape[key] = modelShape[key];
-                    } else {
-                        mergedShape[key] = frameShape[key];
-                    }
-                }
-                mergedShapes.push(mergedShape);
-            }
-            if(frameGroup.shapes){
-                for(let i = frameGroup.shapes.length - 1; i >= 0; i--){
-                    let shape = frameGroup.shapes[i];
-                    if(Object.keys(shape).length == 1){
-                        frameGroup.shapes.splice(i, 1);
-                    }
-                }  
-            }                         
-            const mergedGroup = {
-                ...modelGroup,
-                ...frameGroup,
-            };
-            mergedGroup.shapes = mergedShapes;
+            const mergedGroup = this.shapeManager.getMergedGroup(groupName);
             let threeGroup = await this.shapeFactory.createGroupFromJSON(mergedGroup); 
             threeGroup.name = groupName;
             // Add the group to the root group
