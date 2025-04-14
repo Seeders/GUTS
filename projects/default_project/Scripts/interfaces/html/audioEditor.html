@@ -1,38 +1,22 @@
-<div id="audio-editor-container" class="main-content-container">
-    <div style="display: flex; flex-wrap: wrap; gap: 20px;">
-        <!-- Status Message Area -->
-        <div id="status-container" style="width: 100%; padding: 10px; text-align: center;">
-            <span id="status-message" style="color: #333; font-weight: bold;">Ready</span>
-        </div>
+<div id="audio-editor-container">       
+     <div id="status-container">
+        <span id="status-message">Ready</span>
+    </div>
 
-        <!-- Waveform Visualizer -->
-        <div class="visualizer-container" style="flex: 1; min-width: 300px;">        
+    <div class="main-flex-container">
+        <!-- Status Message Area -->
+
+        <!-- Basic Parameters -->
+        <div class="parameters-container">
             <!-- Playback Controls -->
-            <div class="control-buttons" style="margin-top: 10px; display: flex; gap: 10px;">
+            <div class="control-buttons">
                 <button id="playBtn" class="primary-button">Play</button>
-                <button id="stopBtn" disabled>Stop</button>
                 <button id="exportBtn">Save</button>
                 <button id="randomSoundBtn">🎲 Randomize Sound</button>
             </div>
-
-            <!-- Presets -->
-            <div class="presets-container" style="margin-top: 10px;">
-                <h3>Presets</h3>
-                <div class="preset-controls" style="display: flex; gap: 10px; align-items: center;">
-                    <select id="presetSelect">
-                        <option value="">-- Select Preset --</option>
-                    </select>
-                    <input type="text" id="presetName" placeholder="New preset name" style="padding: 5px;">
-                    <button id="savePresetBtn">Save Preset</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Basic Parameters -->
-        <div class="parameters-container" style="flex: 1; min-width: 300px;">
             <h3>Basic Parameters</h3>
-            <div class="parameter-group" style="display: grid; gap: 10px;">
-                <label style="display: flex; align-items: center; gap: 10px;">
+            <div class="parameter-group">
+                <label>
                     Waveform:
                     <select id="waveform">
                         <option value="sine">Sine</option>
@@ -42,62 +26,92 @@
                         <option value="noise">Noise</option>
                     </select>
                 </label>
-                <label style="display: flex; align-items: center; gap: 10px;">
+                <label>
                     Frequency:
                     <input type="range" id="frequency" min="20" max="2000" value="440" step="1">
                     <span class="value-display">440 Hz</span>
                 </label>
-                <label style="display: flex; align-items: center; gap: 10px;">
+                <label>
                     Duration:
                     <input type="range" id="duration" min="0.1" max="5" value="1" step="0.1">
                     <span class="value-display">1.00 s</span>
                 </label>
-                <label style="display: flex; align-items: center; gap: 10px;">
+                <label>
                     Volume:
                     <input type="range" id="volume" min="0" max="1" value="0.7" step="0.01">
                     <span class="value-display">70%</span>
                 </label>
             </div>
-            
         </div>
-
-        <!-- ADSR Envelope -->
-        <div class="parameters-container" style="flex: 1; min-width: 300px;">
-            <h3>Envelope (ADSR)</h3>
-            <div class="parameter-group" style="display: grid; gap: 10px;">
-                <label style="display: flex; align-items: center; gap: 10px;">
-                    Attack:
-                    <input type="range" id="attack" min="0.001" max="2" value="0.01" step="0.001">
-                    <span class="value-display">0.010 s</span>
+        <div class="parameters-container">
+            <h3>Noise Generator</h3>
+            <div class="parameter-group">
+                <label >
+                    Noise Type:
+                    <select id="noiseType">
+                        <option value="white">White</option>
+                        <option value="pink">Pink</option>
+                        <option value="brown">Brown</option>
+                    </select>
                 </label>
-                <label style="display: flex; align-items: center; gap: 10px;">
-                    Decay:
-                    <input type="range" id="decay" min="0" max="2" value="0.1" step="0.001">
-                    <span class="value-display">0.10 s</span>
+                <label>
+                    Noise Amount:
+                    <input type="range" id="noiseAmount" min="0" max="1" value="0" step="0.01">
+                    <span class="value-display">0%</span>
                 </label>
-                <label style="display: flex; align-items: center; gap: 10px;">
-                    Sustain:
-                    <input type="range" id="sustain" min="0" max="1" value="0.7" step="0.01">
-                    <span class="value-display">70%</span>
+                <label >
+                    Noise Filter:
+                    <select id="noiseFilterType">
+                        <option value="none">None</option>
+                        <option value="lowpass">Low Pass</option>
+                        <option value="highpass">High Pass</option>
+                        <option value="bandpass">Band Pass</option>
+                    </select>
                 </label>
-                <label style="display: flex; align-items: center; gap: 10px;">
-                    Release:
-                    <input type="range" id="release" min="0.001" max="5" value="0.3" step="0.001">
-                    <span class="value-display">0.30 s</span>
+                <label>
+                    Noise Filter Freq:
+                    <input type="range" id="noiseFilterFreq" min="20" max="20000" value="2000" step="1">
+                    <span class="value-display">2000 Hz</span>
                 </label>
+            </div>
+            <!-- ADSR Envelope -->
+            <div class="parameters-container">
+                <h3>Envelope (ADSR)</h3>
+                <div class="parameter-group">
+                    <label>
+                        Attack:
+                        <input type="range" id="attack" min="0.001" max="2" value="0.01" step="0.001">
+                        <span class="value-display">0.010 s</span>
+                    </label>
+                    <label>
+                        Decay:
+                        <input type="range" id="decay" min="0" max="2" value="0.1" step="0.001">
+                        <span class="value-display">0.10 s</span>
+                    </label>
+                    <label>
+                        Sustain:
+                        <input type="range" id="sustain" min="0" max="1" value="0.7" step="0.01">
+                        <span class="value-display">70%</span>
+                    </label>
+                    <label>
+                        Release:
+                        <input type="range" id="release" min="0.001" max="5" value="0.3" step="0.001">
+                        <span class="value-display">0.30 s</span>
+                    </label>
+                </div>
             </div>
         </div>
 
         <!-- Pitch Envelope -->
-        <div class="parameters-container" style="flex: 1; min-width: 300px;">
+        <div class="parameters-container">
             <h3>Pitch Envelope</h3>
-            <div class="parameter-group" style="display: grid; gap: 10px;">
-                <label style="display: flex; align-items: center; gap: 10px;">
+            <div class="parameter-group">
+                <label>
                     Start:
                     <input type="range" id="pitchEnvStart" min="0.1" max="4" value="1" step="0.01">
                     <span class="value-display">1.00x</span>
                 </label>
-                <label style="display: flex; align-items: center; gap: 10px;">
+                <label>
                     End:
                     <input type="range" id="pitchEnvEnd" min="0.1" max="4" value="1" step="0.01">
                     <span class="value-display">1.00x</span>
@@ -106,10 +120,10 @@
         </div>
 
         <!-- Effects -->
-        <div class="parameters-container" style="flex: 1; min-width: 300px;">
+        <div class="parameters-container">
             <h3>Effects</h3>
-            <div class="parameter-group" style="display: grid; gap: 10px;">
-                <label style="display: flex; align-items: center; gap: 10px;">
+            <div class="parameter-group">
+                <label>
                     Filter Type:
                     <select id="filterType">
                         <option value="lowpass">Low Pass</option>
@@ -118,53 +132,47 @@
                         <option value="notch">Notch</option>
                     </select>
                 </label>
-                <label style="display: flex; align-items: center; gap: 10px;">
+                <label>
                     Filter Frequency:
                     <input type="range" id="filterFreq" min="20" max="20000" value="1000" step="1">
                     <span class="value-display">1000 Hz</span>
                 </label>
-                <label style="display: flex; align-items: center; gap: 10px;">
+                <label>
                     Filter Q:
                     <input type="range" id="filterQ" min="0.1" max="20" value="1" step="0.1">
                     <span class="value-display">Q: 1.0</span>
                 </label>
-                <label style="display: flex; align-items: center; gap: 10px;">
+                <label>
                     Distortion:
                     <input type="range" id="distortion" min="0" max="100" value="0" step="1">
                     <span class="value-display">0%</span>
                 </label>
-                <label style="display: flex; align-items: center; gap: 10px;">
+                <label>
                     Delay Time:
                     <input type="range" id="delayTime" min="0" max="2" value="0.3" step="0.01">
                     <span class="value-display">0.30 s</span>
                 </label>
-                <label style="display: flex; align-items: center; gap: 10px;">
+                <label>
                     Delay Feedback:
                     <input type="range" id="delayFeedback" min="0" max="0.9" value="0" step="0.01">
                     <span class="value-display">0%</span>
                 </label>
-                <label style="display: flex; align-items: center; gap: 10px;">
+                <label>
                     Reverb:
                     <input type="range" id="reverbAmount" min="0" max="1" value="0" step="0.01">
                     <span class="value-display">0%</span>
                 </label>
-                <label style="display: flex; align-items: center; gap: 10px;">
+                <label>
                     Bitcrusher:
                     <input type="range" id="bitcrusher" min="0" max="1" value="0" step="0.01">
                     <span class="value-display">0%</span>
                 </label>
-                <label style="display: flex; align-items: center; gap: 10px;">
+                <label>
                     Panning:
                     <input type="range" id="panning" min="-1" max="1" value="0" step="0.01">
                     <span class="value-display">Center</span>
                 </label>
             </div>
-        </div>
-
-        <!-- Output Display -->
-        <div class="output-container" style="flex: 1; min-width: 300px;">
-            <h3>Export Data</h3>
-            <textarea id="jsonOutput" readonly rows="5" style="width: 100%; resize: none; font-family: monospace;"></textarea>
         </div>
     </div>
 </div>
