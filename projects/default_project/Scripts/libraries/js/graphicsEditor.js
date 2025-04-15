@@ -69,12 +69,11 @@ class GraphicsEditor {
             return;
         }
         
-        let frameData = this.getCurrentFrame();
         //model is a Frame that has named groups as properties.
         let model = this.state.renderData.model;
 
         // Create a group for each group in the frame
-        for (const groupName in frameData) {     
+        for (const groupName in model) {     
             const mergedGroup = this.getMergedGroup(groupName);
             if( mergedGroup){
                 let threeGroup = await this.shapeFactory.createGroupFromJSON(mergedGroup); 
@@ -167,14 +166,13 @@ class GraphicsEditor {
             if (shape) {  
                 shape.id = this.state.selectedShapeIndex;
                 // Avoid overwriting shape.id unless necessary
-                let currentGroupData = this.getCurrentGroup();
+                let currentGroupData = this.getCurrentGroup() || {};
                 
                 // Ensure shapes array exists
                 currentGroupData.shapes = currentGroupData.shapes || [];
                 
                 // Find index of shape with matching id
                 const shapeIndex = currentGroupData.shapes.findIndex(s => s.id === shape.id);
-                console.log(shapeIndex, shape.id);
                 // Replace or append shape
                 if (shapeIndex >= 0) {
                     currentGroupData.shapes[shapeIndex] = shape; // Replace

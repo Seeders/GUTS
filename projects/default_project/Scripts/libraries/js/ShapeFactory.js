@@ -167,9 +167,23 @@ class ShapeFactory {
             //group doesnt exist in animation, copy from model
             frameData[groupName] = JSON.parse(JSON.stringify(modelGroup));
             frameGroup = frameData[groupName];
-            return frameGroup;
+            for(let i = 0; i < frameGroup.shapes.length; i++){
+                frameGroup.shapes[i].id = i;
+            }
         }
 
+        if(JSON.stringify(modelGroup.position) == JSON.stringify(frameGroup.position)){
+
+            delete frameGroup.position;
+        }
+        if(JSON.stringify(modelGroup.rotation) == JSON.stringify(frameGroup.rotation)){
+
+            delete frameGroup.rotation;
+        }
+        if(JSON.stringify(modelGroup.scale) == JSON.stringify(frameGroup.scale)){
+
+            delete frameGroup.scale;
+        }
         let mergedShapes = [];
         for(let i = 0; i < modelGroup.shapes.length; i++){
             let modelShape = modelGroup.shapes[i];
@@ -216,8 +230,16 @@ class ShapeFactory {
         if(modelGroup.shapes.length == 0){
             frameGroup.shapes = [];
         }
+
         mergedGroup.shapes = mergedShapes;
-        return JSON.parse(JSON.stringify(mergedGroup));
+        let returnVal = JSON.parse(JSON.stringify(mergedGroup));
+        if(frameGroup.shapes && frameGroup.shapes.length == 0){
+            delete frameGroup.shapes;
+        }
+        if(Object.keys(frameGroup).length == 0) {            
+           delete frameData[groupName];
+        }
+        return returnVal;
     }
 
 }

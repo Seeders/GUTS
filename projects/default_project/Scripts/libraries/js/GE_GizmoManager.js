@@ -189,7 +189,7 @@ class GE_GizmoManager {
     }
 
     updateGizmoPosition() {
-        if (!this.currentTransformTarget) return;
+        if (!this.currentTransformTarget || !this.gizmoGroup) return;
                 
         let center = new window.THREE.Vector3();
         let xOffset = 1, yOffset = 1, zOffset = 1;

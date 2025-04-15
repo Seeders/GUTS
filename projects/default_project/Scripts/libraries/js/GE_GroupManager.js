@@ -168,7 +168,7 @@ class GE_GroupManager {
         // Update the selected group name
         this.graphicsEditor.state.currentGroup = groupName;
         this.graphicsEditor.state.selectedShapeIndex = -1;
-        let groupData = this.getGroupData(groupName);
+        let groupData = this.graphicsEditor.getMergedGroup(groupName);
         this.graphicsEditor.uiManager.updateList();
         this.graphicsEditor.shapeManager.highlightSelectedShape();
         if(groupData){
