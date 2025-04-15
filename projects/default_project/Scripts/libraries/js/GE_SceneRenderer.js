@@ -80,7 +80,11 @@ class GE_SceneRenderer {
         document.getElementById('json-content').value = JSON.stringify(this.graphicsEditor.state.renderData, null, 2);
         
         // Safely get first animation name
-        const model = this.graphicsEditor.state.renderData.model;
+        let model = this.graphicsEditor.state.renderData.model;        
+        if(!model) {
+            this.graphicsEditor.state.renderData.model = JSON.parse(JSON.stringify(this.graphicsEditor.state.renderData.animations['idle'][0])); // Deep copy
+            model = this.graphicsEditor.state.renderData.model;
+        }
         this.graphicsEditor.state.currentAnimation = "";
         
         // Safely get first frame's shapes

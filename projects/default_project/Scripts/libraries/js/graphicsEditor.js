@@ -73,10 +73,6 @@ class GraphicsEditor {
         //model is a Frame that has named groups as properties.
         let model = this.state.renderData.model;
 
-        if(!model) {
-            this.state.renderData.model = JSON.parse(JSON.stringify(this.state.renderData.animations['idle'][0])); // Deep copy
-            model = this.state.renderData.model;
-        }
         // Create a group for each group in the frame
         for (const groupName in frameData) {     
             const mergedGroup = this.getMergedGroup(groupName);
