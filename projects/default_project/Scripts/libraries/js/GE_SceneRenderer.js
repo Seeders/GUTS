@@ -91,8 +91,8 @@ class GE_SceneRenderer {
         const shapes = firstFrame[firstGroup].shapes || [];
         this.graphicsEditor.state.currentGroup = firstGroup;
         this.graphicsEditor.state.selectedShapeIndex = shapes.length > 0 ? 0 : -1;
-        this.graphicsEditor.refreshShapes(false);
         this.handleResize();
+        this.graphicsEditor.refreshShapes(false);
     }
 
 

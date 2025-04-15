@@ -386,4 +386,164 @@ class GE_UIManager {
             groupData.position[property] = value;
         }
     }
+
+  
+
+    updateList() {
+        const frameList = document.getElementById('frame-list');
+        frameList.innerHTML = '';
+        const groupList = document.getElementById('group-list');
+        groupList.innerHTML = '';
+        const shapeList = document.getElementById('shape-list');
+        shapeList.innerHTML = '';
+        this.updateFrameList();
+        this.graphicsEditor.groupManager.updateGroupList();
+        this.updateShapeList();
+    }
+
+    updateFrameList() {
+        const list = document.getElementById('frame-list');
+        // Animation selector
+        const animSelector = document.createElement('select');
+        animSelector.style.marginBottom = '10px';
+        Object.keys(this.graphicsEditor.state.renderData.animations).forEach(anim => {
+            const option = document.createElement('option');
+            option.value = anim;
+            option.textContent = anim;
+            if (anim === this.graphicsEditor.state.currentAnimation) option.selected = true;
+            animSelector.appendChild(option);
+        });
+        animSelector.addEventListener('change', () => {
+            this.graphicsEditor.setPreviewAnimationState(false);
+            this.graphicsEditor.state.currentAnimation = animSelector.value;
+            this.graphicsEditor.state.currentFrame = 0;
+            this.graphicsEditor.state.selectedShapeIndex = -1;
+            
+            this.graphicsEditor.refreshShapes(false);
+        });
+        list.appendChild(animSelector);
+    
+        // Frame list
+        const frameList = document.createElement('div');
+        frameList.style.marginBottom = '10px';
+        this.graphicsEditor.getCurrentAnimation().forEach((frame, index) => {
+            const frameItem = document.createElement('div');
+            frameItem.textContent = `Frame ${index + 1}`;
+            frameItem.style.padding = '5px';
+            frameItem.style.cursor = 'pointer';
+            if (index === this.graphicsEditor.state.currentFrame) frameItem.style.backgroundColor = '#555';
+            frameItem.addEventListener('click', () => {
+                this.graphicsEditor.setPreviewAnimationState(false);
+                this.graphicsEditor.state.currentFrame = index;  
+                let frameData = this.graphicsEditor.getCurrentFrame();   
+                this.graphicsEditor.groupManager.selectGroup(Object.keys(frameData)[0])
+                this.graphicsEditor.refreshShapes(false);
+            });
+            frameList.appendChild(frameItem);
+        });
+        list.appendChild(frameList);
+    }
+
+
+    updateShapeList() {
+        const list = document.getElementById('shape-list');
+        if (!list) return;
+        
+
+        // Get shapes from the currently selected group
+        const currentGroup = this.graphicsEditor.state.currentGroup;
+        const selectedGroup = this.graphicsEditor.getMergedGroup(currentGroup);
+        const shapes = selectedGroup && selectedGroup.shapes ? selectedGroup.shapes : selectedGroup || [];
+       
+        // Create shape list items
+        for (let i = 0; i < shapes.length; i++) {
+            const shape = shapes[i];
+            if (!shape) continue;
+           
+            const shapeItem = document.createElement('div');
+            shapeItem.classList.add('shape-item');
+           
+            // Mark as selected if this shape is the selected one and we're in the right group
+            if (i === this.graphicsEditor.state.selectedShapeIndex) {
+                shapeItem.classList.add('selected');
+            }
+           
+            shapeItem.textContent = `${shape.name} - ${shape.type || 'Shape'}`;
+            shapeItem.addEventListener('click', (e) => {                
+                this.graphicsEditor.shapeManager.selectShape(parseInt(e.target.dataset.index));
+            });
+           
+            // Make the shape draggable
+            shapeItem.draggable = true;
+            shapeItem.dataset.index = i;
+            shapeItem.dataset.group = currentGroup;
+            
+            // Add dragstart event to set the drag data
+            shapeItem.addEventListener('dragstart', (e) => {
+                // Store only the selected shape's index and source group
+                const data = {
+                    shapeIndex: i,
+                    sourceGroup: currentGroup
+                };
+                
+                // Set the drag data
+                e.dataTransfer.setData('text/plain', JSON.stringify(data));
+                
+                // Add a visual indicator
+                shapeItem.classList.add('dragging');
+                
+                // Set drag effect
+                e.dataTransfer.effectAllowed = 'move';
+            });
+            
+            // Add dragend event to clean up
+            shapeItem.addEventListener('dragend', () => {
+                shapeItem.classList.remove('dragging');
+            });
+           
+            list.appendChild(shapeItem);
+        }
+        
+        // Set up the shape list container as a drop target
+        list.addEventListener('dragover', (e) => {
+            // Only respond if we're dragging over the shape list itself, not an individual shape
+            if (e.target === list) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                list.classList.add('drag-over');
+            }
+        });
+        
+        list.addEventListener('dragleave', (e) => {
+            // Only respond if we're leaving the shape list
+            if (e.target === list) {
+                list.classList.remove('drag-over');
+            }
+        });
+        
+        list.addEventListener('drop', (e) => {
+            e.preventDefault();
+            list.classList.remove('drag-over');
+            
+            const data = e.dataTransfer.getData('text/plain');
+            if (!data) return;
+            
+            try {
+                const dragData = JSON.parse(data);
+                const { shapeIndex, sourceGroup } = dragData;
+                
+                // Only process if this is a different group
+                if (sourceGroup && sourceGroup !== currentGroup) {
+                    this.graphicsEditor.groupManager.moveToGroup(
+                        parseInt(shapeIndex),
+                        sourceGroup,
+                        currentGroup
+                    );
+                }
+            } catch (err) {
+                console.error('Error processing drop in shape list:', err);
+            }
+        });
+    }
+
 }

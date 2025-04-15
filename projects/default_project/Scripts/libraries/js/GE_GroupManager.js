@@ -114,7 +114,7 @@ class GE_GroupManager {
         this.graphicsEditor.state.currentGroup = groupName;
         
         // Refresh UI
-        this.graphicsEditor.shapeManager.updateList();
+        this.graphicsEditor.uiManager.updateList();
         this.graphicsEditor.refreshShapes(true);
     }
 
@@ -156,8 +156,7 @@ class GE_GroupManager {
 
     getGroupData(groupName){
         let groupData = this.graphicsEditor.getCurrentFrame()[groupName];
-        let mergedData = { ...JSON.parse(JSON.stringify(this.graphicsEditor.state.renderData.model[groupName])), ...groupData };
-        return mergedData;
+        return groupData;
     }
     // Select a group to work with
     selectGroup(groupName) {
@@ -168,10 +167,10 @@ class GE_GroupManager {
         this.graphicsEditor.state.selectedShapeIndex = -1;
         let groupData = this.getGroupData(groupName);
         // Update the UI to show shapes in this group
-        this.graphicsEditor.shapeManager.updateList();
+        this.graphicsEditor.uiManager.updateList();
         this.graphicsEditor.shapeManager.highlightSelectedShape();
         this.graphicsEditor.uiManager.createGroupInspector(groupData);
-        this.graphicsEditor.shapeManager.transformGroup(this.getGroupObject(groupName));
+        this.graphicsEditor.gizmoManager.transformSelectedObject(this.getGroupObject(groupName));
         
         // Update the selected class on group items
         this.updateSelectedGroupClass(groupName);

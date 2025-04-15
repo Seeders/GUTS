@@ -1,6 +1,6 @@
 // Core structure
 class GraphicsEditor {
-    constructor(gameEditor, config, {ShapeFactory, GE_SceneRenderer, GE_ShapeManager, GE_AnimationManager, GE_RotationUtils, GE_UIManager, GE_GroupManager}) {
+    constructor(gameEditor, config, {ShapeFactory, GE_SceneRenderer, GE_ShapeManager, GE_AnimationManager, GE_RotationUtils, GE_UIManager, GE_GroupManager, GE_GizmoManager}) {
         this.gameEditor = gameEditor;
         this.config = config;
         this.shapeFactory = new ShapeFactory();
@@ -11,6 +11,7 @@ class GraphicsEditor {
         this.uiManager = new GE_UIManager(gameEditor, this);
         this.animationManager = new GE_AnimationManager(gameEditor, this);
         this.groupManager = new GE_GroupManager(gameEditor, this);
+        this.gizmoManager = new GE_GizmoManager(gameEditor, this);
         this.rotationUtils = GE_RotationUtils;
         // State management (simplified)
         this.state = {
@@ -32,6 +33,7 @@ class GraphicsEditor {
         this.shapeManager.init();
         this.animationManager.init();
         this.groupManager.init();
+        this.gizmoManager.init();
         this.sceneRenderer.animate();
     }
     displayIsometricSprites(sprites){
@@ -76,7 +78,7 @@ class GraphicsEditor {
         }
         // Create a group for each group in the frame
         for (const groupName in frameData) {     
-            const mergedGroup = this.shapeManager.getMergedGroup(groupName);
+            const mergedGroup = this.getMergedGroup(groupName);
             let threeGroup = await this.shapeFactory.createGroupFromJSON(mergedGroup); 
             threeGroup.name = groupName;
             // Add the group to the root group
@@ -111,7 +113,7 @@ class GraphicsEditor {
     
         // Highlight the selected shape if any
         this.shapeManager.highlightSelectedShape();
-        this.shapeManager.updateGizmoPosition();
+        this.gizmoManager.updateGizmoPosition();
     }
     
     getCurrentAnimation() {
@@ -125,7 +127,7 @@ class GraphicsEditor {
     }
     getCurrentShape() {
         if (this.state.selectedShapeIndex >= 0) {            
-            const selectedGroup = this.shapeManager.getMergedGroup(this.state.currentGroup);
+            const selectedGroup = this.getMergedGroup(this.state.currentGroup);
             const shapes = selectedGroup?.shapes || [];        
             let shape = shapes[this.state.selectedShapeIndex];       
             if (shape) {  
@@ -153,7 +155,7 @@ class GraphicsEditor {
     }
 
     refreshShapes(param) {
-        this.shapeManager.updateList();
+        this.uiManager.updateList();
         this.renderShapes(param);
     }
 
@@ -167,5 +169,80 @@ class GraphicsEditor {
 
     selectShape(index) {
         return this.shapeManager.selectShape(index);
+    }
+
+    getMergedGroup(groupName){
+        let model = this.state.renderData.model;
+        let frameData = this.getCurrentFrame();
+        const frameGroup = frameData[groupName];
+        const modelGroup = model[groupName];
+        let mergedShapes = [];
+        for(let i = 0; i < modelGroup.shapes.length; i++){
+            let modelShape = modelGroup.shapes[i];
+            if(!frameGroup.shapes){
+                mergedShapes.push(modelShape);
+                continue;
+            }
+            let mergedShape = {};
+            let frameShape = frameGroup.shapes.find((shape) => shape.id == i);
+            if(typeof frameShape == "undefined"){
+                frameShape = { id: i };
+                frameGroup.shapes.push(frameShape);
+            }
+            for(const key in modelShape) {
+                if(key == 'id'){      
+                    delete modelShape.id;
+                    continue;
+                }
+                if(frameShape && typeof frameShape[key] != "undefined" && modelShape[key] === frameShape[key]){
+                    delete frameShape[key];                 
+                    mergedShape[key] = modelShape[key];
+                } else if(!frameShape || typeof frameShape[key] == "undefined"){
+                    mergedShape[key] = modelShape[key];
+                } else {
+                    mergedShape[key] = frameShape[key];
+                }
+            }
+            mergedShape = {...mergedShape, ...frameShape};
+            delete mergedShape.id;
+            mergedShapes.push(mergedShape);
+        }
+        if(frameGroup.shapes){
+            for(let i = frameGroup.shapes.length - 1; i >= 0; i--){
+                let shape = frameGroup.shapes[i];
+                if(Object.keys(shape).length == 1){
+                    frameGroup.shapes.splice(i, 1);
+                }
+            }  
+        }                         
+        const mergedGroup = {
+            ...modelGroup,
+            ...frameGroup,
+        };
+        mergedGroup.shapes = mergedShapes;
+        return JSON.parse(JSON.stringify(mergedGroup));
+    }
+
+
+    getSelectedObject() {
+        const currentGroup = this.state.currentGroup;
+        if (currentGroup) {
+            let foundGroup = null;
+            this.rootGroup.traverse(obj => {
+                if (obj.isGroup && obj.name === currentGroup && obj.userData.isGroup) {
+                    foundGroup = obj;
+                }
+            });
+            let foundShape = null;
+            if(foundGroup){
+                foundGroup.traverse(obj => {
+                    if (obj.userData.isShape && obj.userData.index == this.state.selectedShapeIndex) {
+                        foundShape = obj;
+                    }
+                });
+            }
+            return foundShape || foundGroup || this.rootGroup;
+        }
+        return this.rootGroup;
     }
 }
