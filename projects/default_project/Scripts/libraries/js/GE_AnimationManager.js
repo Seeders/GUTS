@@ -38,7 +38,7 @@ class GE_AnimationManager {
 
     async animatePreview() {
         if (!this.isPreviewingAnimation) return;
-        this.graphicsEditor.state.currentFrame = (this.graphicsEditor.state.currentFrame + 1) % this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation].length;
+        this.graphicsEditor.state.currentFrame = (this.graphicsEditor.state.currentFrame + 1) % this.graphicsEditor.getCurrentAnimation().length;
         await this.graphicsEditor.renderShapes(false);
         setTimeout(this.animatePreview.bind(this), 166); // ~6 FPS, adjust as needed
     }
@@ -64,7 +64,7 @@ class GE_AnimationManager {
 
     deleteAnimation() {
         if (this.graphicsEditor.state.currentAnimation !== "idle") {
-            delete this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation];
+            delete this.graphicsEditor.getCurrentAnimation();
             this.graphicsEditor.state.currentAnimation = "idle";
             this.graphicsEditor.state.currentFrame = 0;
             this.graphicsEditor.state.selectedShapeIndex = -1;
@@ -73,20 +73,21 @@ class GE_AnimationManager {
     }
 
     addFrame() {
-        if (this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation].length > 0) {
-            const currentShapes = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame];
-            const newFrame = { shapes: JSON.parse(JSON.stringify(currentShapes.shapes)) };
-            this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation].splice(this.graphicsEditor.state.currentFrame + 1, 0, newFrame);                    
+        if (this.graphicsEditor.getCurrentAnimation().length > 0) {
+            const currentFrame = this.graphicsEditor.getCurrentFrame();
+            const newFrame = { shapes: JSON.parse(JSON.stringify(currentFrame.shapes)) };
+            this.graphicsEditor.getCurrentAnimation().splice(this.graphicsEditor.state.currentFrame + 1, 0, newFrame);                    
             this.graphicsEditor.state.currentFrame++;
             this.graphicsEditor.refreshShapes(true);
         }
     }
 
     deleteFrame() {
-        if (this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation].length > 1) {
-            this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation].splice(this.graphicsEditor.state.currentFrame, 1);
+        let currentAnimation = getCurrentAnimation();
+        if (currentAnimation.length > 1) {
+            currentAnimation.splice(this.graphicsEditor.state.currentFrame, 1);
             
-            this.graphicsEditor.state.currentFrame = Math.min(this.graphicsEditor.state.currentFrame, this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation].length - 1);
+            this.graphicsEditor.state.currentFrame = Math.min(this.graphicsEditor.state.currentFrame, currentAnimation.length - 1);
             this.graphicsEditor.refreshShapes(true);
         }
     }

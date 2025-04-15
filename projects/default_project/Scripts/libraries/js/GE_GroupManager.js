@@ -97,18 +97,17 @@ class GE_GroupManager {
             return;
         }
 
-        const currentAnimation = this.graphicsEditor.state.currentAnimation;
         const currentFrame = this.graphicsEditor.state.currentFrame;
         
         // Ensure we have current frame data
-        if (!this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame]) {
-            this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame] = {};
+        if (!this.graphicsEditor.getCurrentFrame()) {
+            this.graphicsEditor.getCurrentAnimation()[currentFrame] = {};
         }
         
         // Initialize group if it doesn't exist
-        if (!this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame][groupName]) {
+        if (!this.graphicsEditor.getCurrentGroup()) {
             // Using JSON parse/stringify for deep copying
-            this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame][groupName] = JSON.parse(JSON.stringify(this.DEFAULT_GROUP));
+            this.graphicsEditor.getCurrentFrame()[groupName] = JSON.parse(JSON.stringify(this.DEFAULT_GROUP));
         }
         
         // Switch selection to the new group
@@ -121,9 +120,7 @@ class GE_GroupManager {
 
     // Move an object from one group to another
     moveToGroup(shapeIndex, fromGroupName, toGroupName) {
-        const currentAnimation = this.graphicsEditor.state.currentAnimation;
-        const currentFrame = this.graphicsEditor.state.currentFrame;
-        const currentFrameData = this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame];
+        const currentFrameData = this.graphicsEditor.getCurrentFrame();
         
         // Find the shape in the source group
         const sourceGroup = currentFrameData[fromGroupName];
@@ -158,9 +155,8 @@ class GE_GroupManager {
     }
 
     getGroupData(groupName){
-        let groupData = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][groupName];
+        let groupData = this.graphicsEditor.getCurrentFrame()[groupName];
         let mergedData = { ...JSON.parse(JSON.stringify(this.graphicsEditor.state.renderData.model[groupName])), ...groupData };
-
         return mergedData;
     }
     // Select a group to work with
@@ -199,19 +195,17 @@ class GE_GroupManager {
     // Remove a group and place its contents back in the shapes group
     deleteGroup() {
         
-        const currentAnimation = this.graphicsEditor.state.currentAnimation;
-        const currentFrame = this.graphicsEditor.state.currentFrame;
-        const currentFrameData = this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame];
-        const currentGroup = this.graphicsEditor.state.currentGroup;
+        const currentFrameData = this.graphicsEditor.getCurrentFrame();
+        const currentGroup = this.graphicsEditor.getCurrentGroup();
         // Get shapes from the selected group
-        const groupShapes = currentFrameData[currentGroup].shapes;
+        const groupShapes = currentGroup.shapes;
         if (groupShapes.length > 0) {
             alert('Group must be empty to delete.');
             return;
         }
                         
         // Remove the group
-        delete currentFrameData[currentGroup];
+        delete currentFrameData[this.graphicsEditor.state.currentGroup];
         
         // Reset selection to shapes group
         this.graphicsEditor.state.currentGroup = Object.keys(currentFrameData)[0];
@@ -231,23 +225,13 @@ class GE_GroupManager {
         return foundGroup;
     }
     // Get all available groups in the current frame
-    getGroups() {
-        const currentAnimation = this.graphicsEditor.state.currentAnimation;
-        const currentFrame = this.graphicsEditor.state.currentFrame;
-        
-        if (!this.graphicsEditor.state.renderData.animations[currentAnimation] ||
-            !this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame]) {
-            return ["shapes"];
-        }
-        
-        return Object.keys(this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame]);
+    getGroups() {      
+        return Object.keys(this.graphicsEditor.getCurrentFrame());
     }
 
     applyGroupTransform(groupName, position, rotation, scale) {
         // Get the current frame data
-        const currentAnimation = this.graphicsEditor.state.currentAnimation;
-        const currentFrame = this.graphicsEditor.state.currentFrame;
-        const frameData = this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame];
+        const frameData = this.graphicsEditor.getCurrentFrame();
         
         // Ensure the group exists in the frame data
         if (!frameData[groupName]) {

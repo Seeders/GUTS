@@ -228,7 +228,7 @@ export class EditorView {
         
         const valueInput = document.createElement(moduleInputElementType);
         valueInput.className = 'property-value';
-        console.log(value);
+
         let processedValue = value;
         if (moduleDataType === 'json') {
             processedValue = JSON.stringify(value);

@@ -23,7 +23,7 @@ class GraphicsEditor {
         
         this.rootGroup = new window.THREE.Group(); // Main container for all shapes
         this.rootGroup.name = "rootGroup";
-
+window.state = this.state;
         this.init();
     }
     
@@ -62,38 +62,21 @@ class GraphicsEditor {
         const currentFrame = this.state.currentFrame;
         
         // Ensure animation and frame exist
-        if (!this.state.renderData.animations[currentAnimation] || 
-            !this.state.renderData.animations[currentAnimation][currentFrame]) {
+        if (!this.getCurrentFrame()) {
             console.warn("Animation or frame doesn't exist:", currentAnimation, currentFrame);
             return;
         }
         
-        let frameData = this.state.renderData.animations[currentAnimation][currentFrame];
+        let frameData = this.getCurrentFrame();
         //model is a Frame that has named groups as properties.
         let model = this.state.renderData.model;
 
-   
-        // Backward compatibility: If frameData is not structured as groups
-        if (Array.isArray(frameData)) {
-            console.warn("Old format detected, converting to new group format");
-            let newGroup = {...this.groupManager.DEFAULT_GROUP};
-            newGroup.shapes = frameData;
-            this.state.renderData.animations[currentAnimation][currentFrame] = newGroup;
-            frameData = this.state.renderData.animations[currentAnimation][currentFrame];
-        }
         if(!model) {
             this.state.renderData.model = JSON.parse(JSON.stringify(this.state.renderData.animations['idle'][0])); // Deep copy
             model = this.state.renderData.model;
         }
         // Create a group for each group in the frame
-        for (const groupName in frameData) {
-            const frameGroup = frameData[groupName];            
-            if (Array.isArray(frameGroup)) {
-                let shapes = frameGroup;
-                let newGroup = {...this.groupManager.DEFAULT_GROUP};
-                newGroup.shapes = shapes;
-                this.state.renderData.animations[currentAnimation][currentFrame][groupName] = newGroup;                
-            }            
+        for (const groupName in frameData) {     
             const mergedGroup = this.shapeManager.getMergedGroup(groupName);
             let threeGroup = await this.shapeFactory.createGroupFromJSON(mergedGroup); 
             threeGroup.name = groupName;
@@ -113,7 +96,6 @@ class GraphicsEditor {
         // Update JSON display
         document.getElementById('json-content').value = JSON.stringify(this.state.renderData, null, 2);
     
-        console.log(this.state.renderData);
         if (fireSave) {
             const myCustomEvent = new CustomEvent('saveGraphicsObject', {
                 detail: { data: this.state.renderData, propertyName: 'render' },
@@ -133,6 +115,45 @@ class GraphicsEditor {
         this.shapeManager.updateGizmoPosition();
     }
     
+  
+
+    getCurrentAnimation() {
+        return this.state.renderData.animations[this.state.currentAnimation];
+    }
+    getCurrentFrame() {
+        return this.getCurrentAnimation()[this.state.currentFrame];
+    }
+    getCurrentGroup() {
+        return this.getCurrentFrame()[this.state.currentGroup];
+    }
+    getCurrentShape() {
+        if (this.state.selectedShapeIndex >= 0) {            
+            const selectedGroup = this.shapeManager.getMergedGroup(this.state.currentGroup);
+            const shapes = selectedGroup?.shapes || [];        
+            let shape = shapes[this.state.selectedShapeIndex];       
+            if (shape) {  
+                shape.id = this.state.selectedShapeIndex;
+                // Avoid overwriting shape.id unless necessary
+                let currentGroupData = this.getCurrentGroup();
+                
+                // Ensure shapes array exists
+                currentGroupData.shapes = currentGroupData.shapes || [];
+                
+                // Find index of shape with matching id
+                const shapeIndex = currentGroupData.shapes.findIndex(s => s.id === shape.id);
+                console.log(shapeIndex, shape.id);
+                // Replace or append shape
+                if (shapeIndex >= 0) {
+                    currentGroupData.shapes[shapeIndex] = shape; // Replace
+                } else {
+                    currentGroupData.shapes.push(shape); // Append if not found
+                }
+                
+                return shape;
+            }            
+        }
+        return null;
+    }
 
     refreshShapes(param) {
         this.shapeManager.updateList();

@@ -377,7 +377,7 @@ class GE_ShapeManager {
         }
         // For individual shapes
         else if (this.graphicsEditor.state.selectedShapeIndex >= 0) {
-            const shape = this.getCurrentShape();
+            const shape = this.graphicsEditor.getCurrentShape();
             if (shape) {
                 shape.x = this.currentTransformTarget.position.x;
                 shape.y = this.currentTransformTarget.position.y;
@@ -618,7 +618,7 @@ class GE_ShapeManager {
 
         // If transforming the root group, apply to all shapes
         if (this.currentTransformTarget === this.graphicsEditor.rootGroup) {
-            const currentShapes = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][this.graphicsEditor.state.currentGroup].shapes;
+            const currentShapes = this.graphicsEditor.getCurrentGroup().shapes;
 
             const positionOffset = this.currentTransformTarget.position.clone();
             const rotationEuler = this.currentTransformTarget.rotation.clone();
@@ -703,29 +703,12 @@ class GE_ShapeManager {
         this.highlightSelectedShape();
         
         // Show inspector for selected shape
-        const shape = this.getCurrentShape();
+        const shape = this.graphicsEditor.getCurrentShape();
         if (shape) {
             this.graphicsEditor.createInspector(shape);
             this.transformGroup(this.getSelectedGroupOrRoot());
         }
     }
-
-    getCurrentShape() {
-        if (this.graphicsEditor.state.selectedShapeIndex >= 0) {
-            const currentFrame = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame];
-            const selectedGroup = this.graphicsEditor.state.currentGroup;
-            const shapes = currentFrame[selectedGroup]?.shapes || [];
-            
-            if (this.graphicsEditor.state.selectedShapeIndex < shapes.length) {
-                const shape = shapes[this.graphicsEditor.state.selectedShapeIndex];
-                if (shape) {
-                    return shape;
-                }
-            }
-        }
-        return null;
-    }
-
     highlightSelectedShape() {
         // Remove existing outlines
         this.graphicsEditor.sceneRenderer.scene.children.forEach(obj => {
@@ -767,9 +750,7 @@ class GE_ShapeManager {
             return;
         }
     
-        const currentAnimation = this.graphicsEditor.state.currentAnimation;
-        const currentFrame = this.graphicsEditor.state.currentFrame;
-        const currentFrameData = this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame];
+        const currentFrameData = this.graphicsEditor.getCurrentFrame();
     
         if (!currentFrameData) {
             console.warn("No frame data found");
@@ -884,17 +865,17 @@ class GE_ShapeManager {
             rotationY: 0,
             rotationZ: 0
         };
-        this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][this.graphicsEditor.state.currentGroup].shapes.push(newShape);
-        this.graphicsEditor.state.selectedShapeIndex = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][this.graphicsEditor.state.currentGroup].shapes.length - 1;
+        this.graphicsEditor.getCurrentGroup().shapes.push(newShape);
+        this.graphicsEditor.state.selectedShapeIndex = this.graphicsEditor.getCurrentGroup().shapes.length - 1;
         this.graphicsEditor.refreshShapes(true); // Relies on refreshShapes to add to rootGroup
     }
 
     addSelectedShape() {
         if (this.graphicsEditor.state.selectedShapeIndex >= 0) {
-            const originalShape = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][this.graphicsEditor.state.currentGroup].shapes[this.graphicsEditor.state.selectedShapeIndex];
+            const originalShape = this.graphicsEditor.getCurrentGroup().shapes.find(s => s.id == this.graphicsEditor.state.selectedShapeIndex);
             const newShape = JSON.parse(JSON.stringify(originalShape));
-            this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][this.graphicsEditor.state.currentGroup].shapes.push(newShape);
-            this.graphicsEditor.state.selectedShapeIndex = this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][this.graphicsEditor.state.currentGroup].shapes.length - 1;
+            this.graphicsEditor.getCurrentGroup().shapes.push(newShape);
+            this.graphicsEditor.state.selectedShapeIndex = this.graphicsEditor.getCurrentGroup().shapes.length - 1;
             this.graphicsEditor.refreshShapes(true);
         } else {
             this.addNewShape();
@@ -903,9 +884,9 @@ class GE_ShapeManager {
 
     deleteSelectedShape() {
         if (this.graphicsEditor.state.selectedShapeIndex >= 0) {
-            this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][this.graphicsEditor.state.currentGroup].shapes.splice(this.graphicsEditor.state.selectedShapeIndex, 1);
-            if (this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][this.graphicsEditor.state.currentGroup].shapes.length > 0) {
-                this.graphicsEditor.state.selectedShapeIndex = Math.min(this.graphicsEditor.state.selectedShapeIndex, this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][this.graphicsEditor.state.currentGroup].shapes.length - 1);
+            this.graphicsEditor.getCurrentGroup().shapes.splice(this.graphicsEditor.state.selectedShapeIndex, 1);
+            if (this.graphicsEditor.getCurrentGroup().shapes.length > 0) {
+                this.graphicsEditor.state.selectedShapeIndex = Math.min(this.graphicsEditor.state.selectedShapeIndex, this.graphicsEditor.getCurrentGroup().shapes.length - 1);
             } else {
                 this.graphicsEditor.state.selectedShapeIndex = -1;
             }
@@ -951,7 +932,7 @@ class GE_ShapeManager {
         // Frame list
         const frameList = document.createElement('div');
         frameList.style.marginBottom = '10px';
-        this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation].forEach((frame, index) => {
+        this.graphicsEditor.getCurrentAnimation().forEach((frame, index) => {
             const frameItem = document.createElement('div');
             frameItem.textContent = `Frame ${index + 1}`;
             frameItem.style.padding = '5px';
@@ -959,7 +940,9 @@ class GE_ShapeManager {
             if (index === this.graphicsEditor.state.currentFrame) frameItem.style.backgroundColor = '#555';
             frameItem.addEventListener('click', () => {
                 this.graphicsEditor.setPreviewAnimationState(false);
-                this.graphicsEditor.state.currentFrame = index;                                
+                this.graphicsEditor.state.currentFrame = index;  
+                let frameData = this.graphicsEditor.getCurrentFrame();   
+                this.graphicsEditor.groupManager.selectGroup(Object.keys(frameData)[0])
                 this.graphicsEditor.refreshShapes(false);
             });
             frameList.appendChild(frameItem);
@@ -968,34 +951,34 @@ class GE_ShapeManager {
     }
 
     getMergedGroup(groupName){
-        const currentAnimation = this.graphicsEditor.state.currentAnimation;
-        const currentFrame = this.graphicsEditor.state.currentFrame;
         let model = this.graphicsEditor.state.renderData.model;
         if(!model) {
             this.graphicsEditor.state.renderData.model = JSON.parse(JSON.stringify(this.graphicsEditor.state.renderData.animations['idle'][0])); // Deep copy
             model = this.graphicsEditor.state.renderData.model;
         }
-        let frameData = this.graphicsEditor.state.renderData.animations[currentAnimation][currentFrame];
+        let frameData = this.graphicsEditor.getCurrentFrame();
         const frameGroup = frameData[groupName];
         const modelGroup = model[groupName];
         let mergedShapes = [];
         for(let i = 0; i < modelGroup.shapes.length; i++){
             let modelShape = modelGroup.shapes[i];
             if(!frameGroup.shapes){
-                mergedShapes.push(JSON.parse(JSON.stringify(modelShape)));
+                mergedShapes.push(modelShape);
                 continue;
             }
-            if(frameGroup.shapes.length <= i) {
-                frameGroup.shapes.push({});
-            }
             let mergedShape = {};
-            if(typeof frameGroup.shapes[i].id == "undefined"){
-                frameGroup.shapes[i].id = i;
+            let frameShape = frameGroup.shapes.find((shape) => shape.id == i);
+            if(typeof frameShape == "undefined"){
+                frameShape = { id: i };
+                frameGroup.shapes.push(frameShape);
             }
             for(const key in modelShape) {
-                let frameShape = frameGroup.shapes.find((shape) => shape.id == i);
+                if(key == 'id'){      
+                    delete modelShape.id;
+                    continue;
+                }
                 if(frameShape && typeof frameShape[key] != "undefined" && modelShape[key] === frameShape[key]){
-                    delete frameShape[key];                        
+                    delete frameShape[key];                 
                     mergedShape[key] = modelShape[key];
                 } else if(!frameShape || typeof frameShape[key] == "undefined"){
                     mergedShape[key] = modelShape[key];
@@ -1009,6 +992,7 @@ class GE_ShapeManager {
             for(let i = frameGroup.shapes.length - 1; i >= 0; i--){
                 let shape = frameGroup.shapes[i];
                 if(Object.keys(shape).length == 1){
+                    console.log('spliced', Object.keys(shape)[0], shape[Object.keys(shape)[0]]);
                     frameGroup.shapes.splice(i, 1);
                 }
             }  
@@ -1018,7 +1002,7 @@ class GE_ShapeManager {
             ...frameGroup,
         };
         mergedGroup.shapes = mergedShapes;
-        return mergedGroup;
+        return JSON.parse(JSON.stringify(mergedGroup));
     }
 
     updateShapeList() {
@@ -1045,8 +1029,8 @@ class GE_ShapeManager {
             }
            
             shapeItem.textContent = `${shape.name} - ${shape.type || 'Shape'}`;
-            shapeItem.addEventListener('click', () => {
-                this.selectShape(i);
+            shapeItem.addEventListener('click', (e) => {                
+                this.selectShape(parseInt(e.target.dataset.index));
             });
            
             // Make the shape draggable

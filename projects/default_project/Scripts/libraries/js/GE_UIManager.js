@@ -154,6 +154,7 @@ class GE_UIManager {
     }
     
     createGroupInspector(group) {
+        console.log('create group inspector', group);
         const inspector = document.getElementById('inspector');
         inspector.innerHTML = "";
         inspector.className = 'inspector';
@@ -175,6 +176,7 @@ class GE_UIManager {
     }
 
     createInspector(shape) {
+        console.log('create shape inspector', shape);
         const inspector = document.getElementById('inspector');
         inspector.innerHTML = "";
         inspector.className = 'inspector';
@@ -185,20 +187,18 @@ class GE_UIManager {
         this.addFormRow(inspector, 'Type', 'select', 'type', shape.type, {
             options: ['cube', 'sphere', 'box', 'cylinder', 'cone', 'torus', 'tetrahedron', 'gltf'],
             change: (e) => {
-        
+                let currentShape = this.graphicsEditor.getCurrentShape();
                 let newValue = e.target.value;
                 if (newValue != 'gltf') {
-                    delete this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][this.graphicsEditor.state.currentGroup].shapes[this.graphicsEditor.state.selectedShapeIndex].url
-                } 
-                
-                this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][this.graphicsEditor.state.currentGroup].shapes[this.graphicsEditor.state.selectedShapeIndex]['type'] = newValue;
+                    delete currentShape.url
+                }                 
+                currentShape.type = newValue;
                 this.graphicsEditor.refreshShapes(false);
             }
         });
         
-        if (shape.type === 'gltf') {
-            let property = 'url';
-            let input = this.addFormRow(inspector, 'Model', 'file', property, shape.url, { 'change' :  async (e) => {
+        if (shape.type === 'gltf') {            
+            let input = this.addFormRow(inspector, 'Model', 'file', 'url', shape.url, { 'change' :  async (e) => {
                 e.preventDefault();
 
                 // Get the file from the input element
@@ -219,7 +219,7 @@ class GE_UIManager {
 
                      const result = await response.json();
                      shape.url = result.filePath; 
-                     this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][this.graphicsEditor.state.currentGroup].shapes[this.graphicsEditor.state.selectedShapeIndex][property] = result.filePath;
+                     this.graphicsEditor.getCurrentShape().url = result.filePath;
                      this.graphicsEditor.refreshShapes(false);
                 } catch (error) {
                      console.error('Error uploading file:', error);
@@ -300,7 +300,7 @@ class GE_UIManager {
     
             colorInput.addEventListener('change', () => {
                 let newValue = colorInput.value;                
-                this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation][this.graphicsEditor.state.currentFrame][this.graphicsEditor.state.currentGroup].shapes[this.graphicsEditor.state.selectedShapeIndex][property] = newValue;
+                this.graphicsEditor.getCurrentShape()[property] = newValue;
                 this.graphicsEditor.refreshShapes(true);
             });
             row.appendChild(colorInput);
@@ -338,7 +338,7 @@ class GE_UIManager {
             let newValue = e.target.value;
             if (type === 'number') {
                 newValue = parseFloat(newValue);
-                
+                console.log('change', this.graphicsEditor.shapeManager.currentTransformTarget);
                 // If we're editing a transform property, also update the transform target
                 if (this.graphicsEditor.shapeManager.currentTransformTarget && ['x', 'y', 'z', 'rotationX', 'rotationY', 'rotationZ', 'scaleX', 'scaleY', 'scaleZ'].includes(property)) {
                     if (property === 'x') this.graphicsEditor.shapeManager.currentTransformTarget.position.x = newValue;
@@ -368,11 +368,10 @@ class GE_UIManager {
         return input;
     }
     updatePropertyValue(property, value) {
-        const { currentAnimation, currentFrame, currentGroup, selectedShapeIndex, renderData } = this.graphicsEditor.state;
-        const groupData = renderData.animations[currentAnimation][currentFrame][currentGroup];
-        
-        if (selectedShapeIndex >= 0) {
-            groupData.shapes[selectedShapeIndex][property] = value;
+        const groupData = this.graphicsEditor.getCurrentGroup();
+        const shapeData = this.graphicsEditor.getCurrentShape();
+        if (shapeData) {
+            shapeData[property] = value;
             return;
         }
         
