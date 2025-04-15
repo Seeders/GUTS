@@ -86,7 +86,7 @@ class GE_SceneRenderer {
             model = this.graphicsEditor.state.renderData.model;
         }
         this.graphicsEditor.state.currentAnimation = "";
-        
+        this.graphicsEditor.state.editingModel = true;
         // Safely get first frame's shapes
         const firstGroup = Object.keys(model)[0];
         const shapes = model[firstGroup].shapes || [];

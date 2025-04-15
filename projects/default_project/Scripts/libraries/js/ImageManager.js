@@ -314,7 +314,7 @@ class ImageManager {
             animations[animType] = [];
             let i = 0;
             for (const frame of frames) {
-                const frameImages = await this.captureObjectImagesFromJSON(frame);
+                const frameImages = await this.captureObjectImagesFromJSON(config.render.model, frame);
                 const canvases = frameImages.map(img => {
                     const canvas = document.createElement('canvas');
                     canvas.width = canvas.height = this.imageSize;
@@ -331,7 +331,7 @@ class ImageManager {
     getImages(prefix, type) {
         return this.images[`${prefix}_${type}`]; // Returns animation object
     }
-    async captureObjectImagesFromJSON(shapeData) {
+    async captureObjectImagesFromJSON(model, frameData) {
         const size = this.imageSize;
         // Clear the scene
         while (this.scene.children.length > 0) {
@@ -345,7 +345,7 @@ class ImageManager {
         this.scene.add(this.lightGroup);
         
         // Create objects from the JSON data
-        const objectGroup = await this.createObjectsFromJSON(shapeData, this.scene);
+        const objectGroup = await this.createObjectsFromJSON(model, frameData, this.scene);
 
         
         const images = [];
@@ -409,11 +409,11 @@ class ImageManager {
      * @returns {THREE.Group} - A group containing all 3D objects.
      */
   
-    async createObjectsFromJSON(frameData, scene) {
+    async createObjectsFromJSON(model, frameData, scene) {
         const rootGroup = new THREE.Group();
         
         for(const groupName in frameData) {
-            const group = await this.shapeFactory.createGroupFromJSON(frameData[groupName]);
+            const group = await this.shapeFactory.createMergedGroupFromJSON(model, frameData, groupName);
             group.traverse((child) => {
                 if (child.isMesh) {
                     child.castShadow = true; // or set this selectively for objects that should cast shadows

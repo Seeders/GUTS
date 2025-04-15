@@ -512,6 +512,10 @@ const DEFAULT_PROJECT_CONFIG = {
                       "z": 0,
                       "rotationX": 90,
                       "color": "#ee6060"
+                    },
+                    {
+                      "type": "sphere",
+                      "id": 0
                     }
                   ],
                   "position": {
@@ -572,6 +576,10 @@ const DEFAULT_PROJECT_CONFIG = {
                       "z": 0,
                       "rotationX": 90,
                       "color": "#ee6060"
+                    },
+                    {
+                      "type": "sphere",
+                      "id": 0
                     }
                   ],
                   "position": {
@@ -592,6 +600,37 @@ const DEFAULT_PROJECT_CONFIG = {
                 }
               }
             ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "cube",
+                  "size": 6,
+                  "x": 0,
+                  "y": 24,
+                  "z": 0,
+                  "rotationX": 90,
+                  "color": "#ee6060",
+                  "scaleX": 1
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
           }
         },
         "speed": 50,
@@ -607,8 +646,16 @@ const DEFAULT_PROJECT_CONFIG = {
                 "main": {
                   "shapes": [
                     {
-                      "id": 0,
-                      "scaleX": 1
+                      "name": "ball",
+                      "type": "sphere",
+                      "size": 6,
+                      "x": 0,
+                      "y": 5,
+                      "z": 0,
+                      "rotationX": 90,
+                      "color": "#ee6060",
+                      "scaleX": 1,
+                      "id": 0
                     }
                   ],
                   "position": {
@@ -702,6 +749,37 @@ const DEFAULT_PROJECT_CONFIG = {
                 }
               }
             ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "sphere",
+                  "size": 6,
+                  "x": 0,
+                  "y": 25,
+                  "z": 0,
+                  "rotationX": 90,
+                  "color": "#ee6060",
+                  "scaleX": 1
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
           }
         },
         "speed": 5,
@@ -955,7 +1033,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "rotation": {
                     "x": 0,
                     "y": 0,
-                    "z": 0
+                    "z": -0.7802648420680537
                   },
                   "scale": {
                     "x": 1,
@@ -1080,9 +1158,9 @@ const DEFAULT_PROJECT_CONFIG = {
                     "z": 0
                   },
                   "rotation": {
-                    "x": 0,
+                    "x": -0.7802648420680528,
                     "y": 0,
-                    "z": 0
+                    "z": -0.7802648420680528
                   },
                   "scale": {
                     "x": 1,
@@ -1205,7 +1283,7 @@ const DEFAULT_PROJECT_CONFIG = {
                     "z": 0
                   },
                   "rotation": {
-                    "x": 0,
+                    "x": -0.7802648420680528,
                     "y": 0,
                     "z": 0
                   },
@@ -1332,7 +1410,7 @@ const DEFAULT_PROJECT_CONFIG = {
                     "z": 0
                   },
                   "rotation": {
-                    "x": 0,
+                    "x": 0.7802648420680528,
                     "y": 0,
                     "z": 0
                   },
@@ -1457,9 +1535,9 @@ const DEFAULT_PROJECT_CONFIG = {
                     "z": 0
                   },
                   "rotation": {
-                    "x": 0,
+                    "x": 0.7802648420680524,
                     "y": 0,
-                    "z": 0
+                    "z": 0.7884781561950857
                   },
                   "scale": {
                     "x": 1,
@@ -1584,7 +1662,7 @@ const DEFAULT_PROJECT_CONFIG = {
                     "z": 0
                   },
                   "rotation": {
-                    "x": 0,
+                    "x": -1.5687429982631438,
                     "y": 0,
                     "z": 0
                   },
@@ -1709,9 +1787,9 @@ const DEFAULT_PROJECT_CONFIG = {
                     "z": 0
                   },
                   "rotation": {
-                    "x": 0,
+                    "x": -1.5687429982631438,
                     "y": 0,
-                    "z": 0
+                    "z": 0.7802648420680529
                   },
                   "scale": {
                     "x": 1,
@@ -1836,7 +1914,7 @@ const DEFAULT_PROJECT_CONFIG = {
                     "z": 0
                   },
                   "rotation": {
-                    "x": 0,
+                    "x": 1.5769563123901744,
                     "y": 0,
                     "z": 0
                   },
@@ -1961,9 +2039,9 @@ const DEFAULT_PROJECT_CONFIG = {
                     "z": 0
                   },
                   "rotation": {
-                    "x": 0,
+                    "x": 1.576956312390176,
                     "y": 0,
-                    "z": 0
+                    "z": 0.7884781561950845
                   },
                   "scale": {
                     "x": 1,
@@ -1973,6 +2051,132 @@ const DEFAULT_PROJECT_CONFIG = {
                 }
               }
             ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "cylinder",
+                  "size": 5,
+                  "color": "#888888",
+                  "x": 0,
+                  "y": 0,
+                  "z": -1.4,
+                  "rotationX": 90,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "height": 25,
+                  "scaleX": 1
+                },
+                {
+                  "type": "cone",
+                  "size": 5,
+                  "color": "#ff1117",
+                  "x": 0,
+                  "y": 0,
+                  "z": 13.6,
+                  "rotationX": 90,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "height": 5
+                },
+                {
+                  "type": "cone",
+                  "size": 2.5,
+                  "color": "#ff1117",
+                  "x": 0,
+                  "y": 0,
+                  "z": -13.8,
+                  "rotationX": 90,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "height": 2.5
+                },
+                {
+                  "type": "cylinder",
+                  "size": 6.25,
+                  "color": "#888888",
+                  "x": 0,
+                  "y": 0,
+                  "z": -11,
+                  "rotationX": 90,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "height": 5
+                },
+                {
+                  "type": "box",
+                  "size": 5,
+                  "color": "#888888",
+                  "x": 0,
+                  "y": 3,
+                  "z": -11.631250000000001,
+                  "rotationX": 45,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "width": 0.25,
+                  "height": 2.5,
+                  "depth": 8.5
+                },
+                {
+                  "type": "box",
+                  "size": 5,
+                  "color": "#888888",
+                  "x": 0,
+                  "y": -3,
+                  "z": -11.631250000000001,
+                  "rotationX": -45,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "width": 0.25,
+                  "height": 2.5,
+                  "depth": 8.5
+                },
+                {
+                  "type": "box",
+                  "size": 5,
+                  "color": "#888888",
+                  "x": -3,
+                  "y": 0,
+                  "z": -11.631250000000001,
+                  "rotationX": 0,
+                  "rotationY": 45,
+                  "rotationZ": 90,
+                  "width": 0.25,
+                  "height": 2.5,
+                  "depth": 8.5
+                },
+                {
+                  "type": "box",
+                  "size": 5,
+                  "color": "#888888",
+                  "x": 3,
+                  "y": 0,
+                  "z": -11.631250000000001,
+                  "rotationX": 0,
+                  "rotationY": -45,
+                  "rotationZ": -90,
+                  "width": 0.25,
+                  "height": 2.5,
+                  "depth": 8.5
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
           }
         },
         "speed": 1,
@@ -2020,6 +2224,37 @@ const DEFAULT_PROJECT_CONFIG = {
                 }
               }
             ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "sphere",
+                  "size": 6,
+                  "x": 0,
+                  "y": 25,
+                  "z": 0,
+                  "rotationX": 90,
+                  "color": "#6060ee",
+                  "scaleX": 1
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
           }
         },
         "speed": 5,
@@ -2247,6 +2482,212 @@ const DEFAULT_PROJECT_CONFIG = {
                 }
               }
             ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "sphere",
+                  "width": 24,
+                  "height": 16,
+                  "depth": 24,
+                  "color": "#C0C0C0",
+                  "x": 0,
+                  "y": 32,
+                  "z": 0,
+                  "size": 24,
+                  "name": "dome",
+                  "scaleX": 1
+                },
+                {
+                  "type": "cylinder",
+                  "size": 12,
+                  "height": 22,
+                  "color": "#D8D8D8",
+                  "x": 0,
+                  "y": 42,
+                  "z": 0,
+                  "name": "spire"
+                },
+                {
+                  "type": "cone",
+                  "size": 14,
+                  "height": 20,
+                  "color": "#6f1eb0",
+                  "x": 0,
+                  "y": 62,
+                  "z": 0,
+                  "name": "spire roof"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 0.7,
+                "z": 1
+              }
+            },
+            "base": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 40,
+                  "height": 12,
+                  "depth": 40,
+                  "color": "#414141",
+                  "x": 0,
+                  "y": 6,
+                  "z": 0,
+                  "scaleX": 1,
+                  "name": "base"
+                },
+                {
+                  "type": "box",
+                  "width": 44,
+                  "height": 4,
+                  "depth": 44,
+                  "color": "#696969",
+                  "x": 0,
+                  "y": 2,
+                  "z": 0,
+                  "name": "foundation"
+                },
+                {
+                  "type": "box",
+                  "width": 32,
+                  "height": 12,
+                  "depth": 32,
+                  "color": "#707070",
+                  "x": 0,
+                  "y": 17,
+                  "z": 0,
+                  "name": "main structure"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "towers": {
+              "shapes": [
+                {
+                  "type": "cylinder",
+                  "size": 6,
+                  "height": 30,
+                  "color": "#C0C0C0",
+                  "x": 16,
+                  "y": 22,
+                  "z": 16,
+                  "name": "tower1"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 6,
+                  "height": 30,
+                  "color": "#C0C0C0",
+                  "x": -16,
+                  "y": 22,
+                  "z": 16,
+                  "name": "tower2"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 6,
+                  "height": 30,
+                  "color": "#C0C0C0",
+                  "x": 16,
+                  "y": 22,
+                  "z": -16,
+                  "name": "tower3"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 6,
+                  "height": 30,
+                  "color": "#C0C0C0",
+                  "x": -16,
+                  "y": 22,
+                  "z": -16,
+                  "name": "tower4"
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 10,
+                  "color": "#4169E1",
+                  "x": 16,
+                  "y": 42,
+                  "z": 16,
+                  "name": "tower1roof"
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 10,
+                  "color": "#4169E1",
+                  "x": -16,
+                  "y": 42,
+                  "z": 16,
+                  "name": "tower2roof"
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 10,
+                  "color": "#4169E1",
+                  "x": 16,
+                  "y": 42,
+                  "z": -16,
+                  "name": "tower3roof"
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 10,
+                  "color": "#4169E1",
+                  "x": -16,
+                  "y": 42,
+                  "z": -16,
+                  "name": "tower4roof"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 0.7,
+                "z": 1
+              }
+            }
           }
         }
       },
@@ -2449,6 +2890,190 @@ const DEFAULT_PROJECT_CONFIG = {
                 }
               }
             ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "cylinder",
+                  "size": 20,
+                  "height": 4,
+                  "color": "#696969",
+                  "x": 0,
+                  "y": 2,
+                  "z": 0,
+                  "name": "base",
+                  "rotationX": 0,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
+                },
+                {
+                  "type": "cylinder",
+                  "size": 14,
+                  "height": 26,
+                  "color": "#696969",
+                  "x": 0,
+                  "y": 17,
+                  "z": 0,
+                  "name": "body"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "rampart": {
+              "shapes": [
+                {
+                  "type": "cylinder",
+                  "size": 12,
+                  "height": 8,
+                  "color": "#696969",
+                  "x": 0,
+                  "y": 30,
+                  "z": 0,
+                  "name": "rampartbase"
+                },
+                {
+                  "type": "box",
+                  "width": 3,
+                  "height": 5,
+                  "depth": 3,
+                  "color": "#696969",
+                  "x": 4,
+                  "y": 34,
+                  "z": 4,
+                  "name": "rampartblock1"
+                },
+                {
+                  "type": "box",
+                  "width": 3,
+                  "height": 5,
+                  "depth": 3,
+                  "color": "#696969",
+                  "x": -4,
+                  "y": 34,
+                  "z": 4,
+                  "name": "rampartblock2"
+                },
+                {
+                  "type": "box",
+                  "width": 3,
+                  "height": 5,
+                  "depth": 3,
+                  "color": "#696969",
+                  "x": 4,
+                  "y": 34,
+                  "z": -4,
+                  "name": "rampartblock3"
+                },
+                {
+                  "type": "box",
+                  "width": 3,
+                  "height": 5,
+                  "depth": 3,
+                  "color": "#696969",
+                  "x": -4,
+                  "y": 34,
+                  "z": -4,
+                  "name": "rampartblock4"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1.5,
+                "y": 1,
+                "z": 1.5
+              }
+            },
+            "attacker": {
+              "shapes": [
+                {
+                  "type": "cylinder",
+                  "size": 5.7,
+                  "height": 14,
+                  "color": "#A9A9A9",
+                  "x": 0,
+                  "y": 39.6,
+                  "z": 0,
+                  "name": "attackerbody"
+                },
+                {
+                  "type": "sphere",
+                  "size": 6,
+                  "color": "#CD7F32",
+                  "x": 0,
+                  "y": 48.89655172413794,
+                  "z": 0,
+                  "name": "attacker head",
+                  "rotationX": 0,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
+                },
+                {
+                  "type": "cylinder",
+                  "size": 2,
+                  "height": 12,
+                  "color": "#A9A9A9",
+                  "x": 0,
+                  "y": 42,
+                  "z": 0,
+                  "rotationX": 90,
+                  "name": "attacker arms"
+                },
+                {
+                  "type": "sphere",
+                  "size": 3,
+                  "color": "#FF4500",
+                  "x": 0,
+                  "y": 42,
+                  "z": 6,
+                  "name": "attacker weapon"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
           }
         },
         "projectileCount": 0,
@@ -3007,6 +3632,247 @@ const DEFAULT_PROJECT_CONFIG = {
                 }
               }
             ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 40,
+                  "height": 4,
+                  "depth": 40,
+                  "color": "#303040",
+                  "x": 0,
+                  "y": 2,
+                  "z": 0,
+                  "scaleX": 1
+                },
+                {
+                  "type": "box",
+                  "width": 36,
+                  "height": 12,
+                  "depth": 36,
+                  "color": "#404050",
+                  "x": 0,
+                  "y": 10,
+                  "z": 0
+                },
+                {
+                  "type": "box",
+                  "width": 40,
+                  "height": 2,
+                  "depth": 40,
+                  "color": "#505060",
+                  "x": 0,
+                  "y": 17,
+                  "z": 0
+                },
+                {
+                  "type": "cylinder",
+                  "size": 12,
+                  "height": 12,
+                  "color": "#2288cc",
+                  "x": -16,
+                  "y": 24,
+                  "z": 0
+                },
+                {
+                  "type": "torus",
+                  "size": 12,
+                  "tubeSize": 1,
+                  "color": "#44aaff",
+                  "x": -16,
+                  "y": 24,
+                  "z": 0,
+                  "rotationX": 90
+                },
+                {
+                  "type": "torus",
+                  "size": 12,
+                  "tubeSize": 1,
+                  "color": "#44aaff",
+                  "x": -16,
+                  "y": 28,
+                  "z": 0,
+                  "rotationX": 90
+                },
+                {
+                  "type": "torus",
+                  "size": 12,
+                  "tubeSize": 1,
+                  "color": "#44aaff",
+                  "x": -16,
+                  "y": 20,
+                  "z": 0,
+                  "rotationX": 90
+                },
+                {
+                  "type": "cylinder",
+                  "size": 12,
+                  "height": 12,
+                  "color": "#2288cc",
+                  "x": 16,
+                  "y": 24,
+                  "z": 0
+                },
+                {
+                  "type": "torus",
+                  "size": 12,
+                  "tubeSize": 1,
+                  "color": "#44aaff",
+                  "x": 16,
+                  "y": 24,
+                  "z": 0,
+                  "rotationX": 90
+                },
+                {
+                  "type": "torus",
+                  "size": 12,
+                  "tubeSize": 1,
+                  "color": "#44aaff",
+                  "x": 16,
+                  "y": 28,
+                  "z": 0,
+                  "rotationX": 90
+                },
+                {
+                  "type": "torus",
+                  "size": 12,
+                  "tubeSize": 1,
+                  "color": "#44aaff",
+                  "x": 16,
+                  "y": 20,
+                  "z": 0,
+                  "rotationX": 90
+                },
+                {
+                  "type": "cylinder",
+                  "size": 16,
+                  "height": 6,
+                  "color": "#333333",
+                  "x": 0,
+                  "y": 20,
+                  "z": 0
+                },
+                {
+                  "type": "cylinder",
+                  "size": 14,
+                  "height": 2,
+                  "color": "#444444",
+                  "x": 0,
+                  "y": 24,
+                  "z": 0
+                },
+                {
+                  "type": "cylinder",
+                  "size": 12,
+                  "height": 2,
+                  "color": "#2288cc",
+                  "x": 0,
+                  "y": 26,
+                  "z": 0
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 6,
+                  "depth": 6,
+                  "color": "#cc2200",
+                  "x": -14,
+                  "y": 9,
+                  "z": -14
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 6,
+                  "depth": 6,
+                  "color": "#cc6600",
+                  "x": 0,
+                  "y": 9,
+                  "z": -14
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 6,
+                  "depth": 6,
+                  "color": "#ccaa00",
+                  "x": 14,
+                  "y": 9,
+                  "z": -14
+                },
+                {
+                  "type": "sphere",
+                  "size": 3,
+                  "color": "#44aaff",
+                  "x": 0,
+                  "y": 28,
+                  "z": 0
+                },
+                {
+                  "type": "box",
+                  "width": 40,
+                  "height": 1,
+                  "depth": 24,
+                  "color": "#444455",
+                  "x": 0,
+                  "y": 18.5,
+                  "z": 0
+                },
+                {
+                  "type": "cylinder",
+                  "size": 2,
+                  "height": 4,
+                  "color": "#aa0000",
+                  "x": -18,
+                  "y": 20.5,
+                  "z": -8
+                },
+                {
+                  "type": "cylinder",
+                  "size": 2,
+                  "height": 4,
+                  "color": "#aa0000",
+                  "x": 18,
+                  "y": 20.5,
+                  "z": -8
+                },
+                {
+                  "type": "cylinder",
+                  "size": 2,
+                  "height": 4,
+                  "color": "#aa0000",
+                  "x": -18,
+                  "y": 20.5,
+                  "z": 8
+                },
+                {
+                  "type": "cylinder",
+                  "size": 2,
+                  "height": 4,
+                  "color": "#aa0000",
+                  "x": 18,
+                  "y": 20.5,
+                  "z": 8
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
           }
         }
       },
@@ -3256,6 +4122,235 @@ const DEFAULT_PROJECT_CONFIG = {
                 }
               }
             ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 40,
+                  "height": 6,
+                  "depth": 40,
+                  "x": 0,
+                  "y": 3,
+                  "z": 0,
+                  "color": "#303030"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 36,
+                  "height": 14,
+                  "x": 0,
+                  "y": 13,
+                  "z": 0,
+                  "color": "#505050"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 28,
+                  "height": 4,
+                  "x": 0,
+                  "y": 22,
+                  "z": 0,
+                  "color": "#202020"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 24,
+                  "height": 16,
+                  "x": 0,
+                  "y": 32,
+                  "z": 0,
+                  "color": "#404040"
+                },
+                {
+                  "type": "torus",
+                  "size": 20,
+                  "tubeSize": 2,
+                  "x": 0,
+                  "y": 26,
+                  "z": 0,
+                  "color": "#00FFAA"
+                },
+                {
+                  "type": "sphere",
+                  "size": 14,
+                  "x": 0,
+                  "y": 32,
+                  "z": 0,
+                  "color": "#80FFD0"
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 28,
+                  "depth": 6,
+                  "x": 16,
+                  "y": 22,
+                  "z": 16,
+                  "color": "#303030"
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 28,
+                  "depth": 6,
+                  "x": -16,
+                  "y": 22,
+                  "z": 16,
+                  "color": "#303030"
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 28,
+                  "depth": 6,
+                  "x": 16,
+                  "y": 22,
+                  "z": -16,
+                  "color": "#303030"
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 28,
+                  "depth": 6,
+                  "x": -16,
+                  "y": 22,
+                  "z": -16,
+                  "color": "#303030"
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "x": 16,
+                  "y": 38,
+                  "z": 16,
+                  "color": "#00FFAA"
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "x": -16,
+                  "y": 38,
+                  "z": 16,
+                  "color": "#00FFAA"
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "x": 16,
+                  "y": 38,
+                  "z": -16,
+                  "color": "#00FFAA"
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "x": -16,
+                  "y": 38,
+                  "z": -16,
+                  "color": "#00FFAA"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 10,
+                  "height": 4,
+                  "x": 0,
+                  "y": 42,
+                  "z": 0,
+                  "color": "#606060"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 6,
+                  "height": 8,
+                  "x": 0,
+                  "y": 48,
+                  "z": 0,
+                  "color": "#505050"
+                },
+                {
+                  "type": "torus",
+                  "size": 8,
+                  "tubeSize": 1,
+                  "x": 0,
+                  "y": 46,
+                  "z": 0,
+                  "rotationX": 90,
+                  "color": "#00FFAA"
+                },
+                {
+                  "type": "torus",
+                  "size": 4,
+                  "tubeSize": 1,
+                  "x": 0,
+                  "y": 32,
+                  "z": 0,
+                  "rotationX": 30,
+                  "rotationY": 45,
+                  "color": "#00FFFF"
+                },
+                {
+                  "type": "torus",
+                  "size": 4,
+                  "tubeSize": 1,
+                  "x": 0,
+                  "y": 32,
+                  "z": 0,
+                  "rotationX": 120,
+                  "rotationY": 45,
+                  "color": "#00FFFF"
+                },
+                {
+                  "type": "sphere",
+                  "size": 2,
+                  "x": 6,
+                  "y": 32,
+                  "z": 0,
+                  "color": "#FFFFFF"
+                },
+                {
+                  "type": "sphere",
+                  "size": 2,
+                  "x": -6,
+                  "y": 32,
+                  "z": 0,
+                  "color": "#FFFFFF"
+                },
+                {
+                  "type": "sphere",
+                  "size": 2,
+                  "x": 0,
+                  "y": 32,
+                  "z": 6,
+                  "color": "#FFFFFF"
+                },
+                {
+                  "type": "sphere",
+                  "size": 2,
+                  "x": 0,
+                  "y": 32,
+                  "z": -6,
+                  "color": "#FFFFFF"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
           }
         }
       },
@@ -4342,6 +5437,220 @@ const DEFAULT_PROJECT_CONFIG = {
                 }
               }
             ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "sphere",
+                  "size": 7.5,
+                  "x": 0,
+                  "y": 33.85714285714286,
+                  "z": 0,
+                  "color": "#3D3D3D",
+                  "scaleX": 1
+                },
+                {
+                  "type": "torus",
+                  "size": 9,
+                  "tubeSize": 1.5,
+                  "x": 0,
+                  "y": 33.85714285714286,
+                  "z": 0,
+                  "rotationX": 90,
+                  "color": "#00FFAA"
+                },
+                {
+                  "type": "torus",
+                  "size": 9,
+                  "tubeSize": 1.5,
+                  "x": 0,
+                  "y": 33.85714285714286,
+                  "z": 0,
+                  "rotationY": 90,
+                  "color": "#00FFAA"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 1.5,
+                  "x": 0,
+                  "y": 38.35714285714286,
+                  "z": 0,
+                  "color": "#505050"
+                },
+                {
+                  "type": "sphere",
+                  "size": 2.25,
+                  "x": 0,
+                  "y": 39.85714285714286,
+                  "z": 0,
+                  "color": "#00FFDD"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 12,
+                  "height": 0.75,
+                  "x": 0,
+                  "y": 32.35714285714286,
+                  "z": 0,
+                  "rotationX": 90,
+                  "rotationY": 0,
+                  "color": "#404040"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 12,
+                  "height": 0.75,
+                  "x": 0,
+                  "y": 32.35714285714286,
+                  "z": 0,
+                  "rotationX": 90,
+                  "rotationY": 90,
+                  "color": "#404040"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 0.75,
+                  "x": 10.5,
+                  "y": 32.35714285714286,
+                  "z": 10.5,
+                  "color": "#505050"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 0.75,
+                  "x": -10.5,
+                  "y": 32.35714285714286,
+                  "z": 10.5,
+                  "color": "#505050"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 0.75,
+                  "x": 10.5,
+                  "y": 32.35714285714286,
+                  "z": -10.5,
+                  "color": "#505050"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 0.75,
+                  "x": -10.5,
+                  "y": 32.35714285714286,
+                  "z": -10.5,
+                  "color": "#505050"
+                },
+                {
+                  "type": "torus",
+                  "size": 4.5,
+                  "tubeSize": 0.75,
+                  "x": 10.5,
+                  "y": 33.10714285714286,
+                  "z": 10.5,
+                  "rotationX": 90,
+                  "color": "#00FFAA"
+                },
+                {
+                  "type": "torus",
+                  "size": 4.5,
+                  "tubeSize": 0.75,
+                  "x": -10.5,
+                  "y": 33.10714285714286,
+                  "z": 10.5,
+                  "rotationX": 90,
+                  "color": "#00FFAA"
+                },
+                {
+                  "type": "torus",
+                  "size": 4.5,
+                  "tubeSize": 0.75,
+                  "x": 10.5,
+                  "y": 33.10714285714286,
+                  "z": -10.5,
+                  "rotationX": 90,
+                  "color": "#00FFAA"
+                },
+                {
+                  "type": "torus",
+                  "size": 4.5,
+                  "tubeSize": 0.75,
+                  "x": -10.5,
+                  "y": 33.10714285714286,
+                  "z": -10.5,
+                  "rotationX": 90,
+                  "color": "#00FFAA"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 0.75,
+                  "height": 3,
+                  "x": 0,
+                  "y": 30.857142857142858,
+                  "z": 0,
+                  "color": "#00FFDD"
+                },
+                {
+                  "type": "sphere",
+                  "size": 1.5,
+                  "x": 0,
+                  "y": 29.357142857142858,
+                  "z": 0,
+                  "color": "#00FFAA"
+                },
+                {
+                  "type": "sphere",
+                  "size": 0.75,
+                  "x": 3.75,
+                  "y": 33.85714285714286,
+                  "z": 0,
+                  "color": "#FFFFFF"
+                },
+                {
+                  "type": "sphere",
+                  "size": 0.75,
+                  "x": -3.75,
+                  "y": 33.85714285714286,
+                  "z": 0,
+                  "color": "#FFFFFF"
+                },
+                {
+                  "type": "sphere",
+                  "size": 0.75,
+                  "x": 0,
+                  "y": 33.85714285714286,
+                  "z": 3.75,
+                  "color": "#FFFFFF"
+                },
+                {
+                  "type": "sphere",
+                  "size": 0.75,
+                  "x": 0,
+                  "y": 33.85714285714286,
+                  "z": -3.75,
+                  "color": "#FFFFFF"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
           }
         }
       },
@@ -5114,6 +6423,194 @@ const DEFAULT_PROJECT_CONFIG = {
                 }
               }
             ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "cylinder",
+                  "size": 16,
+                  "height": 4,
+                  "color": "#555555",
+                  "x": 0,
+                  "y": 2,
+                  "z": 0
+                },
+                {
+                  "type": "cylinder",
+                  "size": 12,
+                  "height": 8,
+                  "color": "#777777",
+                  "x": 0,
+                  "y": 8,
+                  "z": 0
+                },
+                {
+                  "type": "cylinder",
+                  "size": 10,
+                  "height": 20,
+                  "color": "#333333",
+                  "x": 0,
+                  "y": 22,
+                  "z": 0
+                },
+                {
+                  "type": "cylinder",
+                  "size": 12,
+                  "height": 3,
+                  "color": "#444444",
+                  "x": 0,
+                  "y": 33.5,
+                  "z": 0
+                },
+                {
+                  "type": "sphere",
+                  "size": 14,
+                  "color": "#66bbff",
+                  "x": 0,
+                  "y": 42,
+                  "z": 0
+                },
+                {
+                  "type": "torus",
+                  "size": 20,
+                  "tubeSize": 1.6,
+                  "color": "#66bbff",
+                  "x": 0,
+                  "y": 18,
+                  "z": 0,
+                  "rotationX": 90
+                },
+                {
+                  "type": "torus",
+                  "size": 18,
+                  "tubeSize": 1.6,
+                  "color": "#4499ff",
+                  "x": 0,
+                  "y": 24,
+                  "z": 0,
+                  "rotationX": 90
+                },
+                {
+                  "type": "torus",
+                  "size": 16,
+                  "tubeSize": 1.6,
+                  "color": "#2277ff",
+                  "x": 0,
+                  "y": 30,
+                  "z": 0,
+                  "rotationX": 90
+                },
+                {
+                  "type": "cone",
+                  "size": 6,
+                  "height": 16,
+                  "color": "#888888",
+                  "x": 7,
+                  "y": 34,
+                  "z": 0,
+                  "rotationZ": -90
+                },
+                {
+                  "type": "cone",
+                  "size": 6,
+                  "height": 16,
+                  "color": "#888888",
+                  "x": -7,
+                  "y": 34,
+                  "z": 0,
+                  "rotationZ": 90
+                },
+                {
+                  "type": "cone",
+                  "size": 6,
+                  "height": 16,
+                  "color": "#888888",
+                  "x": 0,
+                  "y": 34,
+                  "z": 7,
+                  "rotationX": 90
+                },
+                {
+                  "type": "cone",
+                  "size": 6,
+                  "height": 16,
+                  "color": "#888888",
+                  "x": 0,
+                  "y": 34,
+                  "z": -7,
+                  "rotationX": -90
+                },
+                {
+                  "type": "box",
+                  "width": 3,
+                  "height": 14,
+                  "depth": 3,
+                  "color": "#888888",
+                  "x": 6,
+                  "y": 16,
+                  "z": 6,
+                  "rotationY": 45
+                },
+                {
+                  "type": "box",
+                  "width": 3,
+                  "height": 14,
+                  "depth": 3,
+                  "color": "#888888",
+                  "x": -6,
+                  "y": 16,
+                  "z": 6,
+                  "rotationY": -45
+                },
+                {
+                  "type": "box",
+                  "width": 3,
+                  "height": 14,
+                  "depth": 3,
+                  "color": "#888888",
+                  "x": 6,
+                  "y": 16,
+                  "z": -6,
+                  "rotationY": -45
+                },
+                {
+                  "type": "box",
+                  "width": 3,
+                  "height": 14,
+                  "depth": 3,
+                  "color": "#888888",
+                  "x": -6,
+                  "y": 16,
+                  "z": -6,
+                  "rotationY": 45
+                },
+                {
+                  "type": "cylinder",
+                  "size": 2,
+                  "height": 1,
+                  "color": "#66bbff",
+                  "x": 0,
+                  "y": 36,
+                  "z": 0
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
           }
         }
       },
@@ -5256,6 +6753,128 @@ const DEFAULT_PROJECT_CONFIG = {
                 }
               }
             ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 30,
+                  "height": 6,
+                  "depth": 30,
+                  "x": 0,
+                  "y": 3,
+                  "z": 1.8,
+                  "color": "#555555",
+                  "name": "base",
+                  "scaleX": 1
+                },
+                {
+                  "type": "cylinder",
+                  "size": 24,
+                  "height": 7.5,
+                  "x": 0,
+                  "y": 10,
+                  "z": 1.8,
+                  "color": "#444444",
+                  "name": "body"
+                },
+                {
+                  "type": "box",
+                  "width": 18,
+                  "height": 10.5,
+                  "depth": 22.5,
+                  "x": 0,
+                  "y": 19.5,
+                  "z": 1.8,
+                  "color": "#3A3A3A",
+                  "rotationX": 15,
+                  "name": "missile-box"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 6,
+                  "height": 27,
+                  "x": -6,
+                  "y": 24,
+                  "z": 3.3,
+                  "rotationX": 105,
+                  "color": "#2A2A2A",
+                  "name": "left missile container"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 6,
+                  "height": 27,
+                  "x": 6,
+                  "y": 24,
+                  "z": 3.3,
+                  "rotationX": 105,
+                  "color": "#2A2A2A",
+                  "name": "right missile container"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 4.5,
+                  "height": 13.5,
+                  "x": -6,
+                  "y": 27,
+                  "z": -7.2,
+                  "rotationX": 105,
+                  "color": "#7f7f7f",
+                  "rotationZ": 0,
+                  "name": "left missile"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 4.5,
+                  "height": 13.5,
+                  "x": 6,
+                  "y": 27,
+                  "z": -7.2,
+                  "rotationX": 105,
+                  "color": "#7f7f7f",
+                  "name": "right missile"
+                },
+                {
+                  "type": "cone",
+                  "size": 4.35,
+                  "height": 6,
+                  "x": -6,
+                  "y": 29.4,
+                  "z": -16.2,
+                  "rotationX": -75,
+                  "color": "#D14A4A",
+                  "name": "left missile tip"
+                },
+                {
+                  "type": "cone",
+                  "size": 4.35,
+                  "height": 6,
+                  "x": 6,
+                  "y": 29.4,
+                  "z": -16.2,
+                  "rotationX": -75,
+                  "color": "#D14A4A",
+                  "name": "right missile tip"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
           }
         }
       },
@@ -5803,6 +7422,138 @@ const DEFAULT_PROJECT_CONFIG = {
                 }
               }
             ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "torus",
+                  "size": 36,
+                  "tubeSize": 4,
+                  "x": 0,
+                  "y": 8,
+                  "z": 0,
+                  "rotationY": 0,
+                  "color": "#50D0FF",
+                  "rotationZ": 0,
+                  "rotationX": 90
+                },
+                {
+                  "type": "cylinder",
+                  "size": 22,
+                  "height": 10,
+                  "x": 0,
+                  "y": 5,
+                  "z": 0,
+                  "color": "#333333"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 16,
+                  "height": 14,
+                  "x": 0,
+                  "y": 17,
+                  "z": 0,
+                  "color": "#222222"
+                },
+                {
+                  "type": "sphere",
+                  "size": 12,
+                  "x": 0,
+                  "y": 16,
+                  "z": 0,
+                  "color": "#A0E6FF"
+                },
+                {
+                  "type": "tetrahedron",
+                  "size": 10,
+                  "x": 0,
+                  "y": 16,
+                  "z": 0,
+                  "rotationY": 45,
+                  "color": "#203040"
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 16,
+                  "x": 0,
+                  "y": 32,
+                  "z": 0,
+                  "rotationX": 0,
+                  "color": "#444444"
+                },
+                {
+                  "type": "box",
+                  "width": 38,
+                  "height": 4,
+                  "depth": 38,
+                  "x": 0,
+                  "y": 2,
+                  "z": 0,
+                  "color": "#555555"
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "x": 24,
+                  "y": 24,
+                  "z": 24,
+                  "color": "#C0FFFF"
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "x": -24,
+                  "y": 24,
+                  "z": 24,
+                  "color": "#C0FFFF"
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "x": 24,
+                  "y": 24,
+                  "z": -24,
+                  "color": "#C0FFFF"
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "x": -24,
+                  "y": 24,
+                  "z": -24,
+                  "color": "#C0FFFF"
+                },
+                {
+                  "type": "torus",
+                  "size": 48,
+                  "color": "#00a2df",
+                  "x": 0,
+                  "y": 38,
+                  "z": 0,
+                  "rotationX": 90,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "tubeSize": 2
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
           }
         }
       },
@@ -5960,6 +7711,143 @@ const DEFAULT_PROJECT_CONFIG = {
                 }
               }
             ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 32,
+                  "height": 8,
+                  "depth": 32,
+                  "x": 0,
+                  "y": 4,
+                  "z": 1.8,
+                  "color": "#4B4B4B",
+                  "name": "base"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 22,
+                  "height": 10,
+                  "x": 0,
+                  "y": 14,
+                  "z": 1.8,
+                  "color": "#333333",
+                  "name": "core"
+                },
+                {
+                  "type": "box",
+                  "width": 12,
+                  "height": 12,
+                  "depth": 18,
+                  "x": 0,
+                  "y": 24,
+                  "z": 1.8,
+                  "color": "#2A2A2A",
+                  "rotationX": 12,
+                  "name": "cannon-head"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 6,
+                  "height": 18,
+                  "x": 0,
+                  "y": 28,
+                  "z": 12,
+                  "rotationX": 90,
+                  "color": "#1A1A1A",
+                  "name": "plasma-barrel"
+                },
+                {
+                  "type": "cone",
+                  "size": 5,
+                  "height": 8,
+                  "x": 0,
+                  "y": 28,
+                  "z": 20,
+                  "rotationX": 90,
+                  "color": "#00FFFF",
+                  "name": "plasma-emitter"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 10,
+                  "x": -8,
+                  "y": 20,
+                  "z": 1.8,
+                  "color": "#00FFFF",
+                  "name": "left-energy-coil"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 10,
+                  "x": 8,
+                  "y": 20,
+                  "z": 1.8,
+                  "color": "#00FFFF",
+                  "name": "right-energy-coil"
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "x": 0,
+                  "y": 28,
+                  "z": 20,
+                  "color": "#ff00ff",
+                  "name": "charge-orb"
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 6,
+                  "depth": 24,
+                  "x": -12,
+                  "y": 14,
+                  "z": 1.8,
+                  "color": "#00FFFF",
+                  "name": "left-glow-panel"
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 6,
+                  "depth": 24,
+                  "x": 12,
+                  "y": 14,
+                  "z": 1.8,
+                  "color": "#00FFFF",
+                  "name": "right-glow-panel"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 8,
+                  "height": 4,
+                  "x": 0,
+                  "y": 32,
+                  "z": 1.8,
+                  "color": "#FF00FF",
+                  "name": "top-energy-ring"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
           }
         }
       },
@@ -6062,6 +7950,88 @@ const DEFAULT_PROJECT_CONFIG = {
                 }
               }
             ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 15,
+                  "height": 30,
+                  "color": "#738884",
+                  "x": 2.25,
+                  "y": 6.75,
+                  "z": 0
+                },
+                {
+                  "type": "box",
+                  "x": 0.2,
+                  "y": 21.75,
+                  "width": 10,
+                  "height": 15,
+                  "color": "#73520d",
+                  "z": 0
+                },
+                {
+                  "type": "box",
+                  "x": -5.25,
+                  "y": 36.75,
+                  "width": 25,
+                  "height": 5,
+                  "color": "#4a697d",
+                  "z": 0
+                },
+                {
+                  "type": "circle",
+                  "radius": 0.5,
+                  "x": -10.25,
+                  "y": 41.75,
+                  "color": "#e6e6fa",
+                  "z": 0
+                },
+                {
+                  "type": "circle",
+                  "radius": 0.5,
+                  "x": 9.75,
+                  "y": 41.75,
+                  "color": "#e6e6fa",
+                  "z": 0
+                },
+                {
+                  "type": "line",
+                  "points": [
+                    {
+                      "x": -1,
+                      "y": 4
+                    },
+                    {
+                      "x": 1,
+                      "y": 4
+                    }
+                  ],
+                  "width": 2,
+                  "color": "#87CEEB",
+                  "x": 2.25,
+                  "y": 6.75,
+                  "z": 0
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
           }
         }
       }
@@ -14816,7 +16786,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   "shapes": [
                     {
                       "width": 16,
-                      "y": 35,
                       "id": 1
                     }
                   ]
@@ -14914,7 +16883,7 @@ const DEFAULT_PROJECT_CONFIG = {
                 },
                 "left wing": {
                   "position": {
-                    "x": 0,
+                    "x": 5,
                     "y": 5,
                     "z": 15
                   },
@@ -14931,7 +16900,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   "shapes": [
                     {
                       "x": 50,
-                      "y": 37,
                       "z": -24,
                       "id": 2
                     }
@@ -14939,7 +16907,7 @@ const DEFAULT_PROJECT_CONFIG = {
                 },
                 "right wing": {
                   "position": {
-                    "x": 0,
+                    "x": -5,
                     "y": 5,
                     "z": 15
                   },
@@ -14956,7 +16924,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   "shapes": [
                     {
                       "x": -50,
-                      "y": 37,
                       "z": -24,
                       "id": 2
                     }
@@ -15036,7 +17003,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   "shapes": [
                     {
                       "width": 16,
-                      "y": 35,
                       "id": 1
                     }
                   ]
@@ -15144,14 +17110,25 @@ const DEFAULT_PROJECT_CONFIG = {
                   },
                   "shapes": [
                     {
-                      "id": 1,
-                      "rotationX": 0.1,
-                      "rotationY": 0.7
+                      "y": 35,
+                      "z": -2.5,
+                      "rotationX": 0,
+                      "rotationY": 1,
+                      "rotationZ": 0,
+                      "scaleX": 1,
+                      "scaleY": 1,
+                      "scaleZ": 1,
+                      "id": 1
                     },
                     {
-                      "x": 53,
-                      "z": 6,
+                      "x": 19,
+                      "y": 34.5,
+                      "z": 14,
                       "rotationX": 100,
+                      "rotationZ": 0,
+                      "scaleX": 1,
+                      "scaleY": 1,
+                      "scaleZ": 1,
                       "id": 2
                     }
                   ]
@@ -15174,13 +17151,16 @@ const DEFAULT_PROJECT_CONFIG = {
                   },
                   "shapes": [
                     {
-                      "id": 1,
+                      "y": 35,
+                      "z": -2.5,
                       "rotationX": 0.1,
-                      "rotationY": -0.7
+                      "rotationY": -0.7,
+                      "id": 1
                     },
                     {
-                      "x": -53,
-                      "z": 6,
+                      "x": -19,
+                      "y": 34.5,
+                      "z": 14,
                       "rotationX": 100,
                       "id": 2
                     }
@@ -15258,7 +17238,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   "shapes": [
                     {
                       "width": 16,
-                      "y": 35,
                       "id": 1
                     }
                   ]
@@ -15266,8 +17245,8 @@ const DEFAULT_PROJECT_CONFIG = {
                 "left arm": {
                   "position": {
                     "x": 1.5,
-                    "y": -2,
-                    "z": 10
+                    "y": -1,
+                    "z": 6.5
                   },
                   "rotation": {
                     "x": 0.4,
@@ -15366,13 +17345,16 @@ const DEFAULT_PROJECT_CONFIG = {
                   },
                   "shapes": [
                     {
-                      "id": 1,
+                      "y": 35,
+                      "z": -2.5,
                       "rotationX": 0.3,
-                      "rotationY": 0.9
+                      "rotationY": 0.9,
+                      "id": 1
                     },
                     {
-                      "x": 53,
-                      "z": 6,
+                      "x": 19,
+                      "y": 34.7,
+                      "z": 14,
                       "rotationX": 100,
                       "id": 2
                     }
@@ -15396,13 +17378,16 @@ const DEFAULT_PROJECT_CONFIG = {
                   },
                   "shapes": [
                     {
-                      "id": 1,
+                      "y": 35,
+                      "z": -2.5,
                       "rotationX": 0.3,
-                      "rotationY": -0.9
+                      "rotationY": -0.9,
+                      "id": 1
                     },
                     {
-                      "x": -53,
-                      "z": 6,
+                      "x": -19,
+                      "y": 34.5,
+                      "z": 14,
                       "rotationX": 100,
                       "id": 2
                     }
@@ -15480,7 +17465,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   "shapes": [
                     {
                       "width": 16,
-                      "y": 35,
                       "id": 1
                     }
                   ]
@@ -15588,13 +17572,16 @@ const DEFAULT_PROJECT_CONFIG = {
                   },
                   "shapes": [
                     {
-                      "id": 1,
+                      "y": 35,
+                      "z": -2.5,
                       "rotationX": 0.1,
-                      "rotationY": 0.7
+                      "rotationY": 0.7,
+                      "id": 1
                     },
                     {
-                      "x": 53,
-                      "z": 6,
+                      "x": 19,
+                      "y": 34.5,
+                      "z": 14,
                       "rotationX": 100,
                       "id": 2
                     }
@@ -15618,13 +17605,16 @@ const DEFAULT_PROJECT_CONFIG = {
                   },
                   "shapes": [
                     {
-                      "id": 1,
+                      "y": 35,
+                      "z": -2.5,
                       "rotationX": 0.1,
-                      "rotationY": -0.7
+                      "rotationY": -0.7,
+                      "id": 1
                     },
                     {
-                      "x": -53,
-                      "z": 6,
+                      "x": -19,
+                      "y": 34.5,
+                      "z": 14,
                       "rotationX": 100,
                       "id": 2
                     }
@@ -15702,7 +17692,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   "shapes": [
                     {
                       "width": 16,
-                      "y": 35,
                       "id": 1
                     }
                   ]
@@ -15727,8 +17716,8 @@ const DEFAULT_PROJECT_CONFIG = {
                 "right arm": {
                   "position": {
                     "x": -1.5,
-                    "y": -2,
-                    "z": 10
+                    "y": -1,
+                    "z": 6.5
                   },
                   "rotation": {
                     "x": 0.4,
@@ -15810,13 +17799,16 @@ const DEFAULT_PROJECT_CONFIG = {
                   },
                   "shapes": [
                     {
-                      "id": 1,
+                      "y": 35,
+                      "z": -2.5,
                       "rotationX": 0.2,
-                      "rotationY": 0.8
+                      "rotationY": 0.8,
+                      "id": 1
                     },
                     {
-                      "x": 53,
-                      "z": 6,
+                      "x": 19,
+                      "y": 34.5,
+                      "z": 14,
                       "rotationX": 100,
                       "id": 2
                     }
@@ -15840,13 +17832,16 @@ const DEFAULT_PROJECT_CONFIG = {
                   },
                   "shapes": [
                     {
-                      "id": 1,
+                      "y": 35,
+                      "z": -2.5,
                       "rotationX": 0.2,
-                      "rotationY": -0.8
+                      "rotationY": -0.8,
+                      "id": 1
                     },
                     {
-                      "x": -53,
-                      "z": 6,
+                      "x": -19,
+                      "y": 34.5,
+                      "z": 14,
                       "rotationX": 100,
                       "id": 2
                     }
@@ -15945,7 +17940,7 @@ const DEFAULT_PROJECT_CONFIG = {
                 },
                 {
                   "type": "box",
-                  "width": 18,
+                  "width": 16,
                   "height": 3,
                   "depth": 8,
                   "x": 0,
@@ -15960,7 +17955,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "size": 3,
                   "height": 6,
                   "x": -6,
-                  "y": 50,
+                  "y": 52,
                   "z": 26,
                   "color": "#696969",
                   "name": "horn-right",
@@ -15971,7 +17966,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "size": 3,
                   "height": 6,
                   "x": 6,
-                  "y": 50,
+                  "y": 52,
                   "z": 26,
                   "color": "#696969",
                   "name": "horn-left",
@@ -16014,7 +18009,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "height": 3,
                   "depth": 3,
                   "x": 0,
-                  "y": 34,
+                  "y": 35,
                   "z": 26,
                   "color": "#8B0000",
                   "name": "gums",
@@ -16103,7 +18098,7 @@ const DEFAULT_PROJECT_CONFIG = {
                 },
                 {
                   "type": "box",
-                  "width": 5,
+                  "width": 4,
                   "height": 4,
                   "depth": 4,
                   "x": 12,
@@ -16122,7 +18117,8 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": 10,
                   "color": "#A9A9A9",
                   "name": "claw-left-1",
-                  "metalness": 0.6
+                  "metalness": 0.6,
+                  "rotationX": 180
                 },
                 {
                   "type": "cone",
@@ -16133,7 +18129,8 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": 10,
                   "color": "#A9A9A9",
                   "name": "claw-left-2",
-                  "metalness": 0.6
+                  "metalness": 0.6,
+                  "rotationX": 180
                 }
               ],
               "position": {
@@ -16182,7 +18179,7 @@ const DEFAULT_PROJECT_CONFIG = {
                 },
                 {
                   "type": "box",
-                  "width": 5,
+                  "width": 4,
                   "height": 4,
                   "depth": 4,
                   "x": -12,
@@ -16201,7 +18198,8 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": 10,
                   "color": "#A9A9A9",
                   "name": "claw-right-1",
-                  "metalness": 0.6
+                  "metalness": 0.6,
+                  "rotationX": 180
                 },
                 {
                   "type": "cone",
@@ -16212,7 +18210,13 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": 10,
                   "color": "#A9A9A9",
                   "name": "claw-right-2",
-                  "metalness": 0.6
+                  "metalness": 0.6,
+                  "rotationX": 180,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
                 }
               ],
               "position": {
@@ -16278,8 +18282,8 @@ const DEFAULT_PROJECT_CONFIG = {
                   "size": 3,
                   "height": 6,
                   "x": 7,
-                  "y": -1,
-                  "z": 10,
+                  "y": 0,
+                  "z": 11,
                   "rotationX": 90,
                   "color": "#696969",
                   "name": "toe-left-1",
@@ -16290,8 +18294,8 @@ const DEFAULT_PROJECT_CONFIG = {
                   "size": 3,
                   "height": 6,
                   "x": 13,
-                  "y": -1,
-                  "z": 10,
+                  "y": 0,
+                  "z": 11,
                   "rotationX": 90,
                   "color": "#696969",
                   "name": "toe-left-2",
@@ -16361,8 +18365,8 @@ const DEFAULT_PROJECT_CONFIG = {
                   "size": 3,
                   "height": 6,
                   "x": -7,
-                  "y": -1,
-                  "z": 10,
+                  "y": 0,
+                  "z": 11,
                   "rotationX": 90,
                   "color": "#696969",
                   "name": "toe-right-1",
@@ -16373,8 +18377,8 @@ const DEFAULT_PROJECT_CONFIG = {
                   "size": 3,
                   "height": 6,
                   "x": -13,
-                  "y": -1,
-                  "z": 10,
+                  "y": 0,
+                  "z": 11,
                   "rotationX": 90,
                   "color": "#696969",
                   "name": "toe-right-2",
@@ -16416,39 +18420,54 @@ const DEFAULT_PROJECT_CONFIG = {
                 {
                   "type": "box",
                   "width": 14,
-                  "height": 12,
+                  "height": 15.3,
                   "depth": 14,
                   "x": 0,
-                  "y": 40,
+                  "y": 45.46875,
                   "z": 8,
                   "rotationX": 10,
                   "color": "#2F4F4F",
                   "name": "neck",
-                  "texture": "scales"
+                  "texture": "scales",
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
                 },
                 {
                   "type": "cone",
                   "size": 6,
                   "height": 12,
                   "x": 0,
-                  "y": 42,
-                  "z": -4,
-                  "rotationX": -50,
+                  "y": 38.39468690702089,
+                  "z": -6.745098039215698,
+                  "rotationX": -65,
                   "color": "#1C2526",
                   "name": "spike-1",
-                  "metalness": 0.3
+                  "metalness": 0.3,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
                 },
                 {
                   "type": "cone",
                   "size": 5,
                   "height": 10,
                   "x": 0,
-                  "y": 36,
-                  "z": -8,
-                  "rotationX": -45,
+                  "y": 28.979127134724877,
+                  "z": -14.513725490196073,
+                  "rotationX": -66,
                   "color": "#1C2526",
                   "name": "spike-2",
-                  "metalness": 0.3
+                  "metalness": 0.3,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
                 }
               ],
               "position": {
@@ -16502,9 +18521,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "cone",
                   "size": 2,
                   "height": 5,
-                  "x": 55,
-                  "y": 33,
-                  "z": -15,
+                  "x": 51,
+                  "y": 37,
+                  "z": -25,
                   "rotationX": 0,
                   "rotationY": 80,
                   "color": "#696969",
@@ -16513,9 +18532,9 @@ const DEFAULT_PROJECT_CONFIG = {
                 }
               ],
               "position": {
-                "x": 0,
-                "y": 15,
-                "z": -5
+                "x": 5,
+                "y": 5,
+                "z": 15
               },
               "rotation": {
                 "x": 0,
@@ -16563,20 +18582,24 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "cone",
                   "size": 2,
                   "height": 5,
-                  "x": -55,
-                  "y": 33,
-                  "z": -15,
+                  "x": -51,
+                  "y": 37,
+                  "z": -25,
                   "rotationX": 0,
                   "rotationY": -80,
                   "color": "#696969",
                   "name": "wing-claw-right",
-                  "metalness": 0.5
+                  "metalness": 0.5,
+                  "rotationZ": 0,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
                 }
               ],
               "position": {
-                "x": 0,
-                "y": 15,
-                "z": -5
+                "x": -5,
+                "y": 5,
+                "z": 15
               },
               "rotation": {
                 "x": 0,
@@ -20990,6 +23013,76 @@ const DEFAULT_PROJECT_CONFIG = {
                 }
               }
             ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "cylinder",
+                  "size": 10,
+                  "color": "#733f17",
+                  "x": 0,
+                  "y": 10.625,
+                  "z": 0,
+                  "rotationX": 0,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "height": 20,
+                  "scaleX": 1
+                },
+                {
+                  "type": "cone",
+                  "size": 40,
+                  "color": "#018314",
+                  "x": 0,
+                  "y": 50.625,
+                  "z": 0,
+                  "rotationX": 0,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "height": 60
+                },
+                {
+                  "type": "cone",
+                  "size": 35,
+                  "color": "#018314",
+                  "x": 0,
+                  "y": 60.625,
+                  "z": 0,
+                  "rotationX": 0,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "height": 40
+                },
+                {
+                  "type": "cone",
+                  "size": 15,
+                  "color": "#018314",
+                  "x": 0,
+                  "y": 75.625,
+                  "z": 0,
+                  "rotationX": 0,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "height": 15
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
           }
         }
       },
@@ -21043,6 +23136,50 @@ const DEFAULT_PROJECT_CONFIG = {
                 }
               }
             ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "tetrahedron",
+                  "size": 16,
+                  "color": "#666666",
+                  "x": 3.5,
+                  "y": 2,
+                  "z": 2.5,
+                  "rotationX": 50,
+                  "rotationY": 140,
+                  "rotationZ": 10,
+                  "scaleX": 1
+                },
+                {
+                  "type": "tetrahedron",
+                  "size": 12,
+                  "color": "#5b5b5b",
+                  "x": 10.5,
+                  "y": 2,
+                  "z": 7.5,
+                  "rotationX": 50,
+                  "rotationY": 150,
+                  "rotationZ": 10
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
           }
         }
       }
@@ -24514,6 +26651,26 @@ const DEFAULT_PROJECT_CONFIG = {
                 }
               }
             ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
           }
         },
         "lifeSpan": 0.66
@@ -24712,7 +26869,7 @@ const DEFAULT_PROJECT_CONFIG = {
     },
     "libraries": {
       "GraphicsEditor": {
-        "script": "// Core structure\nclass GraphicsEditor {\n    constructor(gameEditor, config, {ShapeFactory, GE_SceneRenderer, GE_ShapeManager, GE_AnimationManager, GE_RotationUtils, GE_UIManager, GE_GroupManager, GE_GizmoManager}) {\n        this.gameEditor = gameEditor;\n        this.config = config;\n        this.shapeFactory = new ShapeFactory();\n        this.canvas = document.getElementById('graphics-editor-canvas');\n        // Initialize sub-modules\n        this.sceneRenderer = new GE_SceneRenderer(gameEditor, this);\n        this.shapeManager = new GE_ShapeManager(gameEditor, this);\n        this.uiManager = new GE_UIManager(gameEditor, this);\n        this.animationManager = new GE_AnimationManager(gameEditor, this);\n        this.groupManager = new GE_GroupManager(gameEditor, this);\n        this.gizmoManager = new GE_GizmoManager(gameEditor, this);\n        this.rotationUtils = GE_RotationUtils;\n        // State management (simplified)\n        this.state = {\n            editingModel: true,\n            selectedShapeIndex: -1,\n            currentAnimation: \"\",\n            selectedGroup: \"main\",\n            currentFrame: 0,\n            renderData: { model: {}, animations: { idle: [{ main: { shapes: [], position: {x: 0, y: 0, z: 0}, rotation: {x:0,y:0,z:0}, scale: {x:1, y:1, z:1}} }] } }\n        };\n        \n        this.rootGroup = new window.THREE.Group(); // Main container for all shapes\n        this.rootGroup.name = \"rootGroup\";\n        this.init();\n    }\n    \n    init() {\n        this.sceneRenderer.init();\n        this.uiManager.init();\n        this.shapeManager.init();\n        this.animationManager.init();\n        this.groupManager.init();\n        this.gizmoManager.init();\n        this.sceneRenderer.animate();\n    }\n    displayIsometricSprites(sprites){\n        this.uiManager.displayIsometricSprites(sprites);\n    }\n    async renderShapes(fireSave = true) {\n        // Clear the root group\n        while (this.rootGroup.children.length > 0) {\n            const obj = this.rootGroup.children[0];\n            this.shapeFactory.disposeObject(obj);\n            this.shapeManager.originalMaterials.delete(obj);\n            this.rootGroup.remove(obj);\n        }\n    \n        // Add lights if they don't exist\n        if (!this.sceneRenderer.scene.getObjectByName('ambient-light')) {\n            const ambientLight = new window.THREE.AmbientLight(0xffffff, 0.6);\n            ambientLight.name = 'ambient-light';\n            this.sceneRenderer.scene.add(ambientLight);\n            const directionalLight = new window.THREE.DirectionalLight(0xffffff, 0.8);\n            directionalLight.position.set(5, 10, 7.5);\n            directionalLight.name = 'dir-light';\n            this.sceneRenderer.scene.add(directionalLight);\n        }\n            \n        const currentAnimation = this.state.currentAnimation;\n        const currentFrame = this.state.currentFrame;\n        \n        // Ensure animation and frame exist\n        if (!this.state.editingModel && !this.getCurrentFrame()) {\n            console.warn(\"Animation or frame doesn't exist:\", currentAnimation, currentFrame);\n            return;\n        }\n        \n        let frameData = this.getCurrentFrame();\n        //model is a Frame that has named groups as properties.\n        let model = this.state.renderData.model;\n\n        // Create a group for each group in the frame\n        for (const groupName in frameData) {     \n            const mergedGroup = this.getMergedGroup(groupName);\n            let threeGroup = await this.shapeFactory.createGroupFromJSON(mergedGroup); \n            threeGroup.name = groupName;\n            // Add the group to the root group\n            this.rootGroup.add(threeGroup);\n        }\n            \n        // Count total shapes for display\n        let totalShapes = 0;\n        for (const groupName in model) {\n            if (Array.isArray(model[groupName].shapes)) {\n                totalShapes += model[groupName].shapes.length;\n            }\n        }\n        document.getElementById('shape-count').textContent = totalShapes;\n        \n        // Update JSON display\n        document.getElementById('json-content').value = JSON.stringify(this.state.renderData, null, 2);\n    \n        if (fireSave) {\n            const myCustomEvent = new CustomEvent('saveGraphicsObject', {\n                detail: { data: this.state.renderData, propertyName: 'render' },\n                bubbles: true,\n                cancelable: true\n            });\n            document.body.dispatchEvent(myCustomEvent);\n        } else {\n            let valEl = this.gameEditor.elements.editor.querySelector(`#render-value`);\n            if (valEl) {\n                valEl.value = JSON.stringify(this.state.renderData);\n            }\n        }\n    \n        // Highlight the selected shape if any\n        this.shapeManager.highlightSelectedShape();\n        this.gizmoManager.updateGizmoPosition();\n    }\n    \n    getCurrentAnimation() {\n     \n        return this.state.renderData.animations[this.state.currentAnimation];\n    }\n    getCurrentFrame() {\n        if(this.state.editingModel){\n            return this.state.renderData.model;\n        } else {\n            return this.getCurrentAnimation()[this.state.currentFrame];\n        }\n    }\n    getCurrentGroup() {\n        return this.getCurrentFrame()[this.state.currentGroup];\n    }\n    getMergedShape() {\n        if (this.state.selectedShapeIndex >= 0) {            \n            const selectedGroup = this.getMergedGroup(this.state.currentGroup);\n            const shapes = selectedGroup?.shapes || [];        \n            let shape = shapes[this.state.selectedShapeIndex];  \n            if(this.state.editingModel){\n                return shape;\n            }     \n            if (shape) {  \n                shape.id = this.state.selectedShapeIndex;\n                // Avoid overwriting shape.id unless necessary\n                let currentGroupData = this.getCurrentGroup();\n                \n                // Ensure shapes array exists\n                currentGroupData.shapes = currentGroupData.shapes || [];\n                \n                // Find index of shape with matching id\n                const shapeIndex = currentGroupData.shapes.findIndex(s => s.id === shape.id);\n                console.log(shapeIndex, shape.id);\n                // Replace or append shape\n                if (shapeIndex >= 0) {\n                    currentGroupData.shapes[shapeIndex] = shape; // Replace\n                } else {\n                    currentGroupData.shapes.push(shape); // Append if not found\n                }\n                \n                return shape;\n            }            \n        }\n        return null;\n    }\n\n    refreshShapes(param) {\n        this.uiManager.updateList();\n        this.renderShapes(param);\n    }\n\n    createInspector(shape) {\n        this.uiManager.createInspector(shape);\n    }\n\n    setPreviewAnimationState(state) {\n        return this.animationManager.setPreviewAnimationState(state);\n    }\n\n    selectShape(index) {\n        return this.shapeManager.selectShape(index);\n    }\n\n    getMergedGroup(groupName){\n        let model = this.state.renderData.model;\n        const modelGroup = model[groupName];\n        if(this.state.editingModel){\n            return modelGroup;\n        }\n        let frameData = this.getCurrentFrame();\n        const frameGroup = frameData[groupName];\n\n        let mergedShapes = [];\n        for(let i = 0; i < modelGroup.shapes.length; i++){\n            let modelShape = modelGroup.shapes[i];\n            if(!frameGroup.shapes){\n                mergedShapes.push(modelShape);\n                continue;\n            }\n            let mergedShape = {};\n            let frameShape = frameGroup.shapes.find((shape) => shape.id == i);\n            if(typeof frameShape == \"undefined\"){\n                frameShape = { id: i };\n                frameGroup.shapes.push(frameShape);\n            }\n            for(const key in modelShape) {\n                if(key == 'id'){      \n                    delete modelShape.id;\n                    continue;\n                }\n                if(frameShape && typeof frameShape[key] != \"undefined\" && modelShape[key] === frameShape[key]){\n                    delete frameShape[key];                 \n                    mergedShape[key] = modelShape[key];\n                } else if(!frameShape || typeof frameShape[key] == \"undefined\"){\n                    mergedShape[key] = modelShape[key];\n                } else {\n                    mergedShape[key] = frameShape[key];\n                }\n            }\n            mergedShape = {...mergedShape, ...frameShape};\n            delete mergedShape.id;\n            mergedShapes.push(mergedShape);\n        }\n        if(frameGroup.shapes){\n            for(let i = frameGroup.shapes.length - 1; i >= 0; i--){\n                let shape = frameGroup.shapes[i];\n                if(Object.keys(shape).length == 1){\n                    frameGroup.shapes.splice(i, 1);\n                }\n            }  \n        }                         \n        const mergedGroup = {\n            ...modelGroup,\n            ...frameGroup,\n        };\n        mergedGroup.shapes = mergedShapes;\n        return JSON.parse(JSON.stringify(mergedGroup));\n    }\n\n\n    getSelectedObject() {\n        const currentGroup = this.state.currentGroup;\n        if (currentGroup) {\n            let foundGroup = null;\n            this.rootGroup.traverse(obj => {\n                if (obj.isGroup && obj.name === currentGroup && obj.userData.isGroup) {\n                    foundGroup = obj;\n                }\n            });\n            let foundShape = null;\n            if(foundGroup){\n                foundGroup.traverse(obj => {\n                    if (obj.userData.isShape && obj.userData.index == this.state.selectedShapeIndex) {\n                        foundShape = obj;\n                    }\n                });\n            }\n            return foundShape || foundGroup || this.rootGroup;\n        }\n        return this.rootGroup;\n    }\n}\n",
+        "script": "// Core structure\nclass GraphicsEditor {\n    constructor(gameEditor, config, {ShapeFactory, GE_SceneRenderer, GE_ShapeManager, GE_AnimationManager, GE_RotationUtils, GE_UIManager, GE_GroupManager, GE_GizmoManager}) {\n        this.gameEditor = gameEditor;\n        this.config = config;\n        this.shapeFactory = new ShapeFactory();\n        this.canvas = document.getElementById('graphics-editor-canvas');\n        // Initialize sub-modules\n        this.sceneRenderer = new GE_SceneRenderer(gameEditor, this);\n        this.shapeManager = new GE_ShapeManager(gameEditor, this);\n        this.uiManager = new GE_UIManager(gameEditor, this);\n        this.animationManager = new GE_AnimationManager(gameEditor, this);\n        this.groupManager = new GE_GroupManager(gameEditor, this);\n        this.gizmoManager = new GE_GizmoManager(gameEditor, this);\n        this.rotationUtils = GE_RotationUtils;\n        // State management (simplified)\n        this.state = {\n            editingModel: true,\n            selectedShapeIndex: -1,\n            currentAnimation: \"\",\n            selectedGroup: \"main\",\n            currentFrame: 0,\n            renderData: { model: {}, animations: { idle: [{ main: { shapes: [], position: {x: 0, y: 0, z: 0}, rotation: {x:0,y:0,z:0}, scale: {x:1, y:1, z:1}} }] } }\n        };\n        \n        this.rootGroup = new window.THREE.Group(); // Main container for all shapes\n        this.rootGroup.name = \"rootGroup\";\n        this.init();\n    }\n    \n    init() {\n        this.sceneRenderer.init();\n        this.uiManager.init();\n        this.shapeManager.init();\n        this.animationManager.init();\n        this.groupManager.init();\n        this.gizmoManager.init();\n        this.sceneRenderer.animate();\n    }\n    displayIsometricSprites(sprites){\n        this.uiManager.displayIsometricSprites(sprites);\n    }\n    async renderShapes(fireSave = true) {\n        // Clear the root group\n        while (this.rootGroup.children.length > 0) {\n            const obj = this.rootGroup.children[0];\n            this.shapeFactory.disposeObject(obj);\n            this.shapeManager.originalMaterials.delete(obj);\n            this.rootGroup.remove(obj);\n        }\n    \n        // Add lights if they don't exist\n        if (!this.sceneRenderer.scene.getObjectByName('ambient-light')) {\n            const ambientLight = new window.THREE.AmbientLight(0xffffff, 0.6);\n            ambientLight.name = 'ambient-light';\n            this.sceneRenderer.scene.add(ambientLight);\n            const directionalLight = new window.THREE.DirectionalLight(0xffffff, 0.8);\n            directionalLight.position.set(5, 10, 7.5);\n            directionalLight.name = 'dir-light';\n            this.sceneRenderer.scene.add(directionalLight);\n        }\n            \n        const currentAnimation = this.state.currentAnimation;\n        const currentFrame = this.state.currentFrame;\n        \n        // Ensure animation and frame exist\n        if (!this.state.editingModel && !this.getCurrentFrame()) {\n            console.warn(\"Animation or frame doesn't exist:\", currentAnimation, currentFrame);\n            return;\n        }\n        \n        let frameData = this.getCurrentFrame();\n        //model is a Frame that has named groups as properties.\n        let model = this.state.renderData.model;\n\n        // Create a group for each group in the frame\n        for (const groupName in frameData) {     \n            const mergedGroup = this.getMergedGroup(groupName);\n            let threeGroup = await this.shapeFactory.createGroupFromJSON(mergedGroup); \n            threeGroup.name = groupName;\n            // Add the group to the root group\n            this.rootGroup.add(threeGroup);\n        }\n            \n        // Count total shapes for display\n        let totalShapes = 0;\n        for (const groupName in model) {\n            if (Array.isArray(model[groupName].shapes)) {\n                totalShapes += model[groupName].shapes.length;\n            }\n        }\n        document.getElementById('shape-count').textContent = totalShapes;\n        \n        // Update JSON display\n        document.getElementById('json-content').value = JSON.stringify(this.state.renderData, null, 2);\n    \n        if (fireSave) {\n            const myCustomEvent = new CustomEvent('saveGraphicsObject', {\n                detail: { data: this.state.renderData, propertyName: 'render' },\n                bubbles: true,\n                cancelable: true\n            });\n            document.body.dispatchEvent(myCustomEvent);\n        } else {\n            let valEl = this.gameEditor.elements.editor.querySelector(`#render-value`);\n            if (valEl) {\n                valEl.value = JSON.stringify(this.state.renderData);\n            }\n        }\n    \n        // Highlight the selected shape if any\n        this.shapeManager.highlightSelectedShape();\n        this.gizmoManager.updateGizmoPosition();\n    }\n    \n    getCurrentAnimation() {\n     \n        return this.state.renderData.animations[this.state.currentAnimation];\n    }\n    getCurrentFrame() {\n        if(this.state.editingModel){\n            return this.state.renderData.model;\n        } else {\n            return this.getCurrentAnimation()[this.state.currentFrame];\n        }\n    }\n    getCurrentGroup() {\n        return this.getCurrentFrame()[this.state.currentGroup];\n    }\n\n    refreshShapes(param) {\n        this.uiManager.updateList();\n        this.renderShapes(param);\n    }\n\n    createInspector(shape) {\n        this.uiManager.createInspector(shape);\n    }\n\n    setPreviewAnimationState(state) {\n        return this.animationManager.setPreviewAnimationState(state);\n    }\n\n    selectShape(index) {\n        return this.shapeManager.selectShape(index);\n    }\n\n    getMergedGroup(groupName){\n        let model = this.state.renderData.model;\n        const modelGroup = model[groupName];\n        if(this.state.editingModel){\n            return modelGroup;\n        }\n        return this.shapeFactory.getMergedGroup(model, this.getCurrentFrame(), groupName );\n    }\n\n    getMergedShape() {\n        if (this.state.selectedShapeIndex >= 0) {            \n            const selectedGroup = this.getMergedGroup(this.state.currentGroup);\n            const shapes = selectedGroup?.shapes || [];        \n            let shape = shapes[this.state.selectedShapeIndex];  \n            if(this.state.editingModel){\n                return shape;\n            }     \n            if (shape) {  \n                shape.id = this.state.selectedShapeIndex;\n                // Avoid overwriting shape.id unless necessary\n                let currentGroupData = this.getCurrentGroup();\n                \n                // Ensure shapes array exists\n                currentGroupData.shapes = currentGroupData.shapes || [];\n                \n                // Find index of shape with matching id\n                const shapeIndex = currentGroupData.shapes.findIndex(s => s.id === shape.id);\n                console.log(shapeIndex, shape.id);\n                // Replace or append shape\n                if (shapeIndex >= 0) {\n                    currentGroupData.shapes[shapeIndex] = shape; // Replace\n                } else {\n                    currentGroupData.shapes.push(shape); // Append if not found\n                }\n                \n                return shape;\n            }            \n        }\n        return null;\n    }\n\n    getSelectedObject() {\n        const currentGroup = this.state.currentGroup;\n        if (currentGroup) {\n            let foundGroup = null;\n            this.rootGroup.traverse(obj => {\n                if (obj.isGroup && obj.name === currentGroup && obj.userData.isGroup) {\n                    foundGroup = obj;\n                }\n            });\n            let foundShape = null;\n            if(foundGroup){\n                foundGroup.traverse(obj => {\n                    if (obj.userData.isShape && obj.userData.index == this.state.selectedShapeIndex) {\n                        foundShape = obj;\n                    }\n                });\n            }\n            return foundShape || foundGroup || this.rootGroup;\n        }\n        return this.rootGroup;\n    }\n}\n",
         "fileName": "GraphicsEditor",
         "title": "GraphicsEditor"
       },
@@ -24746,11 +26903,11 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "jszip.min.js"
       },
       "ShapeFactory": {
-        "script": "class ShapeFactory {\r\n    constructor() {\r\n        this.gltfCache = new Map();\r\n        this.gltfLoader = new THREE.GLTFLoader();\r\n    }\r\n\r\n    async createGroupFromJSON(groupData) {\r\n        const group = new THREE.Group();\r\n        group.userData = { isGroup: true };\r\n        // Use Promise.all with map instead of forEach to properly await all shapes\r\n        await Promise.all(groupData.shapes.map(async (shape, index) => {\r\n            if (shape.type === 'gltf') {\r\n                await this.handleGLTFShape(shape, index, group);\r\n            } else {\r\n                this.handlePrimitiveShape(shape, index, group);\r\n            }\r\n        }));\r\n        group.position.x = groupData.position.x;\r\n        group.position.y = groupData.position.y;\r\n        group.position.z = groupData.position.z;\r\n        \r\n        group.rotation.x = groupData.rotation.x;\r\n        group.rotation.y = groupData.rotation.y;\r\n        group.rotation.z = groupData.rotation.z;\r\n\r\n        group.scale.x = groupData.scale.x;\r\n        group.scale.y = groupData.scale.y;\r\n        group.scale.z = groupData.scale.z;\r\n        return group;\r\n    }\r\n\r\n    async handleGLTFShape(shape, index, group) {\r\n        const applyTransformations = (model) => {\r\n            model.position.set(shape.x || 0, shape.y || 0, shape.z || 0);\r\n            model.scale.set(\r\n                shape.scaleX || 1,\r\n                shape.scaleY || 1,\r\n                shape.scaleZ || 1\r\n            );\r\n            model.rotation.set(\r\n                (shape.rotationX || 0) * Math.PI / 180,\r\n                (shape.rotationY || 0) * Math.PI / 180,\r\n                (shape.rotationZ || 0) * Math.PI / 180\r\n            );\r\n            \r\n            model.traverse(child => {\r\n                if (child.isMesh) {\r\n                    child.userData = {\r\n                        isShape: true,\r\n                        index: index,\r\n                        isGLTFChild: true\r\n                    };\r\n                }\r\n            });\r\n            \r\n            model.userData = {\r\n                isShape: true,\r\n                index: index,\r\n                isGLTFRoot: true,\r\n                castShadow: true\r\n            };\r\n            \r\n            group.add(model);\r\n        };\r\n\r\n        const cached = this.gltfCache.get(shape.url);\r\n        if (cached) {\r\n            applyTransformations(cached.scene.clone());\r\n        } else if (shape.url) {\r\n            // Wrap gltfLoader.load in a Promise to properly await it\r\n            await new Promise((resolve, reject) => {\r\n                this.gltfLoader.load(\r\n                    shape.url,\r\n                    (gltf) => {\r\n                        this.gltfCache.set(shape.url, gltf);\r\n                        applyTransformations(gltf.scene.clone());\r\n                        resolve();\r\n                    },\r\n                    undefined, // onProgress callback (optional)\r\n                    (error) => {\r\n                        console.error(`Failed to load GLTF model at ${shape.url}:`, error);\r\n                        reject(error);\r\n                    }\r\n                );\r\n            });\r\n        }\r\n    }\r\n\r\n    handlePrimitiveShape(shape, index, group) {\r\n        let geometry, material;\r\n\r\n        // Create material with specified color\r\n        material = new THREE.MeshStandardMaterial({ color: shape.color });\r\n\r\n        switch (shape.type) {\r\n            case 'sphere':\r\n                geometry = new THREE.SphereGeometry(shape.size / 2, 32, 32);\r\n                break;\r\n            case 'cube':\r\n                geometry = new THREE.BoxGeometry(shape.size, shape.size, shape.size);\r\n                break;\r\n            case 'box':\r\n                geometry = new THREE.BoxGeometry(shape.width, shape.height, shape.depth || shape.width);\r\n                break;\r\n            case 'cylinder':\r\n                geometry = new THREE.CylinderGeometry(shape.size / 2, shape.size / 2, shape.height, 32);\r\n                break;\r\n            case 'cone':\r\n                geometry = new THREE.ConeGeometry(shape.size / 2, shape.height, 32);\r\n                break;\r\n            case 'torus':\r\n                geometry = new THREE.TorusGeometry(shape.size / 2, shape.tubeSize || shape.size / 6, 16, 100);\r\n                break;\r\n            case 'tetrahedron':\r\n                geometry = new THREE.TetrahedronGeometry(shape.size / 2);\r\n                break;\r\n            default:\r\n                return;\r\n        }\r\n\r\n        const mesh = new THREE.Mesh(geometry, material);\r\n        mesh.userData = { isShape: true, castShadow: true, index: index };\r\n        \r\n        // Position and rotation\r\n        mesh.position.set(shape.x || 0, shape.y || 0, shape.z || 0);\r\n        mesh.rotation.set(\r\n            (shape.rotationX || 0) * Math.PI / 180,\r\n            (shape.rotationY || 0) * Math.PI / 180,\r\n            (shape.rotationZ || 0) * Math.PI / 180\r\n        );\r\n        mesh.scale.set(\r\n            shape.scaleX || 1,\r\n            shape.scaleY || 1,\r\n            shape.scaleZ || 1\r\n        );\r\n        group.add(mesh);\r\n    }\r\n\r\n    disposeObject(object) {\r\n        object.traverse(child => {\r\n            if (child.geometry) child.geometry.dispose();\r\n            if (child.material) {\r\n                if (Array.isArray(child.material)) {\r\n                    child.material.forEach(m => m.dispose());\r\n                } else {\r\n                    child.material.dispose();\r\n                }\r\n            }\r\n        });\r\n    }\r\n}",
+        "script": "class ShapeFactory {\r\n    constructor() {\r\n        this.gltfCache = new Map();\r\n        this.gltfLoader = new THREE.GLTFLoader();\r\n    }\r\n    async createMergedGroupFromJSON(model, frameData, groupName) {\r\n        return await this.createGroupFromJSON(this.getMergedGroup(model, frameData, groupName));\r\n    }\r\n    async createGroupFromJSON(groupData) {\r\n        const group = new THREE.Group();\r\n        group.userData = { isGroup: true };\r\n        // Use Promise.all with map instead of forEach to properly await all shapes\r\n        await Promise.all(groupData.shapes.map(async (shape, index) => {\r\n            if (shape.type === 'gltf') {\r\n                await this.handleGLTFShape(shape, index, group);\r\n            } else {\r\n                this.handlePrimitiveShape(shape, index, group);\r\n            }\r\n        }));\r\n        group.position.x = groupData.position.x;\r\n        group.position.y = groupData.position.y;\r\n        group.position.z = groupData.position.z;\r\n        \r\n        group.rotation.x = groupData.rotation.x;\r\n        group.rotation.y = groupData.rotation.y;\r\n        group.rotation.z = groupData.rotation.z;\r\n\r\n        group.scale.x = groupData.scale.x;\r\n        group.scale.y = groupData.scale.y;\r\n        group.scale.z = groupData.scale.z;\r\n        return group;\r\n    }\r\n\r\n    async handleGLTFShape(shape, index, group) {\r\n        const applyTransformations = (model) => {\r\n            model.position.set(shape.x || 0, shape.y || 0, shape.z || 0);\r\n            model.scale.set(\r\n                shape.scaleX || 1,\r\n                shape.scaleY || 1,\r\n                shape.scaleZ || 1\r\n            );\r\n            model.rotation.set(\r\n                (shape.rotationX || 0) * Math.PI / 180,\r\n                (shape.rotationY || 0) * Math.PI / 180,\r\n                (shape.rotationZ || 0) * Math.PI / 180\r\n            );\r\n            \r\n            model.traverse(child => {\r\n                if (child.isMesh) {\r\n                    child.userData = {\r\n                        isShape: true,\r\n                        index: index,\r\n                        isGLTFChild: true\r\n                    };\r\n                }\r\n            });\r\n            \r\n            model.userData = {\r\n                isShape: true,\r\n                index: index,\r\n                isGLTFRoot: true,\r\n                castShadow: true\r\n            };\r\n            \r\n            group.add(model);\r\n        };\r\n\r\n        const cached = this.gltfCache.get(shape.url);\r\n        if (cached) {\r\n            applyTransformations(cached.scene.clone());\r\n        } else if (shape.url) {\r\n            // Wrap gltfLoader.load in a Promise to properly await it\r\n            await new Promise((resolve, reject) => {\r\n                this.gltfLoader.load(\r\n                    shape.url,\r\n                    (gltf) => {\r\n                        this.gltfCache.set(shape.url, gltf);\r\n                        applyTransformations(gltf.scene.clone());\r\n                        resolve();\r\n                    },\r\n                    undefined, // onProgress callback (optional)\r\n                    (error) => {\r\n                        console.error(`Failed to load GLTF model at ${shape.url}:`, error);\r\n                        reject(error);\r\n                    }\r\n                );\r\n            });\r\n        }\r\n    }\r\n\r\n    handlePrimitiveShape(shape, index, group) {\r\n        let geometry, material;\r\n\r\n        // Create material with specified color\r\n        material = new THREE.MeshStandardMaterial({ color: shape.color });\r\n\r\n        switch (shape.type) {\r\n            case 'sphere':\r\n                geometry = new THREE.SphereGeometry(shape.size / 2, 32, 32);\r\n                break;\r\n            case 'cube':\r\n                geometry = new THREE.BoxGeometry(shape.size, shape.size, shape.size);\r\n                break;\r\n            case 'box':\r\n                geometry = new THREE.BoxGeometry(shape.width, shape.height, shape.depth || shape.width);\r\n                break;\r\n            case 'cylinder':\r\n                geometry = new THREE.CylinderGeometry(shape.size / 2, shape.size / 2, shape.height, 32);\r\n                break;\r\n            case 'cone':\r\n                geometry = new THREE.ConeGeometry(shape.size / 2, shape.height, 32);\r\n                break;\r\n            case 'torus':\r\n                geometry = new THREE.TorusGeometry(shape.size / 2, shape.tubeSize || shape.size / 6, 16, 100);\r\n                break;\r\n            case 'tetrahedron':\r\n                geometry = new THREE.TetrahedronGeometry(shape.size / 2);\r\n                break;\r\n            default:\r\n                return;\r\n        }\r\n\r\n        const mesh = new THREE.Mesh(geometry, material);\r\n        mesh.userData = { isShape: true, castShadow: true, index: index };\r\n        \r\n        // Position and rotation\r\n        mesh.position.set(shape.x || 0, shape.y || 0, shape.z || 0);\r\n        mesh.rotation.set(\r\n            (shape.rotationX || 0) * Math.PI / 180,\r\n            (shape.rotationY || 0) * Math.PI / 180,\r\n            (shape.rotationZ || 0) * Math.PI / 180\r\n        );\r\n        mesh.scale.set(\r\n            shape.scaleX || 1,\r\n            shape.scaleY || 1,\r\n            shape.scaleZ || 1\r\n        );\r\n        group.add(mesh);\r\n    }\r\n\r\n    disposeObject(object) {\r\n        object.traverse(child => {\r\n            if (child.geometry) child.geometry.dispose();\r\n            if (child.material) {\r\n                if (Array.isArray(child.material)) {\r\n                    child.material.forEach(m => m.dispose());\r\n                } else {\r\n                    child.material.dispose();\r\n                }\r\n            }\r\n        });\r\n    }\r\n\r\n    getMergedGroup(model, frameData, groupName){\r\n        const modelGroup = model[groupName];\r\n\r\n        let frameGroup = frameData[groupName];\r\n        if(!frameGroup){\r\n            //group doesnt exist in animation, copy from model\r\n            frameData[groupName] = {...modelGroup};\r\n            frameGroup = frameData[groupName];\r\n            return frameGroup;\r\n        }\r\n        let mergedShapes = [];\r\n        for(let i = 0; i < modelGroup.shapes.length; i++){\r\n            let modelShape = modelGroup.shapes[i];\r\n            if(!frameGroup.shapes){\r\n                mergedShapes.push(modelShape);\r\n                continue;\r\n            }\r\n            let mergedShape = {};\r\n            let frameShape = frameGroup.shapes.find((shape) => shape.id == i);\r\n            if(typeof frameShape == \"undefined\"){\r\n                frameShape = { id: i };\r\n                frameGroup.shapes.push(frameShape);\r\n            }\r\n            for(const key in modelShape) {\r\n                if(key == 'id'){      \r\n                    delete modelShape.id;\r\n                    continue;\r\n                }\r\n                if(frameShape && typeof frameShape[key] != \"undefined\" && modelShape[key] === frameShape[key]){\r\n                    delete frameShape[key];                 \r\n                    mergedShape[key] = modelShape[key];\r\n                } else if(!frameShape || typeof frameShape[key] == \"undefined\"){\r\n                    mergedShape[key] = modelShape[key];\r\n                } else {\r\n                    mergedShape[key] = frameShape[key];\r\n                }\r\n            }\r\n            mergedShape = {...mergedShape, ...frameShape};\r\n            delete mergedShape.id;\r\n            mergedShapes.push(mergedShape);\r\n        }\r\n        if(frameGroup.shapes){\r\n            for(let i = frameGroup.shapes.length - 1; i >= 0; i--){\r\n                let shape = frameGroup.shapes[i];\r\n                if(Object.keys(shape).length == 1){\r\n                    frameGroup.shapes.splice(i, 1);\r\n                }\r\n            }  \r\n        }                         \r\n        const mergedGroup = {\r\n            ...modelGroup,\r\n            ...frameGroup,\r\n        };\r\n        mergedGroup.shapes = mergedShapes;\r\n        return JSON.parse(JSON.stringify(mergedGroup));\r\n    }\r\n\r\n}",
         "fileName": "ShapeFactory"
       },
       "ImageManager": {
-        "script": "\r\nclass ImageManager {\r\n    constructor(app, {imageSize}, {ShapeFactory}) {\r\n        this.app = app;\r\n        this.images = {};\r\n        this.imageSize = imageSize || 128;\r\n        // Create a single reusable renderer\r\n        this.renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });\r\n        this.renderer.setSize(this.imageSize, this.imageSize);\r\n        this.renderer.shadowMap.enabled = true;\r\n        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;\r\n        \r\n        this.renderTarget = new THREE.WebGLRenderTarget(this.imageSize, this.imageSize);\r\n        this.renderTarget.texture.flipY = true;\r\n        \r\n        // Create reusable scene\r\n        this.scene = new THREE.Scene();\r\n        \r\n        // Create reusable cameras for different views\r\n        const cameraDistance = 64;\r\n        const frustumSize = cameraDistance + 16;\r\n        const aspect = 1;\r\n\r\n        this.shapeFactory = new ShapeFactory();\r\n        // Create 8 cameras for isometric views at 45-degree intervals\r\n        this.cameras = [];\r\n        for (let i = 0; i < 8; i++) {\r\n            this.cameras.push(new THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000));\r\n        }\r\n        \r\n        // Position cameras in a circle around the y-axis at isometric angle\r\n        // Standard isometric angle is about 35.264 degrees (arctan(1/sqrt(2)))\r\n        const isoAngle = Math.atan(1 / Math.sqrt(2));\r\n        const horizDistance = cameraDistance * Math.cos(isoAngle);\r\n        const vertDistance = cameraDistance * Math.sin(isoAngle);\r\n        \r\n        for (let i = 0; i < 8; i++) {\r\n            const angle = (i * Math.PI / 4); // 45-degree increments\r\n            const x = horizDistance * Math.sin(angle);\r\n            const z = horizDistance * Math.cos(angle);\r\n            \r\n            this.cameras[i].position.set(x, vertDistance, z);\r\n            this.cameras[i].lookAt(0, 0, 0);\r\n        }\r\n        \r\n        // Create reusable lights\r\n        this.ambientLight = new THREE.AmbientLight(0xffaaff, .25);\r\n        \r\n        // Create a light group that will rotate with each camera view\r\n        this.lightGroup = new THREE.Group();\r\n        \r\n        // Main directional light\r\n        this.directionalLight = new THREE.DirectionalLight(0xffffaa, .7);\r\n        this.directionalLight.position.set(75, 96, 75);\r\n        this.directionalLight.castShadow = true;\r\n        this.directionalLight.shadow.mapSize.width = 1024;\r\n        this.directionalLight.shadow.mapSize.height = 1024;\r\n        this.directionalLight.shadow.camera.near = 0.5;\r\n        this.directionalLight.shadow.camera.far = 500;\r\n        this.directionalLight.shadow.bias = -0.0005;\r\n        this.directionalLight.shadow.normalBias = 0.02;\r\n        this.directionalLight.shadow.radius = 1;\r\n        this.lightGroup.add(this.directionalLight);\r\n        \r\n        // Fill light\r\n        this.fillLight = new THREE.DirectionalLight(0xffaaff, .5);\r\n        this.fillLight.position.set(-20, 30, -20);\r\n        this.lightGroup.add(this.fillLight);\r\n        \r\n        // Create ground plane\r\n        const groundGeometry = new THREE.PlaneGeometry(200, 200);\r\n        const groundMaterial = new THREE.ShadowMaterial({ opacity: 0.3 });\r\n        this.ground = new THREE.Mesh(groundGeometry, groundMaterial);\r\n        this.ground.rotation.x = -Math.PI / 2;\r\n        this.ground.position.y = 0;\r\n        this.ground.receiveShadow = true;\r\n    }\r\n\r\n    clear() {\r\n        images = {};\r\n    }\r\n\r\n    dispose() {\r\n        // Proper cleanup when the manager is no longer needed\r\n        if (this.renderer) {\r\n            this.renderer.dispose();\r\n            this.renderer = null;\r\n        }\r\n        if (this.renderTarget) {\r\n            this.renderTarget.dispose();\r\n            this.renderTarget = null;\r\n        }\r\n        if (this.ground && this.ground.geometry) {\r\n            this.ground.geometry.dispose();\r\n            this.ground.material.dispose();\r\n        }\r\n        // Dispose of other reusable resources\r\n        this.cameras = [];\r\n        this.scene = null;\r\n        this.lightGroup = null;\r\n        this.ambientLight = null;\r\n    }\r\n\r\n    async loadImages(prefix, config, checkCache = true, cacheResult = true) {\r\n        if (!prefix || !config || typeof config !== 'object') {\r\n            throw new Error('Invalid prefix or config provided to loadImages');\r\n        }\r\n        if( checkCache ) {\r\n            const cachedImages = await this.checkCache(prefix);\r\n            if (cachedImages) {\r\n                this.images = { ...this.images, ...cachedImages };\r\n                return;\r\n            }\r\n        }\r\n    \r\n        for (const [type, cfg] of Object.entries(config)) {\r\n            if (cfg.render && cfg.render.animations) {\r\n                this.images[`${prefix}_${type}`] = await this.createAnimatedPlaceholder(cfg);\r\n            } else if (cfg.tileMap && cfg.tileMap.terrainTypes) {\r\n                this.images[`${prefix}_${type}`] = await this.createTerrainImages(cfg);\r\n            }\r\n        }\r\n        if(cacheResult) {\r\n            await this.cacheImages(prefix);\r\n        }\r\n    }\r\n    \r\n    async checkCache(prefix) {\r\n        try {\r\n            const response = await fetch(`cache/${prefix}.json`);\r\n            if (response.ok) {\r\n                const cacheData = await response.json();\r\n                // Convert base64 cached images back to canvases\r\n                return await this.convertBase64ToCanvases(cacheData.images);\r\n            }\r\n            return null;\r\n        } catch (error) {\r\n            return null;\r\n        }\r\n    }\r\n\r\n    async convertBase64ToCanvases(cachedImages) {\r\n        const convertedImages = {};\r\n        \r\n        for (const [key, value] of Object.entries(cachedImages)) {\r\n            if (Array.isArray(value)) {\r\n                // Handle terrain tiles\r\n                convertedImages[key] = await Promise.all(value.map(async (terrain) => {\r\n                    const sprites = await Promise.all(terrain.sprites.map(async (base64) => {\r\n                        const canvas = document.createElement('canvas');\r\n                        canvas.width = canvas.height = 24; // Match tileWidth from createTerrainImages\r\n                        const ctx = canvas.getContext('2d');\r\n                        const img = new Image();\r\n                        \r\n                        await new Promise((resolve, reject) => {\r\n                            img.onload = () => {\r\n                                ctx.drawImage(img, 0, 0);\r\n                                resolve();\r\n                            };\r\n                            img.onerror = reject;\r\n                            img.src = base64;\r\n                        });\r\n                        \r\n                        return canvas;\r\n                    }));\r\n                    \r\n                    return {\r\n                        type: terrain.type,\r\n                        sprites\r\n                    };\r\n                }));\r\n            } else if (typeof value === 'object') {\r\n                // Handle animations\r\n                const animations = {};\r\n                for (const [animType, frames] of Object.entries(value)) {\r\n                    animations[animType] = await Promise.all(frames.map(async (frameSet) => {\r\n                        return Promise.all(frameSet.map(async (base64) => {\r\n                            const canvas = document.createElement('canvas');\r\n                            canvas.width = canvas.height = this.imageSize;\r\n                            const ctx = canvas.getContext('2d');\r\n                            const img = new Image();\r\n                            \r\n                            await new Promise((resolve, reject) => {\r\n                                img.onload = () => {\r\n                                    ctx.drawImage(img, 0, 0);\r\n                                    resolve();\r\n                                };\r\n                                img.onerror = reject;\r\n                                img.src = base64;\r\n                            });\r\n                            \r\n                            return canvas;\r\n                        }));\r\n                    }));\r\n                }\r\n                convertedImages[key] = animations;\r\n            }\r\n        }\r\n        \r\n        return convertedImages;\r\n    }\r\n    async cacheImages(prefix) {\r\n        const base64Images = {};\r\n        \r\n        for (const [key, value] of Object.entries(this.images)) {\r\n            if (key.startsWith(prefix)) {\r\n                if (Array.isArray(value) && value[0]?.type && value[0]?.sprites) {\r\n                    // Handle terrain tiles\r\n                    base64Images[key] = value.map(terrain => ({\r\n                        type: terrain.type,\r\n                        sprites: terrain.sprites.map(canvas => canvas.toDataURL('image/png'))\r\n                    }));\r\n                } else if (typeof value === 'object' && value !== null) {\r\n                    // Handle animations\r\n                    const animationData = {};\r\n                    for (const [animType, frames] of Object.entries(value)) {\r\n                        animationData[animType] = frames.map(frameSet => \r\n                            frameSet.map(canvas => canvas.toDataURL('image/png'))\r\n                        );\r\n                    }\r\n                    base64Images[key] = animationData;\r\n                }\r\n            }\r\n        }\r\n\r\n        try {\r\n            await fetch('/api/cache', {\r\n                method: 'POST',\r\n                headers: {\r\n                    'Content-Type': 'application/json',\r\n                },\r\n                body: JSON.stringify({\r\n                    prefix,\r\n                    images: base64Images\r\n                })\r\n            });\r\n        } catch (error) {\r\n            console.error('Error caching images:', error);\r\n        }\r\n    }\r\n    // In the ImageManager class\r\n    async createTerrainImages(config) {\r\n        let terrainTiles = [];\r\n        const tileWidth = 24;\r\n\r\n        // Create a map of terrain type to its image data first\r\n        const terrainMap = {};\r\n        \r\n        await Promise.all(config.tileMap.terrainTypes.map(async (terrainType, terrainIndex) => {\r\n            const pixelData = terrainType.image;\r\n            if (pixelData && pixelData.length > 0) {\r\n                let sprites = new Array(8);\r\n                \r\n                await Promise.all(pixelData.map(async (imagePixelData, spriteIdx) => {\r\n                    const img = new Image();\r\n                    const canvas = document.createElement('canvas');\r\n                    canvas.width = canvas.height = tileWidth;\r\n                    const ctx = canvas.getContext('2d');\r\n\r\n                    if (!imagePixelData.startsWith('data:image/')) {\r\n                        imagePixelData = 'data:image/png;base64,' + imagePixelData;\r\n                    }\r\n                    img.src = imagePixelData;\r\n\r\n                    await new Promise((resolve, reject) => {\r\n                        img.onload = () => {\r\n                            ctx.drawImage(img, 0, 0);\r\n                            sprites[spriteIdx] = canvas;\r\n                            resolve();\r\n                        };\r\n                        img.onerror = () => {\r\n                            console.error(`Failed to load image for ${terrainType.type} at index ${spriteIdx}`);\r\n                            sprites[spriteIdx] = canvas; // Store empty canvas on error\r\n                            resolve(); // Don't reject, just move on\r\n                        };\r\n                    });\r\n                }));\r\n\r\n                // Store by index and type for more reliable lookup\r\n                terrainTiles[terrainIndex] = { \r\n                    type: terrainType.type,\r\n                    sprites: sprites \r\n                };\r\n            } else {\r\n                // Create a solid color placeholder for types without images\r\n                const sprites = new Array(8).fill().map(() => {\r\n                    const canvas = document.createElement('canvas');\r\n                    canvas.width = canvas.height = tileWidth;\r\n                    const ctx = canvas.getContext('2d');\r\n                    ctx.fillStyle = terrainType.color || '#cccccc';\r\n                    ctx.fillRect(0, 0, tileWidth, tileWidth);\r\n                    return canvas;\r\n                });\r\n                \r\n                terrainTiles[terrainIndex] = {\r\n                    type: terrainType.type,\r\n                    sprites: sprites\r\n                };\r\n            }\r\n        }));\r\n\r\n        // Make sure there are no gaps in the array\r\n        return terrainTiles.filter(Boolean);\r\n    }\r\n    async createAnimatedPlaceholder(config) {\r\n        const animations = {};\r\n        \r\n        if(config.shadows === false) {\r\n            this.ground.receiveShadow = false;\r\n        } else {\r\n            this.ground.receiveShadow = true;\r\n        }\r\n        for (const [animType, frames] of Object.entries(config.render.animations)) {\r\n            animations[animType] = [];\r\n            let i = 0;\r\n            for (const frame of frames) {\r\n                const frameImages = await this.captureObjectImagesFromJSON(frame);\r\n                const canvases = frameImages.map(img => {\r\n                    const canvas = document.createElement('canvas');\r\n                    canvas.width = canvas.height = this.imageSize;\r\n                    const ctx = canvas.getContext('2d');\r\n                    ctx.drawImage(img, 0, 0);\r\n                    return canvas;\r\n                });                \r\n                animations[animType].push(canvases); // Array of 8 canvases per frame\r\n            }\r\n        }\r\n        return animations; // { \"idle\": [[canvas0, canvas1, canvas2, canvas3, ...], ...], \"walk\": [...] }\r\n    }\r\n\r\n    getImages(prefix, type) {\r\n        return this.images[`${prefix}_${type}`]; // Returns animation object\r\n    }\r\n    async captureObjectImagesFromJSON(shapeData) {\r\n        const size = this.imageSize;\r\n        // Clear the scene\r\n        while (this.scene.children.length > 0) {\r\n            const object = this.scene.children[0];\r\n            this.scene.remove(object);\r\n        }\r\n        \r\n        // Add reusable elements to scene\r\n        this.scene.add(this.ground);\r\n        this.scene.add(this.ambientLight);\r\n        this.scene.add(this.lightGroup);\r\n        \r\n        // Create objects from the JSON data\r\n        const objectGroup = await this.createObjectsFromJSON(shapeData, this.scene);\r\n\r\n        \r\n        const images = [];\r\n        \r\n        // For each camera view, rotate the light group to match camera orientation\r\n        for (let i = 0; i < this.cameras.length; i++) {\r\n            const camera = this.cameras[i];\r\n            \r\n            // Reset light group rotation\r\n            this.lightGroup.rotation.set(0, 0, 0);\r\n            \r\n            // Rotate light group to match camera position\r\n            // Calculate angle based on camera index (8 positions at 45-degree intervals)\r\n            // Rotate 45 degrees CLOCKWISE (subtract π/4 instead of adding)\r\n            const angle = (i * Math.PI / 4); \r\n            this.lightGroup.rotation.y = angle;\r\n            \r\n            // Before rendering with each camera, update shadow camera frustum\r\n            const d = 100;\r\n            this.directionalLight.shadow.camera.left = -d;\r\n            this.directionalLight.shadow.camera.right = d;\r\n            this.directionalLight.shadow.camera.top = d;\r\n            this.directionalLight.shadow.camera.bottom = -d;\r\n            // After rotating lightGroup in the camera loop\r\n            this.directionalLight.shadow.camera.updateProjectionMatrix();\r\n            this.directionalLight.shadow.camera.updateMatrixWorld();\r\n            this.directionalLight.target.position.set(0, 0, 0);\r\n            this.directionalLight.target.updateMatrixWorld();\r\n            // Render and capture the image\r\n            this.renderer.setRenderTarget(this.renderTarget);\r\n            this.renderer.render(this.scene, camera);\r\n            const buffer = new Uint8Array(size * size * 4);\r\n            this.renderer.readRenderTargetPixels(this.renderTarget, 0, 0, size, size, buffer);\r\n            \r\n            // Flip the buffer (y-axis)\r\n            const flippedBuffer = new Uint8Array(size * size * 4);\r\n            for (let y = 0; y < size; y++) {\r\n                const srcRowStart = y * size * 4;\r\n                const destRowStart = (size - 1 - y) * size * 4;\r\n                flippedBuffer.set(buffer.subarray(srcRowStart, srcRowStart + size * 4), destRowStart);\r\n            }\r\n            \r\n            const imageData = new ImageData(new Uint8ClampedArray(flippedBuffer), size, size);\r\n            const imageBitmap = await createImageBitmap(imageData);\r\n            images.push(imageBitmap);\r\n        }\r\n        if( this.renderer) this.renderer.setRenderTarget(null);\r\n        \r\n        // Cleanup object geometries and materials\r\n        this.shapeFactory.disposeObject(objectGroup);\r\n        \r\n        // Remove object group from scene\r\n        if( this.scene ) this.scene.remove(objectGroup);\r\n        \r\n        return images;\r\n    }\r\n\r\n    /**\r\n     * Creates 3D objects from shape data.\r\n     * @param {Object} frameData - The JSON object containing frame definitions.\r\n     * @returns {THREE.Group} - A group containing all 3D objects.\r\n     */\r\n  \r\n    async createObjectsFromJSON(frameData, scene) {\r\n        const rootGroup = new THREE.Group();\r\n        \r\n        for(const groupName in frameData) {\r\n            const group = await this.shapeFactory.createGroupFromJSON(frameData[groupName]);\r\n            group.traverse((child) => {\r\n                if (child.isMesh) {\r\n                    child.castShadow = true; // or set this selectively for objects that should cast shadows\r\n                    child.receiveShadow = true; // for objects that should receive shadows\r\n                }\r\n            });\r\n            rootGroup.add(group);\r\n        }\r\n\r\n        scene.add(rootGroup);\r\n    \r\n        return rootGroup;\r\n    }\r\n   \r\n}\r\n",
+        "script": "\r\nclass ImageManager {\r\n    constructor(app, {imageSize}, {ShapeFactory}) {\r\n        this.app = app;\r\n        this.images = {};\r\n        this.imageSize = imageSize || 128;\r\n        // Create a single reusable renderer\r\n        this.renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });\r\n        this.renderer.setSize(this.imageSize, this.imageSize);\r\n        this.renderer.shadowMap.enabled = true;\r\n        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;\r\n        \r\n        this.renderTarget = new THREE.WebGLRenderTarget(this.imageSize, this.imageSize);\r\n        this.renderTarget.texture.flipY = true;\r\n        \r\n        // Create reusable scene\r\n        this.scene = new THREE.Scene();\r\n        \r\n        // Create reusable cameras for different views\r\n        const cameraDistance = 64;\r\n        const frustumSize = cameraDistance + 16;\r\n        const aspect = 1;\r\n\r\n        this.shapeFactory = new ShapeFactory();\r\n        // Create 8 cameras for isometric views at 45-degree intervals\r\n        this.cameras = [];\r\n        for (let i = 0; i < 8; i++) {\r\n            this.cameras.push(new THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000));\r\n        }\r\n        \r\n        // Position cameras in a circle around the y-axis at isometric angle\r\n        // Standard isometric angle is about 35.264 degrees (arctan(1/sqrt(2)))\r\n        const isoAngle = Math.atan(1 / Math.sqrt(2));\r\n        const horizDistance = cameraDistance * Math.cos(isoAngle);\r\n        const vertDistance = cameraDistance * Math.sin(isoAngle);\r\n        \r\n        for (let i = 0; i < 8; i++) {\r\n            const angle = (i * Math.PI / 4); // 45-degree increments\r\n            const x = horizDistance * Math.sin(angle);\r\n            const z = horizDistance * Math.cos(angle);\r\n            \r\n            this.cameras[i].position.set(x, vertDistance, z);\r\n            this.cameras[i].lookAt(0, 0, 0);\r\n        }\r\n        \r\n        // Create reusable lights\r\n        this.ambientLight = new THREE.AmbientLight(0xffaaff, .25);\r\n        \r\n        // Create a light group that will rotate with each camera view\r\n        this.lightGroup = new THREE.Group();\r\n        \r\n        // Main directional light\r\n        this.directionalLight = new THREE.DirectionalLight(0xffffaa, .7);\r\n        this.directionalLight.position.set(75, 96, 75);\r\n        this.directionalLight.castShadow = true;\r\n        this.directionalLight.shadow.mapSize.width = 1024;\r\n        this.directionalLight.shadow.mapSize.height = 1024;\r\n        this.directionalLight.shadow.camera.near = 0.5;\r\n        this.directionalLight.shadow.camera.far = 500;\r\n        this.directionalLight.shadow.bias = -0.0005;\r\n        this.directionalLight.shadow.normalBias = 0.02;\r\n        this.directionalLight.shadow.radius = 1;\r\n        this.lightGroup.add(this.directionalLight);\r\n        \r\n        // Fill light\r\n        this.fillLight = new THREE.DirectionalLight(0xffaaff, .5);\r\n        this.fillLight.position.set(-20, 30, -20);\r\n        this.lightGroup.add(this.fillLight);\r\n        \r\n        // Create ground plane\r\n        const groundGeometry = new THREE.PlaneGeometry(200, 200);\r\n        const groundMaterial = new THREE.ShadowMaterial({ opacity: 0.3 });\r\n        this.ground = new THREE.Mesh(groundGeometry, groundMaterial);\r\n        this.ground.rotation.x = -Math.PI / 2;\r\n        this.ground.position.y = 0;\r\n        this.ground.receiveShadow = true;\r\n    }\r\n\r\n    clear() {\r\n        images = {};\r\n    }\r\n\r\n    dispose() {\r\n        // Proper cleanup when the manager is no longer needed\r\n        if (this.renderer) {\r\n            this.renderer.dispose();\r\n            this.renderer = null;\r\n        }\r\n        if (this.renderTarget) {\r\n            this.renderTarget.dispose();\r\n            this.renderTarget = null;\r\n        }\r\n        if (this.ground && this.ground.geometry) {\r\n            this.ground.geometry.dispose();\r\n            this.ground.material.dispose();\r\n        }\r\n        // Dispose of other reusable resources\r\n        this.cameras = [];\r\n        this.scene = null;\r\n        this.lightGroup = null;\r\n        this.ambientLight = null;\r\n    }\r\n\r\n    async loadImages(prefix, config, checkCache = true, cacheResult = true) {\r\n        if (!prefix || !config || typeof config !== 'object') {\r\n            throw new Error('Invalid prefix or config provided to loadImages');\r\n        }\r\n        if( checkCache ) {\r\n            const cachedImages = await this.checkCache(prefix);\r\n            if (cachedImages) {\r\n                this.images = { ...this.images, ...cachedImages };\r\n                return;\r\n            }\r\n        }\r\n    \r\n        for (const [type, cfg] of Object.entries(config)) {\r\n            if (cfg.render && cfg.render.animations) {\r\n                this.images[`${prefix}_${type}`] = await this.createAnimatedPlaceholder(cfg);\r\n            } else if (cfg.tileMap && cfg.tileMap.terrainTypes) {\r\n                this.images[`${prefix}_${type}`] = await this.createTerrainImages(cfg);\r\n            }\r\n        }\r\n        if(cacheResult) {\r\n            await this.cacheImages(prefix);\r\n        }\r\n    }\r\n    \r\n    async checkCache(prefix) {\r\n        try {\r\n            const response = await fetch(`cache/${prefix}.json`);\r\n            if (response.ok) {\r\n                const cacheData = await response.json();\r\n                // Convert base64 cached images back to canvases\r\n                return await this.convertBase64ToCanvases(cacheData.images);\r\n            }\r\n            return null;\r\n        } catch (error) {\r\n            return null;\r\n        }\r\n    }\r\n\r\n    async convertBase64ToCanvases(cachedImages) {\r\n        const convertedImages = {};\r\n        \r\n        for (const [key, value] of Object.entries(cachedImages)) {\r\n            if (Array.isArray(value)) {\r\n                // Handle terrain tiles\r\n                convertedImages[key] = await Promise.all(value.map(async (terrain) => {\r\n                    const sprites = await Promise.all(terrain.sprites.map(async (base64) => {\r\n                        const canvas = document.createElement('canvas');\r\n                        canvas.width = canvas.height = 24; // Match tileWidth from createTerrainImages\r\n                        const ctx = canvas.getContext('2d');\r\n                        const img = new Image();\r\n                        \r\n                        await new Promise((resolve, reject) => {\r\n                            img.onload = () => {\r\n                                ctx.drawImage(img, 0, 0);\r\n                                resolve();\r\n                            };\r\n                            img.onerror = reject;\r\n                            img.src = base64;\r\n                        });\r\n                        \r\n                        return canvas;\r\n                    }));\r\n                    \r\n                    return {\r\n                        type: terrain.type,\r\n                        sprites\r\n                    };\r\n                }));\r\n            } else if (typeof value === 'object') {\r\n                // Handle animations\r\n                const animations = {};\r\n                for (const [animType, frames] of Object.entries(value)) {\r\n                    animations[animType] = await Promise.all(frames.map(async (frameSet) => {\r\n                        return Promise.all(frameSet.map(async (base64) => {\r\n                            const canvas = document.createElement('canvas');\r\n                            canvas.width = canvas.height = this.imageSize;\r\n                            const ctx = canvas.getContext('2d');\r\n                            const img = new Image();\r\n                            \r\n                            await new Promise((resolve, reject) => {\r\n                                img.onload = () => {\r\n                                    ctx.drawImage(img, 0, 0);\r\n                                    resolve();\r\n                                };\r\n                                img.onerror = reject;\r\n                                img.src = base64;\r\n                            });\r\n                            \r\n                            return canvas;\r\n                        }));\r\n                    }));\r\n                }\r\n                convertedImages[key] = animations;\r\n            }\r\n        }\r\n        \r\n        return convertedImages;\r\n    }\r\n    async cacheImages(prefix) {\r\n        const base64Images = {};\r\n        \r\n        for (const [key, value] of Object.entries(this.images)) {\r\n            if (key.startsWith(prefix)) {\r\n                if (Array.isArray(value) && value[0]?.type && value[0]?.sprites) {\r\n                    // Handle terrain tiles\r\n                    base64Images[key] = value.map(terrain => ({\r\n                        type: terrain.type,\r\n                        sprites: terrain.sprites.map(canvas => canvas.toDataURL('image/png'))\r\n                    }));\r\n                } else if (typeof value === 'object' && value !== null) {\r\n                    // Handle animations\r\n                    const animationData = {};\r\n                    for (const [animType, frames] of Object.entries(value)) {\r\n                        animationData[animType] = frames.map(frameSet => \r\n                            frameSet.map(canvas => canvas.toDataURL('image/png'))\r\n                        );\r\n                    }\r\n                    base64Images[key] = animationData;\r\n                }\r\n            }\r\n        }\r\n\r\n        try {\r\n            await fetch('/api/cache', {\r\n                method: 'POST',\r\n                headers: {\r\n                    'Content-Type': 'application/json',\r\n                },\r\n                body: JSON.stringify({\r\n                    prefix,\r\n                    images: base64Images\r\n                })\r\n            });\r\n        } catch (error) {\r\n            console.error('Error caching images:', error);\r\n        }\r\n    }\r\n    // In the ImageManager class\r\n    async createTerrainImages(config) {\r\n        let terrainTiles = [];\r\n        const tileWidth = 24;\r\n\r\n        // Create a map of terrain type to its image data first\r\n        const terrainMap = {};\r\n        \r\n        await Promise.all(config.tileMap.terrainTypes.map(async (terrainType, terrainIndex) => {\r\n            const pixelData = terrainType.image;\r\n            if (pixelData && pixelData.length > 0) {\r\n                let sprites = new Array(8);\r\n                \r\n                await Promise.all(pixelData.map(async (imagePixelData, spriteIdx) => {\r\n                    const img = new Image();\r\n                    const canvas = document.createElement('canvas');\r\n                    canvas.width = canvas.height = tileWidth;\r\n                    const ctx = canvas.getContext('2d');\r\n\r\n                    if (!imagePixelData.startsWith('data:image/')) {\r\n                        imagePixelData = 'data:image/png;base64,' + imagePixelData;\r\n                    }\r\n                    img.src = imagePixelData;\r\n\r\n                    await new Promise((resolve, reject) => {\r\n                        img.onload = () => {\r\n                            ctx.drawImage(img, 0, 0);\r\n                            sprites[spriteIdx] = canvas;\r\n                            resolve();\r\n                        };\r\n                        img.onerror = () => {\r\n                            console.error(`Failed to load image for ${terrainType.type} at index ${spriteIdx}`);\r\n                            sprites[spriteIdx] = canvas; // Store empty canvas on error\r\n                            resolve(); // Don't reject, just move on\r\n                        };\r\n                    });\r\n                }));\r\n\r\n                // Store by index and type for more reliable lookup\r\n                terrainTiles[terrainIndex] = { \r\n                    type: terrainType.type,\r\n                    sprites: sprites \r\n                };\r\n            } else {\r\n                // Create a solid color placeholder for types without images\r\n                const sprites = new Array(8).fill().map(() => {\r\n                    const canvas = document.createElement('canvas');\r\n                    canvas.width = canvas.height = tileWidth;\r\n                    const ctx = canvas.getContext('2d');\r\n                    ctx.fillStyle = terrainType.color || '#cccccc';\r\n                    ctx.fillRect(0, 0, tileWidth, tileWidth);\r\n                    return canvas;\r\n                });\r\n                \r\n                terrainTiles[terrainIndex] = {\r\n                    type: terrainType.type,\r\n                    sprites: sprites\r\n                };\r\n            }\r\n        }));\r\n\r\n        // Make sure there are no gaps in the array\r\n        return terrainTiles.filter(Boolean);\r\n    }\r\n    async createAnimatedPlaceholder(config) {\r\n        const animations = {};\r\n        \r\n        if(config.shadows === false) {\r\n            this.ground.receiveShadow = false;\r\n        } else {\r\n            this.ground.receiveShadow = true;\r\n        }\r\n        for (const [animType, frames] of Object.entries(config.render.animations)) {\r\n            animations[animType] = [];\r\n            let i = 0;\r\n            for (const frame of frames) {\r\n                const frameImages = await this.captureObjectImagesFromJSON(config.render.model, frame);\r\n                const canvases = frameImages.map(img => {\r\n                    const canvas = document.createElement('canvas');\r\n                    canvas.width = canvas.height = this.imageSize;\r\n                    const ctx = canvas.getContext('2d');\r\n                    ctx.drawImage(img, 0, 0);\r\n                    return canvas;\r\n                });                \r\n                animations[animType].push(canvases); // Array of 8 canvases per frame\r\n            }\r\n        }\r\n        return animations; // { \"idle\": [[canvas0, canvas1, canvas2, canvas3, ...], ...], \"walk\": [...] }\r\n    }\r\n\r\n    getImages(prefix, type) {\r\n        return this.images[`${prefix}_${type}`]; // Returns animation object\r\n    }\r\n    async captureObjectImagesFromJSON(model, frameData) {\r\n        const size = this.imageSize;\r\n        // Clear the scene\r\n        while (this.scene.children.length > 0) {\r\n            const object = this.scene.children[0];\r\n            this.scene.remove(object);\r\n        }\r\n        \r\n        // Add reusable elements to scene\r\n        this.scene.add(this.ground);\r\n        this.scene.add(this.ambientLight);\r\n        this.scene.add(this.lightGroup);\r\n        \r\n        // Create objects from the JSON data\r\n        const objectGroup = await this.createObjectsFromJSON(model, frameData, this.scene);\r\n\r\n        \r\n        const images = [];\r\n        \r\n        // For each camera view, rotate the light group to match camera orientation\r\n        for (let i = 0; i < this.cameras.length; i++) {\r\n            const camera = this.cameras[i];\r\n            \r\n            // Reset light group rotation\r\n            this.lightGroup.rotation.set(0, 0, 0);\r\n            \r\n            // Rotate light group to match camera position\r\n            // Calculate angle based on camera index (8 positions at 45-degree intervals)\r\n            // Rotate 45 degrees CLOCKWISE (subtract π/4 instead of adding)\r\n            const angle = (i * Math.PI / 4); \r\n            this.lightGroup.rotation.y = angle;\r\n            \r\n            // Before rendering with each camera, update shadow camera frustum\r\n            const d = 100;\r\n            this.directionalLight.shadow.camera.left = -d;\r\n            this.directionalLight.shadow.camera.right = d;\r\n            this.directionalLight.shadow.camera.top = d;\r\n            this.directionalLight.shadow.camera.bottom = -d;\r\n            // After rotating lightGroup in the camera loop\r\n            this.directionalLight.shadow.camera.updateProjectionMatrix();\r\n            this.directionalLight.shadow.camera.updateMatrixWorld();\r\n            this.directionalLight.target.position.set(0, 0, 0);\r\n            this.directionalLight.target.updateMatrixWorld();\r\n            // Render and capture the image\r\n            this.renderer.setRenderTarget(this.renderTarget);\r\n            this.renderer.render(this.scene, camera);\r\n            const buffer = new Uint8Array(size * size * 4);\r\n            this.renderer.readRenderTargetPixels(this.renderTarget, 0, 0, size, size, buffer);\r\n            \r\n            // Flip the buffer (y-axis)\r\n            const flippedBuffer = new Uint8Array(size * size * 4);\r\n            for (let y = 0; y < size; y++) {\r\n                const srcRowStart = y * size * 4;\r\n                const destRowStart = (size - 1 - y) * size * 4;\r\n                flippedBuffer.set(buffer.subarray(srcRowStart, srcRowStart + size * 4), destRowStart);\r\n            }\r\n            \r\n            const imageData = new ImageData(new Uint8ClampedArray(flippedBuffer), size, size);\r\n            const imageBitmap = await createImageBitmap(imageData);\r\n            images.push(imageBitmap);\r\n        }\r\n        if( this.renderer) this.renderer.setRenderTarget(null);\r\n        \r\n        // Cleanup object geometries and materials\r\n        this.shapeFactory.disposeObject(objectGroup);\r\n        \r\n        // Remove object group from scene\r\n        if( this.scene ) this.scene.remove(objectGroup);\r\n        \r\n        return images;\r\n    }\r\n\r\n    /**\r\n     * Creates 3D objects from shape data.\r\n     * @param {Object} frameData - The JSON object containing frame definitions.\r\n     * @returns {THREE.Group} - A group containing all 3D objects.\r\n     */\r\n  \r\n    async createObjectsFromJSON(model, frameData, scene) {\r\n        const rootGroup = new THREE.Group();\r\n        \r\n        for(const groupName in frameData) {\r\n            const group = await this.shapeFactory.createMergedGroupFromJSON(model, frameData, groupName);\r\n            group.traverse((child) => {\r\n                if (child.isMesh) {\r\n                    child.castShadow = true; // or set this selectively for objects that should cast shadows\r\n                    child.receiveShadow = true; // for objects that should receive shadows\r\n                }\r\n            });\r\n            rootGroup.add(group);\r\n        }\r\n\r\n        scene.add(rootGroup);\r\n    \r\n        return rootGroup;\r\n    }\r\n   \r\n}\r\n",
         "fileName": "ImageManager"
       },
       "SpatialGrid": {
@@ -24840,7 +26997,7 @@ const DEFAULT_PROJECT_CONFIG = {
       "GE_SceneRenderer": {
         "title": "GE_SceneRenderer",
         "fileName": "GE_SceneRenderer",
-        "script": "class GE_SceneRenderer {\r\n    constructor(gameEditor, graphicsEditor) {\r\n        this.gameEditor = gameEditor;\r\n        this.graphicsEditor = graphicsEditor;\r\n        this.scene = null;\r\n        this.camera = null;\r\n        this.renderer = null;\r\n        this.controls = null;\r\n    }    \r\n\r\n    init() {        \r\n        this.initThreeJS();\r\n        this.initEventListeners();\r\n    }\r\n    initEventListeners() {\r\n        document.body.addEventListener('renderGraphicsObject', this.handleRenderObject.bind(this));\r\n        document.body.addEventListener('resizedEditor', () => { \r\n            console.log('resized');\r\n            this.graphicsEditor.canvas.width = this.gameEditor.getCollections().configs.game.canvasWidth;\r\n            this.graphicsEditor.canvas.height = this.gameEditor.getCollections().configs.game.canvasHeight;\r\n            this.graphicsEditor.canvas.setAttribute('style','');\r\n            this.handleResize();  \r\n            this.graphicsEditor.refreshShapes(false); \r\n        });\r\n        document.getElementById('iso-generate').addEventListener('click', this.generateIsometricSprites.bind(this));\r\n    }\r\n    initThreeJS() {\r\n        // Scene setup\r\n        this.scene = new window.THREE.Scene();\r\n        \r\n        // Add the root group to the scene\r\n        this.scene.add(this.graphicsEditor.rootGroup);\r\n\r\n        // Camera setup\r\n        this.camera = new window.THREE.PerspectiveCamera(\r\n            75, \r\n            this.graphicsEditor.canvas.clientWidth / this.graphicsEditor.canvas.clientHeight, \r\n            0.1, \r\n            1000\r\n        );\r\n        this.camera.position.set(100, 100, 100);\r\n        this.camera.lookAt(0, 0, 0);\r\n\r\n        // Renderer setup\r\n        this.renderer = new window.THREE.WebGLRenderer({ \r\n            canvas: this.graphicsEditor.canvas, \r\n            antialias: false, \r\n            alpha: true \r\n        });\r\n        this.renderer.setSize(this.graphicsEditor.canvas.clientWidth, this.graphicsEditor.canvas.clientHeight);\r\n\r\n        // Add helpers\r\n        const gridHelper = new window.THREE.GridHelper(100, 100);\r\n        this.scene.add(gridHelper);\r\n\r\n        const axesHelper = new window.THREE.AxesHelper(5);\r\n        this.scene.add(axesHelper);\r\n\r\n        // Orbit controls\r\n        this.controls = new window.THREE.OrbitControls(this.camera, this.renderer.domElement);\r\n        this.controls.enableDamping = true;\r\n        this.controls.dampingFactor = 0.25;\r\n\r\n        // Resize handling\r\n        window.addEventListener('resize', this.handleResize.bind(this));\r\n    }\r\n    \r\n    handleResize() {\r\n        this.camera.aspect = this.graphicsEditor.canvas.clientWidth / this.graphicsEditor.canvas.clientHeight;\r\n        this.camera.updateProjectionMatrix();\r\n        this.renderer.setSize(this.graphicsEditor.canvas.clientWidth, this.graphicsEditor.canvas.clientHeight);\r\n    }\r\n    \r\n    handleRenderObject(event) {\r\n        this.graphicsEditor.canvas.width = this.gameEditor.getCollections().configs.game.canvasWidth;\r\n        this.graphicsEditor.canvas.height = this.gameEditor.getCollections().configs.game.canvasHeight;\r\n        this.graphicsEditor.canvas.setAttribute('style','');\r\n        this.graphicsEditor.setPreviewAnimationState(false);\r\n        this.graphicsEditor.state.renderData = event.detail.data;\r\n        document.getElementById('json-content').value = JSON.stringify(this.graphicsEditor.state.renderData, null, 2);\r\n        \r\n        // Safely get first animation name\r\n        let model = this.graphicsEditor.state.renderData.model;        \r\n        if(!model) {\r\n            this.graphicsEditor.state.renderData.model = JSON.parse(JSON.stringify(this.graphicsEditor.state.renderData.animations['idle'][0])); // Deep copy\r\n            model = this.graphicsEditor.state.renderData.model;\r\n        }\r\n        this.graphicsEditor.state.currentAnimation = \"\";\r\n        \r\n        // Safely get first frame's shapes\r\n        const firstGroup = Object.keys(model)[0];\r\n        const shapes = model[firstGroup].shapes || [];\r\n        this.graphicsEditor.state.currentGroup = firstGroup;\r\n        this.graphicsEditor.state.selectedShapeIndex = shapes.length > 0 ? 0 : -1;\r\n        this.handleResize();\r\n        this.graphicsEditor.refreshShapes(false);\r\n    }\r\n\r\n\r\n    animate() {\r\n        requestAnimationFrame(this.animate.bind(this));\r\n        this.controls.update();\r\n        this.renderer.render(this.scene, this.camera);\r\n    }\r\n\r\n    async createObjectsFromJSON(frameData, scene) {\r\n        for(const groupName in frameData) {\r\n            const group = await this.graphicsEditor.shapeFactory.createGroupFromJSON(frameData[groupName]);\r\n            scene.add(group);\r\n        }\r\n    }\r\n\r\n    \r\n    async generateIsometricSprites() {\r\n        const frustumSize = parseFloat(document.getElementById('iso-frustum').value) || 48;\r\n        const cameraDistance = parseFloat(document.getElementById('iso-distance').value) || 100;\r\n        const size = parseFloat(document.getElementById('iso-size').value) || 64;\r\n        const aspect = 1;\r\n        const tempRenderer = new window.THREE.WebGLRenderer({ antialias: false, alpha: true });\r\n        tempRenderer.setSize(size, size);\r\n        document.getElementById('modal-generateIsoSprites').classList.remove('show');\r\n    \r\n        const renderTarget = new window.THREE.WebGLRenderTarget(size, size);\r\n        const cameras = [\r\n            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),\r\n            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),\r\n            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),\r\n            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),\r\n            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),\r\n            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),\r\n            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),\r\n            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000)\r\n        ];\r\n    \r\n        // Position cameras at 8 angles (45° increments)\r\n        cameras[0].position.set(cameraDistance, cameraDistance, cameraDistance);           // NE up\r\n        cameras[1].position.set(0, cameraDistance, cameraDistance);                       // N up\r\n        cameras[2].position.set(-cameraDistance, cameraDistance, cameraDistance);         // NW up\r\n        cameras[3].position.set(-cameraDistance, cameraDistance, 0);                      // W up\r\n        cameras[4].position.set(-cameraDistance, cameraDistance, -cameraDistance);        // SW up\r\n        cameras[5].position.set(0, cameraDistance, -cameraDistance);                      // S up\r\n        cameras[6].position.set(cameraDistance, cameraDistance, -cameraDistance);         // SE up\r\n        cameras[7].position.set(cameraDistance, cameraDistance, 0);                       // E up\r\n        \r\n        cameras.forEach(camera => camera.lookAt(0, 0, 0));\r\n    \r\n        const sprites = {};     \r\n       \r\n        for (const animType in this.graphicsEditor.state.renderData.animations) {\r\n            sprites[animType] = [];\r\n            for (let frameIndex = 0; frameIndex < this.graphicsEditor.state.renderData.animations[animType].length; frameIndex++) {\r\n                const frame = this.graphicsEditor.state.renderData.animations[animType][frameIndex];\r\n                const scene = new window.THREE.Scene();\r\n                \r\n                // Add lights\r\n                const ambientLight = new window.THREE.AmbientLight(0xffffff, 0.8);\r\n                scene.add(ambientLight);\r\n                const directionalLight = new window.THREE.DirectionalLight(0xffffff, 1.0);\r\n                directionalLight.position.set(5, 10, 7.5);\r\n                scene.add(directionalLight);\r\n\r\n                await this.createObjectsFromJSON(frame, scene);\r\n    \r\n                const frameSprites = [];\r\n                for (const camera of cameras) {\r\n                    tempRenderer.setRenderTarget(renderTarget);\r\n                    tempRenderer.render(scene, camera);\r\n                    const buffer = new Uint8Array(size * size * 4);\r\n                    tempRenderer.readRenderTargetPixels(renderTarget, 0, 0, size, size, buffer);\r\n                    const flippedBuffer = new Uint8Array(size * size * 4);\r\n                    for (let y = 0; y < size; y++) {\r\n                        const srcRowStart = y * size * 4;\r\n                        const destRowStart = (size - 1 - y) * size * 4;\r\n                        flippedBuffer.set(buffer.subarray(srcRowStart, srcRowStart + size * 4), destRowStart);\r\n                    }\r\n                    const canvas = document.createElement('canvas');\r\n                    canvas.width = size;\r\n                    canvas.height = size;\r\n                    const ctx = canvas.getContext('2d');\r\n                    const imageData = ctx.createImageData(size, size);\r\n                    imageData.data.set(flippedBuffer);\r\n                    ctx.putImageData(imageData, 0, 0);\r\n                    frameSprites.push(canvas.toDataURL());\r\n                }\r\n                sprites[animType].push(frameSprites);\r\n            }\r\n        }\r\n        tempRenderer.setRenderTarget(null);\r\n        tempRenderer.dispose();\r\n        renderTarget.dispose();\r\n        this.graphicsEditor.displayIsometricSprites(sprites);\r\n    }\r\n}"
+        "script": "class GE_SceneRenderer {\r\n    constructor(gameEditor, graphicsEditor) {\r\n        this.gameEditor = gameEditor;\r\n        this.graphicsEditor = graphicsEditor;\r\n        this.scene = null;\r\n        this.camera = null;\r\n        this.renderer = null;\r\n        this.controls = null;\r\n    }    \r\n\r\n    init() {        \r\n        this.initThreeJS();\r\n        this.initEventListeners();\r\n    }\r\n    initEventListeners() {\r\n        document.body.addEventListener('renderGraphicsObject', this.handleRenderObject.bind(this));\r\n        document.body.addEventListener('resizedEditor', () => { \r\n            console.log('resized');\r\n            this.graphicsEditor.canvas.width = this.gameEditor.getCollections().configs.game.canvasWidth;\r\n            this.graphicsEditor.canvas.height = this.gameEditor.getCollections().configs.game.canvasHeight;\r\n            this.graphicsEditor.canvas.setAttribute('style','');\r\n            this.handleResize();  \r\n            this.graphicsEditor.refreshShapes(false); \r\n        });\r\n        document.getElementById('iso-generate').addEventListener('click', this.generateIsometricSprites.bind(this));\r\n    }\r\n    initThreeJS() {\r\n        // Scene setup\r\n        this.scene = new window.THREE.Scene();\r\n        \r\n        // Add the root group to the scene\r\n        this.scene.add(this.graphicsEditor.rootGroup);\r\n\r\n        // Camera setup\r\n        this.camera = new window.THREE.PerspectiveCamera(\r\n            75, \r\n            this.graphicsEditor.canvas.clientWidth / this.graphicsEditor.canvas.clientHeight, \r\n            0.1, \r\n            1000\r\n        );\r\n        this.camera.position.set(100, 100, 100);\r\n        this.camera.lookAt(0, 0, 0);\r\n\r\n        // Renderer setup\r\n        this.renderer = new window.THREE.WebGLRenderer({ \r\n            canvas: this.graphicsEditor.canvas, \r\n            antialias: false, \r\n            alpha: true \r\n        });\r\n        this.renderer.setSize(this.graphicsEditor.canvas.clientWidth, this.graphicsEditor.canvas.clientHeight);\r\n\r\n        // Add helpers\r\n        const gridHelper = new window.THREE.GridHelper(100, 100);\r\n        this.scene.add(gridHelper);\r\n\r\n        const axesHelper = new window.THREE.AxesHelper(5);\r\n        this.scene.add(axesHelper);\r\n\r\n        // Orbit controls\r\n        this.controls = new window.THREE.OrbitControls(this.camera, this.renderer.domElement);\r\n        this.controls.enableDamping = true;\r\n        this.controls.dampingFactor = 0.25;\r\n\r\n        // Resize handling\r\n        window.addEventListener('resize', this.handleResize.bind(this));\r\n    }\r\n    \r\n    handleResize() {\r\n        this.camera.aspect = this.graphicsEditor.canvas.clientWidth / this.graphicsEditor.canvas.clientHeight;\r\n        this.camera.updateProjectionMatrix();\r\n        this.renderer.setSize(this.graphicsEditor.canvas.clientWidth, this.graphicsEditor.canvas.clientHeight);\r\n    }\r\n    \r\n    handleRenderObject(event) {\r\n        this.graphicsEditor.canvas.width = this.gameEditor.getCollections().configs.game.canvasWidth;\r\n        this.graphicsEditor.canvas.height = this.gameEditor.getCollections().configs.game.canvasHeight;\r\n        this.graphicsEditor.canvas.setAttribute('style','');\r\n        this.graphicsEditor.setPreviewAnimationState(false);\r\n        this.graphicsEditor.state.renderData = event.detail.data;\r\n        document.getElementById('json-content').value = JSON.stringify(this.graphicsEditor.state.renderData, null, 2);\r\n        \r\n        // Safely get first animation name\r\n        let model = this.graphicsEditor.state.renderData.model;        \r\n        if(!model) {\r\n            this.graphicsEditor.state.renderData.model = JSON.parse(JSON.stringify(this.graphicsEditor.state.renderData.animations['idle'][0])); // Deep copy\r\n            model = this.graphicsEditor.state.renderData.model;\r\n        }\r\n        this.graphicsEditor.state.currentAnimation = \"\";\r\n        this.graphicsEditor.state.editingModel = true;\r\n        // Safely get first frame's shapes\r\n        const firstGroup = Object.keys(model)[0];\r\n        const shapes = model[firstGroup].shapes || [];\r\n        this.graphicsEditor.state.currentGroup = firstGroup;\r\n        this.graphicsEditor.state.selectedShapeIndex = shapes.length > 0 ? 0 : -1;\r\n        this.handleResize();\r\n        this.graphicsEditor.refreshShapes(false);\r\n    }\r\n\r\n\r\n    animate() {\r\n        requestAnimationFrame(this.animate.bind(this));\r\n        this.controls.update();\r\n        this.renderer.render(this.scene, this.camera);\r\n    }\r\n\r\n    async createObjectsFromJSON(frameData, scene) {\r\n        for(const groupName in frameData) {\r\n            const group = await this.graphicsEditor.shapeFactory.createGroupFromJSON(frameData[groupName]);\r\n            scene.add(group);\r\n        }\r\n    }\r\n\r\n    \r\n    async generateIsometricSprites() {\r\n        const frustumSize = parseFloat(document.getElementById('iso-frustum').value) || 48;\r\n        const cameraDistance = parseFloat(document.getElementById('iso-distance').value) || 100;\r\n        const size = parseFloat(document.getElementById('iso-size').value) || 64;\r\n        const aspect = 1;\r\n        const tempRenderer = new window.THREE.WebGLRenderer({ antialias: false, alpha: true });\r\n        tempRenderer.setSize(size, size);\r\n        document.getElementById('modal-generateIsoSprites').classList.remove('show');\r\n    \r\n        const renderTarget = new window.THREE.WebGLRenderTarget(size, size);\r\n        const cameras = [\r\n            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),\r\n            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),\r\n            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),\r\n            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),\r\n            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),\r\n            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),\r\n            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),\r\n            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000)\r\n        ];\r\n    \r\n        // Position cameras at 8 angles (45° increments)\r\n        cameras[0].position.set(cameraDistance, cameraDistance, cameraDistance);           // NE up\r\n        cameras[1].position.set(0, cameraDistance, cameraDistance);                       // N up\r\n        cameras[2].position.set(-cameraDistance, cameraDistance, cameraDistance);         // NW up\r\n        cameras[3].position.set(-cameraDistance, cameraDistance, 0);                      // W up\r\n        cameras[4].position.set(-cameraDistance, cameraDistance, -cameraDistance);        // SW up\r\n        cameras[5].position.set(0, cameraDistance, -cameraDistance);                      // S up\r\n        cameras[6].position.set(cameraDistance, cameraDistance, -cameraDistance);         // SE up\r\n        cameras[7].position.set(cameraDistance, cameraDistance, 0);                       // E up\r\n        \r\n        cameras.forEach(camera => camera.lookAt(0, 0, 0));\r\n    \r\n        const sprites = {};     \r\n       \r\n        for (const animType in this.graphicsEditor.state.renderData.animations) {\r\n            sprites[animType] = [];\r\n            for (let frameIndex = 0; frameIndex < this.graphicsEditor.state.renderData.animations[animType].length; frameIndex++) {\r\n                const frame = this.graphicsEditor.state.renderData.animations[animType][frameIndex];\r\n                const scene = new window.THREE.Scene();\r\n                \r\n                // Add lights\r\n                const ambientLight = new window.THREE.AmbientLight(0xffffff, 0.8);\r\n                scene.add(ambientLight);\r\n                const directionalLight = new window.THREE.DirectionalLight(0xffffff, 1.0);\r\n                directionalLight.position.set(5, 10, 7.5);\r\n                scene.add(directionalLight);\r\n\r\n                await this.createObjectsFromJSON(frame, scene);\r\n    \r\n                const frameSprites = [];\r\n                for (const camera of cameras) {\r\n                    tempRenderer.setRenderTarget(renderTarget);\r\n                    tempRenderer.render(scene, camera);\r\n                    const buffer = new Uint8Array(size * size * 4);\r\n                    tempRenderer.readRenderTargetPixels(renderTarget, 0, 0, size, size, buffer);\r\n                    const flippedBuffer = new Uint8Array(size * size * 4);\r\n                    for (let y = 0; y < size; y++) {\r\n                        const srcRowStart = y * size * 4;\r\n                        const destRowStart = (size - 1 - y) * size * 4;\r\n                        flippedBuffer.set(buffer.subarray(srcRowStart, srcRowStart + size * 4), destRowStart);\r\n                    }\r\n                    const canvas = document.createElement('canvas');\r\n                    canvas.width = size;\r\n                    canvas.height = size;\r\n                    const ctx = canvas.getContext('2d');\r\n                    const imageData = ctx.createImageData(size, size);\r\n                    imageData.data.set(flippedBuffer);\r\n                    ctx.putImageData(imageData, 0, 0);\r\n                    frameSprites.push(canvas.toDataURL());\r\n                }\r\n                sprites[animType].push(frameSprites);\r\n            }\r\n        }\r\n        tempRenderer.setRenderTarget(null);\r\n        tempRenderer.dispose();\r\n        renderTarget.dispose();\r\n        this.graphicsEditor.displayIsometricSprites(sprites);\r\n    }\r\n}"
       },
       "GE_ShapeManager": {
         "title": "GE_ShapeManager",
@@ -24849,7 +27006,7 @@ const DEFAULT_PROJECT_CONFIG = {
       },
       "GE_GroupManager": {
         "title": "GE_GroupManager",
-        "script": "class GE_GroupManager {\n    constructor(gameEditor, graphicsEditor) {\n        this.gameEditor = gameEditor;\n        this.graphicsEditor = graphicsEditor;\n        this.DEFAULT_GROUP = {\n            shapes: [],\n            position: { x: 0, y: 0, z: 0 },\n            rotation: { x: 0, y: 0, z: 0 },\n            scale: { x: 1.0, y: 1.0, z: 1.0 }\n        };\n    }\n\n    init() {\n        document.getElementById('create-group').addEventListener('click', this.createGroup.bind(this));\n        document.getElementById('delete-group').addEventListener('click', this.deleteGroup.bind(this));\n        \n       \n        // Update the group list initially\n        this.updateGroupList();\n        \n        // Initialize drag-and-drop\n        this.initDragAndDrop();\n    }\n\n    // Initialize drag and drop functionality\n    initDragAndDrop() {\n        // Make group items drop targets\n        const groupList = document.getElementById('group-list');\n        groupList.addEventListener('dragover', this.handleDragOver.bind(this));\n        groupList.addEventListener('drop', this.handleDrop.bind(this));\n    }\n    \n    handleDragOver(e) {\n        e.preventDefault(); // Allow drop\n        e.dataTransfer.dropEffect = 'move';\n        \n        // Highlight the group being dragged over\n        const groupItem = this.findGroupItemFromEvent(e);\n        if (groupItem) {\n            // Remove highlight from all groups\n            document.querySelectorAll('.group-item').forEach(item => {\n                item.classList.remove('drag-over');\n            });\n            \n            // Add highlight to target group\n            groupItem.classList.add('drag-over');\n        }\n    }\n    \n    handleDrop(e) {\n        e.preventDefault();\n        \n        // Remove all drag-over highlights\n        document.querySelectorAll('.group-item').forEach(item => {\n            item.classList.remove('drag-over');\n        });\n        \n        // Find the target group\n        const groupItem = this.findGroupItemFromEvent(e);\n        if (!groupItem) return;\n        \n        const targetGroup = groupItem.dataset.group;\n        \n        // Get the shape data from dataTransfer\n        const data = e.dataTransfer.getData('text/plain');\n        if (!data) return;\n        \n        try {\n            const dragData = JSON.parse(data);\n            const { shapeIndex, sourceGroup } = dragData;\n            \n            // Don't move if source and target are the same\n            if (sourceGroup === targetGroup) return;\n            \n            // Move the shape to the target group\n            this.moveToGroup(parseInt(shapeIndex), sourceGroup, targetGroup);\n        } catch (err) {\n            console.error('Error processing drop:', err);\n        }\n    }\n    \n    findGroupItemFromEvent(e) {\n        let target = e.target;\n        // Traverse up to find the group-item\n        while (target && !target.classList.contains('group-item')) {\n            target = target.parentElement;\n            if (!target || target === document.body) return null;\n        }\n        return target;\n    }\n\n    // Create a new group at the frame level\n    createGroup() {\n        const groupName = prompt(\"Enter group name:\", \"group_\" + Date.now());\n        if (!groupName || groupName === \"shapes\") {\n            alert(\"Invalid group name or 'shapes' is reserved\");\n            return;\n        }\n\n        const currentFrame = this.graphicsEditor.state.currentFrame;\n        \n        // Ensure we have current frame data\n        if (!this.graphicsEditor.getCurrentFrame()) {\n            this.graphicsEditor.getCurrentAnimation()[currentFrame] = {};\n        }\n        \n        // Initialize group if it doesn't exist\n        if (!this.graphicsEditor.getCurrentGroup()) {\n            // Using JSON parse/stringify for deep copying\n            this.graphicsEditor.getCurrentFrame()[groupName] = JSON.parse(JSON.stringify(this.DEFAULT_GROUP));\n        }\n        \n        // Switch selection to the new group\n        this.graphicsEditor.state.currentGroup = groupName;\n        \n        // Refresh UI\n        this.graphicsEditor.uiManager.updateList();\n        this.graphicsEditor.refreshShapes(true);\n    }\n\n    // Move an object from one group to another\n    moveToGroup(shapeIndex, fromGroupName, toGroupName) {\n        const currentFrameData = this.graphicsEditor.getCurrentFrame();\n        \n        // Find the shape in the source group\n        const sourceGroup = currentFrameData[fromGroupName];\n        if (!sourceGroup) {\n            console.warn(`Source group ${fromGroupName} not found`);\n            return;\n        }\n        \n        // Find the shape\n        const shapeToMove = sourceGroup[fromGroupName][shapeIndex];\n        if (!shapeToMove) {\n            console.warn(`Shape at index ${shapeIndex} not found in ${fromGroupName}`);\n            return;\n        }\n        \n        // Remove from source group\n        sourceGroup[fromGroupName].splice(shapeIndex, 1);\n        \n        // Ensure target group exists\n        if (!currentFrameData[toGroupName]) {\n            currentFrameData[toGroupName] = this.DEFAULT_GROUP;\n        }\n        \n        // Add to target group\n        currentFrameData[toGroupName].shapes.push(shapeToMove);\n        \n        // Clear selection\n        this.graphicsEditor.state.selectedShapeIndex = -1;\n        \n        // Update UI\n        this.graphicsEditor.refreshShapes(true);\n    }\n\n    getGroupData(groupName){\n        let groupData = this.graphicsEditor.getCurrentFrame()[groupName];\n        return groupData;\n    }\n    // Select a group to work with\n    selectGroup(groupName) {\n        if (!groupName) return;\n        \n        // Update the selected group name\n        this.graphicsEditor.state.currentGroup = groupName;\n        this.graphicsEditor.state.selectedShapeIndex = -1;\n        let groupData = this.getGroupData(groupName);\n        // Update the UI to show shapes in this group\n        this.graphicsEditor.uiManager.updateList();\n        this.graphicsEditor.shapeManager.highlightSelectedShape();\n        this.graphicsEditor.uiManager.createGroupInspector(groupData);\n        this.graphicsEditor.gizmoManager.transformSelectedObject(this.getGroupObject(groupName));\n        \n        // Update the selected class on group items\n        this.updateSelectedGroupClass(groupName);\n    }\n    updateSelectedGroupClass(groupName) {\n        // Remove selected class from all group items\n        const groupItems = document.querySelectorAll('.group-item');\n        groupItems.forEach(item => {\n            item.classList.remove('selected');\n        });\n        \n        // Add selected class to the newly selected group\n        const selectedGroupItem = Array.from(groupItems).find(\n            item => item.dataset.group === groupName\n        );\n        \n        if (selectedGroupItem) {\n            selectedGroupItem.classList.add('selected');\n        }\n    }\n    // Remove a group and place its contents back in the shapes group\n    deleteGroup() {\n        \n        const currentFrameData = this.graphicsEditor.getCurrentFrame();\n        const currentGroup = this.graphicsEditor.getCurrentGroup();\n        // Get shapes from the selected group\n        const groupShapes = currentGroup.shapes;\n        if (groupShapes.length > 0) {\n            alert('Group must be empty to delete.');\n            return;\n        }\n                        \n        // Remove the group\n        delete currentFrameData[this.graphicsEditor.state.currentGroup];\n        \n        // Reset selection to shapes group\n        this.graphicsEditor.state.currentGroup = Object.keys(currentFrameData)[0];\n        this.graphicsEditor.state.selectedShapeIndex = -1;\n        \n        // Update UI\n        this.updateGroupList();\n        this.graphicsEditor.refreshShapes(true);\n    }\n    getGroupObject(groupName) {\n        let foundGroup = null;\n        this.graphicsEditor.rootGroup.traverse(obj => {\n            if (obj.isGroup && obj.name === groupName && obj.userData.isGroup) {\n                foundGroup = obj;\n            }\n        });\n        return foundGroup;\n    }\n    // Get all available groups in the current frame\n    getGroups() {      \n        return Object.keys(this.graphicsEditor.getCurrentFrame());\n    }\n\n    applyGroupTransform(groupName, position, rotation, scale) {\n        // Get the current frame data\n        const frameData = this.graphicsEditor.getCurrentFrame();\n        \n        // Ensure the group exists in the frame data\n        if (!frameData[groupName]) {\n            console.warn(`Group ${groupName} not found in frame data`);\n            return;\n        }\n \n        // Save transformations to the group data\n        frameData[groupName].position = {\n            x: position.x,\n            y: position.y,\n            z: position.z\n        };\n        frameData[groupName].rotation = {\n            x: rotation.x,\n            y: rotation.y,\n            z: rotation.z\n        };\n        frameData[groupName].scale = {\n            x: scale.x,\n            y: scale.y,\n            z: scale.z\n        };\n    \n        // Refresh the scene to see changes\n        this.graphicsEditor.refreshShapes(true);\n    }\n    // Update the group list in the UI\n    updateGroupList() {\n        const list = document.getElementById('group-list');\n        if (!list) {\n            console.warn(\"Group list element not found\");\n            return;\n        }\n        \n        list.innerHTML = '';\n        \n        const groups = this.getGroups();\n        for (const group of groups) {\n            const groupItem = document.createElement('div');\n            groupItem.classList.add('group-item');\n            if (group === this.graphicsEditor.state.currentGroup) {\n                groupItem.classList.add('selected');\n            }\n            \n            groupItem.textContent = group;\n            groupItem.addEventListener('click', () => this.selectGroup(group));\n            \n            // Make it a valid drop target for drag and drop\n            groupItem.dataset.group = group;\n            \n            list.appendChild(groupItem);\n        }\n    }\n}",
+        "script": "class GE_GroupManager {\n    constructor(gameEditor, graphicsEditor) {\n        this.gameEditor = gameEditor;\n        this.graphicsEditor = graphicsEditor;\n        this.DEFAULT_GROUP = {\n            shapes: [],\n            position: { x: 0, y: 0, z: 0 },\n            rotation: { x: 0, y: 0, z: 0 },\n            scale: { x: 1.0, y: 1.0, z: 1.0 }\n        };\n    }\n\n    init() {\n        document.getElementById('create-group').addEventListener('click', this.createGroup.bind(this));\n        document.getElementById('delete-group').addEventListener('click', this.deleteGroup.bind(this));\n        \n       \n        // Update the group list initially\n        this.updateGroupList();\n        \n        // Initialize drag-and-drop\n        this.initDragAndDrop();\n    }\n\n    // Initialize drag and drop functionality\n    initDragAndDrop() {\n        // Make group items drop targets\n        const groupList = document.getElementById('group-list');\n        groupList.addEventListener('dragover', this.handleDragOver.bind(this));\n        groupList.addEventListener('drop', this.handleDrop.bind(this));\n    }\n    \n    handleDragOver(e) {\n        e.preventDefault(); // Allow drop\n        e.dataTransfer.dropEffect = 'move';\n        \n        // Highlight the group being dragged over\n        const groupItem = this.findGroupItemFromEvent(e);\n        if (groupItem) {\n            // Remove highlight from all groups\n            document.querySelectorAll('.group-item').forEach(item => {\n                item.classList.remove('drag-over');\n            });\n            \n            // Add highlight to target group\n            groupItem.classList.add('drag-over');\n        }\n    }\n    \n    handleDrop(e) {\n        e.preventDefault();\n        \n        // Remove all drag-over highlights\n        document.querySelectorAll('.group-item').forEach(item => {\n            item.classList.remove('drag-over');\n        });\n        \n        // Find the target group\n        const groupItem = this.findGroupItemFromEvent(e);\n        if (!groupItem) return;\n        \n        const targetGroup = groupItem.dataset.group;\n        \n        // Get the shape data from dataTransfer\n        const data = e.dataTransfer.getData('text/plain');\n        if (!data) return;\n        \n        try {\n            const dragData = JSON.parse(data);\n            const { shapeIndex, sourceGroup } = dragData;\n            \n            // Don't move if source and target are the same\n            if (sourceGroup === targetGroup) return;\n            \n            // Move the shape to the target group\n            this.moveToGroup(parseInt(shapeIndex), sourceGroup, targetGroup);\n        } catch (err) {\n            console.error('Error processing drop:', err);\n        }\n    }\n    \n    findGroupItemFromEvent(e) {\n        let target = e.target;\n        // Traverse up to find the group-item\n        while (target && !target.classList.contains('group-item')) {\n            target = target.parentElement;\n            if (!target || target === document.body) return null;\n        }\n        return target;\n    }\n\n    // Create a new group at the frame level\n    createGroup() {\n        const groupName = prompt(\"Enter group name:\", \"group_\" + Date.now());\n        if (!groupName || groupName === \"shapes\") {\n            alert(\"Invalid group name or 'shapes' is reserved\");\n            return;\n        }\n\n        const currentFrame = this.graphicsEditor.state.currentFrame;\n        \n        // Ensure we have current frame data\n        if (!this.graphicsEditor.getCurrentFrame()) {\n            this.graphicsEditor.getCurrentAnimation()[currentFrame] = {};\n        }\n        \n        // Switch selection to the new group\n        this.graphicsEditor.state.currentGroup = groupName;\n        // Initialize group if it doesn't exist\n        if (!this.graphicsEditor.getCurrentGroup()) {\n            // Using JSON parse/stringify for deep copying\n            this.graphicsEditor.getCurrentFrame()[groupName] = JSON.parse(JSON.stringify(this.DEFAULT_GROUP));\n        }\n        \n        \n        // Refresh UI\n        this.graphicsEditor.uiManager.updateList();\n        this.graphicsEditor.refreshShapes(true);\n    }\n\n    // Move an object from one group to another\n    moveToGroup(shapeIndex, fromGroupName, toGroupName) {\n        const currentFrameData = this.graphicsEditor.getCurrentFrame();\n        \n        // Find the shape in the source group\n        const sourceGroup = currentFrameData[fromGroupName];\n        if (!sourceGroup) {\n            console.warn(`Source group ${fromGroupName} not found`);\n            return;\n        }\n        \n        // Find the shape\n        const shapeToMove = sourceGroup[fromGroupName][shapeIndex];\n        if (!shapeToMove) {\n            console.warn(`Shape at index ${shapeIndex} not found in ${fromGroupName}`);\n            return;\n        }\n        \n        // Remove from source group\n        sourceGroup[fromGroupName].splice(shapeIndex, 1);\n        \n        // Ensure target group exists\n        if (!currentFrameData[toGroupName]) {\n            currentFrameData[toGroupName] = this.DEFAULT_GROUP;\n        }\n        \n        // Add to target group\n        currentFrameData[toGroupName].shapes.push(shapeToMove);\n        \n        // Clear selection\n        this.graphicsEditor.state.selectedShapeIndex = -1;\n        \n        // Update UI\n        this.graphicsEditor.refreshShapes(true);\n    }\n\n    getGroupData(groupName){\n        let groupData = this.graphicsEditor.getCurrentFrame()[groupName];\n        if(!groupData){\n            return this.graphicsEditor.state.renderData.model[groupName];\n        }\n        return groupData;\n    }\n    // Select a group to work with\n    selectGroup(groupName) {\n        if (!groupName) return;\n        \n        // Update the selected group name\n        this.graphicsEditor.state.currentGroup = groupName;\n        this.graphicsEditor.state.selectedShapeIndex = -1;\n        let groupData = this.getGroupData(groupName);\n        // Update the UI to show shapes in this group\n        this.graphicsEditor.uiManager.updateList();\n        this.graphicsEditor.shapeManager.highlightSelectedShape();\n        this.graphicsEditor.uiManager.createGroupInspector(groupData);\n        this.graphicsEditor.gizmoManager.transformSelectedObject(this.getGroupObject(groupName));\n        \n        // Update the selected class on group items\n        this.updateSelectedGroupClass(groupName);\n    }\n    updateSelectedGroupClass(groupName) {\n        // Remove selected class from all group items\n        const groupItems = document.querySelectorAll('.group-item');\n        groupItems.forEach(item => {\n            item.classList.remove('selected');\n        });\n        \n        // Add selected class to the newly selected group\n        const selectedGroupItem = Array.from(groupItems).find(\n            item => item.dataset.group === groupName\n        );\n        \n        if (selectedGroupItem) {\n            selectedGroupItem.classList.add('selected');\n        }\n    }\n    // Remove a group and place its contents back in the shapes group\n    deleteGroup() {\n        \n        const currentFrameData = this.graphicsEditor.getCurrentFrame();\n        const currentGroup = this.graphicsEditor.getCurrentGroup();\n        // Get shapes from the selected group\n        const groupShapes = currentGroup.shapes;\n        if (groupShapes.length > 0) {\n            alert('Group must be empty to delete.');\n            return;\n        }\n                        \n        // Remove the group\n        delete currentFrameData[this.graphicsEditor.state.currentGroup];\n        \n        // Reset selection to shapes group\n        this.graphicsEditor.state.currentGroup = Object.keys(currentFrameData)[0];\n        this.graphicsEditor.state.selectedShapeIndex = -1;\n        \n        // Update UI\n        this.updateGroupList();\n        this.graphicsEditor.refreshShapes(true);\n    }\n    getGroupObject(groupName) {\n        let foundGroup = null;\n        this.graphicsEditor.rootGroup.traverse(obj => {\n            if (obj.isGroup && obj.name === groupName && obj.userData.isGroup) {\n                foundGroup = obj;\n            }\n        });\n        return foundGroup;\n    }\n    // Get all available groups in the current frame\n    getGroups() {      \n        return [...new Set([...Object.keys(this.graphicsEditor.getCurrentFrame()), ...Object.keys(this.graphicsEditor.state.renderData.model)])];\n    }\n\n    applyGroupTransform(groupName, position, rotation, scale) {\n        // Get the current frame data\n        const frameData = this.graphicsEditor.getCurrentFrame();\n        \n        // Ensure the group exists in the frame data\n        if (!frameData[groupName]) {\n            console.warn(`Group ${groupName} not found in frame data`);\n            return;\n        }\n \n        // Save transformations to the group data\n        frameData[groupName].position = {\n            x: position.x,\n            y: position.y,\n            z: position.z\n        };\n        frameData[groupName].rotation = {\n            x: rotation.x,\n            y: rotation.y,\n            z: rotation.z\n        };\n        frameData[groupName].scale = {\n            x: scale.x,\n            y: scale.y,\n            z: scale.z\n        };\n    \n        // Refresh the scene to see changes\n        this.graphicsEditor.refreshShapes(true);\n    }\n    // Update the group list in the UI\n    updateGroupList() {\n        const list = document.getElementById('group-list');\n        if (!list) {\n            console.warn(\"Group list element not found\");\n            return;\n        }\n        \n        list.innerHTML = '';\n        \n        const groups = this.getGroups();\n        for (const group of groups) {\n            const groupItem = document.createElement('div');\n            groupItem.classList.add('group-item');\n            if (group === this.graphicsEditor.state.currentGroup) {\n                groupItem.classList.add('selected');\n            }\n            \n            groupItem.textContent = group;\n            groupItem.addEventListener('click', () => this.selectGroup(group));\n            \n            // Make it a valid drop target for drag and drop\n            groupItem.dataset.group = group;\n            \n            list.appendChild(groupItem);\n        }\n    }\n}",
         "fileName": "GE_GroupManager"
       },
       "GE_GizmoManager": {

@@ -44,7 +44,6 @@
             "shapes": [
               {
                 "width": 16,
-                "y": 35,
                 "id": 1
               }
             ]
@@ -142,7 +141,7 @@
           },
           "left wing": {
             "position": {
-              "x": 0,
+              "x": 5,
               "y": 5,
               "z": 15
             },
@@ -159,7 +158,6 @@
             "shapes": [
               {
                 "x": 50,
-                "y": 37,
                 "z": -24,
                 "id": 2
               }
@@ -167,7 +165,7 @@
           },
           "right wing": {
             "position": {
-              "x": 0,
+              "x": -5,
               "y": 5,
               "z": 15
             },
@@ -184,7 +182,6 @@
             "shapes": [
               {
                 "x": -50,
-                "y": 37,
                 "z": -24,
                 "id": 2
               }
@@ -264,7 +261,6 @@
             "shapes": [
               {
                 "width": 16,
-                "y": 35,
                 "id": 1
               }
             ]
@@ -372,14 +368,25 @@
             },
             "shapes": [
               {
-                "id": 1,
-                "rotationX": 0.1,
-                "rotationY": 0.7
+                "y": 35,
+                "z": -2.5,
+                "rotationX": 0,
+                "rotationY": 1,
+                "rotationZ": 0,
+                "scaleX": 1,
+                "scaleY": 1,
+                "scaleZ": 1,
+                "id": 1
               },
               {
-                "x": 53,
-                "z": 6,
+                "x": 19,
+                "y": 34.5,
+                "z": 14,
                 "rotationX": 100,
+                "rotationZ": 0,
+                "scaleX": 1,
+                "scaleY": 1,
+                "scaleZ": 1,
                 "id": 2
               }
             ]
@@ -402,13 +409,16 @@
             },
             "shapes": [
               {
-                "id": 1,
+                "y": 35,
+                "z": -2.5,
                 "rotationX": 0.1,
-                "rotationY": -0.7
+                "rotationY": -0.7,
+                "id": 1
               },
               {
-                "x": -53,
-                "z": 6,
+                "x": -19,
+                "y": 34.5,
+                "z": 14,
                 "rotationX": 100,
                 "id": 2
               }
@@ -486,7 +496,6 @@
             "shapes": [
               {
                 "width": 16,
-                "y": 35,
                 "id": 1
               }
             ]
@@ -494,8 +503,8 @@
           "left arm": {
             "position": {
               "x": 1.5,
-              "y": -2,
-              "z": 10
+              "y": -1,
+              "z": 6.5
             },
             "rotation": {
               "x": 0.4,
@@ -594,13 +603,16 @@
             },
             "shapes": [
               {
-                "id": 1,
+                "y": 35,
+                "z": -2.5,
                 "rotationX": 0.3,
-                "rotationY": 0.9
+                "rotationY": 0.9,
+                "id": 1
               },
               {
-                "x": 53,
-                "z": 6,
+                "x": 19,
+                "y": 34.7,
+                "z": 14,
                 "rotationX": 100,
                 "id": 2
               }
@@ -624,13 +636,16 @@
             },
             "shapes": [
               {
-                "id": 1,
+                "y": 35,
+                "z": -2.5,
                 "rotationX": 0.3,
-                "rotationY": -0.9
+                "rotationY": -0.9,
+                "id": 1
               },
               {
-                "x": -53,
-                "z": 6,
+                "x": -19,
+                "y": 34.5,
+                "z": 14,
                 "rotationX": 100,
                 "id": 2
               }
@@ -708,7 +723,6 @@
             "shapes": [
               {
                 "width": 16,
-                "y": 35,
                 "id": 1
               }
             ]
@@ -816,13 +830,16 @@
             },
             "shapes": [
               {
-                "id": 1,
+                "y": 35,
+                "z": -2.5,
                 "rotationX": 0.1,
-                "rotationY": 0.7
+                "rotationY": 0.7,
+                "id": 1
               },
               {
-                "x": 53,
-                "z": 6,
+                "x": 19,
+                "y": 34.5,
+                "z": 14,
                 "rotationX": 100,
                 "id": 2
               }
@@ -846,13 +863,16 @@
             },
             "shapes": [
               {
-                "id": 1,
+                "y": 35,
+                "z": -2.5,
                 "rotationX": 0.1,
-                "rotationY": -0.7
+                "rotationY": -0.7,
+                "id": 1
               },
               {
-                "x": -53,
-                "z": 6,
+                "x": -19,
+                "y": 34.5,
+                "z": 14,
                 "rotationX": 100,
                 "id": 2
               }
@@ -930,7 +950,6 @@
             "shapes": [
               {
                 "width": 16,
-                "y": 35,
                 "id": 1
               }
             ]
@@ -955,8 +974,8 @@
           "right arm": {
             "position": {
               "x": -1.5,
-              "y": -2,
-              "z": 10
+              "y": -1,
+              "z": 6.5
             },
             "rotation": {
               "x": 0.4,
@@ -1038,13 +1057,16 @@
             },
             "shapes": [
               {
-                "id": 1,
+                "y": 35,
+                "z": -2.5,
                 "rotationX": 0.2,
-                "rotationY": 0.8
+                "rotationY": 0.8,
+                "id": 1
               },
               {
-                "x": 53,
-                "z": 6,
+                "x": 19,
+                "y": 34.5,
+                "z": 14,
                 "rotationX": 100,
                 "id": 2
               }
@@ -1068,13 +1090,16 @@
             },
             "shapes": [
               {
-                "id": 1,
+                "y": 35,
+                "z": -2.5,
                 "rotationX": 0.2,
-                "rotationY": -0.8
+                "rotationY": -0.8,
+                "id": 1
               },
               {
-                "x": -53,
-                "z": 6,
+                "x": -19,
+                "y": 34.5,
+                "z": 14,
                 "rotationX": 100,
                 "id": 2
               }
@@ -1173,7 +1198,7 @@
           },
           {
             "type": "box",
-            "width": 18,
+            "width": 16,
             "height": 3,
             "depth": 8,
             "x": 0,
@@ -1188,7 +1213,7 @@
             "size": 3,
             "height": 6,
             "x": -6,
-            "y": 50,
+            "y": 52,
             "z": 26,
             "color": "#696969",
             "name": "horn-right",
@@ -1199,7 +1224,7 @@
             "size": 3,
             "height": 6,
             "x": 6,
-            "y": 50,
+            "y": 52,
             "z": 26,
             "color": "#696969",
             "name": "horn-left",
@@ -1242,7 +1267,7 @@
             "height": 3,
             "depth": 3,
             "x": 0,
-            "y": 34,
+            "y": 35,
             "z": 26,
             "color": "#8B0000",
             "name": "gums",
@@ -1331,7 +1356,7 @@
           },
           {
             "type": "box",
-            "width": 5,
+            "width": 4,
             "height": 4,
             "depth": 4,
             "x": 12,
@@ -1350,7 +1375,8 @@
             "z": 10,
             "color": "#A9A9A9",
             "name": "claw-left-1",
-            "metalness": 0.6
+            "metalness": 0.6,
+            "rotationX": 180
           },
           {
             "type": "cone",
@@ -1361,7 +1387,8 @@
             "z": 10,
             "color": "#A9A9A9",
             "name": "claw-left-2",
-            "metalness": 0.6
+            "metalness": 0.6,
+            "rotationX": 180
           }
         ],
         "position": {
@@ -1410,7 +1437,7 @@
           },
           {
             "type": "box",
-            "width": 5,
+            "width": 4,
             "height": 4,
             "depth": 4,
             "x": -12,
@@ -1429,7 +1456,8 @@
             "z": 10,
             "color": "#A9A9A9",
             "name": "claw-right-1",
-            "metalness": 0.6
+            "metalness": 0.6,
+            "rotationX": 180
           },
           {
             "type": "cone",
@@ -1440,7 +1468,13 @@
             "z": 10,
             "color": "#A9A9A9",
             "name": "claw-right-2",
-            "metalness": 0.6
+            "metalness": 0.6,
+            "rotationX": 180,
+            "rotationY": 0,
+            "rotationZ": 0,
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1
           }
         ],
         "position": {
@@ -1506,8 +1540,8 @@
             "size": 3,
             "height": 6,
             "x": 7,
-            "y": -1,
-            "z": 10,
+            "y": 0,
+            "z": 11,
             "rotationX": 90,
             "color": "#696969",
             "name": "toe-left-1",
@@ -1518,8 +1552,8 @@
             "size": 3,
             "height": 6,
             "x": 13,
-            "y": -1,
-            "z": 10,
+            "y": 0,
+            "z": 11,
             "rotationX": 90,
             "color": "#696969",
             "name": "toe-left-2",
@@ -1589,8 +1623,8 @@
             "size": 3,
             "height": 6,
             "x": -7,
-            "y": -1,
-            "z": 10,
+            "y": 0,
+            "z": 11,
             "rotationX": 90,
             "color": "#696969",
             "name": "toe-right-1",
@@ -1601,8 +1635,8 @@
             "size": 3,
             "height": 6,
             "x": -13,
-            "y": -1,
-            "z": 10,
+            "y": 0,
+            "z": 11,
             "rotationX": 90,
             "color": "#696969",
             "name": "toe-right-2",
@@ -1644,39 +1678,54 @@
           {
             "type": "box",
             "width": 14,
-            "height": 12,
+            "height": 15.3,
             "depth": 14,
             "x": 0,
-            "y": 40,
+            "y": 45.46875,
             "z": 8,
             "rotationX": 10,
             "color": "#2F4F4F",
             "name": "neck",
-            "texture": "scales"
+            "texture": "scales",
+            "rotationY": 0,
+            "rotationZ": 0,
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1
           },
           {
             "type": "cone",
             "size": 6,
             "height": 12,
             "x": 0,
-            "y": 42,
-            "z": -4,
-            "rotationX": -50,
+            "y": 38.39468690702089,
+            "z": -6.745098039215698,
+            "rotationX": -65,
             "color": "#1C2526",
             "name": "spike-1",
-            "metalness": 0.3
+            "metalness": 0.3,
+            "rotationY": 0,
+            "rotationZ": 0,
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1
           },
           {
             "type": "cone",
             "size": 5,
             "height": 10,
             "x": 0,
-            "y": 36,
-            "z": -8,
-            "rotationX": -45,
+            "y": 28.979127134724877,
+            "z": -14.513725490196073,
+            "rotationX": -66,
             "color": "#1C2526",
             "name": "spike-2",
-            "metalness": 0.3
+            "metalness": 0.3,
+            "rotationY": 0,
+            "rotationZ": 0,
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1
           }
         ],
         "position": {
@@ -1730,9 +1779,9 @@
             "type": "cone",
             "size": 2,
             "height": 5,
-            "x": 55,
-            "y": 33,
-            "z": -15,
+            "x": 51,
+            "y": 37,
+            "z": -25,
             "rotationX": 0,
             "rotationY": 80,
             "color": "#696969",
@@ -1741,9 +1790,9 @@
           }
         ],
         "position": {
-          "x": 0,
-          "y": 15,
-          "z": -5
+          "x": 5,
+          "y": 5,
+          "z": 15
         },
         "rotation": {
           "x": 0,
@@ -1791,20 +1840,24 @@
             "type": "cone",
             "size": 2,
             "height": 5,
-            "x": -55,
-            "y": 33,
-            "z": -15,
+            "x": -51,
+            "y": 37,
+            "z": -25,
             "rotationX": 0,
             "rotationY": -80,
             "color": "#696969",
             "name": "wing-claw-right",
-            "metalness": 0.5
+            "metalness": 0.5,
+            "rotationZ": 0,
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1
           }
         ],
         "position": {
-          "x": 0,
-          "y": 15,
-          "z": -5
+          "x": -5,
+          "y": 5,
+          "z": 15
         },
         "rotation": {
           "x": 0,

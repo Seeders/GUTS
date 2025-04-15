@@ -542,6 +542,138 @@
           }
         }
       ]
+    },
+    "model": {
+      "shapes": {
+        "shapes": [
+          {
+            "type": "torus",
+            "size": 36,
+            "tubeSize": 4,
+            "x": 0,
+            "y": 8,
+            "z": 0,
+            "rotationY": 0,
+            "color": "#50D0FF",
+            "rotationZ": 0,
+            "rotationX": 90
+          },
+          {
+            "type": "cylinder",
+            "size": 22,
+            "height": 10,
+            "x": 0,
+            "y": 5,
+            "z": 0,
+            "color": "#333333"
+          },
+          {
+            "type": "cylinder",
+            "size": 16,
+            "height": 14,
+            "x": 0,
+            "y": 17,
+            "z": 0,
+            "color": "#222222"
+          },
+          {
+            "type": "sphere",
+            "size": 12,
+            "x": 0,
+            "y": 16,
+            "z": 0,
+            "color": "#A0E6FF"
+          },
+          {
+            "type": "tetrahedron",
+            "size": 10,
+            "x": 0,
+            "y": 16,
+            "z": 0,
+            "rotationY": 45,
+            "color": "#203040"
+          },
+          {
+            "type": "cone",
+            "size": 8,
+            "height": 16,
+            "x": 0,
+            "y": 32,
+            "z": 0,
+            "rotationX": 0,
+            "color": "#444444"
+          },
+          {
+            "type": "box",
+            "width": 38,
+            "height": 4,
+            "depth": 38,
+            "x": 0,
+            "y": 2,
+            "z": 0,
+            "color": "#555555"
+          },
+          {
+            "type": "sphere",
+            "size": 4,
+            "x": 24,
+            "y": 24,
+            "z": 24,
+            "color": "#C0FFFF"
+          },
+          {
+            "type": "sphere",
+            "size": 4,
+            "x": -24,
+            "y": 24,
+            "z": 24,
+            "color": "#C0FFFF"
+          },
+          {
+            "type": "sphere",
+            "size": 4,
+            "x": 24,
+            "y": 24,
+            "z": -24,
+            "color": "#C0FFFF"
+          },
+          {
+            "type": "sphere",
+            "size": 4,
+            "x": -24,
+            "y": 24,
+            "z": -24,
+            "color": "#C0FFFF"
+          },
+          {
+            "type": "torus",
+            "size": 48,
+            "color": "#00a2df",
+            "x": 0,
+            "y": 38,
+            "z": 0,
+            "rotationX": 90,
+            "rotationY": 0,
+            "rotationZ": 0,
+            "tubeSize": 2
+          }
+        ],
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      }
     }
   }
 }

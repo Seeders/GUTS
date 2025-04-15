@@ -127,6 +127,33 @@ class GraphicsEditor {
     getCurrentGroup() {
         return this.getCurrentFrame()[this.state.currentGroup];
     }
+
+    refreshShapes(param) {
+        this.uiManager.updateList();
+        this.renderShapes(param);
+    }
+
+    createInspector(shape) {
+        this.uiManager.createInspector(shape);
+    }
+
+    setPreviewAnimationState(state) {
+        return this.animationManager.setPreviewAnimationState(state);
+    }
+
+    selectShape(index) {
+        return this.shapeManager.selectShape(index);
+    }
+
+    getMergedGroup(groupName){
+        let model = this.state.renderData.model;
+        const modelGroup = model[groupName];
+        if(this.state.editingModel){
+            return modelGroup;
+        }
+        return this.shapeFactory.getMergedGroup(model, this.getCurrentFrame(), groupName );
+    }
+
     getMergedShape() {
         if (this.state.selectedShapeIndex >= 0) {            
             const selectedGroup = this.getMergedGroup(this.state.currentGroup);
@@ -158,80 +185,6 @@ class GraphicsEditor {
         }
         return null;
     }
-
-    refreshShapes(param) {
-        this.uiManager.updateList();
-        this.renderShapes(param);
-    }
-
-    createInspector(shape) {
-        this.uiManager.createInspector(shape);
-    }
-
-    setPreviewAnimationState(state) {
-        return this.animationManager.setPreviewAnimationState(state);
-    }
-
-    selectShape(index) {
-        return this.shapeManager.selectShape(index);
-    }
-
-    getMergedGroup(groupName){
-        let model = this.state.renderData.model;
-        const modelGroup = model[groupName];
-        if(this.state.editingModel){
-            return modelGroup;
-        }
-        let frameData = this.getCurrentFrame();
-        const frameGroup = frameData[groupName];
-
-        let mergedShapes = [];
-        for(let i = 0; i < modelGroup.shapes.length; i++){
-            let modelShape = modelGroup.shapes[i];
-            if(!frameGroup.shapes){
-                mergedShapes.push(modelShape);
-                continue;
-            }
-            let mergedShape = {};
-            let frameShape = frameGroup.shapes.find((shape) => shape.id == i);
-            if(typeof frameShape == "undefined"){
-                frameShape = { id: i };
-                frameGroup.shapes.push(frameShape);
-            }
-            for(const key in modelShape) {
-                if(key == 'id'){      
-                    delete modelShape.id;
-                    continue;
-                }
-                if(frameShape && typeof frameShape[key] != "undefined" && modelShape[key] === frameShape[key]){
-                    delete frameShape[key];                 
-                    mergedShape[key] = modelShape[key];
-                } else if(!frameShape || typeof frameShape[key] == "undefined"){
-                    mergedShape[key] = modelShape[key];
-                } else {
-                    mergedShape[key] = frameShape[key];
-                }
-            }
-            mergedShape = {...mergedShape, ...frameShape};
-            delete mergedShape.id;
-            mergedShapes.push(mergedShape);
-        }
-        if(frameGroup.shapes){
-            for(let i = frameGroup.shapes.length - 1; i >= 0; i--){
-                let shape = frameGroup.shapes[i];
-                if(Object.keys(shape).length == 1){
-                    frameGroup.shapes.splice(i, 1);
-                }
-            }  
-        }                         
-        const mergedGroup = {
-            ...modelGroup,
-            ...frameGroup,
-        };
-        mergedGroup.shapes = mergedShapes;
-        return JSON.parse(JSON.stringify(mergedGroup));
-    }
-
 
     getSelectedObject() {
         const currentGroup = this.state.currentGroup;

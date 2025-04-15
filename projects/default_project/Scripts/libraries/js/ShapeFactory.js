@@ -3,7 +3,9 @@ class ShapeFactory {
         this.gltfCache = new Map();
         this.gltfLoader = new THREE.GLTFLoader();
     }
-
+    async createMergedGroupFromJSON(model, frameData, groupName) {
+        return await this.createGroupFromJSON(this.getMergedGroup(model, frameData, groupName));
+    }
     async createGroupFromJSON(groupData) {
         const group = new THREE.Group();
         group.userData = { isGroup: true };
@@ -148,4 +150,62 @@ class ShapeFactory {
             }
         });
     }
+
+    getMergedGroup(model, frameData, groupName){
+        const modelGroup = model[groupName];
+
+        let frameGroup = frameData[groupName];
+        if(!frameGroup){
+            //group doesnt exist in animation, copy from model
+            frameData[groupName] = {...modelGroup};
+            frameGroup = frameData[groupName];
+            return frameGroup;
+        }
+        let mergedShapes = [];
+        for(let i = 0; i < modelGroup.shapes.length; i++){
+            let modelShape = modelGroup.shapes[i];
+            if(!frameGroup.shapes){
+                mergedShapes.push(modelShape);
+                continue;
+            }
+            let mergedShape = {};
+            let frameShape = frameGroup.shapes.find((shape) => shape.id == i);
+            if(typeof frameShape == "undefined"){
+                frameShape = { id: i };
+                frameGroup.shapes.push(frameShape);
+            }
+            for(const key in modelShape) {
+                if(key == 'id'){      
+                    delete modelShape.id;
+                    continue;
+                }
+                if(frameShape && typeof frameShape[key] != "undefined" && modelShape[key] === frameShape[key]){
+                    delete frameShape[key];                 
+                    mergedShape[key] = modelShape[key];
+                } else if(!frameShape || typeof frameShape[key] == "undefined"){
+                    mergedShape[key] = modelShape[key];
+                } else {
+                    mergedShape[key] = frameShape[key];
+                }
+            }
+            mergedShape = {...mergedShape, ...frameShape};
+            delete mergedShape.id;
+            mergedShapes.push(mergedShape);
+        }
+        if(frameGroup.shapes){
+            for(let i = frameGroup.shapes.length - 1; i >= 0; i--){
+                let shape = frameGroup.shapes[i];
+                if(Object.keys(shape).length == 1){
+                    frameGroup.shapes.splice(i, 1);
+                }
+            }  
+        }                         
+        const mergedGroup = {
+            ...modelGroup,
+            ...frameGroup,
+        };
+        mergedGroup.shapes = mergedShapes;
+        return JSON.parse(JSON.stringify(mergedGroup));
+    }
+
 }

@@ -104,14 +104,14 @@ class GE_GroupManager {
             this.graphicsEditor.getCurrentAnimation()[currentFrame] = {};
         }
         
+        // Switch selection to the new group
+        this.graphicsEditor.state.currentGroup = groupName;
         // Initialize group if it doesn't exist
         if (!this.graphicsEditor.getCurrentGroup()) {
             // Using JSON parse/stringify for deep copying
             this.graphicsEditor.getCurrentFrame()[groupName] = JSON.parse(JSON.stringify(this.DEFAULT_GROUP));
         }
         
-        // Switch selection to the new group
-        this.graphicsEditor.state.currentGroup = groupName;
         
         // Refresh UI
         this.graphicsEditor.uiManager.updateList();
@@ -156,6 +156,9 @@ class GE_GroupManager {
 
     getGroupData(groupName){
         let groupData = this.graphicsEditor.getCurrentFrame()[groupName];
+        if(!groupData){
+            return this.graphicsEditor.state.renderData.model[groupName];
+        }
         return groupData;
     }
     // Select a group to work with
@@ -225,7 +228,7 @@ class GE_GroupManager {
     }
     // Get all available groups in the current frame
     getGroups() {      
-        return Object.keys(this.graphicsEditor.getCurrentFrame());
+        return [...new Set([...Object.keys(this.graphicsEditor.getCurrentFrame()), ...Object.keys(this.graphicsEditor.state.renderData.model)])];
     }
 
     applyGroupTransform(groupName, position, rotation, scale) {

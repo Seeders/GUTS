@@ -6,8 +6,16 @@
           "main": {
             "shapes": [
               {
-                "id": 0,
-                "scaleX": 1
+                "name": "ball",
+                "type": "sphere",
+                "size": 6,
+                "x": 0,
+                "y": 5,
+                "z": 0,
+                "rotationX": 90,
+                "color": "#ee6060",
+                "scaleX": 1,
+                "id": 0
               }
             ],
             "position": {

@@ -45,6 +45,10 @@
                 "z": 0,
                 "rotationX": 90,
                 "color": "#ee6060"
+              },
+              {
+                "type": "sphere",
+                "id": 0
               }
             ],
             "position": {
@@ -105,6 +109,10 @@
                 "z": 0,
                 "rotationX": 90,
                 "color": "#ee6060"
+              },
+              {
+                "type": "sphere",
+                "id": 0
               }
             ],
             "position": {
@@ -125,6 +133,37 @@
           }
         }
       ]
+    },
+    "model": {
+      "shapes": {
+        "shapes": [
+          {
+            "type": "cube",
+            "size": 6,
+            "x": 0,
+            "y": 24,
+            "z": 0,
+            "rotationX": 90,
+            "color": "#ee6060",
+            "scaleX": 1
+          }
+        ],
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      }
     }
   },
   "speed": 50,
