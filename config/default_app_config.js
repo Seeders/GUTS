@@ -16749,365 +16749,11 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {
-                "head": {
-                  "position": {
-                    "x": 0,
-                    "y": 3,
-                    "z": 20
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "jaw": {
-                  "position": {
-                    "x": 0,
-                    "y": 10.5,
-                    "z": 8
-                  },
-                  "rotation": {
-                    "x": 0.3,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  },
-                  "shapes": [
-                    {
-                      "width": 16,
-                      "id": 1
-                    }
-                  ]
-                },
-                "left arm": {
-                  "position": {
-                    "x": 0,
-                    "y": -2,
-                    "z": 12
-                  },
-                  "rotation": {
-                    "x": 0.2,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "right arm": {
-                  "position": {
-                    "x": 0,
-                    "y": -2,
-                    "z": 12
-                  },
-                  "rotation": {
-                    "x": 0.2,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "left leg": {
-                  "position": {
-                    "x": 0,
-                    "y": 3,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "right leg": {
-                  "position": {
-                    "x": 0,
-                    "y": 3,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  },
-                  "shapes": [
-                    {
-                      "id": 3,
-                      "rotationY": 100
-                    }
-                  ]
-                },
-                "body": {
-                  "position": {
-                    "x": 0,
-                    "y": 10,
-                    "z": -8
-                  },
-                  "rotation": {
-                    "x": 0.6,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "left wing": {
-                  "position": {
-                    "x": 5,
-                    "y": 5,
-                    "z": 15
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0.5,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  },
-                  "shapes": [
-                    {
-                      "x": 50,
-                      "z": -24,
-                      "id": 2
-                    }
-                  ]
-                },
-                "right wing": {
-                  "position": {
-                    "x": -5,
-                    "y": 5,
-                    "z": 15
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": -0.5,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  },
-                  "shapes": [
-                    {
-                      "x": -50,
-                      "z": -24,
-                      "id": 2
-                    }
-                  ]
-                },
-                "tail base": {
-                  "position": {
-                    "x": 0,
-                    "y": 6,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "tail tip": {
-                  "position": {
-                    "x": 0,
-                    "y": 6,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              }
+              {}
             ],
             "walk": [
               {
-                "head": {
-                  "position": {
-                    "x": 0,
-                    "y": 3,
-                    "z": 20
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "jaw": {
-                  "position": {
-                    "x": 0,
-                    "y": 10.5,
-                    "z": 8
-                  },
-                  "rotation": {
-                    "x": 0.3,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  },
-                  "shapes": [
-                    {
-                      "width": 16,
-                      "id": 1
-                    }
-                  ]
-                },
-                "left arm": {
-                  "position": {
-                    "x": 0,
-                    "y": -2,
-                    "z": 12
-                  },
-                  "rotation": {
-                    "x": 0.2,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "right arm": {
-                  "position": {
-                    "x": 0,
-                    "y": -2,
-                    "z": 12
-                  },
-                  "rotation": {
-                    "x": 0.2,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "left leg": {
-                  "position": {
-                    "x": 0,
-                    "y": 3,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "right leg": {
-                  "position": {
-                    "x": 0,
-                    "y": 3,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "body": {
-                  "position": {
-                    "x": 0,
-                    "y": 10,
-                    "z": -8
-                  },
-                  "rotation": {
-                    "x": 0.6,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
                 "left wing": {
-                  "position": {
-                    "x": 5,
-                    "y": 5,
-                    "z": 15
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0.5,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  },
                   "shapes": [
                     {
                       "rotationZ": 0,
@@ -17119,21 +16765,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   ]
                 },
                 "right wing": {
-                  "position": {
-                    "x": -5,
-                    "y": 5,
-                    "z": 15
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": -0.5,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  },
                   "shapes": [
                     {
                       "rotationX": 0.1,
@@ -17141,40 +16772,6 @@ const DEFAULT_PROJECT_CONFIG = {
                       "id": 1
                     }
                   ]
-                },
-                "tail base": {
-                  "position": {
-                    "x": 0,
-                    "y": 6,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "tail tip": {
-                  "position": {
-                    "x": 0,
-                    "y": 6,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
                 }
               },
               {
@@ -17188,35 +16785,14 @@ const DEFAULT_PROJECT_CONFIG = {
                     "x": 0,
                     "y": 0.15,
                     "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
                   }
                 },
                 "jaw": {
-                  "position": {
-                    "x": 0,
-                    "y": 10.5,
-                    "z": 8
-                  },
                   "rotation": {
                     "x": 0.35,
                     "y": 0,
                     "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  },
-                  "shapes": [
-                    {
-                      "width": 16,
-                      "id": 1
-                    }
-                  ]
+                  }
                 },
                 "left arm": {
                   "position": {
@@ -17228,11 +16804,6 @@ const DEFAULT_PROJECT_CONFIG = {
                     "x": 0.4,
                     "y": 0,
                     "z": 0.1
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
                   }
                 },
                 "right arm": {
@@ -17245,11 +16816,6 @@ const DEFAULT_PROJECT_CONFIG = {
                     "x": -0.1,
                     "y": 0,
                     "z": -0.1
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
                   }
                 },
                 "left leg": {
@@ -17262,11 +16828,6 @@ const DEFAULT_PROJECT_CONFIG = {
                     "x": 0.5,
                     "y": 0,
                     "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
                   }
                 },
                 "right leg": {
@@ -17279,28 +16840,13 @@ const DEFAULT_PROJECT_CONFIG = {
                     "x": -0.4,
                     "y": 0,
                     "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
                   }
                 },
                 "body": {
-                  "position": {
-                    "x": 0,
-                    "y": 10,
-                    "z": -8
-                  },
                   "rotation": {
                     "x": 0.6,
                     "y": 0.05,
                     "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
                   }
                 },
                 "left wing": {
@@ -17313,11 +16859,6 @@ const DEFAULT_PROJECT_CONFIG = {
                     "x": 0.2,
                     "y": 0.7,
                     "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
                   },
                   "shapes": [
                     {
@@ -17338,11 +16879,6 @@ const DEFAULT_PROJECT_CONFIG = {
                     "y": -0.7,
                     "z": 0
                   },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  },
                   "shapes": [
                     {
                       "rotationX": 0.3,
@@ -17352,182 +16888,22 @@ const DEFAULT_PROJECT_CONFIG = {
                   ]
                 },
                 "tail base": {
-                  "position": {
-                    "x": 0,
-                    "y": 6,
-                    "z": 0
-                  },
                   "rotation": {
                     "x": 0.1,
                     "y": 0.3,
                     "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
                   }
                 },
                 "tail tip": {
-                  "position": {
-                    "x": 0,
-                    "y": 6,
-                    "z": 0
-                  },
                   "rotation": {
                     "x": 0.05,
                     "y": 0.4,
                     "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
                   }
                 }
               },
               {
-                "head": {
-                  "position": {
-                    "x": 0,
-                    "y": 3,
-                    "z": 20
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "jaw": {
-                  "position": {
-                    "x": 0,
-                    "y": 10.5,
-                    "z": 8
-                  },
-                  "rotation": {
-                    "x": 0.3,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  },
-                  "shapes": [
-                    {
-                      "width": 16,
-                      "id": 1
-                    }
-                  ]
-                },
-                "left arm": {
-                  "position": {
-                    "x": 0,
-                    "y": -2,
-                    "z": 12
-                  },
-                  "rotation": {
-                    "x": 0.2,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "right arm": {
-                  "position": {
-                    "x": 0,
-                    "y": -2,
-                    "z": 12
-                  },
-                  "rotation": {
-                    "x": 0.2,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "left leg": {
-                  "position": {
-                    "x": 0,
-                    "y": 3,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "right leg": {
-                  "position": {
-                    "x": 0,
-                    "y": 3,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "body": {
-                  "position": {
-                    "x": 0,
-                    "y": 10,
-                    "z": -8
-                  },
-                  "rotation": {
-                    "x": 0.6,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
                 "left wing": {
-                  "position": {
-                    "x": 5,
-                    "y": 5,
-                    "z": 15
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0.5,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  },
                   "shapes": [
                     {
                       "rotationX": 0.1,
@@ -17537,21 +16913,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   ]
                 },
                 "right wing": {
-                  "position": {
-                    "x": -5,
-                    "y": 5,
-                    "z": 15
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": -0.5,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  },
                   "shapes": [
                     {
                       "rotationX": 0.1,
@@ -17559,40 +16920,6 @@ const DEFAULT_PROJECT_CONFIG = {
                       "id": 1
                     }
                   ]
-                },
-                "tail base": {
-                  "position": {
-                    "x": 0,
-                    "y": 6,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "tail tip": {
-                  "position": {
-                    "x": 0,
-                    "y": 6,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
                 }
               },
               {
@@ -17606,13 +16933,7 @@ const DEFAULT_PROJECT_CONFIG = {
                     "x": 0,
                     "y": -0.15,
                     "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  },
-                  "shapes": []
+                  }
                 },
                 "jaw": {
                   "position": {
@@ -17624,18 +16945,7 @@ const DEFAULT_PROJECT_CONFIG = {
                     "x": 0.35,
                     "y": 0,
                     "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  },
-                  "shapes": [
-                    {
-                      "width": 16,
-                      "id": 1
-                    }
-                  ]
+                  }
                 },
                 "left arm": {
                   "position": {
@@ -17647,11 +16957,6 @@ const DEFAULT_PROJECT_CONFIG = {
                     "x": -0.1,
                     "y": 0,
                     "z": 0.1
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
                   }
                 },
                 "right arm": {
@@ -17664,11 +16969,6 @@ const DEFAULT_PROJECT_CONFIG = {
                     "x": 0.4,
                     "y": 0,
                     "z": -0.1
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
                   }
                 },
                 "left leg": {
@@ -17681,11 +16981,6 @@ const DEFAULT_PROJECT_CONFIG = {
                     "x": -0.4,
                     "y": 0,
                     "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
                   }
                 },
                 "right leg": {
@@ -17698,11 +16993,6 @@ const DEFAULT_PROJECT_CONFIG = {
                     "x": 0.5,
                     "y": 0,
                     "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
                   }
                 },
                 "body": {
@@ -17715,11 +17005,6 @@ const DEFAULT_PROJECT_CONFIG = {
                     "x": 0.6,
                     "y": -0.05,
                     "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
                   }
                 },
                 "left wing": {
@@ -17732,11 +17017,6 @@ const DEFAULT_PROJECT_CONFIG = {
                     "x": 0.2,
                     "y": 0.6,
                     "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
                   },
                   "shapes": [
                     {
@@ -17757,11 +17037,6 @@ const DEFAULT_PROJECT_CONFIG = {
                     "y": -0.6,
                     "z": 0
                   },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  },
                   "shapes": [
                     {
                       "rotationX": 0.2,
@@ -17771,37 +17046,17 @@ const DEFAULT_PROJECT_CONFIG = {
                   ]
                 },
                 "tail base": {
-                  "position": {
-                    "x": 0,
-                    "y": 6,
-                    "z": 0
-                  },
                   "rotation": {
                     "x": 0.1,
                     "y": -0.3,
                     "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
                   }
                 },
                 "tail tip": {
-                  "position": {
-                    "x": 0,
-                    "y": 6,
-                    "z": 0
-                  },
                   "rotation": {
                     "x": 0.05,
                     "y": -0.4,
                     "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
                   }
                 }
               }
@@ -17819,9 +17074,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 44,
                   "z": 16,
                   "color": "#2F4F4F",
-                  "name": "head-main",
-                  "texture": "scales",
-                  "roughness": 0.7
+                  "name": "head-main"
                 },
                 {
                   "type": "sphere",
@@ -17870,8 +17123,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 52,
                   "z": 16,
                   "color": "#1C2526",
-                  "name": "brow-ridge",
-                  "texture": "rough"
+                  "name": "brow-ridge"
                 },
                 {
                   "type": "cone",
@@ -17881,8 +17133,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 52,
                   "z": 26,
                   "color": "#696969",
-                  "name": "horn-right",
-                  "metalness": 0.4
+                  "name": "horn-right"
                 },
                 {
                   "type": "cone",
@@ -17892,8 +17143,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 52,
                   "z": 26,
                   "color": "#696969",
-                  "name": "horn-left",
-                  "metalness": 0.4
+                  "name": "horn-left"
                 }
               ],
               "position": {
@@ -17923,8 +17173,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 32,
                   "z": 18,
                   "color": "#2F4F4F",
-                  "name": "jaw-main",
-                  "texture": "scales"
+                  "name": "jaw-main"
                 },
                 {
                   "type": "box",
@@ -17935,8 +17184,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 35,
                   "z": 26,
                   "color": "#8B0000",
-                  "name": "gums",
-                  "roughness": 0.6
+                  "name": "gums"
                 },
                 {
                   "type": "box",
@@ -18003,8 +17251,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": 2,
                   "rotationX": -30,
                   "color": "#2F4F4F",
-                  "name": "upper-arm-left",
-                  "texture": "scales"
+                  "name": "upper-arm-left"
                 },
                 {
                   "type": "box",
@@ -18016,8 +17263,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": 6,
                   "rotationX": -15,
                   "color": "#2F4F4F",
-                  "name": "lower-arm-left",
-                  "texture": "scales"
+                  "name": "lower-arm-left"
                 },
                 {
                   "type": "box",
@@ -18028,8 +17274,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 24,
                   "z": 8,
                   "color": "#696969",
-                  "name": "hand-left",
-                  "metalness": 0.5
+                  "name": "hand-left"
                 },
                 {
                   "type": "cone",
@@ -18040,7 +17285,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": 10,
                   "color": "#A9A9A9",
                   "name": "claw-left-1",
-                  "metalness": 0.6,
                   "rotationX": 180
                 },
                 {
@@ -18052,7 +17296,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": 10,
                   "color": "#A9A9A9",
                   "name": "claw-left-2",
-                  "metalness": 0.6,
                   "rotationX": 180
                 }
               ],
@@ -18084,8 +17327,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": 2,
                   "rotationX": -30,
                   "color": "#2F4F4F",
-                  "name": "upper-arm-right",
-                  "texture": "scales"
+                  "name": "upper-arm-right"
                 },
                 {
                   "type": "box",
@@ -18097,8 +17339,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": 6,
                   "rotationX": -15,
                   "color": "#2F4F4F",
-                  "name": "lower-arm-right",
-                  "texture": "scales"
+                  "name": "lower-arm-right"
                 },
                 {
                   "type": "box",
@@ -18109,8 +17350,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 24,
                   "z": 8,
                   "color": "#696969",
-                  "name": "hand-right",
-                  "metalness": 0.5
+                  "name": "hand-right"
                 },
                 {
                   "type": "cone",
@@ -18121,7 +17361,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": 10,
                   "color": "#A9A9A9",
                   "name": "claw-right-1",
-                  "metalness": 0.6,
                   "rotationX": 180
                 },
                 {
@@ -18133,7 +17372,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": 10,
                   "color": "#A9A9A9",
                   "name": "claw-right-2",
-                  "metalness": 0.6,
                   "rotationX": 180,
                   "rotationY": 0,
                   "rotationZ": 0,
@@ -18170,8 +17408,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": 2,
                   "color": "#2F4F4F",
                   "name": "thigh-left",
-                  "texture": "scales",
-                  "roughness": 0.7,
                   "rotationX": -10
                 },
                 {
@@ -18184,7 +17420,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": 2,
                   "color": "#2F4F4F",
                   "name": "shin-left",
-                  "texture": "scales",
                   "rotationX": 20
                 },
                 {
@@ -18197,7 +17432,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": 2,
                   "color": "#1C2526",
                   "name": "foot-left",
-                  "roughness": 0.8,
                   "rotationX": 15
                 },
                 {
@@ -18209,8 +17443,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": 11,
                   "rotationX": 90,
                   "color": "#696969",
-                  "name": "toe-left-1",
-                  "metalness": 0.3
+                  "name": "toe-left-1"
                 },
                 {
                   "type": "cone",
@@ -18221,8 +17454,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": 11,
                   "rotationX": 90,
                   "color": "#696969",
-                  "name": "toe-left-2",
-                  "metalness": 0.3
+                  "name": "toe-left-2"
                 }
               ],
               "position": {
@@ -18253,8 +17485,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": 2,
                   "color": "#2F4F4F",
                   "name": "thigh-right",
-                  "texture": "scales",
-                  "roughness": 0.7,
                   "rotationX": -10
                 },
                 {
@@ -18267,7 +17497,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": 2,
                   "color": "#2F4F4F",
                   "name": "shin-right",
-                  "texture": "scales",
                   "rotationX": 20
                 },
                 {
@@ -18280,7 +17509,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": 2,
                   "color": "#1C2526",
                   "name": "foot-right",
-                  "roughness": 0.8,
                   "rotationX": 15
                 },
                 {
@@ -18292,8 +17520,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": 11,
                   "rotationX": 90,
                   "color": "#696969",
-                  "name": "toe-right-1",
-                  "metalness": 0.3
+                  "name": "toe-right-1"
                 },
                 {
                   "type": "cone",
@@ -18304,8 +17531,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": 11,
                   "rotationX": 90,
                   "color": "#696969",
-                  "name": "toe-right-2",
-                  "metalness": 0.3
+                  "name": "toe-right-2"
                 }
               ],
               "position": {
@@ -18336,9 +17562,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": -2,
                   "rotationX": 30,
                   "color": "#2F4F4F",
-                  "name": "torso-main",
-                  "texture": "scales",
-                  "roughness": 0.7
+                  "name": "torso-main"
                 },
                 {
                   "type": "box",
@@ -18351,7 +17575,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   "rotationX": 10,
                   "color": "#2F4F4F",
                   "name": "neck",
-                  "texture": "scales",
                   "rotationY": 0,
                   "rotationZ": 0,
                   "scaleX": 1,
@@ -18368,7 +17591,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   "rotationX": -65,
                   "color": "#1C2526",
                   "name": "spike-1",
-                  "metalness": 0.3,
                   "rotationY": 0,
                   "rotationZ": 0,
                   "scaleX": 1,
@@ -18385,7 +17607,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   "rotationX": -66,
                   "color": "#1C2526",
                   "name": "spike-2",
-                  "metalness": 0.3,
                   "rotationY": 0,
                   "rotationZ": 0,
                   "scaleX": 1,
@@ -18422,8 +17643,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "rotationX": 10,
                   "rotationY": 60,
                   "color": "#2F4F4F",
-                  "name": "wing-base-left",
-                  "texture": "leather"
+                  "name": "wing-base-left"
                 },
                 {
                   "type": "box",
@@ -18436,9 +17656,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "rotationX": 0,
                   "rotationY": 1,
                   "color": "#2F4F4F",
-                  "name": "wing-membrane-left",
-                  "texture": "leather",
-                  "roughness": 0.8
+                  "name": "wing-membrane-left"
                 },
                 {
                   "type": "cone",
@@ -18451,7 +17669,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   "rotationY": 0,
                   "color": "#696969",
                   "name": "wing-claw-left",
-                  "metalness": 0.5,
                   "rotationZ": 45,
                   "scaleX": 1,
                   "scaleY": 1,
@@ -18469,8 +17686,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   "rotationY": 40,
                   "color": "#2F4F4F",
                   "name": "wing-membrane-left",
-                  "texture": "leather",
-                  "roughness": 0.8,
                   "rotationZ": 0,
                   "scaleX": 1,
                   "scaleY": 1,
@@ -18506,8 +17721,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "rotationX": 10,
                   "rotationY": -60,
                   "color": "#2F4F4F",
-                  "name": "wing-base-right",
-                  "texture": "leather"
+                  "name": "wing-base-right"
                 },
                 {
                   "type": "box",
@@ -18520,9 +17734,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "rotationX": 0,
                   "rotationY": -1,
                   "color": "#2F4F4F",
-                  "name": "wing-membrane-right",
-                  "texture": "leather",
-                  "roughness": 0.8
+                  "name": "wing-membrane-right"
                 },
                 {
                   "type": "cone",
@@ -18535,7 +17747,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   "rotationY": 0,
                   "color": "#696969",
                   "name": "wing-claw-right",
-                  "metalness": 0.5,
                   "rotationZ": -45,
                   "scaleX": 1,
                   "scaleY": 1,
@@ -18553,8 +17764,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   "rotationY": -40,
                   "color": "#2F4F4F",
                   "name": "wing-membrane-right",
-                  "texture": "leather",
-                  "roughness": 0.8,
                   "rotationZ": 0,
                   "scaleX": 1,
                   "scaleY": 1,
@@ -18589,8 +17798,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": -18,
                   "rotationX": -15,
                   "color": "#2F4F4F",
-                  "name": "tail-base-segment",
-                  "texture": "scales"
+                  "name": "tail-base-segment"
                 },
                 {
                   "type": "cone",
@@ -18601,8 +17809,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": -20,
                   "rotationX": -20,
                   "color": "#1C2526",
-                  "name": "tail-spike-1",
-                  "metalness": 0.3
+                  "name": "tail-spike-1"
                 },
                 {
                   "type": "box",
@@ -18614,8 +17821,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": -34,
                   "rotationX": -10,
                   "color": "#2F4F4F",
-                  "name": "tail-mid-segment",
-                  "texture": "scales"
+                  "name": "tail-mid-segment"
                 }
               ],
               "position": {
@@ -18646,8 +17852,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": -48,
                   "rotationX": -5,
                   "color": "#2F4F4F",
-                  "name": "tail-end-segment",
-                  "texture": "scales"
+                  "name": "tail-end-segment"
                 },
                 {
                   "type": "cone",
@@ -18658,8 +17863,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": -50,
                   "rotationX": -10,
                   "color": "#1C2526",
-                  "name": "tail-spike-2",
-                  "metalness": 0.3
+                  "name": "tail-spike-2"
                 },
                 {
                   "type": "box",
@@ -18671,8 +17875,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": -60,
                   "rotationX": 0,
                   "color": "#2F4F4F",
-                  "name": "tail-tip-segment",
-                  "texture": "scales"
+                  "name": "tail-tip-segment"
                 },
                 {
                   "type": "cone",
@@ -18683,8 +17886,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": -62,
                   "rotationX": -5,
                   "color": "#1C2526",
-                  "name": "tail-spike-3",
-                  "metalness": 0.3
+                  "name": "tail-spike-3"
                 }
               ],
               "position": {
@@ -26831,7 +26033,7 @@ const DEFAULT_PROJECT_CONFIG = {
     },
     "libraries": {
       "GraphicsEditor": {
-        "script": "// Core structure\nclass GraphicsEditor {\n    constructor(gameEditor, config, {ShapeFactory, GE_SceneRenderer, GE_ShapeManager, GE_AnimationManager, GE_RotationUtils, GE_UIManager, GE_GroupManager, GE_GizmoManager}) {\n        this.gameEditor = gameEditor;\n        this.config = config;\n        this.shapeFactory = new ShapeFactory();\n        this.canvas = document.getElementById('graphics-editor-canvas');\n        // Initialize sub-modules\n        this.sceneRenderer = new GE_SceneRenderer(gameEditor, this);\n        this.shapeManager = new GE_ShapeManager(gameEditor, this);\n        this.uiManager = new GE_UIManager(gameEditor, this);\n        this.animationManager = new GE_AnimationManager(gameEditor, this);\n        this.groupManager = new GE_GroupManager(gameEditor, this);\n        this.gizmoManager = new GE_GizmoManager(gameEditor, this);\n        this.rotationUtils = GE_RotationUtils;\n        // State management (simplified)\n        this.state = {\n            editingModel: true,\n            selectedShapeIndex: -1,\n            currentAnimation: \"\",\n            selectedGroup: \"main\",\n            currentFrame: 0,\n            renderData: { model: {}, animations: { idle: [{ main: { shapes: [], position: {x: 0, y: 0, z: 0}, rotation: {x:0,y:0,z:0}, scale: {x:1, y:1, z:1}} }] } }\n        };\n        \n        this.rootGroup = new window.THREE.Group(); // Main container for all shapes\n        this.rootGroup.name = \"rootGroup\";\n        this.init();\n    }\n    \n    init() {\n        this.sceneRenderer.init();\n        this.uiManager.init();\n        this.shapeManager.init();\n        this.animationManager.init();\n        this.groupManager.init();\n        this.gizmoManager.init();\n        this.sceneRenderer.animate();\n    }\n    displayIsometricSprites(sprites){\n        this.uiManager.displayIsometricSprites(sprites);\n    }\n    async renderShapes(fireSave = true) {\n        // Clear the root group\n        while (this.rootGroup.children.length > 0) {\n            const obj = this.rootGroup.children[0];\n            this.shapeFactory.disposeObject(obj);\n            this.shapeManager.originalMaterials.delete(obj);\n            this.rootGroup.remove(obj);\n        }\n    \n        // Add lights if they don't exist\n        if (!this.sceneRenderer.scene.getObjectByName('ambient-light')) {\n            const ambientLight = new window.THREE.AmbientLight(0xffffff, 0.6);\n            ambientLight.name = 'ambient-light';\n            this.sceneRenderer.scene.add(ambientLight);\n            const directionalLight = new window.THREE.DirectionalLight(0xffffff, 0.8);\n            directionalLight.position.set(5, 10, 7.5);\n            directionalLight.name = 'dir-light';\n            this.sceneRenderer.scene.add(directionalLight);\n        }\n            \n        const currentAnimation = this.state.currentAnimation;\n        const currentFrame = this.state.currentFrame;\n        \n        // Ensure animation and frame exist\n        if (!this.state.editingModel && !this.getCurrentFrame()) {\n            console.warn(\"Animation or frame doesn't exist:\", currentAnimation, currentFrame);\n            return;\n        }\n        \n        let frameData = this.getCurrentFrame();\n        //model is a Frame that has named groups as properties.\n        let model = this.state.renderData.model;\n\n        // Create a group for each group in the frame\n        for (const groupName in frameData) {     \n            const mergedGroup = this.getMergedGroup(groupName);\n            if( mergedGroup){\n                let threeGroup = await this.shapeFactory.createGroupFromJSON(mergedGroup); \n                threeGroup.name = groupName;\n                // Add the group to the root group\n                this.rootGroup.add(threeGroup);\n            }\n        }\n            \n        // Count total shapes for display\n        let totalShapes = 0;\n        for (const groupName in model) {\n            if (Array.isArray(model[groupName].shapes)) {\n                totalShapes += model[groupName].shapes.length;\n            }\n        }\n        document.getElementById('shape-count').textContent = totalShapes;\n        \n        // Update JSON display\n        document.getElementById('json-content').value = JSON.stringify(this.state.renderData, null, 2);\n    \n        if (fireSave) {\n            const myCustomEvent = new CustomEvent('saveGraphicsObject', {\n                detail: { data: this.state.renderData, propertyName: 'render' },\n                bubbles: true,\n                cancelable: true\n            });\n            document.body.dispatchEvent(myCustomEvent);\n        } else {\n            let valEl = this.gameEditor.elements.editor.querySelector(`#render-value`);\n            if (valEl) {\n                valEl.value = JSON.stringify(this.state.renderData);\n            }\n        }\n    \n        // Highlight the selected shape if any\n        this.shapeManager.highlightSelectedShape();\n        this.gizmoManager.updateGizmoPosition();\n    }\n    \n    getCurrentAnimation() {\n     \n        return this.state.renderData.animations[this.state.currentAnimation];\n    }\n    getCurrentFrame() {\n        if(this.state.editingModel){\n            return this.state.renderData.model;\n        } else {\n            return this.getCurrentAnimation()[this.state.currentFrame];\n        }\n    }\n    getCurrentGroup() {\n        return this.getCurrentFrame()[this.state.currentGroup];\n    }\n\n    refreshShapes(param) {\n        this.uiManager.updateList();\n        this.renderShapes(param);\n    }\n\n    createInspector(shape) {\n        this.uiManager.createInspector(shape);\n    }\n\n    setPreviewAnimationState(state) {\n        return this.animationManager.setPreviewAnimationState(state);\n    }\n\n    selectShape(index) {\n        return this.shapeManager.selectShape(index);\n    }\n\n    getMergedGroup(groupName){\n        let model = this.state.renderData.model;\n        const modelGroup = model[groupName];\n        if(this.state.editingModel){\n            return modelGroup;\n        }\n        return this.shapeFactory.getMergedGroup(model, this.getCurrentAnimation()[this.state.currentFrame], groupName );\n    }\n\n    getMergedShape() {\n        if (this.state.selectedShapeIndex >= 0) {            \n            const selectedGroup = this.getMergedGroup(this.state.currentGroup);\n            const shapes = selectedGroup?.shapes || [];        \n            let shape = shapes[this.state.selectedShapeIndex];  \n            if(this.state.editingModel){\n                return shape;\n            }     \n            if (shape) {  \n                shape.id = this.state.selectedShapeIndex;\n                // Avoid overwriting shape.id unless necessary\n                let currentGroupData = this.getCurrentGroup();\n                \n                // Ensure shapes array exists\n                currentGroupData.shapes = currentGroupData.shapes || [];\n                \n                // Find index of shape with matching id\n                const shapeIndex = currentGroupData.shapes.findIndex(s => s.id === shape.id);\n                console.log(shapeIndex, shape.id);\n                // Replace or append shape\n                if (shapeIndex >= 0) {\n                    currentGroupData.shapes[shapeIndex] = shape; // Replace\n                } else {\n                    currentGroupData.shapes.push(shape); // Append if not found\n                }\n                \n                return shape;\n            }            \n        }\n        return null;\n    }\n\n    getSelectedObject() {\n        const currentGroup = this.state.currentGroup;\n        if (currentGroup) {\n            let foundGroup = null;\n            this.rootGroup.traverse(obj => {\n                if (obj.isGroup && obj.name === currentGroup && obj.userData.isGroup) {\n                    foundGroup = obj;\n                }\n            });\n            let foundShape = null;\n            if(foundGroup){\n                foundGroup.traverse(obj => {\n                    if (obj.userData.isShape && obj.userData.index == this.state.selectedShapeIndex) {\n                        foundShape = obj;\n                    }\n                });\n            }\n            return foundShape || foundGroup || this.rootGroup;\n        }\n        return this.rootGroup;\n    }\n}\n",
+        "script": "// Core structure\nclass GraphicsEditor {\n    constructor(gameEditor, config, {ShapeFactory, GE_SceneRenderer, GE_ShapeManager, GE_AnimationManager, GE_RotationUtils, GE_UIManager, GE_GroupManager, GE_GizmoManager}) {\n        this.gameEditor = gameEditor;\n        this.config = config;\n        this.shapeFactory = new ShapeFactory();\n        this.canvas = document.getElementById('graphics-editor-canvas');\n        // Initialize sub-modules\n        this.sceneRenderer = new GE_SceneRenderer(gameEditor, this);\n        this.shapeManager = new GE_ShapeManager(gameEditor, this);\n        this.uiManager = new GE_UIManager(gameEditor, this);\n        this.animationManager = new GE_AnimationManager(gameEditor, this);\n        this.groupManager = new GE_GroupManager(gameEditor, this);\n        this.gizmoManager = new GE_GizmoManager(gameEditor, this);\n        this.rotationUtils = GE_RotationUtils;\n        // State management (simplified)\n        this.state = {\n            editingModel: true,\n            selectedShapeIndex: -1,\n            currentAnimation: \"\",\n            selectedGroup: \"main\",\n            currentFrame: 0,\n            renderData: { model: {}, animations: { idle: [{ main: { shapes: [], position: {x: 0, y: 0, z: 0}, rotation: {x:0,y:0,z:0}, scale: {x:1, y:1, z:1}} }] } }\n        };\n        \n        this.rootGroup = new window.THREE.Group(); // Main container for all shapes\n        this.rootGroup.name = \"rootGroup\";\n        this.init();\n    }\n    \n    init() {\n        this.sceneRenderer.init();\n        this.uiManager.init();\n        this.shapeManager.init();\n        this.animationManager.init();\n        this.groupManager.init();\n        this.gizmoManager.init();\n        this.sceneRenderer.animate();\n    }\n    displayIsometricSprites(sprites){\n        this.uiManager.displayIsometricSprites(sprites);\n    }\n    async renderShapes(fireSave = true) {\n        // Clear the root group\n        while (this.rootGroup.children.length > 0) {\n            const obj = this.rootGroup.children[0];\n            this.shapeFactory.disposeObject(obj);\n            this.shapeManager.originalMaterials.delete(obj);\n            this.rootGroup.remove(obj);\n        }\n    \n        // Add lights if they don't exist\n        if (!this.sceneRenderer.scene.getObjectByName('ambient-light')) {\n            const ambientLight = new window.THREE.AmbientLight(0xffffff, 0.6);\n            ambientLight.name = 'ambient-light';\n            this.sceneRenderer.scene.add(ambientLight);\n            const directionalLight = new window.THREE.DirectionalLight(0xffffff, 0.8);\n            directionalLight.position.set(5, 10, 7.5);\n            directionalLight.name = 'dir-light';\n            this.sceneRenderer.scene.add(directionalLight);\n        }\n            \n        const currentAnimation = this.state.currentAnimation;\n        const currentFrame = this.state.currentFrame;\n        \n        // Ensure animation and frame exist\n        if (!this.state.editingModel && !this.getCurrentFrame()) {\n            console.warn(\"Animation or frame doesn't exist:\", currentAnimation, currentFrame);\n            return;\n        }\n        \n        //model is a Frame that has named groups as properties.\n        let model = this.state.renderData.model;\n\n        // Create a group for each group in the frame\n        for (const groupName in model) {     \n            const mergedGroup = this.getMergedGroup(groupName);\n            if( mergedGroup){\n                let threeGroup = await this.shapeFactory.createGroupFromJSON(mergedGroup); \n                threeGroup.name = groupName;\n                // Add the group to the root group\n                this.rootGroup.add(threeGroup);\n            }\n        }\n            \n        // Count total shapes for display\n        let totalShapes = 0;\n        for (const groupName in model) {\n            if (Array.isArray(model[groupName].shapes)) {\n                totalShapes += model[groupName].shapes.length;\n            }\n        }\n        document.getElementById('shape-count').textContent = totalShapes;\n        \n        // Update JSON display\n        document.getElementById('json-content').value = JSON.stringify(this.state.renderData, null, 2);\n    \n        if (fireSave) {\n            const myCustomEvent = new CustomEvent('saveGraphicsObject', {\n                detail: { data: this.state.renderData, propertyName: 'render' },\n                bubbles: true,\n                cancelable: true\n            });\n            document.body.dispatchEvent(myCustomEvent);\n        } else {\n            let valEl = this.gameEditor.elements.editor.querySelector(`#render-value`);\n            if (valEl) {\n                valEl.value = JSON.stringify(this.state.renderData);\n            }\n        }\n    \n        // Highlight the selected shape if any\n        this.shapeManager.highlightSelectedShape();\n        this.gizmoManager.updateGizmoPosition();\n    }\n    \n    getCurrentAnimation() {\n     \n        return this.state.renderData.animations[this.state.currentAnimation];\n    }\n    getCurrentFrame() {\n        if(this.state.editingModel){\n            return this.state.renderData.model;\n        } else {\n            return this.getCurrentAnimation()[this.state.currentFrame];\n        }\n    }\n    getCurrentGroup() {\n        return this.getCurrentFrame()[this.state.currentGroup];\n    }\n\n    refreshShapes(param) {\n        this.uiManager.updateList();\n        this.renderShapes(param);\n    }\n\n    createInspector(shape) {\n        this.uiManager.createInspector(shape);\n    }\n\n    setPreviewAnimationState(state) {\n        return this.animationManager.setPreviewAnimationState(state);\n    }\n\n    selectShape(index) {\n        return this.shapeManager.selectShape(index);\n    }\n\n    getMergedGroup(groupName){\n        let model = this.state.renderData.model;\n        const modelGroup = model[groupName];\n        if(this.state.editingModel){\n            return modelGroup;\n        }\n        return this.shapeFactory.getMergedGroup(model, this.getCurrentAnimation()[this.state.currentFrame], groupName );\n    }\n\n    getMergedShape() {\n        if (this.state.selectedShapeIndex >= 0) {            \n            const selectedGroup = this.getMergedGroup(this.state.currentGroup);\n            const shapes = selectedGroup?.shapes || [];        \n            let shape = shapes[this.state.selectedShapeIndex];  \n            if(this.state.editingModel){\n                return shape;\n            }     \n            if (shape) {  \n                shape.id = this.state.selectedShapeIndex;\n                // Avoid overwriting shape.id unless necessary\n                let currentGroupData = this.getCurrentGroup() || {};\n                \n                // Ensure shapes array exists\n                currentGroupData.shapes = currentGroupData.shapes || [];\n                \n                // Find index of shape with matching id\n                const shapeIndex = currentGroupData.shapes.findIndex(s => s.id === shape.id);\n                // Replace or append shape\n                if (shapeIndex >= 0) {\n                    currentGroupData.shapes[shapeIndex] = shape; // Replace\n                } else {\n                    currentGroupData.shapes.push(shape); // Append if not found\n                }\n                \n                return shape;\n            }            \n        }\n        return null;\n    }\n\n    getSelectedObject() {\n        const currentGroup = this.state.currentGroup;\n        if (currentGroup) {\n            let foundGroup = null;\n            this.rootGroup.traverse(obj => {\n                if (obj.isGroup && obj.name === currentGroup && obj.userData.isGroup) {\n                    foundGroup = obj;\n                }\n            });\n            let foundShape = null;\n            if(foundGroup){\n                foundGroup.traverse(obj => {\n                    if (obj.userData.isShape && obj.userData.index == this.state.selectedShapeIndex) {\n                        foundShape = obj;\n                    }\n                });\n            }\n            return foundShape || foundGroup || this.rootGroup;\n        }\n        return this.rootGroup;\n    }\n}\n",
         "fileName": "GraphicsEditor",
         "title": "GraphicsEditor"
       },
@@ -26865,7 +26067,7 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "jszip.min.js"
       },
       "ShapeFactory": {
-        "script": "class ShapeFactory {\r\n    constructor() {\r\n        this.gltfCache = new Map();\r\n        this.gltfLoader = new THREE.GLTFLoader();\r\n    }\r\n    async createMergedGroupFromJSON(model, frameData, groupName) {\r\n        let mergedGroup = this.getMergedGroup(model, frameData, groupName);\r\n        if( mergedGroup){\r\n            return await this.createGroupFromJSON(mergedGroup);\r\n        } else {\r\n            return null;\r\n        }\r\n    }\r\n    async createGroupFromJSON(groupData) {\r\n        const group = new THREE.Group();\r\n        group.userData = { isGroup: true };\r\n        // Use Promise.all with map instead of forEach to properly await all shapes\r\n        await Promise.all(groupData.shapes.map(async (shape, index) => {\r\n            if (shape.type === 'gltf') {\r\n                await this.handleGLTFShape(shape, index, group);\r\n            } else {\r\n                this.handlePrimitiveShape(shape, index, group);\r\n            }\r\n        }));\r\n        group.position.x = groupData.position.x;\r\n        group.position.y = groupData.position.y;\r\n        group.position.z = groupData.position.z;\r\n        \r\n        group.rotation.x = groupData.rotation.x;\r\n        group.rotation.y = groupData.rotation.y;\r\n        group.rotation.z = groupData.rotation.z;\r\n\r\n        group.scale.x = groupData.scale.x;\r\n        group.scale.y = groupData.scale.y;\r\n        group.scale.z = groupData.scale.z;\r\n        return group;\r\n    }\r\n\r\n    async handleGLTFShape(shape, index, group) {\r\n        const applyTransformations = (model) => {\r\n            model.position.set(shape.x || 0, shape.y || 0, shape.z || 0);\r\n            model.scale.set(\r\n                shape.scaleX || 1,\r\n                shape.scaleY || 1,\r\n                shape.scaleZ || 1\r\n            );\r\n            model.rotation.set(\r\n                (shape.rotationX || 0) * Math.PI / 180,\r\n                (shape.rotationY || 0) * Math.PI / 180,\r\n                (shape.rotationZ || 0) * Math.PI / 180\r\n            );\r\n            \r\n            model.traverse(child => {\r\n                if (child.isMesh) {\r\n                    child.userData = {\r\n                        isShape: true,\r\n                        index: index,\r\n                        isGLTFChild: true\r\n                    };\r\n                }\r\n            });\r\n            \r\n            model.userData = {\r\n                isShape: true,\r\n                index: index,\r\n                isGLTFRoot: true,\r\n                castShadow: true\r\n            };\r\n            \r\n            group.add(model);\r\n        };\r\n\r\n        const cached = this.gltfCache.get(shape.url);\r\n        if (cached) {\r\n            applyTransformations(cached.scene.clone());\r\n        } else if (shape.url) {\r\n            // Wrap gltfLoader.load in a Promise to properly await it\r\n            await new Promise((resolve, reject) => {\r\n                this.gltfLoader.load(\r\n                    shape.url,\r\n                    (gltf) => {\r\n                        this.gltfCache.set(shape.url, gltf);\r\n                        applyTransformations(gltf.scene.clone());\r\n                        resolve();\r\n                    },\r\n                    undefined, // onProgress callback (optional)\r\n                    (error) => {\r\n                        console.error(`Failed to load GLTF model at ${shape.url}:`, error);\r\n                        reject(error);\r\n                    }\r\n                );\r\n            });\r\n        }\r\n    }\r\n\r\n    handlePrimitiveShape(shape, index, group) {\r\n        let geometry, material;\r\n\r\n        // Create material with specified color\r\n        material = new THREE.MeshStandardMaterial({ color: shape.color });\r\n\r\n        switch (shape.type) {\r\n            case 'sphere':\r\n                geometry = new THREE.SphereGeometry(shape.size / 2, 32, 32);\r\n                break;\r\n            case 'cube':\r\n                geometry = new THREE.BoxGeometry(shape.size, shape.size, shape.size);\r\n                break;\r\n            case 'box':\r\n                geometry = new THREE.BoxGeometry(shape.width, shape.height, shape.depth || shape.width);\r\n                break;\r\n            case 'cylinder':\r\n                geometry = new THREE.CylinderGeometry(shape.size / 2, shape.size / 2, shape.height, 32);\r\n                break;\r\n            case 'cone':\r\n                geometry = new THREE.ConeGeometry(shape.size / 2, shape.height, 32);\r\n                break;\r\n            case 'torus':\r\n                geometry = new THREE.TorusGeometry(shape.size / 2, shape.tubeSize || shape.size / 6, 16, 100);\r\n                break;\r\n            case 'tetrahedron':\r\n                geometry = new THREE.TetrahedronGeometry(shape.size / 2);\r\n                break;\r\n            default:\r\n                return;\r\n        }\r\n\r\n        const mesh = new THREE.Mesh(geometry, material);\r\n        mesh.userData = { isShape: true, castShadow: true, index: index };\r\n        \r\n        // Position and rotation\r\n        mesh.position.set(shape.x || 0, shape.y || 0, shape.z || 0);\r\n        mesh.rotation.set(\r\n            (shape.rotationX || 0) * Math.PI / 180,\r\n            (shape.rotationY || 0) * Math.PI / 180,\r\n            (shape.rotationZ || 0) * Math.PI / 180\r\n        );\r\n        mesh.scale.set(\r\n            shape.scaleX || 1,\r\n            shape.scaleY || 1,\r\n            shape.scaleZ || 1\r\n        );\r\n        group.add(mesh);\r\n    }\r\n\r\n    disposeObject(object) {\r\n        object.traverse(child => {\r\n            if (child.geometry) child.geometry.dispose();\r\n            if (child.material) {\r\n                if (Array.isArray(child.material)) {\r\n                    child.material.forEach(m => m.dispose());\r\n                } else {\r\n                    child.material.dispose();\r\n                }\r\n            }\r\n        });\r\n    }\r\n\r\n    getMergedGroup(model, frameData, groupName){\r\n        let modelGroup = model[groupName];\r\n        if(!modelGroup){\r\n            delete frameData[groupName];\r\n            return null;\r\n        }\r\n        let frameGroup = frameData[groupName];\r\n        if(!frameGroup){\r\n            //group doesnt exist in animation, copy from model\r\n            frameData[groupName] = JSON.parse(JSON.stringify(modelGroup));\r\n            frameGroup = frameData[groupName];\r\n            return frameGroup;\r\n        }\r\n\r\n        let mergedShapes = [];\r\n        for(let i = 0; i < modelGroup.shapes.length; i++){\r\n            let modelShape = modelGroup.shapes[i];\r\n            if(!frameGroup.shapes){\r\n                mergedShapes.push(modelShape);\r\n                continue;\r\n            }\r\n            let mergedShape = {};\r\n            let frameShape = frameGroup.shapes.find((shape) => shape.id == i);\r\n            if(typeof frameShape == \"undefined\"){\r\n                frameShape = { id: i };\r\n                frameGroup.shapes.push(frameShape);\r\n            }\r\n            for(const key in modelShape) {\r\n                if(key == 'id'){      \r\n                    delete modelShape.id;\r\n                    continue;\r\n                }\r\n                if(frameShape && typeof frameShape[key] != \"undefined\" && modelShape[key] === frameShape[key]){\r\n                    delete frameShape[key];                 \r\n                    mergedShape[key] = modelShape[key];\r\n                } else if(!frameShape || typeof frameShape[key] == \"undefined\"){\r\n                    mergedShape[key] = modelShape[key];\r\n                } else {\r\n                    mergedShape[key] = frameShape[key];\r\n                }\r\n            }\r\n            mergedShape = {...mergedShape, ...frameShape};\r\n            delete mergedShape.id;\r\n            mergedShapes.push(mergedShape);\r\n        }\r\n        if(frameGroup.shapes){\r\n            for(let i = frameGroup.shapes.length - 1; i >= 0; i--){\r\n                let shape = frameGroup.shapes[i];\r\n                if(Object.keys(shape).length == 1){\r\n                    frameGroup.shapes.splice(i, 1);\r\n                }\r\n            }  \r\n        }                         \r\n        const mergedGroup = {\r\n            ...modelGroup,\r\n            ...frameGroup,\r\n        };\r\n        if(modelGroup.shapes.length == 0){\r\n            frameGroup.shapes = [];\r\n        }\r\n        mergedGroup.shapes = mergedShapes;\r\n        return JSON.parse(JSON.stringify(mergedGroup));\r\n    }\r\n\r\n}",
+        "script": "class ShapeFactory {\r\n    constructor() {\r\n        this.gltfCache = new Map();\r\n        this.gltfLoader = new THREE.GLTFLoader();\r\n    }\r\n    async createMergedGroupFromJSON(model, frameData, groupName) {\r\n        let mergedGroup = this.getMergedGroup(model, frameData, groupName);\r\n        if( mergedGroup){\r\n            return await this.createGroupFromJSON(mergedGroup);\r\n        } else {\r\n            return null;\r\n        }\r\n    }\r\n    async createGroupFromJSON(groupData) {\r\n        const group = new THREE.Group();\r\n        group.userData = { isGroup: true };\r\n        // Use Promise.all with map instead of forEach to properly await all shapes\r\n        await Promise.all(groupData.shapes.map(async (shape, index) => {\r\n            if (shape.type === 'gltf') {\r\n                await this.handleGLTFShape(shape, index, group);\r\n            } else {\r\n                this.handlePrimitiveShape(shape, index, group);\r\n            }\r\n        }));\r\n        group.position.x = groupData.position.x;\r\n        group.position.y = groupData.position.y;\r\n        group.position.z = groupData.position.z;\r\n        \r\n        group.rotation.x = groupData.rotation.x;\r\n        group.rotation.y = groupData.rotation.y;\r\n        group.rotation.z = groupData.rotation.z;\r\n\r\n        group.scale.x = groupData.scale.x;\r\n        group.scale.y = groupData.scale.y;\r\n        group.scale.z = groupData.scale.z;\r\n        return group;\r\n    }\r\n\r\n    async handleGLTFShape(shape, index, group) {\r\n        const applyTransformations = (model) => {\r\n            model.position.set(shape.x || 0, shape.y || 0, shape.z || 0);\r\n            model.scale.set(\r\n                shape.scaleX || 1,\r\n                shape.scaleY || 1,\r\n                shape.scaleZ || 1\r\n            );\r\n            model.rotation.set(\r\n                (shape.rotationX || 0) * Math.PI / 180,\r\n                (shape.rotationY || 0) * Math.PI / 180,\r\n                (shape.rotationZ || 0) * Math.PI / 180\r\n            );\r\n            \r\n            model.traverse(child => {\r\n                if (child.isMesh) {\r\n                    child.userData = {\r\n                        isShape: true,\r\n                        index: index,\r\n                        isGLTFChild: true\r\n                    };\r\n                }\r\n            });\r\n            \r\n            model.userData = {\r\n                isShape: true,\r\n                index: index,\r\n                isGLTFRoot: true,\r\n                castShadow: true\r\n            };\r\n            \r\n            group.add(model);\r\n        };\r\n\r\n        const cached = this.gltfCache.get(shape.url);\r\n        if (cached) {\r\n            applyTransformations(cached.scene.clone());\r\n        } else if (shape.url) {\r\n            // Wrap gltfLoader.load in a Promise to properly await it\r\n            await new Promise((resolve, reject) => {\r\n                this.gltfLoader.load(\r\n                    shape.url,\r\n                    (gltf) => {\r\n                        this.gltfCache.set(shape.url, gltf);\r\n                        applyTransformations(gltf.scene.clone());\r\n                        resolve();\r\n                    },\r\n                    undefined, // onProgress callback (optional)\r\n                    (error) => {\r\n                        console.error(`Failed to load GLTF model at ${shape.url}:`, error);\r\n                        reject(error);\r\n                    }\r\n                );\r\n            });\r\n        }\r\n    }\r\n\r\n    handlePrimitiveShape(shape, index, group) {\r\n        let geometry, material;\r\n\r\n        // Create material with specified color\r\n        material = new THREE.MeshStandardMaterial({ color: shape.color });\r\n\r\n        switch (shape.type) {\r\n            case 'sphere':\r\n                geometry = new THREE.SphereGeometry(shape.size / 2, 32, 32);\r\n                break;\r\n            case 'cube':\r\n                geometry = new THREE.BoxGeometry(shape.size, shape.size, shape.size);\r\n                break;\r\n            case 'box':\r\n                geometry = new THREE.BoxGeometry(shape.width, shape.height, shape.depth || shape.width);\r\n                break;\r\n            case 'cylinder':\r\n                geometry = new THREE.CylinderGeometry(shape.size / 2, shape.size / 2, shape.height, 32);\r\n                break;\r\n            case 'cone':\r\n                geometry = new THREE.ConeGeometry(shape.size / 2, shape.height, 32);\r\n                break;\r\n            case 'torus':\r\n                geometry = new THREE.TorusGeometry(shape.size / 2, shape.tubeSize || shape.size / 6, 16, 100);\r\n                break;\r\n            case 'tetrahedron':\r\n                geometry = new THREE.TetrahedronGeometry(shape.size / 2);\r\n                break;\r\n            default:\r\n                return;\r\n        }\r\n\r\n        const mesh = new THREE.Mesh(geometry, material);\r\n        mesh.userData = { isShape: true, castShadow: true, index: index };\r\n        \r\n        // Position and rotation\r\n        mesh.position.set(shape.x || 0, shape.y || 0, shape.z || 0);\r\n        mesh.rotation.set(\r\n            (shape.rotationX || 0) * Math.PI / 180,\r\n            (shape.rotationY || 0) * Math.PI / 180,\r\n            (shape.rotationZ || 0) * Math.PI / 180\r\n        );\r\n        mesh.scale.set(\r\n            shape.scaleX || 1,\r\n            shape.scaleY || 1,\r\n            shape.scaleZ || 1\r\n        );\r\n        group.add(mesh);\r\n    }\r\n\r\n    disposeObject(object) {\r\n        object.traverse(child => {\r\n            if (child.geometry) child.geometry.dispose();\r\n            if (child.material) {\r\n                if (Array.isArray(child.material)) {\r\n                    child.material.forEach(m => m.dispose());\r\n                } else {\r\n                    child.material.dispose();\r\n                }\r\n            }\r\n        });\r\n    }\r\n\r\n    getMergedGroup(model, frameData, groupName){\r\n        let modelGroup = model[groupName];\r\n        if(!modelGroup){\r\n            delete frameData[groupName];\r\n            return null;\r\n        }\r\n        let frameGroup = frameData[groupName];\r\n        if(!frameGroup){\r\n            //group doesnt exist in animation, copy from model\r\n            frameData[groupName] = JSON.parse(JSON.stringify(modelGroup));\r\n            frameGroup = frameData[groupName];\r\n            for(let i = 0; i < frameGroup.shapes.length; i++){\r\n                frameGroup.shapes[i].id = i;\r\n            }\r\n        }\r\n\r\n        if(JSON.stringify(modelGroup.position) == JSON.stringify(frameGroup.position)){\r\n\r\n            delete frameGroup.position;\r\n        }\r\n        if(JSON.stringify(modelGroup.rotation) == JSON.stringify(frameGroup.rotation)){\r\n\r\n            delete frameGroup.rotation;\r\n        }\r\n        if(JSON.stringify(modelGroup.scale) == JSON.stringify(frameGroup.scale)){\r\n\r\n            delete frameGroup.scale;\r\n        }\r\n        let mergedShapes = [];\r\n        for(let i = 0; i < modelGroup.shapes.length; i++){\r\n            let modelShape = modelGroup.shapes[i];\r\n            if(!frameGroup.shapes){\r\n                mergedShapes.push(modelShape);\r\n                continue;\r\n            }\r\n            let mergedShape = {};\r\n            let frameShape = frameGroup.shapes.find((shape) => shape.id == i);\r\n            if(typeof frameShape == \"undefined\"){\r\n                frameShape = { id: i };\r\n                frameGroup.shapes.push(frameShape);\r\n            }\r\n            for(const key in modelShape) {\r\n                if(key == 'id'){      \r\n                    delete modelShape.id;\r\n                    continue;\r\n                }\r\n                if(frameShape && typeof frameShape[key] != \"undefined\" && modelShape[key] === frameShape[key]){\r\n                    delete frameShape[key];                 \r\n                    mergedShape[key] = modelShape[key];\r\n                } else if(!frameShape || typeof frameShape[key] == \"undefined\"){\r\n                    mergedShape[key] = modelShape[key];\r\n                } else {\r\n                    mergedShape[key] = frameShape[key];\r\n                }\r\n            }\r\n            mergedShape = {...mergedShape, ...frameShape};\r\n            delete mergedShape.id;\r\n            mergedShapes.push(mergedShape);\r\n        }\r\n        if(frameGroup.shapes){\r\n            for(let i = frameGroup.shapes.length - 1; i >= 0; i--){\r\n                let shape = frameGroup.shapes[i];\r\n                if(Object.keys(shape).length == 1){\r\n                    frameGroup.shapes.splice(i, 1);\r\n                }\r\n            }  \r\n        }                         \r\n        const mergedGroup = {\r\n            ...modelGroup,\r\n            ...frameGroup,\r\n        };\r\n        if(modelGroup.shapes.length == 0){\r\n            frameGroup.shapes = [];\r\n        }\r\n\r\n        mergedGroup.shapes = mergedShapes;\r\n        let returnVal = JSON.parse(JSON.stringify(mergedGroup));\r\n        if(frameGroup.shapes && frameGroup.shapes.length == 0){\r\n            delete frameGroup.shapes;\r\n        }\r\n        if(Object.keys(frameGroup).length == 0) {            \r\n           delete frameData[groupName];\r\n        }\r\n        return returnVal;\r\n    }\r\n\r\n}",
         "fileName": "ShapeFactory"
       },
       "ImageManager": {
@@ -26968,12 +26170,12 @@ const DEFAULT_PROJECT_CONFIG = {
       },
       "GE_GroupManager": {
         "title": "GE_GroupManager",
-        "script": "class GE_GroupManager {\n    constructor(gameEditor, graphicsEditor) {\n        this.gameEditor = gameEditor;\n        this.graphicsEditor = graphicsEditor;\n        this.DEFAULT_GROUP = {\n            shapes: [],\n            position: { x: 0, y: 0, z: 0 },\n            rotation: { x: 0, y: 0, z: 0 },\n            scale: { x: 1.0, y: 1.0, z: 1.0 }\n        };\n    }\n\n    init() {\n        document.getElementById('create-group').addEventListener('click', this.createGroup.bind(this));\n        document.getElementById('delete-group').addEventListener('click', this.deleteGroup.bind(this));\n        \n       \n        // Update the group list initially\n        this.updateGroupList();\n        \n        // Initialize drag-and-drop\n        this.initDragAndDrop();\n    }\n\n    // Initialize drag and drop functionality\n    initDragAndDrop() {\n        // Make group items drop targets\n        const groupList = document.getElementById('group-list');\n        groupList.addEventListener('dragover', this.handleDragOver.bind(this));\n        groupList.addEventListener('drop', this.handleDrop.bind(this));\n    }\n    \n    handleDragOver(e) {\n        e.preventDefault(); // Allow drop\n        e.dataTransfer.dropEffect = 'move';\n        \n        // Highlight the group being dragged over\n        const groupItem = this.findGroupItemFromEvent(e);\n        if (groupItem) {\n            // Remove highlight from all groups\n            document.querySelectorAll('.group-item').forEach(item => {\n                item.classList.remove('drag-over');\n            });\n            \n            // Add highlight to target group\n            groupItem.classList.add('drag-over');\n        }\n    }\n    \n    handleDrop(e) {\n        e.preventDefault();\n        \n        // Remove all drag-over highlights\n        document.querySelectorAll('.group-item').forEach(item => {\n            item.classList.remove('drag-over');\n        });\n        \n        // Find the target group\n        const groupItem = this.findGroupItemFromEvent(e);\n        if (!groupItem) return;\n        \n        const targetGroup = groupItem.dataset.group;\n        \n        // Get the shape data from dataTransfer\n        const data = e.dataTransfer.getData('text/plain');\n        if (!data) return;\n        \n        try {\n            const dragData = JSON.parse(data);\n            const { shapeIndex, sourceGroup } = dragData;\n            \n            // Don't move if source and target are the same\n            if (sourceGroup === targetGroup) return;\n            \n            // Move the shape to the target group\n            this.moveToGroup(parseInt(shapeIndex), sourceGroup, targetGroup);\n        } catch (err) {\n            console.error('Error processing drop:', err);\n        }\n    }\n    \n    findGroupItemFromEvent(e) {\n        let target = e.target;\n        // Traverse up to find the group-item\n        while (target && !target.classList.contains('group-item')) {\n            target = target.parentElement;\n            if (!target || target === document.body) return null;\n        }\n        return target;\n    }\n\n    // Create a new group at the frame level\n    createGroup() {\n        const groupName = prompt(\"Enter group name:\", \"group_\" + Date.now());\n        if (!groupName || groupName === \"shapes\") {\n            alert(\"Invalid group name or 'shapes' is reserved\");\n            return;\n        }\n\n        const currentFrame = this.graphicsEditor.state.currentFrame;\n        \n        // Ensure we have current frame data\n        if (!this.graphicsEditor.getCurrentFrame()) {\n            this.graphicsEditor.getCurrentAnimation()[currentFrame] = {};\n        }\n        \n        // Switch selection to the new group\n        this.graphicsEditor.state.currentGroup = groupName;\n        // Initialize group if it doesn't exist\n        if (!this.graphicsEditor.getCurrentGroup()) {\n            // Using JSON parse/stringify for deep copying\n            this.graphicsEditor.getCurrentFrame()[groupName] = JSON.parse(JSON.stringify(this.DEFAULT_GROUP));\n        }\n        \n        \n        // Refresh UI\n        this.graphicsEditor.uiManager.updateList();\n        this.graphicsEditor.refreshShapes(true);\n    }\n\n    // Move an object from one group to another\n    moveToGroup(shapeIndex, fromGroupName, toGroupName) {\n        const currentFrameData = this.graphicsEditor.getCurrentFrame();\n        \n        // Find the shape in the source group\n        const sourceGroup = currentFrameData[fromGroupName];\n        if (!sourceGroup) {\n            console.warn(`Source group ${fromGroupName} not found`);\n            return;\n        }\n        \n        // Find the shape\n        const shapeToMove = sourceGroup.shapes[shapeIndex];\n        if (!shapeToMove) {\n            console.warn(`Shape at index ${shapeIndex} not found in ${fromGroupName}`);\n            return;\n        }\n        \n        // Remove from source group\n        sourceGroup.shapes.splice(shapeIndex, 1);\n        \n        // Ensure target group exists\n        if (!currentFrameData[toGroupName]) {\n            currentFrameData[toGroupName] = this.DEFAULT_GROUP;\n        }\n        \n        // Add to target group\n        currentFrameData[toGroupName].shapes.push(shapeToMove);\n        \n        // Clear selection\n        this.graphicsEditor.state.selectedShapeIndex = -1;\n        \n        // Update UI\n        this.graphicsEditor.refreshShapes(true);\n    }\n\n    getGroupData(groupName){\n        let groupData = this.graphicsEditor.getCurrentFrame()[groupName];\n        if(!groupData){\n            return this.graphicsEditor.state.renderData.model[groupName];\n        }\n        return groupData;\n    }\n    // Select a group to work with\n    selectGroup(groupName) {\n        if (!groupName) return;\n        \n        // Update the selected group name\n        this.graphicsEditor.state.currentGroup = groupName;\n        this.graphicsEditor.state.selectedShapeIndex = -1;\n        let groupData = this.getGroupData(groupName);\n        this.graphicsEditor.uiManager.updateList();\n        this.graphicsEditor.shapeManager.highlightSelectedShape();\n        if(groupData){\n            // Update the UI to show shapes in this group\n            this.graphicsEditor.uiManager.createGroupInspector(groupData);\n            this.graphicsEditor.gizmoManager.transformSelectedObject(this.getGroupObject(groupName));\n            \n        }\n        // Update the selected class on group items\n        this.updateSelectedGroupClass(groupName);\n    }\n    updateSelectedGroupClass(groupName) {\n        // Remove selected class from all group items\n        const groupItems = document.querySelectorAll('.group-item');\n        groupItems.forEach(item => {\n            item.classList.remove('selected');\n        });\n        \n        // Add selected class to the newly selected group\n        const selectedGroupItem = Array.from(groupItems).find(\n            item => item.dataset.group === groupName\n        );\n        \n        if (selectedGroupItem) {\n            selectedGroupItem.classList.add('selected');\n        }\n    }\n    // Remove a group and place its contents back in the shapes group\n    deleteGroup() {\n        \n        const currentFrameData = this.graphicsEditor.getCurrentFrame();\n        const currentGroup = this.graphicsEditor.getCurrentGroup();\n        // Get shapes from the selected group\n        const groupShapes = currentGroup.shapes;\n        if (groupShapes.length > 0) {\n            alert('Group must be empty to delete.');\n            return;\n        }\n                        \n        // Remove the group\n        delete currentFrameData[this.graphicsEditor.state.currentGroup];\n        \n        // Reset selection to shapes group\n        this.graphicsEditor.state.currentGroup = Object.keys(currentFrameData)[0];\n        this.graphicsEditor.state.selectedShapeIndex = -1;\n        \n        // Update UI\n        this.updateGroupList();\n        this.graphicsEditor.refreshShapes(true);\n    }\n    getGroupObject(groupName) {\n        let foundGroup = null;\n        this.graphicsEditor.rootGroup.traverse(obj => {\n            if (obj.isGroup && obj.name === groupName && obj.userData.isGroup) {\n                foundGroup = obj;\n            }\n        });\n        return foundGroup;\n    }\n\n\n    applyGroupTransform(groupName, position, rotation, scale) {\n        // Get the current frame data\n        const frameData = this.graphicsEditor.getCurrentFrame();\n        \n        // Ensure the group exists in the frame data\n        if (!frameData[groupName]) {\n            console.warn(`Group ${groupName} not found in frame data`);\n            return;\n        }\n \n        // Save transformations to the group data\n        frameData[groupName].position = {\n            x: position.x,\n            y: position.y,\n            z: position.z\n        };\n        frameData[groupName].rotation = {\n            x: rotation.x,\n            y: rotation.y,\n            z: rotation.z\n        };\n        frameData[groupName].scale = {\n            x: scale.x,\n            y: scale.y,\n            z: scale.z\n        };\n    \n        // Refresh the scene to see changes\n        this.graphicsEditor.refreshShapes(true);\n    }\n    // Update the group list in the UI\n    updateGroupList() {\n        const list = document.getElementById('group-list');\n        if (!list) {\n            console.warn(\"Group list element not found\");\n            return;\n        }\n        \n        list.innerHTML = '';\n        \n        for (const group of Object.keys(this.graphicsEditor.state.renderData.model)) {\n            const groupItem = document.createElement('div');\n            groupItem.classList.add('group-item');\n            if (group === this.graphicsEditor.state.currentGroup) {\n                groupItem.classList.add('selected');\n            }\n            \n            groupItem.textContent = group;\n            groupItem.addEventListener('click', () => this.selectGroup(group));\n            \n            // Make it a valid drop target for drag and drop\n            groupItem.dataset.group = group;\n            \n            list.appendChild(groupItem);\n        }\n    }\n}",
+        "script": "class GE_GroupManager {\n    constructor(gameEditor, graphicsEditor) {\n        this.gameEditor = gameEditor;\n        this.graphicsEditor = graphicsEditor;\n        this.DEFAULT_GROUP = {\n            shapes: [],\n            position: { x: 0, y: 0, z: 0 },\n            rotation: { x: 0, y: 0, z: 0 },\n            scale: { x: 1.0, y: 1.0, z: 1.0 }\n        };\n    }\n\n    init() {\n        document.getElementById('create-group').addEventListener('click', this.createGroup.bind(this));\n        document.getElementById('delete-group').addEventListener('click', this.deleteGroup.bind(this));\n        \n       \n        // Update the group list initially\n        this.updateGroupList();\n        \n        // Initialize drag-and-drop\n        this.initDragAndDrop();\n    }\n\n    // Initialize drag and drop functionality\n    initDragAndDrop() {\n        // Make group items drop targets\n        const groupList = document.getElementById('group-list');\n        groupList.addEventListener('dragover', this.handleDragOver.bind(this));\n        groupList.addEventListener('drop', this.handleDrop.bind(this));\n    }\n    \n    handleDragOver(e) {\n        e.preventDefault(); // Allow drop\n        e.dataTransfer.dropEffect = 'move';\n        \n        // Highlight the group being dragged over\n        const groupItem = this.findGroupItemFromEvent(e);\n        if (groupItem) {\n            // Remove highlight from all groups\n            document.querySelectorAll('.group-item').forEach(item => {\n                item.classList.remove('drag-over');\n            });\n            \n            // Add highlight to target group\n            groupItem.classList.add('drag-over');\n        }\n    }\n    \n    handleDrop(e) {\n        e.preventDefault();\n        \n        // Remove all drag-over highlights\n        document.querySelectorAll('.group-item').forEach(item => {\n            item.classList.remove('drag-over');\n        });\n        \n        // Find the target group\n        const groupItem = this.findGroupItemFromEvent(e);\n        if (!groupItem) return;\n        \n        const targetGroup = groupItem.dataset.group;\n        \n        // Get the shape data from dataTransfer\n        const data = e.dataTransfer.getData('text/plain');\n        if (!data) return;\n        \n        try {\n            const dragData = JSON.parse(data);\n            const { shapeIndex, sourceGroup } = dragData;\n            \n            // Don't move if source and target are the same\n            if (sourceGroup === targetGroup) return;\n            \n            // Move the shape to the target group\n            this.moveToGroup(parseInt(shapeIndex), sourceGroup, targetGroup);\n        } catch (err) {\n            console.error('Error processing drop:', err);\n        }\n    }\n    \n    findGroupItemFromEvent(e) {\n        let target = e.target;\n        // Traverse up to find the group-item\n        while (target && !target.classList.contains('group-item')) {\n            target = target.parentElement;\n            if (!target || target === document.body) return null;\n        }\n        return target;\n    }\n\n    // Create a new group at the frame level\n    createGroup() {\n        const groupName = prompt(\"Enter group name:\", \"group_\" + Date.now());\n        if (!groupName || groupName === \"shapes\") {\n            alert(\"Invalid group name or 'shapes' is reserved\");\n            return;\n        }\n\n        const currentFrame = this.graphicsEditor.state.currentFrame;\n        \n        // Ensure we have current frame data\n        if (!this.graphicsEditor.getCurrentFrame()) {\n            this.graphicsEditor.getCurrentAnimation()[currentFrame] = {};\n        }\n        \n        // Switch selection to the new group\n        this.graphicsEditor.state.currentGroup = groupName;\n        // Initialize group if it doesn't exist\n        if (!this.graphicsEditor.getCurrentGroup()) {\n            // Using JSON parse/stringify for deep copying\n            this.graphicsEditor.getCurrentFrame()[groupName] = JSON.parse(JSON.stringify(this.DEFAULT_GROUP));\n        }\n        \n        \n        // Refresh UI\n        this.graphicsEditor.uiManager.updateList();\n        this.graphicsEditor.refreshShapes(true);\n    }\n\n    // Move an object from one group to another\n    moveToGroup(shapeIndex, fromGroupName, toGroupName) {\n        const currentFrameData = this.graphicsEditor.getCurrentFrame();\n        \n        // Find the shape in the source group\n        const sourceGroup = currentFrameData[fromGroupName];\n        if (!sourceGroup) {\n            console.warn(`Source group ${fromGroupName} not found`);\n            return;\n        }\n        \n        // Find the shape\n        const shapeToMove = sourceGroup.shapes[shapeIndex];\n        if (!shapeToMove) {\n            console.warn(`Shape at index ${shapeIndex} not found in ${fromGroupName}`);\n            return;\n        }\n        \n        // Remove from source group\n        sourceGroup.shapes.splice(shapeIndex, 1);\n        \n        // Ensure target group exists\n        if (!currentFrameData[toGroupName]) {\n            currentFrameData[toGroupName] = this.DEFAULT_GROUP;\n        }\n        \n        // Add to target group\n        currentFrameData[toGroupName].shapes.push(shapeToMove);\n        \n        // Clear selection\n        this.graphicsEditor.state.selectedShapeIndex = -1;\n        \n        // Update UI\n        this.graphicsEditor.refreshShapes(true);\n    }\n\n    getGroupData(groupName){\n        let groupData = this.graphicsEditor.getCurrentFrame()[groupName];\n        if(!groupData){\n            return this.graphicsEditor.state.renderData.model[groupName];\n        }\n        return groupData;\n    }\n    // Select a group to work with\n    selectGroup(groupName) {\n        if (!groupName) return;\n        \n        // Update the selected group name\n        this.graphicsEditor.state.currentGroup = groupName;\n        this.graphicsEditor.state.selectedShapeIndex = -1;\n        let groupData = this.graphicsEditor.getMergedGroup(groupName);\n        this.graphicsEditor.uiManager.updateList();\n        this.graphicsEditor.shapeManager.highlightSelectedShape();\n        if(groupData){\n            // Update the UI to show shapes in this group\n            this.graphicsEditor.uiManager.createGroupInspector(groupData);\n            this.graphicsEditor.gizmoManager.transformSelectedObject(this.getGroupObject(groupName));\n            \n        }\n        // Update the selected class on group items\n        this.updateSelectedGroupClass(groupName);\n    }\n    updateSelectedGroupClass(groupName) {\n        // Remove selected class from all group items\n        const groupItems = document.querySelectorAll('.group-item');\n        groupItems.forEach(item => {\n            item.classList.remove('selected');\n        });\n        \n        // Add selected class to the newly selected group\n        const selectedGroupItem = Array.from(groupItems).find(\n            item => item.dataset.group === groupName\n        );\n        \n        if (selectedGroupItem) {\n            selectedGroupItem.classList.add('selected');\n        }\n    }\n    // Remove a group and place its contents back in the shapes group\n    deleteGroup() {\n        \n        const currentFrameData = this.graphicsEditor.getCurrentFrame();\n        const currentGroup = this.graphicsEditor.getCurrentGroup();\n        // Get shapes from the selected group\n        const groupShapes = currentGroup.shapes;\n        if (groupShapes.length > 0) {\n            alert('Group must be empty to delete.');\n            return;\n        }\n                        \n        // Remove the group\n        delete currentFrameData[this.graphicsEditor.state.currentGroup];\n        \n        // Reset selection to shapes group\n        this.graphicsEditor.state.currentGroup = Object.keys(currentFrameData)[0];\n        this.graphicsEditor.state.selectedShapeIndex = -1;\n        \n        // Update UI\n        this.updateGroupList();\n        this.graphicsEditor.refreshShapes(true);\n    }\n    getGroupObject(groupName) {\n        let foundGroup = null;\n        this.graphicsEditor.rootGroup.traverse(obj => {\n            if (obj.isGroup && obj.name === groupName && obj.userData.isGroup) {\n                foundGroup = obj;\n            }\n        });\n        return foundGroup;\n    }\n\n\n    applyGroupTransform(groupName, position, rotation, scale) {\n        // Get the current frame data\n        const frameData = this.graphicsEditor.getCurrentFrame();\n        \n        // Ensure the group exists in the frame data\n        if (!frameData[groupName]) {\n            console.warn(`Group ${groupName} not found in frame data`);\n            return;\n        }\n \n        // Save transformations to the group data\n        frameData[groupName].position = {\n            x: position.x,\n            y: position.y,\n            z: position.z\n        };\n        frameData[groupName].rotation = {\n            x: rotation.x,\n            y: rotation.y,\n            z: rotation.z\n        };\n        frameData[groupName].scale = {\n            x: scale.x,\n            y: scale.y,\n            z: scale.z\n        };\n    \n        // Refresh the scene to see changes\n        this.graphicsEditor.refreshShapes(true);\n    }\n    // Update the group list in the UI\n    updateGroupList() {\n        const list = document.getElementById('group-list');\n        if (!list) {\n            console.warn(\"Group list element not found\");\n            return;\n        }\n        \n        list.innerHTML = '';\n        \n        for (const group of Object.keys(this.graphicsEditor.state.renderData.model)) {\n            const groupItem = document.createElement('div');\n            groupItem.classList.add('group-item');\n            if (group === this.graphicsEditor.state.currentGroup) {\n                groupItem.classList.add('selected');\n            }\n            \n            groupItem.textContent = group;\n            groupItem.addEventListener('click', () => this.selectGroup(group));\n            \n            // Make it a valid drop target for drag and drop\n            groupItem.dataset.group = group;\n            \n            list.appendChild(groupItem);\n        }\n    }\n}",
         "fileName": "GE_GroupManager"
       },
       "GE_GizmoManager": {
         "title": "GE_GizmoManager",
-        "script": "class GE_GizmoManager {\n    constructor(gameEditor, graphicsEditor) {\n        this.gameEditor = gameEditor;\n        this.graphicsEditor = graphicsEditor;\n        this.gizmoMode = 'translate';\n        this.gizmoGroup = null;\n        this.isDragging = false;\n        this.selectedAxis = null;\n        this.mouse = new window.THREE.Vector2();\n        this.lastMouse = new window.THREE.Vector2();\n        this.raycaster = new window.THREE.Raycaster();\n        this.originalScale = new window.THREE.Vector3(1, 1, 1);\n        this.originalPosition = new window.THREE.Vector3(0, 0, 0);\n        this.originalRotation = new window.THREE.Vector3(0, 0, 0);\n    }\n\n    init() {\n\n        const canvas = this.graphicsEditor.sceneRenderer.renderer.domElement;\n        canvas.addEventListener('mousedown', this.onMouseDown.bind(this));\n        canvas.addEventListener('mousemove', this.onDrag.bind(this));\n        canvas.addEventListener('mouseup', this.onMouseUp.bind(this));\n\n    }\n\n    destroyGizmo() {\n        if (this.gizmoGroup) {\n            this.gizmoGroup.children.forEach(child => {\n                if (child.geometry) child.geometry.dispose();\n                if (child.material) child.material.dispose();\n            });\n            this.graphicsEditor.sceneRenderer.scene.remove(this.gizmoGroup);\n            this.gizmoGroup = null;\n        }\n    }\n\n    createGizmo() {\n        this.destroyGizmo();\n        this.gizmoGroup = new window.THREE.Group();\n        this.graphicsEditor.sceneRenderer.scene.add(this.gizmoGroup);\n    \n        let center = new window.THREE.Vector3();\n        let xOffset = 1, yOffset = 1, zOffset = 1;\n    \n        if (this.currentTransformTarget.children.length > 0) {\n            const boundingBox = new window.THREE.Box3().setFromObject(this.currentTransformTarget);\n            const size = new window.THREE.Vector3();\n            if (!boundingBox.isEmpty() && isFinite(boundingBox.min.x)) {\n                boundingBox.getSize(size);\n                boundingBox.getCenter(center);\n                xOffset = size.x / 2 + 1;\n                yOffset = size.y / 2 + 1;\n                zOffset = size.z / 2 + 1;\n            } else {\n                this.currentTransformTarget.getWorldPosition(center);\n                console.warn(\"Invalid bounding box; using group position.\");\n            }\n        } else {\n            const boundingBox = new window.THREE.Box3().setFromObject(this.currentTransformTarget);\n            const size = new window.THREE.Vector3();\n            if (!boundingBox.isEmpty() && isFinite(boundingBox.min.x)) {\n                boundingBox.getSize(size);\n                boundingBox.getCenter(center);\n                xOffset = size.x / 2 + 1;\n                yOffset = size.y / 2 + 1;\n                zOffset = size.z / 2 + 1;\n            } else {\n                this.currentTransformTarget.getWorldPosition(center);\n                console.warn(\"Invalid bounding box; using group position.\");\n            }\n        }\n    \n        this.gizmoGroup.position.copy(center);\n    \n        if (this.graphicsEditor.state.gizmoMode === \"translate\") {\n            const arrowLength = 5;\n            const arrowHeadLength = 2;\n            const arrowHeadWidth = 1;\n    \n            // X-axis (red)\n            const xCylinderGeometry = new window.THREE.CylinderGeometry(0.5, 0.5, arrowLength - arrowHeadLength, 8);\n            const xCylinderMaterial = new window.THREE.MeshBasicMaterial({ color: 0xff0000 });\n            const xCylinder = new window.THREE.Mesh(xCylinderGeometry, xCylinderMaterial);\n            xCylinder.rotation.z = Math.PI / 2;\n            xCylinder.position.x = xOffset + (arrowLength - arrowHeadLength) / 2;\n            xCylinder.name = \"translate-x\";\n            this.gizmoGroup.add(xCylinder);\n    \n            const xConeGeometry = new window.THREE.ConeGeometry(arrowHeadWidth, arrowHeadLength, 8);\n            const xConeMaterial = new window.THREE.MeshBasicMaterial({ color: 0xff0000 });\n            const xCone = new window.THREE.Mesh(xConeGeometry, xConeMaterial);\n            xCone.rotation.z = 3 * Math.PI / 2;\n            xCone.position.x = xOffset + arrowLength - arrowHeadLength / 2;\n            xCone.name = \"translate-x\";\n            this.gizmoGroup.add(xCone);\n    \n            // Y-axis (green)\n            const yCylinderGeometry = new window.THREE.CylinderGeometry(0.5, 0.5, arrowLength - arrowHeadLength, 8);\n            const yCylinderMaterial = new window.THREE.MeshBasicMaterial({ color: 0x00ff00 });\n            const yCylinder = new window.THREE.Mesh(yCylinderGeometry, yCylinderMaterial);\n            yCylinder.position.y = yOffset + (arrowLength - arrowHeadLength) / 2;\n            yCylinder.name = \"translate-y\";\n            this.gizmoGroup.add(yCylinder);\n    \n            const yConeGeometry = new window.THREE.ConeGeometry(arrowHeadWidth, arrowHeadLength, 8);\n            const yConeMaterial = new window.THREE.MeshBasicMaterial({ color: 0x00ff00 });\n            const yCone = new window.THREE.Mesh(yConeGeometry, yConeMaterial);\n            yCone.position.y = yOffset + arrowLength - arrowHeadLength / 2;\n            yCone.name = \"translate-y\";\n            this.gizmoGroup.add(yCone);\n    \n            // Z-axis (blue)\n            const zCylinderGeometry = new window.THREE.CylinderGeometry(0.5, 0.5, arrowLength - arrowHeadLength, 8);\n            const zCylinderMaterial = new window.THREE.MeshBasicMaterial({ color: 0x0000ff });\n            const zCylinder = new window.THREE.Mesh(zCylinderGeometry, zCylinderMaterial);\n            zCylinder.rotation.x = Math.PI / 2;\n            zCylinder.position.z = zOffset + (arrowLength - arrowHeadLength) / 2;\n            zCylinder.name = \"translate-z\";\n            this.gizmoGroup.add(zCylinder);\n    \n            const zConeGeometry = new window.THREE.ConeGeometry(arrowHeadWidth, arrowHeadLength, 8);\n            const zConeMaterial = new window.THREE.MeshBasicMaterial({ color: 0x0000ff });\n            const zCone = new window.THREE.Mesh(zConeGeometry, zConeMaterial);\n            zCone.rotation.x = Math.PI / 2;\n            zCone.position.z = zOffset + arrowLength - arrowHeadLength / 2;\n            zCone.name = \"translate-z\";\n            this.gizmoGroup.add(zCone);\n        } else if (this.graphicsEditor.state.gizmoMode === \"rotate\") {\n            const ringRadius = 4;\n            const ringTube = 0.5;\n    \n            // X-axis (red)\n            const xRingGeometry = new window.THREE.TorusGeometry(ringRadius, ringTube, 16, 100);\n            const xRingMaterial = new window.THREE.MeshBasicMaterial({ color: 0xff0000 });\n            const xRing = new window.THREE.Mesh(xRingGeometry, xRingMaterial);\n            xRing.rotation.y = Math.PI / 2;\n            xRing.position.x = xOffset;\n            xRing.name = \"rotate-x\";\n            this.gizmoGroup.add(xRing);\n    \n            // Y-axis (green)\n            const yRingGeometry = new window.THREE.TorusGeometry(ringRadius, ringTube, 16, 100);\n            const yRingMaterial = new window.THREE.MeshBasicMaterial({ color: 0x00ff00 });\n            const yRing = new window.THREE.Mesh(yRingGeometry, yRingMaterial);\n            yRing.rotation.x = Math.PI / 2;\n            yRing.position.y = yOffset;\n            yRing.name = \"rotate-y\";\n            this.gizmoGroup.add(yRing);\n    \n            // Z-axis (blue)\n            const zRingGeometry = new window.THREE.TorusGeometry(ringRadius, ringTube, 16, 100);\n            const zRingMaterial = new window.THREE.MeshBasicMaterial({ color: 0x0000ff });\n            const zRing = new window.THREE.Mesh(zRingGeometry, zRingMaterial);\n            zRing.position.z = zOffset;\n            zRing.name = \"rotate-z\";\n            this.gizmoGroup.add(zRing);\n        } else if (this.graphicsEditor.state.gizmoMode === \"scale\") {\n            const boxSize = 2;\n    \n            // X-axis (red)\n            const xBoxGeometry = new window.THREE.BoxGeometry(boxSize, boxSize, boxSize);\n            const xBoxMaterial = new window.THREE.MeshBasicMaterial({ color: 0xff0000 });\n            const xBox = new window.THREE.Mesh(xBoxGeometry, xBoxMaterial);\n            xBox.position.set(xOffset, 0, 0);\n            xBox.name = \"scale-x\";\n            this.gizmoGroup.add(xBox);\n    \n            // Y-axis (green)\n            const yBoxGeometry = new window.THREE.BoxGeometry(boxSize, boxSize, boxSize);\n            const yBoxMaterial = new window.THREE.MeshBasicMaterial({ color: 0x00ff00 });\n            const yBox = new window.THREE.Mesh(yBoxGeometry, yBoxMaterial);\n            yBox.position.set(0, yOffset, 0);\n            yBox.name = \"scale-y\";\n            this.gizmoGroup.add(yBox);\n    \n            // Z-axis (blue)\n            const zBoxGeometry = new window.THREE.BoxGeometry(boxSize, boxSize, boxSize);\n            const zBoxMaterial = new window.THREE.MeshBasicMaterial({ color: 0x0000ff });\n            const zBox = new window.THREE.Mesh(zBoxGeometry, zBoxMaterial);\n            zBox.position.set(0, 0, zOffset);\n            zBox.name = \"scale-z\";\n            this.gizmoGroup.add(zBox);\n        }\n    }   \n\n    setGizmoMode(mode) {\n        this.graphicsEditor.state.gizmoMode = mode;\n        this.createGizmo();\n    }\n\n    updateGizmoPosition() {\n        if (!this.currentTransformTarget) return;\n                \n        let center = new window.THREE.Vector3();\n        let xOffset = 1, yOffset = 1, zOffset = 1;\n    \n        if (this.currentTransformTarget.children.length > 0) {\n            const boundingBox = new window.THREE.Box3().setFromObject(this.currentTransformTarget);\n            const size = new window.THREE.Vector3();\n            if (!boundingBox.isEmpty() && isFinite(boundingBox.min.x)) {\n                boundingBox.getSize(size);\n                boundingBox.getCenter(center);\n                xOffset = size.x / 2 + 1;\n                yOffset = size.y / 2 + 1;\n                zOffset = size.z / 2 + 1;\n            } else {\n                this.currentTransformTarget.getWorldPosition(center);\n                console.warn(\"Invalid bounding box; using group position.\");\n            }\n        } else {\n            const boundingBox = new window.THREE.Box3().setFromObject(this.currentTransformTarget);\n            const size = new window.THREE.Vector3();\n            if (!boundingBox.isEmpty() && isFinite(boundingBox.min.x)) {\n                boundingBox.getSize(size);\n                boundingBox.getCenter(center);\n                xOffset = size.x / 2 + 1;\n                yOffset = size.y / 2 + 1;\n                zOffset = size.z / 2 + 1;\n            } else {\n                this.currentTransformTarget.getWorldPosition(center);\n                console.warn(\"Invalid bounding box; using group position.\");\n            }\n        }\n    \n        this.gizmoGroup.position.copy(center);\n    \n        this.gizmoGroup.children.forEach(child => {\n            const name = child.name;\n            if (!name) return;\n    \n            child.position.set(0, 0, 0);\n    \n            if (name.startsWith(\"translate-\")) {\n                const arrowLength = 5;\n                const arrowHeadLength = 2;\n                if (name === \"translate-x\") {\n                    child.position.x = xOffset + (child.geometry.type === \"CylinderGeometry\" ? (arrowLength - arrowHeadLength) / 2 : arrowLength - arrowHeadLength / 2);\n                } else if (name === \"translate-y\") {\n                    child.position.y = yOffset + (child.geometry.type === \"CylinderGeometry\" ? (arrowLength - arrowHeadLength) / 2 : arrowLength - arrowHeadLength / 2);\n                } else if (name === \"translate-z\") {\n                    child.position.z = zOffset + (child.geometry.type === \"CylinderGeometry\" ? (arrowLength - arrowHeadLength) / 2 : arrowLength - arrowHeadLength / 2);\n                }\n            } else if (name.startsWith(\"rotate-\")) {\n                if (name === \"rotate-x\") child.position.x = xOffset;\n                else if (name === \"rotate-y\") child.position.y = yOffset;\n                else if (name === \"rotate-z\") child.position.z = zOffset;\n            } else if (name.startsWith(\"scale-\")) {\n                if (name === \"scale-x\") child.position.x = xOffset;\n                else if (name === \"scale-y\") child.position.y = yOffset;\n                else if (name === \"scale-z\") child.position.z = zOffset;\n            }\n        });\n    \n        // Ensure gizmoGroup is in scene (not rootGroup, as it’s a UI overlay)\n        if (!this.graphicsEditor.sceneRenderer.scene.children.includes(this.gizmoGroup)) {\n            this.graphicsEditor.sceneRenderer.scene.add(this.gizmoGroup);\n            console.warn(\"Gizmo was removed from scene; re-added.\");\n        }\n    }\n\n          \n    onMouseDown(event) {\n        if (!this.gizmoGroup) {\n            return;\n        }\n    \n        const canvas = this.graphicsEditor.sceneRenderer.renderer.domElement;\n        const rect = canvas.getBoundingClientRect();\n        this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;\n        this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;\n    \n        this.raycaster.setFromCamera(this.mouse, this.graphicsEditor.sceneRenderer.camera);\n        const intersects = this.raycaster.intersectObjects(this.gizmoGroup.children, true);\n    \n        if (intersects.length > 0) {\n            const object = intersects[0].object;\n            this.selectedAxis = object.name.split('-')[1];\n            this.isDragging = true;\n            if (this.graphicsEditor.sceneRenderer.controls) {\n                this.graphicsEditor.sceneRenderer.controls.enabled = false;\n            }\n    \n            this.lastMouse.copy(this.mouse);\n        } else {\n            console.log(\"No intersection with gizmo\");\n        }\n    }\n\n    onMouseUp() {\n        this.isDragging = false;\n        this.selectedAxis = null;\n\n        if (this.graphicsEditor.sceneRenderer.controls) {\n            this.graphicsEditor.sceneRenderer.controls.enabled = true;\n        }\n    }\n    onDrag(event) {\n        if (!this.isDragging || !this.selectedAxis || !this.currentTransformTarget) return;\n        \n        const canvas = this.graphicsEditor.sceneRenderer.renderer.domElement;\n        const rect = canvas.getBoundingClientRect();\n        this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;\n        this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;\n        const deltaMouse = this.mouse.clone().sub(this.lastMouse);\n        \n        const camera = this.graphicsEditor.sceneRenderer.camera;\n        const cameraPosition = camera.position.clone();\n        const objectPosition = this.currentTransformTarget.position.clone();\n        \n        const cameraRight = new window.THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);\n        const cameraUp = new window.THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion);\n        const cameraForward = new window.THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);\n        const cameraToObject = objectPosition.clone().sub(cameraPosition);\n        \n        if (this.graphicsEditor.state.gizmoMode === \"translate\") {\n            const moveSpeed = 100;\n            \n            if (this.selectedAxis === \"x\") {\n                const worldX = new window.THREE.Vector3(1, 0, 0);\n                const dotProduct = worldX.dot(cameraRight);\n                const moveFactor = Math.sign(dotProduct) * deltaMouse.x * moveSpeed;\n                this.currentTransformTarget.position.x += moveFactor;\n            } else if (this.selectedAxis === \"y\") {\n                const worldY = new window.THREE.Vector3(0, 1, 0);\n                const dotProduct = worldY.dot(cameraUp);\n                const moveFactor = Math.sign(dotProduct) * deltaMouse.y * moveSpeed;\n                this.currentTransformTarget.position.y += moveFactor;\n            } else if (this.selectedAxis === \"z\") {\n                const worldZ = new window.THREE.Vector3(0, 0, 1);\n                const cameraRightXZ = new window.THREE.Vector3(cameraRight.x, 0, cameraRight.z).normalize();\n                const dotProduct = worldZ.dot(cameraRightXZ);\n                const moveFactor = Math.sign(dotProduct) * deltaMouse.x * moveSpeed;\n                this.currentTransformTarget.position.z += moveFactor;\n            }\n        } else if (this.graphicsEditor.state.gizmoMode === \"rotate\") {\n            const rotateSpeed = 2 * Math.PI;\n            \n            if (this.selectedAxis === \"x\") {\n                const worldX = new window.THREE.Vector3(1, 0, 0);\n                const dotProduct = worldX.dot(cameraRight);\n                const rotateFactor = -Math.sign(dotProduct) * deltaMouse.x * rotateSpeed;\n                this.currentTransformTarget.rotation.x += rotateFactor;\n            } else if (this.selectedAxis === \"y\") {\n                const worldY = new window.THREE.Vector3(0, 1, 0);\n                const dotProduct = worldY.dot(cameraUp);\n                const rotateFactor = Math.sign(dotProduct) * deltaMouse.x * rotateSpeed;\n                this.currentTransformTarget.rotation.y += rotateFactor;\n            } else if (this.selectedAxis === \"z\") {\n                const worldZ = new window.THREE.Vector3(0, 0, 1);\n                const dotProduct = cameraToObject.normalize().dot(worldZ);\n                const rotateFactor = Math.sign(dotProduct) * deltaMouse.x * rotateSpeed;\n                this.currentTransformTarget.rotation.z += rotateFactor;\n            }\n        } else if (this.graphicsEditor.state.gizmoMode === \"scale\") {\n            const scaleSpeed = 2;\n            let scaleFactor = 0;\n            \n            if (this.selectedAxis === \"x\") {\n                const worldX = new window.THREE.Vector3(1, 0, 0);\n                const dotProduct = worldX.dot(cameraRight);\n                scaleFactor = Math.sign(dotProduct) * deltaMouse.x * scaleSpeed;\n            } else if (this.selectedAxis === \"y\") {\n                const worldY = new window.THREE.Vector3(0, 1, 0);\n                const dotProduct = worldY.dot(cameraUp);\n                scaleFactor = Math.sign(dotProduct) * deltaMouse.y * scaleSpeed;\n            } else if (this.selectedAxis === \"z\") {\n                const worldZ = new window.THREE.Vector3(0, 0, 1);\n                const cameraRightXZ = new window.THREE.Vector3(cameraRight.x, 0, cameraRight.z).normalize();\n                const dotProduct = worldZ.dot(cameraRightXZ);\n                scaleFactor = Math.sign(dotProduct) * deltaMouse.x * scaleSpeed;\n            }\n            \n            if (this.selectedAxis === \"x\") {\n                this.currentTransformTarget.scale.x += scaleFactor;\n                if (this.currentTransformTarget.scale.x < 0.1) this.currentTransformTarget.scale.x = 0.1;\n            } else if (this.selectedAxis === \"y\") {\n                this.currentTransformTarget.scale.y += scaleFactor;\n                if (this.currentTransformTarget.scale.y < 0.1) this.currentTransformTarget.scale.y = 0.1;\n            } else if (this.selectedAxis === \"z\") {\n                this.currentTransformTarget.scale.z += scaleFactor;\n                if (this.currentTransformTarget.scale.z < 0.1) this.currentTransformTarget.scale.z = 0.1;\n            }\n        }\n        this.updateGizmoPosition();\n        this.lastMouse.copy(this.mouse);\n        this.updateInspectorValues();\n        this.applyCurrentTransform(); \n    }\n\n    updateInspectorValues() {\n        if (!this.currentTransformTarget) return;\n        \n        // Update all relevant input fields\n        const updateInput = (property, value) => {\n            const input = document.querySelector(`[data-property=\"${property}\"]`);\n            if (input) input.value = value;\n        };\n        \n        // Position\n        updateInput('x', this.currentTransformTarget.position.x);\n        updateInput('y', this.currentTransformTarget.position.y);\n        updateInput('z', this.currentTransformTarget.position.z);\n        \n        // Rotation (convert to degrees)\n        updateInput('rotationX', this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.x));\n        updateInput('rotationY', this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.y));\n        updateInput('rotationZ', this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.z));\n        \n        // Scale\n        updateInput('scaleX', this.currentTransformTarget.scale.x);\n        updateInput('scaleY', this.currentTransformTarget.scale.y);\n        updateInput('scaleZ', this.currentTransformTarget.scale.z);\n    }\n \n    applyCurrentTransform() {\n        if (!this.currentTransformTarget) return;\n    \n        // For groups\n        if (this.currentTransformTarget.userData?.isGroup) {\n            const groupId = this.currentTransformTarget.name;\n            const groupData = this.graphicsEditor.groupManager.getGroupData(groupId);\n            \n            // Directly update group transform without full refresh\n            groupData.position = {\n                x: this.currentTransformTarget.position.x,\n                y: this.currentTransformTarget.position.y,\n                z: this.currentTransformTarget.position.z\n            };\n            groupData.rotation = {\n                x: this.currentTransformTarget.rotation.x,\n                y: this.currentTransformTarget.rotation.y,\n                z: this.currentTransformTarget.rotation.z\n            };\n            groupData.scale = {\n                x: this.currentTransformTarget.scale.x,\n                y: this.currentTransformTarget.scale.y,\n                z: this.currentTransformTarget.scale.z\n            };\n        }\n        // For individual shapes\n        else if (this.graphicsEditor.state.selectedShapeIndex >= 0) {\n            const shape = this.graphicsEditor.shapeManager.getShapeData(this.graphicsEditor.state.selectedShapeIndex);\n            if (shape) {\n                shape.x = this.currentTransformTarget.position.x;\n                shape.y = this.currentTransformTarget.position.y;\n                shape.z = this.currentTransformTarget.position.z;\n                \n                shape.rotationX = this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.x);\n                shape.rotationY = this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.y);\n                shape.rotationZ = this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.z);\n                \n                shape.scaleX = this.currentTransformTarget.scale.x;\n                shape.scaleY = this.currentTransformTarget.scale.y;\n                shape.scaleZ = this.currentTransformTarget.scale.z;\n            }\n        }\n        this.graphicsEditor.renderShapes(false);\n        // Optional: Auto-save or trigger update\n    }\n\n\n    transformSelectedObject(targetObject) {\n        if(!targetObject){\n            targetObject = this.graphicsEditor.getSelectedObject();\n        }\n        console.log('transform', targetObject);\n        // Determine the target object - prioritize the passed target, then selected group, then rootGroup\n        let target;\n        if (targetObject) {\n            target = targetObject;\n        } else {\n            // Try to get the currently selected group\n            const currentGroup = this.graphicsEditor.state.currentGroup;\n            if (currentGroup) {\n                // Find the group in the scene\n                this.graphicsEditor.rootGroup.traverse(obj => {\n                    if (obj.isGroup && obj.name === currentGroup && obj.userData.isGroup) {\n                        target = obj;\n                    }\n                });\n            }\n            \n            // Fall back to rootGroup if no selected group found\n            if (!target) {\n                target = this.graphicsEditor.rootGroup;\n            }\n        }\n    \n        // If we still don't have a target, return\n        if (!target) return;\n    \n        this.currentTransformTarget = target;\n    \n        // If target is a group, ensure it's in rootGroup and populated\n        if (this.currentTransformTarget.userData?.isGroup) {\n            const groupId = this.currentTransformTarget.userData.groupId;\n            const group = this.graphicsEditor.groupManager.getGroupObject(groupId);\n            if (group) {\n                // Ensure group is in rootGroup\n                if (this.currentTransformTarget.parent !== this.graphicsEditor.rootGroup) {\n                    if (this.currentTransformTarget.parent) {\n                        this.currentTransformTarget.parent.remove(this.currentTransformTarget);\n                    }\n                    this.graphicsEditor.rootGroup.add(this.currentTransformTarget);\n                }    \n            }\n        }\n    \n        this.originalPosition.copy(this.currentTransformTarget.position);\n        this.originalRotation.copy(this.currentTransformTarget.rotation);\n        this.originalScale.copy(this.currentTransformTarget.scale);\n        \n        // Inject transform controls into inspector instead of creating separate UI\n        this.injectTransformControlsToInspector();\n        this.updateGizmoPosition();\n    }\n      \n    injectTransformControlsToInspector() {\n        const inspector = document.getElementById('inspector');\n        \n        // Create transform controls section\n        const transformSection = document.createElement('div');\n        transformSection.className = 'transform-controls-section';\n        transformSection.innerHTML = `\n            <h3>Transform ${this.currentTransformTarget.name || 'Current Frame'}</h3>\n            <div class=\"transform-buttons\">\n                <button id=\"translate-btn\" class=\"${this.gizmoMode === 'translate' ? 'active' : ''}\">Translate</button>\n                <button id=\"rotate-btn\" class=\"${this.gizmoMode === 'rotate' ? 'active' : ''}\">Rotate</button>\n                <button id=\"scale-btn\" class=\"${this.gizmoMode === 'scale' ? 'active' : ''}\">Scale</button>\n            </div>\n        `;\n        // Insert at the top of the inspector\n        if (inspector.firstChild) {\n            inspector.insertBefore(transformSection, inspector.firstChild);\n        } else {\n            inspector.appendChild(transformSection);\n        }      \n        // Add event listeners for transform mode buttons\n        document.getElementById('translate-btn').addEventListener('click', () => {\n            this.setGizmoMode('translate');\n            this.updateModeButtonsUI();\n        });\n        \n        document.getElementById('rotate-btn').addEventListener('click', () => {\n            this.setGizmoMode('rotate');\n            this.updateModeButtonsUI();\n        });\n        \n        document.getElementById('scale-btn').addEventListener('click', () => {\n            this.setGizmoMode('scale');\n            this.updateModeButtonsUI();\n        });\n        \n        this.updateInspectorValues();\n        this.setGizmoMode('translate');\n        this.updateModeButtonsUI();\n    }\n    \n    updateModeButtonsUI() {\n        const translateBtn = document.getElementById('translate-btn');\n        const rotateBtn = document.getElementById('rotate-btn');\n        const scaleBtn = document.getElementById('scale-btn');\n        \n        translateBtn.className = this.gizmoMode === 'translate' ? 'active' : '';\n        rotateBtn.className = this.gizmoMode === 'rotate' ? 'active' : '';\n        scaleBtn.className = this.gizmoMode === 'scale' ? 'active' : '';\n    }\n    \n}",
+        "script": "class GE_GizmoManager {\n    constructor(gameEditor, graphicsEditor) {\n        this.gameEditor = gameEditor;\n        this.graphicsEditor = graphicsEditor;\n        this.gizmoMode = 'translate';\n        this.gizmoGroup = null;\n        this.isDragging = false;\n        this.selectedAxis = null;\n        this.mouse = new window.THREE.Vector2();\n        this.lastMouse = new window.THREE.Vector2();\n        this.raycaster = new window.THREE.Raycaster();\n        this.originalScale = new window.THREE.Vector3(1, 1, 1);\n        this.originalPosition = new window.THREE.Vector3(0, 0, 0);\n        this.originalRotation = new window.THREE.Vector3(0, 0, 0);\n    }\n\n    init() {\n\n        const canvas = this.graphicsEditor.sceneRenderer.renderer.domElement;\n        canvas.addEventListener('mousedown', this.onMouseDown.bind(this));\n        canvas.addEventListener('mousemove', this.onDrag.bind(this));\n        canvas.addEventListener('mouseup', this.onMouseUp.bind(this));\n\n    }\n\n    destroyGizmo() {\n        if (this.gizmoGroup) {\n            this.gizmoGroup.children.forEach(child => {\n                if (child.geometry) child.geometry.dispose();\n                if (child.material) child.material.dispose();\n            });\n            this.graphicsEditor.sceneRenderer.scene.remove(this.gizmoGroup);\n            this.gizmoGroup = null;\n        }\n    }\n\n    createGizmo() {\n        this.destroyGizmo();\n        this.gizmoGroup = new window.THREE.Group();\n        this.graphicsEditor.sceneRenderer.scene.add(this.gizmoGroup);\n    \n        let center = new window.THREE.Vector3();\n        let xOffset = 1, yOffset = 1, zOffset = 1;\n    \n        if (this.currentTransformTarget.children.length > 0) {\n            const boundingBox = new window.THREE.Box3().setFromObject(this.currentTransformTarget);\n            const size = new window.THREE.Vector3();\n            if (!boundingBox.isEmpty() && isFinite(boundingBox.min.x)) {\n                boundingBox.getSize(size);\n                boundingBox.getCenter(center);\n                xOffset = size.x / 2 + 1;\n                yOffset = size.y / 2 + 1;\n                zOffset = size.z / 2 + 1;\n            } else {\n                this.currentTransformTarget.getWorldPosition(center);\n                console.warn(\"Invalid bounding box; using group position.\");\n            }\n        } else {\n            const boundingBox = new window.THREE.Box3().setFromObject(this.currentTransformTarget);\n            const size = new window.THREE.Vector3();\n            if (!boundingBox.isEmpty() && isFinite(boundingBox.min.x)) {\n                boundingBox.getSize(size);\n                boundingBox.getCenter(center);\n                xOffset = size.x / 2 + 1;\n                yOffset = size.y / 2 + 1;\n                zOffset = size.z / 2 + 1;\n            } else {\n                this.currentTransformTarget.getWorldPosition(center);\n                console.warn(\"Invalid bounding box; using group position.\");\n            }\n        }\n    \n        this.gizmoGroup.position.copy(center);\n    \n        if (this.graphicsEditor.state.gizmoMode === \"translate\") {\n            const arrowLength = 5;\n            const arrowHeadLength = 2;\n            const arrowHeadWidth = 1;\n    \n            // X-axis (red)\n            const xCylinderGeometry = new window.THREE.CylinderGeometry(0.5, 0.5, arrowLength - arrowHeadLength, 8);\n            const xCylinderMaterial = new window.THREE.MeshBasicMaterial({ color: 0xff0000 });\n            const xCylinder = new window.THREE.Mesh(xCylinderGeometry, xCylinderMaterial);\n            xCylinder.rotation.z = Math.PI / 2;\n            xCylinder.position.x = xOffset + (arrowLength - arrowHeadLength) / 2;\n            xCylinder.name = \"translate-x\";\n            this.gizmoGroup.add(xCylinder);\n    \n            const xConeGeometry = new window.THREE.ConeGeometry(arrowHeadWidth, arrowHeadLength, 8);\n            const xConeMaterial = new window.THREE.MeshBasicMaterial({ color: 0xff0000 });\n            const xCone = new window.THREE.Mesh(xConeGeometry, xConeMaterial);\n            xCone.rotation.z = 3 * Math.PI / 2;\n            xCone.position.x = xOffset + arrowLength - arrowHeadLength / 2;\n            xCone.name = \"translate-x\";\n            this.gizmoGroup.add(xCone);\n    \n            // Y-axis (green)\n            const yCylinderGeometry = new window.THREE.CylinderGeometry(0.5, 0.5, arrowLength - arrowHeadLength, 8);\n            const yCylinderMaterial = new window.THREE.MeshBasicMaterial({ color: 0x00ff00 });\n            const yCylinder = new window.THREE.Mesh(yCylinderGeometry, yCylinderMaterial);\n            yCylinder.position.y = yOffset + (arrowLength - arrowHeadLength) / 2;\n            yCylinder.name = \"translate-y\";\n            this.gizmoGroup.add(yCylinder);\n    \n            const yConeGeometry = new window.THREE.ConeGeometry(arrowHeadWidth, arrowHeadLength, 8);\n            const yConeMaterial = new window.THREE.MeshBasicMaterial({ color: 0x00ff00 });\n            const yCone = new window.THREE.Mesh(yConeGeometry, yConeMaterial);\n            yCone.position.y = yOffset + arrowLength - arrowHeadLength / 2;\n            yCone.name = \"translate-y\";\n            this.gizmoGroup.add(yCone);\n    \n            // Z-axis (blue)\n            const zCylinderGeometry = new window.THREE.CylinderGeometry(0.5, 0.5, arrowLength - arrowHeadLength, 8);\n            const zCylinderMaterial = new window.THREE.MeshBasicMaterial({ color: 0x0000ff });\n            const zCylinder = new window.THREE.Mesh(zCylinderGeometry, zCylinderMaterial);\n            zCylinder.rotation.x = Math.PI / 2;\n            zCylinder.position.z = zOffset + (arrowLength - arrowHeadLength) / 2;\n            zCylinder.name = \"translate-z\";\n            this.gizmoGroup.add(zCylinder);\n    \n            const zConeGeometry = new window.THREE.ConeGeometry(arrowHeadWidth, arrowHeadLength, 8);\n            const zConeMaterial = new window.THREE.MeshBasicMaterial({ color: 0x0000ff });\n            const zCone = new window.THREE.Mesh(zConeGeometry, zConeMaterial);\n            zCone.rotation.x = Math.PI / 2;\n            zCone.position.z = zOffset + arrowLength - arrowHeadLength / 2;\n            zCone.name = \"translate-z\";\n            this.gizmoGroup.add(zCone);\n        } else if (this.graphicsEditor.state.gizmoMode === \"rotate\") {\n            const ringRadius = 4;\n            const ringTube = 0.5;\n    \n            // X-axis (red)\n            const xRingGeometry = new window.THREE.TorusGeometry(ringRadius, ringTube, 16, 100);\n            const xRingMaterial = new window.THREE.MeshBasicMaterial({ color: 0xff0000 });\n            const xRing = new window.THREE.Mesh(xRingGeometry, xRingMaterial);\n            xRing.rotation.y = Math.PI / 2;\n            xRing.position.x = xOffset;\n            xRing.name = \"rotate-x\";\n            this.gizmoGroup.add(xRing);\n    \n            // Y-axis (green)\n            const yRingGeometry = new window.THREE.TorusGeometry(ringRadius, ringTube, 16, 100);\n            const yRingMaterial = new window.THREE.MeshBasicMaterial({ color: 0x00ff00 });\n            const yRing = new window.THREE.Mesh(yRingGeometry, yRingMaterial);\n            yRing.rotation.x = Math.PI / 2;\n            yRing.position.y = yOffset;\n            yRing.name = \"rotate-y\";\n            this.gizmoGroup.add(yRing);\n    \n            // Z-axis (blue)\n            const zRingGeometry = new window.THREE.TorusGeometry(ringRadius, ringTube, 16, 100);\n            const zRingMaterial = new window.THREE.MeshBasicMaterial({ color: 0x0000ff });\n            const zRing = new window.THREE.Mesh(zRingGeometry, zRingMaterial);\n            zRing.position.z = zOffset;\n            zRing.name = \"rotate-z\";\n            this.gizmoGroup.add(zRing);\n        } else if (this.graphicsEditor.state.gizmoMode === \"scale\") {\n            const boxSize = 2;\n    \n            // X-axis (red)\n            const xBoxGeometry = new window.THREE.BoxGeometry(boxSize, boxSize, boxSize);\n            const xBoxMaterial = new window.THREE.MeshBasicMaterial({ color: 0xff0000 });\n            const xBox = new window.THREE.Mesh(xBoxGeometry, xBoxMaterial);\n            xBox.position.set(xOffset, 0, 0);\n            xBox.name = \"scale-x\";\n            this.gizmoGroup.add(xBox);\n    \n            // Y-axis (green)\n            const yBoxGeometry = new window.THREE.BoxGeometry(boxSize, boxSize, boxSize);\n            const yBoxMaterial = new window.THREE.MeshBasicMaterial({ color: 0x00ff00 });\n            const yBox = new window.THREE.Mesh(yBoxGeometry, yBoxMaterial);\n            yBox.position.set(0, yOffset, 0);\n            yBox.name = \"scale-y\";\n            this.gizmoGroup.add(yBox);\n    \n            // Z-axis (blue)\n            const zBoxGeometry = new window.THREE.BoxGeometry(boxSize, boxSize, boxSize);\n            const zBoxMaterial = new window.THREE.MeshBasicMaterial({ color: 0x0000ff });\n            const zBox = new window.THREE.Mesh(zBoxGeometry, zBoxMaterial);\n            zBox.position.set(0, 0, zOffset);\n            zBox.name = \"scale-z\";\n            this.gizmoGroup.add(zBox);\n        }\n    }   \n\n    setGizmoMode(mode) {\n        this.graphicsEditor.state.gizmoMode = mode;\n        this.createGizmo();\n    }\n\n    updateGizmoPosition() {\n        if (!this.currentTransformTarget || !this.gizmoGroup) return;\n                \n        let center = new window.THREE.Vector3();\n        let xOffset = 1, yOffset = 1, zOffset = 1;\n    \n        if (this.currentTransformTarget.children.length > 0) {\n            const boundingBox = new window.THREE.Box3().setFromObject(this.currentTransformTarget);\n            const size = new window.THREE.Vector3();\n            if (!boundingBox.isEmpty() && isFinite(boundingBox.min.x)) {\n                boundingBox.getSize(size);\n                boundingBox.getCenter(center);\n                xOffset = size.x / 2 + 1;\n                yOffset = size.y / 2 + 1;\n                zOffset = size.z / 2 + 1;\n            } else {\n                this.currentTransformTarget.getWorldPosition(center);\n                console.warn(\"Invalid bounding box; using group position.\");\n            }\n        } else {\n            const boundingBox = new window.THREE.Box3().setFromObject(this.currentTransformTarget);\n            const size = new window.THREE.Vector3();\n            if (!boundingBox.isEmpty() && isFinite(boundingBox.min.x)) {\n                boundingBox.getSize(size);\n                boundingBox.getCenter(center);\n                xOffset = size.x / 2 + 1;\n                yOffset = size.y / 2 + 1;\n                zOffset = size.z / 2 + 1;\n            } else {\n                this.currentTransformTarget.getWorldPosition(center);\n                console.warn(\"Invalid bounding box; using group position.\");\n            }\n        }\n    \n        this.gizmoGroup.position.copy(center);\n    \n        this.gizmoGroup.children.forEach(child => {\n            const name = child.name;\n            if (!name) return;\n    \n            child.position.set(0, 0, 0);\n    \n            if (name.startsWith(\"translate-\")) {\n                const arrowLength = 5;\n                const arrowHeadLength = 2;\n                if (name === \"translate-x\") {\n                    child.position.x = xOffset + (child.geometry.type === \"CylinderGeometry\" ? (arrowLength - arrowHeadLength) / 2 : arrowLength - arrowHeadLength / 2);\n                } else if (name === \"translate-y\") {\n                    child.position.y = yOffset + (child.geometry.type === \"CylinderGeometry\" ? (arrowLength - arrowHeadLength) / 2 : arrowLength - arrowHeadLength / 2);\n                } else if (name === \"translate-z\") {\n                    child.position.z = zOffset + (child.geometry.type === \"CylinderGeometry\" ? (arrowLength - arrowHeadLength) / 2 : arrowLength - arrowHeadLength / 2);\n                }\n            } else if (name.startsWith(\"rotate-\")) {\n                if (name === \"rotate-x\") child.position.x = xOffset;\n                else if (name === \"rotate-y\") child.position.y = yOffset;\n                else if (name === \"rotate-z\") child.position.z = zOffset;\n            } else if (name.startsWith(\"scale-\")) {\n                if (name === \"scale-x\") child.position.x = xOffset;\n                else if (name === \"scale-y\") child.position.y = yOffset;\n                else if (name === \"scale-z\") child.position.z = zOffset;\n            }\n        });\n    \n        // Ensure gizmoGroup is in scene (not rootGroup, as it’s a UI overlay)\n        if (!this.graphicsEditor.sceneRenderer.scene.children.includes(this.gizmoGroup)) {\n            this.graphicsEditor.sceneRenderer.scene.add(this.gizmoGroup);\n            console.warn(\"Gizmo was removed from scene; re-added.\");\n        }\n    }\n\n          \n    onMouseDown(event) {\n        if (!this.gizmoGroup) {\n            return;\n        }\n    \n        const canvas = this.graphicsEditor.sceneRenderer.renderer.domElement;\n        const rect = canvas.getBoundingClientRect();\n        this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;\n        this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;\n    \n        this.raycaster.setFromCamera(this.mouse, this.graphicsEditor.sceneRenderer.camera);\n        const intersects = this.raycaster.intersectObjects(this.gizmoGroup.children, true);\n    \n        if (intersects.length > 0) {\n            const object = intersects[0].object;\n            this.selectedAxis = object.name.split('-')[1];\n            this.isDragging = true;\n            if (this.graphicsEditor.sceneRenderer.controls) {\n                this.graphicsEditor.sceneRenderer.controls.enabled = false;\n            }\n    \n            this.lastMouse.copy(this.mouse);\n        } else {\n            console.log(\"No intersection with gizmo\");\n        }\n    }\n\n    onMouseUp() {\n        this.isDragging = false;\n        this.selectedAxis = null;\n\n        if (this.graphicsEditor.sceneRenderer.controls) {\n            this.graphicsEditor.sceneRenderer.controls.enabled = true;\n        }\n    }\n    onDrag(event) {\n        if (!this.isDragging || !this.selectedAxis || !this.currentTransformTarget) return;\n        \n        const canvas = this.graphicsEditor.sceneRenderer.renderer.domElement;\n        const rect = canvas.getBoundingClientRect();\n        this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;\n        this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;\n        const deltaMouse = this.mouse.clone().sub(this.lastMouse);\n        \n        const camera = this.graphicsEditor.sceneRenderer.camera;\n        const cameraPosition = camera.position.clone();\n        const objectPosition = this.currentTransformTarget.position.clone();\n        \n        const cameraRight = new window.THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);\n        const cameraUp = new window.THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion);\n        const cameraForward = new window.THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);\n        const cameraToObject = objectPosition.clone().sub(cameraPosition);\n        \n        if (this.graphicsEditor.state.gizmoMode === \"translate\") {\n            const moveSpeed = 100;\n            \n            if (this.selectedAxis === \"x\") {\n                const worldX = new window.THREE.Vector3(1, 0, 0);\n                const dotProduct = worldX.dot(cameraRight);\n                const moveFactor = Math.sign(dotProduct) * deltaMouse.x * moveSpeed;\n                this.currentTransformTarget.position.x += moveFactor;\n            } else if (this.selectedAxis === \"y\") {\n                const worldY = new window.THREE.Vector3(0, 1, 0);\n                const dotProduct = worldY.dot(cameraUp);\n                const moveFactor = Math.sign(dotProduct) * deltaMouse.y * moveSpeed;\n                this.currentTransformTarget.position.y += moveFactor;\n            } else if (this.selectedAxis === \"z\") {\n                const worldZ = new window.THREE.Vector3(0, 0, 1);\n                const cameraRightXZ = new window.THREE.Vector3(cameraRight.x, 0, cameraRight.z).normalize();\n                const dotProduct = worldZ.dot(cameraRightXZ);\n                const moveFactor = Math.sign(dotProduct) * deltaMouse.x * moveSpeed;\n                this.currentTransformTarget.position.z += moveFactor;\n            }\n        } else if (this.graphicsEditor.state.gizmoMode === \"rotate\") {\n            const rotateSpeed = 2 * Math.PI;\n            \n            if (this.selectedAxis === \"x\") {\n                const worldX = new window.THREE.Vector3(1, 0, 0);\n                const dotProduct = worldX.dot(cameraRight);\n                const rotateFactor = -Math.sign(dotProduct) * deltaMouse.x * rotateSpeed;\n                this.currentTransformTarget.rotation.x += rotateFactor;\n            } else if (this.selectedAxis === \"y\") {\n                const worldY = new window.THREE.Vector3(0, 1, 0);\n                const dotProduct = worldY.dot(cameraUp);\n                const rotateFactor = Math.sign(dotProduct) * deltaMouse.x * rotateSpeed;\n                this.currentTransformTarget.rotation.y += rotateFactor;\n            } else if (this.selectedAxis === \"z\") {\n                const worldZ = new window.THREE.Vector3(0, 0, 1);\n                const dotProduct = cameraToObject.normalize().dot(worldZ);\n                const rotateFactor = Math.sign(dotProduct) * deltaMouse.x * rotateSpeed;\n                this.currentTransformTarget.rotation.z += rotateFactor;\n            }\n        } else if (this.graphicsEditor.state.gizmoMode === \"scale\") {\n            const scaleSpeed = 2;\n            let scaleFactor = 0;\n            \n            if (this.selectedAxis === \"x\") {\n                const worldX = new window.THREE.Vector3(1, 0, 0);\n                const dotProduct = worldX.dot(cameraRight);\n                scaleFactor = Math.sign(dotProduct) * deltaMouse.x * scaleSpeed;\n            } else if (this.selectedAxis === \"y\") {\n                const worldY = new window.THREE.Vector3(0, 1, 0);\n                const dotProduct = worldY.dot(cameraUp);\n                scaleFactor = Math.sign(dotProduct) * deltaMouse.y * scaleSpeed;\n            } else if (this.selectedAxis === \"z\") {\n                const worldZ = new window.THREE.Vector3(0, 0, 1);\n                const cameraRightXZ = new window.THREE.Vector3(cameraRight.x, 0, cameraRight.z).normalize();\n                const dotProduct = worldZ.dot(cameraRightXZ);\n                scaleFactor = Math.sign(dotProduct) * deltaMouse.x * scaleSpeed;\n            }\n            \n            if (this.selectedAxis === \"x\") {\n                this.currentTransformTarget.scale.x += scaleFactor;\n                if (this.currentTransformTarget.scale.x < 0.1) this.currentTransformTarget.scale.x = 0.1;\n            } else if (this.selectedAxis === \"y\") {\n                this.currentTransformTarget.scale.y += scaleFactor;\n                if (this.currentTransformTarget.scale.y < 0.1) this.currentTransformTarget.scale.y = 0.1;\n            } else if (this.selectedAxis === \"z\") {\n                this.currentTransformTarget.scale.z += scaleFactor;\n                if (this.currentTransformTarget.scale.z < 0.1) this.currentTransformTarget.scale.z = 0.1;\n            }\n        }\n        this.updateGizmoPosition();\n        this.lastMouse.copy(this.mouse);\n        this.updateInspectorValues();\n        this.applyCurrentTransform(); \n    }\n\n    updateInspectorValues() {\n        if (!this.currentTransformTarget) return;\n        \n        // Update all relevant input fields\n        const updateInput = (property, value) => {\n            const input = document.querySelector(`[data-property=\"${property}\"]`);\n            if (input) input.value = value;\n        };\n        \n        // Position\n        updateInput('x', this.currentTransformTarget.position.x);\n        updateInput('y', this.currentTransformTarget.position.y);\n        updateInput('z', this.currentTransformTarget.position.z);\n        \n        // Rotation (convert to degrees)\n        updateInput('rotationX', this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.x));\n        updateInput('rotationY', this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.y));\n        updateInput('rotationZ', this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.z));\n        \n        // Scale\n        updateInput('scaleX', this.currentTransformTarget.scale.x);\n        updateInput('scaleY', this.currentTransformTarget.scale.y);\n        updateInput('scaleZ', this.currentTransformTarget.scale.z);\n    }\n \n    applyCurrentTransform() {\n        if (!this.currentTransformTarget) return;\n    \n        // For groups\n        if (this.currentTransformTarget.userData?.isGroup) {\n            const groupId = this.currentTransformTarget.name;\n            const groupData = this.graphicsEditor.groupManager.getGroupData(groupId);\n            \n            // Directly update group transform without full refresh\n            groupData.position = {\n                x: this.currentTransformTarget.position.x,\n                y: this.currentTransformTarget.position.y,\n                z: this.currentTransformTarget.position.z\n            };\n            groupData.rotation = {\n                x: this.currentTransformTarget.rotation.x,\n                y: this.currentTransformTarget.rotation.y,\n                z: this.currentTransformTarget.rotation.z\n            };\n            groupData.scale = {\n                x: this.currentTransformTarget.scale.x,\n                y: this.currentTransformTarget.scale.y,\n                z: this.currentTransformTarget.scale.z\n            };\n        }\n        // For individual shapes\n        else if (this.graphicsEditor.state.selectedShapeIndex >= 0) {\n            const shape = this.graphicsEditor.shapeManager.getShapeData(this.graphicsEditor.state.selectedShapeIndex);\n            if (shape) {\n                shape.x = this.currentTransformTarget.position.x;\n                shape.y = this.currentTransformTarget.position.y;\n                shape.z = this.currentTransformTarget.position.z;\n                \n                shape.rotationX = this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.x);\n                shape.rotationY = this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.y);\n                shape.rotationZ = this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.z);\n                \n                shape.scaleX = this.currentTransformTarget.scale.x;\n                shape.scaleY = this.currentTransformTarget.scale.y;\n                shape.scaleZ = this.currentTransformTarget.scale.z;\n            }\n        }\n        this.graphicsEditor.renderShapes(false);\n        // Optional: Auto-save or trigger update\n    }\n\n\n    transformSelectedObject(targetObject) {\n        if(!targetObject){\n            targetObject = this.graphicsEditor.getSelectedObject();\n        }\n        console.log('transform', targetObject);\n        // Determine the target object - prioritize the passed target, then selected group, then rootGroup\n        let target;\n        if (targetObject) {\n            target = targetObject;\n        } else {\n            // Try to get the currently selected group\n            const currentGroup = this.graphicsEditor.state.currentGroup;\n            if (currentGroup) {\n                // Find the group in the scene\n                this.graphicsEditor.rootGroup.traverse(obj => {\n                    if (obj.isGroup && obj.name === currentGroup && obj.userData.isGroup) {\n                        target = obj;\n                    }\n                });\n            }\n            \n            // Fall back to rootGroup if no selected group found\n            if (!target) {\n                target = this.graphicsEditor.rootGroup;\n            }\n        }\n    \n        // If we still don't have a target, return\n        if (!target) return;\n    \n        this.currentTransformTarget = target;\n    \n        // If target is a group, ensure it's in rootGroup and populated\n        if (this.currentTransformTarget.userData?.isGroup) {\n            const groupId = this.currentTransformTarget.userData.groupId;\n            const group = this.graphicsEditor.groupManager.getGroupObject(groupId);\n            if (group) {\n                // Ensure group is in rootGroup\n                if (this.currentTransformTarget.parent !== this.graphicsEditor.rootGroup) {\n                    if (this.currentTransformTarget.parent) {\n                        this.currentTransformTarget.parent.remove(this.currentTransformTarget);\n                    }\n                    this.graphicsEditor.rootGroup.add(this.currentTransformTarget);\n                }    \n            }\n        }\n    \n        this.originalPosition.copy(this.currentTransformTarget.position);\n        this.originalRotation.copy(this.currentTransformTarget.rotation);\n        this.originalScale.copy(this.currentTransformTarget.scale);\n        \n        // Inject transform controls into inspector instead of creating separate UI\n        this.injectTransformControlsToInspector();\n        this.updateGizmoPosition();\n    }\n      \n    injectTransformControlsToInspector() {\n        const inspector = document.getElementById('inspector');\n        \n        // Create transform controls section\n        const transformSection = document.createElement('div');\n        transformSection.className = 'transform-controls-section';\n        transformSection.innerHTML = `\n            <h3>Transform ${this.currentTransformTarget.name || 'Current Frame'}</h3>\n            <div class=\"transform-buttons\">\n                <button id=\"translate-btn\" class=\"${this.gizmoMode === 'translate' ? 'active' : ''}\">Translate</button>\n                <button id=\"rotate-btn\" class=\"${this.gizmoMode === 'rotate' ? 'active' : ''}\">Rotate</button>\n                <button id=\"scale-btn\" class=\"${this.gizmoMode === 'scale' ? 'active' : ''}\">Scale</button>\n            </div>\n        `;\n        // Insert at the top of the inspector\n        if (inspector.firstChild) {\n            inspector.insertBefore(transformSection, inspector.firstChild);\n        } else {\n            inspector.appendChild(transformSection);\n        }      \n        // Add event listeners for transform mode buttons\n        document.getElementById('translate-btn').addEventListener('click', () => {\n            this.setGizmoMode('translate');\n            this.updateModeButtonsUI();\n        });\n        \n        document.getElementById('rotate-btn').addEventListener('click', () => {\n            this.setGizmoMode('rotate');\n            this.updateModeButtonsUI();\n        });\n        \n        document.getElementById('scale-btn').addEventListener('click', () => {\n            this.setGizmoMode('scale');\n            this.updateModeButtonsUI();\n        });\n        \n        this.updateInspectorValues();\n        this.setGizmoMode('translate');\n        this.updateModeButtonsUI();\n    }\n    \n    updateModeButtonsUI() {\n        const translateBtn = document.getElementById('translate-btn');\n        const rotateBtn = document.getElementById('rotate-btn');\n        const scaleBtn = document.getElementById('scale-btn');\n        \n        translateBtn.className = this.gizmoMode === 'translate' ? 'active' : '';\n        rotateBtn.className = this.gizmoMode === 'rotate' ? 'active' : '';\n        scaleBtn.className = this.gizmoMode === 'scale' ? 'active' : '';\n    }\n    \n}",
         "fileName": "GE_GizmoManager"
       }
     },
