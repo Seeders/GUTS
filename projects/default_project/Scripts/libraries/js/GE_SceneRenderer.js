@@ -80,15 +80,12 @@ class GE_SceneRenderer {
         document.getElementById('json-content').value = JSON.stringify(this.graphicsEditor.state.renderData, null, 2);
         
         // Safely get first animation name
-        const animations = this.graphicsEditor.state.renderData.animations;
-        const firstAnimation = Object.keys(animations)[0] || '';
-        this.graphicsEditor.state.currentAnimation = firstAnimation;
+        const model = this.graphicsEditor.state.renderData.model;
+        this.graphicsEditor.state.currentAnimation = "";
         
         // Safely get first frame's shapes
-        const frames = animations[firstAnimation] || [];
-        const firstFrame = frames[0] || {};
-        const firstGroup = Object.keys(firstFrame)[0];
-        const shapes = firstFrame[firstGroup].shapes || [];
+        const firstGroup = Object.keys(model)[0];
+        const shapes = model[firstGroup].shapes || [];
         this.graphicsEditor.state.currentGroup = firstGroup;
         this.graphicsEditor.state.selectedShapeIndex = shapes.length > 0 ? 0 : -1;
         this.handleResize();

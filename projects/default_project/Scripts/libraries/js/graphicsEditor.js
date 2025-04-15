@@ -15,8 +15,9 @@ class GraphicsEditor {
         this.rotationUtils = GE_RotationUtils;
         // State management (simplified)
         this.state = {
+            editingModel: true,
             selectedShapeIndex: -1,
-            currentAnimation: "idle",
+            currentAnimation: "",
             selectedGroup: "main",
             currentFrame: 0,
             renderData: { model: {}, animations: { idle: [{ main: { shapes: [], position: {x: 0, y: 0, z: 0}, rotation: {x:0,y:0,z:0}, scale: {x:1, y:1, z:1}} }] } }
@@ -63,7 +64,7 @@ class GraphicsEditor {
         const currentFrame = this.state.currentFrame;
         
         // Ensure animation and frame exist
-        if (!this.getCurrentFrame()) {
+        if (!this.state.editingModel && !this.getCurrentFrame()) {
             console.warn("Animation or frame doesn't exist:", currentAnimation, currentFrame);
             return;
         }
@@ -117,19 +118,27 @@ class GraphicsEditor {
     }
     
     getCurrentAnimation() {
+     
         return this.state.renderData.animations[this.state.currentAnimation];
     }
     getCurrentFrame() {
-        return this.getCurrentAnimation()[this.state.currentFrame];
+        if(this.state.editingModel){
+            return this.state.renderData.model;
+        } else {
+            return this.getCurrentAnimation()[this.state.currentFrame];
+        }
     }
     getCurrentGroup() {
         return this.getCurrentFrame()[this.state.currentGroup];
     }
-    getCurrentShape() {
+    getMergedShape() {
         if (this.state.selectedShapeIndex >= 0) {            
             const selectedGroup = this.getMergedGroup(this.state.currentGroup);
             const shapes = selectedGroup?.shapes || [];        
-            let shape = shapes[this.state.selectedShapeIndex];       
+            let shape = shapes[this.state.selectedShapeIndex];  
+            if(this.state.editingModel){
+                return shape;
+            }     
             if (shape) {  
                 shape.id = this.state.selectedShapeIndex;
                 // Avoid overwriting shape.id unless necessary
@@ -173,9 +182,13 @@ class GraphicsEditor {
 
     getMergedGroup(groupName){
         let model = this.state.renderData.model;
+        const modelGroup = model[groupName];
+        if(this.state.editingModel){
+            return modelGroup;
+        }
         let frameData = this.getCurrentFrame();
         const frameGroup = frameData[groupName];
-        const modelGroup = model[groupName];
+
         let mergedShapes = [];
         for(let i = 0; i < modelGroup.shapes.length; i++){
             let modelShape = modelGroup.shapes[i];

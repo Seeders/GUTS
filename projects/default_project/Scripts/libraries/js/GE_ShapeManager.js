@@ -32,6 +32,9 @@ class GE_ShapeManager {
         let currentGroup = this.graphicsEditor.getCurrentGroup();
         currentGroup.shapes = currentGroup.shapes || [];
         let shapeData = (currentGroup.shapes).find(s => s.id == shapeId);
+        if(this.graphicsEditor.state.editingModel){
+            shapeData = currentGroup.shapes[shapeId];
+        }
         return shapeData;
     }
     selectShape(index) {
@@ -47,7 +50,7 @@ class GE_ShapeManager {
         this.highlightSelectedShape();
         
         // Show inspector for selected shape
-        const shape = this.graphicsEditor.getCurrentShape();
+        const shape = this.graphicsEditor.getMergedShape();
         if (shape) {
             this.graphicsEditor.createInspector(shape);
             this.graphicsEditor.gizmoManager.transformSelectedObject();

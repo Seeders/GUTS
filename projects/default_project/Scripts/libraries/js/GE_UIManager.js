@@ -187,7 +187,7 @@ class GE_UIManager {
         this.addFormRow(inspector, 'Type', 'select', 'type', shape.type, {
             options: ['cube', 'sphere', 'box', 'cylinder', 'cone', 'torus', 'tetrahedron', 'gltf'],
             change: (e) => {
-                let currentShape = this.graphicsEditor.getCurrentShape();
+                let currentShape = this.graphicsEditor.getMergedShape();
                 let newValue = e.target.value;
                 if (newValue != 'gltf') {
                     delete currentShape.url
@@ -219,7 +219,7 @@ class GE_UIManager {
 
                      const result = await response.json();
                      shape.url = result.filePath; 
-                     this.graphicsEditor.getCurrentShape().url = result.filePath;
+                     this.graphicsEditor.getMergedShape().url = result.filePath;
                      this.graphicsEditor.refreshShapes(false);
                 } catch (error) {
                      console.error('Error uploading file:', error);
@@ -300,7 +300,7 @@ class GE_UIManager {
     
             colorInput.addEventListener('change', () => {
                 let newValue = colorInput.value;                
-                this.graphicsEditor.getCurrentShape()[property] = newValue;
+                this.graphicsEditor.getMergedShape()[property] = newValue;
                 this.graphicsEditor.refreshShapes(true);
             });
             row.appendChild(colorInput);
@@ -369,7 +369,7 @@ class GE_UIManager {
     }
     updatePropertyValue(property, value) {
         const groupData = this.graphicsEditor.getCurrentGroup();
-        const shapeData = this.graphicsEditor.getCurrentShape();
+        const shapeData = this.graphicsEditor.getMergedShape();
         if (shapeData) {
             shapeData[property] = value;
             return;
@@ -406,6 +406,14 @@ class GE_UIManager {
         // Animation selector
         const animSelector = document.createElement('select');
         animSelector.style.marginBottom = '10px';
+
+        const option = document.createElement('option');
+        option.value = '__model__';
+        option.textContent = 'model';
+        if (this.graphicsEditor.state.editingModel) option.selected = true;
+        animSelector.appendChild(option);
+
+
         Object.keys(this.graphicsEditor.state.renderData.animations).forEach(anim => {
             const option = document.createElement('option');
             option.value = anim;
@@ -413,16 +421,21 @@ class GE_UIManager {
             if (anim === this.graphicsEditor.state.currentAnimation) option.selected = true;
             animSelector.appendChild(option);
         });
-        animSelector.addEventListener('change', () => {
+        animSelector.addEventListener('change', (e) => {
             this.graphicsEditor.setPreviewAnimationState(false);
-            this.graphicsEditor.state.currentAnimation = animSelector.value;
+            if(e.target.value == '__model__'){
+                this.graphicsEditor.state.editingModel = true;
+                this.graphicsEditor.state.currentAnimation = "";                
+            } else {
+                this.graphicsEditor.state.editingModel = false;
+                this.graphicsEditor.state.currentAnimation = animSelector.value;                
+            }
             this.graphicsEditor.state.currentFrame = 0;
             this.graphicsEditor.state.selectedShapeIndex = -1;
-            
             this.graphicsEditor.refreshShapes(false);
         });
         list.appendChild(animSelector);
-    
+        if(this.graphicsEditor.state.editingModel) return;
         // Frame list
         const frameList = document.createElement('div');
         frameList.style.marginBottom = '10px';
