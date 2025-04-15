@@ -3,14 +3,11 @@
   "enemies": [
     "trex",
     "trex",
+    "new_trex",
     "trex",
     "trex",
+    "new_trex",
     "trex",
-    "trex",
-    "trex",
-    "trex",
-    "trex",
-    "trex",
-    "new_trex"
+    "redDragon"
   ]
 }

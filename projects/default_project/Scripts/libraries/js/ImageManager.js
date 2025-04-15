@@ -414,13 +414,15 @@ class ImageManager {
         
         for(const groupName in frameData) {
             const group = await this.shapeFactory.createMergedGroupFromJSON(model, frameData, groupName);
-            group.traverse((child) => {
-                if (child.isMesh) {
-                    child.castShadow = true; // or set this selectively for objects that should cast shadows
-                    child.receiveShadow = true; // for objects that should receive shadows
-                }
-            });
-            rootGroup.add(group);
+            if(group){
+                group.traverse((child) => {
+                    if (child.isMesh) {
+                        child.castShadow = true; // or set this selectively for objects that should cast shadows
+                        child.receiveShadow = true; // for objects that should receive shadows
+                    }
+                });
+                rootGroup.add(group);
+            }
         }
 
         scene.add(rootGroup);

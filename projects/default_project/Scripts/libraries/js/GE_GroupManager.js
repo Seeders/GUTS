@@ -130,14 +130,14 @@ class GE_GroupManager {
         }
         
         // Find the shape
-        const shapeToMove = sourceGroup[fromGroupName][shapeIndex];
+        const shapeToMove = sourceGroup.shapes[shapeIndex];
         if (!shapeToMove) {
             console.warn(`Shape at index ${shapeIndex} not found in ${fromGroupName}`);
             return;
         }
         
         // Remove from source group
-        sourceGroup[fromGroupName].splice(shapeIndex, 1);
+        sourceGroup.shapes.splice(shapeIndex, 1);
         
         // Ensure target group exists
         if (!currentFrameData[toGroupName]) {
@@ -169,12 +169,14 @@ class GE_GroupManager {
         this.graphicsEditor.state.currentGroup = groupName;
         this.graphicsEditor.state.selectedShapeIndex = -1;
         let groupData = this.getGroupData(groupName);
-        // Update the UI to show shapes in this group
         this.graphicsEditor.uiManager.updateList();
         this.graphicsEditor.shapeManager.highlightSelectedShape();
-        this.graphicsEditor.uiManager.createGroupInspector(groupData);
-        this.graphicsEditor.gizmoManager.transformSelectedObject(this.getGroupObject(groupName));
-        
+        if(groupData){
+            // Update the UI to show shapes in this group
+            this.graphicsEditor.uiManager.createGroupInspector(groupData);
+            this.graphicsEditor.gizmoManager.transformSelectedObject(this.getGroupObject(groupName));
+            
+        }
         // Update the selected class on group items
         this.updateSelectedGroupClass(groupName);
     }
@@ -226,10 +228,7 @@ class GE_GroupManager {
         });
         return foundGroup;
     }
-    // Get all available groups in the current frame
-    getGroups() {      
-        return [...new Set([...Object.keys(this.graphicsEditor.getCurrentFrame()), ...Object.keys(this.graphicsEditor.state.renderData.model)])];
-    }
+
 
     applyGroupTransform(groupName, position, rotation, scale) {
         // Get the current frame data
@@ -271,8 +270,7 @@ class GE_GroupManager {
         
         list.innerHTML = '';
         
-        const groups = this.getGroups();
-        for (const group of groups) {
+        for (const group of Object.keys(this.graphicsEditor.state.renderData.model)) {
             const groupItem = document.createElement('div');
             groupItem.classList.add('group-item');
             if (group === this.graphicsEditor.state.currentGroup) {

@@ -76,10 +76,12 @@ class GraphicsEditor {
         // Create a group for each group in the frame
         for (const groupName in frameData) {     
             const mergedGroup = this.getMergedGroup(groupName);
-            let threeGroup = await this.shapeFactory.createGroupFromJSON(mergedGroup); 
-            threeGroup.name = groupName;
-            // Add the group to the root group
-            this.rootGroup.add(threeGroup);
+            if( mergedGroup){
+                let threeGroup = await this.shapeFactory.createGroupFromJSON(mergedGroup); 
+                threeGroup.name = groupName;
+                // Add the group to the root group
+                this.rootGroup.add(threeGroup);
+            }
         }
             
         // Count total shapes for display
@@ -151,7 +153,7 @@ class GraphicsEditor {
         if(this.state.editingModel){
             return modelGroup;
         }
-        return this.shapeFactory.getMergedGroup(model, this.getCurrentFrame(), groupName );
+        return this.shapeFactory.getMergedGroup(model, this.getCurrentAnimation()[this.state.currentFrame], groupName );
     }
 
     getMergedShape() {

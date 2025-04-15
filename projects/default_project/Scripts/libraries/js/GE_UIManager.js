@@ -448,9 +448,13 @@ class GE_UIManager {
             frameItem.addEventListener('click', () => {
                 this.graphicsEditor.setPreviewAnimationState(false);
                 this.graphicsEditor.state.currentFrame = index;  
-                let frameData = this.graphicsEditor.getCurrentFrame();   
-                this.graphicsEditor.groupManager.selectGroup(Object.keys(frameData)[0])
+                let frameData = this.graphicsEditor.getCurrentFrame(); 
+                this.graphicsEditor.groupManager.selectGroup(Object.keys(frameData)[0]);
                 this.graphicsEditor.refreshShapes(false);
+                requestAnimationFrame(() => {
+                    this.graphicsEditor.groupManager.selectGroup(Object.keys(frameData)[0]);
+                    this.graphicsEditor.refreshShapes(false);
+                })
             });
             frameList.appendChild(frameItem);
         });

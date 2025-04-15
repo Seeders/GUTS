@@ -4,7 +4,12 @@ class ShapeFactory {
         this.gltfLoader = new THREE.GLTFLoader();
     }
     async createMergedGroupFromJSON(model, frameData, groupName) {
-        return await this.createGroupFromJSON(this.getMergedGroup(model, frameData, groupName));
+        let mergedGroup = this.getMergedGroup(model, frameData, groupName);
+        if( mergedGroup){
+            return await this.createGroupFromJSON(mergedGroup);
+        } else {
+            return null;
+        }
     }
     async createGroupFromJSON(groupData) {
         const group = new THREE.Group();
@@ -152,15 +157,19 @@ class ShapeFactory {
     }
 
     getMergedGroup(model, frameData, groupName){
-        const modelGroup = model[groupName];
-
+        let modelGroup = model[groupName];
+        if(!modelGroup){
+            delete frameData[groupName];
+            return null;
+        }
         let frameGroup = frameData[groupName];
         if(!frameGroup){
             //group doesnt exist in animation, copy from model
-            frameData[groupName] = {...modelGroup};
+            frameData[groupName] = JSON.parse(JSON.stringify(modelGroup));
             frameGroup = frameData[groupName];
             return frameGroup;
         }
+
         let mergedShapes = [];
         for(let i = 0; i < modelGroup.shapes.length; i++){
             let modelShape = modelGroup.shapes[i];
@@ -204,6 +213,9 @@ class ShapeFactory {
             ...modelGroup,
             ...frameGroup,
         };
+        if(modelGroup.shapes.length == 0){
+            frameGroup.shapes = [];
+        }
         mergedGroup.shapes = mergedShapes;
         return JSON.parse(JSON.stringify(mergedGroup));
     }

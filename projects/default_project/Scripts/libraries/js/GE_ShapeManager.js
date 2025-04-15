@@ -26,8 +26,6 @@ class GE_ShapeManager {
             inspector.innerHTML = ``;
         });
     }
-
-
     getShapeData(shapeId){
         let currentGroup = this.graphicsEditor.getCurrentGroup();
         currentGroup.shapes = currentGroup.shapes || [];
@@ -222,7 +220,9 @@ class GE_ShapeManager {
 
     addSelectedShape() {
         if (this.graphicsEditor.state.selectedShapeIndex >= 0) {
-            const originalShape = this.graphicsEditor.getCurrentGroup().shapes.find(s => s.id == this.graphicsEditor.state.selectedShapeIndex);
+            const originalShape = this.graphicsEditor.state.editingModel ? 
+                                    this.graphicsEditor.getCurrentGroup().shapes[this.graphicsEditor.state.selectedShapeIndex] : 
+                                    this.graphicsEditor.getCurrentGroup().shapes.find(s => s.id == this.graphicsEditor.state.selectedShapeIndex);
             const newShape = JSON.parse(JSON.stringify(originalShape));
             this.graphicsEditor.getCurrentGroup().shapes.push(newShape);
             this.graphicsEditor.state.selectedShapeIndex = this.graphicsEditor.getCurrentGroup().shapes.length - 1;
