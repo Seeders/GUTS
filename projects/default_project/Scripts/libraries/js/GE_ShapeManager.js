@@ -42,8 +42,7 @@ class GE_ShapeManager {
         canvas.addEventListener('mousemove', this.onMouseMove.bind(this));
         canvas.addEventListener('mouseup', this.onMouseUp.bind(this));
     }
-     // Create the gizmo for translation, rotation, or scaling
-     createGizmo() {
+    destroyGizmo() {
         if (this.gizmoGroup) {
             this.gizmoGroup.children.forEach(child => {
                 if (child.geometry) child.geometry.dispose();
@@ -52,7 +51,10 @@ class GE_ShapeManager {
             this.graphicsEditor.sceneRenderer.scene.remove(this.gizmoGroup);
             this.gizmoGroup = null;
         }
-    
+    }
+     // Create the gizmo for translation, rotation, or scaling
+    createGizmo() {
+        this.destroyGizmo();
         this.gizmoGroup = new window.THREE.Group();
         this.graphicsEditor.sceneRenderer.scene.add(this.gizmoGroup);
     
@@ -547,7 +549,6 @@ class GE_ShapeManager {
         this.injectTransformControlsToInspector();
     }
     
-    // New method to inject transform controls into the inspector
     injectTransformControlsToInspector() {
         const inspector = document.getElementById('inspector');
         
@@ -589,13 +590,11 @@ class GE_ShapeManager {
         this.updateModeButtonsUI();
     }
     
-    // New helper method to set gizmo mode
     setGizmoMode(mode) {
         this.gizmoMode = mode;
         this.createGizmo();
     }
     
-    // New helper method to update button UI for transform modes
     updateModeButtonsUI() {
         const translateBtn = document.getElementById('translate-btn');
         const rotateBtn = document.getElementById('rotate-btn');
@@ -606,13 +605,6 @@ class GE_ShapeManager {
         scaleBtn.className = this.gizmoMode === 'scale' ? 'active' : '';
     }
     
-    // New helper method to remove transform controls from inspector
-    removeTransformControlsFromInspector() {
-        const transformSection = document.querySelector('.transform-controls-section');
-        if (transformSection) {
-            transformSection.remove();
-        }
-    }
     applyTransformToShapes() {
         if (!this.currentTransformTarget) return;
 
@@ -707,6 +699,9 @@ class GE_ShapeManager {
         if (shape) {
             this.graphicsEditor.createInspector(shape);
             this.transformGroup(this.getSelectedGroupOrRoot());
+        } else {
+            this.destroyGizmo();
+            this.graphicsEditor.groupManager.selectGroup(this.graphicsEditor.state.currentGroup);
         }
     }
     highlightSelectedShape() {

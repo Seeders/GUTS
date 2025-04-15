@@ -23,7 +23,6 @@ class GraphicsEditor {
         
         this.rootGroup = new window.THREE.Group(); // Main container for all shapes
         this.rootGroup.name = "rootGroup";
-window.state = this.state;
         this.init();
     }
     
@@ -115,8 +114,6 @@ window.state = this.state;
         this.shapeManager.updateGizmoPosition();
     }
     
-  
-
     getCurrentAnimation() {
         return this.state.renderData.animations[this.state.currentAnimation];
     }

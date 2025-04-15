@@ -3,16 +3,11 @@
     "animations": {
       "idle": [
         {
-          "shapes": {
+          "main": {
             "shapes": [
               {
-                "type": "sphere",
-                "size": 6,
-                "x": 0,
-                "y": 5,
-                "z": 0,
-                "rotationX": 90,
-                "color": "#ee6060"
+                "id": 0,
+                "scaleX": 1
               }
             ],
             "position": {
@@ -33,6 +28,37 @@
           }
         }
       ]
+    },
+    "model": {
+      "main": {
+        "shapes": [
+          {
+            "name": "ball",
+            "type": "sphere",
+            "size": 6,
+            "x": 0,
+            "y": 5,
+            "z": 0,
+            "rotationX": 90,
+            "color": "#ee6060"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      }
     }
   },
   "speed": 25,
