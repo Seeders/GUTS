@@ -46,7 +46,6 @@ class GE_ShapeManager {
         // Update shape list and highlighting
         this.graphicsEditor.uiManager.updateList();
         this.highlightSelectedShape();
-        
         // Show inspector for selected shape
         const shape = this.graphicsEditor.getMergedShape();
         if (shape) {
@@ -57,7 +56,7 @@ class GE_ShapeManager {
             this.graphicsEditor.groupManager.selectGroup(this.graphicsEditor.state.currentGroup);
         }
     }
-    highlightSelectedShape() {
+    destroyOutlines() {
         // Remove existing outlines
         this.graphicsEditor.sceneRenderer.scene.children.forEach(obj => {
             if (obj.userData.isOutline) {
@@ -72,6 +71,10 @@ class GE_ShapeManager {
             object.material = material;
         });
         this.originalMaterials.clear();
+    }
+    highlightSelectedShape() {
+        this.destroyOutlines();
+
     
         // If no shape is selected or invalid selection, return
         if (this.graphicsEditor.state.selectedShapeIndex < 0) {

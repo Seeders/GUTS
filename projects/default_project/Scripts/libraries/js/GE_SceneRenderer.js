@@ -91,9 +91,12 @@ class GE_SceneRenderer {
         const firstGroup = Object.keys(model)[0];
         const shapes = model[firstGroup].shapes || [];
         this.graphicsEditor.state.currentGroup = firstGroup;
-        this.graphicsEditor.state.selectedShapeIndex = shapes.length > 0 ? 0 : -1;
+        this.graphicsEditor.state.selectedShapeIndex = -1;
         this.handleResize();
         this.graphicsEditor.refreshShapes(false);
+        requestAnimationFrame(() => {
+            this.graphicsEditor.shapeManager.selectShape(shapes.length > 0 ? 0 : -1);
+        });
     }
 
 

@@ -433,6 +433,9 @@ class GE_UIManager {
             this.graphicsEditor.state.currentFrame = 0;
             this.graphicsEditor.state.selectedShapeIndex = -1;
             this.graphicsEditor.refreshShapes(false);
+            requestAnimationFrame(() => {
+                this.graphicsEditor.shapeManager.selectShape(0);
+            })
         });
         list.appendChild(animSelector);
         if(this.graphicsEditor.state.editingModel) return;
@@ -448,12 +451,10 @@ class GE_UIManager {
             frameItem.addEventListener('click', () => {
                 this.graphicsEditor.setPreviewAnimationState(false);
                 this.graphicsEditor.state.currentFrame = index;  
-                let frameData = this.graphicsEditor.getCurrentFrame(); 
-                this.graphicsEditor.groupManager.selectGroup(Object.keys(frameData)[0]);
+                this.graphicsEditor.state.selectedShapeIndex = -1;
                 this.graphicsEditor.refreshShapes(false);
                 requestAnimationFrame(() => {
-                    this.graphicsEditor.groupManager.selectGroup(Object.keys(frameData)[0]);
-                    this.graphicsEditor.refreshShapes(false);
+                    this.graphicsEditor.shapeManager.selectShape(0);
                 })
             });
             frameList.appendChild(frameItem);

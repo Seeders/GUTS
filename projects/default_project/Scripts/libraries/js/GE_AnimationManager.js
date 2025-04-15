@@ -30,6 +30,8 @@ class GE_AnimationManager {
         let btn = document.getElementById('preview-animation');
         if (this.isPreviewingAnimation) {
             btn.classList.add("active");
+            this.graphicsEditor.gizmoManager.destroyGizmo();
+            this.graphicsEditor.shapeManager.destroyOutlines();
         } else {
             this.graphicsEditor.state.currentFrame = 0;
             btn.classList.remove("active");

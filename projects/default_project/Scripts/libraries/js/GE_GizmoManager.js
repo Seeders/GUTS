@@ -189,8 +189,8 @@ class GE_GizmoManager {
     }
 
     updateGizmoPosition() {
-        if (!this.currentTransformTarget || !this.gizmoGroup) return;
-
+        if (!this.currentTransformTarget) return;
+                
         let center = new window.THREE.Vector3();
         let xOffset = 1, yOffset = 1, zOffset = 1;
     
@@ -463,6 +463,7 @@ class GE_GizmoManager {
         if(!targetObject){
             targetObject = this.graphicsEditor.getSelectedObject();
         }
+        console.log('transform', targetObject);
         // Determine the target object - prioritize the passed target, then selected group, then rootGroup
         let target;
         if (targetObject) {
