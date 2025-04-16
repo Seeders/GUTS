@@ -61,13 +61,14 @@ class GE_ShapeManager {
 
         // Update shape list and highlighting
         this.graphicsEditor.uiManager.updateList();
-        this.highlightSelectedShape();
         // Show inspector for selected shape
         const shape = this.graphicsEditor.getMergedShape();
         if (shape) {
+            this.highlightSelectedShape();
             this.graphicsEditor.createInspector(shape);
             this.graphicsEditor.gizmoManager.transformSelectedObject();
         } else {
+            this.destroyOutlines();
             this.graphicsEditor.gizmoManager.destroyGizmo();
             this.graphicsEditor.groupManager.selectGroup(this.graphicsEditor.state.currentGroup);
         }
@@ -221,6 +222,9 @@ class GE_ShapeManager {
         });
     }
     addNewShape() {
+        if(!this.graphicsEditor.state.editingModel) {            
+            return;
+        }
         const newShape = {
             type: 'sphere',
             size: 2,
@@ -238,6 +242,9 @@ class GE_ShapeManager {
     }
 
     addSelectedShape() {
+        if(!this.graphicsEditor.state.editingModel) {            
+            return;
+        }
         if (this.graphicsEditor.state.selectedShapeIndex >= 0) {
             const originalShape = this.graphicsEditor.state.editingModel ? 
                                     this.graphicsEditor.getCurrentGroup().shapes[this.graphicsEditor.state.selectedShapeIndex] : 
@@ -252,6 +259,9 @@ class GE_ShapeManager {
     }
 
     deleteSelectedShape() {
+        if(!this.graphicsEditor.state.editingModel) {            
+            return;
+        }
         if (this.graphicsEditor.state.selectedShapeIndex >= 0) {
             this.graphicsEditor.getCurrentGroup().shapes.splice(this.graphicsEditor.state.selectedShapeIndex, 1);
             if (this.graphicsEditor.getCurrentGroup().shapes.length > 0) {

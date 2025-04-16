@@ -441,9 +441,9 @@ class GE_UIManager {
                 this.graphicsEditor.state.currentAnimation = animSelector.value;                
             }
             this.graphicsEditor.state.currentFrame = 0;
-            this.graphicsEditor.state.selectedShapeIndex = -1;
             this.graphicsEditor.refreshShapes(false);
             requestAnimationFrame(() => {
+                this.graphicsEditor.state.selectedShapeIndex = -1;
                 this.graphicsEditor.shapeManager.selectShape(0);
             })
         });
@@ -461,9 +461,9 @@ class GE_UIManager {
             frameItem.addEventListener('click', () => {
                 this.graphicsEditor.setPreviewAnimationState(false);
                 this.graphicsEditor.state.currentFrame = index;  
-                this.graphicsEditor.state.selectedShapeIndex = -1;
                 this.graphicsEditor.refreshShapes(false);
-                requestAnimationFrame(() => {
+                requestAnimationFrame(() => {  
+                    this.graphicsEditor.state.selectedShapeIndex = -1;
                     this.graphicsEditor.shapeManager.selectShape(0);
                 })
             });
@@ -497,7 +497,7 @@ class GE_UIManager {
             }
            
             shapeItem.textContent = `${shape.name} - ${shape.type || 'Shape'}`;
-            shapeItem.addEventListener('click', (e) => {                
+            shapeItem.addEventListener('click', (e) => {               
                 this.graphicsEditor.shapeManager.selectShape(parseInt(e.target.dataset.index));
             });
            

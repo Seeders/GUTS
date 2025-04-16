@@ -156,112 +156,128 @@ class ShapeFactory {
         });
     }
 
-    getMergedGroup(model, frameData, groupName){
-        let modelGroup = model[groupName];
-        if(!modelGroup){
-            delete frameData[groupName];
+    getMergedGroup(model, frameData, groupName) {
+        const modelGroup = model[groupName];
+        if (!modelGroup) {
+            delete frameData?.[groupName];
             return null;
         }
-        if(!frameData){
-            frameData = {};
-        }
-        let frameGroup = frameData[groupName];
-        if(!frameGroup){
-            //group doesnt exist in animation, copy from model
-            frameData[groupName] = JSON.parse(JSON.stringify(modelGroup));
-            frameGroup = frameData[groupName];
-            for(let i = 0; i < frameGroup.shapes.length; i++){
-                frameGroup.shapes[i].id = i;
-            }
-        }
-
-        if(JSON.stringify(modelGroup.position) == JSON.stringify(frameGroup.position)){
-
-            delete frameGroup.position;
-        }
-        if(JSON.stringify(modelGroup.rotation) == JSON.stringify(frameGroup.rotation)){
-
-            delete frameGroup.rotation;
-        }
-        if(JSON.stringify(modelGroup.scale) == JSON.stringify(frameGroup.scale)){
-
-            delete frameGroup.scale;
-        }
-        let mergedShapes = [];
-        for(let i = 0; i < modelGroup.shapes.length; i++){
-            let modelShape = modelGroup.shapes[i];
-            if(!frameGroup.shapes){
-                mergedShapes.push(modelShape);
-                continue;
-            }
-            let mergedShape = {};
-            let frameShape = frameGroup.shapes.find((shape) => shape.id == i);
-            if(typeof frameShape == "undefined"){
-                frameShape = { id: i };
-                frameGroup.shapes.push(frameShape);
-            }
-            for(const key in modelShape) {
-                if(key == 'id'){      
-                    delete modelShape.id;
-                    continue;
-                }
-                if(frameShape && typeof frameShape[key] != "undefined" && modelShape[key] === frameShape[key]){
-                    delete frameShape[key];                 
-                    mergedShape[key] = modelShape[key];
-                } else if(!frameShape || typeof frameShape[key] == "undefined"){
-                    mergedShape[key] = modelShape[key];
-                } else {
-                    mergedShape[key] = frameShape[key];
-                }
-            }
-            mergedShape = {...mergedShape, ...frameShape};
-            delete mergedShape.id;
-            mergedShapes.push(JSON.parse(JSON.stringify(mergedShape)));
-            if(frameShape.scaleX == modelShape.scaleX || (frameShape.scaleX == 1 && typeof modelShape.scaleX == "undefined")){
-                delete frameShape.scaleX;
-            }
-            if(frameShape.scaleY == modelShape.scaleY || (frameShape.scaleY == 1 && typeof modelShape.scaleY == "undefined")){
-                delete frameShape.scaleY;
-            }
-            if(frameShape.scaleZ == modelShape.scaleZ || (frameShape.scaleZ == 1 && typeof modelShape.scaleZ == "undefined")){
-                delete frameShape.scaleZ;
-            }
-            if(frameShape.rotationX == modelShape.rotationX || (frameShape.rotationX == 0 && typeof modelShape.rotationX == "undefined")){
-                delete frameShape.rotationX;
-            }
-            if(frameShape.rotationY == modelShape.rotationY || (frameShape.rotationY == 0 && typeof modelShape.rotationY == "undefined")){
-                delete frameShape.rotationY;
-            }
-            if(frameShape.rotationZ == modelShape.rotationZ || (frameShape.rotationZ == 0 && typeof modelShape.rotationZ == "undefined")){
-                delete frameShape.rotationZ;
-            }
-        }
-        if(frameGroup.shapes){
-            for(let i = frameGroup.shapes.length - 1; i >= 0; i--){
-                let shape = frameGroup.shapes[i];
-                if(Object.keys(shape).length == 1){
-                    frameGroup.shapes.splice(i, 1);
-                }
-            }  
-        }                         
+    
+        frameData = frameData || {};
+        let frameGroup = this.initializeFrameGroup(frameData, modelGroup, groupName);
+        
+        this.cleanupMatchingTransforms(modelGroup, frameGroup);
+        const mergedShapes = this.mergeShapes(modelGroup, frameGroup);
+        
+        this.cleanupEmptyShapes(frameGroup);
+        
         const mergedGroup = {
             ...modelGroup,
             ...frameGroup,
+            shapes: mergedShapes
         };
-        if(modelGroup.shapes.length == 0){
+    
+        if (modelGroup.shapes.length === 0) {
             frameGroup.shapes = [];
         }
-
-        mergedGroup.shapes = mergedShapes;
-        let returnVal = JSON.parse(JSON.stringify(mergedGroup));
-        if(frameGroup.shapes && frameGroup.shapes.length == 0){
-            delete frameGroup.shapes;
-        }
-
-        if(Object.keys(frameGroup).length == 0) {            
-           delete frameData[groupName];
-        }
+    
+        const returnVal = JSON.parse(JSON.stringify(mergedGroup));
+        this.cleanupFrameData(frameData, frameGroup, groupName);
+        
         return returnVal;
+    }
+    
+    initializeFrameGroup(frameData, modelGroup, groupName) {
+        if (!frameData[groupName]) {
+            frameData[groupName] = JSON.parse(JSON.stringify(modelGroup));
+            const frameGroup = frameData[groupName];
+            frameGroup.shapes.forEach((shape, index) => {
+                shape.id = index;
+            });
+            return frameGroup;
+        }
+        return frameData[groupName];
+    }
+    
+    cleanupMatchingTransforms(modelGroup, frameGroup) {
+        const properties = ['position', 'rotation', 'scale'];
+        properties.forEach(prop => {
+            if (JSON.stringify(modelGroup[prop]) === JSON.stringify(frameGroup[prop])) {
+                delete frameGroup[prop];
+            }
+        });
+    }
+    
+    mergeShapes(modelGroup, frameGroup) {
+        return modelGroup.shapes.map((modelShape, i) => {
+            if (!frameGroup.shapes) {
+                return modelShape;
+            }
+    
+            let frameShape = frameGroup.shapes.find(shape => shape.id === i) || { id: i };
+            if (!frameGroup.shapes.includes(frameShape)) {
+                frameGroup.shapes.push(frameShape);
+            }
+    
+            const mergedShape = this.mergeShapeProperties(modelShape, frameShape);
+            this.cleanupMatchingShapeTransforms(modelShape, frameShape);
+            
+            return JSON.parse(JSON.stringify(mergedShape));
+        });
+    }
+    
+    mergeShapeProperties(modelShape, frameShape) {
+        const mergedShape = {};
+        
+        for (const key in modelShape) {
+            if (key === 'id') continue;
+            
+            if (frameShape && frameShape[key] !== undefined && modelShape[key] === frameShape[key]) {
+                delete frameShape[key];
+                mergedShape[key] = modelShape[key];
+            } else if (!frameShape || frameShape[key] === undefined) {
+                mergedShape[key] = modelShape[key];
+            } else {
+                mergedShape[key] = frameShape[key];
+            }
+        }
+    
+        return { ...mergedShape, ...frameShape };
+    }
+    
+    cleanupMatchingShapeTransforms(modelShape, frameShape) {
+        const transforms = [
+            { prop: 'scale', defaultVal: 1, axes: ['X', 'Y', 'Z'] },
+            { prop: 'rotation', defaultVal: 0, axes: ['X', 'Y', 'Z'] }
+        ];
+    
+        transforms.forEach(({ prop, defaultVal, axes }) => {
+            axes.forEach(axis => {
+                const propName = `${prop}${axis}`;
+                if (frameShape[propName] === modelShape[propName] || 
+                   (frameShape[propName] === defaultVal && modelShape[propName] === undefined)) {
+                    delete frameShape[propName];
+                }
+            });
+        });
+    }
+    
+    cleanupEmptyShapes(frameGroup) {
+        if (frameGroup.shapes) {
+            frameGroup.shapes = frameGroup.shapes.filter(shape => 
+                Object.keys(shape).length > 1
+            );
+            
+            if (frameGroup.shapes.length === 0) {
+                delete frameGroup.shapes;
+            }
+        }
+    }
+    
+    cleanupFrameData(frameData, frameGroup, groupName) {
+        if (Object.keys(frameGroup).length === 0) {
+            delete frameData[groupName];
+        }
     }
 
 }

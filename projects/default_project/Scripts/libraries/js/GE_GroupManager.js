@@ -91,11 +91,10 @@ class GE_GroupManager {
 
     // Create a new group at the frame level
     createGroup() {
-        const groupName = prompt("Enter group name:", "group_" + Date.now());
-        if (!groupName || groupName === "shapes") {
-            alert("Invalid group name or 'shapes' is reserved");
+        if(!this.graphicsEditor.state.editingModel) {            
             return;
         }
+        const groupName = prompt("Enter group name:", "group_" + Date.now());
 
         const currentFrame = this.graphicsEditor.state.currentFrame;
         
@@ -120,6 +119,9 @@ class GE_GroupManager {
 
     // Move an object from one group to another
     moveToGroup(shapeIndex, fromGroupName, toGroupName) {
+        if(!this.graphicsEditor.state.editingModel) {            
+            return;
+        }
         const currentFrameData = this.graphicsEditor.getCurrentFrame();
         
         // Find the shape in the source group
@@ -198,7 +200,9 @@ class GE_GroupManager {
     }
     // Remove a group and place its contents back in the shapes group
     deleteGroup() {
-        
+        if(!this.graphicsEditor.state.editingModel) {            
+            return;
+        }
         const currentFrameData = this.graphicsEditor.getCurrentFrame();
         const currentGroup = this.graphicsEditor.getCurrentGroup();
         // Get shapes from the selected group
