@@ -483,22 +483,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "color": "#ee6060",
                       "scaleX": 1
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               },
               {
@@ -517,22 +502,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "type": "sphere",
                       "id": 0
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               },
               {
@@ -547,22 +517,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "rotationX": 90,
                       "color": "#ee6060"
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               },
               {
@@ -581,22 +536,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "type": "sphere",
                       "id": 0
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               }
             ]
@@ -642,39 +582,7 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {
-                "main": {
-                  "shapes": [
-                    {
-                      "name": "ball",
-                      "type": "sphere",
-                      "size": 6,
-                      "x": 0,
-                      "y": 5,
-                      "z": 0,
-                      "rotationX": 90,
-                      "color": "#ee6060",
-                      "scaleX": 1,
-                      "id": 0
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              }
+              {}
             ]
           },
           "model": {
@@ -688,11 +596,16 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 5,
                   "z": 0,
                   "rotationX": 90,
-                  "color": "#ee6060"
+                  "color": "#ee6060",
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
                 }
               ],
               "position": {
-                "x": 0,
+                "x": -3.00653594771243,
                 "y": 0,
                 "z": 0
               },
@@ -717,37 +630,7 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "type": "sphere",
-                      "size": 6,
-                      "x": 0,
-                      "y": 25,
-                      "z": 0,
-                      "rotationX": 90,
-                      "color": "#ee6060",
-                      "scaleX": 1
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              }
+              {}
             ]
           },
           "model": {
@@ -791,8 +674,14 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
+              {},
               {
                 "shapes": {
+                  "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0.7884781561950853
+                  },
                   "shapes": [
                     {
                       "type": "cylinder",
@@ -805,120 +694,21 @@ const DEFAULT_PROJECT_CONFIG = {
                       "rotationY": 0,
                       "rotationZ": 0,
                       "height": 25,
-                      "scaleX": 1
-                    },
-                    {
-                      "type": "cone",
-                      "size": 5,
-                      "color": "#ff1117",
-                      "x": 0,
-                      "y": 0,
-                      "z": 13.6,
-                      "rotationX": 90,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "height": 5
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "color": "#ff1117",
-                      "x": 0,
-                      "y": 0,
-                      "z": -13.8,
-                      "rotationX": 90,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "height": 2.5
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 6.25,
-                      "color": "#888888",
-                      "x": 0,
-                      "y": 0,
-                      "z": -11,
-                      "rotationX": 90,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "height": 5
-                    },
-                    {
-                      "type": "box",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": 0,
-                      "y": 3,
-                      "z": -11.631250000000001,
-                      "rotationX": 45,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "width": 0.25,
-                      "height": 2.5,
-                      "depth": 8.5
-                    },
-                    {
-                      "type": "box",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": 0,
-                      "y": -3,
-                      "z": -11.631250000000001,
-                      "rotationX": -45,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "width": 0.25,
-                      "height": 2.5,
-                      "depth": 8.5
-                    },
-                    {
-                      "type": "box",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": -3,
-                      "y": 0,
-                      "z": -11.631250000000001,
-                      "rotationX": 0,
-                      "rotationY": 45,
-                      "rotationZ": 90,
-                      "width": 0.25,
-                      "height": 2.5,
-                      "depth": 8.5
-                    },
-                    {
-                      "type": "box",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": 3,
-                      "y": 0,
-                      "z": -11.631250000000001,
-                      "rotationX": 0,
-                      "rotationY": -45,
-                      "rotationZ": -90,
-                      "width": 0.25,
-                      "height": 2.5,
-                      "depth": 8.5
+                      "scaleX": 1,
+                      "id": 0
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
-              },
+              }
+            ],
+            "ascend": [
               {
                 "shapes": {
+                  "rotation": {
+                    "x": -0.7884781561950848,
+                    "y": 0,
+                    "z": 0
+                  },
                   "shapes": [
                     {
                       "type": "cylinder",
@@ -930,1124 +720,176 @@ const DEFAULT_PROJECT_CONFIG = {
                       "rotationX": 90,
                       "rotationY": 0,
                       "rotationZ": 0,
-                      "height": 25
-                    },
-                    {
-                      "type": "cone",
-                      "size": 5,
-                      "color": "#ff1117",
-                      "x": 0,
-                      "y": 0,
-                      "z": 13.6,
-                      "rotationX": 90,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "height": 5
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "color": "#ff1117",
-                      "x": 0,
-                      "y": 0,
-                      "z": -13.8,
-                      "rotationX": 88,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "height": 2.5
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 6.25,
-                      "color": "#888888",
-                      "x": 0,
-                      "y": 0,
-                      "z": -11,
-                      "rotationX": 88,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "height": 5
-                    },
-                    {
-                      "type": "box",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": -2.5,
-                      "y": 2.0796831071177158,
-                      "z": -12.079938665985402,
-                      "rotationX": 28,
-                      "rotationY": 30,
-                      "rotationZ": 45,
-                      "width": 0.25,
-                      "height": 2.5,
-                      "depth": 8.5
-                    },
-                    {
-                      "type": "box",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": 2.5,
-                      "y": -2.9172710279777645,
-                      "z": -11.905441182472895,
-                      "rotationX": -32,
-                      "rotationY": -30,
-                      "rotationZ": -135,
-                      "width": 0.25,
-                      "height": 2.5,
-                      "depth": 8.5
-                    },
-                    {
-                      "type": "box",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": -2.5,
-                      "y": -2.9172710279777645,
-                      "z": -11.905441182472895,
-                      "rotationX": -32,
-                      "rotationY": 30,
-                      "rotationZ": 135,
-                      "width": 0.25,
-                      "height": 2.5,
-                      "depth": 8.5
-                    },
-                    {
-                      "type": "box",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": 2.5,
-                      "y": 2.0796831071177158,
-                      "z": -12.079938665985402,
-                      "rotationX": 28,
-                      "rotationY": -30,
-                      "rotationZ": -45,
-                      "width": 0.25,
-                      "height": 2.5,
-                      "depth": 8.5
+                      "height": 25,
+                      "scaleX": 1,
+                      "id": 0
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": -0.7802648420680537
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              }
-            ],
-            "ascend": [
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "type": "cylinder",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": 0,
-                      "y": -0.9725217186425965,
-                      "z": -1.0070757204741112,
-                      "rotationX": 46,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "height": 25
-                    },
-                    {
-                      "type": "cone",
-                      "size": 5,
-                      "color": "#ff1117",
-                      "x": 0,
-                      "y": 9.447353838242368,
-                      "z": 9.78302128460565,
-                      "rotationX": 46,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "height": 5
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "color": "#ff1117",
-                      "x": 0,
-                      "y": -9.642726504933961,
-                      "z": -9.985335603450899,
-                      "rotationX": 46,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "height": 2.5
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 6.25,
-                      "color": "#888888",
-                      "x": 0,
-                      "y": -7.732415986171718,
-                      "z": -8.007151152519608,
-                      "rotationX": 46,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "height": 5
-                    },
-                    {
-                      "type": "box",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": 0,
-                      "y": -5.9217257703852635,
-                      "z": -10.450796164065927,
-                      "rotationX": 1,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "width": 0.25,
-                      "height": 2.5,
-                      "depth": 8.5
-                    },
-                    {
-                      "type": "box",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": 0,
-                      "y": -10.237764572417168,
-                      "z": -6.282845941311941,
-                      "rotationX": -89,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "width": 0.25,
-                      "height": 2.5,
-                      "depth": 8.5
-                    },
-                    {
-                      "type": "box",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": -3,
-                      "y": -8.079745171401216,
-                      "z": -8.366821052688934,
-                      "rotationX": -44,
-                      "rotationY": 45,
-                      "rotationZ": 90,
-                      "width": 0.25,
-                      "height": 2.5,
-                      "depth": 8.5
-                    },
-                    {
-                      "type": "box",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": 3,
-                      "y": -8.079745171401216,
-                      "z": -8.366821052688934,
-                      "rotationX": -44,
-                      "rotationY": -45,
-                      "rotationZ": -90,
-                      "width": 0.25,
-                      "height": 2.5,
-                      "depth": 8.5
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": -0.7802648420680528,
-                    "y": 0,
-                    "z": -0.7802648420680528
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               },
               {
                 "shapes": {
+                  "rotation": {
+                    "x": -0.788478156195085,
+                    "y": 0,
+                    "z": -0.7802648420680536
+                  },
                   "shapes": [
                     {
                       "type": "cylinder",
                       "size": 5,
                       "color": "#888888",
                       "x": 0,
-                      "y": -0.9725217186425965,
-                      "z": -1.0070757204741112,
-                      "rotationX": 46,
+                      "y": 0,
+                      "z": -1.4,
+                      "rotationX": 90,
                       "rotationY": 0,
                       "rotationZ": 0,
-                      "height": 25
-                    },
-                    {
-                      "type": "cone",
-                      "size": 5,
-                      "color": "#ff1117",
-                      "x": 0,
-                      "y": 9.447353838242368,
-                      "z": 9.78302128460565,
-                      "rotationX": 46,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "height": 5
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "color": "#ff1117",
-                      "x": 0,
-                      "y": -9.642726504933961,
-                      "z": -9.985335603450899,
-                      "rotationX": 46,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "height": 2.5
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 6.25,
-                      "color": "#888888",
-                      "x": 0,
-                      "y": -7.732415986171718,
-                      "z": -8.007151152519608,
-                      "rotationX": 46,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "height": 5
-                    },
-                    {
-                      "type": "box",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": -2.5,
-                      "y": -6.537550944661343,
-                      "z": -10.368723530211303,
-                      "rotationX": -14,
-                      "rotationY": 30,
-                      "rotationZ": 45,
-                      "width": 0.25,
-                      "height": 2.5,
-                      "depth": 8.5
-                    },
-                    {
-                      "type": "box",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": 2.5,
-                      "y": -10.134249946354597,
-                      "z": -6.895431677916315,
-                      "rotationX": -74,
-                      "rotationY": -30,
-                      "rotationZ": -135,
-                      "width": 0.25,
-                      "height": 2.5,
-                      "depth": 8.5
-                    },
-                    {
-                      "type": "box",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": -2.5,
-                      "y": -10.134249946354597,
-                      "z": -6.895431677916315,
-                      "rotationX": -74,
-                      "rotationY": 30,
-                      "rotationZ": 135,
-                      "width": 0.25,
-                      "height": 2.5,
-                      "depth": 8.5
-                    },
-                    {
-                      "type": "box",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": 2.5,
-                      "y": -6.537550944661343,
-                      "z": -10.368723530211303,
-                      "rotationX": -14,
-                      "rotationY": -30,
-                      "rotationZ": -45,
-                      "width": 0.25,
-                      "height": 2.5,
-                      "depth": 8.5
+                      "height": 25,
+                      "scaleX": 1,
+                      "id": 0
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": -0.7802648420680528,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               }
             ],
             "descend": [
               {
                 "shapes": {
+                  "rotation": {
+                    "x": 0.7802648420680531,
+                    "y": 0,
+                    "z": 0
+                  },
                   "shapes": [
                     {
                       "type": "cylinder",
                       "size": 5,
                       "color": "#888888",
                       "x": 0,
-                      "y": 0.9725217186425961,
-                      "z": -1.0070757204741116,
-                      "rotationX": 134,
+                      "y": 0,
+                      "z": -1.4,
+                      "rotationX": 90,
                       "rotationY": 0,
                       "rotationZ": 0,
-                      "height": 25
-                    },
-                    {
-                      "type": "cone",
-                      "size": 5,
-                      "color": "#ff1117",
-                      "x": 0,
-                      "y": -9.447353838242362,
-                      "z": 9.783021284605656,
-                      "rotationX": 134,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "height": 5
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "color": "#ff1117",
-                      "x": 0,
-                      "y": 9.642726504933957,
-                      "z": -9.985335603450903,
-                      "rotationX": 134,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "height": 2.5
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 6.25,
-                      "color": "#888888",
-                      "x": 0,
-                      "y": 7.7324159861717146,
-                      "z": -8.007151152519612,
-                      "rotationX": 134,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "height": 5
-                    },
-                    {
-                      "type": "box",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": 0,
-                      "y": 10.237764572417166,
-                      "z": -6.282845941311946,
-                      "rotationX": 89,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "width": 0.25,
-                      "height": 2.5,
-                      "depth": 8.5
-                    },
-                    {
-                      "type": "box",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": 0,
-                      "y": 5.921725770385258,
-                      "z": -10.45079616406593,
-                      "rotationX": -1,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "width": 0.25,
-                      "height": 2.5,
-                      "depth": 8.5
-                    },
-                    {
-                      "type": "box",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": -3,
-                      "y": 8.079745171401212,
-                      "z": -8.366821052688937,
-                      "rotationX": 44,
-                      "rotationY": 45,
-                      "rotationZ": 90,
-                      "width": 0.25,
-                      "height": 2.5,
-                      "depth": 8.5
-                    },
-                    {
-                      "type": "box",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": 3,
-                      "y": 8.079745171401212,
-                      "z": -8.366821052688937,
-                      "rotationX": 44,
-                      "rotationY": -45,
-                      "rotationZ": -90,
-                      "width": 0.25,
-                      "height": 2.5,
-                      "depth": 8.5
+                      "height": 25,
+                      "scaleX": 1,
+                      "id": 0
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0.7802648420680528,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               },
               {
                 "shapes": {
+                  "rotation": {
+                    "x": 0.7802648420680529,
+                    "y": 0,
+                    "z": 0.7802648420680495
+                  },
                   "shapes": [
                     {
                       "type": "cylinder",
                       "size": 5,
                       "color": "#888888",
                       "x": 0,
-                      "y": 0.9725217186425961,
-                      "z": -1.0070757204741116,
-                      "rotationX": 134,
+                      "y": 0,
+                      "z": -1.4,
+                      "rotationX": 90,
                       "rotationY": 0,
                       "rotationZ": 0,
-                      "height": 25
-                    },
-                    {
-                      "type": "cone",
-                      "size": 5,
-                      "color": "#ff1117",
-                      "x": 0,
-                      "y": -9.447353838242362,
-                      "z": 9.783021284605656,
-                      "rotationX": 134,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "height": 5
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "color": "#ff1117",
-                      "x": 0,
-                      "y": 9.642726504933957,
-                      "z": -9.985335603450903,
-                      "rotationX": 134,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "height": 2.5
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 6.25,
-                      "color": "#888888",
-                      "x": 0,
-                      "y": 7.7324159861717146,
-                      "z": -8.007151152519612,
-                      "rotationX": 134,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "height": 5
-                    },
-                    {
-                      "type": "box",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": -2.5,
-                      "y": 10.134249946354595,
-                      "z": -6.895431677916322,
-                      "rotationX": 74,
-                      "rotationY": 30,
-                      "rotationZ": 45,
-                      "width": 0.25,
-                      "height": 2.5,
-                      "depth": 8.5
-                    },
-                    {
-                      "type": "box",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": 2.5,
-                      "y": 6.537550944661339,
-                      "z": -10.368723530211309,
-                      "rotationX": 14,
-                      "rotationY": -30,
-                      "rotationZ": -135,
-                      "width": 0.25,
-                      "height": 2.5,
-                      "depth": 8.5
-                    },
-                    {
-                      "type": "box",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": -2.5,
-                      "y": 6.537550944661339,
-                      "z": -10.368723530211309,
-                      "rotationX": 14,
-                      "rotationY": 30,
-                      "rotationZ": 135,
-                      "width": 0.25,
-                      "height": 2.5,
-                      "depth": 8.5
-                    },
-                    {
-                      "type": "box",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": 2.5,
-                      "y": 10.134249946354595,
-                      "z": -6.895431677916322,
-                      "rotationX": 74,
-                      "rotationY": -30,
-                      "rotationZ": -45,
-                      "width": 0.25,
-                      "height": 2.5,
-                      "depth": 8.5
+                      "height": 25,
+                      "scaleX": 1,
+                      "id": 0
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0.7802648420680524,
-                    "y": 0,
-                    "z": 0.7884781561950857
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               }
             ],
             "launch": [
               {
                 "shapes": {
+                  "rotation": {
+                    "x": -1.5769563123901744,
+                    "y": 0,
+                    "z": 0
+                  },
                   "shapes": [
                     {
                       "type": "cylinder",
                       "size": 5,
                       "color": "#888888",
                       "x": 0,
-                      "y": 14.6,
-                      "z": 2.5717582782094415e-16,
-                      "rotationX": 0,
+                      "y": 0,
+                      "z": -1.4,
+                      "rotationX": 90,
                       "rotationY": 0,
                       "rotationZ": 0,
-                      "height": 25
-                    },
-                    {
-                      "type": "cone",
-                      "size": 5,
-                      "color": "#ff1117",
-                      "x": 0,
-                      "y": 29.6,
-                      "z": -2.4982794702606003e-15,
-                      "rotationX": 0,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "height": 5
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "color": "#ff1117",
-                      "x": 0,
-                      "y": 2.1999999999999993,
-                      "z": 2.535018874235021e-15,
-                      "rotationX": 0,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "height": 2.5
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 6.25,
-                      "color": "#888888",
-                      "x": 0,
-                      "y": 5,
-                      "z": 2.0206672185931327e-15,
-                      "rotationX": 0,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "height": 5
-                    },
-                    {
-                      "type": "box",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": 0,
-                      "y": 4.368749999999999,
-                      "z": -2.999999999999998,
-                      "rotationX": -45,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "width": 0.25,
-                      "height": 2.5,
-                      "depth": 8.5
-                    },
-                    {
-                      "type": "box",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": 0,
-                      "y": 4.368749999999999,
-                      "z": 3.000000000000002,
-                      "rotationX": -135,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "width": 0.25,
-                      "height": 2.5,
-                      "depth": 8.5
-                    },
-                    {
-                      "type": "box",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": -3,
-                      "y": 4.368749999999999,
-                      "z": 2.136625962387398e-15,
-                      "rotationX": -90,
-                      "rotationY": 45,
-                      "rotationZ": 90,
-                      "width": 0.25,
-                      "height": 2.5,
-                      "depth": 8.5
-                    },
-                    {
-                      "type": "box",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": 3,
-                      "y": 4.368749999999999,
-                      "z": 2.136625962387398e-15,
-                      "rotationX": -90,
-                      "rotationY": -45,
-                      "rotationZ": -90,
-                      "width": 0.25,
-                      "height": 2.5,
-                      "depth": 8.5
+                      "height": 25,
+                      "scaleX": 1,
+                      "id": 0
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": -1.5687429982631438,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               },
               {
                 "shapes": {
+                  "rotation": {
+                    "x": -1.576956312390172,
+                    "y": -0.008213314127032096,
+                    "z": 0.780264842068052
+                  },
                   "shapes": [
                     {
                       "type": "cylinder",
                       "size": 5,
                       "color": "#888888",
                       "x": 0,
-                      "y": 14.6,
-                      "z": 2.5717582782094415e-16,
-                      "rotationX": 0,
+                      "y": 0,
+                      "z": -1.4,
+                      "rotationX": 90,
                       "rotationY": 0,
                       "rotationZ": 0,
-                      "height": 25
-                    },
-                    {
-                      "type": "cone",
-                      "size": 5,
-                      "color": "#ff1117",
-                      "x": 0,
-                      "y": 29.6,
-                      "z": -2.4982794702606003e-15,
-                      "rotationX": 0,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "height": 5
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "color": "#ff1117",
-                      "x": 0,
-                      "y": 2.1999999999999993,
-                      "z": 2.535018874235021e-15,
-                      "rotationX": -2,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "height": 2.5
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 6.25,
-                      "color": "#888888",
-                      "x": 0,
-                      "y": 5,
-                      "z": 2.0206672185931327e-15,
-                      "rotationX": -2,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "height": 5
-                    },
-                    {
-                      "type": "box",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": -2.5,
-                      "y": 3.9200613340145978,
-                      "z": -2.0796831071177135,
-                      "rotationX": -62,
-                      "rotationY": 30,
-                      "rotationZ": 45,
-                      "width": 0.25,
-                      "height": 2.5,
-                      "depth": 8.5
-                    },
-                    {
-                      "type": "box",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": 2.5,
-                      "y": 4.094558817527105,
-                      "z": 2.9172710279777667,
-                      "rotationX": -122,
-                      "rotationY": -30,
-                      "rotationZ": -135,
-                      "width": 0.25,
-                      "height": 2.5,
-                      "depth": 8.5
-                    },
-                    {
-                      "type": "box",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": -2.5,
-                      "y": 4.094558817527105,
-                      "z": 2.9172710279777667,
-                      "rotationX": -122,
-                      "rotationY": 30,
-                      "rotationZ": 135,
-                      "width": 0.25,
-                      "height": 2.5,
-                      "depth": 8.5
-                    },
-                    {
-                      "type": "box",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": 2.5,
-                      "y": 3.9200613340145978,
-                      "z": -2.0796831071177135,
-                      "rotationX": -62,
-                      "rotationY": -30,
-                      "rotationZ": -45,
-                      "width": 0.25,
-                      "height": 2.5,
-                      "depth": 8.5
+                      "height": 25,
+                      "scaleX": 1,
+                      "id": 0
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": -1.5687429982631438,
-                    "y": 0,
-                    "z": 0.7802648420680529
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               }
             ],
             "land": [
               {
                 "shapes": {
-                  "shapes": [
-                    {
-                      "type": "cylinder",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": 0,
-                      "y": 17.39978677321895,
-                      "z": 0.024433369012196865,
-                      "rotationX": -179,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "height": 25
-                    },
-                    {
-                      "type": "cone",
-                      "size": 5,
-                      "color": "#ff1117",
-                      "x": 0,
-                      "y": 2.402071345873079,
-                      "z": -0.23735272754705528,
-                      "rotationX": -179,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "height": 5
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "color": "#ff1117",
-                      "x": 0,
-                      "y": 29.7978981931582,
-                      "z": 0.240843208834512,
-                      "rotationX": -179,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "height": 2.5
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 6.25,
-                      "color": "#888888",
-                      "x": 0,
-                      "y": 26.998324646720306,
-                      "z": 0.19197647081011826,
-                      "rotationX": -179,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "height": 5
-                    },
-                    {
-                      "type": "box",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": 0,
-                      "y": 27.577121284975924,
-                      "z": 3.2025363878428275,
-                      "rotationX": 136,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "width": 0.25,
-                      "height": 2.5,
-                      "depth": 8.5
-                    },
-                    {
-                      "type": "box",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": 0,
-                      "y": 27.681835723599626,
-                      "z": -2.7965497830955206,
-                      "rotationX": 46,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "width": 0.25,
-                      "height": 2.5,
-                      "depth": 8.5
-                    },
-                    {
-                      "type": "box",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": -3,
-                      "y": 27.629478504287775,
-                      "z": 0.20299330237365346,
-                      "rotationX": 91,
-                      "rotationY": 45,
-                      "rotationZ": 90,
-                      "width": 0.25,
-                      "height": 2.5,
-                      "depth": 8.5
-                    },
-                    {
-                      "type": "box",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": 3,
-                      "y": 27.629478504287775,
-                      "z": 0.20299330237365346,
-                      "rotationX": 91,
-                      "rotationY": -45,
-                      "rotationZ": -90,
-                      "width": 0.25,
-                      "height": 2.5,
-                      "depth": 8.5
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
                   "rotation": {
-                    "x": 1.5769563123901744,
+                    "x": 1.5769563123901817,
                     "y": 0,
                     "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
                   }
                 }
               },
               {
                 "shapes": {
+                  "rotation": {
+                    "x": 1.5667186747652215,
+                    "y": 0.0061889906291131246,
+                    "z": 0.786453832697165
+                  },
                   "shapes": [
                     {
                       "type": "cylinder",
                       "size": 5,
                       "color": "#888888",
                       "x": 0,
-                      "y": 17.39978677321895,
-                      "z": 0.024433369012196865,
-                      "rotationX": -179,
+                      "y": 0,
+                      "z": -1.4,
+                      "rotationX": 90,
                       "rotationY": 0,
                       "rotationZ": 0,
-                      "height": 25
-                    },
-                    {
-                      "type": "cone",
-                      "size": 5,
-                      "color": "#ff1117",
-                      "x": 0,
-                      "y": 2.402071345873079,
-                      "z": -0.23735272754705528,
-                      "rotationX": -179,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "height": 5
-                    },
-                    {
-                      "type": "cone",
-                      "size": 2.5,
-                      "color": "#ff1117",
-                      "x": 0,
-                      "y": 29.7978981931582,
-                      "z": 0.240843208834512,
-                      "rotationX": 179,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "height": 2.5
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 6.25,
-                      "color": "#888888",
-                      "x": 0,
-                      "y": 26.998324646720306,
-                      "z": 0.19197647081011826,
-                      "rotationX": 179,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "height": 5
-                    },
-                    {
-                      "type": "box",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": -2.5,
-                      "y": 28.041803357969904,
-                      "z": 2.290190360643564,
-                      "rotationX": 119,
-                      "rotationY": 30,
-                      "rotationZ": 45,
-                      "width": 0.25,
-                      "height": 2.5,
-                      "depth": 8.5
-                    },
-                    {
-                      "type": "box",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": 2.5,
-                      "y": 27.954541325783488,
-                      "z": -2.7090481151383945,
-                      "rotationX": 59,
-                      "rotationY": -30,
-                      "rotationZ": -135,
-                      "width": 0.25,
-                      "height": 2.5,
-                      "depth": 8.5
-                    },
-                    {
-                      "type": "box",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": -2.5,
-                      "y": 27.954541325783488,
-                      "z": -2.7090481151383945,
-                      "rotationX": 59,
-                      "rotationY": 30,
-                      "rotationZ": 135,
-                      "width": 0.25,
-                      "height": 2.5,
-                      "depth": 8.5
-                    },
-                    {
-                      "type": "box",
-                      "size": 5,
-                      "color": "#888888",
-                      "x": 2.5,
-                      "y": 28.041803357969904,
-                      "z": 2.290190360643564,
-                      "rotationX": 119,
-                      "rotationY": -30,
-                      "rotationZ": -45,
-                      "width": 0.25,
-                      "height": 2.5,
-                      "depth": 8.5
+                      "height": 25,
+                      "scaleX": 1,
+                      "id": 0
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 1.576956312390176,
-                    "y": 0,
-                    "z": 0.7884781561950845
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               }
             ]
@@ -2202,25 +1044,22 @@ const DEFAULT_PROJECT_CONFIG = {
                       "y": 25,
                       "z": 0,
                       "rotationX": 90,
-                      "color": "#6060ee",
-                      "scaleX": 1
+                      "scaleX": 1,
+                      "id": 0
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
+                }
+              },
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "scaleX": 1.5,
+                      "scaleY": 1.5,
+                      "scaleZ": 1.5,
+                      "id": 0
+                    }
+                  ]
                 }
               }
             ]
@@ -2235,7 +1074,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 25,
                   "z": 0,
                   "rotationX": 90,
-                  "color": "#6060ee",
+                  "color": "#6771e7",
                   "scaleX": 1
                 }
               ],
@@ -2275,212 +1114,7 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "type": "sphere",
-                      "width": 24,
-                      "height": 16,
-                      "depth": 24,
-                      "color": "#C0C0C0",
-                      "x": 0,
-                      "y": 32,
-                      "z": 0,
-                      "size": 24,
-                      "name": "dome",
-                      "scaleX": 1
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 22,
-                      "color": "#D8D8D8",
-                      "x": 0,
-                      "y": 42,
-                      "z": 0,
-                      "name": "spire"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 14,
-                      "height": 20,
-                      "color": "#6f1eb0",
-                      "x": 0,
-                      "y": 62,
-                      "z": 0,
-                      "name": "spire roof"
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 0.7,
-                    "z": 1
-                  }
-                },
-                "base": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 40,
-                      "height": 12,
-                      "depth": 40,
-                      "color": "#414141",
-                      "x": 0,
-                      "y": 6,
-                      "z": 0,
-                      "scaleX": 1,
-                      "name": "base"
-                    },
-                    {
-                      "type": "box",
-                      "width": 44,
-                      "height": 4,
-                      "depth": 44,
-                      "color": "#696969",
-                      "x": 0,
-                      "y": 2,
-                      "z": 0,
-                      "name": "foundation"
-                    },
-                    {
-                      "type": "box",
-                      "width": 32,
-                      "height": 12,
-                      "depth": 32,
-                      "color": "#707070",
-                      "x": 0,
-                      "y": 17,
-                      "z": 0,
-                      "name": "main structure"
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "towers": {
-                  "shapes": [
-                    {
-                      "type": "cylinder",
-                      "size": 6,
-                      "height": 30,
-                      "color": "#C0C0C0",
-                      "x": 16,
-                      "y": 22,
-                      "z": 16,
-                      "name": "tower1"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 6,
-                      "height": 30,
-                      "color": "#C0C0C0",
-                      "x": -16,
-                      "y": 22,
-                      "z": 16,
-                      "name": "tower2"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 6,
-                      "height": 30,
-                      "color": "#C0C0C0",
-                      "x": 16,
-                      "y": 22,
-                      "z": -16,
-                      "name": "tower3"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 6,
-                      "height": 30,
-                      "color": "#C0C0C0",
-                      "x": -16,
-                      "y": 22,
-                      "z": -16,
-                      "name": "tower4"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 8,
-                      "height": 10,
-                      "color": "#4169E1",
-                      "x": 16,
-                      "y": 42,
-                      "z": 16,
-                      "name": "tower1roof"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 8,
-                      "height": 10,
-                      "color": "#4169E1",
-                      "x": -16,
-                      "y": 42,
-                      "z": 16,
-                      "name": "tower2roof"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 8,
-                      "height": 10,
-                      "color": "#4169E1",
-                      "x": 16,
-                      "y": 42,
-                      "z": -16,
-                      "name": "tower3roof"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 8,
-                      "height": 10,
-                      "color": "#4169E1",
-                      "x": -16,
-                      "y": 42,
-                      "z": -16,
-                      "name": "tower4roof"
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 0.7,
-                    "z": 1
-                  }
-                }
-              }
+              {}
             ]
           },
           "model": {
@@ -2705,190 +1339,7 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "type": "cylinder",
-                      "size": 20,
-                      "height": 4,
-                      "color": "#696969",
-                      "x": 0,
-                      "y": 2,
-                      "z": 0,
-                      "name": "base",
-                      "rotationX": 0,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "scaleX": 1,
-                      "scaleY": 1,
-                      "scaleZ": 1
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 14,
-                      "height": 26,
-                      "color": "#696969",
-                      "x": 0,
-                      "y": 17,
-                      "z": 0,
-                      "name": "body"
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "rampart": {
-                  "shapes": [
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 8,
-                      "color": "#696969",
-                      "x": 0,
-                      "y": 30,
-                      "z": 0,
-                      "name": "rampartbase"
-                    },
-                    {
-                      "type": "box",
-                      "width": 3,
-                      "height": 5,
-                      "depth": 3,
-                      "color": "#696969",
-                      "x": 4,
-                      "y": 34,
-                      "z": 4,
-                      "name": "rampartblock1"
-                    },
-                    {
-                      "type": "box",
-                      "width": 3,
-                      "height": 5,
-                      "depth": 3,
-                      "color": "#696969",
-                      "x": -4,
-                      "y": 34,
-                      "z": 4,
-                      "name": "rampartblock2"
-                    },
-                    {
-                      "type": "box",
-                      "width": 3,
-                      "height": 5,
-                      "depth": 3,
-                      "color": "#696969",
-                      "x": 4,
-                      "y": 34,
-                      "z": -4,
-                      "name": "rampartblock3"
-                    },
-                    {
-                      "type": "box",
-                      "width": 3,
-                      "height": 5,
-                      "depth": 3,
-                      "color": "#696969",
-                      "x": -4,
-                      "y": 34,
-                      "z": -4,
-                      "name": "rampartblock4"
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1.5,
-                    "y": 1,
-                    "z": 1.5
-                  }
-                },
-                "attacker": {
-                  "shapes": [
-                    {
-                      "type": "cylinder",
-                      "size": 5.7,
-                      "height": 14,
-                      "color": "#A9A9A9",
-                      "x": 0,
-                      "y": 39.6,
-                      "z": 0,
-                      "name": "attackerbody"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 6,
-                      "color": "#CD7F32",
-                      "x": 0,
-                      "y": 48.89655172413794,
-                      "z": 0,
-                      "name": "attacker head",
-                      "rotationX": 0,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "scaleX": 1,
-                      "scaleY": 1,
-                      "scaleZ": 1
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2,
-                      "height": 12,
-                      "color": "#A9A9A9",
-                      "x": 0,
-                      "y": 42,
-                      "z": 0,
-                      "rotationX": 90,
-                      "name": "attacker arms"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 3,
-                      "color": "#FF4500",
-                      "x": 0,
-                      "y": 42,
-                      "z": 6,
-                      "name": "attacker weapon"
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              }
+              {}
             ]
           },
           "model": {
@@ -3091,117 +1542,40 @@ const DEFAULT_PROJECT_CONFIG = {
           "animations": {
             "idle": [
               {
-                "shapes": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              },
-              {
-                "shapes": {
+                "main": {
                   "shapes": [
                     {
+                      "rotationX": -45,
                       "rotationZ": 0,
-                      "rotationY": 45,
-                      "id": 3
+                      "id": 4
                     },
                     {
-                      "rotationX": 155,
-                      "id": 4
+                      "rotationX": 45,
+                      "id": 3
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               },
               {
-                "shapes": {
+                "main": {
                   "shapes": [
                     {
+                      "rotationX": 0,
+                      "rotationZ": 0,
+                      "id": 4
+                    },
+                    {
+                      "rotationX": 0,
                       "rotationY": 90,
                       "id": 3
-                    },
-                    {
-                      "rotationX": 200,
-                      "id": 4
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "rotationY": 135,
-                      "id": 3
-                    },
-                    {
-                      "rotationX": 245,
-                      "id": 4
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               }
             ]
           },
           "model": {
-            "shapes": {
+            "main": {
               "shapes": [
                 {
                   "type": "cylinder",
@@ -3390,247 +1764,7 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 40,
-                      "height": 4,
-                      "depth": 40,
-                      "color": "#303040",
-                      "x": 0,
-                      "y": 2,
-                      "z": 0,
-                      "scaleX": 1
-                    },
-                    {
-                      "type": "box",
-                      "width": 36,
-                      "height": 12,
-                      "depth": 36,
-                      "color": "#404050",
-                      "x": 0,
-                      "y": 10,
-                      "z": 0
-                    },
-                    {
-                      "type": "box",
-                      "width": 40,
-                      "height": 2,
-                      "depth": 40,
-                      "color": "#505060",
-                      "x": 0,
-                      "y": 17,
-                      "z": 0
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 12,
-                      "color": "#2288cc",
-                      "x": -16,
-                      "y": 24,
-                      "z": 0
-                    },
-                    {
-                      "type": "torus",
-                      "size": 12,
-                      "tubeSize": 1,
-                      "color": "#44aaff",
-                      "x": -16,
-                      "y": 24,
-                      "z": 0,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "torus",
-                      "size": 12,
-                      "tubeSize": 1,
-                      "color": "#44aaff",
-                      "x": -16,
-                      "y": 28,
-                      "z": 0,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "torus",
-                      "size": 12,
-                      "tubeSize": 1,
-                      "color": "#44aaff",
-                      "x": -16,
-                      "y": 20,
-                      "z": 0,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 12,
-                      "color": "#2288cc",
-                      "x": 16,
-                      "y": 24,
-                      "z": 0
-                    },
-                    {
-                      "type": "torus",
-                      "size": 12,
-                      "tubeSize": 1,
-                      "color": "#44aaff",
-                      "x": 16,
-                      "y": 24,
-                      "z": 0,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "torus",
-                      "size": 12,
-                      "tubeSize": 1,
-                      "color": "#44aaff",
-                      "x": 16,
-                      "y": 28,
-                      "z": 0,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "torus",
-                      "size": 12,
-                      "tubeSize": 1,
-                      "color": "#44aaff",
-                      "x": 16,
-                      "y": 20,
-                      "z": 0,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 16,
-                      "height": 6,
-                      "color": "#333333",
-                      "x": 0,
-                      "y": 20,
-                      "z": 0
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 14,
-                      "height": 2,
-                      "color": "#444444",
-                      "x": 0,
-                      "y": 24,
-                      "z": 0
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 2,
-                      "color": "#2288cc",
-                      "x": 0,
-                      "y": 26,
-                      "z": 0
-                    },
-                    {
-                      "type": "box",
-                      "width": 6,
-                      "height": 6,
-                      "depth": 6,
-                      "color": "#cc2200",
-                      "x": -14,
-                      "y": 9,
-                      "z": -14
-                    },
-                    {
-                      "type": "box",
-                      "width": 6,
-                      "height": 6,
-                      "depth": 6,
-                      "color": "#cc6600",
-                      "x": 0,
-                      "y": 9,
-                      "z": -14
-                    },
-                    {
-                      "type": "box",
-                      "width": 6,
-                      "height": 6,
-                      "depth": 6,
-                      "color": "#ccaa00",
-                      "x": 14,
-                      "y": 9,
-                      "z": -14
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 3,
-                      "color": "#44aaff",
-                      "x": 0,
-                      "y": 28,
-                      "z": 0
-                    },
-                    {
-                      "type": "box",
-                      "width": 40,
-                      "height": 1,
-                      "depth": 24,
-                      "color": "#444455",
-                      "x": 0,
-                      "y": 18.5,
-                      "z": 0
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2,
-                      "height": 4,
-                      "color": "#aa0000",
-                      "x": -18,
-                      "y": 20.5,
-                      "z": -8
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2,
-                      "height": 4,
-                      "color": "#aa0000",
-                      "x": 18,
-                      "y": 20.5,
-                      "z": -8
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2,
-                      "height": 4,
-                      "color": "#aa0000",
-                      "x": -18,
-                      "y": 20.5,
-                      "z": 8
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2,
-                      "height": 4,
-                      "color": "#aa0000",
-                      "x": 18,
-                      "y": 20.5,
-                      "z": 8
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              }
+              {}
             ]
           },
           "model": {
@@ -3892,235 +2026,7 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 40,
-                      "height": 6,
-                      "depth": 40,
-                      "x": 0,
-                      "y": 3,
-                      "z": 0,
-                      "color": "#303030"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 36,
-                      "height": 14,
-                      "x": 0,
-                      "y": 13,
-                      "z": 0,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 28,
-                      "height": 4,
-                      "x": 0,
-                      "y": 22,
-                      "z": 0,
-                      "color": "#202020"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 24,
-                      "height": 16,
-                      "x": 0,
-                      "y": 32,
-                      "z": 0,
-                      "color": "#404040"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 20,
-                      "tubeSize": 2,
-                      "x": 0,
-                      "y": 26,
-                      "z": 0,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 14,
-                      "x": 0,
-                      "y": 32,
-                      "z": 0,
-                      "color": "#80FFD0"
-                    },
-                    {
-                      "type": "box",
-                      "width": 6,
-                      "height": 28,
-                      "depth": 6,
-                      "x": 16,
-                      "y": 22,
-                      "z": 16,
-                      "color": "#303030"
-                    },
-                    {
-                      "type": "box",
-                      "width": 6,
-                      "height": 28,
-                      "depth": 6,
-                      "x": -16,
-                      "y": 22,
-                      "z": 16,
-                      "color": "#303030"
-                    },
-                    {
-                      "type": "box",
-                      "width": 6,
-                      "height": 28,
-                      "depth": 6,
-                      "x": 16,
-                      "y": 22,
-                      "z": -16,
-                      "color": "#303030"
-                    },
-                    {
-                      "type": "box",
-                      "width": 6,
-                      "height": 28,
-                      "depth": 6,
-                      "x": -16,
-                      "y": 22,
-                      "z": -16,
-                      "color": "#303030"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4,
-                      "x": 16,
-                      "y": 38,
-                      "z": 16,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4,
-                      "x": -16,
-                      "y": 38,
-                      "z": 16,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4,
-                      "x": 16,
-                      "y": 38,
-                      "z": -16,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4,
-                      "x": -16,
-                      "y": 38,
-                      "z": -16,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 10,
-                      "height": 4,
-                      "x": 0,
-                      "y": 42,
-                      "z": 0,
-                      "color": "#606060"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 6,
-                      "height": 8,
-                      "x": 0,
-                      "y": 48,
-                      "z": 0,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 8,
-                      "tubeSize": 1,
-                      "x": 0,
-                      "y": 46,
-                      "z": 0,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 4,
-                      "tubeSize": 1,
-                      "x": 0,
-                      "y": 32,
-                      "z": 0,
-                      "rotationX": 30,
-                      "rotationY": 45,
-                      "color": "#00FFFF"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 4,
-                      "tubeSize": 1,
-                      "x": 0,
-                      "y": 32,
-                      "z": 0,
-                      "rotationX": 120,
-                      "rotationY": 45,
-                      "color": "#00FFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 2,
-                      "x": 6,
-                      "y": 32,
-                      "z": 0,
-                      "color": "#FFFFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 2,
-                      "x": -6,
-                      "y": 32,
-                      "z": 0,
-                      "color": "#FFFFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 2,
-                      "x": 0,
-                      "y": 32,
-                      "z": 6,
-                      "color": "#FFFFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 2,
-                      "x": 0,
-                      "y": 32,
-                      "z": -6,
-                      "color": "#FFFFFF"
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              }
+              {}
             ]
           },
           "model": {
@@ -4368,1074 +2274,7 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "type": "sphere",
-                      "size": 7.5,
-                      "x": 0,
-                      "y": 33.85714285714286,
-                      "z": 0,
-                      "color": "#3D3D3D",
-                      "scaleX": 1
-                    },
-                    {
-                      "type": "torus",
-                      "size": 9,
-                      "tubeSize": 1.5,
-                      "x": 0,
-                      "y": 33.85714285714286,
-                      "z": 0,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 9,
-                      "tubeSize": 1.5,
-                      "x": 0,
-                      "y": 33.85714285714286,
-                      "z": 0,
-                      "rotationY": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 1.5,
-                      "x": 0,
-                      "y": 38.35714285714286,
-                      "z": 0,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 2.25,
-                      "x": 0,
-                      "y": 39.85714285714286,
-                      "z": 0,
-                      "color": "#00FFDD"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 0.75,
-                      "x": 0,
-                      "y": 32.35714285714286,
-                      "z": 0,
-                      "rotationX": 90,
-                      "rotationY": 0,
-                      "color": "#404040"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 0.75,
-                      "x": 0,
-                      "y": 32.35714285714286,
-                      "z": 0,
-                      "rotationX": 90,
-                      "rotationY": 90,
-                      "color": "#404040"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 0.75,
-                      "x": 10.5,
-                      "y": 32.35714285714286,
-                      "z": 10.5,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 0.75,
-                      "x": -10.5,
-                      "y": 32.35714285714286,
-                      "z": 10.5,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 0.75,
-                      "x": 10.5,
-                      "y": 32.35714285714286,
-                      "z": -10.5,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 0.75,
-                      "x": -10.5,
-                      "y": 32.35714285714286,
-                      "z": -10.5,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 4.5,
-                      "tubeSize": 0.75,
-                      "x": 10.5,
-                      "y": 33.10714285714286,
-                      "z": 10.5,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 4.5,
-                      "tubeSize": 0.75,
-                      "x": -10.5,
-                      "y": 33.10714285714286,
-                      "z": 10.5,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 4.5,
-                      "tubeSize": 0.75,
-                      "x": 10.5,
-                      "y": 33.10714285714286,
-                      "z": -10.5,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 4.5,
-                      "tubeSize": 0.75,
-                      "x": -10.5,
-                      "y": 33.10714285714286,
-                      "z": -10.5,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 0.75,
-                      "height": 3,
-                      "x": 0,
-                      "y": 30.857142857142858,
-                      "z": 0,
-                      "color": "#00FFDD"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 1.5,
-                      "x": 0,
-                      "y": 29.357142857142858,
-                      "z": 0,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 0.75,
-                      "x": 3.75,
-                      "y": 33.85714285714286,
-                      "z": 0,
-                      "color": "#FFFFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 0.75,
-                      "x": -3.75,
-                      "y": 33.85714285714286,
-                      "z": 0,
-                      "color": "#FFFFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 0.75,
-                      "x": 0,
-                      "y": 33.85714285714286,
-                      "z": 3.75,
-                      "color": "#FFFFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 0.75,
-                      "x": 0,
-                      "y": 33.85714285714286,
-                      "z": -3.75,
-                      "color": "#FFFFFF"
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              }
-            ],
-            "walk": [
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "type": "sphere",
-                      "size": 7.5,
-                      "x": 0,
-                      "y": 33.85714285714286,
-                      "z": 0,
-                      "color": "#3D3D3D"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 9,
-                      "tubeSize": 1.5,
-                      "x": 0,
-                      "y": 33.85714285714286,
-                      "z": 0,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 9,
-                      "tubeSize": 1.5,
-                      "x": 0,
-                      "y": 33.85714285714286,
-                      "z": 0,
-                      "rotationY": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 1.5,
-                      "x": 0,
-                      "y": 38.35714285714286,
-                      "z": 0,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 2.25,
-                      "x": 0,
-                      "y": 39.85714285714286,
-                      "z": 0,
-                      "color": "#00FFDD"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 0.75,
-                      "x": 0,
-                      "y": 32.35714285714286,
-                      "z": 0,
-                      "rotationX": 90,
-                      "rotationY": 0,
-                      "color": "#404040"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 0.75,
-                      "x": 0,
-                      "y": 32.35714285714286,
-                      "z": 0,
-                      "rotationX": 90,
-                      "rotationY": 90,
-                      "color": "#404040"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 0.75,
-                      "x": 10.5,
-                      "y": 32.35714285714286,
-                      "z": 10.5,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 0.75,
-                      "x": -10.5,
-                      "y": 32.35714285714286,
-                      "z": 10.5,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 0.75,
-                      "x": 10.5,
-                      "y": 32.35714285714286,
-                      "z": -10.5,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 0.75,
-                      "x": -10.5,
-                      "y": 32.35714285714286,
-                      "z": -10.5,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 4.5,
-                      "tubeSize": 0.75,
-                      "x": 10.5,
-                      "y": 33.10714285714286,
-                      "z": 10.5,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 4.5,
-                      "tubeSize": 0.75,
-                      "x": -10.5,
-                      "y": 33.10714285714286,
-                      "z": 10.5,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 4.5,
-                      "tubeSize": 0.75,
-                      "x": 10.5,
-                      "y": 33.10714285714286,
-                      "z": -10.5,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 4.5,
-                      "tubeSize": 0.75,
-                      "x": -10.5,
-                      "y": 33.10714285714286,
-                      "z": -10.5,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 0.75,
-                      "height": 3,
-                      "x": 0,
-                      "y": 30.857142857142858,
-                      "z": 0,
-                      "color": "#00FFDD"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 1.5,
-                      "x": 0,
-                      "y": 29.357142857142858,
-                      "z": 0,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 0.75,
-                      "x": 3.75,
-                      "y": 33.85714285714286,
-                      "z": 0,
-                      "color": "#FFFFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 0.75,
-                      "x": -3.75,
-                      "y": 33.85714285714286,
-                      "z": 0,
-                      "color": "#FFFFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 0.75,
-                      "x": 0,
-                      "y": 33.85714285714286,
-                      "z": 3.75,
-                      "color": "#FFFFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 0.75,
-                      "x": 0,
-                      "y": 33.85714285714286,
-                      "z": -3.75,
-                      "color": "#FFFFFF"
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "type": "sphere",
-                      "size": 7.5,
-                      "x": 0,
-                      "y": 33.85714285714286,
-                      "z": 0,
-                      "color": "#3D3D3D"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 9,
-                      "tubeSize": 1.5,
-                      "x": 0,
-                      "y": 33.85714285714286,
-                      "z": 0,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 9,
-                      "tubeSize": 1.5,
-                      "x": 0,
-                      "y": 33.85714285714286,
-                      "z": 0,
-                      "rotationY": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 1.5,
-                      "x": 0,
-                      "y": 38.35714285714286,
-                      "z": 0,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 2.25,
-                      "x": 0,
-                      "y": 39.85714285714286,
-                      "z": 0,
-                      "color": "#00FFDD"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 0.75,
-                      "x": 0,
-                      "y": 32.35714285714286,
-                      "z": 0,
-                      "rotationX": 90,
-                      "rotationY": 0,
-                      "color": "#404040"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 0.75,
-                      "x": 0,
-                      "y": 32.35714285714286,
-                      "z": 0,
-                      "rotationX": 90,
-                      "rotationY": 90,
-                      "color": "#404040"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 0.75,
-                      "x": 10.5,
-                      "y": 32.35714285714286,
-                      "z": 10.5,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 0.75,
-                      "x": -10.5,
-                      "y": 32.35714285714286,
-                      "z": 10.5,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 0.75,
-                      "x": 10.5,
-                      "y": 32.35714285714286,
-                      "z": -10.5,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 0.75,
-                      "x": -10.5,
-                      "y": 32.35714285714286,
-                      "z": -10.5,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 4.5,
-                      "tubeSize": 0.75,
-                      "x": 10.5,
-                      "y": 33.10714285714286,
-                      "z": 10.5,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 4.5,
-                      "tubeSize": 0.75,
-                      "x": -10.5,
-                      "y": 33.10714285714286,
-                      "z": 10.5,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 4.5,
-                      "tubeSize": 0.75,
-                      "x": 10.5,
-                      "y": 33.10714285714286,
-                      "z": -10.5,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 4.5,
-                      "tubeSize": 0.75,
-                      "x": -10.5,
-                      "y": 33.10714285714286,
-                      "z": -10.5,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 0.75,
-                      "height": 3,
-                      "x": 0,
-                      "y": 30.857142857142858,
-                      "z": 0,
-                      "color": "#00FFDD"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 1.5,
-                      "x": 0,
-                      "y": 29.357142857142858,
-                      "z": 0,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 0.75,
-                      "x": 3.75,
-                      "y": 33.85714285714286,
-                      "z": 0,
-                      "color": "#FFFFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 0.75,
-                      "x": -3.75,
-                      "y": 33.85714285714286,
-                      "z": 0,
-                      "color": "#FFFFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 0.75,
-                      "x": 0,
-                      "y": 33.85714285714286,
-                      "z": 3.75,
-                      "color": "#FFFFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 0.75,
-                      "x": 0,
-                      "y": 33.85714285714286,
-                      "z": -3.75,
-                      "color": "#FFFFFF"
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "type": "sphere",
-                      "size": 7.5,
-                      "x": 0,
-                      "y": 23.85714285714286,
-                      "z": 0,
-                      "color": "#3D3D3D"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 9,
-                      "tubeSize": 1.5,
-                      "x": 0,
-                      "y": 23.85714285714286,
-                      "z": 0,
-                      "rotationX": 90,
-                      "color": "#d2fff0"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 9,
-                      "tubeSize": 1.5,
-                      "x": 0,
-                      "y": 23.85714285714286,
-                      "z": 0,
-                      "rotationY": 90,
-                      "color": "#d2fff0"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 1.5,
-                      "x": 0,
-                      "y": 28.35714285714286,
-                      "z": 0,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 2.25,
-                      "x": 0,
-                      "y": 29.85714285714286,
-                      "z": 0,
-                      "color": "#d2fff0"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 0.75,
-                      "x": 0,
-                      "y": 22.35714285714286,
-                      "z": 0,
-                      "rotationX": 90,
-                      "rotationY": 0,
-                      "color": "#404040"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 0.75,
-                      "x": 0,
-                      "y": 22.35714285714286,
-                      "z": 0,
-                      "rotationX": 90,
-                      "rotationY": 90,
-                      "color": "#404040"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 0.75,
-                      "x": 10.5,
-                      "y": 22.35714285714286,
-                      "z": 10.5,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 0.75,
-                      "x": -10.5,
-                      "y": 22.35714285714286,
-                      "z": 10.5,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 0.75,
-                      "x": 10.5,
-                      "y": 22.35714285714286,
-                      "z": -10.5,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 0.75,
-                      "x": -10.5,
-                      "y": 22.35714285714286,
-                      "z": -10.5,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 4.5,
-                      "tubeSize": 0.75,
-                      "x": 10.5,
-                      "y": 23.10714285714286,
-                      "z": 10.5,
-                      "rotationX": 90,
-                      "color": "#d2fff0"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 4.5,
-                      "tubeSize": 0.75,
-                      "x": -10.5,
-                      "y": 23.10714285714286,
-                      "z": 10.5,
-                      "rotationX": 90,
-                      "color": "#d2fff0"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 4.5,
-                      "tubeSize": 0.75,
-                      "x": 10.5,
-                      "y": 23.10714285714286,
-                      "z": -10.5,
-                      "rotationX": 90,
-                      "color": "#d2fff0"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 4.5,
-                      "tubeSize": 0.75,
-                      "x": -10.5,
-                      "y": 23.10714285714286,
-                      "z": -10.5,
-                      "rotationX": 90,
-                      "color": "#d2fff0"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 0.75,
-                      "height": 3,
-                      "x": 0,
-                      "y": 20.857142857142858,
-                      "z": 0,
-                      "color": "#d2fff0"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 1.5,
-                      "x": 0,
-                      "y": 19.357142857142858,
-                      "z": 0,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 0.75,
-                      "x": 3.75,
-                      "y": 23.85714285714286,
-                      "z": 0,
-                      "color": "#FFFFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 0.75,
-                      "x": -3.75,
-                      "y": 23.85714285714286,
-                      "z": 0,
-                      "color": "#FFFFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 0.75,
-                      "x": 0,
-                      "y": 23.85714285714286,
-                      "z": 3.75,
-                      "color": "#FFFFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 0.75,
-                      "x": 0,
-                      "y": 23.85714285714286,
-                      "z": -3.75,
-                      "color": "#FFFFFF"
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "type": "sphere",
-                      "size": 7.5,
-                      "x": 0,
-                      "y": 23.85714285714286,
-                      "z": 0,
-                      "color": "#3D3D3D"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 9,
-                      "tubeSize": 1.5,
-                      "x": 0,
-                      "y": 23.85714285714286,
-                      "z": 0,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 9,
-                      "tubeSize": 1.5,
-                      "x": 0,
-                      "y": 23.85714285714286,
-                      "z": 0,
-                      "rotationY": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 1.5,
-                      "x": 0,
-                      "y": 28.35714285714286,
-                      "z": 0,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 2.25,
-                      "x": 0,
-                      "y": 29.85714285714286,
-                      "z": 0,
-                      "color": "#00FFDD"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 0.75,
-                      "x": 0,
-                      "y": 22.35714285714286,
-                      "z": 0,
-                      "rotationX": 90,
-                      "rotationY": 0,
-                      "color": "#404040"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 0.75,
-                      "x": 0,
-                      "y": 22.35714285714286,
-                      "z": 0,
-                      "rotationX": 90,
-                      "rotationY": 90,
-                      "color": "#404040"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 0.75,
-                      "x": 10.5,
-                      "y": 22.35714285714286,
-                      "z": 10.5,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 0.75,
-                      "x": -10.5,
-                      "y": 22.35714285714286,
-                      "z": 10.5,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 0.75,
-                      "x": 10.5,
-                      "y": 22.35714285714286,
-                      "z": -10.5,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 0.75,
-                      "x": -10.5,
-                      "y": 22.35714285714286,
-                      "z": -10.5,
-                      "color": "#505050"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 4.5,
-                      "tubeSize": 0.75,
-                      "x": 10.5,
-                      "y": 23.10714285714286,
-                      "z": 10.5,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 4.5,
-                      "tubeSize": 0.75,
-                      "x": -10.5,
-                      "y": 23.10714285714286,
-                      "z": 10.5,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 4.5,
-                      "tubeSize": 0.75,
-                      "x": 10.5,
-                      "y": 23.10714285714286,
-                      "z": -10.5,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 4.5,
-                      "tubeSize": 0.75,
-                      "x": -10.5,
-                      "y": 23.10714285714286,
-                      "z": -10.5,
-                      "rotationX": 90,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 0.75,
-                      "height": 3,
-                      "x": 0,
-                      "y": 20.857142857142858,
-                      "z": 0,
-                      "color": "#00FFDD"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 1.5,
-                      "x": 0,
-                      "y": 19.357142857142858,
-                      "z": 0,
-                      "color": "#00FFAA"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 0.75,
-                      "x": 3.75,
-                      "y": 23.85714285714286,
-                      "z": 0,
-                      "color": "#FFFFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 0.75,
-                      "x": -3.75,
-                      "y": 23.85714285714286,
-                      "z": 0,
-                      "color": "#FFFFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 0.75,
-                      "x": 0,
-                      "y": 23.85714285714286,
-                      "z": 3.75,
-                      "color": "#FFFFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 0.75,
-                      "x": 0,
-                      "y": 23.85714285714286,
-                      "z": -3.75,
-                      "color": "#FFFFFF"
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              }
+              {}
             ]
           },
           "model": {
@@ -5670,758 +2509,7 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "type": "cylinder",
-                      "size": 16,
-                      "height": 4,
-                      "color": "#555555",
-                      "x": 0,
-                      "y": 2,
-                      "z": 0
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 8,
-                      "color": "#777777",
-                      "x": 0,
-                      "y": 8,
-                      "z": 0
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 10,
-                      "height": 20,
-                      "color": "#333333",
-                      "x": 0,
-                      "y": 22,
-                      "z": 0
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 3,
-                      "color": "#444444",
-                      "x": 0,
-                      "y": 33.5,
-                      "z": 0
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 14,
-                      "color": "#66bbff",
-                      "x": 0,
-                      "y": 42,
-                      "z": 0
-                    },
-                    {
-                      "type": "torus",
-                      "size": 20,
-                      "tubeSize": 1.6,
-                      "color": "#66bbff",
-                      "x": 0,
-                      "y": 18,
-                      "z": 0,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "torus",
-                      "size": 18,
-                      "tubeSize": 1.6,
-                      "color": "#4499ff",
-                      "x": 0,
-                      "y": 24,
-                      "z": 0,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "torus",
-                      "size": 16,
-                      "tubeSize": 1.6,
-                      "color": "#2277ff",
-                      "x": 0,
-                      "y": 30,
-                      "z": 0,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "cone",
-                      "size": 6,
-                      "height": 16,
-                      "color": "#888888",
-                      "x": 7,
-                      "y": 34,
-                      "z": 0,
-                      "rotationZ": -90
-                    },
-                    {
-                      "type": "cone",
-                      "size": 6,
-                      "height": 16,
-                      "color": "#888888",
-                      "x": -7,
-                      "y": 34,
-                      "z": 0,
-                      "rotationZ": 90
-                    },
-                    {
-                      "type": "cone",
-                      "size": 6,
-                      "height": 16,
-                      "color": "#888888",
-                      "x": 0,
-                      "y": 34,
-                      "z": 7,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "cone",
-                      "size": 6,
-                      "height": 16,
-                      "color": "#888888",
-                      "x": 0,
-                      "y": 34,
-                      "z": -7,
-                      "rotationX": -90
-                    },
-                    {
-                      "type": "box",
-                      "width": 3,
-                      "height": 14,
-                      "depth": 3,
-                      "color": "#888888",
-                      "x": 6,
-                      "y": 16,
-                      "z": 6,
-                      "rotationY": 45
-                    },
-                    {
-                      "type": "box",
-                      "width": 3,
-                      "height": 14,
-                      "depth": 3,
-                      "color": "#888888",
-                      "x": -6,
-                      "y": 16,
-                      "z": 6,
-                      "rotationY": -45
-                    },
-                    {
-                      "type": "box",
-                      "width": 3,
-                      "height": 14,
-                      "depth": 3,
-                      "color": "#888888",
-                      "x": 6,
-                      "y": 16,
-                      "z": -6,
-                      "rotationY": -45
-                    },
-                    {
-                      "type": "box",
-                      "width": 3,
-                      "height": 14,
-                      "depth": 3,
-                      "color": "#888888",
-                      "x": -6,
-                      "y": 16,
-                      "z": -6,
-                      "rotationY": 45
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2,
-                      "height": 1,
-                      "color": "#66bbff",
-                      "x": 0,
-                      "y": 36,
-                      "z": 0
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "type": "cylinder",
-                      "size": 16,
-                      "height": 4,
-                      "color": "#555555",
-                      "x": 0,
-                      "y": 2,
-                      "z": 0
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 8,
-                      "color": "#777777",
-                      "x": 0,
-                      "y": 8,
-                      "z": 0
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 10,
-                      "height": 20,
-                      "color": "#333333",
-                      "x": 0,
-                      "y": 22,
-                      "z": 0
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 3,
-                      "color": "#444444",
-                      "x": 0,
-                      "y": 33.5,
-                      "z": 0
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 14,
-                      "color": "#66bbff",
-                      "x": 0,
-                      "y": 42,
-                      "z": 0
-                    },
-                    {
-                      "type": "torus",
-                      "size": 20,
-                      "tubeSize": 1.6,
-                      "color": "#4499ff",
-                      "x": 0,
-                      "y": 18,
-                      "z": 0,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "torus",
-                      "size": 18,
-                      "tubeSize": 1.6,
-                      "color": "#66bbff",
-                      "x": 0,
-                      "y": 24,
-                      "z": 0,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "torus",
-                      "size": 16,
-                      "tubeSize": 1.6,
-                      "color": "#4499ff",
-                      "x": 0,
-                      "y": 30,
-                      "z": 0,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "cone",
-                      "size": 6,
-                      "height": 16,
-                      "color": "#888888",
-                      "x": 7,
-                      "y": 34,
-                      "z": 0,
-                      "rotationZ": -90
-                    },
-                    {
-                      "type": "cone",
-                      "size": 6,
-                      "height": 16,
-                      "color": "#888888",
-                      "x": -7,
-                      "y": 34,
-                      "z": 0,
-                      "rotationZ": 90
-                    },
-                    {
-                      "type": "cone",
-                      "size": 6,
-                      "height": 16,
-                      "color": "#888888",
-                      "x": 0,
-                      "y": 34,
-                      "z": 7,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "cone",
-                      "size": 6,
-                      "height": 16,
-                      "color": "#888888",
-                      "x": 0,
-                      "y": 34,
-                      "z": -7,
-                      "rotationX": -90
-                    },
-                    {
-                      "type": "box",
-                      "width": 3,
-                      "height": 14,
-                      "depth": 3,
-                      "color": "#888888",
-                      "x": 6,
-                      "y": 16,
-                      "z": 6,
-                      "rotationY": 45
-                    },
-                    {
-                      "type": "box",
-                      "width": 3,
-                      "height": 14,
-                      "depth": 3,
-                      "color": "#888888",
-                      "x": -6,
-                      "y": 16,
-                      "z": 6,
-                      "rotationY": -45
-                    },
-                    {
-                      "type": "box",
-                      "width": 3,
-                      "height": 14,
-                      "depth": 3,
-                      "color": "#888888",
-                      "x": 6,
-                      "y": 16,
-                      "z": -6,
-                      "rotationY": -45
-                    },
-                    {
-                      "type": "box",
-                      "width": 3,
-                      "height": 14,
-                      "depth": 3,
-                      "color": "#888888",
-                      "x": -6,
-                      "y": 16,
-                      "z": -6,
-                      "rotationY": 45
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2,
-                      "height": 1,
-                      "color": "#66bbff",
-                      "x": 0,
-                      "y": 36,
-                      "z": 0
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "type": "cylinder",
-                      "size": 16,
-                      "height": 4,
-                      "color": "#555555",
-                      "x": 0,
-                      "y": 2,
-                      "z": 0
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 8,
-                      "color": "#777777",
-                      "x": 0,
-                      "y": 8,
-                      "z": 0
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 10,
-                      "height": 20,
-                      "color": "#333333",
-                      "x": 0,
-                      "y": 22,
-                      "z": 0
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 3,
-                      "color": "#444444",
-                      "x": 0,
-                      "y": 33.5,
-                      "z": 0
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 14,
-                      "color": "#84c8ff",
-                      "x": 0,
-                      "y": 42,
-                      "z": 0
-                    },
-                    {
-                      "type": "torus",
-                      "size": 20,
-                      "tubeSize": 1.6,
-                      "color": "#2277ff",
-                      "x": 0,
-                      "y": 18,
-                      "z": 0,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "torus",
-                      "size": 18,
-                      "tubeSize": 1.6,
-                      "color": "#4499ff",
-                      "x": 0,
-                      "y": 24,
-                      "z": 0,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "torus",
-                      "size": 16,
-                      "tubeSize": 1.6,
-                      "color": "#66bbff",
-                      "x": 0,
-                      "y": 30,
-                      "z": 0,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "cone",
-                      "size": 6,
-                      "height": 16,
-                      "color": "#888888",
-                      "x": 7,
-                      "y": 34,
-                      "z": 0,
-                      "rotationZ": -90
-                    },
-                    {
-                      "type": "cone",
-                      "size": 6,
-                      "height": 16,
-                      "color": "#888888",
-                      "x": -7,
-                      "y": 34,
-                      "z": 0,
-                      "rotationZ": 90
-                    },
-                    {
-                      "type": "cone",
-                      "size": 6,
-                      "height": 16,
-                      "color": "#888888",
-                      "x": 0,
-                      "y": 34,
-                      "z": 7,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "cone",
-                      "size": 6,
-                      "height": 16,
-                      "color": "#888888",
-                      "x": 0,
-                      "y": 34,
-                      "z": -7,
-                      "rotationX": -90
-                    },
-                    {
-                      "type": "box",
-                      "width": 3,
-                      "height": 14,
-                      "depth": 3,
-                      "color": "#888888",
-                      "x": 6,
-                      "y": 16,
-                      "z": 6,
-                      "rotationY": 45
-                    },
-                    {
-                      "type": "box",
-                      "width": 3,
-                      "height": 14,
-                      "depth": 3,
-                      "color": "#888888",
-                      "x": -6,
-                      "y": 16,
-                      "z": 6,
-                      "rotationY": -45
-                    },
-                    {
-                      "type": "box",
-                      "width": 3,
-                      "height": 14,
-                      "depth": 3,
-                      "color": "#888888",
-                      "x": 6,
-                      "y": 16,
-                      "z": -6,
-                      "rotationY": -45
-                    },
-                    {
-                      "type": "box",
-                      "width": 3,
-                      "height": 14,
-                      "depth": 3,
-                      "color": "#888888",
-                      "x": -6,
-                      "y": 16,
-                      "z": -6,
-                      "rotationY": 45
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2,
-                      "height": 1,
-                      "color": "#66bbff",
-                      "x": 0,
-                      "y": 36,
-                      "z": 0
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "type": "cylinder",
-                      "size": 16,
-                      "height": 4,
-                      "color": "#555555",
-                      "x": 0,
-                      "y": 2,
-                      "z": 0
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 8,
-                      "color": "#777777",
-                      "x": 0,
-                      "y": 8,
-                      "z": 0
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 10,
-                      "height": 20,
-                      "color": "#333333",
-                      "x": 0,
-                      "y": 22,
-                      "z": 0
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 12,
-                      "height": 3,
-                      "color": "#444444",
-                      "x": 0,
-                      "y": 33.5,
-                      "z": 0
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 14,
-                      "color": "#84c8ff",
-                      "x": 0,
-                      "y": 42,
-                      "z": 0
-                    },
-                    {
-                      "type": "torus",
-                      "size": 20,
-                      "tubeSize": 1.6,
-                      "color": "#4499ff",
-                      "x": 0,
-                      "y": 18,
-                      "z": 0,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "torus",
-                      "size": 18,
-                      "tubeSize": 1.6,
-                      "color": "#2277ff",
-                      "x": 0,
-                      "y": 24,
-                      "z": 0,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "torus",
-                      "size": 16,
-                      "tubeSize": 1.6,
-                      "color": "#4499ff",
-                      "x": 0,
-                      "y": 30,
-                      "z": 0,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "cone",
-                      "size": 6,
-                      "height": 16,
-                      "color": "#888888",
-                      "x": 7,
-                      "y": 34,
-                      "z": 0,
-                      "rotationZ": -90
-                    },
-                    {
-                      "type": "cone",
-                      "size": 6,
-                      "height": 16,
-                      "color": "#888888",
-                      "x": -7,
-                      "y": 34,
-                      "z": 0,
-                      "rotationZ": 90
-                    },
-                    {
-                      "type": "cone",
-                      "size": 6,
-                      "height": 16,
-                      "color": "#888888",
-                      "x": 0,
-                      "y": 34,
-                      "z": 7,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "cone",
-                      "size": 6,
-                      "height": 16,
-                      "color": "#888888",
-                      "x": 0,
-                      "y": 34,
-                      "z": -7,
-                      "rotationX": -90
-                    },
-                    {
-                      "type": "box",
-                      "width": 3,
-                      "height": 14,
-                      "depth": 3,
-                      "color": "#888888",
-                      "x": 6,
-                      "y": 16,
-                      "z": 6,
-                      "rotationY": 45
-                    },
-                    {
-                      "type": "box",
-                      "width": 3,
-                      "height": 14,
-                      "depth": 3,
-                      "color": "#888888",
-                      "x": -6,
-                      "y": 16,
-                      "z": 6,
-                      "rotationY": -45
-                    },
-                    {
-                      "type": "box",
-                      "width": 3,
-                      "height": 14,
-                      "depth": 3,
-                      "color": "#888888",
-                      "x": 6,
-                      "y": 16,
-                      "z": -6,
-                      "rotationY": -45
-                    },
-                    {
-                      "type": "box",
-                      "width": 3,
-                      "height": 14,
-                      "depth": 3,
-                      "color": "#888888",
-                      "x": -6,
-                      "y": 16,
-                      "z": -6,
-                      "rotationY": 45
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 2,
-                      "height": 1,
-                      "color": "#66bbff",
-                      "x": 0,
-                      "y": 36,
-                      "z": 0
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              }
+              {}
             ]
           },
           "model": {
@@ -6630,128 +2718,7 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 30,
-                      "height": 6,
-                      "depth": 30,
-                      "x": 0,
-                      "y": 3,
-                      "z": 1.8,
-                      "color": "#555555",
-                      "name": "base",
-                      "scaleX": 1
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 24,
-                      "height": 7.5,
-                      "x": 0,
-                      "y": 10,
-                      "z": 1.8,
-                      "color": "#444444",
-                      "name": "body"
-                    },
-                    {
-                      "type": "box",
-                      "width": 18,
-                      "height": 10.5,
-                      "depth": 22.5,
-                      "x": 0,
-                      "y": 19.5,
-                      "z": 1.8,
-                      "color": "#3A3A3A",
-                      "rotationX": 15,
-                      "name": "missile-box"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 6,
-                      "height": 27,
-                      "x": -6,
-                      "y": 24,
-                      "z": 3.3,
-                      "rotationX": 105,
-                      "color": "#2A2A2A",
-                      "name": "left missile container"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 6,
-                      "height": 27,
-                      "x": 6,
-                      "y": 24,
-                      "z": 3.3,
-                      "rotationX": 105,
-                      "color": "#2A2A2A",
-                      "name": "right missile container"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 4.5,
-                      "height": 13.5,
-                      "x": -6,
-                      "y": 27,
-                      "z": -7.2,
-                      "rotationX": 105,
-                      "color": "#7f7f7f",
-                      "rotationZ": 0,
-                      "name": "left missile"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 4.5,
-                      "height": 13.5,
-                      "x": 6,
-                      "y": 27,
-                      "z": -7.2,
-                      "rotationX": 105,
-                      "color": "#7f7f7f",
-                      "name": "right missile"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 4.35,
-                      "height": 6,
-                      "x": -6,
-                      "y": 29.4,
-                      "z": -16.2,
-                      "rotationX": -75,
-                      "color": "#D14A4A",
-                      "name": "left missile tip"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 4.35,
-                      "height": 6,
-                      "x": 6,
-                      "y": 29.4,
-                      "z": -16.2,
-                      "rotationX": -75,
-                      "color": "#D14A4A",
-                      "name": "right missile tip"
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              }
+              {}
             ]
           },
           "model": {
@@ -6893,534 +2860,7 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "type": "torus",
-                      "size": 36,
-                      "tubeSize": 4,
-                      "x": 0,
-                      "y": 8,
-                      "z": 0,
-                      "rotationY": 0,
-                      "color": "#50D0FF",
-                      "rotationZ": 0,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 22,
-                      "height": 10,
-                      "x": 0,
-                      "y": 5,
-                      "z": 0,
-                      "color": "#333333"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 16,
-                      "height": 14,
-                      "x": 0,
-                      "y": 17,
-                      "z": 0,
-                      "color": "#222222"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 12,
-                      "x": 0,
-                      "y": 16,
-                      "z": 0,
-                      "color": "#A0E6FF"
-                    },
-                    {
-                      "type": "tetrahedron",
-                      "size": 10,
-                      "x": 0,
-                      "y": 16,
-                      "z": 0,
-                      "rotationY": 45,
-                      "color": "#203040"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 8,
-                      "height": 16,
-                      "x": 0,
-                      "y": 32,
-                      "z": 0,
-                      "rotationX": 0,
-                      "color": "#444444"
-                    },
-                    {
-                      "type": "box",
-                      "width": 38,
-                      "height": 4,
-                      "depth": 38,
-                      "x": 0,
-                      "y": 2,
-                      "z": 0,
-                      "color": "#555555"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4,
-                      "x": 24,
-                      "y": 24,
-                      "z": 24,
-                      "color": "#C0FFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4,
-                      "x": -24,
-                      "y": 24,
-                      "z": 24,
-                      "color": "#C0FFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4,
-                      "x": 24,
-                      "y": 24,
-                      "z": -24,
-                      "color": "#C0FFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4,
-                      "x": -24,
-                      "y": 24,
-                      "z": -24,
-                      "color": "#C0FFFF"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 48,
-                      "color": "#00a2df",
-                      "x": 0,
-                      "y": 38,
-                      "z": 0,
-                      "rotationX": 90,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "tubeSize": 2
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "type": "torus",
-                      "size": 36,
-                      "tubeSize": 4,
-                      "x": 0,
-                      "y": 8,
-                      "z": 0,
-                      "rotationY": 0,
-                      "color": "#50D0FF",
-                      "rotationZ": 0,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 22,
-                      "height": 10,
-                      "x": 0,
-                      "y": 5,
-                      "z": 0,
-                      "color": "#333333"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 16,
-                      "height": 14,
-                      "x": 0,
-                      "y": 17,
-                      "z": 0,
-                      "color": "#222222"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 12,
-                      "x": 0,
-                      "y": 16,
-                      "z": 0,
-                      "color": "#A0E6FF"
-                    },
-                    {
-                      "type": "tetrahedron",
-                      "size": 10,
-                      "x": 0,
-                      "y": 16,
-                      "z": 0,
-                      "rotationY": 45,
-                      "color": "#203040"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 8,
-                      "height": 16,
-                      "x": 0,
-                      "y": 32,
-                      "z": 0,
-                      "rotationX": 0,
-                      "color": "#444444"
-                    },
-                    {
-                      "type": "box",
-                      "width": 38,
-                      "height": 4,
-                      "depth": 38,
-                      "x": 0,
-                      "y": 2,
-                      "z": 0,
-                      "color": "#555555"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4,
-                      "x": 12,
-                      "y": 24,
-                      "z": 32,
-                      "color": "#C0FFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4,
-                      "x": -32,
-                      "y": 24,
-                      "z": 12,
-                      "color": "#C0FFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4,
-                      "x": 32,
-                      "y": 24,
-                      "z": -12,
-                      "color": "#C0FFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4,
-                      "x": -12,
-                      "y": 24,
-                      "z": -32,
-                      "color": "#C0FFFF"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 48,
-                      "color": "#00a2df",
-                      "x": 0,
-                      "y": 38,
-                      "z": 0,
-                      "rotationX": 90,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "tubeSize": 2
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "type": "torus",
-                      "size": 36,
-                      "tubeSize": 4,
-                      "x": 0,
-                      "y": 8,
-                      "z": 0,
-                      "rotationY": 0,
-                      "color": "#50D0FF",
-                      "rotationZ": 0,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 22,
-                      "height": 10,
-                      "x": 0,
-                      "y": 5,
-                      "z": 0,
-                      "color": "#333333"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 16,
-                      "height": 14,
-                      "x": 0,
-                      "y": 17,
-                      "z": 0,
-                      "color": "#222222"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 12,
-                      "x": 0,
-                      "y": 16,
-                      "z": 0,
-                      "color": "#A0E6FF"
-                    },
-                    {
-                      "type": "tetrahedron",
-                      "size": 10,
-                      "x": 0,
-                      "y": 16,
-                      "z": 0,
-                      "rotationY": 45,
-                      "color": "#203040"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 8,
-                      "height": 16,
-                      "x": 0,
-                      "y": 32,
-                      "z": 0,
-                      "rotationX": 0,
-                      "color": "#444444"
-                    },
-                    {
-                      "type": "box",
-                      "width": 38,
-                      "height": 4,
-                      "depth": 38,
-                      "x": 0,
-                      "y": 2,
-                      "z": 0,
-                      "color": "#555555"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4,
-                      "x": -34,
-                      "y": 24,
-                      "z": 0,
-                      "color": "#C0FFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4,
-                      "x": 0,
-                      "y": 24,
-                      "z": 34,
-                      "color": "#C0FFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4,
-                      "x": 34,
-                      "y": 24,
-                      "z": 0,
-                      "color": "#C0FFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4,
-                      "x": 0,
-                      "y": 24,
-                      "z": -34,
-                      "color": "#C0FFFF"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 48,
-                      "color": "#00a2df",
-                      "x": 0,
-                      "y": 38,
-                      "z": 0,
-                      "rotationX": 90,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "tubeSize": 2
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "type": "torus",
-                      "size": 36,
-                      "tubeSize": 4,
-                      "x": 0,
-                      "y": 8,
-                      "z": 0,
-                      "rotationY": 0,
-                      "color": "#50D0FF",
-                      "rotationZ": 0,
-                      "rotationX": 90
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 22,
-                      "height": 10,
-                      "x": 0,
-                      "y": 5,
-                      "z": 0,
-                      "color": "#333333"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 16,
-                      "height": 14,
-                      "x": 0,
-                      "y": 17,
-                      "z": 0,
-                      "color": "#222222"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 12,
-                      "x": 0,
-                      "y": 16,
-                      "z": 0,
-                      "color": "#A0E6FF"
-                    },
-                    {
-                      "type": "tetrahedron",
-                      "size": 10,
-                      "x": 0,
-                      "y": 16,
-                      "z": 0,
-                      "rotationY": 45,
-                      "color": "#203040"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 8,
-                      "height": 16,
-                      "x": 0,
-                      "y": 32,
-                      "z": 0,
-                      "rotationX": 0,
-                      "color": "#444444"
-                    },
-                    {
-                      "type": "box",
-                      "width": 38,
-                      "height": 4,
-                      "depth": 38,
-                      "x": 0,
-                      "y": 2,
-                      "z": 0,
-                      "color": "#555555"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4,
-                      "x": -32,
-                      "y": 24,
-                      "z": -12,
-                      "color": "#C0FFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4,
-                      "x": -12,
-                      "y": 24,
-                      "z": 32,
-                      "color": "#C0FFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4,
-                      "x": 32,
-                      "y": 24,
-                      "z": 12,
-                      "color": "#C0FFFF"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4,
-                      "x": 12,
-                      "y": 24,
-                      "z": -32,
-                      "color": "#C0FFFF"
-                    },
-                    {
-                      "type": "torus",
-                      "size": 48,
-                      "color": "#00a2df",
-                      "x": 0,
-                      "y": 38,
-                      "z": 0,
-                      "rotationX": 90,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "tubeSize": 2
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              }
+              {}
             ]
           },
           "model": {
@@ -7573,143 +3013,7 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "type": "box",
-                      "width": 32,
-                      "height": 8,
-                      "depth": 32,
-                      "x": 0,
-                      "y": 4,
-                      "z": 1.8,
-                      "color": "#4B4B4B",
-                      "name": "base"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 22,
-                      "height": 10,
-                      "x": 0,
-                      "y": 14,
-                      "z": 1.8,
-                      "color": "#333333",
-                      "name": "core"
-                    },
-                    {
-                      "type": "box",
-                      "width": 12,
-                      "height": 12,
-                      "depth": 18,
-                      "x": 0,
-                      "y": 24,
-                      "z": 1.8,
-                      "color": "#2A2A2A",
-                      "rotationX": 12,
-                      "name": "cannon-head"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 6,
-                      "height": 18,
-                      "x": 0,
-                      "y": 28,
-                      "z": 12,
-                      "rotationX": 90,
-                      "color": "#1A1A1A",
-                      "name": "plasma-barrel"
-                    },
-                    {
-                      "type": "cone",
-                      "size": 5,
-                      "height": 8,
-                      "x": 0,
-                      "y": 28,
-                      "z": 20,
-                      "rotationX": 90,
-                      "color": "#00FFFF",
-                      "name": "plasma-emitter"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 10,
-                      "x": -8,
-                      "y": 20,
-                      "z": 1.8,
-                      "color": "#00FFFF",
-                      "name": "left-energy-coil"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 3,
-                      "height": 10,
-                      "x": 8,
-                      "y": 20,
-                      "z": 1.8,
-                      "color": "#00FFFF",
-                      "name": "right-energy-coil"
-                    },
-                    {
-                      "type": "sphere",
-                      "size": 4,
-                      "x": 0,
-                      "y": 28,
-                      "z": 20,
-                      "color": "#ff00ff",
-                      "name": "charge-orb"
-                    },
-                    {
-                      "type": "box",
-                      "width": 6,
-                      "height": 6,
-                      "depth": 24,
-                      "x": -12,
-                      "y": 14,
-                      "z": 1.8,
-                      "color": "#00FFFF",
-                      "name": "left-glow-panel"
-                    },
-                    {
-                      "type": "box",
-                      "width": 6,
-                      "height": 6,
-                      "depth": 24,
-                      "x": 12,
-                      "y": 14,
-                      "z": 1.8,
-                      "color": "#00FFFF",
-                      "name": "right-glow-panel"
-                    },
-                    {
-                      "type": "cylinder",
-                      "size": 8,
-                      "height": 4,
-                      "x": 0,
-                      "y": 32,
-                      "z": 1.8,
-                      "color": "#FF00FF",
-                      "name": "top-energy-ring"
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              }
+              {}
             ]
           },
           "model": {
@@ -7871,50 +3175,6 @@ const DEFAULT_PROJECT_CONFIG = {
                 "shapes": {
                   "shapes": [
                     {
-                      "type": "box",
-                      "width": 15,
-                      "height": 30,
-                      "color": "#738884",
-                      "x": 2.25,
-                      "y": 6.75,
-                      "z": 0
-                    },
-                    {
-                      "type": "box",
-                      "x": 0.2,
-                      "y": 21.75,
-                      "width": 10,
-                      "height": 15,
-                      "color": "#73520d",
-                      "z": 0
-                    },
-                    {
-                      "type": "box",
-                      "x": -5.25,
-                      "y": 36.75,
-                      "width": 25,
-                      "height": 5,
-                      "color": "#4a697d",
-                      "z": 0
-                    },
-                    {
-                      "type": "circle",
-                      "radius": 0.5,
-                      "x": -10.25,
-                      "y": 41.75,
-                      "color": "#e6e6fa",
-                      "z": 0
-                    },
-                    {
-                      "type": "circle",
-                      "radius": 0.5,
-                      "x": 9.75,
-                      "y": 41.75,
-                      "color": "#e6e6fa",
-                      "z": 0
-                    },
-                    {
-                      "type": "line",
                       "points": [
                         {
                           "x": -1,
@@ -7925,28 +3185,9 @@ const DEFAULT_PROJECT_CONFIG = {
                           "y": 4
                         }
                       ],
-                      "width": 2,
-                      "color": "#87CEEB",
-                      "x": 2.25,
-                      "y": 6.75,
-                      "z": 0
+                      "id": 5
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               }
             ]
@@ -7970,7 +3211,8 @@ const DEFAULT_PROJECT_CONFIG = {
                   "width": 10,
                   "height": 15,
                   "color": "#73520d",
-                  "z": 0
+                  "z": 0,
+                  "scaleX": 1
                 },
                 {
                   "type": "box",
@@ -8045,26 +3287,7 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {
-                "shapes": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              }
+              {}
             ],
             "walk": [
               {
@@ -8095,22 +3318,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "rotationX": -10,
                       "id": 9
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               },
               {
@@ -8162,22 +3370,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "rotationX": 30,
                       "id": 9
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               },
               {
@@ -8225,22 +3418,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "rotationX": 30,
                       "id": 9
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               },
               {
@@ -8273,22 +3451,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "rotationX": 10,
                       "id": 9
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               }
             ]
@@ -8435,48 +3598,10 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {
-                "shapes": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              }
+              {}
             ],
             "walk": [
-              {
-                "shapes": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              },
+              {},
               {
                 "shapes": {
                   "shapes": [
@@ -8534,44 +3659,10 @@ const DEFAULT_PROJECT_CONFIG = {
                       "z": 6,
                       "id": 11
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               },
-              {
-                "shapes": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              },
+              {},
               {
                 "shapes": {
                   "shapes": [
@@ -8627,22 +3718,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "z": -4,
                       "id": 11
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               }
             ]
@@ -8802,66 +3878,51 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {
-                "shapes": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              }
+              {}
             ],
             "walk": [
+              {},
+              {},
               {
                 "shapes": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  "shapes": [
+                    {
+                      "y": 32,
+                      "id": 0
+                    },
+                    {
+                      "y": 22,
+                      "id": 1
+                    },
+                    {
+                      "y": 12,
+                      "id": 2
+                    },
+                    {
+                      "y": 7,
+                      "id": 3
+                    },
+                    {
+                      "y": 7,
+                      "id": 4
+                    },
+                    {
+                      "y": 7,
+                      "id": 5
+                    },
+                    {
+                      "y": 32,
+                      "id": 6
+                    },
+                    {
+                      "y": 32,
+                      "id": 7
+                    },
+                    {
+                      "y": 29,
+                      "id": 8
+                    }
+                  ]
                 }
               },
               {
@@ -8903,79 +3964,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "y": 29,
                       "id": 8
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 32,
-                      "id": 0
-                    },
-                    {
-                      "y": 22,
-                      "id": 1
-                    },
-                    {
-                      "y": 12,
-                      "id": 2
-                    },
-                    {
-                      "y": 7,
-                      "id": 3
-                    },
-                    {
-                      "y": 7,
-                      "id": 4
-                    },
-                    {
-                      "y": 7,
-                      "id": 5
-                    },
-                    {
-                      "y": 32,
-                      "id": 6
-                    },
-                    {
-                      "y": 32,
-                      "id": 7
-                    },
-                    {
-                      "y": 29,
-                      "id": 8
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               }
             ]
@@ -9097,74 +4086,16 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {
-                "shapes": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              }
+              {}
             ],
             "walk": [
-              {
-                "shapes": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              },
+              {},
+              {},
               {
                 "shapes": {
                   "shapes": [
                     {
                       "y": 25,
-                      "scaleY": 1,
                       "id": 0
                     },
                     {
@@ -9183,22 +4114,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "y": 23,
                       "id": 4
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               },
               {
@@ -9206,7 +4122,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   "shapes": [
                     {
                       "y": 25,
-                      "scaleY": 1,
                       "id": 0
                     },
                     {
@@ -9225,22 +4140,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "y": 23,
                       "id": 4
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               }
             ]
@@ -9324,48 +4224,10 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {
-                "shapes": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              }
+              {}
             ],
             "walk": [
-              {
-                "shapes": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              },
+              {},
               {
                 "shapes": {
                   "shapes": [
@@ -9441,44 +4303,10 @@ const DEFAULT_PROJECT_CONFIG = {
                       "z": -1.6974159987006954,
                       "id": 13
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               },
-              {
-                "shapes": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              },
+              {},
               {
                 "shapes": {
                   "shapes": [
@@ -9554,22 +4382,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "z": 1.7755475546379114,
                       "id": 13
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               }
             ]
@@ -9738,64 +4551,76 @@ const DEFAULT_PROJECT_CONFIG = {
             "idle": [
               {
                 "shapes": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  "shapes": [
+                    {
+                      "type": "sphere",
+                      "size": 12,
+                      "color": "#BCA9DF",
+                      "x": 0,
+                      "y": 36,
+                      "z": 2,
+                      "scaleX": 1,
+                      "id": 0
+                    }
+                  ]
                 }
               }
             ],
             "walk": [
+              {},
+              {},
               {
                 "shapes": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  "shapes": [
+                    {
+                      "y": 38,
+                      "id": 0
+                    },
+                    {
+                      "y": 20,
+                      "id": 1
+                    },
+                    {
+                      "y": 38,
+                      "id": 2
+                    },
+                    {
+                      "y": 38,
+                      "id": 3
+                    },
+                    {
+                      "y": 30,
+                      "id": 4
+                    },
+                    {
+                      "y": 30,
+                      "id": 5
+                    },
+                    {
+                      "y": 35,
+                      "id": 6
+                    },
+                    {
+                      "y": 35,
+                      "id": 7
+                    },
+                    {
+                      "y": 34,
+                      "id": 8
+                    },
+                    {
+                      "y": 20,
+                      "id": 9
+                    },
+                    {
+                      "y": 20,
+                      "id": 10
+                    },
+                    {
+                      "y": 20,
+                      "id": 11
+                    }
+                  ]
                 }
               },
               {
@@ -9849,91 +4674,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "y": 20,
                       "id": 11
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 38,
-                      "id": 0
-                    },
-                    {
-                      "y": 20,
-                      "id": 1
-                    },
-                    {
-                      "y": 38,
-                      "id": 2
-                    },
-                    {
-                      "y": 38,
-                      "id": 3
-                    },
-                    {
-                      "y": 30,
-                      "id": 4
-                    },
-                    {
-                      "y": 30,
-                      "id": 5
-                    },
-                    {
-                      "y": 35,
-                      "id": 6
-                    },
-                    {
-                      "y": 35,
-                      "id": 7
-                    },
-                    {
-                      "y": 34,
-                      "id": 8
-                    },
-                    {
-                      "y": 20,
-                      "id": 9
-                    },
-                    {
-                      "y": 20,
-                      "id": 10
-                    },
-                    {
-                      "y": 20,
-                      "id": 11
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               }
             ]
@@ -10082,26 +4823,7 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {
-                "shapes": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              }
+              {}
             ],
             "walk": [
               {
@@ -10220,22 +4942,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "rotationZ": 15,
                       "id": 24
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               },
               {
@@ -10333,22 +5040,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "y": 28.3,
                       "id": 22
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               },
               {
@@ -10467,22 +5159,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "rotationZ": -15,
                       "id": 24
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               },
               {
@@ -10580,22 +5257,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "y": 28.3,
                       "id": 22
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               }
             ]
@@ -10904,26 +5566,7 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {
-                "shapes": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              }
+              {}
             ],
             "walk": [
               {
@@ -11011,22 +5654,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "x": 1,
                       "id": 22
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               },
               {
@@ -11114,22 +5742,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "x": -1,
                       "id": 22
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               },
               {
@@ -11217,22 +5830,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "x": 1,
                       "id": 22
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               },
               {
@@ -11320,22 +5918,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "x": -1,
                       "id": 22
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               }
             ]
@@ -11619,26 +6202,7 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {
-                "shapes": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              }
+              {}
             ],
             "walk": [
               {
@@ -11742,22 +6306,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "rotationZ": -10,
                       "id": 17
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               },
               {
@@ -11855,22 +6404,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "y": 38,
                       "id": 17
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               },
               {
@@ -11974,22 +6508,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "rotationZ": -10,
                       "id": 17
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               },
               {
@@ -12093,22 +6612,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "rotationZ": 50,
                       "id": 17
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               }
             ]
@@ -12365,48 +6869,10 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {
-                "shapes": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              }
+              {}
             ],
             "walk": [
-              {
-                "shapes": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              },
+              {},
               {
                 "shapes": {
                   "shapes": [
@@ -12492,44 +6958,10 @@ const DEFAULT_PROJECT_CONFIG = {
                       "z": 0.039065777968608106,
                       "id": 15
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               },
-              {
-                "shapes": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              },
+              {},
               {
                 "shapes": {
                   "shapes": [
@@ -12615,22 +7047,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "z": 0.039065777968608106,
                       "id": 15
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               }
             ]
@@ -12815,48 +7232,10 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {
-                "shapes": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              }
+              {}
             ],
             "walk": [
-              {
-                "shapes": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              },
+              {},
               {
                 "shapes": {
                   "shapes": [
@@ -13032,22 +7411,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "rotationX": 75,
                       "id": 32
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               },
               {
@@ -13065,22 +7429,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "y": 14.999999999999993,
                       "id": 29
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               },
               {
@@ -13251,22 +7600,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "rotationX": 105,
                       "id": 32
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               }
             ]
@@ -13664,53 +7998,10 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {
-                "shapes": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              }
+              {}
             ],
             "walk": [
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "rotationX": null,
-                      "id": 22
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              },
+              {},
               {
                 "shapes": {
                   "shapes": [
@@ -13844,7 +8135,6 @@ const DEFAULT_PROJECT_CONFIG = {
                       "z": 8,
                       "rotationZ": 30,
                       "rotationX": 110,
-                      "rotationY": 0,
                       "id": 24
                     },
                     {
@@ -13881,44 +8171,10 @@ const DEFAULT_PROJECT_CONFIG = {
                       "z": 5.5,
                       "id": 30
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               },
-              {
-                "shapes": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              },
+              {},
               {
                 "shapes": {
                   "shapes": [
@@ -14073,7 +8329,6 @@ const DEFAULT_PROJECT_CONFIG = {
                     {
                       "y": 2,
                       "z": -5,
-                      "rotationY": 0,
                       "rotationX": 180,
                       "id": 28
                     },
@@ -14087,22 +8342,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "z": 5.5,
                       "id": 30
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               }
             ]
@@ -14483,33 +8723,23 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {
-                "shapes": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              }
+              {}
             ],
             "walk": [
               {
                 "shapes": {
                   "shapes": [
                     {
+                      "type": "box",
+                      "width": 18,
+                      "height": 10,
+                      "depth": 28,
+                      "x": 0,
                       "y": 19,
+                      "z": -6.4,
+                      "rotationX": -19,
+                      "color": "#00008b",
+                      "scaleX": 1,
                       "id": 0
                     },
                     {
@@ -14650,29 +8880,23 @@ const DEFAULT_PROJECT_CONFIG = {
                       "rotationZ": 8,
                       "id": 29
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               },
               {
                 "shapes": {
                   "shapes": [
                     {
+                      "type": "box",
+                      "width": 18,
+                      "height": 10,
+                      "depth": 28,
+                      "x": 0,
                       "y": 20.5,
+                      "z": -6.4,
+                      "rotationX": -19,
+                      "color": "#00008b",
+                      "scaleX": 1,
                       "id": 0
                     },
                     {
@@ -14819,29 +9043,23 @@ const DEFAULT_PROJECT_CONFIG = {
                       "y": 25.5,
                       "id": 35
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               },
               {
                 "shapes": {
                   "shapes": [
                     {
+                      "type": "box",
+                      "width": 18,
+                      "height": 10,
+                      "depth": 28,
+                      "x": 0,
                       "y": 21,
+                      "z": -6.4,
+                      "rotationX": -19,
+                      "color": "#00008b",
+                      "scaleX": 1,
                       "id": 0
                     },
                     {
@@ -15010,29 +9228,23 @@ const DEFAULT_PROJECT_CONFIG = {
                       "y": 26,
                       "id": 35
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               },
               {
                 "shapes": {
                   "shapes": [
                     {
+                      "type": "box",
+                      "width": 18,
+                      "height": 10,
+                      "depth": 28,
+                      "x": 0,
                       "y": 20.5,
+                      "z": -6.4,
+                      "rotationX": -19,
+                      "color": "#00008b",
+                      "scaleX": 1,
                       "id": 0
                     },
                     {
@@ -15179,22 +9391,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "y": 25.5,
                       "id": 35
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               }
             ]
@@ -15616,26 +9813,7 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {
-                "shapes": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              }
+              {}
             ],
             "walk": [
               {
@@ -15783,22 +9961,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "rotationZ": 8,
                       "id": 29
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               },
               {
@@ -15952,22 +10115,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "y": 25.5,
                       "id": 35
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               },
               {
@@ -16143,22 +10291,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "y": 26,
                       "id": 35
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               },
               {
@@ -16312,22 +10445,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "y": 25.5,
                       "id": 35
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               }
             ]
@@ -16753,17 +10871,6 @@ const DEFAULT_PROJECT_CONFIG = {
             ],
             "walk": [
               {
-                "left wing": {
-                  "shapes": [
-                    {
-                      "rotationZ": 0,
-                      "scaleX": 1,
-                      "scaleY": 1,
-                      "scaleZ": 1,
-                      "id": 1
-                    }
-                  ]
-                },
                 "right wing": {
                   "shapes": [
                     {
@@ -17921,26 +12028,7 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {
-                "shapes": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              }
+              {}
             ],
             "walk": [
               {
@@ -18088,22 +12176,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "rotationZ": 8,
                       "id": 29
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               },
               {
@@ -18257,22 +12330,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "y": 25.5,
                       "id": 35
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               },
               {
@@ -18448,22 +12506,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "y": 26,
                       "id": 35
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               },
               {
@@ -18617,22 +12660,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "y": 25.5,
                       "id": 35
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               }
             ]
@@ -19050,26 +13078,7 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {
-                "shapes": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              }
+              {}
             ]
           },
           "model": {
@@ -19373,44 +13382,40 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "walk": [
+              {},
+              {},
               {
                 "shapes": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  "shapes": [
+                    {
+                      "y": 26,
+                      "id": 0
+                    },
+                    {
+                      "y": 26,
+                      "id": 1
+                    },
+                    {
+                      "y": 26,
+                      "id": 2
+                    },
+                    {
+                      "y": 26,
+                      "id": 3
+                    },
+                    {
+                      "y": 26,
+                      "id": 4
+                    },
+                    {
+                      "y": 26,
+                      "id": 5
+                    },
+                    {
+                      "y": 26,
+                      "id": 6
+                    }
+                  ]
                 }
               },
               {
@@ -19444,113 +13449,45 @@ const DEFAULT_PROJECT_CONFIG = {
                       "y": 26,
                       "id": 6
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 26,
-                      "id": 0
-                    },
-                    {
-                      "y": 26,
-                      "id": 1
-                    },
-                    {
-                      "y": 26,
-                      "id": 2
-                    },
-                    {
-                      "y": 26,
-                      "id": 3
-                    },
-                    {
-                      "y": 26,
-                      "id": 4
-                    },
-                    {
-                      "y": 26,
-                      "id": 5
-                    },
-                    {
-                      "y": 26,
-                      "id": 6
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               }
             ],
             "idle": [
+              {},
+              {},
               {
                 "shapes": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  "shapes": [
+                    {
+                      "y": 26,
+                      "id": 0
+                    },
+                    {
+                      "y": 26,
+                      "id": 1
+                    },
+                    {
+                      "y": 26,
+                      "id": 2
+                    },
+                    {
+                      "y": 26,
+                      "id": 3
+                    },
+                    {
+                      "y": 26,
+                      "id": 4
+                    },
+                    {
+                      "y": 26,
+                      "id": 5
+                    },
+                    {
+                      "y": 26,
+                      "id": 6
+                    }
+                  ]
                 }
               },
               {
@@ -19584,71 +13521,7 @@ const DEFAULT_PROJECT_CONFIG = {
                       "y": 26,
                       "id": 6
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 26,
-                      "id": 0
-                    },
-                    {
-                      "y": 26,
-                      "id": 1
-                    },
-                    {
-                      "y": 26,
-                      "id": 2
-                    },
-                    {
-                      "y": 26,
-                      "id": 3
-                    },
-                    {
-                      "y": 26,
-                      "id": 4
-                    },
-                    {
-                      "y": 26,
-                      "id": 5
-                    },
-                    {
-                      "y": 26,
-                      "id": 6
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               }
             ]
@@ -19779,351 +13652,23 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {
-                "head": {
-                  "position": {
-                    "x": 0,
-                    "y": 2.5,
-                    "z": 18.5
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "jaw": {
-                  "position": {
-                    "x": 0,
-                    "y": 10,
-                    "z": 7.8
-                  },
-                  "rotation": {
-                    "x": 0.3121059368272202,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "left arm": {
-                  "position": {
-                    "x": 0,
-                    "y": -2.7,
-                    "z": 10
-                  },
-                  "rotation": {
-                    "x": 0.18890622492173986,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "right arm": {
-                  "position": {
-                    "x": 0,
-                    "y": -2.7,
-                    "z": 10
-                  },
-                  "rotation": {
-                    "x": 0.19949192295270599,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "left leg": {
-                  "position": {
-                    "x": 0,
-                    "y": 2.5,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "right leg": {
-                  "position": {
-                    "x": 0,
-                    "y": 2.5,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "body": {
-                  "position": {
-                    "x": 0,
-                    "y": 9.5,
-                    "z": -10
-                  },
-                  "rotation": {
-                    "x": 0.7145583290517965,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "tail base": {
-                  "position": {
-                    "x": 0,
-                    "y": 5,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "tail tip": {
-                  "position": {
-                    "x": 0,
-                    "y": 5,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              }
+              {}
             ],
             "walk": [
+              {},
               {
                 "head": {
-                  "position": {
-                    "x": 0,
-                    "y": 2.5,
-                    "z": 18.5
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "jaw": {
-                  "position": {
-                    "x": 0,
-                    "y": 10,
-                    "z": 7.8
-                  },
-                  "rotation": {
-                    "x": 0.3121059368272202,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "left arm": {
-                  "position": {
-                    "x": 0,
-                    "y": -2.7,
-                    "z": 10
-                  },
-                  "rotation": {
-                    "x": 0.18890622492173986,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "right arm": {
-                  "position": {
-                    "x": 0,
-                    "y": -2.7,
-                    "z": 10
-                  },
-                  "rotation": {
-                    "x": 0.19949192295270599,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "left leg": {
-                  "position": {
-                    "x": 0,
-                    "y": 2.5,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "right leg": {
-                  "position": {
-                    "x": 0,
-                    "y": 2.5,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "body": {
-                  "position": {
-                    "x": 0,
-                    "y": 9.5,
-                    "z": -10
-                  },
-                  "rotation": {
-                    "x": 0.7145583290517965,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "tail base": {
-                  "position": {
-                    "x": 0,
-                    "y": 5,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "tail tip": {
-                  "position": {
-                    "x": 0,
-                    "y": 5,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              },
-              {
-                "head": {
-                  "position": {
-                    "x": 0,
-                    "y": 2.5,
-                    "z": 18.5
-                  },
                   "rotation": {
                     "x": 0,
                     "y": 0.1,
                     "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
                   }
                 },
                 "jaw": {
-                  "position": {
-                    "x": 0,
-                    "y": 10,
-                    "z": 7.8
-                  },
                   "rotation": {
                     "x": 0.3,
                     "y": 0,
                     "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
                   }
                 },
                 "left arm": {
@@ -20136,11 +13681,6 @@ const DEFAULT_PROJECT_CONFIG = {
                     "x": 0.5,
                     "y": 0,
                     "z": 0.1
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
                   }
                 },
                 "right arm": {
@@ -20153,11 +13693,6 @@ const DEFAULT_PROJECT_CONFIG = {
                     "x": -0.2,
                     "y": 0,
                     "z": -0.1
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
                   }
                 },
                 "left leg": {
@@ -20170,11 +13705,6 @@ const DEFAULT_PROJECT_CONFIG = {
                     "x": 0.4,
                     "y": 0,
                     "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
                   }
                 },
                 "right leg": {
@@ -20187,220 +13717,31 @@ const DEFAULT_PROJECT_CONFIG = {
                     "x": -0.3,
                     "y": 0,
                     "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
                   }
                 },
                 "body": {
-                  "position": {
-                    "x": 0,
-                    "y": 9.5,
-                    "z": -10
-                  },
                   "rotation": {
                     "x": 0.7,
                     "y": 0.05,
                     "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
                   }
                 },
                 "tail base": {
-                  "position": {
-                    "x": 0,
-                    "y": 5,
-                    "z": 0
-                  },
                   "rotation": {
                     "x": 0.1,
                     "y": 0.2,
                     "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
                   }
                 },
                 "tail tip": {
-                  "position": {
-                    "x": 0,
-                    "y": 5,
-                    "z": 0
-                  },
                   "rotation": {
                     "x": 0.05,
                     "y": 0.3,
                     "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
                   }
                 }
               },
-              {
-                "head": {
-                  "position": {
-                    "x": 0,
-                    "y": 2.5,
-                    "z": 18.5
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "jaw": {
-                  "position": {
-                    "x": 0,
-                    "y": 10,
-                    "z": 7.8
-                  },
-                  "rotation": {
-                    "x": 0.3121059368272202,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "left arm": {
-                  "position": {
-                    "x": 0,
-                    "y": -2.7,
-                    "z": 10
-                  },
-                  "rotation": {
-                    "x": 0.18890622492173986,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "right arm": {
-                  "position": {
-                    "x": 0,
-                    "y": -2.7,
-                    "z": 10
-                  },
-                  "rotation": {
-                    "x": 0.19949192295270599,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "left leg": {
-                  "position": {
-                    "x": 0,
-                    "y": 2.5,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "right leg": {
-                  "position": {
-                    "x": 0,
-                    "y": 2.5,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "body": {
-                  "position": {
-                    "x": 0,
-                    "y": 9.5,
-                    "z": -10
-                  },
-                  "rotation": {
-                    "x": 0.7145583290517965,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "tail base": {
-                  "position": {
-                    "x": 0,
-                    "y": 5,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "tail tip": {
-                  "position": {
-                    "x": 0,
-                    "y": 5,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              },
+              {},
               {
                 "head": {
                   "position": {
@@ -20412,11 +13753,6 @@ const DEFAULT_PROJECT_CONFIG = {
                     "x": 0,
                     "y": -0.1,
                     "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
                   }
                 },
                 "jaw": {
@@ -20429,11 +13765,6 @@ const DEFAULT_PROJECT_CONFIG = {
                     "x": 0.3,
                     "y": 0,
                     "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
                   }
                 },
                 "left arm": {
@@ -20446,11 +13777,6 @@ const DEFAULT_PROJECT_CONFIG = {
                     "x": -0.2,
                     "y": 0,
                     "z": 0.1028404567909271
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
                   }
                 },
                 "right arm": {
@@ -20463,11 +13789,6 @@ const DEFAULT_PROJECT_CONFIG = {
                     "x": 0.5,
                     "y": 0,
                     "z": -0.1
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
                   }
                 },
                 "left leg": {
@@ -20480,11 +13801,6 @@ const DEFAULT_PROJECT_CONFIG = {
                     "x": -0.2956793085731574,
                     "y": 0,
                     "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
                   }
                 },
                 "right leg": {
@@ -20497,11 +13813,6 @@ const DEFAULT_PROJECT_CONFIG = {
                     "x": 0.4,
                     "y": 0,
                     "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
                   }
                 },
                 "body": {
@@ -20514,45 +13825,20 @@ const DEFAULT_PROJECT_CONFIG = {
                     "x": 0.7,
                     "y": -0.05,
                     "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
                   }
                 },
                 "tail base": {
-                  "position": {
-                    "x": 0,
-                    "y": 5,
-                    "z": 0
-                  },
                   "rotation": {
                     "x": 0.1,
                     "y": -0.2,
                     "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
                   }
                 },
                 "tail tip": {
-                  "position": {
-                    "x": 0,
-                    "y": 5,
-                    "z": 0
-                  },
                   "rotation": {
                     "x": 0.05,
                     "y": -0.3,
                     "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
                   }
                 }
               }
@@ -21392,170 +14678,7 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {
-                "head": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "jaw": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "left arm": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "right arm": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "left leg": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "right leg": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "body": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "tail base": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                },
-                "tail tip": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              }
+              {}
             ]
           },
           "model": {
@@ -22109,76 +15232,7 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "type": "cylinder",
-                      "size": 10,
-                      "color": "#733f17",
-                      "x": 0,
-                      "y": 10.625,
-                      "z": 0,
-                      "rotationX": 0,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "height": 20,
-                      "scaleX": 1
-                    },
-                    {
-                      "type": "cone",
-                      "size": 40,
-                      "color": "#018314",
-                      "x": 0,
-                      "y": 50.625,
-                      "z": 0,
-                      "rotationX": 0,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "height": 60
-                    },
-                    {
-                      "type": "cone",
-                      "size": 35,
-                      "color": "#018314",
-                      "x": 0,
-                      "y": 60.625,
-                      "z": 0,
-                      "rotationX": 0,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "height": 40
-                    },
-                    {
-                      "type": "cone",
-                      "size": 15,
-                      "color": "#018314",
-                      "x": 0,
-                      "y": 75.625,
-                      "z": 0,
-                      "rotationX": 0,
-                      "rotationY": 0,
-                      "rotationZ": 0,
-                      "height": 15
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              }
+              {}
             ]
           },
           "model": {
@@ -22258,50 +15312,7 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "type": "tetrahedron",
-                      "size": 16,
-                      "color": "#666666",
-                      "x": 3.5,
-                      "y": 2,
-                      "z": 2.5,
-                      "rotationX": 50,
-                      "rotationY": 140,
-                      "rotationZ": 10,
-                      "scaleX": 1
-                    },
-                    {
-                      "type": "tetrahedron",
-                      "size": 12,
-                      "color": "#5b5b5b",
-                      "x": 10.5,
-                      "y": 2,
-                      "z": 7.5,
-                      "rotationX": 50,
-                      "rotationY": 150,
-                      "rotationZ": 10
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              }
+              {}
             ]
           },
           "model": {
@@ -25630,130 +18641,13 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {
-                "shapes": {
-                  "shapes": [],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              },
+              {},
               {
                 "shapes": {
                   "shapes": [
                     {
                       "type": "sphere",
-                      "size": 5,
-                      "color": "#1c1c24",
-                      "x": null,
-                      "y": 0,
-                      "z": 0,
-                      "rotationX": 0,
-                      "rotationY": 0,
-                      "rotationZ": 0
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "type": "sphere",
-                      "size": 10,
-                      "color": "#63637e",
-                      "x": null,
-                      "y": 0,
-                      "z": 0,
-                      "rotationX": 0,
-                      "rotationY": 0,
-                      "rotationZ": 0
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "type": "sphere",
-                      "size": 12,
-                      "color": "#63637e",
-                      "x": null,
-                      "y": 0,
-                      "z": 0,
-                      "rotationX": 0,
-                      "rotationY": 0,
-                      "rotationZ": 0
-                    }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
-                }
-              }
-            ],
-            "emerge": [
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "type": "sphere",
-                      "size": 0,
+                      "size": 2,
                       "color": "#000000",
                       "x": 0,
                       "y": 0,
@@ -25761,24 +18655,9 @@ const DEFAULT_PROJECT_CONFIG = {
                       "rotationX": 0,
                       "rotationY": 0,
                       "rotationZ": 0,
-                      "alpha": 0
+                      "id": 0
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
                 }
               },
               {
@@ -25786,39 +18665,54 @@ const DEFAULT_PROJECT_CONFIG = {
                   "shapes": [
                     {
                       "type": "sphere",
-                      "size": 5,
-                      "color": "#000000",
+                      "size": 4,
+                      "color": "#5c5c5c",
                       "x": 0,
-                      "y": 24,
+                      "y": 0,
                       "z": 0,
                       "rotationX": 0,
                       "rotationY": 0,
                       "rotationZ": 0,
-                      "alpha": 1
+                      "id": 0
                     }
-                  ],
-                  "position": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0,
-                    "z": 0
-                  },
-                  "scale": {
-                    "x": 1,
-                    "y": 1,
-                    "z": 1
-                  }
+                  ]
+                }
+              },
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "type": "sphere",
+                      "size": 8,
+                      "color": "#949494",
+                      "x": 0,
+                      "y": 0,
+                      "z": 0,
+                      "rotationX": 0,
+                      "rotationY": 0,
+                      "rotationZ": 0,
+                      "id": 0
+                    }
+                  ]
                 }
               }
             ]
           },
           "model": {
             "shapes": {
-              "shapes": [],
+              "shapes": [
+                {
+                  "type": "sphere",
+                  "size": 1,
+                  "color": "#000000",
+                  "x": 0,
+                  "y": 0,
+                  "z": 0,
+                  "rotationX": 0,
+                  "rotationY": 0,
+                  "rotationZ": 0
+                }
+              ],
               "position": {
                 "x": 0,
                 "y": 0,
@@ -26033,7 +18927,7 @@ const DEFAULT_PROJECT_CONFIG = {
     },
     "libraries": {
       "GraphicsEditor": {
-        "script": "// Core structure\nclass GraphicsEditor {\n    constructor(gameEditor, config, {ShapeFactory, GE_SceneRenderer, GE_ShapeManager, GE_AnimationManager, GE_RotationUtils, GE_UIManager, GE_GroupManager, GE_GizmoManager}) {\n        this.gameEditor = gameEditor;\n        this.config = config;\n        this.shapeFactory = new ShapeFactory();\n        this.canvas = document.getElementById('graphics-editor-canvas');\n        // Initialize sub-modules\n        this.sceneRenderer = new GE_SceneRenderer(gameEditor, this);\n        this.shapeManager = new GE_ShapeManager(gameEditor, this);\n        this.uiManager = new GE_UIManager(gameEditor, this);\n        this.animationManager = new GE_AnimationManager(gameEditor, this);\n        this.groupManager = new GE_GroupManager(gameEditor, this);\n        this.gizmoManager = new GE_GizmoManager(gameEditor, this);\n        this.rotationUtils = GE_RotationUtils;\n        // State management (simplified)\n        this.state = {\n            editingModel: true,\n            selectedShapeIndex: -1,\n            currentAnimation: \"\",\n            selectedGroup: \"main\",\n            currentFrame: 0,\n            renderData: { model: {}, animations: { idle: [{ main: { shapes: [], position: {x: 0, y: 0, z: 0}, rotation: {x:0,y:0,z:0}, scale: {x:1, y:1, z:1}} }] } }\n        };\n        \n        this.rootGroup = new window.THREE.Group(); // Main container for all shapes\n        this.rootGroup.name = \"rootGroup\";\n        this.init();\n    }\n    \n    init() {\n        this.sceneRenderer.init();\n        this.uiManager.init();\n        this.shapeManager.init();\n        this.animationManager.init();\n        this.groupManager.init();\n        this.gizmoManager.init();\n        this.sceneRenderer.animate();\n    }\n    displayIsometricSprites(sprites){\n        this.uiManager.displayIsometricSprites(sprites);\n    }\n    async renderShapes(fireSave = true) {\n        // Clear the root group\n        while (this.rootGroup.children.length > 0) {\n            const obj = this.rootGroup.children[0];\n            this.shapeFactory.disposeObject(obj);\n            this.shapeManager.originalMaterials.delete(obj);\n            this.rootGroup.remove(obj);\n        }\n    \n        // Add lights if they don't exist\n        if (!this.sceneRenderer.scene.getObjectByName('ambient-light')) {\n            const ambientLight = new window.THREE.AmbientLight(0xffffff, 0.6);\n            ambientLight.name = 'ambient-light';\n            this.sceneRenderer.scene.add(ambientLight);\n            const directionalLight = new window.THREE.DirectionalLight(0xffffff, 0.8);\n            directionalLight.position.set(5, 10, 7.5);\n            directionalLight.name = 'dir-light';\n            this.sceneRenderer.scene.add(directionalLight);\n        }\n            \n        const currentAnimation = this.state.currentAnimation;\n        const currentFrame = this.state.currentFrame;\n        \n        // Ensure animation and frame exist\n        if (!this.state.editingModel && !this.getCurrentFrame()) {\n            console.warn(\"Animation or frame doesn't exist:\", currentAnimation, currentFrame);\n            return;\n        }\n        \n        //model is a Frame that has named groups as properties.\n        let model = this.state.renderData.model;\n\n        // Create a group for each group in the frame\n        for (const groupName in model) {     \n            const mergedGroup = this.getMergedGroup(groupName);\n            if( mergedGroup){\n                let threeGroup = await this.shapeFactory.createGroupFromJSON(mergedGroup); \n                threeGroup.name = groupName;\n                // Add the group to the root group\n                this.rootGroup.add(threeGroup);\n            }\n        }\n            \n        // Count total shapes for display\n        let totalShapes = 0;\n        for (const groupName in model) {\n            if (Array.isArray(model[groupName].shapes)) {\n                totalShapes += model[groupName].shapes.length;\n            }\n        }\n        document.getElementById('shape-count').textContent = totalShapes;\n        \n        // Update JSON display\n        document.getElementById('json-content').value = JSON.stringify(this.state.renderData, null, 2);\n    \n        if (fireSave) {\n            const myCustomEvent = new CustomEvent('saveGraphicsObject', {\n                detail: { data: this.state.renderData, propertyName: 'render' },\n                bubbles: true,\n                cancelable: true\n            });\n            document.body.dispatchEvent(myCustomEvent);\n        } else {\n            let valEl = this.gameEditor.elements.editor.querySelector(`#render-value`);\n            if (valEl) {\n                valEl.value = JSON.stringify(this.state.renderData);\n            }\n        }\n    \n        // Highlight the selected shape if any\n        this.shapeManager.highlightSelectedShape();\n        this.gizmoManager.updateGizmoPosition();\n    }\n    \n    getCurrentAnimation() {\n     \n        return this.state.renderData.animations[this.state.currentAnimation];\n    }\n    getCurrentFrame() {\n        if(this.state.editingModel){\n            return this.state.renderData.model;\n        } else {\n            return this.getCurrentAnimation()[this.state.currentFrame];\n        }\n    }\n    getCurrentGroup() {\n        return this.getCurrentFrame()[this.state.currentGroup];\n    }\n\n    refreshShapes(param) {\n        this.uiManager.updateList();\n        this.renderShapes(param);\n    }\n\n    createInspector(shape) {\n        this.uiManager.createInspector(shape);\n    }\n\n    setPreviewAnimationState(state) {\n        return this.animationManager.setPreviewAnimationState(state);\n    }\n\n    selectShape(index) {\n        return this.shapeManager.selectShape(index);\n    }\n\n    getMergedGroup(groupName){\n        let model = this.state.renderData.model;\n        const modelGroup = model[groupName];\n        if(this.state.editingModel){\n            return modelGroup;\n        }\n        return this.shapeFactory.getMergedGroup(model, this.getCurrentAnimation()[this.state.currentFrame], groupName );\n    }\n\n    getMergedShape() {\n        if (this.state.selectedShapeIndex >= 0) {            \n            const selectedGroup = this.getMergedGroup(this.state.currentGroup);\n            const shapes = selectedGroup?.shapes || [];        \n            let shape = shapes[this.state.selectedShapeIndex];  \n            if(this.state.editingModel){\n                return shape;\n            }     \n            if (shape) {  \n                shape.id = this.state.selectedShapeIndex;\n                // Avoid overwriting shape.id unless necessary\n                let currentGroupData = this.getCurrentGroup() || {};\n                \n                // Ensure shapes array exists\n                currentGroupData.shapes = currentGroupData.shapes || [];\n                \n                // Find index of shape with matching id\n                const shapeIndex = currentGroupData.shapes.findIndex(s => s.id === shape.id);\n                // Replace or append shape\n                if (shapeIndex >= 0) {\n                    currentGroupData.shapes[shapeIndex] = shape; // Replace\n                } else {\n                    currentGroupData.shapes.push(shape); // Append if not found\n                }\n                \n                return shape;\n            }            \n        }\n        return null;\n    }\n\n    getSelectedObject() {\n        const currentGroup = this.state.currentGroup;\n        if (currentGroup) {\n            let foundGroup = null;\n            this.rootGroup.traverse(obj => {\n                if (obj.isGroup && obj.name === currentGroup && obj.userData.isGroup) {\n                    foundGroup = obj;\n                }\n            });\n            let foundShape = null;\n            if(foundGroup){\n                foundGroup.traverse(obj => {\n                    if (obj.userData.isShape && obj.userData.index == this.state.selectedShapeIndex) {\n                        foundShape = obj;\n                    }\n                });\n            }\n            return foundShape || foundGroup || this.rootGroup;\n        }\n        return this.rootGroup;\n    }\n}\n",
+        "script": "// Core structure\nclass GraphicsEditor {\n    constructor(gameEditor, config, {ShapeFactory, GE_SceneRenderer, GE_ShapeManager, GE_AnimationManager, GE_RotationUtils, GE_UIManager, GE_GroupManager, GE_GizmoManager}) {\n        this.gameEditor = gameEditor;\n        this.config = config;\n        this.shapeFactory = new ShapeFactory();\n        this.canvas = document.getElementById('graphics-editor-canvas');\n        // Initialize sub-modules\n        this.sceneRenderer = new GE_SceneRenderer(gameEditor, this);\n        this.shapeManager = new GE_ShapeManager(gameEditor, this);\n        this.uiManager = new GE_UIManager(gameEditor, this);\n        this.animationManager = new GE_AnimationManager(gameEditor, this);\n        this.groupManager = new GE_GroupManager(gameEditor, this);\n        this.gizmoManager = new GE_GizmoManager(gameEditor, this);\n        this.rotationUtils = GE_RotationUtils;\n        // State management (simplified)\n        this.state = {\n            editingModel: true,\n            selectedShapeIndex: -1,\n            currentAnimation: \"\",\n            selectedGroup: \"main\",\n            currentFrame: 0,\n            renderData: { model: {}, animations: { idle: [{ main: { shapes: [], position: {x: 0, y: 0, z: 0}, rotation: {x:0,y:0,z:0}, scale: {x:1, y:1, z:1}} }] } }\n        };\n        \n        this.rootGroup = new window.THREE.Group(); // Main container for all shapes\n        this.rootGroup.name = \"rootGroup\";\n        this.init();\n    }\n    \n    init() {\n        this.sceneRenderer.init();\n        this.uiManager.init();\n        this.shapeManager.init();\n        this.animationManager.init();\n        this.groupManager.init();\n        this.gizmoManager.init();\n        this.sceneRenderer.animate();    \n    }\n    displayIsometricSprites(sprites){\n        this.uiManager.displayIsometricSprites(sprites);\n    }\n    async renderShapes(fireSave = true) {\n        // Clear the root group\n        while (this.rootGroup.children.length > 0) {\n            const obj = this.rootGroup.children[0];\n            this.shapeFactory.disposeObject(obj);\n            this.shapeManager.originalMaterials.delete(obj);\n            this.rootGroup.remove(obj);\n        }\n    \n        // Add lights if they don't exist\n        if (!this.sceneRenderer.scene.getObjectByName('ambient-light')) {\n            const ambientLight = new window.THREE.AmbientLight(0xffffff, 0.6);\n            ambientLight.name = 'ambient-light';\n            this.sceneRenderer.scene.add(ambientLight);\n            const directionalLight = new window.THREE.DirectionalLight(0xffffff, 0.8);\n            directionalLight.position.set(5, 10, 7.5);\n            directionalLight.name = 'dir-light';\n            this.sceneRenderer.scene.add(directionalLight);\n        }\n            \n        const currentAnimation = this.state.currentAnimation;\n        const currentFrame = this.state.currentFrame;\n        \n        // Ensure animation and frame exist\n        if (!this.state.editingModel && !this.getCurrentFrame()) {\n            console.warn(\"Animation or frame doesn't exist:\", currentAnimation, currentFrame);\n            return;\n        }\n        \n        //model is a Frame that has named groups as properties.\n        let model = this.state.renderData.model;\n\n        // Create a group for each group in the frame\n        for (const groupName in model) {     \n            const mergedGroup = this.getMergedGroup(groupName);\n            if( mergedGroup){\n                let threeGroup = await this.shapeFactory.createGroupFromJSON(mergedGroup); \n                threeGroup.name = groupName;\n                // Add the group to the root group\n                this.rootGroup.add(threeGroup);\n            }\n        }\n            \n        // Count total shapes for display\n        let totalShapes = 0;\n        for (const groupName in model) {\n            if (Array.isArray(model[groupName].shapes)) {\n                totalShapes += model[groupName].shapes.length;\n            }\n        }\n        document.getElementById('shape-count').textContent = totalShapes;\n        \n        // Update JSON display\n        document.getElementById('json-content').value = JSON.stringify(this.state.renderData, null, 2);\n    \n        if (fireSave) {\n            const myCustomEvent = new CustomEvent('saveGraphicsObject', {\n                detail: { data: this.state.renderData, propertyName: 'render' },\n                bubbles: true,\n                cancelable: true\n            });\n            document.body.dispatchEvent(myCustomEvent);\n        } else {\n            let valEl = this.gameEditor.elements.editor.querySelector(`#render-value`);\n            if (valEl) {\n                valEl.value = JSON.stringify(this.state.renderData);\n            }\n        }\n    \n        // Highlight the selected shape if any\n        this.shapeManager.highlightSelectedShape();\n        this.gizmoManager.updateGizmoPosition();\n    }\n    \n    getCurrentAnimation() {\n     \n        return this.state.renderData.animations[this.state.currentAnimation] || null;\n    }\n    getCurrentFrame() {\n        if(this.state.editingModel){\n            return this.state.renderData.model;\n        } else {\n            let currentAnimation = this.getCurrentAnimation();\n            return currentAnimation ? currentAnimation[this.state.currentFrame] : null;\n        }\n    }\n    getCurrentGroup() {\n        let currentFrame = this.getCurrentFrame();\n        return currentFrame ? currentFrame[this.state.currentGroup] : null;\n    }\n\n    refreshShapes(param) {\n        this.uiManager.updateList();\n        this.renderShapes(param);\n    }\n\n    createInspector(shape) {\n        this.uiManager.createInspector(shape);\n    }\n\n    setPreviewAnimationState(state) {\n        return this.animationManager.setPreviewAnimationState(state);\n    }\n\n    selectShape(index) {\n        return this.shapeManager.selectShape(index);\n    }\n\n    getMergedGroup(groupName){\n        let model = this.state.renderData.model;\n        const modelGroup = model[groupName];\n        if(this.state.editingModel){\n            return modelGroup;\n        }\n        return this.shapeFactory.getMergedGroup(model, this.getCurrentAnimation()[this.state.currentFrame], groupName );\n    }\n\n    getFrameShape() {\n        // If we're in model editing mode, return merged shape\n        if (this.state.editingModel) {\n            return this.getMergedShape();\n        }\n    \n        // Return null if no shape is selected\n        if (this.state.selectedShapeIndex < 0) {\n            return null;\n        }\n    \n        // Get or create group data\n        let groupData = this.getCurrentGroup() || \n            JSON.parse(JSON.stringify(this.state.renderData.model[this.state.currentGroup]));\n    \n        if (!groupData?.shapes) {\n            return null;\n        }\n    \n        // Find existing shape or create new one\n        let shape = groupData.shapes.find(s => s.id === this.state.selectedShapeIndex);\n        if (shape) {\n            return shape;\n        }\n    \n        // Create new shape if not found\n        return this.createBlankFrameShape();\n    }\n    \n    createBlankFrameShape() {\n        const shape = { id: this.state.selectedShapeIndex };\n        const currentFrame = this.getCurrentFrame();\n        \n        if (!currentFrame) {\n            return null;\n        }\n    \n        // Add shape to current group or create new group\n        if (!currentFrame[this.state.currentGroup]) {\n            currentFrame[this.state.currentGroup] = { shapes: [] };\n        }\n        \n        currentFrame[this.state.currentGroup].shapes.push(shape);\n        return shape;\n    }\n\n    getMergedShape() {\n        if (this.state.selectedShapeIndex >= 0) {            \n            const selectedGroup = this.getMergedGroup(this.state.currentGroup);\n            const shapes = selectedGroup?.shapes || [];        \n            let shape = shapes[this.state.selectedShapeIndex];  \n            if(this.state.editingModel){\n                return shape;\n            }     \n            if (shape) {  \n                shape.id = this.state.selectedShapeIndex;\n                // Avoid overwriting shape.id unless necessary\n                let currentGroupData = this.getCurrentGroup() || {};\n                \n                // Ensure shapes array exists\n                currentGroupData.shapes = currentGroupData.shapes || [];\n                \n                // Find index of shape with matching id\n                const shapeIndex = currentGroupData.shapes.findIndex(s => s.id === shape.id);\n                // Replace or append shape\n                if (shapeIndex >= 0) {\n                    currentGroupData.shapes[shapeIndex] = shape; // Replace\n                } else {\n                    currentGroupData.shapes.push(shape); // Append if not found\n                }\n                this.state.renderData.animations[this.state.currentAnimation][this.state.currentFrame][this.state.currentGroup] = currentGroupData;\n                return shape;\n            }            \n        }\n        return null;\n    }\n\n    getSelectedObject() {\n        const currentGroup = this.state.currentGroup;\n        if (currentGroup) {\n            let foundGroup = null;\n            this.rootGroup.traverse(obj => {\n                if (obj.isGroup && obj.name === currentGroup && obj.userData.isGroup) {\n                    foundGroup = obj;\n                }\n            });\n            let foundShape = null;\n            if(foundGroup){\n                foundGroup.traverse(obj => {\n                    if (obj.userData.isShape && obj.userData.index == this.state.selectedShapeIndex) {\n                        foundShape = obj;\n                    }\n                });\n            }\n            return foundShape || foundGroup || this.rootGroup;\n        }\n        return this.rootGroup;\n    }\n}\n",
         "fileName": "GraphicsEditor",
         "title": "GraphicsEditor"
       },
@@ -26067,7 +18961,7 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "jszip.min.js"
       },
       "ShapeFactory": {
-        "script": "class ShapeFactory {\r\n    constructor() {\r\n        this.gltfCache = new Map();\r\n        this.gltfLoader = new THREE.GLTFLoader();\r\n    }\r\n    async createMergedGroupFromJSON(model, frameData, groupName) {\r\n        let mergedGroup = this.getMergedGroup(model, frameData, groupName);\r\n        if( mergedGroup){\r\n            return await this.createGroupFromJSON(mergedGroup);\r\n        } else {\r\n            return null;\r\n        }\r\n    }\r\n    async createGroupFromJSON(groupData) {\r\n        const group = new THREE.Group();\r\n        group.userData = { isGroup: true };\r\n        // Use Promise.all with map instead of forEach to properly await all shapes\r\n        await Promise.all(groupData.shapes.map(async (shape, index) => {\r\n            if (shape.type === 'gltf') {\r\n                await this.handleGLTFShape(shape, index, group);\r\n            } else {\r\n                this.handlePrimitiveShape(shape, index, group);\r\n            }\r\n        }));\r\n        group.position.x = groupData.position.x;\r\n        group.position.y = groupData.position.y;\r\n        group.position.z = groupData.position.z;\r\n        \r\n        group.rotation.x = groupData.rotation.x;\r\n        group.rotation.y = groupData.rotation.y;\r\n        group.rotation.z = groupData.rotation.z;\r\n\r\n        group.scale.x = groupData.scale.x;\r\n        group.scale.y = groupData.scale.y;\r\n        group.scale.z = groupData.scale.z;\r\n        return group;\r\n    }\r\n\r\n    async handleGLTFShape(shape, index, group) {\r\n        const applyTransformations = (model) => {\r\n            model.position.set(shape.x || 0, shape.y || 0, shape.z || 0);\r\n            model.scale.set(\r\n                shape.scaleX || 1,\r\n                shape.scaleY || 1,\r\n                shape.scaleZ || 1\r\n            );\r\n            model.rotation.set(\r\n                (shape.rotationX || 0) * Math.PI / 180,\r\n                (shape.rotationY || 0) * Math.PI / 180,\r\n                (shape.rotationZ || 0) * Math.PI / 180\r\n            );\r\n            \r\n            model.traverse(child => {\r\n                if (child.isMesh) {\r\n                    child.userData = {\r\n                        isShape: true,\r\n                        index: index,\r\n                        isGLTFChild: true\r\n                    };\r\n                }\r\n            });\r\n            \r\n            model.userData = {\r\n                isShape: true,\r\n                index: index,\r\n                isGLTFRoot: true,\r\n                castShadow: true\r\n            };\r\n            \r\n            group.add(model);\r\n        };\r\n\r\n        const cached = this.gltfCache.get(shape.url);\r\n        if (cached) {\r\n            applyTransformations(cached.scene.clone());\r\n        } else if (shape.url) {\r\n            // Wrap gltfLoader.load in a Promise to properly await it\r\n            await new Promise((resolve, reject) => {\r\n                this.gltfLoader.load(\r\n                    shape.url,\r\n                    (gltf) => {\r\n                        this.gltfCache.set(shape.url, gltf);\r\n                        applyTransformations(gltf.scene.clone());\r\n                        resolve();\r\n                    },\r\n                    undefined, // onProgress callback (optional)\r\n                    (error) => {\r\n                        console.error(`Failed to load GLTF model at ${shape.url}:`, error);\r\n                        reject(error);\r\n                    }\r\n                );\r\n            });\r\n        }\r\n    }\r\n\r\n    handlePrimitiveShape(shape, index, group) {\r\n        let geometry, material;\r\n\r\n        // Create material with specified color\r\n        material = new THREE.MeshStandardMaterial({ color: shape.color });\r\n\r\n        switch (shape.type) {\r\n            case 'sphere':\r\n                geometry = new THREE.SphereGeometry(shape.size / 2, 32, 32);\r\n                break;\r\n            case 'cube':\r\n                geometry = new THREE.BoxGeometry(shape.size, shape.size, shape.size);\r\n                break;\r\n            case 'box':\r\n                geometry = new THREE.BoxGeometry(shape.width, shape.height, shape.depth || shape.width);\r\n                break;\r\n            case 'cylinder':\r\n                geometry = new THREE.CylinderGeometry(shape.size / 2, shape.size / 2, shape.height, 32);\r\n                break;\r\n            case 'cone':\r\n                geometry = new THREE.ConeGeometry(shape.size / 2, shape.height, 32);\r\n                break;\r\n            case 'torus':\r\n                geometry = new THREE.TorusGeometry(shape.size / 2, shape.tubeSize || shape.size / 6, 16, 100);\r\n                break;\r\n            case 'tetrahedron':\r\n                geometry = new THREE.TetrahedronGeometry(shape.size / 2);\r\n                break;\r\n            default:\r\n                return;\r\n        }\r\n\r\n        const mesh = new THREE.Mesh(geometry, material);\r\n        mesh.userData = { isShape: true, castShadow: true, index: index };\r\n        \r\n        // Position and rotation\r\n        mesh.position.set(shape.x || 0, shape.y || 0, shape.z || 0);\r\n        mesh.rotation.set(\r\n            (shape.rotationX || 0) * Math.PI / 180,\r\n            (shape.rotationY || 0) * Math.PI / 180,\r\n            (shape.rotationZ || 0) * Math.PI / 180\r\n        );\r\n        mesh.scale.set(\r\n            shape.scaleX || 1,\r\n            shape.scaleY || 1,\r\n            shape.scaleZ || 1\r\n        );\r\n        group.add(mesh);\r\n    }\r\n\r\n    disposeObject(object) {\r\n        object.traverse(child => {\r\n            if (child.geometry) child.geometry.dispose();\r\n            if (child.material) {\r\n                if (Array.isArray(child.material)) {\r\n                    child.material.forEach(m => m.dispose());\r\n                } else {\r\n                    child.material.dispose();\r\n                }\r\n            }\r\n        });\r\n    }\r\n\r\n    getMergedGroup(model, frameData, groupName){\r\n        let modelGroup = model[groupName];\r\n        if(!modelGroup){\r\n            delete frameData[groupName];\r\n            return null;\r\n        }\r\n        let frameGroup = frameData[groupName];\r\n        if(!frameGroup){\r\n            //group doesnt exist in animation, copy from model\r\n            frameData[groupName] = JSON.parse(JSON.stringify(modelGroup));\r\n            frameGroup = frameData[groupName];\r\n            for(let i = 0; i < frameGroup.shapes.length; i++){\r\n                frameGroup.shapes[i].id = i;\r\n            }\r\n        }\r\n\r\n        if(JSON.stringify(modelGroup.position) == JSON.stringify(frameGroup.position)){\r\n\r\n            delete frameGroup.position;\r\n        }\r\n        if(JSON.stringify(modelGroup.rotation) == JSON.stringify(frameGroup.rotation)){\r\n\r\n            delete frameGroup.rotation;\r\n        }\r\n        if(JSON.stringify(modelGroup.scale) == JSON.stringify(frameGroup.scale)){\r\n\r\n            delete frameGroup.scale;\r\n        }\r\n        let mergedShapes = [];\r\n        for(let i = 0; i < modelGroup.shapes.length; i++){\r\n            let modelShape = modelGroup.shapes[i];\r\n            if(!frameGroup.shapes){\r\n                mergedShapes.push(modelShape);\r\n                continue;\r\n            }\r\n            let mergedShape = {};\r\n            let frameShape = frameGroup.shapes.find((shape) => shape.id == i);\r\n            if(typeof frameShape == \"undefined\"){\r\n                frameShape = { id: i };\r\n                frameGroup.shapes.push(frameShape);\r\n            }\r\n            for(const key in modelShape) {\r\n                if(key == 'id'){      \r\n                    delete modelShape.id;\r\n                    continue;\r\n                }\r\n                if(frameShape && typeof frameShape[key] != \"undefined\" && modelShape[key] === frameShape[key]){\r\n                    delete frameShape[key];                 \r\n                    mergedShape[key] = modelShape[key];\r\n                } else if(!frameShape || typeof frameShape[key] == \"undefined\"){\r\n                    mergedShape[key] = modelShape[key];\r\n                } else {\r\n                    mergedShape[key] = frameShape[key];\r\n                }\r\n            }\r\n            mergedShape = {...mergedShape, ...frameShape};\r\n            delete mergedShape.id;\r\n            mergedShapes.push(mergedShape);\r\n        }\r\n        if(frameGroup.shapes){\r\n            for(let i = frameGroup.shapes.length - 1; i >= 0; i--){\r\n                let shape = frameGroup.shapes[i];\r\n                if(Object.keys(shape).length == 1){\r\n                    frameGroup.shapes.splice(i, 1);\r\n                }\r\n            }  \r\n        }                         \r\n        const mergedGroup = {\r\n            ...modelGroup,\r\n            ...frameGroup,\r\n        };\r\n        if(modelGroup.shapes.length == 0){\r\n            frameGroup.shapes = [];\r\n        }\r\n\r\n        mergedGroup.shapes = mergedShapes;\r\n        let returnVal = JSON.parse(JSON.stringify(mergedGroup));\r\n        if(frameGroup.shapes && frameGroup.shapes.length == 0){\r\n            delete frameGroup.shapes;\r\n        }\r\n        if(Object.keys(frameGroup).length == 0) {            \r\n           delete frameData[groupName];\r\n        }\r\n        return returnVal;\r\n    }\r\n\r\n}",
+        "script": "class ShapeFactory {\r\n    constructor() {\r\n        this.gltfCache = new Map();\r\n        this.gltfLoader = new THREE.GLTFLoader();\r\n    }\r\n    async createMergedGroupFromJSON(model, frameData, groupName) {\r\n        let mergedGroup = this.getMergedGroup(model, frameData, groupName);\r\n        if( mergedGroup){\r\n            return await this.createGroupFromJSON(mergedGroup);\r\n        } else {\r\n            return null;\r\n        }\r\n    }\r\n    async createGroupFromJSON(groupData) {\r\n        const group = new THREE.Group();\r\n        group.userData = { isGroup: true };\r\n        // Use Promise.all with map instead of forEach to properly await all shapes\r\n        await Promise.all(groupData.shapes.map(async (shape, index) => {\r\n            if (shape.type === 'gltf') {\r\n                await this.handleGLTFShape(shape, index, group);\r\n            } else {\r\n                this.handlePrimitiveShape(shape, index, group);\r\n            }\r\n        }));\r\n        group.position.x = groupData.position.x;\r\n        group.position.y = groupData.position.y;\r\n        group.position.z = groupData.position.z;\r\n        \r\n        group.rotation.x = groupData.rotation.x;\r\n        group.rotation.y = groupData.rotation.y;\r\n        group.rotation.z = groupData.rotation.z;\r\n\r\n        group.scale.x = groupData.scale.x;\r\n        group.scale.y = groupData.scale.y;\r\n        group.scale.z = groupData.scale.z;\r\n        return group;\r\n    }\r\n\r\n    async handleGLTFShape(shape, index, group) {\r\n        const applyTransformations = (model) => {\r\n            model.position.set(shape.x || 0, shape.y || 0, shape.z || 0);\r\n            model.scale.set(\r\n                shape.scaleX || 1,\r\n                shape.scaleY || 1,\r\n                shape.scaleZ || 1\r\n            );\r\n            model.rotation.set(\r\n                (shape.rotationX || 0) * Math.PI / 180,\r\n                (shape.rotationY || 0) * Math.PI / 180,\r\n                (shape.rotationZ || 0) * Math.PI / 180\r\n            );\r\n            \r\n            model.traverse(child => {\r\n                if (child.isMesh) {\r\n                    child.userData = {\r\n                        isShape: true,\r\n                        index: index,\r\n                        isGLTFChild: true\r\n                    };\r\n                }\r\n            });\r\n            \r\n            model.userData = {\r\n                isShape: true,\r\n                index: index,\r\n                isGLTFRoot: true,\r\n                castShadow: true\r\n            };\r\n            \r\n            group.add(model);\r\n        };\r\n\r\n        const cached = this.gltfCache.get(shape.url);\r\n        if (cached) {\r\n            applyTransformations(cached.scene.clone());\r\n        } else if (shape.url) {\r\n            // Wrap gltfLoader.load in a Promise to properly await it\r\n            await new Promise((resolve, reject) => {\r\n                this.gltfLoader.load(\r\n                    shape.url,\r\n                    (gltf) => {\r\n                        this.gltfCache.set(shape.url, gltf);\r\n                        applyTransformations(gltf.scene.clone());\r\n                        resolve();\r\n                    },\r\n                    undefined, // onProgress callback (optional)\r\n                    (error) => {\r\n                        console.error(`Failed to load GLTF model at ${shape.url}:`, error);\r\n                        reject(error);\r\n                    }\r\n                );\r\n            });\r\n        }\r\n    }\r\n\r\n    handlePrimitiveShape(shape, index, group) {\r\n        let geometry, material;\r\n\r\n        // Create material with specified color\r\n        material = new THREE.MeshStandardMaterial({ color: shape.color });\r\n\r\n        switch (shape.type) {\r\n            case 'sphere':\r\n                geometry = new THREE.SphereGeometry(shape.size / 2, 32, 32);\r\n                break;\r\n            case 'cube':\r\n                geometry = new THREE.BoxGeometry(shape.size, shape.size, shape.size);\r\n                break;\r\n            case 'box':\r\n                geometry = new THREE.BoxGeometry(shape.width, shape.height, shape.depth || shape.width);\r\n                break;\r\n            case 'cylinder':\r\n                geometry = new THREE.CylinderGeometry(shape.size / 2, shape.size / 2, shape.height, 32);\r\n                break;\r\n            case 'cone':\r\n                geometry = new THREE.ConeGeometry(shape.size / 2, shape.height, 32);\r\n                break;\r\n            case 'torus':\r\n                geometry = new THREE.TorusGeometry(shape.size / 2, shape.tubeSize || shape.size / 6, 16, 100);\r\n                break;\r\n            case 'tetrahedron':\r\n                geometry = new THREE.TetrahedronGeometry(shape.size / 2);\r\n                break;\r\n            default:\r\n                return;\r\n        }\r\n\r\n        const mesh = new THREE.Mesh(geometry, material);\r\n        mesh.userData = { isShape: true, castShadow: true, index: index };\r\n        \r\n        // Position and rotation\r\n        mesh.position.set(shape.x || 0, shape.y || 0, shape.z || 0);\r\n        mesh.rotation.set(\r\n            (shape.rotationX || 0) * Math.PI / 180,\r\n            (shape.rotationY || 0) * Math.PI / 180,\r\n            (shape.rotationZ || 0) * Math.PI / 180\r\n        );\r\n        mesh.scale.set(\r\n            shape.scaleX || 1,\r\n            shape.scaleY || 1,\r\n            shape.scaleZ || 1\r\n        );\r\n        group.add(mesh);\r\n    }\r\n\r\n    disposeObject(object) {\r\n        object.traverse(child => {\r\n            if (child.geometry) child.geometry.dispose();\r\n            if (child.material) {\r\n                if (Array.isArray(child.material)) {\r\n                    child.material.forEach(m => m.dispose());\r\n                } else {\r\n                    child.material.dispose();\r\n                }\r\n            }\r\n        });\r\n    }\r\n\r\n    getMergedGroup(model, frameData, groupName){\r\n        let modelGroup = model[groupName];\r\n        if(!modelGroup){\r\n            delete frameData[groupName];\r\n            return null;\r\n        }\r\n        if(!frameData){\r\n            frameData = {};\r\n        }\r\n        let frameGroup = frameData[groupName];\r\n        if(!frameGroup){\r\n            //group doesnt exist in animation, copy from model\r\n            frameData[groupName] = JSON.parse(JSON.stringify(modelGroup));\r\n            frameGroup = frameData[groupName];\r\n            for(let i = 0; i < frameGroup.shapes.length; i++){\r\n                frameGroup.shapes[i].id = i;\r\n            }\r\n        }\r\n\r\n        if(JSON.stringify(modelGroup.position) == JSON.stringify(frameGroup.position)){\r\n\r\n            delete frameGroup.position;\r\n        }\r\n        if(JSON.stringify(modelGroup.rotation) == JSON.stringify(frameGroup.rotation)){\r\n\r\n            delete frameGroup.rotation;\r\n        }\r\n        if(JSON.stringify(modelGroup.scale) == JSON.stringify(frameGroup.scale)){\r\n\r\n            delete frameGroup.scale;\r\n        }\r\n        let mergedShapes = [];\r\n        for(let i = 0; i < modelGroup.shapes.length; i++){\r\n            let modelShape = modelGroup.shapes[i];\r\n            if(!frameGroup.shapes){\r\n                mergedShapes.push(modelShape);\r\n                continue;\r\n            }\r\n            let mergedShape = {};\r\n            let frameShape = frameGroup.shapes.find((shape) => shape.id == i);\r\n            if(typeof frameShape == \"undefined\"){\r\n                frameShape = { id: i };\r\n                frameGroup.shapes.push(frameShape);\r\n            }\r\n            for(const key in modelShape) {\r\n                if(key == 'id'){      \r\n                    delete modelShape.id;\r\n                    continue;\r\n                }\r\n                if(frameShape && typeof frameShape[key] != \"undefined\" && modelShape[key] === frameShape[key]){\r\n                    delete frameShape[key];                 \r\n                    mergedShape[key] = modelShape[key];\r\n                } else if(!frameShape || typeof frameShape[key] == \"undefined\"){\r\n                    mergedShape[key] = modelShape[key];\r\n                } else {\r\n                    mergedShape[key] = frameShape[key];\r\n                }\r\n            }\r\n            mergedShape = {...mergedShape, ...frameShape};\r\n            delete mergedShape.id;\r\n            mergedShapes.push(JSON.parse(JSON.stringify(mergedShape)));\r\n            if(frameShape.scaleX == modelShape.scaleX || (frameShape.scaleX == 1 && typeof modelShape.scaleX == \"undefined\")){\r\n                delete frameShape.scaleX;\r\n            }\r\n            if(frameShape.scaleY == modelShape.scaleY || (frameShape.scaleY == 1 && typeof modelShape.scaleY == \"undefined\")){\r\n                delete frameShape.scaleY;\r\n            }\r\n            if(frameShape.scaleZ == modelShape.scaleZ || (frameShape.scaleZ == 1 && typeof modelShape.scaleZ == \"undefined\")){\r\n                delete frameShape.scaleZ;\r\n            }\r\n            if(frameShape.rotationX == modelShape.rotationX || (frameShape.rotationX == 0 && typeof modelShape.rotationX == \"undefined\")){\r\n                delete frameShape.rotationX;\r\n            }\r\n            if(frameShape.rotationY == modelShape.rotationY || (frameShape.rotationY == 0 && typeof modelShape.rotationY == \"undefined\")){\r\n                delete frameShape.rotationY;\r\n            }\r\n            if(frameShape.rotationZ == modelShape.rotationZ || (frameShape.rotationZ == 0 && typeof modelShape.rotationZ == \"undefined\")){\r\n                delete frameShape.rotationZ;\r\n            }\r\n        }\r\n        if(frameGroup.shapes){\r\n            for(let i = frameGroup.shapes.length - 1; i >= 0; i--){\r\n                let shape = frameGroup.shapes[i];\r\n                if(Object.keys(shape).length == 1){\r\n                    frameGroup.shapes.splice(i, 1);\r\n                }\r\n            }  \r\n        }                         \r\n        const mergedGroup = {\r\n            ...modelGroup,\r\n            ...frameGroup,\r\n        };\r\n        if(modelGroup.shapes.length == 0){\r\n            frameGroup.shapes = [];\r\n        }\r\n\r\n        mergedGroup.shapes = mergedShapes;\r\n        let returnVal = JSON.parse(JSON.stringify(mergedGroup));\r\n        if(frameGroup.shapes && frameGroup.shapes.length == 0){\r\n            delete frameGroup.shapes;\r\n        }\r\n\r\n        if(Object.keys(frameGroup).length == 0) {            \r\n           delete frameData[groupName];\r\n        }\r\n        return returnVal;\r\n    }\r\n\r\n}",
         "fileName": "ShapeFactory"
       },
       "ImageManager": {
@@ -26140,7 +19034,7 @@ const DEFAULT_PROJECT_CONFIG = {
       },
       "GE_UIManager": {
         "title": "GE_UIManager",
-        "script": "class GE_UIManager {\r\n    constructor(gameEditor, graphicsEditor) {\r\n        this.gameEditor = gameEditor;\r\n        this.graphicsEditor = graphicsEditor;\r\n        this.mouse = new window.THREE.Vector2();\r\n        this.raycaster = new window.THREE.Raycaster();\r\n        this.isDragging = false;\r\n        this.clickStartTime = 0;\r\n    }    \r\n     \r\n\r\n    init() {   \r\n        this.initEventListeners();\r\n    }\r\n    \r\n    \r\n    \r\n    initEventListeners() {\r\n        // Button event listeners\r\n        const buttonMappings = {\r\n            'generate-isometric': this.showIsometricModal.bind(this),\r\n        };\r\n        Object.entries(buttonMappings).forEach(([id, handler]) => {\r\n            const button = document.getElementById(id);\r\n            if (button) button.addEventListener('click', handler);\r\n        });\r\n\r\n        // Canvas interaction\r\n        this.graphicsEditor.canvas.addEventListener('mousedown', this.handleMouseDown.bind(this));\r\n        this.graphicsEditor.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));\r\n        this.graphicsEditor.canvas.addEventListener('mouseup', this.handleMouseUp.bind(this));\r\n\r\n        // Additional event listeners\r\n\r\n        \r\n        // Move modal listeners\r\n\r\n        // Isometric modal listeners\r\n        document.getElementById('iso-cancel').addEventListener('click', () => {\r\n            document.getElementById('modal-generateIsoSprites').classList.remove('show');\r\n        });\r\n    }\r\n    handleMouseDown(event) {\r\n        this.isDragging = false;\r\n        this.clickStartTime = Date.now();\r\n    }\r\n\r\n    handleMouseMove() {\r\n        if (Date.now() - this.clickStartTime > 100) {\r\n            this.isDragging = true;\r\n        }\r\n    }\r\n\r\n    handleMouseUp(event) {\r\n        if (this.isDragging) return;\r\n    \r\n        const rect = this.graphicsEditor.canvas.getBoundingClientRect();\r\n        this.mouse.x = ((event.clientX - rect.left) / this.graphicsEditor.canvas.clientWidth) * 2 - 1;\r\n        this.mouse.y = -((event.clientY - rect.top) / this.graphicsEditor.canvas.clientHeight) * 2 + 1;\r\n    \r\n        this.raycaster.setFromCamera(this.mouse, this.graphicsEditor.sceneRenderer.camera);\r\n    \r\n        // Instead of looking only at scene.children, search through all descendant meshes\r\n        const meshes = [];\r\n        this.graphicsEditor.rootGroup.traverse(obj => {\r\n            if (obj.isMesh && obj.userData.isShape) {\r\n                meshes.push(obj);\r\n            }\r\n        });\r\n    \r\n        const intersects = this.raycaster.intersectObjects(meshes, true);\r\n    \r\n        if (intersects.length > 0) {\r\n            // Find the parent mesh with the isShape flag if we've hit a child mesh\r\n            let hitObject = intersects[0].object;\r\n            while (hitObject && !hitObject.userData.isShape) {\r\n                hitObject = hitObject.parent;\r\n            }\r\n            \r\n            if (hitObject && hitObject.userData.index !== undefined) {\r\n                this.graphicsEditor.selectShape(hitObject.userData.index);\r\n            }\r\n        }\r\n    }\r\n    \r\n\r\n    showIsometricModal() {\r\n        document.getElementById('modal-generateIsoSprites').classList.add('show');\r\n    }\r\n    displayIsometricSprites(sprites) {\r\n        const modal = document.createElement('div');\r\n        modal.style.cssText = `\r\n            position: fixed; top: 0; left: 0; width: 100%; height: 100%; \r\n            background-color: rgba(0, 0, 0, 0.7); z-index: 1000; \r\n            display: flex; align-items: center; justify-content: center;\r\n        `;\r\n        const content = document.createElement('div');\r\n        content.style.cssText = `\r\n            background: #333; padding: 20px; border-radius: 8px; \r\n            max-width: 80%; max-height: 80%; overflow: auto;\r\n        `;\r\n    \r\n        const angleLabels = ['NE', 'N', 'NW', 'W', 'SW', 'S', 'SE', 'E']; // Labels for 8 angles\r\n    \r\n        for (const animType in sprites) {\r\n            const animSection = document.createElement('div');\r\n            const title = document.createElement('h3');\r\n            title.textContent = `${animType} Animation`;\r\n            title.style.color = '#e0e0e0';\r\n            animSection.appendChild(title);\r\n    \r\n            // Create a container for all angles\r\n            const anglesContainer = document.createElement('div');\r\n            anglesContainer.style.cssText = `margin: 10px 0;`;\r\n    \r\n            // For each angle (0-7)\r\n            for (let angle = 0; angle < 8; angle++) {\r\n                const angleSection = document.createElement('div');\r\n    \r\n                const grid = document.createElement('div');\r\n                grid.style.cssText = `\r\n                    display: grid; \r\n                    grid-template-columns: repeat(${Math.min(sprites[animType].length, 4)}, 1fr); \r\n                    gap: 5px; \r\n                    margin-bottom: 15px;\r\n                `;\r\n    \r\n                // Add all frames for this specific angle\r\n                sprites[animType].forEach(frame => {\r\n                    const img = document.createElement('img');\r\n                    img.src = frame[angle]; // Get the specific angle's sprite\r\n                    img.style.maxWidth = '100%';\r\n                    grid.appendChild(img);\r\n                });\r\n    \r\n                angleSection.appendChild(grid);\r\n                anglesContainer.appendChild(angleSection);\r\n            }\r\n    \r\n            animSection.appendChild(anglesContainer);\r\n            content.appendChild(animSection);\r\n        }\r\n    \r\n        const closeButton = document.createElement('button');\r\n        closeButton.textContent = 'Close';\r\n        closeButton.style.cssText = `\r\n            margin-top: 20px; padding: 8px 16px; background-color: #4CAF50; \r\n            color: #fff; border: none; border-radius: 6px; cursor: pointer;\r\n        `;\r\n        closeButton.addEventListener('click', () => document.body.removeChild(modal));\r\n        content.appendChild(closeButton);\r\n        modal.appendChild(content);\r\n        document.body.appendChild(modal);\r\n    }\r\n    \r\n    createGroupInspector(group) {\r\n        console.log('create group inspector', group);\r\n        const inspector = document.getElementById('inspector');\r\n        inspector.innerHTML = \"\";\r\n        inspector.className = 'inspector';\r\n\r\n        \r\n        this.addFormRow(inspector, 'X Scale', 'number', 'scaleX', group.scale.x || 1, { min: 0.1, step: 0.1 });\r\n        this.addFormRow(inspector, 'Y Scale', 'number', 'scaleY', group.scale.y || 1, { min: 0.1, step: 0.1 });\r\n        this.addFormRow(inspector, 'Z Scale', 'number', 'scaleZ', group.scale.z || 1, { min: 0.1, step: 0.1 });\r\n        // Position inputs\r\n        this.addFormRow(inspector, 'X Position', 'number', 'x', group.position.x || 0, { step: 0.1 });\r\n        this.addFormRow(inspector, 'Y Position', 'number', 'y', group.position.y || 0, { step: 0.1 });\r\n        this.addFormRow(inspector, 'Z Position', 'number', 'z', group.position.z || 0, { step: 0.1 });\r\n        \r\n        // Rotation inputs\r\n        this.addFormRow(inspector, 'X Rotation', 'number', 'rotationX', group.rotation.x || 0, { step: 5 });\r\n        this.addFormRow(inspector, 'Y Rotation', 'number', 'rotationY', group.rotation.y || 0, { step: 5 });\r\n        this.addFormRow(inspector, 'Z Rotation', 'number', 'rotationZ', group.rotation.z || 0, { step: 5 });\r\n        \r\n    }\r\n\r\n    createInspector(shape) {\r\n        console.log('create shape inspector', shape);\r\n        const inspector = document.getElementById('inspector');\r\n        inspector.innerHTML = \"\";\r\n        inspector.className = 'inspector';\r\n\r\n        this.addFormRow(inspector, 'Name', 'text', 'name', shape.name || \"\");\r\n        \r\n        // Type selector\r\n        this.addFormRow(inspector, 'Type', 'select', 'type', shape.type, {\r\n            options: ['cube', 'sphere', 'box', 'cylinder', 'cone', 'torus', 'tetrahedron', 'gltf'],\r\n            change: (e) => {\r\n                let currentShape = this.graphicsEditor.getMergedShape();\r\n                let newValue = e.target.value;\r\n                if (newValue != 'gltf') {\r\n                    delete currentShape.url\r\n                }                 \r\n                currentShape.type = newValue;\r\n                this.graphicsEditor.refreshShapes(false);\r\n            }\r\n        });\r\n        \r\n        if (shape.type === 'gltf') {            \r\n            let input = this.addFormRow(inspector, 'Model', 'file', 'url', shape.url, { 'change' :  async (e) => {\r\n                e.preventDefault();\r\n\r\n                // Get the file from the input element\r\n                const file = e.target.files[0]; // Access the file object\r\n                if (!file) {\r\n                    console.error('No file selected');\r\n                    return;\r\n                }\r\n                // // Create FormData and append the file\r\n                 const formData = new FormData();\r\n                 formData.append('gltfFile', file); // 'gltfFile' matches the multer.single('gltfFile') on the server\r\n\r\n                try {\r\n                     const response = await fetch('/upload-model', {\r\n                         method: 'POST',\r\n                         body: formData // Send the FormData with the file\r\n                     });\r\n\r\n                     const result = await response.json();\r\n                     shape.url = result.filePath; \r\n                     this.graphicsEditor.getMergedShape().url = result.filePath;\r\n                     this.graphicsEditor.refreshShapes(false);\r\n                } catch (error) {\r\n                     console.error('Error uploading file:', error);\r\n                }\r\n            }});\r\n            input.setAttribute(\"accept\",\".gltf\");\r\n        }\r\n        // Color picker\r\n        this.addFormRow(inspector, 'Color', 'color', 'color', shape.color);\r\n        \r\n        this.addFormRow(inspector, 'X Scale', 'number', 'scaleX', shape.scaleX || 1, { min: 0.1, step: 0.1 });\r\n        this.addFormRow(inspector, 'Y Scale', 'number', 'scaleY', shape.scaleY || 1, { min: 0.1, step: 0.1 });\r\n        this.addFormRow(inspector, 'Z Scale', 'number', 'scaleZ', shape.scaleZ || 1, { min: 0.1, step: 0.1 });\r\n        // Position inputs\r\n        this.addFormRow(inspector, 'X Position', 'number', 'x', shape.x || 0, { step: 0.1 });\r\n        this.addFormRow(inspector, 'Y Position', 'number', 'y', shape.y || 0, { step: 0.1 });\r\n        this.addFormRow(inspector, 'Z Position', 'number', 'z', shape.z || 0, { step: 0.1 });\r\n        \r\n        // Rotation inputs\r\n        this.addFormRow(inspector, 'X Rotation', 'number', 'rotationX', shape.rotationX || 0, { step: 5 });\r\n        this.addFormRow(inspector, 'Y Rotation', 'number', 'rotationY', shape.rotationY || 0, { step: 5 });\r\n        this.addFormRow(inspector, 'Z Rotation', 'number', 'rotationZ', shape.rotationZ || 0, { step: 5 });\r\n        \r\n        // Size inputs\r\n        if (['cube', 'sphere', 'tetrahedron', 'torus'].includes(shape.type)) {\r\n            this.addFormRow(inspector, 'Size', 'number', 'size', shape.size || 2, { min: 0.1, step: 0.1 });\r\n        }\r\n        \r\n        if (shape.type === 'box') {\r\n            this.addFormRow(inspector, 'Width', 'number', 'width', shape.width || 2, { min: 0.1, step: 0.1 });\r\n            this.addFormRow(inspector, 'Height', 'number', 'height', shape.height || 2, { min: 0.1, step: 0.1 });\r\n            this.addFormRow(inspector, 'Depth', 'number', 'depth', shape.depth || 2, { min: 0.1, step: 0.1 });\r\n        }\r\n        \r\n        if (['cylinder', 'cone'].includes(shape.type)) {\r\n            this.addFormRow(inspector, 'Size', 'number', 'size', shape.size || 2, { min: 0.1, step: 0.1 });\r\n            this.addFormRow(inspector, 'Height', 'number', 'height', shape.height || 3, { min: 0.1, step: 0.1 });\r\n        }\r\n        \r\n        if (shape.type === 'torus') {\r\n            this.addFormRow(inspector, 'Tube Size', 'number', 'tubeSize', shape.tubeSize || shape.size / 6, { min: 0.1, step: 0.1 });\r\n        }\r\n    }\r\n\r\n\r\n    addFormRow(container, label, type, property, value, options = {}) {\r\n        const row = document.createElement('div');\r\n        row.className = 'form-row';\r\n        \r\n        const labelElement = document.createElement('label');\r\n        labelElement.textContent = label;\r\n        row.appendChild(labelElement);\r\n        \r\n        let input;\r\n        \r\n        if (type === 'select') {\r\n            input = document.createElement('select');\r\n            input.setAttribute('data-property', property);\r\n            (options.options || []).forEach(optionValue => {\r\n                const option = document.createElement('option');\r\n                option.value = optionValue;\r\n                option.textContent = optionValue;\r\n                if (value === optionValue) {\r\n                    option.selected = true;\r\n                }\r\n                input.appendChild(option);\r\n            });\r\n        } else if(type === \"color\") {\r\n            input = document.createElement('input');\r\n            input.type = \"text\";\r\n            input.value = value;\r\n            input.setAttribute('data-property', property);\r\n            \r\n            let colorInput = document.createElement('input');\r\n            colorInput.type = \"color\";\r\n            colorInput.value = value;\r\n            colorInput.setAttribute('data-property', property + '-color');\r\n    \r\n            colorInput.addEventListener('change', () => {\r\n                let newValue = colorInput.value;                \r\n                this.graphicsEditor.getMergedShape()[property] = newValue;\r\n                this.graphicsEditor.refreshShapes(true);\r\n            });\r\n            row.appendChild(colorInput);\r\n        } else if(type === \"file\") {\r\n            let inputContainer = document.createElement('div');\r\n            inputContainer.style = \"flex: 1; display: flex; flex-direction: column; font-size: .75em;\";\r\n            input = document.createElement('input');\r\n            input.style = \"width: calc(100% - 18px);\"\r\n            input.type = type;\r\n            input.setAttribute('data-property', property);\r\n            inputContainer.appendChild(input);\r\n            if( value ) {\r\n                let urlName = document.createElement('span');\r\n                urlName.innerText = value;            \r\n                inputContainer.appendChild(urlName);\r\n            }\r\n            row.appendChild(inputContainer);\r\n            container.appendChild(row);\r\n            input.addEventListener('change', options.change );\r\n            return input;\r\n        } else {\r\n            input = document.createElement('input');\r\n            input.type = type;\r\n            input.value = value;\r\n            input.setAttribute('data-property', property);\r\n            \r\n            if (type === 'number') {\r\n                input.min = options.min !== undefined ? options.min : -64;\r\n                input.max = options.max !== undefined ? options.max : 64;\r\n                input.step = options.step || 1;\r\n            }\r\n        }\r\n        \r\n        input.addEventListener('change', options.change || ((e) => {\r\n            let newValue = e.target.value;\r\n            if (type === 'number') {\r\n                newValue = parseFloat(newValue);\r\n                console.log('change', this.graphicsEditor.shapeManager.currentTransformTarget);\r\n                // If we're editing a transform property, also update the transform target\r\n                if (this.graphicsEditor.shapeManager.currentTransformTarget && ['x', 'y', 'z', 'rotationX', 'rotationY', 'rotationZ', 'scaleX', 'scaleY', 'scaleZ'].includes(property)) {\r\n                    if (property === 'x') this.graphicsEditor.shapeManager.currentTransformTarget.position.x = newValue;\r\n                    if (property === 'y') this.graphicsEditor.shapeManager.currentTransformTarget.position.y = newValue;\r\n                    if (property === 'z') this.graphicsEditor.shapeManager.currentTransformTarget.position.z = newValue;\r\n                    \r\n                    if (property === 'rotationX') this.graphicsEditor.shapeManager.currentTransformTarget.rotation.x = this.graphicsEditor.rotationUtils.degToRad(newValue);\r\n                    if (property === 'rotationY') this.graphicsEditor.shapeManager.currentTransformTarget.rotation.y = this.graphicsEditor.rotationUtils.degToRad(newValue);\r\n                    if (property === 'rotationZ') this.graphicsEditor.shapeManager.currentTransformTarget.rotation.z = this.graphicsEditor.rotationUtils.degToRad(newValue);\r\n                    \r\n                    if (property === 'scaleX') this.graphicsEditor.shapeManager.currentTransformTarget.scale.x = newValue;\r\n                    if (property === 'scaleY') this.graphicsEditor.shapeManager.currentTransformTarget.scale.y = newValue;\r\n                    if (property === 'scaleZ') this.graphicsEditor.shapeManager.currentTransformTarget.scale.z = newValue;\r\n                    \r\n                    // Update gizmo position after directly changing values\r\n                }\r\n            } else if(type === 'file') {\r\n                return;\r\n            }\r\n            \r\n            this.updatePropertyValue(property, newValue);\r\n            this.graphicsEditor.refreshShapes(false);\r\n        }));\r\n        \r\n        row.appendChild(input);\r\n        container.appendChild(row);\r\n        return input;\r\n    }\r\n    updatePropertyValue(property, value) {\r\n        const groupData = this.graphicsEditor.getCurrentGroup();\r\n        const shapeData = this.graphicsEditor.getMergedShape();\r\n        if (shapeData) {\r\n            shapeData[property] = value;\r\n            return;\r\n        }\r\n        \r\n        // Handle transform properties\r\n        if (property.startsWith('scale')) {\r\n            const axis = property.charAt(property.length - 1).toLowerCase();\r\n            groupData.scale[axis] = value;\r\n        } else if (property.startsWith('rotation')) {\r\n            const axis = property.charAt(property.length - 1).toLowerCase();\r\n            groupData.rotation[axis] = value;\r\n        } else if (['x', 'y', 'z'].includes(property)) {\r\n            groupData.position[property] = value;\r\n        }\r\n    }\r\n\r\n  \r\n\r\n    updateList() {\r\n        const frameList = document.getElementById('frame-list');\r\n        frameList.innerHTML = '';\r\n        const groupList = document.getElementById('group-list');\r\n        groupList.innerHTML = '';\r\n        const shapeList = document.getElementById('shape-list');\r\n        shapeList.innerHTML = '';\r\n        this.updateFrameList();\r\n        this.graphicsEditor.groupManager.updateGroupList();\r\n        this.updateShapeList();\r\n    }\r\n\r\n    updateFrameList() {\r\n        const list = document.getElementById('frame-list');\r\n        // Animation selector\r\n        const animSelector = document.createElement('select');\r\n        animSelector.style.marginBottom = '10px';\r\n\r\n        const option = document.createElement('option');\r\n        option.value = '__model__';\r\n        option.textContent = 'model';\r\n        if (this.graphicsEditor.state.editingModel) option.selected = true;\r\n        animSelector.appendChild(option);\r\n\r\n\r\n        Object.keys(this.graphicsEditor.state.renderData.animations).forEach(anim => {\r\n            const option = document.createElement('option');\r\n            option.value = anim;\r\n            option.textContent = anim;\r\n            if (anim === this.graphicsEditor.state.currentAnimation) option.selected = true;\r\n            animSelector.appendChild(option);\r\n        });\r\n        animSelector.addEventListener('change', (e) => {\r\n            this.graphicsEditor.setPreviewAnimationState(false);\r\n            if(e.target.value == '__model__'){\r\n                this.graphicsEditor.state.editingModel = true;\r\n                this.graphicsEditor.state.currentAnimation = \"\";                \r\n            } else {\r\n                this.graphicsEditor.state.editingModel = false;\r\n                this.graphicsEditor.state.currentAnimation = animSelector.value;                \r\n            }\r\n            this.graphicsEditor.state.currentFrame = 0;\r\n            this.graphicsEditor.state.selectedShapeIndex = -1;\r\n            this.graphicsEditor.refreshShapes(false);\r\n            requestAnimationFrame(() => {\r\n                this.graphicsEditor.shapeManager.selectShape(0);\r\n            })\r\n        });\r\n        list.appendChild(animSelector);\r\n        if(this.graphicsEditor.state.editingModel) return;\r\n        // Frame list\r\n        const frameList = document.createElement('div');\r\n        frameList.style.marginBottom = '10px';\r\n        this.graphicsEditor.getCurrentAnimation().forEach((frame, index) => {\r\n            const frameItem = document.createElement('div');\r\n            frameItem.textContent = `Frame ${index + 1}`;\r\n            frameItem.style.padding = '5px';\r\n            frameItem.style.cursor = 'pointer';\r\n            if (index === this.graphicsEditor.state.currentFrame) frameItem.style.backgroundColor = '#555';\r\n            frameItem.addEventListener('click', () => {\r\n                this.graphicsEditor.setPreviewAnimationState(false);\r\n                this.graphicsEditor.state.currentFrame = index;  \r\n                this.graphicsEditor.state.selectedShapeIndex = -1;\r\n                this.graphicsEditor.refreshShapes(false);\r\n                requestAnimationFrame(() => {\r\n                    this.graphicsEditor.shapeManager.selectShape(0);\r\n                })\r\n            });\r\n            frameList.appendChild(frameItem);\r\n        });\r\n        list.appendChild(frameList);\r\n    }\r\n\r\n\r\n    updateShapeList() {\r\n        const list = document.getElementById('shape-list');\r\n        if (!list) return;\r\n        \r\n\r\n        // Get shapes from the currently selected group\r\n        const currentGroup = this.graphicsEditor.state.currentGroup;\r\n        const selectedGroup = this.graphicsEditor.getMergedGroup(currentGroup);\r\n        const shapes = selectedGroup && selectedGroup.shapes ? selectedGroup.shapes : selectedGroup || [];\r\n       \r\n        // Create shape list items\r\n        for (let i = 0; i < shapes.length; i++) {\r\n            const shape = shapes[i];\r\n            if (!shape) continue;\r\n           \r\n            const shapeItem = document.createElement('div');\r\n            shapeItem.classList.add('shape-item');\r\n           \r\n            // Mark as selected if this shape is the selected one and we're in the right group\r\n            if (i === this.graphicsEditor.state.selectedShapeIndex) {\r\n                shapeItem.classList.add('selected');\r\n            }\r\n           \r\n            shapeItem.textContent = `${shape.name} - ${shape.type || 'Shape'}`;\r\n            shapeItem.addEventListener('click', (e) => {                \r\n                this.graphicsEditor.shapeManager.selectShape(parseInt(e.target.dataset.index));\r\n            });\r\n           \r\n            // Make the shape draggable\r\n            shapeItem.draggable = true;\r\n            shapeItem.dataset.index = i;\r\n            shapeItem.dataset.group = currentGroup;\r\n            \r\n            // Add dragstart event to set the drag data\r\n            shapeItem.addEventListener('dragstart', (e) => {\r\n                // Store only the selected shape's index and source group\r\n                const data = {\r\n                    shapeIndex: i,\r\n                    sourceGroup: currentGroup\r\n                };\r\n                \r\n                // Set the drag data\r\n                e.dataTransfer.setData('text/plain', JSON.stringify(data));\r\n                \r\n                // Add a visual indicator\r\n                shapeItem.classList.add('dragging');\r\n                \r\n                // Set drag effect\r\n                e.dataTransfer.effectAllowed = 'move';\r\n            });\r\n            \r\n            // Add dragend event to clean up\r\n            shapeItem.addEventListener('dragend', () => {\r\n                shapeItem.classList.remove('dragging');\r\n            });\r\n           \r\n            list.appendChild(shapeItem);\r\n        }\r\n        \r\n        // Set up the shape list container as a drop target\r\n        list.addEventListener('dragover', (e) => {\r\n            // Only respond if we're dragging over the shape list itself, not an individual shape\r\n            if (e.target === list) {\r\n                e.preventDefault();\r\n                e.dataTransfer.dropEffect = 'move';\r\n                list.classList.add('drag-over');\r\n            }\r\n        });\r\n        \r\n        list.addEventListener('dragleave', (e) => {\r\n            // Only respond if we're leaving the shape list\r\n            if (e.target === list) {\r\n                list.classList.remove('drag-over');\r\n            }\r\n        });\r\n        \r\n        list.addEventListener('drop', (e) => {\r\n            e.preventDefault();\r\n            list.classList.remove('drag-over');\r\n            \r\n            const data = e.dataTransfer.getData('text/plain');\r\n            if (!data) return;\r\n            \r\n            try {\r\n                const dragData = JSON.parse(data);\r\n                const { shapeIndex, sourceGroup } = dragData;\r\n                \r\n                // Only process if this is a different group\r\n                if (sourceGroup && sourceGroup !== currentGroup) {\r\n                    this.graphicsEditor.groupManager.moveToGroup(\r\n                        parseInt(shapeIndex),\r\n                        sourceGroup,\r\n                        currentGroup\r\n                    );\r\n                }\r\n            } catch (err) {\r\n                console.error('Error processing drop in shape list:', err);\r\n            }\r\n        });\r\n    }\r\n\r\n}",
+        "script": "class GE_UIManager {\r\n    constructor(gameEditor, graphicsEditor) {\r\n        this.gameEditor = gameEditor;\r\n        this.graphicsEditor = graphicsEditor;\r\n        this.mouse = new window.THREE.Vector2();\r\n        this.raycaster = new window.THREE.Raycaster();\r\n        this.isDragging = false;\r\n        this.clickStartTime = 0;\r\n    }    \r\n     \r\n\r\n    init() {   \r\n        this.initEventListeners();\r\n    }\r\n    \r\n    \r\n    \r\n    initEventListeners() {\r\n        // Button event listeners\r\n        const buttonMappings = {\r\n            'generate-isometric': this.showIsometricModal.bind(this),\r\n        };\r\n        Object.entries(buttonMappings).forEach(([id, handler]) => {\r\n            const button = document.getElementById(id);\r\n            if (button) button.addEventListener('click', handler);\r\n        });\r\n\r\n        // Canvas interaction\r\n        this.graphicsEditor.canvas.addEventListener('mousedown', this.handleMouseDown.bind(this));\r\n        this.graphicsEditor.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));\r\n        this.graphicsEditor.canvas.addEventListener('mouseup', this.handleMouseUp.bind(this));\r\n\r\n        // Additional event listeners\r\n\r\n        \r\n        // Move modal listeners\r\n\r\n        // Isometric modal listeners\r\n        document.getElementById('iso-cancel').addEventListener('click', () => {\r\n            document.getElementById('modal-generateIsoSprites').classList.remove('show');\r\n        });\r\n    }\r\n    handleMouseDown(event) {\r\n        this.isDragging = false;\r\n        this.clickStartTime = Date.now();\r\n    }\r\n\r\n    handleMouseMove() {\r\n        if (Date.now() - this.clickStartTime > 100) {\r\n            this.isDragging = true;\r\n        }\r\n    }\r\n\r\n    handleMouseUp(event) {\r\n        if (this.isDragging) return;\r\n    \r\n        const rect = this.graphicsEditor.canvas.getBoundingClientRect();\r\n        this.mouse.x = ((event.clientX - rect.left) / this.graphicsEditor.canvas.clientWidth) * 2 - 1;\r\n        this.mouse.y = -((event.clientY - rect.top) / this.graphicsEditor.canvas.clientHeight) * 2 + 1;\r\n    \r\n        this.raycaster.setFromCamera(this.mouse, this.graphicsEditor.sceneRenderer.camera);\r\n    \r\n        // Instead of looking only at scene.children, search through all descendant meshes\r\n        const meshes = [];\r\n        this.graphicsEditor.rootGroup.traverse(obj => {\r\n            if (obj.isMesh && obj.userData.isShape) {\r\n                meshes.push(obj);\r\n            }\r\n        });\r\n    \r\n        const intersects = this.raycaster.intersectObjects(meshes, true);\r\n    \r\n        if (intersects.length > 0) {\r\n            // Find the parent mesh with the isShape flag if we've hit a child mesh\r\n            let hitObject = intersects[0].object;\r\n            while (hitObject && !hitObject.userData.isShape) {\r\n                hitObject = hitObject.parent;\r\n            }\r\n            \r\n            if (hitObject && hitObject.userData.index !== undefined) {\r\n                this.graphicsEditor.selectShape(hitObject.userData.index);\r\n            }\r\n        }\r\n    }\r\n    \r\n\r\n    showIsometricModal() {\r\n        document.getElementById('modal-generateIsoSprites').classList.add('show');\r\n    }\r\n    displayIsometricSprites(sprites) {\r\n        const modal = document.createElement('div');\r\n        modal.style.cssText = `\r\n            position: fixed; top: 0; left: 0; width: 100%; height: 100%; \r\n            background-color: rgba(0, 0, 0, 0.7); z-index: 1000; \r\n            display: flex; align-items: center; justify-content: center;\r\n        `;\r\n        const content = document.createElement('div');\r\n        content.style.cssText = `\r\n            background: #333; padding: 20px; border-radius: 8px; \r\n            max-width: 80%; max-height: 80%; overflow: auto;\r\n        `;\r\n    \r\n        const angleLabels = ['NE', 'N', 'NW', 'W', 'SW', 'S', 'SE', 'E']; // Labels for 8 angles\r\n    \r\n        for (const animType in sprites) {\r\n            const animSection = document.createElement('div');\r\n            const title = document.createElement('h3');\r\n            title.textContent = `${animType} Animation`;\r\n            title.style.color = '#e0e0e0';\r\n            animSection.appendChild(title);\r\n    \r\n            // Create a container for all angles\r\n            const anglesContainer = document.createElement('div');\r\n            anglesContainer.style.cssText = `margin: 10px 0;`;\r\n    \r\n            // For each angle (0-7)\r\n            for (let angle = 0; angle < 8; angle++) {\r\n                const angleSection = document.createElement('div');\r\n    \r\n                const grid = document.createElement('div');\r\n                grid.style.cssText = `\r\n                    display: grid; \r\n                    grid-template-columns: repeat(${Math.min(sprites[animType].length, 4)}, 1fr); \r\n                    gap: 5px; \r\n                    margin-bottom: 15px;\r\n                `;\r\n    \r\n                // Add all frames for this specific angle\r\n                sprites[animType].forEach(frame => {\r\n                    const img = document.createElement('img');\r\n                    img.src = frame[angle]; // Get the specific angle's sprite\r\n                    img.style.maxWidth = '100%';\r\n                    grid.appendChild(img);\r\n                });\r\n    \r\n                angleSection.appendChild(grid);\r\n                anglesContainer.appendChild(angleSection);\r\n            }\r\n    \r\n            animSection.appendChild(anglesContainer);\r\n            content.appendChild(animSection);\r\n        }\r\n    \r\n        const closeButton = document.createElement('button');\r\n        closeButton.textContent = 'Close';\r\n        closeButton.style.cssText = `\r\n            margin-top: 20px; padding: 8px 16px; background-color: #4CAF50; \r\n            color: #fff; border: none; border-radius: 6px; cursor: pointer;\r\n        `;\r\n        closeButton.addEventListener('click', () => document.body.removeChild(modal));\r\n        content.appendChild(closeButton);\r\n        modal.appendChild(content);\r\n        document.body.appendChild(modal);\r\n    }\r\n    \r\n    createGroupInspector(group) {\r\n        console.log('create group inspector', group);\r\n        const inspector = document.getElementById('inspector');\r\n        inspector.innerHTML = \"\";\r\n        inspector.className = 'inspector';\r\n\r\n        \r\n        this.addFormRow(inspector, 'X Scale', 'number', 'scaleX', group.scale.x || 1, { min: 0.1, step: 0.1 });\r\n        this.addFormRow(inspector, 'Y Scale', 'number', 'scaleY', group.scale.y || 1, { min: 0.1, step: 0.1 });\r\n        this.addFormRow(inspector, 'Z Scale', 'number', 'scaleZ', group.scale.z || 1, { min: 0.1, step: 0.1 });\r\n        // Position inputs\r\n        this.addFormRow(inspector, 'X Position', 'number', 'x', group.position.x || 0, { step: 0.1 });\r\n        this.addFormRow(inspector, 'Y Position', 'number', 'y', group.position.y || 0, { step: 0.1 });\r\n        this.addFormRow(inspector, 'Z Position', 'number', 'z', group.position.z || 0, { step: 0.1 });\r\n        \r\n        // Rotation inputs\r\n        this.addFormRow(inspector, 'X Rotation', 'number', 'rotationX', group.rotation.x || 0, { step: 5 });\r\n        this.addFormRow(inspector, 'Y Rotation', 'number', 'rotationY', group.rotation.y || 0, { step: 5 });\r\n        this.addFormRow(inspector, 'Z Rotation', 'number', 'rotationZ', group.rotation.z || 0, { step: 5 });\r\n        \r\n    }\r\n\r\n    createInspector(shape) {\r\n        console.log('create shape inspector', shape);\r\n        const inspector = document.getElementById('inspector');\r\n        inspector.innerHTML = \"\";\r\n        inspector.className = 'inspector';\r\n\r\n        this.addFormRow(inspector, 'Name', 'text', 'name', shape.name || \"\");\r\n        \r\n        // Type selector\r\n        this.addFormRow(inspector, 'Type', 'select', 'type', shape.type, {\r\n            options: ['cube', 'sphere', 'box', 'cylinder', 'cone', 'torus', 'tetrahedron', 'gltf'],\r\n            change: (e) => {\r\n                let currentShape = this.graphicsEditor.getFrameShape();\r\n                let newValue = e.target.value;\r\n                if (newValue != 'gltf') {\r\n                    delete currentShape.url\r\n                }                 \r\n                currentShape.type = newValue;\r\n                this.graphicsEditor.refreshShapes(false);\r\n            }\r\n        });\r\n        \r\n        if (shape.type === 'gltf') {            \r\n            let input = this.addFormRow(inspector, 'Model', 'file', 'url', shape.url, { 'change' :  async (e) => {\r\n                e.preventDefault();\r\n\r\n                // Get the file from the input element\r\n                const file = e.target.files[0]; // Access the file object\r\n                if (!file) {\r\n                    console.error('No file selected');\r\n                    return;\r\n                }\r\n                // // Create FormData and append the file\r\n                 const formData = new FormData();\r\n                 formData.append('gltfFile', file); // 'gltfFile' matches the multer.single('gltfFile') on the server\r\n\r\n                try {\r\n                     const response = await fetch('/upload-model', {\r\n                         method: 'POST',\r\n                         body: formData // Send the FormData with the file\r\n                     });\r\n\r\n                     const result = await response.json();\r\n                     shape.url = result.filePath; \r\n                     this.graphicsEditor.getFrameShape().url = result.filePath;\r\n                     this.graphicsEditor.refreshShapes(false);\r\n                } catch (error) {\r\n                     console.error('Error uploading file:', error);\r\n                }\r\n            }});\r\n            input.setAttribute(\"accept\",\".gltf\");\r\n        }\r\n        // Color picker\r\n        this.addFormRow(inspector, 'Color', 'color', 'color', shape.color);\r\n        \r\n        this.addFormRow(inspector, 'X Scale', 'number', 'scaleX', shape.scaleX || 1, { min: 0.1, step: 0.1 });\r\n        this.addFormRow(inspector, 'Y Scale', 'number', 'scaleY', shape.scaleY || 1, { min: 0.1, step: 0.1 });\r\n        this.addFormRow(inspector, 'Z Scale', 'number', 'scaleZ', shape.scaleZ || 1, { min: 0.1, step: 0.1 });\r\n        // Position inputs\r\n        this.addFormRow(inspector, 'X Position', 'number', 'x', shape.x || 0, { step: 0.1 });\r\n        this.addFormRow(inspector, 'Y Position', 'number', 'y', shape.y || 0, { step: 0.1 });\r\n        this.addFormRow(inspector, 'Z Position', 'number', 'z', shape.z || 0, { step: 0.1 });\r\n        \r\n        // Rotation inputs\r\n        this.addFormRow(inspector, 'X Rotation', 'number', 'rotationX', shape.rotationX || 0, { step: 5 });\r\n        this.addFormRow(inspector, 'Y Rotation', 'number', 'rotationY', shape.rotationY || 0, { step: 5 });\r\n        this.addFormRow(inspector, 'Z Rotation', 'number', 'rotationZ', shape.rotationZ || 0, { step: 5 });\r\n        \r\n        // Size inputs\r\n        if (['cube', 'sphere', 'tetrahedron', 'torus'].includes(shape.type)) {\r\n            this.addFormRow(inspector, 'Size', 'number', 'size', shape.size || 2, { min: 0.1, step: 0.1 });\r\n        }\r\n        \r\n        if (shape.type === 'box') {\r\n            this.addFormRow(inspector, 'Width', 'number', 'width', shape.width || 2, { min: 0.1, step: 0.1 });\r\n            this.addFormRow(inspector, 'Height', 'number', 'height', shape.height || 2, { min: 0.1, step: 0.1 });\r\n            this.addFormRow(inspector, 'Depth', 'number', 'depth', shape.depth || 2, { min: 0.1, step: 0.1 });\r\n        }\r\n        \r\n        if (['cylinder', 'cone'].includes(shape.type)) {\r\n            this.addFormRow(inspector, 'Size', 'number', 'size', shape.size || 2, { min: 0.1, step: 0.1 });\r\n            this.addFormRow(inspector, 'Height', 'number', 'height', shape.height || 3, { min: 0.1, step: 0.1 });\r\n        }\r\n        \r\n        if (shape.type === 'torus') {\r\n            this.addFormRow(inspector, 'Tube Size', 'number', 'tubeSize', shape.tubeSize || shape.size / 6, { min: 0.1, step: 0.1 });\r\n        }\r\n    }\r\n\r\n\r\n    addFormRow(container, label, type, property, value, options = {}) {\r\n        const row = document.createElement('div');\r\n        row.className = 'form-row';\r\n        \r\n        const labelElement = document.createElement('label');\r\n        labelElement.textContent = label;\r\n        row.appendChild(labelElement);\r\n        \r\n        let input;\r\n        \r\n        if (type === 'select') {\r\n            input = document.createElement('select');\r\n            input.setAttribute('data-property', property);\r\n            (options.options || []).forEach(optionValue => {\r\n                const option = document.createElement('option');\r\n                option.value = optionValue;\r\n                option.textContent = optionValue;\r\n                if (value === optionValue) {\r\n                    option.selected = true;\r\n                }\r\n                input.appendChild(option);\r\n            });\r\n        } else if(type === \"color\") {\r\n            input = document.createElement('input');\r\n            input.type = \"text\";\r\n            input.value = value;\r\n            input.setAttribute('data-property', property);\r\n            \r\n            let colorInput = document.createElement('input');\r\n            colorInput.type = \"color\";\r\n            colorInput.value = value;\r\n            colorInput.setAttribute('data-property', property + '-color');\r\n    \r\n            colorInput.addEventListener('change', () => {\r\n                let newValue = colorInput.value;                \r\n                this.graphicsEditor.getFrameShape()[property] = newValue;\r\n                this.graphicsEditor.refreshShapes(true);\r\n            });\r\n            row.appendChild(colorInput);\r\n        } else if(type === \"file\") {\r\n            let inputContainer = document.createElement('div');\r\n            inputContainer.style = \"flex: 1; display: flex; flex-direction: column; font-size: .75em;\";\r\n            input = document.createElement('input');\r\n            input.style = \"width: calc(100% - 18px);\"\r\n            input.type = type;\r\n            input.setAttribute('data-property', property);\r\n            inputContainer.appendChild(input);\r\n            if( value ) {\r\n                let urlName = document.createElement('span');\r\n                urlName.innerText = value;            \r\n                inputContainer.appendChild(urlName);\r\n            }\r\n            row.appendChild(inputContainer);\r\n            container.appendChild(row);\r\n            input.addEventListener('change', options.change );\r\n            return input;\r\n        } else {\r\n            input = document.createElement('input');\r\n            input.type = type;\r\n            input.value = value;\r\n            input.setAttribute('data-property', property);\r\n            \r\n            if (type === 'number') {\r\n                input.min = options.min !== undefined ? options.min : -64;\r\n                input.max = options.max !== undefined ? options.max : 64;\r\n                input.step = options.step || 1;\r\n            }\r\n        }\r\n        \r\n        input.addEventListener('change', options.change || ((e) => {\r\n            let newValue = e.target.value;\r\n            if (type === 'number') {\r\n                newValue = parseFloat(newValue);\r\n                console.log('change', this.graphicsEditor.shapeManager.currentTransformTarget);\r\n                // If we're editing a transform property, also update the transform target\r\n                if (this.graphicsEditor.shapeManager.currentTransformTarget && ['x', 'y', 'z', 'rotationX', 'rotationY', 'rotationZ', 'scaleX', 'scaleY', 'scaleZ'].includes(property)) {\r\n                    if (property === 'x') this.graphicsEditor.shapeManager.currentTransformTarget.position.x = newValue;\r\n                    if (property === 'y') this.graphicsEditor.shapeManager.currentTransformTarget.position.y = newValue;\r\n                    if (property === 'z') this.graphicsEditor.shapeManager.currentTransformTarget.position.z = newValue;\r\n                    \r\n                    if (property === 'rotationX') this.graphicsEditor.shapeManager.currentTransformTarget.rotation.x = this.graphicsEditor.rotationUtils.degToRad(newValue);\r\n                    if (property === 'rotationY') this.graphicsEditor.shapeManager.currentTransformTarget.rotation.y = this.graphicsEditor.rotationUtils.degToRad(newValue);\r\n                    if (property === 'rotationZ') this.graphicsEditor.shapeManager.currentTransformTarget.rotation.z = this.graphicsEditor.rotationUtils.degToRad(newValue);\r\n                    \r\n                    if (property === 'scaleX') this.graphicsEditor.shapeManager.currentTransformTarget.scale.x = newValue;\r\n                    if (property === 'scaleY') this.graphicsEditor.shapeManager.currentTransformTarget.scale.y = newValue;\r\n                    if (property === 'scaleZ') this.graphicsEditor.shapeManager.currentTransformTarget.scale.z = newValue;\r\n                    \r\n                    // Update gizmo position after directly changing values\r\n                }\r\n            } else if(type === 'file') {\r\n                return;\r\n            }\r\n            \r\n            this.updatePropertyValue(property, newValue);\r\n            this.graphicsEditor.refreshShapes(false);\r\n        }));\r\n        \r\n        row.appendChild(input);\r\n        container.appendChild(row);\r\n        return input;\r\n    }\r\n    updatePropertyValue(property, value) {\r\n        const shapeData = this.graphicsEditor.getFrameShape();\r\n        if (shapeData) {\r\n            shapeData[property] = value;\r\n            return;\r\n        }\r\n        let groupData = this.graphicsEditor.getCurrentGroup();\r\n        if(!groupData){\r\n            groupData = {};\r\n            let currentFrame = this.graphicsEditor.getCurrentFrame();\r\n            if(currentFrame) {\r\n                currentFrame[this.graphicsEditor.state.currentGroup] = groupData;\r\n            }\r\n        }\r\n        \r\n        // Handle transform properties\r\n        if (property.startsWith('scale')) {\r\n            if(!groupData.scale) groupData.scale = {};\r\n            const axis = property.charAt(property.length - 1).toLowerCase();\r\n            groupData.scale[axis] = value;\r\n        } else if (property.startsWith('rotation')) {\r\n            if(!groupData.rotation) groupData.rotation = {};\r\n            const axis = property.charAt(property.length - 1).toLowerCase();\r\n            groupData.rotation[axis] = value;\r\n        } else if (['x', 'y', 'z'].includes(property)) {\r\n            if(!groupData.position) groupData.position = {};\r\n            groupData.position[property] = value;\r\n        }\r\n    }\r\n\r\n  \r\n\r\n    updateList() {\r\n        const frameList = document.getElementById('frame-list');\r\n        frameList.innerHTML = '';\r\n        const groupList = document.getElementById('group-list');\r\n        groupList.innerHTML = '';\r\n        const shapeList = document.getElementById('shape-list');\r\n        shapeList.innerHTML = '';\r\n        this.updateFrameList();\r\n        this.graphicsEditor.groupManager.updateGroupList();\r\n        this.updateShapeList();\r\n    }\r\n\r\n    updateFrameList() {\r\n        const list = document.getElementById('frame-list');\r\n        // Animation selector\r\n        const animSelector = document.createElement('select');\r\n        animSelector.style.marginBottom = '10px';\r\n\r\n        const option = document.createElement('option');\r\n        option.value = '__model__';\r\n        option.textContent = 'model';\r\n        if (this.graphicsEditor.state.editingModel) option.selected = true;\r\n        animSelector.appendChild(option);\r\n\r\n\r\n        Object.keys(this.graphicsEditor.state.renderData.animations).forEach(anim => {\r\n            const option = document.createElement('option');\r\n            option.value = anim;\r\n            option.textContent = anim;\r\n            if (anim === this.graphicsEditor.state.currentAnimation) option.selected = true;\r\n            animSelector.appendChild(option);\r\n        });\r\n        animSelector.addEventListener('change', (e) => {\r\n            this.graphicsEditor.setPreviewAnimationState(false);\r\n            if(e.target.value == '__model__'){\r\n                this.graphicsEditor.state.editingModel = true;\r\n                this.graphicsEditor.state.currentAnimation = \"\";                \r\n            } else {\r\n                this.graphicsEditor.state.editingModel = false;\r\n                this.graphicsEditor.state.currentAnimation = animSelector.value;                \r\n            }\r\n            this.graphicsEditor.state.currentFrame = 0;\r\n            this.graphicsEditor.state.selectedShapeIndex = -1;\r\n            this.graphicsEditor.refreshShapes(false);\r\n            requestAnimationFrame(() => {\r\n                this.graphicsEditor.shapeManager.selectShape(0);\r\n            })\r\n        });\r\n        list.appendChild(animSelector);\r\n        if(this.graphicsEditor.state.editingModel) return;\r\n        // Frame list\r\n        const frameList = document.createElement('div');\r\n        frameList.style.marginBottom = '10px';\r\n        this.graphicsEditor.getCurrentAnimation().forEach((frame, index) => {\r\n            const frameItem = document.createElement('div');\r\n            frameItem.textContent = `Frame ${index + 1}`;\r\n            frameItem.style.padding = '5px';\r\n            frameItem.style.cursor = 'pointer';\r\n            if (index === this.graphicsEditor.state.currentFrame) frameItem.style.backgroundColor = '#555';\r\n            frameItem.addEventListener('click', () => {\r\n                this.graphicsEditor.setPreviewAnimationState(false);\r\n                this.graphicsEditor.state.currentFrame = index;  \r\n                this.graphicsEditor.state.selectedShapeIndex = -1;\r\n                this.graphicsEditor.refreshShapes(false);\r\n                requestAnimationFrame(() => {\r\n                    this.graphicsEditor.shapeManager.selectShape(0);\r\n                })\r\n            });\r\n            frameList.appendChild(frameItem);\r\n        });\r\n        list.appendChild(frameList);\r\n    }\r\n\r\n\r\n    updateShapeList() {\r\n        const list = document.getElementById('shape-list');\r\n        if (!list) return;\r\n        \r\n\r\n        // Get shapes from the currently selected group\r\n        const currentGroup = this.graphicsEditor.state.currentGroup;\r\n        const selectedGroup = this.graphicsEditor.getMergedGroup(currentGroup);\r\n        const shapes = selectedGroup && selectedGroup.shapes ? selectedGroup.shapes : selectedGroup || [];\r\n       \r\n        // Create shape list items\r\n        for (let i = 0; i < shapes.length; i++) {\r\n            const shape = shapes[i];\r\n            if (!shape) continue;\r\n           \r\n            const shapeItem = document.createElement('div');\r\n            shapeItem.classList.add('shape-item');\r\n           \r\n            // Mark as selected if this shape is the selected one and we're in the right group\r\n            if (i === this.graphicsEditor.state.selectedShapeIndex) {\r\n                shapeItem.classList.add('selected');\r\n            }\r\n           \r\n            shapeItem.textContent = `${shape.name} - ${shape.type || 'Shape'}`;\r\n            shapeItem.addEventListener('click', (e) => {                \r\n                this.graphicsEditor.shapeManager.selectShape(parseInt(e.target.dataset.index));\r\n            });\r\n           \r\n            // Make the shape draggable\r\n            shapeItem.draggable = true;\r\n            shapeItem.dataset.index = i;\r\n            shapeItem.dataset.group = currentGroup;\r\n            \r\n            // Add dragstart event to set the drag data\r\n            shapeItem.addEventListener('dragstart', (e) => {\r\n                // Store only the selected shape's index and source group\r\n                const data = {\r\n                    shapeIndex: i,\r\n                    sourceGroup: currentGroup\r\n                };\r\n                \r\n                // Set the drag data\r\n                e.dataTransfer.setData('text/plain', JSON.stringify(data));\r\n                \r\n                // Add a visual indicator\r\n                shapeItem.classList.add('dragging');\r\n                \r\n                // Set drag effect\r\n                e.dataTransfer.effectAllowed = 'move';\r\n            });\r\n            \r\n            // Add dragend event to clean up\r\n            shapeItem.addEventListener('dragend', () => {\r\n                shapeItem.classList.remove('dragging');\r\n            });\r\n           \r\n            list.appendChild(shapeItem);\r\n        }\r\n        \r\n        // Set up the shape list container as a drop target\r\n        list.addEventListener('dragover', (e) => {\r\n            // Only respond if we're dragging over the shape list itself, not an individual shape\r\n            if (e.target === list) {\r\n                e.preventDefault();\r\n                e.dataTransfer.dropEffect = 'move';\r\n                list.classList.add('drag-over');\r\n            }\r\n        });\r\n        \r\n        list.addEventListener('dragleave', (e) => {\r\n            // Only respond if we're leaving the shape list\r\n            if (e.target === list) {\r\n                list.classList.remove('drag-over');\r\n            }\r\n        });\r\n        \r\n        list.addEventListener('drop', (e) => {\r\n            e.preventDefault();\r\n            list.classList.remove('drag-over');\r\n            \r\n            const data = e.dataTransfer.getData('text/plain');\r\n            if (!data) return;\r\n            \r\n            try {\r\n                const dragData = JSON.parse(data);\r\n                const { shapeIndex, sourceGroup } = dragData;\r\n                \r\n                // Only process if this is a different group\r\n                if (sourceGroup && sourceGroup !== currentGroup) {\r\n                    this.graphicsEditor.groupManager.moveToGroup(\r\n                        parseInt(shapeIndex),\r\n                        sourceGroup,\r\n                        currentGroup\r\n                    );\r\n                }\r\n            } catch (err) {\r\n                console.error('Error processing drop in shape list:', err);\r\n            }\r\n        });\r\n    }\r\n\r\n}",
         "fileName": "GE_UIManager"
       },
       "GE_EventManager": {
@@ -26156,7 +19050,7 @@ const DEFAULT_PROJECT_CONFIG = {
       "GE_AnimationManager": {
         "title": "GE_AnimationManager",
         "fileName": "GE_AnimationManager",
-        "script": "class GE_AnimationManager {\r\n    constructor(gameEditor, graphicsEditor) {\r\n        this.gameEditor = gameEditor;\r\n        this.graphicsEditor = graphicsEditor;\r\n\r\n        this.isPreviewingAnimation = false;\r\n    }    \r\n\r\n    init() {   \r\n        this.initEventListeners();\r\n    }\r\n    \r\n    initEventListeners() {\r\n        // Button event listeners\r\n        const buttonMappings = {\r\n            'preview-animation': this.togglePreview.bind(this),\r\n            'add-animation': this.addNewAnimation.bind(this),\r\n            'delete-animation': this.deleteAnimation.bind(this),\r\n            'add-frame': this.addFrame.bind(this),\r\n            'delete-frame': this.deleteFrame.bind(this)\r\n        };\r\n        Object.entries(buttonMappings).forEach(([id, handler]) => {\r\n            const button = document.getElementById(id);\r\n            if (button) button.addEventListener('click', handler);\r\n        });\r\n    }\r\n\r\n    setPreviewAnimationState(isPreviewing) {\r\n        this.isPreviewingAnimation = isPreviewing;\r\n        let btn = document.getElementById('preview-animation');\r\n        if (this.isPreviewingAnimation) {\r\n            btn.classList.add(\"active\");\r\n            this.graphicsEditor.gizmoManager.destroyGizmo();\r\n            this.graphicsEditor.shapeManager.destroyOutlines();\r\n        } else {\r\n            this.graphicsEditor.state.currentFrame = 0;\r\n            btn.classList.remove(\"active\");\r\n        }\r\n    }\r\n\r\n    async animatePreview() {\r\n        if (!this.isPreviewingAnimation) return;\r\n        this.graphicsEditor.state.currentFrame = (this.graphicsEditor.state.currentFrame + 1) % this.graphicsEditor.getCurrentAnimation().length;\r\n        await this.graphicsEditor.renderShapes(false);\r\n        setTimeout(this.animatePreview.bind(this), 166); // ~6 FPS, adjust as needed\r\n    }\r\n    \r\n    async togglePreview(e) {\r\n        this.isPreviewingAnimation = !this.isPreviewingAnimation;\r\n        await this.animatePreview();\r\n        this.setPreviewAnimationState(this.isPreviewingAnimation);            \r\n    }\r\n\r\n    \r\n\r\n\r\n    addNewAnimation() {\r\n        const animName = prompt(\"Enter animation name:\", `anim${Object.keys(this.graphicsEditor.state.renderData.animations).length + 1}`);\r\n        if (animName && !this.graphicsEditor.state.renderData.animations[animName]) {\r\n            this.graphicsEditor.state.renderData.animations[animName] = [ ...this.graphicsEditor.state.renderData.animations[\"idle\"] ];\r\n            this.graphicsEditor.state.currentAnimation = animName;\r\n            this.graphicsEditor.state.currentFrame = 0;        \r\n            this.graphicsEditor.refreshShapes(true);\r\n        }\r\n    }\r\n\r\n    deleteAnimation() {\r\n        if (this.graphicsEditor.state.currentAnimation !== \"idle\") {\r\n            delete this.graphicsEditor.getCurrentAnimation();\r\n            this.graphicsEditor.state.currentAnimation = \"idle\";\r\n            this.graphicsEditor.state.currentFrame = 0;\r\n            this.graphicsEditor.state.selectedShapeIndex = -1;\r\n            this.graphicsEditor.refreshShapes(true);\r\n        }\r\n    }\r\n\r\n    addFrame() {\r\n        if (this.graphicsEditor.getCurrentAnimation().length > 0) {\r\n            const currentFrame = this.graphicsEditor.getCurrentFrame();\r\n            const newFrame = { shapes: JSON.parse(JSON.stringify(currentFrame.shapes)) };\r\n            this.graphicsEditor.getCurrentAnimation().splice(this.graphicsEditor.state.currentFrame + 1, 0, newFrame);                    \r\n            this.graphicsEditor.state.currentFrame++;\r\n            this.graphicsEditor.refreshShapes(true);\r\n        }\r\n    }\r\n\r\n    deleteFrame() {\r\n        let currentAnimation = getCurrentAnimation();\r\n        if (currentAnimation.length > 1) {\r\n            currentAnimation.splice(this.graphicsEditor.state.currentFrame, 1);\r\n            \r\n            this.graphicsEditor.state.currentFrame = Math.min(this.graphicsEditor.state.currentFrame, currentAnimation.length - 1);\r\n            this.graphicsEditor.refreshShapes(true);\r\n        }\r\n    }\r\n}"
+        "script": "class GE_AnimationManager {\r\n    constructor(gameEditor, graphicsEditor) {\r\n        this.gameEditor = gameEditor;\r\n        this.graphicsEditor = graphicsEditor;\r\n\r\n        this.isPreviewingAnimation = false;\r\n    }    \r\n\r\n    init() {   \r\n        this.initEventListeners();\r\n    }\r\n    \r\n    initEventListeners() {\r\n        // Button event listeners\r\n        const buttonMappings = {\r\n            'preview-animation': this.togglePreview.bind(this),\r\n            'add-animation': this.addNewAnimation.bind(this),\r\n            'delete-animation': this.deleteAnimation.bind(this),\r\n            'add-frame': this.addFrame.bind(this),\r\n            'delete-frame': this.deleteFrame.bind(this)\r\n        };\r\n        Object.entries(buttonMappings).forEach(([id, handler]) => {\r\n            const button = document.getElementById(id);\r\n            if (button) button.addEventListener('click', handler);\r\n        });\r\n    }\r\n\r\n    setPreviewAnimationState(isPreviewing) {\r\n        this.isPreviewingAnimation = isPreviewing;\r\n        let btn = document.getElementById('preview-animation');\r\n        if (this.isPreviewingAnimation) {\r\n            btn.classList.add(\"active\");\r\n            this.graphicsEditor.gizmoManager.destroyGizmo();\r\n            this.graphicsEditor.shapeManager.destroyOutlines();\r\n        } else {\r\n            this.graphicsEditor.state.currentFrame = 0;\r\n            btn.classList.remove(\"active\");\r\n        }\r\n    }\r\n\r\n    async animatePreview() {\r\n        if (!this.isPreviewingAnimation) return;\r\n        this.graphicsEditor.state.currentFrame = (this.graphicsEditor.state.currentFrame + 1) % this.graphicsEditor.getCurrentAnimation().length;\r\n        await this.graphicsEditor.renderShapes(false);\r\n        setTimeout(this.animatePreview.bind(this), 166); // ~6 FPS, adjust as needed\r\n    }\r\n    \r\n    async togglePreview(e) {\r\n        this.isPreviewingAnimation = !this.isPreviewingAnimation;\r\n        await this.animatePreview();\r\n        this.setPreviewAnimationState(this.isPreviewingAnimation);            \r\n    }\r\n\r\n    \r\n\r\n\r\n    addNewAnimation() {\r\n        const animName = prompt(\"Enter animation name:\", `anim${Object.keys(this.graphicsEditor.state.renderData.animations).length + 1}`);\r\n        if (animName && !this.graphicsEditor.state.renderData.animations[animName]) {\r\n            this.graphicsEditor.state.renderData.animations[animName] = [ ...this.graphicsEditor.state.renderData.animations[\"idle\"] ];\r\n            this.graphicsEditor.state.currentAnimation = animName;\r\n            this.graphicsEditor.state.currentFrame = 0;        \r\n            this.graphicsEditor.refreshShapes(true);\r\n        }\r\n    }\r\n\r\n    deleteAnimation() {\r\n        if (this.graphicsEditor.state.currentAnimation !== \"idle\") {\r\n            delete this.graphicsEditor.getCurrentAnimation();\r\n            this.graphicsEditor.state.currentAnimation = \"idle\";\r\n            this.graphicsEditor.state.currentFrame = 0;\r\n            this.graphicsEditor.state.selectedShapeIndex = -1;\r\n            this.graphicsEditor.refreshShapes(true);\r\n        }\r\n    }\r\n\r\n    addFrame() {\r\n\r\n        let currentFrame = this.graphicsEditor.getCurrentFrame();\r\n        if(!currentFrame){\r\n            currentFrame = {};\r\n        }\r\n        const newFrame = { shapes: JSON.parse(JSON.stringify(currentFrame.shapes || [])) };\r\n        this.graphicsEditor.getCurrentAnimation().splice(this.graphicsEditor.state.currentFrame + 1, 0, newFrame);                    \r\n        this.graphicsEditor.state.currentFrame++;\r\n        this.graphicsEditor.refreshShapes(true);\r\n    \r\n    }\r\n\r\n    deleteFrame() {\r\n        let currentAnimation = this.graphicsEditor.getCurrentAnimation();\r\n        if (currentAnimation.length > 1) {\r\n            currentAnimation.splice(this.graphicsEditor.state.currentFrame, 1);\r\n            \r\n            this.graphicsEditor.state.currentFrame = Math.min(this.graphicsEditor.state.currentFrame, currentAnimation.length - 1);\r\n            this.graphicsEditor.refreshShapes(true);\r\n        }\r\n    }\r\n}"
       },
       "GE_SceneRenderer": {
         "title": "GE_SceneRenderer",
@@ -26166,7 +19060,7 @@ const DEFAULT_PROJECT_CONFIG = {
       "GE_ShapeManager": {
         "title": "GE_ShapeManager",
         "fileName": "GE_ShapeManager",
-        "script": "class GE_ShapeManager {\r\n    constructor(gameEditor, graphicsEditor) {\r\n        this.gameEditor = gameEditor;\r\n        this.graphicsEditor = graphicsEditor;\r\n        this.originalMaterials = new Map();\r\n        \r\n    }    \r\n\r\n    init() {   \r\n        this.initEventListeners();\r\n\r\n    }\r\n    initEventListeners() {\r\n        // Button event listeners\r\n        const buttonMappings = {\r\n            'add-shape': this.addSelectedShape.bind(this),\r\n            'delete-shape': this.deleteSelectedShape.bind(this)\r\n        };\r\n        Object.entries(buttonMappings).forEach(([id, handler]) => {\r\n            const button = document.getElementById(id);\r\n            if (button) button.addEventListener('click', handler);\r\n        });\r\n        \r\n        document.getElementById('move-cancel').addEventListener('click', () => {            \r\n            const inspector = document.getElementById('inspector');\r\n            inspector.innerHTML = ``;\r\n        });\r\n    }\r\n    getShapeData(shapeId){\r\n        let currentGroup = this.graphicsEditor.getCurrentGroup();\r\n        currentGroup.shapes = currentGroup.shapes || [];\r\n        let shapeData = (currentGroup.shapes).find(s => s.id == shapeId);\r\n        if(this.graphicsEditor.state.editingModel){\r\n            shapeData = currentGroup.shapes[shapeId];\r\n        }\r\n        return shapeData;\r\n    }\r\n    selectShape(index) {\r\n        if (this.graphicsEditor.animationManager.isPreviewingAnimation) {\r\n            this.graphicsEditor.setPreviewAnimationState(false);\r\n        }\r\n        \r\n        // Toggle selection if clicking the same shape\r\n        this.graphicsEditor.state.selectedShapeIndex = (this.graphicsEditor.state.selectedShapeIndex === index) ? -1 : index;\r\n\r\n        // Update shape list and highlighting\r\n        this.graphicsEditor.uiManager.updateList();\r\n        this.highlightSelectedShape();\r\n        // Show inspector for selected shape\r\n        const shape = this.graphicsEditor.getMergedShape();\r\n        if (shape) {\r\n            this.graphicsEditor.createInspector(shape);\r\n            this.graphicsEditor.gizmoManager.transformSelectedObject();\r\n        } else {\r\n            this.graphicsEditor.gizmoManager.destroyGizmo();\r\n            this.graphicsEditor.groupManager.selectGroup(this.graphicsEditor.state.currentGroup);\r\n        }\r\n    }\r\n    destroyOutlines() {\r\n        // Remove existing outlines\r\n        this.graphicsEditor.sceneRenderer.scene.children.forEach(obj => {\r\n            if (obj.userData.isOutline) {\r\n                this.graphicsEditor.sceneRenderer.scene.remove(obj);\r\n                if (obj.geometry) obj.geometry.dispose();\r\n                if (obj.material) obj.material.dispose();\r\n            }\r\n        });\r\n    \r\n        // Reset any highlighted materials\r\n        this.originalMaterials.forEach((material, object) => {\r\n            object.material = material;\r\n        });\r\n        this.originalMaterials.clear();\r\n    }\r\n    highlightSelectedShape() {\r\n        this.destroyOutlines();\r\n\r\n    \r\n        // If no shape is selected or invalid selection, return\r\n        if (this.graphicsEditor.state.selectedShapeIndex < 0) {\r\n            return;\r\n        }\r\n    \r\n        // Get the selected group name from state\r\n        const currentGroup = this.graphicsEditor.state.currentGroup;\r\n        if (!currentGroup) {\r\n            console.warn(\"No group selected\");\r\n            return;\r\n        }\r\n    \r\n        // Find the THREE.Group with matching name under rootGroup\r\n        let selectedGroup = null;\r\n        this.graphicsEditor.rootGroup.traverse(obj => {\r\n            if (obj.isGroup && obj.name === currentGroup) {\r\n                selectedGroup = obj;\r\n            }\r\n        });\r\n    \r\n        if (!selectedGroup) {\r\n            console.warn(`No group found with name ${currentGroup}`);\r\n            return;\r\n        }\r\n    \r\n        const currentFrameData = this.graphicsEditor.getCurrentFrame();\r\n    \r\n        if (!currentFrameData) {\r\n            console.warn(\"No frame data found\");\r\n            return;\r\n        }\r\n    \r\n        const groupShapes = currentFrameData[currentGroup];\r\n    \r\n        if (!groupShapes || this.graphicsEditor.state.selectedShapeIndex >= groupShapes.length) {\r\n            console.warn(`Invalid shape index ${this.graphicsEditor.state.selectedShapeIndex} for group ${currentGroup}`);\r\n            return;\r\n        }\r\n    \r\n        // Find all meshes belonging to the selected shape within the group\r\n        const selectedMeshes = [];\r\n        selectedGroup.traverse(obj => {\r\n            if (obj.isMesh && (\r\n                // Direct shape object that matches the index\r\n                (obj.userData.isShape &&\r\n                 obj.userData.index === this.graphicsEditor.state.selectedShapeIndex) ||\r\n                // Parent is a shape object that matches the index\r\n                (obj.parent &&\r\n                 obj.parent.userData.isShape &&\r\n                 obj.parent.userData.index === this.graphicsEditor.state.selectedShapeIndex) ||\r\n                // GLTF child of selected shape that matches the index\r\n                (obj.userData.isGLTFChild &&\r\n                 obj.parent &&\r\n                 obj.parent.userData.index === this.graphicsEditor.state.selectedShapeIndex)\r\n            )) {\r\n                selectedMeshes.push(obj);\r\n            }\r\n        });\r\n    \r\n        // Handle highlighting for all relevant meshes\r\n        selectedMeshes.forEach(mesh => {\r\n            // Apply emissive highlight to original mesh\r\n            this.originalMaterials.set(mesh, mesh.material);\r\n            const highlightMaterial = mesh.material.clone();\r\n            highlightMaterial.emissive = new window.THREE.Color(0x555555);\r\n            highlightMaterial.emissiveIntensity = 0.5;\r\n            mesh.material = highlightMaterial;\r\n    \r\n            // Create the outline geometry\r\n            const outlineGeometry = mesh.geometry.clone();\r\n            const outlineMaterial = new window.THREE.MeshBasicMaterial({\r\n                color: 0xffff00,\r\n                side: window.THREE.BackSide\r\n            });\r\n    \r\n            // Create the outline mesh\r\n            const outline = new window.THREE.Mesh(outlineGeometry, outlineMaterial);\r\n            outline.userData.isOutline = true;\r\n            \r\n            // Create a new group to hold the outline\r\n            let outlineGroup = new window.THREE.Group();\r\n            outlineGroup.userData.isOutline = true;\r\n            \r\n            // Add the outline to the group\r\n            outlineGroup.add(outline);\r\n            \r\n            // Find all parent groups up to rootGroup and copy their transformations\r\n            let currentParent = mesh.parent;\r\n            let transformChain = [];\r\n            \r\n            while (currentParent && currentParent !== this.graphicsEditor.rootGroup) {\r\n                transformChain.unshift({\r\n                    position: currentParent.position.clone(),\r\n                    rotation: currentParent.rotation.clone(),\r\n                    scale: currentParent.scale.clone(),\r\n                    quaternion: currentParent.quaternion.clone()\r\n                });\r\n                currentParent = currentParent.parent;\r\n            }\r\n            \r\n            // Apply all parent transformations to our outline group\r\n            transformChain.forEach(transform => {\r\n                // Create a temporary group to apply each parent's transform\r\n                const tempGroup = new window.THREE.Group();\r\n                tempGroup.position.copy(transform.position);\r\n                tempGroup.rotation.copy(transform.rotation);\r\n                tempGroup.scale.copy(transform.scale);\r\n                \r\n                // Add our current group to this temp group\r\n                tempGroup.add(outlineGroup);\r\n                \r\n                // Move outlineGroup up one level\r\n                outlineGroup = tempGroup;\r\n                outlineGroup.userData.isOutline = true;\r\n            });\r\n            \r\n            // Add mesh's local transform\r\n            outline.position.copy(mesh.position);\r\n            outline.rotation.copy(mesh.rotation);\r\n            outline.scale.copy(mesh.scale);\r\n            \r\n            // Scale the outline slightly larger (in local space)\r\n            outline.scale.multiplyScalar(1.05);\r\n            \r\n            // Add the complete outline group to the scene\r\n            this.graphicsEditor.sceneRenderer.scene.add(outlineGroup);\r\n        });\r\n    }\r\n    addNewShape() {\r\n        const newShape = {\r\n            type: 'sphere',\r\n            size: 2,\r\n            color: '#ff0000',\r\n            x: 0,\r\n            y: 0,\r\n            z: 0,\r\n            rotationX: 0,\r\n            rotationY: 0,\r\n            rotationZ: 0\r\n        };\r\n        this.graphicsEditor.getCurrentGroup().shapes.push(newShape);\r\n        this.graphicsEditor.state.selectedShapeIndex = this.graphicsEditor.getCurrentGroup().shapes.length - 1;\r\n        this.graphicsEditor.refreshShapes(true); \r\n    }\r\n\r\n    addSelectedShape() {\r\n        if (this.graphicsEditor.state.selectedShapeIndex >= 0) {\r\n            const originalShape = this.graphicsEditor.state.editingModel ? \r\n                                    this.graphicsEditor.getCurrentGroup().shapes[this.graphicsEditor.state.selectedShapeIndex] : \r\n                                    this.graphicsEditor.getCurrentGroup().shapes.find(s => s.id == this.graphicsEditor.state.selectedShapeIndex);\r\n            const newShape = JSON.parse(JSON.stringify(originalShape));\r\n            this.graphicsEditor.getCurrentGroup().shapes.push(newShape);\r\n            this.graphicsEditor.state.selectedShapeIndex = this.graphicsEditor.getCurrentGroup().shapes.length - 1;\r\n            this.graphicsEditor.refreshShapes(true);\r\n        } else {\r\n            this.addNewShape();\r\n        }\r\n    }\r\n\r\n    deleteSelectedShape() {\r\n        if (this.graphicsEditor.state.selectedShapeIndex >= 0) {\r\n            this.graphicsEditor.getCurrentGroup().shapes.splice(this.graphicsEditor.state.selectedShapeIndex, 1);\r\n            if (this.graphicsEditor.getCurrentGroup().shapes.length > 0) {\r\n                this.graphicsEditor.state.selectedShapeIndex = Math.min(this.graphicsEditor.state.selectedShapeIndex, this.graphicsEditor.getCurrentGroup().shapes.length - 1);\r\n            } else {\r\n                this.graphicsEditor.state.selectedShapeIndex = -1;\r\n            }\r\n            this.graphicsEditor.refreshShapes(true);\r\n        }\r\n    }\r\n\r\n}"
+        "script": "class GE_ShapeManager {\r\n    constructor(gameEditor, graphicsEditor) {\r\n        this.gameEditor = gameEditor;\r\n        this.graphicsEditor = graphicsEditor;\r\n        this.originalMaterials = new Map();\r\n        \r\n    }    \r\n\r\n    init() {   \r\n        this.initEventListeners();\r\n\r\n    }\r\n    initEventListeners() {\r\n        // Button event listeners\r\n        const buttonMappings = {\r\n            'add-shape': this.addSelectedShape.bind(this),\r\n            'delete-shape': this.deleteSelectedShape.bind(this)\r\n        };\r\n        Object.entries(buttonMappings).forEach(([id, handler]) => {\r\n            const button = document.getElementById(id);\r\n            if (button) button.addEventListener('click', handler);\r\n        });\r\n        \r\n        document.getElementById('move-cancel').addEventListener('click', () => {            \r\n            const inspector = document.getElementById('inspector');\r\n            inspector.innerHTML = ``;\r\n        });\r\n    }\r\n    getShapeData(shapeId){\r\n        let currentGroup = this.graphicsEditor.getCurrentGroup();\r\n        if(!currentGroup){\r\n            currentGroup = { shapes: [] };\r\n            let currentAnimation = this.graphicsEditor.getCurrentAnimation();\r\n            let currentFrame = currentAnimation[this.graphicsEditor.state.currentFrame];\r\n            if(!currentFrame){\r\n                currentFrame = {};\r\n            }\r\n            currentFrame[this.graphicsEditor.state.currentGroup] = currentGroup;\r\n            currentAnimation[this.graphicsEditor.state.currentFrame] = currentFrame;\r\n        }\r\n        currentGroup.shapes = currentGroup.shapes || [];\r\n        if(currentGroup.shapes.length == 0){\r\n            let shapeData = JSON.parse(JSON.stringify(this.graphicsEditor.state.renderData.model[this.graphicsEditor.state.currentGroup])).shapes[shapeId];\r\n            shapeData.id = shapeId;\r\n            currentGroup.shapes = [shapeData];\r\n            return shapeData;\r\n        }\r\n        let shapeData = (currentGroup.shapes).find(s => s.id == shapeId);\r\n        if(this.graphicsEditor.state.editingModel){\r\n            shapeData = currentGroup.shapes[shapeId];\r\n        }\r\n        return shapeData;\r\n    }\r\n    selectShape(index) {\r\n        if (this.graphicsEditor.animationManager.isPreviewingAnimation) {\r\n            this.graphicsEditor.setPreviewAnimationState(false);\r\n        }\r\n        \r\n        // Toggle selection if clicking the same shape\r\n        this.graphicsEditor.state.selectedShapeIndex = (this.graphicsEditor.state.selectedShapeIndex === index) ? -1 : index;\r\n\r\n        // Update shape list and highlighting\r\n        this.graphicsEditor.uiManager.updateList();\r\n        this.highlightSelectedShape();\r\n        // Show inspector for selected shape\r\n        const shape = this.graphicsEditor.getMergedShape();\r\n        if (shape) {\r\n            this.graphicsEditor.createInspector(shape);\r\n            this.graphicsEditor.gizmoManager.transformSelectedObject();\r\n        } else {\r\n            this.graphicsEditor.gizmoManager.destroyGizmo();\r\n            this.graphicsEditor.groupManager.selectGroup(this.graphicsEditor.state.currentGroup);\r\n        }\r\n    }\r\n    destroyOutlines() {\r\n        // Remove existing outlines\r\n        this.graphicsEditor.sceneRenderer.scene.children.forEach(obj => {\r\n            if (obj.userData.isOutline) {\r\n                this.graphicsEditor.sceneRenderer.scene.remove(obj);\r\n                if (obj.geometry) obj.geometry.dispose();\r\n                if (obj.material) obj.material.dispose();\r\n            }\r\n        });\r\n    \r\n        // Reset any highlighted materials\r\n        this.originalMaterials.forEach((material, object) => {\r\n            object.material = material;\r\n        });\r\n        this.originalMaterials.clear();\r\n    }\r\n    highlightSelectedShape() {\r\n        this.destroyOutlines();\r\n\r\n    \r\n        // If no shape is selected or invalid selection, return\r\n        if (this.graphicsEditor.state.selectedShapeIndex < 0) {\r\n            return;\r\n        }\r\n    \r\n        // Get the selected group name from state\r\n        const currentGroup = this.graphicsEditor.state.currentGroup;\r\n        if (!currentGroup) {\r\n            console.warn(\"No group selected\");\r\n            return;\r\n        }\r\n    \r\n        // Find the THREE.Group with matching name under rootGroup\r\n        let selectedGroup = null;\r\n        this.graphicsEditor.rootGroup.traverse(obj => {\r\n            if (obj.isGroup && obj.name === currentGroup) {\r\n                selectedGroup = obj;\r\n            }\r\n        });\r\n    \r\n        if (!selectedGroup) {\r\n            console.warn(`No group found with name ${currentGroup}`);\r\n            return;\r\n        }\r\n    \r\n        const currentFrameData = this.graphicsEditor.getCurrentFrame();\r\n    \r\n        if (!currentFrameData) {\r\n            console.warn(\"No frame data found\");\r\n            return;\r\n        }\r\n    \r\n        const groupShapes = currentFrameData[currentGroup];\r\n    \r\n        if (!groupShapes || this.graphicsEditor.state.selectedShapeIndex >= groupShapes.length) {\r\n            console.warn(`Invalid shape index ${this.graphicsEditor.state.selectedShapeIndex} for group ${currentGroup}`);\r\n            return;\r\n        }\r\n    \r\n        // Find all meshes belonging to the selected shape within the group\r\n        const selectedMeshes = [];\r\n        selectedGroup.traverse(obj => {\r\n            if (obj.isMesh && (\r\n                // Direct shape object that matches the index\r\n                (obj.userData.isShape &&\r\n                 obj.userData.index === this.graphicsEditor.state.selectedShapeIndex) ||\r\n                // Parent is a shape object that matches the index\r\n                (obj.parent &&\r\n                 obj.parent.userData.isShape &&\r\n                 obj.parent.userData.index === this.graphicsEditor.state.selectedShapeIndex) ||\r\n                // GLTF child of selected shape that matches the index\r\n                (obj.userData.isGLTFChild &&\r\n                 obj.parent &&\r\n                 obj.parent.userData.index === this.graphicsEditor.state.selectedShapeIndex)\r\n            )) {\r\n                selectedMeshes.push(obj);\r\n            }\r\n        });\r\n    \r\n        // Handle highlighting for all relevant meshes\r\n        selectedMeshes.forEach(mesh => {\r\n            // Apply emissive highlight to original mesh\r\n            this.originalMaterials.set(mesh, mesh.material);\r\n            const highlightMaterial = mesh.material.clone();\r\n            highlightMaterial.emissive = new window.THREE.Color(0x555555);\r\n            highlightMaterial.emissiveIntensity = 0.5;\r\n            mesh.material = highlightMaterial;\r\n    \r\n            // Create the outline geometry\r\n            const outlineGeometry = mesh.geometry.clone();\r\n            const outlineMaterial = new window.THREE.MeshBasicMaterial({\r\n                color: 0xffff00,\r\n                side: window.THREE.BackSide\r\n            });\r\n    \r\n            // Create the outline mesh\r\n            const outline = new window.THREE.Mesh(outlineGeometry, outlineMaterial);\r\n            outline.userData.isOutline = true;\r\n            \r\n            // Create a new group to hold the outline\r\n            let outlineGroup = new window.THREE.Group();\r\n            outlineGroup.userData.isOutline = true;\r\n            \r\n            // Add the outline to the group\r\n            outlineGroup.add(outline);\r\n            \r\n            // Find all parent groups up to rootGroup and copy their transformations\r\n            let currentParent = mesh.parent;\r\n            let transformChain = [];\r\n            \r\n            while (currentParent && currentParent !== this.graphicsEditor.rootGroup) {\r\n                transformChain.unshift({\r\n                    position: currentParent.position.clone(),\r\n                    rotation: currentParent.rotation.clone(),\r\n                    scale: currentParent.scale.clone(),\r\n                    quaternion: currentParent.quaternion.clone()\r\n                });\r\n                currentParent = currentParent.parent;\r\n            }\r\n            \r\n            // Apply all parent transformations to our outline group\r\n            transformChain.forEach(transform => {\r\n                // Create a temporary group to apply each parent's transform\r\n                const tempGroup = new window.THREE.Group();\r\n                tempGroup.position.copy(transform.position);\r\n                tempGroup.rotation.copy(transform.rotation);\r\n                tempGroup.scale.copy(transform.scale);\r\n                \r\n                // Add our current group to this temp group\r\n                tempGroup.add(outlineGroup);\r\n                \r\n                // Move outlineGroup up one level\r\n                outlineGroup = tempGroup;\r\n                outlineGroup.userData.isOutline = true;\r\n            });\r\n            \r\n            // Add mesh's local transform\r\n            outline.position.copy(mesh.position);\r\n            outline.rotation.copy(mesh.rotation);\r\n            outline.scale.copy(mesh.scale);\r\n            \r\n            // Scale the outline slightly larger (in local space)\r\n            outline.scale.multiplyScalar(1.05);\r\n            \r\n            // Add the complete outline group to the scene\r\n            this.graphicsEditor.sceneRenderer.scene.add(outlineGroup);\r\n        });\r\n    }\r\n    addNewShape() {\r\n        const newShape = {\r\n            type: 'sphere',\r\n            size: 2,\r\n            color: '#ff0000',\r\n            x: 0,\r\n            y: 0,\r\n            z: 0,\r\n            rotationX: 0,\r\n            rotationY: 0,\r\n            rotationZ: 0\r\n        };\r\n        this.graphicsEditor.getCurrentGroup().shapes.push(newShape);\r\n        this.graphicsEditor.state.selectedShapeIndex = this.graphicsEditor.getCurrentGroup().shapes.length - 1;\r\n        this.graphicsEditor.refreshShapes(true); \r\n    }\r\n\r\n    addSelectedShape() {\r\n        if (this.graphicsEditor.state.selectedShapeIndex >= 0) {\r\n            const originalShape = this.graphicsEditor.state.editingModel ? \r\n                                    this.graphicsEditor.getCurrentGroup().shapes[this.graphicsEditor.state.selectedShapeIndex] : \r\n                                    this.graphicsEditor.getCurrentGroup().shapes.find(s => s.id == this.graphicsEditor.state.selectedShapeIndex);\r\n            const newShape = JSON.parse(JSON.stringify(originalShape));\r\n            this.graphicsEditor.getCurrentGroup().shapes.push(newShape);\r\n            this.graphicsEditor.state.selectedShapeIndex = this.graphicsEditor.getCurrentGroup().shapes.length - 1;\r\n            this.graphicsEditor.refreshShapes(true);\r\n        } else {\r\n            this.addNewShape();\r\n        }\r\n    }\r\n\r\n    deleteSelectedShape() {\r\n        if (this.graphicsEditor.state.selectedShapeIndex >= 0) {\r\n            this.graphicsEditor.getCurrentGroup().shapes.splice(this.graphicsEditor.state.selectedShapeIndex, 1);\r\n            if (this.graphicsEditor.getCurrentGroup().shapes.length > 0) {\r\n                this.graphicsEditor.state.selectedShapeIndex = Math.min(this.graphicsEditor.state.selectedShapeIndex, this.graphicsEditor.getCurrentGroup().shapes.length - 1);\r\n            } else {\r\n                this.graphicsEditor.state.selectedShapeIndex = -1;\r\n            }\r\n            this.graphicsEditor.refreshShapes(true);\r\n        }\r\n    }\r\n\r\n}"
       },
       "GE_GroupManager": {
         "title": "GE_GroupManager",
