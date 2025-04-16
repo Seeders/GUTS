@@ -128,14 +128,11 @@ export class EditorController {
      * @param {string} name - Project identifier to load
      */
     async loadProject(name) {
-  
+
+        await this.model.loadProject(name);
         if(window.location.hostname == "localhost") {
-            // Load project data from storage via the model
-            this.model.state.currentProject = name;            
-            this.model.state.project = DEFAULT_PROJECT_CONFIG;
-            await this.fs.importProjectFromFilesystem(name);
-        } else {
-            await this.model.loadProject(name);
+            // Load project data from storage via the model    
+            await this.fs.importProjectFromFilesystem(name);            
         }
         const project = this.model.state.project;
         // Initialize module manager for handling dynamic modules
