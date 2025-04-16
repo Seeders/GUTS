@@ -276,6 +276,7 @@ class GE_GizmoManager {
             const object = intersects[0].object;
             this.selectedAxis = object.name.split('-')[1];
             this.isDragging = true;
+            this.graphicsEditor.shapeManager.startTransform();
             if (this.graphicsEditor.sceneRenderer.controls) {
                 this.graphicsEditor.sceneRenderer.controls.enabled = false;
             }
@@ -290,6 +291,7 @@ class GE_GizmoManager {
         this.isDragging = false;
         this.selectedAxis = null;
 
+        this.graphicsEditor.shapeManager.endTransform();
         if (this.graphicsEditor.sceneRenderer.controls) {
             this.graphicsEditor.sceneRenderer.controls.enabled = true;
         }
