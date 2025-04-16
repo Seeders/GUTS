@@ -211,7 +211,7 @@ class ShapeFactory {
     mergeShapes(modelGroup, frameGroup) {
         return modelGroup.shapes.map((modelShape, i) => {
             if (!frameGroup.shapes) {
-                return modelShape;
+                return JSON.parse(JSON.stringify(modelShape));
             }
     
             let frameShape = frameGroup.shapes.find(shape => shape.id === i) || { id: i };
@@ -265,7 +265,7 @@ class ShapeFactory {
     cleanupEmptyShapes(frameGroup) {
         if (frameGroup.shapes) {
             frameGroup.shapes = frameGroup.shapes.filter(shape => 
-                Object.keys(shape).length > 1
+                Object.keys(shape).length > 0
             );
             
             if (frameGroup.shapes.length === 0) {
