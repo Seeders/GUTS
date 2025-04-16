@@ -1,0 +1,15 @@
+{
+  "title": "Tower",
+  "components": [
+    "Stats",
+    "ArrayTracker",
+    "Leveler",
+    "Buildable",
+    "PopulationBurden",
+    "Attacker"
+  ],
+  "renderers": [
+    "ModelRenderer",
+    "RangeIndicator"
+  ]
+}

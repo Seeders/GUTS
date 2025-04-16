@@ -1,0 +1,15 @@
+{
+  "title": "Enemy",
+  "components": [
+    "Stats",
+    "EssenceBounty",
+    "FollowPath",
+    "SpacialGridEntity",
+    "ArrayTracker"
+  ],
+  "renderers": [
+    "ModelRenderer",
+    "Health",
+    "EnergyShield"
+  ]
+}

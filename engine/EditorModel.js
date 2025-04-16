@@ -129,7 +129,7 @@ export class EditorModel {
         const configText = JSON.stringify(this.state.project);
         try {
             
-            if(window.location.hostname != "localhost") {
+            if(window.location.hostname != "localhost" || this.state.currentProject != "default_project") {
                 // Save to localStorage
                 localStorage.setItem(this.state.currentProject, configText);
             } else {

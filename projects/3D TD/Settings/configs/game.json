@@ -1,0 +1,28 @@
+{
+  "gridSize": 48,
+  "imageSize": 128,
+  "title": "3D TD!",
+  "isIsometric": true,
+  "libraries": [
+    "threejs",
+    "three.OrbitControls",
+    "GLTFLoader",
+    "ShapeFactory",
+    "ImageManager",
+    "SpatialGrid",
+    "CoordinateTranslator",
+    "CanvasUtility",
+    "TerrainImageProcessor",
+    "TileMap",
+    "Entity",
+    "Component",
+    "GameState",
+    "ModelManager"
+  ],
+  "fileName": "game",
+  "interface": "main",
+  "loaderComponent": "GameLoader",
+  "loaderEntity": "GameLoader",
+  "canvasWidth": 1600,
+  "canvasHeight": 800
+}

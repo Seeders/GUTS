@@ -1,0 +1,13 @@
+{
+  "title": "Wave 2",
+  "enemies": [
+    "trex",
+    "trex",
+    "new_trex",
+    "trex",
+    "trex",
+    "new_trex",
+    "trex",
+    "redDragon"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "title": "Lightning Projectile",
+  "components": [
+    "Stats",
+    "ArrayTracker",
+    "ChainProjectile"
+  ],
+  "renderers": [
+    "LightningRenderer"
+  ]
+}

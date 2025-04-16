@@ -1,0 +1,97 @@
+{
+  "title": "Smoke",
+  "render": {
+    "animations": {
+      "idle": [
+        {},
+        {
+          "shapes": {
+            "shapes": [
+              {
+                "type": "sphere",
+                "size": 2,
+                "color": "#000000",
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "rotationX": 0,
+                "rotationY": 0,
+                "rotationZ": 0,
+                "id": 0
+              }
+            ]
+          }
+        },
+        {
+          "shapes": {
+            "shapes": [
+              {
+                "type": "sphere",
+                "size": 4,
+                "color": "#5c5c5c",
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "rotationX": 0,
+                "rotationY": 0,
+                "rotationZ": 0,
+                "id": 0
+              }
+            ]
+          }
+        },
+        {
+          "shapes": {
+            "shapes": [
+              {
+                "type": "sphere",
+                "size": 8,
+                "color": "#949494",
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "rotationX": 0,
+                "rotationY": 0,
+                "rotationZ": 0,
+                "id": 0
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "model": {
+      "shapes": {
+        "shapes": [
+          {
+            "type": "sphere",
+            "size": 1,
+            "color": "#000000",
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "rotationX": 0,
+            "rotationY": 0,
+            "rotationZ": 0
+          }
+        ],
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      }
+    }
+  },
+  "lifeSpan": 0.66
+}

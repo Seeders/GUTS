@@ -1,0 +1,11 @@
+{
+  "title": "Ballistic Projectile",
+  "components": [
+    "Stats",
+    "ArrayTracker",
+    "BallisticProjectile"
+  ],
+  "renderers": [
+    "ModelRenderer"
+  ]
+}

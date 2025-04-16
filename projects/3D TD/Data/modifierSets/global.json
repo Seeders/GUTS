@@ -1,0 +1,11 @@
+{
+  "maxBloodCoreHP": 100,
+  "bloodShardMultiplier": 1,
+  "towerCostMod": 1,
+  "damageMultiplier": 1,
+  "healingMultiplier": 1,
+  "essenceMultiplier": 1,
+  "towerDamageReduction": 1,
+  "population": 0,
+  "maxPopulation": 5
+}

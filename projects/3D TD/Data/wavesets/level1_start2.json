@@ -1,0 +1,12 @@
+{
+  "title": "Level 1 - Start 2",
+  "waves": [
+    "wave2",
+    "wave2",
+    "wave2",
+    "wave2",
+    "wave2",
+    "swarm"
+  ],
+  "startDelay": 5
+}
