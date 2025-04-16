@@ -193,7 +193,32 @@ class GraphicsEditor {
             const valueElement = this.gameEditor.elements.editor
                 .querySelector('#render-value');
             if (valueElement) {
-                valueElement.value = JSON.stringify(this.state.renderData);
+                let renderDataCopy = JSON.parse(JSON.stringify(this.state.renderData));
+                Object.keys(renderDataCopy.animations).forEach(animationName => {
+                    const animation = renderDataCopy.animations[animationName];
+                    animation.forEach(frame => {
+                        Object.keys(frame).forEach(groupName => {
+                            const group = frame[groupName];
+                            if (group && group.shapes) {
+                                // Filter shapes with more than just ID
+                                group.shapes = group.shapes.filter(shape => 
+                                    Object.keys(shape).length > 1
+                                );
+                                
+                                // Remove empty shapes array
+                                if (group.shapes.length === 0) {
+                                    delete group.shapes;
+                                }
+                
+                                // Remove empty group
+                                if (Object.keys(group).length === 0) {
+                                    delete frame[groupName];
+                                }
+                            }
+                        });               
+                    });
+                });
+                valueElement.value = JSON.stringify(renderDataCopy);
             }
         }
     }
