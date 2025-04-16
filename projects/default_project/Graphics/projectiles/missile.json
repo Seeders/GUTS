@@ -3,26 +3,7 @@
   "render": {
     "animations": {
       "idle": [
-        {
-          "shapes": {
-            "shapes": [
-              {
-                "type": "cylinder",
-                "size": 5,
-                "color": "#888888",
-                "x": 0,
-                "y": 0,
-                "z": -1.4,
-                "rotationX": 90,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "height": 25,
-                "scaleX": 1,
-                "id": 0
-              }
-            ]
-          }
-        },
+        {},
         {
           "shapes": {
             "rotation": {
@@ -160,7 +141,23 @@
               "x": -1.5769563123901744,
               "y": 0,
               "z": 0
-            }
+            },
+            "shapes": [
+              {
+                "type": "cylinder",
+                "size": 5,
+                "color": "#888888",
+                "x": 0,
+                "y": 0,
+                "z": -1.4,
+                "rotationX": 90,
+                "rotationY": 0,
+                "rotationZ": 0,
+                "height": 25,
+                "scaleX": 1,
+                "id": 0
+              }
+            ]
           }
         },
         {
@@ -240,8 +237,7 @@
             "rotationY": 0,
             "rotationZ": 0,
             "height": 25,
-            "scaleX": 1,
-            "name": "fuselage"
+            "scaleX": 1
           },
           {
             "type": "cone",
@@ -253,8 +249,7 @@
             "rotationX": 90,
             "rotationY": 0,
             "rotationZ": 0,
-            "height": 5,
-            "name": "nose"
+            "height": 5
           },
           {
             "type": "cone",
@@ -266,8 +261,7 @@
             "rotationX": 90,
             "rotationY": 0,
             "rotationZ": 0,
-            "height": 2.5,
-            "name": "nozel"
+            "height": 2.5
           },
           {
             "type": "cylinder",
@@ -279,8 +273,7 @@
             "rotationX": 90,
             "rotationY": 0,
             "rotationZ": 0,
-            "height": 5,
-            "name": "finAttachment"
+            "height": 5
           },
           {
             "type": "box",
@@ -294,8 +287,7 @@
             "rotationZ": 0,
             "width": 0.25,
             "height": 2.5,
-            "depth": 8.5,
-            "name": "fin1"
+            "depth": 8.5
           },
           {
             "type": "box",
@@ -309,8 +301,7 @@
             "rotationZ": 0,
             "width": 0.25,
             "height": 2.5,
-            "depth": 8.5,
-            "name": "fin2"
+            "depth": 8.5
           },
           {
             "type": "box",
@@ -324,8 +315,7 @@
             "rotationZ": 90,
             "width": 0.25,
             "height": 2.5,
-            "depth": 8.5,
-            "name": "fin3"
+            "depth": 8.5
           },
           {
             "type": "box",
@@ -339,8 +329,7 @@
             "rotationZ": -90,
             "width": 0.25,
             "height": 2.5,
-            "depth": 8.5,
-            "name": "fin4"
+            "depth": 8.5
           }
         ],
         "position": {
