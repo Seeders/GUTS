@@ -11,17 +11,6 @@
       ],
       "walk": [
         {
-          "left wing": {
-            "shapes": [
-              {
-                "rotationZ": 0,
-                "scaleX": 1,
-                "scaleY": 1,
-                "scaleZ": 1,
-                "id": 1
-              }
-            ]
-          },
           "right wing": {
             "shapes": [
               {

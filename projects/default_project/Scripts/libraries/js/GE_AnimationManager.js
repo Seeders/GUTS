@@ -75,17 +75,20 @@ class GE_AnimationManager {
     }
 
     addFrame() {
-        if (this.graphicsEditor.getCurrentAnimation().length > 0) {
-            const currentFrame = this.graphicsEditor.getCurrentFrame();
-            const newFrame = { shapes: JSON.parse(JSON.stringify(currentFrame.shapes)) };
-            this.graphicsEditor.getCurrentAnimation().splice(this.graphicsEditor.state.currentFrame + 1, 0, newFrame);                    
-            this.graphicsEditor.state.currentFrame++;
-            this.graphicsEditor.refreshShapes(true);
+
+        let currentFrame = this.graphicsEditor.getCurrentFrame();
+        if(!currentFrame){
+            currentFrame = {};
         }
+        const newFrame = { shapes: JSON.parse(JSON.stringify(currentFrame.shapes || [])) };
+        this.graphicsEditor.getCurrentAnimation().splice(this.graphicsEditor.state.currentFrame + 1, 0, newFrame);                    
+        this.graphicsEditor.state.currentFrame++;
+        this.graphicsEditor.refreshShapes(true);
+    
     }
 
     deleteFrame() {
-        let currentAnimation = getCurrentAnimation();
+        let currentAnimation = this.graphicsEditor.getCurrentAnimation();
         if (currentAnimation.length > 1) {
             currentAnimation.splice(this.graphicsEditor.state.currentFrame, 1);
             

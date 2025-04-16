@@ -13,25 +13,22 @@
                 "y": 25,
                 "z": 0,
                 "rotationX": 90,
-                "color": "#6060ee",
-                "scaleX": 1
+                "scaleX": 1,
+                "id": 0
               }
-            ],
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
+            ]
+          }
+        },
+        {
+          "shapes": {
+            "shapes": [
+              {
+                "scaleX": 1.5,
+                "scaleY": 1.5,
+                "scaleZ": 1.5,
+                "id": 0
+              }
+            ]
           }
         }
       ]
@@ -46,7 +43,7 @@
             "y": 25,
             "z": 0,
             "rotationX": 90,
-            "color": "#6060ee",
+            "color": "#6771e7",
             "scaleX": 1
           }
         ],

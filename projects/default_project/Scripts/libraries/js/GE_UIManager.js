@@ -187,7 +187,7 @@ class GE_UIManager {
         this.addFormRow(inspector, 'Type', 'select', 'type', shape.type, {
             options: ['cube', 'sphere', 'box', 'cylinder', 'cone', 'torus', 'tetrahedron', 'gltf'],
             change: (e) => {
-                let currentShape = this.graphicsEditor.getMergedShape();
+                let currentShape = this.graphicsEditor.getFrameShape();
                 let newValue = e.target.value;
                 if (newValue != 'gltf') {
                     delete currentShape.url
@@ -219,7 +219,7 @@ class GE_UIManager {
 
                      const result = await response.json();
                      shape.url = result.filePath; 
-                     this.graphicsEditor.getMergedShape().url = result.filePath;
+                     this.graphicsEditor.getFrameShape().url = result.filePath;
                      this.graphicsEditor.refreshShapes(false);
                 } catch (error) {
                      console.error('Error uploading file:', error);
@@ -300,7 +300,7 @@ class GE_UIManager {
     
             colorInput.addEventListener('change', () => {
                 let newValue = colorInput.value;                
-                this.graphicsEditor.getMergedShape()[property] = newValue;
+                this.graphicsEditor.getFrameShape()[property] = newValue;
                 this.graphicsEditor.refreshShapes(true);
             });
             row.appendChild(colorInput);
@@ -368,21 +368,31 @@ class GE_UIManager {
         return input;
     }
     updatePropertyValue(property, value) {
-        const groupData = this.graphicsEditor.getCurrentGroup();
-        const shapeData = this.graphicsEditor.getMergedShape();
+        const shapeData = this.graphicsEditor.getFrameShape();
         if (shapeData) {
             shapeData[property] = value;
             return;
         }
+        let groupData = this.graphicsEditor.getCurrentGroup();
+        if(!groupData){
+            groupData = {};
+            let currentFrame = this.graphicsEditor.getCurrentFrame();
+            if(currentFrame) {
+                currentFrame[this.graphicsEditor.state.currentGroup] = groupData;
+            }
+        }
         
         // Handle transform properties
         if (property.startsWith('scale')) {
+            if(!groupData.scale) groupData.scale = {};
             const axis = property.charAt(property.length - 1).toLowerCase();
             groupData.scale[axis] = value;
         } else if (property.startsWith('rotation')) {
+            if(!groupData.rotation) groupData.rotation = {};
             const axis = property.charAt(property.length - 1).toLowerCase();
             groupData.rotation[axis] = value;
         } else if (['x', 'y', 'z'].includes(property)) {
+            if(!groupData.position) groupData.position = {};
             groupData.position[property] = value;
         }
     }

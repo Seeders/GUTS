@@ -35,7 +35,7 @@ class GraphicsEditor {
         this.animationManager.init();
         this.groupManager.init();
         this.gizmoManager.init();
-        this.sceneRenderer.animate();
+        this.sceneRenderer.animate();    
     }
     displayIsometricSprites(sprites){
         this.uiManager.displayIsometricSprites(sprites);
@@ -116,17 +116,19 @@ class GraphicsEditor {
     
     getCurrentAnimation() {
      
-        return this.state.renderData.animations[this.state.currentAnimation];
+        return this.state.renderData.animations[this.state.currentAnimation] || null;
     }
     getCurrentFrame() {
         if(this.state.editingModel){
             return this.state.renderData.model;
         } else {
-            return this.getCurrentAnimation()[this.state.currentFrame];
+            let currentAnimation = this.getCurrentAnimation();
+            return currentAnimation ? currentAnimation[this.state.currentFrame] : null;
         }
     }
     getCurrentGroup() {
-        return this.getCurrentFrame()[this.state.currentGroup];
+        let currentFrame = this.getCurrentFrame();
+        return currentFrame ? currentFrame[this.state.currentGroup] : null;
     }
 
     refreshShapes(param) {
@@ -155,6 +157,52 @@ class GraphicsEditor {
         return this.shapeFactory.getMergedGroup(model, this.getCurrentAnimation()[this.state.currentFrame], groupName );
     }
 
+    getFrameShape() {
+        // If we're in model editing mode, return merged shape
+        if (this.state.editingModel) {
+            return this.getMergedShape();
+        }
+    
+        // Return null if no shape is selected
+        if (this.state.selectedShapeIndex < 0) {
+            return null;
+        }
+    
+        // Get or create group data
+        let groupData = this.getCurrentGroup() || 
+            JSON.parse(JSON.stringify(this.state.renderData.model[this.state.currentGroup]));
+    
+        if (!groupData?.shapes) {
+            return null;
+        }
+    
+        // Find existing shape or create new one
+        let shape = groupData.shapes.find(s => s.id === this.state.selectedShapeIndex);
+        if (shape) {
+            return shape;
+        }
+    
+        // Create new shape if not found
+        return this.createBlankFrameShape();
+    }
+    
+    createBlankFrameShape() {
+        const shape = { id: this.state.selectedShapeIndex };
+        const currentFrame = this.getCurrentFrame();
+        
+        if (!currentFrame) {
+            return null;
+        }
+    
+        // Add shape to current group or create new group
+        if (!currentFrame[this.state.currentGroup]) {
+            currentFrame[this.state.currentGroup] = { shapes: [] };
+        }
+        
+        currentFrame[this.state.currentGroup].shapes.push(shape);
+        return shape;
+    }
+
     getMergedShape() {
         if (this.state.selectedShapeIndex >= 0) {            
             const selectedGroup = this.getMergedGroup(this.state.currentGroup);
@@ -179,7 +227,7 @@ class GraphicsEditor {
                 } else {
                     currentGroupData.shapes.push(shape); // Append if not found
                 }
-                
+                this.state.renderData.animations[this.state.currentAnimation][this.state.currentFrame][this.state.currentGroup] = currentGroupData;
                 return shape;
             }            
         }

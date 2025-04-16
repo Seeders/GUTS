@@ -3,8 +3,14 @@
   "render": {
     "animations": {
       "idle": [
+        {},
         {
           "shapes": {
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0.7884781561950853
+            },
             "shapes": [
               {
                 "type": "cylinder",
@@ -17,120 +23,21 @@
                 "rotationY": 0,
                 "rotationZ": 0,
                 "height": 25,
-                "scaleX": 1
-              },
-              {
-                "type": "cone",
-                "size": 5,
-                "color": "#ff1117",
-                "x": 0,
-                "y": 0,
-                "z": 13.6,
-                "rotationX": 90,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "height": 5
-              },
-              {
-                "type": "cone",
-                "size": 2.5,
-                "color": "#ff1117",
-                "x": 0,
-                "y": 0,
-                "z": -13.8,
-                "rotationX": 90,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "height": 2.5
-              },
-              {
-                "type": "cylinder",
-                "size": 6.25,
-                "color": "#888888",
-                "x": 0,
-                "y": 0,
-                "z": -11,
-                "rotationX": 90,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "height": 5
-              },
-              {
-                "type": "box",
-                "size": 5,
-                "color": "#888888",
-                "x": 0,
-                "y": 3,
-                "z": -11.631250000000001,
-                "rotationX": 45,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "width": 0.25,
-                "height": 2.5,
-                "depth": 8.5
-              },
-              {
-                "type": "box",
-                "size": 5,
-                "color": "#888888",
-                "x": 0,
-                "y": -3,
-                "z": -11.631250000000001,
-                "rotationX": -45,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "width": 0.25,
-                "height": 2.5,
-                "depth": 8.5
-              },
-              {
-                "type": "box",
-                "size": 5,
-                "color": "#888888",
-                "x": -3,
-                "y": 0,
-                "z": -11.631250000000001,
-                "rotationX": 0,
-                "rotationY": 45,
-                "rotationZ": 90,
-                "width": 0.25,
-                "height": 2.5,
-                "depth": 8.5
-              },
-              {
-                "type": "box",
-                "size": 5,
-                "color": "#888888",
-                "x": 3,
-                "y": 0,
-                "z": -11.631250000000001,
-                "rotationX": 0,
-                "rotationY": -45,
-                "rotationZ": -90,
-                "width": 0.25,
-                "height": 2.5,
-                "depth": 8.5
+                "scaleX": 1,
+                "id": 0
               }
-            ],
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
+            ]
           }
-        },
+        }
+      ],
+      "ascend": [
         {
           "shapes": {
+            "rotation": {
+              "x": -0.7884781561950848,
+              "y": 0,
+              "z": 0
+            },
             "shapes": [
               {
                 "type": "cylinder",
@@ -142,1124 +49,176 @@
                 "rotationX": 90,
                 "rotationY": 0,
                 "rotationZ": 0,
-                "height": 25
-              },
-              {
-                "type": "cone",
-                "size": 5,
-                "color": "#ff1117",
-                "x": 0,
-                "y": 0,
-                "z": 13.6,
-                "rotationX": 90,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "height": 5
-              },
-              {
-                "type": "cone",
-                "size": 2.5,
-                "color": "#ff1117",
-                "x": 0,
-                "y": 0,
-                "z": -13.8,
-                "rotationX": 88,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "height": 2.5
-              },
-              {
-                "type": "cylinder",
-                "size": 6.25,
-                "color": "#888888",
-                "x": 0,
-                "y": 0,
-                "z": -11,
-                "rotationX": 88,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "height": 5
-              },
-              {
-                "type": "box",
-                "size": 5,
-                "color": "#888888",
-                "x": -2.5,
-                "y": 2.0796831071177158,
-                "z": -12.079938665985402,
-                "rotationX": 28,
-                "rotationY": 30,
-                "rotationZ": 45,
-                "width": 0.25,
-                "height": 2.5,
-                "depth": 8.5
-              },
-              {
-                "type": "box",
-                "size": 5,
-                "color": "#888888",
-                "x": 2.5,
-                "y": -2.9172710279777645,
-                "z": -11.905441182472895,
-                "rotationX": -32,
-                "rotationY": -30,
-                "rotationZ": -135,
-                "width": 0.25,
-                "height": 2.5,
-                "depth": 8.5
-              },
-              {
-                "type": "box",
-                "size": 5,
-                "color": "#888888",
-                "x": -2.5,
-                "y": -2.9172710279777645,
-                "z": -11.905441182472895,
-                "rotationX": -32,
-                "rotationY": 30,
-                "rotationZ": 135,
-                "width": 0.25,
-                "height": 2.5,
-                "depth": 8.5
-              },
-              {
-                "type": "box",
-                "size": 5,
-                "color": "#888888",
-                "x": 2.5,
-                "y": 2.0796831071177158,
-                "z": -12.079938665985402,
-                "rotationX": 28,
-                "rotationY": -30,
-                "rotationZ": -45,
-                "width": 0.25,
-                "height": 2.5,
-                "depth": 8.5
+                "height": 25,
+                "scaleX": 1,
+                "id": 0
               }
-            ],
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": -0.7802648420680537
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
-          }
-        }
-      ],
-      "ascend": [
-        {
-          "shapes": {
-            "shapes": [
-              {
-                "type": "cylinder",
-                "size": 5,
-                "color": "#888888",
-                "x": 0,
-                "y": -0.9725217186425965,
-                "z": -1.0070757204741112,
-                "rotationX": 46,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "height": 25
-              },
-              {
-                "type": "cone",
-                "size": 5,
-                "color": "#ff1117",
-                "x": 0,
-                "y": 9.447353838242368,
-                "z": 9.78302128460565,
-                "rotationX": 46,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "height": 5
-              },
-              {
-                "type": "cone",
-                "size": 2.5,
-                "color": "#ff1117",
-                "x": 0,
-                "y": -9.642726504933961,
-                "z": -9.985335603450899,
-                "rotationX": 46,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "height": 2.5
-              },
-              {
-                "type": "cylinder",
-                "size": 6.25,
-                "color": "#888888",
-                "x": 0,
-                "y": -7.732415986171718,
-                "z": -8.007151152519608,
-                "rotationX": 46,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "height": 5
-              },
-              {
-                "type": "box",
-                "size": 5,
-                "color": "#888888",
-                "x": 0,
-                "y": -5.9217257703852635,
-                "z": -10.450796164065927,
-                "rotationX": 1,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "width": 0.25,
-                "height": 2.5,
-                "depth": 8.5
-              },
-              {
-                "type": "box",
-                "size": 5,
-                "color": "#888888",
-                "x": 0,
-                "y": -10.237764572417168,
-                "z": -6.282845941311941,
-                "rotationX": -89,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "width": 0.25,
-                "height": 2.5,
-                "depth": 8.5
-              },
-              {
-                "type": "box",
-                "size": 5,
-                "color": "#888888",
-                "x": -3,
-                "y": -8.079745171401216,
-                "z": -8.366821052688934,
-                "rotationX": -44,
-                "rotationY": 45,
-                "rotationZ": 90,
-                "width": 0.25,
-                "height": 2.5,
-                "depth": 8.5
-              },
-              {
-                "type": "box",
-                "size": 5,
-                "color": "#888888",
-                "x": 3,
-                "y": -8.079745171401216,
-                "z": -8.366821052688934,
-                "rotationX": -44,
-                "rotationY": -45,
-                "rotationZ": -90,
-                "width": 0.25,
-                "height": 2.5,
-                "depth": 8.5
-              }
-            ],
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": -0.7802648420680528,
-              "y": 0,
-              "z": -0.7802648420680528
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
+            ]
           }
         },
         {
           "shapes": {
+            "rotation": {
+              "x": -0.788478156195085,
+              "y": 0,
+              "z": -0.7802648420680536
+            },
             "shapes": [
               {
                 "type": "cylinder",
                 "size": 5,
                 "color": "#888888",
                 "x": 0,
-                "y": -0.9725217186425965,
-                "z": -1.0070757204741112,
-                "rotationX": 46,
+                "y": 0,
+                "z": -1.4,
+                "rotationX": 90,
                 "rotationY": 0,
                 "rotationZ": 0,
-                "height": 25
-              },
-              {
-                "type": "cone",
-                "size": 5,
-                "color": "#ff1117",
-                "x": 0,
-                "y": 9.447353838242368,
-                "z": 9.78302128460565,
-                "rotationX": 46,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "height": 5
-              },
-              {
-                "type": "cone",
-                "size": 2.5,
-                "color": "#ff1117",
-                "x": 0,
-                "y": -9.642726504933961,
-                "z": -9.985335603450899,
-                "rotationX": 46,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "height": 2.5
-              },
-              {
-                "type": "cylinder",
-                "size": 6.25,
-                "color": "#888888",
-                "x": 0,
-                "y": -7.732415986171718,
-                "z": -8.007151152519608,
-                "rotationX": 46,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "height": 5
-              },
-              {
-                "type": "box",
-                "size": 5,
-                "color": "#888888",
-                "x": -2.5,
-                "y": -6.537550944661343,
-                "z": -10.368723530211303,
-                "rotationX": -14,
-                "rotationY": 30,
-                "rotationZ": 45,
-                "width": 0.25,
-                "height": 2.5,
-                "depth": 8.5
-              },
-              {
-                "type": "box",
-                "size": 5,
-                "color": "#888888",
-                "x": 2.5,
-                "y": -10.134249946354597,
-                "z": -6.895431677916315,
-                "rotationX": -74,
-                "rotationY": -30,
-                "rotationZ": -135,
-                "width": 0.25,
-                "height": 2.5,
-                "depth": 8.5
-              },
-              {
-                "type": "box",
-                "size": 5,
-                "color": "#888888",
-                "x": -2.5,
-                "y": -10.134249946354597,
-                "z": -6.895431677916315,
-                "rotationX": -74,
-                "rotationY": 30,
-                "rotationZ": 135,
-                "width": 0.25,
-                "height": 2.5,
-                "depth": 8.5
-              },
-              {
-                "type": "box",
-                "size": 5,
-                "color": "#888888",
-                "x": 2.5,
-                "y": -6.537550944661343,
-                "z": -10.368723530211303,
-                "rotationX": -14,
-                "rotationY": -30,
-                "rotationZ": -45,
-                "width": 0.25,
-                "height": 2.5,
-                "depth": 8.5
+                "height": 25,
+                "scaleX": 1,
+                "id": 0
               }
-            ],
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": -0.7802648420680528,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
+            ]
           }
         }
       ],
       "descend": [
         {
           "shapes": {
+            "rotation": {
+              "x": 0.7802648420680531,
+              "y": 0,
+              "z": 0
+            },
             "shapes": [
               {
                 "type": "cylinder",
                 "size": 5,
                 "color": "#888888",
                 "x": 0,
-                "y": 0.9725217186425961,
-                "z": -1.0070757204741116,
-                "rotationX": 134,
+                "y": 0,
+                "z": -1.4,
+                "rotationX": 90,
                 "rotationY": 0,
                 "rotationZ": 0,
-                "height": 25
-              },
-              {
-                "type": "cone",
-                "size": 5,
-                "color": "#ff1117",
-                "x": 0,
-                "y": -9.447353838242362,
-                "z": 9.783021284605656,
-                "rotationX": 134,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "height": 5
-              },
-              {
-                "type": "cone",
-                "size": 2.5,
-                "color": "#ff1117",
-                "x": 0,
-                "y": 9.642726504933957,
-                "z": -9.985335603450903,
-                "rotationX": 134,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "height": 2.5
-              },
-              {
-                "type": "cylinder",
-                "size": 6.25,
-                "color": "#888888",
-                "x": 0,
-                "y": 7.7324159861717146,
-                "z": -8.007151152519612,
-                "rotationX": 134,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "height": 5
-              },
-              {
-                "type": "box",
-                "size": 5,
-                "color": "#888888",
-                "x": 0,
-                "y": 10.237764572417166,
-                "z": -6.282845941311946,
-                "rotationX": 89,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "width": 0.25,
-                "height": 2.5,
-                "depth": 8.5
-              },
-              {
-                "type": "box",
-                "size": 5,
-                "color": "#888888",
-                "x": 0,
-                "y": 5.921725770385258,
-                "z": -10.45079616406593,
-                "rotationX": -1,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "width": 0.25,
-                "height": 2.5,
-                "depth": 8.5
-              },
-              {
-                "type": "box",
-                "size": 5,
-                "color": "#888888",
-                "x": -3,
-                "y": 8.079745171401212,
-                "z": -8.366821052688937,
-                "rotationX": 44,
-                "rotationY": 45,
-                "rotationZ": 90,
-                "width": 0.25,
-                "height": 2.5,
-                "depth": 8.5
-              },
-              {
-                "type": "box",
-                "size": 5,
-                "color": "#888888",
-                "x": 3,
-                "y": 8.079745171401212,
-                "z": -8.366821052688937,
-                "rotationX": 44,
-                "rotationY": -45,
-                "rotationZ": -90,
-                "width": 0.25,
-                "height": 2.5,
-                "depth": 8.5
+                "height": 25,
+                "scaleX": 1,
+                "id": 0
               }
-            ],
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 0.7802648420680528,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
+            ]
           }
         },
         {
           "shapes": {
+            "rotation": {
+              "x": 0.7802648420680529,
+              "y": 0,
+              "z": 0.7802648420680495
+            },
             "shapes": [
               {
                 "type": "cylinder",
                 "size": 5,
                 "color": "#888888",
                 "x": 0,
-                "y": 0.9725217186425961,
-                "z": -1.0070757204741116,
-                "rotationX": 134,
+                "y": 0,
+                "z": -1.4,
+                "rotationX": 90,
                 "rotationY": 0,
                 "rotationZ": 0,
-                "height": 25
-              },
-              {
-                "type": "cone",
-                "size": 5,
-                "color": "#ff1117",
-                "x": 0,
-                "y": -9.447353838242362,
-                "z": 9.783021284605656,
-                "rotationX": 134,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "height": 5
-              },
-              {
-                "type": "cone",
-                "size": 2.5,
-                "color": "#ff1117",
-                "x": 0,
-                "y": 9.642726504933957,
-                "z": -9.985335603450903,
-                "rotationX": 134,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "height": 2.5
-              },
-              {
-                "type": "cylinder",
-                "size": 6.25,
-                "color": "#888888",
-                "x": 0,
-                "y": 7.7324159861717146,
-                "z": -8.007151152519612,
-                "rotationX": 134,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "height": 5
-              },
-              {
-                "type": "box",
-                "size": 5,
-                "color": "#888888",
-                "x": -2.5,
-                "y": 10.134249946354595,
-                "z": -6.895431677916322,
-                "rotationX": 74,
-                "rotationY": 30,
-                "rotationZ": 45,
-                "width": 0.25,
-                "height": 2.5,
-                "depth": 8.5
-              },
-              {
-                "type": "box",
-                "size": 5,
-                "color": "#888888",
-                "x": 2.5,
-                "y": 6.537550944661339,
-                "z": -10.368723530211309,
-                "rotationX": 14,
-                "rotationY": -30,
-                "rotationZ": -135,
-                "width": 0.25,
-                "height": 2.5,
-                "depth": 8.5
-              },
-              {
-                "type": "box",
-                "size": 5,
-                "color": "#888888",
-                "x": -2.5,
-                "y": 6.537550944661339,
-                "z": -10.368723530211309,
-                "rotationX": 14,
-                "rotationY": 30,
-                "rotationZ": 135,
-                "width": 0.25,
-                "height": 2.5,
-                "depth": 8.5
-              },
-              {
-                "type": "box",
-                "size": 5,
-                "color": "#888888",
-                "x": 2.5,
-                "y": 10.134249946354595,
-                "z": -6.895431677916322,
-                "rotationX": 74,
-                "rotationY": -30,
-                "rotationZ": -45,
-                "width": 0.25,
-                "height": 2.5,
-                "depth": 8.5
+                "height": 25,
+                "scaleX": 1,
+                "id": 0
               }
-            ],
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 0.7802648420680524,
-              "y": 0,
-              "z": 0.7884781561950857
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
+            ]
           }
         }
       ],
       "launch": [
         {
           "shapes": {
+            "rotation": {
+              "x": -1.5769563123901744,
+              "y": 0,
+              "z": 0
+            },
             "shapes": [
               {
                 "type": "cylinder",
                 "size": 5,
                 "color": "#888888",
                 "x": 0,
-                "y": 14.6,
-                "z": 2.5717582782094415e-16,
-                "rotationX": 0,
+                "y": 0,
+                "z": -1.4,
+                "rotationX": 90,
                 "rotationY": 0,
                 "rotationZ": 0,
-                "height": 25
-              },
-              {
-                "type": "cone",
-                "size": 5,
-                "color": "#ff1117",
-                "x": 0,
-                "y": 29.6,
-                "z": -2.4982794702606003e-15,
-                "rotationX": 0,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "height": 5
-              },
-              {
-                "type": "cone",
-                "size": 2.5,
-                "color": "#ff1117",
-                "x": 0,
-                "y": 2.1999999999999993,
-                "z": 2.535018874235021e-15,
-                "rotationX": 0,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "height": 2.5
-              },
-              {
-                "type": "cylinder",
-                "size": 6.25,
-                "color": "#888888",
-                "x": 0,
-                "y": 5,
-                "z": 2.0206672185931327e-15,
-                "rotationX": 0,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "height": 5
-              },
-              {
-                "type": "box",
-                "size": 5,
-                "color": "#888888",
-                "x": 0,
-                "y": 4.368749999999999,
-                "z": -2.999999999999998,
-                "rotationX": -45,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "width": 0.25,
-                "height": 2.5,
-                "depth": 8.5
-              },
-              {
-                "type": "box",
-                "size": 5,
-                "color": "#888888",
-                "x": 0,
-                "y": 4.368749999999999,
-                "z": 3.000000000000002,
-                "rotationX": -135,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "width": 0.25,
-                "height": 2.5,
-                "depth": 8.5
-              },
-              {
-                "type": "box",
-                "size": 5,
-                "color": "#888888",
-                "x": -3,
-                "y": 4.368749999999999,
-                "z": 2.136625962387398e-15,
-                "rotationX": -90,
-                "rotationY": 45,
-                "rotationZ": 90,
-                "width": 0.25,
-                "height": 2.5,
-                "depth": 8.5
-              },
-              {
-                "type": "box",
-                "size": 5,
-                "color": "#888888",
-                "x": 3,
-                "y": 4.368749999999999,
-                "z": 2.136625962387398e-15,
-                "rotationX": -90,
-                "rotationY": -45,
-                "rotationZ": -90,
-                "width": 0.25,
-                "height": 2.5,
-                "depth": 8.5
+                "height": 25,
+                "scaleX": 1,
+                "id": 0
               }
-            ],
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": -1.5687429982631438,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
+            ]
           }
         },
         {
           "shapes": {
+            "rotation": {
+              "x": -1.576956312390172,
+              "y": -0.008213314127032096,
+              "z": 0.780264842068052
+            },
             "shapes": [
               {
                 "type": "cylinder",
                 "size": 5,
                 "color": "#888888",
                 "x": 0,
-                "y": 14.6,
-                "z": 2.5717582782094415e-16,
-                "rotationX": 0,
+                "y": 0,
+                "z": -1.4,
+                "rotationX": 90,
                 "rotationY": 0,
                 "rotationZ": 0,
-                "height": 25
-              },
-              {
-                "type": "cone",
-                "size": 5,
-                "color": "#ff1117",
-                "x": 0,
-                "y": 29.6,
-                "z": -2.4982794702606003e-15,
-                "rotationX": 0,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "height": 5
-              },
-              {
-                "type": "cone",
-                "size": 2.5,
-                "color": "#ff1117",
-                "x": 0,
-                "y": 2.1999999999999993,
-                "z": 2.535018874235021e-15,
-                "rotationX": -2,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "height": 2.5
-              },
-              {
-                "type": "cylinder",
-                "size": 6.25,
-                "color": "#888888",
-                "x": 0,
-                "y": 5,
-                "z": 2.0206672185931327e-15,
-                "rotationX": -2,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "height": 5
-              },
-              {
-                "type": "box",
-                "size": 5,
-                "color": "#888888",
-                "x": -2.5,
-                "y": 3.9200613340145978,
-                "z": -2.0796831071177135,
-                "rotationX": -62,
-                "rotationY": 30,
-                "rotationZ": 45,
-                "width": 0.25,
-                "height": 2.5,
-                "depth": 8.5
-              },
-              {
-                "type": "box",
-                "size": 5,
-                "color": "#888888",
-                "x": 2.5,
-                "y": 4.094558817527105,
-                "z": 2.9172710279777667,
-                "rotationX": -122,
-                "rotationY": -30,
-                "rotationZ": -135,
-                "width": 0.25,
-                "height": 2.5,
-                "depth": 8.5
-              },
-              {
-                "type": "box",
-                "size": 5,
-                "color": "#888888",
-                "x": -2.5,
-                "y": 4.094558817527105,
-                "z": 2.9172710279777667,
-                "rotationX": -122,
-                "rotationY": 30,
-                "rotationZ": 135,
-                "width": 0.25,
-                "height": 2.5,
-                "depth": 8.5
-              },
-              {
-                "type": "box",
-                "size": 5,
-                "color": "#888888",
-                "x": 2.5,
-                "y": 3.9200613340145978,
-                "z": -2.0796831071177135,
-                "rotationX": -62,
-                "rotationY": -30,
-                "rotationZ": -45,
-                "width": 0.25,
-                "height": 2.5,
-                "depth": 8.5
+                "height": 25,
+                "scaleX": 1,
+                "id": 0
               }
-            ],
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": -1.5687429982631438,
-              "y": 0,
-              "z": 0.7802648420680529
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
+            ]
           }
         }
       ],
       "land": [
         {
           "shapes": {
-            "shapes": [
-              {
-                "type": "cylinder",
-                "size": 5,
-                "color": "#888888",
-                "x": 0,
-                "y": 17.39978677321895,
-                "z": 0.024433369012196865,
-                "rotationX": -179,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "height": 25
-              },
-              {
-                "type": "cone",
-                "size": 5,
-                "color": "#ff1117",
-                "x": 0,
-                "y": 2.402071345873079,
-                "z": -0.23735272754705528,
-                "rotationX": -179,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "height": 5
-              },
-              {
-                "type": "cone",
-                "size": 2.5,
-                "color": "#ff1117",
-                "x": 0,
-                "y": 29.7978981931582,
-                "z": 0.240843208834512,
-                "rotationX": -179,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "height": 2.5
-              },
-              {
-                "type": "cylinder",
-                "size": 6.25,
-                "color": "#888888",
-                "x": 0,
-                "y": 26.998324646720306,
-                "z": 0.19197647081011826,
-                "rotationX": -179,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "height": 5
-              },
-              {
-                "type": "box",
-                "size": 5,
-                "color": "#888888",
-                "x": 0,
-                "y": 27.577121284975924,
-                "z": 3.2025363878428275,
-                "rotationX": 136,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "width": 0.25,
-                "height": 2.5,
-                "depth": 8.5
-              },
-              {
-                "type": "box",
-                "size": 5,
-                "color": "#888888",
-                "x": 0,
-                "y": 27.681835723599626,
-                "z": -2.7965497830955206,
-                "rotationX": 46,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "width": 0.25,
-                "height": 2.5,
-                "depth": 8.5
-              },
-              {
-                "type": "box",
-                "size": 5,
-                "color": "#888888",
-                "x": -3,
-                "y": 27.629478504287775,
-                "z": 0.20299330237365346,
-                "rotationX": 91,
-                "rotationY": 45,
-                "rotationZ": 90,
-                "width": 0.25,
-                "height": 2.5,
-                "depth": 8.5
-              },
-              {
-                "type": "box",
-                "size": 5,
-                "color": "#888888",
-                "x": 3,
-                "y": 27.629478504287775,
-                "z": 0.20299330237365346,
-                "rotationX": 91,
-                "rotationY": -45,
-                "rotationZ": -90,
-                "width": 0.25,
-                "height": 2.5,
-                "depth": 8.5
-              }
-            ],
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
             "rotation": {
-              "x": 1.5769563123901744,
+              "x": 1.5769563123901817,
               "y": 0,
               "z": 0
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
             }
           }
         },
         {
           "shapes": {
+            "rotation": {
+              "x": 1.5667186747652215,
+              "y": 0.0061889906291131246,
+              "z": 0.786453832697165
+            },
             "shapes": [
               {
                 "type": "cylinder",
                 "size": 5,
                 "color": "#888888",
                 "x": 0,
-                "y": 17.39978677321895,
-                "z": 0.024433369012196865,
-                "rotationX": -179,
+                "y": 0,
+                "z": -1.4,
+                "rotationX": 90,
                 "rotationY": 0,
                 "rotationZ": 0,
-                "height": 25
-              },
-              {
-                "type": "cone",
-                "size": 5,
-                "color": "#ff1117",
-                "x": 0,
-                "y": 2.402071345873079,
-                "z": -0.23735272754705528,
-                "rotationX": -179,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "height": 5
-              },
-              {
-                "type": "cone",
-                "size": 2.5,
-                "color": "#ff1117",
-                "x": 0,
-                "y": 29.7978981931582,
-                "z": 0.240843208834512,
-                "rotationX": 179,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "height": 2.5
-              },
-              {
-                "type": "cylinder",
-                "size": 6.25,
-                "color": "#888888",
-                "x": 0,
-                "y": 26.998324646720306,
-                "z": 0.19197647081011826,
-                "rotationX": 179,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "height": 5
-              },
-              {
-                "type": "box",
-                "size": 5,
-                "color": "#888888",
-                "x": -2.5,
-                "y": 28.041803357969904,
-                "z": 2.290190360643564,
-                "rotationX": 119,
-                "rotationY": 30,
-                "rotationZ": 45,
-                "width": 0.25,
-                "height": 2.5,
-                "depth": 8.5
-              },
-              {
-                "type": "box",
-                "size": 5,
-                "color": "#888888",
-                "x": 2.5,
-                "y": 27.954541325783488,
-                "z": -2.7090481151383945,
-                "rotationX": 59,
-                "rotationY": -30,
-                "rotationZ": -135,
-                "width": 0.25,
-                "height": 2.5,
-                "depth": 8.5
-              },
-              {
-                "type": "box",
-                "size": 5,
-                "color": "#888888",
-                "x": -2.5,
-                "y": 27.954541325783488,
-                "z": -2.7090481151383945,
-                "rotationX": 59,
-                "rotationY": 30,
-                "rotationZ": 135,
-                "width": 0.25,
-                "height": 2.5,
-                "depth": 8.5
-              },
-              {
-                "type": "box",
-                "size": 5,
-                "color": "#888888",
-                "x": 2.5,
-                "y": 28.041803357969904,
-                "z": 2.290190360643564,
-                "rotationX": 119,
-                "rotationY": -30,
-                "rotationZ": -45,
-                "width": 0.25,
-                "height": 2.5,
-                "depth": 8.5
+                "height": 25,
+                "scaleX": 1,
+                "id": 0
               }
-            ],
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 1.576956312390176,
-              "y": 0,
-              "z": 0.7884781561950845
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
+            ]
           }
         }
       ]

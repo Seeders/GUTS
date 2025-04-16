@@ -7,33 +7,23 @@
   "render": {
     "animations": {
       "idle": [
-        {
-          "shapes": {
-            "shapes": [],
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
-          }
-        }
+        {}
       ],
       "walk": [
         {
           "shapes": {
             "shapes": [
               {
+                "type": "box",
+                "width": 18,
+                "height": 10,
+                "depth": 28,
+                "x": 0,
                 "y": 19,
+                "z": -6.4,
+                "rotationX": -19,
+                "color": "#00008b",
+                "scaleX": 1,
                 "id": 0
               },
               {
@@ -174,29 +164,23 @@
                 "rotationZ": 8,
                 "id": 29
               }
-            ],
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
+            ]
           }
         },
         {
           "shapes": {
             "shapes": [
               {
+                "type": "box",
+                "width": 18,
+                "height": 10,
+                "depth": 28,
+                "x": 0,
                 "y": 20.5,
+                "z": -6.4,
+                "rotationX": -19,
+                "color": "#00008b",
+                "scaleX": 1,
                 "id": 0
               },
               {
@@ -343,29 +327,23 @@
                 "y": 25.5,
                 "id": 35
               }
-            ],
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
+            ]
           }
         },
         {
           "shapes": {
             "shapes": [
               {
+                "type": "box",
+                "width": 18,
+                "height": 10,
+                "depth": 28,
+                "x": 0,
                 "y": 21,
+                "z": -6.4,
+                "rotationX": -19,
+                "color": "#00008b",
+                "scaleX": 1,
                 "id": 0
               },
               {
@@ -534,29 +512,23 @@
                 "y": 26,
                 "id": 35
               }
-            ],
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
+            ]
           }
         },
         {
           "shapes": {
             "shapes": [
               {
+                "type": "box",
+                "width": 18,
+                "height": 10,
+                "depth": 28,
+                "x": 0,
                 "y": 20.5,
+                "z": -6.4,
+                "rotationX": -19,
+                "color": "#00008b",
+                "scaleX": 1,
                 "id": 0
               },
               {
@@ -703,22 +675,7 @@
                 "y": 25.5,
                 "id": 35
               }
-            ],
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
+            ]
           }
         }
       ]

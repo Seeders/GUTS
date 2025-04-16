@@ -162,6 +162,9 @@ class ShapeFactory {
             delete frameData[groupName];
             return null;
         }
+        if(!frameData){
+            frameData = {};
+        }
         let frameGroup = frameData[groupName];
         if(!frameGroup){
             //group doesnt exist in animation, copy from model
@@ -213,7 +216,25 @@ class ShapeFactory {
             }
             mergedShape = {...mergedShape, ...frameShape};
             delete mergedShape.id;
-            mergedShapes.push(mergedShape);
+            mergedShapes.push(JSON.parse(JSON.stringify(mergedShape)));
+            if(frameShape.scaleX == modelShape.scaleX || (frameShape.scaleX == 1 && typeof modelShape.scaleX == "undefined")){
+                delete frameShape.scaleX;
+            }
+            if(frameShape.scaleY == modelShape.scaleY || (frameShape.scaleY == 1 && typeof modelShape.scaleY == "undefined")){
+                delete frameShape.scaleY;
+            }
+            if(frameShape.scaleZ == modelShape.scaleZ || (frameShape.scaleZ == 1 && typeof modelShape.scaleZ == "undefined")){
+                delete frameShape.scaleZ;
+            }
+            if(frameShape.rotationX == modelShape.rotationX || (frameShape.rotationX == 0 && typeof modelShape.rotationX == "undefined")){
+                delete frameShape.rotationX;
+            }
+            if(frameShape.rotationY == modelShape.rotationY || (frameShape.rotationY == 0 && typeof modelShape.rotationY == "undefined")){
+                delete frameShape.rotationY;
+            }
+            if(frameShape.rotationZ == modelShape.rotationZ || (frameShape.rotationZ == 0 && typeof modelShape.rotationZ == "undefined")){
+                delete frameShape.rotationZ;
+            }
         }
         if(frameGroup.shapes){
             for(let i = frameGroup.shapes.length - 1; i >= 0; i--){
@@ -236,6 +257,7 @@ class ShapeFactory {
         if(frameGroup.shapes && frameGroup.shapes.length == 0){
             delete frameGroup.shapes;
         }
+
         if(Object.keys(frameGroup).length == 0) {            
            delete frameData[groupName];
         }

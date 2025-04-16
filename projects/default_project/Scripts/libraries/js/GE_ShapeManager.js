@@ -28,7 +28,23 @@ class GE_ShapeManager {
     }
     getShapeData(shapeId){
         let currentGroup = this.graphicsEditor.getCurrentGroup();
+        if(!currentGroup){
+            currentGroup = { shapes: [] };
+            let currentAnimation = this.graphicsEditor.getCurrentAnimation();
+            let currentFrame = currentAnimation[this.graphicsEditor.state.currentFrame];
+            if(!currentFrame){
+                currentFrame = {};
+            }
+            currentFrame[this.graphicsEditor.state.currentGroup] = currentGroup;
+            currentAnimation[this.graphicsEditor.state.currentFrame] = currentFrame;
+        }
         currentGroup.shapes = currentGroup.shapes || [];
+        if(currentGroup.shapes.length == 0){
+            let shapeData = JSON.parse(JSON.stringify(this.graphicsEditor.state.renderData.model[this.graphicsEditor.state.currentGroup])).shapes[shapeId];
+            shapeData.id = shapeId;
+            currentGroup.shapes = [shapeData];
+            return shapeData;
+        }
         let shapeData = (currentGroup.shapes).find(s => s.id == shapeId);
         if(this.graphicsEditor.state.editingModel){
             shapeData = currentGroup.shapes[shapeId];

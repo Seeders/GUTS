@@ -10,117 +10,40 @@
     "animations": {
       "idle": [
         {
-          "shapes": {
-            "shapes": [],
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
-          }
-        },
-        {
-          "shapes": {
+          "main": {
             "shapes": [
               {
+                "rotationX": -45,
                 "rotationZ": 0,
-                "rotationY": 45,
-                "id": 3
+                "id": 4
               },
               {
-                "rotationX": 155,
-                "id": 4
+                "rotationX": 45,
+                "id": 3
               }
-            ],
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
+            ]
           }
         },
         {
-          "shapes": {
+          "main": {
             "shapes": [
               {
+                "rotationX": 0,
+                "rotationZ": 0,
+                "id": 4
+              },
+              {
+                "rotationX": 0,
                 "rotationY": 90,
                 "id": 3
-              },
-              {
-                "rotationX": 200,
-                "id": 4
               }
-            ],
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
-          }
-        },
-        {
-          "shapes": {
-            "shapes": [
-              {
-                "rotationY": 135,
-                "id": 3
-              },
-              {
-                "rotationX": 245,
-                "id": 4
-              }
-            ],
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
+            ]
           }
         }
       ]
     },
     "model": {
-      "shapes": {
+      "main": {
         "shapes": [
           {
             "type": "cylinder",
