@@ -13,7 +13,7 @@ init({ spawnType, owner, target, stats }) {
     this.stats = stats;
     this.piercedEnemies = [];
     this.ownerStats = this.owner.getComponent("stats").stats;
-    this.modelRenderer = this.getRenderer("modelRenderer");
+    this.modelRenderer = this.owner.getComponent('modelRenderer');
     this.distanceTraveled = 0;
     this.distanceToSpawnParticle = 24;
     
