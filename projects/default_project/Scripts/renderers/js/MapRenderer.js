@@ -53,11 +53,21 @@ class MapRenderer extends engine.Component {
                 
             // Draw the map onto the cache canvas
             this.drawTileMap(tileMapData);
+            this.renderEnvironment();
+            
             //this.drawPaths(this.terrainCacheCtx, paths);
         }
         // Mark cache as valid
         this.isMapCached = true;
     }
+
+    renderEnvironment() {
+        this.tileMap.environmentObjects.forEach(obj => {
+            this.game.spawn(obj.x, obj.y, 'staticObject', { objectType: "environment", spawnType: obj.type});
+              
+        });
+    }
+
     renderBG(tileMapData, paths) {
         this.clearMap(tileMapData);
         // Generate cache if not already done

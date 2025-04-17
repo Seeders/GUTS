@@ -85,32 +85,29 @@ class ThreeJsWorld extends engine.Component {
             lightConfig.directional.color,
             lightConfig.directional.intensity
         );
-        this.directionalLight.position.set(100, 120, 80);
+        this.terrainSize = 768; // Original terrain size
+        this.directionalLight.position.set(this.terrainSize*2, this.terrainSize*2, this.terrainSize*2);
         this.directionalLight.castShadow = shadowConfig.enabled;
         
-        // Ground plane size
-        const groundSize = 768;
-        const groundCenterX = groundSize / 2;
-        const groundCenterZ = groundSize / 2;
-        
+        this.extendedSize = this.terrainSize * 10; // Make ground plane 4x larger
         if (shadowConfig.enabled) {
             this.directionalLight.shadow.mapSize.width = shadowConfig.mapSize;
             this.directionalLight.shadow.mapSize.height = shadowConfig.mapSize;
             this.directionalLight.shadow.camera.near = 0.5;
-            this.directionalLight.shadow.camera.far = 1000; // Increased for taller objects
+            this.directionalLight.shadow.camera.far = 20000; // Increased for taller objects
             this.directionalLight.shadow.bias = shadowConfig.bias;
             this.directionalLight.shadow.normalBias = shadowConfig.normalBias;
             this.directionalLight.shadow.radius = shadowConfig.radius;
             
             // Size shadow frustum to cover entire terrain
-            const d = groundSize * 0.6; // 60% larger than half the terrain size for padding
+            const d = this.extendedSize * 0.6; // 60% larger than half the terrain size for padding
             this.directionalLight.shadow.camera.left = -d;
             this.directionalLight.shadow.camera.right = d;
             this.directionalLight.shadow.camera.top = d;
             this.directionalLight.shadow.camera.bottom = -d;
             
             // Center shadow camera on terrain
-            this.directionalLight.target.position.set(groundCenterX, 0, groundCenterZ);
+            this.directionalLight.target.position.set(-this.terrainSize*2, 0, -this.terrainSize*2);
             this.directionalLight.target.updateMatrixWorld();
             this.directionalLight.shadow.camera.updateProjectionMatrix();
 
@@ -127,11 +124,25 @@ class ThreeJsWorld extends engine.Component {
         this.scene.add(this.hemisphereLight);
         
         // Create ground plane
-        const groundGeometry = new THREE.PlaneGeometry(groundSize, groundSize);
-        this.groundTexture = new THREE.CanvasTexture(this.game.terrainCanvasBuffer);
+        
+        // Create a single large ground plane
+        const groundGeometry = new THREE.PlaneGeometry(this.extendedSize, this.extendedSize);
+        
+        // Create a new canvas for the combined texture
+        const combinedCanvas = document.createElement('canvas');
+        combinedCanvas.width = this.extendedSize;
+        combinedCanvas.height = this.extendedSize;
+        this.groundCtx = combinedCanvas.getContext('2d');
+        
+        // Fill with background color
+        this.groundCtx.fillStyle = this.game.config.levels[this.game.state.level].tileMap.terrainBGColor;
+        this.groundCtx.fillRect(0, 0, this.extendedSize, this.extendedSize);
+        
+      
+        // Create texture from combined canvas
+        this.groundTexture = new THREE.CanvasTexture(combinedCanvas);
         this.groundTexture.wrapS = THREE.ClampToEdgeWrapping;
         this.groundTexture.wrapT = THREE.ClampToEdgeWrapping;
-        this.groundTexture.repeat.set(1, 1);
         this.groundTexture.minFilter = THREE.LinearFilter;
         this.groundTexture.magFilter = THREE.LinearFilter;
         
@@ -143,7 +154,7 @@ class ThreeJsWorld extends engine.Component {
         
         const ground = new THREE.Mesh(groundGeometry, groundMaterial);
         ground.rotation.x = -Math.PI / 2;
-        ground.position.set(groundCenterX, 0, groundCenterZ);
+        ground.position.set(this.terrainSize / 2, 0, this.terrainSize / 2);
         ground.receiveShadow = true;
         this.scene.add(ground);
       
@@ -185,7 +196,13 @@ class ThreeJsWorld extends engine.Component {
             this.stats.update();
         }
         if (!this.drawn && this.groundTexture && this.game.mapRenderer && this.game.mapRenderer.isMapCached) {
-            this.groundTexture.needsUpdate = true;            
+            this.groundTexture.needsUpdate = true;          
+              // Calculate position to draw terrain texture (center it)
+            const offset = (this.extendedSize - this.terrainSize) / 2;
+            
+            // Draw terrain texture in the center
+            this.groundCtx.drawImage(this.game.terrainCanvasBuffer, offset, offset);
+            
             this.drawn = true;
         }
         // Render the scene

@@ -14,13 +14,13 @@ class Animator extends engine.Component {
         this.frameDuration = .166; // 10 frames per animation frame (~0.166s at 60 FPS)
         this.frameTimer = 0;
 
-        this.baseSpeed = this.parent.getComponent("stats").stats.speed || 1;
+        this.baseSpeed = this.parent.getComponent("stats")?.stats.speed || 1;
     }
 
     update() {
-
+        
         this.frameTimer += this.game.deltaTime;
-        let currentSpeedPercent = this.parent.getComponent("stats").stats.speed / this.baseSpeed || 1;
+        let currentSpeedPercent = this.parent.getComponent("stats")?.stats.speed / this.baseSpeed || 1;
 
         if (this.frameTimer >= this.frameDuration / currentSpeedPercent) {
             this.frameTimer = 0;
