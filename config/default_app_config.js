@@ -28,7 +28,7 @@ const DEFAULT_PROJECT_CONFIG = {
         "loaderEntity": "GameLoader",
         "canvasWidth": 1600,
         "canvasHeight": 800,
-        "is3D": false
+        "is3D": true
       },
       "editor": {
         "title": "Editor Config",
