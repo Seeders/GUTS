@@ -5,7 +5,7 @@ class MapRenderer extends engine.Component {
     }
     
     
-    init({canvasBuffer, terrainCanvasBuffer, environment, imageManager, levelName, gameConfig, level}) {   
+    init({canvasBuffer, terrainCanvasBuffer, environment, imageManager, levelName, gameConfig, level, isEditor}) {   
 
         this.config = gameConfig;
         this.imageManager = imageManager;
@@ -18,7 +18,7 @@ class MapRenderer extends engine.Component {
         this.tileMap = level.tileMap;
         this.terrainBGColor = level.tileMap.terrainBGColor;
         // Create off-screen canvas for caching
-        if(!this.config.is3D) {
+        if(!this.config.is3D || isEditor) {
             this.ctx = canvasBuffer.getContext('2d');
             this.mapCacheCanvas = document.createElement('canvas');
             this.mapCacheCanvas.width = this.config.canvasWidth;

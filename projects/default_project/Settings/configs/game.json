@@ -24,6 +24,6 @@
   "loaderComponent": "GameLoader",
   "loaderEntity": "GameLoader",
   "canvasWidth": 1600,
-  "canvasHeight": 800,
+  "canvasHeight": 1000,
   "is3D": true
 }

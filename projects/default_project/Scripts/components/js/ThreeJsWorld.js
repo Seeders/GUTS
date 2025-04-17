@@ -1,15 +1,15 @@
 class ThreeJsWorld extends engine.Component {
 
-    init({ 
-        containerSelector = '#gameContainer', 
-        width = window.innerWidth, 
+    init({
+        containerSelector = '#gameContainer',
+        width = window.innerWidth,
         height = window.innerHeight,
         cameraConfig = {
             fov: 45,
             near: 0.1,
             far: 5000,
-            position: { x: 768/2, y: 500, z: 768*1.5 },
-            lookAt: { x: 768/2, y: 0, z: 768/2 }
+            position: { x: 768 / 2, y: 500, z: 768 * 1.5 },
+            lookAt: { x: 768 / 2, y: 0, z: 768 / 2 }
         },
         useControls = true,
         lightConfig = {
@@ -26,28 +26,28 @@ class ThreeJsWorld extends engine.Component {
         },
         background = 0x87CEEB,
         fog = { enabled: true, color: 0x87CEEB, density: 0.0005 }
-    }) {       
-        if(!this.game.config.configs.game.is3D) {
+    }) {
+        if (!this.game.config.configs.game.is3D) {
             return;
-        }    
+        }
         this.showStats = false;
         this.clock = new THREE.Clock();
         this.onWindowResizeHandler = this.onWindowResize.bind(this);
-        
+
         this.container = document.querySelector(containerSelector) || document.body;
         this.renderer = new THREE.WebGLRenderer({ antialias: true, canvas: this.game.canvas });
         this.renderer.setSize(width, height);
         this.renderer.setPixelRatio(window.devicePixelRatio);
         this.renderer.shadowMap.enabled = shadowConfig.enabled;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        
+
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(background);
-        
+
         if (fog.enabled) {
             this.scene.fog = new THREE.FogExp2(fog.color, fog.density);
         }
-        
+
         this.camera = new THREE.PerspectiveCamera(
             cameraConfig.fov,
             width / height,
@@ -64,7 +64,7 @@ class ThreeJsWorld extends engine.Component {
             cameraConfig.lookAt.y,
             cameraConfig.lookAt.z
         );
-        
+
         if (useControls) {
             this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
             this.controls.target.set(
@@ -74,103 +74,105 @@ class ThreeJsWorld extends engine.Component {
             );
             this.controls.update();
         }
-        
+
         this.ambientLight = new THREE.AmbientLight(
             lightConfig.ambient.color,
             lightConfig.ambient.intensity
         );
         this.scene.add(this.ambientLight);
-        
+
         this.directionalLight = new THREE.DirectionalLight(
             lightConfig.directional.color,
             lightConfig.directional.intensity
         );
-        this.terrainSize = 768; // Original terrain size
-        this.directionalLight.position.set(this.terrainSize*2, this.terrainSize*2, this.terrainSize*2);
+        this.terrainSize = 768;
+        this.directionalLight.position.set(this.terrainSize * 2, this.terrainSize * 2, this.terrainSize * 2);
         this.directionalLight.castShadow = shadowConfig.enabled;
-        
-        this.extendedSize = this.terrainSize * 10; // Make ground plane 4x larger
+
+        this.extendedSize = this.terrainSize * 10;
         if (shadowConfig.enabled) {
             this.directionalLight.shadow.mapSize.width = shadowConfig.mapSize;
             this.directionalLight.shadow.mapSize.height = shadowConfig.mapSize;
             this.directionalLight.shadow.camera.near = 0.5;
-            this.directionalLight.shadow.camera.far = 20000; // Increased for taller objects
+            this.directionalLight.shadow.camera.far = 20000;
             this.directionalLight.shadow.bias = shadowConfig.bias;
             this.directionalLight.shadow.normalBias = shadowConfig.normalBias;
             this.directionalLight.shadow.radius = shadowConfig.radius;
-            
-            // Size shadow frustum to cover entire terrain
-            const d = this.extendedSize * 0.6; // 60% larger than half the terrain size for padding
+
+            const d = this.extendedSize * 0.6;
             this.directionalLight.shadow.camera.left = -d;
             this.directionalLight.shadow.camera.right = d;
             this.directionalLight.shadow.camera.top = d;
             this.directionalLight.shadow.camera.bottom = -d;
-            
-            // Center shadow camera on terrain
-            this.directionalLight.target.position.set(-this.terrainSize*2, 0, -this.terrainSize*2);
+
+            this.directionalLight.target.position.set(-this.terrainSize * 2, 0, -this.terrainSize * 2);
             this.directionalLight.target.updateMatrixWorld();
             this.directionalLight.shadow.camera.updateProjectionMatrix();
-
         }
-        
+
         this.scene.add(this.directionalLight);
         this.scene.add(this.directionalLight.target);
-        
+
         this.hemisphereLight = new THREE.HemisphereLight(
             lightConfig.hemisphere.skyColor,
             lightConfig.hemisphere.groundColor,
             lightConfig.hemisphere.intensity
         );
         this.scene.add(this.hemisphereLight);
-        
+
         // Create ground plane
-        
-        // Create a single large ground plane
         const groundGeometry = new THREE.PlaneGeometry(this.extendedSize, this.extendedSize);
-        
-        // Create a new canvas for the combined texture
-        const combinedCanvas = document.createElement('canvas');
-        combinedCanvas.width = this.extendedSize;
-        combinedCanvas.height = this.extendedSize;
-        this.groundCtx = combinedCanvas.getContext('2d');
-        
+
+        // Create canvas for terrain texture
+        this.groundCanvas = document.createElement('canvas');
+        this.groundCanvas.width = this.extendedSize;
+        this.groundCanvas.height = this.extendedSize;
+        this.groundCtx = this.groundCanvas.getContext('2d');
+
         // Fill with background color
         this.groundCtx.fillStyle = this.game.config.levels[this.game.state.level].tileMap.terrainBGColor;
         this.groundCtx.fillRect(0, 0, this.extendedSize, this.extendedSize);
-        
-      
-        // Create texture from combined canvas
-        this.groundTexture = new THREE.CanvasTexture(combinedCanvas);
+
+        // Create texture
+        this.groundTexture = new THREE.CanvasTexture(this.groundCanvas);
         this.groundTexture.wrapS = THREE.ClampToEdgeWrapping;
         this.groundTexture.wrapT = THREE.ClampToEdgeWrapping;
         this.groundTexture.minFilter = THREE.LinearFilter;
         this.groundTexture.magFilter = THREE.LinearFilter;
-        
-        const groundMaterial = new THREE.MeshStandardMaterial({ 
-            map: this.groundTexture,
-            roughness: 0.8,
-            metalness: 0.2
-        });
-        
-        const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+
+        // Use simplified material
+        this.groundMaterial = this.getGroundMaterial();
+
+        const ground = new THREE.Mesh(groundGeometry, this.groundMaterial);
         ground.rotation.x = -Math.PI / 2;
         ground.position.set(this.terrainSize / 2, 0, this.terrainSize / 2);
         ground.receiveShadow = true;
         this.scene.add(ground);
-      
+
         if (this.showStats) {
             this.stats = new Stats();
             this.container.appendChild(this.stats.dom);
         }
-        
+
         window.addEventListener('resize', this.onWindowResizeHandler);
-        
+
         this.game.scene = this.scene;
         this.game.camera = this.camera;
         this.game.renderer = this.renderer;
         this.drawn = false;
     }
-    
+
+    getGroundMaterial() {
+        // Simplified material using MeshStandardMaterial for terrain
+        return new THREE.MeshStandardMaterial({
+            map: this.groundTexture,
+            side: THREE.DoubleSide,
+            metalness: 0.0,
+            roughness: 0.8
+        });
+    }
+
+
     // Handle window resize
     onWindowResize() {
         const width = this.container.clientWidth || window.innerWidth;
@@ -182,33 +184,107 @@ class ThreeJsWorld extends engine.Component {
     }
     
     // Update and render the scene
+
     update(deltaTime) {
-        if(!this.game.config.configs.game.is3D) {
+        if (!this.game.config.configs.game.is3D) {
             return;
         }
-        // Update controls if they exist
         if (this.controls) {
             this.controls.update();
         }
-        
-        // Update stats if they exist
+        if (this.grassShader) {
+            this.grassShader.uniforms.time.value += deltaTime;
+        }
         if (this.stats) {
             this.stats.update();
         }
         if (!this.drawn && this.groundTexture && this.game.mapRenderer && this.game.mapRenderer.isMapCached) {
-            this.groundTexture.needsUpdate = true;          
-              // Calculate position to draw terrain texture (center it)
             const offset = (this.extendedSize - this.terrainSize) / 2;
-            
-            // Draw terrain texture in the center
             this.groundCtx.drawImage(this.game.terrainCanvasBuffer, offset, offset);
-            
+            this.groundTexture.needsUpdate = true;
+
+        // Add 3D grass
+        this.addGrassToTerrain();
             this.drawn = true;
         }
-        // Render the scene
         this.renderer.render(this.scene, this.camera);
     }
+
+    // Add this method to your ThreeJsWorld class
+    addGrassToTerrain() {
+        // Grass blade geometry
+        const bladeWidth = 12;
+        const bladeHeight = 24;
+        const grassGeometry = this.createCurvedBladeGeometry(bladeWidth, bladeHeight);
+        grassGeometry.translate(0, bladeHeight / 2, 0);
     
+        // Grass material (no vertex colors for now)
+        const grassTexture = this.createGrassTexture();
+        const grassMaterial = new THREE.MeshStandardMaterial({
+            map: grassTexture,
+            transparent: true,
+            side: THREE.DoubleSide,
+            depthWrite: false
+        });
+    
+        // Grass parameters
+        const grassCount = 2400000; // Low count for testing
+        const terrainSize = this.terrainSize;
+    
+        // Create instanced mesh
+        const grass = new THREE.InstancedMesh(grassGeometry, grassMaterial, grassCount);
+
+        grass.castShadow = true;
+        grass.receiveShadow = true;
+    
+        // Temporary objects
+        const dummy = new THREE.Object3D();
+    
+        // Log terrain canvas status
+        if (!this.groundCanvas) {
+            console.warn('terrainCanvasBuffer is missing; placing grass everywhere.');
+        } else {
+            console.log('terrainCanvasBuffer size:', this.groundCanvas.width, 'x', this.groundCanvas.height);
+            const ctx = this.groundCanvas.getContext('2d');
+            try {
+                const terrainData = ctx.getImageData(0, 0, this.groundCanvas.width, this.groundCanvas.height).data;
+                let grassArea = this.groundCanvas.width;
+                // Distribute grass (bypass terrain check)
+                let placedGrassCount = 0;
+                for (let i = 0; i < grassCount; i++) {
+                    const x = Math.floor(Math.random() * grassArea);
+                    const z = Math.floor(Math.random() * grassArea);
+                    const pixelIndex = (z * grassArea + x) * 4;
+                    const r = terrainData[pixelIndex];
+                    const g = terrainData[pixelIndex + 1];
+                    const b = terrainData[pixelIndex + 2];
+                    if( g > r && g > b) {
+                        placedGrassCount++;
+                        const rotationY = Math.random() * Math.PI * 2;
+                        const scale = 0.7 + Math.random() * 0.5;
+                
+                        dummy.position.set(x - grassArea / 2 + 768 / 2, -bladeHeight, z - grassArea / 2 + 768 / 2);
+                        dummy.rotation.set(0, rotationY, 0);
+                        dummy.scale.set(scale, scale, scale);
+                        dummy.updateMatrix();
+                
+                        grass.setMatrixAt(i, dummy.matrix);
+                    }
+                
+                }
+            
+            } catch (e) {
+                console.warn('Failed to get terrainCanvasBuffer data:', e);
+            }
+        }
+    
+        grass.instanceMatrix.needsUpdate = true;
+        this.scene.add(grass);
+        this.grass = grass;
+
+    }
+
+
     // Create a follow camera that tracks a target object
     setupFollowCamera(target, offsetX = 50, offsetY = 50, offsetZ = 50, lookAhead = 0) {
         if (!target) return;
@@ -307,26 +383,57 @@ class ThreeJsWorld extends engine.Component {
     
     // Clean up
     onDestroy() {
-        debugger;
-        // Remove event listeners
         window.removeEventListener('resize', this.onWindowResizeHandler);
-        
-        // Dispose Three.js objects
         this.renderer.dispose();
-        
-        // Remove stats if it exists
-        if (this.stats && this.stats.dom && this.stats.dom.parentElement) {
+        if (this.stats?.dom?.parentElement) {
             this.stats.dom.parentElement.removeChild(this.stats.dom);
         }
-        
-        // Remove renderer from DOM
-        if (this.renderer.domElement && this.renderer.domElement.parentElement) {
+        if (this.renderer.domElement?.parentElement) {
             this.renderer.domElement.parentElement.removeChild(this.renderer.domElement);
         }
-        
-        // Remove references to Three.js objects from game
+        // Dispose grass resources
+        if (this.grass) {
+            this.grass.geometry.dispose();
+            this.grass.material.dispose();
+        }
+        // Dispose ground resources
+        this.groundGeometry?.dispose();
+        this.groundMaterial?.dispose();
+        this.groundTexture?.dispose();
         this.game.scene = null;
         this.game.camera = null;
         this.game.renderer = null;
     }
+
+    createCurvedBladeGeometry(width = 0.1, height = 1) {
+        const shape = new THREE.Shape();
+        shape.moveTo(0, 0);
+        shape.quadraticCurveTo(width * 0.5, height * 0.5, 0, height);
+    
+        const geometry = new THREE.ShapeGeometry(shape);
+        geometry.translate(0, 0, 0);
+        return geometry;
+    }
+    createGrassTexture() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 4;
+        canvas.height = 32;
+        const ctx = canvas.getContext('2d');
+    
+        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        gradient.addColorStop(0, '#6bbf59');  // Tip
+        gradient.addColorStop(1, '#2d5f2e');  // Base
+    
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.wrapS = THREE.ClampToEdgeWrapping;
+        texture.wrapT = THREE.ClampToEdgeWrapping;
+        texture.magFilter = THREE.LinearFilter;
+        texture.minFilter = THREE.LinearMipMapLinearFilter;
+        return texture;
+    }
 }
+
+

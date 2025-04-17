@@ -279,7 +279,8 @@ class TerrainMapEditor {
                 environment: this.environment, 
                 imageManager: this.imageManager, 
                 levelName: 'level', 
-                level: { tileMap: this.tileMap }
+                level: { tileMap: this.tileMap },
+                isEditor: true
             }
         );
     }
