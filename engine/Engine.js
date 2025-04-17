@@ -149,7 +149,7 @@ class Engine {
     loadCollections() {
         let currentProject = localStorage.getItem("currentProject");
         let gameData = DEFAULT_PROJECT_CONFIG;
-        if (currentProject && currentProject !== "default_project") {
+        if (currentProject && !(currentProject == "default_project" && window.location.hostname === "localhost")) {
             gameData = JSON.parse(localStorage.getItem(currentProject));   
         }
 
