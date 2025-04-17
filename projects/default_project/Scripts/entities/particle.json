@@ -6,6 +6,7 @@
     "Animator"
   ],
   "renderers": [
+    "ModelRenderer",
     "Renderer"
   ]
 }

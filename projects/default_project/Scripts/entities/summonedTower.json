@@ -2,13 +2,14 @@
   "title": "Summoned Tower",
   "components": [
     "Stats",
-    "Animator",
     "ArrayTracker",
     "Attacker",
-    "LifeSpan"
+    "LifeSpan",
+    "Animator"
   ],
   "renderers": [
-    "Renderer",
-    "RangeIndicator"
+    "ModelRenderer",
+    "RangeIndicator",
+    "Renderer"
   ]
 }

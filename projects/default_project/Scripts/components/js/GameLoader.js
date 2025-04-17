@@ -22,13 +22,13 @@ class GameLoader extends engine.Component {
         }   
 
 
+        this.setupCanvas(this.config.configs.game.canvasWidth, this.config.configs.game.canvasHeight);
         await this.loadAssets();
 
         this.game.translator = new (this.game.libraryClasses.CoordinateTranslator)(this.config.configs.game, this.config.levels[this.state.level].tileMap.terrainMap.length, this.isometric);
         this.game.spatialGrid = new (this.game.libraryClasses.SpatialGrid)(this.config.levels[this.state.level].tileMap.terrainMap.length, this.config.configs.game.gridSize);
         const terrainImages = this.game.imageManager.getImages("levels", this.state.level);
 
-        this.setupCanvas(this.config.configs.game.canvasWidth, this.config.configs.game.canvasHeight);
         // Use ModuleManager's script environment
         this.game.terrainTileMapper = new (this.game.libraryClasses.TileMap)(this, {}, {CanvasUtility: this.game.libraryClasses.CanvasUtility});
         this.game.terrainTileMapper.init(this.terrainCanvasBuffer, this.config.configs.game.gridSize, terrainImages, this.isometric);
@@ -43,7 +43,11 @@ class GameLoader extends engine.Component {
     }
     setupCanvas(canvasWidth, canvasHeight) {
         this.canvas = document.getElementById("gameCanvas");
-        this.finalCtx = this.canvas.getContext("2d");
+        if(this.game.config.configs.game.is3D){
+            this.finalCtx = this.canvas.getContext("webgl");
+        } else {
+            this.finalCtx = this.canvas.getContext("2d");
+        }
         this.canvasBuffer = document.createElement("canvas");
         this.ctx = this.canvasBuffer.getContext("2d");
         this.canvasBuffer.setAttribute('width', canvasWidth);
@@ -68,5 +72,11 @@ class GameLoader extends engine.Component {
             console.log('loading', objectType);
             await this.game.imageManager.loadImages(objectType, this.config[objectType]);
         }  
+        this.game.modelManager = new (this.game.libraryClasses.ModelManager)(this,{ShapeFactory: this.game.libraryClasses.ShapeFactory});    
+        for(let objectType in this.config) {
+            console.log('loading', objectType);
+            await this.game.modelManager.loadModels(objectType, this.config[objectType]);
+        }  
+ 
     }
 }

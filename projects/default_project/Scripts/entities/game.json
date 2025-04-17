@@ -5,6 +5,7 @@
     "WaveManager",
     "UpgradeManager",
     "AudioManager",
+    "ThreeJsWorld",
     "Game"
   ],
   "renderers": [

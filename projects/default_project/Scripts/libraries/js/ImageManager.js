@@ -102,6 +102,7 @@ class ImageManager {
     }
 
     async loadImages(prefix, config, checkCache = true, cacheResult = true) {
+
         if (!prefix || !config || typeof config !== 'object') {
             throw new Error('Invalid prefix or config provided to loadImages');
         }

@@ -2,15 +2,16 @@
   "title": "Tower",
   "components": [
     "Stats",
-    "Animator",
     "ArrayTracker",
     "Leveler",
     "Buildable",
     "PopulationBurden",
-    "Attacker"
+    "Attacker",
+    "Animator"
   ],
   "renderers": [
-    "Renderer",
-    "RangeIndicator"
+    "ModelRenderer",
+    "RangeIndicator",
+    "Renderer"
   ]
 }

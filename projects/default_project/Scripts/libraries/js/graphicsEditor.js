@@ -144,7 +144,7 @@ class GraphicsEditor {
         for (const groupName in model) {     
             const mergedGroup = this.getMergedGroup(groupName);
             if (mergedGroup) {
-                let threeGroup = await this.shapeFactory.createGroupFromJSON(mergedGroup); 
+                let threeGroup = await this.shapeFactory.createGroupFromJSON(groupName, mergedGroup); 
                 threeGroup.name = groupName;
                 this.rootGroup.add(threeGroup);
             }

@@ -21,9 +21,11 @@ class Game extends engine.Component {
     }
 
     update() {
-        this.getComponent("UiManager")?.clearCanvas();
-
-        this.getComponent("MapRenderer")?.renderBG(this.game.state.tileMapData, this.game.state.paths);
+        if(this.game.config.configs.game.is3D){
+            this.getComponent("MapRenderer")?.render(this.game.state.tileMapData, this.game.state.paths);
+        } else {
+            this.getComponent("MapRenderer")?.renderBG(this.game.state.tileMapData, this.game.state.paths);
+        }
         
         if (!this.game.state.isPaused) {
             this.currentTime = Date.now();
@@ -67,8 +69,9 @@ class Game extends engine.Component {
             this.game.entitiesToAdd.forEach((entity) => this.game.state.addEntity(entity));
             this.game.entitiesToAdd = [];
         }     
-        
-        this.getComponent("MapRenderer")?.renderFG();
+        if(!this.game.config.configs.game.is3D){
+            this.getComponent("MapRenderer")?.renderFG(this.game.state.tileMapData, this.game.state.paths);
+        }   
         
     }
 

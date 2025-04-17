@@ -7,9 +7,14 @@ class UiManager extends engine.Component {
     
     init({ canvas, canvasBuffer, terrainCanvasBuffer }) {
         this.canvas = canvas;
-        this.finalCtx = this.canvas.getContext("2d");
         this.canvasBuffer = canvasBuffer;
-        this.ctx = this.canvasBuffer.getContext("2d");
+        if(this.game.config.configs.game.is3D) {
+            this.finalCtx = this.canvas.getContext("webgl");
+            this.ctx = this.canvasBuffer.getContext("webgl");
+        } else {
+            this.finalCtx = this.canvas.getContext("2d");
+            this.ctx = this.canvasBuffer.getContext("2d");
+        }
         this.terrainCanvasBuffer = terrainCanvasBuffer;
         this.projectConfig = this.game.config.configs.game;
         this.gridSize = this.projectConfig.gridSize;
@@ -254,8 +259,9 @@ class UiManager extends engine.Component {
             this.ctx.textAlign = 'center';
             this.ctx.fillText(`Next Wave in ${countdown}...`, this.canvas.width / 2, 50);
         }  
-
-        this.renderCanvas();
+        if(!this.game.config.configs.game.is3D) {
+            this.renderCanvas();
+        }
 }
 
     updateWaveDisplay(waveNumber) {

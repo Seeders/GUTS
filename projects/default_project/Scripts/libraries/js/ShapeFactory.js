@@ -6,13 +6,14 @@ class ShapeFactory {
     async createMergedGroupFromJSON(model, frameData, groupName) {
         let mergedGroup = this.getMergedGroup(model, frameData, groupName);
         if( mergedGroup){
-            return await this.createGroupFromJSON(mergedGroup);
+            return await this.createGroupFromJSON(groupName, mergedGroup);
         } else {
             return null;
         }
     }
-    async createGroupFromJSON(groupData) {
+    async createGroupFromJSON(groupName, groupData) {
         const group = new THREE.Group();
+        group.name = groupName;
         group.userData = { isGroup: true };
         // Use Promise.all with map instead of forEach to properly await all shapes
         await Promise.all(groupData.shapes.map(async (shape, index) => {

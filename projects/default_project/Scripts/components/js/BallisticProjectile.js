@@ -13,7 +13,7 @@ init({ spawnType, owner, target, stats }) {
     this.stats = stats;
     this.piercedEnemies = [];
     this.ownerStats = this.owner.getComponent("stats").stats;
-    this.animator = this.getComponent("animator");
+    this.modelRenderer = this.getRenderer("modelRenderer");
     this.distanceTraveled = 0;
     this.distanceToSpawnParticle = 24;
     
@@ -34,7 +34,7 @@ init({ spawnType, owner, target, stats }) {
     
     // Animation state variables
     this.lastZPosition = this.positionZ;
-    this.animator.setAnimation('ascend');
+    this.modelRenderer.setAnimation('ascend');
     this.peakThreshold = this.maxHeight * 0.1; // 10% threshold for idle at peak
     this.currentAnimState = 'ascend';
     if(this.stats.attackSound){
@@ -76,7 +76,7 @@ update() {
     // Check if animation state needs to change based on z movement and proximity to peak
     if( xyprogressToTarget < .075 ) {
         if (this.currentAnimState !== 'launch') {
-            this.animator.setAnimation('launch');
+            this.modelRenderer.setAnimation('launch');
             this.currentAnimState = 'launch';
         }
     // } else if( xyprogressToTarget > .95 ) {
@@ -87,19 +87,19 @@ update() {
     } else if (distanceFromPeak <= this.peakThreshold) {
         // We're near the peak of the trajectory
         if (this.currentAnimState !== 'idle') {
-            this.animator.setAnimation('idle');
+            this.modelRenderer.setAnimation('idle');
             this.currentAnimState = 'idle';
         }
     } else if (this.positionZ < this.lastZPosition) {
         // We're descending and not near the peak
         if (this.currentAnimState !== 'descend') {
-            this.animator.setAnimation('descend');
+            this.modelRenderer.setAnimation('descend');
             this.currentAnimState = 'descend';
         }
     } else if (this.positionZ > this.lastZPosition) {
         // We're ascending and not near the peak
         if (this.currentAnimState !== 'ascend') {
-            this.animator.setAnimation('ascend');
+            this.modelRenderer.setAnimation('ascend');
             this.currentAnimState = 'ascend';
         }
     }

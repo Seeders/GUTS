@@ -2,11 +2,12 @@
   "title": "Ballistic Projectile",
   "components": [
     "Stats",
-    "Animator",
     "ArrayTracker",
-    "BallisticProjectile"
+    "BallisticProjectile",
+    "Animator"
   ],
   "renderers": [
+    "ModelRenderer",
     "Renderer"
   ]
 }

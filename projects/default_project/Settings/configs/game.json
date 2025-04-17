@@ -2,9 +2,10 @@
   "gridSize": 48,
   "imageSize": 128,
   "title": "Default Project",
-  "isIsometric": true,
+  "isIsometric": false,
   "libraries": [
     "threejs",
+    "three.OrbitControls",
     "GLTFLoader",
     "ShapeFactory",
     "ImageManager",
@@ -15,12 +16,14 @@
     "TileMap",
     "Entity",
     "Component",
-    "GameState"
+    "GameState",
+    "ModelManager"
   ],
   "fileName": "game",
   "interface": "main",
   "loaderComponent": "GameLoader",
   "loaderEntity": "GameLoader",
   "canvasWidth": 1600,
-  "canvasHeight": 800
+  "canvasHeight": 800,
+  "is3D": false
 }

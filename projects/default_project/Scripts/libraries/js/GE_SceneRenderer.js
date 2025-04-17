@@ -108,7 +108,7 @@ class GE_SceneRenderer {
 
     async createObjectsFromJSON(frameData, scene) {
         for(const groupName in frameData) {
-            const group = await this.graphicsEditor.shapeFactory.createGroupFromJSON(frameData[groupName]);
+            const group = await this.graphicsEditor.shapeFactory.createGroupFromJSON(groupName, frameData[groupName]);
             scene.add(group);
         }
     }

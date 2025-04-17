@@ -1,7 +1,7 @@
 {
   "title": "Editor Config",
   "editorCategories": "",
-  "theme": "professional2",
+  "theme": "claude2",
   "editorModules": [
     "terrainModule",
     "graphicsModule",
