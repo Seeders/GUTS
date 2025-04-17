@@ -160,6 +160,7 @@ class ThreeJsWorld extends engine.Component {
         this.game.camera = this.camera;
         this.game.renderer = this.renderer;
         this.drawn = false;
+        this.timer = 0;
     }
 
     getGroundMaterial() {
@@ -185,15 +186,15 @@ class ThreeJsWorld extends engine.Component {
     
     // Update and render the scene
 
-    update(deltaTime) {
+    update() {
         if (!this.game.config.configs.game.is3D) {
             return;
         }
         if (this.controls) {
             this.controls.update();
         }
-        if (this.grassShader) {
-            this.grassShader.uniforms.time.value += deltaTime;
+        if(!isNaN(this.game.deltaTime)) {
+            this.timer += this.game.deltaTime;
         }
         if (this.stats) {
             this.stats.update();
@@ -203,9 +204,14 @@ class ThreeJsWorld extends engine.Component {
             this.groundCtx.drawImage(this.game.terrainCanvasBuffer, offset, offset);
             this.groundTexture.needsUpdate = true;
 
-        // Add 3D grass
-        this.addGrassToTerrain();
+            // Add 3D grass
+            this.addGrassToTerrain();
             this.drawn = true;
+        }
+        if(this.grassMaterial) {
+            if (this.uniforms) {
+                this.uniforms.time = { value: this.timer };
+            }
         }
         this.renderer.render(this.scene, this.camera);
     }
@@ -213,26 +219,75 @@ class ThreeJsWorld extends engine.Component {
     // Add this method to your ThreeJsWorld class
     addGrassToTerrain() {
         // Grass blade geometry
-        const bladeWidth = 12;
-        const bladeHeight = 24;
+        const bladeWidth = 24;
+        const bladeHeight = 32;
         const grassGeometry = this.createCurvedBladeGeometry(bladeWidth, bladeHeight);
         grassGeometry.translate(0, bladeHeight / 2, 0);
+        const grassCount = 1000000;
+        // Add random phase attribute for each instance
+        const phases = new Float32Array(grassCount);
+        for (let i = 0; i < grassCount; i++) {
+            phases[i] = Math.random() * Math.PI * 2;
+        }
+        grassGeometry.setAttribute('instancePhase', new THREE.InstancedBufferAttribute(phases, 1));
     
-        // Grass material (no vertex colors for now)
+        // Grass shader material
         const grassTexture = this.createGrassTexture();
-        const grassMaterial = new THREE.MeshStandardMaterial({
-            map: grassTexture,
-            transparent: true,
-            side: THREE.DoubleSide,
-            depthWrite: false
+        // In addGrassToTerrain() method:
+        this.uniforms = {
+                time: { value: 0 },
+                windSpeed: { value: .8 },
+                windStrength: { value: 0.2 },
+                windDirection: { value: new THREE.Vector2(0.8, 0.6).normalize() },
+                map: { value: grassTexture },
+                // Three.js automatically provides:
+                // projectionMatrix, modelViewMatrix, instanceMatrix (for instancing)
+                // position, uv, etc.
+            };
+        const uniforms = this.uniforms;
+        this.grassMaterial = new THREE.ShaderMaterial({
+            vertexShader: `
+        varying vec2 vUv;
+        uniform float time;
+        uniform float windSpeed;
+        uniform float windStrength;
+        uniform vec2 windDirection;
+        attribute float instancePhase;
+
+        void main() {        
+            
+            vUv = uv;
+            
+            vec2 dir = normalize(windDirection);
+            float wave = sin(time * windSpeed + instancePhase) * windStrength;
+            wave *= uv.y;
+            
+            vec3 displacement = vec3(
+                dir.x * wave,
+                0.0,
+                dir.y * wave
+            );
+
+            gl_Position = projectionMatrix * modelViewMatrix * instanceMatrix * 
+                        vec4(position + displacement, 1.0);
+
+        }
+    `,
+    fragmentShader: `
+        varying vec2 vUv;
+        uniform sampler2D map;
+
+        void main() {
+            gl_FragColor = texture2D(map, vUv);
+        }
+    `,
+            uniforms: uniforms
         });
     
-        // Grass parameters
-        const grassCount = 2400000; // Low count for testing
-        const terrainSize = this.terrainSize;
-    
+        this.grassShader = this.grassMaterial; // Reference for time updates
+    // new THREE.MeshStandardMaterial({map: grassTexture})
         // Create instanced mesh
-        const grass = new THREE.InstancedMesh(grassGeometry, grassMaterial, grassCount);
+        const grass = new THREE.InstancedMesh(grassGeometry,this.grassMaterial, grassCount);
 
         grass.castShadow = true;
         grass.receiveShadow = true;
@@ -248,13 +303,14 @@ class ThreeJsWorld extends engine.Component {
             const ctx = this.groundCanvas.getContext('2d');
             try {
                 const terrainData = ctx.getImageData(0, 0, this.groundCanvas.width, this.groundCanvas.height).data;
-                let grassArea = this.groundCanvas.width;
+                let grassArea = this.groundCanvas.width / 4;
+                const offset =  (this.extendedSize - grassArea) / 2;
                 // Distribute grass (bypass terrain check)
                 let placedGrassCount = 0;
                 for (let i = 0; i < grassCount; i++) {
                     const x = Math.floor(Math.random() * grassArea);
                     const z = Math.floor(Math.random() * grassArea);
-                    const pixelIndex = (z * grassArea + x) * 4;
+                    const pixelIndex = ((z + offset) * this.groundCanvas.width + (x + offset)) * 4;
                     const r = terrainData[pixelIndex];
                     const g = terrainData[pixelIndex + 1];
                     const b = terrainData[pixelIndex + 2];
@@ -263,7 +319,7 @@ class ThreeJsWorld extends engine.Component {
                         const rotationY = Math.random() * Math.PI * 2;
                         const scale = 0.7 + Math.random() * 0.5;
                 
-                        dummy.position.set(x - grassArea / 2 + 768 / 2, -bladeHeight, z - grassArea / 2 + 768 / 2);
+                        dummy.position.set(x - grassArea / 2 + this.terrainSize / 2, -bladeHeight, z - grassArea / 2 + this.terrainSize / 2);
                         dummy.rotation.set(0, rotationY, 0);
                         dummy.scale.set(scale, scale, scale);
                         dummy.updateMatrix();
