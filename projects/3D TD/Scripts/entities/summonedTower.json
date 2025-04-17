@@ -4,10 +4,12 @@
     "Stats",
     "ArrayTracker",
     "Attacker",
-    "LifeSpan"
+    "LifeSpan",
+    "Animator"
   ],
   "renderers": [
     "ModelRenderer",
-    "RangeIndicator"
+    "RangeIndicator",
+    "Renderer"
   ]
 }

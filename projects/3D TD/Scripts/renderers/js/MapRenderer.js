@@ -10,7 +10,6 @@ class MapRenderer extends engine.Component {
         this.config = gameConfig;
         this.imageManager = imageManager;
         this.environment = environment;
-        this.ctx = canvasBuffer.getContext('webgl');
         this.selectedTowerType = null;
         this.hoverCell = { x: -1, y: -1 };
         this.showRange = false;
@@ -19,22 +18,24 @@ class MapRenderer extends engine.Component {
         this.tileMap = level.tileMap;
         this.terrainBGColor = level.tileMap.terrainBGColor;
         // Create off-screen canvas for caching
-        this.mapCacheCanvas = document.createElement('canvas');
-        this.mapCacheCanvas.width = this.config.canvasWidth;
-        this.mapCacheCanvas.height = this.config.canvasHeight;
-        this.mapCacheCtx = this.mapCacheCanvas.getContext('2d');
+        if(!this.config.is3D) {
+            this.ctx = canvasBuffer.getContext('2d');
+            this.mapCacheCanvas = document.createElement('canvas');
+            this.mapCacheCanvas.width = this.config.canvasWidth;
+            this.mapCacheCanvas.height = this.config.canvasHeight;
+            this.mapCacheCtx = this.mapCacheCanvas.getContext('2d');
 
-        
-        this.envCacheCanvasBG = document.createElement('canvas');
-        this.envCacheCanvasBG.width = this.config.canvasWidth;
-        this.envCacheCanvasBG.height = this.config.canvasHeight / 2;
-        this.envCacheCtxBG = this.envCacheCanvasBG.getContext('2d');
+            
+            this.envCacheCanvasBG = document.createElement('canvas');
+            this.envCacheCanvasBG.width = this.config.canvasWidth;
+            this.envCacheCanvasBG.height = this.config.canvasHeight / 2;
+            this.envCacheCtxBG = this.envCacheCanvasBG.getContext('2d');
 
-        this.envCacheCanvasFG = document.createElement('canvas');
-        this.envCacheCanvasFG.width = this.config.canvasWidth;
-        this.envCacheCanvasFG.height = this.config.canvasHeight / 2;
-        this.envCacheCtxFG = this.envCacheCanvasFG.getContext('2d');
-
+            this.envCacheCanvasFG = document.createElement('canvas');
+            this.envCacheCanvasFG.width = this.config.canvasWidth;
+            this.envCacheCanvasFG.height = this.config.canvasHeight / 2;
+            this.envCacheCtxFG = this.envCacheCanvasFG.getContext('2d');
+        }
         this.terrainCanvas = terrainCanvasBuffer;
         this.terrainCanvas.width = this.tileMap.size * this.config.gridSize;
         this.terrainCanvas.height = this.tileMap.size * this.config.gridSize;
@@ -46,6 +47,17 @@ class MapRenderer extends engine.Component {
     }
 
     draw(){}
+    render(tileMapData) {
+        if(!this.isMapCached){
+            this.terrainCtx.clearRect(0, 0, this.terrainCanvas.width, this.terrainCanvas.height);
+                
+            // Draw the map onto the cache canvas
+            this.drawTileMap(tileMapData);
+            //this.drawPaths(this.terrainCacheCtx, paths);
+        }
+        // Mark cache as valid
+        this.isMapCached = true;
+    }
     renderBG(tileMapData, paths) {
         this.clearMap(tileMapData);
         // Generate cache if not already done
@@ -55,14 +67,14 @@ class MapRenderer extends engine.Component {
   
         // Draw cached map image to main canvas
       
-      // this.ctx.drawImage( this.terrainCanvas, ( this.config.canvasWidth - this.terrainCanvas.width) / 2, ( this.config.canvasHeight - this.terrainCanvas.height) / 2 );
+       this.ctx.drawImage( this.terrainCanvas, ( this.config.canvasWidth - this.terrainCanvas.width) / 2, ( this.config.canvasHeight - this.terrainCanvas.height) / 2 );
 
        //this.ctx.drawImage(this.terrainCanvas, 0, 0);
         //this.ctx.drawImage(this.mapCacheCanvas, 0,  -this.config.canvasHeight / 2);
-      //  this.ctx.drawImage(this.envCacheCanvasBG, 0, 0);
+        this.ctx.drawImage(this.envCacheCanvasBG, 0, 0);
     }
     renderFG() {  
-       // this.ctx.drawImage(this.envCacheCanvasFG, 0, this.config.canvasHeight / 2);
+        this.ctx.drawImage(this.envCacheCanvasFG, 0, this.config.canvasHeight / 2);
     }    
     setLevel(level) {
         this.currentLevel = level;
@@ -70,13 +82,13 @@ class MapRenderer extends engine.Component {
 
     }
 
-    drawTileMap(tileMapData, isometric) {
-        //this.terrainTileMapper.draw(tileMapData.terrainMap);
+    drawTileMap(tileMapData) {
+        this.terrainTileMapper.draw(tileMapData.terrainMap);
     }
     clearMap(tileMapData) {
-        // this.ctx.clearRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);
-        // this.ctx.fillStyle = tileMapData.terrainBGColor;        
-        // this.ctx.fillRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);
+        this.ctx.clearRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);
+        this.ctx.fillStyle = tileMapData.terrainBGColor;        
+        this.ctx.fillRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);
     }
     // Call this when map data changes or on initialization
     cacheMap(tileMapData, paths, isometric) {

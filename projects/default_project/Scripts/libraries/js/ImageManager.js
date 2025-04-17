@@ -412,7 +412,7 @@ class ImageManager {
     async createObjectsFromJSON(model, frameData, scene) {
         const rootGroup = new THREE.Group();
         
-        for(const groupName in frameData) {
+        for(const groupName in model) {
             const group = await this.shapeFactory.createMergedGroupFromJSON(model, frameData, groupName);
             if(group){
                 group.traverse((child) => {

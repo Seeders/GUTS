@@ -6,10 +6,12 @@
     "Leveler",
     "Buildable",
     "PopulationBurden",
-    "Attacker"
+    "Attacker",
+    "Animator"
   ],
   "renderers": [
     "ModelRenderer",
-    "RangeIndicator"
+    "RangeIndicator",
+    "Renderer"
   ]
 }

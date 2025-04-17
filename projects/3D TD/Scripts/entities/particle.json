@@ -2,9 +2,11 @@
   "title": "Particle",
   "components": [
     "Stats",
-    "LifeSpan"
+    "LifeSpan",
+    "Animator"
   ],
   "renderers": [
-    "ModelRenderer"
+    "ModelRenderer",
+    "Renderer"
   ]
 }

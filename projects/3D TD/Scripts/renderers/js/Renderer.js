@@ -6,6 +6,9 @@ class Renderer extends engine.Component {
     
     
   init( { objectType, spawnType, setDirection = -2}) {
+        if(this.game.config.configs.game.is3D) {
+            return;
+        }
         this.images = this.game.imageManager.getImages(objectType, spawnType);  
         this.setDirection = setDirection;
         this.currentDirection = 0; // Default direction (will be 0-7 now)
@@ -25,6 +28,9 @@ class Renderer extends engine.Component {
     }
 
     draw() {
+        if(this.game.config.configs.game.is3D) {
+            return;
+        }
         if( this.setDirection < 0 ) {
             const dx = this.parent.position.x - this.parent.lastPosition.x; // Change in x
             const dy = this.parent.position.y - this.parent.lastPosition.y; // Change in y

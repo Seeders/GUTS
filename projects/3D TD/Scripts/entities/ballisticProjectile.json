@@ -3,9 +3,11 @@
   "components": [
     "Stats",
     "ArrayTracker",
-    "BallisticProjectile"
+    "BallisticProjectile",
+    "Animator"
   ],
   "renderers": [
-    "ModelRenderer"
+    "ModelRenderer",
+    "Renderer"
   ]
 }

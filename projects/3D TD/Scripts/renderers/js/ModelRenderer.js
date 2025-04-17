@@ -1,5 +1,8 @@
 class ModelRenderer extends engine.Component {
     init({ objectType, spawnType, frameDuration }) {
+        if(!this.game.config.configs.game.is3D) {
+            return;
+        }
         this.animationState = 'idle';
         this.currentFrameIndex = 0;
         this.frameTime = 0;
@@ -65,6 +68,9 @@ class ModelRenderer extends engine.Component {
     }
     
     draw() {
+        if(!this.game.config.configs.game.is3D) {
+            return;
+        }
         // Update position of model to match entity position
         if (this.parent && this.parent.position) {
             this.modelGroup.position.set(

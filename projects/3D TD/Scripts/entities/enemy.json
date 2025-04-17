@@ -5,11 +5,13 @@
     "EssenceBounty",
     "FollowPath",
     "SpacialGridEntity",
-    "ArrayTracker"
+    "ArrayTracker",
+    "Animator"
   ],
   "renderers": [
     "ModelRenderer",
     "Health",
-    "EnergyShield"
+    "EnergyShield",
+    "Renderer"
   ]
 }

@@ -2,7 +2,7 @@
   "gridSize": 48,
   "imageSize": 128,
   "title": "3D TD!",
-  "isIsometric": true,
+  "isIsometric": false,
   "libraries": [
     "threejs",
     "three.OrbitControls",
@@ -24,5 +24,6 @@
   "loaderComponent": "GameLoader",
   "loaderEntity": "GameLoader",
   "canvasWidth": 1600,
-  "canvasHeight": 800
+  "canvasHeight": 800,
+  "is3D": true
 }

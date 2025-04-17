@@ -7,52 +7,47 @@ class ThreeJsWorld extends engine.Component {
         cameraConfig = {
             fov: 45,
             near: 0.1,
-            far: 1000,
-            position: { x: 100, y: 100, z: 100 },
-            lookAt: { x: 0, y: 0, z: 0 }
+            far: 5000,
+            position: { x: 768/2, y: 500, z: 768*1.5 },
+            lookAt: { x: 768/2, y: 0, z: 768/2 }
         },
         useControls = true,
         lightConfig = {
-            ambient: { color: 0xffaaff, intensity: 0.25 },
-            directional: { color: 0xffffaa, intensity: 0.7 },
-            fill: { color: 0xffaaff, intensity: 0.5 }
+            ambient: { color: 0xaaddff, intensity: 0.4 },
+            directional: { color: 0xfff8e1, intensity: 0.8 },
+            hemisphere: { skyColor: 0x87CEEB, groundColor: 0x4a7c59, intensity: 0.5 }
         },
         shadowConfig = {
             enabled: true,
-            mapSize: 1024,
-            bias: -0.0005,
-            normalBias: 0.02
+            mapSize: 2048,
+            bias: -0.0002,
+            normalBias: 0.01,
+            radius: 2
         },
-        background = 0x87CEEB, // Sky blue
-        fog = { enabled: true, color: 0xCCCCCC, near: 100, far: 600 }
-    }) {           
-        // Performance monitoring
+        background = 0x87CEEB,
+        fog = { enabled: true, color: 0x87CEEB, density: 0.0005 }
+    }) {       
+        if(!this.game.config.configs.game.is3D) {
+            return;
+        }    
         this.showStats = false;
-        
-        // Clock for animation timing
         this.clock = new THREE.Clock();
-        
-        // Resize handler
         this.onWindowResizeHandler = this.onWindowResize.bind(this);
         
-        // Get or create container element
-        this.container = document.querySelector(containerSelector);
-        // Initialize renderer
+        this.container = document.querySelector(containerSelector) || document.body;
         this.renderer = new THREE.WebGLRenderer({ antialias: true, canvas: this.game.canvas });
         this.renderer.setSize(width, height);
         this.renderer.setPixelRatio(window.devicePixelRatio);
         this.renderer.shadowMap.enabled = shadowConfig.enabled;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        // Create scene
+        
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(background);
         
-        // Add fog if enabled
         if (fog.enabled) {
-            this.scene.fog = new THREE.Fog(fog.color, fog.near, fog.far);
+            this.scene.fog = new THREE.FogExp2(fog.color, fog.density);
         }
         
-        // Create camera
         this.camera = new THREE.PerspectiveCamera(
             cameraConfig.fov,
             width / height,
@@ -70,7 +65,6 @@ class ThreeJsWorld extends engine.Component {
             cameraConfig.lookAt.z
         );
         
-        // Camera controls
         if (useControls) {
             this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
             this.controls.target.set(
@@ -81,85 +75,89 @@ class ThreeJsWorld extends engine.Component {
             this.controls.update();
         }
         
-        // Create lights
-        // Ambient light
         this.ambientLight = new THREE.AmbientLight(
             lightConfig.ambient.color,
             lightConfig.ambient.intensity
         );
         this.scene.add(this.ambientLight);
         
-        // Main directional light with shadows
         this.directionalLight = new THREE.DirectionalLight(
             lightConfig.directional.color,
             lightConfig.directional.intensity
         );
-        this.directionalLight.position.set(75, 96, 75);
+        this.directionalLight.position.set(100, 120, 80);
         this.directionalLight.castShadow = shadowConfig.enabled;
         
-        // Configure shadow properties
+        // Ground plane size
+        const groundSize = 768;
+        const groundCenterX = groundSize / 2;
+        const groundCenterZ = groundSize / 2;
+        
         if (shadowConfig.enabled) {
             this.directionalLight.shadow.mapSize.width = shadowConfig.mapSize;
             this.directionalLight.shadow.mapSize.height = shadowConfig.mapSize;
             this.directionalLight.shadow.camera.near = 0.5;
-            this.directionalLight.shadow.camera.far = 500;
+            this.directionalLight.shadow.camera.far = 1000; // Increased for taller objects
             this.directionalLight.shadow.bias = shadowConfig.bias;
             this.directionalLight.shadow.normalBias = shadowConfig.normalBias;
-            this.directionalLight.shadow.radius = 1;
+            this.directionalLight.shadow.radius = shadowConfig.radius;
             
-            // Configure shadow camera frustum
-            const d = 200;
+            // Size shadow frustum to cover entire terrain
+            const d = groundSize * 0.6; // 60% larger than half the terrain size for padding
             this.directionalLight.shadow.camera.left = -d;
             this.directionalLight.shadow.camera.right = d;
             this.directionalLight.shadow.camera.top = d;
             this.directionalLight.shadow.camera.bottom = -d;
+            
+            // Center shadow camera on terrain
+            this.directionalLight.target.position.set(groundCenterX, 0, groundCenterZ);
+            this.directionalLight.target.updateMatrixWorld();
             this.directionalLight.shadow.camera.updateProjectionMatrix();
+
         }
         
         this.scene.add(this.directionalLight);
+        this.scene.add(this.directionalLight.target);
         
-        // Fill light
-        this.fillLight = new THREE.DirectionalLight(
-            lightConfig.fill.color,
-            lightConfig.fill.intensity
+        this.hemisphereLight = new THREE.HemisphereLight(
+            lightConfig.hemisphere.skyColor,
+            lightConfig.hemisphere.groundColor,
+            lightConfig.hemisphere.intensity
         );
-        this.fillLight.position.set(-20, 30, -20);
-        this.scene.add(this.fillLight);
+        this.scene.add(this.hemisphereLight);
         
         // Create ground plane
-        const groundGeometry = new THREE.PlaneGeometry(1000, 1000);
+        const groundGeometry = new THREE.PlaneGeometry(groundSize, groundSize);
+        this.groundTexture = new THREE.CanvasTexture(this.game.terrainCanvasBuffer);
+        this.groundTexture.wrapS = THREE.ClampToEdgeWrapping;
+        this.groundTexture.wrapT = THREE.ClampToEdgeWrapping;
+        this.groundTexture.repeat.set(1, 1);
+        this.groundTexture.minFilter = THREE.LinearFilter;
+        this.groundTexture.magFilter = THREE.LinearFilter;
+        
         const groundMaterial = new THREE.MeshStandardMaterial({ 
-            color: 0x999999, 
+            map: this.groundTexture,
             roughness: 0.8,
             metalness: 0.2
         });
+        
         const ground = new THREE.Mesh(groundGeometry, groundMaterial);
         ground.rotation.x = -Math.PI / 2;
-        ground.position.y = 0;
+        ground.position.set(groundCenterX, 0, groundCenterZ);
         ground.receiveShadow = true;
         this.scene.add(ground);
-        
-        // Add a grid helper
-        const gridHelper = new THREE.GridHelper(1000, 100, 0x444444, 0x888888);
-        this.scene.add(gridHelper);
-        
-        // Add coordinate axes helper
-        const axesHelper = new THREE.AxesHelper(5);
-        this.scene.add(axesHelper);
-        
-        // Add stats if enabled
+      
         if (this.showStats) {
             this.stats = new Stats();
             this.container.appendChild(this.stats.dom);
         }
         
-        // Add event listeners
         window.addEventListener('resize', this.onWindowResizeHandler);
         
-        // Make the scene accessible to the game
         this.game.scene = this.scene;
         this.game.camera = this.camera;
         this.game.renderer = this.renderer;
+        this.drawn = false;
     }
     
     // Handle window resize
@@ -174,6 +172,9 @@ class ThreeJsWorld extends engine.Component {
     
     // Update and render the scene
     update(deltaTime) {
+        if(!this.game.config.configs.game.is3D) {
+            return;
+        }
         // Update controls if they exist
         if (this.controls) {
             this.controls.update();
@@ -183,7 +184,10 @@ class ThreeJsWorld extends engine.Component {
         if (this.stats) {
             this.stats.update();
         }
-        
+        if (!this.drawn && this.groundTexture && this.game.mapRenderer && this.game.mapRenderer.isMapCached) {
+            this.groundTexture.needsUpdate = true;            
+            this.drawn = true;
+        }
         // Render the scene
         this.renderer.render(this.scene, this.camera);
     }

@@ -102,6 +102,7 @@ class ImageManager {
     }
 
     async loadImages(prefix, config, checkCache = true, cacheResult = true) {
+
         if (!prefix || !config || typeof config !== 'object') {
             throw new Error('Invalid prefix or config provided to loadImages');
         }
@@ -412,7 +413,7 @@ class ImageManager {
     async createObjectsFromJSON(model, frameData, scene) {
         const rootGroup = new THREE.Group();
         
-        for(const groupName in frameData) {
+        for(const groupName in model) {
             const group = await this.shapeFactory.createMergedGroupFromJSON(model, frameData, groupName);
             if(group){
                 group.traverse((child) => {
