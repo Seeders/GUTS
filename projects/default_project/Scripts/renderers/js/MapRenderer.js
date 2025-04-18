@@ -5,7 +5,7 @@ class MapRenderer extends engine.Component {
     }
     
     
-    init({canvasBuffer, terrainCanvasBuffer, environment, imageManager, levelName, gameConfig, level, isEditor}) {   
+    init({canvasBuffer, terrainCanvasBuffer, environment, imageManager, levelName, gameConfig, level, isEditor, palette}) {   
 
         this.config = gameConfig;
         this.imageManager = imageManager;
@@ -16,7 +16,8 @@ class MapRenderer extends engine.Component {
         this.isMapCached = false; // Flag to track if map needs redrawing
         this.currentLevel = levelName;
         this.tileMap = level.tileMap;
-        this.terrainBGColor = level.tileMap.terrainBGColor;
+        this.palette = palette;
+
         // Create off-screen canvas for caching
         if(!this.config.is3D || isEditor) {
             this.ctx = canvasBuffer.getContext('2d');
@@ -169,7 +170,7 @@ class MapRenderer extends engine.Component {
     }
     clearMap(tileMapData) {
         this.ctx.clearRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);
-        this.ctx.fillStyle = tileMapData.terrainBGColor;        
+        this.ctx.fillStyle = tileMapData.terrainBGColor.paletteColor ? this.palette[tileMapData.terrainBGColor.paletteColor] : tileMapData.terrainBGColor;        
         this.ctx.fillRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);
     }
     // Call this when map data changes or on initialization

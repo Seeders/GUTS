@@ -288,65 +288,14 @@ class GE_UIManager {
                 input.appendChild(option);
             });
         } else if(type === "color") {
-            let valueToUse = value;
-            const palette = this.gameEditor.getCollections().palettes["main"];
-            if(value && value.paletteColor) {
-                valueToUse = palette[value.paletteColor];
-            }
-            input = document.createElement('input');
-            input.type = "text";
-            input.value = valueToUse;
-            input.setAttribute('data-property', property);
-
-            let colorInput = document.createElement('input');            
-            colorInput.type = "color";
-            colorInput.value = valueToUse;
-            colorInput.setAttribute('data-property', property + '-color');
-            
-            input.addEventListener('change', (e) => {
-                colorInput.value = e.target.value; 
-                this.graphicsEditor.getFrameShape()[property] = e.target.value;
-                this.graphicsEditor.refreshShapes(false);
-            });
-            colorInput.addEventListener('change', (e) => {      
-                input.value = e.target.value;         
-                this.graphicsEditor.getFrameShape()[property] = e.target.value;
+            input = this.gameEditor.createColorInputGroup(value, property, row, (val, colorName) => {
+                if(colorName){
+                    this.graphicsEditor.getFrameShape()[property] = { paletteColor: colorName };
+                } else {
+                    this.graphicsEditor.getFrameShape()[property] = val;
+                }
                 this.graphicsEditor.refreshShapes(false);
             });            
-            row.appendChild(input);
-            row.appendChild(colorInput);
-
-            if(this.gameEditor.getCollections().palettes) {
-                let colorSelect = document.createElement('select');
-                let colors = [{ name: "From Palette", value: "" }];
-
-                for(let colorName in palette) {
-                    if(!colorName.toLowerCase().endsWith('color')) continue;
-                    colors.push({ name: colorName, value: palette[colorName]});
-                }
-                colors.forEach(color => {
-                    const option = document.createElement('option');
-                    option.value = color.value;
-                    option.textContent = color.name;
-                    if (valueToUse === color.value) {
-                        option.selected = true;
-                    }
-                    colorSelect.appendChild(option);
-                });
-                input.addEventListener('change', (e) => {
-                    colorSelect.value = e.target.value; 
-                });
-                colorInput.addEventListener('change', (e) => {      
-                    colorSelect.value = e.target.value;         
-                });   
-                colorSelect.addEventListener('change', (e) => {
-                    input.value = e.target.value;
-                    colorInput.value = e.target.value;
-                    this.graphicsEditor.getFrameShape()[property] = { paletteColor: e.target.querySelector(`option[value="${e.target.value}"]`).textContent };
-                    this.graphicsEditor.refreshShapes(false);
-                });
-                row.appendChild(colorSelect);
-            }
         } else if(type === "file") {
             let inputContainer = document.createElement('div');
             inputContainer.style = "flex: 1; display: flex; flex-direction: column; font-size: .75em;";

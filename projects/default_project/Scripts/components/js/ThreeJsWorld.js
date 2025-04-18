@@ -135,7 +135,9 @@ class ThreeJsWorld extends engine.Component {
         this.groundCtx = this.groundCanvas.getContext('2d');
 
         // Fill with background color
-        this.groundCtx.fillStyle = this.game.config.levels[this.game.state.level].tileMap.terrainBGColor;
+        let bgColor = this.game.config.levels[this.game.state.level].tileMap.terrainBGColor;
+        let colorToUse = bgColor.paletteColor ? this.game.palette[bgColor.paletteColor] : bgColor;
+        this.groundCtx.fillStyle = colorToUse;
         this.groundCtx.fillRect(0, 0, this.extendedSize, this.extendedSize);
 
         // Create texture
@@ -294,7 +296,6 @@ class ThreeJsWorld extends engine.Component {
         });
     
         this.grassShader = this.grassMaterial; // Reference for time updates
-    // new THREE.MeshStandardMaterial({map: grassTexture})
         // Create instanced mesh
         const grass = new THREE.InstancedMesh(grassGeometry,this.grassMaterial, grassCount);
 
@@ -305,10 +306,7 @@ class ThreeJsWorld extends engine.Component {
         const dummy = new THREE.Object3D();
     
         // Log terrain canvas status
-        if (!this.groundCanvas) {
-            console.warn('terrainCanvasBuffer is missing; placing grass everywhere.');
-        } else {
-            console.log('terrainCanvasBuffer size:', this.groundCanvas.width, 'x', this.groundCanvas.height);
+        if (this.groundCanvas) {
             const ctx = this.groundCanvas.getContext('2d');
             try {
                 const terrainData = ctx.getImageData(0, 0, this.groundCanvas.width, this.groundCanvas.height).data;
@@ -519,9 +517,9 @@ createGrassTexture() {
 
     // Create gradient from bottom to top
     const gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);
-    gradient.addColorStop(0.0, this.game.config.palettes["main"]["greenDColor"]); // Base
-    gradient.addColorStop(0.8, this.game.config.palettes["main"]["greenMColor"]); // Tip
-    gradient.addColorStop(1.0, this.game.config.palettes["main"]["redLColor"]); // Tip
+    gradient.addColorStop(0.0, this.game.palette["greenDColor"]); // Base
+    gradient.addColorStop(0.8, this.game.palette["greenMColor"]); // Tip
+    gradient.addColorStop(1.0, this.game.palette["redLColor"]); // Tip
 
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);

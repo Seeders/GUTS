@@ -12,7 +12,7 @@ class GameLoader extends engine.Component {
         this.config.configs.game.canvasHeight = window.outerHeight;
         this.state = new (this.game.libraryClasses.GameState)(this.config);  
         this.game.state = this.state;
-
+        this.game.palette = this.config.palettes && this.config.configs.game.palette ? this.config.palettes[this.config.configs.game.palette] : null;
         this.isometric = this.config.configs.game.isIsometric;
         this.game.state.tileMapData = this.config.levels[this.game.state.level].tileMap;
         this.game.state.isometric = this.config.configs.game.isIsometric;
@@ -32,8 +32,8 @@ class GameLoader extends engine.Component {
         // Use ModuleManager's script environment
         this.game.terrainTileMapper = new (this.game.libraryClasses.TileMap)(this, {}, {CanvasUtility: this.game.libraryClasses.CanvasUtility});
         this.game.terrainTileMapper.init(this.terrainCanvasBuffer, this.config.configs.game.gridSize, terrainImages, this.isometric);
-        
-        this.gameEntity = this.game.createEntityFromConfig(0, 0, 'game', { gameConfig: this.config.configs.game, canvas: this.canvas, canvasBuffer: this.canvasBuffer, terrainCanvasBuffer: this.terrainCanvasBuffer, environment: this.config.environment, imageManager: this.game.imageManager, levelName: this.game.state.level, level: this.config.levels[this.game.state.level] });
+
+        this.gameEntity = this.game.createEntityFromConfig(0, 0, 'game', { gameConfig: this.config.configs.game, canvas: this.canvas, canvasBuffer: this.canvasBuffer, terrainCanvasBuffer: this.terrainCanvasBuffer, environment: this.config.environment, imageManager: this.game.imageManager, levelName: this.game.state.level, level: this.config.levels[this.game.state.level], palette: this.game.palette });
         this.game.imageManager.dispose();    
         this.game.audioManager = this.gameEntity.getComponent('AudioManager');  
     }
@@ -66,19 +66,13 @@ class GameLoader extends engine.Component {
         this.game.terrainCanvasBuffer = this.terrainCanvasBuffer;
     }
     async loadAssets() {
-        let palette = null;
-        if(this.config.palettes && this.config.palettes["main"]){ 
-            palette = this.config.palettes["main"]
-        }
-        this.game.imageManager = new (this.game.libraryClasses.ImageManager)(this, { imageSize: this.config.configs.game.imageSize, palette: palette}, {ShapeFactory: this.game.libraryClasses.ShapeFactory});    
+        this.game.imageManager = new (this.game.libraryClasses.ImageManager)(this, { imageSize: this.config.configs.game.imageSize, palette: this.game.palette}, {ShapeFactory: this.game.libraryClasses.ShapeFactory});    
         // Load all images
         for(let objectType in this.config) {
-            console.log('loading', objectType);
             await this.game.imageManager.loadImages(objectType, this.config[objectType]);
         }  
-        this.game.modelManager = new (this.game.libraryClasses.ModelManager)(this,{ShapeFactory: this.game.libraryClasses.ShapeFactory, palette: palette});    
+        this.game.modelManager = new (this.game.libraryClasses.ModelManager)(this,{ShapeFactory: this.game.libraryClasses.ShapeFactory, palette: this.game.palette});    
         for(let objectType in this.config) {
-            console.log('loading', objectType);
             await this.game.modelManager.loadModels(objectType, this.config[objectType]);
         }  
  

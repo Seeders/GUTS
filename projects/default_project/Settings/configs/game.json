@@ -25,5 +25,6 @@
   "loaderEntity": "GameLoader",
   "canvasWidth": 1600,
   "canvasHeight": 1000,
-  "is3D": true
+  "is3D": true,
+  "palette": "main"
 }

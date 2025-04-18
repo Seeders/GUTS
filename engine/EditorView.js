@@ -927,4 +927,65 @@ export class EditorView {
     dispatchHook(hookName, detail = {}) {
         this.controller.dispatchHook(hookName, detail);
     }
+
+    createColorInputGroup(value, propertyName, container, callback){
+      let valueToUse = value;
+      const palette = this.controller.getPalette();
+      if(value && value.paletteColor) {
+          valueToUse = palette[value.paletteColor];
+      }
+      const input = document.createElement('input');
+      input.type = "text";
+      input.value = valueToUse;
+      input.setAttribute('data-property', propertyName);
+
+      const colorInput = document.createElement('input');            
+      colorInput.type = "color";
+      colorInput.value = valueToUse;
+      colorInput.setAttribute('data-property', propertyName + '-color');
+      
+      input.addEventListener('change', (e) => {
+          colorInput.value = e.target.value;        
+          callback(e.target.value);   
+      });
+      colorInput.addEventListener('change', (e) => {      
+          input.value = e.target.value;       
+          callback(e.target.value);          
+      });            
+      container.appendChild(input);
+      container.appendChild(colorInput);
+
+      if(this.controller.getCollections().palettes) {
+          const colorSelect = document.createElement('select');
+          let colors = [{ name: "From Palette", value: "" }];
+
+          for(let colorName in palette) {
+              if(!colorName.toLowerCase().endsWith('color')) continue;
+              colors.push({ name: colorName, value: palette[colorName]});
+          }
+          colors.forEach(color => {
+              const option = document.createElement('option');
+              option.value = color.value;
+              option.textContent = color.name;
+              if (valueToUse === color.value) {
+                  option.selected = true;
+              }
+              colorSelect.appendChild(option);
+          });
+          input.addEventListener('change', (e) => {
+              colorSelect.value = e.target.value; 
+          });
+          colorInput.addEventListener('change', (e) => {      
+              colorSelect.value = e.target.value;         
+          });   
+          colorSelect.addEventListener('change', (e) => {
+              input.value = e.target.value;
+              colorInput.value = e.target.value;     
+              let colorName = e.target.querySelector(`option[value="${e.target.value}"]`).textContent;    
+              callback(e.target.value, colorName);   
+          });
+          container.appendChild(colorSelect);
+      }
+      return input;
+    }
   }

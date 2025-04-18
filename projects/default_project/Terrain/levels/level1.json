@@ -418,7 +418,9 @@
         5
       ]
     ],
-    "terrainBGColor": "#5a8a4f",
+    "terrainBGColor": {
+      "paletteColor": "greenMColor"
+    },
     "environmentObjects": [
       {
         "type": "tree",

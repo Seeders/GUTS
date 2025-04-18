@@ -348,6 +348,28 @@ export class EditorController {
     createType(typeId, typeName, typeSingular, typeCategory) {
         return this.model.createType(typeId, typeName, typeSingular, typeCategory);
     }
+
+    createColorInputGroup(value, propertyName, container, callback){
+        return this.view.createColorInputGroup(value, propertyName, container, callback);
+    }
+
+    getColorValue(value){        
+        const palette = this.getPalette();   
+        const colorToUse = palette && value.paletteColor ? palette[value.paletteColor] : value;
+        return colorToUse;    
+    }
+    setColorValue(container, rawValue){
+        let colorValue = this.getColorValue(rawValue);
+        container.querySelector("input[type='text']").value = colorValue;
+        container.querySelector("input[type='color']").value = colorValue;    
+        container.querySelector("select").value = colorValue;    
+        return colorValue;
+    }
+    getPalette() {
+        const paletteName = this.getCollections().configs.game.palette || "main";
+        const palettes = this.getCollections().palettes;
+        return palettes && palettes[paletteName] ? palettes[paletteName] : null;
+    }
 }
 
 // Initialize the application when DOM is fully loaded

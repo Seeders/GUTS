@@ -13,11 +13,12 @@ class TerrainMapEditor {
         // Terrain map structure without explicit IDs
         this.tileMap = {
             size: 16,
+            terrainBGColor: "#7aad7b",
             terrainTypes: [
                 { type: "start", color: "#ffff00", image: [] },
                 { type: "end", color: "#ff0000", image: [] },
                 { type: "path", color: "#eeae9e", image: [] },
-                { type: "grass", color: "#8bc34a", image: [] },
+                { type: "grass", color: "#7aad7b", image: [] },
                 { type: "water", color: "#64b5f6", image: [] },
                 { type: "rock", color: "#9e9e9e", image: [] }
             ],
@@ -42,10 +43,7 @@ class TerrainMapEditor {
         this.currentPreviewImage = null;
 
         // Managers and renderers
-        let palette = null;
-        if(this.gameEditor.getCollections().palettes) {
-            palette = this.gameEditor.getCollections().palettes["main"];
-        }
+        let palette = this.gameEditor.getPalette();
         this.imageManager = new this.engineClasses.ImageManager(this.gameEditor,  { imageSize: this.config.imageSize, palette: palette}, {ShapeFactory: ShapeFactory});
         this.mapRenderer = null;
         this.mapManager = null;
@@ -69,6 +67,7 @@ class TerrainMapEditor {
     }
 
     setupEventListeners() {
+
         document.getElementById('terrainColor').addEventListener('change', (el) => {                    
             document.getElementById('terrainColorText').value = el.target.value;
         });
@@ -119,12 +118,14 @@ class TerrainMapEditor {
             this.exportMap();
         });
 
-        document.getElementById('terrainBGColor').addEventListener('change', (ev) => {
-            this.tileMap.terrainBGColor = ev.target.value;
-            this.canvasEl.backgroundColor = ev.target.value;
+        let colorContainer = document.getElementById('terrainBGColorContainer');
+        this.gameEditor.createColorInputGroup(this.tileMap.terrainBGColor, "terrainBGColor", colorContainer, (val, colorName) => {
+            let valueToSave = val;
+            if(colorName) valueToSave = {paletteColor: colorName};
+            this.tileMap.terrainBGColor = valueToSave;
+            this.canvasEl.backgroundColor = val;
             this.exportMap();
-        }); 
-
+        });      
         // Handle mouseup event (stop dragging)
         document.addEventListener('mouseup', () => {
             this.isMouseDown = false;
@@ -163,10 +164,9 @@ class TerrainMapEditor {
             this.tileMap = event.detail.data;
             this.savePropertyName = event.detail.propertyName;
             this.canvasEl.width = this.config.canvasWidth;
-            this.canvasEl.height = this.config.canvasHeight;
-            let bgColor = this.tileMap.terrainBGColor || "#7aad7b";
-            document.getElementById('terrainBGColor').value = bgColor;
-            this.canvasEl.backgroundColor = bgColor;
+            this.canvasEl.height = this.config.canvasHeight;            
+            let colorVal = this.gameEditor.setColorValue(document.getElementById('terrainBGColorContainer'), this.tileMap.terrainBGColor || "#7aad7b"); 
+            this.canvasEl.backgroundColor = colorVal;
             if (!this.tileMap.environmentObjects) {
                 this.tileMap.environmentObjects = [];
             }
@@ -258,10 +258,7 @@ class TerrainMapEditor {
     }
 
     async initImageManager() {
-        let palette = null;
-        if(this.gameEditor.getCollections().palettes) {
-            palette = this.gameEditor.getCollections().palettes["main"];
-        }
+        let palette = this.gameEditor.getPalette();
         this.imageManager = new this.engineClasses.ImageManager(this.gameEditor, { imageSize: this.config.imageSize, palette: palette}, {ShapeFactory: this.engineClasses.ShapeFactory});
         await this.imageManager.loadImages("levels", { level: { tileMap: this.tileMap } }, false, false);
         if(this.environment){
@@ -288,7 +285,8 @@ class TerrainMapEditor {
                 imageManager: this.imageManager, 
                 levelName: 'level', 
                 level: { tileMap: this.tileMap },
-                isEditor: true
+                isEditor: true,
+                palette: palette
             }
         );
     }
