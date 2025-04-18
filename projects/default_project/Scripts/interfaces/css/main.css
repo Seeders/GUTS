@@ -70,60 +70,44 @@ canvas {
     z-index: 0;
 }
 
-
+/* ========== Tower Menu Container ========== */
 #towerMenu {
-	width: 800px;
-	max-width: 90%;
-	display: flex;
-	flex-wrap: wrap;
-	gap: 12px;
-	justify-content: center;
-	padding: 15px;
-	background: var(--primary-dark);
-	border-radius: 10px;
-	border: 1px solid var(--accent-color);
-	border-opacity: var(--low-transparent);
-	/* Note: This won't work directly; see below */
-	backdrop-filter: blur(5px);
-	position: absolute;
-	z-index: 1;
-	margin: 1em auto;
+    position: absolute;
+    bottom: 30px;
+    border-radius: 14px;
+    padding: .5em;
+    max-width: 90%;
+    width: 820px;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--accent-color);
+	background-color: var(--primary-dark);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 5px;
+    z-index: 100;
 	left: 0;
 	right: 0;
-	bottom: 0;	
+	margin: 0 auto;
+	overflow-x: auto;
+	overflow-y: hidden;
+	padding: 10px;
+	scrollbar-width: thin;
+	scrollbar-color: var(--accent-color) transparent;
 }
 
+/* ========== Tower Options ========== */
 .tower-option {
-	padding: 8px 14px;
-	background: linear-gradient(to bottom, var(--accent-color), var(--secondary-bg));
-	opacity: var(--high-transparent);
+	background-color: var(--secondary-bg);
+	border-radius: 8px;
 	border: 1px solid var(--accent-color);
 	color: var(--text-color);
 	cursor: pointer;
-	transition: all 0.3s;
-	border-radius: 6px;
-	min-width: 110px;
-	text-align: center;
-	font-family: 'Cinzel', serif;
-	font-weight: 500;
-	letter-spacing: 0.5px;
-	text-shadow: 0 1px 3px #000;
-	/* Black shadow, no rgba */
-	box-shadow: 0 3px 6px #000;
-	/* Black shadow, no rgba */
+	padding: .1em .5em;
 }
-
 .tower-option:hover {
-	background: linear-gradient(to bottom, var(--bright-accent), var(--accent-color));
-	opacity: var(--hover-transparent);
-	transform: translateY(-3px);
-	box-shadow: 0 6px 12px #000;
-}
-
-.tower-option:active {
-	transform: translateY(0);
-	box-shadow: 0 2px 4px #000;
-}
+	background-color: var(--primary-bg);
+	transition: background-color 0.3s ease;
+}	
 
 #statsContainer {
 	width: 800px;
@@ -447,29 +431,20 @@ canvas {
     }
     #towerMenu {
         position: fixed;
-        bottom: 0;
+		bottom: 0;
         left: 0;
         right: 0;
-        width: 100%;
-        max-width: 100%;
-        max-height: 20vh;
-        overflow-y: auto;
-        transform: none;
-        border-radius: 12px 12px 0 0;
-        padding: 2px;
-        gap: 8px;
-        border: 2px solid var(--accent-color);
-        box-shadow: 0 -4px 12px rgba(0,0,0,0.3);
-		margin: 0;
+        width: 95vw;
+		max-height: 20vh;
+		overflow-y:auto;
+        max-width: unset;
+        margin: 0 auto;
+        grid-template-columns: repeat(2, 1fr);
     }
 
     .tower-option {
-        min-width: calc(50% - 6px);
-        flex-grow: 0;
-        padding: 2px;
-        margin: 2px;
-        border-radius: 8px;
-        font-size: .5rem;
+        min-width: unset;
+        font-size: 0.95rem;
     }
 
     /* Add a close button for mobile */
@@ -569,11 +544,7 @@ canvas {
 
 /* Additional adjustments for very small screens */
 @media screen and (max-width: 480px) {
-    .tower-option {
-        min-width: 45%;
-        font-size: 0.8rem;
-        padding: 5px;
-    }
+
 
     #stats {
         justify-content: center;
@@ -604,33 +575,16 @@ canvas {
 
 /* Orientation-specific adjustments */
 @media screen and (max-height: 500px) and (orientation: landscape) {
-    #towerMenu {
-        bottom: 0px;
-        padding: 5px;
-    }
 
     #statsContainer {
         top: 5px;
         padding: 5px;
     }
 
-    .tower-option {
-        min-width: 30%;
-        padding: 4px;
-        font-size: 0.7rem;
-    }
+  
 }
 @media screen and (max-width: 480px) {
-    #towerMenu {
-        padding: 8px;
-        gap: 6px;
-    }
 
-    .tower-option {
-        min-width: calc(50% - 4px);
-        padding: 10px;
-        font-size: 0.85rem;
-    }
 
     #menuCloseButton {
         top: 4px;

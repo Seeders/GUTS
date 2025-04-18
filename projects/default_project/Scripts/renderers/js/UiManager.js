@@ -40,7 +40,7 @@ class UiManager extends engine.Component {
         let towerMenuOptions = '';
         for(let type in this.game.config.towers) {
             if(this.game.config.towers[type].cost > 0){
-                towerMenuOptions += `<div class="tower-option" data-type="${type}">${this.game.config.towers[type].title} (${this.game.config.towers[type].cost})</div>`;
+                towerMenuOptions += `<button class="tower-option" data-type="${type}">${this.game.config.towers[type].title} (${this.game.config.towers[type].cost})</button>`;
             }
         }
         this.towerMenu.innerHTML = towerMenuOptions;
