@@ -215,6 +215,11 @@
     display: flex;
     gap: 10px;
     align-items: center;
+    flex-grow: 2;
+  }
+
+  .property-item .property-value {
+    flex-basis: 75%;
   }
   
   .property-item button {
