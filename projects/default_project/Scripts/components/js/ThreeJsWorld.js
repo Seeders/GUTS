@@ -159,6 +159,7 @@ class ThreeJsWorld extends engine.Component {
         this.game.scene = this.scene;
         this.game.camera = this.camera;
         this.game.renderer = this.renderer;
+        this.game.ground = ground;
         this.drawn = false;
         this.timer = 0;
     }
