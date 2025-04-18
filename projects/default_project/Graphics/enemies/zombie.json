@@ -6,7 +6,42 @@
   "render": {
     "animations": {
       "idle": [
-        {}
+        {
+          "shapes": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 1
+              },
+              {
+                "color": {
+                  "paletteColor": "greenMColor"
+                },
+                "id": 6
+              },
+              {
+                "color": {
+                  "paletteColor": "greenMColor"
+                },
+                "id": 7
+              },
+              {
+                "color": {
+                  "paletteColor": "greenMColor"
+                },
+                "id": 8
+              },
+              {
+                "color": {
+                  "paletteColor": "greenMColor"
+                },
+                "id": 9
+              }
+            ]
+          }
+        }
       ],
       "walk": [
         {
@@ -196,7 +231,9 @@
             "width": 20,
             "height": 24,
             "depth": 10,
-            "color": "#506050",
+            "color": {
+              "paletteColor": "greenDColor"
+            },
             "x": 0,
             "y": 24,
             "z": 0,
@@ -245,7 +282,9 @@
             "type": "cylinder",
             "size": 4,
             "height": 20,
-            "color": "#60A060",
+            "color": {
+              "paletteColor": "greenMColor"
+            },
             "x": 8,
             "y": 29,
             "z": 10,
@@ -257,7 +296,9 @@
             "type": "cylinder",
             "size": 4,
             "height": 20,
-            "color": "#60A060",
+            "color": {
+              "paletteColor": "greenMColor"
+            },
             "x": -8,
             "y": 29,
             "z": 10,
@@ -269,7 +310,9 @@
             "type": "cylinder",
             "size": 4,
             "height": 24,
-            "color": "#60A060",
+            "color": {
+              "paletteColor": "greenMColor"
+            },
             "x": 5,
             "y": 12,
             "z": 0,
@@ -280,7 +323,9 @@
             "type": "cylinder",
             "size": 4,
             "height": 24,
-            "color": "#60A060",
+            "color": {
+              "paletteColor": "greenMColor"
+            },
             "x": -5,
             "y": 12,
             "z": 0,

@@ -7,10 +7,694 @@
   "render": {
     "animations": {
       "idle": [
-        {}
+        {
+          "head": {
+            "shapes": [
+              {
+                "type": "box",
+                "width": 16,
+                "height": 14,
+                "depth": 22,
+                "x": 0,
+                "y": 42,
+                "z": 14,
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "name": "head-main",
+                "texture": "scales",
+                "roughness": 0.8,
+                "id": 0
+              },
+              {
+                "color": {
+                  "paletteColor": "redMColor"
+                },
+                "id": 1
+              },
+              {
+                "color": {
+                  "paletteColor": "brownDColor"
+                },
+                "id": 2
+              },
+              {
+                "color": {
+                  "paletteColor": "redMColor"
+                },
+                "id": 3
+              },
+              {
+                "color": {
+                  "paletteColor": "brownDColor"
+                },
+                "id": 4
+              },
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 5
+              },
+              {
+                "color": {
+                  "paletteColor": "greenMColor"
+                },
+                "id": 6
+              },
+              {
+                "color": {
+                  "paletteColor": "greenMColor"
+                },
+                "id": 7
+              }
+            ]
+          },
+          "jaw": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 0
+              },
+              {
+                "color": {
+                  "paletteColor": "redDColor"
+                },
+                "id": 1
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 2
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 3
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 4
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 5
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 6
+              }
+            ]
+          },
+          "left arm": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 0
+              },
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 1
+              },
+              {
+                "color": {
+                  "paletteColor": "greyMColor"
+                },
+                "id": 2
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 3
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 4
+              }
+            ]
+          },
+          "right arm": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 0
+              },
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 1
+              },
+              {
+                "color": {
+                  "paletteColor": "greyMColor"
+                },
+                "id": 2
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 3
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 4
+              }
+            ]
+          },
+          "left leg": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 0
+              },
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 1
+              },
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 2
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 3
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 4
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 5
+              }
+            ]
+          },
+          "right leg": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 0
+              },
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 1
+              },
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 2
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 3
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 4
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 5
+              }
+            ]
+          },
+          "body": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 0
+              },
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 1
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 2
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 3
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 4
+              }
+            ]
+          },
+          "tail base": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 0
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 1
+              },
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 2
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 3
+              }
+            ]
+          },
+          "tail tip": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 0
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 1
+              },
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 2
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 3
+              }
+            ]
+          }
+        }
       ],
       "walk": [
-        {},
+        {
+          "head": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 0
+              },
+              {
+                "color": {
+                  "paletteColor": "redMColor"
+                },
+                "id": 1
+              },
+              {
+                "color": {
+                  "paletteColor": "brownDColor"
+                },
+                "id": 2
+              },
+              {
+                "color": {
+                  "paletteColor": "redMColor"
+                },
+                "id": 3
+              },
+              {
+                "color": {
+                  "paletteColor": "brownDColor"
+                },
+                "id": 4
+              },
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 5
+              },
+              {
+                "color": {
+                  "paletteColor": "greenMColor"
+                },
+                "id": 6
+              },
+              {
+                "color": {
+                  "paletteColor": "greenMColor"
+                },
+                "id": 7
+              }
+            ]
+          },
+          "jaw": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 0
+              },
+              {
+                "color": {
+                  "paletteColor": "redDColor"
+                },
+                "id": 1
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 2
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 3
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 4
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 5
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 6
+              }
+            ]
+          },
+          "left arm": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 0
+              },
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 1
+              },
+              {
+                "color": {
+                  "paletteColor": "greyMColor"
+                },
+                "id": 2
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 3
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 4
+              }
+            ]
+          },
+          "right arm": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 0
+              },
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 1
+              },
+              {
+                "color": {
+                  "paletteColor": "greyMColor"
+                },
+                "id": 2
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 3
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 4
+              }
+            ]
+          },
+          "left leg": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 0
+              },
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 1
+              },
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 2
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 3
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 4
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 5
+              }
+            ]
+          },
+          "right leg": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 0
+              },
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 1
+              },
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 2
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 3
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 4
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 5
+              }
+            ]
+          },
+          "body": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 0
+              },
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 1
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 2
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 3
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 4
+              }
+            ]
+          },
+          "tail base": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 0
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 1
+              },
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 2
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 3
+              }
+            ]
+          },
+          "tail tip": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 0
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 1
+              },
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 2
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 3
+              }
+            ]
+          }
+        },
         {
           "head": {
             "rotation": {
@@ -96,7 +780,344 @@
             }
           }
         },
-        {},
+        {
+          "head": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 0
+              },
+              {
+                "color": {
+                  "paletteColor": "redMColor"
+                },
+                "id": 1
+              },
+              {
+                "color": {
+                  "paletteColor": "brownDColor"
+                },
+                "id": 2
+              },
+              {
+                "color": {
+                  "paletteColor": "redMColor"
+                },
+                "id": 3
+              },
+              {
+                "color": {
+                  "paletteColor": "brownDColor"
+                },
+                "id": 4
+              },
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 5
+              },
+              {
+                "color": {
+                  "paletteColor": "greenMColor"
+                },
+                "id": 6
+              },
+              {
+                "color": {
+                  "paletteColor": "greenMColor"
+                },
+                "id": 7
+              }
+            ]
+          },
+          "jaw": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 0
+              },
+              {
+                "color": {
+                  "paletteColor": "redDColor"
+                },
+                "id": 1
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 2
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 3
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 4
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 5
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 6
+              }
+            ]
+          },
+          "left arm": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 0
+              },
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 1
+              },
+              {
+                "color": {
+                  "paletteColor": "greyMColor"
+                },
+                "id": 2
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 3
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 4
+              }
+            ]
+          },
+          "right arm": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 0
+              },
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 1
+              },
+              {
+                "color": {
+                  "paletteColor": "greyMColor"
+                },
+                "id": 2
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 3
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 4
+              }
+            ]
+          },
+          "left leg": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 0
+              },
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 1
+              },
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 2
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 3
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 4
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 5
+              }
+            ]
+          },
+          "right leg": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 0
+              },
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 1
+              },
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 2
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 3
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 4
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 5
+              }
+            ]
+          },
+          "body": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 0
+              },
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 1
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 2
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 3
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 4
+              }
+            ]
+          },
+          "tail base": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 0
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 1
+              },
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 2
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 3
+              }
+            ]
+          },
+          "tail tip": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 0
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 1
+              },
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 2
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 3
+              }
+            ]
+          }
+        },
         {
           "head": {
             "position": {
@@ -210,7 +1231,9 @@
             "x": 0,
             "y": 42,
             "z": 14,
-            "color": "#556B2F",
+            "color": {
+              "paletteColor": "greenDColor"
+            },
             "name": "head-main",
             "texture": "scales",
             "roughness": 0.8
@@ -221,7 +1244,9 @@
             "x": -8,
             "y": 46,
             "z": 16,
-            "color": "#DAA520",
+            "color": {
+              "paletteColor": "redMColor"
+            },
             "name": "eye-right",
             "emissive": "#B8860B"
           },
@@ -231,7 +1256,9 @@
             "x": -8,
             "y": 46,
             "z": 17.5,
-            "color": "#000000",
+            "color": {
+              "paletteColor": "brownDColor"
+            },
             "name": "pupil-right"
           },
           {
@@ -240,7 +1267,9 @@
             "x": 8,
             "y": 46,
             "z": 16,
-            "color": "#DAA520",
+            "color": {
+              "paletteColor": "redMColor"
+            },
             "name": "eye-left",
             "emissive": "#B8860B"
           },
@@ -250,7 +1279,9 @@
             "x": 8,
             "y": 46,
             "z": 17.5,
-            "color": "#000000",
+            "color": {
+              "paletteColor": "brownDColor"
+            },
             "name": "pupil-left"
           },
           {
@@ -261,7 +1292,9 @@
             "x": 0,
             "y": 50,
             "z": 14,
-            "color": "#3D4D1E",
+            "color": {
+              "paletteColor": "greenDColor"
+            },
             "name": "brow-ridge",
             "texture": "rough"
           },
@@ -271,7 +1304,9 @@
             "x": -4.5,
             "y": 48.7,
             "z": 23.6,
-            "color": "#556B2F",
+            "color": {
+              "paletteColor": "greenDColor"
+            },
             "name": "nostril-right",
             "rotationX": 0,
             "rotationY": 0,
@@ -286,7 +1321,9 @@
             "x": 4.5,
             "y": 48.7,
             "z": 23.6,
-            "color": "#556B2F",
+            "color": {
+              "paletteColor": "greenDColor"
+            },
             "name": "nostril-left",
             "rotationX": 0,
             "rotationY": 0,
@@ -318,11 +1355,13 @@
             "type": "box",
             "width": 18.3,
             "height": 6,
-            "depth": 20,
+            "depth": 20.9,
             "x": 0,
             "y": 30,
             "z": 16,
-            "color": "#4D6227",
+            "color": {
+              "paletteColor": "greenDColor"
+            },
             "name": "jaw-main",
             "texture": "rough"
           },
@@ -334,7 +1373,9 @@
             "x": 0,
             "y": 32.5,
             "z": 24.7,
-            "color": "#A52A2A",
+            "color": {
+              "paletteColor": "redDColor"
+            },
             "name": "gums",
             "roughness": 0.7
           },
@@ -346,7 +1387,9 @@
             "x": -5,
             "y": 33,
             "z": 25,
-            "color": "#F8F8FF",
+            "color": {
+              "paletteColor": "greyLColor"
+            },
             "name": "tooth-front-right",
             "shininess": 90
           },
@@ -358,7 +1401,9 @@
             "x": 0,
             "y": 33,
             "z": 25,
-            "color": "#F8F8FF",
+            "color": {
+              "paletteColor": "greyLColor"
+            },
             "name": "tooth-front-middle",
             "shininess": 90
           },
@@ -370,7 +1415,9 @@
             "x": 5,
             "y": 33,
             "z": 25,
-            "color": "#F8F8FF",
+            "color": {
+              "paletteColor": "greyLColor"
+            },
             "name": "tooth-front-left",
             "shininess": 90
           },
@@ -382,7 +1429,9 @@
             "x": -7,
             "y": 33,
             "z": 22,
-            "color": "#F8F8FF",
+            "color": {
+              "paletteColor": "greyLColor"
+            },
             "name": "tooth-side-right1",
             "shininess": 90
           },
@@ -394,7 +1443,9 @@
             "x": 7,
             "y": 33,
             "z": 22,
-            "color": "#F8F8FF",
+            "color": {
+              "paletteColor": "greyLColor"
+            },
             "name": "tooth-side-left1",
             "shininess": 90
           }
@@ -426,7 +1477,9 @@
             "y": 28,
             "z": 0,
             "rotationX": -45,
-            "color": "#4D6227",
+            "color": {
+              "paletteColor": "greenDColor"
+            },
             "name": "upper-arm-left",
             "texture": "scales"
           },
@@ -439,7 +1492,9 @@
             "y": 24,
             "z": 4,
             "rotationX": -20,
-            "color": "#485A22",
+            "color": {
+              "paletteColor": "greenDColor"
+            },
             "name": "lower-arm-left",
             "texture": "scales"
           },
@@ -451,7 +1506,9 @@
             "x": 11,
             "y": 22,
             "z": 6,
-            "color": "#707070",
+            "color": {
+              "paletteColor": "greyMColor"
+            },
             "name": "hand-left",
             "metalness": 0.5,
             "roughness": 0.7
@@ -464,7 +1521,9 @@
             "x": 12.5,
             "y": 21,
             "z": 8,
-            "color": "#C0C0C0",
+            "color": {
+              "paletteColor": "greyLColor"
+            },
             "name": "claw-left-1",
             "metalness": 0.6
           },
@@ -476,7 +1535,9 @@
             "x": 9.5,
             "y": 21.5,
             "z": 7.5,
-            "color": "#C0C0C0",
+            "color": {
+              "paletteColor": "greyLColor"
+            },
             "name": "claw-left-2",
             "metalness": 0.6
           }
@@ -508,7 +1569,9 @@
             "y": 28,
             "z": 0,
             "rotationX": -45,
-            "color": "#4D6227",
+            "color": {
+              "paletteColor": "greenDColor"
+            },
             "name": "upper-arm-right",
             "texture": "scales"
           },
@@ -521,7 +1584,9 @@
             "y": 24,
             "z": 4,
             "rotationX": -20,
-            "color": "#485A22",
+            "color": {
+              "paletteColor": "greenDColor"
+            },
             "name": "lower-arm-right",
             "texture": "scales"
           },
@@ -533,7 +1598,9 @@
             "x": -11,
             "y": 22,
             "z": 6,
-            "color": "#707070",
+            "color": {
+              "paletteColor": "greyMColor"
+            },
             "name": "hand-right",
             "metalness": 0.5,
             "roughness": 0.7
@@ -546,7 +1613,9 @@
             "x": -12.5,
             "y": 21,
             "z": 8,
-            "color": "#C0C0C0",
+            "color": {
+              "paletteColor": "greyLColor"
+            },
             "name": "claw-right-1",
             "metalness": 0.6
           },
@@ -558,7 +1627,9 @@
             "x": -9.5,
             "y": 21.5,
             "z": 7.5,
-            "color": "#C0C0C0",
+            "color": {
+              "paletteColor": "greyLColor"
+            },
             "name": "claw-right-2",
             "metalness": 0.6
           }
@@ -589,7 +1660,9 @@
             "x": 9,
             "y": 20,
             "z": 0,
-            "color": "#4A5D25",
+            "color": {
+              "paletteColor": "greenDColor"
+            },
             "name": "thigh-left",
             "texture": "scales",
             "roughness": 0.7,
@@ -608,7 +1681,9 @@
             "x": 9,
             "y": 9,
             "z": 0,
-            "color": "#556B2F",
+            "color": {
+              "paletteColor": "greenDColor"
+            },
             "name": "shin-left",
             "texture": "scales",
             "rotationX": 30
@@ -621,7 +1696,9 @@
             "x": 9,
             "y": 1,
             "z": 0,
-            "color": "#3D4D1E",
+            "color": {
+              "paletteColor": "greenDColor"
+            },
             "name": "foot-left",
             "roughness": 0.8,
             "rotationX": 20,
@@ -639,7 +1716,9 @@
             "y": -2,
             "z": 8.5,
             "rotationX": 90,
-            "color": "#606060",
+            "color": {
+              "paletteColor": "greyLColor"
+            },
             "name": "toe-left-1",
             "metalness": 0.3
           },
@@ -651,7 +1730,9 @@
             "y": -2,
             "z": 8.5,
             "rotationX": 90,
-            "color": "#606060",
+            "color": {
+              "paletteColor": "greyLColor"
+            },
             "name": "toe-left-2",
             "metalness": 0.3
           },
@@ -663,7 +1744,9 @@
             "y": -2,
             "z": 9,
             "rotationX": 90,
-            "color": "#606060",
+            "color": {
+              "paletteColor": "greyLColor"
+            },
             "name": "toe-left-3",
             "metalness": 0.3
           }
@@ -694,7 +1777,9 @@
             "x": -9,
             "y": 20,
             "z": 0,
-            "color": "#4A5D25",
+            "color": {
+              "paletteColor": "greenDColor"
+            },
             "name": "thigh-right",
             "texture": "scales",
             "roughness": 0.7,
@@ -713,7 +1798,9 @@
             "x": -9,
             "y": 9,
             "z": 0,
-            "color": "#556B2F",
+            "color": {
+              "paletteColor": "greenDColor"
+            },
             "name": "shin-right",
             "texture": "scales",
             "rotationX": 30,
@@ -731,7 +1818,9 @@
             "x": -9,
             "y": 1,
             "z": 0,
-            "color": "#3D4D1E",
+            "color": {
+              "paletteColor": "greenDColor"
+            },
             "name": "foot-right",
             "roughness": 0.8,
             "rotationX": 20
@@ -744,7 +1833,9 @@
             "y": -2,
             "z": 8.5,
             "rotationX": 90,
-            "color": "#606060",
+            "color": {
+              "paletteColor": "greyLColor"
+            },
             "name": "toe-right-1",
             "metalness": 0.3
           },
@@ -756,7 +1847,9 @@
             "y": -2,
             "z": 8.5,
             "rotationX": 90,
-            "color": "#606060",
+            "color": {
+              "paletteColor": "greyLColor"
+            },
             "name": "toe-right-2",
             "metalness": 0.3
           },
@@ -768,7 +1861,9 @@
             "y": -2,
             "z": 9,
             "rotationX": 90,
-            "color": "#606060",
+            "color": {
+              "paletteColor": "greyLColor"
+            },
             "name": "toe-right-3",
             "metalness": 0.3
           }
@@ -800,7 +1895,9 @@
             "y": 24,
             "z": -3,
             "rotationX": 40,
-            "color": "#556B2F",
+            "color": {
+              "paletteColor": "greenDColor"
+            },
             "name": "torso-main",
             "texture": "scales",
             "roughness": 0.7
@@ -814,7 +1911,9 @@
             "y": 38,
             "z": 7.3,
             "rotationX": 10,
-            "color": "#4D6227",
+            "color": {
+              "paletteColor": "greenDColor"
+            },
             "name": "neck",
             "texture": "scales",
             "rotationY": 0,
@@ -831,7 +1930,9 @@
             "y": 40,
             "z": -5,
             "rotationX": -55,
-            "color": "#3D4D1E",
+            "color": {
+              "paletteColor": "greyDColor"
+            },
             "name": "dorsal-spike-1",
             "metalness": 0.3,
             "roughness": 0.8
@@ -844,7 +1945,9 @@
             "y": 34,
             "z": -10,
             "rotationX": -50,
-            "color": "#3A4A1D",
+            "color": {
+              "paletteColor": "greyDColor"
+            },
             "name": "dorsal-spike-2",
             "metalness": 0.3,
             "roughness": 0.8
@@ -857,7 +1960,9 @@
             "y": 28,
             "z": -14,
             "rotationX": -45,
-            "color": "#384919",
+            "color": {
+              "paletteColor": "greyDColor"
+            },
             "name": "dorsal-spike-3",
             "metalness": 0.3,
             "roughness": 0.8
@@ -890,7 +1995,9 @@
             "y": 20,
             "z": -20,
             "rotationX": -20,
-            "color": "#4D6227",
+            "color": {
+              "paletteColor": "greenDColor"
+            },
             "name": "tail-base-segment",
             "texture": "scales"
           },
@@ -902,7 +2009,9 @@
             "y": 24,
             "z": -22,
             "rotationX": -25,
-            "color": "#3A4A1D",
+            "color": {
+              "paletteColor": "greyDColor"
+            },
             "name": "tail-spike-1",
             "metalness": 0.3,
             "roughness": 0.8
@@ -916,7 +2025,9 @@
             "y": 18,
             "z": -36,
             "rotationX": -15,
-            "color": "#4A5D25",
+            "color": {
+              "paletteColor": "greenDColor"
+            },
             "name": "tail-mid-segment",
             "texture": "scales"
           },
@@ -928,7 +2039,9 @@
             "y": 22,
             "z": -38,
             "rotationX": -20,
-            "color": "#384919",
+            "color": {
+              "paletteColor": "greyDColor"
+            },
             "name": "tail-spike-2",
             "metalness": 0.3,
             "roughness": 0.8
@@ -961,7 +2074,9 @@
             "y": 16,
             "z": -50,
             "rotationX": -10,
-            "color": "#556B2F",
+            "color": {
+              "paletteColor": "greenDColor"
+            },
             "name": "tail-end-segment",
             "texture": "scales"
           },
@@ -973,7 +2088,9 @@
             "y": 19,
             "z": -52,
             "rotationX": -15,
-            "color": "#384919",
+            "color": {
+              "paletteColor": "greyDColor"
+            },
             "name": "tail-spike-3",
             "metalness": 0.3,
             "roughness": 0.8
@@ -987,7 +2104,9 @@
             "y": 14.5,
             "z": -62,
             "rotationX": -5,
-            "color": "#4D6227",
+            "color": {
+              "paletteColor": "greenDColor"
+            },
             "name": "tail-tip-segment",
             "texture": "scales"
           },
@@ -999,7 +2118,9 @@
             "y": 16.5,
             "z": -64,
             "rotationX": -10,
-            "color": "#384919",
+            "color": {
+              "paletteColor": "greyDColor"
+            },
             "name": "tail-spike-4",
             "metalness": 0.3,
             "roughness": 0.8

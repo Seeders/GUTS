@@ -42,7 +42,9 @@
             "type": "box",
             "width": 15,
             "height": 30,
-            "color": "#738884",
+            "color": {
+              "paletteColor": "greyMColor"
+            },
             "x": 2.25,
             "y": 6.75,
             "z": 0
@@ -53,7 +55,9 @@
             "y": 21.75,
             "width": 10,
             "height": 15,
-            "color": "#73520d",
+            "color": {
+              "paletteColor": "redMColor"
+            },
             "z": 0,
             "scaleX": 1
           },
@@ -63,41 +67,9 @@
             "y": 36.75,
             "width": 25,
             "height": 5,
-            "color": "#4a697d",
-            "z": 0
-          },
-          {
-            "type": "circle",
-            "radius": 0.5,
-            "x": -10.25,
-            "y": 41.75,
-            "color": "#e6e6fa",
-            "z": 0
-          },
-          {
-            "type": "circle",
-            "radius": 0.5,
-            "x": 9.75,
-            "y": 41.75,
-            "color": "#e6e6fa",
-            "z": 0
-          },
-          {
-            "type": "line",
-            "points": [
-              {
-                "x": -1,
-                "y": 4
-              },
-              {
-                "x": 1,
-                "y": 4
-              }
-            ],
-            "width": 2,
-            "color": "#87CEEB",
-            "x": 2.25,
-            "y": 6.75,
+            "color": {
+              "paletteColor": "greyDColor"
+            },
             "z": 0
           }
         ],

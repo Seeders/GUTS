@@ -42,7 +42,11 @@ class TerrainMapEditor {
         this.currentPreviewImage = null;
 
         // Managers and renderers
-        this.imageManager = new this.engineClasses.ImageManager(this.gameEditor,  { imageSize: this.config.imageSize}, {ShapeFactory: ShapeFactory});
+        let palette = null;
+        if(this.gameEditor.getCollections().palettes) {
+            palette = this.gameEditor.getCollections().palettes["main"];
+        }
+        this.imageManager = new this.engineClasses.ImageManager(this.gameEditor,  { imageSize: this.config.imageSize, palette: palette}, {ShapeFactory: ShapeFactory});
         this.mapRenderer = null;
         this.mapManager = null;
 
@@ -254,7 +258,11 @@ class TerrainMapEditor {
     }
 
     async initImageManager() {
-        this.imageManager = new this.engineClasses.ImageManager(this.gameEditor, { imageSize: this.config.imageSize }, { ShapeFactory: this.engineClasses.ShapeFactory });
+        let palette = null;
+        if(this.gameEditor.getCollections().palettes) {
+            palette = this.gameEditor.getCollections().palettes["main"];
+        }
+        this.imageManager = new this.engineClasses.ImageManager(this.gameEditor, { imageSize: this.config.imageSize, palette: palette}, {ShapeFactory: this.engineClasses.ShapeFactory});
         await this.imageManager.loadImages("levels", { level: { tileMap: this.tileMap } }, false, false);
         if(this.environment){
             await this.imageManager.loadImages("environment", this.environment, false, false);

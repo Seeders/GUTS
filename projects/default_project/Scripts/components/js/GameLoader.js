@@ -66,13 +66,17 @@ class GameLoader extends engine.Component {
         this.game.terrainCanvasBuffer = this.terrainCanvasBuffer;
     }
     async loadAssets() {
-        this.game.imageManager = new (this.game.libraryClasses.ImageManager)(this, { imageSize: this.config.configs.game.imageSize}, {ShapeFactory: this.game.libraryClasses.ShapeFactory});    
+        let palette = null;
+        if(this.config.palettes && this.config.palettes["main"]){ 
+            palette = this.config.palettes["main"]
+        }
+        this.game.imageManager = new (this.game.libraryClasses.ImageManager)(this, { imageSize: this.config.configs.game.imageSize, palette: palette}, {ShapeFactory: this.game.libraryClasses.ShapeFactory});    
         // Load all images
         for(let objectType in this.config) {
             console.log('loading', objectType);
             await this.game.imageManager.loadImages(objectType, this.config[objectType]);
         }  
-        this.game.modelManager = new (this.game.libraryClasses.ModelManager)(this,{ShapeFactory: this.game.libraryClasses.ShapeFactory});    
+        this.game.modelManager = new (this.game.libraryClasses.ModelManager)(this,{ShapeFactory: this.game.libraryClasses.ShapeFactory, palette: palette});    
         for(let objectType in this.config) {
             console.log('loading', objectType);
             await this.game.modelManager.loadModels(objectType, this.config[objectType]);

@@ -23,7 +23,6 @@ export class EditorController {
             app: document.getElementById("container"),
             objectList: document.getElementById('object-list'),
             editor: document.getElementById('editor'),
-            handle: document.getElementById('toggleEditorButton'),
             newObjectModal: document.getElementById('new-object-modal'),
             newObjectIdInput: document.getElementById('new-object-id'),
             newObjectNameInput: document.getElementById('new-object-name'),

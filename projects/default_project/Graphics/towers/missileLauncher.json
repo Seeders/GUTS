@@ -14,7 +14,75 @@
   "render": {
     "animations": {
       "idle": [
-        {}
+        {
+          "shapes": {
+            "shapes": [
+              {
+                "type": "box",
+                "width": 30,
+                "height": 6,
+                "depth": 30,
+                "x": 0,
+                "y": 3,
+                "z": 1.8,
+                "color": {
+                  "paletteColor": "greyMColor"
+                },
+                "name": "base",
+                "scaleX": 1,
+                "id": 0
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 1
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 2
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 3
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 4
+              },
+              {
+                "color": {
+                  "paletteColor": "greyMColor"
+                },
+                "id": 5
+              },
+              {
+                "color": {
+                  "paletteColor": "greyMColor"
+                },
+                "id": 6
+              },
+              {
+                "color": {
+                  "paletteColor": "redDColor"
+                },
+                "id": 7
+              },
+              {
+                "color": {
+                  "paletteColor": "redDColor"
+                },
+                "id": 8
+              }
+            ]
+          }
+        }
       ]
     },
     "model": {
@@ -28,7 +96,9 @@
             "x": 0,
             "y": 3,
             "z": 1.8,
-            "color": "#555555",
+            "color": {
+              "paletteColor": "greyMColor"
+            },
             "name": "base",
             "scaleX": 1
           },
@@ -39,7 +109,9 @@
             "x": 0,
             "y": 10,
             "z": 1.8,
-            "color": "#444444",
+            "color": {
+              "paletteColor": "greyDColor"
+            },
             "name": "body"
           },
           {
@@ -50,7 +122,9 @@
             "x": 0,
             "y": 19.5,
             "z": 1.8,
-            "color": "#3A3A3A",
+            "color": {
+              "paletteColor": "greyDColor"
+            },
             "rotationX": 15,
             "name": "missile-box"
           },
@@ -62,7 +136,9 @@
             "y": 24,
             "z": 3.3,
             "rotationX": 105,
-            "color": "#2A2A2A",
+            "color": {
+              "paletteColor": "greyDColor"
+            },
             "name": "left missile container"
           },
           {
@@ -73,30 +149,40 @@
             "y": 24,
             "z": 3.3,
             "rotationX": 105,
-            "color": "#2A2A2A",
+            "color": {
+              "paletteColor": "greyDColor"
+            },
             "name": "right missile container"
           },
           {
             "type": "cylinder",
             "size": 4.5,
-            "height": 13.5,
+            "height": 4,
             "x": -6,
-            "y": 27,
-            "z": -7.2,
+            "y": 28.2,
+            "z": -11.5,
             "rotationX": 105,
-            "color": "#7f7f7f",
+            "color": {
+              "paletteColor": "greyMColor"
+            },
             "rotationZ": 0,
-            "name": "left missile"
+            "name": "left missile",
+            "rotationY": 0,
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1
           },
           {
             "type": "cylinder",
             "size": 4.5,
-            "height": 13.5,
+            "height": 4,
             "x": 6,
-            "y": 27,
-            "z": -7.2,
+            "y": 28.2,
+            "z": -11.5,
             "rotationX": 105,
-            "color": "#7f7f7f",
+            "color": {
+              "paletteColor": "greyMColor"
+            },
             "name": "right missile"
           },
           {
@@ -107,7 +193,9 @@
             "y": 29.4,
             "z": -16.2,
             "rotationX": -75,
-            "color": "#D14A4A",
+            "color": {
+              "paletteColor": "redDColor"
+            },
             "name": "left missile tip"
           },
           {
@@ -118,7 +206,9 @@
             "y": 29.4,
             "z": -16.2,
             "rotationX": -75,
-            "color": "#D14A4A",
+            "color": {
+              "paletteColor": "redDColor"
+            },
             "name": "right missile tip"
           }
         ],

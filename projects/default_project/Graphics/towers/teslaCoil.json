@@ -14,7 +14,114 @@
   "render": {
     "animations": {
       "idle": [
-        {}
+        {
+          "shapes": {
+            "shapes": [
+              {
+                "type": "cylinder",
+                "size": 16,
+                "height": 4,
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "x": 0,
+                "y": 2,
+                "z": 0,
+                "id": 0
+              },
+              {
+                "color": {
+                  "paletteColor": "greyMColor"
+                },
+                "id": 1
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 2
+              },
+              {
+                "color": {
+                  "paletteColor": "greyMColor"
+                },
+                "id": 3
+              },
+              {
+                "color": {
+                  "paletteColor": "blueMColor"
+                },
+                "id": 4
+              },
+              {
+                "color": {
+                  "paletteColor": "blueLColor"
+                },
+                "id": 5
+              },
+              {
+                "color": {
+                  "paletteColor": "blueMColor"
+                },
+                "id": 6
+              },
+              {
+                "color": {
+                  "paletteColor": "blueDColor"
+                },
+                "id": 7
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 8
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 9
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 10
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 11
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 12
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 13
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 14
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 15
+              }
+            ]
+          }
+        }
       ]
     },
     "model": {
@@ -24,7 +131,9 @@
             "type": "cylinder",
             "size": 16,
             "height": 4,
-            "color": "#555555",
+            "color": {
+              "paletteColor": "greyDColor"
+            },
             "x": 0,
             "y": 2,
             "z": 0
@@ -33,7 +142,9 @@
             "type": "cylinder",
             "size": 12,
             "height": 8,
-            "color": "#777777",
+            "color": {
+              "paletteColor": "greyMColor"
+            },
             "x": 0,
             "y": 8,
             "z": 0
@@ -42,7 +153,9 @@
             "type": "cylinder",
             "size": 10,
             "height": 20,
-            "color": "#333333",
+            "color": {
+              "paletteColor": "greyDColor"
+            },
             "x": 0,
             "y": 22,
             "z": 0
@@ -51,7 +164,9 @@
             "type": "cylinder",
             "size": 12,
             "height": 3,
-            "color": "#444444",
+            "color": {
+              "paletteColor": "greyMColor"
+            },
             "x": 0,
             "y": 33.5,
             "z": 0
@@ -59,7 +174,9 @@
           {
             "type": "sphere",
             "size": 14,
-            "color": "#66bbff",
+            "color": {
+              "paletteColor": "blueMColor"
+            },
             "x": 0,
             "y": 42,
             "z": 0
@@ -68,7 +185,9 @@
             "type": "torus",
             "size": 20,
             "tubeSize": 1.6,
-            "color": "#66bbff",
+            "color": {
+              "paletteColor": "blueLColor"
+            },
             "x": 0,
             "y": 18,
             "z": 0,
@@ -78,7 +197,9 @@
             "type": "torus",
             "size": 18,
             "tubeSize": 1.6,
-            "color": "#4499ff",
+            "color": {
+              "paletteColor": "blueMColor"
+            },
             "x": 0,
             "y": 24,
             "z": 0,
@@ -88,7 +209,9 @@
             "type": "torus",
             "size": 16,
             "tubeSize": 1.6,
-            "color": "#2277ff",
+            "color": {
+              "paletteColor": "blueDColor"
+            },
             "x": 0,
             "y": 30,
             "z": 0,
@@ -98,7 +221,9 @@
             "type": "cone",
             "size": 6,
             "height": 16,
-            "color": "#888888",
+            "color": {
+              "paletteColor": "greyLColor"
+            },
             "x": 7,
             "y": 34,
             "z": 0,
@@ -108,7 +233,9 @@
             "type": "cone",
             "size": 6,
             "height": 16,
-            "color": "#888888",
+            "color": {
+              "paletteColor": "greyLColor"
+            },
             "x": -7,
             "y": 34,
             "z": 0,
@@ -118,7 +245,9 @@
             "type": "cone",
             "size": 6,
             "height": 16,
-            "color": "#888888",
+            "color": {
+              "paletteColor": "greyLColor"
+            },
             "x": 0,
             "y": 34,
             "z": 7,
@@ -128,7 +257,9 @@
             "type": "cone",
             "size": 6,
             "height": 16,
-            "color": "#888888",
+            "color": {
+              "paletteColor": "greyLColor"
+            },
             "x": 0,
             "y": 34,
             "z": -7,
@@ -139,7 +270,9 @@
             "width": 3,
             "height": 14,
             "depth": 3,
-            "color": "#888888",
+            "color": {
+              "paletteColor": "greyLColor"
+            },
             "x": 6,
             "y": 16,
             "z": 6,
@@ -150,7 +283,9 @@
             "width": 3,
             "height": 14,
             "depth": 3,
-            "color": "#888888",
+            "color": {
+              "paletteColor": "greyLColor"
+            },
             "x": -6,
             "y": 16,
             "z": 6,
@@ -161,7 +296,9 @@
             "width": 3,
             "height": 14,
             "depth": 3,
-            "color": "#888888",
+            "color": {
+              "paletteColor": "greyLColor"
+            },
             "x": 6,
             "y": 16,
             "z": -6,
@@ -172,20 +309,13 @@
             "width": 3,
             "height": 14,
             "depth": 3,
-            "color": "#888888",
+            "color": {
+              "paletteColor": "greyLColor"
+            },
             "x": -6,
             "y": 16,
             "z": -6,
             "rotationY": 45
-          },
-          {
-            "type": "cylinder",
-            "size": 2,
-            "height": 1,
-            "color": "#66bbff",
-            "x": 0,
-            "y": 36,
-            "z": 0
           }
         ],
         "position": {

@@ -458,7 +458,9 @@
             "y": 22.6,
             "z": -2.6,
             "rotationX": 46,
-            "color": "#5D8233",
+            "color": {
+              "paletteColor": "greenMColor"
+            },
             "name": "body",
             "scaleX": 1
           },
@@ -470,7 +472,9 @@
             "x": 0,
             "y": 37,
             "z": 12,
-            "color": "#5D8233",
+            "color": {
+              "paletteColor": "greenMColor"
+            },
             "name": "head-top"
           },
           {
@@ -481,7 +485,9 @@
             "x": 0,
             "y": 29,
             "z": 14,
-            "color": "#4E6C2A",
+            "color": {
+              "paletteColor": "greenMColor"
+            },
             "name": "jaw"
           },
           {
@@ -492,7 +498,9 @@
             "x": 0,
             "y": 31,
             "z": 20,
-            "color": "#ff3c41",
+            "color": {
+              "paletteColor": "redDColor"
+            },
             "name": "gums"
           },
           {
@@ -502,8 +510,10 @@
             "depth": 1,
             "x": -3,
             "y": 31,
-            "z": 20,
-            "color": "#FFFFFF",
+            "z": 20.1,
+            "color": {
+              "paletteColor": "greyLColor"
+            },
             "name": "tooth-right"
           },
           {
@@ -513,8 +523,10 @@
             "depth": 1,
             "x": 0,
             "y": 31,
-            "z": 20,
-            "color": "#FFFFFF",
+            "z": 20.1,
+            "color": {
+              "paletteColor": "greyLColor"
+            },
             "name": "tooth-middle"
           },
           {
@@ -524,8 +536,10 @@
             "depth": 1,
             "x": 3,
             "y": 31,
-            "z": 20,
-            "color": "#FFFFFF",
+            "z": 20.1,
+            "color": {
+              "paletteColor": "greyLColor"
+            },
             "name": "tooth-left"
           },
           {
@@ -534,7 +548,9 @@
             "x": -7,
             "y": 42,
             "z": 14,
-            "color": "#FFFF00",
+            "color": {
+              "paletteColor": "redLColor"
+            },
             "name": "eye-right"
           },
           {
@@ -543,7 +559,9 @@
             "x": -7,
             "y": 42,
             "z": 15,
-            "color": "#000000",
+            "color": {
+              "paletteColor": "brownDColor"
+            },
             "name": "pupil-right"
           },
           {
@@ -552,7 +570,9 @@
             "x": 7,
             "y": 42,
             "z": 14,
-            "color": "#FFFF00",
+            "color": {
+              "paletteColor": "redLColor"
+            },
             "name": "eye-left"
           },
           {
@@ -561,7 +581,9 @@
             "x": 7,
             "y": 42,
             "z": 15,
-            "color": "#000000",
+            "color": {
+              "paletteColor": "brownDColor"
+            },
             "name": "pupil-left"
           },
           {
@@ -573,7 +595,9 @@
             "y": 18,
             "z": -17.9,
             "rotationX": -20,
-            "color": "#5D8233",
+            "color": {
+              "paletteColor": "greenMColor"
+            },
             "name": "tail-base"
           },
           {
@@ -585,7 +609,9 @@
             "y": 15,
             "z": -30,
             "rotationX": -10,
-            "color": "#5D8233",
+            "color": {
+              "paletteColor": "greenMColor"
+            },
             "name": "tail-tip"
           },
           {
@@ -596,7 +622,9 @@
             "x": 6,
             "y": 10,
             "z": 0,
-            "color": "#4E6C2A",
+            "color": {
+              "paletteColor": "greenMColor"
+            },
             "name": "leg-left"
           },
           {
@@ -607,7 +635,9 @@
             "x": -6,
             "y": 10,
             "z": 0,
-            "color": "#4E6C2A",
+            "color": {
+              "paletteColor": "greenMColor"
+            },
             "name": "leg-right"
           },
           {
@@ -618,7 +648,9 @@
             "x": 6,
             "y": 1,
             "z": 0,
-            "color": "#4E6C2A",
+            "color": {
+              "paletteColor": "greenMColor"
+            },
             "name": "foot-left"
           },
           {
@@ -629,7 +661,9 @@
             "x": -6,
             "y": 1,
             "z": 0,
-            "color": "#4E6C2A",
+            "color": {
+              "paletteColor": "greenMColor"
+            },
             "name": "foot-right"
           },
           {
@@ -641,7 +675,9 @@
             "y": 26,
             "z": 0,
             "rotationX": -40,
-            "color": "#4E6C2A",
+            "color": {
+              "paletteColor": "greenMColor"
+            },
             "name": "arm-left"
           },
           {
@@ -653,7 +689,9 @@
             "y": 26,
             "z": 0,
             "rotationX": -40,
-            "color": "#4E6C2A",
+            "color": {
+              "paletteColor": "greenMColor"
+            },
             "name": "arm-right"
           },
           {
@@ -664,7 +702,9 @@
             "x": 8,
             "y": 24,
             "z": 3,
-            "color": "#A0A0A0",
+            "color": {
+              "paletteColor": "greyMColor"
+            },
             "name": "hand-left"
           },
           {
@@ -675,7 +715,9 @@
             "x": -8,
             "y": 24,
             "z": 3,
-            "color": "#A0A0A0",
+            "color": {
+              "paletteColor": "greyMColor"
+            },
             "name": "hand-right"
           },
           {
@@ -686,7 +728,9 @@
             "y": 35,
             "z": -2,
             "rotationX": -60,
-            "color": "#536026",
+            "color": {
+              "paletteColor": "greenDColor"
+            },
             "name": "spike1"
           },
           {
@@ -697,7 +741,9 @@
             "y": 28,
             "z": -8,
             "rotationX": -75,
-            "color": "#436026",
+            "color": {
+              "paletteColor": "greenDColor"
+            },
             "name": "spike2"
           },
           {
@@ -708,7 +754,9 @@
             "y": 22,
             "z": -20,
             "rotationX": -25,
-            "color": "#436026",
+            "color": {
+              "paletteColor": "greenDColor"
+            },
             "name": "spike3"
           },
           {
@@ -719,7 +767,9 @@
             "y": 18,
             "z": -28,
             "rotationX": -25,
-            "color": "#436026",
+            "color": {
+              "paletteColor": "greenDColor"
+            },
             "name": "spike4"
           }
         ],

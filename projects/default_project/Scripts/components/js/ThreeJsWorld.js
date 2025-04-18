@@ -225,11 +225,11 @@ class ThreeJsWorld extends engine.Component {
     // Add this method to your ThreeJsWorld class
     addGrassToTerrain() {
         // Grass blade geometry
-        const bladeWidth = 24;
+        const bladeWidth = 12;
         const bladeHeight = 32;
         const grassGeometry = this.createCurvedBladeGeometry(bladeWidth, bladeHeight);
         grassGeometry.translate(0, bladeHeight / 2, 0);
-        const grassCount = 100000;
+        const grassCount = 500000;
         // Add random phase attribute for each instance
         const phases = new Float32Array(grassCount);
         for (let i = 0; i < grassCount; i++) {
@@ -253,39 +253,42 @@ class ThreeJsWorld extends engine.Component {
         const uniforms = this.uniforms;
         this.grassMaterial = new THREE.ShaderMaterial({
             vertexShader: `
-        varying vec2 vUv;
-        uniform float time;
-        uniform float windSpeed;
-        uniform float windStrength;
-        uniform vec2 windDirection;
-        attribute float instancePhase;
+            varying vec2 vUv;
+            varying float vDistance;
+            uniform float time;
+            uniform float windSpeed;
+            uniform float windStrength;
+            uniform vec2 windDirection;
+            attribute float instancePhase;
+    
+            void main() {        
+                vUv = uv;
+                
+                vec2 dir = normalize(windDirection);
+                float wave = sin(time * windSpeed + instancePhase) * windStrength;
+                wave *= uv.y;
+                
+                vec3 displacement = vec3(
+                    dir.x * wave,
+                    0.0,
+                    dir.y * wave
+                );
+    
+                vec4 mvPosition = modelViewMatrix * instanceMatrix * vec4(position + displacement, 1.0);
+                gl_Position = projectionMatrix * mvPosition;
+                
+                // Pass the original UV coordinate, unaffected by instance position
+                vUv = uv;
+            }
+        `,
+        fragmentShader: `
+    varying vec2 vUv;
+    uniform sampler2D map;
 
-        void main() {        
-            
-            vUv = uv;
-            
-            vec2 dir = normalize(windDirection);
-            float wave = sin(time * windSpeed + instancePhase) * windStrength;
-            wave *= uv.y;
-            
-            vec3 displacement = vec3(
-                dir.x * wave,
-                0.0,
-                dir.y * wave
-            );
-
-            gl_Position = projectionMatrix * modelViewMatrix * instanceMatrix * 
-                        vec4(position + displacement, 1.0);
-
-        }
-    `,
-    fragmentShader: `
-        varying vec2 vUv;
-        uniform sampler2D map;
-
-        void main() {
-            gl_FragColor = texture2D(map, vUv);
-        }
+    void main() {
+       vec4 texColor = texture2D(map, vUv);
+        gl_FragColor = texColor;
+    }
     `,
             uniforms: uniforms
         });
@@ -466,36 +469,70 @@ class ThreeJsWorld extends engine.Component {
         this.game.camera = null;
         this.game.renderer = null;
     }
-
     createCurvedBladeGeometry(width = 0.1, height = 1) {
+        // Create a shape similar to the original quadratic curve approach
         const shape = new THREE.Shape();
         shape.moveTo(0, 0);
         shape.quadraticCurveTo(width * 0.5, height * 0.5, 0, height);
-    
-        const geometry = new THREE.ShapeGeometry(shape);
-        geometry.translate(0, 0, 0);
-        return geometry;
+        
+        // Create ShapeGeometry with custom UV generation
+        const shapeGeom = new THREE.ShapeGeometry(shape, 12);
+        
+        // The issue is that the default UV mapping in ShapeGeometry doesn't
+        // give us the vertical gradient we want. Let's fix the UVs:
+        const positions = shapeGeom.attributes.position.array;
+        const uvs = shapeGeom.attributes.uv.array;
+        const vertexCount = positions.length / 3;
+        
+        // Create new UV array
+        const newUVs = new Float32Array(uvs.length);
+        
+        // For each vertex
+        for (let i = 0; i < vertexCount; i++) {
+            const posIndex = i * 3;
+            const uvIndex = i * 2;
+            
+            // Get y-coordinate (height position)
+            const y = positions[posIndex + 1];
+            
+            // Normalize y to 0-1 range (0 at bottom, 1 at top)
+            const normalizedY = y / height;
+            
+            // Use original x-UV for horizontal position
+            newUVs[uvIndex] = uvs[uvIndex];
+            
+            // Use normalized height for vertical UV position
+            newUVs[uvIndex + 1] = normalizedY;
+        }
+        
+        // Replace UV attribute
+        shapeGeom.setAttribute('uv', new THREE.BufferAttribute(newUVs, 2));
+        
+        return shapeGeom;
     }
-    createGrassTexture() {
-        const canvas = document.createElement('canvas');
-        canvas.width = 4;
-        canvas.height = 32;
-        const ctx = canvas.getContext('2d');
-    
-        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        gradient.addColorStop(0, '#6bbf59');  // Tip
-        gradient.addColorStop(1, '#2d5f2e');  // Base
-    
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-        const texture = new THREE.CanvasTexture(canvas);
-        texture.wrapS = THREE.ClampToEdgeWrapping;
-        texture.wrapT = THREE.ClampToEdgeWrapping;
-        texture.magFilter = THREE.LinearFilter;
-        texture.minFilter = THREE.LinearMipMapLinearFilter;
-        return texture;
-    }
+// And in createGrassTexture:
+createGrassTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 4;  // Increased width for better color reproduction
+    canvas.height = 32;
+    const ctx = canvas.getContext('2d');
+
+    // Create gradient from bottom to top
+    const gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);
+    gradient.addColorStop(0.0, this.game.config.palettes["main"]["greenDColor"]); // Base
+    gradient.addColorStop(0.8, this.game.config.palettes["main"]["greenMColor"]); // Tip
+    gradient.addColorStop(1.0, this.game.config.palettes["main"]["redLColor"]); // Tip
+
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.ClampToEdgeWrapping;
+    texture.magFilter = THREE.LinearFilter;
+    texture.minFilter = THREE.LinearFilter;
+    return texture;
+}
 }
 
 

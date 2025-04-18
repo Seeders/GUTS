@@ -1,6 +1,6 @@
 
 class ImageManager {
-    constructor(app, {imageSize}, {ShapeFactory}) {
+    constructor(app, {imageSize, palette}, {ShapeFactory}) {
         this.app = app;
         this.images = {};
         this.imageSize = imageSize || 128;
@@ -21,7 +21,7 @@ class ImageManager {
         const frustumSize = cameraDistance + 16;
         const aspect = 1;
 
-        this.shapeFactory = new ShapeFactory();
+        this.shapeFactory = new ShapeFactory(palette);
         // Create 8 cameras for isometric views at 45-degree intervals
         this.cameras = [];
         for (let i = 0; i < 8; i++) {

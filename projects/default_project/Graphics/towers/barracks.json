@@ -9,7 +9,141 @@
   "render": {
     "animations": {
       "idle": [
-        {}
+        {
+          "shapes": {
+            "shapes": [
+              {
+                "type": "box",
+                "width": 40,
+                "height": 4,
+                "depth": 40,
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "x": 0,
+                "y": 2,
+                "z": 0,
+                "scaleX": 1,
+                "name": "foundation",
+                "id": 0
+              },
+              {
+                "color": {
+                  "paletteColor": "greyMColor"
+                },
+                "id": 1
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 2
+              },
+              {
+                "color": {
+                  "paletteColor": "blueDColor"
+                },
+                "id": 3
+              },
+              {
+                "color": {
+                  "paletteColor": "blueMColor"
+                },
+                "id": 4
+              },
+              {
+                "color": {
+                  "paletteColor": "blueMColor"
+                },
+                "id": 5
+              },
+              {
+                "color": {
+                  "paletteColor": "blueMColor"
+                },
+                "id": 6
+              },
+              {
+                "color": {
+                  "paletteColor": "blueDColor"
+                },
+                "id": 7
+              },
+              {
+                "color": {
+                  "paletteColor": "blueMColor"
+                },
+                "id": 8
+              },
+              {
+                "color": {
+                  "paletteColor": "blueMColor"
+                },
+                "id": 9
+              },
+              {
+                "color": {
+                  "paletteColor": "blueMColor"
+                },
+                "id": 10
+              },
+              {
+                "color": {
+                  "paletteColor": "greyMColor"
+                },
+                "id": 11
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 12
+              },
+              {
+                "color": {
+                  "paletteColor": "blueDColor"
+                },
+                "id": 13
+              },
+              {
+                "color": {
+                  "paletteColor": "blueMColor"
+                },
+                "id": 14
+              },
+              {
+                "color": {
+                  "paletteColor": "greyMColor"
+                },
+                "id": 15
+              },
+              {
+                "color": {
+                  "paletteColor": "redDColor"
+                },
+                "id": 16
+              },
+              {
+                "color": {
+                  "paletteColor": "redDColor"
+                },
+                "id": 17
+              },
+              {
+                "color": {
+                  "paletteColor": "redDColor"
+                },
+                "id": 18
+              },
+              {
+                "color": {
+                  "paletteColor": "redDColor"
+                },
+                "id": 19
+              }
+            ]
+          }
+        }
       ]
     },
     "model": {
@@ -20,76 +154,99 @@
             "width": 40,
             "height": 4,
             "depth": 40,
-            "color": "#303040",
+            "color": {
+              "paletteColor": "greyDColor"
+            },
             "x": 0,
             "y": 2,
             "z": 0,
-            "scaleX": 1
+            "scaleX": 1,
+            "name": "foundation"
           },
           {
             "type": "box",
             "width": 36,
             "height": 12,
             "depth": 36,
-            "color": "#404050",
+            "color": {
+              "paletteColor": "greyMColor"
+            },
             "x": 0,
             "y": 10,
-            "z": 0
+            "z": 0,
+            "name": "structure"
           },
           {
             "type": "box",
             "width": 40,
             "height": 2,
             "depth": 40,
-            "color": "#505060",
+            "color": {
+              "paletteColor": "greyDColor"
+            },
             "x": 0,
             "y": 17,
-            "z": 0
+            "z": 0,
+            "name": "roof"
           },
           {
             "type": "cylinder",
             "size": 12,
             "height": 12,
-            "color": "#2288cc",
-            "x": -16,
-            "y": 24,
-            "z": 0
-          },
-          {
-            "type": "torus",
-            "size": 12,
-            "tubeSize": 1,
-            "color": "#44aaff",
+            "color": {
+              "paletteColor": "blueDColor"
+            },
             "x": -16,
             "y": 24,
             "z": 0,
-            "rotationX": 90
+            "name": "terminal1"
           },
           {
             "type": "torus",
             "size": 12,
             "tubeSize": 1,
-            "color": "#44aaff",
+            "color": {
+              "paletteColor": "blueMColor"
+            },
+            "x": -16,
+            "y": 24,
+            "z": 0,
+            "rotationX": 90,
+            "name": "terminal1coil2"
+          },
+          {
+            "type": "torus",
+            "size": 12,
+            "tubeSize": 1,
+            "color": {
+              "paletteColor": "blueMColor"
+            },
             "x": -16,
             "y": 28,
             "z": 0,
-            "rotationX": 90
+            "rotationX": 90,
+            "name": "terminal1coil3"
           },
           {
             "type": "torus",
             "size": 12,
             "tubeSize": 1,
-            "color": "#44aaff",
+            "color": {
+              "paletteColor": "blueMColor"
+            },
             "x": -16,
             "y": 20,
             "z": 0,
-            "rotationX": 90
+            "rotationX": 90,
+            "name": "terminal1coil1"
           },
           {
             "type": "cylinder",
             "size": 12,
             "height": 12,
-            "color": "#2288cc",
+            "color": {
+              "paletteColor": "blueDColor"
+            },
             "x": 16,
             "y": 24,
             "z": 0
@@ -98,103 +255,96 @@
             "type": "torus",
             "size": 12,
             "tubeSize": 1,
-            "color": "#44aaff",
+            "color": {
+              "paletteColor": "blueMColor"
+            },
             "x": 16,
             "y": 24,
             "z": 0,
-            "rotationX": 90
+            "rotationX": 90,
+            "name": "terminal2coil2"
           },
           {
             "type": "torus",
             "size": 12,
             "tubeSize": 1,
-            "color": "#44aaff",
+            "color": {
+              "paletteColor": "blueMColor"
+            },
             "x": 16,
             "y": 28,
             "z": 0,
-            "rotationX": 90
+            "rotationX": 90,
+            "name": "terminal2coil3"
           },
           {
             "type": "torus",
             "size": 12,
             "tubeSize": 1,
-            "color": "#44aaff",
+            "color": {
+              "paletteColor": "blueMColor"
+            },
             "x": 16,
             "y": 20,
             "z": 0,
-            "rotationX": 90
+            "rotationX": 90,
+            "name": "terminal2coil1"
           },
           {
             "type": "cylinder",
             "size": 16,
             "height": 6,
-            "color": "#333333",
+            "color": {
+              "paletteColor": "greyMColor"
+            },
             "x": 0,
             "y": 20,
-            "z": 0
+            "z": 0,
+            "name": "center1"
           },
           {
             "type": "cylinder",
             "size": 14,
             "height": 2,
-            "color": "#444444",
+            "color": {
+              "paletteColor": "greyDColor"
+            },
             "x": 0,
             "y": 24,
-            "z": 0
+            "z": 0,
+            "name": "center2"
           },
           {
             "type": "cylinder",
             "size": 12,
             "height": 2,
-            "color": "#2288cc",
+            "color": {
+              "paletteColor": "blueDColor"
+            },
             "x": 0,
             "y": 26,
-            "z": 0
-          },
-          {
-            "type": "box",
-            "width": 6,
-            "height": 6,
-            "depth": 6,
-            "color": "#cc2200",
-            "x": -14,
-            "y": 9,
-            "z": -14
-          },
-          {
-            "type": "box",
-            "width": 6,
-            "height": 6,
-            "depth": 6,
-            "color": "#cc6600",
-            "x": 0,
-            "y": 9,
-            "z": -14
-          },
-          {
-            "type": "box",
-            "width": 6,
-            "height": 6,
-            "depth": 6,
-            "color": "#ccaa00",
-            "x": 14,
-            "y": 9,
-            "z": -14
+            "z": 0,
+            "name": "centerterminal"
           },
           {
             "type": "sphere",
             "size": 3,
-            "color": "#44aaff",
+            "color": {
+              "paletteColor": "blueMColor"
+            },
             "x": 0,
             "y": 28,
-            "z": 0
+            "z": 0,
+            "name": "centersphere"
           },
           {
             "type": "box",
             "width": 40,
             "height": 1,
             "depth": 24,
-            "color": "#444455",
+            "color": {
+              "paletteColor": "greyMColor"
+            },
             "x": 0,
             "y": 18.5,
             "z": 0
@@ -203,37 +353,49 @@
             "type": "cylinder",
             "size": 2,
             "height": 4,
-            "color": "#aa0000",
+            "color": {
+              "paletteColor": "redDColor"
+            },
             "x": -18,
             "y": 20.5,
-            "z": -8
+            "z": -8,
+            "name": "redthing1"
           },
           {
             "type": "cylinder",
             "size": 2,
             "height": 4,
-            "color": "#aa0000",
+            "color": {
+              "paletteColor": "redDColor"
+            },
             "x": 18,
             "y": 20.5,
-            "z": -8
+            "z": -8,
+            "name": "redthing2"
           },
           {
             "type": "cylinder",
             "size": 2,
             "height": 4,
-            "color": "#aa0000",
+            "color": {
+              "paletteColor": "redDColor"
+            },
             "x": -18,
             "y": 20.5,
-            "z": 8
+            "z": 8,
+            "name": "redthing3"
           },
           {
             "type": "cylinder",
             "size": 2,
             "height": 4,
-            "color": "#aa0000",
+            "color": {
+              "paletteColor": "redDColor"
+            },
             "x": 18,
             "y": 20.5,
-            "z": 8
+            "z": 8,
+            "name": "redthing4"
           }
         ],
         "position": {

@@ -28,7 +28,9 @@
             "x": 0,
             "y": 4,
             "z": 1.8,
-            "color": "#4B4B4B",
+            "color": {
+              "paletteColor": "greyMColor"
+            },
             "name": "base"
           },
           {
@@ -38,7 +40,9 @@
             "x": 0,
             "y": 14,
             "z": 1.8,
-            "color": "#333333",
+            "color": {
+              "paletteColor": "greyDColor"
+            },
             "name": "core"
           },
           {
@@ -49,7 +53,9 @@
             "x": 0,
             "y": 24,
             "z": 1.8,
-            "color": "#2A2A2A",
+            "color": {
+              "paletteColor": "greyMColor"
+            },
             "rotationX": 12,
             "name": "cannon-head"
           },
@@ -61,7 +67,9 @@
             "y": 28,
             "z": 12,
             "rotationX": 90,
-            "color": "#1A1A1A",
+            "color": {
+              "paletteColor": "greyDColor"
+            },
             "name": "plasma-barrel"
           },
           {
@@ -72,7 +80,9 @@
             "y": 28,
             "z": 20,
             "rotationX": 90,
-            "color": "#00FFFF",
+            "color": {
+              "paletteColor": "greyLColor"
+            },
             "name": "plasma-emitter"
           },
           {
@@ -82,7 +92,9 @@
             "x": -8,
             "y": 20,
             "z": 1.8,
-            "color": "#00FFFF",
+            "color": {
+              "paletteColor": "blueMColor"
+            },
             "name": "left-energy-coil"
           },
           {
@@ -92,7 +104,9 @@
             "x": 8,
             "y": 20,
             "z": 1.8,
-            "color": "#00FFFF",
+            "color": {
+              "paletteColor": "blueMColor"
+            },
             "name": "right-energy-coil"
           },
           {
@@ -101,7 +115,9 @@
             "x": 0,
             "y": 28,
             "z": 20,
-            "color": "#ff00ff",
+            "color": {
+              "paletteColor": "purpleMColor"
+            },
             "name": "charge-orb"
           },
           {
@@ -112,7 +128,9 @@
             "x": -12,
             "y": 14,
             "z": 1.8,
-            "color": "#00FFFF",
+            "color": {
+              "paletteColor": "blueMColor"
+            },
             "name": "left-glow-panel"
           },
           {
@@ -123,7 +141,9 @@
             "x": 12,
             "y": 14,
             "z": 1.8,
-            "color": "#00FFFF",
+            "color": {
+              "paletteColor": "blueMColor"
+            },
             "name": "right-glow-panel"
           },
           {
@@ -133,7 +153,9 @@
             "x": 0,
             "y": 32,
             "z": 1.8,
-            "color": "#FF00FF",
+            "color": {
+              "paletteColor": "purpleMColor"
+            },
             "name": "top-energy-ring"
           }
         ],

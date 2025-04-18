@@ -1,7 +1,8 @@
 class ShapeFactory {
-    constructor() {
+    constructor(palette) {
         this.gltfCache = new Map();
         this.gltfLoader = new THREE.GLTFLoader();
+        this.palette = palette;
     }
     async createMergedGroupFromJSON(model, frameData, groupName) {
         let mergedGroup = this.getMergedGroup(model, frameData, groupName);
@@ -97,8 +98,15 @@ class ShapeFactory {
     handlePrimitiveShape(shape, index, group) {
         let geometry, material;
 
+        let colorToUse = shape.color;
+        if(shape.color.paletteColor){
+            colorToUse = "#ffffff";
+            if(this.palette && this.palette[shape.color.paletteColor]){
+                colorToUse = this.palette[shape.color.paletteColor];
+            }
+        }
         // Create material with specified color
-        material = new THREE.MeshStandardMaterial({ color: shape.color });
+        material = new THREE.MeshStandardMaterial({ color: colorToUse });
 
         switch (shape.type) {
             case 'sphere':

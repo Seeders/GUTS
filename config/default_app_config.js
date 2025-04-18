@@ -429,7 +429,7 @@ const DEFAULT_PROJECT_CONFIG = {
       },
       "GameLoader": {
         "title": "Game Loader",
-        "script": "class GameLoader extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n\r\n    init() {}\r\n    \r\n    async load({config}){\r\n        this.config = config;        \r\n        this.config.configs.game.canvasWidth = window.outerWidth;\r\n        this.config.configs.game.canvasHeight = window.outerHeight;\r\n        this.state = new (this.game.libraryClasses.GameState)(this.config);  \r\n        this.game.state = this.state;\r\n\r\n        this.isometric = this.config.configs.game.isIsometric;\r\n        this.game.state.tileMapData = this.config.levels[this.game.state.level].tileMap;\r\n        this.game.state.isometric = this.config.configs.game.isIsometric;\r\n        if (this.game.state.modifierSet && this.config.modifierSets) {\r\n            this.game.state.stats = this.config.modifierSets[this.game.state.modifierSet];\r\n            this.game.state.defaultStats = { ...this.game.state.stats };\r\n        }   \r\n\r\n\r\n        this.setupCanvas(this.config.configs.game.canvasWidth, this.config.configs.game.canvasHeight);\r\n        await this.loadAssets();\r\n\r\n        this.game.translator = new (this.game.libraryClasses.CoordinateTranslator)(this.config.configs.game, this.config.levels[this.state.level].tileMap.terrainMap.length, this.isometric);\r\n        this.game.spatialGrid = new (this.game.libraryClasses.SpatialGrid)(this.config.levels[this.state.level].tileMap.terrainMap.length, this.config.configs.game.gridSize);\r\n        const terrainImages = this.game.imageManager.getImages(\"levels\", this.state.level);\r\n\r\n        // Use ModuleManager's script environment\r\n        this.game.terrainTileMapper = new (this.game.libraryClasses.TileMap)(this, {}, {CanvasUtility: this.game.libraryClasses.CanvasUtility});\r\n        this.game.terrainTileMapper.init(this.terrainCanvasBuffer, this.config.configs.game.gridSize, terrainImages, this.isometric);\r\n        \r\n        this.gameEntity = this.game.createEntityFromConfig(0, 0, 'game', { gameConfig: this.config.configs.game, canvas: this.canvas, canvasBuffer: this.canvasBuffer, terrainCanvasBuffer: this.terrainCanvasBuffer, environment: this.config.environment, imageManager: this.game.imageManager, levelName: this.game.state.level, level: this.config.levels[this.game.state.level] });\r\n        this.game.imageManager.dispose();    \r\n        this.game.audioManager = this.gameEntity.getComponent('AudioManager');  \r\n    }\r\n\r\n    getProject() {\r\n        return this.gameEntity;\r\n    }\r\n    setupCanvas(canvasWidth, canvasHeight) {\r\n        this.canvas = document.getElementById(\"gameCanvas\");\r\n        if(this.game.config.configs.game.is3D){\r\n            this.finalCtx = this.canvas.getContext(\"webgl\");\r\n        } else {\r\n            this.finalCtx = this.canvas.getContext(\"2d\");\r\n        }\r\n        this.canvasBuffer = document.createElement(\"canvas\");\r\n        this.ctx = this.canvasBuffer.getContext(\"2d\");\r\n        this.canvasBuffer.setAttribute('width', canvasWidth);\r\n        this.canvasBuffer.setAttribute('height', canvasHeight);\r\n        this.canvas.setAttribute('width', canvasWidth);\r\n        this.canvas.setAttribute('height', canvasHeight);  \r\n        \r\n        this.terrainCanvasBuffer = document.createElement('canvas');\r\n        this.terrainCanvasBuffer.width = this.config.configs.game.gridSize * this.config.levels[this.state.level].tileMap.terrainMap[0].length;\r\n        this.terrainCanvasBuffer.height = this.config.configs.game.gridSize * this.config.levels[this.state.level].tileMap.terrainMap.length;\r\n\r\n        this.game.canvas = this.canvas;\r\n        this.game.finalCtx = this.finalCtx;\r\n        this.game.canvasBuffer = this.canvasBuffer;\r\n        this.game.ctx = this.ctx;\r\n        this.game.terrainCanvasBuffer = this.terrainCanvasBuffer;\r\n    }\r\n    async loadAssets() {\r\n        this.game.imageManager = new (this.game.libraryClasses.ImageManager)(this, { imageSize: this.config.configs.game.imageSize}, {ShapeFactory: this.game.libraryClasses.ShapeFactory});    \r\n        // Load all images\r\n        for(let objectType in this.config) {\r\n            console.log('loading', objectType);\r\n            await this.game.imageManager.loadImages(objectType, this.config[objectType]);\r\n        }  \r\n        this.game.modelManager = new (this.game.libraryClasses.ModelManager)(this,{ShapeFactory: this.game.libraryClasses.ShapeFactory});    \r\n        for(let objectType in this.config) {\r\n            console.log('loading', objectType);\r\n            await this.game.modelManager.loadModels(objectType, this.config[objectType]);\r\n        }  \r\n \r\n    }\r\n}",
+        "script": "class GameLoader extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n\r\n    init() {}\r\n    \r\n    async load({config}){\r\n        this.config = config;        \r\n        this.config.configs.game.canvasWidth = window.outerWidth;\r\n        this.config.configs.game.canvasHeight = window.outerHeight;\r\n        this.state = new (this.game.libraryClasses.GameState)(this.config);  \r\n        this.game.state = this.state;\r\n\r\n        this.isometric = this.config.configs.game.isIsometric;\r\n        this.game.state.tileMapData = this.config.levels[this.game.state.level].tileMap;\r\n        this.game.state.isometric = this.config.configs.game.isIsometric;\r\n        if (this.game.state.modifierSet && this.config.modifierSets) {\r\n            this.game.state.stats = this.config.modifierSets[this.game.state.modifierSet];\r\n            this.game.state.defaultStats = { ...this.game.state.stats };\r\n        }   \r\n\r\n\r\n        this.setupCanvas(this.config.configs.game.canvasWidth, this.config.configs.game.canvasHeight);\r\n        await this.loadAssets();\r\n\r\n        this.game.translator = new (this.game.libraryClasses.CoordinateTranslator)(this.config.configs.game, this.config.levels[this.state.level].tileMap.terrainMap.length, this.isometric);\r\n        this.game.spatialGrid = new (this.game.libraryClasses.SpatialGrid)(this.config.levels[this.state.level].tileMap.terrainMap.length, this.config.configs.game.gridSize);\r\n        const terrainImages = this.game.imageManager.getImages(\"levels\", this.state.level);\r\n\r\n        // Use ModuleManager's script environment\r\n        this.game.terrainTileMapper = new (this.game.libraryClasses.TileMap)(this, {}, {CanvasUtility: this.game.libraryClasses.CanvasUtility});\r\n        this.game.terrainTileMapper.init(this.terrainCanvasBuffer, this.config.configs.game.gridSize, terrainImages, this.isometric);\r\n        \r\n        this.gameEntity = this.game.createEntityFromConfig(0, 0, 'game', { gameConfig: this.config.configs.game, canvas: this.canvas, canvasBuffer: this.canvasBuffer, terrainCanvasBuffer: this.terrainCanvasBuffer, environment: this.config.environment, imageManager: this.game.imageManager, levelName: this.game.state.level, level: this.config.levels[this.game.state.level] });\r\n        this.game.imageManager.dispose();    \r\n        this.game.audioManager = this.gameEntity.getComponent('AudioManager');  \r\n    }\r\n\r\n    getProject() {\r\n        return this.gameEntity;\r\n    }\r\n    setupCanvas(canvasWidth, canvasHeight) {\r\n        this.canvas = document.getElementById(\"gameCanvas\");\r\n        if(this.game.config.configs.game.is3D){\r\n            this.finalCtx = this.canvas.getContext(\"webgl\");\r\n        } else {\r\n            this.finalCtx = this.canvas.getContext(\"2d\");\r\n        }\r\n        this.canvasBuffer = document.createElement(\"canvas\");\r\n        this.ctx = this.canvasBuffer.getContext(\"2d\");\r\n        this.canvasBuffer.setAttribute('width', canvasWidth);\r\n        this.canvasBuffer.setAttribute('height', canvasHeight);\r\n        this.canvas.setAttribute('width', canvasWidth);\r\n        this.canvas.setAttribute('height', canvasHeight);  \r\n        \r\n        this.terrainCanvasBuffer = document.createElement('canvas');\r\n        this.terrainCanvasBuffer.width = this.config.configs.game.gridSize * this.config.levels[this.state.level].tileMap.terrainMap[0].length;\r\n        this.terrainCanvasBuffer.height = this.config.configs.game.gridSize * this.config.levels[this.state.level].tileMap.terrainMap.length;\r\n\r\n        this.game.canvas = this.canvas;\r\n        this.game.finalCtx = this.finalCtx;\r\n        this.game.canvasBuffer = this.canvasBuffer;\r\n        this.game.ctx = this.ctx;\r\n        this.game.terrainCanvasBuffer = this.terrainCanvasBuffer;\r\n    }\r\n    async loadAssets() {\r\n        let palette = null;\r\n        if(this.config.palettes && this.config.palettes[\"main\"]){ \r\n            palette = this.config.palettes[\"main\"]\r\n        }\r\n        this.game.imageManager = new (this.game.libraryClasses.ImageManager)(this, { imageSize: this.config.configs.game.imageSize, palette: palette}, {ShapeFactory: this.game.libraryClasses.ShapeFactory});    \r\n        // Load all images\r\n        for(let objectType in this.config) {\r\n            console.log('loading', objectType);\r\n            await this.game.imageManager.loadImages(objectType, this.config[objectType]);\r\n        }  \r\n        this.game.modelManager = new (this.game.libraryClasses.ModelManager)(this,{ShapeFactory: this.game.libraryClasses.ShapeFactory, palette: palette});    \r\n        for(let objectType in this.config) {\r\n            console.log('loading', objectType);\r\n            await this.game.modelManager.loadModels(objectType, this.config[objectType]);\r\n        }  \r\n \r\n    }\r\n}",
         "fileName": "GameLoader"
       },
       "AudioManager": {
@@ -440,7 +440,7 @@ const DEFAULT_PROJECT_CONFIG = {
       "ThreeJsWorld": {
         "title": "ThreeJsWorld",
         "fileName": "ThreeJsWorld",
-        "script": "class ThreeJsWorld extends engine.Component {\n\n    init({\n        containerSelector = '#gameContainer',\n        width = window.innerWidth,\n        height = window.innerHeight,\n        cameraConfig = {\n            fov: 45,\n            near: 0.1,\n            far: 5000,\n            position: { x: 768 / 2, y: 500, z: 768 * 1.5 },\n            lookAt: { x: 768 / 2, y: 0, z: 768 / 2 }\n        },\n        useControls = true,\n        lightConfig = {\n            ambient: { color: 0xaaddff, intensity: 0.4 },\n            directional: { color: 0xfff8e1, intensity: 0.8 },\n            hemisphere: { skyColor: 0x87CEEB, groundColor: 0x4a7c59, intensity: 0.5 }\n        },\n        shadowConfig = {\n            enabled: true,\n            mapSize: 2048,\n            bias: -0.0002,\n            normalBias: 0.01,\n            radius: 2\n        },\n        background = 0x87CEEB,\n        fog = { enabled: true, color: 0x87CEEB, density: 0.0005 }\n    }) {\n        if (!this.game.config.configs.game.is3D) {\n            return;\n        }\n        this.showStats = false;\n        this.clock = new THREE.Clock();\n        this.onWindowResizeHandler = this.onWindowResize.bind(this);\n\n        this.container = document.querySelector(containerSelector) || document.body;\n        this.renderer = new THREE.WebGLRenderer({ antialias: true, canvas: this.game.canvas });\n        this.renderer.setSize(width, height);\n        this.renderer.setPixelRatio(window.devicePixelRatio);\n        this.renderer.shadowMap.enabled = shadowConfig.enabled;\n        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;\n\n        this.scene = new THREE.Scene();\n        this.scene.background = new THREE.Color(background);\n\n        if (fog.enabled) {\n            this.scene.fog = new THREE.FogExp2(fog.color, fog.density);\n        }\n\n        this.camera = new THREE.PerspectiveCamera(\n            cameraConfig.fov,\n            width / height,\n            cameraConfig.near,\n            cameraConfig.far\n        );\n        this.camera.position.set(\n            cameraConfig.position.x,\n            cameraConfig.position.y,\n            cameraConfig.position.z\n        );\n        this.camera.lookAt(\n            cameraConfig.lookAt.x,\n            cameraConfig.lookAt.y,\n            cameraConfig.lookAt.z\n        );\n\n        if (useControls) {\n            this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);\n            this.controls.target.set(\n                cameraConfig.lookAt.x,\n                cameraConfig.lookAt.y,\n                cameraConfig.lookAt.z\n            );\n            this.controls.maxPolarAngle = Math.PI / 2.05; // Prevent going below ground\n            this.controls.minPolarAngle = 0.1; // Prevent going completely overhead\n            this.controls.enableDamping = true; // Add smooth damping\n            this.controls.dampingFactor = 0.05;\n            \n            this.controls.update();\n        }\n\n        this.ambientLight = new THREE.AmbientLight(\n            lightConfig.ambient.color,\n            lightConfig.ambient.intensity\n        );\n        this.scene.add(this.ambientLight);\n\n        this.directionalLight = new THREE.DirectionalLight(\n            lightConfig.directional.color,\n            lightConfig.directional.intensity\n        );\n        this.terrainSize = 768;\n        this.directionalLight.position.set(this.terrainSize * 2, this.terrainSize * 2, this.terrainSize * 2);\n        this.directionalLight.castShadow = shadowConfig.enabled;\n\n        this.extendedSize = this.terrainSize * 10;\n        if (shadowConfig.enabled) {\n            this.directionalLight.shadow.mapSize.width = shadowConfig.mapSize;\n            this.directionalLight.shadow.mapSize.height = shadowConfig.mapSize;\n            this.directionalLight.shadow.camera.near = 0.5;\n            this.directionalLight.shadow.camera.far = 20000;\n            this.directionalLight.shadow.bias = shadowConfig.bias;\n            this.directionalLight.shadow.normalBias = shadowConfig.normalBias;\n            this.directionalLight.shadow.radius = shadowConfig.radius;\n\n            const d = this.extendedSize * 0.6;\n            this.directionalLight.shadow.camera.left = -d;\n            this.directionalLight.shadow.camera.right = d;\n            this.directionalLight.shadow.camera.top = d;\n            this.directionalLight.shadow.camera.bottom = -d;\n\n            this.directionalLight.target.position.set(-this.terrainSize * 2, 0, -this.terrainSize * 2);\n            this.directionalLight.target.updateMatrixWorld();\n            this.directionalLight.shadow.camera.updateProjectionMatrix();\n        }\n\n        this.scene.add(this.directionalLight);\n        this.scene.add(this.directionalLight.target);\n\n        this.hemisphereLight = new THREE.HemisphereLight(\n            lightConfig.hemisphere.skyColor,\n            lightConfig.hemisphere.groundColor,\n            lightConfig.hemisphere.intensity\n        );\n        this.scene.add(this.hemisphereLight);\n\n        // Create ground plane\n        const groundGeometry = new THREE.PlaneGeometry(this.extendedSize, this.extendedSize);\n\n        // Create canvas for terrain texture\n        this.groundCanvas = document.createElement('canvas');\n        this.groundCanvas.width = this.extendedSize;\n        this.groundCanvas.height = this.extendedSize;\n        this.groundCtx = this.groundCanvas.getContext('2d');\n\n        // Fill with background color\n        this.groundCtx.fillStyle = this.game.config.levels[this.game.state.level].tileMap.terrainBGColor;\n        this.groundCtx.fillRect(0, 0, this.extendedSize, this.extendedSize);\n\n        // Create texture\n        this.groundTexture = new THREE.CanvasTexture(this.groundCanvas);\n        this.groundTexture.wrapS = THREE.ClampToEdgeWrapping;\n        this.groundTexture.wrapT = THREE.ClampToEdgeWrapping;\n        this.groundTexture.minFilter = THREE.LinearFilter;\n        this.groundTexture.magFilter = THREE.LinearFilter;\n\n        // Use simplified material\n        this.groundMaterial = this.getGroundMaterial();\n\n        const ground = new THREE.Mesh(groundGeometry, this.groundMaterial);\n        ground.rotation.x = -Math.PI / 2;\n        ground.position.set(this.terrainSize / 2, 0, this.terrainSize / 2);\n        ground.receiveShadow = true;\n        this.scene.add(ground);\n\n        if (this.showStats) {\n            this.stats = new Stats();\n            this.container.appendChild(this.stats.dom);\n        }\n\n        window.addEventListener('resize', this.onWindowResizeHandler);\n\n        this.game.scene = this.scene;\n        this.game.camera = this.camera;\n        this.game.renderer = this.renderer;\n        this.game.ground = ground;\n        this.drawn = false;\n        this.timer = 0;\n    }\n\n    getGroundMaterial() {\n        // Simplified material using MeshStandardMaterial for terrain\n        return new THREE.MeshStandardMaterial({\n            map: this.groundTexture,\n            side: THREE.DoubleSide,\n            metalness: 0.0,\n            roughness: 0.8\n        });\n    }\n\n\n    // Handle window resize\n    onWindowResize() {\n        const width = this.container.clientWidth || window.innerWidth;\n        const height = this.container.clientHeight || window.innerHeight;\n        \n        this.camera.aspect = width / height;\n        this.camera.updateProjectionMatrix();\n        this.renderer.setSize(width, height);\n    }\n    \n    // Update and render the scene\n\n    update() {\n        if (!this.game.config.configs.game.is3D) {\n            return;\n        }\n        if (this.controls) {\n            this.controls.update();\n        }\n        if(!isNaN(this.game.deltaTime)) {\n            this.timer += this.game.deltaTime;\n        }\n        if (this.stats) {\n            this.stats.update();\n        }\n        if (!this.drawn && this.groundTexture && this.game.mapRenderer && this.game.mapRenderer.isMapCached) {\n            const offset = (this.extendedSize - this.terrainSize) / 2;\n            this.groundCtx.drawImage(this.game.terrainCanvasBuffer, offset, offset);\n            this.groundTexture.needsUpdate = true;\n\n            // Add 3D grass\n            this.addGrassToTerrain();\n            this.drawn = true;\n        }\n        if(this.grassMaterial) {\n            if (this.uniforms) {\n                this.uniforms.time = { value: this.timer };\n            }\n        }\n        this.renderer.render(this.scene, this.camera);\n    }\n\n    // Add this method to your ThreeJsWorld class\n    addGrassToTerrain() {\n        // Grass blade geometry\n        const bladeWidth = 24;\n        const bladeHeight = 32;\n        const grassGeometry = this.createCurvedBladeGeometry(bladeWidth, bladeHeight);\n        grassGeometry.translate(0, bladeHeight / 2, 0);\n        const grassCount = 100000;\n        // Add random phase attribute for each instance\n        const phases = new Float32Array(grassCount);\n        for (let i = 0; i < grassCount; i++) {\n            phases[i] = Math.random() * Math.PI * 2;\n        }\n        grassGeometry.setAttribute('instancePhase', new THREE.InstancedBufferAttribute(phases, 1));\n    \n        // Grass shader material\n        const grassTexture = this.createGrassTexture();\n        // In addGrassToTerrain() method:\n        this.uniforms = {\n                time: { value: 0 },\n                windSpeed: { value: .8 },\n                windStrength: { value: 0.2 },\n                windDirection: { value: new THREE.Vector2(0.8, 0.6).normalize() },\n                map: { value: grassTexture },\n                // Three.js automatically provides:\n                // projectionMatrix, modelViewMatrix, instanceMatrix (for instancing)\n                // position, uv, etc.\n            };\n        const uniforms = this.uniforms;\n        this.grassMaterial = new THREE.ShaderMaterial({\n            vertexShader: `\n        varying vec2 vUv;\n        uniform float time;\n        uniform float windSpeed;\n        uniform float windStrength;\n        uniform vec2 windDirection;\n        attribute float instancePhase;\n\n        void main() {        \n            \n            vUv = uv;\n            \n            vec2 dir = normalize(windDirection);\n            float wave = sin(time * windSpeed + instancePhase) * windStrength;\n            wave *= uv.y;\n            \n            vec3 displacement = vec3(\n                dir.x * wave,\n                0.0,\n                dir.y * wave\n            );\n\n            gl_Position = projectionMatrix * modelViewMatrix * instanceMatrix * \n                        vec4(position + displacement, 1.0);\n\n        }\n    `,\n    fragmentShader: `\n        varying vec2 vUv;\n        uniform sampler2D map;\n\n        void main() {\n            gl_FragColor = texture2D(map, vUv);\n        }\n    `,\n            uniforms: uniforms\n        });\n    \n        this.grassShader = this.grassMaterial; // Reference for time updates\n    // new THREE.MeshStandardMaterial({map: grassTexture})\n        // Create instanced mesh\n        const grass = new THREE.InstancedMesh(grassGeometry,this.grassMaterial, grassCount);\n\n        grass.castShadow = true;\n        grass.receiveShadow = true;\n    \n        // Temporary objects\n        const dummy = new THREE.Object3D();\n    \n        // Log terrain canvas status\n        if (!this.groundCanvas) {\n            console.warn('terrainCanvasBuffer is missing; placing grass everywhere.');\n        } else {\n            console.log('terrainCanvasBuffer size:', this.groundCanvas.width, 'x', this.groundCanvas.height);\n            const ctx = this.groundCanvas.getContext('2d');\n            try {\n                const terrainData = ctx.getImageData(0, 0, this.groundCanvas.width, this.groundCanvas.height).data;\n                let grassArea = this.groundCanvas.width / 4;\n                const offset =  (this.extendedSize - grassArea) / 2;\n                // Distribute grass (bypass terrain check)\n                let placedGrassCount = 0;\n                for (let i = 0; i < grassCount; i++) {\n                    const x = Math.floor(Math.random() * grassArea);\n                    const z = Math.floor(Math.random() * grassArea);\n                    const pixelIndex = ((z + offset) * this.groundCanvas.width + (x + offset)) * 4;\n                    const r = terrainData[pixelIndex];\n                    const g = terrainData[pixelIndex + 1];\n                    const b = terrainData[pixelIndex + 2];\n                    if( g > r && g > b) {\n                        placedGrassCount++;\n                        const rotationY = Math.random() * Math.PI * 2;\n                        const scale = 0.7 + Math.random() * 0.5;\n                \n                        dummy.position.set(x - grassArea / 2 + this.terrainSize / 2, -bladeHeight, z - grassArea / 2 + this.terrainSize / 2);\n                        dummy.rotation.set(0, rotationY, 0);\n                        dummy.scale.set(scale, scale, scale);\n                        dummy.updateMatrix();\n                \n                        grass.setMatrixAt(i, dummy.matrix);\n                    }\n                \n                }\n            \n            } catch (e) {\n                console.warn('Failed to get terrainCanvasBuffer data:', e);\n            }\n        }\n    \n        grass.instanceMatrix.needsUpdate = true;\n        this.scene.add(grass);\n        this.grass = grass;\n\n    }\n\n\n    // Create a follow camera that tracks a target object\n    setupFollowCamera(target, offsetX = 50, offsetY = 50, offsetZ = 50, lookAhead = 0) {\n        if (!target) return;\n        \n        // Create a function that updates camera position to follow target\n        const updateFollowCamera = () => {\n            const targetPosition = target.position || target;\n            \n            // Set camera position relative to target\n            this.camera.position.set(\n                targetPosition.x + offsetX,\n                targetPosition.y + offsetY,\n                targetPosition.z + offsetZ\n            );\n            \n            // Look at target, possibly with some look-ahead\n            this.camera.lookAt(\n                targetPosition.x + lookAhead * (targetPosition.x - target.lastPosition?.x || 0),\n                targetPosition.y + lookAhead * (targetPosition.y - target.lastPosition?.y || 0),\n                targetPosition.z + lookAhead * (targetPosition.z - target.lastPosition?.z || 0)\n            );\n        };\n        \n        // Disable orbit controls if enabled\n        if (this.controls) {\n            this.controls.enabled = false;\n        }\n        \n        // Store the update function on the camera\n        this.camera.updateFollowCamera = updateFollowCamera;\n        \n        // Execute first update\n        updateFollowCamera();\n        \n        // Return the update function so it can be called in the game loop\n        return updateFollowCamera;\n    }\n    \n    // Switch to isometric view\n    setIsometricView() {\n        const isoAngle = Math.atan(1 / Math.sqrt(2));\n        const distance = 200;\n        const horizDistance = distance * Math.cos(isoAngle);\n        const vertDistance = distance * Math.sin(isoAngle);\n        \n        // Set camera to isometric position\n        this.camera.position.set(horizDistance, vertDistance, horizDistance);\n        this.camera.lookAt(0, 0, 0);\n        \n        // Update controls if they exist\n        if (this.controls) {\n            this.controls.target.set(0, 0, 0);\n            this.controls.update();\n        }\n    }\n    \n    // Switch to top-down view\n    setTopDownView(height = 200) {\n        this.camera.position.set(0, height, 0);\n        this.camera.lookAt(0, 0, 0);\n        \n        // Update controls if they exist\n        if (this.controls) {\n            this.controls.target.set(0, 0, 0);\n            this.controls.update();\n        }\n    }\n    \n    // Create a new light that follows the player\n    addPlayerLight(target, color = 0xffffbb, intensity = 0.7, distance = 50) {\n        const playerLight = new THREE.PointLight(color, intensity, distance);\n        playerLight.castShadow = true;\n        playerLight.shadow.mapSize.width = 512;\n        playerLight.shadow.mapSize.height = 512;\n        \n        // Create a function to update light position\n        const updateLightPosition = () => {\n            const targetPosition = target.position || target;\n            playerLight.position.set(\n                targetPosition.x,\n                targetPosition.y + 10, // Position light above player\n                targetPosition.z\n            );\n        };\n        \n        // Add light to scene\n        this.scene.add(playerLight);\n        updateLightPosition();\n        \n        // Return update function and light reference\n        return { \n            light: playerLight, \n            update: updateLightPosition \n        };\n    }\n    \n    // Clean up\n    onDestroy() {\n        window.removeEventListener('resize', this.onWindowResizeHandler);\n        this.renderer.dispose();\n        if (this.stats?.dom?.parentElement) {\n            this.stats.dom.parentElement.removeChild(this.stats.dom);\n        }\n        if (this.renderer.domElement?.parentElement) {\n            this.renderer.domElement.parentElement.removeChild(this.renderer.domElement);\n        }\n        // Dispose grass resources\n        if (this.grass) {\n            this.grass.geometry.dispose();\n            this.grass.material.dispose();\n        }\n        // Dispose ground resources\n        this.groundGeometry?.dispose();\n        this.groundMaterial?.dispose();\n        this.groundTexture?.dispose();\n        this.game.scene = null;\n        this.game.camera = null;\n        this.game.renderer = null;\n    }\n\n    createCurvedBladeGeometry(width = 0.1, height = 1) {\n        const shape = new THREE.Shape();\n        shape.moveTo(0, 0);\n        shape.quadraticCurveTo(width * 0.5, height * 0.5, 0, height);\n    \n        const geometry = new THREE.ShapeGeometry(shape);\n        geometry.translate(0, 0, 0);\n        return geometry;\n    }\n    createGrassTexture() {\n        const canvas = document.createElement('canvas');\n        canvas.width = 4;\n        canvas.height = 32;\n        const ctx = canvas.getContext('2d');\n    \n        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);\n        gradient.addColorStop(0, '#6bbf59');  // Tip\n        gradient.addColorStop(1, '#2d5f2e');  // Base\n    \n        ctx.fillStyle = gradient;\n        ctx.fillRect(0, 0, canvas.width, canvas.height);\n    \n        const texture = new THREE.CanvasTexture(canvas);\n        texture.wrapS = THREE.ClampToEdgeWrapping;\n        texture.wrapT = THREE.ClampToEdgeWrapping;\n        texture.magFilter = THREE.LinearFilter;\n        texture.minFilter = THREE.LinearMipMapLinearFilter;\n        return texture;\n    }\n}\n\n\n"
+        "script": "class ThreeJsWorld extends engine.Component {\n\n    init({\n        containerSelector = '#gameContainer',\n        width = window.innerWidth,\n        height = window.innerHeight,\n        cameraConfig = {\n            fov: 45,\n            near: 0.1,\n            far: 5000,\n            position: { x: 768 / 2, y: 500, z: 768 * 1.5 },\n            lookAt: { x: 768 / 2, y: 0, z: 768 / 2 }\n        },\n        useControls = true,\n        lightConfig = {\n            ambient: { color: 0xaaddff, intensity: 0.4 },\n            directional: { color: 0xfff8e1, intensity: 0.8 },\n            hemisphere: { skyColor: 0x87CEEB, groundColor: 0x4a7c59, intensity: 0.5 }\n        },\n        shadowConfig = {\n            enabled: true,\n            mapSize: 2048,\n            bias: -0.0002,\n            normalBias: 0.01,\n            radius: 2\n        },\n        background = 0x87CEEB,\n        fog = { enabled: true, color: 0x87CEEB, density: 0.0005 }\n    }) {\n        if (!this.game.config.configs.game.is3D) {\n            return;\n        }\n        this.showStats = false;\n        this.clock = new THREE.Clock();\n        this.onWindowResizeHandler = this.onWindowResize.bind(this);\n\n        this.container = document.querySelector(containerSelector) || document.body;\n        this.renderer = new THREE.WebGLRenderer({ antialias: true, canvas: this.game.canvas });\n        this.renderer.setSize(width, height);\n        this.renderer.setPixelRatio(window.devicePixelRatio);\n        this.renderer.shadowMap.enabled = shadowConfig.enabled;\n        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;\n\n        this.scene = new THREE.Scene();\n        this.scene.background = new THREE.Color(background);\n\n        if (fog.enabled) {\n            this.scene.fog = new THREE.FogExp2(fog.color, fog.density);\n        }\n\n        this.camera = new THREE.PerspectiveCamera(\n            cameraConfig.fov,\n            width / height,\n            cameraConfig.near,\n            cameraConfig.far\n        );\n        this.camera.position.set(\n            cameraConfig.position.x,\n            cameraConfig.position.y,\n            cameraConfig.position.z\n        );\n        this.camera.lookAt(\n            cameraConfig.lookAt.x,\n            cameraConfig.lookAt.y,\n            cameraConfig.lookAt.z\n        );\n\n        if (useControls) {\n            this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);\n            this.controls.target.set(\n                cameraConfig.lookAt.x,\n                cameraConfig.lookAt.y,\n                cameraConfig.lookAt.z\n            );\n            this.controls.maxPolarAngle = Math.PI / 2.05; // Prevent going below ground\n            this.controls.minPolarAngle = 0.1; // Prevent going completely overhead\n            this.controls.enableDamping = true; // Add smooth damping\n            this.controls.dampingFactor = 0.05;\n            \n            this.controls.update();\n        }\n\n        this.ambientLight = new THREE.AmbientLight(\n            lightConfig.ambient.color,\n            lightConfig.ambient.intensity\n        );\n        this.scene.add(this.ambientLight);\n\n        this.directionalLight = new THREE.DirectionalLight(\n            lightConfig.directional.color,\n            lightConfig.directional.intensity\n        );\n        this.terrainSize = 768;\n        this.directionalLight.position.set(this.terrainSize * 2, this.terrainSize * 2, this.terrainSize * 2);\n        this.directionalLight.castShadow = shadowConfig.enabled;\n\n        this.extendedSize = this.terrainSize * 10;\n        if (shadowConfig.enabled) {\n            this.directionalLight.shadow.mapSize.width = shadowConfig.mapSize;\n            this.directionalLight.shadow.mapSize.height = shadowConfig.mapSize;\n            this.directionalLight.shadow.camera.near = 0.5;\n            this.directionalLight.shadow.camera.far = 20000;\n            this.directionalLight.shadow.bias = shadowConfig.bias;\n            this.directionalLight.shadow.normalBias = shadowConfig.normalBias;\n            this.directionalLight.shadow.radius = shadowConfig.radius;\n\n            const d = this.extendedSize * 0.6;\n            this.directionalLight.shadow.camera.left = -d;\n            this.directionalLight.shadow.camera.right = d;\n            this.directionalLight.shadow.camera.top = d;\n            this.directionalLight.shadow.camera.bottom = -d;\n\n            this.directionalLight.target.position.set(-this.terrainSize * 2, 0, -this.terrainSize * 2);\n            this.directionalLight.target.updateMatrixWorld();\n            this.directionalLight.shadow.camera.updateProjectionMatrix();\n        }\n\n        this.scene.add(this.directionalLight);\n        this.scene.add(this.directionalLight.target);\n\n        this.hemisphereLight = new THREE.HemisphereLight(\n            lightConfig.hemisphere.skyColor,\n            lightConfig.hemisphere.groundColor,\n            lightConfig.hemisphere.intensity\n        );\n        this.scene.add(this.hemisphereLight);\n\n        // Create ground plane\n        const groundGeometry = new THREE.PlaneGeometry(this.extendedSize, this.extendedSize);\n\n        // Create canvas for terrain texture\n        this.groundCanvas = document.createElement('canvas');\n        this.groundCanvas.width = this.extendedSize;\n        this.groundCanvas.height = this.extendedSize;\n        this.groundCtx = this.groundCanvas.getContext('2d');\n\n        // Fill with background color\n        this.groundCtx.fillStyle = this.game.config.levels[this.game.state.level].tileMap.terrainBGColor;\n        this.groundCtx.fillRect(0, 0, this.extendedSize, this.extendedSize);\n\n        // Create texture\n        this.groundTexture = new THREE.CanvasTexture(this.groundCanvas);\n        this.groundTexture.wrapS = THREE.ClampToEdgeWrapping;\n        this.groundTexture.wrapT = THREE.ClampToEdgeWrapping;\n        this.groundTexture.minFilter = THREE.LinearFilter;\n        this.groundTexture.magFilter = THREE.LinearFilter;\n\n        // Use simplified material\n        this.groundMaterial = this.getGroundMaterial();\n\n        const ground = new THREE.Mesh(groundGeometry, this.groundMaterial);\n        ground.rotation.x = -Math.PI / 2;\n        ground.position.set(this.terrainSize / 2, 0, this.terrainSize / 2);\n        ground.receiveShadow = true;\n        this.scene.add(ground);\n\n        if (this.showStats) {\n            this.stats = new Stats();\n            this.container.appendChild(this.stats.dom);\n        }\n\n        window.addEventListener('resize', this.onWindowResizeHandler);\n\n        this.game.scene = this.scene;\n        this.game.camera = this.camera;\n        this.game.renderer = this.renderer;\n        this.game.ground = ground;\n        this.drawn = false;\n        this.timer = 0;\n    }\n\n    getGroundMaterial() {\n        // Simplified material using MeshStandardMaterial for terrain\n        return new THREE.MeshStandardMaterial({\n            map: this.groundTexture,\n            side: THREE.DoubleSide,\n            metalness: 0.0,\n            roughness: 0.8\n        });\n    }\n\n\n    // Handle window resize\n    onWindowResize() {\n        const width = this.container.clientWidth || window.innerWidth;\n        const height = this.container.clientHeight || window.innerHeight;\n        \n        this.camera.aspect = width / height;\n        this.camera.updateProjectionMatrix();\n        this.renderer.setSize(width, height);\n    }\n    \n    // Update and render the scene\n\n    update() {\n        if (!this.game.config.configs.game.is3D) {\n            return;\n        }\n        if (this.controls) {\n            this.controls.update();\n        }\n        if(!isNaN(this.game.deltaTime)) {\n            this.timer += this.game.deltaTime;\n        }\n        if (this.stats) {\n            this.stats.update();\n        }\n        if (!this.drawn && this.groundTexture && this.game.mapRenderer && this.game.mapRenderer.isMapCached) {\n            const offset = (this.extendedSize - this.terrainSize) / 2;\n            this.groundCtx.drawImage(this.game.terrainCanvasBuffer, offset, offset);\n            this.groundTexture.needsUpdate = true;\n\n            // Add 3D grass\n            this.addGrassToTerrain();\n            this.drawn = true;\n        }\n        if(this.grassMaterial) {\n            if (this.uniforms) {\n                this.uniforms.time = { value: this.timer };\n            }\n        }\n        this.renderer.render(this.scene, this.camera);\n    }\n\n    // Add this method to your ThreeJsWorld class\n    addGrassToTerrain() {\n        // Grass blade geometry\n        const bladeWidth = 12;\n        const bladeHeight = 32;\n        const grassGeometry = this.createCurvedBladeGeometry(bladeWidth, bladeHeight);\n        grassGeometry.translate(0, bladeHeight / 2, 0);\n        const grassCount = 500000;\n        // Add random phase attribute for each instance\n        const phases = new Float32Array(grassCount);\n        for (let i = 0; i < grassCount; i++) {\n            phases[i] = Math.random() * Math.PI * 2;\n        }\n        grassGeometry.setAttribute('instancePhase', new THREE.InstancedBufferAttribute(phases, 1));\n    \n        // Grass shader material\n        const grassTexture = this.createGrassTexture();\n        // In addGrassToTerrain() method:\n        this.uniforms = {\n                time: { value: 0 },\n                windSpeed: { value: .8 },\n                windStrength: { value: 0.2 },\n                windDirection: { value: new THREE.Vector2(0.8, 0.6).normalize() },\n                map: { value: grassTexture },\n                // Three.js automatically provides:\n                // projectionMatrix, modelViewMatrix, instanceMatrix (for instancing)\n                // position, uv, etc.\n            };\n        const uniforms = this.uniforms;\n        this.grassMaterial = new THREE.ShaderMaterial({\n            vertexShader: `\n            varying vec2 vUv;\n            varying float vDistance;\n            uniform float time;\n            uniform float windSpeed;\n            uniform float windStrength;\n            uniform vec2 windDirection;\n            attribute float instancePhase;\n    \n            void main() {        \n                vUv = uv;\n                \n                vec2 dir = normalize(windDirection);\n                float wave = sin(time * windSpeed + instancePhase) * windStrength;\n                wave *= uv.y;\n                \n                vec3 displacement = vec3(\n                    dir.x * wave,\n                    0.0,\n                    dir.y * wave\n                );\n    \n                vec4 mvPosition = modelViewMatrix * instanceMatrix * vec4(position + displacement, 1.0);\n                gl_Position = projectionMatrix * mvPosition;\n                \n                // Pass the original UV coordinate, unaffected by instance position\n                vUv = uv;\n            }\n        `,\n        fragmentShader: `\n    varying vec2 vUv;\n    uniform sampler2D map;\n\n    void main() {\n       vec4 texColor = texture2D(map, vUv);\n        gl_FragColor = texColor;\n    }\n    `,\n            uniforms: uniforms\n        });\n    \n        this.grassShader = this.grassMaterial; // Reference for time updates\n    // new THREE.MeshStandardMaterial({map: grassTexture})\n        // Create instanced mesh\n        const grass = new THREE.InstancedMesh(grassGeometry,this.grassMaterial, grassCount);\n\n        grass.castShadow = true;\n        grass.receiveShadow = true;\n    \n        // Temporary objects\n        const dummy = new THREE.Object3D();\n    \n        // Log terrain canvas status\n        if (!this.groundCanvas) {\n            console.warn('terrainCanvasBuffer is missing; placing grass everywhere.');\n        } else {\n            console.log('terrainCanvasBuffer size:', this.groundCanvas.width, 'x', this.groundCanvas.height);\n            const ctx = this.groundCanvas.getContext('2d');\n            try {\n                const terrainData = ctx.getImageData(0, 0, this.groundCanvas.width, this.groundCanvas.height).data;\n                let grassArea = this.groundCanvas.width / 4;\n                const offset =  (this.extendedSize - grassArea) / 2;\n                // Distribute grass (bypass terrain check)\n                let placedGrassCount = 0;\n                for (let i = 0; i < grassCount; i++) {\n                    const x = Math.floor(Math.random() * grassArea);\n                    const z = Math.floor(Math.random() * grassArea);\n                    const pixelIndex = ((z + offset) * this.groundCanvas.width + (x + offset)) * 4;\n                    const r = terrainData[pixelIndex];\n                    const g = terrainData[pixelIndex + 1];\n                    const b = terrainData[pixelIndex + 2];\n                    if( g > r && g > b) {\n                        placedGrassCount++;\n                        const rotationY = Math.random() * Math.PI * 2;\n                        const scale = 0.7 + Math.random() * 0.5;\n                \n                        dummy.position.set(x - grassArea / 2 + this.terrainSize / 2, -bladeHeight, z - grassArea / 2 + this.terrainSize / 2);\n                        dummy.rotation.set(0, rotationY, 0);\n                        dummy.scale.set(scale, scale, scale);\n                        dummy.updateMatrix();\n                \n                        grass.setMatrixAt(i, dummy.matrix);\n                    }\n                \n                }\n            \n            } catch (e) {\n                console.warn('Failed to get terrainCanvasBuffer data:', e);\n            }\n        }\n    \n        grass.instanceMatrix.needsUpdate = true;\n        this.scene.add(grass);\n        this.grass = grass;\n\n    }\n\n\n    // Create a follow camera that tracks a target object\n    setupFollowCamera(target, offsetX = 50, offsetY = 50, offsetZ = 50, lookAhead = 0) {\n        if (!target) return;\n        \n        // Create a function that updates camera position to follow target\n        const updateFollowCamera = () => {\n            const targetPosition = target.position || target;\n            \n            // Set camera position relative to target\n            this.camera.position.set(\n                targetPosition.x + offsetX,\n                targetPosition.y + offsetY,\n                targetPosition.z + offsetZ\n            );\n            \n            // Look at target, possibly with some look-ahead\n            this.camera.lookAt(\n                targetPosition.x + lookAhead * (targetPosition.x - target.lastPosition?.x || 0),\n                targetPosition.y + lookAhead * (targetPosition.y - target.lastPosition?.y || 0),\n                targetPosition.z + lookAhead * (targetPosition.z - target.lastPosition?.z || 0)\n            );\n        };\n        \n        // Disable orbit controls if enabled\n        if (this.controls) {\n            this.controls.enabled = false;\n        }\n        \n        // Store the update function on the camera\n        this.camera.updateFollowCamera = updateFollowCamera;\n        \n        // Execute first update\n        updateFollowCamera();\n        \n        // Return the update function so it can be called in the game loop\n        return updateFollowCamera;\n    }\n    \n    // Switch to isometric view\n    setIsometricView() {\n        const isoAngle = Math.atan(1 / Math.sqrt(2));\n        const distance = 200;\n        const horizDistance = distance * Math.cos(isoAngle);\n        const vertDistance = distance * Math.sin(isoAngle);\n        \n        // Set camera to isometric position\n        this.camera.position.set(horizDistance, vertDistance, horizDistance);\n        this.camera.lookAt(0, 0, 0);\n        \n        // Update controls if they exist\n        if (this.controls) {\n            this.controls.target.set(0, 0, 0);\n            this.controls.update();\n        }\n    }\n    \n    // Switch to top-down view\n    setTopDownView(height = 200) {\n        this.camera.position.set(0, height, 0);\n        this.camera.lookAt(0, 0, 0);\n        \n        // Update controls if they exist\n        if (this.controls) {\n            this.controls.target.set(0, 0, 0);\n            this.controls.update();\n        }\n    }\n    \n    // Create a new light that follows the player\n    addPlayerLight(target, color = 0xffffbb, intensity = 0.7, distance = 50) {\n        const playerLight = new THREE.PointLight(color, intensity, distance);\n        playerLight.castShadow = true;\n        playerLight.shadow.mapSize.width = 512;\n        playerLight.shadow.mapSize.height = 512;\n        \n        // Create a function to update light position\n        const updateLightPosition = () => {\n            const targetPosition = target.position || target;\n            playerLight.position.set(\n                targetPosition.x,\n                targetPosition.y + 10, // Position light above player\n                targetPosition.z\n            );\n        };\n        \n        // Add light to scene\n        this.scene.add(playerLight);\n        updateLightPosition();\n        \n        // Return update function and light reference\n        return { \n            light: playerLight, \n            update: updateLightPosition \n        };\n    }\n    \n    // Clean up\n    onDestroy() {\n        window.removeEventListener('resize', this.onWindowResizeHandler);\n        this.renderer.dispose();\n        if (this.stats?.dom?.parentElement) {\n            this.stats.dom.parentElement.removeChild(this.stats.dom);\n        }\n        if (this.renderer.domElement?.parentElement) {\n            this.renderer.domElement.parentElement.removeChild(this.renderer.domElement);\n        }\n        // Dispose grass resources\n        if (this.grass) {\n            this.grass.geometry.dispose();\n            this.grass.material.dispose();\n        }\n        // Dispose ground resources\n        this.groundGeometry?.dispose();\n        this.groundMaterial?.dispose();\n        this.groundTexture?.dispose();\n        this.game.scene = null;\n        this.game.camera = null;\n        this.game.renderer = null;\n    }\n    createCurvedBladeGeometry(width = 0.1, height = 1) {\n        // Create a shape similar to the original quadratic curve approach\n        const shape = new THREE.Shape();\n        shape.moveTo(0, 0);\n        shape.quadraticCurveTo(width * 0.5, height * 0.5, 0, height);\n        \n        // Create ShapeGeometry with custom UV generation\n        const shapeGeom = new THREE.ShapeGeometry(shape, 12);\n        \n        // The issue is that the default UV mapping in ShapeGeometry doesn't\n        // give us the vertical gradient we want. Let's fix the UVs:\n        const positions = shapeGeom.attributes.position.array;\n        const uvs = shapeGeom.attributes.uv.array;\n        const vertexCount = positions.length / 3;\n        \n        // Create new UV array\n        const newUVs = new Float32Array(uvs.length);\n        \n        // For each vertex\n        for (let i = 0; i < vertexCount; i++) {\n            const posIndex = i * 3;\n            const uvIndex = i * 2;\n            \n            // Get y-coordinate (height position)\n            const y = positions[posIndex + 1];\n            \n            // Normalize y to 0-1 range (0 at bottom, 1 at top)\n            const normalizedY = y / height;\n            \n            // Use original x-UV for horizontal position\n            newUVs[uvIndex] = uvs[uvIndex];\n            \n            // Use normalized height for vertical UV position\n            newUVs[uvIndex + 1] = normalizedY;\n        }\n        \n        // Replace UV attribute\n        shapeGeom.setAttribute('uv', new THREE.BufferAttribute(newUVs, 2));\n        \n        return shapeGeom;\n    }\n// And in createGrassTexture:\ncreateGrassTexture() {\n    const canvas = document.createElement('canvas');\n    canvas.width = 4;  // Increased width for better color reproduction\n    canvas.height = 32;\n    const ctx = canvas.getContext('2d');\n\n    // Create gradient from bottom to top\n    const gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);\n    gradient.addColorStop(0.0, this.game.config.palettes[\"main\"][\"greenDColor\"]); // Base\n    gradient.addColorStop(0.8, this.game.config.palettes[\"main\"][\"greenMColor\"]); // Tip\n    gradient.addColorStop(1.0, this.game.config.palettes[\"main\"][\"redLColor\"]); // Tip\n\n    ctx.fillStyle = gradient;\n    ctx.fillRect(0, 0, canvas.width, canvas.height);\n\n    const texture = new THREE.CanvasTexture(canvas);\n    texture.wrapS = THREE.RepeatWrapping;\n    texture.wrapT = THREE.ClampToEdgeWrapping;\n    texture.magFilter = THREE.LinearFilter;\n    texture.minFilter = THREE.LinearFilter;\n    return texture;\n}\n}\n\n\n"
       }
     },
     "renderers": {
@@ -1935,7 +1935,141 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {}
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 40,
+                      "height": 4,
+                      "depth": 40,
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "x": 0,
+                      "y": 2,
+                      "z": 0,
+                      "scaleX": 1,
+                      "name": "foundation",
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyMColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueDColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueMColor"
+                      },
+                      "id": 4
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueMColor"
+                      },
+                      "id": 5
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueMColor"
+                      },
+                      "id": 6
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueDColor"
+                      },
+                      "id": 7
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueMColor"
+                      },
+                      "id": 8
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueMColor"
+                      },
+                      "id": 9
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueMColor"
+                      },
+                      "id": 10
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyMColor"
+                      },
+                      "id": 11
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 12
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueDColor"
+                      },
+                      "id": 13
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueMColor"
+                      },
+                      "id": 14
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyMColor"
+                      },
+                      "id": 15
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 16
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 17
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 18
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 19
+                    }
+                  ]
+                }
+              }
             ]
           },
           "model": {
@@ -1946,76 +2080,99 @@ const DEFAULT_PROJECT_CONFIG = {
                   "width": 40,
                   "height": 4,
                   "depth": 40,
-                  "color": "#303040",
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  },
                   "x": 0,
                   "y": 2,
                   "z": 0,
-                  "scaleX": 1
+                  "scaleX": 1,
+                  "name": "foundation"
                 },
                 {
                   "type": "box",
                   "width": 36,
                   "height": 12,
                   "depth": 36,
-                  "color": "#404050",
+                  "color": {
+                    "paletteColor": "greyMColor"
+                  },
                   "x": 0,
                   "y": 10,
-                  "z": 0
+                  "z": 0,
+                  "name": "structure"
                 },
                 {
                   "type": "box",
                   "width": 40,
                   "height": 2,
                   "depth": 40,
-                  "color": "#505060",
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  },
                   "x": 0,
                   "y": 17,
-                  "z": 0
+                  "z": 0,
+                  "name": "roof"
                 },
                 {
                   "type": "cylinder",
                   "size": 12,
                   "height": 12,
-                  "color": "#2288cc",
-                  "x": -16,
-                  "y": 24,
-                  "z": 0
-                },
-                {
-                  "type": "torus",
-                  "size": 12,
-                  "tubeSize": 1,
-                  "color": "#44aaff",
+                  "color": {
+                    "paletteColor": "blueDColor"
+                  },
                   "x": -16,
                   "y": 24,
                   "z": 0,
-                  "rotationX": 90
+                  "name": "terminal1"
                 },
                 {
                   "type": "torus",
                   "size": 12,
                   "tubeSize": 1,
-                  "color": "#44aaff",
+                  "color": {
+                    "paletteColor": "blueMColor"
+                  },
+                  "x": -16,
+                  "y": 24,
+                  "z": 0,
+                  "rotationX": 90,
+                  "name": "terminal1coil2"
+                },
+                {
+                  "type": "torus",
+                  "size": 12,
+                  "tubeSize": 1,
+                  "color": {
+                    "paletteColor": "blueMColor"
+                  },
                   "x": -16,
                   "y": 28,
                   "z": 0,
-                  "rotationX": 90
+                  "rotationX": 90,
+                  "name": "terminal1coil3"
                 },
                 {
                   "type": "torus",
                   "size": 12,
                   "tubeSize": 1,
-                  "color": "#44aaff",
+                  "color": {
+                    "paletteColor": "blueMColor"
+                  },
                   "x": -16,
                   "y": 20,
                   "z": 0,
-                  "rotationX": 90
+                  "rotationX": 90,
+                  "name": "terminal1coil1"
                 },
                 {
                   "type": "cylinder",
                   "size": 12,
                   "height": 12,
-                  "color": "#2288cc",
+                  "color": {
+                    "paletteColor": "blueDColor"
+                  },
                   "x": 16,
                   "y": 24,
                   "z": 0
@@ -2024,103 +2181,96 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "torus",
                   "size": 12,
                   "tubeSize": 1,
-                  "color": "#44aaff",
+                  "color": {
+                    "paletteColor": "blueMColor"
+                  },
                   "x": 16,
                   "y": 24,
                   "z": 0,
-                  "rotationX": 90
+                  "rotationX": 90,
+                  "name": "terminal2coil2"
                 },
                 {
                   "type": "torus",
                   "size": 12,
                   "tubeSize": 1,
-                  "color": "#44aaff",
+                  "color": {
+                    "paletteColor": "blueMColor"
+                  },
                   "x": 16,
                   "y": 28,
                   "z": 0,
-                  "rotationX": 90
+                  "rotationX": 90,
+                  "name": "terminal2coil3"
                 },
                 {
                   "type": "torus",
                   "size": 12,
                   "tubeSize": 1,
-                  "color": "#44aaff",
+                  "color": {
+                    "paletteColor": "blueMColor"
+                  },
                   "x": 16,
                   "y": 20,
                   "z": 0,
-                  "rotationX": 90
+                  "rotationX": 90,
+                  "name": "terminal2coil1"
                 },
                 {
                   "type": "cylinder",
                   "size": 16,
                   "height": 6,
-                  "color": "#333333",
+                  "color": {
+                    "paletteColor": "greyMColor"
+                  },
                   "x": 0,
                   "y": 20,
-                  "z": 0
+                  "z": 0,
+                  "name": "center1"
                 },
                 {
                   "type": "cylinder",
                   "size": 14,
                   "height": 2,
-                  "color": "#444444",
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  },
                   "x": 0,
                   "y": 24,
-                  "z": 0
+                  "z": 0,
+                  "name": "center2"
                 },
                 {
                   "type": "cylinder",
                   "size": 12,
                   "height": 2,
-                  "color": "#2288cc",
+                  "color": {
+                    "paletteColor": "blueDColor"
+                  },
                   "x": 0,
                   "y": 26,
-                  "z": 0
-                },
-                {
-                  "type": "box",
-                  "width": 6,
-                  "height": 6,
-                  "depth": 6,
-                  "color": "#cc2200",
-                  "x": -14,
-                  "y": 9,
-                  "z": -14
-                },
-                {
-                  "type": "box",
-                  "width": 6,
-                  "height": 6,
-                  "depth": 6,
-                  "color": "#cc6600",
-                  "x": 0,
-                  "y": 9,
-                  "z": -14
-                },
-                {
-                  "type": "box",
-                  "width": 6,
-                  "height": 6,
-                  "depth": 6,
-                  "color": "#ccaa00",
-                  "x": 14,
-                  "y": 9,
-                  "z": -14
+                  "z": 0,
+                  "name": "centerterminal"
                 },
                 {
                   "type": "sphere",
                   "size": 3,
-                  "color": "#44aaff",
+                  "color": {
+                    "paletteColor": "blueMColor"
+                  },
                   "x": 0,
                   "y": 28,
-                  "z": 0
+                  "z": 0,
+                  "name": "centersphere"
                 },
                 {
                   "type": "box",
                   "width": 40,
                   "height": 1,
                   "depth": 24,
-                  "color": "#444455",
+                  "color": {
+                    "paletteColor": "greyMColor"
+                  },
                   "x": 0,
                   "y": 18.5,
                   "z": 0
@@ -2129,37 +2279,49 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "cylinder",
                   "size": 2,
                   "height": 4,
-                  "color": "#aa0000",
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
                   "x": -18,
                   "y": 20.5,
-                  "z": -8
+                  "z": -8,
+                  "name": "redthing1"
                 },
                 {
                   "type": "cylinder",
                   "size": 2,
                   "height": 4,
-                  "color": "#aa0000",
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
                   "x": 18,
                   "y": 20.5,
-                  "z": -8
+                  "z": -8,
+                  "name": "redthing2"
                 },
                 {
                   "type": "cylinder",
                   "size": 2,
                   "height": 4,
-                  "color": "#aa0000",
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
                   "x": -18,
                   "y": 20.5,
-                  "z": 8
+                  "z": 8,
+                  "name": "redthing3"
                 },
                 {
                   "type": "cylinder",
                   "size": 2,
                   "height": 4,
-                  "color": "#aa0000",
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
                   "x": 18,
                   "y": 20.5,
-                  "z": 8
+                  "z": 8,
+                  "name": "redthing4"
                 }
               ],
               "position": {
@@ -2197,7 +2359,115 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {}
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 40,
+                      "height": 6,
+                      "depth": 40,
+                      "x": 0,
+                      "y": 3,
+                      "z": 0,
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyMColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyMColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueDColor"
+                      },
+                      "id": 4
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 5
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 6
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 7
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 8
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueMColor"
+                      },
+                      "id": 9
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueMColor"
+                      },
+                      "id": 10
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueMColor"
+                      },
+                      "id": 11
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueMColor"
+                      },
+                      "id": 12
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 13
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueDColor"
+                      },
+                      "id": 14
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueMColor"
+                      },
+                      "id": 15
+                    }
+                  ]
+                }
+              }
             ]
           },
           "model": {
@@ -2211,7 +2481,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 0,
                   "y": 3,
                   "z": 0,
-                  "color": "#303030"
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  }
                 },
                 {
                   "type": "cylinder",
@@ -2220,7 +2492,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 0,
                   "y": 13,
                   "z": 0,
-                  "color": "#505050"
+                  "color": {
+                    "paletteColor": "greyMColor"
+                  }
                 },
                 {
                   "type": "cylinder",
@@ -2229,7 +2503,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 0,
                   "y": 22,
                   "z": 0,
-                  "color": "#202020"
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  }
                 },
                 {
                   "type": "cylinder",
@@ -2238,44 +2514,26 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 0,
                   "y": 32,
                   "z": 0,
-                  "color": "#404040"
+                  "color": {
+                    "paletteColor": "greyMColor"
+                  }
                 },
                 {
                   "type": "torus",
                   "size": 20,
                   "tubeSize": 2,
                   "x": 0,
-                  "y": 26,
+                  "y": 42,
                   "z": 0,
-                  "color": "#00FFAA"
-                },
-                {
-                  "type": "sphere",
-                  "size": 14,
-                  "x": 0,
-                  "y": 32,
-                  "z": 0,
-                  "color": "#80FFD0"
-                },
-                {
-                  "type": "box",
-                  "width": 6,
-                  "height": 28,
-                  "depth": 6,
-                  "x": 16,
-                  "y": 22,
-                  "z": 16,
-                  "color": "#303030"
-                },
-                {
-                  "type": "box",
-                  "width": 6,
-                  "height": 28,
-                  "depth": 6,
-                  "x": -16,
-                  "y": 22,
-                  "z": 16,
-                  "color": "#303030"
+                  "color": {
+                    "paletteColor": "blueDColor"
+                  },
+                  "rotationX": 90,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
                 },
                 {
                   "type": "box",
@@ -2283,9 +2541,11 @@ const DEFAULT_PROJECT_CONFIG = {
                   "height": 28,
                   "depth": 6,
                   "x": 16,
-                  "y": 22,
-                  "z": -16,
-                  "color": "#303030"
+                  "y": 20,
+                  "z": 16,
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  }
                 },
                 {
                   "type": "box",
@@ -2293,9 +2553,35 @@ const DEFAULT_PROJECT_CONFIG = {
                   "height": 28,
                   "depth": 6,
                   "x": -16,
-                  "y": 22,
+                  "y": 20,
+                  "z": 16,
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  }
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 28,
+                  "depth": 6,
+                  "x": 16,
+                  "y": 20,
                   "z": -16,
-                  "color": "#303030"
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  }
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 28,
+                  "depth": 6,
+                  "x": -16,
+                  "y": 20,
+                  "z": -16,
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  }
                 },
                 {
                   "type": "sphere",
@@ -2303,7 +2589,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 16,
                   "y": 38,
                   "z": 16,
-                  "color": "#00FFAA"
+                  "color": {
+                    "paletteColor": "blueMColor"
+                  }
                 },
                 {
                   "type": "sphere",
@@ -2311,7 +2599,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": -16,
                   "y": 38,
                   "z": 16,
-                  "color": "#00FFAA"
+                  "color": {
+                    "paletteColor": "blueMColor"
+                  }
                 },
                 {
                   "type": "sphere",
@@ -2319,7 +2609,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 16,
                   "y": 38,
                   "z": -16,
-                  "color": "#00FFAA"
+                  "color": {
+                    "paletteColor": "blueMColor"
+                  }
                 },
                 {
                   "type": "sphere",
@@ -2327,7 +2619,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": -16,
                   "y": 38,
                   "z": -16,
-                  "color": "#00FFAA"
+                  "color": {
+                    "paletteColor": "blueMColor"
+                  }
                 },
                 {
                   "type": "cylinder",
@@ -2336,7 +2630,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 0,
                   "y": 42,
                   "z": 0,
-                  "color": "#606060"
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  }
                 },
                 {
                   "type": "cylinder",
@@ -2345,45 +2641,27 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 0,
                   "y": 48,
                   "z": 0,
-                  "color": "#505050"
+                  "color": {
+                    "paletteColor": "blueDColor"
+                  }
                 },
                 {
                   "type": "torus",
                   "size": 8,
                   "tubeSize": 1,
                   "x": 0,
-                  "y": 46,
+                  "y": 48,
                   "z": 0,
                   "rotationX": 90,
-                  "color": "#00FFAA"
-                },
-                {
-                  "type": "torus",
-                  "size": 4,
-                  "tubeSize": 1,
-                  "x": 0,
-                  "y": 32,
-                  "z": 0,
-                  "rotationX": 30,
-                  "rotationY": 45,
-                  "color": "#00FFFF"
-                },
-                {
-                  "type": "torus",
-                  "size": 4,
-                  "tubeSize": 1,
-                  "x": 0,
-                  "y": 32,
-                  "z": 0,
-                  "rotationX": 120,
-                  "rotationY": 45,
-                  "color": "#00FFFF"
+                  "color": {
+                    "paletteColor": "blueMColor"
+                  }
                 },
                 {
                   "type": "sphere",
                   "size": 2,
                   "x": 6,
-                  "y": 32,
+                  "y": 48,
                   "z": 0,
                   "color": "#FFFFFF"
                 },
@@ -2391,7 +2669,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "sphere",
                   "size": 2,
                   "x": -6,
-                  "y": 32,
+                  "y": 48,
                   "z": 0,
                   "color": "#FFFFFF"
                 },
@@ -2399,7 +2677,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "sphere",
                   "size": 2,
                   "x": 0,
-                  "y": 32,
+                  "y": 48,
                   "z": 6,
                   "color": "#FFFFFF"
                 },
@@ -2407,7 +2685,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "sphere",
                   "size": 2,
                   "x": 0,
-                  "y": 32,
+                  "y": 48,
                   "z": -6,
                   "color": "#FFFFFF"
                 }
@@ -2445,21 +2723,102 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {}
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "type": "torus",
+                      "size": 9,
+                      "tubeSize": 1.5,
+                      "x": 0,
+                      "y": 33.85714285714286,
+                      "z": 0,
+                      "rotationX": 90,
+                      "color": {
+                        "paletteColor": "blueDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueLColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 4
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 5
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 6
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 7
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 8
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueDColor"
+                      },
+                      "id": 9
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueDColor"
+                      },
+                      "id": 10
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueDColor"
+                      },
+                      "id": 11
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueDColor"
+                      },
+                      "id": 12
+                    }
+                  ]
+                }
+              }
             ]
           },
           "model": {
             "shapes": {
               "shapes": [
-                {
-                  "type": "sphere",
-                  "size": 7.5,
-                  "x": 0,
-                  "y": 33.85714285714286,
-                  "z": 0,
-                  "color": "#3D3D3D",
-                  "scaleX": 1
-                },
                 {
                   "type": "torus",
                   "size": 9,
@@ -2468,7 +2827,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 33.85714285714286,
                   "z": 0,
                   "rotationX": 90,
-                  "color": "#00FFAA"
+                  "color": {
+                    "paletteColor": "blueDColor"
+                  }
                 },
                 {
                   "type": "torus",
@@ -2478,16 +2839,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 33.85714285714286,
                   "z": 0,
                   "rotationY": 90,
-                  "color": "#00FFAA"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 3,
-                  "height": 1.5,
-                  "x": 0,
-                  "y": 38.35714285714286,
-                  "z": 0,
-                  "color": "#505050"
+                  "color": {
+                    "paletteColor": "blueDColor"
+                  }
                 },
                 {
                   "type": "sphere",
@@ -2495,29 +2849,39 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 0,
                   "y": 39.85714285714286,
                   "z": 0,
-                  "color": "#00FFDD"
+                  "color": {
+                    "paletteColor": "blueLColor"
+                  }
                 },
                 {
                   "type": "cylinder",
-                  "size": 12,
+                  "size": 10,
                   "height": 0.75,
                   "x": 0,
-                  "y": 32.35714285714286,
+                  "y": 34,
                   "z": 0,
                   "rotationX": 90,
                   "rotationY": 0,
-                  "color": "#404040"
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  }
                 },
                 {
                   "type": "cylinder",
-                  "size": 12,
+                  "size": 11,
                   "height": 0.75,
                   "x": 0,
-                  "y": 32.35714285714286,
+                  "y": 34,
                   "z": 0,
-                  "rotationX": 90,
+                  "rotationX": 0,
                   "rotationY": 90,
-                  "color": "#404040"
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  },
+                  "rotationZ": 0,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
                 },
                 {
                   "type": "cylinder",
@@ -2526,7 +2890,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 10.5,
                   "y": 32.35714285714286,
                   "z": 10.5,
-                  "color": "#505050"
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  }
                 },
                 {
                   "type": "cylinder",
@@ -2535,7 +2901,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": -10.5,
                   "y": 32.35714285714286,
                   "z": 10.5,
-                  "color": "#505050"
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  }
                 },
                 {
                   "type": "cylinder",
@@ -2544,7 +2912,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 10.5,
                   "y": 32.35714285714286,
                   "z": -10.5,
-                  "color": "#505050"
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  }
                 },
                 {
                   "type": "cylinder",
@@ -2553,7 +2923,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": -10.5,
                   "y": 32.35714285714286,
                   "z": -10.5,
-                  "color": "#505050"
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  }
                 },
                 {
                   "type": "torus",
@@ -2563,7 +2935,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 33.10714285714286,
                   "z": 10.5,
                   "rotationX": 90,
-                  "color": "#00FFAA"
+                  "color": {
+                    "paletteColor": "blueDColor"
+                  }
                 },
                 {
                   "type": "torus",
@@ -2573,7 +2947,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 33.10714285714286,
                   "z": 10.5,
                   "rotationX": 90,
-                  "color": "#00FFAA"
+                  "color": {
+                    "paletteColor": "blueDColor"
+                  }
                 },
                 {
                   "type": "torus",
@@ -2583,7 +2959,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 33.10714285714286,
                   "z": -10.5,
                   "rotationX": 90,
-                  "color": "#00FFAA"
+                  "color": {
+                    "paletteColor": "blueDColor"
+                  }
                 },
                 {
                   "type": "torus",
@@ -2593,56 +2971,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 33.10714285714286,
                   "z": -10.5,
                   "rotationX": 90,
-                  "color": "#00FFAA"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 0.75,
-                  "height": 3,
-                  "x": 0,
-                  "y": 30.857142857142858,
-                  "z": 0,
-                  "color": "#00FFDD"
-                },
-                {
-                  "type": "sphere",
-                  "size": 1.5,
-                  "x": 0,
-                  "y": 29.357142857142858,
-                  "z": 0,
-                  "color": "#00FFAA"
-                },
-                {
-                  "type": "sphere",
-                  "size": 0.75,
-                  "x": 3.75,
-                  "y": 33.85714285714286,
-                  "z": 0,
-                  "color": "#FFFFFF"
-                },
-                {
-                  "type": "sphere",
-                  "size": 0.75,
-                  "x": -3.75,
-                  "y": 33.85714285714286,
-                  "z": 0,
-                  "color": "#FFFFFF"
-                },
-                {
-                  "type": "sphere",
-                  "size": 0.75,
-                  "x": 0,
-                  "y": 33.85714285714286,
-                  "z": 3.75,
-                  "color": "#FFFFFF"
-                },
-                {
-                  "type": "sphere",
-                  "size": 0.75,
-                  "x": 0,
-                  "y": 33.85714285714286,
-                  "z": -3.75,
-                  "color": "#FFFFFF"
+                  "color": {
+                    "paletteColor": "blueDColor"
+                  }
                 }
               ],
               "position": {
@@ -2680,7 +3011,114 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {}
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "type": "cylinder",
+                      "size": 16,
+                      "height": 4,
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "x": 0,
+                      "y": 2,
+                      "z": 0,
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyMColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyMColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueMColor"
+                      },
+                      "id": 4
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueLColor"
+                      },
+                      "id": 5
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueMColor"
+                      },
+                      "id": 6
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueDColor"
+                      },
+                      "id": 7
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 8
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 9
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 10
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 11
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 12
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 13
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 14
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 15
+                    }
+                  ]
+                }
+              }
             ]
           },
           "model": {
@@ -2690,7 +3128,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "cylinder",
                   "size": 16,
                   "height": 4,
-                  "color": "#555555",
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  },
                   "x": 0,
                   "y": 2,
                   "z": 0
@@ -2699,7 +3139,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "cylinder",
                   "size": 12,
                   "height": 8,
-                  "color": "#777777",
+                  "color": {
+                    "paletteColor": "greyMColor"
+                  },
                   "x": 0,
                   "y": 8,
                   "z": 0
@@ -2708,7 +3150,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "cylinder",
                   "size": 10,
                   "height": 20,
-                  "color": "#333333",
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  },
                   "x": 0,
                   "y": 22,
                   "z": 0
@@ -2717,7 +3161,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "cylinder",
                   "size": 12,
                   "height": 3,
-                  "color": "#444444",
+                  "color": {
+                    "paletteColor": "greyMColor"
+                  },
                   "x": 0,
                   "y": 33.5,
                   "z": 0
@@ -2725,7 +3171,9 @@ const DEFAULT_PROJECT_CONFIG = {
                 {
                   "type": "sphere",
                   "size": 14,
-                  "color": "#66bbff",
+                  "color": {
+                    "paletteColor": "blueMColor"
+                  },
                   "x": 0,
                   "y": 42,
                   "z": 0
@@ -2734,7 +3182,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "torus",
                   "size": 20,
                   "tubeSize": 1.6,
-                  "color": "#66bbff",
+                  "color": {
+                    "paletteColor": "blueLColor"
+                  },
                   "x": 0,
                   "y": 18,
                   "z": 0,
@@ -2744,7 +3194,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "torus",
                   "size": 18,
                   "tubeSize": 1.6,
-                  "color": "#4499ff",
+                  "color": {
+                    "paletteColor": "blueMColor"
+                  },
                   "x": 0,
                   "y": 24,
                   "z": 0,
@@ -2754,7 +3206,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "torus",
                   "size": 16,
                   "tubeSize": 1.6,
-                  "color": "#2277ff",
+                  "color": {
+                    "paletteColor": "blueDColor"
+                  },
                   "x": 0,
                   "y": 30,
                   "z": 0,
@@ -2764,7 +3218,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "cone",
                   "size": 6,
                   "height": 16,
-                  "color": "#888888",
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "x": 7,
                   "y": 34,
                   "z": 0,
@@ -2774,7 +3230,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "cone",
                   "size": 6,
                   "height": 16,
-                  "color": "#888888",
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "x": -7,
                   "y": 34,
                   "z": 0,
@@ -2784,7 +3242,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "cone",
                   "size": 6,
                   "height": 16,
-                  "color": "#888888",
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "x": 0,
                   "y": 34,
                   "z": 7,
@@ -2794,7 +3254,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "cone",
                   "size": 6,
                   "height": 16,
-                  "color": "#888888",
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "x": 0,
                   "y": 34,
                   "z": -7,
@@ -2805,7 +3267,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "width": 3,
                   "height": 14,
                   "depth": 3,
-                  "color": "#888888",
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "x": 6,
                   "y": 16,
                   "z": 6,
@@ -2816,7 +3280,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "width": 3,
                   "height": 14,
                   "depth": 3,
-                  "color": "#888888",
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "x": -6,
                   "y": 16,
                   "z": 6,
@@ -2827,7 +3293,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "width": 3,
                   "height": 14,
                   "depth": 3,
-                  "color": "#888888",
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "x": 6,
                   "y": 16,
                   "z": -6,
@@ -2838,20 +3306,13 @@ const DEFAULT_PROJECT_CONFIG = {
                   "width": 3,
                   "height": 14,
                   "depth": 3,
-                  "color": "#888888",
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "x": -6,
                   "y": 16,
                   "z": -6,
                   "rotationY": 45
-                },
-                {
-                  "type": "cylinder",
-                  "size": 2,
-                  "height": 1,
-                  "color": "#66bbff",
-                  "x": 0,
-                  "y": 36,
-                  "z": 0
                 }
               ],
               "position": {
@@ -2889,7 +3350,75 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {}
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 30,
+                      "height": 6,
+                      "depth": 30,
+                      "x": 0,
+                      "y": 3,
+                      "z": 1.8,
+                      "color": {
+                        "paletteColor": "greyMColor"
+                      },
+                      "name": "base",
+                      "scaleX": 1,
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 4
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyMColor"
+                      },
+                      "id": 5
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyMColor"
+                      },
+                      "id": 6
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 7
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 8
+                    }
+                  ]
+                }
+              }
             ]
           },
           "model": {
@@ -2903,7 +3432,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 0,
                   "y": 3,
                   "z": 1.8,
-                  "color": "#555555",
+                  "color": {
+                    "paletteColor": "greyMColor"
+                  },
                   "name": "base",
                   "scaleX": 1
                 },
@@ -2914,7 +3445,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 0,
                   "y": 10,
                   "z": 1.8,
-                  "color": "#444444",
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  },
                   "name": "body"
                 },
                 {
@@ -2925,7 +3458,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 0,
                   "y": 19.5,
                   "z": 1.8,
-                  "color": "#3A3A3A",
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  },
                   "rotationX": 15,
                   "name": "missile-box"
                 },
@@ -2937,7 +3472,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 24,
                   "z": 3.3,
                   "rotationX": 105,
-                  "color": "#2A2A2A",
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  },
                   "name": "left missile container"
                 },
                 {
@@ -2948,30 +3485,40 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 24,
                   "z": 3.3,
                   "rotationX": 105,
-                  "color": "#2A2A2A",
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  },
                   "name": "right missile container"
                 },
                 {
                   "type": "cylinder",
                   "size": 4.5,
-                  "height": 13.5,
+                  "height": 4,
                   "x": -6,
-                  "y": 27,
-                  "z": -7.2,
+                  "y": 28.2,
+                  "z": -11.5,
                   "rotationX": 105,
-                  "color": "#7f7f7f",
+                  "color": {
+                    "paletteColor": "greyMColor"
+                  },
                   "rotationZ": 0,
-                  "name": "left missile"
+                  "name": "left missile",
+                  "rotationY": 0,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
                 },
                 {
                   "type": "cylinder",
                   "size": 4.5,
-                  "height": 13.5,
+                  "height": 4,
                   "x": 6,
-                  "y": 27,
-                  "z": -7.2,
+                  "y": 28.2,
+                  "z": -11.5,
                   "rotationX": 105,
-                  "color": "#7f7f7f",
+                  "color": {
+                    "paletteColor": "greyMColor"
+                  },
                   "name": "right missile"
                 },
                 {
@@ -2982,7 +3529,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 29.4,
                   "z": -16.2,
                   "rotationX": -75,
-                  "color": "#D14A4A",
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
                   "name": "left missile tip"
                 },
                 {
@@ -2993,7 +3542,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 29.4,
                   "z": -16.2,
                   "rotationX": -75,
-                  "color": "#D14A4A",
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
                   "name": "right missile tip"
                 }
               ],
@@ -3031,7 +3582,81 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {}
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "type": "torus",
+                      "size": 36,
+                      "tubeSize": 4,
+                      "x": 0,
+                      "y": 8,
+                      "z": 0,
+                      "rotationY": 0,
+                      "color": {
+                        "paletteColor": "blueDColor"
+                      },
+                      "rotationZ": 0,
+                      "rotationX": 90,
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyMColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyMColor"
+                      },
+                      "id": 5
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 6
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueMColor"
+                      },
+                      "id": 7
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueMColor"
+                      },
+                      "id": 8
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueMColor"
+                      },
+                      "id": 9
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueMColor"
+                      },
+                      "id": 10
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueDColor"
+                      },
+                      "id": 11
+                    }
+                  ]
+                }
+              }
             ]
           },
           "model": {
@@ -3045,7 +3670,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 8,
                   "z": 0,
                   "rotationY": 0,
-                  "color": "#50D0FF",
+                  "color": {
+                    "paletteColor": "blueDColor"
+                  },
                   "rotationZ": 0,
                   "rotationX": 90
                 },
@@ -3056,7 +3683,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 0,
                   "y": 5,
                   "z": 0,
-                  "color": "#333333"
+                  "color": {
+                    "paletteColor": "greyMColor"
+                  }
                 },
                 {
                   "type": "cylinder",
@@ -3065,7 +3694,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 0,
                   "y": 17,
                   "z": 0,
-                  "color": "#222222"
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  }
                 },
                 {
                   "type": "sphere",
@@ -3092,7 +3723,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 32,
                   "z": 0,
                   "rotationX": 0,
-                  "color": "#444444"
+                  "color": {
+                    "paletteColor": "greyMColor"
+                  }
                 },
                 {
                   "type": "box",
@@ -3102,7 +3735,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 0,
                   "y": 2,
                   "z": 0,
-                  "color": "#555555"
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  }
                 },
                 {
                   "type": "sphere",
@@ -3110,7 +3745,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 24,
                   "y": 24,
                   "z": 24,
-                  "color": "#C0FFFF"
+                  "color": {
+                    "paletteColor": "blueMColor"
+                  }
                 },
                 {
                   "type": "sphere",
@@ -3118,7 +3755,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": -24,
                   "y": 24,
                   "z": 24,
-                  "color": "#C0FFFF"
+                  "color": {
+                    "paletteColor": "blueMColor"
+                  }
                 },
                 {
                   "type": "sphere",
@@ -3126,7 +3765,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 24,
                   "y": 24,
                   "z": -24,
-                  "color": "#C0FFFF"
+                  "color": {
+                    "paletteColor": "blueMColor"
+                  }
                 },
                 {
                   "type": "sphere",
@@ -3134,12 +3775,16 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": -24,
                   "y": 24,
                   "z": -24,
-                  "color": "#C0FFFF"
+                  "color": {
+                    "paletteColor": "blueMColor"
+                  }
                 },
                 {
                   "type": "torus",
                   "size": 48,
-                  "color": "#00a2df",
+                  "color": {
+                    "paletteColor": "blueDColor"
+                  },
                   "x": 0,
                   "y": 38,
                   "z": 0,
@@ -3198,7 +3843,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 0,
                   "y": 4,
                   "z": 1.8,
-                  "color": "#4B4B4B",
+                  "color": {
+                    "paletteColor": "greyMColor"
+                  },
                   "name": "base"
                 },
                 {
@@ -3208,7 +3855,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 0,
                   "y": 14,
                   "z": 1.8,
-                  "color": "#333333",
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  },
                   "name": "core"
                 },
                 {
@@ -3219,7 +3868,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 0,
                   "y": 24,
                   "z": 1.8,
-                  "color": "#2A2A2A",
+                  "color": {
+                    "paletteColor": "greyMColor"
+                  },
                   "rotationX": 12,
                   "name": "cannon-head"
                 },
@@ -3231,7 +3882,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 28,
                   "z": 12,
                   "rotationX": 90,
-                  "color": "#1A1A1A",
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  },
                   "name": "plasma-barrel"
                 },
                 {
@@ -3242,7 +3895,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 28,
                   "z": 20,
                   "rotationX": 90,
-                  "color": "#00FFFF",
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "name": "plasma-emitter"
                 },
                 {
@@ -3252,7 +3907,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": -8,
                   "y": 20,
                   "z": 1.8,
-                  "color": "#00FFFF",
+                  "color": {
+                    "paletteColor": "blueMColor"
+                  },
                   "name": "left-energy-coil"
                 },
                 {
@@ -3262,7 +3919,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 8,
                   "y": 20,
                   "z": 1.8,
-                  "color": "#00FFFF",
+                  "color": {
+                    "paletteColor": "blueMColor"
+                  },
                   "name": "right-energy-coil"
                 },
                 {
@@ -3271,7 +3930,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 0,
                   "y": 28,
                   "z": 20,
-                  "color": "#ff00ff",
+                  "color": {
+                    "paletteColor": "purpleMColor"
+                  },
                   "name": "charge-orb"
                 },
                 {
@@ -3282,7 +3943,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": -12,
                   "y": 14,
                   "z": 1.8,
-                  "color": "#00FFFF",
+                  "color": {
+                    "paletteColor": "blueMColor"
+                  },
                   "name": "left-glow-panel"
                 },
                 {
@@ -3293,7 +3956,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 12,
                   "y": 14,
                   "z": 1.8,
-                  "color": "#00FFFF",
+                  "color": {
+                    "paletteColor": "blueMColor"
+                  },
                   "name": "right-glow-panel"
                 },
                 {
@@ -3303,7 +3968,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 0,
                   "y": 32,
                   "z": 1.8,
-                  "color": "#FF00FF",
+                  "color": {
+                    "paletteColor": "purpleMColor"
+                  },
                   "name": "top-energy-ring"
                 }
               ],
@@ -3370,7 +4037,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "box",
                   "width": 15,
                   "height": 30,
-                  "color": "#738884",
+                  "color": {
+                    "paletteColor": "greyMColor"
+                  },
                   "x": 2.25,
                   "y": 6.75,
                   "z": 0
@@ -3381,7 +4050,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 21.75,
                   "width": 10,
                   "height": 15,
-                  "color": "#73520d",
+                  "color": {
+                    "paletteColor": "redMColor"
+                  },
                   "z": 0,
                   "scaleX": 1
                 },
@@ -3391,41 +4062,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 36.75,
                   "width": 25,
                   "height": 5,
-                  "color": "#4a697d",
-                  "z": 0
-                },
-                {
-                  "type": "circle",
-                  "radius": 0.5,
-                  "x": -10.25,
-                  "y": 41.75,
-                  "color": "#e6e6fa",
-                  "z": 0
-                },
-                {
-                  "type": "circle",
-                  "radius": 0.5,
-                  "x": 9.75,
-                  "y": 41.75,
-                  "color": "#e6e6fa",
-                  "z": 0
-                },
-                {
-                  "type": "line",
-                  "points": [
-                    {
-                      "x": -1,
-                      "y": 4
-                    },
-                    {
-                      "x": 1,
-                      "y": 4
-                    }
-                  ],
-                  "width": 2,
-                  "color": "#87CEEB",
-                  "x": 2.25,
-                  "y": 6.75,
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  },
                   "z": 0
                 }
               ],
@@ -3458,7 +4097,42 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {}
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenMColor"
+                      },
+                      "id": 6
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenMColor"
+                      },
+                      "id": 7
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenMColor"
+                      },
+                      "id": 8
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenMColor"
+                      },
+                      "id": 9
+                    }
+                  ]
+                }
+              }
             ],
             "walk": [
               {
@@ -3648,7 +4322,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "width": 20,
                   "height": 24,
                   "depth": 10,
-                  "color": "#506050",
+                  "color": {
+                    "paletteColor": "greenDColor"
+                  },
                   "x": 0,
                   "y": 24,
                   "z": 0,
@@ -3697,7 +4373,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "cylinder",
                   "size": 4,
                   "height": 20,
-                  "color": "#60A060",
+                  "color": {
+                    "paletteColor": "greenMColor"
+                  },
                   "x": 8,
                   "y": 29,
                   "z": 10,
@@ -3709,7 +4387,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "cylinder",
                   "size": 4,
                   "height": 20,
-                  "color": "#60A060",
+                  "color": {
+                    "paletteColor": "greenMColor"
+                  },
                   "x": -8,
                   "y": 29,
                   "z": 10,
@@ -3721,7 +4401,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "cylinder",
                   "size": 4,
                   "height": 24,
-                  "color": "#60A060",
+                  "color": {
+                    "paletteColor": "greenMColor"
+                  },
                   "x": 5,
                   "y": 12,
                   "z": 0,
@@ -3732,7 +4414,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "cylinder",
                   "size": 4,
                   "height": 24,
-                  "color": "#60A060",
+                  "color": {
+                    "paletteColor": "greenMColor"
+                  },
                   "x": -5,
                   "y": 12,
                   "z": 0,
@@ -5430,7 +6114,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 22.6,
                   "z": -2.6,
                   "rotationX": 46,
-                  "color": "#5D8233",
+                  "color": {
+                    "paletteColor": "greenMColor"
+                  },
                   "name": "body",
                   "scaleX": 1
                 },
@@ -5442,7 +6128,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 0,
                   "y": 37,
                   "z": 12,
-                  "color": "#5D8233",
+                  "color": {
+                    "paletteColor": "greenMColor"
+                  },
                   "name": "head-top"
                 },
                 {
@@ -5453,7 +6141,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 0,
                   "y": 29,
                   "z": 14,
-                  "color": "#4E6C2A",
+                  "color": {
+                    "paletteColor": "greenMColor"
+                  },
                   "name": "jaw"
                 },
                 {
@@ -5464,7 +6154,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 0,
                   "y": 31,
                   "z": 20,
-                  "color": "#ff3c41",
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
                   "name": "gums"
                 },
                 {
@@ -5474,8 +6166,10 @@ const DEFAULT_PROJECT_CONFIG = {
                   "depth": 1,
                   "x": -3,
                   "y": 31,
-                  "z": 20,
-                  "color": "#FFFFFF",
+                  "z": 20.1,
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "name": "tooth-right"
                 },
                 {
@@ -5485,8 +6179,10 @@ const DEFAULT_PROJECT_CONFIG = {
                   "depth": 1,
                   "x": 0,
                   "y": 31,
-                  "z": 20,
-                  "color": "#FFFFFF",
+                  "z": 20.1,
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "name": "tooth-middle"
                 },
                 {
@@ -5496,8 +6192,10 @@ const DEFAULT_PROJECT_CONFIG = {
                   "depth": 1,
                   "x": 3,
                   "y": 31,
-                  "z": 20,
-                  "color": "#FFFFFF",
+                  "z": 20.1,
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "name": "tooth-left"
                 },
                 {
@@ -5506,7 +6204,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": -7,
                   "y": 42,
                   "z": 14,
-                  "color": "#FFFF00",
+                  "color": {
+                    "paletteColor": "redLColor"
+                  },
                   "name": "eye-right"
                 },
                 {
@@ -5515,7 +6215,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": -7,
                   "y": 42,
                   "z": 15,
-                  "color": "#000000",
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
                   "name": "pupil-right"
                 },
                 {
@@ -5524,7 +6226,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 7,
                   "y": 42,
                   "z": 14,
-                  "color": "#FFFF00",
+                  "color": {
+                    "paletteColor": "redLColor"
+                  },
                   "name": "eye-left"
                 },
                 {
@@ -5533,7 +6237,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 7,
                   "y": 42,
                   "z": 15,
-                  "color": "#000000",
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
                   "name": "pupil-left"
                 },
                 {
@@ -5545,7 +6251,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 18,
                   "z": -17.9,
                   "rotationX": -20,
-                  "color": "#5D8233",
+                  "color": {
+                    "paletteColor": "greenMColor"
+                  },
                   "name": "tail-base"
                 },
                 {
@@ -5557,7 +6265,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 15,
                   "z": -30,
                   "rotationX": -10,
-                  "color": "#5D8233",
+                  "color": {
+                    "paletteColor": "greenMColor"
+                  },
                   "name": "tail-tip"
                 },
                 {
@@ -5568,7 +6278,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 6,
                   "y": 10,
                   "z": 0,
-                  "color": "#4E6C2A",
+                  "color": {
+                    "paletteColor": "greenMColor"
+                  },
                   "name": "leg-left"
                 },
                 {
@@ -5579,7 +6291,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": -6,
                   "y": 10,
                   "z": 0,
-                  "color": "#4E6C2A",
+                  "color": {
+                    "paletteColor": "greenMColor"
+                  },
                   "name": "leg-right"
                 },
                 {
@@ -5590,7 +6304,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 6,
                   "y": 1,
                   "z": 0,
-                  "color": "#4E6C2A",
+                  "color": {
+                    "paletteColor": "greenMColor"
+                  },
                   "name": "foot-left"
                 },
                 {
@@ -5601,7 +6317,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": -6,
                   "y": 1,
                   "z": 0,
-                  "color": "#4E6C2A",
+                  "color": {
+                    "paletteColor": "greenMColor"
+                  },
                   "name": "foot-right"
                 },
                 {
@@ -5613,7 +6331,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 26,
                   "z": 0,
                   "rotationX": -40,
-                  "color": "#4E6C2A",
+                  "color": {
+                    "paletteColor": "greenMColor"
+                  },
                   "name": "arm-left"
                 },
                 {
@@ -5625,7 +6345,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 26,
                   "z": 0,
                   "rotationX": -40,
-                  "color": "#4E6C2A",
+                  "color": {
+                    "paletteColor": "greenMColor"
+                  },
                   "name": "arm-right"
                 },
                 {
@@ -5636,7 +6358,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 8,
                   "y": 24,
                   "z": 3,
-                  "color": "#A0A0A0",
+                  "color": {
+                    "paletteColor": "greyMColor"
+                  },
                   "name": "hand-left"
                 },
                 {
@@ -5647,7 +6371,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": -8,
                   "y": 24,
                   "z": 3,
-                  "color": "#A0A0A0",
+                  "color": {
+                    "paletteColor": "greyMColor"
+                  },
                   "name": "hand-right"
                 },
                 {
@@ -5658,7 +6384,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 35,
                   "z": -2,
                   "rotationX": -60,
-                  "color": "#536026",
+                  "color": {
+                    "paletteColor": "greenDColor"
+                  },
                   "name": "spike1"
                 },
                 {
@@ -5669,7 +6397,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 28,
                   "z": -8,
                   "rotationX": -75,
-                  "color": "#436026",
+                  "color": {
+                    "paletteColor": "greenDColor"
+                  },
                   "name": "spike2"
                 },
                 {
@@ -5680,7 +6410,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 22,
                   "z": -20,
                   "rotationX": -25,
-                  "color": "#436026",
+                  "color": {
+                    "paletteColor": "greenDColor"
+                  },
                   "name": "spike3"
                 },
                 {
@@ -5691,7 +6423,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 18,
                   "z": -28,
                   "rotationX": -25,
-                  "color": "#436026",
+                  "color": {
+                    "paletteColor": "greenDColor"
+                  },
                   "name": "spike4"
                 }
               ],
@@ -11023,208 +11757,7 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {
-                "head": {
-                  "shapes": [
-                    {
-                      "id": 0
-                    },
-                    {
-                      "id": 1
-                    },
-                    {
-                      "id": 2
-                    },
-                    {
-                      "id": 3
-                    },
-                    {
-                      "id": 4
-                    },
-                    {
-                      "id": 5
-                    },
-                    {
-                      "id": 6
-                    },
-                    {
-                      "id": 7
-                    }
-                  ]
-                },
-                "jaw": {
-                  "shapes": [
-                    {
-                      "id": 0
-                    },
-                    {
-                      "id": 1
-                    },
-                    {
-                      "id": 2
-                    },
-                    {
-                      "id": 3
-                    },
-                    {
-                      "id": 4
-                    }
-                  ]
-                },
-                "left arm": {
-                  "shapes": [
-                    {
-                      "id": 0
-                    },
-                    {
-                      "id": 1
-                    },
-                    {
-                      "id": 2
-                    },
-                    {
-                      "id": 3
-                    },
-                    {
-                      "id": 4
-                    }
-                  ]
-                },
-                "right arm": {
-                  "shapes": [
-                    {
-                      "id": 0
-                    },
-                    {
-                      "id": 1
-                    },
-                    {
-                      "id": 2
-                    },
-                    {
-                      "id": 3
-                    },
-                    {
-                      "id": 4
-                    }
-                  ]
-                },
-                "left leg": {
-                  "shapes": [
-                    {
-                      "id": 0
-                    },
-                    {
-                      "id": 1
-                    },
-                    {
-                      "id": 2
-                    },
-                    {
-                      "id": 3
-                    },
-                    {
-                      "id": 4
-                    }
-                  ]
-                },
-                "right leg": {
-                  "shapes": [
-                    {
-                      "id": 0
-                    },
-                    {
-                      "id": 1
-                    },
-                    {
-                      "id": 2
-                    },
-                    {
-                      "id": 3
-                    },
-                    {
-                      "id": 4
-                    }
-                  ]
-                },
-                "body": {
-                  "shapes": [
-                    {
-                      "id": 0
-                    },
-                    {
-                      "id": 1
-                    },
-                    {
-                      "id": 2
-                    },
-                    {
-                      "id": 3
-                    }
-                  ]
-                },
-                "left wing": {
-                  "shapes": [
-                    {
-                      "id": 0
-                    },
-                    {
-                      "id": 1
-                    },
-                    {
-                      "id": 2
-                    },
-                    {
-                      "id": 3
-                    }
-                  ]
-                },
-                "right wing": {
-                  "shapes": [
-                    {
-                      "id": 0
-                    },
-                    {
-                      "id": 1
-                    },
-                    {
-                      "id": 2
-                    },
-                    {
-                      "id": 3
-                    }
-                  ]
-                },
-                "tail base": {
-                  "shapes": [
-                    {
-                      "id": 0
-                    },
-                    {
-                      "id": 1
-                    },
-                    {
-                      "id": 2
-                    }
-                  ]
-                },
-                "tail tip": {
-                  "shapes": [
-                    {
-                      "id": 0
-                    },
-                    {
-                      "id": 1
-                    },
-                    {
-                      "id": 2
-                    },
-                    {
-                      "id": 3
-                    }
-                  ]
-                }
-              }
+              {}
             ],
             "walk": [
               {
@@ -11537,7 +12070,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 0,
                   "y": 44,
                   "z": 16,
-                  "color": "#2F4F4F",
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
                   "name": "head-main"
                 },
                 {
@@ -11546,7 +12081,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": -9,
                   "y": 48,
                   "z": 18,
-                  "color": "#FFD700",
+                  "color": {
+                    "paletteColor": "redMColor"
+                  },
                   "name": "eye-right",
                   "emissive": "#FFA500"
                 },
@@ -11556,7 +12093,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": -9,
                   "y": 48,
                   "z": 19.5,
-                  "color": "#000000",
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
                   "name": "pupil-right"
                 },
                 {
@@ -11565,7 +12104,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 9,
                   "y": 48,
                   "z": 18,
-                  "color": "#FFD700",
+                  "color": {
+                    "paletteColor": "redMColor"
+                  },
                   "name": "eye-left",
                   "emissive": "#FFA500"
                 },
@@ -11575,7 +12116,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 9,
                   "y": 48,
                   "z": 19.5,
-                  "color": "#000000",
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
                   "name": "pupil-left"
                 },
                 {
@@ -11586,7 +12129,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 0,
                   "y": 52,
                   "z": 16,
-                  "color": "#1C2526",
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
                   "name": "brow-ridge"
                 },
                 {
@@ -11596,7 +12141,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": -6,
                   "y": 52,
                   "z": 26,
-                  "color": "#696969",
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "name": "horn-right"
                 },
                 {
@@ -11606,7 +12153,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 6,
                   "y": 52,
                   "z": 26,
-                  "color": "#696969",
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "name": "horn-left"
                 }
               ],
@@ -11636,7 +12185,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 0,
                   "y": 32,
                   "z": 18,
-                  "color": "#2F4F4F",
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
                   "name": "jaw-main"
                 },
                 {
@@ -11647,7 +12198,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 0,
                   "y": 35,
                   "z": 26,
-                  "color": "#8B0000",
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
                   "name": "gums"
                 },
                 {
@@ -11658,7 +12211,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": -6,
                   "y": 35,
                   "z": 26,
-                  "color": "#F5F5F5",
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "name": "tooth-right",
                   "shininess": 80
                 },
@@ -11670,7 +12225,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 6,
                   "y": 35,
                   "z": 26,
-                  "color": "#F5F5F5",
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "name": "tooth-left",
                   "shininess": 80
                 },
@@ -11682,7 +12239,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 0,
                   "y": 35,
                   "z": 26,
-                  "color": "#F5F5F5",
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "name": "tooth-middle",
                   "shininess": 80
                 }
@@ -11714,7 +12273,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 30,
                   "z": 2,
                   "rotationX": -30,
-                  "color": "#2F4F4F",
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
                   "name": "upper-arm-left"
                 },
                 {
@@ -11726,7 +12287,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 26,
                   "z": 6,
                   "rotationX": -15,
-                  "color": "#2F4F4F",
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
                   "name": "lower-arm-left"
                 },
                 {
@@ -11737,7 +12300,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 12,
                   "y": 24,
                   "z": 8,
-                  "color": "#696969",
+                  "color": {
+                    "paletteColor": "greyMColor"
+                  },
                   "name": "hand-left"
                 },
                 {
@@ -11747,7 +12312,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 13,
                   "y": 23,
                   "z": 10,
-                  "color": "#A9A9A9",
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "name": "claw-left-1",
                   "rotationX": 180
                 },
@@ -11758,7 +12325,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 11,
                   "y": 23,
                   "z": 10,
-                  "color": "#A9A9A9",
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "name": "claw-left-2",
                   "rotationX": 180
                 }
@@ -11790,7 +12359,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 30,
                   "z": 2,
                   "rotationX": -30,
-                  "color": "#2F4F4F",
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
                   "name": "upper-arm-right"
                 },
                 {
@@ -11802,7 +12373,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 26,
                   "z": 6,
                   "rotationX": -15,
-                  "color": "#2F4F4F",
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
                   "name": "lower-arm-right"
                 },
                 {
@@ -11813,7 +12386,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": -12,
                   "y": 24,
                   "z": 8,
-                  "color": "#696969",
+                  "color": {
+                    "paletteColor": "greyMColor"
+                  },
                   "name": "hand-right"
                 },
                 {
@@ -11823,7 +12398,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": -13,
                   "y": 23,
                   "z": 10,
-                  "color": "#A9A9A9",
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "name": "claw-right-1",
                   "rotationX": 180
                 },
@@ -11834,7 +12411,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": -11,
                   "y": 23,
                   "z": 10,
-                  "color": "#A9A9A9",
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "name": "claw-right-2",
                   "rotationX": 180,
                   "rotationY": 0,
@@ -11870,7 +12449,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 10,
                   "y": 22,
                   "z": 2,
-                  "color": "#2F4F4F",
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
                   "name": "thigh-left",
                   "rotationX": -10
                 },
@@ -11882,7 +12463,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 10,
                   "y": 10,
                   "z": 2,
-                  "color": "#2F4F4F",
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
                   "name": "shin-left",
                   "rotationX": 20
                 },
@@ -11894,7 +12477,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 10,
                   "y": 2,
                   "z": 2,
-                  "color": "#1C2526",
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
                   "name": "foot-left",
                   "rotationX": 15
                 },
@@ -11906,7 +12491,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 0,
                   "z": 11,
                   "rotationX": 90,
-                  "color": "#696969",
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "name": "toe-left-1"
                 },
                 {
@@ -11917,7 +12504,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 0,
                   "z": 11,
                   "rotationX": 90,
-                  "color": "#696969",
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "name": "toe-left-2"
                 }
               ],
@@ -11947,7 +12536,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": -10,
                   "y": 22,
                   "z": 2,
-                  "color": "#2F4F4F",
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
                   "name": "thigh-right",
                   "rotationX": -10
                 },
@@ -11959,7 +12550,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": -10,
                   "y": 10,
                   "z": 2,
-                  "color": "#2F4F4F",
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
                   "name": "shin-right",
                   "rotationX": 20
                 },
@@ -11971,7 +12564,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": -10,
                   "y": 2,
                   "z": 2,
-                  "color": "#1C2526",
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
                   "name": "foot-right",
                   "rotationX": 15
                 },
@@ -11983,7 +12578,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 0,
                   "z": 11,
                   "rotationX": 90,
-                  "color": "#696969",
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "name": "toe-right-1"
                 },
                 {
@@ -11994,7 +12591,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 0,
                   "z": 11,
                   "rotationX": 90,
-                  "color": "#696969",
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "name": "toe-right-2"
                 }
               ],
@@ -12025,7 +12624,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 26,
                   "z": -2,
                   "rotationX": 30,
-                  "color": "#2F4F4F",
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
                   "name": "torso-main"
                 },
                 {
@@ -12037,7 +12638,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 45.46875,
                   "z": 8,
                   "rotationX": 10,
-                  "color": "#2F4F4F",
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
                   "name": "neck",
                   "rotationY": 0,
                   "rotationZ": 0,
@@ -12053,7 +12656,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 38.39468690702089,
                   "z": -6.745098039215698,
                   "rotationX": -65,
-                  "color": "#1C2526",
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
                   "name": "spike-1",
                   "rotationY": 0,
                   "rotationZ": 0,
@@ -12069,7 +12674,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 28.979127134724877,
                   "z": -14.513725490196073,
                   "rotationX": -66,
-                  "color": "#1C2526",
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
                   "name": "spike-2",
                   "rotationY": 0,
                   "rotationZ": 0,
@@ -12106,7 +12713,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": -5,
                   "rotationX": 10,
                   "rotationY": 60,
-                  "color": "#2F4F4F",
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
                   "name": "wing-base-left"
                 },
                 {
@@ -12119,7 +12728,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": -2.5,
                   "rotationX": 0,
                   "rotationY": 1,
-                  "color": "#2F4F4F",
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
                   "name": "wing-membrane-left"
                 },
                 {
@@ -12131,7 +12742,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": 14,
                   "rotationX": 90,
                   "rotationY": 0,
-                  "color": "#696969",
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "name": "wing-claw-left",
                   "rotationZ": 45,
                   "scaleX": 1,
@@ -12148,7 +12761,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": -5.5,
                   "rotationX": 5,
                   "rotationY": 40,
-                  "color": "#2F4F4F",
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
                   "name": "wing-membrane-left",
                   "rotationZ": 0,
                   "scaleX": 1,
@@ -12184,7 +12799,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": -5,
                   "rotationX": 10,
                   "rotationY": -60,
-                  "color": "#2F4F4F",
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
                   "name": "wing-base-right"
                 },
                 {
@@ -12197,7 +12814,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": -2.5,
                   "rotationX": 0,
                   "rotationY": -1,
-                  "color": "#2F4F4F",
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
                   "name": "wing-membrane-right"
                 },
                 {
@@ -12209,7 +12828,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": 14,
                   "rotationX": 90,
                   "rotationY": 0,
-                  "color": "#696969",
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "name": "wing-claw-right",
                   "rotationZ": -45,
                   "scaleX": 1,
@@ -12226,7 +12847,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": -5.5,
                   "rotationX": 5,
                   "rotationY": -40,
-                  "color": "#2F4F4F",
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
                   "name": "wing-membrane-right",
                   "rotationZ": 0,
                   "scaleX": 1,
@@ -12261,7 +12884,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 22,
                   "z": -18,
                   "rotationX": -15,
-                  "color": "#2F4F4F",
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
                   "name": "tail-base-segment"
                 },
                 {
@@ -12272,7 +12897,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 26,
                   "z": -20,
                   "rotationX": -20,
-                  "color": "#1C2526",
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
                   "name": "tail-spike-1"
                 },
                 {
@@ -12284,7 +12911,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 20,
                   "z": -34,
                   "rotationX": -10,
-                  "color": "#2F4F4F",
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
                   "name": "tail-mid-segment"
                 }
               ],
@@ -12315,7 +12944,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 18,
                   "z": -48,
                   "rotationX": -5,
-                  "color": "#2F4F4F",
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
                   "name": "tail-end-segment"
                 },
                 {
@@ -12326,7 +12957,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 21,
                   "z": -50,
                   "rotationX": -10,
-                  "color": "#1C2526",
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
                   "name": "tail-spike-2"
                 },
                 {
@@ -12338,7 +12971,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 16,
                   "z": -60,
                   "rotationX": 0,
-                  "color": "#2F4F4F",
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
                   "name": "tail-tip-segment"
                 },
                 {
@@ -12349,7 +12984,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 18,
                   "z": -62,
                   "rotationX": -5,
-                  "color": "#1C2526",
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
                   "name": "tail-spike-3"
                 }
               ],
@@ -14009,10 +14646,694 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {}
+              {
+                "head": {
+                  "shapes": [
+                    {
+                      "type": "box",
+                      "width": 16,
+                      "height": 14,
+                      "depth": 22,
+                      "x": 0,
+                      "y": 42,
+                      "z": 14,
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "name": "head-main",
+                      "texture": "scales",
+                      "roughness": 0.8,
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redMColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redMColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 4
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 5
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenMColor"
+                      },
+                      "id": 6
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenMColor"
+                      },
+                      "id": 7
+                    }
+                  ]
+                },
+                "jaw": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 4
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 5
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 6
+                    }
+                  ]
+                },
+                "left arm": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyMColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 4
+                    }
+                  ]
+                },
+                "right arm": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyMColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 4
+                    }
+                  ]
+                },
+                "left leg": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 4
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 5
+                    }
+                  ]
+                },
+                "right leg": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 4
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 5
+                    }
+                  ]
+                },
+                "body": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 4
+                    }
+                  ]
+                },
+                "tail base": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 3
+                    }
+                  ]
+                },
+                "tail tip": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 3
+                    }
+                  ]
+                }
+              }
             ],
             "walk": [
-              {},
+              {
+                "head": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redMColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redMColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 4
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 5
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenMColor"
+                      },
+                      "id": 6
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenMColor"
+                      },
+                      "id": 7
+                    }
+                  ]
+                },
+                "jaw": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 4
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 5
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 6
+                    }
+                  ]
+                },
+                "left arm": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyMColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 4
+                    }
+                  ]
+                },
+                "right arm": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyMColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 4
+                    }
+                  ]
+                },
+                "left leg": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 4
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 5
+                    }
+                  ]
+                },
+                "right leg": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 4
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 5
+                    }
+                  ]
+                },
+                "body": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 4
+                    }
+                  ]
+                },
+                "tail base": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 3
+                    }
+                  ]
+                },
+                "tail tip": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 3
+                    }
+                  ]
+                }
+              },
               {
                 "head": {
                   "rotation": {
@@ -14098,7 +15419,344 @@ const DEFAULT_PROJECT_CONFIG = {
                   }
                 }
               },
-              {},
+              {
+                "head": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redMColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redMColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 4
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 5
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenMColor"
+                      },
+                      "id": 6
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenMColor"
+                      },
+                      "id": 7
+                    }
+                  ]
+                },
+                "jaw": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 4
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 5
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 6
+                    }
+                  ]
+                },
+                "left arm": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyMColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 4
+                    }
+                  ]
+                },
+                "right arm": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyMColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 4
+                    }
+                  ]
+                },
+                "left leg": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 4
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 5
+                    }
+                  ]
+                },
+                "right leg": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 4
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 5
+                    }
+                  ]
+                },
+                "body": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 4
+                    }
+                  ]
+                },
+                "tail base": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 3
+                    }
+                  ]
+                },
+                "tail tip": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 3
+                    }
+                  ]
+                }
+              },
               {
                 "head": {
                   "position": {
@@ -14212,7 +15870,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 0,
                   "y": 42,
                   "z": 14,
-                  "color": "#556B2F",
+                  "color": {
+                    "paletteColor": "greenDColor"
+                  },
                   "name": "head-main",
                   "texture": "scales",
                   "roughness": 0.8
@@ -14223,7 +15883,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": -8,
                   "y": 46,
                   "z": 16,
-                  "color": "#DAA520",
+                  "color": {
+                    "paletteColor": "redMColor"
+                  },
                   "name": "eye-right",
                   "emissive": "#B8860B"
                 },
@@ -14233,7 +15895,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": -8,
                   "y": 46,
                   "z": 17.5,
-                  "color": "#000000",
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
                   "name": "pupil-right"
                 },
                 {
@@ -14242,7 +15906,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 8,
                   "y": 46,
                   "z": 16,
-                  "color": "#DAA520",
+                  "color": {
+                    "paletteColor": "redMColor"
+                  },
                   "name": "eye-left",
                   "emissive": "#B8860B"
                 },
@@ -14252,7 +15918,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 8,
                   "y": 46,
                   "z": 17.5,
-                  "color": "#000000",
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
                   "name": "pupil-left"
                 },
                 {
@@ -14263,7 +15931,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 0,
                   "y": 50,
                   "z": 14,
-                  "color": "#3D4D1E",
+                  "color": {
+                    "paletteColor": "greenDColor"
+                  },
                   "name": "brow-ridge",
                   "texture": "rough"
                 },
@@ -14273,7 +15943,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": -4.5,
                   "y": 48.7,
                   "z": 23.6,
-                  "color": "#556B2F",
+                  "color": {
+                    "paletteColor": "greenDColor"
+                  },
                   "name": "nostril-right",
                   "rotationX": 0,
                   "rotationY": 0,
@@ -14288,7 +15960,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 4.5,
                   "y": 48.7,
                   "z": 23.6,
-                  "color": "#556B2F",
+                  "color": {
+                    "paletteColor": "greenDColor"
+                  },
                   "name": "nostril-left",
                   "rotationX": 0,
                   "rotationY": 0,
@@ -14320,11 +15994,13 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "box",
                   "width": 18.3,
                   "height": 6,
-                  "depth": 20,
+                  "depth": 20.9,
                   "x": 0,
                   "y": 30,
                   "z": 16,
-                  "color": "#4D6227",
+                  "color": {
+                    "paletteColor": "greenDColor"
+                  },
                   "name": "jaw-main",
                   "texture": "rough"
                 },
@@ -14336,7 +16012,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 0,
                   "y": 32.5,
                   "z": 24.7,
-                  "color": "#A52A2A",
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
                   "name": "gums",
                   "roughness": 0.7
                 },
@@ -14348,7 +16026,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": -5,
                   "y": 33,
                   "z": 25,
-                  "color": "#F8F8FF",
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "name": "tooth-front-right",
                   "shininess": 90
                 },
@@ -14360,7 +16040,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 0,
                   "y": 33,
                   "z": 25,
-                  "color": "#F8F8FF",
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "name": "tooth-front-middle",
                   "shininess": 90
                 },
@@ -14372,7 +16054,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 5,
                   "y": 33,
                   "z": 25,
-                  "color": "#F8F8FF",
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "name": "tooth-front-left",
                   "shininess": 90
                 },
@@ -14384,7 +16068,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": -7,
                   "y": 33,
                   "z": 22,
-                  "color": "#F8F8FF",
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "name": "tooth-side-right1",
                   "shininess": 90
                 },
@@ -14396,7 +16082,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 7,
                   "y": 33,
                   "z": 22,
-                  "color": "#F8F8FF",
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "name": "tooth-side-left1",
                   "shininess": 90
                 }
@@ -14428,7 +16116,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 28,
                   "z": 0,
                   "rotationX": -45,
-                  "color": "#4D6227",
+                  "color": {
+                    "paletteColor": "greenDColor"
+                  },
                   "name": "upper-arm-left",
                   "texture": "scales"
                 },
@@ -14441,7 +16131,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 24,
                   "z": 4,
                   "rotationX": -20,
-                  "color": "#485A22",
+                  "color": {
+                    "paletteColor": "greenDColor"
+                  },
                   "name": "lower-arm-left",
                   "texture": "scales"
                 },
@@ -14453,7 +16145,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 11,
                   "y": 22,
                   "z": 6,
-                  "color": "#707070",
+                  "color": {
+                    "paletteColor": "greyMColor"
+                  },
                   "name": "hand-left",
                   "metalness": 0.5,
                   "roughness": 0.7
@@ -14466,7 +16160,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 12.5,
                   "y": 21,
                   "z": 8,
-                  "color": "#C0C0C0",
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "name": "claw-left-1",
                   "metalness": 0.6
                 },
@@ -14478,7 +16174,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 9.5,
                   "y": 21.5,
                   "z": 7.5,
-                  "color": "#C0C0C0",
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "name": "claw-left-2",
                   "metalness": 0.6
                 }
@@ -14510,7 +16208,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 28,
                   "z": 0,
                   "rotationX": -45,
-                  "color": "#4D6227",
+                  "color": {
+                    "paletteColor": "greenDColor"
+                  },
                   "name": "upper-arm-right",
                   "texture": "scales"
                 },
@@ -14523,7 +16223,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 24,
                   "z": 4,
                   "rotationX": -20,
-                  "color": "#485A22",
+                  "color": {
+                    "paletteColor": "greenDColor"
+                  },
                   "name": "lower-arm-right",
                   "texture": "scales"
                 },
@@ -14535,7 +16237,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": -11,
                   "y": 22,
                   "z": 6,
-                  "color": "#707070",
+                  "color": {
+                    "paletteColor": "greyMColor"
+                  },
                   "name": "hand-right",
                   "metalness": 0.5,
                   "roughness": 0.7
@@ -14548,7 +16252,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": -12.5,
                   "y": 21,
                   "z": 8,
-                  "color": "#C0C0C0",
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "name": "claw-right-1",
                   "metalness": 0.6
                 },
@@ -14560,7 +16266,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": -9.5,
                   "y": 21.5,
                   "z": 7.5,
-                  "color": "#C0C0C0",
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "name": "claw-right-2",
                   "metalness": 0.6
                 }
@@ -14591,7 +16299,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 9,
                   "y": 20,
                   "z": 0,
-                  "color": "#4A5D25",
+                  "color": {
+                    "paletteColor": "greenDColor"
+                  },
                   "name": "thigh-left",
                   "texture": "scales",
                   "roughness": 0.7,
@@ -14610,7 +16320,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 9,
                   "y": 9,
                   "z": 0,
-                  "color": "#556B2F",
+                  "color": {
+                    "paletteColor": "greenDColor"
+                  },
                   "name": "shin-left",
                   "texture": "scales",
                   "rotationX": 30
@@ -14623,7 +16335,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": 9,
                   "y": 1,
                   "z": 0,
-                  "color": "#3D4D1E",
+                  "color": {
+                    "paletteColor": "greenDColor"
+                  },
                   "name": "foot-left",
                   "roughness": 0.8,
                   "rotationX": 20,
@@ -14641,7 +16355,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": -2,
                   "z": 8.5,
                   "rotationX": 90,
-                  "color": "#606060",
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "name": "toe-left-1",
                   "metalness": 0.3
                 },
@@ -14653,7 +16369,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": -2,
                   "z": 8.5,
                   "rotationX": 90,
-                  "color": "#606060",
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "name": "toe-left-2",
                   "metalness": 0.3
                 },
@@ -14665,7 +16383,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": -2,
                   "z": 9,
                   "rotationX": 90,
-                  "color": "#606060",
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "name": "toe-left-3",
                   "metalness": 0.3
                 }
@@ -14696,7 +16416,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": -9,
                   "y": 20,
                   "z": 0,
-                  "color": "#4A5D25",
+                  "color": {
+                    "paletteColor": "greenDColor"
+                  },
                   "name": "thigh-right",
                   "texture": "scales",
                   "roughness": 0.7,
@@ -14715,7 +16437,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": -9,
                   "y": 9,
                   "z": 0,
-                  "color": "#556B2F",
+                  "color": {
+                    "paletteColor": "greenDColor"
+                  },
                   "name": "shin-right",
                   "texture": "scales",
                   "rotationX": 30,
@@ -14733,7 +16457,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "x": -9,
                   "y": 1,
                   "z": 0,
-                  "color": "#3D4D1E",
+                  "color": {
+                    "paletteColor": "greenDColor"
+                  },
                   "name": "foot-right",
                   "roughness": 0.8,
                   "rotationX": 20
@@ -14746,7 +16472,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": -2,
                   "z": 8.5,
                   "rotationX": 90,
-                  "color": "#606060",
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "name": "toe-right-1",
                   "metalness": 0.3
                 },
@@ -14758,7 +16486,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": -2,
                   "z": 8.5,
                   "rotationX": 90,
-                  "color": "#606060",
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "name": "toe-right-2",
                   "metalness": 0.3
                 },
@@ -14770,7 +16500,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": -2,
                   "z": 9,
                   "rotationX": 90,
-                  "color": "#606060",
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
                   "name": "toe-right-3",
                   "metalness": 0.3
                 }
@@ -14802,7 +16534,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 24,
                   "z": -3,
                   "rotationX": 40,
-                  "color": "#556B2F",
+                  "color": {
+                    "paletteColor": "greenDColor"
+                  },
                   "name": "torso-main",
                   "texture": "scales",
                   "roughness": 0.7
@@ -14816,7 +16550,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 38,
                   "z": 7.3,
                   "rotationX": 10,
-                  "color": "#4D6227",
+                  "color": {
+                    "paletteColor": "greenDColor"
+                  },
                   "name": "neck",
                   "texture": "scales",
                   "rotationY": 0,
@@ -14833,7 +16569,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 40,
                   "z": -5,
                   "rotationX": -55,
-                  "color": "#3D4D1E",
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  },
                   "name": "dorsal-spike-1",
                   "metalness": 0.3,
                   "roughness": 0.8
@@ -14846,7 +16584,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 34,
                   "z": -10,
                   "rotationX": -50,
-                  "color": "#3A4A1D",
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  },
                   "name": "dorsal-spike-2",
                   "metalness": 0.3,
                   "roughness": 0.8
@@ -14859,7 +16599,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 28,
                   "z": -14,
                   "rotationX": -45,
-                  "color": "#384919",
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  },
                   "name": "dorsal-spike-3",
                   "metalness": 0.3,
                   "roughness": 0.8
@@ -14892,7 +16634,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 20,
                   "z": -20,
                   "rotationX": -20,
-                  "color": "#4D6227",
+                  "color": {
+                    "paletteColor": "greenDColor"
+                  },
                   "name": "tail-base-segment",
                   "texture": "scales"
                 },
@@ -14904,7 +16648,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 24,
                   "z": -22,
                   "rotationX": -25,
-                  "color": "#3A4A1D",
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  },
                   "name": "tail-spike-1",
                   "metalness": 0.3,
                   "roughness": 0.8
@@ -14918,7 +16664,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 18,
                   "z": -36,
                   "rotationX": -15,
-                  "color": "#4A5D25",
+                  "color": {
+                    "paletteColor": "greenDColor"
+                  },
                   "name": "tail-mid-segment",
                   "texture": "scales"
                 },
@@ -14930,7 +16678,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 22,
                   "z": -38,
                   "rotationX": -20,
-                  "color": "#384919",
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  },
                   "name": "tail-spike-2",
                   "metalness": 0.3,
                   "roughness": 0.8
@@ -14963,7 +16713,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 16,
                   "z": -50,
                   "rotationX": -10,
-                  "color": "#556B2F",
+                  "color": {
+                    "paletteColor": "greenDColor"
+                  },
                   "name": "tail-end-segment",
                   "texture": "scales"
                 },
@@ -14975,7 +16727,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 19,
                   "z": -52,
                   "rotationX": -15,
-                  "color": "#384919",
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  },
                   "name": "tail-spike-3",
                   "metalness": 0.3,
                   "roughness": 0.8
@@ -14989,7 +16743,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 14.5,
                   "z": -62,
                   "rotationX": -5,
-                  "color": "#4D6227",
+                  "color": {
+                    "paletteColor": "greenDColor"
+                  },
                   "name": "tail-tip-segment",
                   "texture": "scales"
                 },
@@ -15001,7 +16757,9 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 16.5,
                   "z": -64,
                   "rotationX": -10,
-                  "color": "#384919",
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  },
                   "name": "tail-spike-4",
                   "metalness": 0.3,
                   "roughness": 0.8
@@ -15589,7 +17347,33 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {}
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "id": 0
+                    }
+                  ]
+                }
+              }
             ]
           },
           "model": {
@@ -15611,7 +17395,9 @@ const DEFAULT_PROJECT_CONFIG = {
                 {
                   "type": "cone",
                   "size": 40,
-                  "color": "#018314",
+                  "color": {
+                    "paletteColor": "greenDColor"
+                  },
                   "x": 0,
                   "y": 50.625,
                   "z": 0,
@@ -15623,7 +17409,9 @@ const DEFAULT_PROJECT_CONFIG = {
                 {
                   "type": "cone",
                   "size": 35,
-                  "color": "#018314",
+                  "color": {
+                    "paletteColor": "greenDColor"
+                  },
                   "x": 0,
                   "y": 60.625,
                   "z": 0,
@@ -15635,7 +17423,9 @@ const DEFAULT_PROJECT_CONFIG = {
                 {
                   "type": "cone",
                   "size": 15,
-                  "color": "#018314",
+                  "color": {
+                    "paletteColor": "greenDColor"
+                  },
                   "x": 0,
                   "y": 75.625,
                   "z": 0,
@@ -15669,7 +17459,24 @@ const DEFAULT_PROJECT_CONFIG = {
         "render": {
           "animations": {
             "idle": [
-              {}
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 1
+                    }
+                  ]
+                }
+              }
             ]
           },
           "model": {
@@ -15678,7 +17485,9 @@ const DEFAULT_PROJECT_CONFIG = {
                 {
                   "type": "tetrahedron",
                   "size": 16,
-                  "color": "#666666",
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  },
                   "x": 3.5,
                   "y": 2,
                   "z": 2.5,
@@ -15690,7 +17499,9 @@ const DEFAULT_PROJECT_CONFIG = {
                 {
                   "type": "tetrahedron",
                   "size": 12,
-                  "color": "#5b5b5b",
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  },
                   "x": 10.5,
                   "y": 2,
                   "z": 7.5,
@@ -16117,14 +17928,14 @@ const DEFAULT_PROJECT_CONFIG = {
               "type": "water",
               "color": "#2d85c6",
               "image": [
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC"
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2Nk6rj4n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABACTJOInljIZYAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2Nk6rj4n4GK4F+FPiOycYzUtgBkOLIlNLEA2RKaWQCzhKYWgCwZtYBgAh8NotEgIhgCBBWMpqLRICIYAgQVjKaigQ8iAB3DPyFhLWYbAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2NkoDFgpLH5DMPAAqaOi/9pGUyMoxYQCt7RICIUQgyjQTQaRARDgKCC0VQ0GkQEQ4CgApqnIgAM+S8hyaxkaAAAAABJRU5ErkJggg==",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASElEQVRIS2NkoDFgpLH5DMPAAqaOi/+pEUz/KvSxhgYjtSwAORKbJVS1AJsloxZgpA/0eBgNotEgIr0QGU1FBMNsNIhGYBABANMJUBkDDfPEAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2Nk6rj4n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABACTJOInljIZYAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2Nk6rj4n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwtFPRvwp9Rpr5AGQ4KPxoYgHMcJpYgGw4yAIAIvU/Ia+PZCwAAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAQElEQVRIS2Nk6rj4n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFRA+1RE0AkUKmCkUD9B7UPfAgBZQi8hVlOfqgAAAABJRU5ErkJggg==",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2Nk6rj4n4GK4F+FPiOycYyjFqCH7mgQEUxvo0E0GkQEQ4CggtFUNBpEBEMArwL0FARSTLUaDZvhYAsoczNh3aMWEAwjABovUBkJTyamAAAAAElFTkSuQmCC"
               ],
               "buildable": false
             },
@@ -16132,14 +17943,14 @@ const DEFAULT_PROJECT_CONFIG = {
               "type": "rock",
               "color": "#9e9e9e",
               "image": [
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2OcN2/efwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEAIf9RHEX0vjVAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2OcN2/efwYqgqSkJEZk4xipbQHIcGRLaGIBsiU0swBmCU0tAFkyagHBBD4aRKNBRDAECCoYTUWjQUQwBAgqGE1FAx9EAECFSQ0HGbi8AAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2NkoDFgpLH5DMPAgnnz5v2nZTAxjlpAKHhHg4hQCDGMBtFoEBEMAYIKRlPRaBARDAGCCmieigCFBDkNArgMlAAAAABJRU5ErkJggg==",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASElEQVRIS2NkoDFgpLH5DMPAgnnz5v2nRjAlJSVhDQ1GalkAciQ2S6hqATZLRi3ASB/o8TAaRKNBRHohMpqKCIbZaBCNwCACAOcCUBnjhUZTAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2OcN2/efwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEAIf9RHEX0vjVAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2OcN2/efwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDB0E5FSUlJjDTzAchwUPjRxAKY4TSxANlwkAUAUEhJDYCk3yoAAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAQElEQVRIS2OcN2/efwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFAB7VMRQSdQqICRQv0EtQ99CwDb3jkNHe23xQAAAABJRU5ErkJggg==",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2OcN2/efwYqgqSkJEZk4xhHLUAP3dEgIpjeRoNoNIgIhgBBBaOpaDSICIYAXgXoKQikmGo1GjbDwRZQ5mbCukctIBhGAC4oUBlpvrH3AAAAAElFTkSuQmCC"
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2OsmDDnPwMNAeOoBYRCdzSICIUQw2gQjQYRwRAgqGA0FY0GEcEQIKhgNBWNgCACAJMNP2HVNAWkAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2OsmDDnPwMVQUdBCiOycYzUtgBkOLIlNLEA2RKaWQCzhKYWgCwZtYBgAh8NotEgIhgCBBWMpqLRICIYAgQVjKaigQ8iADPKRNVwhJgpAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2NkoDFgpLH5DMPAgooJc/7TMpgYRy0gFLyjQUQohBhGg2g0iAiGAEEFo6loNIgIhgBBBTRPRQDA2TTVzasNsAAAAABJRU5ErkJggg==",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASElEQVRIS2NkoDFgpLH5DMPAgooJc/5TI5g6ClKwhgYjtSwAORKbJVS1AJsloxZgpA/0eBgNotEgIr0QGU1FBMNsNIhGYBABAJf7UBnT7pbvAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2OsmDDnPwMNAeOoBYRCdzSICIUQw2gQjQYRwRAgqGA0FY0GEcEQIKhgNBWNgCACAJMNP2HVNAWkAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2OsmDDnPwMNAeOoBYRCdzSICIUQw2gQjQYRwRAgqGA0FY0GEcEQIKhgaKeijoIURpr5AGQ4KPxoYgHMcJpYgGw4yAIA3kRE1c2U09gAAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAQElEQVRIS2OsmDDnPwMNAeOoBYRCdzSICIUQw2gQjQYRwRAgqGA0FY0GEcEQIKiA9qmIoBMoVMBIoX6C2oe+BQCyeTTVighC9gAAAABJRU5ErkJggg==",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2OsmDDnPwMVQUdBCiOycYyjFqCH7mgQEUxvo0E0GkQEQ4CggtFUNBpEBEMArwL0FARSTLUaDZvhYAsoczNh3aMWEAwjAN8SUBlM4cXZAAAAAElFTkSuQmCC"
               ],
               "buildable": false
             },
@@ -16147,14 +17958,14 @@ const DEFAULT_PROJECT_CONFIG = {
               "type": "forest",
               "color": "#1c6438",
               "image": [
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS2OUSbH4z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCoYTUUjIIgA71YpQQB/w8QAAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATklEQVRIS2OUSbH4z0Al8GTOCUZ0oxiHlAUg16P7gqo+gAUPsiU0sQDZJzSzAOabUQsI5qDRIBoNIoIhQFDBaCoaDSKCIUBQwWgqIhhEAIHMNK76+kj9AAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2NkoDFgpLH5DKMWEAxhRpkUi/8EVVGgYNQCgoE3GkSjQUQwBAgqGE1Fo0FEMAQIKhhNRQSDCACNcyCuKmmRrQAAAABJRU5ErkJggg==",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2NkoDFgpLH5DKMWEAxhRpkUi/8EVRFQ8GTOCZxBTRULQPbjsoRqFuCyZNQClOjHFg+jQTQaRKQVIqOpiGB4jQbR4AwiAPx6TBmX9XIXAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS2OUSbH4z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCoYTUUjIIgA71YpQQB/w8QAAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2OUSbH4z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCqgWSp6MucEI8h2mlgAM5wmFiAbTnUL0A2niwUAO0c0rkd3ClIAAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2OUSbH4z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCpgJKiCQgWjFhAMQJoHEQBLXiCu2Bx7HwAAAABJRU5ErkJggg==",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2OUSbH4z0Al8GTOCUZ0oxhHLUAOktEgIpjWRoNoNIgIhgBBBaOpaJgHEbYIBnmZKhUOLsPBFhAMWAoVjFpAMABpHkQAAPlMGX+pQM0AAAAASUVORK5CYII="
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS2PU99L8z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCoYTUUjIIgAMVcnMWaCer0AAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2PU99L8z0BFcHHbdUZk4xipbQHIcGRLaGIBsiU0swBmCU0tAFkyagHBBD4aRKNBRDAECCoYTUWjQUQwBAgqGE1FAx9EAM7AMK06eeZJAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2NkoDFgpLH5DMPAAn0vzf+0DCbGUQsIBe9oEBEKIYbRIBoNIoIhQFDBaCoaDSKCIUBQAc1TEQC2nSCt0Vf5ogAAAABJRU5ErkJggg==",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASElEQVRIS2NkoDFgpLH5DMPAAn0vzf/UCKaL265jDQ1GalkAciQ2S6hqATZLRi3ASB/o8TAaRKNBRHohMpqKCIbZaBCNwCACAFc5UBlc2SShAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS2PU99L8z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCoYTUUjIIgAMVcnMWaCer0AAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2PU99L8z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCoY2qno4rbrjDTzAchwUPjRxAKY4TSxANlwkAUA6tgwrW9iQGUAAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAQElEQVRIS2PU99L8z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCqgfSoi6AQKFTBSqJ+g9qFvAQAZ2yCt7eMyfAAAAABJRU5ErkJggg==",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2PU99L8z0BFcHHbdUZk4xhHLUAP3dEgIpjeRoNoNIgIhgBBBaOpaDSICIYAXgXoKQikmGo1GjbDwRZQ5mbCukctIBhGAJ5QUBlAsncEAAAAAElFTkSuQmCC"
               ],
               "buildable": true
             },
@@ -16162,14 +17973,14 @@ const DEFAULT_PROJECT_CONFIG = {
               "type": "grass",
               "color": "#4a7c59",
               "image": [
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS2P0qon8z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCoYTUUjIIgAnCQy6fQdcSIAAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATklEQVRIS2P0qon8z0AlsK1lOSO6UYxDygKQ69F9QVUfwIIH2RKaWIDsE5pZAPPNqAUEc9BoEI0GEcEQIKhgNBWNBhHBECCoYDQVEQwiAA75PFN7PN69AAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2NkoDFgpLH5DKMWEAxhRq+ayP8EVVGgYNQCgoE3GkSjQUQwBAgqGE1Fo0FEMAQIKhhNRQSDCAB4BShTjqMEpwAAAABJRU5ErkJggg==",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2NkoDFgpLH5DKMWEAxhRq+ayP8EVRFQsK1lOc6gpooFIPtxWUI1C3BZMmoBSvRji4fRIBoNItIKkdFURDC8RoNocAYRADzPTBkQkiUcAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS2P0qon8z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCoYTUUjIIgAnCQy6fQdcSIAAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2P0qon8z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCqgWSra1rKcEWQ7TSyAGU4TC5ANp7oF6IbTxQIARN88U7u38m0AAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2P0qon8z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCpgJKiCQgWjFhAMQJoHEQCyWyhTURksDgAAAABJRU5ErkJggg==",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2P0qon8z0AlsK1lOSO6UYyjFiAHyWgQEUxro0E0GkQEQ4CggtFUNMyDCFsEg7xMlQoHl+FgCwgGLIUKRi0gGIA0DyIAQT9MGVwsaTUAAAAASUVORK5CYII="
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS2OM6vL/z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCoYTUUjIIgAfMs0ycPNloYAAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2OM6vL/z0BFsKxsIyOycYzUtgBkOLIlNLEA2RKaWQCzhKYWgCwZtYBgAh8NotEgIhgCBBWMpqLRICIYAgQVjKaigQ8iAI+4PAED+PgWAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2NkoDFgpLH5DMPAgqgu//+0DCbGUQsIBe9oEBEKIYbRIBoNIoIhQFDBaCoaDSKCIUBQAc1TEQC0riwBPmCHPQAAAABJRU5ErkJggg==",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASElEQVRIS2NkoDFgpLH5DMPAgqgu///UCKZlZRuxhgYjtSwAORKbJVS1AJsloxZgpA/0eBgNotEgIr0QGU1FBMNsNIhGYBABANraUBnI7elLAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS2OM6vL/z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCoYTUUjIIgAfMs0ycPNloYAAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2OM6vL/z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCoY2qloWdlGRpr5AGQ4KPxoYgHMcJpYgGw4yAIA2B88AalS6kAAAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAQElEQVRIS2OM6vL/z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCqgfSoi6AQKFTBSqJ+g9qFvAQBEOywBeS2I2QAAAABJRU5ErkJggg==",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2OM6vL/z0BFsKxsIyOycYyjFqCH7mgQEUxvo0E0GkQEQ4CggtFUNBpEBEMArwL0FARSTLUaDZvhYAsoczNh3aMWEAwjACIAUBkyurStAAAAAElFTkSuQmCC"
               ],
               "buildable": true
             },
@@ -16177,14 +17988,14 @@ const DEFAULT_PROJECT_CONFIG = {
               "type": "path",
               "color": "#f5d69a",
               "image": [
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8em3WfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEADJ7UXnV1RQ5AAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATklEQVRIS2P8em3WfwYqAW6tNEZ0oxiHlAUg16P7gqo+gAUPsiU0sQDZJzSzAOabUQsI5qDRIBoNIoIhQFDBaCoaDSKCIUBQwWgqIhhEAJvSVIWbYGLaAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2NkoDFgpLH5DKMWEAxhxq/XZv0nqIoCBaMWEAy80SAaDSKCIUBQwWgqGg0igiFAUMFoKiIYRAACV0CFxNTeCQAAAABJRU5ErkJggg==",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2NkoDFgpLH5DKMWEAxhxq/XZv0nqIqAAm6tNJxBTRULQPbjsoRqFuCyZNQClOjHFg+jQTQaRKQVIqOpiGB4jQbR4AwiAFzITBnELKoVAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8em3WfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEADJ7UXnV1RQ5AAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2P8em3WfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFABzVIRt1YaI8h2mlgAM5wmFiAbTnUL0A2niwUAqyRUhRUUb34AAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2P8em3WfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFABI0EVFCoYtYBgANI8iAAWGUCFGtCTSgAAAABJRU5ErkJggg==",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2P8em3WfwYqAW6tNEZ0oxhHLUAOktEgIpjWRoNoNIgIhgBBBaOpaJgHEbYIBnmZKhUOLsPBFhAMWAoVjFpAMABpHkQAYThMGX3v4DMAAAAASUVORK5CYII="
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8f6bhPwMNAeOoBYRCdzSICIUQw2gQjQYRwRAgqGA0FY0GEcEQIKhgNBWNgCACAK6PTwnhzaq8AAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATElEQVRIS2P8f6bhPwMVAaNJAyOycYzUtgBkOLIlNLEA2RKaWQCzhKYWgC2hRRzQPJJHLSApW45GMsHgGg2i0SAiGAIEFYymohEQRADyIFHhS6+aIAAAAABJRU5ErkJggg==",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2NkoDFgpLH5DMPAgv9nGv7TMpgYRy0gFLyjQUQohBhGg2g0iAiGAEEFo6loNIgIhgBBBTRPRQCex0HhGrcMwgAAAABJRU5ErkJggg==",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASElEQVRIS2NkoDFgpLH5DMPAgv9nGv5TI5gYTRqwhgYjtSwAORKbJVS1AJsloxZgpA/0eBgNotEgIr0QGU1FBMNsNIhGYBABAKQjUBmb1cCaAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8f6bhPwMNAeOoBYRCdzSICIUQw2gQjQYRwRAgqGA0FY0GEcEQIKhgNBWNgCACAK6PTwnhzaq8AAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2P8f6bhPwMNAeOoBYRCdzSICIUQw2gQjQYRwRAgqGA0FY0GEcEQIKhgaKciRpMGRpr5AGQ4KPxoYgHMcJpYgGw4yAIAZAVR4acv6pYAAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAQElEQVRIS2P8f6bhPwMNAeOoBYRCdzSICIUQw2gQjQYRwRAgqGA0FY0GEcEQIKiA9qmIoBMoVMBIoX6C2oe+BQBXw0HhcbehBwAAAABJRU5ErkJggg==",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2P8f6bhPwMVAaNJAyOycYyjFqCH7mgQEUxvo0E0GkQEQ4CggtFUNBpEBEMArwL0FARSTLUaDZvhYAsoczNh3aMWEAwjAOs6UBng/JffAAAAAElFTkSuQmCC"
               ],
               "buildable": false
             },
@@ -16192,14 +18003,14 @@ const DEFAULT_PROJECT_CONFIG = {
               "type": "lava",
               "color": "#cc6315",
               "image": [
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2M81cDwn4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAMFtNvH3DcpWAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2M81cDwn4GKwKyBgRHZOEZqWwAyHNkSmliAbAnNLIBZQlMLQJaMWkAwgY8G0WgQEQwBggpGU9FoEBEMAYIKRlPRwAcRACibOc10Zjf/AAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2NkoDFgpLH5DMPAglMNDP9pGUyMoxYQCt7RICIUQgyjQTQaRARDgKCC0VQ0GkQEQ4CgApqnIgDmiS3NXNwn0QAAAABJRU5ErkJggg==",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAARklEQVRIS2NkoDFgpLH5DMPAglMNDP+pEUxmDdhDg5FaFoAcic0SqlqAzZJRCzDSB3o8jAbRaBCRXoiMpiKCYTYaRCMwiABDTjwZ3JoihwAAAABJRU5ErkJggg==",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2M81cDwn4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAMFtNvH3DcpWAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2M81cDwn4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwtFORWQMDI818ADIcFH40sQBmOE0sQDYcZAEAfCE5zUzArKoAAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAQElEQVRIS2M81cDwn4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFRA+1RE0AkUKmCkUD9B7UPfAgAvcy3NGuuB5QAAAABJRU5ErkJggg==",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2M81cDwn4GKwKyBgRHZOMZRC9BDdzSICKa30SAaDSKCIUBQwWgqGg0igiGAVwF6CgIpplqNhs1wsAWUuZmw7lELCIYRADijPBm9W3nbAAAAAElFTkSuQmCC"
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQdzfnXWEr6x8ahKSCzWdyWHKAdKViIQikUQogAVfJBEKYMEXPSBamJQ9CXgfObkAAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATElEQVRIS2P838Pwn4GKgLGEgRHZOEZqWwAyHNkSmliAbAnNLIBZQlMLwJbQIg5oHsmjFpCULUcjmWBwjQbRaBARDAGCCkZT0QgIIgCvLT7h9ff/qwAAAABJRU5ErkJggg==",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPElEQVRIS+3SsQkAMAwDQXn/7OyM8JUa866FBYcm5Zvy/xwo2JdtMo0FxCsRCUUiiVAAA65IIhTAQH1FHxXSMuGNrO/rAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAARklEQVRIS2NkoDFgpLH5DMPAgv89DP+pEUyMJdhDg5FaFoAcic0SqlqAzZJRCzDSB3o8jAbRaBCRXoiMpiKCYTYaRCMwiADWkTwZ+w+X6QAAAABJRU5ErkJggg==",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQdzfnXWEr6x8ahKSCzWdyWHKAdKViIQikUQogAVfJBEKYMEXPSBamJQ9CXgfObkAAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2P838Pwn4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwtFMRYwkDI818ADIcFH40sQBmOE0sQDYcZAEAtXs+4XbNSVcAAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAQElEQVRIS2P838Pwn4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFRA+1RE0AkUKmCkUD9B7UPfAgARdTLhxToLvQAAAABJRU5ErkJggg==",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2P838Pwn4GKgLGEgRHZOMZRC9BDdzSICKa30SAaDSKCIUBQwWgqGg0igiGAVwF6CgIpplqNhs1wsAWUuZmw7lELCIYRAMvmPBmZFN13AAAAAElFTkSuQmCC"
               ],
               "buildable": false
             },
@@ -16207,14 +18018,14 @@ const DEFAULT_PROJECT_CONFIG = {
               "type": "end",
               "color": "#ff9999",
               "image": [
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC"
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2Pcb8bzn4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAGEJMBn8lwDOAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2Pcb8bzn4GKwPHUF0Zk4xipbQHIcGRLaGIBsiU0swBmCU0tAFkyagHBBD4aRKNBRDAECCoYTUWjQUQwBAgqGE1FAx9EANYEOBntXJF3AAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2NkoDFgpLH5DMPAgv1mPP9pGUyMoxYQCt7RICIUQgyjQTQaRARDgKCC0VQ0GkQEQ4CgApqnIgA+OSgZFH+JDgAAAABJRU5ErkJggg==",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASElEQVRIS2NkoDFgpLH5DMPAgv1mPP+pEUyOp75gDQ1GalkAciQ2S6hqATZLRi3ASB/o8TAaRKNBRHohMpqKCIbZaBCNwCACAKSjUBnVc59EAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2Pcb8bzn4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAGEJMBn8lwDOAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2Pcb8bzn4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwtFOR46kvjDTzAchwUPjRxAKY4TSxANlwkAUAMoA4GYViOn4AAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAQElEQVRIS2Pcb8bzn4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFRA+1RE0AkUKmCkUD9B7UPfAgDhvSgZWsU86gAAAABJRU5ErkJggg==",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2Pcb8bzn4GKwPHUF0Zk4xhHLUAP3dEgIpjeRoNoNIgIhgBBBaOpaDSICIYAXgXoKQikmGo1GjbDwRZQ5mbCukctIBhGAOu6UBlo3bmTAAAAAElFTkSuQmCC"
               ],
               "buildable": false
             },
@@ -16222,14 +18033,14 @@ const DEFAULT_PROJECT_CONFIG = {
               "type": "start",
               "color": "#ffff80",
               "image": [
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII="
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2N8uO/5fwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEAMsxVJFoDnaTAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2N8uO/5fwYqAnknSUZk4xipbQHIcGRLaGIBsiU0swBmCU0tAFkyagHBBD4aRKNBRDAECCoYTUWjQUQwBAgqGE1FAx9EAIWPVn1LfyHzAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2NkoDFgpLH5DMPAgof7nv+nZTAxjlpAKHhHg4hQCDGMBtFoEBEMAYIKRlPRaBARDAGCCmieigDi30Z9FKHvXgAAAABJRU5ErkJggg==",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASElEQVRIS2NkoDFgpLH5DMPAgof7nv+nRjDJO0liDQ1GalkAciQ2S6hqATZLRi3ASB/o8TAaRKNBRHohMpqKCIbZaBCNwCACABI9UBlRfiAaAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2N8uO/5fwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEAMsxVJFoDnaTAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2N8uO/5fwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDB0E5F8k6SjDTzAchwUPjRxAKY4TSxANlwkAUA9D5WfW47yLMAAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAQElEQVRIS2N8uO/5fwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFAB7VMRQSdQqICRQv0EtQ99CwCYtEZ9mDNQjgAAAABJRU5ErkJggg==",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2N8uO/5fwYqAnknSUZk4xhHLUAP3dEgIpjeRoNoNIgIhgBBBaOpaDSICIYAXgXoKQikmGo1GjbDwRZQ5mbCukctIBhGAFlUUBlfgMXpAAAAAElFTkSuQmCC"
               ],
               "buildable": false
             }
@@ -16524,7 +18335,7 @@ const DEFAULT_PROJECT_CONFIG = {
               5
             ]
           ],
-          "terrainBGColor": "#487957",
+          "terrainBGColor": "#5a8a4f",
           "environmentObjects": [
             {
               "type": "tree",
@@ -19284,12 +21095,12 @@ const DEFAULT_PROJECT_CONFIG = {
     },
     "libraries": {
       "GraphicsEditor": {
-        "script": "/**\n * @class GraphicsEditor\n * @description Manages 3D graphics editing functionality including shapes, animations, and UI\n */\nclass GraphicsEditor {\n    /**\n     * @param {Object} gameEditor - Main game editor instance\n     * @param {Object} config - Editor configuration\n     * @param {Object} managers - Required manager instances\n     * @param {Function} managers.ShapeFactory - Factory for creating shapes\n     * @param {Function} managers.GE_SceneRenderer - Handles scene rendering\n     * @param {Function} managers.GE_ShapeManager - Manages shape operations\n     * @param {Function} managers.GE_AnimationManager - Handles animations\n     * @param {Function} managers.GE_RotationUtils - Rotation utility functions\n     * @param {Function} managers.GE_UIManager - Manages UI interactions\n     * @param {Function} managers.GE_GroupManager - Handles shape grouping\n     * @param {Function} managers.GE_GizmoManager - Manages transformation gizmos\n     */\n    constructor(gameEditor, config, {ShapeFactory, GE_SceneRenderer, GE_ShapeManager, GE_AnimationManager, GE_RotationUtils, GE_UIManager, GE_GroupManager, GE_GizmoManager}) {\n        this.gameEditor = gameEditor;\n        this.config = config;\n        this.shapeFactory = new ShapeFactory();\n        this.canvas = document.getElementById('graphics-editor-canvas');\n        // Initialize sub-modules\n        this.sceneRenderer = new GE_SceneRenderer(gameEditor, this);\n        this.shapeManager = new GE_ShapeManager(gameEditor, this);\n        this.uiManager = new GE_UIManager(gameEditor, this);\n        this.animationManager = new GE_AnimationManager(gameEditor, this);\n        this.groupManager = new GE_GroupManager(gameEditor, this);\n        this.gizmoManager = new GE_GizmoManager(gameEditor, this);\n        this.rotationUtils = GE_RotationUtils;\n        // State management (simplified)\n        this.state = {\n            editingModel: true,\n            selectedShapeIndex: -1,\n            currentAnimation: \"\",\n            selectedGroup: \"main\",\n            currentFrame: 0,\n            renderData: { model: {}, animations: { idle: [{ main: { shapes: [], position: {x: 0, y: 0, z: 0}, rotation: {x:0,y:0,z:0}, scale: {x:1, y:1, z:1}} }] } }\n        };\n        \n        this.rootGroup = new window.THREE.Group(); // Main container for all shapes\n        this.rootGroup.name = \"rootGroup\";\n        this.init();\n    }\n    /**\n     * Initializes all manager components\n     * @private\n     */\n    init() {\n        this.sceneRenderer.init();\n        this.uiManager.init();\n        this.shapeManager.init();\n        this.animationManager.init();\n        this.groupManager.init();\n        this.gizmoManager.init();\n        this.sceneRenderer.animate();    \n    }\n\n    /**\n     * Displays isometric sprite previews\n     * @param {Array<Object>} sprites - Array of sprite data\n     */\n    displayIsometricSprites(sprites){\n        this.uiManager.displayIsometricSprites(sprites);\n    }\n\n    /**\n     * Renders all shapes in the scene\n     * @param {boolean} [fireSave=true] - Whether to trigger a save after rendering\n     * @returns {Promise<void>}\n     */\n    async renderShapes(fireSave = true) {\n        await this.clearScene();\n        await this.setupLights();\n        \n        if (!this.validateCurrentFrame()) {\n            return;\n        }\n        \n        await this.renderGroups();\n        await this.updateUI(fireSave);\n        await this.updateSelection();\n    }\n\n    /**\n     * Clears all objects from the scene\n     * @private\n     * @returns {Promise<void>}\n     */    \n    async clearScene() {\n        while (this.rootGroup.children.length > 0) {\n            const obj = this.rootGroup.children[0];\n            this.shapeFactory.disposeObject(obj);\n            this.shapeManager.originalMaterials.delete(obj);\n            this.rootGroup.remove(obj);\n        }\n    }\n\n    /**\n     * Sets up scene lighting\n     * @private\n     * @returns {Promise<void>}\n     */    \n    async setupLights() {\n        if (this.sceneRenderer.scene.getObjectByName('ambient-light')) {\n            return;\n        }\n    \n        const ambientLight = new window.THREE.AmbientLight(0xffffff, 0.6);\n        ambientLight.name = 'ambient-light';\n        this.sceneRenderer.scene.add(ambientLight);\n    \n        const directionalLight = new window.THREE.DirectionalLight(0xffffff, 0.8);\n        directionalLight.position.set(5, 10, 7.5);\n        directionalLight.name = 'dir-light';\n        this.sceneRenderer.scene.add(directionalLight);\n    }    \n\n    /**\n     * Validates the current animation frame\n     * @private\n     * @returns {boolean} - Whether the current frame is valid\n     */\n    validateCurrentFrame() {\n        if (!this.state.editingModel && !this.getCurrentFrame()) {\n            console.warn(\n                \"Animation or frame doesn't exist:\", \n                this.state.currentAnimation, \n                this.state.currentFrame\n            );\n            return false;\n        }\n        return true;\n    }\n    \n    /**\n     * Renders all shapes in the scene\n     * @param {boolean} [fireSave=true] - Whether to trigger a save after rendering\n     * @returns {Promise<void>}\n     */\n    async renderGroups() {\n        const model = this.state.renderData.model;\n        for (const groupName in model) {     \n            const mergedGroup = this.getMergedGroup(groupName);\n            if (mergedGroup) {\n                let threeGroup = await this.shapeFactory.createGroupFromJSON(groupName, mergedGroup); \n                threeGroup.name = groupName;\n                this.rootGroup.add(threeGroup);\n            }\n        }\n    }\n\n    /**\n     * Renders all shapes in the scene\n     * @param {boolean} [fireSave=true] - Whether to trigger a save after rendering\n     * @returns {Promise<void>}\n     */\n    async updateUI(fireSave) {\n        this.updateShapeCount();\n        await this.handleSave(fireSave);\n    }\n\n    /**\n     * Updates the shape count display in the UI\n     * @private\n     */\n    updateShapeCount() {\n        const model = this.state.renderData.model;\n        const totalShapes = Object.values(model).reduce((total, group) => {\n            return total + (Array.isArray(group.shapes) ? group.shapes.length : 0);\n        }, 0);\n        document.getElementById('shape-count').textContent = totalShapes;\n    }\n    \n    /**\n     * Handles saving the current state\n     * @param {boolean} fireSave - Whether to trigger a save event\n     * @returns {Promise<void>}\n     */\n    async handleSave(fireSave) {\n        if (fireSave) {\n            const saveEvent = new CustomEvent('saveGraphicsObject', {\n                detail: { \n                    data: this.state.renderData, \n                    propertyName: 'render' \n                },\n                bubbles: true,\n                cancelable: true\n            });\n            document.body.dispatchEvent(saveEvent);\n        } else {\n            const valueElement = this.gameEditor.elements.editor\n                .querySelector('#render-value');\n            if (valueElement) {\n                let renderDataCopy = JSON.parse(JSON.stringify(this.state.renderData));\n                Object.keys(renderDataCopy.animations).forEach(animationName => {\n                    const animation = renderDataCopy.animations[animationName];\n                    animation.forEach(frame => {\n                        Object.keys(frame).forEach(groupName => {\n                            const group = frame[groupName];\n                            if (group && group.shapes) {\n                                // Filter shapes with more than just ID\n                                group.shapes = group.shapes.filter(shape => \n                                    Object.keys(shape).length > 1\n                                );\n                                \n                                // Remove empty shapes array\n                                if (group.shapes.length === 0) {\n                                    delete group.shapes;\n                                }\n                \n                                // Remove empty group\n                                if (Object.keys(group).length === 0) {\n                                    delete frame[groupName];\n                                }\n                            }\n                        });               \n                    });\n                });\n                valueElement.value = JSON.stringify(renderDataCopy);\n            }\n        }\n    }\n\n    /**\n     * Updates the selection highlight and gizmo positions\n     * @returns {Promise<void>}\n     */\n    async updateSelection() {\n        this.shapeManager.highlightSelectedShape();\n        this.gizmoManager.updateGizmoPosition();\n    }\n\n    /**\n     * Gets the current animation data\n     * @returns {Object|null} Current animation or null if none exists\n     */\n    getCurrentAnimation() {\n     \n        return this.state.renderData.animations[this.state.currentAnimation] || null;\n    }\n\n    /**\n     * Gets the current frame data\n     * @returns {Object|null} Current frame data or model data if in editing mode\n     */\n    getCurrentFrame() {\n        if(this.state.editingModel){\n            return this.state.renderData.model;\n        } else {\n            let currentAnimation = this.getCurrentAnimation();\n            return currentAnimation ? currentAnimation[this.state.currentFrame] : null;\n        }\n    }\n\n    /**\n     * Gets the current group data\n     * @returns {Object|null} Current group data or null if none exists\n     */\n    getCurrentGroup() {\n        let currentFrame = this.getCurrentFrame();\n        return currentFrame ? currentFrame[this.state.currentGroup] : null;\n    }\n\n    /**\n     * Refreshes the shape list and renders the scene\n     * @param {boolean} param - Whether to trigger a save after refresh\n     */\n    refreshShapes(param) {\n        this.uiManager.updateList();\n        this.renderShapes(param);\n    }\n\n    /**\n     * Creates an inspector panel for the given shape\n     * @param {Object} shape - Shape to create inspector for\n     */\n    createInspector(shape) {\n        this.uiManager.createInspector(shape);\n    }\n\n    /**\n     * Sets the animation preview state\n     * @param {Object} state - New animation state\n     * @returns {Promise<void>}\n     */\n    setPreviewAnimationState(state) {\n        return this.animationManager.setPreviewAnimationState(state);\n    }\n\n    /**\n     * Selects a shape by index\n     * @param {number} index - Index of shape to select\n     * @returns {Promise<void>}\n     */\n    selectShape(index) {\n        return this.shapeManager.selectShape(index);\n    }\n\n    /**\n     * Gets a merged group by name\n     * @param {string} groupName - Name of group to get\n     * @returns {Object|null} Merged group data or null\n     */\n    getMergedGroup(groupName){\n        let model = this.state.renderData.model;\n        const modelGroup = model[groupName];\n        if(this.state.editingModel){\n            return modelGroup;\n        }\n        return this.shapeFactory.getMergedGroup(model, this.getCurrentAnimation()[this.state.currentFrame], groupName );\n    }\n\n    /**\n     * Gets the current frame's shape data\n     * @returns {Object|null} Shape data or null if not found\n     */\n    getFrameShape() {\n        // If we're in model editing mode, return merged shape\n        if (this.state.editingModel) {\n            return this.getMergedShape();\n        }\n    \n        // Return null if no shape is selected\n        if (this.state.selectedShapeIndex < 0) {\n            return null;\n        }\n    \n        // Get or create group data\n        let groupData = this.getCurrentGroup() || \n            JSON.parse(JSON.stringify(this.state.renderData.model[this.state.currentGroup]));\n    \n        if (!groupData?.shapes) {\n            return null;\n        }\n    \n        // Find existing shape or create new one\n        let shape = groupData.shapes.find(s => s.id === this.state.selectedShapeIndex);\n        if (shape) {\n            return shape;\n        }\n    \n        // Create new shape if not found\n        return this.createBlankFrameShape();\n    }\n\n    /**\n     * Creates a new blank frame shape\n     * @private\n     * @returns {Object|null} New shape or null if frame doesn't exist\n     */\n    createBlankFrameShape() {\n        const shape = { id: this.state.selectedShapeIndex };\n        const currentFrame = this.getCurrentFrame();\n        \n        if (!currentFrame) {\n            return null;\n        }\n    \n        // Add shape to current group or create new group\n        if (!currentFrame[this.state.currentGroup]) {\n            currentFrame[this.state.currentGroup] = { shapes: [] };\n        }\n        \n        currentFrame[this.state.currentGroup].shapes.push(shape);\n        return shape;\n    }\n    /**\n     * Gets the currently selected shape merged with its group\n     * @returns {Object|null} - Merged shape or null if not found\n     */\n    getMergedShape() {\n        if (this.state.selectedShapeIndex < 0) {\n            return null;\n        }\n    \n        const selectedGroup = this.getMergedGroup(this.state.currentGroup);\n        const shapes = selectedGroup?.shapes || [];\n        const shape = shapes[this.state.selectedShapeIndex];\n    \n        if (!shape) {\n            return null;\n        }\n    \n        if (this.state.editingModel) {\n            return shape;\n        }\n    \n        return this.mergeShapeWithCurrentGroup(shape);\n    }\n    /**\n     * Merges a shape with its current group\n     * @param {Object} shape - Shape to merge\n     * @returns {Object} - Merged shape\n     */\n    mergeShapeWithCurrentGroup(shape) {\n        // Set shape ID\n        shape.id = this.state.selectedShapeIndex;\n    \n        // Get or create current group data\n        const currentGroupData = this.getCurrentGroup() || { shapes: [] };\n        if (!Array.isArray(currentGroupData.shapes)) {\n            currentGroupData.shapes = [];\n        }\n    \n        // Update shape in current group\n        this.updateShapeInGroup(shape, currentGroupData);\n    \n        // Update animation data\n        this.updateAnimationData(currentGroupData);\n    \n        return shape;\n    }\n    /**\n     * Updates a shape within its group\n     * @param {Object} shape - Shape to update\n     * @param {Object} groupData - Group containing the shape\n     */\n    updateShapeInGroup(shape, groupData) {\n        const shapeIndex = groupData.shapes.findIndex(s => s.id === shape.id);\n        \n        if (shapeIndex >= 0) {\n            groupData.shapes[shapeIndex] = shape; // Replace existing\n        } else {\n            groupData.shapes.push(shape); // Add new\n        }\n    }\n    \n    /**\n     * Updates animation data for the current group\n     * @param {Object} groupData - Group data to update\n     */\n    updateAnimationData(groupData) {\n        const path = [\n            this.state.currentAnimation,\n            this.state.currentFrame,\n            this.state.currentGroup\n        ];\n    \n        // Update nested property safely\n        let current = this.state.renderData.animations;\n        path.forEach((key, index) => {\n            if (index === path.length - 1) {\n                current[key] = groupData;\n            } else {\n                current = current[key];\n            }\n        });\n    }\n    /**\n     * Gets the currently selected object from the scene\n     * @returns {THREE.Object3D} - Selected object or root group\n     */\n    getSelectedObject() {\n        const currentGroup = this.state.currentGroup;\n        \n        if (!currentGroup) {\n            return this.rootGroup;\n        }\n    \n        const foundGroup = this.findGroupByName(currentGroup);\n        if (!foundGroup) {\n            return this.rootGroup;\n        }\n    \n        const foundShape = this.findShapeInGroup(foundGroup);\n        return foundShape || foundGroup || this.rootGroup;\n    }\n        /**\n     * Finds a group by name in the scene\n     * @param {string} groupName - Name of the group to find\n     * @returns {THREE.Group|null} - Found group or null\n     */\n    findGroupByName(groupName) {\n        let found = null;\n        this.rootGroup.traverse(obj => {\n            if (obj.isGroup && obj.name === groupName && obj.userData.isGroup) {\n                found = obj;\n            }\n        });\n        return found;\n    }\n        /**\n     * Finds a shape within a group\n     * @param {THREE.Group} group - Group to search in\n     * @returns {THREE.Object3D|null} - Found shape or null\n     */\n    findShapeInGroup(group) {\n        let found = null;\n        group.traverse(obj => {\n            if (obj.userData.isShape && obj.userData.index === this.state.selectedShapeIndex) {\n                found = obj;\n            }\n        });\n        return found;\n    }\n}\n",
+        "script": "/**\n * @class GraphicsEditor\n * @description Manages 3D graphics editing functionality including shapes, animations, and UI\n */\nclass GraphicsEditor {\n    /**\n     * @param {Object} gameEditor - Main game editor instance\n     * @param {Object} config - Editor configuration\n     * @param {Object} managers - Required manager instances\n     * @param {Function} managers.ShapeFactory - Factory for creating shapes\n     * @param {Function} managers.GE_SceneRenderer - Handles scene rendering\n     * @param {Function} managers.GE_ShapeManager - Manages shape operations\n     * @param {Function} managers.GE_AnimationManager - Handles animations\n     * @param {Function} managers.GE_RotationUtils - Rotation utility functions\n     * @param {Function} managers.GE_UIManager - Manages UI interactions\n     * @param {Function} managers.GE_GroupManager - Handles shape grouping\n     * @param {Function} managers.GE_GizmoManager - Manages transformation gizmos\n     */\n    constructor(gameEditor, config, {ShapeFactory, GE_SceneRenderer, GE_ShapeManager, GE_AnimationManager, GE_RotationUtils, GE_UIManager, GE_GroupManager, GE_GizmoManager}) {\n        this.gameEditor = gameEditor;\n        this.config = config;\n        this.shapeFactory = new ShapeFactory(this.gameEditor.getCollections().palettes[\"main\"]);\n        this.canvas = document.getElementById('graphics-editor-canvas');\n        // Initialize sub-modules\n        this.sceneRenderer = new GE_SceneRenderer(gameEditor, this);\n        this.shapeManager = new GE_ShapeManager(gameEditor, this);\n        this.uiManager = new GE_UIManager(gameEditor, this);\n        this.animationManager = new GE_AnimationManager(gameEditor, this);\n        this.groupManager = new GE_GroupManager(gameEditor, this);\n        this.gizmoManager = new GE_GizmoManager(gameEditor, this);\n        this.rotationUtils = GE_RotationUtils;\n        // State management (simplified)\n        this.state = {\n            editingModel: true,\n            selectedShapeIndex: -1,\n            currentAnimation: \"\",\n            selectedGroup: \"main\",\n            currentFrame: 0,\n            renderData: { model: {}, animations: { idle: [{ main: { shapes: [], position: {x: 0, y: 0, z: 0}, rotation: {x:0,y:0,z:0}, scale: {x:1, y:1, z:1}} }] } }\n        };\n        \n        this.rootGroup = new window.THREE.Group(); // Main container for all shapes\n        this.rootGroup.name = \"rootGroup\";\n        this.init();\n    }\n    /**\n     * Initializes all manager components\n     * @private\n     */\n    init() {\n        this.sceneRenderer.init();\n        this.uiManager.init();\n        this.shapeManager.init();\n        this.animationManager.init();\n        this.groupManager.init();\n        this.gizmoManager.init();\n        this.sceneRenderer.animate();    \n    }\n\n    /**\n     * Displays isometric sprite previews\n     * @param {Array<Object>} sprites - Array of sprite data\n     */\n    displayIsometricSprites(sprites){\n        this.uiManager.displayIsometricSprites(sprites);\n    }\n\n    /**\n     * Renders all shapes in the scene\n     * @param {boolean} [fireSave=true] - Whether to trigger a save after rendering\n     * @returns {Promise<void>}\n     */\n    async renderShapes(fireSave = true) {\n        await this.clearScene();\n        await this.setupLights();\n        \n        if (!this.validateCurrentFrame()) {\n            return;\n        }\n        \n        await this.renderGroups();\n        await this.updateUI(fireSave);\n        await this.updateSelection();\n    }\n\n    /**\n     * Clears all objects from the scene\n     * @private\n     * @returns {Promise<void>}\n     */    \n    async clearScene() {\n        while (this.rootGroup.children.length > 0) {\n            const obj = this.rootGroup.children[0];\n            this.shapeFactory.disposeObject(obj);\n            this.shapeManager.originalMaterials.delete(obj);\n            this.rootGroup.remove(obj);\n        }\n    }\n\n    /**\n     * Sets up scene lighting\n     * @private\n     * @returns {Promise<void>}\n     */    \n    async setupLights() {\n        if (this.sceneRenderer.scene.getObjectByName('ambient-light')) {\n            return;\n        }\n    \n        const ambientLight = new window.THREE.AmbientLight(0xffffff, 0.6);\n        ambientLight.name = 'ambient-light';\n        this.sceneRenderer.scene.add(ambientLight);\n    \n        const directionalLight = new window.THREE.DirectionalLight(0xffffff, 0.8);\n        directionalLight.position.set(5, 10, 7.5);\n        directionalLight.name = 'dir-light';\n        this.sceneRenderer.scene.add(directionalLight);\n    }    \n\n    /**\n     * Validates the current animation frame\n     * @private\n     * @returns {boolean} - Whether the current frame is valid\n     */\n    validateCurrentFrame() {\n        if (!this.state.editingModel && !this.getCurrentFrame()) {\n            console.warn(\n                \"Animation or frame doesn't exist:\", \n                this.state.currentAnimation, \n                this.state.currentFrame\n            );\n            return false;\n        }\n        return true;\n    }\n    \n    /**\n     * Renders all shapes in the scene\n     * @param {boolean} [fireSave=true] - Whether to trigger a save after rendering\n     * @returns {Promise<void>}\n     */\n    async renderGroups() {\n        const model = this.state.renderData.model;\n        for (const groupName in model) {     \n            const mergedGroup = this.getMergedGroup(groupName);\n            if (mergedGroup) {\n                let threeGroup = await this.shapeFactory.createGroupFromJSON(groupName, mergedGroup); \n                threeGroup.name = groupName;\n                this.rootGroup.add(threeGroup);\n            }\n        }\n    }\n\n    /**\n     * Renders all shapes in the scene\n     * @param {boolean} [fireSave=true] - Whether to trigger a save after rendering\n     * @returns {Promise<void>}\n     */\n    async updateUI(fireSave) {\n        this.updateShapeCount();\n        await this.handleSave(fireSave);\n    }\n\n    /**\n     * Updates the shape count display in the UI\n     * @private\n     */\n    updateShapeCount() {\n        const model = this.state.renderData.model;\n        const totalShapes = Object.values(model).reduce((total, group) => {\n            return total + (Array.isArray(group.shapes) ? group.shapes.length : 0);\n        }, 0);\n        document.getElementById('shape-count').textContent = totalShapes;\n    }\n    \n    /**\n     * Handles saving the current state\n     * @param {boolean} fireSave - Whether to trigger a save event\n     * @returns {Promise<void>}\n     */\n    async handleSave(fireSave) {\n        if (fireSave) {\n            const saveEvent = new CustomEvent('saveGraphicsObject', {\n                detail: { \n                    data: this.state.renderData, \n                    propertyName: 'render' \n                },\n                bubbles: true,\n                cancelable: true\n            });\n            document.body.dispatchEvent(saveEvent);\n        } else {\n            const valueElement = this.gameEditor.elements.editor\n                .querySelector('#render-value');\n            if (valueElement) {\n                let renderDataCopy = JSON.parse(JSON.stringify(this.state.renderData));\n                Object.keys(renderDataCopy.animations).forEach(animationName => {\n                    const animation = renderDataCopy.animations[animationName];\n                    animation.forEach(frame => {\n                        Object.keys(frame).forEach(groupName => {\n                            const group = frame[groupName];\n                            if (group && group.shapes) {\n                                // Filter shapes with more than just ID\n                                group.shapes = group.shapes.filter(shape => \n                                    Object.keys(shape).length > 1\n                                );\n                                \n                                // Remove empty shapes array\n                                if (group.shapes.length === 0) {\n                                    delete group.shapes;\n                                }\n                \n                                // Remove empty group\n                                if (Object.keys(group).length === 0) {\n                                    delete frame[groupName];\n                                }\n                            }\n                        });               \n                    });\n                });\n                valueElement.value = JSON.stringify(renderDataCopy);\n            }\n        }\n    }\n\n    /**\n     * Updates the selection highlight and gizmo positions\n     * @returns {Promise<void>}\n     */\n    async updateSelection() {\n        this.shapeManager.highlightSelectedShape();\n        this.gizmoManager.updateGizmoPosition();\n    }\n\n    /**\n     * Gets the current animation data\n     * @returns {Object|null} Current animation or null if none exists\n     */\n    getCurrentAnimation() {\n     \n        return this.state.renderData.animations[this.state.currentAnimation] || null;\n    }\n\n    /**\n     * Gets the current frame data\n     * @returns {Object|null} Current frame data or model data if in editing mode\n     */\n    getCurrentFrame() {\n        if(this.state.editingModel){\n            return this.state.renderData.model;\n        } else {\n            let currentAnimation = this.getCurrentAnimation();\n            return currentAnimation ? currentAnimation[this.state.currentFrame] : null;\n        }\n    }\n\n    /**\n     * Gets the current group data\n     * @returns {Object|null} Current group data or null if none exists\n     */\n    getCurrentGroup() {\n        let currentFrame = this.getCurrentFrame();\n        return currentFrame ? currentFrame[this.state.currentGroup] : null;\n    }\n\n    /**\n     * Refreshes the shape list and renders the scene\n     * @param {boolean} param - Whether to trigger a save after refresh\n     */\n    refreshShapes(param) {\n        this.uiManager.updateList();\n        this.renderShapes(param);\n    }\n\n    /**\n     * Creates an inspector panel for the given shape\n     * @param {Object} shape - Shape to create inspector for\n     */\n    createInspector(shape) {\n        this.uiManager.createInspector(shape);\n    }\n\n    /**\n     * Sets the animation preview state\n     * @param {Object} state - New animation state\n     * @returns {Promise<void>}\n     */\n    setPreviewAnimationState(state) {\n        return this.animationManager.setPreviewAnimationState(state);\n    }\n\n    /**\n     * Selects a shape by index\n     * @param {number} index - Index of shape to select\n     * @returns {Promise<void>}\n     */\n    selectShape(index) {\n        return this.shapeManager.selectShape(index);\n    }\n\n    /**\n     * Gets a merged group by name\n     * @param {string} groupName - Name of group to get\n     * @returns {Object|null} Merged group data or null\n     */\n    getMergedGroup(groupName){\n        let model = this.state.renderData.model;\n        const modelGroup = model[groupName];\n        if(this.state.editingModel){\n            return modelGroup;\n        }\n        return this.shapeFactory.getMergedGroup(model, this.getCurrentAnimation()[this.state.currentFrame], groupName );\n    }\n\n    /**\n     * Gets the current frame's shape data\n     * @returns {Object|null} Shape data or null if not found\n     */\n    getFrameShape() {\n        // If we're in model editing mode, return merged shape\n        if (this.state.editingModel) {\n            return this.getMergedShape();\n        }\n    \n        // Return null if no shape is selected\n        if (this.state.selectedShapeIndex < 0) {\n            return null;\n        }\n    \n        // Get or create group data\n        let groupData = this.getCurrentGroup() || \n            JSON.parse(JSON.stringify(this.state.renderData.model[this.state.currentGroup]));\n    \n        if (!groupData?.shapes) {\n            return null;\n        }\n    \n        // Find existing shape or create new one\n        let shape = groupData.shapes.find(s => s.id === this.state.selectedShapeIndex);\n        if (shape) {\n            return shape;\n        }\n    \n        // Create new shape if not found\n        return this.createBlankFrameShape();\n    }\n\n    /**\n     * Creates a new blank frame shape\n     * @private\n     * @returns {Object|null} New shape or null if frame doesn't exist\n     */\n    createBlankFrameShape() {\n        const shape = { id: this.state.selectedShapeIndex };\n        const currentFrame = this.getCurrentFrame();\n        \n        if (!currentFrame) {\n            return null;\n        }\n    \n        // Add shape to current group or create new group\n        if (!currentFrame[this.state.currentGroup]) {\n            currentFrame[this.state.currentGroup] = { shapes: [] };\n        }\n        \n        currentFrame[this.state.currentGroup].shapes.push(shape);\n        return shape;\n    }\n    /**\n     * Gets the currently selected shape merged with its group\n     * @returns {Object|null} - Merged shape or null if not found\n     */\n    getMergedShape() {\n        if (this.state.selectedShapeIndex < 0) {\n            return null;\n        }\n    \n        const selectedGroup = this.getMergedGroup(this.state.currentGroup);\n        const shapes = selectedGroup?.shapes || [];\n        const shape = shapes[this.state.selectedShapeIndex];\n    \n        if (!shape) {\n            return null;\n        }\n    \n        if (this.state.editingModel) {\n            return shape;\n        }\n    \n        return this.mergeShapeWithCurrentGroup(shape);\n    }\n    /**\n     * Merges a shape with its current group\n     * @param {Object} shape - Shape to merge\n     * @returns {Object} - Merged shape\n     */\n    mergeShapeWithCurrentGroup(shape) {\n        // Set shape ID\n        shape.id = this.state.selectedShapeIndex;\n    \n        // Get or create current group data\n        const currentGroupData = this.getCurrentGroup() || { shapes: [] };\n        if (!Array.isArray(currentGroupData.shapes)) {\n            currentGroupData.shapes = [];\n        }\n    \n        // Update shape in current group\n        this.updateShapeInGroup(shape, currentGroupData);\n    \n        // Update animation data\n        this.updateAnimationData(currentGroupData);\n    \n        return shape;\n    }\n    /**\n     * Updates a shape within its group\n     * @param {Object} shape - Shape to update\n     * @param {Object} groupData - Group containing the shape\n     */\n    updateShapeInGroup(shape, groupData) {\n        const shapeIndex = groupData.shapes.findIndex(s => s.id === shape.id);\n        \n        if (shapeIndex >= 0) {\n            groupData.shapes[shapeIndex] = shape; // Replace existing\n        } else {\n            groupData.shapes.push(shape); // Add new\n        }\n    }\n    \n    /**\n     * Updates animation data for the current group\n     * @param {Object} groupData - Group data to update\n     */\n    updateAnimationData(groupData) {\n        const path = [\n            this.state.currentAnimation,\n            this.state.currentFrame,\n            this.state.currentGroup\n        ];\n    \n        // Update nested property safely\n        let current = this.state.renderData.animations;\n        path.forEach((key, index) => {\n            if (index === path.length - 1) {\n                current[key] = groupData;\n            } else {\n                current = current[key];\n            }\n        });\n    }\n    /**\n     * Gets the currently selected object from the scene\n     * @returns {THREE.Object3D} - Selected object or root group\n     */\n    getSelectedObject() {\n        const currentGroup = this.state.currentGroup;\n        \n        if (!currentGroup) {\n            return this.rootGroup;\n        }\n    \n        const foundGroup = this.findGroupByName(currentGroup);\n        if (!foundGroup) {\n            return this.rootGroup;\n        }\n    \n        const foundShape = this.findShapeInGroup(foundGroup);\n        return foundShape || foundGroup || this.rootGroup;\n    }\n        /**\n     * Finds a group by name in the scene\n     * @param {string} groupName - Name of the group to find\n     * @returns {THREE.Group|null} - Found group or null\n     */\n    findGroupByName(groupName) {\n        let found = null;\n        this.rootGroup.traverse(obj => {\n            if (obj.isGroup && obj.name === groupName && obj.userData.isGroup) {\n                found = obj;\n            }\n        });\n        return found;\n    }\n        /**\n     * Finds a shape within a group\n     * @param {THREE.Group} group - Group to search in\n     * @returns {THREE.Object3D|null} - Found shape or null\n     */\n    findShapeInGroup(group) {\n        let found = null;\n        group.traverse(obj => {\n            if (obj.userData.isShape && obj.userData.index === this.state.selectedShapeIndex) {\n                found = obj;\n            }\n        });\n        return found;\n    }\n}\n",
         "fileName": "GraphicsEditor",
         "title": "GraphicsEditor"
       },
       "terrainMapEditor": {
-        "script": "class TerrainMapEditor {\r\n    constructor(gameEditor, config = {}, { TileMap, TerrainImageProcessor, CoordinateTranslator, ImageManager, ShapeFactory }) {\r\n        this.gameEditor = gameEditor;\r\n        this.engineClasses = { TileMap, TerrainImageProcessor, CoordinateTranslator, ImageManager, ShapeFactory };\r\n        this.defaultConfig = { gridSize: 48, imageSize: 128, canvasWidth: 1536, canvasHeight: 768 };\r\n        this.config = { ...this.defaultConfig, ...config };\r\n    \r\n        this.defaultMapSize = 16;\r\n        this.mapSize = this.defaultMapSize;\r\n        this.currentTerrainId = 3; // Default to grass (index 3)\r\n        this.isMouseDown = false;\r\n    \r\n        // Terrain map structure without explicit IDs\r\n        this.tileMap = {\r\n            size: 16,\r\n            terrainTypes: [\r\n                { type: \"start\", color: \"#ffff00\", image: [] },\r\n                { type: \"end\", color: \"#ff0000\", image: [] },\r\n                { type: \"path\", color: \"#eeae9e\", image: [] },\r\n                { type: \"grass\", color: \"#8bc34a\", image: [] },\r\n                { type: \"water\", color: \"#64b5f6\", image: [] },\r\n                { type: \"rock\", color: \"#9e9e9e\", image: [] }\r\n            ],\r\n            terrainMap: []\r\n        };\r\n        this.environmentObjects = this.tileMap.environmentObjects || [];\r\n        this.selectedEnvironmentType = null;\r\n        this.selectedEnvironmentItem = null;\r\n        this.placementMode = 'terrain'; // can be 'terrain' or 'environment'\r\n        this.environment = this.gameEditor.getCollections().environment;\r\n        this.terrainTypesContainer = null;\r\n        this.draggedItem = null;\r\n        this.dragOverItem = null; // Track the item being dragged over\r\n\r\n        // DOM elements\r\n        this.canvasEl = document.getElementById('grid');\r\n        this.canvasEl.width = this.config.canvasWidth;\r\n        this.canvasEl.height = this.config.canvasHeight;\r\n\r\n        // Preview elements for cursor\r\n        this.previewCanvas = null;\r\n        this.currentPreviewImage = null;\r\n\r\n        // Managers and renderers\r\n        this.imageManager = new this.engineClasses.ImageManager(this.gameEditor,  { imageSize: this.config.imageSize}, {ShapeFactory: ShapeFactory});\r\n        this.mapRenderer = null;\r\n        this.mapManager = null;\r\n\r\n        this.translator = new this.engineClasses.CoordinateTranslator(this.config, this.tileMap.size, this.gameEditor.getCollections().configs.game.isIsometric);\r\n        this.terrainCanvasBuffer = document.createElement('canvas');\r\n        this.terrainCanvasBuffer.width = this.tileMap.size * this.gameEditor.getCollections().configs.game.gridSize;\r\n        this.terrainCanvasBuffer.height =  this.tileMap.size * this.gameEditor.getCollections().configs.game.gridSize;\r\n        this.modalId = 'modal-addTerrainType';\r\n        // Bind methods to maintain correct context\r\n        this.init();\r\n    }\r\n\r\n    init() {\r\n        this.setupTerrainTypesUI();\r\n        this.setupEnvironmentPanel();\r\n        this.createPreviewCanvas();\r\n        this.setupEventListeners();\r\n        this.updateTerrainStyles();\r\n        this.setupTerrainImageProcessor();\r\n    }\r\n\r\n    setupEventListeners() {\r\n        document.getElementById('terrainColor').addEventListener('change', (el) => {                    \r\n            document.getElementById('terrainColorText').value = el.target.value;\r\n        });\r\n\r\n        document.getElementById('terrainMapSize').addEventListener('change', (ev) => {    \r\n            const newGridSize = parseInt(ev.target.value);\r\n            const oldGridSize = this.tileMap.size;\r\n            \r\n            // Create a new map to hold the resized terrain\r\n            const newTerrainMap = [];\r\n            for (let i = 0; i < newGridSize; i++) {\r\n                newTerrainMap.push(new Array(newGridSize));\r\n            }\r\n            \r\n            // Calculate offsets for maintaining center\r\n            const oldOffset = Math.floor(oldGridSize / 2);\r\n            const newOffset = Math.floor(newGridSize / 2);\r\n            \r\n            // Fill the new map\r\n            for (let newI = 0; newI < newGridSize; newI++) {\r\n                for (let newJ = 0; newJ < newGridSize; newJ++) {\r\n                    const absI = newI - newOffset;\r\n                    const absJ = newJ - newOffset;\r\n                    \r\n                    const oldI = absI + oldOffset;\r\n                    const oldJ = absJ + oldOffset;\r\n                    \r\n                    if (oldI >= 0 && oldI < oldGridSize && oldJ >= 0 && oldJ < oldGridSize) {\r\n                        // Copy existing terrain\r\n                        newTerrainMap[newI][newJ] = this.tileMap.terrainMap[oldI][oldJ];\r\n                    } else {\r\n                        // Use nearest edge value for new areas\r\n                        const clampedI = Math.max(0, Math.min(oldGridSize - 1, oldI));\r\n                        const clampedJ = Math.max(0, Math.min(oldGridSize - 1, oldJ));\r\n                        newTerrainMap[newI][newJ] = this.tileMap.terrainMap[clampedI][clampedJ];\r\n                    }\r\n                }\r\n            }\r\n            \r\n            // Update tileMap with new terrain\r\n            this.tileMap.terrainMap = newTerrainMap;\r\n            this.tileMap.size = newGridSize;\r\n            this.translator = new this.engineClasses.CoordinateTranslator(this.config, newGridSize, this.gameEditor.getCollections().configs.game.isIsometric);\r\n            \r\n            this.updateTerrainStyles();\r\n            this.setupTerrainTypesUI();\r\n            this.initGridCanvas();\r\n            this.exportMap();\r\n        });\r\n\r\n        document.getElementById('terrainBGColor').addEventListener('change', (ev) => {\r\n            this.tileMap.terrainBGColor = ev.target.value;\r\n            this.canvasEl.backgroundColor = ev.target.value;\r\n            this.exportMap();\r\n        }); \r\n\r\n        // Handle mouseup event (stop dragging)\r\n        document.addEventListener('mouseup', () => {\r\n            this.isMouseDown = false;\r\n        });\r\n\r\n        // Add mouse down event for canvas\r\n        this.canvasEl.addEventListener('mousedown', (e) => {\r\n            if (e.button === 0) { // Left click\r\n                if (this.deleteMode && this.tileMap.environmentObjects) {\r\n                    this.deleteEnvironmentObjectAt(e);\r\n                } else {\r\n                    this.isMouseDown = true;\r\n                    this.handleCanvasInteraction(e);\r\n                }\r\n            }\r\n        });\r\n        \r\n        // Add mouse move event for drawing while dragging\r\n        this.canvasEl.addEventListener('mousemove', (e) => {\r\n            this.updatePreviewPosition(e);\r\n            \r\n            if (this.isMouseDown) {\r\n                this.handleCanvasInteraction(e);\r\n            }\r\n        });\r\n\r\n        // Add translation event listeners\r\n        document.getElementById('translate-left').addEventListener('click', () => this.translateMap(-1, 0));\r\n        document.getElementById('translate-right').addEventListener('click', () => this.translateMap(1, 0));\r\n        document.getElementById('translate-up').addEventListener('click', () => this.translateMap(0, -1));\r\n        document.getElementById('translate-down').addEventListener('click', () => this.translateMap(0, 1));\r\n\r\n        // Handle editTileMap event\r\n        document.body.addEventListener('editTileMap', async (event) => {\r\n            this.config = event.detail.config;\r\n            this.tileMap = event.detail.data;\r\n            this.savePropertyName = event.detail.propertyName;\r\n            this.canvasEl.width = this.config.canvasWidth;\r\n            this.canvasEl.height = this.config.canvasHeight;\r\n            let bgColor = this.tileMap.terrainBGColor || \"#7aad7b\";\r\n            document.getElementById('terrainBGColor').value = bgColor;\r\n            this.canvasEl.backgroundColor = bgColor;\r\n            if (!this.tileMap.environmentObjects) {\r\n                this.tileMap.environmentObjects = [];\r\n            }\r\n            // Strip id from terrainTypes if present, assume order is correct\r\n            this.tileMap.terrainTypes = this.tileMap.terrainTypes.map(terrain => {\r\n                if (terrain.id !== undefined) {\r\n                    const { id, ...rest } = terrain;\r\n                    return rest;\r\n                }\r\n                return terrain;\r\n            });\r\n        \r\n            // No need to remap terrainMap; assume it already uses indices matching the order\r\n            // If terrainMap has invalid indices, clamp them to valid range\r\n            if (this.tileMap.terrainMap && this.tileMap.terrainMap.length > 0) {\r\n                const maxIndex = this.tileMap.terrainTypes.length - 1;\r\n                for (let y = 0; y < this.tileMap.terrainMap.length; y++) {\r\n                    for (let x = 0; x < this.tileMap.terrainMap[y].length; x++) {\r\n                        const currentValue = this.tileMap.terrainMap[y][x];\r\n                        if (currentValue > maxIndex || currentValue < 0) {\r\n                            this.tileMap.terrainMap[y][x] = 0; // Clamp invalid values to 0\r\n                        }\r\n                    }\r\n                }\r\n            }\r\n            \r\n            // Update grid size if it's different\r\n            if (this.tileMap.size && this.tileMap.size !== this.mapSize) {\r\n                this.mapSize = this.tileMap.size;\r\n                this.translator = new this.engineClasses.CoordinateTranslator(this.config, this.mapSize, this.gameEditor.getCollections().configs.game.isIsometric);\r\n            } else {\r\n                this.mapSize = this.defaultMapSize;\r\n                this.translator = new this.engineClasses.CoordinateTranslator(this.config, this.mapSize, this.gameEditor.getCollections().configs.game.isIsometric);\r\n            }\r\n            \r\n            document.getElementById('terrainMapSize').value = this.mapSize;\r\n            requestAnimationFrame(() => {\r\n                // Load terrain types if provided\r\n                this.updateTerrainStyles();\r\n                this.setupTerrainTypesUI();\r\n                this.initGridCanvas();\r\n            });\r\n        });\r\n\r\n        document.getElementById('terrainsBtn').addEventListener('click', () => {\r\n            document.getElementById('terrainsBtn').classList.add('active');\r\n            document.getElementById('environmentBtn').classList.remove('active');\r\n            \r\n            document.getElementById('terrainsPanel').style.display = 'block';\r\n            document.getElementById('environmentPanel').style.display = 'none';\r\n            this.placementMode = 'terrain';\r\n            this.previewCanvas.style.display = 'none';\r\n            // Update placement indicator\r\n            this.placementModeIndicator.textContent = 'Placement Mode: Terrain';\r\n            this.placementModeIndicator.style.opacity = '1';\r\n            \r\n            // Hide indicator after a delay\r\n            clearTimeout(this.indicatorTimeout);\r\n            this.indicatorTimeout = setTimeout(() => {\r\n                this.placementModeIndicator.style.opacity = '0';\r\n            }, 2000);\r\n        });\r\n        \r\n        document.getElementById('environmentBtn').addEventListener('click', () => {\r\n            document.getElementById('terrainsBtn').classList.remove('active');\r\n            document.getElementById('environmentBtn').classList.add('active');\r\n            document.getElementById('terrainsPanel').style.display = 'none';\r\n            document.getElementById('environmentPanel').style.display = 'block';\r\n            this.placementMode = 'environment';\r\n            \r\n            // Make sure environment panel is set up\r\n            this.setupEnvironmentPanel();\r\n            this.placementModeIndicator.textContent = 'Placement Mode: Environment';\r\n            this.placementModeIndicator.style.opacity = '1';\r\n            \r\n            // Hide indicator after a delay\r\n            clearTimeout(this.indicatorTimeout);\r\n            this.indicatorTimeout = setTimeout(() => {\r\n                this.placementModeIndicator.style.opacity = '0';\r\n            }, 2000);\r\n        });\r\n        this.canvasEl.addEventListener('contextmenu', (e) => {\r\n            e.preventDefault(); // Prevent default context menu\r\n            \r\n            if (this.placementMode === 'environment' && this.tileMap.environmentObjects) {\r\n                this.deleteEnvironmentObjectAt(e);\r\n            }\r\n        });\r\n    }\r\n\r\n    async initImageManager() {\r\n        this.imageManager = new this.engineClasses.ImageManager(this.gameEditor, { imageSize: this.config.imageSize }, { ShapeFactory: this.engineClasses.ShapeFactory });\r\n        await this.imageManager.loadImages(\"levels\", { level: { tileMap: this.tileMap } }, false, false);\r\n        if(this.environment){\r\n            await this.imageManager.loadImages(\"environment\", this.environment, false, false);\r\n        }\r\n        const terrainImages = this.imageManager.getImages(\"levels\", \"level\");\r\n\r\n        this.terrainTileMapper = this.gameEditor.editorModuleInstances.TileMap;\r\n        if(!this.terrainCanvasBuffer) {\r\n            this.terrainCanvasBuffer = document.createElement('canvas');\r\n        }\r\n        this.terrainCanvasBuffer.width = this.tileMap.size * this.gameEditor.getCollections().configs.game.gridSize;\r\n        this.terrainCanvasBuffer.height =  this.tileMap.size * this.gameEditor.getCollections().configs.game.gridSize;\r\n\r\n        this.terrainTileMapper.init(this.terrainCanvasBuffer, this.gameEditor.getCollections().configs.game.gridSize, terrainImages, this.gameEditor.getCollections().configs.game.isIsometric);\r\n        this.game = { state: {}, terrainTileMapper: this.terrainTileMapper, config: this.gameEditor.getCollections(), translator: this.translator };\r\n\r\n        this.mapRenderer = new (this.gameEditor.scriptContext.getRenderer(\"MapRenderer\"))(this.game, null,\r\n            { \r\n                gameConfig: this.config, \r\n                terrainCanvasBuffer: this.terrainCanvasBuffer, \r\n                canvasBuffer: this.canvasEl, \r\n                environment: this.environment, \r\n                imageManager: this.imageManager, \r\n                levelName: 'level', \r\n                level: { tileMap: this.tileMap },\r\n                isEditor: true\r\n            }\r\n        );\r\n    }\r\n    updatePreviewImage() {\r\n        if (!this.selectedEnvironmentType || this.selectedEnvironmentItem === null) {\r\n            this.currentPreviewImage = null;\r\n            return;\r\n        }\r\n        \r\n        const images = this.imageManager.getImages(\"environment\", this.selectedEnvironmentType);\r\n        if (!images || !images.idle || !images.idle[0] || !images.idle[0][this.selectedEnvironmentItem]) {\r\n            this.currentPreviewImage = null;\r\n            return;\r\n        }\r\n        \r\n        const image = images.idle[0][this.selectedEnvironmentItem];\r\n        this.currentPreviewImage = image;\r\n        \r\n        // Resize preview canvas if needed\r\n        const maxDimension = Math.max(image.width, image.height);\r\n        const scale = this.config.imageSize / maxDimension;\r\n        \r\n        this.previewCanvas.width = image.width * scale;\r\n        this.previewCanvas.height = image.height * scale;\r\n        \r\n        const ctx = this.previewCanvas.getContext('2d');\r\n        ctx.clearRect(0, 0, this.previewCanvas.width, this.previewCanvas.height);\r\n        ctx.drawImage(image, 0, 0, this.previewCanvas.width, this.previewCanvas.height);\r\n    }\r\n    updatePreviewPosition(e) {\r\n        if (this.placementMode !== 'environment' || \r\n            !this.selectedEnvironmentType || \r\n            this.selectedEnvironmentItem === null || \r\n            this.deleteMode || \r\n            !this.currentPreviewImage) {\r\n            this.previewCanvas.style.display = 'none';\r\n            return;\r\n        }\r\n        \r\n        // Get mouse position relative to canvas\r\n        const rect = this.canvasEl.getBoundingClientRect();\r\n        let mouseX = e.clientX - rect.left;\r\n        const mouseY = e.clientY - rect.top;\r\n        \r\n        if (!this.gameEditor.getCollections().configs.game.isIsometric) {\r\n            mouseX -= (this.canvasEl.width - this.mapSize * this.config.gridSize) / 2;\r\n        }\r\n        \r\n        // For isometric view, we need to convert cursor position to actual object position\r\n        let posX, posY;\r\n        if (this.gameEditor.getCollections().configs.game.isIsometric) {\r\n            const isoPos = { x: mouseX, y: mouseY };\r\n            const pixelPos = this.translator.isoToPixel(isoPos.x, isoPos.y);\r\n            \r\n            // Convert back to screen coordinates\r\n            const screenPos = this.translator.pixelToIso(pixelPos.x, pixelPos.y);\r\n            posX = screenPos.x + rect.left;\r\n            posY = screenPos.y + rect.top;\r\n        } else {\r\n            // For non-isometric, just use the mouse position\r\n            posX = e.clientX;\r\n            posY = e.clientY;\r\n        }\r\n        posX = e.clientX;\r\n        posY = e.clientY;\r\n        // Center the preview on the cursor\r\n        this.previewCanvas.style.transform = `translate(${posX - this.previewCanvas.width / 2}px, ${posY - this.previewCanvas.height / 2}px)`;\r\n        this.previewCanvas.style.display = 'block';\r\n    }\r\n    setupTerrainImageProcessor() {\r\n        const processor = new this.engineClasses.TerrainImageProcessor();\r\n        processor.initialize(\r\n            document.getElementById('terrainImage'),\r\n            document.getElementById('terrain-image-upload'),\r\n            document.getElementById('terrain-image-display')\r\n        );\r\n        return processor;\r\n    }\r\n\r\n    setupTerrainTypesUI() {\r\n        const terrainsPanel = document.getElementById('terrainsPanel');\r\n        const existingColorPicker = terrainsPanel.querySelector('.terrain-types-container');\r\n        if (existingColorPicker) {\r\n            terrainsPanel.removeChild(existingColorPicker);\r\n        }\r\n    \r\n        this.terrainTypesContainer = document.createElement('div');\r\n        this.terrainTypesContainer.className = 'terrain-types-container';\r\n        const addNewBtn = document.createElement('button');\r\n        addNewBtn.className = 'add-terrain-btn';\r\n        addNewBtn.innerHTML = '+ Add Layer';\r\n        addNewBtn.addEventListener('click', this.showAddTerrainForm.bind(this));\r\n        this.terrainTypesContainer.appendChild(addNewBtn);\r\n        this.tileMap.terrainTypes.forEach((terrain, index) => {\r\n            const terrainItem = document.createElement('div');\r\n            terrainItem.className = 'terrain-item';\r\n            terrainItem.draggable = true;\r\n            terrainItem.dataset.index = index;\r\n    \r\n            terrainItem.addEventListener('dragstart', this.handleDragStart.bind(this));\r\n            terrainItem.addEventListener('dragover', this.handleDragOver.bind(this));\r\n            terrainItem.addEventListener('drop', this.handleDrop.bind(this));\r\n            terrainItem.addEventListener('dragend', this.handleDragEnd.bind(this));\r\n            terrainItem.addEventListener('dragenter', this.handleDragEnter.bind(this));\r\n            terrainItem.addEventListener('dragleave', this.handleDragLeave.bind(this));\r\n    \r\n            const option = document.createElement('div');\r\n            option.className = 'color-option';\r\n            option.dataset.index = index;\r\n            option.dataset.type = terrain.type;\r\n            option.style.backgroundColor = terrain.color;\r\n    \r\n            if (index === this.currentTerrainId) {\r\n                option.classList.add('active');\r\n            }\r\n    \r\n            option.addEventListener('click', () => {\r\n                document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('active'));\r\n                option.classList.add('active');\r\n                this.currentTerrainId = parseInt(option.dataset.index);\r\n            });\r\n    \r\n            const label = document.createElement('div');\r\n            label.className = 'terrain-label';\r\n            label.textContent = terrain.type;\r\n    \r\n            const buttonContainer = document.createElement('div');\r\n            buttonContainer.className = 'terrain-buttons';\r\n    \r\n            const editBtn = document.createElement('button');\r\n            editBtn.className = 'edit-terrain-btn';\r\n            editBtn.innerHTML = '✏️';\r\n            editBtn.title = 'Edit terrain';\r\n            editBtn.addEventListener('click', () => this.showTerrainEditForm(terrain));\r\n            buttonContainer.appendChild(editBtn);\r\n    \r\n            const deleteBtn = document.createElement('button');\r\n            deleteBtn.className = 'delete-terrain-btn';\r\n            deleteBtn.innerHTML = '❌';\r\n            deleteBtn.title = 'Delete terrain';\r\n            deleteBtn.addEventListener('click', () => this.deleteTerrain(index));\r\n            buttonContainer.appendChild(deleteBtn);\r\n    \r\n            terrainItem.appendChild(option);\r\n            terrainItem.appendChild(label);\r\n            terrainItem.appendChild(buttonContainer);\r\n    \r\n            this.terrainTypesContainer.appendChild(terrainItem);\r\n        });\r\n    \r\n\r\n    \r\n        terrainsPanel.appendChild(this.terrainTypesContainer);\r\n    \r\n        document.getElementById('saveTerrainBtn').addEventListener('click', this.saveTerrainType.bind(this));\r\n        document.getElementById('cancelTerrainBtn').addEventListener('click', this.hideTerrainForm.bind(this));\r\n    }\r\n    \r\n    createPreviewCanvas() {\r\n        if (this.previewCanvas) {\r\n            document.body.removeChild(this.previewCanvas);\r\n        }\r\n        \r\n        this.previewCanvas = document.createElement('canvas');\r\n        this.previewCanvas.id = 'object-preview-canvas';\r\n        this.previewCanvas.width = this.config.imageSize;\r\n        this.previewCanvas.height = this.config.imageSize;\r\n        this.previewCanvas.style.display = 'none'; // Hidden by default\r\n        \r\n        document.body.prepend(this.previewCanvas);\r\n\r\n    }\r\n\r\n    setupEnvironmentPanel() {\r\n        const environmentPanel = document.getElementById('environmentPanel');\r\n        if (!environmentPanel) {\r\n            // Create the panel if it doesn't exist\r\n            const panel = document.createElement('div');\r\n            panel.id = 'environmentPanel';\r\n            panel.style.display = 'none'; // Hidden by default\r\n            document.querySelector('.tools').appendChild(panel);\r\n        } else {\r\n            // Clear existing content\r\n            environmentPanel.innerHTML = '';\r\n        }\r\n    \r\n        // Create object controls\r\n        const controlsDiv = document.createElement('div');\r\n        controlsDiv.className = 'object-controls';\r\n        \r\n        const deleteButton = document.createElement('button');\r\n        deleteButton.className = 'delete-btn';\r\n        deleteButton.innerHTML = '<svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2\"/><path d=\"M10 11v6M14 11v6\"/></svg> Delete Mode';\r\n        deleteButton.addEventListener('click', () => {\r\n            deleteButton.classList.toggle('delete-mode');\r\n            document.body.classList.toggle('delete-mode-active');\r\n            this.deleteMode = deleteButton.classList.contains('delete-mode');\r\n            if (this.deleteMode) {\r\n                this.previewCanvas.style.display = 'none';\r\n            } else if (this.placementMode === 'environment' && \r\n                      this.selectedEnvironmentType && \r\n                      this.selectedEnvironmentItem !== null) {\r\n                this.updatePreviewImage();\r\n            }\r\n        });\r\n        \r\n        const clearButton = document.createElement('button');\r\n        clearButton.className = 'clear-all-btn';\r\n        clearButton.innerHTML = 'Clear All Objects';\r\n        clearButton.addEventListener('click', () => {\r\n            if (confirm('Are you sure you want to remove all environment objects?')) {\r\n                this.tileMap.environmentObjects = [];\r\n                this.updateCanvasWithData();\r\n                this.exportMap();\r\n                this.updateObjectCounts();\r\n            }\r\n        });\r\n        \r\n        controlsDiv.appendChild(deleteButton);\r\n        controlsDiv.appendChild(clearButton);\r\n        environmentPanel.appendChild(controlsDiv);\r\n        \r\n        // Create placement mode indicator (hidden by default)\r\n        const indicator = document.createElement('div');\r\n        indicator.className = 'placement-mode-indicator';\r\n        indicator.style.opacity = '0';\r\n        indicator.textContent = 'Placement Mode: Terrain';\r\n        document.querySelector('.grid-container').appendChild(indicator);\r\n        this.placementModeIndicator = indicator;\r\n    \r\n        // Create environment object selector\r\n        if (this.environment) {\r\n            const container = document.createElement('div');\r\n            container.className = 'environment-objects-container';\r\n            \r\n            // Add header\r\n            const header = document.createElement('h3');\r\n            header.textContent = 'Environment Objects';\r\n            container.appendChild(header);\r\n            \r\n            // Create object type list\r\n            for (const type in this.environment) {\r\n                const typeContainer = document.createElement('div');\r\n                typeContainer.className = 'environment-type';\r\n                \r\n                // Count objects of this type\r\n                const objectCount = (this.tileMap.environmentObjects || [])\r\n                    .filter(obj => obj.type === type).length;\r\n                \r\n                const typeHeader = document.createElement('div');\r\n                typeHeader.className = 'environment-type-header';\r\n                typeHeader.textContent = type;\r\n                \r\n                // Add count badge\r\n                const countBadgeContainer = document.createElement('span');\r\n                countBadgeContainer.className = 'object-count-container';\r\n                const countBadge = document.createElement('span');\r\n                countBadge.className = 'object-count';\r\n                countBadge.textContent = objectCount;\r\n                countBadgeContainer.appendChild(countBadge);\r\n                typeHeader.appendChild(countBadgeContainer);\r\n                \r\n                typeHeader.addEventListener('click', () => {\r\n                    const content = typeContainer.querySelector('.environment-items');\r\n                    const isOpen = content.style.display !== 'none';\r\n                    content.style.display = isOpen ? 'none' : 'flex';\r\n                    typeHeader.classList.toggle('open', !isOpen);\r\n                });\r\n                typeContainer.appendChild(typeHeader);\r\n                \r\n                const itemsContainer = document.createElement('div');\r\n                itemsContainer.className = 'environment-items';\r\n                itemsContainer.style.display = 'none';\r\n                \r\n                // Get images for this type\r\n                const images = this.imageManager.getImages(\"environment\", type);\r\n                if (images && images.idle && images.idle[0] && images.idle[0].length > 0) {\r\n                    images.idle[0].forEach((image, imageIndex) => {\r\n                        const item = document.createElement('div');\r\n                        item.className = 'environment-item';\r\n                        item.dataset.name = `${type} ${imageIndex + 1}`;\r\n                        \r\n                        const preview = document.createElement('canvas');\r\n                        preview.width = this.config.imageSize;\r\n                        preview.height = this.config.imageSize;\r\n                        const ctx = preview.getContext('2d');\r\n                        \r\n                        // Draw scaled down version of the image for preview with proper centering\r\n                        const scale = Math.min(this.config.imageSize / image.width, this.config.imageSize / image.height);\r\n                        ctx.drawImage(\r\n                            image, \r\n                            (this.config.imageSize - image.width * scale) / 2, \r\n                            (this.config.imageSize - image.height * scale) / 2, \r\n                            image.width * scale, \r\n                            image.height * scale\r\n                        );\r\n                        \r\n                        item.appendChild(preview);\r\n                        \r\n                        item.addEventListener('click', () => {\r\n                            // Deselect any previously selected items\r\n                            document.querySelectorAll('.environment-item').forEach(i => i.classList.remove('active'));\r\n                            \r\n                            // Select this item\r\n                            item.classList.add('active');\r\n                            this.selectedEnvironmentType = type;\r\n                            this.selectedEnvironmentItem = imageIndex;\r\n                            this.placementMode = 'environment';\r\n                              // Update preview image for cursor\r\n                            this.updatePreviewImage();\r\n                            // Update placement indicator\r\n                            this.placementModeIndicator.textContent = `Placing: ${type} ${imageIndex + 1}`;\r\n                            this.placementModeIndicator.style.opacity = '1';\r\n                            \r\n                            // Auto-disable delete mode when selecting an object\r\n                            if (this.deleteMode) {\r\n                                deleteButton.classList.remove('delete-mode');\r\n                                document.body.classList.remove('delete-mode-active');\r\n                                this.deleteMode = false;\r\n                            }\r\n                            \r\n                            // Hide indicator after a delay\r\n                            clearTimeout(this.indicatorTimeout);\r\n                            this.indicatorTimeout = setTimeout(() => {\r\n                                this.placementModeIndicator.style.opacity = '0';\r\n                            }, 2000);\r\n                        });\r\n                        \r\n                        itemsContainer.appendChild(item);\r\n                    });\r\n                } else {\r\n                    // Empty state\r\n                    itemsContainer.classList.add('empty');\r\n                    const emptyMsg = document.createElement('div');\r\n                    emptyMsg.textContent = 'No objects available for this type';\r\n                    itemsContainer.appendChild(emptyMsg);\r\n                }\r\n                \r\n                typeContainer.appendChild(itemsContainer);\r\n                container.appendChild(typeContainer);\r\n            }\r\n            \r\n            environmentPanel.appendChild(container);\r\n        } else {\r\n            const message = document.createElement('p');\r\n            message.textContent = 'No environment objects available.';\r\n            environmentPanel.appendChild(message);\r\n        }\r\n    }\r\n    deleteEnvironmentObjectAt(e) {\r\n        // Get mouse position and convert to game coordinates\r\n        const rect = this.canvasEl.getBoundingClientRect();\r\n        let mouseX = e.clientX - rect.left;\r\n        const mouseY = e.clientY - rect.top;\r\n        \r\n        if(!this.gameEditor.getCollections().configs.game.isIsometric) {\r\n            mouseX -= (this.canvasEl.width - this.mapSize * this.config.gridSize) / 2;\r\n        }\r\n        \r\n        const isoPos = { x: mouseX, y: mouseY };\r\n        const pixelPos = this.translator.isoToPixel(isoPos.x, isoPos.y);\r\n        \r\n        // Find and remove any environment object near the click position\r\n        const clickRadius = 30; // Radius for detecting objects to delete (in pixels)\r\n        let deletedObject = false;\r\n        \r\n        for (let i = this.tileMap.environmentObjects.length - 1; i >= 0; i--) {\r\n            const obj = this.tileMap.environmentObjects[i];\r\n            const dx = obj.x - pixelPos.x;\r\n            const dy = obj.y - pixelPos.y;\r\n            const distance = Math.sqrt(dx * dx + dy * dy);\r\n            \r\n            if (distance < clickRadius) {\r\n                // Remove this object\r\n                const deleted = this.tileMap.environmentObjects.splice(i, 1)[0];\r\n                deletedObject = true;\r\n                \r\n                // Show feedback\r\n                this.placementModeIndicator.textContent = `Deleted: ${deleted.type}`;\r\n                this.placementModeIndicator.style.opacity = '1';\r\n                \r\n                // Hide indicator after a delay\r\n                clearTimeout(this.indicatorTimeout);\r\n                this.indicatorTimeout = setTimeout(() => {\r\n                    this.placementModeIndicator.style.opacity = '0';\r\n                }, 1500);\r\n                \r\n                // Update the map rendering\r\n                this.updateCanvasWithData();\r\n                \r\n                // Update object counts\r\n                this.updateObjectCounts();\r\n                \r\n                // Export the updated map\r\n                this.exportMap();\r\n                break; // Only remove one object at a time\r\n            }\r\n        }\r\n        \r\n        // Show feedback if no object was found to delete\r\n        if (!deletedObject && this.deleteMode) {\r\n            this.placementModeIndicator.textContent = 'No object found at this location';\r\n            this.placementModeIndicator.style.opacity = '1';\r\n            \r\n            // Hide indicator after a delay\r\n            clearTimeout(this.indicatorTimeout);\r\n            this.indicatorTimeout = setTimeout(() => {\r\n                this.placementModeIndicator.style.opacity = '0';\r\n            }, 1500);\r\n        }\r\n    }\r\n    updateObjectCounts() {\r\n        if (!document.getElementById('environmentPanel')) return;\r\n        \r\n        // Update count badges\r\n        for (const type in this.environment) {\r\n            const objectCount = (this.tileMap.environmentObjects || [])\r\n                .filter(obj => obj.type === type).length;\r\n            \r\n            // Find all headers first\r\n            const headers = document.querySelectorAll('.environment-type-header');\r\n            // Find the specific header containing the type name\r\n            for (const header of headers) {\r\n                if (header.textContent.includes(type)) {\r\n                    // Get the count badge within this header\r\n                    const countBadge = header.querySelector('.object-count');\r\n                    if (countBadge) {\r\n                        countBadge.textContent = objectCount;\r\n                    }\r\n                    break; // Found the right header, no need to continue\r\n                }\r\n            }\r\n        }\r\n    }\r\n    // Improved drag and drop handlers\r\n    handleDragStart(e) {\r\n        this.draggedItem = e.currentTarget;\r\n        e.dataTransfer.effectAllowed = 'move';\r\n        e.dataTransfer.setData('text/html', this.draggedItem.outerHTML);\r\n        this.draggedItem.classList.add('dragging');\r\n        this.draggedTerrainId = parseInt(this.draggedItem.dataset.index);\r\n    }\r\n    \r\n    async handleDrop(e) {\r\n        e.preventDefault();\r\n        e.stopPropagation();\r\n        const dropTarget = e.currentTarget;\r\n        dropTarget.classList.remove('drag-over');\r\n    \r\n        if (this.draggedItem !== dropTarget && dropTarget.classList.contains('terrain-item')) {\r\n            const allItems = Array.from(this.terrainTypesContainer.querySelectorAll('.terrain-item'));\r\n            const draggedIndex = allItems.indexOf(this.draggedItem);\r\n            const dropIndex = allItems.indexOf(dropTarget);\r\n    \r\n            if (draggedIndex !== -1 && dropIndex !== -1) {\r\n                // Store a copy of the original terrain types for reference\r\n                const oldTerrainTypes = [...this.tileMap.terrainTypes];\r\n                \r\n                // Reorder terrain types\r\n                const draggedTerrain = this.tileMap.terrainTypes[draggedIndex];\r\n                this.tileMap.terrainTypes.splice(draggedIndex, 1);\r\n                this.tileMap.terrainTypes.splice(dropIndex, 0, draggedTerrain);\r\n    \r\n                // Create mapping between old and new indices\r\n                const indexMap = {};\r\n                oldTerrainTypes.forEach((terrain, oldIndex) => {\r\n                    const newIndex = this.tileMap.terrainTypes.findIndex(t => t.type === terrain.type);\r\n                    indexMap[oldIndex] = newIndex;\r\n                });\r\n    \r\n                // Update terrain map with new indices\r\n                if (this.tileMap.terrainMap && this.tileMap.terrainMap.length > 0) {\r\n                    const maxIndex = this.tileMap.terrainTypes.length - 1;\r\n                    for (let y = 0; y < this.tileMap.terrainMap.length; y++) {\r\n                        for (let x = 0; x < this.tileMap.terrainMap[y].length; x++) {\r\n                            const oldIndex = this.tileMap.terrainMap[y][x];\r\n                            const newIndex = indexMap[oldIndex] !== undefined ? indexMap[oldIndex] : 0;\r\n                            this.tileMap.terrainMap[y][x] = Math.min(newIndex, maxIndex);\r\n                        }\r\n                    }\r\n                }\r\n    \r\n                // Update UI order\r\n                if (draggedIndex < dropIndex) {\r\n                    dropTarget.parentNode.insertBefore(this.draggedItem, dropTarget.nextSibling);\r\n                } else {\r\n                    dropTarget.parentNode.insertBefore(this.draggedItem, dropTarget);\r\n                }\r\n    \r\n                // Update current terrain ID if needed\r\n                if (this.currentTerrainId === draggedIndex) {\r\n                    this.currentTerrainId = dropIndex;\r\n                } else if (this.currentTerrainId === dropIndex) {\r\n                    this.currentTerrainId = draggedIndex;\r\n                }\r\n    \r\n                // Force a complete refresh of the rendering pipeline\r\n                // Clear any cached images or renderers\r\n                this.terrainTileMapper = null;\r\n                this.mapRenderer = null;\r\n                this.imageManager = null;\r\n                this.updateTerrainStyles();\r\n                this.setupTerrainTypesUI();\r\n\r\n                await this.initImageManager();\r\n                this.exportMap();\r\n            }\r\n        }\r\n        return false;\r\n    }\r\n    \r\n    handleDragOver(e) {\r\n        e.preventDefault();\r\n        e.dataTransfer.dropEffect = 'move';\r\n        return false;\r\n    }\r\n    \r\n    // Add visual feedback when dragging over items\r\n    handleDragEnter(e) {\r\n        e.preventDefault();\r\n        // Only add highlight if dragging over another terrain item (not itself)\r\n        if (e.currentTarget !== this.draggedItem) {\r\n            e.currentTarget.classList.add('drag-over');\r\n            this.dragOverItem = e.currentTarget;\r\n        }\r\n    }\r\n    \r\n    handleDragLeave(e) {\r\n        e.preventDefault();\r\n        e.currentTarget.classList.remove('drag-over');\r\n        if (this.dragOverItem === e.currentTarget) {\r\n            this.dragOverItem = null;\r\n        }\r\n    }\r\n   \r\n    \r\n    handleDragEnd(e) {\r\n        // Clean up all drag-related classes\r\n        this.draggedItem.classList.remove('dragging');\r\n        document.querySelectorAll('.terrain-item').forEach(item => {\r\n            item.classList.remove('drag-over');\r\n        });\r\n        this.draggedItem = null;\r\n        this.dragOverItem = null;\r\n    }\r\n\r\n    showAddTerrainForm() {\r\n        const form = document.getElementById(this.modalId);\r\n        form.classList.add('show');\r\n        document.getElementById('formTitle').textContent = 'Add Terrain Type';\r\n        document.getElementById('editingId').value = ''; // New form field for ID\r\n        document.getElementById('terrainType').value = '';\r\n        document.getElementById('terrainColor').value = '#cccccc';\r\n        document.getElementById('terrainColorText').value = '#cccccc';  \r\n        document.getElementById('terrainImage').value = '[]';        \r\n        document.getElementById('terrainBuildable').checked = false;         \r\n    }\r\n\r\n    showTerrainEditForm(terrain) {\r\n        const form = document.getElementById(this.modalId);\r\n        form.classList.add('show');\r\n        document.getElementById('formTitle').textContent = 'Edit Terrain Type';\r\n        document.getElementById('editingId').value = terrain.id; // Use ID instead of type\r\n        document.getElementById('terrainType').value = terrain.type;\r\n        document.getElementById('terrainColor').value = terrain.color;\r\n        document.getElementById('terrainColorText').value = terrain.color;\r\n        document.getElementById('terrainImage').value = JSON.stringify(terrain.image || []);   \r\n        document.getElementById('terrainBuildable').checked = terrain.buildable;\r\n        \r\n        // Create a custom event with data\r\n        const myCustomEvent = new CustomEvent('editTerrainImage', {\r\n            bubbles: true,\r\n            cancelable: true\r\n        });\r\n\r\n        // Dispatch the event\r\n        document.body.dispatchEvent(myCustomEvent);\r\n    }\r\n\r\n    hideTerrainForm() {\r\n        document.getElementById(this.modalId).classList.remove('show');\r\n    }\r\n\r\n    saveTerrainType() {\r\n        const editingId = document.getElementById('editingId').value;\r\n        const newType = document.getElementById('terrainType').value.trim();\r\n        const newColor = document.getElementById('terrainColorText').value;\r\n        const newImage = JSON.parse(document.getElementById('terrainImage').value);\r\n        const newBuildable = document.getElementById('terrainBuildable').checked;\r\n    \r\n        if (!newType) {\r\n            alert('Terrain type cannot be empty');\r\n            return;\r\n        }\r\n    \r\n        if (editingId !== '') {\r\n            // Editing existing terrain (using index as identifier)\r\n            const index = parseInt(editingId);\r\n            if (index >= 0 && index < this.tileMap.terrainTypes.length) {\r\n                if (this.tileMap.terrainTypes.some((t, i) => t.type === newType && i !== index)) {\r\n                    alert('A terrain type with this name already exists');\r\n                    return;\r\n                }\r\n                this.tileMap.terrainTypes[index] = { type: newType, color: newColor, image: newImage, buildable: newBuildable };\r\n            }\r\n        } else {\r\n            // Adding new terrain\r\n            if (this.tileMap.terrainTypes.some(t => t.type === newType)) {\r\n                alert('A terrain type with this name already exists');\r\n                return;\r\n            }\r\n            this.tileMap.terrainTypes.push({ type: newType, color: newColor, image: newImage, buildable: newBuildable });\r\n        }\r\n    \r\n        this.updateTerrainStyles();\r\n        this.setupTerrainTypesUI();\r\n        this.hideTerrainForm();\r\n        this.initGridCanvas();\r\n        this.exportMap();\r\n    }\r\n\r\n    deleteTerrain(indexToDelete) {\r\n        if (this.tileMap.terrainTypes.length <= 1) {\r\n            alert('Cannot delete the last terrain type');\r\n            return;\r\n        }\r\n    \r\n        const terrainToDelete = this.tileMap.terrainTypes[indexToDelete];\r\n        if (!terrainToDelete) return;\r\n    \r\n        if (!confirm(`Are you sure you want to delete the \"${terrainToDelete.type}\" terrain type? All instances will be converted to the default terrain.`)) {\r\n            return;\r\n        }\r\n    \r\n        const defaultTerrainIndex = this.tileMap.terrainTypes.findIndex(t => t.type === 'grass') || 0;\r\n    \r\n        // Remove from terrainTypes array\r\n        this.tileMap.terrainTypes.splice(indexToDelete, 1);\r\n    \r\n        // Update terrainMap - replace all instances with defaultTerrainIndex\r\n        for (let y = 0; y < this.tileMap.terrainMap.length; y++) {\r\n            for (let x = 0; x < this.tileMap.terrainMap[y].length; x++) {\r\n                if (this.tileMap.terrainMap[y][x] === indexToDelete) {\r\n                    this.tileMap.terrainMap[y][x] = defaultTerrainIndex;\r\n                } else if (this.tileMap.terrainMap[y][x] > indexToDelete) {\r\n                    this.tileMap.terrainMap[y][x]--; // Adjust indices after deleted item\r\n                }\r\n            }\r\n        }\r\n    \r\n        if (this.currentTerrainId === indexToDelete) {\r\n            this.currentTerrainId = defaultTerrainIndex;\r\n        } else if (this.currentTerrainId > indexToDelete) {\r\n            this.currentTerrainId--;\r\n        }\r\n    \r\n        this.updateTerrainStyles();\r\n        this.setupTerrainTypesUI();\r\n        this.initGridCanvas();\r\n        this.exportMap();\r\n    }\r\n\r\n    updateTerrainStyles() {\r\n        let styleElem = document.getElementById('terrainStyles');\r\n        if (!styleElem) {\r\n            styleElem = document.createElement('style');\r\n            styleElem.id = 'terrainStyles';\r\n            document.head.appendChild(styleElem);\r\n        }\r\n    \r\n        let css = '';\r\n        this.tileMap.terrainTypes.forEach((terrain, index) => {\r\n            css += `#level-editor-container .color-option[data-index=\"${index}\"] { background-color: ${terrain.color}; }\\n`;\r\n        });\r\n    \r\n        css += `\r\n            .terrain-item.dragging { opacity: 0.4; }\r\n            .terrain-item.drag-over { border: 2px dashed #666; background-color: rgba(0,0,0,0.1); }\r\n        `;\r\n    \r\n        styleElem.textContent = css;\r\n    }\r\n\r\n    translateMap(deltaX, deltaY) {\r\n        const gridSize = this.tileMap.size;\r\n        \r\n        // Create a new map to hold the translated terrain\r\n        const newTerrainMap = [];\r\n        for (let i = 0; i < gridSize; i++) {\r\n            newTerrainMap.push(new Array(gridSize));\r\n        }\r\n        \r\n        // Fill the new map\r\n        for (let i = 0; i < gridSize; i++) {\r\n            for (let j = 0; j < gridSize; j++) {\r\n                // Calculate source coordinates in old map\r\n                const oldI = i - deltaY;\r\n                const oldJ = j - deltaX;\r\n                \r\n                // Check if source coordinates are within map boundaries\r\n                if (oldI >= 0 && oldI < gridSize && oldJ >= 0 && oldJ < gridSize) {\r\n                    // Copy existing terrain\r\n                    newTerrainMap[i][j] = this.tileMap.terrainMap[oldI][oldJ];\r\n                } else {\r\n                    // For areas that would be outside the original map,\r\n                    // use the nearest edge value (wrap around)\r\n                    const clampedI = Math.max(0, Math.min(gridSize - 1, oldI));\r\n                    const clampedJ = Math.max(0, Math.min(gridSize - 1, oldJ));\r\n                    newTerrainMap[i][j] = this.tileMap.terrainMap[clampedI][clampedJ];\r\n                }\r\n            }\r\n        }\r\n        \r\n        // Update tileMap with new terrain\r\n        this.tileMap.terrainMap = newTerrainMap;\r\n        \r\n        // Update UI and export\r\n        this.updateCanvasWithData();\r\n        this.exportMap();\r\n    }\r\n\r\n    async initGridCanvas() {\r\n        // Initialize the canvas with our map renderer\r\n\r\n        await this.initImageManager();\r\n\r\n        // Render the initial map\r\n        this.updateCanvasWithData();\r\n        \r\n        // Clean up resources\r\n        this.imageManager.dispose();\r\n    }\r\n\r\n    handleCanvasInteraction(event) {\r\n        // Get mouse position relative to canvas\r\n        const rect = this.canvasEl.getBoundingClientRect();\r\n        let mouseX = event.clientX - rect.left;\r\n        const mouseY = event.clientY - rect.top;\r\n        \r\n        if(!this.gameEditor.getCollections().configs.game.isIsometric) {\r\n            mouseX -= (this.canvasEl.width - this.mapSize * this.config.gridSize) / 2;\r\n        }\r\n        \r\n        if (this.placementMode === 'terrain') {\r\n            // Original terrain placement logic\r\n            const gridPos = this.translator.isoToGrid(mouseX, mouseY);\r\n            const snappedGrid = this.translator.snapToGrid(gridPos.x, gridPos.y);\r\n            \r\n            // Check if coordinates are within bounds\r\n            if (snappedGrid.x >= 0 && snappedGrid.x < this.mapSize && \r\n                snappedGrid.y >= 0 && snappedGrid.y < this.mapSize) {\r\n                \r\n                // Update terrain map with selected terrain ID\r\n                this.tileMap.terrainMap[snappedGrid.y][snappedGrid.x] = this.currentTerrainId;\r\n                \r\n                // Update the map rendering\r\n                this.updateCanvasWithData();\r\n                \r\n                // Export the updated map\r\n                this.exportMap();\r\n            }\r\n        } else if (this.placementMode === 'environment' && this.selectedEnvironmentType && \r\n                   this.selectedEnvironmentItem !== null) {\r\n            // Environment object placement logic\r\n            const isoPos = { x: mouseX, y: mouseY };\r\n            const pixelPos = this.translator.isoToPixel(isoPos.x, isoPos.y);\r\n            \r\n            // Get the image to calculate its size\r\n            const images = this.imageManager.getImages(\"environment\", this.selectedEnvironmentType);\r\n            const image = images.idle[0][this.selectedEnvironmentItem];\r\n            \r\n            // Create new environment object\r\n            const newObject = {\r\n                type: this.selectedEnvironmentType,\r\n                imageIndex: this.selectedEnvironmentItem,\r\n                x: pixelPos.x,\r\n                y: pixelPos.y\r\n            };\r\n            \r\n            // Add to environment objects array\r\n            if (!this.tileMap.environmentObjects) {\r\n                this.tileMap.environmentObjects = [];\r\n            }\r\n            this.tileMap.environmentObjects.push(newObject);\r\n            \r\n            // Update the map rendering\r\n            this.updateCanvasWithData();\r\n            \r\n            // Export the updated map\r\n            this.exportMap();\r\n        }\r\n    }\r\n\r\n    async updateCanvasWithData() {\r\n        if(this.tileMap.terrainMap.length > 0){\r\n            this.mapRenderer.isMapCached = false;\r\n            this.mapRenderer.renderBG(this.tileMap, []);\r\n            this.mapRenderer.renderFG();\r\n        }\r\n    }\r\n\r\n    exportMap() {\r\n        // Create a custom event with data\r\n        const myCustomEvent = new CustomEvent('saveTileMap', {\r\n            detail: { data: this.tileMap, propertyName: this.savePropertyName, refresh: false },\r\n            bubbles: true,\r\n            cancelable: true\r\n        });\r\n\r\n        // Dispatch the event\r\n        document.body.dispatchEvent(myCustomEvent);\r\n    }\r\n}\r\n                   ",
+        "script": "class TerrainMapEditor {\r\n    constructor(gameEditor, config = {}, { TileMap, TerrainImageProcessor, CoordinateTranslator, ImageManager, ShapeFactory }) {\r\n        this.gameEditor = gameEditor;\r\n        this.engineClasses = { TileMap, TerrainImageProcessor, CoordinateTranslator, ImageManager, ShapeFactory };\r\n        this.defaultConfig = { gridSize: 48, imageSize: 128, canvasWidth: 1536, canvasHeight: 768 };\r\n        this.config = { ...this.defaultConfig, ...config };\r\n    \r\n        this.defaultMapSize = 16;\r\n        this.mapSize = this.defaultMapSize;\r\n        this.currentTerrainId = 3; // Default to grass (index 3)\r\n        this.isMouseDown = false;\r\n    \r\n        // Terrain map structure without explicit IDs\r\n        this.tileMap = {\r\n            size: 16,\r\n            terrainTypes: [\r\n                { type: \"start\", color: \"#ffff00\", image: [] },\r\n                { type: \"end\", color: \"#ff0000\", image: [] },\r\n                { type: \"path\", color: \"#eeae9e\", image: [] },\r\n                { type: \"grass\", color: \"#8bc34a\", image: [] },\r\n                { type: \"water\", color: \"#64b5f6\", image: [] },\r\n                { type: \"rock\", color: \"#9e9e9e\", image: [] }\r\n            ],\r\n            terrainMap: []\r\n        };\r\n        this.environmentObjects = this.tileMap.environmentObjects || [];\r\n        this.selectedEnvironmentType = null;\r\n        this.selectedEnvironmentItem = null;\r\n        this.placementMode = 'terrain'; // can be 'terrain' or 'environment'\r\n        this.environment = this.gameEditor.getCollections().environment;\r\n        this.terrainTypesContainer = null;\r\n        this.draggedItem = null;\r\n        this.dragOverItem = null; // Track the item being dragged over\r\n\r\n        // DOM elements\r\n        this.canvasEl = document.getElementById('grid');\r\n        this.canvasEl.width = this.config.canvasWidth;\r\n        this.canvasEl.height = this.config.canvasHeight;\r\n\r\n        // Preview elements for cursor\r\n        this.previewCanvas = null;\r\n        this.currentPreviewImage = null;\r\n\r\n        // Managers and renderers\r\n        let palette = null;\r\n        if(this.gameEditor.getCollections().palettes) {\r\n            palette = this.gameEditor.getCollections().palettes[\"main\"];\r\n        }\r\n        this.imageManager = new this.engineClasses.ImageManager(this.gameEditor,  { imageSize: this.config.imageSize, palette: palette}, {ShapeFactory: ShapeFactory});\r\n        this.mapRenderer = null;\r\n        this.mapManager = null;\r\n\r\n        this.translator = new this.engineClasses.CoordinateTranslator(this.config, this.tileMap.size, this.gameEditor.getCollections().configs.game.isIsometric);\r\n        this.terrainCanvasBuffer = document.createElement('canvas');\r\n        this.terrainCanvasBuffer.width = this.tileMap.size * this.gameEditor.getCollections().configs.game.gridSize;\r\n        this.terrainCanvasBuffer.height =  this.tileMap.size * this.gameEditor.getCollections().configs.game.gridSize;\r\n        this.modalId = 'modal-addTerrainType';\r\n        // Bind methods to maintain correct context\r\n        this.init();\r\n    }\r\n\r\n    init() {\r\n        this.setupTerrainTypesUI();\r\n        this.setupEnvironmentPanel();\r\n        this.createPreviewCanvas();\r\n        this.setupEventListeners();\r\n        this.updateTerrainStyles();\r\n        this.setupTerrainImageProcessor();\r\n    }\r\n\r\n    setupEventListeners() {\r\n        document.getElementById('terrainColor').addEventListener('change', (el) => {                    \r\n            document.getElementById('terrainColorText').value = el.target.value;\r\n        });\r\n\r\n        document.getElementById('terrainMapSize').addEventListener('change', (ev) => {    \r\n            const newGridSize = parseInt(ev.target.value);\r\n            const oldGridSize = this.tileMap.size;\r\n            \r\n            // Create a new map to hold the resized terrain\r\n            const newTerrainMap = [];\r\n            for (let i = 0; i < newGridSize; i++) {\r\n                newTerrainMap.push(new Array(newGridSize));\r\n            }\r\n            \r\n            // Calculate offsets for maintaining center\r\n            const oldOffset = Math.floor(oldGridSize / 2);\r\n            const newOffset = Math.floor(newGridSize / 2);\r\n            \r\n            // Fill the new map\r\n            for (let newI = 0; newI < newGridSize; newI++) {\r\n                for (let newJ = 0; newJ < newGridSize; newJ++) {\r\n                    const absI = newI - newOffset;\r\n                    const absJ = newJ - newOffset;\r\n                    \r\n                    const oldI = absI + oldOffset;\r\n                    const oldJ = absJ + oldOffset;\r\n                    \r\n                    if (oldI >= 0 && oldI < oldGridSize && oldJ >= 0 && oldJ < oldGridSize) {\r\n                        // Copy existing terrain\r\n                        newTerrainMap[newI][newJ] = this.tileMap.terrainMap[oldI][oldJ];\r\n                    } else {\r\n                        // Use nearest edge value for new areas\r\n                        const clampedI = Math.max(0, Math.min(oldGridSize - 1, oldI));\r\n                        const clampedJ = Math.max(0, Math.min(oldGridSize - 1, oldJ));\r\n                        newTerrainMap[newI][newJ] = this.tileMap.terrainMap[clampedI][clampedJ];\r\n                    }\r\n                }\r\n            }\r\n            \r\n            // Update tileMap with new terrain\r\n            this.tileMap.terrainMap = newTerrainMap;\r\n            this.tileMap.size = newGridSize;\r\n            this.translator = new this.engineClasses.CoordinateTranslator(this.config, newGridSize, this.gameEditor.getCollections().configs.game.isIsometric);\r\n            \r\n            this.updateTerrainStyles();\r\n            this.setupTerrainTypesUI();\r\n            this.initGridCanvas();\r\n            this.exportMap();\r\n        });\r\n\r\n        document.getElementById('terrainBGColor').addEventListener('change', (ev) => {\r\n            this.tileMap.terrainBGColor = ev.target.value;\r\n            this.canvasEl.backgroundColor = ev.target.value;\r\n            this.exportMap();\r\n        }); \r\n\r\n        // Handle mouseup event (stop dragging)\r\n        document.addEventListener('mouseup', () => {\r\n            this.isMouseDown = false;\r\n        });\r\n\r\n        // Add mouse down event for canvas\r\n        this.canvasEl.addEventListener('mousedown', (e) => {\r\n            if (e.button === 0) { // Left click\r\n                if (this.deleteMode && this.tileMap.environmentObjects) {\r\n                    this.deleteEnvironmentObjectAt(e);\r\n                } else {\r\n                    this.isMouseDown = true;\r\n                    this.handleCanvasInteraction(e);\r\n                }\r\n            }\r\n        });\r\n        \r\n        // Add mouse move event for drawing while dragging\r\n        this.canvasEl.addEventListener('mousemove', (e) => {\r\n            this.updatePreviewPosition(e);\r\n            \r\n            if (this.isMouseDown) {\r\n                this.handleCanvasInteraction(e);\r\n            }\r\n        });\r\n\r\n        // Add translation event listeners\r\n        document.getElementById('translate-left').addEventListener('click', () => this.translateMap(-1, 0));\r\n        document.getElementById('translate-right').addEventListener('click', () => this.translateMap(1, 0));\r\n        document.getElementById('translate-up').addEventListener('click', () => this.translateMap(0, -1));\r\n        document.getElementById('translate-down').addEventListener('click', () => this.translateMap(0, 1));\r\n\r\n        // Handle editTileMap event\r\n        document.body.addEventListener('editTileMap', async (event) => {\r\n            this.config = event.detail.config;\r\n            this.tileMap = event.detail.data;\r\n            this.savePropertyName = event.detail.propertyName;\r\n            this.canvasEl.width = this.config.canvasWidth;\r\n            this.canvasEl.height = this.config.canvasHeight;\r\n            let bgColor = this.tileMap.terrainBGColor || \"#7aad7b\";\r\n            document.getElementById('terrainBGColor').value = bgColor;\r\n            this.canvasEl.backgroundColor = bgColor;\r\n            if (!this.tileMap.environmentObjects) {\r\n                this.tileMap.environmentObjects = [];\r\n            }\r\n            // Strip id from terrainTypes if present, assume order is correct\r\n            this.tileMap.terrainTypes = this.tileMap.terrainTypes.map(terrain => {\r\n                if (terrain.id !== undefined) {\r\n                    const { id, ...rest } = terrain;\r\n                    return rest;\r\n                }\r\n                return terrain;\r\n            });\r\n        \r\n            // No need to remap terrainMap; assume it already uses indices matching the order\r\n            // If terrainMap has invalid indices, clamp them to valid range\r\n            if (this.tileMap.terrainMap && this.tileMap.terrainMap.length > 0) {\r\n                const maxIndex = this.tileMap.terrainTypes.length - 1;\r\n                for (let y = 0; y < this.tileMap.terrainMap.length; y++) {\r\n                    for (let x = 0; x < this.tileMap.terrainMap[y].length; x++) {\r\n                        const currentValue = this.tileMap.terrainMap[y][x];\r\n                        if (currentValue > maxIndex || currentValue < 0) {\r\n                            this.tileMap.terrainMap[y][x] = 0; // Clamp invalid values to 0\r\n                        }\r\n                    }\r\n                }\r\n            }\r\n            \r\n            // Update grid size if it's different\r\n            if (this.tileMap.size && this.tileMap.size !== this.mapSize) {\r\n                this.mapSize = this.tileMap.size;\r\n                this.translator = new this.engineClasses.CoordinateTranslator(this.config, this.mapSize, this.gameEditor.getCollections().configs.game.isIsometric);\r\n            } else {\r\n                this.mapSize = this.defaultMapSize;\r\n                this.translator = new this.engineClasses.CoordinateTranslator(this.config, this.mapSize, this.gameEditor.getCollections().configs.game.isIsometric);\r\n            }\r\n            \r\n            document.getElementById('terrainMapSize').value = this.mapSize;\r\n            requestAnimationFrame(() => {\r\n                // Load terrain types if provided\r\n                this.updateTerrainStyles();\r\n                this.setupTerrainTypesUI();\r\n                this.initGridCanvas();\r\n            });\r\n        });\r\n\r\n        document.getElementById('terrainsBtn').addEventListener('click', () => {\r\n            document.getElementById('terrainsBtn').classList.add('active');\r\n            document.getElementById('environmentBtn').classList.remove('active');\r\n            \r\n            document.getElementById('terrainsPanel').style.display = 'block';\r\n            document.getElementById('environmentPanel').style.display = 'none';\r\n            this.placementMode = 'terrain';\r\n            this.previewCanvas.style.display = 'none';\r\n            // Update placement indicator\r\n            this.placementModeIndicator.textContent = 'Placement Mode: Terrain';\r\n            this.placementModeIndicator.style.opacity = '1';\r\n            \r\n            // Hide indicator after a delay\r\n            clearTimeout(this.indicatorTimeout);\r\n            this.indicatorTimeout = setTimeout(() => {\r\n                this.placementModeIndicator.style.opacity = '0';\r\n            }, 2000);\r\n        });\r\n        \r\n        document.getElementById('environmentBtn').addEventListener('click', () => {\r\n            document.getElementById('terrainsBtn').classList.remove('active');\r\n            document.getElementById('environmentBtn').classList.add('active');\r\n            document.getElementById('terrainsPanel').style.display = 'none';\r\n            document.getElementById('environmentPanel').style.display = 'block';\r\n            this.placementMode = 'environment';\r\n            \r\n            // Make sure environment panel is set up\r\n            this.setupEnvironmentPanel();\r\n            this.placementModeIndicator.textContent = 'Placement Mode: Environment';\r\n            this.placementModeIndicator.style.opacity = '1';\r\n            \r\n            // Hide indicator after a delay\r\n            clearTimeout(this.indicatorTimeout);\r\n            this.indicatorTimeout = setTimeout(() => {\r\n                this.placementModeIndicator.style.opacity = '0';\r\n            }, 2000);\r\n        });\r\n        this.canvasEl.addEventListener('contextmenu', (e) => {\r\n            e.preventDefault(); // Prevent default context menu\r\n            \r\n            if (this.placementMode === 'environment' && this.tileMap.environmentObjects) {\r\n                this.deleteEnvironmentObjectAt(e);\r\n            }\r\n        });\r\n    }\r\n\r\n    async initImageManager() {\r\n        let palette = null;\r\n        if(this.gameEditor.getCollections().palettes) {\r\n            palette = this.gameEditor.getCollections().palettes[\"main\"];\r\n        }\r\n        this.imageManager = new this.engineClasses.ImageManager(this.gameEditor, { imageSize: this.config.imageSize, palette: palette}, {ShapeFactory: this.engineClasses.ShapeFactory});\r\n        await this.imageManager.loadImages(\"levels\", { level: { tileMap: this.tileMap } }, false, false);\r\n        if(this.environment){\r\n            await this.imageManager.loadImages(\"environment\", this.environment, false, false);\r\n        }\r\n        const terrainImages = this.imageManager.getImages(\"levels\", \"level\");\r\n\r\n        this.terrainTileMapper = this.gameEditor.editorModuleInstances.TileMap;\r\n        if(!this.terrainCanvasBuffer) {\r\n            this.terrainCanvasBuffer = document.createElement('canvas');\r\n        }\r\n        this.terrainCanvasBuffer.width = this.tileMap.size * this.gameEditor.getCollections().configs.game.gridSize;\r\n        this.terrainCanvasBuffer.height =  this.tileMap.size * this.gameEditor.getCollections().configs.game.gridSize;\r\n\r\n        this.terrainTileMapper.init(this.terrainCanvasBuffer, this.gameEditor.getCollections().configs.game.gridSize, terrainImages, this.gameEditor.getCollections().configs.game.isIsometric);\r\n        this.game = { state: {}, terrainTileMapper: this.terrainTileMapper, config: this.gameEditor.getCollections(), translator: this.translator };\r\n\r\n        this.mapRenderer = new (this.gameEditor.scriptContext.getRenderer(\"MapRenderer\"))(this.game, null,\r\n            { \r\n                gameConfig: this.config, \r\n                terrainCanvasBuffer: this.terrainCanvasBuffer, \r\n                canvasBuffer: this.canvasEl, \r\n                environment: this.environment, \r\n                imageManager: this.imageManager, \r\n                levelName: 'level', \r\n                level: { tileMap: this.tileMap },\r\n                isEditor: true\r\n            }\r\n        );\r\n    }\r\n    updatePreviewImage() {\r\n        if (!this.selectedEnvironmentType || this.selectedEnvironmentItem === null) {\r\n            this.currentPreviewImage = null;\r\n            return;\r\n        }\r\n        \r\n        const images = this.imageManager.getImages(\"environment\", this.selectedEnvironmentType);\r\n        if (!images || !images.idle || !images.idle[0] || !images.idle[0][this.selectedEnvironmentItem]) {\r\n            this.currentPreviewImage = null;\r\n            return;\r\n        }\r\n        \r\n        const image = images.idle[0][this.selectedEnvironmentItem];\r\n        this.currentPreviewImage = image;\r\n        \r\n        // Resize preview canvas if needed\r\n        const maxDimension = Math.max(image.width, image.height);\r\n        const scale = this.config.imageSize / maxDimension;\r\n        \r\n        this.previewCanvas.width = image.width * scale;\r\n        this.previewCanvas.height = image.height * scale;\r\n        \r\n        const ctx = this.previewCanvas.getContext('2d');\r\n        ctx.clearRect(0, 0, this.previewCanvas.width, this.previewCanvas.height);\r\n        ctx.drawImage(image, 0, 0, this.previewCanvas.width, this.previewCanvas.height);\r\n    }\r\n    updatePreviewPosition(e) {\r\n        if (this.placementMode !== 'environment' || \r\n            !this.selectedEnvironmentType || \r\n            this.selectedEnvironmentItem === null || \r\n            this.deleteMode || \r\n            !this.currentPreviewImage) {\r\n            this.previewCanvas.style.display = 'none';\r\n            return;\r\n        }\r\n        \r\n        // Get mouse position relative to canvas\r\n        const rect = this.canvasEl.getBoundingClientRect();\r\n        let mouseX = e.clientX - rect.left;\r\n        const mouseY = e.clientY - rect.top;\r\n        \r\n        if (!this.gameEditor.getCollections().configs.game.isIsometric) {\r\n            mouseX -= (this.canvasEl.width - this.mapSize * this.config.gridSize) / 2;\r\n        }\r\n        \r\n        // For isometric view, we need to convert cursor position to actual object position\r\n        let posX, posY;\r\n        if (this.gameEditor.getCollections().configs.game.isIsometric) {\r\n            const isoPos = { x: mouseX, y: mouseY };\r\n            const pixelPos = this.translator.isoToPixel(isoPos.x, isoPos.y);\r\n            \r\n            // Convert back to screen coordinates\r\n            const screenPos = this.translator.pixelToIso(pixelPos.x, pixelPos.y);\r\n            posX = screenPos.x + rect.left;\r\n            posY = screenPos.y + rect.top;\r\n        } else {\r\n            // For non-isometric, just use the mouse position\r\n            posX = e.clientX;\r\n            posY = e.clientY;\r\n        }\r\n        posX = e.clientX;\r\n        posY = e.clientY;\r\n        // Center the preview on the cursor\r\n        this.previewCanvas.style.transform = `translate(${posX - this.previewCanvas.width / 2}px, ${posY - this.previewCanvas.height / 2}px)`;\r\n        this.previewCanvas.style.display = 'block';\r\n    }\r\n    setupTerrainImageProcessor() {\r\n        const processor = new this.engineClasses.TerrainImageProcessor();\r\n        processor.initialize(\r\n            document.getElementById('terrainImage'),\r\n            document.getElementById('terrain-image-upload'),\r\n            document.getElementById('terrain-image-display')\r\n        );\r\n        return processor;\r\n    }\r\n\r\n    setupTerrainTypesUI() {\r\n        const terrainsPanel = document.getElementById('terrainsPanel');\r\n        const existingColorPicker = terrainsPanel.querySelector('.terrain-types-container');\r\n        if (existingColorPicker) {\r\n            terrainsPanel.removeChild(existingColorPicker);\r\n        }\r\n    \r\n        this.terrainTypesContainer = document.createElement('div');\r\n        this.terrainTypesContainer.className = 'terrain-types-container';\r\n        const addNewBtn = document.createElement('button');\r\n        addNewBtn.className = 'add-terrain-btn';\r\n        addNewBtn.innerHTML = '+ Add Layer';\r\n        addNewBtn.addEventListener('click', this.showAddTerrainForm.bind(this));\r\n        this.terrainTypesContainer.appendChild(addNewBtn);\r\n        this.tileMap.terrainTypes.forEach((terrain, index) => {\r\n            const terrainItem = document.createElement('div');\r\n            terrainItem.className = 'terrain-item';\r\n            terrainItem.draggable = true;\r\n            terrainItem.dataset.index = index;\r\n    \r\n            terrainItem.addEventListener('dragstart', this.handleDragStart.bind(this));\r\n            terrainItem.addEventListener('dragover', this.handleDragOver.bind(this));\r\n            terrainItem.addEventListener('drop', this.handleDrop.bind(this));\r\n            terrainItem.addEventListener('dragend', this.handleDragEnd.bind(this));\r\n            terrainItem.addEventListener('dragenter', this.handleDragEnter.bind(this));\r\n            terrainItem.addEventListener('dragleave', this.handleDragLeave.bind(this));\r\n    \r\n            const option = document.createElement('div');\r\n            option.className = 'color-option';\r\n            option.dataset.index = index;\r\n            option.dataset.type = terrain.type;\r\n            option.style.backgroundColor = terrain.color;\r\n    \r\n            if (index === this.currentTerrainId) {\r\n                option.classList.add('active');\r\n            }\r\n    \r\n            option.addEventListener('click', () => {\r\n                document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('active'));\r\n                option.classList.add('active');\r\n                this.currentTerrainId = parseInt(option.dataset.index);\r\n            });\r\n    \r\n            const label = document.createElement('div');\r\n            label.className = 'terrain-label';\r\n            label.textContent = terrain.type;\r\n    \r\n            const buttonContainer = document.createElement('div');\r\n            buttonContainer.className = 'terrain-buttons';\r\n    \r\n            const editBtn = document.createElement('button');\r\n            editBtn.className = 'edit-terrain-btn';\r\n            editBtn.innerHTML = '✏️';\r\n            editBtn.title = 'Edit terrain';\r\n            editBtn.addEventListener('click', () => this.showTerrainEditForm(terrain));\r\n            buttonContainer.appendChild(editBtn);\r\n    \r\n            const deleteBtn = document.createElement('button');\r\n            deleteBtn.className = 'delete-terrain-btn';\r\n            deleteBtn.innerHTML = '❌';\r\n            deleteBtn.title = 'Delete terrain';\r\n            deleteBtn.addEventListener('click', () => this.deleteTerrain(index));\r\n            buttonContainer.appendChild(deleteBtn);\r\n    \r\n            terrainItem.appendChild(option);\r\n            terrainItem.appendChild(label);\r\n            terrainItem.appendChild(buttonContainer);\r\n    \r\n            this.terrainTypesContainer.appendChild(terrainItem);\r\n        });\r\n    \r\n\r\n    \r\n        terrainsPanel.appendChild(this.terrainTypesContainer);\r\n    \r\n        document.getElementById('saveTerrainBtn').addEventListener('click', this.saveTerrainType.bind(this));\r\n        document.getElementById('cancelTerrainBtn').addEventListener('click', this.hideTerrainForm.bind(this));\r\n    }\r\n    \r\n    createPreviewCanvas() {\r\n        if (this.previewCanvas) {\r\n            document.body.removeChild(this.previewCanvas);\r\n        }\r\n        \r\n        this.previewCanvas = document.createElement('canvas');\r\n        this.previewCanvas.id = 'object-preview-canvas';\r\n        this.previewCanvas.width = this.config.imageSize;\r\n        this.previewCanvas.height = this.config.imageSize;\r\n        this.previewCanvas.style.display = 'none'; // Hidden by default\r\n        \r\n        document.body.prepend(this.previewCanvas);\r\n\r\n    }\r\n\r\n    setupEnvironmentPanel() {\r\n        const environmentPanel = document.getElementById('environmentPanel');\r\n        if (!environmentPanel) {\r\n            // Create the panel if it doesn't exist\r\n            const panel = document.createElement('div');\r\n            panel.id = 'environmentPanel';\r\n            panel.style.display = 'none'; // Hidden by default\r\n            document.querySelector('.tools').appendChild(panel);\r\n        } else {\r\n            // Clear existing content\r\n            environmentPanel.innerHTML = '';\r\n        }\r\n    \r\n        // Create object controls\r\n        const controlsDiv = document.createElement('div');\r\n        controlsDiv.className = 'object-controls';\r\n        \r\n        const deleteButton = document.createElement('button');\r\n        deleteButton.className = 'delete-btn';\r\n        deleteButton.innerHTML = '<svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2\"/><path d=\"M10 11v6M14 11v6\"/></svg> Delete Mode';\r\n        deleteButton.addEventListener('click', () => {\r\n            deleteButton.classList.toggle('delete-mode');\r\n            document.body.classList.toggle('delete-mode-active');\r\n            this.deleteMode = deleteButton.classList.contains('delete-mode');\r\n            if (this.deleteMode) {\r\n                this.previewCanvas.style.display = 'none';\r\n            } else if (this.placementMode === 'environment' && \r\n                      this.selectedEnvironmentType && \r\n                      this.selectedEnvironmentItem !== null) {\r\n                this.updatePreviewImage();\r\n            }\r\n        });\r\n        \r\n        const clearButton = document.createElement('button');\r\n        clearButton.className = 'clear-all-btn';\r\n        clearButton.innerHTML = 'Clear All Objects';\r\n        clearButton.addEventListener('click', () => {\r\n            if (confirm('Are you sure you want to remove all environment objects?')) {\r\n                this.tileMap.environmentObjects = [];\r\n                this.updateCanvasWithData();\r\n                this.exportMap();\r\n                this.updateObjectCounts();\r\n            }\r\n        });\r\n        \r\n        controlsDiv.appendChild(deleteButton);\r\n        controlsDiv.appendChild(clearButton);\r\n        environmentPanel.appendChild(controlsDiv);\r\n        \r\n        // Create placement mode indicator (hidden by default)\r\n        const indicator = document.createElement('div');\r\n        indicator.className = 'placement-mode-indicator';\r\n        indicator.style.opacity = '0';\r\n        indicator.textContent = 'Placement Mode: Terrain';\r\n        document.querySelector('.grid-container').appendChild(indicator);\r\n        this.placementModeIndicator = indicator;\r\n    \r\n        // Create environment object selector\r\n        if (this.environment) {\r\n            const container = document.createElement('div');\r\n            container.className = 'environment-objects-container';\r\n            \r\n            // Add header\r\n            const header = document.createElement('h3');\r\n            header.textContent = 'Environment Objects';\r\n            container.appendChild(header);\r\n            \r\n            // Create object type list\r\n            for (const type in this.environment) {\r\n                const typeContainer = document.createElement('div');\r\n                typeContainer.className = 'environment-type';\r\n                \r\n                // Count objects of this type\r\n                const objectCount = (this.tileMap.environmentObjects || [])\r\n                    .filter(obj => obj.type === type).length;\r\n                \r\n                const typeHeader = document.createElement('div');\r\n                typeHeader.className = 'environment-type-header';\r\n                typeHeader.textContent = type;\r\n                \r\n                // Add count badge\r\n                const countBadgeContainer = document.createElement('span');\r\n                countBadgeContainer.className = 'object-count-container';\r\n                const countBadge = document.createElement('span');\r\n                countBadge.className = 'object-count';\r\n                countBadge.textContent = objectCount;\r\n                countBadgeContainer.appendChild(countBadge);\r\n                typeHeader.appendChild(countBadgeContainer);\r\n                \r\n                typeHeader.addEventListener('click', () => {\r\n                    const content = typeContainer.querySelector('.environment-items');\r\n                    const isOpen = content.style.display !== 'none';\r\n                    content.style.display = isOpen ? 'none' : 'flex';\r\n                    typeHeader.classList.toggle('open', !isOpen);\r\n                });\r\n                typeContainer.appendChild(typeHeader);\r\n                \r\n                const itemsContainer = document.createElement('div');\r\n                itemsContainer.className = 'environment-items';\r\n                itemsContainer.style.display = 'none';\r\n                \r\n                // Get images for this type\r\n                const images = this.imageManager.getImages(\"environment\", type);\r\n                if (images && images.idle && images.idle[0] && images.idle[0].length > 0) {\r\n                    images.idle[0].forEach((image, imageIndex) => {\r\n                        const item = document.createElement('div');\r\n                        item.className = 'environment-item';\r\n                        item.dataset.name = `${type} ${imageIndex + 1}`;\r\n                        \r\n                        const preview = document.createElement('canvas');\r\n                        preview.width = this.config.imageSize;\r\n                        preview.height = this.config.imageSize;\r\n                        const ctx = preview.getContext('2d');\r\n                        \r\n                        // Draw scaled down version of the image for preview with proper centering\r\n                        const scale = Math.min(this.config.imageSize / image.width, this.config.imageSize / image.height);\r\n                        ctx.drawImage(\r\n                            image, \r\n                            (this.config.imageSize - image.width * scale) / 2, \r\n                            (this.config.imageSize - image.height * scale) / 2, \r\n                            image.width * scale, \r\n                            image.height * scale\r\n                        );\r\n                        \r\n                        item.appendChild(preview);\r\n                        \r\n                        item.addEventListener('click', () => {\r\n                            // Deselect any previously selected items\r\n                            document.querySelectorAll('.environment-item').forEach(i => i.classList.remove('active'));\r\n                            \r\n                            // Select this item\r\n                            item.classList.add('active');\r\n                            this.selectedEnvironmentType = type;\r\n                            this.selectedEnvironmentItem = imageIndex;\r\n                            this.placementMode = 'environment';\r\n                              // Update preview image for cursor\r\n                            this.updatePreviewImage();\r\n                            // Update placement indicator\r\n                            this.placementModeIndicator.textContent = `Placing: ${type} ${imageIndex + 1}`;\r\n                            this.placementModeIndicator.style.opacity = '1';\r\n                            \r\n                            // Auto-disable delete mode when selecting an object\r\n                            if (this.deleteMode) {\r\n                                deleteButton.classList.remove('delete-mode');\r\n                                document.body.classList.remove('delete-mode-active');\r\n                                this.deleteMode = false;\r\n                            }\r\n                            \r\n                            // Hide indicator after a delay\r\n                            clearTimeout(this.indicatorTimeout);\r\n                            this.indicatorTimeout = setTimeout(() => {\r\n                                this.placementModeIndicator.style.opacity = '0';\r\n                            }, 2000);\r\n                        });\r\n                        \r\n                        itemsContainer.appendChild(item);\r\n                    });\r\n                } else {\r\n                    // Empty state\r\n                    itemsContainer.classList.add('empty');\r\n                    const emptyMsg = document.createElement('div');\r\n                    emptyMsg.textContent = 'No objects available for this type';\r\n                    itemsContainer.appendChild(emptyMsg);\r\n                }\r\n                \r\n                typeContainer.appendChild(itemsContainer);\r\n                container.appendChild(typeContainer);\r\n            }\r\n            \r\n            environmentPanel.appendChild(container);\r\n        } else {\r\n            const message = document.createElement('p');\r\n            message.textContent = 'No environment objects available.';\r\n            environmentPanel.appendChild(message);\r\n        }\r\n    }\r\n    deleteEnvironmentObjectAt(e) {\r\n        // Get mouse position and convert to game coordinates\r\n        const rect = this.canvasEl.getBoundingClientRect();\r\n        let mouseX = e.clientX - rect.left;\r\n        const mouseY = e.clientY - rect.top;\r\n        \r\n        if(!this.gameEditor.getCollections().configs.game.isIsometric) {\r\n            mouseX -= (this.canvasEl.width - this.mapSize * this.config.gridSize) / 2;\r\n        }\r\n        \r\n        const isoPos = { x: mouseX, y: mouseY };\r\n        const pixelPos = this.translator.isoToPixel(isoPos.x, isoPos.y);\r\n        \r\n        // Find and remove any environment object near the click position\r\n        const clickRadius = 30; // Radius for detecting objects to delete (in pixels)\r\n        let deletedObject = false;\r\n        \r\n        for (let i = this.tileMap.environmentObjects.length - 1; i >= 0; i--) {\r\n            const obj = this.tileMap.environmentObjects[i];\r\n            const dx = obj.x - pixelPos.x;\r\n            const dy = obj.y - pixelPos.y;\r\n            const distance = Math.sqrt(dx * dx + dy * dy);\r\n            \r\n            if (distance < clickRadius) {\r\n                // Remove this object\r\n                const deleted = this.tileMap.environmentObjects.splice(i, 1)[0];\r\n                deletedObject = true;\r\n                \r\n                // Show feedback\r\n                this.placementModeIndicator.textContent = `Deleted: ${deleted.type}`;\r\n                this.placementModeIndicator.style.opacity = '1';\r\n                \r\n                // Hide indicator after a delay\r\n                clearTimeout(this.indicatorTimeout);\r\n                this.indicatorTimeout = setTimeout(() => {\r\n                    this.placementModeIndicator.style.opacity = '0';\r\n                }, 1500);\r\n                \r\n                // Update the map rendering\r\n                this.updateCanvasWithData();\r\n                \r\n                // Update object counts\r\n                this.updateObjectCounts();\r\n                \r\n                // Export the updated map\r\n                this.exportMap();\r\n                break; // Only remove one object at a time\r\n            }\r\n        }\r\n        \r\n        // Show feedback if no object was found to delete\r\n        if (!deletedObject && this.deleteMode) {\r\n            this.placementModeIndicator.textContent = 'No object found at this location';\r\n            this.placementModeIndicator.style.opacity = '1';\r\n            \r\n            // Hide indicator after a delay\r\n            clearTimeout(this.indicatorTimeout);\r\n            this.indicatorTimeout = setTimeout(() => {\r\n                this.placementModeIndicator.style.opacity = '0';\r\n            }, 1500);\r\n        }\r\n    }\r\n    updateObjectCounts() {\r\n        if (!document.getElementById('environmentPanel')) return;\r\n        \r\n        // Update count badges\r\n        for (const type in this.environment) {\r\n            const objectCount = (this.tileMap.environmentObjects || [])\r\n                .filter(obj => obj.type === type).length;\r\n            \r\n            // Find all headers first\r\n            const headers = document.querySelectorAll('.environment-type-header');\r\n            // Find the specific header containing the type name\r\n            for (const header of headers) {\r\n                if (header.textContent.includes(type)) {\r\n                    // Get the count badge within this header\r\n                    const countBadge = header.querySelector('.object-count');\r\n                    if (countBadge) {\r\n                        countBadge.textContent = objectCount;\r\n                    }\r\n                    break; // Found the right header, no need to continue\r\n                }\r\n            }\r\n        }\r\n    }\r\n    // Improved drag and drop handlers\r\n    handleDragStart(e) {\r\n        this.draggedItem = e.currentTarget;\r\n        e.dataTransfer.effectAllowed = 'move';\r\n        e.dataTransfer.setData('text/html', this.draggedItem.outerHTML);\r\n        this.draggedItem.classList.add('dragging');\r\n        this.draggedTerrainId = parseInt(this.draggedItem.dataset.index);\r\n    }\r\n    \r\n    async handleDrop(e) {\r\n        e.preventDefault();\r\n        e.stopPropagation();\r\n        const dropTarget = e.currentTarget;\r\n        dropTarget.classList.remove('drag-over');\r\n    \r\n        if (this.draggedItem !== dropTarget && dropTarget.classList.contains('terrain-item')) {\r\n            const allItems = Array.from(this.terrainTypesContainer.querySelectorAll('.terrain-item'));\r\n            const draggedIndex = allItems.indexOf(this.draggedItem);\r\n            const dropIndex = allItems.indexOf(dropTarget);\r\n    \r\n            if (draggedIndex !== -1 && dropIndex !== -1) {\r\n                // Store a copy of the original terrain types for reference\r\n                const oldTerrainTypes = [...this.tileMap.terrainTypes];\r\n                \r\n                // Reorder terrain types\r\n                const draggedTerrain = this.tileMap.terrainTypes[draggedIndex];\r\n                this.tileMap.terrainTypes.splice(draggedIndex, 1);\r\n                this.tileMap.terrainTypes.splice(dropIndex, 0, draggedTerrain);\r\n    \r\n                // Create mapping between old and new indices\r\n                const indexMap = {};\r\n                oldTerrainTypes.forEach((terrain, oldIndex) => {\r\n                    const newIndex = this.tileMap.terrainTypes.findIndex(t => t.type === terrain.type);\r\n                    indexMap[oldIndex] = newIndex;\r\n                });\r\n    \r\n                // Update terrain map with new indices\r\n                if (this.tileMap.terrainMap && this.tileMap.terrainMap.length > 0) {\r\n                    const maxIndex = this.tileMap.terrainTypes.length - 1;\r\n                    for (let y = 0; y < this.tileMap.terrainMap.length; y++) {\r\n                        for (let x = 0; x < this.tileMap.terrainMap[y].length; x++) {\r\n                            const oldIndex = this.tileMap.terrainMap[y][x];\r\n                            const newIndex = indexMap[oldIndex] !== undefined ? indexMap[oldIndex] : 0;\r\n                            this.tileMap.terrainMap[y][x] = Math.min(newIndex, maxIndex);\r\n                        }\r\n                    }\r\n                }\r\n    \r\n                // Update UI order\r\n                if (draggedIndex < dropIndex) {\r\n                    dropTarget.parentNode.insertBefore(this.draggedItem, dropTarget.nextSibling);\r\n                } else {\r\n                    dropTarget.parentNode.insertBefore(this.draggedItem, dropTarget);\r\n                }\r\n    \r\n                // Update current terrain ID if needed\r\n                if (this.currentTerrainId === draggedIndex) {\r\n                    this.currentTerrainId = dropIndex;\r\n                } else if (this.currentTerrainId === dropIndex) {\r\n                    this.currentTerrainId = draggedIndex;\r\n                }\r\n    \r\n                // Force a complete refresh of the rendering pipeline\r\n                // Clear any cached images or renderers\r\n                this.terrainTileMapper = null;\r\n                this.mapRenderer = null;\r\n                this.imageManager = null;\r\n                this.updateTerrainStyles();\r\n                this.setupTerrainTypesUI();\r\n\r\n                await this.initImageManager();\r\n                this.exportMap();\r\n            }\r\n        }\r\n        return false;\r\n    }\r\n    \r\n    handleDragOver(e) {\r\n        e.preventDefault();\r\n        e.dataTransfer.dropEffect = 'move';\r\n        return false;\r\n    }\r\n    \r\n    // Add visual feedback when dragging over items\r\n    handleDragEnter(e) {\r\n        e.preventDefault();\r\n        // Only add highlight if dragging over another terrain item (not itself)\r\n        if (e.currentTarget !== this.draggedItem) {\r\n            e.currentTarget.classList.add('drag-over');\r\n            this.dragOverItem = e.currentTarget;\r\n        }\r\n    }\r\n    \r\n    handleDragLeave(e) {\r\n        e.preventDefault();\r\n        e.currentTarget.classList.remove('drag-over');\r\n        if (this.dragOverItem === e.currentTarget) {\r\n            this.dragOverItem = null;\r\n        }\r\n    }\r\n   \r\n    \r\n    handleDragEnd(e) {\r\n        // Clean up all drag-related classes\r\n        this.draggedItem.classList.remove('dragging');\r\n        document.querySelectorAll('.terrain-item').forEach(item => {\r\n            item.classList.remove('drag-over');\r\n        });\r\n        this.draggedItem = null;\r\n        this.dragOverItem = null;\r\n    }\r\n\r\n    showAddTerrainForm() {\r\n        const form = document.getElementById(this.modalId);\r\n        form.classList.add('show');\r\n        document.getElementById('formTitle').textContent = 'Add Terrain Type';\r\n        document.getElementById('editingId').value = ''; // New form field for ID\r\n        document.getElementById('terrainType').value = '';\r\n        document.getElementById('terrainColor').value = '#cccccc';\r\n        document.getElementById('terrainColorText').value = '#cccccc';  \r\n        document.getElementById('terrainImage').value = '[]';        \r\n        document.getElementById('terrainBuildable').checked = false;         \r\n    }\r\n\r\n    showTerrainEditForm(terrain) {\r\n        const form = document.getElementById(this.modalId);\r\n        form.classList.add('show');\r\n        document.getElementById('formTitle').textContent = 'Edit Terrain Type';\r\n        document.getElementById('editingId').value = terrain.id; // Use ID instead of type\r\n        document.getElementById('terrainType').value = terrain.type;\r\n        document.getElementById('terrainColor').value = terrain.color;\r\n        document.getElementById('terrainColorText').value = terrain.color;\r\n        document.getElementById('terrainImage').value = JSON.stringify(terrain.image || []);   \r\n        document.getElementById('terrainBuildable').checked = terrain.buildable;\r\n        \r\n        // Create a custom event with data\r\n        const myCustomEvent = new CustomEvent('editTerrainImage', {\r\n            bubbles: true,\r\n            cancelable: true\r\n        });\r\n\r\n        // Dispatch the event\r\n        document.body.dispatchEvent(myCustomEvent);\r\n    }\r\n\r\n    hideTerrainForm() {\r\n        document.getElementById(this.modalId).classList.remove('show');\r\n    }\r\n\r\n    saveTerrainType() {\r\n        const editingId = document.getElementById('editingId').value;\r\n        const newType = document.getElementById('terrainType').value.trim();\r\n        const newColor = document.getElementById('terrainColorText').value;\r\n        const newImage = JSON.parse(document.getElementById('terrainImage').value);\r\n        const newBuildable = document.getElementById('terrainBuildable').checked;\r\n    \r\n        if (!newType) {\r\n            alert('Terrain type cannot be empty');\r\n            return;\r\n        }\r\n    \r\n        if (editingId !== '') {\r\n            // Editing existing terrain (using index as identifier)\r\n            const index = parseInt(editingId);\r\n            if (index >= 0 && index < this.tileMap.terrainTypes.length) {\r\n                if (this.tileMap.terrainTypes.some((t, i) => t.type === newType && i !== index)) {\r\n                    alert('A terrain type with this name already exists');\r\n                    return;\r\n                }\r\n                this.tileMap.terrainTypes[index] = { type: newType, color: newColor, image: newImage, buildable: newBuildable };\r\n            }\r\n        } else {\r\n            // Adding new terrain\r\n            if (this.tileMap.terrainTypes.some(t => t.type === newType)) {\r\n                alert('A terrain type with this name already exists');\r\n                return;\r\n            }\r\n            this.tileMap.terrainTypes.push({ type: newType, color: newColor, image: newImage, buildable: newBuildable });\r\n        }\r\n    \r\n        this.updateTerrainStyles();\r\n        this.setupTerrainTypesUI();\r\n        this.hideTerrainForm();\r\n        this.initGridCanvas();\r\n        this.exportMap();\r\n    }\r\n\r\n    deleteTerrain(indexToDelete) {\r\n        if (this.tileMap.terrainTypes.length <= 1) {\r\n            alert('Cannot delete the last terrain type');\r\n            return;\r\n        }\r\n    \r\n        const terrainToDelete = this.tileMap.terrainTypes[indexToDelete];\r\n        if (!terrainToDelete) return;\r\n    \r\n        if (!confirm(`Are you sure you want to delete the \"${terrainToDelete.type}\" terrain type? All instances will be converted to the default terrain.`)) {\r\n            return;\r\n        }\r\n    \r\n        const defaultTerrainIndex = this.tileMap.terrainTypes.findIndex(t => t.type === 'grass') || 0;\r\n    \r\n        // Remove from terrainTypes array\r\n        this.tileMap.terrainTypes.splice(indexToDelete, 1);\r\n    \r\n        // Update terrainMap - replace all instances with defaultTerrainIndex\r\n        for (let y = 0; y < this.tileMap.terrainMap.length; y++) {\r\n            for (let x = 0; x < this.tileMap.terrainMap[y].length; x++) {\r\n                if (this.tileMap.terrainMap[y][x] === indexToDelete) {\r\n                    this.tileMap.terrainMap[y][x] = defaultTerrainIndex;\r\n                } else if (this.tileMap.terrainMap[y][x] > indexToDelete) {\r\n                    this.tileMap.terrainMap[y][x]--; // Adjust indices after deleted item\r\n                }\r\n            }\r\n        }\r\n    \r\n        if (this.currentTerrainId === indexToDelete) {\r\n            this.currentTerrainId = defaultTerrainIndex;\r\n        } else if (this.currentTerrainId > indexToDelete) {\r\n            this.currentTerrainId--;\r\n        }\r\n    \r\n        this.updateTerrainStyles();\r\n        this.setupTerrainTypesUI();\r\n        this.initGridCanvas();\r\n        this.exportMap();\r\n    }\r\n\r\n    updateTerrainStyles() {\r\n        let styleElem = document.getElementById('terrainStyles');\r\n        if (!styleElem) {\r\n            styleElem = document.createElement('style');\r\n            styleElem.id = 'terrainStyles';\r\n            document.head.appendChild(styleElem);\r\n        }\r\n    \r\n        let css = '';\r\n        this.tileMap.terrainTypes.forEach((terrain, index) => {\r\n            css += `#level-editor-container .color-option[data-index=\"${index}\"] { background-color: ${terrain.color}; }\\n`;\r\n        });\r\n    \r\n        css += `\r\n            .terrain-item.dragging { opacity: 0.4; }\r\n            .terrain-item.drag-over { border: 2px dashed #666; background-color: rgba(0,0,0,0.1); }\r\n        `;\r\n    \r\n        styleElem.textContent = css;\r\n    }\r\n\r\n    translateMap(deltaX, deltaY) {\r\n        const gridSize = this.tileMap.size;\r\n        \r\n        // Create a new map to hold the translated terrain\r\n        const newTerrainMap = [];\r\n        for (let i = 0; i < gridSize; i++) {\r\n            newTerrainMap.push(new Array(gridSize));\r\n        }\r\n        \r\n        // Fill the new map\r\n        for (let i = 0; i < gridSize; i++) {\r\n            for (let j = 0; j < gridSize; j++) {\r\n                // Calculate source coordinates in old map\r\n                const oldI = i - deltaY;\r\n                const oldJ = j - deltaX;\r\n                \r\n                // Check if source coordinates are within map boundaries\r\n                if (oldI >= 0 && oldI < gridSize && oldJ >= 0 && oldJ < gridSize) {\r\n                    // Copy existing terrain\r\n                    newTerrainMap[i][j] = this.tileMap.terrainMap[oldI][oldJ];\r\n                } else {\r\n                    // For areas that would be outside the original map,\r\n                    // use the nearest edge value (wrap around)\r\n                    const clampedI = Math.max(0, Math.min(gridSize - 1, oldI));\r\n                    const clampedJ = Math.max(0, Math.min(gridSize - 1, oldJ));\r\n                    newTerrainMap[i][j] = this.tileMap.terrainMap[clampedI][clampedJ];\r\n                }\r\n            }\r\n        }\r\n        \r\n        // Update tileMap with new terrain\r\n        this.tileMap.terrainMap = newTerrainMap;\r\n        \r\n        // Update UI and export\r\n        this.updateCanvasWithData();\r\n        this.exportMap();\r\n    }\r\n\r\n    async initGridCanvas() {\r\n        // Initialize the canvas with our map renderer\r\n\r\n        await this.initImageManager();\r\n\r\n        // Render the initial map\r\n        this.updateCanvasWithData();\r\n        \r\n        // Clean up resources\r\n        this.imageManager.dispose();\r\n    }\r\n\r\n    handleCanvasInteraction(event) {\r\n        // Get mouse position relative to canvas\r\n        const rect = this.canvasEl.getBoundingClientRect();\r\n        let mouseX = event.clientX - rect.left;\r\n        const mouseY = event.clientY - rect.top;\r\n        \r\n        if(!this.gameEditor.getCollections().configs.game.isIsometric) {\r\n            mouseX -= (this.canvasEl.width - this.mapSize * this.config.gridSize) / 2;\r\n        }\r\n        \r\n        if (this.placementMode === 'terrain') {\r\n            // Original terrain placement logic\r\n            const gridPos = this.translator.isoToGrid(mouseX, mouseY);\r\n            const snappedGrid = this.translator.snapToGrid(gridPos.x, gridPos.y);\r\n            \r\n            // Check if coordinates are within bounds\r\n            if (snappedGrid.x >= 0 && snappedGrid.x < this.mapSize && \r\n                snappedGrid.y >= 0 && snappedGrid.y < this.mapSize) {\r\n                \r\n                // Update terrain map with selected terrain ID\r\n                this.tileMap.terrainMap[snappedGrid.y][snappedGrid.x] = this.currentTerrainId;\r\n                \r\n                // Update the map rendering\r\n                this.updateCanvasWithData();\r\n                \r\n                // Export the updated map\r\n                this.exportMap();\r\n            }\r\n        } else if (this.placementMode === 'environment' && this.selectedEnvironmentType && \r\n                   this.selectedEnvironmentItem !== null) {\r\n            // Environment object placement logic\r\n            const isoPos = { x: mouseX, y: mouseY };\r\n            const pixelPos = this.translator.isoToPixel(isoPos.x, isoPos.y);\r\n            \r\n            // Get the image to calculate its size\r\n            const images = this.imageManager.getImages(\"environment\", this.selectedEnvironmentType);\r\n            const image = images.idle[0][this.selectedEnvironmentItem];\r\n            \r\n            // Create new environment object\r\n            const newObject = {\r\n                type: this.selectedEnvironmentType,\r\n                imageIndex: this.selectedEnvironmentItem,\r\n                x: pixelPos.x,\r\n                y: pixelPos.y\r\n            };\r\n            \r\n            // Add to environment objects array\r\n            if (!this.tileMap.environmentObjects) {\r\n                this.tileMap.environmentObjects = [];\r\n            }\r\n            this.tileMap.environmentObjects.push(newObject);\r\n            \r\n            // Update the map rendering\r\n            this.updateCanvasWithData();\r\n            \r\n            // Export the updated map\r\n            this.exportMap();\r\n        }\r\n    }\r\n\r\n    async updateCanvasWithData() {\r\n        if(this.tileMap.terrainMap.length > 0){\r\n            this.mapRenderer.isMapCached = false;\r\n            this.mapRenderer.renderBG(this.tileMap, []);\r\n            this.mapRenderer.renderFG();\r\n        }\r\n    }\r\n\r\n    exportMap() {\r\n        // Create a custom event with data\r\n        const myCustomEvent = new CustomEvent('saveTileMap', {\r\n            detail: { data: this.tileMap, propertyName: this.savePropertyName, refresh: false },\r\n            bubbles: true,\r\n            cancelable: true\r\n        });\r\n\r\n        // Dispatch the event\r\n        document.body.dispatchEvent(myCustomEvent);\r\n    }\r\n}\r\n                   ",
         "fileName": "terrainMapEditor"
       },
       "scriptEditor": {
@@ -19318,11 +21129,11 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "jszip.min.js"
       },
       "ShapeFactory": {
-        "script": "class ShapeFactory {\r\n    constructor() {\r\n        this.gltfCache = new Map();\r\n        this.gltfLoader = new THREE.GLTFLoader();\r\n    }\r\n    async createMergedGroupFromJSON(model, frameData, groupName) {\r\n        let mergedGroup = this.getMergedGroup(model, frameData, groupName);\r\n        if( mergedGroup){\r\n            return await this.createGroupFromJSON(groupName, mergedGroup);\r\n        } else {\r\n            return null;\r\n        }\r\n    }\r\n    async createGroupFromJSON(groupName, groupData) {\r\n        const group = new THREE.Group();\r\n        group.name = groupName;\r\n        group.userData = { isGroup: true };\r\n        // Use Promise.all with map instead of forEach to properly await all shapes\r\n        await Promise.all(groupData.shapes.map(async (shape, index) => {\r\n            if (shape.type === 'gltf') {\r\n                await this.handleGLTFShape(shape, index, group);\r\n            } else {\r\n                this.handlePrimitiveShape(shape, index, group);\r\n            }\r\n        }));\r\n        group.position.x = groupData.position.x;\r\n        group.position.y = groupData.position.y;\r\n        group.position.z = groupData.position.z;\r\n        \r\n        group.rotation.x = groupData.rotation.x;\r\n        group.rotation.y = groupData.rotation.y;\r\n        group.rotation.z = groupData.rotation.z;\r\n\r\n        group.scale.x = groupData.scale.x;\r\n        group.scale.y = groupData.scale.y;\r\n        group.scale.z = groupData.scale.z;\r\n        return group;\r\n    }\r\n\r\n    async handleGLTFShape(shape, index, group) {\r\n        const applyTransformations = (model) => {\r\n            model.position.set(shape.x || 0, shape.y || 0, shape.z || 0);\r\n            model.scale.set(\r\n                shape.scaleX || 1,\r\n                shape.scaleY || 1,\r\n                shape.scaleZ || 1\r\n            );\r\n            model.rotation.set(\r\n                (shape.rotationX || 0) * Math.PI / 180,\r\n                (shape.rotationY || 0) * Math.PI / 180,\r\n                (shape.rotationZ || 0) * Math.PI / 180\r\n            );\r\n            \r\n            model.traverse(child => {\r\n                if (child.isMesh) {\r\n                    child.userData = {\r\n                        isShape: true,\r\n                        index: index,\r\n                        isGLTFChild: true\r\n                    };\r\n                }\r\n            });\r\n            \r\n            model.userData = {\r\n                isShape: true,\r\n                index: index,\r\n                isGLTFRoot: true,\r\n                castShadow: true\r\n            };\r\n            \r\n            group.add(model);\r\n        };\r\n\r\n        const cached = this.gltfCache.get(shape.url);\r\n        if (cached) {\r\n            applyTransformations(cached.scene.clone());\r\n        } else if (shape.url) {\r\n            // Wrap gltfLoader.load in a Promise to properly await it\r\n            await new Promise((resolve, reject) => {\r\n                this.gltfLoader.load(\r\n                    shape.url,\r\n                    (gltf) => {\r\n                        this.gltfCache.set(shape.url, gltf);\r\n                        applyTransformations(gltf.scene.clone());\r\n                        resolve();\r\n                    },\r\n                    undefined, // onProgress callback (optional)\r\n                    (error) => {\r\n                        console.error(`Failed to load GLTF model at ${shape.url}:`, error);\r\n                        reject(error);\r\n                    }\r\n                );\r\n            });\r\n        }\r\n    }\r\n\r\n    handlePrimitiveShape(shape, index, group) {\r\n        let geometry, material;\r\n\r\n        // Create material with specified color\r\n        material = new THREE.MeshStandardMaterial({ color: shape.color });\r\n\r\n        switch (shape.type) {\r\n            case 'sphere':\r\n                geometry = new THREE.SphereGeometry(shape.size / 2, 32, 32);\r\n                break;\r\n            case 'cube':\r\n                geometry = new THREE.BoxGeometry(shape.size, shape.size, shape.size);\r\n                break;\r\n            case 'box':\r\n                geometry = new THREE.BoxGeometry(shape.width, shape.height, shape.depth || shape.width);\r\n                break;\r\n            case 'cylinder':\r\n                geometry = new THREE.CylinderGeometry(shape.size / 2, shape.size / 2, shape.height, 32);\r\n                break;\r\n            case 'cone':\r\n                geometry = new THREE.ConeGeometry(shape.size / 2, shape.height, 32);\r\n                break;\r\n            case 'torus':\r\n                geometry = new THREE.TorusGeometry(shape.size / 2, shape.tubeSize || shape.size / 6, 16, 100);\r\n                break;\r\n            case 'tetrahedron':\r\n                geometry = new THREE.TetrahedronGeometry(shape.size / 2);\r\n                break;\r\n            default:\r\n                return;\r\n        }\r\n\r\n        const mesh = new THREE.Mesh(geometry, material);\r\n        mesh.userData = { isShape: true, castShadow: true, index: index };\r\n        \r\n        // Position and rotation\r\n        mesh.position.set(shape.x || 0, shape.y || 0, shape.z || 0);\r\n        mesh.rotation.set(\r\n            (shape.rotationX || 0) * Math.PI / 180,\r\n            (shape.rotationY || 0) * Math.PI / 180,\r\n            (shape.rotationZ || 0) * Math.PI / 180\r\n        );\r\n        mesh.scale.set(\r\n            shape.scaleX || 1,\r\n            shape.scaleY || 1,\r\n            shape.scaleZ || 1\r\n        );\r\n        group.add(mesh);\r\n    }\r\n\r\n    disposeObject(object) {\r\n        object.traverse(child => {\r\n            if (child.geometry) child.geometry.dispose();\r\n            if (child.material) {\r\n                if (Array.isArray(child.material)) {\r\n                    child.material.forEach(m => m.dispose());\r\n                } else {\r\n                    child.material.dispose();\r\n                }\r\n            }\r\n        });\r\n    }\r\n\r\n    getMergedGroup(model, frameData, groupName) {\r\n        const modelGroup = model[groupName];\r\n        if (!modelGroup) {\r\n            delete frameData?.[groupName];\r\n            return null;\r\n        }\r\n    \r\n        frameData = frameData || {};\r\n        let frameGroup = this.initializeFrameGroup(frameData, modelGroup, groupName);\r\n        \r\n        this.cleanupMatchingTransforms(modelGroup, frameGroup);\r\n        const mergedShapes = this.mergeShapes(modelGroup, frameGroup);\r\n        \r\n        this.cleanupEmptyShapes(frameGroup);\r\n        \r\n        const mergedGroup = {\r\n            ...modelGroup,\r\n            ...frameGroup,\r\n            shapes: mergedShapes\r\n        };\r\n    \r\n        if (modelGroup.shapes.length === 0) {\r\n            frameGroup.shapes = [];\r\n        }\r\n    \r\n        const returnVal = JSON.parse(JSON.stringify(mergedGroup));\r\n        this.cleanupFrameData(frameData, frameGroup, groupName);\r\n        \r\n        return returnVal;\r\n    }\r\n    \r\n    initializeFrameGroup(frameData, modelGroup, groupName) {\r\n        if (!frameData[groupName]) {\r\n            frameData[groupName] = JSON.parse(JSON.stringify(modelGroup));\r\n            const frameGroup = frameData[groupName];\r\n            frameGroup.shapes.forEach((shape, index) => {\r\n                shape.id = index;\r\n            });\r\n            return frameGroup;\r\n        }\r\n        return frameData[groupName];\r\n    }\r\n    \r\n    cleanupMatchingTransforms(modelGroup, frameGroup) {\r\n        const properties = ['position', 'rotation', 'scale'];\r\n        properties.forEach(prop => {\r\n            if (JSON.stringify(modelGroup[prop]) === JSON.stringify(frameGroup[prop])) {\r\n                delete frameGroup[prop];\r\n            }\r\n        });\r\n    }\r\n    \r\n    mergeShapes(modelGroup, frameGroup) {\r\n        return modelGroup.shapes.map((modelShape, i) => {\r\n            if (!frameGroup.shapes) {\r\n                return JSON.parse(JSON.stringify(modelShape));\r\n            }\r\n    \r\n            let frameShape = frameGroup.shapes.find(shape => shape.id === i) || { id: i };\r\n            if (!frameGroup.shapes.includes(frameShape)) {\r\n                frameGroup.shapes.push(frameShape);\r\n            }\r\n    \r\n            const mergedShape = this.mergeShapeProperties(modelShape, frameShape);\r\n            this.cleanupMatchingShapeTransforms(modelShape, frameShape);\r\n            \r\n            return JSON.parse(JSON.stringify(mergedShape));\r\n        });\r\n    }\r\n    \r\n    mergeShapeProperties(modelShape, frameShape) {\r\n        const mergedShape = {};\r\n        \r\n        for (const key in modelShape) {\r\n            if (key === 'id') continue;\r\n            \r\n            if (frameShape && frameShape[key] !== undefined && modelShape[key] === frameShape[key]) {\r\n                delete frameShape[key];\r\n                mergedShape[key] = modelShape[key];\r\n            } else if (!frameShape || frameShape[key] === undefined) {\r\n                mergedShape[key] = modelShape[key];\r\n            } else {\r\n                mergedShape[key] = frameShape[key];\r\n            }\r\n        }\r\n    \r\n        return { ...mergedShape, ...frameShape };\r\n    }\r\n    \r\n    cleanupMatchingShapeTransforms(modelShape, frameShape) {\r\n        const transforms = [\r\n            { prop: 'scale', defaultVal: 1, axes: ['X', 'Y', 'Z'] },\r\n            { prop: 'rotation', defaultVal: 0, axes: ['X', 'Y', 'Z'] }\r\n        ];\r\n    \r\n        transforms.forEach(({ prop, defaultVal, axes }) => {\r\n            axes.forEach(axis => {\r\n                const propName = `${prop}${axis}`;\r\n                if (frameShape[propName] === modelShape[propName] || \r\n                   (frameShape[propName] === defaultVal && modelShape[propName] === undefined)) {\r\n                    delete frameShape[propName];\r\n                }\r\n            });\r\n        });\r\n    }\r\n    \r\n    cleanupEmptyShapes(frameGroup) {\r\n        if (frameGroup.shapes) {\r\n            frameGroup.shapes = frameGroup.shapes.filter(shape => \r\n                Object.keys(shape).length > 0\r\n            );\r\n            \r\n            if (frameGroup.shapes.length === 0) {\r\n                delete frameGroup.shapes;\r\n            }\r\n        }\r\n    }\r\n    \r\n    cleanupFrameData(frameData, frameGroup, groupName) {\r\n        if (Object.keys(frameGroup).length === 0) {\r\n            delete frameData[groupName];\r\n        }\r\n    }\r\n\r\n}",
+        "script": "class ShapeFactory {\r\n    constructor(palette) {\r\n        this.gltfCache = new Map();\r\n        this.gltfLoader = new THREE.GLTFLoader();\r\n        this.palette = palette;\r\n    }\r\n    async createMergedGroupFromJSON(model, frameData, groupName) {\r\n        let mergedGroup = this.getMergedGroup(model, frameData, groupName);\r\n        if( mergedGroup){\r\n            return await this.createGroupFromJSON(groupName, mergedGroup);\r\n        } else {\r\n            return null;\r\n        }\r\n    }\r\n    async createGroupFromJSON(groupName, groupData) {\r\n        const group = new THREE.Group();\r\n        group.name = groupName;\r\n        group.userData = { isGroup: true };\r\n        // Use Promise.all with map instead of forEach to properly await all shapes\r\n        await Promise.all(groupData.shapes.map(async (shape, index) => {\r\n            if (shape.type === 'gltf') {\r\n                await this.handleGLTFShape(shape, index, group);\r\n            } else {\r\n                this.handlePrimitiveShape(shape, index, group);\r\n            }\r\n        }));\r\n        group.position.x = groupData.position.x;\r\n        group.position.y = groupData.position.y;\r\n        group.position.z = groupData.position.z;\r\n        \r\n        group.rotation.x = groupData.rotation.x;\r\n        group.rotation.y = groupData.rotation.y;\r\n        group.rotation.z = groupData.rotation.z;\r\n\r\n        group.scale.x = groupData.scale.x;\r\n        group.scale.y = groupData.scale.y;\r\n        group.scale.z = groupData.scale.z;\r\n        return group;\r\n    }\r\n\r\n    async handleGLTFShape(shape, index, group) {\r\n        const applyTransformations = (model) => {\r\n            model.position.set(shape.x || 0, shape.y || 0, shape.z || 0);\r\n            model.scale.set(\r\n                shape.scaleX || 1,\r\n                shape.scaleY || 1,\r\n                shape.scaleZ || 1\r\n            );\r\n            model.rotation.set(\r\n                (shape.rotationX || 0) * Math.PI / 180,\r\n                (shape.rotationY || 0) * Math.PI / 180,\r\n                (shape.rotationZ || 0) * Math.PI / 180\r\n            );\r\n            \r\n            model.traverse(child => {\r\n                if (child.isMesh) {\r\n                    child.userData = {\r\n                        isShape: true,\r\n                        index: index,\r\n                        isGLTFChild: true\r\n                    };\r\n                }\r\n            });\r\n            \r\n            model.userData = {\r\n                isShape: true,\r\n                index: index,\r\n                isGLTFRoot: true,\r\n                castShadow: true\r\n            };\r\n            \r\n            group.add(model);\r\n        };\r\n\r\n        const cached = this.gltfCache.get(shape.url);\r\n        if (cached) {\r\n            applyTransformations(cached.scene.clone());\r\n        } else if (shape.url) {\r\n            // Wrap gltfLoader.load in a Promise to properly await it\r\n            await new Promise((resolve, reject) => {\r\n                this.gltfLoader.load(\r\n                    shape.url,\r\n                    (gltf) => {\r\n                        this.gltfCache.set(shape.url, gltf);\r\n                        applyTransformations(gltf.scene.clone());\r\n                        resolve();\r\n                    },\r\n                    undefined, // onProgress callback (optional)\r\n                    (error) => {\r\n                        console.error(`Failed to load GLTF model at ${shape.url}:`, error);\r\n                        reject(error);\r\n                    }\r\n                );\r\n            });\r\n        }\r\n    }\r\n\r\n    handlePrimitiveShape(shape, index, group) {\r\n        let geometry, material;\r\n\r\n        let colorToUse = shape.color;\r\n        if(shape.color.paletteColor){\r\n            colorToUse = \"#ffffff\";\r\n            if(this.palette && this.palette[shape.color.paletteColor]){\r\n                colorToUse = this.palette[shape.color.paletteColor];\r\n            }\r\n        }\r\n        // Create material with specified color\r\n        material = new THREE.MeshStandardMaterial({ color: colorToUse });\r\n\r\n        switch (shape.type) {\r\n            case 'sphere':\r\n                geometry = new THREE.SphereGeometry(shape.size / 2, 32, 32);\r\n                break;\r\n            case 'cube':\r\n                geometry = new THREE.BoxGeometry(shape.size, shape.size, shape.size);\r\n                break;\r\n            case 'box':\r\n                geometry = new THREE.BoxGeometry(shape.width, shape.height, shape.depth || shape.width);\r\n                break;\r\n            case 'cylinder':\r\n                geometry = new THREE.CylinderGeometry(shape.size / 2, shape.size / 2, shape.height, 32);\r\n                break;\r\n            case 'cone':\r\n                geometry = new THREE.ConeGeometry(shape.size / 2, shape.height, 32);\r\n                break;\r\n            case 'torus':\r\n                geometry = new THREE.TorusGeometry(shape.size / 2, shape.tubeSize || shape.size / 6, 16, 100);\r\n                break;\r\n            case 'tetrahedron':\r\n                geometry = new THREE.TetrahedronGeometry(shape.size / 2);\r\n                break;\r\n            default:\r\n                return;\r\n        }\r\n\r\n        const mesh = new THREE.Mesh(geometry, material);\r\n        mesh.userData = { isShape: true, castShadow: true, index: index };\r\n        \r\n        // Position and rotation\r\n        mesh.position.set(shape.x || 0, shape.y || 0, shape.z || 0);\r\n        mesh.rotation.set(\r\n            (shape.rotationX || 0) * Math.PI / 180,\r\n            (shape.rotationY || 0) * Math.PI / 180,\r\n            (shape.rotationZ || 0) * Math.PI / 180\r\n        );\r\n        mesh.scale.set(\r\n            shape.scaleX || 1,\r\n            shape.scaleY || 1,\r\n            shape.scaleZ || 1\r\n        );\r\n        group.add(mesh);\r\n    }\r\n\r\n    disposeObject(object) {\r\n        object.traverse(child => {\r\n            if (child.geometry) child.geometry.dispose();\r\n            if (child.material) {\r\n                if (Array.isArray(child.material)) {\r\n                    child.material.forEach(m => m.dispose());\r\n                } else {\r\n                    child.material.dispose();\r\n                }\r\n            }\r\n        });\r\n    }\r\n\r\n    getMergedGroup(model, frameData, groupName) {\r\n        const modelGroup = model[groupName];\r\n        if (!modelGroup) {\r\n            delete frameData?.[groupName];\r\n            return null;\r\n        }\r\n    \r\n        frameData = frameData || {};\r\n        let frameGroup = this.initializeFrameGroup(frameData, modelGroup, groupName);\r\n        \r\n        this.cleanupMatchingTransforms(modelGroup, frameGroup);\r\n        const mergedShapes = this.mergeShapes(modelGroup, frameGroup);\r\n        \r\n        this.cleanupEmptyShapes(frameGroup);\r\n        \r\n        const mergedGroup = {\r\n            ...modelGroup,\r\n            ...frameGroup,\r\n            shapes: mergedShapes\r\n        };\r\n    \r\n        if (modelGroup.shapes.length === 0) {\r\n            frameGroup.shapes = [];\r\n        }\r\n    \r\n        const returnVal = JSON.parse(JSON.stringify(mergedGroup));\r\n        this.cleanupFrameData(frameData, frameGroup, groupName);\r\n        \r\n        return returnVal;\r\n    }\r\n    \r\n    initializeFrameGroup(frameData, modelGroup, groupName) {\r\n        if (!frameData[groupName]) {\r\n            frameData[groupName] = JSON.parse(JSON.stringify(modelGroup));\r\n            const frameGroup = frameData[groupName];\r\n            frameGroup.shapes.forEach((shape, index) => {\r\n                shape.id = index;\r\n            });\r\n            return frameGroup;\r\n        }\r\n        return frameData[groupName];\r\n    }\r\n    \r\n    cleanupMatchingTransforms(modelGroup, frameGroup) {\r\n        const properties = ['position', 'rotation', 'scale'];\r\n        properties.forEach(prop => {\r\n            if (JSON.stringify(modelGroup[prop]) === JSON.stringify(frameGroup[prop])) {\r\n                delete frameGroup[prop];\r\n            }\r\n        });\r\n    }\r\n    \r\n    mergeShapes(modelGroup, frameGroup) {\r\n        return modelGroup.shapes.map((modelShape, i) => {\r\n            if (!frameGroup.shapes) {\r\n                return JSON.parse(JSON.stringify(modelShape));\r\n            }\r\n    \r\n            let frameShape = frameGroup.shapes.find(shape => shape.id === i) || { id: i };\r\n            if (!frameGroup.shapes.includes(frameShape)) {\r\n                frameGroup.shapes.push(frameShape);\r\n            }\r\n    \r\n            const mergedShape = this.mergeShapeProperties(modelShape, frameShape);\r\n            this.cleanupMatchingShapeTransforms(modelShape, frameShape);\r\n            \r\n            return JSON.parse(JSON.stringify(mergedShape));\r\n        });\r\n    }\r\n    \r\n    mergeShapeProperties(modelShape, frameShape) {\r\n        const mergedShape = {};\r\n        \r\n        for (const key in modelShape) {\r\n            if (key === 'id') continue;\r\n            \r\n            if (frameShape && frameShape[key] !== undefined && modelShape[key] === frameShape[key]) {\r\n                delete frameShape[key];\r\n                mergedShape[key] = modelShape[key];\r\n            } else if (!frameShape || frameShape[key] === undefined) {\r\n                mergedShape[key] = modelShape[key];\r\n            } else {\r\n                mergedShape[key] = frameShape[key];\r\n            }\r\n        }\r\n    \r\n        return { ...mergedShape, ...frameShape };\r\n    }\r\n    \r\n    cleanupMatchingShapeTransforms(modelShape, frameShape) {\r\n        const transforms = [\r\n            { prop: 'scale', defaultVal: 1, axes: ['X', 'Y', 'Z'] },\r\n            { prop: 'rotation', defaultVal: 0, axes: ['X', 'Y', 'Z'] }\r\n        ];\r\n    \r\n        transforms.forEach(({ prop, defaultVal, axes }) => {\r\n            axes.forEach(axis => {\r\n                const propName = `${prop}${axis}`;\r\n                if (frameShape[propName] === modelShape[propName] || \r\n                   (frameShape[propName] === defaultVal && modelShape[propName] === undefined)) {\r\n                    delete frameShape[propName];\r\n                }\r\n            });\r\n        });\r\n    }\r\n    \r\n    cleanupEmptyShapes(frameGroup) {\r\n        if (frameGroup.shapes) {\r\n            frameGroup.shapes = frameGroup.shapes.filter(shape => \r\n                Object.keys(shape).length > 0\r\n            );\r\n            \r\n            if (frameGroup.shapes.length === 0) {\r\n                delete frameGroup.shapes;\r\n            }\r\n        }\r\n    }\r\n    \r\n    cleanupFrameData(frameData, frameGroup, groupName) {\r\n        if (Object.keys(frameGroup).length === 0) {\r\n            delete frameData[groupName];\r\n        }\r\n    }\r\n\r\n}",
         "fileName": "ShapeFactory"
       },
       "ImageManager": {
-        "script": "\r\nclass ImageManager {\r\n    constructor(app, {imageSize}, {ShapeFactory}) {\r\n        this.app = app;\r\n        this.images = {};\r\n        this.imageSize = imageSize || 128;\r\n        // Create a single reusable renderer\r\n        this.renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });\r\n        this.renderer.setSize(this.imageSize, this.imageSize);\r\n        this.renderer.shadowMap.enabled = true;\r\n        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;\r\n        \r\n        this.renderTarget = new THREE.WebGLRenderTarget(this.imageSize, this.imageSize);\r\n        this.renderTarget.texture.flipY = true;\r\n        \r\n        // Create reusable scene\r\n        this.scene = new THREE.Scene();\r\n        \r\n        // Create reusable cameras for different views\r\n        const cameraDistance = 64;\r\n        const frustumSize = cameraDistance + 16;\r\n        const aspect = 1;\r\n\r\n        this.shapeFactory = new ShapeFactory();\r\n        // Create 8 cameras for isometric views at 45-degree intervals\r\n        this.cameras = [];\r\n        for (let i = 0; i < 8; i++) {\r\n            this.cameras.push(new THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000));\r\n        }\r\n        \r\n        // Position cameras in a circle around the y-axis at isometric angle\r\n        // Standard isometric angle is about 35.264 degrees (arctan(1/sqrt(2)))\r\n        const isoAngle = Math.atan(1 / Math.sqrt(2));\r\n        const horizDistance = cameraDistance * Math.cos(isoAngle);\r\n        const vertDistance = cameraDistance * Math.sin(isoAngle);\r\n        \r\n        for (let i = 0; i < 8; i++) {\r\n            const angle = (i * Math.PI / 4); // 45-degree increments\r\n            const x = horizDistance * Math.sin(angle);\r\n            const z = horizDistance * Math.cos(angle);\r\n            \r\n            this.cameras[i].position.set(x, vertDistance, z);\r\n            this.cameras[i].lookAt(0, 0, 0);\r\n        }\r\n        \r\n        // Create reusable lights\r\n        this.ambientLight = new THREE.AmbientLight(0xffaaff, .25);\r\n        \r\n        // Create a light group that will rotate with each camera view\r\n        this.lightGroup = new THREE.Group();\r\n        \r\n        // Main directional light\r\n        this.directionalLight = new THREE.DirectionalLight(0xffffaa, .7);\r\n        this.directionalLight.position.set(75, 96, 75);\r\n        this.directionalLight.castShadow = true;\r\n        this.directionalLight.shadow.mapSize.width = 1024;\r\n        this.directionalLight.shadow.mapSize.height = 1024;\r\n        this.directionalLight.shadow.camera.near = 0.5;\r\n        this.directionalLight.shadow.camera.far = 500;\r\n        this.directionalLight.shadow.bias = -0.0005;\r\n        this.directionalLight.shadow.normalBias = 0.02;\r\n        this.directionalLight.shadow.radius = 1;\r\n        this.lightGroup.add(this.directionalLight);\r\n        \r\n        // Fill light\r\n        this.fillLight = new THREE.DirectionalLight(0xffaaff, .5);\r\n        this.fillLight.position.set(-20, 30, -20);\r\n        this.lightGroup.add(this.fillLight);\r\n        \r\n        // Create ground plane\r\n        const groundGeometry = new THREE.PlaneGeometry(200, 200);\r\n        const groundMaterial = new THREE.ShadowMaterial({ opacity: 0.3 });\r\n        this.ground = new THREE.Mesh(groundGeometry, groundMaterial);\r\n        this.ground.rotation.x = -Math.PI / 2;\r\n        this.ground.position.y = 0;\r\n        this.ground.receiveShadow = true;\r\n    }\r\n\r\n    clear() {\r\n        images = {};\r\n    }\r\n\r\n    dispose() {\r\n        // Proper cleanup when the manager is no longer needed\r\n        if (this.renderer) {\r\n            this.renderer.dispose();\r\n            this.renderer = null;\r\n        }\r\n        if (this.renderTarget) {\r\n            this.renderTarget.dispose();\r\n            this.renderTarget = null;\r\n        }\r\n        if (this.ground && this.ground.geometry) {\r\n            this.ground.geometry.dispose();\r\n            this.ground.material.dispose();\r\n        }\r\n        // Dispose of other reusable resources\r\n        this.cameras = [];\r\n        this.scene = null;\r\n        this.lightGroup = null;\r\n        this.ambientLight = null;\r\n    }\r\n\r\n    async loadImages(prefix, config, checkCache = true, cacheResult = true) {\r\n\r\n        if (!prefix || !config || typeof config !== 'object') {\r\n            throw new Error('Invalid prefix or config provided to loadImages');\r\n        }\r\n        if( checkCache ) {\r\n            const cachedImages = await this.checkCache(prefix);\r\n            if (cachedImages) {\r\n                this.images = { ...this.images, ...cachedImages };\r\n                return;\r\n            }\r\n        }\r\n    \r\n        for (const [type, cfg] of Object.entries(config)) {\r\n            if (cfg.render && cfg.render.animations) {\r\n                this.images[`${prefix}_${type}`] = await this.createAnimatedPlaceholder(cfg);\r\n            } else if (cfg.tileMap && cfg.tileMap.terrainTypes) {\r\n                this.images[`${prefix}_${type}`] = await this.createTerrainImages(cfg);\r\n            }\r\n        }\r\n        if(cacheResult) {\r\n            await this.cacheImages(prefix);\r\n        }\r\n    }\r\n    \r\n    async checkCache(prefix) {\r\n        try {\r\n            const response = await fetch(`cache/${prefix}.json`);\r\n            if (response.ok) {\r\n                const cacheData = await response.json();\r\n                // Convert base64 cached images back to canvases\r\n                return await this.convertBase64ToCanvases(cacheData.images);\r\n            }\r\n            return null;\r\n        } catch (error) {\r\n            return null;\r\n        }\r\n    }\r\n\r\n    async convertBase64ToCanvases(cachedImages) {\r\n        const convertedImages = {};\r\n        \r\n        for (const [key, value] of Object.entries(cachedImages)) {\r\n            if (Array.isArray(value)) {\r\n                // Handle terrain tiles\r\n                convertedImages[key] = await Promise.all(value.map(async (terrain) => {\r\n                    const sprites = await Promise.all(terrain.sprites.map(async (base64) => {\r\n                        const canvas = document.createElement('canvas');\r\n                        canvas.width = canvas.height = 24; // Match tileWidth from createTerrainImages\r\n                        const ctx = canvas.getContext('2d');\r\n                        const img = new Image();\r\n                        \r\n                        await new Promise((resolve, reject) => {\r\n                            img.onload = () => {\r\n                                ctx.drawImage(img, 0, 0);\r\n                                resolve();\r\n                            };\r\n                            img.onerror = reject;\r\n                            img.src = base64;\r\n                        });\r\n                        \r\n                        return canvas;\r\n                    }));\r\n                    \r\n                    return {\r\n                        type: terrain.type,\r\n                        sprites\r\n                    };\r\n                }));\r\n            } else if (typeof value === 'object') {\r\n                // Handle animations\r\n                const animations = {};\r\n                for (const [animType, frames] of Object.entries(value)) {\r\n                    animations[animType] = await Promise.all(frames.map(async (frameSet) => {\r\n                        return Promise.all(frameSet.map(async (base64) => {\r\n                            const canvas = document.createElement('canvas');\r\n                            canvas.width = canvas.height = this.imageSize;\r\n                            const ctx = canvas.getContext('2d');\r\n                            const img = new Image();\r\n                            \r\n                            await new Promise((resolve, reject) => {\r\n                                img.onload = () => {\r\n                                    ctx.drawImage(img, 0, 0);\r\n                                    resolve();\r\n                                };\r\n                                img.onerror = reject;\r\n                                img.src = base64;\r\n                            });\r\n                            \r\n                            return canvas;\r\n                        }));\r\n                    }));\r\n                }\r\n                convertedImages[key] = animations;\r\n            }\r\n        }\r\n        \r\n        return convertedImages;\r\n    }\r\n    async cacheImages(prefix) {\r\n        const base64Images = {};\r\n        \r\n        for (const [key, value] of Object.entries(this.images)) {\r\n            if (key.startsWith(prefix)) {\r\n                if (Array.isArray(value) && value[0]?.type && value[0]?.sprites) {\r\n                    // Handle terrain tiles\r\n                    base64Images[key] = value.map(terrain => ({\r\n                        type: terrain.type,\r\n                        sprites: terrain.sprites.map(canvas => canvas.toDataURL('image/png'))\r\n                    }));\r\n                } else if (typeof value === 'object' && value !== null) {\r\n                    // Handle animations\r\n                    const animationData = {};\r\n                    for (const [animType, frames] of Object.entries(value)) {\r\n                        animationData[animType] = frames.map(frameSet => \r\n                            frameSet.map(canvas => canvas.toDataURL('image/png'))\r\n                        );\r\n                    }\r\n                    base64Images[key] = animationData;\r\n                }\r\n            }\r\n        }\r\n\r\n        try {\r\n            await fetch('/api/cache', {\r\n                method: 'POST',\r\n                headers: {\r\n                    'Content-Type': 'application/json',\r\n                },\r\n                body: JSON.stringify({\r\n                    prefix,\r\n                    images: base64Images\r\n                })\r\n            });\r\n        } catch (error) {\r\n            console.error('Error caching images:', error);\r\n        }\r\n    }\r\n    // In the ImageManager class\r\n    async createTerrainImages(config) {\r\n        let terrainTiles = [];\r\n        const tileWidth = 24;\r\n\r\n        // Create a map of terrain type to its image data first\r\n        const terrainMap = {};\r\n        \r\n        await Promise.all(config.tileMap.terrainTypes.map(async (terrainType, terrainIndex) => {\r\n            const pixelData = terrainType.image;\r\n            if (pixelData && pixelData.length > 0) {\r\n                let sprites = new Array(8);\r\n                \r\n                await Promise.all(pixelData.map(async (imagePixelData, spriteIdx) => {\r\n                    const img = new Image();\r\n                    const canvas = document.createElement('canvas');\r\n                    canvas.width = canvas.height = tileWidth;\r\n                    const ctx = canvas.getContext('2d');\r\n\r\n                    if (!imagePixelData.startsWith('data:image/')) {\r\n                        imagePixelData = 'data:image/png;base64,' + imagePixelData;\r\n                    }\r\n                    img.src = imagePixelData;\r\n\r\n                    await new Promise((resolve, reject) => {\r\n                        img.onload = () => {\r\n                            ctx.drawImage(img, 0, 0);\r\n                            sprites[spriteIdx] = canvas;\r\n                            resolve();\r\n                        };\r\n                        img.onerror = () => {\r\n                            console.error(`Failed to load image for ${terrainType.type} at index ${spriteIdx}`);\r\n                            sprites[spriteIdx] = canvas; // Store empty canvas on error\r\n                            resolve(); // Don't reject, just move on\r\n                        };\r\n                    });\r\n                }));\r\n\r\n                // Store by index and type for more reliable lookup\r\n                terrainTiles[terrainIndex] = { \r\n                    type: terrainType.type,\r\n                    sprites: sprites \r\n                };\r\n            } else {\r\n                // Create a solid color placeholder for types without images\r\n                const sprites = new Array(8).fill().map(() => {\r\n                    const canvas = document.createElement('canvas');\r\n                    canvas.width = canvas.height = tileWidth;\r\n                    const ctx = canvas.getContext('2d');\r\n                    ctx.fillStyle = terrainType.color || '#cccccc';\r\n                    ctx.fillRect(0, 0, tileWidth, tileWidth);\r\n                    return canvas;\r\n                });\r\n                \r\n                terrainTiles[terrainIndex] = {\r\n                    type: terrainType.type,\r\n                    sprites: sprites\r\n                };\r\n            }\r\n        }));\r\n\r\n        // Make sure there are no gaps in the array\r\n        return terrainTiles.filter(Boolean);\r\n    }\r\n    async createAnimatedPlaceholder(config) {\r\n        const animations = {};\r\n        \r\n        if(config.shadows === false) {\r\n            this.ground.receiveShadow = false;\r\n        } else {\r\n            this.ground.receiveShadow = true;\r\n        }\r\n        for (const [animType, frames] of Object.entries(config.render.animations)) {\r\n            animations[animType] = [];\r\n            let i = 0;\r\n            for (const frame of frames) {\r\n                const frameImages = await this.captureObjectImagesFromJSON(config.render.model, frame);\r\n                const canvases = frameImages.map(img => {\r\n                    const canvas = document.createElement('canvas');\r\n                    canvas.width = canvas.height = this.imageSize;\r\n                    const ctx = canvas.getContext('2d');\r\n                    ctx.drawImage(img, 0, 0);\r\n                    return canvas;\r\n                });                \r\n                animations[animType].push(canvases); // Array of 8 canvases per frame\r\n            }\r\n        }\r\n        return animations; // { \"idle\": [[canvas0, canvas1, canvas2, canvas3, ...], ...], \"walk\": [...] }\r\n    }\r\n\r\n    getImages(prefix, type) {\r\n        return this.images[`${prefix}_${type}`]; // Returns animation object\r\n    }\r\n    async captureObjectImagesFromJSON(model, frameData) {\r\n        const size = this.imageSize;\r\n        // Clear the scene\r\n        while (this.scene.children.length > 0) {\r\n            const object = this.scene.children[0];\r\n            this.scene.remove(object);\r\n        }\r\n        \r\n        // Add reusable elements to scene\r\n        this.scene.add(this.ground);\r\n        this.scene.add(this.ambientLight);\r\n        this.scene.add(this.lightGroup);\r\n        \r\n        // Create objects from the JSON data\r\n        const objectGroup = await this.createObjectsFromJSON(model, frameData, this.scene);\r\n\r\n        \r\n        const images = [];\r\n        \r\n        // For each camera view, rotate the light group to match camera orientation\r\n        for (let i = 0; i < this.cameras.length; i++) {\r\n            const camera = this.cameras[i];\r\n            \r\n            // Reset light group rotation\r\n            this.lightGroup.rotation.set(0, 0, 0);\r\n            \r\n            // Rotate light group to match camera position\r\n            // Calculate angle based on camera index (8 positions at 45-degree intervals)\r\n            // Rotate 45 degrees CLOCKWISE (subtract π/4 instead of adding)\r\n            const angle = (i * Math.PI / 4); \r\n            this.lightGroup.rotation.y = angle;\r\n            \r\n            // Before rendering with each camera, update shadow camera frustum\r\n            const d = 100;\r\n            this.directionalLight.shadow.camera.left = -d;\r\n            this.directionalLight.shadow.camera.right = d;\r\n            this.directionalLight.shadow.camera.top = d;\r\n            this.directionalLight.shadow.camera.bottom = -d;\r\n            // After rotating lightGroup in the camera loop\r\n            this.directionalLight.shadow.camera.updateProjectionMatrix();\r\n            this.directionalLight.shadow.camera.updateMatrixWorld();\r\n            this.directionalLight.target.position.set(0, 0, 0);\r\n            this.directionalLight.target.updateMatrixWorld();\r\n            // Render and capture the image\r\n            this.renderer.setRenderTarget(this.renderTarget);\r\n            this.renderer.render(this.scene, camera);\r\n            const buffer = new Uint8Array(size * size * 4);\r\n            this.renderer.readRenderTargetPixels(this.renderTarget, 0, 0, size, size, buffer);\r\n            \r\n            // Flip the buffer (y-axis)\r\n            const flippedBuffer = new Uint8Array(size * size * 4);\r\n            for (let y = 0; y < size; y++) {\r\n                const srcRowStart = y * size * 4;\r\n                const destRowStart = (size - 1 - y) * size * 4;\r\n                flippedBuffer.set(buffer.subarray(srcRowStart, srcRowStart + size * 4), destRowStart);\r\n            }\r\n            \r\n            const imageData = new ImageData(new Uint8ClampedArray(flippedBuffer), size, size);\r\n            const imageBitmap = await createImageBitmap(imageData);\r\n            images.push(imageBitmap);\r\n        }\r\n        if( this.renderer) this.renderer.setRenderTarget(null);\r\n        \r\n        // Cleanup object geometries and materials\r\n        this.shapeFactory.disposeObject(objectGroup);\r\n        \r\n        // Remove object group from scene\r\n        if( this.scene ) this.scene.remove(objectGroup);\r\n        \r\n        return images;\r\n    }\r\n\r\n    /**\r\n     * Creates 3D objects from shape data.\r\n     * @param {Object} frameData - The JSON object containing frame definitions.\r\n     * @returns {THREE.Group} - A group containing all 3D objects.\r\n     */\r\n  \r\n    async createObjectsFromJSON(model, frameData, scene) {\r\n        const rootGroup = new THREE.Group();\r\n        \r\n        for(const groupName in model) {\r\n            const group = await this.shapeFactory.createMergedGroupFromJSON(model, frameData, groupName);\r\n            if(group){\r\n                group.traverse((child) => {\r\n                    if (child.isMesh) {\r\n                        child.castShadow = true; // or set this selectively for objects that should cast shadows\r\n                        child.receiveShadow = true; // for objects that should receive shadows\r\n                    }\r\n                });\r\n                rootGroup.add(group);\r\n            }\r\n        }\r\n\r\n        scene.add(rootGroup);\r\n    \r\n        return rootGroup;\r\n    }\r\n   \r\n}\r\n",
+        "script": "\r\nclass ImageManager {\r\n    constructor(app, {imageSize, palette}, {ShapeFactory}) {\r\n        this.app = app;\r\n        this.images = {};\r\n        this.imageSize = imageSize || 128;\r\n        // Create a single reusable renderer\r\n        this.renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });\r\n        this.renderer.setSize(this.imageSize, this.imageSize);\r\n        this.renderer.shadowMap.enabled = true;\r\n        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;\r\n        \r\n        this.renderTarget = new THREE.WebGLRenderTarget(this.imageSize, this.imageSize);\r\n        this.renderTarget.texture.flipY = true;\r\n        \r\n        // Create reusable scene\r\n        this.scene = new THREE.Scene();\r\n        \r\n        // Create reusable cameras for different views\r\n        const cameraDistance = 64;\r\n        const frustumSize = cameraDistance + 16;\r\n        const aspect = 1;\r\n\r\n        this.shapeFactory = new ShapeFactory(palette);\r\n        // Create 8 cameras for isometric views at 45-degree intervals\r\n        this.cameras = [];\r\n        for (let i = 0; i < 8; i++) {\r\n            this.cameras.push(new THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000));\r\n        }\r\n        \r\n        // Position cameras in a circle around the y-axis at isometric angle\r\n        // Standard isometric angle is about 35.264 degrees (arctan(1/sqrt(2)))\r\n        const isoAngle = Math.atan(1 / Math.sqrt(2));\r\n        const horizDistance = cameraDistance * Math.cos(isoAngle);\r\n        const vertDistance = cameraDistance * Math.sin(isoAngle);\r\n        \r\n        for (let i = 0; i < 8; i++) {\r\n            const angle = (i * Math.PI / 4); // 45-degree increments\r\n            const x = horizDistance * Math.sin(angle);\r\n            const z = horizDistance * Math.cos(angle);\r\n            \r\n            this.cameras[i].position.set(x, vertDistance, z);\r\n            this.cameras[i].lookAt(0, 0, 0);\r\n        }\r\n        \r\n        // Create reusable lights\r\n        this.ambientLight = new THREE.AmbientLight(0xffaaff, .25);\r\n        \r\n        // Create a light group that will rotate with each camera view\r\n        this.lightGroup = new THREE.Group();\r\n        \r\n        // Main directional light\r\n        this.directionalLight = new THREE.DirectionalLight(0xffffaa, .7);\r\n        this.directionalLight.position.set(75, 96, 75);\r\n        this.directionalLight.castShadow = true;\r\n        this.directionalLight.shadow.mapSize.width = 1024;\r\n        this.directionalLight.shadow.mapSize.height = 1024;\r\n        this.directionalLight.shadow.camera.near = 0.5;\r\n        this.directionalLight.shadow.camera.far = 500;\r\n        this.directionalLight.shadow.bias = -0.0005;\r\n        this.directionalLight.shadow.normalBias = 0.02;\r\n        this.directionalLight.shadow.radius = 1;\r\n        this.lightGroup.add(this.directionalLight);\r\n        \r\n        // Fill light\r\n        this.fillLight = new THREE.DirectionalLight(0xffaaff, .5);\r\n        this.fillLight.position.set(-20, 30, -20);\r\n        this.lightGroup.add(this.fillLight);\r\n        \r\n        // Create ground plane\r\n        const groundGeometry = new THREE.PlaneGeometry(200, 200);\r\n        const groundMaterial = new THREE.ShadowMaterial({ opacity: 0.3 });\r\n        this.ground = new THREE.Mesh(groundGeometry, groundMaterial);\r\n        this.ground.rotation.x = -Math.PI / 2;\r\n        this.ground.position.y = 0;\r\n        this.ground.receiveShadow = true;\r\n    }\r\n\r\n    clear() {\r\n        images = {};\r\n    }\r\n\r\n    dispose() {\r\n        // Proper cleanup when the manager is no longer needed\r\n        if (this.renderer) {\r\n            this.renderer.dispose();\r\n            this.renderer = null;\r\n        }\r\n        if (this.renderTarget) {\r\n            this.renderTarget.dispose();\r\n            this.renderTarget = null;\r\n        }\r\n        if (this.ground && this.ground.geometry) {\r\n            this.ground.geometry.dispose();\r\n            this.ground.material.dispose();\r\n        }\r\n        // Dispose of other reusable resources\r\n        this.cameras = [];\r\n        this.scene = null;\r\n        this.lightGroup = null;\r\n        this.ambientLight = null;\r\n    }\r\n\r\n    async loadImages(prefix, config, checkCache = true, cacheResult = true) {\r\n\r\n        if (!prefix || !config || typeof config !== 'object') {\r\n            throw new Error('Invalid prefix or config provided to loadImages');\r\n        }\r\n        if( checkCache ) {\r\n            const cachedImages = await this.checkCache(prefix);\r\n            if (cachedImages) {\r\n                this.images = { ...this.images, ...cachedImages };\r\n                return;\r\n            }\r\n        }\r\n    \r\n        for (const [type, cfg] of Object.entries(config)) {\r\n            if (cfg.render && cfg.render.animations) {\r\n                this.images[`${prefix}_${type}`] = await this.createAnimatedPlaceholder(cfg);\r\n            } else if (cfg.tileMap && cfg.tileMap.terrainTypes) {\r\n                this.images[`${prefix}_${type}`] = await this.createTerrainImages(cfg);\r\n            }\r\n        }\r\n        if(cacheResult) {\r\n            await this.cacheImages(prefix);\r\n        }\r\n    }\r\n    \r\n    async checkCache(prefix) {\r\n        try {\r\n            const response = await fetch(`cache/${prefix}.json`);\r\n            if (response.ok) {\r\n                const cacheData = await response.json();\r\n                // Convert base64 cached images back to canvases\r\n                return await this.convertBase64ToCanvases(cacheData.images);\r\n            }\r\n            return null;\r\n        } catch (error) {\r\n            return null;\r\n        }\r\n    }\r\n\r\n    async convertBase64ToCanvases(cachedImages) {\r\n        const convertedImages = {};\r\n        \r\n        for (const [key, value] of Object.entries(cachedImages)) {\r\n            if (Array.isArray(value)) {\r\n                // Handle terrain tiles\r\n                convertedImages[key] = await Promise.all(value.map(async (terrain) => {\r\n                    const sprites = await Promise.all(terrain.sprites.map(async (base64) => {\r\n                        const canvas = document.createElement('canvas');\r\n                        canvas.width = canvas.height = 24; // Match tileWidth from createTerrainImages\r\n                        const ctx = canvas.getContext('2d');\r\n                        const img = new Image();\r\n                        \r\n                        await new Promise((resolve, reject) => {\r\n                            img.onload = () => {\r\n                                ctx.drawImage(img, 0, 0);\r\n                                resolve();\r\n                            };\r\n                            img.onerror = reject;\r\n                            img.src = base64;\r\n                        });\r\n                        \r\n                        return canvas;\r\n                    }));\r\n                    \r\n                    return {\r\n                        type: terrain.type,\r\n                        sprites\r\n                    };\r\n                }));\r\n            } else if (typeof value === 'object') {\r\n                // Handle animations\r\n                const animations = {};\r\n                for (const [animType, frames] of Object.entries(value)) {\r\n                    animations[animType] = await Promise.all(frames.map(async (frameSet) => {\r\n                        return Promise.all(frameSet.map(async (base64) => {\r\n                            const canvas = document.createElement('canvas');\r\n                            canvas.width = canvas.height = this.imageSize;\r\n                            const ctx = canvas.getContext('2d');\r\n                            const img = new Image();\r\n                            \r\n                            await new Promise((resolve, reject) => {\r\n                                img.onload = () => {\r\n                                    ctx.drawImage(img, 0, 0);\r\n                                    resolve();\r\n                                };\r\n                                img.onerror = reject;\r\n                                img.src = base64;\r\n                            });\r\n                            \r\n                            return canvas;\r\n                        }));\r\n                    }));\r\n                }\r\n                convertedImages[key] = animations;\r\n            }\r\n        }\r\n        \r\n        return convertedImages;\r\n    }\r\n    async cacheImages(prefix) {\r\n        const base64Images = {};\r\n        \r\n        for (const [key, value] of Object.entries(this.images)) {\r\n            if (key.startsWith(prefix)) {\r\n                if (Array.isArray(value) && value[0]?.type && value[0]?.sprites) {\r\n                    // Handle terrain tiles\r\n                    base64Images[key] = value.map(terrain => ({\r\n                        type: terrain.type,\r\n                        sprites: terrain.sprites.map(canvas => canvas.toDataURL('image/png'))\r\n                    }));\r\n                } else if (typeof value === 'object' && value !== null) {\r\n                    // Handle animations\r\n                    const animationData = {};\r\n                    for (const [animType, frames] of Object.entries(value)) {\r\n                        animationData[animType] = frames.map(frameSet => \r\n                            frameSet.map(canvas => canvas.toDataURL('image/png'))\r\n                        );\r\n                    }\r\n                    base64Images[key] = animationData;\r\n                }\r\n            }\r\n        }\r\n\r\n        try {\r\n            await fetch('/api/cache', {\r\n                method: 'POST',\r\n                headers: {\r\n                    'Content-Type': 'application/json',\r\n                },\r\n                body: JSON.stringify({\r\n                    prefix,\r\n                    images: base64Images\r\n                })\r\n            });\r\n        } catch (error) {\r\n            console.error('Error caching images:', error);\r\n        }\r\n    }\r\n    // In the ImageManager class\r\n    async createTerrainImages(config) {\r\n        let terrainTiles = [];\r\n        const tileWidth = 24;\r\n\r\n        // Create a map of terrain type to its image data first\r\n        const terrainMap = {};\r\n        \r\n        await Promise.all(config.tileMap.terrainTypes.map(async (terrainType, terrainIndex) => {\r\n            const pixelData = terrainType.image;\r\n            if (pixelData && pixelData.length > 0) {\r\n                let sprites = new Array(8);\r\n                \r\n                await Promise.all(pixelData.map(async (imagePixelData, spriteIdx) => {\r\n                    const img = new Image();\r\n                    const canvas = document.createElement('canvas');\r\n                    canvas.width = canvas.height = tileWidth;\r\n                    const ctx = canvas.getContext('2d');\r\n\r\n                    if (!imagePixelData.startsWith('data:image/')) {\r\n                        imagePixelData = 'data:image/png;base64,' + imagePixelData;\r\n                    }\r\n                    img.src = imagePixelData;\r\n\r\n                    await new Promise((resolve, reject) => {\r\n                        img.onload = () => {\r\n                            ctx.drawImage(img, 0, 0);\r\n                            sprites[spriteIdx] = canvas;\r\n                            resolve();\r\n                        };\r\n                        img.onerror = () => {\r\n                            console.error(`Failed to load image for ${terrainType.type} at index ${spriteIdx}`);\r\n                            sprites[spriteIdx] = canvas; // Store empty canvas on error\r\n                            resolve(); // Don't reject, just move on\r\n                        };\r\n                    });\r\n                }));\r\n\r\n                // Store by index and type for more reliable lookup\r\n                terrainTiles[terrainIndex] = { \r\n                    type: terrainType.type,\r\n                    sprites: sprites \r\n                };\r\n            } else {\r\n                // Create a solid color placeholder for types without images\r\n                const sprites = new Array(8).fill().map(() => {\r\n                    const canvas = document.createElement('canvas');\r\n                    canvas.width = canvas.height = tileWidth;\r\n                    const ctx = canvas.getContext('2d');\r\n                    ctx.fillStyle = terrainType.color || '#cccccc';\r\n                    ctx.fillRect(0, 0, tileWidth, tileWidth);\r\n                    return canvas;\r\n                });\r\n                \r\n                terrainTiles[terrainIndex] = {\r\n                    type: terrainType.type,\r\n                    sprites: sprites\r\n                };\r\n            }\r\n        }));\r\n\r\n        // Make sure there are no gaps in the array\r\n        return terrainTiles.filter(Boolean);\r\n    }\r\n    async createAnimatedPlaceholder(config) {\r\n        const animations = {};\r\n        \r\n        if(config.shadows === false) {\r\n            this.ground.receiveShadow = false;\r\n        } else {\r\n            this.ground.receiveShadow = true;\r\n        }\r\n        for (const [animType, frames] of Object.entries(config.render.animations)) {\r\n            animations[animType] = [];\r\n            let i = 0;\r\n            for (const frame of frames) {\r\n                const frameImages = await this.captureObjectImagesFromJSON(config.render.model, frame);\r\n                const canvases = frameImages.map(img => {\r\n                    const canvas = document.createElement('canvas');\r\n                    canvas.width = canvas.height = this.imageSize;\r\n                    const ctx = canvas.getContext('2d');\r\n                    ctx.drawImage(img, 0, 0);\r\n                    return canvas;\r\n                });                \r\n                animations[animType].push(canvases); // Array of 8 canvases per frame\r\n            }\r\n        }\r\n        return animations; // { \"idle\": [[canvas0, canvas1, canvas2, canvas3, ...], ...], \"walk\": [...] }\r\n    }\r\n\r\n    getImages(prefix, type) {\r\n        return this.images[`${prefix}_${type}`]; // Returns animation object\r\n    }\r\n    async captureObjectImagesFromJSON(model, frameData) {\r\n        const size = this.imageSize;\r\n        // Clear the scene\r\n        while (this.scene.children.length > 0) {\r\n            const object = this.scene.children[0];\r\n            this.scene.remove(object);\r\n        }\r\n        \r\n        // Add reusable elements to scene\r\n        this.scene.add(this.ground);\r\n        this.scene.add(this.ambientLight);\r\n        this.scene.add(this.lightGroup);\r\n        \r\n        // Create objects from the JSON data\r\n        const objectGroup = await this.createObjectsFromJSON(model, frameData, this.scene);\r\n\r\n        \r\n        const images = [];\r\n        \r\n        // For each camera view, rotate the light group to match camera orientation\r\n        for (let i = 0; i < this.cameras.length; i++) {\r\n            const camera = this.cameras[i];\r\n            \r\n            // Reset light group rotation\r\n            this.lightGroup.rotation.set(0, 0, 0);\r\n            \r\n            // Rotate light group to match camera position\r\n            // Calculate angle based on camera index (8 positions at 45-degree intervals)\r\n            // Rotate 45 degrees CLOCKWISE (subtract π/4 instead of adding)\r\n            const angle = (i * Math.PI / 4); \r\n            this.lightGroup.rotation.y = angle;\r\n            \r\n            // Before rendering with each camera, update shadow camera frustum\r\n            const d = 100;\r\n            this.directionalLight.shadow.camera.left = -d;\r\n            this.directionalLight.shadow.camera.right = d;\r\n            this.directionalLight.shadow.camera.top = d;\r\n            this.directionalLight.shadow.camera.bottom = -d;\r\n            // After rotating lightGroup in the camera loop\r\n            this.directionalLight.shadow.camera.updateProjectionMatrix();\r\n            this.directionalLight.shadow.camera.updateMatrixWorld();\r\n            this.directionalLight.target.position.set(0, 0, 0);\r\n            this.directionalLight.target.updateMatrixWorld();\r\n            // Render and capture the image\r\n            this.renderer.setRenderTarget(this.renderTarget);\r\n            this.renderer.render(this.scene, camera);\r\n            const buffer = new Uint8Array(size * size * 4);\r\n            this.renderer.readRenderTargetPixels(this.renderTarget, 0, 0, size, size, buffer);\r\n            \r\n            // Flip the buffer (y-axis)\r\n            const flippedBuffer = new Uint8Array(size * size * 4);\r\n            for (let y = 0; y < size; y++) {\r\n                const srcRowStart = y * size * 4;\r\n                const destRowStart = (size - 1 - y) * size * 4;\r\n                flippedBuffer.set(buffer.subarray(srcRowStart, srcRowStart + size * 4), destRowStart);\r\n            }\r\n            \r\n            const imageData = new ImageData(new Uint8ClampedArray(flippedBuffer), size, size);\r\n            const imageBitmap = await createImageBitmap(imageData);\r\n            images.push(imageBitmap);\r\n        }\r\n        if( this.renderer) this.renderer.setRenderTarget(null);\r\n        \r\n        // Cleanup object geometries and materials\r\n        this.shapeFactory.disposeObject(objectGroup);\r\n        \r\n        // Remove object group from scene\r\n        if( this.scene ) this.scene.remove(objectGroup);\r\n        \r\n        return images;\r\n    }\r\n\r\n    /**\r\n     * Creates 3D objects from shape data.\r\n     * @param {Object} frameData - The JSON object containing frame definitions.\r\n     * @returns {THREE.Group} - A group containing all 3D objects.\r\n     */\r\n  \r\n    async createObjectsFromJSON(model, frameData, scene) {\r\n        const rootGroup = new THREE.Group();\r\n        \r\n        for(const groupName in model) {\r\n            const group = await this.shapeFactory.createMergedGroupFromJSON(model, frameData, groupName);\r\n            if(group){\r\n                group.traverse((child) => {\r\n                    if (child.isMesh) {\r\n                        child.castShadow = true; // or set this selectively for objects that should cast shadows\r\n                        child.receiveShadow = true; // for objects that should receive shadows\r\n                    }\r\n                });\r\n                rootGroup.add(group);\r\n            }\r\n        }\r\n\r\n        scene.add(rootGroup);\r\n    \r\n        return rootGroup;\r\n    }\r\n   \r\n}\r\n",
         "fileName": "ImageManager"
       },
       "SpatialGrid": {
@@ -19391,7 +21202,7 @@ const DEFAULT_PROJECT_CONFIG = {
       },
       "GE_UIManager": {
         "title": "GE_UIManager",
-        "script": "class GE_UIManager {\r\n    constructor(gameEditor, graphicsEditor) {\r\n        this.gameEditor = gameEditor;\r\n        this.graphicsEditor = graphicsEditor;\r\n        this.mouse = new window.THREE.Vector2();\r\n        this.raycaster = new window.THREE.Raycaster();\r\n        this.isDragging = false;\r\n        this.clickStartTime = 0;\r\n    }    \r\n     \r\n\r\n    init() {   \r\n        this.initEventListeners();\r\n    }\r\n    \r\n    \r\n    \r\n    initEventListeners() {\r\n        // Button event listeners\r\n        const buttonMappings = {\r\n            'generate-isometric': this.showIsometricModal.bind(this),\r\n        };\r\n        Object.entries(buttonMappings).forEach(([id, handler]) => {\r\n            const button = document.getElementById(id);\r\n            if (button) button.addEventListener('click', handler);\r\n        });\r\n\r\n        // Canvas interaction\r\n        this.graphicsEditor.canvas.addEventListener('mousedown', this.handleMouseDown.bind(this));\r\n        this.graphicsEditor.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));\r\n        this.graphicsEditor.canvas.addEventListener('mouseup', this.handleMouseUp.bind(this));\r\n\r\n        // Additional event listeners\r\n\r\n        \r\n        // Move modal listeners\r\n\r\n        // Isometric modal listeners\r\n        document.getElementById('iso-cancel').addEventListener('click', () => {\r\n            document.getElementById('modal-generateIsoSprites').classList.remove('show');\r\n        });\r\n    }\r\n    handleMouseDown(event) {\r\n        this.isDragging = false;\r\n        this.clickStartTime = Date.now();\r\n    }\r\n\r\n    handleMouseMove() {\r\n        if (Date.now() - this.clickStartTime > 100) {\r\n            this.isDragging = true;\r\n        }\r\n    }\r\n\r\n    handleMouseUp(event) {\r\n        if (this.isDragging) return;\r\n    \r\n        const rect = this.graphicsEditor.canvas.getBoundingClientRect();\r\n        this.mouse.x = ((event.clientX - rect.left) / this.graphicsEditor.canvas.clientWidth) * 2 - 1;\r\n        this.mouse.y = -((event.clientY - rect.top) / this.graphicsEditor.canvas.clientHeight) * 2 + 1;\r\n    \r\n        this.raycaster.setFromCamera(this.mouse, this.graphicsEditor.sceneRenderer.camera);\r\n    \r\n        // Instead of looking only at scene.children, search through all descendant meshes\r\n        const meshes = [];\r\n        this.graphicsEditor.rootGroup.traverse(obj => {\r\n            if (obj.isMesh && obj.userData.isShape) {\r\n                meshes.push(obj);\r\n            }\r\n        });\r\n    \r\n        const intersects = this.raycaster.intersectObjects(meshes, true);\r\n    \r\n        if (intersects.length > 0) {\r\n            // Find the parent mesh with the isShape flag if we've hit a child mesh\r\n            let hitObject = intersects[0].object;\r\n            while (hitObject && !hitObject.userData.isShape) {\r\n                hitObject = hitObject.parent;\r\n            }\r\n            \r\n            if (hitObject && hitObject.userData.index !== undefined) {\r\n                this.graphicsEditor.selectShape(hitObject.userData.index);\r\n            }\r\n        }\r\n    }\r\n    \r\n\r\n    showIsometricModal() {\r\n        document.getElementById('modal-generateIsoSprites').classList.add('show');\r\n    }\r\n    displayIsometricSprites(sprites) {\r\n        const modal = document.createElement('div');\r\n        modal.style.cssText = `\r\n            position: fixed; top: 0; left: 0; width: 100%; height: 100%; \r\n            background-color: rgba(0, 0, 0, 0.7); z-index: 1000; \r\n            display: flex; align-items: center; justify-content: center;\r\n        `;\r\n        const content = document.createElement('div');\r\n        content.style.cssText = `\r\n            background: #333; padding: 20px; border-radius: 8px; \r\n            max-width: 80%; max-height: 80%; overflow: auto;\r\n        `;\r\n    \r\n        const angleLabels = ['NE', 'N', 'NW', 'W', 'SW', 'S', 'SE', 'E']; // Labels for 8 angles\r\n    \r\n        for (const animType in sprites) {\r\n            const animSection = document.createElement('div');\r\n            const title = document.createElement('h3');\r\n            title.textContent = `${animType} Animation`;\r\n            title.style.color = '#e0e0e0';\r\n            animSection.appendChild(title);\r\n    \r\n            // Create a container for all angles\r\n            const anglesContainer = document.createElement('div');\r\n            anglesContainer.style.cssText = `margin: 10px 0;`;\r\n    \r\n            // For each angle (0-7)\r\n            for (let angle = 0; angle < 8; angle++) {\r\n                const angleSection = document.createElement('div');\r\n    \r\n                const grid = document.createElement('div');\r\n                grid.style.cssText = `\r\n                    display: grid; \r\n                    grid-template-columns: repeat(${Math.min(sprites[animType].length, 4)}, 1fr); \r\n                    gap: 5px; \r\n                    margin-bottom: 15px;\r\n                `;\r\n    \r\n                // Add all frames for this specific angle\r\n                sprites[animType].forEach(frame => {\r\n                    const img = document.createElement('img');\r\n                    img.src = frame[angle]; // Get the specific angle's sprite\r\n                    img.style.maxWidth = '100%';\r\n                    grid.appendChild(img);\r\n                });\r\n    \r\n                angleSection.appendChild(grid);\r\n                anglesContainer.appendChild(angleSection);\r\n            }\r\n    \r\n            animSection.appendChild(anglesContainer);\r\n            content.appendChild(animSection);\r\n        }\r\n    \r\n        const closeButton = document.createElement('button');\r\n        closeButton.textContent = 'Close';\r\n        closeButton.style.cssText = `\r\n            margin-top: 20px; padding: 8px 16px; background-color: #4CAF50; \r\n            color: #fff; border: none; border-radius: 6px; cursor: pointer;\r\n        `;\r\n        closeButton.addEventListener('click', () => document.body.removeChild(modal));\r\n        content.appendChild(closeButton);\r\n        modal.appendChild(content);\r\n        document.body.appendChild(modal);\r\n    }\r\n    \r\n    createGroupInspector(group) {\r\n        console.log('create group inspector', group);\r\n        const inspector = document.getElementById('inspector');\r\n        inspector.innerHTML = \"\";\r\n        inspector.className = 'inspector';\r\n\r\n        \r\n        this.addFormRow(inspector, 'X Scale', 'number', 'scaleX', group.scale.x || 1, { min: 0.1, step: 0.1 });\r\n        this.addFormRow(inspector, 'Y Scale', 'number', 'scaleY', group.scale.y || 1, { min: 0.1, step: 0.1 });\r\n        this.addFormRow(inspector, 'Z Scale', 'number', 'scaleZ', group.scale.z || 1, { min: 0.1, step: 0.1 });\r\n        // Position inputs\r\n        this.addFormRow(inspector, 'X Position', 'number', 'x', group.position.x || 0, { step: 0.1 });\r\n        this.addFormRow(inspector, 'Y Position', 'number', 'y', group.position.y || 0, { step: 0.1 });\r\n        this.addFormRow(inspector, 'Z Position', 'number', 'z', group.position.z || 0, { step: 0.1 });\r\n        \r\n        // Rotation inputs\r\n        this.addFormRow(inspector, 'X Rotation', 'number', 'rotationX', group.rotation.x || 0, { step: 5 });\r\n        this.addFormRow(inspector, 'Y Rotation', 'number', 'rotationY', group.rotation.y || 0, { step: 5 });\r\n        this.addFormRow(inspector, 'Z Rotation', 'number', 'rotationZ', group.rotation.z || 0, { step: 5 });\r\n        \r\n    }\r\n\r\n    createInspector(shape) {\r\n        console.log('create shape inspector', shape);\r\n        const inspector = document.getElementById('inspector');\r\n        inspector.innerHTML = \"\";\r\n        inspector.className = 'inspector';\r\n\r\n        this.addFormRow(inspector, 'Name', 'text', 'name', shape.name || \"\");\r\n        \r\n        // Type selector\r\n        this.addFormRow(inspector, 'Type', 'select', 'type', shape.type, {\r\n            options: ['cube', 'sphere', 'box', 'cylinder', 'cone', 'torus', 'tetrahedron', 'gltf'],\r\n            change: (e) => {\r\n                let currentShape = this.graphicsEditor.getFrameShape();\r\n                let newValue = e.target.value;\r\n                if (newValue != 'gltf') {\r\n                    delete currentShape.url\r\n                }                 \r\n                currentShape.type = newValue;\r\n                this.graphicsEditor.refreshShapes(false);\r\n            }\r\n        });\r\n        \r\n        if (shape.type === 'gltf') {            \r\n            let input = this.addFormRow(inspector, 'Model', 'file', 'url', shape.url, { 'change' :  async (e) => {\r\n                e.preventDefault();\r\n\r\n                // Get the file from the input element\r\n                const file = e.target.files[0]; // Access the file object\r\n                if (!file) {\r\n                    console.error('No file selected');\r\n                    return;\r\n                }\r\n                // // Create FormData and append the file\r\n                 const formData = new FormData();\r\n                 formData.append('gltfFile', file); // 'gltfFile' matches the multer.single('gltfFile') on the server\r\n\r\n                try {\r\n                     const response = await fetch('/upload-model', {\r\n                         method: 'POST',\r\n                         body: formData // Send the FormData with the file\r\n                     });\r\n\r\n                     const result = await response.json();\r\n                     shape.url = result.filePath; \r\n                     this.graphicsEditor.getFrameShape().url = result.filePath;\r\n                     this.graphicsEditor.refreshShapes(false);\r\n                } catch (error) {\r\n                     console.error('Error uploading file:', error);\r\n                }\r\n            }});\r\n            input.setAttribute(\"accept\",\".gltf\");\r\n        }\r\n        // Color picker\r\n        this.addFormRow(inspector, 'Color', 'color', 'color', shape.color);\r\n        \r\n        this.addFormRow(inspector, 'X Scale', 'number', 'scaleX', shape.scaleX || 1, { min: 0.1, step: 0.1 });\r\n        this.addFormRow(inspector, 'Y Scale', 'number', 'scaleY', shape.scaleY || 1, { min: 0.1, step: 0.1 });\r\n        this.addFormRow(inspector, 'Z Scale', 'number', 'scaleZ', shape.scaleZ || 1, { min: 0.1, step: 0.1 });\r\n        // Position inputs\r\n        this.addFormRow(inspector, 'X Position', 'number', 'x', shape.x || 0, { step: 0.1 });\r\n        this.addFormRow(inspector, 'Y Position', 'number', 'y', shape.y || 0, { step: 0.1 });\r\n        this.addFormRow(inspector, 'Z Position', 'number', 'z', shape.z || 0, { step: 0.1 });\r\n        \r\n        // Rotation inputs\r\n        this.addFormRow(inspector, 'X Rotation', 'number', 'rotationX', shape.rotationX || 0, { step: 5 });\r\n        this.addFormRow(inspector, 'Y Rotation', 'number', 'rotationY', shape.rotationY || 0, { step: 5 });\r\n        this.addFormRow(inspector, 'Z Rotation', 'number', 'rotationZ', shape.rotationZ || 0, { step: 5 });\r\n        \r\n        // Size inputs\r\n        if (['cube', 'sphere', 'tetrahedron', 'torus'].includes(shape.type)) {\r\n            this.addFormRow(inspector, 'Size', 'number', 'size', shape.size || 2, { min: 0.1, step: 0.1 });\r\n        }\r\n        \r\n        if (shape.type === 'box') {\r\n            this.addFormRow(inspector, 'Width', 'number', 'width', shape.width || 2, { min: 0.1, step: 0.1 });\r\n            this.addFormRow(inspector, 'Height', 'number', 'height', shape.height || 2, { min: 0.1, step: 0.1 });\r\n            this.addFormRow(inspector, 'Depth', 'number', 'depth', shape.depth || 2, { min: 0.1, step: 0.1 });\r\n        }\r\n        \r\n        if (['cylinder', 'cone'].includes(shape.type)) {\r\n            this.addFormRow(inspector, 'Size', 'number', 'size', shape.size || 2, { min: 0.1, step: 0.1 });\r\n            this.addFormRow(inspector, 'Height', 'number', 'height', shape.height || 3, { min: 0.1, step: 0.1 });\r\n        }\r\n        \r\n        if (shape.type === 'torus') {\r\n            this.addFormRow(inspector, 'Tube Size', 'number', 'tubeSize', shape.tubeSize || shape.size / 6, { min: 0.1, step: 0.1 });\r\n        }\r\n    }\r\n\r\n\r\n    addFormRow(container, label, type, property, value, options = {}) {\r\n        const row = document.createElement('div');\r\n        row.className = 'form-row';\r\n        \r\n        const labelElement = document.createElement('label');\r\n        labelElement.textContent = label;\r\n        row.appendChild(labelElement);\r\n        \r\n        let input;\r\n        \r\n        if (type === 'select') {\r\n            input = document.createElement('select');\r\n            input.setAttribute('data-property', property);\r\n            (options.options || []).forEach(optionValue => {\r\n                const option = document.createElement('option');\r\n                option.value = optionValue;\r\n                option.textContent = optionValue;\r\n                if (value === optionValue) {\r\n                    option.selected = true;\r\n                }\r\n                input.appendChild(option);\r\n            });\r\n        } else if(type === \"color\") {\r\n\r\n            let colors = [];\r\n            let palette = this.gameEditor.getCollections().palettes[\"main\"];\r\n            for(let colorName in palette) {\r\n                if(!colorName.toLowerCase().endsWith('color')) continue;\r\n                colors.push({ name: colorName, value: palette[colorName]});\r\n            }\r\n            let colorInput = document.createElement('input');\r\n            input = document.createElement('input');\r\n            input.type = \"text\";\r\n            input.value = value;\r\n            input.setAttribute('data-property', property);\r\n\r\n            let colorSelect = document.createElement('select');\r\n            colors.forEach(color => {\r\n                const option = document.createElement('option');\r\n                option.value = color.value;\r\n                option.textContent = color.name;\r\n                if (value === color.value) {\r\n                    option.selected = true;\r\n                }\r\n                colorSelect.appendChild(option);\r\n            });\r\n            colorSelect.addEventListener('change', (e) => {\r\n                input.value = e.target.value;\r\n                colorInput.value = e.target.value;\r\n                this.graphicsEditor.getFrameShape()[property] = e.target.value;\r\n                this.graphicsEditor.refreshShapes(false);\r\n            });\r\n            input.addEventListener('change', (e) => {\r\n                colorInput.value = e.target.value;\r\n                colorSelect.value = e.target.value;   \r\n                this.graphicsEditor.getFrameShape()[property] = e.target.value;\r\n                this.graphicsEditor.refreshShapes(false);\r\n            });\r\n            colorInput.type = \"color\";\r\n            colorInput.value = value;\r\n            colorInput.setAttribute('data-property', property + '-color');\r\n    \r\n            colorInput.addEventListener('change', (e) => {      \r\n                input.value = e.target.value;\r\n                colorSelect.value = e.target.value;          \r\n                this.graphicsEditor.getFrameShape()[property] = e.target.value;\r\n                this.graphicsEditor.refreshShapes(false);\r\n            });            \r\n            row.appendChild(input);\r\n            row.appendChild(colorInput);\r\n            row.appendChild(colorSelect);\r\n        } else if(type === \"file\") {\r\n            let inputContainer = document.createElement('div');\r\n            inputContainer.style = \"flex: 1; display: flex; flex-direction: column; font-size: .75em;\";\r\n            input = document.createElement('input');\r\n            input.style = \"width: calc(100% - 18px);\"\r\n            input.type = type;\r\n            input.setAttribute('data-property', property);\r\n            inputContainer.appendChild(input);\r\n            if( value ) {\r\n                let urlName = document.createElement('span');\r\n                urlName.innerText = value;            \r\n                inputContainer.appendChild(urlName);\r\n            }\r\n            row.appendChild(inputContainer);\r\n            container.appendChild(row);\r\n            input.addEventListener('change', options.change );\r\n            return input;\r\n        } else {\r\n            input = document.createElement('input');\r\n            input.type = type;\r\n            input.value = value;\r\n            input.setAttribute('data-property', property);\r\n            \r\n            if (type === 'number') {\r\n                input.min = options.min !== undefined ? options.min : -64;\r\n                input.max = options.max !== undefined ? options.max : 64;\r\n                input.step = options.step || 1;\r\n            }\r\n        }\r\n        \r\n        input.addEventListener('change', options.change || ((e) => {\r\n            let newValue = e.target.value;\r\n            if (type === 'number') {\r\n                newValue = parseFloat(newValue);\r\n                console.log('change', this.graphicsEditor.shapeManager.currentTransformTarget);\r\n                // If we're editing a transform property, also update the transform target\r\n                if (this.graphicsEditor.shapeManager.currentTransformTarget && ['x', 'y', 'z', 'rotationX', 'rotationY', 'rotationZ', 'scaleX', 'scaleY', 'scaleZ'].includes(property)) {\r\n                    if (property === 'x') this.graphicsEditor.shapeManager.currentTransformTarget.position.x = newValue;\r\n                    if (property === 'y') this.graphicsEditor.shapeManager.currentTransformTarget.position.y = newValue;\r\n                    if (property === 'z') this.graphicsEditor.shapeManager.currentTransformTarget.position.z = newValue;\r\n                    \r\n                    if (property === 'rotationX') this.graphicsEditor.shapeManager.currentTransformTarget.rotation.x = this.graphicsEditor.rotationUtils.degToRad(newValue);\r\n                    if (property === 'rotationY') this.graphicsEditor.shapeManager.currentTransformTarget.rotation.y = this.graphicsEditor.rotationUtils.degToRad(newValue);\r\n                    if (property === 'rotationZ') this.graphicsEditor.shapeManager.currentTransformTarget.rotation.z = this.graphicsEditor.rotationUtils.degToRad(newValue);\r\n                    \r\n                    if (property === 'scaleX') this.graphicsEditor.shapeManager.currentTransformTarget.scale.x = newValue;\r\n                    if (property === 'scaleY') this.graphicsEditor.shapeManager.currentTransformTarget.scale.y = newValue;\r\n                    if (property === 'scaleZ') this.graphicsEditor.shapeManager.currentTransformTarget.scale.z = newValue;\r\n                    \r\n                    // Update gizmo position after directly changing values\r\n                }\r\n            } else if(type === 'file') {\r\n                return;\r\n            }\r\n            \r\n            this.updatePropertyValue(property, newValue);\r\n            this.graphicsEditor.refreshShapes(false);\r\n        }));\r\n        \r\n        row.appendChild(input);\r\n        container.appendChild(row);\r\n        return input;\r\n    }\r\n    updatePropertyValue(property, value) {\r\n        const shapeData = this.graphicsEditor.getFrameShape();\r\n        if (shapeData) {\r\n            shapeData[property] = value;\r\n            return;\r\n        }\r\n        let groupData = this.graphicsEditor.getCurrentGroup();\r\n        if(!groupData){\r\n            groupData = {};\r\n            let currentFrame = this.graphicsEditor.getCurrentFrame();\r\n            if(currentFrame) {\r\n                currentFrame[this.graphicsEditor.state.currentGroup] = groupData;\r\n            }\r\n        }\r\n        \r\n        // Handle transform properties\r\n        if (property.startsWith('scale')) {\r\n            if(!groupData.scale) groupData.scale = {};\r\n            const axis = property.charAt(property.length - 1).toLowerCase();\r\n            groupData.scale[axis] = value;\r\n        } else if (property.startsWith('rotation')) {\r\n            if(!groupData.rotation) groupData.rotation = {};\r\n            const axis = property.charAt(property.length - 1).toLowerCase();\r\n            groupData.rotation[axis] = value;\r\n        } else if (['x', 'y', 'z'].includes(property)) {\r\n            if(!groupData.position) groupData.position = {};\r\n            groupData.position[property] = value;\r\n        }\r\n    }\r\n\r\n  \r\n\r\n    updateList() {\r\n        const frameList = document.getElementById('frame-list');\r\n        frameList.innerHTML = '';\r\n        const groupList = document.getElementById('group-list');\r\n        groupList.innerHTML = '';\r\n        const shapeList = document.getElementById('shape-list');\r\n        shapeList.innerHTML = '';\r\n        this.updateFrameList();\r\n        this.graphicsEditor.groupManager.updateGroupList();\r\n        this.updateShapeList();\r\n    }\r\n\r\n    updateFrameList() {\r\n        const list = document.getElementById('frame-list');\r\n        // Animation selector\r\n        const animSelector = document.createElement('select');\r\n        animSelector.style.marginBottom = '10px';\r\n\r\n        const option = document.createElement('option');\r\n        option.value = '__model__';\r\n        option.textContent = 'model';\r\n        if (this.graphicsEditor.state.editingModel) option.selected = true;\r\n        animSelector.appendChild(option);\r\n\r\n\r\n        Object.keys(this.graphicsEditor.state.renderData.animations).forEach(anim => {\r\n            const option = document.createElement('option');\r\n            option.value = anim;\r\n            option.textContent = anim;\r\n            if (anim === this.graphicsEditor.state.currentAnimation) option.selected = true;\r\n            animSelector.appendChild(option);\r\n        });\r\n        animSelector.addEventListener('change', (e) => {\r\n            this.graphicsEditor.setPreviewAnimationState(false);\r\n            if(e.target.value == '__model__'){\r\n                this.graphicsEditor.state.editingModel = true;\r\n                this.graphicsEditor.state.currentAnimation = \"\";                \r\n            } else {\r\n                this.graphicsEditor.state.editingModel = false;\r\n                this.graphicsEditor.state.currentAnimation = animSelector.value;                \r\n            }\r\n            this.graphicsEditor.state.currentFrame = 0;\r\n            this.graphicsEditor.refreshShapes(false);\r\n            requestAnimationFrame(() => {\r\n                this.graphicsEditor.state.selectedShapeIndex = -1;\r\n                this.graphicsEditor.shapeManager.selectShape(0);\r\n            })\r\n        });\r\n        list.appendChild(animSelector);\r\n        if(this.graphicsEditor.state.editingModel) return;\r\n        // Frame list\r\n        const frameList = document.createElement('div');\r\n        frameList.style.marginBottom = '10px';\r\n        this.graphicsEditor.getCurrentAnimation().forEach((frame, index) => {\r\n            const frameItem = document.createElement('div');\r\n            frameItem.textContent = `Frame ${index + 1}`;\r\n            frameItem.style.padding = '5px';\r\n            frameItem.style.cursor = 'pointer';\r\n            if (index === this.graphicsEditor.state.currentFrame) frameItem.style.backgroundColor = '#555';\r\n            frameItem.addEventListener('click', () => {\r\n                this.graphicsEditor.setPreviewAnimationState(false);\r\n                this.graphicsEditor.state.currentFrame = index;  \r\n                this.graphicsEditor.refreshShapes(false);\r\n                requestAnimationFrame(() => {  \r\n                    this.graphicsEditor.state.selectedShapeIndex = -1;\r\n                    this.graphicsEditor.shapeManager.selectShape(0);\r\n                })\r\n            });\r\n            frameList.appendChild(frameItem);\r\n        });\r\n        list.appendChild(frameList);\r\n    }\r\n\r\n\r\n    updateShapeList() {\r\n        const list = document.getElementById('shape-list');\r\n        if (!list) return;\r\n        \r\n\r\n        // Get shapes from the currently selected group\r\n        const currentGroup = this.graphicsEditor.state.currentGroup;\r\n        const selectedGroup = this.graphicsEditor.getMergedGroup(currentGroup);\r\n        const shapes = selectedGroup && selectedGroup.shapes ? selectedGroup.shapes : selectedGroup || [];\r\n       \r\n        // Create shape list items\r\n        for (let i = 0; i < shapes.length; i++) {\r\n            const shape = shapes[i];\r\n            if (!shape) continue;\r\n           \r\n            const shapeItem = document.createElement('div');\r\n            shapeItem.classList.add('shape-item');\r\n           \r\n            // Mark as selected if this shape is the selected one and we're in the right group\r\n            if (i === this.graphicsEditor.state.selectedShapeIndex) {\r\n                shapeItem.classList.add('selected');\r\n            }\r\n           \r\n            shapeItem.textContent = `${shape.name} - ${shape.type || 'Shape'}`;\r\n            shapeItem.addEventListener('click', (e) => {               \r\n                this.graphicsEditor.shapeManager.selectShape(parseInt(e.target.dataset.index));\r\n            });\r\n           \r\n            // Make the shape draggable\r\n            shapeItem.draggable = true;\r\n            shapeItem.dataset.index = i;\r\n            shapeItem.dataset.group = currentGroup;\r\n            \r\n            // Add dragstart event to set the drag data\r\n            shapeItem.addEventListener('dragstart', (e) => {\r\n                // Store only the selected shape's index and source group\r\n                const data = {\r\n                    shapeIndex: i,\r\n                    sourceGroup: currentGroup\r\n                };\r\n                \r\n                // Set the drag data\r\n                e.dataTransfer.setData('text/plain', JSON.stringify(data));\r\n                \r\n                // Add a visual indicator\r\n                shapeItem.classList.add('dragging');\r\n                \r\n                // Set drag effect\r\n                e.dataTransfer.effectAllowed = 'move';\r\n            });\r\n            \r\n            // Add dragend event to clean up\r\n            shapeItem.addEventListener('dragend', () => {\r\n                shapeItem.classList.remove('dragging');\r\n            });\r\n           \r\n            list.appendChild(shapeItem);\r\n        }\r\n        \r\n        // Set up the shape list container as a drop target\r\n        list.addEventListener('dragover', (e) => {\r\n            // Only respond if we're dragging over the shape list itself, not an individual shape\r\n            if (e.target === list) {\r\n                e.preventDefault();\r\n                e.dataTransfer.dropEffect = 'move';\r\n                list.classList.add('drag-over');\r\n            }\r\n        });\r\n        \r\n        list.addEventListener('dragleave', (e) => {\r\n            // Only respond if we're leaving the shape list\r\n            if (e.target === list) {\r\n                list.classList.remove('drag-over');\r\n            }\r\n        });\r\n        \r\n        list.addEventListener('drop', (e) => {\r\n            e.preventDefault();\r\n            list.classList.remove('drag-over');\r\n            \r\n            const data = e.dataTransfer.getData('text/plain');\r\n            if (!data) return;\r\n            \r\n            try {\r\n                const dragData = JSON.parse(data);\r\n                const { shapeIndex, sourceGroup } = dragData;\r\n                \r\n                // Only process if this is a different group\r\n                if (sourceGroup && sourceGroup !== currentGroup) {\r\n                    this.graphicsEditor.groupManager.moveToGroup(\r\n                        parseInt(shapeIndex),\r\n                        sourceGroup,\r\n                        currentGroup\r\n                    );\r\n                }\r\n            } catch (err) {\r\n                console.error('Error processing drop in shape list:', err);\r\n            }\r\n        });\r\n    }\r\n\r\n}",
+        "script": "class GE_UIManager {\r\n    constructor(gameEditor, graphicsEditor) {\r\n        this.gameEditor = gameEditor;\r\n        this.graphicsEditor = graphicsEditor;\r\n        this.mouse = new window.THREE.Vector2();\r\n        this.raycaster = new window.THREE.Raycaster();\r\n        this.isDragging = false;\r\n        this.clickStartTime = 0;\r\n    }    \r\n     \r\n\r\n    init() {   \r\n        this.initEventListeners();\r\n    }\r\n    \r\n    \r\n    \r\n    initEventListeners() {\r\n        // Button event listeners\r\n        const buttonMappings = {\r\n            'generate-isometric': this.showIsometricModal.bind(this),\r\n        };\r\n        Object.entries(buttonMappings).forEach(([id, handler]) => {\r\n            const button = document.getElementById(id);\r\n            if (button) button.addEventListener('click', handler);\r\n        });\r\n\r\n        // Canvas interaction\r\n        this.graphicsEditor.canvas.addEventListener('mousedown', this.handleMouseDown.bind(this));\r\n        this.graphicsEditor.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));\r\n        this.graphicsEditor.canvas.addEventListener('mouseup', this.handleMouseUp.bind(this));\r\n\r\n        // Additional event listeners\r\n\r\n        \r\n        // Move modal listeners\r\n\r\n        // Isometric modal listeners\r\n        document.getElementById('iso-cancel').addEventListener('click', () => {\r\n            document.getElementById('modal-generateIsoSprites').classList.remove('show');\r\n        });\r\n    }\r\n    handleMouseDown(event) {\r\n        this.isDragging = false;\r\n        this.clickStartTime = Date.now();\r\n    }\r\n\r\n    handleMouseMove() {\r\n        if (Date.now() - this.clickStartTime > 100) {\r\n            this.isDragging = true;\r\n        }\r\n    }\r\n\r\n    handleMouseUp(event) {\r\n        if (this.isDragging) return;\r\n    \r\n        const rect = this.graphicsEditor.canvas.getBoundingClientRect();\r\n        this.mouse.x = ((event.clientX - rect.left) / this.graphicsEditor.canvas.clientWidth) * 2 - 1;\r\n        this.mouse.y = -((event.clientY - rect.top) / this.graphicsEditor.canvas.clientHeight) * 2 + 1;\r\n    \r\n        this.raycaster.setFromCamera(this.mouse, this.graphicsEditor.sceneRenderer.camera);\r\n    \r\n        // Instead of looking only at scene.children, search through all descendant meshes\r\n        const meshes = [];\r\n        this.graphicsEditor.rootGroup.traverse(obj => {\r\n            if (obj.isMesh && obj.userData.isShape) {\r\n                meshes.push(obj);\r\n            }\r\n        });\r\n    \r\n        const intersects = this.raycaster.intersectObjects(meshes, true);\r\n    \r\n        if (intersects.length > 0) {\r\n            // Find the parent mesh with the isShape flag if we've hit a child mesh\r\n            let hitObject = intersects[0].object;\r\n            while (hitObject && !hitObject.userData.isShape) {\r\n                hitObject = hitObject.parent;\r\n            }\r\n            \r\n            if (hitObject && hitObject.userData.index !== undefined) {\r\n                this.graphicsEditor.selectShape(hitObject.userData.index);\r\n            }\r\n        }\r\n    }\r\n    \r\n\r\n    showIsometricModal() {\r\n        document.getElementById('modal-generateIsoSprites').classList.add('show');\r\n    }\r\n    displayIsometricSprites(sprites) {\r\n        const modal = document.createElement('div');\r\n        modal.style.cssText = `\r\n            position: fixed; top: 0; left: 0; width: 100%; height: 100%; \r\n            background-color: rgba(0, 0, 0, 0.7); z-index: 1000; \r\n            display: flex; align-items: center; justify-content: center;\r\n        `;\r\n        const content = document.createElement('div');\r\n        content.style.cssText = `\r\n            background: #333; padding: 20px; border-radius: 8px; \r\n            max-width: 80%; max-height: 80%; overflow: auto;\r\n        `;\r\n    \r\n        const angleLabels = ['NE', 'N', 'NW', 'W', 'SW', 'S', 'SE', 'E']; // Labels for 8 angles\r\n    \r\n        for (const animType in sprites) {\r\n            const animSection = document.createElement('div');\r\n            const title = document.createElement('h3');\r\n            title.textContent = `${animType} Animation`;\r\n            title.style.color = '#e0e0e0';\r\n            animSection.appendChild(title);\r\n    \r\n            // Create a container for all angles\r\n            const anglesContainer = document.createElement('div');\r\n            anglesContainer.style.cssText = `margin: 10px 0;`;\r\n    \r\n            // For each angle (0-7)\r\n            for (let angle = 0; angle < 8; angle++) {\r\n                const angleSection = document.createElement('div');\r\n    \r\n                const grid = document.createElement('div');\r\n                grid.style.cssText = `\r\n                    display: grid; \r\n                    grid-template-columns: repeat(${Math.min(sprites[animType].length, 4)}, 1fr); \r\n                    gap: 5px; \r\n                    margin-bottom: 15px;\r\n                `;\r\n    \r\n                // Add all frames for this specific angle\r\n                sprites[animType].forEach(frame => {\r\n                    const img = document.createElement('img');\r\n                    img.src = frame[angle]; // Get the specific angle's sprite\r\n                    img.style.maxWidth = '100%';\r\n                    grid.appendChild(img);\r\n                });\r\n    \r\n                angleSection.appendChild(grid);\r\n                anglesContainer.appendChild(angleSection);\r\n            }\r\n    \r\n            animSection.appendChild(anglesContainer);\r\n            content.appendChild(animSection);\r\n        }\r\n    \r\n        const closeButton = document.createElement('button');\r\n        closeButton.textContent = 'Close';\r\n        closeButton.style.cssText = `\r\n            margin-top: 20px; padding: 8px 16px; background-color: #4CAF50; \r\n            color: #fff; border: none; border-radius: 6px; cursor: pointer;\r\n        `;\r\n        closeButton.addEventListener('click', () => document.body.removeChild(modal));\r\n        content.appendChild(closeButton);\r\n        modal.appendChild(content);\r\n        document.body.appendChild(modal);\r\n    }\r\n    \r\n    createGroupInspector(group) {\r\n        console.log('create group inspector', group);\r\n        const inspector = document.getElementById('inspector');\r\n        inspector.innerHTML = \"\";\r\n        inspector.className = 'inspector';\r\n\r\n        \r\n        this.addFormRow(inspector, 'X Scale', 'number', 'scaleX', group.scale.x || 1, { min: 0.1, step: 0.1 });\r\n        this.addFormRow(inspector, 'Y Scale', 'number', 'scaleY', group.scale.y || 1, { min: 0.1, step: 0.1 });\r\n        this.addFormRow(inspector, 'Z Scale', 'number', 'scaleZ', group.scale.z || 1, { min: 0.1, step: 0.1 });\r\n        // Position inputs\r\n        this.addFormRow(inspector, 'X Position', 'number', 'x', group.position.x || 0, { step: 0.1 });\r\n        this.addFormRow(inspector, 'Y Position', 'number', 'y', group.position.y || 0, { step: 0.1 });\r\n        this.addFormRow(inspector, 'Z Position', 'number', 'z', group.position.z || 0, { step: 0.1 });\r\n        \r\n        // Rotation inputs\r\n        this.addFormRow(inspector, 'X Rotation', 'number', 'rotationX', group.rotation.x || 0, { step: 5 });\r\n        this.addFormRow(inspector, 'Y Rotation', 'number', 'rotationY', group.rotation.y || 0, { step: 5 });\r\n        this.addFormRow(inspector, 'Z Rotation', 'number', 'rotationZ', group.rotation.z || 0, { step: 5 });\r\n        \r\n    }\r\n\r\n    createInspector(shape) {\r\n        console.log('create shape inspector', shape);\r\n        const inspector = document.getElementById('inspector');\r\n        inspector.innerHTML = \"\";\r\n        inspector.className = 'inspector';\r\n\r\n        this.addFormRow(inspector, 'Name', 'text', 'name', shape.name || \"\");\r\n        \r\n        // Type selector\r\n        this.addFormRow(inspector, 'Type', 'select', 'type', shape.type, {\r\n            options: ['cube', 'sphere', 'box', 'cylinder', 'cone', 'torus', 'tetrahedron', 'gltf'],\r\n            change: (e) => {\r\n                let currentShape = this.graphicsEditor.getFrameShape();\r\n                let newValue = e.target.value;\r\n                if (newValue != 'gltf') {\r\n                    delete currentShape.url\r\n                }                 \r\n                currentShape.type = newValue;\r\n                this.graphicsEditor.refreshShapes(false);\r\n            }\r\n        });\r\n        \r\n        if (shape.type === 'gltf') {            \r\n            let input = this.addFormRow(inspector, 'Model', 'file', 'url', shape.url, { 'change' :  async (e) => {\r\n                e.preventDefault();\r\n\r\n                // Get the file from the input element\r\n                const file = e.target.files[0]; // Access the file object\r\n                if (!file) {\r\n                    console.error('No file selected');\r\n                    return;\r\n                }\r\n                // // Create FormData and append the file\r\n                 const formData = new FormData();\r\n                 formData.append('gltfFile', file); // 'gltfFile' matches the multer.single('gltfFile') on the server\r\n\r\n                try {\r\n                     const response = await fetch('/upload-model', {\r\n                         method: 'POST',\r\n                         body: formData // Send the FormData with the file\r\n                     });\r\n\r\n                     const result = await response.json();\r\n                     shape.url = result.filePath; \r\n                     this.graphicsEditor.getFrameShape().url = result.filePath;\r\n                     this.graphicsEditor.refreshShapes(false);\r\n                } catch (error) {\r\n                     console.error('Error uploading file:', error);\r\n                }\r\n            }});\r\n            input.setAttribute(\"accept\",\".gltf\");\r\n        }\r\n        // Color picker\r\n        this.addFormRow(inspector, 'Color', 'color', 'color', shape.color);\r\n        \r\n        this.addFormRow(inspector, 'X Scale', 'number', 'scaleX', shape.scaleX || 1, { min: 0.1, step: 0.1 });\r\n        this.addFormRow(inspector, 'Y Scale', 'number', 'scaleY', shape.scaleY || 1, { min: 0.1, step: 0.1 });\r\n        this.addFormRow(inspector, 'Z Scale', 'number', 'scaleZ', shape.scaleZ || 1, { min: 0.1, step: 0.1 });\r\n        // Position inputs\r\n        this.addFormRow(inspector, 'X Position', 'number', 'x', shape.x || 0, { step: 0.1 });\r\n        this.addFormRow(inspector, 'Y Position', 'number', 'y', shape.y || 0, { step: 0.1 });\r\n        this.addFormRow(inspector, 'Z Position', 'number', 'z', shape.z || 0, { step: 0.1 });\r\n        \r\n        // Rotation inputs\r\n        this.addFormRow(inspector, 'X Rotation', 'number', 'rotationX', shape.rotationX || 0, { step: 5 });\r\n        this.addFormRow(inspector, 'Y Rotation', 'number', 'rotationY', shape.rotationY || 0, { step: 5 });\r\n        this.addFormRow(inspector, 'Z Rotation', 'number', 'rotationZ', shape.rotationZ || 0, { step: 5 });\r\n        \r\n        // Size inputs\r\n        if (['cube', 'sphere', 'tetrahedron', 'torus'].includes(shape.type)) {\r\n            this.addFormRow(inspector, 'Size', 'number', 'size', shape.size || 2, { min: 0.1, step: 0.1 });\r\n        }\r\n        \r\n        if (shape.type === 'box') {\r\n            this.addFormRow(inspector, 'Width', 'number', 'width', shape.width || 2, { min: 0.1, step: 0.1 });\r\n            this.addFormRow(inspector, 'Height', 'number', 'height', shape.height || 2, { min: 0.1, step: 0.1 });\r\n            this.addFormRow(inspector, 'Depth', 'number', 'depth', shape.depth || 2, { min: 0.1, step: 0.1 });\r\n        }\r\n        \r\n        if (['cylinder', 'cone'].includes(shape.type)) {\r\n            this.addFormRow(inspector, 'Size', 'number', 'size', shape.size || 2, { min: 0.1, step: 0.1 });\r\n            this.addFormRow(inspector, 'Height', 'number', 'height', shape.height || 3, { min: 0.1, step: 0.1 });\r\n        }\r\n        \r\n        if (shape.type === 'torus') {\r\n            this.addFormRow(inspector, 'Tube Size', 'number', 'tubeSize', shape.tubeSize || shape.size / 6, { min: 0.1, step: 0.1 });\r\n        }\r\n    }\r\n\r\n\r\n    addFormRow(container, label, type, property, value, options = {}) {\r\n        const row = document.createElement('div');\r\n        row.className = 'form-row';\r\n        \r\n        const labelElement = document.createElement('label');\r\n        labelElement.textContent = label;\r\n        row.appendChild(labelElement);\r\n        \r\n        let input;\r\n        \r\n        if (type === 'select') {\r\n            input = document.createElement('select');\r\n            input.setAttribute('data-property', property);\r\n            (options.options || []).forEach(optionValue => {\r\n                const option = document.createElement('option');\r\n                option.value = optionValue;\r\n                option.textContent = optionValue;\r\n                if (value === optionValue) {\r\n                    option.selected = true;\r\n                }\r\n                input.appendChild(option);\r\n            });\r\n        } else if(type === \"color\") {\r\n            let valueToUse = value;\r\n            const palette = this.gameEditor.getCollections().palettes[\"main\"];\r\n            if(value && value.paletteColor) {\r\n                valueToUse = palette[value.paletteColor];\r\n            }\r\n            input = document.createElement('input');\r\n            input.type = \"text\";\r\n            input.value = valueToUse;\r\n            input.setAttribute('data-property', property);\r\n\r\n            let colorInput = document.createElement('input');            \r\n            colorInput.type = \"color\";\r\n            colorInput.value = valueToUse;\r\n            colorInput.setAttribute('data-property', property + '-color');\r\n            \r\n            input.addEventListener('change', (e) => {\r\n                colorInput.value = e.target.value; \r\n                this.graphicsEditor.getFrameShape()[property] = e.target.value;\r\n                this.graphicsEditor.refreshShapes(false);\r\n            });\r\n            colorInput.addEventListener('change', (e) => {      \r\n                input.value = e.target.value;         \r\n                this.graphicsEditor.getFrameShape()[property] = e.target.value;\r\n                this.graphicsEditor.refreshShapes(false);\r\n            });            \r\n            row.appendChild(input);\r\n            row.appendChild(colorInput);\r\n\r\n            if(this.gameEditor.getCollections().palettes) {\r\n                let colorSelect = document.createElement('select');\r\n                let colors = [{ name: \"From Palette\", value: \"\" }];\r\n\r\n                for(let colorName in palette) {\r\n                    if(!colorName.toLowerCase().endsWith('color')) continue;\r\n                    colors.push({ name: colorName, value: palette[colorName]});\r\n                }\r\n                colors.forEach(color => {\r\n                    const option = document.createElement('option');\r\n                    option.value = color.value;\r\n                    option.textContent = color.name;\r\n                    if (valueToUse === color.value) {\r\n                        option.selected = true;\r\n                    }\r\n                    colorSelect.appendChild(option);\r\n                });\r\n                input.addEventListener('change', (e) => {\r\n                    colorSelect.value = e.target.value; \r\n                });\r\n                colorInput.addEventListener('change', (e) => {      \r\n                    colorSelect.value = e.target.value;         \r\n                });   \r\n                colorSelect.addEventListener('change', (e) => {\r\n                    input.value = e.target.value;\r\n                    colorInput.value = e.target.value;\r\n                    this.graphicsEditor.getFrameShape()[property] = { paletteColor: e.target.querySelector(`option[value=\"${e.target.value}\"]`).textContent };\r\n                    this.graphicsEditor.refreshShapes(false);\r\n                });\r\n                row.appendChild(colorSelect);\r\n            }\r\n        } else if(type === \"file\") {\r\n            let inputContainer = document.createElement('div');\r\n            inputContainer.style = \"flex: 1; display: flex; flex-direction: column; font-size: .75em;\";\r\n            input = document.createElement('input');\r\n            input.style = \"width: calc(100% - 18px);\"\r\n            input.type = type;\r\n            input.setAttribute('data-property', property);\r\n            inputContainer.appendChild(input);\r\n            if( value ) {\r\n                let urlName = document.createElement('span');\r\n                urlName.innerText = value;            \r\n                inputContainer.appendChild(urlName);\r\n            }\r\n            row.appendChild(inputContainer);\r\n            container.appendChild(row);\r\n            input.addEventListener('change', options.change );\r\n            return input;\r\n        } else {\r\n            input = document.createElement('input');\r\n            input.type = type;\r\n            input.value = value;\r\n            input.setAttribute('data-property', property);\r\n            \r\n            if (type === 'number') {\r\n                input.min = options.min !== undefined ? options.min : -64;\r\n                input.max = options.max !== undefined ? options.max : 64;\r\n                input.step = options.step || 1;\r\n            }\r\n        }\r\n        \r\n        input.addEventListener('change', options.change || ((e) => {\r\n            let newValue = e.target.value;\r\n            if (type === 'number') {\r\n                newValue = parseFloat(newValue);\r\n                console.log('change', this.graphicsEditor.shapeManager.currentTransformTarget);\r\n                // If we're editing a transform property, also update the transform target\r\n                if (this.graphicsEditor.shapeManager.currentTransformTarget && ['x', 'y', 'z', 'rotationX', 'rotationY', 'rotationZ', 'scaleX', 'scaleY', 'scaleZ'].includes(property)) {\r\n                    if (property === 'x') this.graphicsEditor.shapeManager.currentTransformTarget.position.x = newValue;\r\n                    if (property === 'y') this.graphicsEditor.shapeManager.currentTransformTarget.position.y = newValue;\r\n                    if (property === 'z') this.graphicsEditor.shapeManager.currentTransformTarget.position.z = newValue;\r\n                    \r\n                    if (property === 'rotationX') this.graphicsEditor.shapeManager.currentTransformTarget.rotation.x = this.graphicsEditor.rotationUtils.degToRad(newValue);\r\n                    if (property === 'rotationY') this.graphicsEditor.shapeManager.currentTransformTarget.rotation.y = this.graphicsEditor.rotationUtils.degToRad(newValue);\r\n                    if (property === 'rotationZ') this.graphicsEditor.shapeManager.currentTransformTarget.rotation.z = this.graphicsEditor.rotationUtils.degToRad(newValue);\r\n                    \r\n                    if (property === 'scaleX') this.graphicsEditor.shapeManager.currentTransformTarget.scale.x = newValue;\r\n                    if (property === 'scaleY') this.graphicsEditor.shapeManager.currentTransformTarget.scale.y = newValue;\r\n                    if (property === 'scaleZ') this.graphicsEditor.shapeManager.currentTransformTarget.scale.z = newValue;\r\n                    \r\n                    // Update gizmo position after directly changing values\r\n                }\r\n            } else if(type === 'file') {\r\n                return;\r\n            }\r\n            \r\n            this.updatePropertyValue(property, newValue);\r\n            this.graphicsEditor.refreshShapes(false);\r\n        }));\r\n        \r\n        row.appendChild(input);\r\n        container.appendChild(row);\r\n        return input;\r\n    }\r\n    updatePropertyValue(property, value) {\r\n        const shapeData = this.graphicsEditor.getFrameShape();\r\n        if (shapeData) {\r\n            shapeData[property] = value;\r\n            return;\r\n        }\r\n        let groupData = this.graphicsEditor.getCurrentGroup();\r\n        if(!groupData){\r\n            groupData = {};\r\n            let currentFrame = this.graphicsEditor.getCurrentFrame();\r\n            if(currentFrame) {\r\n                currentFrame[this.graphicsEditor.state.currentGroup] = groupData;\r\n            }\r\n        }\r\n        \r\n        // Handle transform properties\r\n        if (property.startsWith('scale')) {\r\n            if(!groupData.scale) groupData.scale = {};\r\n            const axis = property.charAt(property.length - 1).toLowerCase();\r\n            groupData.scale[axis] = value;\r\n        } else if (property.startsWith('rotation')) {\r\n            if(!groupData.rotation) groupData.rotation = {};\r\n            const axis = property.charAt(property.length - 1).toLowerCase();\r\n            groupData.rotation[axis] = value;\r\n        } else if (['x', 'y', 'z'].includes(property)) {\r\n            if(!groupData.position) groupData.position = {};\r\n            groupData.position[property] = value;\r\n        }\r\n    }\r\n\r\n  \r\n\r\n    updateList() {\r\n        const frameList = document.getElementById('frame-list');\r\n        frameList.innerHTML = '';\r\n        const groupList = document.getElementById('group-list');\r\n        groupList.innerHTML = '';\r\n        const shapeList = document.getElementById('shape-list');\r\n        shapeList.innerHTML = '';\r\n        this.updateFrameList();\r\n        this.graphicsEditor.groupManager.updateGroupList();\r\n        this.updateShapeList();\r\n    }\r\n\r\n    updateFrameList() {\r\n        const list = document.getElementById('frame-list');\r\n        // Animation selector\r\n        const animSelector = document.createElement('select');\r\n        animSelector.style.marginBottom = '10px';\r\n\r\n        const option = document.createElement('option');\r\n        option.value = '__model__';\r\n        option.textContent = 'model';\r\n        if (this.graphicsEditor.state.editingModel) option.selected = true;\r\n        animSelector.appendChild(option);\r\n\r\n\r\n        Object.keys(this.graphicsEditor.state.renderData.animations).forEach(anim => {\r\n            const option = document.createElement('option');\r\n            option.value = anim;\r\n            option.textContent = anim;\r\n            if (anim === this.graphicsEditor.state.currentAnimation) option.selected = true;\r\n            animSelector.appendChild(option);\r\n        });\r\n        animSelector.addEventListener('change', (e) => {\r\n            this.graphicsEditor.setPreviewAnimationState(false);\r\n            if(e.target.value == '__model__'){\r\n                this.graphicsEditor.state.editingModel = true;\r\n                this.graphicsEditor.state.currentAnimation = \"\";                \r\n            } else {\r\n                this.graphicsEditor.state.editingModel = false;\r\n                this.graphicsEditor.state.currentAnimation = animSelector.value;                \r\n            }\r\n            this.graphicsEditor.state.currentFrame = 0;\r\n            this.graphicsEditor.refreshShapes(false);\r\n            requestAnimationFrame(() => {\r\n                this.graphicsEditor.state.selectedShapeIndex = -1;\r\n                this.graphicsEditor.shapeManager.selectShape(0);\r\n            })\r\n        });\r\n        list.appendChild(animSelector);\r\n        if(this.graphicsEditor.state.editingModel) return;\r\n        // Frame list\r\n        const frameList = document.createElement('div');\r\n        frameList.style.marginBottom = '10px';\r\n        this.graphicsEditor.getCurrentAnimation().forEach((frame, index) => {\r\n            const frameItem = document.createElement('div');\r\n            frameItem.textContent = `Frame ${index + 1}`;\r\n            frameItem.style.padding = '5px';\r\n            frameItem.style.cursor = 'pointer';\r\n            if (index === this.graphicsEditor.state.currentFrame) frameItem.style.backgroundColor = '#555';\r\n            frameItem.addEventListener('click', () => {\r\n                this.graphicsEditor.setPreviewAnimationState(false);\r\n                this.graphicsEditor.state.currentFrame = index;  \r\n                this.graphicsEditor.refreshShapes(false);\r\n                requestAnimationFrame(() => {  \r\n                    this.graphicsEditor.state.selectedShapeIndex = -1;\r\n                    this.graphicsEditor.shapeManager.selectShape(0);\r\n                })\r\n            });\r\n            frameList.appendChild(frameItem);\r\n        });\r\n        list.appendChild(frameList);\r\n    }\r\n\r\n\r\n    updateShapeList() {\r\n        const list = document.getElementById('shape-list');\r\n        if (!list) return;\r\n        \r\n\r\n        // Get shapes from the currently selected group\r\n        const currentGroup = this.graphicsEditor.state.currentGroup;\r\n        const selectedGroup = this.graphicsEditor.getMergedGroup(currentGroup);\r\n        const shapes = selectedGroup && selectedGroup.shapes ? selectedGroup.shapes : selectedGroup || [];\r\n       \r\n        // Create shape list items\r\n        for (let i = 0; i < shapes.length; i++) {\r\n            const shape = shapes[i];\r\n            if (!shape) continue;\r\n           \r\n            const shapeItem = document.createElement('div');\r\n            shapeItem.classList.add('shape-item');\r\n           \r\n            // Mark as selected if this shape is the selected one and we're in the right group\r\n            if (i === this.graphicsEditor.state.selectedShapeIndex) {\r\n                shapeItem.classList.add('selected');\r\n            }\r\n           \r\n            shapeItem.textContent = `${shape.name} - ${shape.type || 'Shape'}`;\r\n            shapeItem.addEventListener('click', (e) => {               \r\n                this.graphicsEditor.shapeManager.selectShape(parseInt(e.target.dataset.index));\r\n            });\r\n           \r\n            // Make the shape draggable\r\n            shapeItem.draggable = true;\r\n            shapeItem.dataset.index = i;\r\n            shapeItem.dataset.group = currentGroup;\r\n            \r\n            // Add dragstart event to set the drag data\r\n            shapeItem.addEventListener('dragstart', (e) => {\r\n                // Store only the selected shape's index and source group\r\n                const data = {\r\n                    shapeIndex: i,\r\n                    sourceGroup: currentGroup\r\n                };\r\n                \r\n                // Set the drag data\r\n                e.dataTransfer.setData('text/plain', JSON.stringify(data));\r\n                \r\n                // Add a visual indicator\r\n                shapeItem.classList.add('dragging');\r\n                \r\n                // Set drag effect\r\n                e.dataTransfer.effectAllowed = 'move';\r\n            });\r\n            \r\n            // Add dragend event to clean up\r\n            shapeItem.addEventListener('dragend', () => {\r\n                shapeItem.classList.remove('dragging');\r\n            });\r\n           \r\n            list.appendChild(shapeItem);\r\n        }\r\n        \r\n        // Set up the shape list container as a drop target\r\n        list.addEventListener('dragover', (e) => {\r\n            // Only respond if we're dragging over the shape list itself, not an individual shape\r\n            if (e.target === list) {\r\n                e.preventDefault();\r\n                e.dataTransfer.dropEffect = 'move';\r\n                list.classList.add('drag-over');\r\n            }\r\n        });\r\n        \r\n        list.addEventListener('dragleave', (e) => {\r\n            // Only respond if we're leaving the shape list\r\n            if (e.target === list) {\r\n                list.classList.remove('drag-over');\r\n            }\r\n        });\r\n        \r\n        list.addEventListener('drop', (e) => {\r\n            e.preventDefault();\r\n            list.classList.remove('drag-over');\r\n            \r\n            const data = e.dataTransfer.getData('text/plain');\r\n            if (!data) return;\r\n            \r\n            try {\r\n                const dragData = JSON.parse(data);\r\n                const { shapeIndex, sourceGroup } = dragData;\r\n                \r\n                // Only process if this is a different group\r\n                if (sourceGroup && sourceGroup !== currentGroup) {\r\n                    this.graphicsEditor.groupManager.moveToGroup(\r\n                        parseInt(shapeIndex),\r\n                        sourceGroup,\r\n                        currentGroup\r\n                    );\r\n                }\r\n            } catch (err) {\r\n                console.error('Error processing drop in shape list:', err);\r\n            }\r\n        });\r\n    }\r\n\r\n}",
         "fileName": "GE_UIManager"
       },
       "GE_EventManager": {
@@ -19432,7 +21243,7 @@ const DEFAULT_PROJECT_CONFIG = {
       "ModelManager": {
         "title": "ModelManager",
         "fileName": "ModelManager",
-        "script": "class ModelManager {\n    constructor(app, { ShapeFactory }) {\n        this.app = app;\n        this.models = {};\n        this.shapeFactory = new ShapeFactory();\n    }\n\n    clear() {\n        this.models = {};\n    }\n\n    dispose() {\n        // Cleanup when manager is no longer needed\n        for (const [key, model] of Object.entries(this.models)) {\n            this.disposeModel(model);\n        }\n        this.models = {};\n    }\n    \n    disposeModel(model) {\n        if (!model) return;\n        \n        // Handle animation objects\n        if (model.animations) {\n            for (const [animType, frames] of Object.entries(model.animations)) {\n                for (const frame of frames) {\n                    if (frame.group) {\n                        this.shapeFactory.disposeObject(frame.group);\n                        frame.group = null;\n                    }\n                }\n            }\n        }\n    }\n\n    async loadModels(prefix, config) {\n        if (!prefix || !config || typeof config !== 'object') {\n            throw new Error('Invalid prefix or config provided to loadModels');\n        }\n    \n        for (const [type, cfg] of Object.entries(config)) {\n            if (cfg.render && cfg.render.model) {\n                this.models[`${prefix}_${type}`] = await this.createModel(cfg.render.model);\n            }\n        }        \n       \n    }\n\n\n    async createModel(modelData) {\n        const modelGroup = await this.createObjectsFromJSON(modelData, {});\n            \n        if (modelGroup) {\n            // Apply shadows to all meshes\n            modelGroup.traverse((child) => {\n                if (child.isMesh) {\n                    child.castShadow = true;\n                    child.receiveShadow = true;\n                }\n            });\n            \n        }\n            \n        \n        \n        return modelGroup;\n    }\n\n    getModel(prefix, type) {\n        return this.models[`${prefix}_${type}`];\n    }\n\n    async createObjectsFromJSON(model, frameData) {\n        const rootGroup = new THREE.Group();\n        \n        for (const groupName in model) {\n            const group = await this.shapeFactory.createMergedGroupFromJSON(model, frameData, groupName);\n            if (group) {\n                rootGroup.add(group);\n            }\n        }\n    \n        return rootGroup;\n    }\n}"
+        "script": "class ModelManager {\n    constructor(app, { ShapeFactory, palette }) {\n        this.app = app;\n        this.models = {};\n        this.shapeFactory = new ShapeFactory(palette);\n    }\n\n    clear() {\n        this.models = {};\n    }\n\n    dispose() {\n        // Cleanup when manager is no longer needed\n        for (const [key, model] of Object.entries(this.models)) {\n            this.disposeModel(model);\n        }\n        this.models = {};\n    }\n    \n    disposeModel(model) {\n        if (!model) return;\n        \n        // Handle animation objects\n        if (model.animations) {\n            for (const [animType, frames] of Object.entries(model.animations)) {\n                for (const frame of frames) {\n                    if (frame.group) {\n                        this.shapeFactory.disposeObject(frame.group);\n                        frame.group = null;\n                    }\n                }\n            }\n        }\n    }\n\n    async loadModels(prefix, config) {\n        if (!prefix || !config || typeof config !== 'object') {\n            throw new Error('Invalid prefix or config provided to loadModels');\n        }\n    \n        for (const [type, cfg] of Object.entries(config)) {\n            if (cfg.render && cfg.render.model) {\n                this.models[`${prefix}_${type}`] = await this.createModel(cfg.render.model);\n            }\n        }        \n       \n    }\n\n\n    async createModel(modelData) {\n        const modelGroup = await this.createObjectsFromJSON(modelData, {});\n            \n        if (modelGroup) {\n            // Apply shadows to all meshes\n            modelGroup.traverse((child) => {\n                if (child.isMesh) {\n                    child.castShadow = true;\n                    child.receiveShadow = true;\n                }\n            });\n            \n        }\n            \n        \n        \n        return modelGroup;\n    }\n\n    getModel(prefix, type) {\n        return this.models[`${prefix}_${type}`];\n    }\n\n    async createObjectsFromJSON(model, frameData) {\n        const rootGroup = new THREE.Group();\n        \n        for (const groupName in model) {\n            const group = await this.shapeFactory.createMergedGroupFromJSON(model, frameData, groupName);\n            if (group) {\n                rootGroup.add(group);\n            }\n        }\n    \n        return rootGroup;\n    }\n}"
       }
     },
     "interfaces": {
