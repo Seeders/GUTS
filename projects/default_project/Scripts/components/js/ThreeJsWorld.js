@@ -72,6 +72,11 @@ class ThreeJsWorld extends engine.Component {
                 cameraConfig.lookAt.y,
                 cameraConfig.lookAt.z
             );
+            this.controls.maxPolarAngle = Math.PI / 2.05; // Prevent going below ground
+            this.controls.minPolarAngle = 0.1; // Prevent going completely overhead
+            this.controls.enableDamping = true; // Add smooth damping
+            this.controls.dampingFactor = 0.05;
+            
             this.controls.update();
         }
 
