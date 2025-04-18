@@ -223,7 +223,7 @@ class ThreeJsWorld extends engine.Component {
         const bladeHeight = 32;
         const grassGeometry = this.createCurvedBladeGeometry(bladeWidth, bladeHeight);
         grassGeometry.translate(0, bladeHeight / 2, 0);
-        const grassCount = 1000000;
+        const grassCount = 100000;
         // Add random phase attribute for each instance
         const phases = new Float32Array(grassCount);
         for (let i = 0; i < grassCount; i++) {

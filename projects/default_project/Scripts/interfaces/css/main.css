@@ -437,3 +437,205 @@ canvas {
 #waveDisplay {
 	display: inline-block;
 }
+
+
+/* Mobile-first adjustments (applies below 768px) */
+@media screen and (max-width: 768px) {
+    /* Base layout adjustments */
+    #gameContainer {
+        overflow: hidden;
+    }
+    #towerMenu {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        max-width: 100%;
+        max-height: 20vh;
+        overflow-y: auto;
+        transform: none;
+        border-radius: 12px 12px 0 0;
+        padding: 2px;
+        gap: 8px;
+        border: 2px solid var(--accent-color);
+        box-shadow: 0 -4px 12px rgba(0,0,0,0.3);
+		margin: 0;
+    }
+
+    .tower-option {
+        min-width: calc(50% - 6px);
+        flex-grow: 0;
+        padding: 2px;
+        margin: 2px;
+        border-radius: 8px;
+        font-size: .5rem;
+    }
+
+    /* Add a close button for mobile */
+    #menuCloseButton {
+        display: block;
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: var(--accent-color);
+        border: none;
+        color: var(--text-color);
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        cursor: pointer;
+        z-index: 100;
+    }
+
+    /* Adjust stats container position */
+    #statsContainer {
+        top: 10px;
+        width: 95%;
+        padding: 8px;
+    }
+    #stats {
+        gap: 8px;
+    }
+
+    .stat {
+        font-size: 0.9rem;
+        gap: 4px;
+    }
+
+    /* Upgrade menu adjustments */
+    #upgradeMenu {
+        width: 90%;
+        padding: 15px;
+    }
+
+    .upgrade-option {
+        margin: 12px 0;
+        padding: 12px;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .upgrade-icon {
+        width: 36px;
+        height: 36px;
+        margin-right: 12px;
+        font-size: 18px;
+    }
+
+    .upgrade-title {
+        font-size: 1rem;
+    }
+
+    /* Wave info adjustments */
+    #waveInfo {
+        top: 80px;
+        width: 90%;
+        padding: 6px 15px;
+    }
+
+    .progress-bar {
+        width: 150px;
+    }
+
+    /* Game over/victory menus */
+    #gameOverMenu, #victoryMenu {
+        width: 90%;
+        padding: 20px;
+    }
+
+    #gameOverMenu h2, #victoryMenu h2 {
+        font-size: 1.5rem;
+    }
+
+    /* Tooltip adjustments */
+    #tooltip {
+        max-width: 200px;
+        font-size: 0.85rem;
+        padding: 8px 10px;
+    }
+
+    /* Button sizes */
+    #startGameBtn {
+        padding: 10px 25px;
+        font-size: 1rem;
+    }
+
+    .menu-button {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+}
+
+/* Additional adjustments for very small screens */
+@media screen and (max-width: 480px) {
+    .tower-option {
+        min-width: 45%;
+        font-size: 0.8rem;
+        padding: 5px;
+    }
+
+    #stats {
+        justify-content: center;
+    }
+
+    .stat {
+        font-size: 0.8rem;
+    }
+
+    .progress-bar {
+        width: 120px;
+        height: 10px;
+    }
+
+    #waveDisplay {
+        font-size: 0.9rem;
+    }
+
+    .upgrade-option {
+        padding: 10px;
+        margin: 8px 0;
+    }
+
+    .upgrade-title {
+        font-size: 0.9rem;
+    }
+}
+
+/* Orientation-specific adjustments */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+    #towerMenu {
+        bottom: 0px;
+        padding: 5px;
+    }
+
+    #statsContainer {
+        top: 5px;
+        padding: 5px;
+    }
+
+    .tower-option {
+        min-width: 30%;
+        padding: 4px;
+        font-size: 0.7rem;
+    }
+}
+@media screen and (max-width: 480px) {
+    #towerMenu {
+        padding: 8px;
+        gap: 6px;
+    }
+
+    .tower-option {
+        min-width: calc(50% - 4px);
+        padding: 10px;
+        font-size: 0.85rem;
+    }
+
+    #menuCloseButton {
+        top: 4px;
+        right: 4px;
+        width: 28px;
+        height: 28px;
+    }
+}
