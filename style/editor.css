@@ -30,19 +30,16 @@
   #container {
     display: flex;
     gap: 20px;
-    height: calc(100vh - 40px);
     padding: 20px;
   }
   
   .main-content {
     width: 100%;
-    height: calc(100vh - 20px);
     display: flex;
     flex-direction: column;
-    overflow: hidden;
     flex: 1;
     min-height: 100px;
-    margin-top: -20px;
+    gap: 20px;
   }
   
   .sidebar {
@@ -88,11 +85,6 @@
     padding: 8px;
   }
   
-  /* Content Areas */
-  #main-content-container {
-    overflow-y: auto;
-  }
-  
   #main-content-container > div {
     display: none;
     height: 100%;
@@ -104,13 +96,10 @@
   #main-content-container > div.show {
     display: flex;
   }
-  #toggleEditorButton {
-    margin: 0;
-  }
+
   .editor {
     border-radius: 0;
     padding: 20px;
-    overflow-y: auto;
   }
   .ref-container {
     display: flex;
@@ -275,12 +264,6 @@
     display: none;
   }
   
-  .full-height {
-    flex: none;
-    height: calc(100% - 62px);
-    max-height: calc(100% - 62px) !important;
-    margin-top: 20px;
-  }
   
   .highlight {
     border-left: 3px solid #4682b4;
