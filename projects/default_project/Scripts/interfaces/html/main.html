@@ -36,8 +36,7 @@
         <div class="tower-option" data-type="chrono">Chrono Defibrilator (100)</div>
         <div class="tower-option" data-type="guardTower">Guard Tower (70)</div>
     </div>
-    <button id="startGameBtn">Start Game</button>  
-    <button id="menuCloseButton" onclick="toggleTowerMenu()">×</button>   
+    <button id="startGameBtn">Start Game</button>    
 </div>
 <div id="overlay"></div>
 <div id="upgradeMenu">
@@ -55,9 +54,3 @@
     <p>You've successfully defended your Home through all waves!</p>
     <button class="menu-button">Play Again</button>     
 </div>
-<script>
-function toggleTowerMenu() {
-    const menu = document.getElementById('towerMenu');
-    menu.style.display = menu.style.display === 'none' ? 'flex' : 'none';
-}
-</script>
