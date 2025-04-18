@@ -5,7 +5,6 @@ export class EditorView {
       this.controller = controller;
       this.moduleManager = controller.moduleManager;
       this.elements = controller.elements;
-      this.isDragging = false;
       this.dragState = {};
       
       // Initialize UI
@@ -157,7 +156,7 @@ export class EditorView {
       const { matchingTypePlural, matchingTypeSingular, matchingModuleType } = this.controller.findMatchingTypes(key);
       
       // Create value input based on property type
-      if (key === 'color') {
+      if (key.toLowerCase().endsWith('color')) {
           this.appendColorInput(propertyItem, value);
       } else if (typeof value === 'boolean') {
           this.appendBooleanSelect(propertyItem, value);
@@ -201,11 +200,36 @@ export class EditorView {
     
     appendColorInput(propertyItem, value) {
         const valueContainer = this.createValueContainer();
-        const valueInput = document.createElement('input');
-        valueInput.type = 'color';
-        valueInput.value = value;
-        valueInput.className = 'property-value';
-        valueContainer.appendChild(valueInput);
+      
+        // Create color picker input
+        const colorInput = document.createElement('input');
+        colorInput.type = 'color';
+        colorInput.value = value;
+        colorInput.className = 'property-value color-picker';
+        
+        // Create hex text input
+        const hexInput = document.createElement('input');
+        hexInput.type = 'text';
+        hexInput.value = value;
+        hexInput.className = 'property-value color-text';
+        hexInput.pattern = '^#[0-9A-Fa-f]{6}$';
+        
+        // Sync color picker -> text
+        colorInput.addEventListener('input', () => {
+            hexInput.value = colorInput.value;
+        });
+        
+        // Sync text -> color picker
+        hexInput.addEventListener('input', (e) => {
+            const value = e.target.value;
+            if (value.match(/^#[0-9A-Fa-f]{6}$/)) {
+                colorInput.value = value;
+            }
+        });
+        
+        // Add both inputs to container
+        valueContainer.appendChild(colorInput);
+        valueContainer.appendChild(hexInput);
         propertyItem.appendChild(valueContainer);
     }
     
@@ -369,9 +393,6 @@ export class EditorView {
 
 
     selectObject() {
-        
-        this.elements.handle.style = "";
-         
         this.renderObjectList();
         this.renderEditor();
         this.renderObject();
@@ -552,34 +573,15 @@ export class EditorView {
         this.controller.dispatchHook('showContent', arguments);
         this.elements.mainContentContainer.classList.remove('hidden');
 
-        if( this.elements.editor.classList.contains('full-height') ) {
-          console.log('show', this.lastHeights);
-          if(this.lastHeights) {
-            this.elements.editor.style.height = this.lastHeights.editor;
-            this.elements.mainContentContainer.style.height = this.lastHeights.content;        
-          } else {
-            this.elements.editor.style.height = '45vh';
-            this.elements.mainContentContainer.style.height = '65vh';          
-          }
-        }
-        this.elements.handle.classList.remove('hidden');
-        this.elements.editor.classList.remove('full-height');
-
     }
     hideContent() {
         this.controller.dispatchHook('hideContent', arguments);
-        this.elements.mainContentContainer.classList.add('hidden');
-        this.elements.handle.classList.add('hidden');
-        this.elements.editor.classList.add('full-height');
-        this.elements.editor.style.height = '100%';
+        this.elements.mainContentContainer.classList.add('hidden');        
     }
   
     hideEditor() {
         this.controller.dispatchHook('hideEditor', arguments);
-        this.elements.editor.classList.add('hidden');
-        this.elements.handle.classList.add('hidden');
-        this.elements.mainContentContainer.classList.add('full-height');
-        this.elements.mainContentContainer.style.height = '100%';
+        this.elements.editor.classList.add('hidden');        
     }
     
     updateSidebarButtons() {
@@ -598,7 +600,6 @@ export class EditorView {
   
     // Event listeners setup
     setupEventListeners() {
-      this.setupDragResize();
       this.setupProjectEventListeners();
       this.setupModalEventListeners();
       this.setupActionEventListeners();
@@ -781,61 +782,6 @@ export class EditorView {
             window.open("game.html", "_blank");
         });
     }
-
-    setupDragResize() {
-        this.isDragging = false;
-        this.startY;
-        this.startHeightContent;
-        this.startHeightEditor;
-        this.elements.handle.addEventListener('mousedown', (e) => {
-            if( this.elements.editor.classList.contains('full-height') )  {
-              return;
-            }
-            this.isDragging = true;
-            this.startY = e.clientY;
-            this.startHeightContent = this.elements.mainContentContainer.offsetHeight;
-            this.startHeightEditor = this.elements.editor.offsetHeight;
-           
-            e.preventDefault();
-        });
-        
-        document.addEventListener('mousemove', (e) => {
-            if (!this.isDragging) return;  
-            if( this.elements.editor.classList.contains('full-height') )  {
-              return;
-            }      
-
-            const delta = e.clientY + this.elements.handle.offsetHeight / 2 - this.startY;
-            const containerHeight = this.elements.handle.parentElement.offsetHeight;
-            
-            // Calculate new heights with minimum constraints
-            let newContentHeight = this.startHeightContent + delta;
-            let newEditorHeight = this.startHeightEditor - delta;
-            
-            // Enforce minimum heights
-            if (newContentHeight < 100) {
-              newContentHeight = 100;
-              newEditorHeight = containerHeight - newContentHeight;
-            }
-            if (newEditorHeight < 100) {
-              newEditorHeight = 100;
-              newContentHeight = containerHeight - newEditorHeight;
-            }
-            this.elements.mainContentContainer.style.height = `${newContentHeight}px`;
-            this.elements.editor.style.height = `${newEditorHeight}px`;
-        });
-        
-        document.addEventListener('mouseup', () => {
-            if(this.isDragging){
-              this.lastHeights = {
-                editor: this.elements.editor.style.height,
-                content: this.elements.mainContentContainer.style.height,
-              }
-              this.controller.dispatchHook('resizedEditor', arguments);
-            }
-            this.isDragging = false;
-        });
-      }
   
     // Modal handling
     showAddObjectModal() {

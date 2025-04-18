@@ -21,71 +21,6 @@
                 "rotationX": 90,
                 "id": 2,
                 "rotationZ": 0
-              },
-              {
-                "id": 0
-              }
-            ]
-          },
-          "main": {
-            "shapes": [
-              {
-                "id": 0
-              },
-              {
-                "id": 1
-              },
-              {
-                "id": 2
-              },
-              {
-                "id": 3
-              },
-              {
-                "id": 4
-              },
-              {
-                "id": 5
-              }
-            ]
-          },
-          "pillar1": {
-            "shapes": [
-              {
-                "id": 0
-              },
-              {
-                "id": 1
-              }
-            ]
-          },
-          "pillar2": {
-            "shapes": [
-              {
-                "id": 0
-              },
-              {
-                "id": 1
-              }
-            ]
-          },
-          "pillar3": {
-            "shapes": [
-              {
-                "id": 0
-              },
-              {
-                "id": 1
-              }
-            ]
-          },
-          "pillar4": {
-            "shapes": [
-              {
-                "id": 0
-              },
-              {
-                "id": 1
               }
             ]
           }
@@ -94,80 +29,12 @@
           "shapes": [],
           "energy": {
             "shapes": [
-              {
-                "id": 0
-              },
-              {
-                "id": 1
-              },
               {
                 "rotationX": 90,
                 "id": 2,
                 "rotationY": -45
               }
             ]
-          },
-          "main": {
-            "shapes": [
-              {
-                "id": 0
-              },
-              {
-                "id": 1
-              },
-              {
-                "id": 2
-              },
-              {
-                "id": 3
-              },
-              {
-                "id": 4
-              },
-              {
-                "id": 5
-              }
-            ]
-          },
-          "pillar1": {
-            "shapes": [
-              {
-                "id": 0
-              },
-              {
-                "id": 1
-              }
-            ]
-          },
-          "pillar2": {
-            "shapes": [
-              {
-                "id": 0
-              },
-              {
-                "id": 1
-              }
-            ]
-          },
-          "pillar3": {
-            "shapes": [
-              {
-                "id": 0
-              },
-              {
-                "id": 1
-              }
-            ]
-          },
-          "pillar4": {
-            "shapes": [
-              {
-                "id": 0
-              },
-              {
-                "id": 1
-              }
-            ]
           }
         },
         {
@@ -178,146 +45,16 @@
                 "id": 1
               },
               {
-                "id": 0
-              },
-              {
                 "id": 2,
                 "rotationY": -90
-              }
-            ]
-          },
-          "main": {
-            "shapes": [
-              {
-                "id": 0
-              },
-              {
-                "id": 1
-              },
-              {
-                "id": 2
-              },
-              {
-                "id": 3
-              },
-              {
-                "id": 4
-              },
-              {
-                "id": 5
-              }
-            ]
-          },
-          "pillar1": {
-            "shapes": [
-              {
-                "id": 0
-              },
-              {
-                "id": 1
-              }
-            ]
-          },
-          "pillar2": {
-            "shapes": [
-              {
-                "id": 0
-              },
-              {
-                "id": 1
-              }
-            ]
-          },
-          "pillar3": {
-            "shapes": [
-              {
-                "id": 0
-              },
-              {
-                "id": 1
-              }
-            ]
-          },
-          "pillar4": {
-            "shapes": [
-              {
-                "id": 0
-              },
-              {
-                "id": 1
               }
             ]
           }
         },
         {
           "shapes": [],
-          "main": {
-            "shapes": [
-              {
-                "id": 0
-              },
-              {
-                "id": 1
-              },
-              {
-                "id": 2
-              },
-              {
-                "id": 3
-              },
-              {
-                "id": 4
-              },
-              {
-                "id": 5
-              }
-            ]
-          },
-          "pillar1": {
-            "shapes": [
-              {
-                "id": 0
-              },
-              {
-                "id": 1
-              }
-            ]
-          },
-          "pillar2": {
-            "shapes": [
-              {
-                "id": 0
-              },
-              {
-                "id": 1
-              }
-            ]
-          },
-          "pillar3": {
-            "shapes": [
-              {
-                "id": 0
-              },
-              {
-                "id": 1
-              }
-            ]
-          },
-          "pillar4": {
-            "shapes": [
-              {
-                "id": 0
-              },
-              {
-                "id": 1
-              }
-            ]
-          },
           "energy": {
             "shapes": [
-              {
-                "id": 0
-              },
               {
                 "id": 1,
                 "rotationX": 135
@@ -339,7 +76,7 @@
             "type": "cylinder",
             "size": 24,
             "height": 8,
-            "color": "#3A3A3A",
+            "color": "#3e4f57",
             "x": 0,
             "y": 0,
             "z": 0,
@@ -350,7 +87,7 @@
             "type": "cylinder",
             "size": 20,
             "height": 12,
-            "color": "#555555",
+            "color": "#78909c",
             "x": 0,
             "y": 10,
             "z": 0,
@@ -361,7 +98,7 @@
             "width": 8,
             "height": 4,
             "depth": 8,
-            "color": "#555555",
+            "color": "#3e4f57",
             "x": 16,
             "y": 2,
             "z": 0,
@@ -372,7 +109,7 @@
             "width": 8,
             "height": 4,
             "depth": 8,
-            "color": "#555555",
+            "color": "#3e4f57",
             "x": -16,
             "y": 2,
             "z": 0,
@@ -383,7 +120,7 @@
             "width": 8,
             "height": 4,
             "depth": 8,
-            "color": "#555555",
+            "color": "#3e4f57",
             "x": 0,
             "y": 2,
             "z": 16,
@@ -394,7 +131,7 @@
             "width": 8,
             "height": 4,
             "depth": 8,
-            "color": "#555555",
+            "color": "#3e4f57",
             "x": 0,
             "y": 2,
             "z": -16,
@@ -423,7 +160,7 @@
             "type": "cylinder",
             "size": 4,
             "height": 10,
-            "color": "#666666",
+            "color": "#3e4f57",
             "x": 12,
             "y": 6,
             "z": 12,
@@ -432,7 +169,7 @@
           {
             "type": "sphere",
             "size": 3,
-            "color": "#00FFFF",
+            "color": "#4fc3f7",
             "x": 12,
             "y": 12,
             "z": 12,
@@ -461,7 +198,7 @@
             "type": "cylinder",
             "size": 4,
             "height": 10,
-            "color": "#666666",
+            "color": "#3e4f57",
             "x": -12,
             "y": 6,
             "z": 12,
@@ -470,7 +207,7 @@
           {
             "type": "sphere",
             "size": 3,
-            "color": "#00FFFF",
+            "color": "#4fc3f7",
             "x": -12,
             "y": 12,
             "z": 12,
@@ -499,7 +236,7 @@
             "type": "cylinder",
             "size": 4,
             "height": 10,
-            "color": "#666666",
+            "color": "#3e4f57",
             "x": 12,
             "y": 6,
             "z": -12,
@@ -508,7 +245,7 @@
           {
             "type": "sphere",
             "size": 3,
-            "color": "#00FFFF",
+            "color": "#4fc3f7",
             "x": 12,
             "y": 12,
             "z": -12,
@@ -537,7 +274,7 @@
             "type": "cylinder",
             "size": 4,
             "height": 10,
-            "color": "#666666",
+            "color": "#3e4f57",
             "x": -12,
             "y": 6,
             "z": -12,
@@ -546,7 +283,7 @@
           {
             "type": "sphere",
             "size": 3,
-            "color": "#00FFFF",
+            "color": "#4fc3f7",
             "x": -12,
             "y": 12,
             "z": -12,
@@ -574,7 +311,7 @@
           {
             "type": "sphere",
             "size": 14,
-            "color": "#4B0082",
+            "color": "#6a1b9a",
             "x": 0,
             "y": 30,
             "z": 0,
@@ -584,7 +321,7 @@
             "type": "torus",
             "size": 22,
             "tubeSize": 2,
-            "color": "#00BFFF",
+            "color": "#0288d1",
             "x": 0,
             "y": 30,
             "z": 0,
@@ -595,7 +332,7 @@
             "type": "torus",
             "size": 22,
             "tubeSize": 2,
-            "color": "#00BFFF",
+            "color": "#0288d1",
             "x": 0,
             "y": 30,
             "z": 0,

@@ -1157,7 +1157,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "width": 24,
                   "height": 16,
                   "depth": 24,
-                  "color": "#C0C0C0",
+                  "color": "#cfd8dc",
                   "x": 0,
                   "y": 32,
                   "z": 0,
@@ -1169,7 +1169,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "cylinder",
                   "size": 12,
                   "height": 22,
-                  "color": "#D8D8D8",
+                  "color": "#cfd8dc",
                   "x": 0,
                   "y": 42,
                   "z": 0,
@@ -1179,7 +1179,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "cone",
                   "size": 14,
                   "height": 20,
-                  "color": "#6f1eb0",
+                  "color": "#ab47bc",
                   "x": 0,
                   "y": 62,
                   "z": 0,
@@ -1209,7 +1209,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "width": 40,
                   "height": 12,
                   "depth": 40,
-                  "color": "#414141",
+                  "color": "#3e4f57",
                   "x": 0,
                   "y": 6,
                   "z": 0,
@@ -1221,7 +1221,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "width": 44,
                   "height": 4,
                   "depth": 44,
-                  "color": "#696969",
+                  "color": "#3e4f57",
                   "x": 0,
                   "y": 2,
                   "z": 0,
@@ -1232,7 +1232,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "width": 32,
                   "height": 12,
                   "depth": 32,
-                  "color": "#707070",
+                  "color": "#78909c",
                   "x": 0,
                   "y": 17,
                   "z": 0,
@@ -1261,7 +1261,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "cylinder",
                   "size": 6,
                   "height": 30,
-                  "color": "#C0C0C0",
+                  "color": "#cfd8dc",
                   "x": 16,
                   "y": 22,
                   "z": 16,
@@ -1271,7 +1271,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "cylinder",
                   "size": 6,
                   "height": 30,
-                  "color": "#C0C0C0",
+                  "color": "#cfd8dc",
                   "x": -16,
                   "y": 22,
                   "z": 16,
@@ -1281,7 +1281,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "cylinder",
                   "size": 6,
                   "height": 30,
-                  "color": "#C0C0C0",
+                  "color": "#cfd8dc",
                   "x": 16,
                   "y": 22,
                   "z": -16,
@@ -1291,7 +1291,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "cylinder",
                   "size": 6,
                   "height": 30,
-                  "color": "#C0C0C0",
+                  "color": "#cfd8dc",
                   "x": -16,
                   "y": 22,
                   "z": -16,
@@ -1301,7 +1301,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "cone",
                   "size": 8,
                   "height": 10,
-                  "color": "#4169E1",
+                  "color": "#0288d1",
                   "x": 16,
                   "y": 42,
                   "z": 16,
@@ -1311,7 +1311,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "cone",
                   "size": 8,
                   "height": 10,
-                  "color": "#4169E1",
+                  "color": "#0288d1",
                   "x": -16,
                   "y": 42,
                   "z": 16,
@@ -1321,7 +1321,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "cone",
                   "size": 8,
                   "height": 10,
-                  "color": "#4169E1",
+                  "color": "#0288d1",
                   "x": 16,
                   "y": 42,
                   "z": -16,
@@ -1331,7 +1331,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "cone",
                   "size": 8,
                   "height": 10,
-                  "color": "#4169E1",
+                  "color": "#0288d1",
                   "x": -16,
                   "y": 42,
                   "z": -16,
@@ -1381,7 +1381,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "cylinder",
                   "size": 20,
                   "height": 4,
-                  "color": "#696969",
+                  "color": "#78909c",
                   "x": 0,
                   "y": 2,
                   "z": 0,
@@ -1397,7 +1397,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "cylinder",
                   "size": 14,
                   "height": 26,
-                  "color": "#696969",
+                  "color": "#78909c",
                   "x": 0,
                   "y": 17,
                   "z": 0,
@@ -1426,7 +1426,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "cylinder",
                   "size": 12,
                   "height": 8,
-                  "color": "#696969",
+                  "color": "#3e4f57",
                   "x": 0,
                   "y": 30,
                   "z": 0,
@@ -1437,7 +1437,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "width": 3,
                   "height": 5,
                   "depth": 3,
-                  "color": "#696969",
+                  "color": "#3e4f57",
                   "x": 4,
                   "y": 34,
                   "z": 4,
@@ -1448,7 +1448,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "width": 3,
                   "height": 5,
                   "depth": 3,
-                  "color": "#696969",
+                  "color": "#3e4f57",
                   "x": -4,
                   "y": 34,
                   "z": 4,
@@ -1459,7 +1459,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "width": 3,
                   "height": 5,
                   "depth": 3,
-                  "color": "#696969",
+                  "color": "#3e4f57",
                   "x": 4,
                   "y": 34,
                   "z": -4,
@@ -1470,7 +1470,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "width": 3,
                   "height": 5,
                   "depth": 3,
-                  "color": "#696969",
+                  "color": "#3e4f57",
                   "x": -4,
                   "y": 34,
                   "z": -4,
@@ -1499,7 +1499,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "cylinder",
                   "size": 5.7,
                   "height": 14,
-                  "color": "#A9A9A9",
+                  "color": "#cfd8dc",
                   "x": 0,
                   "y": 39.6,
                   "z": 0,
@@ -1508,7 +1508,7 @@ const DEFAULT_PROJECT_CONFIG = {
                 {
                   "type": "sphere",
                   "size": 6,
-                  "color": "#CD7F32",
+                  "color": "#ff8c00",
                   "x": 0,
                   "y": 48.89655172413794,
                   "z": 0,
@@ -1524,7 +1524,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "cylinder",
                   "size": 2,
                   "height": 12,
-                  "color": "#A9A9A9",
+                  "color": "#cfd8dc",
                   "x": 0,
                   "y": 42,
                   "z": 0,
@@ -1534,7 +1534,7 @@ const DEFAULT_PROJECT_CONFIG = {
                 {
                   "type": "sphere",
                   "size": 3,
-                  "color": "#FF4500",
+                  "color": "#bf360c",
                   "x": 0,
                   "y": 42,
                   "z": 6,
@@ -1585,71 +1585,6 @@ const DEFAULT_PROJECT_CONFIG = {
                       "rotationX": 90,
                       "id": 2,
                       "rotationZ": 0
-                    },
-                    {
-                      "id": 0
-                    }
-                  ]
-                },
-                "main": {
-                  "shapes": [
-                    {
-                      "id": 0
-                    },
-                    {
-                      "id": 1
-                    },
-                    {
-                      "id": 2
-                    },
-                    {
-                      "id": 3
-                    },
-                    {
-                      "id": 4
-                    },
-                    {
-                      "id": 5
-                    }
-                  ]
-                },
-                "pillar1": {
-                  "shapes": [
-                    {
-                      "id": 0
-                    },
-                    {
-                      "id": 1
-                    }
-                  ]
-                },
-                "pillar2": {
-                  "shapes": [
-                    {
-                      "id": 0
-                    },
-                    {
-                      "id": 1
-                    }
-                  ]
-                },
-                "pillar3": {
-                  "shapes": [
-                    {
-                      "id": 0
-                    },
-                    {
-                      "id": 1
-                    }
-                  ]
-                },
-                "pillar4": {
-                  "shapes": [
-                    {
-                      "id": 0
-                    },
-                    {
-                      "id": 1
                     }
                   ]
                 }
@@ -1658,80 +1593,12 @@ const DEFAULT_PROJECT_CONFIG = {
                 "shapes": [],
                 "energy": {
                   "shapes": [
-                    {
-                      "id": 0
-                    },
-                    {
-                      "id": 1
-                    },
                     {
                       "rotationX": 90,
                       "id": 2,
                       "rotationY": -45
                     }
                   ]
-                },
-                "main": {
-                  "shapes": [
-                    {
-                      "id": 0
-                    },
-                    {
-                      "id": 1
-                    },
-                    {
-                      "id": 2
-                    },
-                    {
-                      "id": 3
-                    },
-                    {
-                      "id": 4
-                    },
-                    {
-                      "id": 5
-                    }
-                  ]
-                },
-                "pillar1": {
-                  "shapes": [
-                    {
-                      "id": 0
-                    },
-                    {
-                      "id": 1
-                    }
-                  ]
-                },
-                "pillar2": {
-                  "shapes": [
-                    {
-                      "id": 0
-                    },
-                    {
-                      "id": 1
-                    }
-                  ]
-                },
-                "pillar3": {
-                  "shapes": [
-                    {
-                      "id": 0
-                    },
-                    {
-                      "id": 1
-                    }
-                  ]
-                },
-                "pillar4": {
-                  "shapes": [
-                    {
-                      "id": 0
-                    },
-                    {
-                      "id": 1
-                    }
-                  ]
                 }
               },
               {
@@ -1742,146 +1609,16 @@ const DEFAULT_PROJECT_CONFIG = {
                       "id": 1
                     },
                     {
-                      "id": 0
-                    },
-                    {
                       "id": 2,
                       "rotationY": -90
-                    }
-                  ]
-                },
-                "main": {
-                  "shapes": [
-                    {
-                      "id": 0
-                    },
-                    {
-                      "id": 1
-                    },
-                    {
-                      "id": 2
-                    },
-                    {
-                      "id": 3
-                    },
-                    {
-                      "id": 4
-                    },
-                    {
-                      "id": 5
-                    }
-                  ]
-                },
-                "pillar1": {
-                  "shapes": [
-                    {
-                      "id": 0
-                    },
-                    {
-                      "id": 1
-                    }
-                  ]
-                },
-                "pillar2": {
-                  "shapes": [
-                    {
-                      "id": 0
-                    },
-                    {
-                      "id": 1
-                    }
-                  ]
-                },
-                "pillar3": {
-                  "shapes": [
-                    {
-                      "id": 0
-                    },
-                    {
-                      "id": 1
-                    }
-                  ]
-                },
-                "pillar4": {
-                  "shapes": [
-                    {
-                      "id": 0
-                    },
-                    {
-                      "id": 1
                     }
                   ]
                 }
               },
               {
                 "shapes": [],
-                "main": {
-                  "shapes": [
-                    {
-                      "id": 0
-                    },
-                    {
-                      "id": 1
-                    },
-                    {
-                      "id": 2
-                    },
-                    {
-                      "id": 3
-                    },
-                    {
-                      "id": 4
-                    },
-                    {
-                      "id": 5
-                    }
-                  ]
-                },
-                "pillar1": {
-                  "shapes": [
-                    {
-                      "id": 0
-                    },
-                    {
-                      "id": 1
-                    }
-                  ]
-                },
-                "pillar2": {
-                  "shapes": [
-                    {
-                      "id": 0
-                    },
-                    {
-                      "id": 1
-                    }
-                  ]
-                },
-                "pillar3": {
-                  "shapes": [
-                    {
-                      "id": 0
-                    },
-                    {
-                      "id": 1
-                    }
-                  ]
-                },
-                "pillar4": {
-                  "shapes": [
-                    {
-                      "id": 0
-                    },
-                    {
-                      "id": 1
-                    }
-                  ]
-                },
                 "energy": {
                   "shapes": [
-                    {
-                      "id": 0
-                    },
                     {
                       "id": 1,
                       "rotationX": 135
@@ -1903,7 +1640,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "cylinder",
                   "size": 24,
                   "height": 8,
-                  "color": "#3A3A3A",
+                  "color": "#3e4f57",
                   "x": 0,
                   "y": 0,
                   "z": 0,
@@ -1914,7 +1651,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "cylinder",
                   "size": 20,
                   "height": 12,
-                  "color": "#555555",
+                  "color": "#78909c",
                   "x": 0,
                   "y": 10,
                   "z": 0,
@@ -1925,7 +1662,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "width": 8,
                   "height": 4,
                   "depth": 8,
-                  "color": "#555555",
+                  "color": "#3e4f57",
                   "x": 16,
                   "y": 2,
                   "z": 0,
@@ -1936,7 +1673,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "width": 8,
                   "height": 4,
                   "depth": 8,
-                  "color": "#555555",
+                  "color": "#3e4f57",
                   "x": -16,
                   "y": 2,
                   "z": 0,
@@ -1947,7 +1684,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "width": 8,
                   "height": 4,
                   "depth": 8,
-                  "color": "#555555",
+                  "color": "#3e4f57",
                   "x": 0,
                   "y": 2,
                   "z": 16,
@@ -1958,7 +1695,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "width": 8,
                   "height": 4,
                   "depth": 8,
-                  "color": "#555555",
+                  "color": "#3e4f57",
                   "x": 0,
                   "y": 2,
                   "z": -16,
@@ -1987,7 +1724,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "cylinder",
                   "size": 4,
                   "height": 10,
-                  "color": "#666666",
+                  "color": "#3e4f57",
                   "x": 12,
                   "y": 6,
                   "z": 12,
@@ -1996,7 +1733,7 @@ const DEFAULT_PROJECT_CONFIG = {
                 {
                   "type": "sphere",
                   "size": 3,
-                  "color": "#00FFFF",
+                  "color": "#4fc3f7",
                   "x": 12,
                   "y": 12,
                   "z": 12,
@@ -2025,7 +1762,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "cylinder",
                   "size": 4,
                   "height": 10,
-                  "color": "#666666",
+                  "color": "#3e4f57",
                   "x": -12,
                   "y": 6,
                   "z": 12,
@@ -2034,7 +1771,7 @@ const DEFAULT_PROJECT_CONFIG = {
                 {
                   "type": "sphere",
                   "size": 3,
-                  "color": "#00FFFF",
+                  "color": "#4fc3f7",
                   "x": -12,
                   "y": 12,
                   "z": 12,
@@ -2063,7 +1800,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "cylinder",
                   "size": 4,
                   "height": 10,
-                  "color": "#666666",
+                  "color": "#3e4f57",
                   "x": 12,
                   "y": 6,
                   "z": -12,
@@ -2072,7 +1809,7 @@ const DEFAULT_PROJECT_CONFIG = {
                 {
                   "type": "sphere",
                   "size": 3,
-                  "color": "#00FFFF",
+                  "color": "#4fc3f7",
                   "x": 12,
                   "y": 12,
                   "z": -12,
@@ -2101,7 +1838,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "cylinder",
                   "size": 4,
                   "height": 10,
-                  "color": "#666666",
+                  "color": "#3e4f57",
                   "x": -12,
                   "y": 6,
                   "z": -12,
@@ -2110,7 +1847,7 @@ const DEFAULT_PROJECT_CONFIG = {
                 {
                   "type": "sphere",
                   "size": 3,
-                  "color": "#00FFFF",
+                  "color": "#4fc3f7",
                   "x": -12,
                   "y": 12,
                   "z": -12,
@@ -2138,7 +1875,7 @@ const DEFAULT_PROJECT_CONFIG = {
                 {
                   "type": "sphere",
                   "size": 14,
-                  "color": "#4B0082",
+                  "color": "#6a1b9a",
                   "x": 0,
                   "y": 30,
                   "z": 0,
@@ -2148,7 +1885,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "torus",
                   "size": 22,
                   "tubeSize": 2,
-                  "color": "#00BFFF",
+                  "color": "#0288d1",
                   "x": 0,
                   "y": 30,
                   "z": 0,
@@ -2159,7 +1896,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "type": "torus",
                   "size": 22,
                   "tubeSize": 2,
-                  "color": "#00BFFF",
+                  "color": "#0288d1",
                   "x": 0,
                   "y": 30,
                   "z": 0,
@@ -19654,7 +19391,7 @@ const DEFAULT_PROJECT_CONFIG = {
       },
       "GE_UIManager": {
         "title": "GE_UIManager",
-        "script": "class GE_UIManager {\r\n    constructor(gameEditor, graphicsEditor) {\r\n        this.gameEditor = gameEditor;\r\n        this.graphicsEditor = graphicsEditor;\r\n        this.mouse = new window.THREE.Vector2();\r\n        this.raycaster = new window.THREE.Raycaster();\r\n        this.isDragging = false;\r\n        this.clickStartTime = 0;\r\n    }    \r\n     \r\n\r\n    init() {   \r\n        this.initEventListeners();\r\n    }\r\n    \r\n    \r\n    \r\n    initEventListeners() {\r\n        // Button event listeners\r\n        const buttonMappings = {\r\n            'generate-isometric': this.showIsometricModal.bind(this),\r\n        };\r\n        Object.entries(buttonMappings).forEach(([id, handler]) => {\r\n            const button = document.getElementById(id);\r\n            if (button) button.addEventListener('click', handler);\r\n        });\r\n\r\n        // Canvas interaction\r\n        this.graphicsEditor.canvas.addEventListener('mousedown', this.handleMouseDown.bind(this));\r\n        this.graphicsEditor.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));\r\n        this.graphicsEditor.canvas.addEventListener('mouseup', this.handleMouseUp.bind(this));\r\n\r\n        // Additional event listeners\r\n\r\n        \r\n        // Move modal listeners\r\n\r\n        // Isometric modal listeners\r\n        document.getElementById('iso-cancel').addEventListener('click', () => {\r\n            document.getElementById('modal-generateIsoSprites').classList.remove('show');\r\n        });\r\n    }\r\n    handleMouseDown(event) {\r\n        this.isDragging = false;\r\n        this.clickStartTime = Date.now();\r\n    }\r\n\r\n    handleMouseMove() {\r\n        if (Date.now() - this.clickStartTime > 100) {\r\n            this.isDragging = true;\r\n        }\r\n    }\r\n\r\n    handleMouseUp(event) {\r\n        if (this.isDragging) return;\r\n    \r\n        const rect = this.graphicsEditor.canvas.getBoundingClientRect();\r\n        this.mouse.x = ((event.clientX - rect.left) / this.graphicsEditor.canvas.clientWidth) * 2 - 1;\r\n        this.mouse.y = -((event.clientY - rect.top) / this.graphicsEditor.canvas.clientHeight) * 2 + 1;\r\n    \r\n        this.raycaster.setFromCamera(this.mouse, this.graphicsEditor.sceneRenderer.camera);\r\n    \r\n        // Instead of looking only at scene.children, search through all descendant meshes\r\n        const meshes = [];\r\n        this.graphicsEditor.rootGroup.traverse(obj => {\r\n            if (obj.isMesh && obj.userData.isShape) {\r\n                meshes.push(obj);\r\n            }\r\n        });\r\n    \r\n        const intersects = this.raycaster.intersectObjects(meshes, true);\r\n    \r\n        if (intersects.length > 0) {\r\n            // Find the parent mesh with the isShape flag if we've hit a child mesh\r\n            let hitObject = intersects[0].object;\r\n            while (hitObject && !hitObject.userData.isShape) {\r\n                hitObject = hitObject.parent;\r\n            }\r\n            \r\n            if (hitObject && hitObject.userData.index !== undefined) {\r\n                this.graphicsEditor.selectShape(hitObject.userData.index);\r\n            }\r\n        }\r\n    }\r\n    \r\n\r\n    showIsometricModal() {\r\n        document.getElementById('modal-generateIsoSprites').classList.add('show');\r\n    }\r\n    displayIsometricSprites(sprites) {\r\n        const modal = document.createElement('div');\r\n        modal.style.cssText = `\r\n            position: fixed; top: 0; left: 0; width: 100%; height: 100%; \r\n            background-color: rgba(0, 0, 0, 0.7); z-index: 1000; \r\n            display: flex; align-items: center; justify-content: center;\r\n        `;\r\n        const content = document.createElement('div');\r\n        content.style.cssText = `\r\n            background: #333; padding: 20px; border-radius: 8px; \r\n            max-width: 80%; max-height: 80%; overflow: auto;\r\n        `;\r\n    \r\n        const angleLabels = ['NE', 'N', 'NW', 'W', 'SW', 'S', 'SE', 'E']; // Labels for 8 angles\r\n    \r\n        for (const animType in sprites) {\r\n            const animSection = document.createElement('div');\r\n            const title = document.createElement('h3');\r\n            title.textContent = `${animType} Animation`;\r\n            title.style.color = '#e0e0e0';\r\n            animSection.appendChild(title);\r\n    \r\n            // Create a container for all angles\r\n            const anglesContainer = document.createElement('div');\r\n            anglesContainer.style.cssText = `margin: 10px 0;`;\r\n    \r\n            // For each angle (0-7)\r\n            for (let angle = 0; angle < 8; angle++) {\r\n                const angleSection = document.createElement('div');\r\n    \r\n                const grid = document.createElement('div');\r\n                grid.style.cssText = `\r\n                    display: grid; \r\n                    grid-template-columns: repeat(${Math.min(sprites[animType].length, 4)}, 1fr); \r\n                    gap: 5px; \r\n                    margin-bottom: 15px;\r\n                `;\r\n    \r\n                // Add all frames for this specific angle\r\n                sprites[animType].forEach(frame => {\r\n                    const img = document.createElement('img');\r\n                    img.src = frame[angle]; // Get the specific angle's sprite\r\n                    img.style.maxWidth = '100%';\r\n                    grid.appendChild(img);\r\n                });\r\n    \r\n                angleSection.appendChild(grid);\r\n                anglesContainer.appendChild(angleSection);\r\n            }\r\n    \r\n            animSection.appendChild(anglesContainer);\r\n            content.appendChild(animSection);\r\n        }\r\n    \r\n        const closeButton = document.createElement('button');\r\n        closeButton.textContent = 'Close';\r\n        closeButton.style.cssText = `\r\n            margin-top: 20px; padding: 8px 16px; background-color: #4CAF50; \r\n            color: #fff; border: none; border-radius: 6px; cursor: pointer;\r\n        `;\r\n        closeButton.addEventListener('click', () => document.body.removeChild(modal));\r\n        content.appendChild(closeButton);\r\n        modal.appendChild(content);\r\n        document.body.appendChild(modal);\r\n    }\r\n    \r\n    createGroupInspector(group) {\r\n        console.log('create group inspector', group);\r\n        const inspector = document.getElementById('inspector');\r\n        inspector.innerHTML = \"\";\r\n        inspector.className = 'inspector';\r\n\r\n        \r\n        this.addFormRow(inspector, 'X Scale', 'number', 'scaleX', group.scale.x || 1, { min: 0.1, step: 0.1 });\r\n        this.addFormRow(inspector, 'Y Scale', 'number', 'scaleY', group.scale.y || 1, { min: 0.1, step: 0.1 });\r\n        this.addFormRow(inspector, 'Z Scale', 'number', 'scaleZ', group.scale.z || 1, { min: 0.1, step: 0.1 });\r\n        // Position inputs\r\n        this.addFormRow(inspector, 'X Position', 'number', 'x', group.position.x || 0, { step: 0.1 });\r\n        this.addFormRow(inspector, 'Y Position', 'number', 'y', group.position.y || 0, { step: 0.1 });\r\n        this.addFormRow(inspector, 'Z Position', 'number', 'z', group.position.z || 0, { step: 0.1 });\r\n        \r\n        // Rotation inputs\r\n        this.addFormRow(inspector, 'X Rotation', 'number', 'rotationX', group.rotation.x || 0, { step: 5 });\r\n        this.addFormRow(inspector, 'Y Rotation', 'number', 'rotationY', group.rotation.y || 0, { step: 5 });\r\n        this.addFormRow(inspector, 'Z Rotation', 'number', 'rotationZ', group.rotation.z || 0, { step: 5 });\r\n        \r\n    }\r\n\r\n    createInspector(shape) {\r\n        console.log('create shape inspector', shape);\r\n        const inspector = document.getElementById('inspector');\r\n        inspector.innerHTML = \"\";\r\n        inspector.className = 'inspector';\r\n\r\n        this.addFormRow(inspector, 'Name', 'text', 'name', shape.name || \"\");\r\n        \r\n        // Type selector\r\n        this.addFormRow(inspector, 'Type', 'select', 'type', shape.type, {\r\n            options: ['cube', 'sphere', 'box', 'cylinder', 'cone', 'torus', 'tetrahedron', 'gltf'],\r\n            change: (e) => {\r\n                let currentShape = this.graphicsEditor.getFrameShape();\r\n                let newValue = e.target.value;\r\n                if (newValue != 'gltf') {\r\n                    delete currentShape.url\r\n                }                 \r\n                currentShape.type = newValue;\r\n                this.graphicsEditor.refreshShapes(false);\r\n            }\r\n        });\r\n        \r\n        if (shape.type === 'gltf') {            \r\n            let input = this.addFormRow(inspector, 'Model', 'file', 'url', shape.url, { 'change' :  async (e) => {\r\n                e.preventDefault();\r\n\r\n                // Get the file from the input element\r\n                const file = e.target.files[0]; // Access the file object\r\n                if (!file) {\r\n                    console.error('No file selected');\r\n                    return;\r\n                }\r\n                // // Create FormData and append the file\r\n                 const formData = new FormData();\r\n                 formData.append('gltfFile', file); // 'gltfFile' matches the multer.single('gltfFile') on the server\r\n\r\n                try {\r\n                     const response = await fetch('/upload-model', {\r\n                         method: 'POST',\r\n                         body: formData // Send the FormData with the file\r\n                     });\r\n\r\n                     const result = await response.json();\r\n                     shape.url = result.filePath; \r\n                     this.graphicsEditor.getFrameShape().url = result.filePath;\r\n                     this.graphicsEditor.refreshShapes(false);\r\n                } catch (error) {\r\n                     console.error('Error uploading file:', error);\r\n                }\r\n            }});\r\n            input.setAttribute(\"accept\",\".gltf\");\r\n        }\r\n        // Color picker\r\n        this.addFormRow(inspector, 'Color', 'color', 'color', shape.color);\r\n        \r\n        this.addFormRow(inspector, 'X Scale', 'number', 'scaleX', shape.scaleX || 1, { min: 0.1, step: 0.1 });\r\n        this.addFormRow(inspector, 'Y Scale', 'number', 'scaleY', shape.scaleY || 1, { min: 0.1, step: 0.1 });\r\n        this.addFormRow(inspector, 'Z Scale', 'number', 'scaleZ', shape.scaleZ || 1, { min: 0.1, step: 0.1 });\r\n        // Position inputs\r\n        this.addFormRow(inspector, 'X Position', 'number', 'x', shape.x || 0, { step: 0.1 });\r\n        this.addFormRow(inspector, 'Y Position', 'number', 'y', shape.y || 0, { step: 0.1 });\r\n        this.addFormRow(inspector, 'Z Position', 'number', 'z', shape.z || 0, { step: 0.1 });\r\n        \r\n        // Rotation inputs\r\n        this.addFormRow(inspector, 'X Rotation', 'number', 'rotationX', shape.rotationX || 0, { step: 5 });\r\n        this.addFormRow(inspector, 'Y Rotation', 'number', 'rotationY', shape.rotationY || 0, { step: 5 });\r\n        this.addFormRow(inspector, 'Z Rotation', 'number', 'rotationZ', shape.rotationZ || 0, { step: 5 });\r\n        \r\n        // Size inputs\r\n        if (['cube', 'sphere', 'tetrahedron', 'torus'].includes(shape.type)) {\r\n            this.addFormRow(inspector, 'Size', 'number', 'size', shape.size || 2, { min: 0.1, step: 0.1 });\r\n        }\r\n        \r\n        if (shape.type === 'box') {\r\n            this.addFormRow(inspector, 'Width', 'number', 'width', shape.width || 2, { min: 0.1, step: 0.1 });\r\n            this.addFormRow(inspector, 'Height', 'number', 'height', shape.height || 2, { min: 0.1, step: 0.1 });\r\n            this.addFormRow(inspector, 'Depth', 'number', 'depth', shape.depth || 2, { min: 0.1, step: 0.1 });\r\n        }\r\n        \r\n        if (['cylinder', 'cone'].includes(shape.type)) {\r\n            this.addFormRow(inspector, 'Size', 'number', 'size', shape.size || 2, { min: 0.1, step: 0.1 });\r\n            this.addFormRow(inspector, 'Height', 'number', 'height', shape.height || 3, { min: 0.1, step: 0.1 });\r\n        }\r\n        \r\n        if (shape.type === 'torus') {\r\n            this.addFormRow(inspector, 'Tube Size', 'number', 'tubeSize', shape.tubeSize || shape.size / 6, { min: 0.1, step: 0.1 });\r\n        }\r\n    }\r\n\r\n\r\n    addFormRow(container, label, type, property, value, options = {}) {\r\n        const row = document.createElement('div');\r\n        row.className = 'form-row';\r\n        \r\n        const labelElement = document.createElement('label');\r\n        labelElement.textContent = label;\r\n        row.appendChild(labelElement);\r\n        \r\n        let input;\r\n        \r\n        if (type === 'select') {\r\n            input = document.createElement('select');\r\n            input.setAttribute('data-property', property);\r\n            (options.options || []).forEach(optionValue => {\r\n                const option = document.createElement('option');\r\n                option.value = optionValue;\r\n                option.textContent = optionValue;\r\n                if (value === optionValue) {\r\n                    option.selected = true;\r\n                }\r\n                input.appendChild(option);\r\n            });\r\n        } else if(type === \"color\") {\r\n            input = document.createElement('input');\r\n            input.type = \"text\";\r\n            input.value = value;\r\n            input.setAttribute('data-property', property);\r\n            \r\n            let colorInput = document.createElement('input');\r\n            colorInput.type = \"color\";\r\n            colorInput.value = value;\r\n            colorInput.setAttribute('data-property', property + '-color');\r\n    \r\n            colorInput.addEventListener('change', () => {\r\n                let newValue = colorInput.value;                \r\n                this.graphicsEditor.getFrameShape()[property] = newValue;\r\n                this.graphicsEditor.refreshShapes(true);\r\n            });\r\n            row.appendChild(colorInput);\r\n        } else if(type === \"file\") {\r\n            let inputContainer = document.createElement('div');\r\n            inputContainer.style = \"flex: 1; display: flex; flex-direction: column; font-size: .75em;\";\r\n            input = document.createElement('input');\r\n            input.style = \"width: calc(100% - 18px);\"\r\n            input.type = type;\r\n            input.setAttribute('data-property', property);\r\n            inputContainer.appendChild(input);\r\n            if( value ) {\r\n                let urlName = document.createElement('span');\r\n                urlName.innerText = value;            \r\n                inputContainer.appendChild(urlName);\r\n            }\r\n            row.appendChild(inputContainer);\r\n            container.appendChild(row);\r\n            input.addEventListener('change', options.change );\r\n            return input;\r\n        } else {\r\n            input = document.createElement('input');\r\n            input.type = type;\r\n            input.value = value;\r\n            input.setAttribute('data-property', property);\r\n            \r\n            if (type === 'number') {\r\n                input.min = options.min !== undefined ? options.min : -64;\r\n                input.max = options.max !== undefined ? options.max : 64;\r\n                input.step = options.step || 1;\r\n            }\r\n        }\r\n        \r\n        input.addEventListener('change', options.change || ((e) => {\r\n            let newValue = e.target.value;\r\n            if (type === 'number') {\r\n                newValue = parseFloat(newValue);\r\n                console.log('change', this.graphicsEditor.shapeManager.currentTransformTarget);\r\n                // If we're editing a transform property, also update the transform target\r\n                if (this.graphicsEditor.shapeManager.currentTransformTarget && ['x', 'y', 'z', 'rotationX', 'rotationY', 'rotationZ', 'scaleX', 'scaleY', 'scaleZ'].includes(property)) {\r\n                    if (property === 'x') this.graphicsEditor.shapeManager.currentTransformTarget.position.x = newValue;\r\n                    if (property === 'y') this.graphicsEditor.shapeManager.currentTransformTarget.position.y = newValue;\r\n                    if (property === 'z') this.graphicsEditor.shapeManager.currentTransformTarget.position.z = newValue;\r\n                    \r\n                    if (property === 'rotationX') this.graphicsEditor.shapeManager.currentTransformTarget.rotation.x = this.graphicsEditor.rotationUtils.degToRad(newValue);\r\n                    if (property === 'rotationY') this.graphicsEditor.shapeManager.currentTransformTarget.rotation.y = this.graphicsEditor.rotationUtils.degToRad(newValue);\r\n                    if (property === 'rotationZ') this.graphicsEditor.shapeManager.currentTransformTarget.rotation.z = this.graphicsEditor.rotationUtils.degToRad(newValue);\r\n                    \r\n                    if (property === 'scaleX') this.graphicsEditor.shapeManager.currentTransformTarget.scale.x = newValue;\r\n                    if (property === 'scaleY') this.graphicsEditor.shapeManager.currentTransformTarget.scale.y = newValue;\r\n                    if (property === 'scaleZ') this.graphicsEditor.shapeManager.currentTransformTarget.scale.z = newValue;\r\n                    \r\n                    // Update gizmo position after directly changing values\r\n                }\r\n            } else if(type === 'file') {\r\n                return;\r\n            }\r\n            \r\n            this.updatePropertyValue(property, newValue);\r\n            this.graphicsEditor.refreshShapes(false);\r\n        }));\r\n        \r\n        row.appendChild(input);\r\n        container.appendChild(row);\r\n        return input;\r\n    }\r\n    updatePropertyValue(property, value) {\r\n        const shapeData = this.graphicsEditor.getFrameShape();\r\n        if (shapeData) {\r\n            shapeData[property] = value;\r\n            return;\r\n        }\r\n        let groupData = this.graphicsEditor.getCurrentGroup();\r\n        if(!groupData){\r\n            groupData = {};\r\n            let currentFrame = this.graphicsEditor.getCurrentFrame();\r\n            if(currentFrame) {\r\n                currentFrame[this.graphicsEditor.state.currentGroup] = groupData;\r\n            }\r\n        }\r\n        \r\n        // Handle transform properties\r\n        if (property.startsWith('scale')) {\r\n            if(!groupData.scale) groupData.scale = {};\r\n            const axis = property.charAt(property.length - 1).toLowerCase();\r\n            groupData.scale[axis] = value;\r\n        } else if (property.startsWith('rotation')) {\r\n            if(!groupData.rotation) groupData.rotation = {};\r\n            const axis = property.charAt(property.length - 1).toLowerCase();\r\n            groupData.rotation[axis] = value;\r\n        } else if (['x', 'y', 'z'].includes(property)) {\r\n            if(!groupData.position) groupData.position = {};\r\n            groupData.position[property] = value;\r\n        }\r\n    }\r\n\r\n  \r\n\r\n    updateList() {\r\n        const frameList = document.getElementById('frame-list');\r\n        frameList.innerHTML = '';\r\n        const groupList = document.getElementById('group-list');\r\n        groupList.innerHTML = '';\r\n        const shapeList = document.getElementById('shape-list');\r\n        shapeList.innerHTML = '';\r\n        this.updateFrameList();\r\n        this.graphicsEditor.groupManager.updateGroupList();\r\n        this.updateShapeList();\r\n    }\r\n\r\n    updateFrameList() {\r\n        const list = document.getElementById('frame-list');\r\n        // Animation selector\r\n        const animSelector = document.createElement('select');\r\n        animSelector.style.marginBottom = '10px';\r\n\r\n        const option = document.createElement('option');\r\n        option.value = '__model__';\r\n        option.textContent = 'model';\r\n        if (this.graphicsEditor.state.editingModel) option.selected = true;\r\n        animSelector.appendChild(option);\r\n\r\n\r\n        Object.keys(this.graphicsEditor.state.renderData.animations).forEach(anim => {\r\n            const option = document.createElement('option');\r\n            option.value = anim;\r\n            option.textContent = anim;\r\n            if (anim === this.graphicsEditor.state.currentAnimation) option.selected = true;\r\n            animSelector.appendChild(option);\r\n        });\r\n        animSelector.addEventListener('change', (e) => {\r\n            this.graphicsEditor.setPreviewAnimationState(false);\r\n            if(e.target.value == '__model__'){\r\n                this.graphicsEditor.state.editingModel = true;\r\n                this.graphicsEditor.state.currentAnimation = \"\";                \r\n            } else {\r\n                this.graphicsEditor.state.editingModel = false;\r\n                this.graphicsEditor.state.currentAnimation = animSelector.value;                \r\n            }\r\n            this.graphicsEditor.state.currentFrame = 0;\r\n            this.graphicsEditor.refreshShapes(false);\r\n            requestAnimationFrame(() => {\r\n                this.graphicsEditor.state.selectedShapeIndex = -1;\r\n                this.graphicsEditor.shapeManager.selectShape(0);\r\n            })\r\n        });\r\n        list.appendChild(animSelector);\r\n        if(this.graphicsEditor.state.editingModel) return;\r\n        // Frame list\r\n        const frameList = document.createElement('div');\r\n        frameList.style.marginBottom = '10px';\r\n        this.graphicsEditor.getCurrentAnimation().forEach((frame, index) => {\r\n            const frameItem = document.createElement('div');\r\n            frameItem.textContent = `Frame ${index + 1}`;\r\n            frameItem.style.padding = '5px';\r\n            frameItem.style.cursor = 'pointer';\r\n            if (index === this.graphicsEditor.state.currentFrame) frameItem.style.backgroundColor = '#555';\r\n            frameItem.addEventListener('click', () => {\r\n                this.graphicsEditor.setPreviewAnimationState(false);\r\n                this.graphicsEditor.state.currentFrame = index;  \r\n                this.graphicsEditor.refreshShapes(false);\r\n                requestAnimationFrame(() => {  \r\n                    this.graphicsEditor.state.selectedShapeIndex = -1;\r\n                    this.graphicsEditor.shapeManager.selectShape(0);\r\n                })\r\n            });\r\n            frameList.appendChild(frameItem);\r\n        });\r\n        list.appendChild(frameList);\r\n    }\r\n\r\n\r\n    updateShapeList() {\r\n        const list = document.getElementById('shape-list');\r\n        if (!list) return;\r\n        \r\n\r\n        // Get shapes from the currently selected group\r\n        const currentGroup = this.graphicsEditor.state.currentGroup;\r\n        const selectedGroup = this.graphicsEditor.getMergedGroup(currentGroup);\r\n        const shapes = selectedGroup && selectedGroup.shapes ? selectedGroup.shapes : selectedGroup || [];\r\n       \r\n        // Create shape list items\r\n        for (let i = 0; i < shapes.length; i++) {\r\n            const shape = shapes[i];\r\n            if (!shape) continue;\r\n           \r\n            const shapeItem = document.createElement('div');\r\n            shapeItem.classList.add('shape-item');\r\n           \r\n            // Mark as selected if this shape is the selected one and we're in the right group\r\n            if (i === this.graphicsEditor.state.selectedShapeIndex) {\r\n                shapeItem.classList.add('selected');\r\n            }\r\n           \r\n            shapeItem.textContent = `${shape.name} - ${shape.type || 'Shape'}`;\r\n            shapeItem.addEventListener('click', (e) => {               \r\n                this.graphicsEditor.shapeManager.selectShape(parseInt(e.target.dataset.index));\r\n            });\r\n           \r\n            // Make the shape draggable\r\n            shapeItem.draggable = true;\r\n            shapeItem.dataset.index = i;\r\n            shapeItem.dataset.group = currentGroup;\r\n            \r\n            // Add dragstart event to set the drag data\r\n            shapeItem.addEventListener('dragstart', (e) => {\r\n                // Store only the selected shape's index and source group\r\n                const data = {\r\n                    shapeIndex: i,\r\n                    sourceGroup: currentGroup\r\n                };\r\n                \r\n                // Set the drag data\r\n                e.dataTransfer.setData('text/plain', JSON.stringify(data));\r\n                \r\n                // Add a visual indicator\r\n                shapeItem.classList.add('dragging');\r\n                \r\n                // Set drag effect\r\n                e.dataTransfer.effectAllowed = 'move';\r\n            });\r\n            \r\n            // Add dragend event to clean up\r\n            shapeItem.addEventListener('dragend', () => {\r\n                shapeItem.classList.remove('dragging');\r\n            });\r\n           \r\n            list.appendChild(shapeItem);\r\n        }\r\n        \r\n        // Set up the shape list container as a drop target\r\n        list.addEventListener('dragover', (e) => {\r\n            // Only respond if we're dragging over the shape list itself, not an individual shape\r\n            if (e.target === list) {\r\n                e.preventDefault();\r\n                e.dataTransfer.dropEffect = 'move';\r\n                list.classList.add('drag-over');\r\n            }\r\n        });\r\n        \r\n        list.addEventListener('dragleave', (e) => {\r\n            // Only respond if we're leaving the shape list\r\n            if (e.target === list) {\r\n                list.classList.remove('drag-over');\r\n            }\r\n        });\r\n        \r\n        list.addEventListener('drop', (e) => {\r\n            e.preventDefault();\r\n            list.classList.remove('drag-over');\r\n            \r\n            const data = e.dataTransfer.getData('text/plain');\r\n            if (!data) return;\r\n            \r\n            try {\r\n                const dragData = JSON.parse(data);\r\n                const { shapeIndex, sourceGroup } = dragData;\r\n                \r\n                // Only process if this is a different group\r\n                if (sourceGroup && sourceGroup !== currentGroup) {\r\n                    this.graphicsEditor.groupManager.moveToGroup(\r\n                        parseInt(shapeIndex),\r\n                        sourceGroup,\r\n                        currentGroup\r\n                    );\r\n                }\r\n            } catch (err) {\r\n                console.error('Error processing drop in shape list:', err);\r\n            }\r\n        });\r\n    }\r\n\r\n}",
+        "script": "class GE_UIManager {\r\n    constructor(gameEditor, graphicsEditor) {\r\n        this.gameEditor = gameEditor;\r\n        this.graphicsEditor = graphicsEditor;\r\n        this.mouse = new window.THREE.Vector2();\r\n        this.raycaster = new window.THREE.Raycaster();\r\n        this.isDragging = false;\r\n        this.clickStartTime = 0;\r\n    }    \r\n     \r\n\r\n    init() {   \r\n        this.initEventListeners();\r\n    }\r\n    \r\n    \r\n    \r\n    initEventListeners() {\r\n        // Button event listeners\r\n        const buttonMappings = {\r\n            'generate-isometric': this.showIsometricModal.bind(this),\r\n        };\r\n        Object.entries(buttonMappings).forEach(([id, handler]) => {\r\n            const button = document.getElementById(id);\r\n            if (button) button.addEventListener('click', handler);\r\n        });\r\n\r\n        // Canvas interaction\r\n        this.graphicsEditor.canvas.addEventListener('mousedown', this.handleMouseDown.bind(this));\r\n        this.graphicsEditor.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));\r\n        this.graphicsEditor.canvas.addEventListener('mouseup', this.handleMouseUp.bind(this));\r\n\r\n        // Additional event listeners\r\n\r\n        \r\n        // Move modal listeners\r\n\r\n        // Isometric modal listeners\r\n        document.getElementById('iso-cancel').addEventListener('click', () => {\r\n            document.getElementById('modal-generateIsoSprites').classList.remove('show');\r\n        });\r\n    }\r\n    handleMouseDown(event) {\r\n        this.isDragging = false;\r\n        this.clickStartTime = Date.now();\r\n    }\r\n\r\n    handleMouseMove() {\r\n        if (Date.now() - this.clickStartTime > 100) {\r\n            this.isDragging = true;\r\n        }\r\n    }\r\n\r\n    handleMouseUp(event) {\r\n        if (this.isDragging) return;\r\n    \r\n        const rect = this.graphicsEditor.canvas.getBoundingClientRect();\r\n        this.mouse.x = ((event.clientX - rect.left) / this.graphicsEditor.canvas.clientWidth) * 2 - 1;\r\n        this.mouse.y = -((event.clientY - rect.top) / this.graphicsEditor.canvas.clientHeight) * 2 + 1;\r\n    \r\n        this.raycaster.setFromCamera(this.mouse, this.graphicsEditor.sceneRenderer.camera);\r\n    \r\n        // Instead of looking only at scene.children, search through all descendant meshes\r\n        const meshes = [];\r\n        this.graphicsEditor.rootGroup.traverse(obj => {\r\n            if (obj.isMesh && obj.userData.isShape) {\r\n                meshes.push(obj);\r\n            }\r\n        });\r\n    \r\n        const intersects = this.raycaster.intersectObjects(meshes, true);\r\n    \r\n        if (intersects.length > 0) {\r\n            // Find the parent mesh with the isShape flag if we've hit a child mesh\r\n            let hitObject = intersects[0].object;\r\n            while (hitObject && !hitObject.userData.isShape) {\r\n                hitObject = hitObject.parent;\r\n            }\r\n            \r\n            if (hitObject && hitObject.userData.index !== undefined) {\r\n                this.graphicsEditor.selectShape(hitObject.userData.index);\r\n            }\r\n        }\r\n    }\r\n    \r\n\r\n    showIsometricModal() {\r\n        document.getElementById('modal-generateIsoSprites').classList.add('show');\r\n    }\r\n    displayIsometricSprites(sprites) {\r\n        const modal = document.createElement('div');\r\n        modal.style.cssText = `\r\n            position: fixed; top: 0; left: 0; width: 100%; height: 100%; \r\n            background-color: rgba(0, 0, 0, 0.7); z-index: 1000; \r\n            display: flex; align-items: center; justify-content: center;\r\n        `;\r\n        const content = document.createElement('div');\r\n        content.style.cssText = `\r\n            background: #333; padding: 20px; border-radius: 8px; \r\n            max-width: 80%; max-height: 80%; overflow: auto;\r\n        `;\r\n    \r\n        const angleLabels = ['NE', 'N', 'NW', 'W', 'SW', 'S', 'SE', 'E']; // Labels for 8 angles\r\n    \r\n        for (const animType in sprites) {\r\n            const animSection = document.createElement('div');\r\n            const title = document.createElement('h3');\r\n            title.textContent = `${animType} Animation`;\r\n            title.style.color = '#e0e0e0';\r\n            animSection.appendChild(title);\r\n    \r\n            // Create a container for all angles\r\n            const anglesContainer = document.createElement('div');\r\n            anglesContainer.style.cssText = `margin: 10px 0;`;\r\n    \r\n            // For each angle (0-7)\r\n            for (let angle = 0; angle < 8; angle++) {\r\n                const angleSection = document.createElement('div');\r\n    \r\n                const grid = document.createElement('div');\r\n                grid.style.cssText = `\r\n                    display: grid; \r\n                    grid-template-columns: repeat(${Math.min(sprites[animType].length, 4)}, 1fr); \r\n                    gap: 5px; \r\n                    margin-bottom: 15px;\r\n                `;\r\n    \r\n                // Add all frames for this specific angle\r\n                sprites[animType].forEach(frame => {\r\n                    const img = document.createElement('img');\r\n                    img.src = frame[angle]; // Get the specific angle's sprite\r\n                    img.style.maxWidth = '100%';\r\n                    grid.appendChild(img);\r\n                });\r\n    \r\n                angleSection.appendChild(grid);\r\n                anglesContainer.appendChild(angleSection);\r\n            }\r\n    \r\n            animSection.appendChild(anglesContainer);\r\n            content.appendChild(animSection);\r\n        }\r\n    \r\n        const closeButton = document.createElement('button');\r\n        closeButton.textContent = 'Close';\r\n        closeButton.style.cssText = `\r\n            margin-top: 20px; padding: 8px 16px; background-color: #4CAF50; \r\n            color: #fff; border: none; border-radius: 6px; cursor: pointer;\r\n        `;\r\n        closeButton.addEventListener('click', () => document.body.removeChild(modal));\r\n        content.appendChild(closeButton);\r\n        modal.appendChild(content);\r\n        document.body.appendChild(modal);\r\n    }\r\n    \r\n    createGroupInspector(group) {\r\n        console.log('create group inspector', group);\r\n        const inspector = document.getElementById('inspector');\r\n        inspector.innerHTML = \"\";\r\n        inspector.className = 'inspector';\r\n\r\n        \r\n        this.addFormRow(inspector, 'X Scale', 'number', 'scaleX', group.scale.x || 1, { min: 0.1, step: 0.1 });\r\n        this.addFormRow(inspector, 'Y Scale', 'number', 'scaleY', group.scale.y || 1, { min: 0.1, step: 0.1 });\r\n        this.addFormRow(inspector, 'Z Scale', 'number', 'scaleZ', group.scale.z || 1, { min: 0.1, step: 0.1 });\r\n        // Position inputs\r\n        this.addFormRow(inspector, 'X Position', 'number', 'x', group.position.x || 0, { step: 0.1 });\r\n        this.addFormRow(inspector, 'Y Position', 'number', 'y', group.position.y || 0, { step: 0.1 });\r\n        this.addFormRow(inspector, 'Z Position', 'number', 'z', group.position.z || 0, { step: 0.1 });\r\n        \r\n        // Rotation inputs\r\n        this.addFormRow(inspector, 'X Rotation', 'number', 'rotationX', group.rotation.x || 0, { step: 5 });\r\n        this.addFormRow(inspector, 'Y Rotation', 'number', 'rotationY', group.rotation.y || 0, { step: 5 });\r\n        this.addFormRow(inspector, 'Z Rotation', 'number', 'rotationZ', group.rotation.z || 0, { step: 5 });\r\n        \r\n    }\r\n\r\n    createInspector(shape) {\r\n        console.log('create shape inspector', shape);\r\n        const inspector = document.getElementById('inspector');\r\n        inspector.innerHTML = \"\";\r\n        inspector.className = 'inspector';\r\n\r\n        this.addFormRow(inspector, 'Name', 'text', 'name', shape.name || \"\");\r\n        \r\n        // Type selector\r\n        this.addFormRow(inspector, 'Type', 'select', 'type', shape.type, {\r\n            options: ['cube', 'sphere', 'box', 'cylinder', 'cone', 'torus', 'tetrahedron', 'gltf'],\r\n            change: (e) => {\r\n                let currentShape = this.graphicsEditor.getFrameShape();\r\n                let newValue = e.target.value;\r\n                if (newValue != 'gltf') {\r\n                    delete currentShape.url\r\n                }                 \r\n                currentShape.type = newValue;\r\n                this.graphicsEditor.refreshShapes(false);\r\n            }\r\n        });\r\n        \r\n        if (shape.type === 'gltf') {            \r\n            let input = this.addFormRow(inspector, 'Model', 'file', 'url', shape.url, { 'change' :  async (e) => {\r\n                e.preventDefault();\r\n\r\n                // Get the file from the input element\r\n                const file = e.target.files[0]; // Access the file object\r\n                if (!file) {\r\n                    console.error('No file selected');\r\n                    return;\r\n                }\r\n                // // Create FormData and append the file\r\n                 const formData = new FormData();\r\n                 formData.append('gltfFile', file); // 'gltfFile' matches the multer.single('gltfFile') on the server\r\n\r\n                try {\r\n                     const response = await fetch('/upload-model', {\r\n                         method: 'POST',\r\n                         body: formData // Send the FormData with the file\r\n                     });\r\n\r\n                     const result = await response.json();\r\n                     shape.url = result.filePath; \r\n                     this.graphicsEditor.getFrameShape().url = result.filePath;\r\n                     this.graphicsEditor.refreshShapes(false);\r\n                } catch (error) {\r\n                     console.error('Error uploading file:', error);\r\n                }\r\n            }});\r\n            input.setAttribute(\"accept\",\".gltf\");\r\n        }\r\n        // Color picker\r\n        this.addFormRow(inspector, 'Color', 'color', 'color', shape.color);\r\n        \r\n        this.addFormRow(inspector, 'X Scale', 'number', 'scaleX', shape.scaleX || 1, { min: 0.1, step: 0.1 });\r\n        this.addFormRow(inspector, 'Y Scale', 'number', 'scaleY', shape.scaleY || 1, { min: 0.1, step: 0.1 });\r\n        this.addFormRow(inspector, 'Z Scale', 'number', 'scaleZ', shape.scaleZ || 1, { min: 0.1, step: 0.1 });\r\n        // Position inputs\r\n        this.addFormRow(inspector, 'X Position', 'number', 'x', shape.x || 0, { step: 0.1 });\r\n        this.addFormRow(inspector, 'Y Position', 'number', 'y', shape.y || 0, { step: 0.1 });\r\n        this.addFormRow(inspector, 'Z Position', 'number', 'z', shape.z || 0, { step: 0.1 });\r\n        \r\n        // Rotation inputs\r\n        this.addFormRow(inspector, 'X Rotation', 'number', 'rotationX', shape.rotationX || 0, { step: 5 });\r\n        this.addFormRow(inspector, 'Y Rotation', 'number', 'rotationY', shape.rotationY || 0, { step: 5 });\r\n        this.addFormRow(inspector, 'Z Rotation', 'number', 'rotationZ', shape.rotationZ || 0, { step: 5 });\r\n        \r\n        // Size inputs\r\n        if (['cube', 'sphere', 'tetrahedron', 'torus'].includes(shape.type)) {\r\n            this.addFormRow(inspector, 'Size', 'number', 'size', shape.size || 2, { min: 0.1, step: 0.1 });\r\n        }\r\n        \r\n        if (shape.type === 'box') {\r\n            this.addFormRow(inspector, 'Width', 'number', 'width', shape.width || 2, { min: 0.1, step: 0.1 });\r\n            this.addFormRow(inspector, 'Height', 'number', 'height', shape.height || 2, { min: 0.1, step: 0.1 });\r\n            this.addFormRow(inspector, 'Depth', 'number', 'depth', shape.depth || 2, { min: 0.1, step: 0.1 });\r\n        }\r\n        \r\n        if (['cylinder', 'cone'].includes(shape.type)) {\r\n            this.addFormRow(inspector, 'Size', 'number', 'size', shape.size || 2, { min: 0.1, step: 0.1 });\r\n            this.addFormRow(inspector, 'Height', 'number', 'height', shape.height || 3, { min: 0.1, step: 0.1 });\r\n        }\r\n        \r\n        if (shape.type === 'torus') {\r\n            this.addFormRow(inspector, 'Tube Size', 'number', 'tubeSize', shape.tubeSize || shape.size / 6, { min: 0.1, step: 0.1 });\r\n        }\r\n    }\r\n\r\n\r\n    addFormRow(container, label, type, property, value, options = {}) {\r\n        const row = document.createElement('div');\r\n        row.className = 'form-row';\r\n        \r\n        const labelElement = document.createElement('label');\r\n        labelElement.textContent = label;\r\n        row.appendChild(labelElement);\r\n        \r\n        let input;\r\n        \r\n        if (type === 'select') {\r\n            input = document.createElement('select');\r\n            input.setAttribute('data-property', property);\r\n            (options.options || []).forEach(optionValue => {\r\n                const option = document.createElement('option');\r\n                option.value = optionValue;\r\n                option.textContent = optionValue;\r\n                if (value === optionValue) {\r\n                    option.selected = true;\r\n                }\r\n                input.appendChild(option);\r\n            });\r\n        } else if(type === \"color\") {\r\n\r\n            let colors = [];\r\n            let palette = this.gameEditor.getCollections().palettes[\"main\"];\r\n            for(let colorName in palette) {\r\n                if(!colorName.toLowerCase().endsWith('color')) continue;\r\n                colors.push({ name: colorName, value: palette[colorName]});\r\n            }\r\n            let colorInput = document.createElement('input');\r\n            input = document.createElement('input');\r\n            input.type = \"text\";\r\n            input.value = value;\r\n            input.setAttribute('data-property', property);\r\n\r\n            let colorSelect = document.createElement('select');\r\n            colors.forEach(color => {\r\n                const option = document.createElement('option');\r\n                option.value = color.value;\r\n                option.textContent = color.name;\r\n                if (value === color.value) {\r\n                    option.selected = true;\r\n                }\r\n                colorSelect.appendChild(option);\r\n            });\r\n            colorSelect.addEventListener('change', (e) => {\r\n                input.value = e.target.value;\r\n                colorInput.value = e.target.value;\r\n                this.graphicsEditor.getFrameShape()[property] = e.target.value;\r\n                this.graphicsEditor.refreshShapes(false);\r\n            });\r\n            input.addEventListener('change', (e) => {\r\n                colorInput.value = e.target.value;\r\n                colorSelect.value = e.target.value;   \r\n                this.graphicsEditor.getFrameShape()[property] = e.target.value;\r\n                this.graphicsEditor.refreshShapes(false);\r\n            });\r\n            colorInput.type = \"color\";\r\n            colorInput.value = value;\r\n            colorInput.setAttribute('data-property', property + '-color');\r\n    \r\n            colorInput.addEventListener('change', (e) => {      \r\n                input.value = e.target.value;\r\n                colorSelect.value = e.target.value;          \r\n                this.graphicsEditor.getFrameShape()[property] = e.target.value;\r\n                this.graphicsEditor.refreshShapes(false);\r\n            });            \r\n            row.appendChild(input);\r\n            row.appendChild(colorInput);\r\n            row.appendChild(colorSelect);\r\n        } else if(type === \"file\") {\r\n            let inputContainer = document.createElement('div');\r\n            inputContainer.style = \"flex: 1; display: flex; flex-direction: column; font-size: .75em;\";\r\n            input = document.createElement('input');\r\n            input.style = \"width: calc(100% - 18px);\"\r\n            input.type = type;\r\n            input.setAttribute('data-property', property);\r\n            inputContainer.appendChild(input);\r\n            if( value ) {\r\n                let urlName = document.createElement('span');\r\n                urlName.innerText = value;            \r\n                inputContainer.appendChild(urlName);\r\n            }\r\n            row.appendChild(inputContainer);\r\n            container.appendChild(row);\r\n            input.addEventListener('change', options.change );\r\n            return input;\r\n        } else {\r\n            input = document.createElement('input');\r\n            input.type = type;\r\n            input.value = value;\r\n            input.setAttribute('data-property', property);\r\n            \r\n            if (type === 'number') {\r\n                input.min = options.min !== undefined ? options.min : -64;\r\n                input.max = options.max !== undefined ? options.max : 64;\r\n                input.step = options.step || 1;\r\n            }\r\n        }\r\n        \r\n        input.addEventListener('change', options.change || ((e) => {\r\n            let newValue = e.target.value;\r\n            if (type === 'number') {\r\n                newValue = parseFloat(newValue);\r\n                console.log('change', this.graphicsEditor.shapeManager.currentTransformTarget);\r\n                // If we're editing a transform property, also update the transform target\r\n                if (this.graphicsEditor.shapeManager.currentTransformTarget && ['x', 'y', 'z', 'rotationX', 'rotationY', 'rotationZ', 'scaleX', 'scaleY', 'scaleZ'].includes(property)) {\r\n                    if (property === 'x') this.graphicsEditor.shapeManager.currentTransformTarget.position.x = newValue;\r\n                    if (property === 'y') this.graphicsEditor.shapeManager.currentTransformTarget.position.y = newValue;\r\n                    if (property === 'z') this.graphicsEditor.shapeManager.currentTransformTarget.position.z = newValue;\r\n                    \r\n                    if (property === 'rotationX') this.graphicsEditor.shapeManager.currentTransformTarget.rotation.x = this.graphicsEditor.rotationUtils.degToRad(newValue);\r\n                    if (property === 'rotationY') this.graphicsEditor.shapeManager.currentTransformTarget.rotation.y = this.graphicsEditor.rotationUtils.degToRad(newValue);\r\n                    if (property === 'rotationZ') this.graphicsEditor.shapeManager.currentTransformTarget.rotation.z = this.graphicsEditor.rotationUtils.degToRad(newValue);\r\n                    \r\n                    if (property === 'scaleX') this.graphicsEditor.shapeManager.currentTransformTarget.scale.x = newValue;\r\n                    if (property === 'scaleY') this.graphicsEditor.shapeManager.currentTransformTarget.scale.y = newValue;\r\n                    if (property === 'scaleZ') this.graphicsEditor.shapeManager.currentTransformTarget.scale.z = newValue;\r\n                    \r\n                    // Update gizmo position after directly changing values\r\n                }\r\n            } else if(type === 'file') {\r\n                return;\r\n            }\r\n            \r\n            this.updatePropertyValue(property, newValue);\r\n            this.graphicsEditor.refreshShapes(false);\r\n        }));\r\n        \r\n        row.appendChild(input);\r\n        container.appendChild(row);\r\n        return input;\r\n    }\r\n    updatePropertyValue(property, value) {\r\n        const shapeData = this.graphicsEditor.getFrameShape();\r\n        if (shapeData) {\r\n            shapeData[property] = value;\r\n            return;\r\n        }\r\n        let groupData = this.graphicsEditor.getCurrentGroup();\r\n        if(!groupData){\r\n            groupData = {};\r\n            let currentFrame = this.graphicsEditor.getCurrentFrame();\r\n            if(currentFrame) {\r\n                currentFrame[this.graphicsEditor.state.currentGroup] = groupData;\r\n            }\r\n        }\r\n        \r\n        // Handle transform properties\r\n        if (property.startsWith('scale')) {\r\n            if(!groupData.scale) groupData.scale = {};\r\n            const axis = property.charAt(property.length - 1).toLowerCase();\r\n            groupData.scale[axis] = value;\r\n        } else if (property.startsWith('rotation')) {\r\n            if(!groupData.rotation) groupData.rotation = {};\r\n            const axis = property.charAt(property.length - 1).toLowerCase();\r\n            groupData.rotation[axis] = value;\r\n        } else if (['x', 'y', 'z'].includes(property)) {\r\n            if(!groupData.position) groupData.position = {};\r\n            groupData.position[property] = value;\r\n        }\r\n    }\r\n\r\n  \r\n\r\n    updateList() {\r\n        const frameList = document.getElementById('frame-list');\r\n        frameList.innerHTML = '';\r\n        const groupList = document.getElementById('group-list');\r\n        groupList.innerHTML = '';\r\n        const shapeList = document.getElementById('shape-list');\r\n        shapeList.innerHTML = '';\r\n        this.updateFrameList();\r\n        this.graphicsEditor.groupManager.updateGroupList();\r\n        this.updateShapeList();\r\n    }\r\n\r\n    updateFrameList() {\r\n        const list = document.getElementById('frame-list');\r\n        // Animation selector\r\n        const animSelector = document.createElement('select');\r\n        animSelector.style.marginBottom = '10px';\r\n\r\n        const option = document.createElement('option');\r\n        option.value = '__model__';\r\n        option.textContent = 'model';\r\n        if (this.graphicsEditor.state.editingModel) option.selected = true;\r\n        animSelector.appendChild(option);\r\n\r\n\r\n        Object.keys(this.graphicsEditor.state.renderData.animations).forEach(anim => {\r\n            const option = document.createElement('option');\r\n            option.value = anim;\r\n            option.textContent = anim;\r\n            if (anim === this.graphicsEditor.state.currentAnimation) option.selected = true;\r\n            animSelector.appendChild(option);\r\n        });\r\n        animSelector.addEventListener('change', (e) => {\r\n            this.graphicsEditor.setPreviewAnimationState(false);\r\n            if(e.target.value == '__model__'){\r\n                this.graphicsEditor.state.editingModel = true;\r\n                this.graphicsEditor.state.currentAnimation = \"\";                \r\n            } else {\r\n                this.graphicsEditor.state.editingModel = false;\r\n                this.graphicsEditor.state.currentAnimation = animSelector.value;                \r\n            }\r\n            this.graphicsEditor.state.currentFrame = 0;\r\n            this.graphicsEditor.refreshShapes(false);\r\n            requestAnimationFrame(() => {\r\n                this.graphicsEditor.state.selectedShapeIndex = -1;\r\n                this.graphicsEditor.shapeManager.selectShape(0);\r\n            })\r\n        });\r\n        list.appendChild(animSelector);\r\n        if(this.graphicsEditor.state.editingModel) return;\r\n        // Frame list\r\n        const frameList = document.createElement('div');\r\n        frameList.style.marginBottom = '10px';\r\n        this.graphicsEditor.getCurrentAnimation().forEach((frame, index) => {\r\n            const frameItem = document.createElement('div');\r\n            frameItem.textContent = `Frame ${index + 1}`;\r\n            frameItem.style.padding = '5px';\r\n            frameItem.style.cursor = 'pointer';\r\n            if (index === this.graphicsEditor.state.currentFrame) frameItem.style.backgroundColor = '#555';\r\n            frameItem.addEventListener('click', () => {\r\n                this.graphicsEditor.setPreviewAnimationState(false);\r\n                this.graphicsEditor.state.currentFrame = index;  \r\n                this.graphicsEditor.refreshShapes(false);\r\n                requestAnimationFrame(() => {  \r\n                    this.graphicsEditor.state.selectedShapeIndex = -1;\r\n                    this.graphicsEditor.shapeManager.selectShape(0);\r\n                })\r\n            });\r\n            frameList.appendChild(frameItem);\r\n        });\r\n        list.appendChild(frameList);\r\n    }\r\n\r\n\r\n    updateShapeList() {\r\n        const list = document.getElementById('shape-list');\r\n        if (!list) return;\r\n        \r\n\r\n        // Get shapes from the currently selected group\r\n        const currentGroup = this.graphicsEditor.state.currentGroup;\r\n        const selectedGroup = this.graphicsEditor.getMergedGroup(currentGroup);\r\n        const shapes = selectedGroup && selectedGroup.shapes ? selectedGroup.shapes : selectedGroup || [];\r\n       \r\n        // Create shape list items\r\n        for (let i = 0; i < shapes.length; i++) {\r\n            const shape = shapes[i];\r\n            if (!shape) continue;\r\n           \r\n            const shapeItem = document.createElement('div');\r\n            shapeItem.classList.add('shape-item');\r\n           \r\n            // Mark as selected if this shape is the selected one and we're in the right group\r\n            if (i === this.graphicsEditor.state.selectedShapeIndex) {\r\n                shapeItem.classList.add('selected');\r\n            }\r\n           \r\n            shapeItem.textContent = `${shape.name} - ${shape.type || 'Shape'}`;\r\n            shapeItem.addEventListener('click', (e) => {               \r\n                this.graphicsEditor.shapeManager.selectShape(parseInt(e.target.dataset.index));\r\n            });\r\n           \r\n            // Make the shape draggable\r\n            shapeItem.draggable = true;\r\n            shapeItem.dataset.index = i;\r\n            shapeItem.dataset.group = currentGroup;\r\n            \r\n            // Add dragstart event to set the drag data\r\n            shapeItem.addEventListener('dragstart', (e) => {\r\n                // Store only the selected shape's index and source group\r\n                const data = {\r\n                    shapeIndex: i,\r\n                    sourceGroup: currentGroup\r\n                };\r\n                \r\n                // Set the drag data\r\n                e.dataTransfer.setData('text/plain', JSON.stringify(data));\r\n                \r\n                // Add a visual indicator\r\n                shapeItem.classList.add('dragging');\r\n                \r\n                // Set drag effect\r\n                e.dataTransfer.effectAllowed = 'move';\r\n            });\r\n            \r\n            // Add dragend event to clean up\r\n            shapeItem.addEventListener('dragend', () => {\r\n                shapeItem.classList.remove('dragging');\r\n            });\r\n           \r\n            list.appendChild(shapeItem);\r\n        }\r\n        \r\n        // Set up the shape list container as a drop target\r\n        list.addEventListener('dragover', (e) => {\r\n            // Only respond if we're dragging over the shape list itself, not an individual shape\r\n            if (e.target === list) {\r\n                e.preventDefault();\r\n                e.dataTransfer.dropEffect = 'move';\r\n                list.classList.add('drag-over');\r\n            }\r\n        });\r\n        \r\n        list.addEventListener('dragleave', (e) => {\r\n            // Only respond if we're leaving the shape list\r\n            if (e.target === list) {\r\n                list.classList.remove('drag-over');\r\n            }\r\n        });\r\n        \r\n        list.addEventListener('drop', (e) => {\r\n            e.preventDefault();\r\n            list.classList.remove('drag-over');\r\n            \r\n            const data = e.dataTransfer.getData('text/plain');\r\n            if (!data) return;\r\n            \r\n            try {\r\n                const dragData = JSON.parse(data);\r\n                const { shapeIndex, sourceGroup } = dragData;\r\n                \r\n                // Only process if this is a different group\r\n                if (sourceGroup && sourceGroup !== currentGroup) {\r\n                    this.graphicsEditor.groupManager.moveToGroup(\r\n                        parseInt(shapeIndex),\r\n                        sourceGroup,\r\n                        currentGroup\r\n                    );\r\n                }\r\n            } catch (err) {\r\n                console.error('Error processing drop in shape list:', err);\r\n            }\r\n        });\r\n    }\r\n\r\n}",
         "fileName": "GE_UIManager"
       },
       "GE_EventManager": {
@@ -20068,6 +19805,29 @@ const DEFAULT_PROJECT_CONFIG = {
         "title": "Place Tower",
         "sound": "placeTower"
       }
+    },
+    "palettes": {
+      "main": {
+        "title": "Main",
+        "greenLColor": "#a3d39c",
+        "greenMColor": "#5a8a4f",
+        "greenDColor": "#2f4a29",
+        "brownLColor": "#d9b38c",
+        "brownMColor": "#8b5e3c",
+        "brownDColor": "#4a2f1f",
+        "blueLColor": "#b3e5fc",
+        "blueMColor": "#4fc3f7",
+        "blueDColor": "#0288d1",
+        "redLColor": "#ffcc80",
+        "redMColor": "#ff8c00",
+        "redDColor": "#bf360c",
+        "purpleLColor": "#e1bee7",
+        "purpleMColor": "#ab47bc",
+        "purpleDColor": "#6a1b9a",
+        "greyLColor": "#cfd8dc",
+        "greyMColor": "#78909c",
+        "greyDColor": "#3e4f57"
+      }
     }
   },
   "objectTypeDefinitions": [
@@ -20243,6 +20003,12 @@ const DEFAULT_PROJECT_CONFIG = {
       "name": "Game Events",
       "singular": "gameEvent",
       "category": "Data"
+    },
+    {
+      "id": "palettes",
+      "name": "Palettes",
+      "singular": "Palette",
+      "category": "Resources"
     }
   ]
 }; 
