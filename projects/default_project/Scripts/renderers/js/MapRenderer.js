@@ -60,14 +60,86 @@ class MapRenderer extends engine.Component {
         // Mark cache as valid
         this.isMapCached = true;
     }
-
     renderEnvironment() {
+        if (this.tileMap.environmentObjects.length === 0) return;
+    
+        // Group environment objects by type
+        const objectsByType = {};
         this.tileMap.environmentObjects.forEach(obj => {
-            this.game.spawn(obj.x, obj.y, 'staticObject', { objectType: "environment", spawnType: obj.type});
-              
+            if (!objectsByType[obj.type]) {
+                objectsByType[obj.type] = [];
+            }
+            objectsByType[obj.type].push(obj);
+        });
+    
+        // Process each type separately
+        Object.entries(objectsByType).forEach(([type, objects]) => {
+            // Load the model for this type
+            const referenceModel = this.game.modelManager.getModel("environment", type);
+            if (!referenceModel) return;
+    
+            // Find all meshes and store their complete transform data
+            const meshData = [];
+            referenceModel.updateMatrixWorld(true); // Ensure world matrices are up to date
+    
+            referenceModel.traverse(node => {
+                if (node.isMesh) {
+                    const parent = node.parent;
+                    const parentWorldMatrix = parent.matrixWorld.clone();
+                    const localMatrix = node.matrix.clone();
+    
+                    // Get transform relative to model root
+                    const relativeMatrix = new THREE.Matrix4();
+                    relativeMatrix.copy(parentWorldMatrix);
+                    relativeMatrix.multiply(localMatrix);
+    
+                    meshData.push({
+                        mesh: node,
+                        relativeMatrix: relativeMatrix
+                    });
+                }
+            });
+            if (meshData.length === 0) return;
+    
+            // Create instanced meshes for this type
+            const instancedMeshes = meshData.map(({ mesh, relativeMatrix }) => {
+                const instancedMesh = new THREE.InstancedMesh(
+                    mesh.geometry,
+                    mesh.material,
+                    objects.length // Number of instances for this type
+                );
+                instancedMesh.userData.relativeMatrix = relativeMatrix;
+                instancedMesh.castShadow = true;
+                instancedMesh.receiveShadow = true;
+                return instancedMesh;
+            });
+    
+            // Set positions for all instances of this type
+            const matrix = new THREE.Matrix4();
+            const dummy = new THREE.Object3D();
+    
+            objects.forEach((obj, index) => {
+                dummy.position.set(obj.x, 0, obj.y);
+                dummy.rotation.y = Math.random() * Math.PI * 2;
+                const scale = 0.8 + Math.random() * 0.4;
+                dummy.scale.set(scale, scale, scale);
+                dummy.updateMatrix();
+    
+                // Apply transforms while preserving mesh relationships
+                instancedMeshes.forEach(instancedMesh => {
+                    matrix.copy(dummy.matrix);
+                    matrix.multiply(instancedMesh.userData.relativeMatrix);
+                    instancedMesh.setMatrixAt(index, matrix);
+                });
+            });
+    
+            // Add instanced meshes to the scene
+            instancedMeshes.forEach(instancedMesh => {
+                instancedMesh.instanceMatrix.needsUpdate = true;
+                this.game.scene.add(instancedMesh);
+            });
         });
     }
-
     renderBG(tileMapData, paths) {
         this.clearMap(tileMapData);
         // Generate cache if not already done
