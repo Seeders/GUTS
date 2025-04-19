@@ -50,7 +50,7 @@ class ThreeJsWorld extends engine.Component {
         this.renderer.setPixelRatio(window.devicePixelRatio);
         this.renderer.shadowMap.enabled = shadowConfig.enabled;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
+        this.uniforms = {};
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(background);
 
@@ -131,10 +131,12 @@ class ThreeJsWorld extends engine.Component {
             lightConfig.hemisphere.intensity
         );
         this.scene.add(this.hemisphereLight);
-
+        this.world = this.game.config.worlds[this.game.config.levels[this.game.state.level].world];
+        this.heightMap = this.game.config.heightMaps[this.world.heightMap];
         this.tileMap = this.game.config.levels[this.game.state.level].tileMap;
         this.setupGround();
-
+        this.generateLiquidSurfaceMesh(0);
+        this.generateLiquidSurfaceMesh(1);
         if (this.showStats) {
             this.stats = new Stats();
             this.container.appendChild(this.stats.dom);
@@ -376,10 +378,8 @@ class ThreeJsWorld extends engine.Component {
             this.addGrassToTerrain();
             this.drawn = true;
         }
-        if (this.grassMaterial) {
-            if (this.uniforms) {
-                this.uniforms.time = { value: this.timer };
-            }
+        for(const key in this.uniforms) {
+            this.uniforms[key].time = { value: this.timer };            
         }
         this.renderer.render(this.scene, this.camera);
     }
@@ -398,14 +398,14 @@ class ThreeJsWorld extends engine.Component {
         grassGeometry.setAttribute('instancePhase', new THREE.InstancedBufferAttribute(phases, 1));
 
         const grassTexture = this.createGrassTexture();
-        this.uniforms = {
+        this.uniforms['grass'] = {
             time: { value: 0 },
             windSpeed: { value: 0.8 },
             windStrength: { value: 2 },
             windDirection: { value: new THREE.Vector2(0.8, 0.6).normalize() },
             map: { value: grassTexture }
         };
-        const uniforms = this.uniforms;
+        const uniforms = this.uniforms['grass'];
         this.grassMaterial = new THREE.ShaderMaterial({
             vertexShader: `
                 varying vec2 vUv;
@@ -646,5 +646,284 @@ class ThreeJsWorld extends engine.Component {
         texture.magFilter = THREE.LinearFilter;
         texture.minFilter = THREE.LinearFilter;
         return texture;
+    }
+
+    // Assuming this is inside a class where `this.tileMapData` and `this.game.config` are accessible
+    generateLiquidSurfaceMesh(terrainType) {
+        const terrainMap = this.tileMap.terrainMap;
+        const gridSize = this.game.config.configs.game.gridSize;
+        const rows = terrainMap.length;
+        const cols = terrainMap[0].length;
+        
+        // Arrays to store vertices, indices, and UVs for the BufferGeometry
+        const vertices = [];
+        const indices = [];
+        const uvs = [];
+        
+        // Amount to extend the perimeter (e.g., 10% of gridSize)
+        const extensionAmount = gridSize * 0.25; // Adjust as needed        
+  
+        // Helper function to check if a tile is a water tile
+        const isWaterTile = (x, z) => {
+            if (x < 0 || x >= cols || z < 0 || z >= rows) return false;
+            return terrainMap[z][x] === terrainType;
+        };
+        
+        // Step 1: Generate a grid of vertices, but only for positions needed by water tiles
+        const usedPositions = new Set();
+        for (let z = 0; z < rows; z++) {
+            for (let x = 0; x < cols; x++) {
+                if (terrainMap[z][x] === terrainType) {
+                    usedPositions.add(`${x},${z}`);     // Bottom-left
+                    usedPositions.add(`${x + 1},${z}`); // Bottom-right
+                    usedPositions.add(`${x + 1},${z + 1}`); // Bottom-right in your view (+z is south)
+                    usedPositions.add(`${x},${z + 1}`); // Top-left
+                }
+            }
+        }
+        
+        // Step 2: Create vertices for all used positions and store their original positions
+        const positionToVertexIndex = new Map();
+        const originalPositions = []; // Store original (x, z) for each vertex
+        let vertexIndex = 0;
+        for (const pos of usedPositions) {
+            const [x, z] = pos.split(',').map(Number);
+            positionToVertexIndex.set(pos, vertexIndex++);
+            vertices.push(x * gridSize, 0.1, z * gridSize);
+            originalPositions.push([x, z]); // Store original grid position
+            uvs.push(x, z); // UVs based on grid position
+        }
+        
+        // Step 3: Generate indices for water tiles, connecting them into a single mesh
+        for (let z = 0; z < rows; z++) {
+            for (let x = 0; x < cols; x++) {
+                if (terrainMap[z][x] === terrainType) {
+                    const bl = positionToVertexIndex.get(`${x},${z}`);
+                    const br = positionToVertexIndex.get(`${x + 1},${z}`);
+                    const tr = positionToVertexIndex.get(`${x + 1},${z + 1}`); // Bottom-right in your view
+                    const tl = positionToVertexIndex.get(`${x},${z + 1}`);
+        
+                    indices.push(bl, br, tl);
+                    indices.push(br, tr, tl);
+                }
+            }
+        }
+        
+        // Step 4: Identify perimeter vertices and their extension directions
+        const perimeterExtensions = new Map(); // Map vertexIndex to { extendLeft, extendRight, extendUp, extendDown }
+        for (let z = 0; z < rows; z++) {
+            for (let x = 0; x < cols; x++) {
+                if (terrainMap[z][x] === terrainType) {
+                    const isLeftEdge = !isWaterTile(x - 1, z);
+                    const isRightEdge = !isWaterTile(x + 1, z);
+                    const isBottomEdge = !isWaterTile(x, z - 1); // North
+                    const isTopEdge = !isWaterTile(x, z + 1);    // South
+        
+                    // Bottom-left vertex (x, z)
+                    if (isLeftEdge || isBottomEdge) {
+                        const vIdx = positionToVertexIndex.get(`${x},${z}`);
+                        if (!perimeterExtensions.has(vIdx)) perimeterExtensions.set(vIdx, { extendLeft: false, extendRight: false, extendUp: false, extendDown: false });
+                        const ext = perimeterExtensions.get(vIdx);
+                        if (isLeftEdge) ext.extendLeft = true;
+                        if (isBottomEdge) ext.extendUp = true; // North
+                    }
+        
+                    // Bottom-right vertex (x + 1, z)
+                    if (isRightEdge || isBottomEdge) {
+                        const vIdx = positionToVertexIndex.get(`${x + 1},${z}`);
+                        if (!perimeterExtensions.has(vIdx)) perimeterExtensions.set(vIdx, { extendLeft: false, extendRight: false, extendUp: false, extendDown: false });
+                        const ext = perimeterExtensions.get(vIdx);
+                        if (isRightEdge) ext.extendRight = true;
+                        if (isBottomEdge) ext.extendUp = true; // North
+                    }
+        
+                    // Top-right vertex (x + 1, z + 1) - Bottom-right in your view
+                    if (isRightEdge || isTopEdge) {
+                        const vIdx = positionToVertexIndex.get(`${x + 1},${z + 1}`);
+                        if (!perimeterExtensions.has(vIdx)) perimeterExtensions.set(vIdx, { extendLeft: false, extendRight: false, extendUp: false, extendDown: false });
+                        const ext = perimeterExtensions.get(vIdx);
+                        if (isRightEdge) ext.extendRight = true;
+                        if (isTopEdge) ext.extendDown = true; // South
+                    }
+        
+                    // Top-left vertex (x, z + 1)
+                    if (isLeftEdge || isTopEdge) {
+                        const vIdx = positionToVertexIndex.get(`${x},${z + 1}`);
+                        if (!perimeterExtensions.has(vIdx)) perimeterExtensions.set(vIdx, { extendLeft: false, extendRight: false, extendUp: false, extendDown: false });
+                        const ext = perimeterExtensions.get(vIdx);
+                        if (isLeftEdge) ext.extendLeft = true;
+                        if (isTopEdge) ext.extendDown = true; // South
+                    }
+                }
+            }
+        }
+        
+        // Step 5: Apply perimeter extensions
+        perimeterExtensions.forEach((ext, vertexIndex) => {
+            const idx = vertexIndex * 3;
+            const [origX, origZ] = originalPositions[vertexIndex];
+        
+            // Log the bottom-right corner for debugging
+            if (ext.extendRight && ext.extendDown) {
+                console.log(`Bottom-right corner at (${origX}, ${origZ}): Before extension - x: ${vertices[idx]}, z: ${vertices[idx + 2]}`);
+            }
+        
+            if (ext.extendLeft) vertices[idx] -= extensionAmount; // Extend left
+            if (ext.extendRight) vertices[idx] += extensionAmount; // Extend right
+            if (ext.extendUp) vertices[idx + 2] -= extensionAmount; // Extend north (decrease z)
+            if (ext.extendDown) vertices[idx + 2] += extensionAmount; // Extend south (increase z)
+        
+            if (ext.extendRight && ext.extendDown) {
+                console.log(`Bottom-right corner at (${origX}, ${origZ}): After extension - x: ${vertices[idx]}, z: ${vertices[idx + 2]}`);
+            }
+        });
+        
+        // Step 6: Create the BufferGeometry
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+        geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+        geometry.setIndex(indices);
+        geometry.computeVertexNormals(); // For lighting
+        // Parse the hex color to RGB
+        const parseHexColor = (hex) => {
+            const r = parseInt(hex.slice(1, 3), 16) / 255;
+            const g = parseInt(hex.slice(3, 5), 16) / 255;
+            const b = parseInt(hex.slice(5, 7), 16) / 255;
+            return { r, g, b };
+        };
+
+        // Use the hex color in a ShaderMaterial
+        const colorToUse = this.tileMap.terrainTypes[terrainType].color;
+        const { r, g, b } = parseHexColor(colorToUse);
+        this.uniforms[terrainType] = {
+            time: { value: 0.0 },
+            waveHeight: { value: 2.0 }, // Height of waves
+            waveFrequency: { value: 5.0 }, // Frequency of primary waves
+            waveSpeed: { value: 0.25 }, // Speed of wave animation
+            liquidColor: { value: new THREE.Vector3(r, g, b) }, // Base RGB color as vec3
+            foamColor: { value: new THREE.Vector3(r, g, b) }, // Foam/highlight color
+            fresnelPower: { value: 0.0 }, // Controls fresnel effect intensity
+            lightDirection: { value: new THREE.Vector3(0.5, 0.5, 0.5) }, // Normalized light direction
+            ambientIntensity: { value: 1 }, // Ambient light contribution
+            specularIntensity: { value:1 } // Specular highlight intensity
+        };
+        
+        // Reference the uniforms
+        const uniforms = this.uniforms[terrainType];
+        
+        // Create the shader material
+        const material = new THREE.ShaderMaterial({
+            uniforms: uniforms,
+            vertexShader: `
+                uniform float time;
+uniform float waveHeight;
+uniform float waveFrequency;
+uniform float waveSpeed;
+varying vec2 vUv;
+varying vec3 vNormal;
+varying vec3 vViewPosition;
+varying float vWaveHeight;
+varying float vNormalizedWaveHeight; // New varying for normalized height
+
+// Simple noise function for wave variation
+float snoise(vec2 co) {
+    return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453);
+}
+
+void main() {
+    vUv = uv;
+
+    // Combine multiple waves for more natural movement
+    float wave1 = sin(uv.x * waveFrequency + time * waveSpeed) * waveHeight;
+    float wave2 = sin(uv.y * waveFrequency * 0.7 + time * waveSpeed * 0.8) * waveHeight * 0.5;
+    float wave3 = cos((uv.x + uv.y) * waveFrequency * 0.5 + time * waveSpeed * 1.2) * waveHeight * 0.3;
+    float displacementY = (wave1 + wave2 + wave3) * 0.5;
+
+    // Store wave height for fragment shader
+    vWaveHeight = displacementY;
+
+    // Normalize wave height based on maximum possible displacement
+    float maxWaveHeight = waveHeight * (1.0 + 0.5 + 0.3) * 0.5; // Sum of wave amplitudes
+    vNormalizedWaveHeight = displacementY / maxWaveHeight;
+
+    // Update position with displacement
+    vec3 newPosition = vec3(position.x, position.y + displacementY, position.z);
+
+    // Compute normal for lighting
+    float offset = 0.01;
+    float waveX = (sin((uv.x + offset) * waveFrequency + time * waveSpeed) +
+                   sin((uv.y + offset) * waveFrequency * 0.7 + time * waveSpeed * 0.8) * 0.5 +
+                   cos((uv.x + uv.y + offset) * waveFrequency * 0.5 + time * waveSpeed * 1.2) * 0.3) * waveHeight * 0.5;
+    float waveZ = (sin((uv.x) * waveFrequency + time * waveSpeed) +
+                   sin((uv.y + offset) * waveFrequency * 0.7 + time * waveSpeed * 0.8) * 0.5 +
+                   cos((uv.x + uv.y + offset) * waveFrequency * 0.5 + time * waveSpeed * 1.2) * 0.3) * waveHeight * 0.5;
+    vec3 tangent = normalize(vec3(1.0, (waveX - displacementY) / offset, 0.0));
+    vec3 bitangent = normalize(vec3(0.0, (waveZ - displacementY) / offset, 1.0));
+    vNormal = normalize(cross(tangent, bitangent));
+
+    // Pass view position for fresnel and lighting
+    vec4 worldPosition = modelMatrix * vec4(newPosition, 1.0);
+    vViewPosition = (cameraPosition - worldPosition.xyz);
+
+    // Apply projection and model-view transforms
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
+}
+            `,
+            fragmentShader: `
+              uniform float time;
+uniform float waveHeight;
+uniform vec3 liquidColor;
+uniform vec3 foamColor;
+uniform float waveFrequency;
+uniform float fresnelPower;
+uniform vec3 lightDirection;
+uniform float ambientIntensity;
+uniform float specularIntensity;
+varying vec2 vUv;
+varying vec3 vNormal;
+varying vec3 vViewPosition;
+varying float vWaveHeight;
+varying float vNormalizedWaveHeight; // New varying for normalized height
+
+void main() {
+    vec2 uv = vUv;
+    vec3 normal = normalize(vNormal);
+    vec3 viewDir = normalize(vViewPosition);
+    vec3 lightDir = normalize(lightDirection);
+
+    // Fresnel effect for edge transparency
+    float fresnel = pow(1.0 - max(dot(normal, viewDir), 0.0), fresnelPower);
+
+    // Diffuse lighting
+    float diffuse = max(dot(normal, lightDir), 0.0) * 0.25;
+
+    // Specular (Blinn-Phong)
+    vec3 halfwayDir = normalize(lightDir + viewDir);
+    float specular = pow(max(dot(normal, halfwayDir), 0.0), 32.0) * specularIntensity;
+
+    // Base color with subtle wave height modulation
+    vec3 baseColor = liquidColor * (0.8 + 0.2 * vNormalizedWaveHeight); // Slight tint variation
+
+    // Foam effect based on normalized wave height
+    float foamFactor = smoothstep(0.8, 1.0, vNormalizedWaveHeight); // Tighter range for foam at peaks
+    vec3 color = mix(baseColor, foamColor, foamFactor);
+
+    // Combine lighting components
+    vec3 finalColor = color * (ambientIntensity + diffuse) + vec3(specular);
+
+    // Apply fresnel for transparency at edges
+    float alpha = mix(0.6, 1.0, fresnel);
+
+    gl_FragColor = vec4(finalColor, alpha);
+}
+            `,
+            side: THREE.DoubleSide,
+            transparent: true
+        });
+
+        // Replace the MeshBasicMaterial with this ShaderMaterial in the mesh creation
+        const waterMesh = new THREE.Mesh(geometry, material);        
+        waterMesh.position.y = (terrainType + 2) * this.heightMap.heightStep + this.heightMap.heightStep*.5;
+        this.scene.add(waterMesh); // Assuming `this.scene` is your THREE.js scene
     }
 }

@@ -128,7 +128,6 @@ class MapRenderer extends engine.Component {
                 let r = (numColor >> 16) & 0xff; // Red channel
                 let g = (numColor >> 8) & 0xff;  // Green channel   
                 let b = numColor & 0xff;         // Blue channel
-                debugger;
                 if (g > r && g > b) {
                     dummy.position.set(
                         obj.x, 
