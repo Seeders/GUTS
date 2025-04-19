@@ -14,7 +14,7 @@ init({ spawnType, owner, target, stats }) {
     this.piercedEnemies = [];
     this.ownerStats = this.owner.getComponent("stats").stats;
     this.distanceTraveled = 0;
-    this.distanceToSpawnParticle = 24;
+    this.distanceToSpawnParticle = 1;
     
     // Ballistic trajectory variables
     this.startPosition = { ...this.parent.position, z: 10 }; // Start 10 units above ground

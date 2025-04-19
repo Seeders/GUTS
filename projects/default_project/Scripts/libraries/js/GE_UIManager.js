@@ -288,7 +288,7 @@ class GE_UIManager {
                 input.appendChild(option);
             });
         } else if(type === "color") {
-            input = this.gameEditor.createColorInputGroup(value, property, row, (val, colorName) => {
+            input = this.gameEditor.createColorInputGroup(value, 'data-property', property, row, (val, colorName) => {
                 if(colorName){
                     this.graphicsEditor.getFrameShape()[property] = { paletteColor: colorName };
                 } else {

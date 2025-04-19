@@ -9,7 +9,7 @@ class TerrainMapEditor {
         this.mapSize = this.defaultMapSize;
         this.currentTerrainId = 3; // Default to grass (index 3)
         this.isMouseDown = false;
-    
+        this.objectData = {};
         // Terrain map structure without explicit IDs
         this.tileMap = {
             size: 16,
@@ -28,7 +28,7 @@ class TerrainMapEditor {
         this.selectedEnvironmentType = null;
         this.selectedEnvironmentItem = null;
         this.placementMode = 'terrain'; // can be 'terrain' or 'environment'
-        this.environment = this.gameEditor.getCollections().environment;
+        this.worldObjects = [];
         this.terrainTypesContainer = null;
         this.draggedItem = null;
         this.dragOverItem = null; // Track the item being dragged over
@@ -117,15 +117,13 @@ class TerrainMapEditor {
             this.initGridCanvas();
             this.exportMap();
         });
-
-        let colorContainer = document.getElementById('terrainBGColorContainer');
-        this.gameEditor.createColorInputGroup(this.tileMap.terrainBGColor, "terrainBGColor", colorContainer, (val, colorName) => {
-            let valueToSave = val;
-            if(colorName) valueToSave = {paletteColor: colorName};
-            this.tileMap.terrainBGColor = valueToSave;
-            this.canvasEl.backgroundColor = val;
+        document.getElementById('extensionTerrainType').addEventListener('change', (ev) => {    
+            const newTerrainType = parseInt(ev.target.value);            
+            this.tileMap.extensionTerrainType = newTerrainType;
+            this.initGridCanvas();
             this.exportMap();
-        });      
+        });
+       
         // Handle mouseup event (stop dragging)
         document.addEventListener('mouseup', () => {
             this.isMouseDown = false;
@@ -162,21 +160,39 @@ class TerrainMapEditor {
         document.body.addEventListener('editTileMap', async (event) => {
             this.config = event.detail.config;
             this.tileMap = event.detail.data;
+            this.objectData = event.detail.objectData;
             this.savePropertyName = event.detail.propertyName;
+            const world = this.objectData.world ? this.gameEditor.getCollections().worlds[this.objectData.world] : null;
+            this.worldObjects = {};
+            if(world){
+                const worldObjectNames = world.worldObjects || [];             
+                worldObjectNames.forEach((objectName) => {
+                    this.worldObjects[objectName] = this.gameEditor.getCollections().worldObjects[objectName];
+                });
+            }
             this.canvasEl.width = this.config.canvasWidth;
             this.canvasEl.height = this.config.canvasHeight;            
-            let colorVal = this.gameEditor.setColorValue(document.getElementById('terrainBGColorContainer'), this.tileMap.terrainBGColor || "#7aad7b"); 
-            this.canvasEl.backgroundColor = colorVal;
+            //this.gameEditor.setColorValue(document.getElementById('terrainBGColorContainer'), this.tileMap.terrainBGColor || "#7aad7b"); 
+            if(this.tileMap.extensionTerrainType){
+                this.canvasEl.backgroundColor = this.tileMap.terrainTypes[this.tileMap.extensionTerrainType].color;
+            } else {
+                this.canvasEl.backgroundColor = this.tileMap.terrainTypes[4].color;
+                this.tileMap.extensionTerrainType = 4; // Default to grass if not set
+            }
+
             if (!this.tileMap.environmentObjects) {
                 this.tileMap.environmentObjects = [];
             }
+            const extensionTerrainTypeSelector = document.getElementById('extensionTerrainType');
             // Strip id from terrainTypes if present, assume order is correct
-            this.tileMap.terrainTypes = this.tileMap.terrainTypes.map(terrain => {
-                if (terrain.id !== undefined) {
-                    const { id, ...rest } = terrain;
-                    return rest;
+            this.tileMap.terrainTypes.forEach((terrain, index) => {
+                const newOption = document.createElement('option');
+                newOption.value = index;
+                newOption.textContent = terrain.type;
+                if (index === this.tileMap.extensionTerrainType) {
+                    newOption.selected = true;
                 }
-                return terrain;
+                extensionTerrainTypeSelector.appendChild(newOption);
             });
         
             // No need to remap terrainMap; assume it already uses indices matching the order
@@ -261,8 +277,8 @@ class TerrainMapEditor {
         let palette = this.gameEditor.getPalette();
         this.imageManager = new this.engineClasses.ImageManager(this.gameEditor, { imageSize: this.config.imageSize, palette: palette}, {ShapeFactory: this.engineClasses.ShapeFactory});
         await this.imageManager.loadImages("levels", { level: { tileMap: this.tileMap } }, false, false);
-        if(this.environment){
-            await this.imageManager.loadImages("environment", this.environment, false, false);
+        if(this.worldObjects){
+            await this.imageManager.loadImages("environment", this.worldObjects, false, false);
         }
         const terrainImages = this.imageManager.getImages("levels", "level");
 
@@ -281,7 +297,7 @@ class TerrainMapEditor {
                 gameConfig: this.config, 
                 terrainCanvasBuffer: this.terrainCanvasBuffer, 
                 canvasBuffer: this.canvasEl, 
-                environment: this.environment, 
+                environment: this.worldObjects, 
                 imageManager: this.imageManager, 
                 levelName: 'level', 
                 level: { tileMap: this.tileMap },
@@ -518,7 +534,7 @@ class TerrainMapEditor {
         this.placementModeIndicator = indicator;
     
         // Create environment object selector
-        if (this.environment) {
+        if (this.worldObjects) {
             const container = document.createElement('div');
             container.className = 'environment-objects-container';
             
@@ -528,7 +544,7 @@ class TerrainMapEditor {
             container.appendChild(header);
             
             // Create object type list
-            for (const type in this.environment) {
+            for (const type in this.worldObjects) {
                 const typeContainer = document.createElement('div');
                 typeContainer.className = 'environment-type';
                 
@@ -702,7 +718,7 @@ class TerrainMapEditor {
         if (!document.getElementById('environmentPanel')) return;
         
         // Update count badges
-        for (const type in this.environment) {
+        for (const type in this.worldObjects) {
             const objectCount = (this.tileMap.environmentObjects || [])
                 .filter(obj => obj.type === type).length;
             

@@ -33,7 +33,7 @@ class GameLoader extends engine.Component {
         this.game.terrainTileMapper = new (this.game.libraryClasses.TileMap)(this, {}, {CanvasUtility: this.game.libraryClasses.CanvasUtility});
         this.game.terrainTileMapper.init(this.terrainCanvasBuffer, this.config.configs.game.gridSize, terrainImages, this.isometric);
 
-        this.gameEntity = this.game.createEntityFromConfig(0, 0, 'game', { gameConfig: this.config.configs.game, canvas: this.canvas, canvasBuffer: this.canvasBuffer, terrainCanvasBuffer: this.terrainCanvasBuffer, environment: this.config.environment, imageManager: this.game.imageManager, levelName: this.game.state.level, level: this.config.levels[this.game.state.level], palette: this.game.palette });
+        this.gameEntity = this.game.createEntityFromConfig(0, 0, 'game', { gameConfig: this.config.configs.game, canvas: this.canvas, canvasBuffer: this.canvasBuffer, terrainCanvasBuffer: this.terrainCanvasBuffer, worldObjects: this.config.worldObjects, imageManager: this.game.imageManager, levelName: this.game.state.level, level: this.config.levels[this.game.state.level], palette: this.game.palette });
         this.game.imageManager.dispose();    
         this.game.audioManager = this.gameEntity.getComponent('AudioManager');  
     }

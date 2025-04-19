@@ -1,0 +1,13 @@
+{
+  "title": "Shire",
+  "lighting": "sunnyDayLighting",
+  "shadow": "sunnyDayShadows",
+  "fog": "sunnyDayFog",
+  "heightMap": "fiveStep",
+  "camera": "main",
+  "extensionSize": 768,
+  "worldObjects": [
+    "tree",
+    "rock"
+  ]
+}

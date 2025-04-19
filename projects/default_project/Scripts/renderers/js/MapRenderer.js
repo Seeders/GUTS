@@ -5,16 +5,17 @@ class MapRenderer extends engine.Component {
     }
     
     
-    init({canvasBuffer, terrainCanvasBuffer, environment, imageManager, levelName, gameConfig, level, isEditor, palette}) {   
+    init({canvasBuffer, terrainCanvasBuffer, worldObjects, imageManager, levelName, gameConfig, level, isEditor, palette}) {   
 
         this.config = gameConfig;
         this.imageManager = imageManager;
-        this.environment = environment;
+        this.worldObjects = worldObjects;
         this.selectedTowerType = null;
         this.hoverCell = { x: -1, y: -1 };
         this.showRange = false;
         this.isMapCached = false; // Flag to track if map needs redrawing
         this.currentLevel = levelName;
+        this.level = level;
         this.tileMap = level.tileMap;
         this.palette = palette;
 
@@ -76,7 +77,7 @@ class MapRenderer extends engine.Component {
         // Process each type separately
         Object.entries(objectsByType).forEach(([type, objects]) => {
             // Load the model for this type
-            const referenceModel = this.game.modelManager.getModel("environment", type);
+            const referenceModel = this.game.modelManager.getModel("worldObjects", type);
             if (!referenceModel) return;
     
             // Find all meshes and store their complete transform data
@@ -120,18 +121,32 @@ class MapRenderer extends engine.Component {
             const dummy = new THREE.Object3D();
     
             objects.forEach((obj, index) => {
-                dummy.position.set(obj.x, 0, obj.y);
-                dummy.rotation.y = Math.random() * Math.PI * 2;
-                const scale = 0.8 + Math.random() * 0.4;
-                dummy.scale.set(scale, scale, scale);
-                dummy.updateMatrix();
-    
-                // Apply transforms while preserving mesh relationships
-                instancedMeshes.forEach(instancedMesh => {
-                    matrix.copy(dummy.matrix);
-                    matrix.multiply(instancedMesh.userData.relativeMatrix);
-                    instancedMesh.setMatrixAt(index, matrix);
-                });
+                // Get pixel color at object position
+                let hexColor = this.tileMap.terrainTypes[this.tileMap.extensionTerrainType].color.slice(1);
+                let numColor = parseInt(hexColor, 16); // Convert hex string to number, e.g., 0xaa3311
+
+                let r = (numColor >> 16) & 0xff; // Red channel
+                let g = (numColor >> 8) & 0xff;  // Green channel   
+                let b = numColor & 0xff;         // Blue channel
+                debugger;
+                if (g > r && g > b) {
+                    dummy.position.set(
+                        obj.x, 
+                        this.game.config.heightMaps[this.game.config.worlds[this.level.world].heightMap].heightStep * this.tileMap.extensionTerrainType, 
+                        obj.y
+                    );
+                    dummy.rotation.y = Math.random() * Math.PI * 2;
+                    const scale = 0.8 + Math.random() * 0.4;
+                    dummy.scale.set(scale, scale, scale);
+                    dummy.updateMatrix();
+            
+                    // Apply transforms while preserving mesh relationships
+                    instancedMeshes.forEach(instancedMesh => {
+                        matrix.copy(dummy.matrix);
+                        matrix.multiply(instancedMesh.userData.relativeMatrix);
+                        instancedMesh.setMatrixAt(index, matrix);
+                    });
+                }
             });
     
             // Add instanced meshes to the scene
@@ -170,7 +185,7 @@ class MapRenderer extends engine.Component {
     }
     clearMap(tileMapData) {
         this.ctx.clearRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);
-        this.ctx.fillStyle = tileMapData.terrainBGColor.paletteColor ? this.palette[tileMapData.terrainBGColor.paletteColor] : tileMapData.terrainBGColor;        
+        this.ctx.fillStyle = tileMapData.terrainTypes[tileMapData.extensionTerrainType].color;       
         this.ctx.fillRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);
     }
     // Call this when map data changes or on initialization
@@ -253,7 +268,7 @@ class MapRenderer extends engine.Component {
 
         let itemAmt = amountToDraw;
         let environmentTypes = [];
-        for(let envType in this.environment){
+        for(let envType in this.worldObjects){
             environmentTypes.push(envType);
         }
         this.envCacheCtxBG.clearRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);

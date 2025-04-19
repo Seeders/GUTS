@@ -6,7 +6,7 @@ class ModelRenderer extends engine.Component {
         this.animationState = 'idle';
         this.currentFrameIndex = 0;
         this.frameTime = 0;
-        this.frameDuration = frameDuration || 0.1;
+        this.frameDuration = frameDuration || 0.17;
         this.lastDirection = -1;
         
         // Load animation and model data
@@ -67,15 +67,43 @@ class ModelRenderer extends engine.Component {
         }
     }
     
+    getCurrentTile() {
+        if (!this.parent || !this.parent.position) {
+            return null;
+        }
+        
+        const gridPos = this.game.translator.pixelToGrid(this.parent.position.x, this.parent.position.y);
+        if(gridPos && this.game.state.tileMap.length > gridPos.y && gridPos.y > 0 && this.game.state.tileMap[Math.floor(gridPos.y)] && this.game.state.tileMap[Math.floor(gridPos.y)].length > gridPos.x && gridPos.x > 0){
+            return this.game.state.tileMap[Math.floor(gridPos.y)][Math.floor(gridPos.x)];
+        }
+        return { typeId: 0};
+    }
+
+    getCurrentTerrainHeight() {
+        const tile = this.getCurrentTile();
+        if (!tile) {
+            return 0;
+        }
+        
+        const terrainHeight = tile.typeId * this.game.heightMapConfig.heightStep;
+        return terrainHeight;
+    }
+
     draw() {
         if(!this.game.config.configs.game.is3D) {
             return;
+        }
+        // Update animation frames
+        this.frameTime += this.game.deltaTime;
+        if (this.frameTime >= this.frameDuration) {
+            this.frameTime -= this.frameDuration;
+            this.advanceFrame();
         }
         // Update position of model to match entity position
         if (this.parent && this.parent.position) {
             this.modelGroup.position.set(
                 this.parent.position.x,
-                this.parent.position.z || 0,
+                this.parent.position.z || this.getCurrentTerrainHeight(),
                 this.parent.position.y
             );
             
@@ -83,12 +111,7 @@ class ModelRenderer extends engine.Component {
             this.updateDirection();
         }
         
-        // Update animation frames
-        this.frameTime += this.game.deltaTime;
-        if (this.frameTime >= this.frameDuration) {
-            this.frameTime -= this.frameDuration;
-            this.advanceFrame();
-        }
+   
     }
     
     updateDirection() {
@@ -192,7 +215,13 @@ class ModelRenderer extends engine.Component {
     }
     updateShapeTransforms(obj, shape, modelShape) {
         if (!modelShape) return;
-        
+        let shapeColor = shape?.color || modelShape.color;
+        if(shapeColor.paletteColor){
+            shapeColor = this.game.palette[shapeColor.paletteColor];
+        }
+        let color = new THREE.Color(shapeColor);
+        obj.material.color.setRGB(color.r, color.g, color.b );
+    
         // Position (local to group)
         obj.position.set(
             shape?.x ?? modelShape.x ?? 0,
@@ -213,6 +242,7 @@ class ModelRenderer extends engine.Component {
             shape?.scaleY ?? modelShape.scaleY ?? 1,
             shape?.scaleZ ?? modelShape.scaleZ ?? 1
         );
+
     }
     destroy() {
         if(this.modelGroup){

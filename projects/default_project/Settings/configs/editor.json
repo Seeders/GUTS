@@ -8,7 +8,8 @@
     "scriptModule",
     "aiPromptModule",
     "audioModule",
-    "exportScriptModule"
+    "exportScriptModule",
+    "textureEditor"
   ],
   "path": "/",
   "fileName": "editor"

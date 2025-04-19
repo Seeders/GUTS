@@ -3,14 +3,15 @@
   "render": {
     "animations": {
       "idle": [
-        {},
         {
           "shapes": {
             "shapes": [
               {
                 "type": "sphere",
-                "size": 2,
-                "color": "#000000",
+                "size": 1,
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
                 "x": 0,
                 "y": 0,
                 "z": 0,
@@ -27,8 +28,10 @@
             "shapes": [
               {
                 "type": "sphere",
-                "size": 4,
-                "color": "#5c5c5c",
+                "size": 1,
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
                 "x": 0,
                 "y": 0,
                 "z": 0,
@@ -37,25 +40,46 @@
                 "rotationZ": 0,
                 "id": 0
               }
-            ]
+            ],
+            "scale": {
+              "x": 2,
+              "y": 2,
+              "z": 2
+            }
           }
         },
         {
           "shapes": {
             "shapes": [
               {
-                "type": "sphere",
-                "size": 8,
-                "color": "#949494",
-                "x": 0,
-                "y": 0,
-                "z": 0,
-                "rotationX": 0,
-                "rotationY": 0,
-                "rotationZ": 0,
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
                 "id": 0
               }
-            ]
+            ],
+            "scale": {
+              "x": 4,
+              "y": 4,
+              "z": 4
+            }
+          }
+        },
+        {
+          "shapes": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 0
+              }
+            ],
+            "scale": {
+              "x": 8,
+              "y": 8,
+              "z": 8
+            }
           }
         }
       ]

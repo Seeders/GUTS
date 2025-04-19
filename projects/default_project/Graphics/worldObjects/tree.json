@@ -35,7 +35,9 @@
           {
             "type": "cylinder",
             "size": 10,
-            "color": "#733f17",
+            "color": {
+              "paletteColor": "brownDColor"
+            },
             "x": 0,
             "y": 10.625,
             "z": 0,

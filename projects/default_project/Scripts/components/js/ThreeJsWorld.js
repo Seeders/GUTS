@@ -1,5 +1,4 @@
 class ThreeJsWorld extends engine.Component {
-
     init({
         containerSelector = '#gameContainer',
         width = window.innerWidth,
@@ -25,7 +24,13 @@ class ThreeJsWorld extends engine.Component {
             radius: 2
         },
         background = 0x87CEEB,
-        fog = { enabled: true, color: 0x87CEEB, density: 0.0005 }
+        fog = { enabled: true, color: 0x87CEEB, density: 0.0005 },
+        heightMapConfig = {
+            enabled: true,
+            heightStep: 5,
+            smoothing: true
+        },
+        extensionSize = 768 // Width of grass border around terrain
     }) {
         if (!this.game.config.configs.game.is3D) {
             return;
@@ -33,7 +38,12 @@ class ThreeJsWorld extends engine.Component {
         this.showStats = false;
         this.clock = new THREE.Clock();
         this.onWindowResizeHandler = this.onWindowResize.bind(this);
-
+        this.heightMapConfig = heightMapConfig;
+        this.game.heightMapConfig = heightMapConfig;
+        this.extensionSize = extensionSize;
+        this.terrainSize = 768;
+        this.extendedSize = this.terrainSize + 2 * extensionSize;
+        this.heightMapResolution = 256;
         this.container = document.querySelector(containerSelector) || document.body;
         this.renderer = new THREE.WebGLRenderer({ antialias: true, canvas: this.game.canvas });
         this.renderer.setSize(width, height);
@@ -72,11 +82,10 @@ class ThreeJsWorld extends engine.Component {
                 cameraConfig.lookAt.y,
                 cameraConfig.lookAt.z
             );
-            this.controls.maxPolarAngle = Math.PI / 2.05; // Prevent going below ground
-            this.controls.minPolarAngle = 0.1; // Prevent going completely overhead
-            this.controls.enableDamping = true; // Add smooth damping
+            this.controls.maxPolarAngle = Math.PI / 2.05;
+            this.controls.minPolarAngle = 0.1;
+            this.controls.enableDamping = true;
             this.controls.dampingFactor = 0.05;
-            
             this.controls.update();
         }
 
@@ -90,11 +99,9 @@ class ThreeJsWorld extends engine.Component {
             lightConfig.directional.color,
             lightConfig.directional.intensity
         );
-        this.terrainSize = 768;
-        this.directionalLight.position.set(this.terrainSize * 2, this.terrainSize * 2, this.terrainSize * 2);
+        this.directionalLight.position.set(this.extendedSize * 2, this.extendedSize * 2, this.extendedSize * 2);
         this.directionalLight.castShadow = shadowConfig.enabled;
 
-        this.extendedSize = this.terrainSize * 10;
         if (shadowConfig.enabled) {
             this.directionalLight.shadow.mapSize.width = shadowConfig.mapSize;
             this.directionalLight.shadow.mapSize.height = shadowConfig.mapSize;
@@ -110,7 +117,7 @@ class ThreeJsWorld extends engine.Component {
             this.directionalLight.shadow.camera.top = d;
             this.directionalLight.shadow.camera.bottom = -d;
 
-            this.directionalLight.target.position.set(-this.terrainSize * 2, 0, -this.terrainSize * 2);
+            this.directionalLight.target.position.set(-this.extendedSize * 2, 0, -this.extendedSize * 2);
             this.directionalLight.target.updateMatrixWorld();
             this.directionalLight.shadow.camera.updateProjectionMatrix();
         }
@@ -125,36 +132,8 @@ class ThreeJsWorld extends engine.Component {
         );
         this.scene.add(this.hemisphereLight);
 
-        // Create ground plane
-        const groundGeometry = new THREE.PlaneGeometry(this.extendedSize, this.extendedSize);
-
-        // Create canvas for terrain texture
-        this.groundCanvas = document.createElement('canvas');
-        this.groundCanvas.width = this.extendedSize;
-        this.groundCanvas.height = this.extendedSize;
-        this.groundCtx = this.groundCanvas.getContext('2d');
-
-        // Fill with background color
-        let bgColor = this.game.config.levels[this.game.state.level].tileMap.terrainBGColor;
-        let colorToUse = bgColor.paletteColor ? this.game.palette[bgColor.paletteColor] : bgColor;
-        this.groundCtx.fillStyle = colorToUse;
-        this.groundCtx.fillRect(0, 0, this.extendedSize, this.extendedSize);
-
-        // Create texture
-        this.groundTexture = new THREE.CanvasTexture(this.groundCanvas);
-        this.groundTexture.wrapS = THREE.ClampToEdgeWrapping;
-        this.groundTexture.wrapT = THREE.ClampToEdgeWrapping;
-        this.groundTexture.minFilter = THREE.LinearFilter;
-        this.groundTexture.magFilter = THREE.LinearFilter;
-
-        // Use simplified material
-        this.groundMaterial = this.getGroundMaterial();
-
-        const ground = new THREE.Mesh(groundGeometry, this.groundMaterial);
-        ground.rotation.x = -Math.PI / 2;
-        ground.position.set(this.terrainSize / 2, 0, this.terrainSize / 2);
-        ground.receiveShadow = true;
-        this.scene.add(ground);
+        this.tileMap = this.game.config.levels[this.game.state.level].tileMap;
+        this.setupGround();
 
         if (this.showStats) {
             this.stats = new Stats();
@@ -166,13 +145,196 @@ class ThreeJsWorld extends engine.Component {
         this.game.scene = this.scene;
         this.game.camera = this.camera;
         this.game.renderer = this.renderer;
-        this.game.ground = ground;
+        this.game.ground = this.ground;
         this.drawn = false;
         this.timer = 0;
     }
 
+    setupGround() {
+        this.groundCanvas = document.createElement('canvas');
+        this.groundCanvas.width = this.extendedSize;
+        this.groundCanvas.height = this.extendedSize;
+        this.groundCtx = this.groundCanvas.getContext('2d');
+
+        let bgColor = this.tileMap.terrainTypes[this.tileMap.extensionTerrainType].color;
+        let colorToUse = bgColor.paletteColor ? this.game.palette[bgColor.paletteColor] : bgColor;
+        this.groundCtx.fillStyle = colorToUse;
+        this.groundCtx.fillRect(0, 0, this.extendedSize, this.extendedSize);
+
+        this.groundTexture = new THREE.CanvasTexture(this.groundCanvas);
+        this.groundTexture.wrapS = THREE.ClampToEdgeWrapping;
+        this.groundTexture.wrapT = THREE.ClampToEdgeWrapping;
+        this.groundTexture.minFilter = THREE.LinearFilter;
+        this.groundTexture.magFilter = THREE.LinearFilter;
+
+        if (this.heightMapConfig.enabled) {
+            this.createHeightMapTerrain();
+        } else {
+            const groundGeometry = new THREE.PlaneGeometry(this.extendedSize, this.extendedSize);
+            this.groundMaterial = this.getGroundMaterial();
+            this.ground = new THREE.Mesh(groundGeometry, this.groundMaterial);
+            this.ground.rotation.x = -Math.PI / 2;
+            this.ground.position.set(this.terrainSize / 2, 0, this.terrainSize / 2);
+            this.ground.receiveShadow = true;
+            this.scene.add(this.ground);
+        }
+    }
+
+    createHeightMapTerrain() {
+        this.heightMapData = new Float32Array(this.extendedSize * this.extendedSize);
+        this.terrainTypes = this.tileMap.terrainTypes || [];
+        this.heightStep = this.heightMapConfig.heightStep;
+
+        const segments = this.heightMapResolution;
+        const groundGeometry = new THREE.PlaneGeometry(
+            this.extendedSize,
+            this.extendedSize,
+            segments,
+            segments
+        );
+
+        this.groundVertices = groundGeometry.attributes.position;
+
+        this.groundMaterial = this.getGroundMaterial();
+
+        this.ground = new THREE.Mesh(groundGeometry, this.groundMaterial);
+        this.ground.rotation.x = -Math.PI / 2;
+        this.ground.position.set(this.terrainSize / 2, 0, this.terrainSize / 2);
+        this.ground.receiveShadow = true;
+
+        this.scene.add(this.ground);
+    }
+
+    updateHeightMap() {
+        if (!this.heightMapConfig.enabled || !this.game.terrainCanvasBuffer) return;
+
+        try {
+            const terrainCanvas = this.game.terrainCanvasBuffer;
+            const ctx = terrainCanvas.getContext('2d');
+            const terrainData = ctx.getImageData(0, 0, terrainCanvas.width, terrainCanvas.height).data;
+
+            const terrainTypeColors = this.createTerrainTypeColorMap();
+
+            this.heightMapData = new Float32Array(this.extendedSize * this.extendedSize);
+
+            const extensionTerrainType = this.tileMap.extensionTerrainType;
+            const extensionHeight = extensionTerrainType * this.heightStep;
+
+            for (let z = 0; z < this.extendedSize; z++) {
+                for (let x = 0; x < this.extendedSize; x++) {
+                    this.heightMapData[z * this.extendedSize + x] = extensionHeight;
+                }
+            }
+
+            for (let z = 0; z < this.terrainSize; z++) {
+                for (let x = 0; x < this.terrainSize; x++) {
+                    const pixelIndex = (z * terrainCanvas.width + x) * 4;
+                    const r = terrainData[pixelIndex];
+                    const g = terrainData[pixelIndex + 1];
+                    const b = terrainData[pixelIndex + 2];
+                    const colorKey = `${r},${g},${b}`;
+
+                    const typeIndex = terrainTypeColors[colorKey];
+                    const height = typeIndex !== undefined ? typeIndex * this.heightStep : extensionHeight;
+
+                    const extX = x + this.extensionSize;
+                    const extZ = z + this.extensionSize;
+                    this.heightMapData[extZ * this.extendedSize + extX] = height;
+                }
+            }
+
+            this.applyHeightMapToGeometry();
+
+        } catch (e) {
+            console.warn('Failed to update height map:', e);
+        }
+    }
+
+    createTerrainTypeColorMap() {
+        const colorMap = {};
+        const terrainTypes = this.terrainTypes;
+
+        for (let i = 0; i < terrainTypes.length; i++) {
+            const terrainType = terrainTypes[i];
+            let color = terrainType.color || {};
+
+            if (color.paletteColor && this.game.palette) {
+                const hexColor = this.game.palette[color.paletteColor];
+                if (hexColor) {
+                    const r = parseInt(hexColor.slice(1, 3), 16);
+                    const g = parseInt(hexColor.slice(3, 5), 16);
+                    const b = parseInt(hexColor.slice(5, 7), 16);
+                    colorMap[`${r},${g},${b}`] = i;
+                }
+            } else {
+                const hexColor = color;
+                if (hexColor) {
+                    const r = parseInt(hexColor.slice(1, 3), 16);
+                    const g = parseInt(hexColor.slice(3, 5), 16);
+                    const b = parseInt(hexColor.slice(5, 7), 16);
+                    colorMap[`${r},${g},${b}`] = i;
+                }
+            }
+        }
+
+        return colorMap;
+    }
+
+    applyHeightMapToGeometry() {
+        if (!this.ground || !this.groundVertices) return;
+
+        const positions = this.groundVertices.array;
+        const geometry = this.ground.geometry;
+        const segments = this.heightMapResolution;
+        const verticesPerRow = segments + 1;
+
+        for (let z = 0; z < verticesPerRow; z++) {
+            for (let x = 0; x < verticesPerRow; x++) {
+                const vertexIndex = (z * verticesPerRow + x);
+                const idx = vertexIndex * 3;
+
+                const nx = x / segments;
+                const nz = z / segments;
+
+                const terrainX = Math.floor(nx * (this.extendedSize - 1));
+                const terrainZ = Math.floor(nz * (this.extendedSize - 1));
+
+                const heightIndex = terrainZ * this.extendedSize + terrainX;
+                const height = this.heightMapData[heightIndex] || 0;
+
+                const finalHeight = this.heightMapConfig.smoothing ?
+                    this.smoothHeight(terrainX, terrainZ) : height;
+
+                positions[idx + 2] = finalHeight;
+            }
+        }
+
+        this.groundVertices.needsUpdate = true;
+        geometry.computeVertexNormals();
+    }
+
+    smoothHeight(x, z) {
+        if (!this.heightMapConfig.smoothing) return this.heightMapData[z * this.extendedSize + x];
+
+        let totalHeight = 0;
+        let count = 0;
+
+        for (let dz = -1; dz <= 1; dz++) {
+            for (let dx = -1; dx <= 1; dx++) {
+                const nx = x + dx;
+                const nz = z + dz;
+
+                if (nx >= 0 && nx < this.extendedSize && nz >= 0 && nz < this.extendedSize) {
+                    totalHeight += this.heightMapData[nz * this.extendedSize + nx];
+                    count++;
+                }
+            }
+        }
+
+        return count > 0 ? totalHeight / count : 0;
+    }
+
     getGroundMaterial() {
-        // Simplified material using MeshStandardMaterial for terrain
         return new THREE.MeshStandardMaterial({
             map: this.groundTexture,
             side: THREE.DoubleSide,
@@ -181,18 +343,14 @@ class ThreeJsWorld extends engine.Component {
         });
     }
 
-
-    // Handle window resize
     onWindowResize() {
         const width = this.container.clientWidth || window.innerWidth;
         const height = this.container.clientHeight || window.innerHeight;
-        
+
         this.camera.aspect = width / height;
         this.camera.updateProjectionMatrix();
         this.renderer.setSize(width, height);
     }
-    
-    // Update and render the scene
 
     update() {
         if (!this.game.config.configs.game.is3D) {
@@ -201,22 +359,24 @@ class ThreeJsWorld extends engine.Component {
         if (this.controls) {
             this.controls.update();
         }
-        if(!isNaN(this.game.deltaTime)) {
+        if (!isNaN(this.game.deltaTime)) {
             this.timer += this.game.deltaTime;
         }
         if (this.stats) {
             this.stats.update();
         }
         if (!this.drawn && this.groundTexture && this.game.mapRenderer && this.game.mapRenderer.isMapCached) {
-            const offset = (this.extendedSize - this.terrainSize) / 2;
-            this.groundCtx.drawImage(this.game.terrainCanvasBuffer, offset, offset);
+            this.groundCtx.drawImage(this.game.terrainCanvasBuffer, this.extensionSize, this.extensionSize);
             this.groundTexture.needsUpdate = true;
 
-            // Add 3D grass
+            if (this.heightMapConfig.enabled) {
+                this.updateHeightMap();
+            }
+
             this.addGrassToTerrain();
             this.drawn = true;
         }
-        if(this.grassMaterial) {
+        if (this.grassMaterial) {
             if (this.uniforms) {
                 this.uniforms.time = { value: this.timer };
             }
@@ -224,227 +384,197 @@ class ThreeJsWorld extends engine.Component {
         this.renderer.render(this.scene, this.camera);
     }
 
-    // Add this method to your ThreeJsWorld class
     addGrassToTerrain() {
-        // Grass blade geometry
         const bladeWidth = 12;
-        const bladeHeight = 32;
+        const bladeHeight = 18;
         const grassGeometry = this.createCurvedBladeGeometry(bladeWidth, bladeHeight);
         grassGeometry.translate(0, bladeHeight / 2, 0);
-        const grassCount = 500000;
-        // Add random phase attribute for each instance
+        const grassCount = 1000000;
+
         const phases = new Float32Array(grassCount);
         for (let i = 0; i < grassCount; i++) {
             phases[i] = Math.random() * Math.PI * 2;
         }
         grassGeometry.setAttribute('instancePhase', new THREE.InstancedBufferAttribute(phases, 1));
-    
-        // Grass shader material
+
         const grassTexture = this.createGrassTexture();
-        // In addGrassToTerrain() method:
         this.uniforms = {
-                time: { value: 0 },
-                windSpeed: { value: .8 },
-                windStrength: { value: 0.2 },
-                windDirection: { value: new THREE.Vector2(0.8, 0.6).normalize() },
-                map: { value: grassTexture },
-                // Three.js automatically provides:
-                // projectionMatrix, modelViewMatrix, instanceMatrix (for instancing)
-                // position, uv, etc.
-            };
+            time: { value: 0 },
+            windSpeed: { value: 0.8 },
+            windStrength: { value: 2 },
+            windDirection: { value: new THREE.Vector2(0.8, 0.6).normalize() },
+            map: { value: grassTexture }
+        };
         const uniforms = this.uniforms;
         this.grassMaterial = new THREE.ShaderMaterial({
             vertexShader: `
-            varying vec2 vUv;
-            varying float vDistance;
-            uniform float time;
-            uniform float windSpeed;
-            uniform float windStrength;
-            uniform vec2 windDirection;
-            attribute float instancePhase;
-    
-            void main() {        
-                vUv = uv;
-                
-                vec2 dir = normalize(windDirection);
-                float wave = sin(time * windSpeed + instancePhase) * windStrength;
-                wave *= uv.y;
-                
-                vec3 displacement = vec3(
-                    dir.x * wave,
-                    0.0,
-                    dir.y * wave
-                );
-    
-                vec4 mvPosition = modelViewMatrix * instanceMatrix * vec4(position + displacement, 1.0);
-                gl_Position = projectionMatrix * mvPosition;
-                
-                // Pass the original UV coordinate, unaffected by instance position
-                vUv = uv;
-            }
-        `,
-        fragmentShader: `
-    varying vec2 vUv;
-    uniform sampler2D map;
+                varying vec2 vUv;
+                uniform float time;
+                uniform float windSpeed;
+                uniform float windStrength;
+                uniform vec2 windDirection;
+                attribute float instancePhase;
 
-    void main() {
-       vec4 texColor = texture2D(map, vUv);
-        gl_FragColor = texColor;
-    }
-    `,
+                void main() {
+                    vUv = uv;
+                    vec2 dir = normalize(windDirection);
+                    float wave = sin(time * windSpeed + instancePhase) * windStrength;
+                    wave *= uv.y;
+
+                    vec3 displacement = vec3(
+                        dir.x * wave,
+                        0.0,
+                        dir.y * wave
+                    );
+
+                    vec4 mvPosition = modelViewMatrix * instanceMatrix * vec4(position + displacement, 1.0);
+                    gl_Position = projectionMatrix * mvPosition;
+                    vUv = uv;
+                }
+            `,
+            fragmentShader: `
+                varying vec2 vUv;
+                uniform sampler2D map;
+
+                void main() {
+                    vec4 texColor = texture2D(map, vUv);
+                    gl_FragColor = texColor;
+                }
+            `,
             uniforms: uniforms
         });
-    
-        this.grassShader = this.grassMaterial; // Reference for time updates
-        // Create instanced mesh
-        const grass = new THREE.InstancedMesh(grassGeometry,this.grassMaterial, grassCount);
 
+        this.grassShader = this.grassMaterial;
+        const grass = new THREE.InstancedMesh(grassGeometry, this.grassMaterial, grassCount);
         grass.castShadow = true;
         grass.receiveShadow = true;
-    
-        // Temporary objects
+
         const dummy = new THREE.Object3D();
-    
-        // Log terrain canvas status
+
         if (this.groundCanvas) {
             const ctx = this.groundCanvas.getContext('2d');
             try {
                 const terrainData = ctx.getImageData(0, 0, this.groundCanvas.width, this.groundCanvas.height).data;
-                let grassArea = this.groundCanvas.width / 4;
-                const offset =  (this.extendedSize - grassArea) / 2;
-                // Distribute grass (bypass terrain check)
+                let grassArea = this.extendedSize;
                 let placedGrassCount = 0;
+
                 for (let i = 0; i < grassCount; i++) {
                     const x = Math.floor(Math.random() * grassArea);
                     const z = Math.floor(Math.random() * grassArea);
-                    const pixelIndex = ((z + offset) * this.groundCanvas.width + (x + offset)) * 4;
+                    const pixelIndex = (z * this.groundCanvas.width + x) * 4;
                     const r = terrainData[pixelIndex];
                     const g = terrainData[pixelIndex + 1];
                     const b = terrainData[pixelIndex + 2];
-                    if( g > r && g > b) {
+
+                    if (g > r && g > b ) {
                         placedGrassCount++;
                         const rotationY = Math.random() * Math.PI * 2;
                         const scale = 0.7 + Math.random() * 0.5;
-                
-                        dummy.position.set(x - grassArea / 2 + this.terrainSize / 2, -bladeHeight, z - grassArea / 2 + this.terrainSize / 2);
+
+                        let height = 0;
+                        if (this.heightMapConfig.enabled) {
+                            const terrainX = Math.min(Math.floor(x), this.extendedSize - 1);
+                            const terrainZ = Math.min(Math.floor(z), this.extendedSize - 1);
+                            height = this.heightMapData[terrainZ * this.extendedSize + terrainX] || 0;
+                        }
+
+                        dummy.position.set(x - grassArea / 2 + this.terrainSize / 2, height - bladeHeight, z - grassArea / 2 + this.terrainSize / 2);
                         dummy.rotation.set(0, rotationY, 0);
                         dummy.scale.set(scale, scale, scale);
                         dummy.updateMatrix();
-                
+
                         grass.setMatrixAt(i, dummy.matrix);
                     }
-                
                 }
-            
+
             } catch (e) {
                 console.warn('Failed to get terrainCanvasBuffer data:', e);
             }
         }
-    
+
         grass.instanceMatrix.needsUpdate = true;
         this.scene.add(grass);
         this.grass = grass;
-
     }
 
-
-    // Create a follow camera that tracks a target object
     setupFollowCamera(target, offsetX = 50, offsetY = 50, offsetZ = 50, lookAhead = 0) {
         if (!target) return;
-        
-        // Create a function that updates camera position to follow target
+
         const updateFollowCamera = () => {
             const targetPosition = target.position || target;
-            
-            // Set camera position relative to target
+
             this.camera.position.set(
                 targetPosition.x + offsetX,
                 targetPosition.y + offsetY,
                 targetPosition.z + offsetZ
             );
-            
-            // Look at target, possibly with some look-ahead
+
             this.camera.lookAt(
                 targetPosition.x + lookAhead * (targetPosition.x - target.lastPosition?.x || 0),
                 targetPosition.y + lookAhead * (targetPosition.y - target.lastPosition?.y || 0),
                 targetPosition.z + lookAhead * (targetPosition.z - target.lastPosition?.z || 0)
             );
         };
-        
-        // Disable orbit controls if enabled
+
         if (this.controls) {
             this.controls.enabled = false;
         }
-        
-        // Store the update function on the camera
+
         this.camera.updateFollowCamera = updateFollowCamera;
-        
-        // Execute first update
         updateFollowCamera();
-        
-        // Return the update function so it can be called in the game loop
+
         return updateFollowCamera;
     }
-    
-    // Switch to isometric view
+
     setIsometricView() {
         const isoAngle = Math.atan(1 / Math.sqrt(2));
         const distance = 200;
         const horizDistance = distance * Math.cos(isoAngle);
         const vertDistance = distance * Math.sin(isoAngle);
-        
-        // Set camera to isometric position
+
         this.camera.position.set(horizDistance, vertDistance, horizDistance);
         this.camera.lookAt(0, 0, 0);
-        
-        // Update controls if they exist
+
         if (this.controls) {
             this.controls.target.set(0, 0, 0);
             this.controls.update();
         }
     }
-    
-    // Switch to top-down view
+
     setTopDownView(height = 200) {
         this.camera.position.set(0, height, 0);
         this.camera.lookAt(0, 0, 0);
-        
-        // Update controls if they exist
+
         if (this.controls) {
             this.controls.target.set(0, 0, 0);
             this.controls.update();
         }
     }
-    
-    // Create a new light that follows the player
+
     addPlayerLight(target, color = 0xffffbb, intensity = 0.7, distance = 50) {
         const playerLight = new THREE.PointLight(color, intensity, distance);
         playerLight.castShadow = true;
         playerLight.shadow.mapSize.width = 512;
         playerLight.shadow.mapSize.height = 512;
-        
-        // Create a function to update light position
+
         const updateLightPosition = () => {
             const targetPosition = target.position || target;
             playerLight.position.set(
                 targetPosition.x,
-                targetPosition.y + 10, // Position light above player
+                targetPosition.y + 10,
                 targetPosition.z
             );
         };
-        
-        // Add light to scene
+
         this.scene.add(playerLight);
         updateLightPosition();
-        
-        // Return update function and light reference
-        return { 
-            light: playerLight, 
-            update: updateLightPosition 
+
+        return {
+            light: playerLight,
+            update: updateLightPosition
         };
     }
-    
-    // Clean up
+
     onDestroy() {
         window.removeEventListener('resize', this.onWindowResizeHandler);
         this.renderer.dispose();
@@ -454,83 +584,67 @@ class ThreeJsWorld extends engine.Component {
         if (this.renderer.domElement?.parentElement) {
             this.renderer.domElement.parentElement.removeChild(this.renderer.domElement);
         }
-        // Dispose grass resources
         if (this.grass) {
             this.grass.geometry.dispose();
             this.grass.material.dispose();
         }
-        // Dispose ground resources
-        this.groundGeometry?.dispose();
+        this.ground.geometry?.dispose();
         this.groundMaterial?.dispose();
         this.groundTexture?.dispose();
+        this.groundCanvas = null;
         this.game.scene = null;
         this.game.camera = null;
         this.game.renderer = null;
     }
+
     createCurvedBladeGeometry(width = 0.1, height = 1) {
-        // Create a shape similar to the original quadratic curve approach
         const shape = new THREE.Shape();
         shape.moveTo(0, 0);
         shape.quadraticCurveTo(width * 0.5, height * 0.5, 0, height);
-        
-        // Create ShapeGeometry with custom UV generation
+
         const shapeGeom = new THREE.ShapeGeometry(shape, 12);
-        
-        // The issue is that the default UV mapping in ShapeGeometry doesn't
-        // give us the vertical gradient we want. Let's fix the UVs:
+
         const positions = shapeGeom.attributes.position.array;
         const uvs = shapeGeom.attributes.uv.array;
         const vertexCount = positions.length / 3;
-        
-        // Create new UV array
+
         const newUVs = new Float32Array(uvs.length);
-        
-        // For each vertex
+
         for (let i = 0; i < vertexCount; i++) {
             const posIndex = i * 3;
             const uvIndex = i * 2;
-            
-            // Get y-coordinate (height position)
+
             const y = positions[posIndex + 1];
-            
-            // Normalize y to 0-1 range (0 at bottom, 1 at top)
             const normalizedY = y / height;
-            
-            // Use original x-UV for horizontal position
+
             newUVs[uvIndex] = uvs[uvIndex];
-            
-            // Use normalized height for vertical UV position
             newUVs[uvIndex + 1] = normalizedY;
         }
-        
-        // Replace UV attribute
+
         shapeGeom.setAttribute('uv', new THREE.BufferAttribute(newUVs, 2));
-        
+
         return shapeGeom;
     }
-// And in createGrassTexture:
-createGrassTexture() {
-    const canvas = document.createElement('canvas');
-    canvas.width = 4;  // Increased width for better color reproduction
-    canvas.height = 32;
-    const ctx = canvas.getContext('2d');
 
-    // Create gradient from bottom to top
-    const gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);
-    gradient.addColorStop(0.0, this.game.palette["greenDColor"]); // Base
-    gradient.addColorStop(0.8, this.game.palette["greenMColor"]); // Tip
-    gradient.addColorStop(1.0, this.game.palette["redLColor"]); // Tip
+    createGrassTexture() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 4;
+        canvas.height = 32;
+        const ctx = canvas.getContext('2d');
 
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+        const gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);
+        gradient.addColorStop(0.0, this.game.palette["greenDColor"]);
+        gradient.addColorStop(0.8, this.game.palette["greenMColor"]);
+        gradient.addColorStop(1.0, this.game.palette["redLColor"]);
 
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.ClampToEdgeWrapping;
-    texture.magFilter = THREE.LinearFilter;
-    texture.minFilter = THREE.LinearFilter;
-    return texture;
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.ClampToEdgeWrapping;
+        texture.magFilter = THREE.LinearFilter;
+        texture.minFilter = THREE.LinearFilter;
+        return texture;
+    }
 }
-}
-
-
