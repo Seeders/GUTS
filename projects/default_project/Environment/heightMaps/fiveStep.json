@@ -1,5 +1,6 @@
 {
   "title": "Five Step and Smoothing",
   "heightStep": 5,
-  "smoothing": true
+  "smoothing": true,
+  "enabled": true
 }

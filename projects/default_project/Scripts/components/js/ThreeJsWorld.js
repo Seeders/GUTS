@@ -3,84 +3,66 @@ class ThreeJsWorld extends engine.Component {
         containerSelector = '#gameContainer',
         width = window.innerWidth,
         height = window.innerHeight,
-        cameraConfig = {
-            fov: 45,
-            near: 0.1,
-            far: 5000,
-            position: { x: 768 / 2, y: 500, z: 768 * 1.5 },
-            lookAt: { x: 768 / 2, y: 0, z: 768 / 2 }
-        },
-        useControls = true,
-        lightConfig = {
-            ambient: { color: 0xaaddff, intensity: 0.4 },
-            directional: { color: 0xfff8e1, intensity: 0.8 },
-            hemisphere: { skyColor: 0x87CEEB, groundColor: 0x4a7c59, intensity: 0.5 }
-        },
-        shadowConfig = {
-            enabled: true,
-            mapSize: 2048,
-            bias: -0.0002,
-            normalBias: 0.01,
-            radius: 2
-        },
-        background = 0x87CEEB,
-        fog = { enabled: true, color: 0x87CEEB, density: 0.0005 },
-        heightMapConfig = {
-            enabled: true,
-            heightStep: 5,
-            smoothing: true
-        },
-        extensionSize = 768 // Width of grass border around terrain
-    }) {
+        useControls = true}) {
         if (!this.game.config.configs.game.is3D) {
             return;
         }
+
+        this.world = this.game.config.worlds[this.game.config.levels[this.game.state.level].world];
+        this.lightingSettings = this.game.config.lightings[this.world.lighting];
+        this.shadowSettings = this.game.config.shadows[this.world.shadow];
+        this.fogSettings = this.game.config.fogs[this.world.fog]; 
+        this.heightMapSettings = this.game.config.heightMaps[this.world.heightMap];      
+        this.cameraSettings = this.game.config.cameras[this.world.camera];
+
         this.showStats = false;
         this.clock = new THREE.Clock();
         this.onWindowResizeHandler = this.onWindowResize.bind(this);
-        this.heightMapConfig = heightMapConfig;
-        this.game.heightMapConfig = heightMapConfig;
-        this.extensionSize = extensionSize;
+        this.game.heightMapConfig = this.heightMapSettings;
         this.terrainSize = 768;
-        this.extendedSize = this.terrainSize + 2 * extensionSize;
+        this.extensionSize = this.world.extensionSize;
+        this.extendedSize = this.terrainSize + 2 * this.world.extensionSize;
         this.heightMapResolution = 256;
         this.container = document.querySelector(containerSelector) || document.body;
         this.renderer = new THREE.WebGLRenderer({ antialias: true, canvas: this.game.canvas });
         this.renderer.setSize(width, height);
         this.renderer.setPixelRatio(window.devicePixelRatio);
-        this.renderer.shadowMap.enabled = shadowConfig.enabled;
+        this.renderer.shadowMap.enabled = this.shadowSettings.enabled;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         this.uniforms = {};
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color(background);
+        this.scene.background = new THREE.Color(this.world.backgroundColor);
 
-        if (fog.enabled) {
-            this.scene.fog = new THREE.FogExp2(fog.color, fog.density);
+        if (this.fogSettings.enabled) {
+            this.scene.fog = new THREE.FogExp2(this.fogSettings.color, this.fogSettings.density);
         }
 
         this.camera = new THREE.PerspectiveCamera(
-            cameraConfig.fov,
+            this.cameraSettings.fov,
             width / height,
-            cameraConfig.near,
-            cameraConfig.far
+            this.cameraSettings.near,
+            this.cameraSettings.far
         );
+        let cameraPos = JSON.parse(this.cameraSettings.position);
+        debugger;
         this.camera.position.set(
-            cameraConfig.position.x,
-            cameraConfig.position.y,
-            cameraConfig.position.z
+            cameraPos.x,
+            cameraPos.y,
+            cameraPos.z
         );
+        let lookAt = JSON.parse(this.cameraSettings.lookAt);
         this.camera.lookAt(
-            cameraConfig.lookAt.x,
-            cameraConfig.lookAt.y,
-            cameraConfig.lookAt.z
+            lookAt.x,
+            lookAt.y,
+            lookAt.z
         );
 
         if (useControls) {
             this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
             this.controls.target.set(
-                cameraConfig.lookAt.x,
-                cameraConfig.lookAt.y,
-                cameraConfig.lookAt.z
+                lookAt.x,
+                lookAt.y,
+                lookAt.z
             );
             this.controls.maxPolarAngle = Math.PI / 2.05;
             this.controls.minPolarAngle = 0.1;
@@ -90,26 +72,26 @@ class ThreeJsWorld extends engine.Component {
         }
 
         this.ambientLight = new THREE.AmbientLight(
-            lightConfig.ambient.color,
-            lightConfig.ambient.intensity
+            this.lightingSettings.ambientColor,
+            this.lightingSettings.ambientIntensity
         );
         this.scene.add(this.ambientLight);
 
         this.directionalLight = new THREE.DirectionalLight(
-            lightConfig.directional.color,
-            lightConfig.directional.intensity
+            this.lightingSettings.directionalColor,
+            this.lightingSettings.directionalIntensity
         );
         this.directionalLight.position.set(this.extendedSize * 2, this.extendedSize * 2, this.extendedSize * 2);
-        this.directionalLight.castShadow = shadowConfig.enabled;
+        this.directionalLight.castShadow = this.shadowSettings.enabled;
 
-        if (shadowConfig.enabled) {
-            this.directionalLight.shadow.mapSize.width = shadowConfig.mapSize;
-            this.directionalLight.shadow.mapSize.height = shadowConfig.mapSize;
+        if (this.shadowSettings.enabled) {
+            this.directionalLight.shadow.mapSize.width = this.shadowSettings.mapSize;
+            this.directionalLight.shadow.mapSize.height = this.shadowSettings.mapSize;
             this.directionalLight.shadow.camera.near = 0.5;
             this.directionalLight.shadow.camera.far = 20000;
-            this.directionalLight.shadow.bias = shadowConfig.bias;
-            this.directionalLight.shadow.normalBias = shadowConfig.normalBias;
-            this.directionalLight.shadow.radius = shadowConfig.radius;
+            this.directionalLight.shadow.bias = this.shadowSettings.bias;
+            this.directionalLight.shadow.normalBias = this.shadowSettings.normalBias;
+            this.directionalLight.shadow.radius = this.shadowSettings.radius;
 
             const d = this.extendedSize * 0.6;
             this.directionalLight.shadow.camera.left = -d;
@@ -126,13 +108,11 @@ class ThreeJsWorld extends engine.Component {
         this.scene.add(this.directionalLight.target);
 
         this.hemisphereLight = new THREE.HemisphereLight(
-            lightConfig.hemisphere.skyColor,
-            lightConfig.hemisphere.groundColor,
-            lightConfig.hemisphere.intensity
+            this.lightingSettings.skyColor,
+            this.lightingSettings.groundColor,
+            this.lightingSettings.hemisphereIntensity
         );
         this.scene.add(this.hemisphereLight);
-        this.world = this.game.config.worlds[this.game.config.levels[this.game.state.level].world];
-        this.heightMap = this.game.config.heightMaps[this.world.heightMap];
         this.tileMap = this.game.config.levels[this.game.state.level].tileMap;
         this.setupGround();
         this.generateLiquidSurfaceMesh(0);
@@ -169,7 +149,7 @@ class ThreeJsWorld extends engine.Component {
         this.groundTexture.minFilter = THREE.LinearFilter;
         this.groundTexture.magFilter = THREE.LinearFilter;
 
-        if (this.heightMapConfig.enabled) {
+        if (this.heightMapSettings) {
             this.createHeightMapTerrain();
         } else {
             const groundGeometry = new THREE.PlaneGeometry(this.extendedSize, this.extendedSize);
@@ -185,7 +165,7 @@ class ThreeJsWorld extends engine.Component {
     createHeightMapTerrain() {
         this.heightMapData = new Float32Array(this.extendedSize * this.extendedSize);
         this.terrainTypes = this.tileMap.terrainTypes || [];
-        this.heightStep = this.heightMapConfig.heightStep;
+        this.heightStep = this.heightMapSettings.heightStep;
 
         const segments = this.heightMapResolution;
         const groundGeometry = new THREE.PlaneGeometry(
@@ -208,7 +188,8 @@ class ThreeJsWorld extends engine.Component {
     }
 
     updateHeightMap() {
-        if (!this.heightMapConfig.enabled || !this.game.terrainCanvasBuffer) return;
+        debugger;
+        if (!this.heightMapSettings.enabled || !this.game.terrainCanvasBuffer) return;
 
         try {
             const terrainCanvas = this.game.terrainCanvasBuffer;
@@ -304,10 +285,10 @@ class ThreeJsWorld extends engine.Component {
                 const heightIndex = terrainZ * this.extendedSize + terrainX;
                 const height = this.heightMapData[heightIndex] || 0;
 
-                const finalHeight = this.heightMapConfig.smoothing ?
-                    this.smoothHeight(terrainX, terrainZ) : height;
+                // const finalHeight = this.heightMapConfig.smoothing ?
+                //     this.smoothHeight(terrainX, terrainZ) : height;
 
-                positions[idx + 2] = finalHeight;
+                positions[idx + 2] = height;
             }
         }
 
@@ -316,7 +297,7 @@ class ThreeJsWorld extends engine.Component {
     }
 
     smoothHeight(x, z) {
-        if (!this.heightMapConfig.smoothing) return this.heightMapData[z * this.extendedSize + x];
+        if (!this.heightMapSettings.smoothing) return this.heightMapData[z * this.extendedSize + x];
 
         let totalHeight = 0;
         let count = 0;
@@ -370,8 +351,8 @@ class ThreeJsWorld extends engine.Component {
         if (!this.drawn && this.groundTexture && this.game.mapRenderer && this.game.mapRenderer.isMapCached) {
             this.groundCtx.drawImage(this.game.terrainCanvasBuffer, this.extensionSize, this.extensionSize);
             this.groundTexture.needsUpdate = true;
-
-            if (this.heightMapConfig.enabled) {
+debugger;
+            if (this.heightMapSettings.enabled) {
                 this.updateHeightMap();
             }
 
@@ -472,7 +453,7 @@ class ThreeJsWorld extends engine.Component {
                         const scale = 0.7 + Math.random() * 0.5;
 
                         let height = 0;
-                        if (this.heightMapConfig.enabled) {
+                        if (this.heightMapSettings.enabled) {
                             const terrainX = Math.min(Math.floor(x), this.extendedSize - 1);
                             const terrainZ = Math.min(Math.floor(z), this.extendedSize - 1);
                             height = this.heightMapData[terrainZ * this.extendedSize + terrainX] || 0;
@@ -923,7 +904,7 @@ void main() {
 
         // Replace the MeshBasicMaterial with this ShaderMaterial in the mesh creation
         const waterMesh = new THREE.Mesh(geometry, material);        
-        waterMesh.position.y = (terrainType + 2) * this.heightMap.heightStep + this.heightMap.heightStep*.5;
+        waterMesh.position.y = (terrainType + 2) * this.heightMapSettings.heightStep + this.heightMapSettings.heightStep*.5;
         this.scene.add(waterMesh); // Assuming `this.scene` is your THREE.js scene
     }
 }

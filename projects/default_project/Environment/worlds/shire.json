@@ -9,5 +9,6 @@
   "worldObjects": [
     "tree",
     "rock"
-  ]
+  ],
+  "backgroundColor": "#b3e5fc"
 }
