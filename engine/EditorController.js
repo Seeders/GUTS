@@ -349,8 +349,8 @@ export class EditorController {
         return this.model.createType(typeId, typeName, typeSingular, typeCategory);
     }
 
-    createColorInputGroup(value, propertyName, container, callback){
-        return this.view.createColorInputGroup(value, propertyName, container, callback);
+    createColorInputGroup(value, attributeName, attributeValue, container, callback){
+        return this.view.createColorInputGroup(value,  attributeName, attributeValue, container, callback);
     }
 
     getColorValue(value){        

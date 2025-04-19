@@ -201,35 +201,11 @@ export class EditorView {
     appendColorInput(propertyItem, value) {
         const valueContainer = this.createValueContainer();
       
-        // Create color picker input
-        const colorInput = document.createElement('input');
-        colorInput.type = 'color';
-        colorInput.value = value;
-        colorInput.className = 'property-value color-picker';
-        
-        // Create hex text input
-        const hexInput = document.createElement('input');
-        hexInput.type = 'text';
-        hexInput.value = value;
+        const hexInput = this.createColorInputGroup(value, "", "", valueContainer, (val) => {}); 
+
         hexInput.className = 'property-value color-text';
         hexInput.pattern = '^#[0-9A-Fa-f]{6}$';
-        
-        // Sync color picker -> text
-        colorInput.addEventListener('input', () => {
-            hexInput.value = colorInput.value;
-        });
-        
-        // Sync text -> color picker
-        hexInput.addEventListener('input', (e) => {
-            const value = e.target.value;
-            if (value.match(/^#[0-9A-Fa-f]{6}$/)) {
-                colorInput.value = value;
-            }
-        });
-        
-        // Add both inputs to container
-        valueContainer.appendChild(colorInput);
-        valueContainer.appendChild(hexInput);
+  
         propertyItem.appendChild(valueContainer);
     }
     
@@ -557,7 +533,8 @@ export class EditorView {
             const customEvent = new CustomEvent(matchingModule.loadHook, {
                 detail: { 
                     data: object[matchingProperty], 
-                    propertyName: matchingProperty, 
+                    propertyName: matchingProperty,
+                    objectData: object, 
                     config: this.controller.getCollections().configs.game 
                 },
                 bubbles: true,
@@ -928,7 +905,7 @@ export class EditorView {
         this.controller.dispatchHook(hookName, detail);
     }
 
-    createColorInputGroup(value, propertyName, container, callback){
+    createColorInputGroup(value, attributeName, attributeValue, container, callback){
       let valueToUse = value;
       const palette = this.controller.getPalette();
       if(value && value.paletteColor) {
@@ -937,12 +914,16 @@ export class EditorView {
       const input = document.createElement('input');
       input.type = "text";
       input.value = valueToUse;
-      input.setAttribute('data-property', propertyName);
+      if(attributeName) {
+        input.setAttribute(attributeName, attributeValue);
+      }
 
       const colorInput = document.createElement('input');            
       colorInput.type = "color";
       colorInput.value = valueToUse;
-      colorInput.setAttribute('data-property', propertyName + '-color');
+      if(attributeName) {
+        colorInput.setAttribute(attributeName, attributeValue + '-color');
+      }
       
       input.addEventListener('change', (e) => {
           colorInput.value = e.target.value;        
