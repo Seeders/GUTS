@@ -59,11 +59,11 @@ class TerrainMapEditor {
 
     init() {
         this.setupTerrainTypesUI();
+        this.setupTerrainImageProcessor();
         this.setupEnvironmentPanel();
         this.createPreviewCanvas();
         this.setupEventListeners();
         this.updateTerrainStyles();
-        this.setupTerrainImageProcessor();
     }
 
     setupEventListeners() {
@@ -71,7 +71,13 @@ class TerrainMapEditor {
         document.getElementById('terrainColor').addEventListener('change', (el) => {                    
             document.getElementById('terrainColorText').value = el.target.value;
         });
-
+        document.getElementById('terrainTexture').addEventListener('change', (ev) => {
+            const textureName = ev.target.value;
+            if (textureName) {
+                this.tileMap.terrainTypes[this.currentTerrainId].texture = textureName;
+                this.terrainImageProcessor.processImage(this.gameEditor.getCollections().textures[textureName].image);
+            }
+        });
         document.getElementById('terrainMapSize').addEventListener('change', (ev) => {    
             const newGridSize = parseInt(ev.target.value);
             const oldGridSize = this.tileMap.size;
@@ -373,13 +379,11 @@ class TerrainMapEditor {
         this.previewCanvas.style.display = 'block';
     }
     setupTerrainImageProcessor() {
-        const processor = new this.engineClasses.TerrainImageProcessor();
-        processor.initialize(
+        this.terrainImageProcessor = new this.engineClasses.TerrainImageProcessor();
+        this.terrainImageProcessor.initialize(
             document.getElementById('terrainImage'),
-            document.getElementById('terrain-image-upload'),
             document.getElementById('terrain-image-display')
         );
-        return processor;
     }
 
     setupTerrainTypesUI() {
@@ -436,7 +440,7 @@ class TerrainMapEditor {
             editBtn.className = 'edit-terrain-btn';
             editBtn.innerHTML = '✏️';
             editBtn.title = 'Edit terrain';
-            editBtn.addEventListener('click', () => this.showTerrainEditForm(terrain));
+            editBtn.addEventListener('click', () => this.showTerrainEditForm(index));
             buttonContainer.appendChild(editBtn);
     
             const deleteBtn = document.createElement('button');
@@ -861,17 +865,31 @@ class TerrainMapEditor {
         document.getElementById('terrainBuildable').checked = false;         
     }
 
-    showTerrainEditForm(terrain) {
+    showTerrainEditForm(index) {
+        const terrain = this.tileMap.terrainTypes[index];
+        this.currentTerrainId = index; // Set current terrain ID for later use
         const form = document.getElementById(this.modalId);
         form.classList.add('show');
         document.getElementById('formTitle').textContent = 'Edit Terrain Type';
-        document.getElementById('editingId').value = terrain.id; // Use ID instead of type
         document.getElementById('terrainType').value = terrain.type;
         document.getElementById('terrainColor').value = terrain.color;
         document.getElementById('terrainColorText').value = terrain.color;
         document.getElementById('terrainImage').value = JSON.stringify(terrain.image || []);   
         document.getElementById('terrainBuildable').checked = terrain.buildable;
-        
+        const terrainTextureEl = document.getElementById('terrainTexture');
+        terrainTextureEl.innerHTML = ''; // Clear existing options
+
+        for(let textureName in this.gameEditor.getCollections().textures){
+            const texture = this.gameEditor.getCollections().textures[textureName];
+            const option = document.createElement('option');
+            option.value = textureName;
+            option.textContent = texture.title;
+
+            if( textureName === terrain.texture) {
+                option.selected = true; // Set the current terrain texture as selected
+            }
+            terrainTextureEl.appendChild(option);
+        }
         // Create a custom event with data
         const myCustomEvent = new CustomEvent('editTerrainImage', {
             bubbles: true,
@@ -887,9 +905,9 @@ class TerrainMapEditor {
     }
 
     saveTerrainType() {
-        const editingId = document.getElementById('editingId').value;
         const newType = document.getElementById('terrainType').value.trim();
         const newColor = document.getElementById('terrainColorText').value;
+        const newTexture = document.getElementById('terrainTexture').value;
         const newImage = JSON.parse(document.getElementById('terrainImage').value);
         const newBuildable = document.getElementById('terrainBuildable').checked;
     
@@ -898,15 +916,15 @@ class TerrainMapEditor {
             return;
         }
     
-        if (editingId !== '') {
+        if (this.currentTerrainId !== '') {
             // Editing existing terrain (using index as identifier)
-            const index = parseInt(editingId);
+            const index = this.currentTerrainId;
             if (index >= 0 && index < this.tileMap.terrainTypes.length) {
                 if (this.tileMap.terrainTypes.some((t, i) => t.type === newType && i !== index)) {
                     alert('A terrain type with this name already exists');
                     return;
                 }
-                this.tileMap.terrainTypes[index] = { type: newType, color: newColor, image: newImage, buildable: newBuildable };
+                this.tileMap.terrainTypes[index] = { type: newType, texture: newTexture, color: newColor, image: newImage, buildable: newBuildable };
             }
         } else {
             // Adding new terrain
@@ -914,7 +932,7 @@ class TerrainMapEditor {
                 alert('A terrain type with this name already exists');
                 return;
             }
-            this.tileMap.terrainTypes.push({ type: newType, color: newColor, image: newImage, buildable: newBuildable });
+            this.tileMap.terrainTypes.push({ type: newType, texture: newTexture, color: newColor, image: newImage, buildable: newBuildable });
         }
     
         this.updateTerrainStyles();

@@ -9,65 +9,53 @@ class TerrainImageProcessor {
         this.tilesY = options.tilesY || 1;
 
         // Bind methods to ensure correct context
-        this.handleImageUpload = this.handleImageUpload.bind(this);
         this.convertCanvasToBase64Tiles = this.convertCanvasToBase64Tiles.bind(this);
         this.displayStoredBase64Tiles = this.displayStoredBase64Tiles.bind(this);
 
         // Element references
         this.output = null;
-        this.fileInput = null;
         this.displayImage = null;
     }
 
     // Initialize the processor with DOM elements
-    initialize(outputElement, fileInputElement, displayImageElement) {
+    initialize(outputElement, displayImageElement) {
         this.output = outputElement;
-        this.fileInput = fileInputElement;
         this.displayImage = displayImageElement;
-
-        // Add event listeners
-        this.fileInput.addEventListener('change', this.handleImageUpload);
 
         // Optional: Add custom event listener
         document.body.addEventListener('editTerrainImage', this.displayStoredBase64Tiles);
     }
 
-    // Handle image upload and conversion
-    handleImageUpload(event) {
-        const file = event.target.files[0];
-        if (!file) return;
+    processImage(imageUrl) {
+        const img = new Image();
+        img.onload = () => {
+            // Create a temporary canvas to process the image
+            const canvas = document.createElement('canvas');
+            canvas.width = this.tileWidth * this.tilesX;
+            canvas.height = this.tileHeight * this.tilesY;
 
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const img = new Image();
-            img.onload = () => {
-                // Create a temporary canvas to process the image
-                const canvas = document.createElement('canvas');
-                canvas.width = this.tileWidth * this.tilesX;
-                canvas.height = this.tileHeight * this.tilesY;
+            const ctx = canvas.getContext('2d');
+            
+            // Set transparent background
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw the uploaded image, scaling to fit the canvas
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-                const ctx = canvas.getContext('2d');
-                
-                // Set transparent background
-                ctx.globalCompositeOperation = 'source-over';
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                
-                // Draw the uploaded image, scaling to fit the canvas
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            // Convert to base64 tiles with vertical flips
+            const base64Tiles = this.convertCanvasToBase64Tiles(canvas);
+            
+            // Save base64 tiles to output
+            this.output.value = JSON.stringify(base64Tiles);
 
-                // Convert to base64 tiles with vertical flips
-                const base64Tiles = this.convertCanvasToBase64Tiles(canvas);
-                
-                // Save base64 tiles to output
-                this.output.value = JSON.stringify(base64Tiles);
-
-                // Display the original uploaded image
-                this.displayImage.src = e.target.result;
-            };
-            img.src = e.target.result;
+            // Display the original uploaded image
+            this.displayImage.src = imageUrl;
         };
-        reader.readAsDataURL(file);
+        img.src = imageUrl;
     }
+
+
 
     // Convert canvas to array of base64 tiles with vertical flips
     convertCanvasToBase64Tiles(canvas, format = 'png', quality = 1.0) {
@@ -203,9 +191,6 @@ class TerrainImageProcessor {
 
     // Method to clean up event listeners if needed
     destroy() {
-        if (this.fileInput) {
-            this.fileInput.removeEventListener('change', this.handleImageUpload);
-        }
         document.body.removeEventListener('editTerrainImage', this.displayStoredBase64Tiles);
     }
 }
