@@ -25,6 +25,8 @@ class ModelRenderer extends engine.Component {
         this.createInitialModel();
         // Add the model group to the scene
         this.game.scene.add(this.modelGroup);
+
+        this.modelGroup.position.set(0, -10000, 0);
         
         // Set initial animation
         this.setAnimation('idle');
