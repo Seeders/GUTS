@@ -330,15 +330,15 @@ export class EditorModel {
     
     findMatchingTypes(key) {
       const matchingTypePlural = this.getCollectionDefs().find(t => 
-          t.id.toLowerCase() === key.toLowerCase());
+          key.toLowerCase().endsWith(t.id.toLowerCase()));
       
       const matchingTypeSingular = this.getCollectionDefs().find(t => 
-          t.singular.replace(/ /g,'').toLowerCase() === key.toLowerCase());
+         key.toLowerCase().endsWith(t.singular.replace(/ /g,'').toLowerCase()));
       
       const matchingModuleType = Object.values(this.getCollections().editorModules).find((t) => {
-          return (t.propertyName && t.propertyName.toLowerCase() === key.toLowerCase()) ||
+          return (t.propertyName && key.toLowerCase().endsWith(t.propertyName.toLowerCase())) ||
                 (t.propertyNames && JSON.parse(t.propertyNames).some(name => 
-                    name.toLowerCase() === key.toLowerCase()));
+                    key.toLowerCase().endsWith(name.toLowerCase())));
       });
       
       return { matchingTypePlural, matchingTypeSingular, matchingModuleType };

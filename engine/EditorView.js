@@ -242,7 +242,6 @@ export class EditorView {
         
         valueInput.setAttribute('id', `${key}-value`);
         valueContainer.appendChild(valueInput);
-        
         const editButton = document.createElement('button');
         editButton.innerText = "edit";
         editButton.addEventListener('click', () => {
@@ -471,7 +470,7 @@ export class EditorView {
 
     renderObject() {
         this.controller.dispatchHook('renderObject', arguments);
-        
+
         // Hide all module containers first
         Object.values(this.controller.getCollections().editorModules).forEach(module => {
             const container = document.getElementById(module.container);
@@ -495,10 +494,16 @@ export class EditorView {
             const module = this.controller.getCollections().editorModules[moduleId];
             
             // Check for single propertyName match
-            if (module.propertyName && object.hasOwnProperty(module.propertyName)) {
-                matchingModule = module;
-                matchingProperty = module.propertyName;
-                break;
+            if (module.propertyName) {
+                // Find any property that ends with the module's propertyName
+                const matchingKey = Object.keys(object).find(key => 
+                    key.toLowerCase().endsWith(module.propertyName.toLowerCase())
+                );
+                if (matchingKey) {
+                    matchingModule = module;
+                    matchingProperty = matchingKey;
+                    break;
+                }
             }
             
             // Check for match in propertyNames array
@@ -507,8 +512,12 @@ export class EditorView {
                 const propertyNames = Array.isArray(module.propertyNames) ? 
                     module.propertyNames : JSON.parse(module.propertyNames);
                 
-                // Find the first property in the array that exists in the object
-                const foundProperty = propertyNames.find(propName => object.hasOwnProperty(propName));
+                // Find the first property that ends with any of the propertyNames
+                const foundProperty = Object.keys(object).find(key => 
+                    propertyNames.some(propName => 
+                        key.toLowerCase().endsWith(propName.toLowerCase())
+                    )
+                );
                 
                 if (foundProperty) {
                     matchingModule = module;

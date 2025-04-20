@@ -453,7 +453,7 @@ const DEFAULT_PROJECT_CONFIG = {
       "ThreeJsWorld": {
         "title": "ThreeJsWorld",
         "fileName": "ThreeJsWorld",
-        "script": "class ThreeJsWorld extends engine.Component {\n    init({\n        containerSelector = '#gameContainer',\n        width = window.innerWidth,\n        height = window.innerHeight,\n        useControls = true}) {\n        if (!this.game.config.configs.game.is3D) {\n            return;\n        }\n\n        this.world = this.game.config.worlds[this.game.config.levels[this.game.state.level].world];\n        this.lightingSettings = this.game.config.lightings[this.world.lighting];\n        this.shadowSettings = this.game.config.shadows[this.world.shadow];\n        this.fogSettings = this.game.config.fogs[this.world.fog]; \n        this.heightMapSettings = this.game.config.heightMaps[this.world.heightMap];      \n        this.cameraSettings = this.game.config.cameras[this.world.camera];\n\n        this.showStats = false;\n        this.clock = new THREE.Clock();\n        this.onWindowResizeHandler = this.onWindowResize.bind(this);\n        this.game.heightMapConfig = this.heightMapSettings;\n        this.terrainSize = 768;\n        this.extensionSize = this.world.extensionSize;\n        this.extendedSize = this.terrainSize + 2 * this.world.extensionSize;\n        this.heightMapResolution = 256;\n        this.container = document.querySelector(containerSelector) || document.body;\n        this.renderer = new THREE.WebGLRenderer({ antialias: true, canvas: this.game.canvas });\n        this.renderer.setSize(width, height);\n        this.renderer.setPixelRatio(window.devicePixelRatio);\n        this.renderer.shadowMap.enabled = this.shadowSettings.enabled;\n        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;\n        this.uniforms = {};\n        this.scene = new THREE.Scene();\n        this.scene.background = new THREE.Color(this.world.backgroundColor);\n\n        if (this.fogSettings.enabled) {\n            this.scene.fog = new THREE.FogExp2(this.fogSettings.color, this.fogSettings.density);\n        }\n\n        this.camera = new THREE.PerspectiveCamera(\n            this.cameraSettings.fov,\n            width / height,\n            this.cameraSettings.near,\n            this.cameraSettings.far\n        );\n        let cameraPos = JSON.parse(this.cameraSettings.position);\n        debugger;\n        this.camera.position.set(\n            cameraPos.x,\n            cameraPos.y,\n            cameraPos.z\n        );\n        let lookAt = JSON.parse(this.cameraSettings.lookAt);\n        this.camera.lookAt(\n            lookAt.x,\n            lookAt.y,\n            lookAt.z\n        );\n\n        if (useControls) {\n            this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);\n            this.controls.target.set(\n                lookAt.x,\n                lookAt.y,\n                lookAt.z\n            );\n            this.controls.maxPolarAngle = Math.PI / 2.05;\n            this.controls.minPolarAngle = 0.1;\n            this.controls.enableDamping = true;\n            this.controls.dampingFactor = 0.05;\n            this.controls.update();\n        }\n\n        this.ambientLight = new THREE.AmbientLight(\n            this.lightingSettings.ambientColor,\n            this.lightingSettings.ambientIntensity\n        );\n        this.scene.add(this.ambientLight);\n\n        this.directionalLight = new THREE.DirectionalLight(\n            this.lightingSettings.directionalColor,\n            this.lightingSettings.directionalIntensity\n        );\n        this.directionalLight.position.set(this.extendedSize * 2, this.extendedSize * 2, this.extendedSize * 2);\n        this.directionalLight.castShadow = this.shadowSettings.enabled;\n\n        if (this.shadowSettings.enabled) {\n            this.directionalLight.shadow.mapSize.width = this.shadowSettings.mapSize;\n            this.directionalLight.shadow.mapSize.height = this.shadowSettings.mapSize;\n            this.directionalLight.shadow.camera.near = 0.5;\n            this.directionalLight.shadow.camera.far = 20000;\n            this.directionalLight.shadow.bias = this.shadowSettings.bias;\n            this.directionalLight.shadow.normalBias = this.shadowSettings.normalBias;\n            this.directionalLight.shadow.radius = this.shadowSettings.radius;\n\n            const d = this.extendedSize * 0.6;\n            this.directionalLight.shadow.camera.left = -d;\n            this.directionalLight.shadow.camera.right = d;\n            this.directionalLight.shadow.camera.top = d;\n            this.directionalLight.shadow.camera.bottom = -d;\n\n            this.directionalLight.target.position.set(-this.extendedSize * 2, 0, -this.extendedSize * 2);\n            this.directionalLight.target.updateMatrixWorld();\n            this.directionalLight.shadow.camera.updateProjectionMatrix();\n        }\n\n        this.scene.add(this.directionalLight);\n        this.scene.add(this.directionalLight.target);\n\n        this.hemisphereLight = new THREE.HemisphereLight(\n            this.lightingSettings.skyColor,\n            this.lightingSettings.groundColor,\n            this.lightingSettings.hemisphereIntensity\n        );\n        this.scene.add(this.hemisphereLight);\n        this.tileMap = this.game.config.levels[this.game.state.level].tileMap;\n        this.setupGround();\n        this.generateLiquidSurfaceMesh(0);\n        this.generateLiquidSurfaceMesh(1);\n        if (this.showStats) {\n            this.stats = new Stats();\n            this.container.appendChild(this.stats.dom);\n        }\n\n        window.addEventListener('resize', this.onWindowResizeHandler);\n\n        this.game.scene = this.scene;\n        this.game.camera = this.camera;\n        this.game.renderer = this.renderer;\n        this.game.ground = this.ground;\n        this.drawn = false;\n        this.timer = 0;\n    }\n\n    setupGround() {\n        this.groundCanvas = document.createElement('canvas');\n        this.groundCanvas.width = this.extendedSize;\n        this.groundCanvas.height = this.extendedSize;\n        this.groundCtx = this.groundCanvas.getContext('2d');\n\n        let bgColor = this.tileMap.terrainTypes[this.tileMap.extensionTerrainType].color;\n        let colorToUse = bgColor.paletteColor ? this.game.palette[bgColor.paletteColor] : bgColor;\n        this.groundCtx.fillStyle = colorToUse;\n        this.groundCtx.fillRect(0, 0, this.extendedSize, this.extendedSize);\n\n        this.groundTexture = new THREE.CanvasTexture(this.groundCanvas);\n        this.groundTexture.wrapS = THREE.ClampToEdgeWrapping;\n        this.groundTexture.wrapT = THREE.ClampToEdgeWrapping;\n        this.groundTexture.minFilter = THREE.LinearFilter;\n        this.groundTexture.magFilter = THREE.LinearFilter;\n\n        if (this.heightMapSettings) {\n            this.createHeightMapTerrain();\n        } else {\n            const groundGeometry = new THREE.PlaneGeometry(this.extendedSize, this.extendedSize);\n            this.groundMaterial = this.getGroundMaterial();\n            this.ground = new THREE.Mesh(groundGeometry, this.groundMaterial);\n            this.ground.rotation.x = -Math.PI / 2;\n            this.ground.position.set(this.terrainSize / 2, 0, this.terrainSize / 2);\n            this.ground.receiveShadow = true;\n            this.scene.add(this.ground);\n        }\n    }\n\n    createHeightMapTerrain() {\n        this.heightMapData = new Float32Array(this.extendedSize * this.extendedSize);\n        this.terrainTypes = this.tileMap.terrainTypes || [];\n        this.heightStep = this.heightMapSettings.heightStep;\n\n        const segments = this.heightMapResolution;\n        const groundGeometry = new THREE.PlaneGeometry(\n            this.extendedSize,\n            this.extendedSize,\n            segments,\n            segments\n        );\n\n        this.groundVertices = groundGeometry.attributes.position;\n\n        this.groundMaterial = this.getGroundMaterial();\n\n        this.ground = new THREE.Mesh(groundGeometry, this.groundMaterial);\n        this.ground.rotation.x = -Math.PI / 2;\n        this.ground.position.set(this.terrainSize / 2, 0, this.terrainSize / 2);\n        this.ground.receiveShadow = true;\n\n        this.scene.add(this.ground);\n    }\n\n    updateHeightMap() {\n        debugger;\n        if (!this.heightMapSettings.enabled || !this.game.terrainCanvasBuffer) return;\n\n        try {\n            const terrainCanvas = this.game.terrainCanvasBuffer;\n            const ctx = terrainCanvas.getContext('2d');\n            const terrainData = ctx.getImageData(0, 0, terrainCanvas.width, terrainCanvas.height).data;\n\n            const terrainTypeColors = this.createTerrainTypeColorMap();\n\n            this.heightMapData = new Float32Array(this.extendedSize * this.extendedSize);\n\n            const extensionTerrainType = this.tileMap.extensionTerrainType;\n            const extensionHeight = extensionTerrainType * this.heightStep;\n\n            for (let z = 0; z < this.extendedSize; z++) {\n                for (let x = 0; x < this.extendedSize; x++) {\n                    this.heightMapData[z * this.extendedSize + x] = extensionHeight;\n                }\n            }\n\n            for (let z = 0; z < this.terrainSize; z++) {\n                for (let x = 0; x < this.terrainSize; x++) {\n                    const pixelIndex = (z * terrainCanvas.width + x) * 4;\n                    const r = terrainData[pixelIndex];\n                    const g = terrainData[pixelIndex + 1];\n                    const b = terrainData[pixelIndex + 2];\n                    const colorKey = `${r},${g},${b}`;\n\n                    const typeIndex = terrainTypeColors[colorKey];\n                    const height = typeIndex !== undefined ? typeIndex * this.heightStep : extensionHeight;\n\n                    const extX = x + this.extensionSize;\n                    const extZ = z + this.extensionSize;\n                    this.heightMapData[extZ * this.extendedSize + extX] = height;\n                }\n            }\n\n            this.applyHeightMapToGeometry();\n\n        } catch (e) {\n            console.warn('Failed to update height map:', e);\n        }\n    }\n\n    createTerrainTypeColorMap() {\n        const colorMap = {};\n        const terrainTypes = this.terrainTypes;\n\n        for (let i = 0; i < terrainTypes.length; i++) {\n            const terrainType = terrainTypes[i];\n            let color = terrainType.color || {};\n\n            if (color.paletteColor && this.game.palette) {\n                const hexColor = this.game.palette[color.paletteColor];\n                if (hexColor) {\n                    const r = parseInt(hexColor.slice(1, 3), 16);\n                    const g = parseInt(hexColor.slice(3, 5), 16);\n                    const b = parseInt(hexColor.slice(5, 7), 16);\n                    colorMap[`${r},${g},${b}`] = i;\n                }\n            } else {\n                const hexColor = color;\n                if (hexColor) {\n                    const r = parseInt(hexColor.slice(1, 3), 16);\n                    const g = parseInt(hexColor.slice(3, 5), 16);\n                    const b = parseInt(hexColor.slice(5, 7), 16);\n                    colorMap[`${r},${g},${b}`] = i;\n                }\n            }\n        }\n\n        return colorMap;\n    }\n\n    applyHeightMapToGeometry() {\n        if (!this.ground || !this.groundVertices) return;\n\n        const positions = this.groundVertices.array;\n        const geometry = this.ground.geometry;\n        const segments = this.heightMapResolution;\n        const verticesPerRow = segments + 1;\n\n        for (let z = 0; z < verticesPerRow; z++) {\n            for (let x = 0; x < verticesPerRow; x++) {\n                const vertexIndex = (z * verticesPerRow + x);\n                const idx = vertexIndex * 3;\n\n                const nx = x / segments;\n                const nz = z / segments;\n\n                const terrainX = Math.floor(nx * (this.extendedSize - 1));\n                const terrainZ = Math.floor(nz * (this.extendedSize - 1));\n\n                const heightIndex = terrainZ * this.extendedSize + terrainX;\n                const height = this.heightMapData[heightIndex] || 0;\n\n                // const finalHeight = this.heightMapConfig.smoothing ?\n                //     this.smoothHeight(terrainX, terrainZ) : height;\n\n                positions[idx + 2] = height;\n            }\n        }\n\n        this.groundVertices.needsUpdate = true;\n        geometry.computeVertexNormals();\n    }\n\n    smoothHeight(x, z) {\n        if (!this.heightMapSettings.smoothing) return this.heightMapData[z * this.extendedSize + x];\n\n        let totalHeight = 0;\n        let count = 0;\n\n        for (let dz = -1; dz <= 1; dz++) {\n            for (let dx = -1; dx <= 1; dx++) {\n                const nx = x + dx;\n                const nz = z + dz;\n\n                if (nx >= 0 && nx < this.extendedSize && nz >= 0 && nz < this.extendedSize) {\n                    totalHeight += this.heightMapData[nz * this.extendedSize + nx];\n                    count++;\n                }\n            }\n        }\n\n        return count > 0 ? totalHeight / count : 0;\n    }\n\n    getGroundMaterial() {\n        return new THREE.MeshStandardMaterial({\n            map: this.groundTexture,\n            side: THREE.DoubleSide,\n            metalness: 0.0,\n            roughness: 0.8\n        });\n    }\n\n    onWindowResize() {\n        const width = this.container.clientWidth || window.innerWidth;\n        const height = this.container.clientHeight || window.innerHeight;\n\n        this.camera.aspect = width / height;\n        this.camera.updateProjectionMatrix();\n        this.renderer.setSize(width, height);\n    }\n\n    update() {\n        if (!this.game.config.configs.game.is3D) {\n            return;\n        }\n        if (this.controls) {\n            this.controls.update();\n        }\n        if (!isNaN(this.game.deltaTime)) {\n            this.timer += this.game.deltaTime;\n        }\n        if (this.stats) {\n            this.stats.update();\n        }\n        if (!this.drawn && this.groundTexture && this.game.mapRenderer && this.game.mapRenderer.isMapCached) {\n            this.groundCtx.drawImage(this.game.terrainCanvasBuffer, this.extensionSize, this.extensionSize);\n            this.groundTexture.needsUpdate = true;\ndebugger;\n            if (this.heightMapSettings.enabled) {\n                this.updateHeightMap();\n            }\n\n            this.addGrassToTerrain();\n            this.drawn = true;\n        }\n        for(const key in this.uniforms) {\n            this.uniforms[key].time = { value: this.timer };            \n        }\n        this.renderer.render(this.scene, this.camera);\n    }\n\n    addGrassToTerrain() {\n        const bladeWidth = 12;\n        const bladeHeight = 18;\n        const grassGeometry = this.createCurvedBladeGeometry(bladeWidth, bladeHeight);\n        grassGeometry.translate(0, bladeHeight / 2, 0);\n        const grassCount = 1000000;\n\n        const phases = new Float32Array(grassCount);\n        for (let i = 0; i < grassCount; i++) {\n            phases[i] = Math.random() * Math.PI * 2;\n        }\n        grassGeometry.setAttribute('instancePhase', new THREE.InstancedBufferAttribute(phases, 1));\n\n        const grassTexture = this.createGrassTexture();\n        this.uniforms['grass'] = {\n            time: { value: 0 },\n            windSpeed: { value: 0.8 },\n            windStrength: { value: 2 },\n            windDirection: { value: new THREE.Vector2(0.8, 0.6).normalize() },\n            map: { value: grassTexture }\n        };\n        const uniforms = this.uniforms['grass'];\n        this.grassMaterial = new THREE.ShaderMaterial({\n            vertexShader: `\n                varying vec2 vUv;\n                uniform float time;\n                uniform float windSpeed;\n                uniform float windStrength;\n                uniform vec2 windDirection;\n                attribute float instancePhase;\n\n                void main() {\n                    vUv = uv;\n                    vec2 dir = normalize(windDirection);\n                    float wave = sin(time * windSpeed + instancePhase) * windStrength;\n                    wave *= uv.y;\n\n                    vec3 displacement = vec3(\n                        dir.x * wave,\n                        0.0,\n                        dir.y * wave\n                    );\n\n                    vec4 mvPosition = modelViewMatrix * instanceMatrix * vec4(position + displacement, 1.0);\n                    gl_Position = projectionMatrix * mvPosition;\n                    vUv = uv;\n                }\n            `,\n            fragmentShader: `\n                varying vec2 vUv;\n                uniform sampler2D map;\n\n                void main() {\n                    vec4 texColor = texture2D(map, vUv);\n                    gl_FragColor = texColor;\n                }\n            `,\n            uniforms: uniforms\n        });\n\n        this.grassShader = this.grassMaterial;\n        const grass = new THREE.InstancedMesh(grassGeometry, this.grassMaterial, grassCount);\n        grass.castShadow = true;\n        grass.receiveShadow = true;\n\n        const dummy = new THREE.Object3D();\n\n        if (this.groundCanvas) {\n            const ctx = this.groundCanvas.getContext('2d');\n            try {\n                const terrainData = ctx.getImageData(0, 0, this.groundCanvas.width, this.groundCanvas.height).data;\n                let grassArea = this.extendedSize;\n                let placedGrassCount = 0;\n\n                for (let i = 0; i < grassCount; i++) {\n                    const x = Math.floor(Math.random() * grassArea);\n                    const z = Math.floor(Math.random() * grassArea);\n                    const pixelIndex = (z * this.groundCanvas.width + x) * 4;\n                    const r = terrainData[pixelIndex];\n                    const g = terrainData[pixelIndex + 1];\n                    const b = terrainData[pixelIndex + 2];\n\n                    if (g > r && g > b ) {\n                        placedGrassCount++;\n                        const rotationY = Math.random() * Math.PI * 2;\n                        const scale = 0.7 + Math.random() * 0.5;\n\n                        let height = 0;\n                        if (this.heightMapSettings.enabled) {\n                            const terrainX = Math.min(Math.floor(x), this.extendedSize - 1);\n                            const terrainZ = Math.min(Math.floor(z), this.extendedSize - 1);\n                            height = this.heightMapData[terrainZ * this.extendedSize + terrainX] || 0;\n                        }\n\n                        dummy.position.set(x - grassArea / 2 + this.terrainSize / 2, height - bladeHeight, z - grassArea / 2 + this.terrainSize / 2);\n                        dummy.rotation.set(0, rotationY, 0);\n                        dummy.scale.set(scale, scale, scale);\n                        dummy.updateMatrix();\n\n                        grass.setMatrixAt(i, dummy.matrix);\n                    }\n                }\n\n            } catch (e) {\n                console.warn('Failed to get terrainCanvasBuffer data:', e);\n            }\n        }\n\n        grass.instanceMatrix.needsUpdate = true;\n        this.scene.add(grass);\n        this.grass = grass;\n    }\n\n    setupFollowCamera(target, offsetX = 50, offsetY = 50, offsetZ = 50, lookAhead = 0) {\n        if (!target) return;\n\n        const updateFollowCamera = () => {\n            const targetPosition = target.position || target;\n\n            this.camera.position.set(\n                targetPosition.x + offsetX,\n                targetPosition.y + offsetY,\n                targetPosition.z + offsetZ\n            );\n\n            this.camera.lookAt(\n                targetPosition.x + lookAhead * (targetPosition.x - target.lastPosition?.x || 0),\n                targetPosition.y + lookAhead * (targetPosition.y - target.lastPosition?.y || 0),\n                targetPosition.z + lookAhead * (targetPosition.z - target.lastPosition?.z || 0)\n            );\n        };\n\n        if (this.controls) {\n            this.controls.enabled = false;\n        }\n\n        this.camera.updateFollowCamera = updateFollowCamera;\n        updateFollowCamera();\n\n        return updateFollowCamera;\n    }\n\n    setIsometricView() {\n        const isoAngle = Math.atan(1 / Math.sqrt(2));\n        const distance = 200;\n        const horizDistance = distance * Math.cos(isoAngle);\n        const vertDistance = distance * Math.sin(isoAngle);\n\n        this.camera.position.set(horizDistance, vertDistance, horizDistance);\n        this.camera.lookAt(0, 0, 0);\n\n        if (this.controls) {\n            this.controls.target.set(0, 0, 0);\n            this.controls.update();\n        }\n    }\n\n    setTopDownView(height = 200) {\n        this.camera.position.set(0, height, 0);\n        this.camera.lookAt(0, 0, 0);\n\n        if (this.controls) {\n            this.controls.target.set(0, 0, 0);\n            this.controls.update();\n        }\n    }\n\n    addPlayerLight(target, color = 0xffffbb, intensity = 0.7, distance = 50) {\n        const playerLight = new THREE.PointLight(color, intensity, distance);\n        playerLight.castShadow = true;\n        playerLight.shadow.mapSize.width = 512;\n        playerLight.shadow.mapSize.height = 512;\n\n        const updateLightPosition = () => {\n            const targetPosition = target.position || target;\n            playerLight.position.set(\n                targetPosition.x,\n                targetPosition.y + 10,\n                targetPosition.z\n            );\n        };\n\n        this.scene.add(playerLight);\n        updateLightPosition();\n\n        return {\n            light: playerLight,\n            update: updateLightPosition\n        };\n    }\n\n    onDestroy() {\n        window.removeEventListener('resize', this.onWindowResizeHandler);\n        this.renderer.dispose();\n        if (this.stats?.dom?.parentElement) {\n            this.stats.dom.parentElement.removeChild(this.stats.dom);\n        }\n        if (this.renderer.domElement?.parentElement) {\n            this.renderer.domElement.parentElement.removeChild(this.renderer.domElement);\n        }\n        if (this.grass) {\n            this.grass.geometry.dispose();\n            this.grass.material.dispose();\n        }\n        this.ground.geometry?.dispose();\n        this.groundMaterial?.dispose();\n        this.groundTexture?.dispose();\n        this.groundCanvas = null;\n        this.game.scene = null;\n        this.game.camera = null;\n        this.game.renderer = null;\n    }\n\n    createCurvedBladeGeometry(width = 0.1, height = 1) {\n        const shape = new THREE.Shape();\n        shape.moveTo(0, 0);\n        shape.quadraticCurveTo(width * 0.5, height * 0.5, 0, height);\n\n        const shapeGeom = new THREE.ShapeGeometry(shape, 12);\n\n        const positions = shapeGeom.attributes.position.array;\n        const uvs = shapeGeom.attributes.uv.array;\n        const vertexCount = positions.length / 3;\n\n        const newUVs = new Float32Array(uvs.length);\n\n        for (let i = 0; i < vertexCount; i++) {\n            const posIndex = i * 3;\n            const uvIndex = i * 2;\n\n            const y = positions[posIndex + 1];\n            const normalizedY = y / height;\n\n            newUVs[uvIndex] = uvs[uvIndex];\n            newUVs[uvIndex + 1] = normalizedY;\n        }\n\n        shapeGeom.setAttribute('uv', new THREE.BufferAttribute(newUVs, 2));\n\n        return shapeGeom;\n    }\n\n    createGrassTexture() {\n        const canvas = document.createElement('canvas');\n        canvas.width = 4;\n        canvas.height = 32;\n        const ctx = canvas.getContext('2d');\n\n        const gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);\n        gradient.addColorStop(0.0, this.game.palette[\"greenDColor\"]);\n        gradient.addColorStop(0.8, this.game.palette[\"greenMColor\"]);\n        gradient.addColorStop(1.0, this.game.palette[\"redLColor\"]);\n\n        ctx.fillStyle = gradient;\n        ctx.fillRect(0, 0, canvas.width, canvas.height);\n\n        const texture = new THREE.CanvasTexture(canvas);\n        texture.wrapS = THREE.RepeatWrapping;\n        texture.wrapT = THREE.ClampToEdgeWrapping;\n        texture.magFilter = THREE.LinearFilter;\n        texture.minFilter = THREE.LinearFilter;\n        return texture;\n    }\n\n    // Assuming this is inside a class where `this.tileMapData` and `this.game.config` are accessible\n    generateLiquidSurfaceMesh(terrainType) {\n        const terrainMap = this.tileMap.terrainMap;\n        const gridSize = this.game.config.configs.game.gridSize;\n        const rows = terrainMap.length;\n        const cols = terrainMap[0].length;\n        \n        // Arrays to store vertices, indices, and UVs for the BufferGeometry\n        const vertices = [];\n        const indices = [];\n        const uvs = [];\n        \n        // Amount to extend the perimeter (e.g., 10% of gridSize)\n        const extensionAmount = gridSize * 0.25; // Adjust as needed        \n  \n        // Helper function to check if a tile is a water tile\n        const isWaterTile = (x, z) => {\n            if (x < 0 || x >= cols || z < 0 || z >= rows) return false;\n            return terrainMap[z][x] === terrainType;\n        };\n        \n        // Step 1: Generate a grid of vertices, but only for positions needed by water tiles\n        const usedPositions = new Set();\n        for (let z = 0; z < rows; z++) {\n            for (let x = 0; x < cols; x++) {\n                if (terrainMap[z][x] === terrainType) {\n                    usedPositions.add(`${x},${z}`);     // Bottom-left\n                    usedPositions.add(`${x + 1},${z}`); // Bottom-right\n                    usedPositions.add(`${x + 1},${z + 1}`); // Bottom-right in your view (+z is south)\n                    usedPositions.add(`${x},${z + 1}`); // Top-left\n                }\n            }\n        }\n        \n        // Step 2: Create vertices for all used positions and store their original positions\n        const positionToVertexIndex = new Map();\n        const originalPositions = []; // Store original (x, z) for each vertex\n        let vertexIndex = 0;\n        for (const pos of usedPositions) {\n            const [x, z] = pos.split(',').map(Number);\n            positionToVertexIndex.set(pos, vertexIndex++);\n            vertices.push(x * gridSize, 0.1, z * gridSize);\n            originalPositions.push([x, z]); // Store original grid position\n            uvs.push(x, z); // UVs based on grid position\n        }\n        \n        // Step 3: Generate indices for water tiles, connecting them into a single mesh\n        for (let z = 0; z < rows; z++) {\n            for (let x = 0; x < cols; x++) {\n                if (terrainMap[z][x] === terrainType) {\n                    const bl = positionToVertexIndex.get(`${x},${z}`);\n                    const br = positionToVertexIndex.get(`${x + 1},${z}`);\n                    const tr = positionToVertexIndex.get(`${x + 1},${z + 1}`); // Bottom-right in your view\n                    const tl = positionToVertexIndex.get(`${x},${z + 1}`);\n        \n                    indices.push(bl, br, tl);\n                    indices.push(br, tr, tl);\n                }\n            }\n        }\n        \n        // Step 4: Identify perimeter vertices and their extension directions\n        const perimeterExtensions = new Map(); // Map vertexIndex to { extendLeft, extendRight, extendUp, extendDown }\n        for (let z = 0; z < rows; z++) {\n            for (let x = 0; x < cols; x++) {\n                if (terrainMap[z][x] === terrainType) {\n                    const isLeftEdge = !isWaterTile(x - 1, z);\n                    const isRightEdge = !isWaterTile(x + 1, z);\n                    const isBottomEdge = !isWaterTile(x, z - 1); // North\n                    const isTopEdge = !isWaterTile(x, z + 1);    // South\n        \n                    // Bottom-left vertex (x, z)\n                    if (isLeftEdge || isBottomEdge) {\n                        const vIdx = positionToVertexIndex.get(`${x},${z}`);\n                        if (!perimeterExtensions.has(vIdx)) perimeterExtensions.set(vIdx, { extendLeft: false, extendRight: false, extendUp: false, extendDown: false });\n                        const ext = perimeterExtensions.get(vIdx);\n                        if (isLeftEdge) ext.extendLeft = true;\n                        if (isBottomEdge) ext.extendUp = true; // North\n                    }\n        \n                    // Bottom-right vertex (x + 1, z)\n                    if (isRightEdge || isBottomEdge) {\n                        const vIdx = positionToVertexIndex.get(`${x + 1},${z}`);\n                        if (!perimeterExtensions.has(vIdx)) perimeterExtensions.set(vIdx, { extendLeft: false, extendRight: false, extendUp: false, extendDown: false });\n                        const ext = perimeterExtensions.get(vIdx);\n                        if (isRightEdge) ext.extendRight = true;\n                        if (isBottomEdge) ext.extendUp = true; // North\n                    }\n        \n                    // Top-right vertex (x + 1, z + 1) - Bottom-right in your view\n                    if (isRightEdge || isTopEdge) {\n                        const vIdx = positionToVertexIndex.get(`${x + 1},${z + 1}`);\n                        if (!perimeterExtensions.has(vIdx)) perimeterExtensions.set(vIdx, { extendLeft: false, extendRight: false, extendUp: false, extendDown: false });\n                        const ext = perimeterExtensions.get(vIdx);\n                        if (isRightEdge) ext.extendRight = true;\n                        if (isTopEdge) ext.extendDown = true; // South\n                    }\n        \n                    // Top-left vertex (x, z + 1)\n                    if (isLeftEdge || isTopEdge) {\n                        const vIdx = positionToVertexIndex.get(`${x},${z + 1}`);\n                        if (!perimeterExtensions.has(vIdx)) perimeterExtensions.set(vIdx, { extendLeft: false, extendRight: false, extendUp: false, extendDown: false });\n                        const ext = perimeterExtensions.get(vIdx);\n                        if (isLeftEdge) ext.extendLeft = true;\n                        if (isTopEdge) ext.extendDown = true; // South\n                    }\n                }\n            }\n        }\n        \n        // Step 5: Apply perimeter extensions\n        perimeterExtensions.forEach((ext, vertexIndex) => {\n            const idx = vertexIndex * 3;\n            const [origX, origZ] = originalPositions[vertexIndex];\n        \n            // Log the bottom-right corner for debugging\n            if (ext.extendRight && ext.extendDown) {\n                console.log(`Bottom-right corner at (${origX}, ${origZ}): Before extension - x: ${vertices[idx]}, z: ${vertices[idx + 2]}`);\n            }\n        \n            if (ext.extendLeft) vertices[idx] -= extensionAmount; // Extend left\n            if (ext.extendRight) vertices[idx] += extensionAmount; // Extend right\n            if (ext.extendUp) vertices[idx + 2] -= extensionAmount; // Extend north (decrease z)\n            if (ext.extendDown) vertices[idx + 2] += extensionAmount; // Extend south (increase z)\n        \n            if (ext.extendRight && ext.extendDown) {\n                console.log(`Bottom-right corner at (${origX}, ${origZ}): After extension - x: ${vertices[idx]}, z: ${vertices[idx + 2]}`);\n            }\n        });\n        \n        // Step 6: Create the BufferGeometry\n        const geometry = new THREE.BufferGeometry();\n        geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));\n        geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));\n        geometry.setIndex(indices);\n        geometry.computeVertexNormals(); // For lighting\n        // Parse the hex color to RGB\n        const parseHexColor = (hex) => {\n            const r = parseInt(hex.slice(1, 3), 16) / 255;\n            const g = parseInt(hex.slice(3, 5), 16) / 255;\n            const b = parseInt(hex.slice(5, 7), 16) / 255;\n            return { r, g, b };\n        };\n\n        // Use the hex color in a ShaderMaterial\n        const colorToUse = this.tileMap.terrainTypes[terrainType].color;\n        const { r, g, b } = parseHexColor(colorToUse);\n        this.uniforms[terrainType] = {\n            time: { value: 0.0 },\n            waveHeight: { value: 2.0 }, // Height of waves\n            waveFrequency: { value: 5.0 }, // Frequency of primary waves\n            waveSpeed: { value: 0.25 }, // Speed of wave animation\n            liquidColor: { value: new THREE.Vector3(r, g, b) }, // Base RGB color as vec3\n            foamColor: { value: new THREE.Vector3(r, g, b) }, // Foam/highlight color\n            fresnelPower: { value: 0.0 }, // Controls fresnel effect intensity\n            lightDirection: { value: new THREE.Vector3(0.5, 0.5, 0.5) }, // Normalized light direction\n            ambientIntensity: { value: 1 }, // Ambient light contribution\n            specularIntensity: { value:1 } // Specular highlight intensity\n        };\n        \n        // Reference the uniforms\n        const uniforms = this.uniforms[terrainType];\n        \n        // Create the shader material\n        const material = new THREE.ShaderMaterial({\n            uniforms: uniforms,\n            vertexShader: `\n                uniform float time;\nuniform float waveHeight;\nuniform float waveFrequency;\nuniform float waveSpeed;\nvarying vec2 vUv;\nvarying vec3 vNormal;\nvarying vec3 vViewPosition;\nvarying float vWaveHeight;\nvarying float vNormalizedWaveHeight; // New varying for normalized height\n\n// Simple noise function for wave variation\nfloat snoise(vec2 co) {\n    return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453);\n}\n\nvoid main() {\n    vUv = uv;\n\n    // Combine multiple waves for more natural movement\n    float wave1 = sin(uv.x * waveFrequency + time * waveSpeed) * waveHeight;\n    float wave2 = sin(uv.y * waveFrequency * 0.7 + time * waveSpeed * 0.8) * waveHeight * 0.5;\n    float wave3 = cos((uv.x + uv.y) * waveFrequency * 0.5 + time * waveSpeed * 1.2) * waveHeight * 0.3;\n    float displacementY = (wave1 + wave2 + wave3) * 0.5;\n\n    // Store wave height for fragment shader\n    vWaveHeight = displacementY;\n\n    // Normalize wave height based on maximum possible displacement\n    float maxWaveHeight = waveHeight * (1.0 + 0.5 + 0.3) * 0.5; // Sum of wave amplitudes\n    vNormalizedWaveHeight = displacementY / maxWaveHeight;\n\n    // Update position with displacement\n    vec3 newPosition = vec3(position.x, position.y + displacementY, position.z);\n\n    // Compute normal for lighting\n    float offset = 0.01;\n    float waveX = (sin((uv.x + offset) * waveFrequency + time * waveSpeed) +\n                   sin((uv.y + offset) * waveFrequency * 0.7 + time * waveSpeed * 0.8) * 0.5 +\n                   cos((uv.x + uv.y + offset) * waveFrequency * 0.5 + time * waveSpeed * 1.2) * 0.3) * waveHeight * 0.5;\n    float waveZ = (sin((uv.x) * waveFrequency + time * waveSpeed) +\n                   sin((uv.y + offset) * waveFrequency * 0.7 + time * waveSpeed * 0.8) * 0.5 +\n                   cos((uv.x + uv.y + offset) * waveFrequency * 0.5 + time * waveSpeed * 1.2) * 0.3) * waveHeight * 0.5;\n    vec3 tangent = normalize(vec3(1.0, (waveX - displacementY) / offset, 0.0));\n    vec3 bitangent = normalize(vec3(0.0, (waveZ - displacementY) / offset, 1.0));\n    vNormal = normalize(cross(tangent, bitangent));\n\n    // Pass view position for fresnel and lighting\n    vec4 worldPosition = modelMatrix * vec4(newPosition, 1.0);\n    vViewPosition = (cameraPosition - worldPosition.xyz);\n\n    // Apply projection and model-view transforms\n    gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);\n}\n            `,\n            fragmentShader: `\n              uniform float time;\nuniform float waveHeight;\nuniform vec3 liquidColor;\nuniform vec3 foamColor;\nuniform float waveFrequency;\nuniform float fresnelPower;\nuniform vec3 lightDirection;\nuniform float ambientIntensity;\nuniform float specularIntensity;\nvarying vec2 vUv;\nvarying vec3 vNormal;\nvarying vec3 vViewPosition;\nvarying float vWaveHeight;\nvarying float vNormalizedWaveHeight; // New varying for normalized height\n\nvoid main() {\n    vec2 uv = vUv;\n    vec3 normal = normalize(vNormal);\n    vec3 viewDir = normalize(vViewPosition);\n    vec3 lightDir = normalize(lightDirection);\n\n    // Fresnel effect for edge transparency\n    float fresnel = pow(1.0 - max(dot(normal, viewDir), 0.0), fresnelPower);\n\n    // Diffuse lighting\n    float diffuse = max(dot(normal, lightDir), 0.0) * 0.25;\n\n    // Specular (Blinn-Phong)\n    vec3 halfwayDir = normalize(lightDir + viewDir);\n    float specular = pow(max(dot(normal, halfwayDir), 0.0), 32.0) * specularIntensity;\n\n    // Base color with subtle wave height modulation\n    vec3 baseColor = liquidColor * (0.8 + 0.2 * vNormalizedWaveHeight); // Slight tint variation\n\n    // Foam effect based on normalized wave height\n    float foamFactor = smoothstep(0.8, 1.0, vNormalizedWaveHeight); // Tighter range for foam at peaks\n    vec3 color = mix(baseColor, foamColor, foamFactor);\n\n    // Combine lighting components\n    vec3 finalColor = color * (ambientIntensity + diffuse) + vec3(specular);\n\n    // Apply fresnel for transparency at edges\n    float alpha = mix(0.6, 1.0, fresnel);\n\n    gl_FragColor = vec4(finalColor, alpha);\n}\n            `,\n            side: THREE.DoubleSide,\n            transparent: true\n        });\n\n        // Replace the MeshBasicMaterial with this ShaderMaterial in the mesh creation\n        const waterMesh = new THREE.Mesh(geometry, material);        \n        waterMesh.position.y = (terrainType + 2) * this.heightMapSettings.heightStep + this.heightMapSettings.heightStep*.5;\n        this.scene.add(waterMesh); // Assuming `this.scene` is your THREE.js scene\n    }\n}"
+        "script": "class ThreeJsWorld extends engine.Component {\n    init({\n        containerSelector = '#gameContainer',\n        width = window.innerWidth,\n        height = window.innerHeight,\n        useControls = true}) {\n        if (!this.game.config.configs.game.is3D) {\n            return;\n        }\n        this.level = this.game.config.levels[this.game.state.level];\n        this.world = this.game.config.worlds[this.level.world];\n        this.lightingSettings = this.game.config.lightings[this.world.lighting];\n        this.shadowSettings = this.game.config.shadows[this.world.shadow];\n        this.fogSettings = this.game.config.fogs[this.world.fog]; \n        this.heightMapSettings = this.game.config.heightMaps[this.world.heightMap];      \n        this.cameraSettings = this.game.config.cameras[this.world.camera];\n\n        this.showStats = false;\n        this.clock = new THREE.Clock();\n        this.onWindowResizeHandler = this.onWindowResize.bind(this);\n        this.game.heightMapConfig = this.heightMapSettings;\n        this.terrainSize = 768;\n        this.extensionSize = this.world.extensionSize;\n        this.extendedSize = this.terrainSize + 2 * this.world.extensionSize;\n        this.heightMapResolution = this.extendedSize / this.heightMapSettings.resolutionDivisor;\n        this.container = document.querySelector(containerSelector) || document.body;\n        this.renderer = new THREE.WebGLRenderer({ antialias: true, canvas: this.game.canvas });\n        this.renderer.setSize(width, height);\n        this.renderer.setPixelRatio(window.devicePixelRatio);\n        this.renderer.shadowMap.enabled = this.shadowSettings.enabled;\n        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;\n        this.uniforms = {};\n        this.scene = new THREE.Scene();\n        this.scene.background = new THREE.Color(this.world.backgroundColor);\n\n        if (this.fogSettings.enabled) {\n            this.scene.fog = new THREE.FogExp2(this.fogSettings.color, this.fogSettings.density);\n        }\n\n        this.camera = new THREE.PerspectiveCamera(\n            this.cameraSettings.fov,\n            width / height,\n            this.cameraSettings.near,\n            this.cameraSettings.far\n        );\n        let cameraPos = JSON.parse(this.cameraSettings.position);\n\n        this.camera.position.set(\n            cameraPos.x,\n            cameraPos.y,\n            cameraPos.z\n        );\n        let lookAt = JSON.parse(this.cameraSettings.lookAt);\n        this.camera.lookAt(\n            lookAt.x,\n            lookAt.y,\n            lookAt.z\n        );\n\n        if (useControls) {\n            this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);\n            this.controls.target.set(\n                lookAt.x,\n                lookAt.y,\n                lookAt.z\n            );\n            this.controls.maxPolarAngle = Math.PI / 2.05;\n            this.controls.minPolarAngle = 0.1;\n            this.controls.enableDamping = true;\n            this.controls.dampingFactor = 0.05;\n            this.controls.update();\n        }\n\n        this.ambientLight = new THREE.AmbientLight(\n            this.lightingSettings.ambientColor,\n            this.lightingSettings.ambientIntensity\n        );\n        this.scene.add(this.ambientLight);\n\n        this.directionalLight = new THREE.DirectionalLight(\n            this.lightingSettings.directionalColor,\n            this.lightingSettings.directionalIntensity\n        );\n        this.directionalLight.position.set(this.extendedSize * 2, this.extendedSize * 2, this.extendedSize * 2);\n        this.directionalLight.castShadow = this.shadowSettings.enabled;\n\n        if (this.shadowSettings.enabled) {\n            this.directionalLight.shadow.mapSize.width = this.shadowSettings.mapSize;\n            this.directionalLight.shadow.mapSize.height = this.shadowSettings.mapSize;\n            this.directionalLight.shadow.camera.near = 0.5;\n            this.directionalLight.shadow.camera.far = 20000;\n            this.directionalLight.shadow.bias = this.shadowSettings.bias;\n            this.directionalLight.shadow.normalBias = this.shadowSettings.normalBias;\n            this.directionalLight.shadow.radius = this.shadowSettings.radius;\n\n            const d = this.extendedSize * 0.6;\n            this.directionalLight.shadow.camera.left = -d;\n            this.directionalLight.shadow.camera.right = d;\n            this.directionalLight.shadow.camera.top = d;\n            this.directionalLight.shadow.camera.bottom = -d;\n\n            this.directionalLight.target.position.set(-this.extendedSize * 2, 0, -this.extendedSize * 2);\n            this.directionalLight.target.updateMatrixWorld();\n            this.directionalLight.shadow.camera.updateProjectionMatrix();\n        }\n\n        this.scene.add(this.directionalLight);\n        this.scene.add(this.directionalLight.target);\n\n        this.hemisphereLight = new THREE.HemisphereLight(\n            this.lightingSettings.skyColor,\n            this.lightingSettings.groundColor,\n            this.lightingSettings.hemisphereIntensity\n        );\n        this.scene.add(this.hemisphereLight);\n        this.tileMap = this.game.config.levels[this.game.state.level].tileMap;\n        this.setupGround();\n        this.generateLiquidSurfaceMesh(0);\n        this.generateLiquidSurfaceMesh(1);\n        if (this.showStats) {\n            this.stats = new Stats();\n            this.container.appendChild(this.stats.dom);\n        }\n\n        window.addEventListener('resize', this.onWindowResizeHandler);\n\n        this.game.scene = this.scene;\n        this.game.camera = this.camera;\n        this.game.renderer = this.renderer;\n        this.game.ground = this.ground;\n        this.drawn = false;\n        this.timer = 0;\n    }\n\n    setupGround() {\n        this.groundCanvas = document.createElement('canvas');\n        this.groundCanvas.width = this.extendedSize;\n        this.groundCanvas.height = this.extendedSize;\n        this.groundCtx = this.groundCanvas.getContext('2d');\n\n        let bgColor = this.tileMap.terrainTypes[this.tileMap.extensionTerrainType].color;\n        let colorToUse = bgColor.paletteColor ? this.game.palette[bgColor.paletteColor] : bgColor;\n        this.groundCtx.fillStyle = colorToUse;\n        this.groundCtx.fillRect(0, 0, this.extendedSize, this.extendedSize);\n\n        this.groundTexture = new THREE.CanvasTexture(this.groundCanvas);\n        this.groundTexture.wrapS = THREE.ClampToEdgeWrapping;\n        this.groundTexture.wrapT = THREE.ClampToEdgeWrapping;\n        this.groundTexture.minFilter = THREE.LinearFilter;\n        this.groundTexture.magFilter = THREE.LinearFilter;\n\n        if (this.heightMapSettings) {\n            this.createHeightMapTerrain();\n        } else {\n            const groundGeometry = new THREE.PlaneGeometry(this.extendedSize, this.extendedSize);\n            this.groundMaterial = this.getGroundMaterial();\n            this.ground = new THREE.Mesh(groundGeometry, this.groundMaterial);\n            this.ground.rotation.x = -Math.PI / 2;\n            this.ground.position.set(this.terrainSize / 2, 0, this.terrainSize / 2);\n            this.ground.receiveShadow = true;\n            this.scene.add(this.ground);\n        }\n    }\n\n    createHeightMapTerrain() {\n        this.heightMapData = new Float32Array(this.extendedSize * this.extendedSize);\n        this.terrainTypes = this.tileMap.terrainTypes || [];\n        this.heightStep = this.heightMapSettings.heightStep;\n\n        const segments = this.heightMapResolution;\n        const groundGeometry = new THREE.PlaneGeometry(\n            this.extendedSize,\n            this.extendedSize,\n            segments,\n            segments\n        );\n\n        this.groundVertices = groundGeometry.attributes.position;\n\n        this.groundMaterial = this.getGroundMaterial();\n\n        this.ground = new THREE.Mesh(groundGeometry, this.groundMaterial);\n        this.ground.rotation.x = -Math.PI / 2;\n        this.ground.position.set(this.terrainSize / 2, 0, this.terrainSize / 2);\n        this.ground.receiveShadow = true;\n\n        this.scene.add(this.ground);\n    }\n\n    updateHeightMap() {\n        if (!this.heightMapSettings.enabled || !this.game.terrainCanvasBuffer) return;\n\n        try {\n            const terrainCanvas = this.game.terrainCanvasBuffer;\n            const ctx = terrainCanvas.getContext('2d');\n            const terrainData = ctx.getImageData(0, 0, terrainCanvas.width, terrainCanvas.height).data;\n\n            const terrainTypeColors = this.createTerrainTypeColorMap();\n\n            this.heightMapData = new Float32Array(this.extendedSize * this.extendedSize);\n\n            const extensionTerrainType = this.tileMap.extensionTerrainType;\n            const extensionHeight = extensionTerrainType * this.heightStep;\n\n            for (let z = 0; z < this.extendedSize; z++) {\n                for (let x = 0; x < this.extendedSize; x++) {\n                    this.heightMapData[z * this.extendedSize + x] = extensionHeight;\n                }\n            }\n\n            for (let z = 0; z < this.terrainSize; z++) {\n                for (let x = 0; x < this.terrainSize; x++) {\n                    const pixelIndex = (z * terrainCanvas.width + x) * 4;\n                    const r = terrainData[pixelIndex];\n                    const g = terrainData[pixelIndex + 1];\n                    const b = terrainData[pixelIndex + 2];\n                    const colorKey = `${r},${g},${b}`;\n            \n                    const typeIndex = terrainTypeColors[colorKey];\n                    let height = typeIndex !== undefined ? typeIndex * this.heightStep : extensionHeight;\n            \n                    // Check neighboring pixels for lower terrain types\n                    const neighbors = [\n                        { x: x-1, z: z },   // left\n                        { x: x+1, z: z },   // right\n                        { x: x, z: z-1 },   // top\n                        { x: x, z: z+1 },   // bottom\n                        { x: x-1, z: z-1 }, // top-left\n                        { x: x+1, z: z-1 }, // top-right\n                        { x: x-1, z: z+1 }, // bottom-left\n                        { x: x+1, z: z+1 }  // bottom-right\n                    ];\n            \n                    for (const neighbor of neighbors) {\n                        if (neighbor.x >= 0 && neighbor.x < this.terrainSize && \n                            neighbor.z >= 0 && neighbor.z < this.terrainSize) {\n                            \n                            const neighborIndex = (neighbor.z * terrainCanvas.width + neighbor.x) * 4;\n                            const nr = terrainData[neighborIndex];\n                            const ng = terrainData[neighborIndex + 1];\n                            const nb = terrainData[neighborIndex + 2];\n                            const neighborKey = `${nr},${ng},${nb}`;\n                            \n                            const neighborTypeIndex = terrainTypeColors[neighborKey];\n                            if (neighborTypeIndex !== undefined && neighborTypeIndex < typeIndex) {\n                                // If neighbor is lower terrain, use its height\n                                height = neighborTypeIndex * this.heightStep;\n                                break;\n                            }\n                        }\n                    }\n            \n                    const extX = x + this.extensionSize;\n                    const extZ = z + this.extensionSize;\n                    this.heightMapData[extZ * this.extendedSize + extX] = height;\n                }\n            }\n\n            this.applyHeightMapToGeometry();\n\n        } catch (e) {\n            console.warn('Failed to update height map:', e);\n        }\n    }\n\n    createTerrainTypeColorMap() {\n        const colorMap = {};\n        const terrainTypes = this.terrainTypes;\n\n        for (let i = 0; i < terrainTypes.length; i++) {\n            const terrainType = terrainTypes[i];\n            let color = terrainType.color || {};\n\n            if (color.paletteColor && this.game.palette) {\n                const hexColor = this.game.palette[color.paletteColor];\n                if (hexColor) {\n                    const r = parseInt(hexColor.slice(1, 3), 16);\n                    const g = parseInt(hexColor.slice(3, 5), 16);\n                    const b = parseInt(hexColor.slice(5, 7), 16);\n                    colorMap[`${r},${g},${b}`] = i;\n                }\n            } else {\n                const hexColor = color;\n                if (hexColor) {\n                    const r = parseInt(hexColor.slice(1, 3), 16);\n                    const g = parseInt(hexColor.slice(3, 5), 16);\n                    const b = parseInt(hexColor.slice(5, 7), 16);\n                    colorMap[`${r},${g},${b}`] = i;\n                }\n            }\n        }\n\n        return colorMap;\n    }\n\n    applyHeightMapToGeometry() {\n        if (!this.ground || !this.groundVertices) return;\n\n        const positions = this.groundVertices.array;\n        const geometry = this.ground.geometry;\n        const segments = this.heightMapResolution;\n        const verticesPerRow = segments + 1;\n\n        for (let z = 0; z < verticesPerRow; z++) {\n            for (let x = 0; x < verticesPerRow; x++) {\n                const vertexIndex = (z * verticesPerRow + x);\n                const idx = vertexIndex * 3;\n\n                const nx = x / segments;\n                const nz = z / segments;\n\n                const terrainX = Math.floor(nx * (this.extendedSize - 1));\n                const terrainZ = Math.floor(nz * (this.extendedSize - 1));\n\n                const heightIndex = terrainZ * this.extendedSize + terrainX;\n                const height = this.heightMapData[heightIndex] || 0;\n\n                // const finalHeight = this.heightMapSettings.smoothing ?\n                //     this.smoothHeight(terrainX, terrainZ) : height;\n\n                positions[idx + 2] = height;\n            }\n        }\n\n        this.groundVertices.needsUpdate = true;\n        geometry.computeVertexNormals();\n    }\n\n    smoothHeight(x, z) {\n        if (!this.heightMapSettings.smoothing) return this.heightMapData[z * this.extendedSize + x];\n\n        let totalHeight = 0;\n        let count = 0;\n\n        for (let dz = -1; dz <= 1; dz++) {\n            for (let dx = -1; dx <= 1; dx++) {\n                const nx = x + dx;\n                const nz = z + dz;\n\n                if (nx >= 0 && nx < this.extendedSize && nz >= 0 && nz < this.extendedSize) {\n                    totalHeight += this.heightMapData[nz * this.extendedSize + nx];\n                    count++;\n                }\n            }\n        }\n\n        return count > 0 ? totalHeight / count : 0;\n    }\n\n    getGroundMaterial() {\n        return new THREE.MeshStandardMaterial({\n            map: this.groundTexture,\n            side: THREE.DoubleSide,\n            metalness: 0.0,\n            roughness: 0.8\n        });\n    }\n\n    onWindowResize() {\n        const width = this.container.clientWidth || window.innerWidth;\n        const height = this.container.clientHeight || window.innerHeight;\n\n        this.camera.aspect = width / height;\n        this.camera.updateProjectionMatrix();\n        this.renderer.setSize(width, height);\n    }\n\n    update() {\n        if (!this.game.config.configs.game.is3D) {\n            return;\n        }\n        if (this.controls) {\n            this.controls.update();\n        }\n        if (!isNaN(this.game.deltaTime)) {\n            this.timer += this.game.deltaTime;\n        }\n        if (this.stats) {\n            this.stats.update();\n        }\n        if (!this.drawn && this.groundTexture && this.game.mapRenderer && this.game.mapRenderer.isMapCached) {\n            this.groundCtx.drawImage(this.game.terrainCanvasBuffer, this.extensionSize, this.extensionSize);\n            this.groundTexture.needsUpdate = true;\n\n            if (this.heightMapSettings.enabled) {\n                this.updateHeightMap();\n            }\n\n            this.addGrassToTerrain();\n            this.drawn = true;\n        }\n        for(const key in this.uniforms) {\n            this.uniforms[key].time = { value: this.timer };            \n        }\n        this.renderer.render(this.scene, this.camera);\n    }\n\n    addGrassToTerrain() {\n        const bladeWidth = 12;\n        const bladeHeight = 18;\n        const grassGeometry = this.createCurvedBladeGeometry(bladeWidth, bladeHeight);\n        grassGeometry.translate(0, bladeHeight / 2, 0);\n        const grassCount = 1000000;\n\n        const phases = new Float32Array(grassCount);\n        for (let i = 0; i < grassCount; i++) {\n            phases[i] = Math.random() * Math.PI * 2;\n        }\n        grassGeometry.setAttribute('instancePhase', new THREE.InstancedBufferAttribute(phases, 1));\n\n        const grassTexture = this.createGrassTexture();\n        const grassShader = this.game.config.shaders[this.level.grassShader];\n        this.uniforms['grass'] = JSON.parse(grassShader.uniforms);\n        \n        this.uniforms['grass'].windDirection = { value: new THREE.Vector2(this.uniforms['grass'].windDirection.value[0], this.uniforms['grass'].windDirection.value[1]).normalize()};\n        this.uniforms['grass'].map = { value: grassTexture };\n        const uniforms = this.uniforms['grass'];\n        this.grassMaterial = new THREE.ShaderMaterial({\n            vertexShader: grassShader.vertexScript,\n            fragmentShader: grassShader.fragmentScript,\n            uniforms: uniforms\n        });\n\n        this.grassShader = this.grassMaterial;\n        const grass = new THREE.InstancedMesh(grassGeometry, this.grassMaterial, grassCount);\n        grass.castShadow = true;\n        grass.receiveShadow = true;\n\n        const dummy = new THREE.Object3D();\n\n        if (this.groundCanvas) {\n            const ctx = this.groundCanvas.getContext('2d');\n            try {\n                const terrainData = ctx.getImageData(0, 0, this.groundCanvas.width, this.groundCanvas.height).data;\n                let grassArea = this.extendedSize;\n                let placedGrassCount = 0;\n\n                for (let i = 0; i < grassCount; i++) {\n                    const x = Math.floor(Math.random() * grassArea);\n                    const z = Math.floor(Math.random() * grassArea);\n                    const pixelIndex = (z * this.groundCanvas.width + x) * 4;\n                    const r = terrainData[pixelIndex];\n                    const g = terrainData[pixelIndex + 1];\n                    const b = terrainData[pixelIndex + 2];\n\n                    if (g > r && g > b ) {\n                        placedGrassCount++;\n                        const rotationY = Math.random() * Math.PI * 2;\n                        const scale = 0.7 + Math.random() * 0.5;\n\n                        let height = 0;\n                        if (this.heightMapSettings.enabled) {\n                            const terrainX = Math.min(Math.floor(x), this.extendedSize - 1);\n                            const terrainZ = Math.min(Math.floor(z), this.extendedSize - 1);\n                            height = this.heightMapData[terrainZ * this.extendedSize + terrainX] || 0;\n                        }\n\n                        dummy.position.set(x - grassArea / 2 + this.terrainSize / 2, height - bladeHeight, z - grassArea / 2 + this.terrainSize / 2);\n                        dummy.rotation.set(0, rotationY, 0);\n                        dummy.scale.set(scale, scale, scale);\n                        dummy.updateMatrix();\n\n                        grass.setMatrixAt(i, dummy.matrix);\n                    }\n                }\n\n            } catch (e) {\n                console.warn('Failed to get terrainCanvasBuffer data:', e);\n            }\n        }\n\n        grass.instanceMatrix.needsUpdate = true;\n        this.scene.add(grass);\n        this.grass = grass;\n    }\n\n\n\n    onDestroy() {\n        window.removeEventListener('resize', this.onWindowResizeHandler);\n        this.renderer.dispose();\n        if (this.stats?.dom?.parentElement) {\n            this.stats.dom.parentElement.removeChild(this.stats.dom);\n        }\n        if (this.renderer.domElement?.parentElement) {\n            this.renderer.domElement.parentElement.removeChild(this.renderer.domElement);\n        }\n        if (this.grass) {\n            this.grass.geometry.dispose();\n            this.grass.material.dispose();\n        }\n        this.ground.geometry?.dispose();\n        this.groundMaterial?.dispose();\n        this.groundTexture?.dispose();\n        this.groundCanvas = null;\n        this.game.scene = null;\n        this.game.camera = null;\n        this.game.renderer = null;\n    }\n\n    createCurvedBladeGeometry(width = 0.1, height = 1) {\n        const shape = new THREE.Shape();\n        shape.moveTo(0, 0);\n        shape.quadraticCurveTo(width * 0.5, height * 0.5, 0, height);\n\n        const shapeGeom = new THREE.ShapeGeometry(shape, 12);\n\n        const positions = shapeGeom.attributes.position.array;\n        const uvs = shapeGeom.attributes.uv.array;\n        const vertexCount = positions.length / 3;\n\n        const newUVs = new Float32Array(uvs.length);\n\n        for (let i = 0; i < vertexCount; i++) {\n            const posIndex = i * 3;\n            const uvIndex = i * 2;\n\n            const y = positions[posIndex + 1];\n            const normalizedY = y / height;\n\n            newUVs[uvIndex] = uvs[uvIndex];\n            newUVs[uvIndex + 1] = normalizedY;\n        }\n\n        shapeGeom.setAttribute('uv', new THREE.BufferAttribute(newUVs, 2));\n\n        return shapeGeom;\n    }\n\n    createGrassTexture() {\n        const canvas = document.createElement('canvas');\n        canvas.width = 4;\n        canvas.height = 32;\n        const ctx = canvas.getContext('2d');\n\n        const gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);\n        gradient.addColorStop(0.0, this.game.palette[\"greenDColor\"]);\n        gradient.addColorStop(0.8, this.game.palette[\"greenMColor\"]);\n        gradient.addColorStop(1.0, this.game.palette[\"redLColor\"]);\n\n        ctx.fillStyle = gradient;\n        ctx.fillRect(0, 0, canvas.width, canvas.height);\n\n        const texture = new THREE.CanvasTexture(canvas);\n        texture.wrapS = THREE.RepeatWrapping;\n        texture.wrapT = THREE.ClampToEdgeWrapping;\n        texture.magFilter = THREE.LinearFilter;\n        texture.minFilter = THREE.LinearFilter;\n        return texture;\n    }\n\n    // Assuming this is inside a class where `this.tileMapData` and `this.game.config` are accessible\n    generateLiquidSurfaceMesh(terrainType) {\n        const terrainMap = this.tileMap.terrainMap;\n        const gridSize = this.game.config.configs.game.gridSize;\n        const rows = terrainMap.length;\n        const cols = terrainMap[0].length;\n        \n        // Arrays to store vertices, indices, and UVs for the BufferGeometry\n        const vertices = [];\n        const indices = [];\n        const uvs = [];\n        \n        // Amount to extend the perimeter (e.g., 10% of gridSize)\n        const extensionAmount = gridSize * 0.25; // Adjust as needed        \n  \n        // Helper function to check if a tile is a water tile\n        const isWaterTile = (x, z) => {\n            if (x < 0 || x >= cols || z < 0 || z >= rows) return false;\n            return terrainMap[z][x] === terrainType;\n        };\n        \n        // Step 1: Generate a grid of vertices, but only for positions needed by water tiles\n        const usedPositions = new Set();\n        for (let z = 0; z < rows; z++) {\n            for (let x = 0; x < cols; x++) {\n                if (terrainMap[z][x] === terrainType) {\n                    usedPositions.add(`${x},${z}`);     // Bottom-left\n                    usedPositions.add(`${x + 1},${z}`); // Bottom-right\n                    usedPositions.add(`${x + 1},${z + 1}`); // Bottom-right in your view (+z is south)\n                    usedPositions.add(`${x},${z + 1}`); // Top-left\n                }\n            }\n        }\n        \n        // Step 2: Create vertices for all used positions and store their original positions\n        const positionToVertexIndex = new Map();\n        const originalPositions = []; // Store original (x, z) for each vertex\n        let vertexIndex = 0;\n        for (const pos of usedPositions) {\n            const [x, z] = pos.split(',').map(Number);\n            positionToVertexIndex.set(pos, vertexIndex++);\n            vertices.push(x * gridSize, 0.1, z * gridSize);\n            originalPositions.push([x, z]); // Store original grid position\n            uvs.push(x, z); // UVs based on grid position\n        }\n        \n        // Step 3: Generate indices for water tiles, connecting them into a single mesh\n        for (let z = 0; z < rows; z++) {\n            for (let x = 0; x < cols; x++) {\n                if (terrainMap[z][x] === terrainType) {\n                    const bl = positionToVertexIndex.get(`${x},${z}`);\n                    const br = positionToVertexIndex.get(`${x + 1},${z}`);\n                    const tr = positionToVertexIndex.get(`${x + 1},${z + 1}`); // Bottom-right in your view\n                    const tl = positionToVertexIndex.get(`${x},${z + 1}`);\n        \n                    indices.push(bl, br, tl);\n                    indices.push(br, tr, tl);\n                }\n            }\n        }\n        \n        // Step 4: Identify perimeter vertices and their extension directions\n        const perimeterExtensions = new Map(); // Map vertexIndex to { extendLeft, extendRight, extendUp, extendDown }\n        for (let z = 0; z < rows; z++) {\n            for (let x = 0; x < cols; x++) {\n                if (terrainMap[z][x] === terrainType) {\n                    const isLeftEdge = !isWaterTile(x - 1, z);\n                    const isRightEdge = !isWaterTile(x + 1, z);\n                    const isBottomEdge = !isWaterTile(x, z - 1); // North\n                    const isTopEdge = !isWaterTile(x, z + 1);    // South\n        \n                    // Bottom-left vertex (x, z)\n                    if (isLeftEdge || isBottomEdge) {\n                        const vIdx = positionToVertexIndex.get(`${x},${z}`);\n                        if (!perimeterExtensions.has(vIdx)) perimeterExtensions.set(vIdx, { extendLeft: false, extendRight: false, extendUp: false, extendDown: false });\n                        const ext = perimeterExtensions.get(vIdx);\n                        if (isLeftEdge) ext.extendLeft = true;\n                        if (isBottomEdge) ext.extendUp = true; // North\n                    }\n        \n                    // Bottom-right vertex (x + 1, z)\n                    if (isRightEdge || isBottomEdge) {\n                        const vIdx = positionToVertexIndex.get(`${x + 1},${z}`);\n                        if (!perimeterExtensions.has(vIdx)) perimeterExtensions.set(vIdx, { extendLeft: false, extendRight: false, extendUp: false, extendDown: false });\n                        const ext = perimeterExtensions.get(vIdx);\n                        if (isRightEdge) ext.extendRight = true;\n                        if (isBottomEdge) ext.extendUp = true; // North\n                    }\n        \n                    // Top-right vertex (x + 1, z + 1) - Bottom-right in your view\n                    if (isRightEdge || isTopEdge) {\n                        const vIdx = positionToVertexIndex.get(`${x + 1},${z + 1}`);\n                        if (!perimeterExtensions.has(vIdx)) perimeterExtensions.set(vIdx, { extendLeft: false, extendRight: false, extendUp: false, extendDown: false });\n                        const ext = perimeterExtensions.get(vIdx);\n                        if (isRightEdge) ext.extendRight = true;\n                        if (isTopEdge) ext.extendDown = true; // South\n                    }\n        \n                    // Top-left vertex (x, z + 1)\n                    if (isLeftEdge || isTopEdge) {\n                        const vIdx = positionToVertexIndex.get(`${x},${z + 1}`);\n                        if (!perimeterExtensions.has(vIdx)) perimeterExtensions.set(vIdx, { extendLeft: false, extendRight: false, extendUp: false, extendDown: false });\n                        const ext = perimeterExtensions.get(vIdx);\n                        if (isLeftEdge) ext.extendLeft = true;\n                        if (isTopEdge) ext.extendDown = true; // South\n                    }\n                }\n            }\n        }\n        \n        // Step 5: Apply perimeter extensions\n        perimeterExtensions.forEach((ext, vertexIndex) => {\n            const idx = vertexIndex * 3;\n            const [origX, origZ] = originalPositions[vertexIndex];\n        \n            // Log the bottom-right corner for debugging\n            if (ext.extendRight && ext.extendDown) {\n                console.log(`Bottom-right corner at (${origX}, ${origZ}): Before extension - x: ${vertices[idx]}, z: ${vertices[idx + 2]}`);\n            }\n        \n            if (ext.extendLeft) vertices[idx] -= extensionAmount; // Extend left\n            if (ext.extendRight) vertices[idx] += extensionAmount; // Extend right\n            if (ext.extendUp) vertices[idx + 2] -= extensionAmount; // Extend north (decrease z)\n            if (ext.extendDown) vertices[idx + 2] += extensionAmount; // Extend south (increase z)\n        \n            if (ext.extendRight && ext.extendDown) {\n                console.log(`Bottom-right corner at (${origX}, ${origZ}): After extension - x: ${vertices[idx]}, z: ${vertices[idx + 2]}`);\n            }\n        });\n        \n        // Step 6: Create the BufferGeometry\n        const geometry = new THREE.BufferGeometry();\n        geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));\n        geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));\n        geometry.setIndex(indices);\n        geometry.computeVertexNormals(); // For lighting\n        // Parse the hex color to RGB\n        const parseHexColor = (hex) => {\n            const r = parseInt(hex.slice(1, 3), 16) / 255;\n            const g = parseInt(hex.slice(3, 5), 16) / 255;\n            const b = parseInt(hex.slice(5, 7), 16) / 255;\n            return { r, g, b };\n        };\n        const waterShader = this.game.config.shaders[this.level.waterShader];\n        // Use the hex color in a ShaderMaterial\n        this.uniforms[terrainType] = JSON.parse(waterShader.uniforms);\n        let vectorizeProps = JSON.parse(waterShader.vectors);\n        vectorizeProps.forEach((prop => {\n            if (this.uniforms[terrainType][prop]) {\n                if( prop.toLowerCase().endsWith(\"color\")){\n                    const colorToUse = this.tileMap.terrainTypes[terrainType].color;\n                    const { r, g, b } = parseHexColor(colorToUse);\n                    this.uniforms[terrainType][prop].value = new THREE.Vector3(r, g, b);\n                } else {\n                    let arr = this.uniforms[terrainType][prop].value;\n                    this.uniforms[terrainType][prop].value = new THREE.Vector3(arr[0], arr[1], arr[2]);\n                }\n            }\n        }));\n        // Reference the uniforms\n        const uniforms = this.uniforms[terrainType];\n        \n        // Create the shader material\n        const material = new THREE.ShaderMaterial({\n            uniforms: uniforms,\n            vertexShader: waterShader.vertexScript,\n            fragmentShader: waterShader.fragmentScript,\n            side: THREE.DoubleSide,\n            transparent: true\n        });\n\n        // Replace the MeshBasicMaterial with this ShaderMaterial in the mesh creation\n        const waterMesh = new THREE.Mesh(geometry, material);        \n        waterMesh.position.y = (terrainType + 2) * this.heightMapSettings.heightStep;\n        this.scene.add(waterMesh); // Assuming `this.scene` is your THREE.js scene\n    }\n}"
       }
     },
     "renderers": {
@@ -11782,6 +11782,334 @@ const DEFAULT_PROJECT_CONFIG = {
                       "id": 1
                     }
                   ]
+                },
+                "head": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redMColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redMColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 4
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 5
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 6
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 7
+                    }
+                  ]
+                },
+                "jaw": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redMColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 4
+                    }
+                  ]
+                },
+                "left arm": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 4
+                    }
+                  ]
+                },
+                "right arm": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 4
+                    }
+                  ]
+                },
+                "left leg": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 4
+                    }
+                  ]
+                },
+                "right leg": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 4
+                    }
+                  ]
+                },
+                "body": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 3
+                    }
+                  ]
+                },
+                "left wing": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 3
+                    }
+                  ]
+                },
+                "tail base": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 2
+                    }
+                  ]
+                },
+                "tail tip": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 3
+                    }
+                  ]
                 }
               },
               {
@@ -11928,6 +12256,306 @@ const DEFAULT_PROJECT_CONFIG = {
                       "rotationX": 0.1,
                       "rotationY": -0.7,
                       "id": 1
+                    }
+                  ]
+                },
+                "head": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redMColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redMColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 4
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 5
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 6
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 7
+                    }
+                  ]
+                },
+                "jaw": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redMColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 4
+                    }
+                  ]
+                },
+                "left arm": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 4
+                    }
+                  ]
+                },
+                "right arm": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 4
+                    }
+                  ]
+                },
+                "left leg": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 4
+                    }
+                  ]
+                },
+                "right leg": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 4
+                    }
+                  ]
+                },
+                "body": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 3
+                    }
+                  ]
+                },
+                "tail base": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 2
+                    }
+                  ]
+                },
+                "tail tip": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 3
                     }
                   ]
                 }
@@ -12155,7 +12783,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 52,
                   "z": 26,
                   "color": {
-                    "paletteColor": "greyLColor"
+                    "paletteColor": "brownDColor"
                   },
                   "name": "horn-right"
                 },
@@ -12167,7 +12795,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 52,
                   "z": 26,
                   "color": {
-                    "paletteColor": "greyLColor"
+                    "paletteColor": "brownDColor"
                   },
                   "name": "horn-left"
                 }
@@ -12212,51 +12840,54 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 35,
                   "z": 26,
                   "color": {
-                    "paletteColor": "redDColor"
+                    "paletteColor": "redMColor"
                   },
                   "name": "gums"
                 },
                 {
-                  "type": "box",
+                  "type": "cone",
                   "width": 2,
-                  "height": 5,
+                  "height": 2,
                   "depth": 2,
                   "x": -6,
-                  "y": 35,
+                  "y": 36.7,
                   "z": 26,
                   "color": {
                     "paletteColor": "greyLColor"
                   },
                   "name": "tooth-right",
-                  "shininess": 80
+                  "shininess": 80,
+                  "size": 2
                 },
                 {
-                  "type": "box",
+                  "type": "cone",
                   "width": 2,
-                  "height": 5,
+                  "height": 2,
                   "depth": 2,
                   "x": 6,
-                  "y": 35,
+                  "y": 36.7,
                   "z": 26,
                   "color": {
                     "paletteColor": "greyLColor"
                   },
                   "name": "tooth-left",
-                  "shininess": 80
+                  "shininess": 80,
+                  "size": 2
                 },
                 {
-                  "type": "box",
+                  "type": "cone",
                   "width": 2,
-                  "height": 4,
+                  "height": 2,
                   "depth": 2,
                   "x": 0,
-                  "y": 35,
+                  "y": 36.5,
                   "z": 26,
                   "color": {
                     "paletteColor": "greyLColor"
                   },
                   "name": "tooth-middle",
-                  "shininess": 80
+                  "shininess": 80,
+                  "size": 2
                 }
               ],
               "position": {
@@ -12314,7 +12945,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 24,
                   "z": 8,
                   "color": {
-                    "paletteColor": "greyMColor"
+                    "paletteColor": "redDColor"
                   },
                   "name": "hand-left"
                 },
@@ -12326,7 +12957,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 23,
                   "z": 10,
                   "color": {
-                    "paletteColor": "greyLColor"
+                    "paletteColor": "brownDColor"
                   },
                   "name": "claw-left-1",
                   "rotationX": 180
@@ -12339,7 +12970,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 23,
                   "z": 10,
                   "color": {
-                    "paletteColor": "greyLColor"
+                    "paletteColor": "brownDColor"
                   },
                   "name": "claw-left-2",
                   "rotationX": 180
@@ -12400,7 +13031,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 24,
                   "z": 8,
                   "color": {
-                    "paletteColor": "greyMColor"
+                    "paletteColor": "redDColor"
                   },
                   "name": "hand-right"
                 },
@@ -12412,7 +13043,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 23,
                   "z": 10,
                   "color": {
-                    "paletteColor": "greyLColor"
+                    "paletteColor": "brownDColor"
                   },
                   "name": "claw-right-1",
                   "rotationX": 180
@@ -12425,7 +13056,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 23,
                   "z": 10,
                   "color": {
-                    "paletteColor": "greyLColor"
+                    "paletteColor": "brownDColor"
                   },
                   "name": "claw-right-2",
                   "rotationX": 180,
@@ -12505,7 +13136,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": 11,
                   "rotationX": 90,
                   "color": {
-                    "paletteColor": "greyLColor"
+                    "paletteColor": "brownDColor"
                   },
                   "name": "toe-left-1"
                 },
@@ -12518,7 +13149,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": 11,
                   "rotationX": 90,
                   "color": {
-                    "paletteColor": "greyLColor"
+                    "paletteColor": "brownDColor"
                   },
                   "name": "toe-left-2"
                 }
@@ -12592,7 +13223,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": 11,
                   "rotationX": 90,
                   "color": {
-                    "paletteColor": "greyLColor"
+                    "paletteColor": "brownDColor"
                   },
                   "name": "toe-right-1"
                 },
@@ -12605,7 +13236,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "z": 11,
                   "rotationX": 90,
                   "color": {
-                    "paletteColor": "greyLColor"
+                    "paletteColor": "brownDColor"
                   },
                   "name": "toe-right-2"
                 }
@@ -12756,7 +13387,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "rotationX": 90,
                   "rotationY": 0,
                   "color": {
-                    "paletteColor": "greyLColor"
+                    "paletteColor": "brownDColor"
                   },
                   "name": "wing-claw-left",
                   "rotationZ": 45,
@@ -12842,7 +13473,7 @@ const DEFAULT_PROJECT_CONFIG = {
                   "rotationX": 90,
                   "rotationY": 0,
                   "color": {
-                    "paletteColor": "greyLColor"
+                    "paletteColor": "brownDColor"
                   },
                   "name": "wing-claw-right",
                   "rotationZ": -45,
@@ -19549,9 +20180,11 @@ const DEFAULT_PROJECT_CONFIG = {
               "y": -96
             }
           ],
-          "extensionTerrainType": 6
+          "extensionTerrainType": 5
         },
-        "world": "shire"
+        "world": "shire",
+        "grassShader": "grass",
+        "waterShader": "water"
       },
       "level2": {
         "title": "Level 2",
@@ -21161,7 +21794,7 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "jszip.min.js"
       },
       "ShapeFactory": {
-        "script": "class ShapeFactory {\r\n    constructor(palette) {\r\n        this.gltfCache = new Map();\r\n        this.gltfLoader = new THREE.GLTFLoader();\r\n        this.palette = palette;\r\n    }\r\n    async createMergedGroupFromJSON(model, frameData, groupName) {\r\n        let mergedGroup = this.getMergedGroup(model, frameData, groupName);\r\n        if( mergedGroup){\r\n            return await this.createGroupFromJSON(groupName, mergedGroup);\r\n        } else {\r\n            return null;\r\n        }\r\n    }\r\n    async createGroupFromJSON(groupName, groupData) {\r\n        const group = new THREE.Group();\r\n        group.name = groupName;\r\n        group.userData = { isGroup: true };\r\n        // Use Promise.all with map instead of forEach to properly await all shapes\r\n        await Promise.all(groupData.shapes.map(async (shape, index) => {\r\n            if (shape.type === 'gltf') {\r\n                await this.handleGLTFShape(shape, index, group);\r\n            } else {\r\n                this.handlePrimitiveShape(shape, index, group);\r\n            }\r\n        }));\r\n        group.position.x = groupData.position.x;\r\n        group.position.y = groupData.position.y;\r\n        group.position.z = groupData.position.z;\r\n        \r\n        group.rotation.x = groupData.rotation.x;\r\n        group.rotation.y = groupData.rotation.y;\r\n        group.rotation.z = groupData.rotation.z;\r\n\r\n        group.scale.x = groupData.scale.x;\r\n        group.scale.y = groupData.scale.y;\r\n        group.scale.z = groupData.scale.z;\r\n        return group;\r\n    }\r\n\r\n    async handleGLTFShape(shape, index, group) {\r\n        const applyTransformations = (model) => {\r\n            model.position.set(shape.x || 0, shape.y || 0, shape.z || 0);\r\n            model.scale.set(\r\n                shape.scaleX || 1,\r\n                shape.scaleY || 1,\r\n                shape.scaleZ || 1\r\n            );\r\n            model.rotation.set(\r\n                (shape.rotationX || 0) * Math.PI / 180,\r\n                (shape.rotationY || 0) * Math.PI / 180,\r\n                (shape.rotationZ || 0) * Math.PI / 180\r\n            );\r\n            \r\n            model.traverse(child => {\r\n                if (child.isMesh) {\r\n                    child.userData = {\r\n                        isShape: true,\r\n                        index: index,\r\n                        isGLTFChild: true\r\n                    };\r\n                }\r\n            });\r\n            \r\n            model.userData = {\r\n                isShape: true,\r\n                index: index,\r\n                isGLTFRoot: true,\r\n                castShadow: true\r\n            };\r\n            \r\n            group.add(model);\r\n        };\r\n\r\n        const cached = this.gltfCache.get(shape.url);\r\n        if (cached) {\r\n            applyTransformations(cached.scene.clone());\r\n        } else if (shape.url) {\r\n            // Wrap gltfLoader.load in a Promise to properly await it\r\n            await new Promise((resolve, reject) => {\r\n                this.gltfLoader.load(\r\n                    shape.url,\r\n                    (gltf) => {\r\n                        this.gltfCache.set(shape.url, gltf);\r\n                        applyTransformations(gltf.scene.clone());\r\n                        resolve();\r\n                    },\r\n                    undefined, // onProgress callback (optional)\r\n                    (error) => {\r\n                        console.error(`Failed to load GLTF model at ${shape.url}:`, error);\r\n                        reject(error);\r\n                    }\r\n                );\r\n            });\r\n        }\r\n    }\r\n\r\n    handlePrimitiveShape(shape, index, group) {\r\n        let geometry, material;\r\n\r\n        let colorToUse = shape.color;\r\n        if(shape.color.paletteColor){\r\n            colorToUse = \"#ffffff\";\r\n            if(this.palette && this.palette[shape.color.paletteColor]){\r\n                colorToUse = this.palette[shape.color.paletteColor];\r\n            }\r\n        }\r\n        // Create material with specified color\r\n        material = new THREE.MeshStandardMaterial({ color: colorToUse });\r\n\r\n        switch (shape.type) {\r\n            case 'sphere':\r\n                geometry = new THREE.SphereGeometry(shape.size / 2, 32, 32);\r\n                break;\r\n            case 'cube':\r\n                geometry = new THREE.BoxGeometry(shape.size, shape.size, shape.size);\r\n                break;\r\n            case 'box':\r\n                geometry = new THREE.BoxGeometry(shape.width, shape.height, shape.depth || shape.width);\r\n                break;\r\n            case 'cylinder':\r\n                geometry = new THREE.CylinderGeometry(shape.size / 2, shape.size / 2, shape.height, 32);\r\n                break;\r\n            case 'cone':\r\n                geometry = new THREE.ConeGeometry(shape.size / 2, shape.height, 32);\r\n                break;\r\n            case 'torus':\r\n                geometry = new THREE.TorusGeometry(shape.size / 2, shape.tubeSize || shape.size / 6, 16, 100);\r\n                break;\r\n            case 'tetrahedron':\r\n                geometry = new THREE.TetrahedronGeometry(shape.size / 2);\r\n                break;\r\n            default:\r\n                return;\r\n        }\r\n\r\n        const mesh = new THREE.Mesh(geometry, material);\r\n        mesh.userData = { isShape: true, castShadow: true, index: index };\r\n        \r\n        // Position and rotation\r\n        mesh.position.set(shape.x || 0, shape.y || 0, shape.z || 0);\r\n        mesh.rotation.set(\r\n            (shape.rotationX || 0) * Math.PI / 180,\r\n            (shape.rotationY || 0) * Math.PI / 180,\r\n            (shape.rotationZ || 0) * Math.PI / 180\r\n        );\r\n        mesh.scale.set(\r\n            shape.scaleX || 1,\r\n            shape.scaleY || 1,\r\n            shape.scaleZ || 1\r\n        );\r\n        group.add(mesh);\r\n    }\r\n\r\n    disposeObject(object) {\r\n        object.traverse(child => {\r\n            if (child.geometry) child.geometry.dispose();\r\n            if (child.material) {\r\n                if (Array.isArray(child.material)) {\r\n                    child.material.forEach(m => m.dispose());\r\n                } else {\r\n                    child.material.dispose();\r\n                }\r\n            }\r\n        });\r\n    }\r\n\r\n    getMergedGroup(model, frameData, groupName) {\r\n        const modelGroup = model[groupName];\r\n        if (!modelGroup) {\r\n            delete frameData?.[groupName];\r\n            return null;\r\n        }\r\n    \r\n        frameData = frameData || {};\r\n        let frameGroup = this.initializeFrameGroup(frameData, modelGroup, groupName);\r\n        \r\n        this.cleanupMatchingTransforms(modelGroup, frameGroup);\r\n        const mergedShapes = this.mergeShapes(modelGroup, frameGroup);\r\n        \r\n        this.cleanupEmptyShapes(frameGroup);\r\n        \r\n        const mergedGroup = {\r\n            ...modelGroup,\r\n            ...frameGroup,\r\n            shapes: mergedShapes\r\n        };\r\n    \r\n        if (modelGroup.shapes.length === 0) {\r\n            frameGroup.shapes = [];\r\n        }\r\n    \r\n        const returnVal = JSON.parse(JSON.stringify(mergedGroup));\r\n        this.cleanupFrameData(frameData, frameGroup, groupName);\r\n        \r\n        return returnVal;\r\n    }\r\n    \r\n    initializeFrameGroup(frameData, modelGroup, groupName) {\r\n        if (!frameData[groupName]) {\r\n            frameData[groupName] = JSON.parse(JSON.stringify(modelGroup));\r\n            const frameGroup = frameData[groupName];\r\n            frameGroup.shapes.forEach((shape, index) => {\r\n                shape.id = index;\r\n            });\r\n            return frameGroup;\r\n        }\r\n        return frameData[groupName];\r\n    }\r\n    \r\n    cleanupMatchingTransforms(modelGroup, frameGroup) {\r\n        const properties = ['position', 'rotation', 'scale'];\r\n        properties.forEach(prop => {\r\n            if (JSON.stringify(modelGroup[prop]) === JSON.stringify(frameGroup[prop])) {\r\n                delete frameGroup[prop];\r\n            }\r\n        });\r\n    }\r\n    \r\n    mergeShapes(modelGroup, frameGroup) {\r\n        return modelGroup.shapes.map((modelShape, i) => {\r\n            if (!frameGroup.shapes) {\r\n                return JSON.parse(JSON.stringify(modelShape));\r\n            }\r\n    \r\n            let frameShape = frameGroup.shapes.find(shape => shape.id === i) || { id: i };\r\n            if (!frameGroup.shapes.includes(frameShape)) {\r\n                frameGroup.shapes.push(frameShape);\r\n            }\r\n    \r\n            const mergedShape = this.mergeShapeProperties(modelShape, frameShape);\r\n            this.cleanupMatchingShapeTransforms(modelShape, frameShape);\r\n            \r\n            return JSON.parse(JSON.stringify(mergedShape));\r\n        });\r\n    }\r\n    \r\n    mergeShapeProperties(modelShape, frameShape) {\r\n        const mergedShape = {};\r\n        \r\n        for (const key in modelShape) {\r\n            if (key === 'id') continue;\r\n            \r\n            if (frameShape && frameShape[key] !== undefined && modelShape[key] === frameShape[key]) {\r\n                delete frameShape[key];\r\n                mergedShape[key] = modelShape[key];\r\n            } else if (!frameShape || frameShape[key] === undefined) {\r\n                mergedShape[key] = modelShape[key];\r\n            } else {\r\n                mergedShape[key] = frameShape[key];\r\n            }\r\n        }\r\n    \r\n        return { ...mergedShape, ...frameShape };\r\n    }\r\n    \r\n    cleanupMatchingShapeTransforms(modelShape, frameShape) {\r\n        const transforms = [\r\n            { prop: 'scale', defaultVal: 1, axes: ['X', 'Y', 'Z'] },\r\n            { prop: 'rotation', defaultVal: 0, axes: ['X', 'Y', 'Z'] }\r\n        ];\r\n    \r\n        transforms.forEach(({ prop, defaultVal, axes }) => {\r\n            axes.forEach(axis => {\r\n                const propName = `${prop}${axis}`;\r\n                if (frameShape[propName] === modelShape[propName] || \r\n                   (frameShape[propName] === defaultVal && modelShape[propName] === undefined)) {\r\n                    delete frameShape[propName];\r\n                }\r\n            });\r\n        });\r\n    }\r\n    \r\n    cleanupEmptyShapes(frameGroup) {\r\n        if (frameGroup.shapes) {\r\n            frameGroup.shapes = frameGroup.shapes.filter(shape => \r\n                Object.keys(shape).length > 0\r\n            );\r\n            \r\n            if (frameGroup.shapes.length === 0) {\r\n                delete frameGroup.shapes;\r\n            }\r\n        }\r\n    }\r\n    \r\n    cleanupFrameData(frameData, frameGroup, groupName) {\r\n        if (Object.keys(frameGroup).length === 0) {\r\n            delete frameData[groupName];\r\n        }\r\n    }\r\n\r\n}",
+        "script": "class ShapeFactory {\n    constructor(palette) {\n        this.gltfCache = new Map();\n        this.gltfLoader = new THREE.GLTFLoader();\n        this.palette = palette;\n    }\n    async createMergedGroupFromJSON(model, frameData, groupName) {\n        let mergedGroup = this.getMergedGroup(model, frameData, groupName);\n        if( mergedGroup){\n            return await this.createGroupFromJSON(groupName, mergedGroup);\n        } else {\n            return null;\n        }\n    }\n    async createGroupFromJSON(groupName, groupData) {\n        const group = new THREE.Group();\n        group.name = groupName;\n        group.userData = { isGroup: true };\n        // Use Promise.all with map instead of forEach to properly await all shapes\n        await Promise.all(groupData.shapes.map(async (shape, index) => {\n            if (shape.type === 'gltf') {\n                await this.handleGLTFShape(shape, index, group);\n            } else {\n                this.handlePrimitiveShape(shape, index, group);\n            }\n        }));\n        group.position.x = groupData.position.x;\n        group.position.y = groupData.position.y;\n        group.position.z = groupData.position.z;\n        \n        group.rotation.x = groupData.rotation.x;\n        group.rotation.y = groupData.rotation.y;\n        group.rotation.z = groupData.rotation.z;\n\n        group.scale.x = groupData.scale.x;\n        group.scale.y = groupData.scale.y;\n        group.scale.z = groupData.scale.z;\n        return group;\n    }\n\n    async handleGLTFShape(shape, index, group) {\n        const applyTransformations = (model) => {\n            model.position.set(shape.x || 0, shape.y || 0, shape.z || 0);\n            model.scale.set(\n                shape.scaleX || 1,\n                shape.scaleY || 1,\n                shape.scaleZ || 1\n            );\n            model.rotation.set(\n                (shape.rotationX || 0) * Math.PI / 180,\n                (shape.rotationY || 0) * Math.PI / 180,\n                (shape.rotationZ || 0) * Math.PI / 180\n            );\n            \n            model.traverse(child => {\n                if (child.isMesh) {\n                    child.userData = {\n                        isShape: true,\n                        index: index,\n                        isGLTFChild: true\n                    };\n                }\n            });\n            \n            model.userData = {\n                isShape: true,\n                index: index,\n                isGLTFRoot: true,\n                castShadow: true\n            };\n            \n            group.add(model);\n        };\n\n        const cached = this.gltfCache.get(shape.url);\n        if (cached) {\n            applyTransformations(cached.scene.clone());\n        } else if (shape.url) {\n            // Wrap gltfLoader.load in a Promise to properly await it\n            await new Promise((resolve, reject) => {\n                this.gltfLoader.load(\n                    shape.url,\n                    (gltf) => {\n                        this.gltfCache.set(shape.url, gltf);\n                        applyTransformations(gltf.scene.clone());\n                        resolve();\n                    },\n                    undefined, // onProgress callback (optional)\n                    (error) => {\n                        console.error(`Failed to load GLTF model at ${shape.url}:`, error);\n                        reject(error);\n                    }\n                );\n            });\n        }\n    }\n\n    handlePrimitiveShape(shape, index, group) {\n        let geometry, material;\n\n        let colorToUse = shape.color;\n        if(shape.color.paletteColor){\n            colorToUse = \"#ffffff\";\n            if(this.palette && this.palette[shape.color.paletteColor]){\n                colorToUse = this.palette[shape.color.paletteColor];\n            }\n        }\n        // Create material with specified color\n        material = new THREE.MeshStandardMaterial({ color: colorToUse });\n\n        switch (shape.type) {\n            case 'sphere':\n                geometry = new THREE.SphereGeometry(shape.size / 2, 32, 32);\n                break;\n            case 'cube':\n                geometry = new THREE.BoxGeometry(shape.size, shape.size, shape.size);\n                break;\n            case 'box':\n                geometry = new THREE.BoxGeometry(shape.width, shape.height, shape.depth || shape.width);\n                break;\n            case 'cylinder':\n                geometry = new THREE.CylinderGeometry(shape.size / 2, shape.size / 2, shape.height, 32);\n                break;\n            case 'cone':\n                geometry = new THREE.ConeGeometry(shape.size / 2, shape.height, 32);\n                break;\n            case 'torus':\n                geometry = new THREE.TorusGeometry(shape.size / 2, shape.tubeSize || shape.size / 6, 16, 100);\n                break;\n            case 'tetrahedron':\n                geometry = new THREE.TetrahedronGeometry(shape.size / 2);\n                break;\n            default:\n                return;\n        }\n\n        const mesh = new THREE.Mesh(geometry, material);\n        mesh.userData = { isShape: true, castShadow: true, index: index };\n        \n        // Position and rotation\n        mesh.position.set(shape.x || 0, shape.y || 0, shape.z || 0);\n        mesh.rotation.set(\n            (shape.rotationX || 0) * Math.PI / 180,\n            (shape.rotationY || 0) * Math.PI / 180,\n            (shape.rotationZ || 0) * Math.PI / 180\n        );\n        mesh.scale.set(\n            shape.scaleX || 1,\n            shape.scaleY || 1,\n            shape.scaleZ || 1\n        );\n        group.add(mesh);\n    }\n\n    disposeObject(object) {\n        object.traverse(child => {\n            if (child.geometry) child.geometry.dispose();\n            if (child.material) {\n                if (Array.isArray(child.material)) {\n                    child.material.forEach(m => m.dispose());\n                } else {\n                    child.material.dispose();\n                }\n            }\n        });\n    }\n\n    getMergedGroup(model, frameData, groupName) {\n        const modelGroup = model[groupName];\n        if (!modelGroup) {\n            delete frameData?.[groupName];\n            return null;\n        }\n    \n        frameData = frameData || {};\n        let frameGroup = this.initializeFrameGroup(frameData, modelGroup, groupName);\n        \n        this.cleanupMatchingTransforms(modelGroup, frameGroup);\n        const mergedShapes = this.mergeShapes(modelGroup, frameGroup);\n        \n        this.cleanupEmptyShapes(frameGroup);\n        \n        const mergedGroup = {\n            ...modelGroup,\n            ...frameGroup,\n            shapes: mergedShapes\n        };\n    \n        if (modelGroup.shapes.length === 0) {\n            frameGroup.shapes = [];\n        }\n    \n        const returnVal = JSON.parse(JSON.stringify(mergedGroup));\n        this.cleanupFrameData(frameData, frameGroup, groupName);\n        \n        return returnVal;\n    }\n    \n    initializeFrameGroup(frameData, modelGroup, groupName) {\n        if (!frameData[groupName]) {\n            frameData[groupName] = JSON.parse(JSON.stringify(modelGroup));\n            const frameGroup = frameData[groupName];\n            frameGroup.shapes.forEach((shape, index) => {\n                shape.id = index;\n            });\n            return frameGroup;\n        }\n        return frameData[groupName];\n    }\n    \n    cleanupMatchingTransforms(modelGroup, frameGroup) {\n        const properties = ['position', 'rotation', 'scale'];\n        properties.forEach(prop => {\n            if (JSON.stringify(modelGroup[prop]) === JSON.stringify(frameGroup[prop])) {\n                delete frameGroup[prop];\n            }\n        });\n    }\n    \n    mergeShapes(modelGroup, frameGroup) {\n        return modelGroup.shapes.map((modelShape, i) => {\n            if (!frameGroup.shapes) {\n                return JSON.parse(JSON.stringify(modelShape));\n            }\n    \n            let frameShape = frameGroup.shapes.find(shape => shape.id === i) || { id: i };\n            if (!frameGroup.shapes.includes(frameShape)) {\n                frameGroup.shapes.push(frameShape);\n            }\n    \n            const mergedShape = this.mergeShapeProperties(modelShape, frameShape);\n            this.cleanupMatchingShapeTransforms(modelShape, frameShape);\n            \n            return JSON.parse(JSON.stringify(mergedShape));\n        });\n    }\n    \n    mergeShapeProperties(modelShape, frameShape) {\n        const mergedShape = {};\n        \n        for (const key in modelShape) {\n            if (key === 'id') continue;\n            \n            if (frameShape && frameShape[key] !== undefined && modelShape[key] === frameShape[key]) {\n                delete frameShape[key];\n                mergedShape[key] = modelShape[key];\n            } else if (!frameShape || frameShape[key] === undefined) {\n                mergedShape[key] = modelShape[key];\n            } else {\n                mergedShape[key] = frameShape[key];\n            }\n        }\n    \n        return { ...mergedShape, ...frameShape };\n    }\n    \n    cleanupMatchingShapeTransforms(modelShape, frameShape) {\n        const transforms = [\n            { prop: 'scale', defaultVal: 1, axes: ['X', 'Y', 'Z'] },\n            { prop: 'rotation', defaultVal: 0, axes: ['X', 'Y', 'Z'] }\n        ];\n    \n        transforms.forEach(({ prop, defaultVal, axes }) => {\n            axes.forEach(axis => {\n                const propName = `${prop}${axis}`;\n                if (frameShape[propName] === modelShape[propName] || \n                   (frameShape[propName] === defaultVal && modelShape[propName] === undefined)) {\n                    delete frameShape[propName];\n                }\n            });\n        });\n    }\n    \n    cleanupEmptyShapes(frameGroup) {\n        if (frameGroup.shapes) {\n            frameGroup.shapes = frameGroup.shapes.filter(shape => \n                Object.keys(shape).length > 0\n            );\n            \n            if (frameGroup.shapes.length === 0) {\n                delete frameGroup.shapes;\n            }\n        }\n    }\n    \n    cleanupFrameData(frameData, frameGroup, groupName) {\n        if (Object.keys(frameGroup).length === 0) {\n            delete frameData[groupName];\n        }\n    }\n\n}",
         "fileName": "ShapeFactory"
       },
       "ImageManager": {
@@ -21716,9 +22349,10 @@ const DEFAULT_PROJECT_CONFIG = {
     "heightMaps": {
       "fiveStep": {
         "title": "Five Step and Smoothing",
-        "heightStep": 5,
+        "heightStep": 48,
         "smoothing": true,
-        "enabled": true
+        "enabled": true,
+        "resolutionDivisor": 2
       }
     },
     "cameras": {
@@ -21789,6 +22423,22 @@ const DEFAULT_PROJECT_CONFIG = {
       "greenL": {
         "title": "Green Light",
         "color": "#a3d39c"
+      }
+    },
+    "shaders": {
+      "water": {
+        "title": "Water",
+        "fragmentScript": "uniform float time;\nuniform float waveHeight;\nuniform vec3 liquidColor;\nuniform vec3 foamColor;\nuniform float waveFrequency;\nuniform float fresnelPower;\nuniform vec3 lightDirection;\nuniform float ambientIntensity;\nuniform float specularIntensity;\nvarying vec2 vUv;\nvarying vec3 vNormal;\nvarying vec3 vViewPosition;\nvarying float vWaveHeight;\nvarying float vNormalizedWaveHeight; // New varying for normalized height\n\nvoid main() {\n    vec2 uv = vUv;\n    vec3 normal = normalize(vNormal);\n    vec3 viewDir = normalize(vViewPosition);\n    vec3 lightDir = normalize(lightDirection);\n\n    // Fresnel effect for edge transparency\n    float fresnel = pow(1.0 - max(dot(normal, viewDir), 0.0), fresnelPower);\n\n    // Diffuse lighting\n    float diffuse = max(dot(normal, lightDir), 0.0) * 0.25;\n\n    // Specular (Blinn-Phong)\n    vec3 halfwayDir = normalize(lightDir + viewDir);\n    float specular = pow(max(dot(normal, halfwayDir), 0.0), 32.0) * specularIntensity;\n\n    // Base color with subtle wave height modulation\n    vec3 baseColor = liquidColor * (0.8 + 0.2 * vNormalizedWaveHeight); // Slight tint variation\n\n    // Foam effect based on normalized wave height\n    float foamFactor = smoothstep(0.8, 1.0, vNormalizedWaveHeight); // Tighter range for foam at peaks\n    vec3 color = mix(baseColor, foamColor, foamFactor);\n\n    // Combine lighting components\n    vec3 finalColor = color * (ambientIntensity + diffuse) + vec3(specular);\n\n    // Apply fresnel for transparency at edges\n    float alpha = mix(0.6, 1.0, fresnel);\n\n    gl_FragColor = vec4(finalColor, alpha);\n}",
+        "vertexScript": " uniform float time;\nuniform float waveHeight;\nuniform float waveFrequency;\nuniform float waveSpeed;\nvarying vec2 vUv;\nvarying vec3 vNormal;\nvarying vec3 vViewPosition;\nvarying float vWaveHeight;\nvarying float vNormalizedWaveHeight; // New varying for normalized height\n\n// Simple noise function for wave variation\nfloat snoise(vec2 co) {\n    return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453);\n}\n\nvoid main() {\n    vUv = uv;\n\n    // Combine multiple waves for more natural movement\n    float wave1 = sin(uv.x * waveFrequency + time * waveSpeed) * waveHeight;\n    float wave2 = sin(uv.y * waveFrequency * 0.7 + time * waveSpeed * 0.8) * waveHeight * 0.5;\n    float wave3 = cos((uv.x + uv.y) * waveFrequency * 0.5 + time * waveSpeed * 1.2) * waveHeight * 0.3;\n    float displacementY = (wave1 + wave2 + wave3) * 0.5;\n\n    // Store wave height for fragment shader\n    vWaveHeight = displacementY;\n\n    // Normalize wave height based on maximum possible displacement\n    float maxWaveHeight = waveHeight * (1.0 + 0.5 + 0.3) * 0.5; // Sum of wave amplitudes\n    vNormalizedWaveHeight = displacementY / maxWaveHeight;\n\n    // Update position with displacement\n    vec3 newPosition = vec3(position.x, position.y + displacementY, position.z);\n\n    // Compute normal for lighting\n    float offset = 0.01;\n    float waveX = (sin((uv.x + offset) * waveFrequency + time * waveSpeed) +\n                   sin((uv.y + offset) * waveFrequency * 0.7 + time * waveSpeed * 0.8) * 0.5 +\n                   cos((uv.x + uv.y + offset) * waveFrequency * 0.5 + time * waveSpeed * 1.2) * 0.3) * waveHeight * 0.5;\n    float waveZ = (sin((uv.x) * waveFrequency + time * waveSpeed) +\n                   sin((uv.y + offset) * waveFrequency * 0.7 + time * waveSpeed * 0.8) * 0.5 +\n                   cos((uv.x + uv.y + offset) * waveFrequency * 0.5 + time * waveSpeed * 1.2) * 0.3) * waveHeight * 0.5;\n    vec3 tangent = normalize(vec3(1.0, (waveX - displacementY) / offset, 0.0));\n    vec3 bitangent = normalize(vec3(0.0, (waveZ - displacementY) / offset, 1.0));\n    vNormal = normalize(cross(tangent, bitangent));\n\n    // Pass view position for fresnel and lighting\n    vec4 worldPosition = modelMatrix * vec4(newPosition, 1.0);\n    vViewPosition = (cameraPosition - worldPosition.xyz);\n\n    // Apply projection and model-view transforms\n    gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);\n}",
+        "uniforms": "{\"time\":{\"value\":0},\"waveHeight\":{\"value\":5},\"waveFrequency\":{\"value\":5},\"waveSpeed\":{\"value\":0.25},\"liquidColor\":{\"value\":\"\"},\"foamColor\":{\"value\":\"\"},\"fresnelPower\":{\"value\":0},\"lightDirection\":{\"value\":[0.5,0.5,0.5]},\"ambientIntensity\":{\"value\":1},\"specularIntensity\":{\"value\":1}}",
+        "vectors": "[\"foamColor\",\"liquidColor\",\"lightDirection\"]"
+      },
+      "grass": {
+        "title": "Grass",
+        "fragmentScript": "varying vec2 vUv;\nuniform sampler2D map;\n\nvoid main() {\n    vec4 texColor = texture2D(map, vUv);\n    gl_FragColor = texColor;\n}",
+        "vertexScript": "varying vec2 vUv;\nuniform float time;\nuniform float windSpeed;\nuniform float windStrength;\nuniform vec2 windDirection;\nattribute float instancePhase;\n\nvoid main() {\n    vUv = uv;\n    vec2 dir = normalize(windDirection);\n    float wave = sin(time * windSpeed + instancePhase) * windStrength;\n    wave *= uv.y;\n\n    vec3 displacement = vec3(\n        dir.x * wave,\n        0.0,\n        dir.y * wave\n    );\n\n    vec4 mvPosition = modelViewMatrix * instanceMatrix * vec4(position + displacement, 1.0);\n    gl_Position = projectionMatrix * mvPosition;\n    vUv = uv;\n}",
+        "uniforms": "{ \"time\": { \"value\": 0 }, \"windSpeed\": { \"value\": 0.8 }, \"windStrength\": { \"value\": 2 }, \"windDirection\": { \"value\": [0.8, 0.6]} }",
+        "vectors": "[\"windDirection\"]"
       }
     }
   },
@@ -22018,6 +22668,12 @@ const DEFAULT_PROJECT_CONFIG = {
       "id": "materials",
       "name": "Materials",
       "singular": "Material",
+      "category": "Resources"
+    },
+    {
+      "id": "shaders",
+      "name": "Shaders",
+      "singular": "Shader",
       "category": "Resources"
     }
   ]
