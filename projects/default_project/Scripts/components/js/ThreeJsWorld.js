@@ -221,12 +221,12 @@ class ThreeJsWorld extends engine.Component {
                     let height = typeIndex !== undefined ? typeIndex * this.heightStep : extensionHeight;
             
                     // Check neighboring pixels for lower terrain types
-                    let neighborCheckDist = this.heightMapSettings.resolutionDivisor;
+                    let neighborCheckDist = this.heightMapSettings.resolutionDivisor - 1;
                     const neighbors = [
                         { x: x-neighborCheckDist, z: z },   // left
                         { x: x+neighborCheckDist, z: z },   // right
                         { x: x, z: z-neighborCheckDist },   // top
-                        { x: x, z: z+neighborCheckDist },   // bottom
+                        { x: x, z: z+neighborCheckDist + 1 },   // bottom
                         { x: x-neighborCheckDist, z: z-neighborCheckDist }, // top-left
                         { x: x+neighborCheckDist, z: z-neighborCheckDist }, // top-right
                         { x: x-neighborCheckDist, z: z+neighborCheckDist }, // bottom-left
