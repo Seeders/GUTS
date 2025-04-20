@@ -220,17 +220,18 @@ class ThreeJsWorld extends engine.Component {
                     let height = typeIndex !== undefined ? typeIndex * this.heightStep : extensionHeight;
             
                     // Check neighboring pixels for lower terrain types
+                    let neighborCheckDist = this.heightMapSettings.resolutionDivisor;
                     const neighbors = [
-                        { x: x-1, z: z },   // left
-                        { x: x+1, z: z },   // right
-                        { x: x, z: z-1 },   // top
-                        { x: x, z: z+1 },   // bottom
-                        { x: x-1, z: z-1 }, // top-left
-                        { x: x+1, z: z-1 }, // top-right
-                        { x: x-1, z: z+1 }, // bottom-left
-                        { x: x+1, z: z+1 }  // bottom-right
+                        { x: x-neighborCheckDist, z: z },   // left
+                        { x: x+neighborCheckDist, z: z },   // right
+                        { x: x, z: z-neighborCheckDist },   // top
+                        { x: x, z: z+neighborCheckDist },   // bottom
+                        { x: x-neighborCheckDist, z: z-neighborCheckDist }, // top-left
+                        { x: x+neighborCheckDist, z: z-neighborCheckDist }, // top-right
+                        { x: x-neighborCheckDist, z: z+neighborCheckDist }, // bottom-left
+                        { x: x+neighborCheckDist, z: z+neighborCheckDist }  // bottom-right
                     ];
-            
+                    let lowestNeighborType = Infinity;
                     for (const neighbor of neighbors) {
                         if (neighbor.x >= 0 && neighbor.x < this.terrainSize && 
                             neighbor.z >= 0 && neighbor.z < this.terrainSize) {
@@ -242,12 +243,14 @@ class ThreeJsWorld extends engine.Component {
                             const neighborKey = `${nr},${ng},${nb}`;
                             
                             const neighborTypeIndex = terrainTypeColors[neighborKey];
-                            if (neighborTypeIndex !== undefined && neighborTypeIndex < typeIndex) {
+                            if (neighborTypeIndex !== undefined && neighborTypeIndex < typeIndex && neighborTypeIndex < lowestNeighborType) {
                                 // If neighbor is lower terrain, use its height
-                                height = neighborTypeIndex * this.heightStep;
-                                break;
+                                lowestNeighborType = neighborTypeIndex;
                             }
                         }
+                    }
+                    if (lowestNeighborType < typeIndex) {
+                        height = lowestNeighborType * this.heightStep;
                     }
             
                     const extX = x + this.extensionSize;
@@ -324,27 +327,6 @@ class ThreeJsWorld extends engine.Component {
 
         this.groundVertices.needsUpdate = true;
         geometry.computeVertexNormals();
-    }
-
-    smoothHeight(x, z) {
-        if (!this.heightMapSettings.smoothing) return this.heightMapData[z * this.extendedSize + x];
-
-        let totalHeight = 0;
-        let count = 0;
-
-        for (let dz = -1; dz <= 1; dz++) {
-            for (let dx = -1; dx <= 1; dx++) {
-                const nx = x + dx;
-                const nz = z + dz;
-
-                if (nx >= 0 && nx < this.extendedSize && nz >= 0 && nz < this.extendedSize) {
-                    totalHeight += this.heightMapData[nz * this.extendedSize + nx];
-                    count++;
-                }
-            }
-        }
-
-        return count > 0 ? totalHeight / count : 0;
     }
 
     getGroundMaterial() {
@@ -474,8 +456,6 @@ class ThreeJsWorld extends engine.Component {
         this.grass = grass;
     }
 
-
-
     onDestroy() {
         window.removeEventListener('resize', this.onWindowResizeHandler);
         this.renderer.dispose();
@@ -549,7 +529,6 @@ class ThreeJsWorld extends engine.Component {
         return texture;
     }
 
-    // Assuming this is inside a class where `this.tileMapData` and `this.game.config` are accessible
     generateLiquidSurfaceMesh(terrainType) {
         const terrainMap = this.tileMap.terrainMap;
         const gridSize = this.game.config.configs.game.gridSize;

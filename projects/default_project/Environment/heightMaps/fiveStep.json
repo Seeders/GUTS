@@ -1,7 +1,7 @@
 {
   "title": "Five Step and Smoothing",
-  "heightStep": 48,
+  "heightStep": 4,
   "smoothing": true,
   "enabled": true,
-  "resolutionDivisor": 2
+  "resolutionDivisor": 4
 }
