@@ -383,8 +383,9 @@ class ThreeJsWorld extends engine.Component {
         const bladeHeight = 18;
         const grassGeometry = this.createCurvedBladeGeometry(bladeWidth, bladeHeight);
         grassGeometry.translate(0, bladeHeight / 2, 0);
-        const grassCount = 1000000;
+        const grassCount = 500000;
 
+        const gridSize = this.game.config.configs.game.gridSize;
         const phases = new Float32Array(grassCount);
         for (let i = 0; i < grassCount; i++) {
             phases[i] = Math.random() * Math.PI * 2;
@@ -428,45 +429,75 @@ class ThreeJsWorld extends engine.Component {
         grass.receiveShadow = false;
 
         const dummy = new THREE.Object3D();
+        const grassArea = this.extendedSize;  
+        const ctx = this.groundCanvas.getContext('2d');
+        const terrainData = ctx.getImageData(0, 0, this.groundCanvas.width, this.groundCanvas.height).data;
 
-        if (this.groundCanvas) {
-            const ctx = this.groundCanvas.getContext('2d');
-            try {
-                const terrainData = ctx.getImageData(0, 0, this.groundCanvas.width, this.groundCanvas.height).data;
-                let grassArea = this.extendedSize;
-                let placedGrassCount = 0;
+        // Create a density map for grass placement
+        // Create a density map for grass placement
+        const densityMap = new Float32Array(this.extendedSize * this.extendedSize);
+        for (let z = 0; z < this.extendedSize; z++) {
+            for (let x = 0; x < this.extendedSize; x++) {
+                // Check current pixel for green dominance
+                const pixelIndex = (z * this.groundCanvas.width + x) * 4;
+                const isGreenDominant = (pixel) => {
+                    const r = terrainData[pixel];
+                    const g = terrainData[pixel + 1];
+                    const b = terrainData[pixel + 2];
+                    return g > r && g > b;
+                };
 
-                for (let i = 0; i < grassCount; i++) {
-                    const x = Math.floor(Math.random() * grassArea);
-                    const z = Math.floor(Math.random() * grassArea);
-                    const pixelIndex = (z * this.groundCanvas.width + x) * 4;
-                    const r = terrainData[pixelIndex];
-                    const g = terrainData[pixelIndex + 1];
-                    const b = terrainData[pixelIndex + 2];
+                // Only set density if current pixel and all neighbors are green
+                if (isGreenDominant(pixelIndex)) {
+                    // Check 8 neighboring pixels
+                    let checkDist = Math.ceil(gridSize / 10);
+                    const neighbors = [
+                        [-checkDist, -checkDist], [0, -checkDist], [checkDist, -checkDist],
+                        [-checkDist,  0],                           [checkDist,  0],
+                        [-checkDist,  checkDist], [0,  checkDist], [checkDist,  checkDist]
+                    ];
 
-                    if (g > r && g > b ) {
-                        placedGrassCount++;
-                        const rotationY = Math.random() * Math.PI * 2;
-                        const scale = 0.7 + Math.random() * 0.5;
-
-                        let height = 0;
-                        if (this.heightMapSettings.enabled) {
-                            const terrainX = Math.min(Math.floor(x), this.extendedSize - 1);
-                            const terrainZ = Math.min(Math.floor(z), this.extendedSize - 1);
-                            height = this.heightMapData[terrainZ * this.extendedSize + terrainX] || 0;
+                    let allNeighborsGreen = true;
+                    for (const [dx, dz] of neighbors) {
+                        const nx = x + dx;
+                        const nz = z + dz;
+                        
+                        // Skip if neighbor is outside bounds
+                        if (nx < 0 || nx >= this.extendedSize || nz < 0 || nz >= this.extendedSize) {
+                            allNeighborsGreen = false;
+                            break;
                         }
 
-                        dummy.position.set(x - grassArea / 2 + this.terrainSize / 2, height - bladeHeight, z - grassArea / 2 + this.terrainSize / 2);
-                        dummy.rotation.set(0, rotationY, 0);
-                        dummy.scale.set(scale, scale, scale);
-                        dummy.updateMatrix();
-
-                        grass.setMatrixAt(i, dummy.matrix);
+                        const neighborIndex = (nz * this.groundCanvas.width + nx) * 4;
+                        if (!isGreenDominant(neighborIndex)) {
+                            allNeighborsGreen = false;
+                            break;
+                        }
                     }
-                }
 
-            } catch (e) {
-                console.warn('Failed to get terrainCanvasBuffer data:', e);
+                    densityMap[z * this.extendedSize + x] = allNeighborsGreen ? 1 : 0;
+                } else {
+                    densityMap[z * this.extendedSize + x] = 0;
+                }
+            }
+        }
+
+        // Place grass based on density
+        let placed = 0;
+        for (let i = 0; i < grassCount * 2 && placed < grassCount; i++) {
+            const x = Math.floor(Math.random() * grassArea);
+            const z = Math.floor(Math.random() * grassArea);
+            if (densityMap[z * this.extendedSize + x] > 0) {
+                const rotationY = Math.random() * Math.PI * 2;
+                const scale = 0.7 + Math.random() * 0.5;
+                let height = this.heightMapSettings.enabled
+                    ? this.heightMapData[Math.min(z, this.extendedSize - 1) * this.extendedSize + Math.min(x, this.extendedSize - 1)] || 0
+                    : 0;
+                dummy.position.set(x - grassArea / 2 + this.terrainSize / 2, height - bladeHeight, z - grassArea / 2 + this.terrainSize / 2);
+                dummy.rotation.set(0, rotationY, 0);
+                dummy.scale.set(scale, scale, scale);
+                dummy.updateMatrix();
+                grass.setMatrixAt(placed++, dummy.matrix);
             }
         }
 
