@@ -1,0 +1,7 @@
+{
+  "title": "Grass",
+  "fragmentScript": "varying vec2 vUv;\nuniform sampler2D map;\n\nvoid main() {\n    vec4 texColor = texture2D(map, vUv);\n    gl_FragColor = texColor;\n}",
+  "vertexScript": "varying vec2 vUv;\nuniform float time;\nuniform float windSpeed;\nuniform float windStrength;\nuniform vec2 windDirection;\nattribute float instancePhase;\n\nvoid main() {\n    vUv = uv;\n    vec2 dir = normalize(windDirection);\n    float wave = sin(time * windSpeed + instancePhase) * windStrength;\n    wave *= uv.y;\n\n    vec3 displacement = vec3(\n        dir.x * wave,\n        0.0,\n        dir.y * wave\n    );\n\n    vec4 mvPosition = modelViewMatrix * instanceMatrix * vec4(position + displacement, 1.0);\n    gl_Position = projectionMatrix * mvPosition;\n    vUv = uv;\n}",
+  "uniforms": "{ \"time\": { \"value\": 0 }, \"windSpeed\": { \"value\": 0.8 }, \"windStrength\": { \"value\": 2 }, \"windDirection\": { \"value\": [0.8, 0.6]} }",
+  "vectors": "[\"windDirection\"]"
+}

@@ -7,8 +7,8 @@ class ThreeJsWorld extends engine.Component {
         if (!this.game.config.configs.game.is3D) {
             return;
         }
-
-        this.world = this.game.config.worlds[this.game.config.levels[this.game.state.level].world];
+        this.level = this.game.config.levels[this.game.state.level];
+        this.world = this.game.config.worlds[this.level.world];
         this.lightingSettings = this.game.config.lightings[this.world.lighting];
         this.shadowSettings = this.game.config.shadows[this.world.shadow];
         this.fogSettings = this.game.config.fogs[this.world.fog]; 
@@ -22,7 +22,7 @@ class ThreeJsWorld extends engine.Component {
         this.terrainSize = 768;
         this.extensionSize = this.world.extensionSize;
         this.extendedSize = this.terrainSize + 2 * this.world.extensionSize;
-        this.heightMapResolution = 256;
+        this.heightMapResolution = this.extendedSize / this.heightMapSettings.resolutionDivisor;
         this.container = document.querySelector(containerSelector) || document.body;
         this.renderer = new THREE.WebGLRenderer({ antialias: true, canvas: this.game.canvas });
         this.renderer.setSize(width, height);
@@ -44,7 +44,7 @@ class ThreeJsWorld extends engine.Component {
             this.cameraSettings.far
         );
         let cameraPos = JSON.parse(this.cameraSettings.position);
-        debugger;
+
         this.camera.position.set(
             cameraPos.x,
             cameraPos.y,
@@ -188,7 +188,6 @@ class ThreeJsWorld extends engine.Component {
     }
 
     updateHeightMap() {
-        debugger;
         if (!this.heightMapSettings.enabled || !this.game.terrainCanvasBuffer) return;
 
         try {
@@ -216,10 +215,41 @@ class ThreeJsWorld extends engine.Component {
                     const g = terrainData[pixelIndex + 1];
                     const b = terrainData[pixelIndex + 2];
                     const colorKey = `${r},${g},${b}`;
-
+            
                     const typeIndex = terrainTypeColors[colorKey];
-                    const height = typeIndex !== undefined ? typeIndex * this.heightStep : extensionHeight;
-
+                    let height = typeIndex !== undefined ? typeIndex * this.heightStep : extensionHeight;
+            
+                    // Check neighboring pixels for lower terrain types
+                    const neighbors = [
+                        { x: x-1, z: z },   // left
+                        { x: x+1, z: z },   // right
+                        { x: x, z: z-1 },   // top
+                        { x: x, z: z+1 },   // bottom
+                        { x: x-1, z: z-1 }, // top-left
+                        { x: x+1, z: z-1 }, // top-right
+                        { x: x-1, z: z+1 }, // bottom-left
+                        { x: x+1, z: z+1 }  // bottom-right
+                    ];
+            
+                    for (const neighbor of neighbors) {
+                        if (neighbor.x >= 0 && neighbor.x < this.terrainSize && 
+                            neighbor.z >= 0 && neighbor.z < this.terrainSize) {
+                            
+                            const neighborIndex = (neighbor.z * terrainCanvas.width + neighbor.x) * 4;
+                            const nr = terrainData[neighborIndex];
+                            const ng = terrainData[neighborIndex + 1];
+                            const nb = terrainData[neighborIndex + 2];
+                            const neighborKey = `${nr},${ng},${nb}`;
+                            
+                            const neighborTypeIndex = terrainTypeColors[neighborKey];
+                            if (neighborTypeIndex !== undefined && neighborTypeIndex < typeIndex) {
+                                // If neighbor is lower terrain, use its height
+                                height = neighborTypeIndex * this.heightStep;
+                                break;
+                            }
+                        }
+                    }
+            
                     const extX = x + this.extensionSize;
                     const extZ = z + this.extensionSize;
                     this.heightMapData[extZ * this.extendedSize + extX] = height;
@@ -285,7 +315,7 @@ class ThreeJsWorld extends engine.Component {
                 const heightIndex = terrainZ * this.extendedSize + terrainX;
                 const height = this.heightMapData[heightIndex] || 0;
 
-                // const finalHeight = this.heightMapConfig.smoothing ?
+                // const finalHeight = this.heightMapSettings.smoothing ?
                 //     this.smoothHeight(terrainX, terrainZ) : height;
 
                 positions[idx + 2] = height;
@@ -351,7 +381,7 @@ class ThreeJsWorld extends engine.Component {
         if (!this.drawn && this.groundTexture && this.game.mapRenderer && this.game.mapRenderer.isMapCached) {
             this.groundCtx.drawImage(this.game.terrainCanvasBuffer, this.extensionSize, this.extensionSize);
             this.groundTexture.needsUpdate = true;
-debugger;
+
             if (this.heightMapSettings.enabled) {
                 this.updateHeightMap();
             }
@@ -379,49 +409,15 @@ debugger;
         grassGeometry.setAttribute('instancePhase', new THREE.InstancedBufferAttribute(phases, 1));
 
         const grassTexture = this.createGrassTexture();
-        this.uniforms['grass'] = {
-            time: { value: 0 },
-            windSpeed: { value: 0.8 },
-            windStrength: { value: 2 },
-            windDirection: { value: new THREE.Vector2(0.8, 0.6).normalize() },
-            map: { value: grassTexture }
-        };
+        const grassShader = this.game.config.shaders[this.level.grassShader];
+        this.uniforms['grass'] = JSON.parse(grassShader.uniforms);
+        
+        this.uniforms['grass'].windDirection = { value: new THREE.Vector2(this.uniforms['grass'].windDirection.value[0], this.uniforms['grass'].windDirection.value[1]).normalize()};
+        this.uniforms['grass'].map = { value: grassTexture };
         const uniforms = this.uniforms['grass'];
         this.grassMaterial = new THREE.ShaderMaterial({
-            vertexShader: `
-                varying vec2 vUv;
-                uniform float time;
-                uniform float windSpeed;
-                uniform float windStrength;
-                uniform vec2 windDirection;
-                attribute float instancePhase;
-
-                void main() {
-                    vUv = uv;
-                    vec2 dir = normalize(windDirection);
-                    float wave = sin(time * windSpeed + instancePhase) * windStrength;
-                    wave *= uv.y;
-
-                    vec3 displacement = vec3(
-                        dir.x * wave,
-                        0.0,
-                        dir.y * wave
-                    );
-
-                    vec4 mvPosition = modelViewMatrix * instanceMatrix * vec4(position + displacement, 1.0);
-                    gl_Position = projectionMatrix * mvPosition;
-                    vUv = uv;
-                }
-            `,
-            fragmentShader: `
-                varying vec2 vUv;
-                uniform sampler2D map;
-
-                void main() {
-                    vec4 texColor = texture2D(map, vUv);
-                    gl_FragColor = texColor;
-                }
-            `,
+            vertexShader: grassShader.vertexScript,
+            fragmentShader: grassShader.fragmentScript,
             uniforms: uniforms
         });
 
@@ -478,83 +474,7 @@ debugger;
         this.grass = grass;
     }
 
-    setupFollowCamera(target, offsetX = 50, offsetY = 50, offsetZ = 50, lookAhead = 0) {
-        if (!target) return;
 
-        const updateFollowCamera = () => {
-            const targetPosition = target.position || target;
-
-            this.camera.position.set(
-                targetPosition.x + offsetX,
-                targetPosition.y + offsetY,
-                targetPosition.z + offsetZ
-            );
-
-            this.camera.lookAt(
-                targetPosition.x + lookAhead * (targetPosition.x - target.lastPosition?.x || 0),
-                targetPosition.y + lookAhead * (targetPosition.y - target.lastPosition?.y || 0),
-                targetPosition.z + lookAhead * (targetPosition.z - target.lastPosition?.z || 0)
-            );
-        };
-
-        if (this.controls) {
-            this.controls.enabled = false;
-        }
-
-        this.camera.updateFollowCamera = updateFollowCamera;
-        updateFollowCamera();
-
-        return updateFollowCamera;
-    }
-
-    setIsometricView() {
-        const isoAngle = Math.atan(1 / Math.sqrt(2));
-        const distance = 200;
-        const horizDistance = distance * Math.cos(isoAngle);
-        const vertDistance = distance * Math.sin(isoAngle);
-
-        this.camera.position.set(horizDistance, vertDistance, horizDistance);
-        this.camera.lookAt(0, 0, 0);
-
-        if (this.controls) {
-            this.controls.target.set(0, 0, 0);
-            this.controls.update();
-        }
-    }
-
-    setTopDownView(height = 200) {
-        this.camera.position.set(0, height, 0);
-        this.camera.lookAt(0, 0, 0);
-
-        if (this.controls) {
-            this.controls.target.set(0, 0, 0);
-            this.controls.update();
-        }
-    }
-
-    addPlayerLight(target, color = 0xffffbb, intensity = 0.7, distance = 50) {
-        const playerLight = new THREE.PointLight(color, intensity, distance);
-        playerLight.castShadow = true;
-        playerLight.shadow.mapSize.width = 512;
-        playerLight.shadow.mapSize.height = 512;
-
-        const updateLightPosition = () => {
-            const targetPosition = target.position || target;
-            playerLight.position.set(
-                targetPosition.x,
-                targetPosition.y + 10,
-                targetPosition.z
-            );
-        };
-
-        this.scene.add(playerLight);
-        updateLightPosition();
-
-        return {
-            light: playerLight,
-            update: updateLightPosition
-        };
-    }
 
     onDestroy() {
         window.removeEventListener('resize', this.onWindowResizeHandler);
@@ -772,139 +692,37 @@ debugger;
             const b = parseInt(hex.slice(5, 7), 16) / 255;
             return { r, g, b };
         };
-
+        const waterShader = this.game.config.shaders[this.level.waterShader];
         // Use the hex color in a ShaderMaterial
-        const colorToUse = this.tileMap.terrainTypes[terrainType].color;
-        const { r, g, b } = parseHexColor(colorToUse);
-        this.uniforms[terrainType] = {
-            time: { value: 0.0 },
-            waveHeight: { value: 2.0 }, // Height of waves
-            waveFrequency: { value: 5.0 }, // Frequency of primary waves
-            waveSpeed: { value: 0.25 }, // Speed of wave animation
-            liquidColor: { value: new THREE.Vector3(r, g, b) }, // Base RGB color as vec3
-            foamColor: { value: new THREE.Vector3(r, g, b) }, // Foam/highlight color
-            fresnelPower: { value: 0.0 }, // Controls fresnel effect intensity
-            lightDirection: { value: new THREE.Vector3(0.5, 0.5, 0.5) }, // Normalized light direction
-            ambientIntensity: { value: 1 }, // Ambient light contribution
-            specularIntensity: { value:1 } // Specular highlight intensity
-        };
-        
+        this.uniforms[terrainType] = JSON.parse(waterShader.uniforms);
+        let vectorizeProps = JSON.parse(waterShader.vectors);
+        vectorizeProps.forEach((prop => {
+            if (this.uniforms[terrainType][prop]) {
+                if( prop.toLowerCase().endsWith("color")){
+                    const colorToUse = this.tileMap.terrainTypes[terrainType].color;
+                    const { r, g, b } = parseHexColor(colorToUse);
+                    this.uniforms[terrainType][prop].value = new THREE.Vector3(r, g, b);
+                } else {
+                    let arr = this.uniforms[terrainType][prop].value;
+                    this.uniforms[terrainType][prop].value = new THREE.Vector3(arr[0], arr[1], arr[2]);
+                }
+            }
+        }));
         // Reference the uniforms
         const uniforms = this.uniforms[terrainType];
         
         // Create the shader material
         const material = new THREE.ShaderMaterial({
             uniforms: uniforms,
-            vertexShader: `
-                uniform float time;
-uniform float waveHeight;
-uniform float waveFrequency;
-uniform float waveSpeed;
-varying vec2 vUv;
-varying vec3 vNormal;
-varying vec3 vViewPosition;
-varying float vWaveHeight;
-varying float vNormalizedWaveHeight; // New varying for normalized height
-
-// Simple noise function for wave variation
-float snoise(vec2 co) {
-    return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453);
-}
-
-void main() {
-    vUv = uv;
-
-    // Combine multiple waves for more natural movement
-    float wave1 = sin(uv.x * waveFrequency + time * waveSpeed) * waveHeight;
-    float wave2 = sin(uv.y * waveFrequency * 0.7 + time * waveSpeed * 0.8) * waveHeight * 0.5;
-    float wave3 = cos((uv.x + uv.y) * waveFrequency * 0.5 + time * waveSpeed * 1.2) * waveHeight * 0.3;
-    float displacementY = (wave1 + wave2 + wave3) * 0.5;
-
-    // Store wave height for fragment shader
-    vWaveHeight = displacementY;
-
-    // Normalize wave height based on maximum possible displacement
-    float maxWaveHeight = waveHeight * (1.0 + 0.5 + 0.3) * 0.5; // Sum of wave amplitudes
-    vNormalizedWaveHeight = displacementY / maxWaveHeight;
-
-    // Update position with displacement
-    vec3 newPosition = vec3(position.x, position.y + displacementY, position.z);
-
-    // Compute normal for lighting
-    float offset = 0.01;
-    float waveX = (sin((uv.x + offset) * waveFrequency + time * waveSpeed) +
-                   sin((uv.y + offset) * waveFrequency * 0.7 + time * waveSpeed * 0.8) * 0.5 +
-                   cos((uv.x + uv.y + offset) * waveFrequency * 0.5 + time * waveSpeed * 1.2) * 0.3) * waveHeight * 0.5;
-    float waveZ = (sin((uv.x) * waveFrequency + time * waveSpeed) +
-                   sin((uv.y + offset) * waveFrequency * 0.7 + time * waveSpeed * 0.8) * 0.5 +
-                   cos((uv.x + uv.y + offset) * waveFrequency * 0.5 + time * waveSpeed * 1.2) * 0.3) * waveHeight * 0.5;
-    vec3 tangent = normalize(vec3(1.0, (waveX - displacementY) / offset, 0.0));
-    vec3 bitangent = normalize(vec3(0.0, (waveZ - displacementY) / offset, 1.0));
-    vNormal = normalize(cross(tangent, bitangent));
-
-    // Pass view position for fresnel and lighting
-    vec4 worldPosition = modelMatrix * vec4(newPosition, 1.0);
-    vViewPosition = (cameraPosition - worldPosition.xyz);
-
-    // Apply projection and model-view transforms
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
-}
-            `,
-            fragmentShader: `
-              uniform float time;
-uniform float waveHeight;
-uniform vec3 liquidColor;
-uniform vec3 foamColor;
-uniform float waveFrequency;
-uniform float fresnelPower;
-uniform vec3 lightDirection;
-uniform float ambientIntensity;
-uniform float specularIntensity;
-varying vec2 vUv;
-varying vec3 vNormal;
-varying vec3 vViewPosition;
-varying float vWaveHeight;
-varying float vNormalizedWaveHeight; // New varying for normalized height
-
-void main() {
-    vec2 uv = vUv;
-    vec3 normal = normalize(vNormal);
-    vec3 viewDir = normalize(vViewPosition);
-    vec3 lightDir = normalize(lightDirection);
-
-    // Fresnel effect for edge transparency
-    float fresnel = pow(1.0 - max(dot(normal, viewDir), 0.0), fresnelPower);
-
-    // Diffuse lighting
-    float diffuse = max(dot(normal, lightDir), 0.0) * 0.25;
-
-    // Specular (Blinn-Phong)
-    vec3 halfwayDir = normalize(lightDir + viewDir);
-    float specular = pow(max(dot(normal, halfwayDir), 0.0), 32.0) * specularIntensity;
-
-    // Base color with subtle wave height modulation
-    vec3 baseColor = liquidColor * (0.8 + 0.2 * vNormalizedWaveHeight); // Slight tint variation
-
-    // Foam effect based on normalized wave height
-    float foamFactor = smoothstep(0.8, 1.0, vNormalizedWaveHeight); // Tighter range for foam at peaks
-    vec3 color = mix(baseColor, foamColor, foamFactor);
-
-    // Combine lighting components
-    vec3 finalColor = color * (ambientIntensity + diffuse) + vec3(specular);
-
-    // Apply fresnel for transparency at edges
-    float alpha = mix(0.6, 1.0, fresnel);
-
-    gl_FragColor = vec4(finalColor, alpha);
-}
-            `,
+            vertexShader: waterShader.vertexScript,
+            fragmentShader: waterShader.fragmentScript,
             side: THREE.DoubleSide,
             transparent: true
         });
 
         // Replace the MeshBasicMaterial with this ShaderMaterial in the mesh creation
         const waterMesh = new THREE.Mesh(geometry, material);        
-        waterMesh.position.y = (terrainType + 2) * this.heightMapSettings.heightStep + this.heightMapSettings.heightStep*.5;
+        waterMesh.position.y = (terrainType + 2) * this.heightMapSettings.heightStep;
         this.scene.add(waterMesh); // Assuming `this.scene` is your THREE.js scene
     }
 }

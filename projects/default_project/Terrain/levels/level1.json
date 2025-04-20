@@ -1637,7 +1637,9 @@
         "y": -96
       }
     ],
-    "extensionTerrainType": 6
+    "extensionTerrainType": 5
   },
-  "world": "shire"
+  "world": "shire",
+  "grassShader": "grass",
+  "waterShader": "water"
 }
