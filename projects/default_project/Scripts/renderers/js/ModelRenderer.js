@@ -69,28 +69,6 @@ class ModelRenderer extends engine.Component {
         }
     }
     
-    getCurrentTile() {
-        if (!this.parent || !this.parent.position) {
-            return null;
-        }
-        
-        const gridPos = this.game.translator.pixelToGrid(this.parent.position.x, this.parent.position.y);
-        if(gridPos && this.game.state.tileMap.length > gridPos.y && gridPos.y > 0 && this.game.state.tileMap[Math.floor(gridPos.y)] && this.game.state.tileMap[Math.floor(gridPos.y)].length > gridPos.x && gridPos.x > 0){
-            return this.game.state.tileMap[Math.floor(gridPos.y)][Math.floor(gridPos.x)];
-        }
-        return { typeId: 0};
-    }
-
-    getCurrentTerrainHeight() {
-        const tile = this.getCurrentTile();
-        if (!tile) {
-            return 0;
-        }
-        
-        const terrainHeight = tile.typeId * this.game.heightMapConfig.heightStep;
-        return terrainHeight;
-    }
-
     draw() {
         if(!this.game.config.configs.game.is3D) {
             return;
@@ -105,7 +83,7 @@ class ModelRenderer extends engine.Component {
         if (this.parent && this.parent.position) {
             this.modelGroup.position.set(
                 this.parent.position.x,
-                this.parent.position.z || this.getCurrentTerrainHeight(),
+                this.parent.position.z,
                 this.parent.position.y
             );
             

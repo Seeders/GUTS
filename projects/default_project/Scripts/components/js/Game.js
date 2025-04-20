@@ -75,6 +75,18 @@ class Game extends engine.Component {
         
     }
 
+    getTerrainHeight(gridPosition) {
+        if(this.game.state.tileMap.length > gridPosition.y && gridPosition.y > 0 && this.game.state.tileMap[Math.floor(gridPosition.y)] && this.game.state.tileMap[Math.floor(gridPosition.y)].length > gridPosition.x && gridPosition.x > 0){
+            const tile = this.game.state.tileMap[Math.floor(gridPosition.y)][Math.floor(gridPosition.x)];
+            if (!tile) {
+                return 0;
+            }
+            
+            const terrainHeight = tile.typeId * this.game.heightMapConfig.heightStep;
+            return terrainHeight;
+        }
+        return 0;
+    }
     postUpdate() {
         
             if (this.game.state.gameOver || this.game.state.victory || this.game.state.isLevelingUp) return;

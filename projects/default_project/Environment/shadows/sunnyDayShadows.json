@@ -1,7 +1,7 @@
 {
   "title": "Sunny Day Shadows",
   "mapSize": 2048,
-  "bias": -0.0002,
+  "bias": -0.0005,
   "normalBias": 0.01,
   "radius": 2,
   "enabled": true

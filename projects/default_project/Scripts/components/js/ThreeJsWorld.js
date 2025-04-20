@@ -81,7 +81,7 @@ class ThreeJsWorld extends engine.Component {
             this.lightingSettings.directionalColor,
             this.lightingSettings.directionalIntensity
         );
-        this.directionalLight.position.set(this.extendedSize * 2, this.extendedSize * 2, this.extendedSize * 2);
+        this.directionalLight.position.set(this.extendedSize, this.extendedSize, this.extendedSize);
         this.directionalLight.castShadow = this.shadowSettings.enabled;
 
         if (this.shadowSettings.enabled) {
@@ -93,13 +93,13 @@ class ThreeJsWorld extends engine.Component {
             this.directionalLight.shadow.normalBias = this.shadowSettings.normalBias;
             this.directionalLight.shadow.radius = this.shadowSettings.radius;
 
-            const d = this.extendedSize * 0.6;
+            const d = this.extendedSize * 0.75;
             this.directionalLight.shadow.camera.left = -d;
             this.directionalLight.shadow.camera.right = d;
             this.directionalLight.shadow.camera.top = d;
             this.directionalLight.shadow.camera.bottom = -d;
 
-            this.directionalLight.target.position.set(-this.extendedSize * 2, 0, -this.extendedSize * 2);
+            this.directionalLight.target.position.set(-this.extendedSize, -this.extendedSize, -this.extendedSize);
             this.directionalLight.target.updateMatrixWorld();
             this.directionalLight.shadow.camera.updateProjectionMatrix();
         }
@@ -158,6 +158,7 @@ class ThreeJsWorld extends engine.Component {
             this.ground.rotation.x = -Math.PI / 2;
             this.ground.position.set(this.terrainSize / 2, 0, this.terrainSize / 2);
             this.ground.receiveShadow = true;
+            this.ground.castShadow = true;
             this.scene.add(this.ground);
         }
     }
@@ -183,7 +184,7 @@ class ThreeJsWorld extends engine.Component {
         this.ground.rotation.x = -Math.PI / 2;
         this.ground.position.set(this.terrainSize / 2, 0, this.terrainSize / 2);
         this.ground.receiveShadow = true;
-
+        this.ground.castShadow = true;
         this.scene.add(this.ground);
     }
 
@@ -396,6 +397,8 @@ class ThreeJsWorld extends engine.Component {
         
         this.uniforms['grass'].windDirection = { value: new THREE.Vector2(this.uniforms['grass'].windDirection.value[0], this.uniforms['grass'].windDirection.value[1]).normalize()};
         this.uniforms['grass'].map = { value: grassTexture };
+        this.uniforms['grass'].fogColor = { value: new THREE.Color(this.fogSettings.color) };
+        this.uniforms['grass'].fogDensity = { value: this.fogSettings.density};
         const uniforms = this.uniforms['grass'];
         this.grassMaterial = new THREE.ShaderMaterial({
             vertexShader: grassShader.vertexScript,
@@ -687,6 +690,8 @@ class ThreeJsWorld extends engine.Component {
                 }
             }
         }));
+        this.uniforms[terrainType].fogColor = { value: new THREE.Color(this.fogSettings.color) };
+        this.uniforms[terrainType].fogDensity = { value: this.fogSettings.density };
         // Reference the uniforms
         const uniforms = this.uniforms[terrainType];
         

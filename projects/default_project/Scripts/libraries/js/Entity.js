@@ -2,7 +2,7 @@ class Entity {
     constructor(game, x, y, type) {
         this.game = game;
         this.moduleManager = game.moduleManager;
-        this.position = { x: x, y: y };
+        this.position = { x: x, y: y, z: 0};
         this.components = [];
         this.renderers = [];
         this.destroyed = false;        
@@ -13,6 +13,14 @@ class Entity {
         this.lastPosition = {...this.position};
         this.lastGridPosition = {...this.gridPosition};
         this.lastDrawPosition = {...this.drawPosition};
+        if(this.game.gameEntity){
+            this.setGridPosition();
+            this.position.z = this.getCurrentTerrainHeight();
+        }
+    }
+
+    getCurrentTerrainHeight(){
+        return this.game.gameEntity.getComponent('game').getTerrainHeight(this.gridPosition);
     }
 
     getComponent(name) {
@@ -38,13 +46,24 @@ class Entity {
         }
     }
     setGridPosition() {
-        let gridPosition = this.game.translator.pixelToGrid( this.position.x, this.position.y ); 
-        this.gridPosition = this.game.translator.snapToGrid(gridPosition.x, gridPosition.y);   
+        if(this.game.translator){
+            let gridPosition = this.game.translator.pixelToGrid( this.position.x, this.position.y ); 
+            this.gridPosition = this.game.translator.snapToGrid(gridPosition.x, gridPosition.y);   
+            return;
+        }
+        this.gridPosition = { x: 0, y: 0 };
     }
     updateLastPositions() {
         this.lastPosition = {...this.position};
         this.lastGridPosition = {...this.gridPosition};
         this.lastDrawPosition = {...this.drawPosition};         
+    }
+    
+    getCurrentTile() {                     
+        if(this.game.state.tileMap.length > this.gridPosition.y && this.gridPosition.y > 0 && this.game.state.tileMap[Math.floor(this.gridPosition.y)] && this.game.state.tileMap[Math.floor(this.gridPosition.y)].length > this.gridPosition.x && this.gridPosition.x > 0){
+            return this.game.state.tileMap[Math.floor(this.gridPosition.y)][Math.floor(this.gridPosition.x)];
+        }
+        return { typeId: 0};
     }
     update() {    
         this.setGridPosition();

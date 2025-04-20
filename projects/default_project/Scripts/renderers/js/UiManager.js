@@ -145,6 +145,7 @@ class UiManager extends engine.Component {
             if (this.game.state.selectedTowerType && this.game.state.previewTower) {
                 this.game.state.previewTower.position.x = this.game.state.mousePosition.gridX * this.gridSize + this.gridSize / 2;
                 this.game.state.previewTower.position.y = this.game.state.mousePosition.gridY * this.gridSize + this.gridSize / 2;
+                this.game.state.previewTower.position.z = this.game.state.previewTower.getCurrentTerrainHeight();
                 const isValidPosition = this.checkValidTowerPosition(this.game.state.mousePosition.gridX, this.game.state.mousePosition.gridY);
                 this.canvas.style.cursor = isValidPosition ? 'pointer' : 'not-allowed';
             }

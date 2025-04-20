@@ -1,10 +1,10 @@
 {
   "title": "Sunny Day Lighting",
-  "ambientColor": "#aaddff",
+  "ambientColor": "#b3e5fc",
   "ambientIntensity": 0.4,
-  "directionalColor": "#fff8e1",
-  "directionalIntensity": 0.8,
-  "skyColor": "#87ceeb",
-  "groundColor": "#4a7c59",
+  "directionalColor": "#ffcc80",
+  "directionalIntensity": 0.7,
+  "skyColor": "#4fc3f7",
+  "groundColor": "#5a8a4f",
   "hemisphereIntensity": 0.5
 }

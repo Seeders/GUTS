@@ -49,7 +49,7 @@ class FollowPath extends engine.Component {
             // Convert grid coordinates to pixel coordinates
             this.parent.position.x = this.x * this.gridSize + this.gridSize / 2;
             this.parent.position.y = this.y * this.gridSize + this.gridSize / 2;
-            
+            this.parent.position.z = this.game.gameEntity.getComponent('game').getTerrainHeight(this.parent.gridPosition);
         } else {
             this.game.state.bloodCoreHP -= this.stats.value;
             this.parent.destroy();
