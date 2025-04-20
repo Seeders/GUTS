@@ -17,10 +17,10 @@ class Game extends engine.Component {
                                 { spawnType: 'keep', objectType: 'towers', setDirection: 1});
         this.keep.placed = true;
 
-
     }
 
     update() {
+        this.keep.position.z = this.getTerrainHeight(this.keep.gridPosition);
         if(this.game.config.configs.game.is3D){
             this.getComponent("MapRenderer")?.render(this.game.state.tileMapData, this.game.state.paths);
         } else {

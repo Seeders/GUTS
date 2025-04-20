@@ -398,18 +398,34 @@ class ThreeJsWorld extends engine.Component {
         this.uniforms['grass'].windDirection = { value: new THREE.Vector2(this.uniforms['grass'].windDirection.value[0], this.uniforms['grass'].windDirection.value[1]).normalize()};
         this.uniforms['grass'].map = { value: grassTexture };
         this.uniforms['grass'].fogColor = { value: new THREE.Color(this.fogSettings.color) };
-        this.uniforms['grass'].fogDensity = { value: this.fogSettings.density};
+        this.uniforms['grass'].fogDensity = this.fogSettings.enabled ? { value: this.fogSettings.density } : 0;
+        const lightDirection = new THREE.Vector3();
+        lightDirection.subVectors(this.directionalLight.position, this.directionalLight.target.position);
+        lightDirection.normalize();
+
+        this.uniforms['grass'].directionalLightColor = { value: new THREE.Color(this.lightingSettings.directionalColor) };
+        this.uniforms['grass'].directionalLightIntensity = { value: this.lightingSettings.directionalIntensity };
+        this.uniforms['grass'].directionalLightDirection = { value: lightDirection };
+        this.uniforms['grass'].ambientLightColor = { value: new THREE.Color(this.lightingSettings.ambientColor) };
+        this.uniforms['grass'].ambientLightIntensity = { value: this.lightingSettings.ambientIntensity };
+        this.uniforms['grass'].skyColor =  { value: new THREE.Color(this.lightingSettings.skyColor) }; // HemisphereLight sky color
+        this.uniforms['grass'].groundColor = { value: new THREE.Color(this.lightingSettings.groundColor) }; // HemisphereLight ground color
+        this.uniforms['grass'].hemisphereIntensity = { value: this.lightingSettings.hemisphereIntensity };
+
         const uniforms = this.uniforms['grass'];
         this.grassMaterial = new THREE.ShaderMaterial({
             vertexShader: grassShader.vertexScript,
             fragmentShader: grassShader.fragmentScript,
-            uniforms: uniforms
+            uniforms: uniforms,
+            transparent: true
         });
 
         this.grassShader = this.grassMaterial;
+        
+        grassGeometry.computeVertexNormals(); 
         const grass = new THREE.InstancedMesh(grassGeometry, this.grassMaterial, grassCount);
         grass.castShadow = true;
-        grass.receiveShadow = true;
+        grass.receiveShadow = false;
 
         const dummy = new THREE.Object3D();
 
@@ -485,31 +501,39 @@ class ThreeJsWorld extends engine.Component {
         const shape = new THREE.Shape();
         shape.moveTo(0, 0);
         shape.quadraticCurveTo(width * 0.5, height * 0.5, 0, height);
-
+    
         const shapeGeom = new THREE.ShapeGeometry(shape, 12);
-
         const positions = shapeGeom.attributes.position.array;
         const uvs = shapeGeom.attributes.uv.array;
         const vertexCount = positions.length / 3;
-
+    
         const newUVs = new Float32Array(uvs.length);
-
+        const newNormals = new Float32Array(positions.length);
+    
         for (let i = 0; i < vertexCount; i++) {
             const posIndex = i * 3;
             const uvIndex = i * 2;
-
+            const x = positions[posIndex];
             const y = positions[posIndex + 1];
             const normalizedY = y / height;
-
+    
             newUVs[uvIndex] = uvs[uvIndex];
             newUVs[uvIndex + 1] = normalizedY;
+    
+            // Compute normal: approximate outward direction along curve
+            const t = y / height; // Parameter along curve
+            const curveX = width * 0.5 * (1 - t); // Quadratic curve approximation
+            const tangent = new THREE.Vector2(curveX - x, y - (y - height * 0.5)).normalize();
+            const normal = new THREE.Vector2(-tangent.y, tangent.x); // Perpendicular to tangent
+            newNormals[posIndex] = normal.x;
+            newNormals[posIndex + 1] = 0;
+            newNormals[posIndex + 2] = normal.y;
         }
-
+    
         shapeGeom.setAttribute('uv', new THREE.BufferAttribute(newUVs, 2));
-
+        shapeGeom.setAttribute('normal', new THREE.BufferAttribute(newNormals, 3));
         return shapeGeom;
     }
-
     createGrassTexture() {
         const canvas = document.createElement('canvas');
         canvas.width = 4;
@@ -517,7 +541,7 @@ class ThreeJsWorld extends engine.Component {
         const ctx = canvas.getContext('2d');
 
         const gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);
-        gradient.addColorStop(0.0, this.game.palette["greenDColor"]);
+        gradient.addColorStop(0.0, this.game.palette["greenMColor"]);
         gradient.addColorStop(0.8, this.game.palette["greenMColor"]);
         gradient.addColorStop(1.0, this.game.palette["redLColor"]);
 
@@ -691,7 +715,7 @@ class ThreeJsWorld extends engine.Component {
             }
         }));
         this.uniforms[terrainType].fogColor = { value: new THREE.Color(this.fogSettings.color) };
-        this.uniforms[terrainType].fogDensity = { value: this.fogSettings.density };
+        this.uniforms[terrainType].fogDensity = this.fogSettings.enabled ? { value: this.fogSettings.density } : 0;
         // Reference the uniforms
         const uniforms = this.uniforms[terrainType];
         
