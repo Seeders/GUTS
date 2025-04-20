@@ -110,7 +110,7 @@ class Engine {
         this.entitiesToAdd.push(entity);
         return entity;
     }
-
+    
     createEntityFromConfig(x, y, type, params) {
 
         const entity = this.createEntity(x, y, type);
