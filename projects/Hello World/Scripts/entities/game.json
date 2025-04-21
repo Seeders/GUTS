@@ -1,0 +1,9 @@
+{
+  "title": "Game",
+  "components": [
+    "Game"
+  ],
+  "renderers": [
+    "UIManager"
+  ]
+}

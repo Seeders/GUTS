@@ -1,0 +1,13 @@
+{
+  "title": "Hello World",
+  "libraries": [
+    "Entity",
+    "Component",
+    "GameState"
+  ],
+  "fileName": "game",
+  "interface": "main",
+  "loaderComponent": "GameLoader",
+  "loaderEntity": "GameLoader",
+  "palette": "main"
+}
