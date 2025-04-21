@@ -136,22 +136,31 @@ class EditorController {
         );
         
         try {
-            // First load all required library modules
-            // Libraries provide common functionality needed by other modules
-            this.moduleManager.libraryClasses = await this.moduleManager.loadModules(
-                project.objectTypes.libraries
-            );
+            const editorConfig = project.objectTypes.configs?.editor;
+            
+           
             
             // Then load property editor modules based on editor configuration
-            const editorConfig = project.objectTypes.configs?.editor;
             if (editorConfig) {
                 // Filter property modules to only those specified in editor config
                 const editorModules = {};
-                editorConfig.editorModules.forEach((pm) => {
+                let moduleLibraries = {};
+                editorConfig.editorModules.forEach(async (pm) => {
                     if (project.objectTypes.editorModules[pm]) {
                         editorModules[pm] = project.objectTypes.editorModules[pm];
+
+                        const moduleLibraryNames = editorModules[pm].libraries;
+                        if(moduleLibraryNames && moduleLibraryNames.length > 0) {
+                            moduleLibraryNames.forEach((libraryName) => {
+                                moduleLibraries[libraryName] = project.objectTypes.libraries[libraryName];
+                            });
+                        }
+            
                     }
                 });
+                this.moduleManager.libraryClasses = await this.moduleManager.loadModules(moduleLibraries);
+
+
                 
                 // Load property module classes dynamically
                 this.editorModuleClasses = await this.moduleManager.loadModules(editorModules);
