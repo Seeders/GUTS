@@ -13,8 +13,6 @@ class EditorModel {
         // Configuration constants for game objects and editor
         this.CONFIG = {
             GRID_SIZE: 40,
-            DEFAULT_TOWER_SIZE: 30,
-            DEFAULT_TOWER_COLOR: '#ffffff',
             DEFAULT_RENDER: { model: [], animations: { idle: [{ main: { shapes: [], position: {x: 0, y: 0, z: 0}, rotation: {x:0,y:0,z:0}, scale: {x:1, y:1, z:1}} }] } },
             DEFAULT_TILEMAP: {},
             DEFAULT_SCRIPT: 'init(){\n\n}'
@@ -111,26 +109,7 @@ class EditorModel {
                 this.state.project = DEFAULT_PROJECT_CONFIG;            
             }
         } else {
-            if(location.hostname === "localhost"){
-                const response = await fetch('/load-config', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ projectName: this.state.currentProject }),
-                });
-
-                if (!response.ok) {
-                    if (response.status === 404) {                
-                        this.state.project = DEFAULT_PROJECT_CONFIG;
-                    } else {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                } else {
-                    const data = await response.json();            
-                    this.state.project = data.config;
-                }
-            } else {
+            if(location.hostname !== "localhost"){
                 this.state.project = JSON.parse(localStorage.getItem(this.state.currentProject)); 
             }
         }

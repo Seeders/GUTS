@@ -206,12 +206,17 @@ class FileSystemSyncService {
                 fileGroups[key].files.push(file);
             });
     
-    
+            this.currentCollections = {};
             const loadPromises = Object.values(fileGroups).map(group =>
                 this.loadFilesForObject(group.collectionId, group.objectId, group.files)
             );
     
             await Promise.all(loadPromises);
+            let collectionDefs = this.gameEditor.model.getCollectionDefs();
+            this.gameEditor.model.state.project = {
+                objectTypes: this.currentCollections,
+                objectTypeDefinitions: collectionDefs
+            }
             this.gameEditor.model.saveProject();
             console.log('All files successfully imported');
         } catch (error) {
@@ -221,11 +226,11 @@ class FileSystemSyncService {
     }
 
     async loadFilesForObject(collectionIdFromPath, objectId, files) {
-        const currentCollections = this.gameEditor.model.getCollections();
-        if (!currentCollections[collectionIdFromPath]) currentCollections[collectionIdFromPath] = {};
+      
+        if (!this.currentCollections[collectionIdFromPath]) this.currentCollections[collectionIdFromPath] = {};
     
         const jsonFile = files.find(f => f.name.endsWith('.json'));
-        let objectData = currentCollections[collectionIdFromPath][objectId] || {};
+        let objectData = this.currentCollections[collectionIdFromPath][objectId] || {};
     
         // Process JSON file if it exists
         if (jsonFile) {
@@ -266,7 +271,7 @@ class FileSystemSyncService {
             objectData.fileName = fileName;
         }
     
-        currentCollections[collectionIdFromPath][objectId] = objectData;
+        this.currentCollections[collectionIdFromPath][objectId] = objectData;
         const updateEvent = new CustomEvent('projectUpdated', { cancelable: true });
         document.body.dispatchEvent(updateEvent);
     }
@@ -484,7 +489,7 @@ class FileSystemSyncService {
                 if (existingObject && useDataFolder && fileNameFromFS !== existingObject.fileName) {
                     console.log(`Detected rename: ${existingObject.fileName} → ${fileNameFromFS} for id: ${canonicalId}`);
                     // Handle rename scenario (already implemented)
-                    // ...existing rename code...
+           
                 }
                 
                 // Update the base object data
