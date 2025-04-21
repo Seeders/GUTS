@@ -11,19 +11,9 @@
           "head": {
             "shapes": [
               {
-                "type": "box",
-                "width": 16,
-                "height": 14,
-                "depth": 22,
-                "x": 0,
-                "y": 42,
-                "z": 14,
                 "color": {
                   "paletteColor": "greenDColor"
                 },
-                "name": "head-main",
-                "texture": "scales",
-                "roughness": 0.8,
                 "id": 0
               },
               {
@@ -1363,7 +1353,7 @@
               "paletteColor": "greenDColor"
             },
             "name": "jaw-main",
-            "texture": "rough"
+            "texture": "scales"
           },
           {
             "type": "box",
@@ -1706,7 +1696,8 @@
             "rotationZ": 0,
             "scaleX": 1,
             "scaleY": 1,
-            "scaleZ": 1
+            "scaleZ": 1,
+            "texture": "scales"
           },
           {
             "type": "cone",
@@ -1823,7 +1814,8 @@
             },
             "name": "foot-right",
             "roughness": 0.8,
-            "rotationX": 20
+            "rotationX": 20,
+            "texture": "scales"
           },
           {
             "type": "cone",

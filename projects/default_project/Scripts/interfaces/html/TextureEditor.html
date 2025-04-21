@@ -21,10 +21,16 @@
                 <input type="color" id="custom-color-picker" value="#000000">
                 <label for="custom-color-picker">Custom Color</label>
             </div>
+            <div class="transparency-controls">
+                <label for="transparency-slider">Opacity: </label>
+                <input type="range" id="transparency-slider" min="0" max="255">
+                <span id="transparency-display">100%</span>
+            </div>
         </div>
         
         <div class="tool-section">
             <h3>Actions</h3>
+            <button id="new-btn">New</button>
             <button id="undo-btn" disabled>Undo</button>
             <button id="redo-btn" disabled>Redo</button>
             <button id="clear-btn">Clear</button>

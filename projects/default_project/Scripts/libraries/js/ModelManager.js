@@ -1,8 +1,8 @@
 class ModelManager {
-    constructor(app, { ShapeFactory, palette }) {
+    constructor(app, { ShapeFactory, palette, textures }) {
         this.app = app;
         this.models = {};
-        this.shapeFactory = new ShapeFactory(palette);
+        this.shapeFactory = new ShapeFactory(palette, textures);
     }
 
     clear() {

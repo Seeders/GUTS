@@ -22,7 +22,7 @@ class ModelRenderer extends engine.Component {
         }
         
         // Create the initial model instance
-        this.createInitialModel();
+        this.modelGroup = this.model.clone();  
         // Add the model group to the scene
         this.game.scene.add(this.modelGroup);
 
@@ -30,19 +30,6 @@ class ModelRenderer extends engine.Component {
         
         // Set initial animation
         this.setAnimation('idle');
-    }
-    
-    createInitialModel() {
-        // Clone the model to create the modelGroup
-        this.modelGroup = this.model.clone();
-        
-        // Set up shadow properties and assign userData.index based on modelData
-        this.modelGroup.traverse((obj) => {
-            if (obj.isMesh) {
-                obj.castShadow = true;
-                obj.receiveShadow = true;
-            }
-        });
     }
     
     setAnimation(animationName) {
@@ -151,7 +138,6 @@ class ModelRenderer extends engine.Component {
                 const index = obj.userData.index;
                 const groupData = frameData[groupName];
                 const modelGroupData = this.modelData[groupName];
-                
                 // Find shape in animationData by id (id: 1 maps to index 0)
                 let shape;
                 if (groupData?.shapes) {
@@ -195,13 +181,7 @@ class ModelRenderer extends engine.Component {
     }
     updateShapeTransforms(obj, shape, modelShape) {
         if (!modelShape) return;
-        let shapeColor = shape?.color || modelShape.color;
-        if(shapeColor.paletteColor){
-            shapeColor = this.game.palette[shapeColor.paletteColor];
-        }
-        let color = new THREE.Color(shapeColor);
-        obj.material.color.setRGB(color.r, color.g, color.b );
-    
+
         // Position (local to group)
         obj.position.set(
             shape?.x ?? modelShape.x ?? 0,

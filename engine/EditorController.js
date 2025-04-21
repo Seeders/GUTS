@@ -353,6 +353,10 @@ export class EditorController {
         return this.view.createColorInputGroup(value,  attributeName, attributeValue, container, callback);
     }
 
+    createTextureInputGroup(value, attributeName, attributeValue, container, callback){
+        return this.view.createTextureInputGroup(value,  attributeName, attributeValue, container, callback);
+    }
+
     getColorValue(value){        
         const palette = this.getPalette();   
         const colorToUse = palette && value.paletteColor ? palette[value.paletteColor] : value;

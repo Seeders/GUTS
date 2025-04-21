@@ -58,10 +58,7 @@ class TextureEditor {
         // Set initial UI state
         document.getElementById('noTextureMessage').style.display = 'block';
         this.canvas.style.display = 'none';
-        
-        // Add transparency slider
-        this.addTransparencyControls(container);
-        
+                
         // Add zoom controls to the UI
         this.addZoomControls(container);
         // Create a container for the canvas if it doesn't exist
@@ -74,48 +71,6 @@ class TextureEditor {
 
         }
     }
-    
-    addTransparencyControls(container) {
-        // Create transparency controls container
-        const transparencyContainer = document.createElement('div');
-        transparencyContainer.className = 'transparency-controls';
-        transparencyContainer.style.display = 'flex';
-        transparencyContainer.style.alignItems = 'center';
-        transparencyContainer.style.marginTop = '10px';
-        
-        // Label
-        const transparencyLabel = document.createElement('label');
-        transparencyLabel.htmlFor = 'transparency-slider';
-        transparencyLabel.innerText = 'Opacity: ';
-        
-        // Slider
-        const transparencySlider = document.createElement('input');
-        transparencySlider.type = 'range';
-        transparencySlider.id = 'transparency-slider';
-        transparencySlider.min = '0';
-        transparencySlider.max = '255';
-        transparencySlider.value = '255';
-        
-        // Display value
-        const transparencyDisplay = document.createElement('span');
-        transparencyDisplay.id = 'transparency-display';
-        transparencyDisplay.innerText = '100%';
-        transparencyDisplay.style.marginLeft = '10px';
-        transparencyDisplay.style.width = '50px';
-        
-        // Add all controls to container
-        transparencyContainer.appendChild(transparencyLabel);
-        transparencyContainer.appendChild(transparencySlider);
-        transparencyContainer.appendChild(transparencyDisplay);
-        
-        // Add container to the editor UI - place it after the color picker
-        const colorPicker = container.querySelector('#custom-color-picker');
-        if (colorPicker && colorPicker.parentNode) {
-            colorPicker.parentNode.insertBefore(transparencyContainer, colorPicker.nextSibling);
-        } else {
-            container.appendChild(transparencyContainer);
-        }
-    }    
     
     addZoomControls(container) {
         // Create zoom controls container
@@ -305,6 +260,7 @@ class TextureEditor {
         });
 
         // Action buttons
+        container.querySelector('#new-btn').addEventListener('click', () => this.newImage());
         container.querySelector('#undo-btn').addEventListener('click', () => this.undo());
         container.querySelector('#redo-btn').addEventListener('click', () => this.redo());
         container.querySelector('#clear-btn').addEventListener('click', () => this.clear());
@@ -808,6 +764,50 @@ class TextureEditor {
         if (redoBtn) {
             redoBtn.disabled = this.historyIndex >= this.history.length - 1;
         }
+    }
+
+    newImage() {
+        // Prompt user for dimensions
+        const width = prompt('Enter width for new texture (1-2048):', '64');
+        const height = prompt('Enter height for new texture (1-2048):', '64');
+    
+        // Validate input
+        const newWidth = parseInt(width);
+        const newHeight = parseInt(height);
+    
+        if (isNaN(newWidth) || isNaN(newHeight) || newWidth < 1 || newWidth > 2048 || newHeight < 1 || newHeight > 2048) {
+            alert('Invalid dimensions. Please enter values between 1 and 2048.');
+            return;
+        }
+    
+        // Save current state before creating a new texture
+        this.saveToHistory();
+    
+        // Set canvas dimensions
+        this.imageWidth = newWidth;
+        this.imageHeight = newHeight;
+        this.canvas.width = this.imageWidth;
+        this.canvas.height = this.imageHeight;
+    
+        // Clear canvas with full transparency
+        this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    
+        // Update dimensions display
+        this.updateDimensionsDisplay();
+    
+        // Show canvas and hide no texture message
+        document.getElementById('noTextureMessage').style.display = 'none';
+        this.canvas.style.display = 'block';
+    
+        // Reset zoom
+        this.resetZoom();
+    
+        // Save initial state to history
+        this.saveToHistory();
+    
+        // Render canvas with zoom
+        this.renderCanvas();
     }
 
     undo() {

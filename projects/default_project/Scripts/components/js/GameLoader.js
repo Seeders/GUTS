@@ -44,7 +44,7 @@ class GameLoader extends engine.Component {
     setupCanvas(canvasWidth, canvasHeight) {
         this.canvas = document.getElementById("gameCanvas");
         if(this.game.config.configs.game.is3D){
-            this.finalCtx = this.canvas.getContext("webgl");
+            this.finalCtx = this.canvas.getContext("webgl2");
         } else {
             this.finalCtx = this.canvas.getContext("2d");
         }
@@ -66,12 +66,12 @@ class GameLoader extends engine.Component {
         this.game.terrainCanvasBuffer = this.terrainCanvasBuffer;
     }
     async loadAssets() {
-        this.game.imageManager = new (this.game.libraryClasses.ImageManager)(this, { imageSize: this.config.configs.game.imageSize, palette: this.game.palette}, {ShapeFactory: this.game.libraryClasses.ShapeFactory});    
+        this.game.imageManager = new (this.game.libraryClasses.ImageManager)(this, { imageSize: this.config.configs.game.imageSize, palette: this.game.palette, textures:  this.game.config.textures}, {ShapeFactory: this.game.libraryClasses.ShapeFactory});    
         // Load all images
         for(let objectType in this.config) {
             await this.game.imageManager.loadImages(objectType, this.config[objectType]);
         }  
-        this.game.modelManager = new (this.game.libraryClasses.ModelManager)(this,{ShapeFactory: this.game.libraryClasses.ShapeFactory, palette: this.game.palette});    
+        this.game.modelManager = new (this.game.libraryClasses.ModelManager)(this,{ShapeFactory: this.game.libraryClasses.ShapeFactory, palette: this.game.palette, textures: this.game.config.textures});    
         for(let objectType in this.config) {
             await this.game.modelManager.loadModels(objectType, this.config[objectType]);
         }  

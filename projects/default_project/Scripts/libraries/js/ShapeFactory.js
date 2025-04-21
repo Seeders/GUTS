@@ -1,8 +1,9 @@
 class ShapeFactory {
-    constructor(palette) {
+    constructor(palette, textures) {
         this.gltfCache = new Map();
         this.gltfLoader = new THREE.GLTFLoader();
         this.palette = palette;
+        this.textures = textures;
     }
     async createMergedGroupFromJSON(model, frameData, groupName) {
         let mergedGroup = this.getMergedGroup(model, frameData, groupName);
@@ -21,7 +22,7 @@ class ShapeFactory {
             if (shape.type === 'gltf') {
                 await this.handleGLTFShape(shape, index, group);
             } else {
-                this.handlePrimitiveShape(shape, index, group);
+                await this.handlePrimitiveShape(shape, index, group);
             }
         }));
         group.position.x = groupData.position.x;
@@ -95,7 +96,7 @@ class ShapeFactory {
         }
     }
 
-    handlePrimitiveShape(shape, index, group) {
+    async handlePrimitiveShape(shape, index, group) {
         let geometry, material;
 
         let colorToUse = shape.color;
@@ -105,8 +106,51 @@ class ShapeFactory {
                 colorToUse = this.palette[shape.color.paletteColor];
             }
         }
-        // Create material with specified color
-        material = new THREE.MeshStandardMaterial({ color: colorToUse });
+        if(shape.texture){
+            // If a texture is specified, use it instead of the color
+            // If a texture is specified, use it instead of the color
+            const textureLoader = new THREE.TextureLoader();
+                
+            const textureData = this.textures[shape.texture];
+            
+            if( textureData ) {
+                const texture = await new Promise((resolve, reject) => {
+                    textureLoader.load(
+                        textureData.image,
+                        (loadedTexture) => {
+                            loadedTexture.wrapS = THREE.RepeatWrapping; // Use ClampToEdge instead of RepeatWrapping
+                            loadedTexture.wrapT = THREE.RepeatWrapping; // Use RepeatWrapping for vertical repeat
+                            loadedTexture.magFilter = THREE.NearestFilter;
+                            loadedTexture.minFilter = THREE.NearestFilter;
+                            loadedTexture.generateMipmaps = false;
+                            loadedTexture.anisotropy = 1;
+                            loadedTexture.needsUpdate = true;
+
+                            const meshWidth = shape.width || 1; // Mesh width in world units
+                            const meshHeight = shape.height || 1; // Mesh height in world units
+            
+                            const textureWidth = loadedTexture.image.width;
+                            const textureHeight = loadedTexture.image.height;
+                            const pixelsPerUnit = 2;
+                            const repeatX = Math.ceil((meshWidth * pixelsPerUnit) / textureWidth);
+                            const repeatY = Math.ceil((meshHeight * pixelsPerUnit) / textureHeight);
+                            loadedTexture.repeat.set(repeatX, repeatY);
+ 
+                            resolve(loadedTexture);
+                        },
+                        undefined,
+                        (error) => reject(error)
+                    );
+                });
+                document.body.appendChild(texture.image);
+                material = new THREE.MeshStandardMaterial({ map: texture });
+            } else {                
+                material = new THREE.MeshStandardMaterial({ color: colorToUse });
+            }
+        } else {            
+            // Create material with specified color
+            material = new THREE.MeshStandardMaterial({ color: colorToUse });
+        }
 
         switch (shape.type) {
             case 'sphere':

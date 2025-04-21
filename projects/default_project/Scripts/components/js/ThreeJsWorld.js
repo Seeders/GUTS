@@ -15,6 +15,7 @@ class ThreeJsWorld extends engine.Component {
         this.heightMapSettings = this.game.config.heightMaps[this.world.heightMap];      
         this.cameraSettings = this.game.config.cameras[this.world.camera];
 
+        this.heightStep = this.heightMapSettings.heightStep;
         this.showStats = false;
         this.clock = new THREE.Clock();
         this.onWindowResizeHandler = this.onWindowResize.bind(this);
@@ -24,9 +25,9 @@ class ThreeJsWorld extends engine.Component {
         this.extendedSize = this.terrainSize + 2 * this.world.extensionSize;
         this.heightMapResolution = this.extendedSize / this.heightMapSettings.resolutionDivisor;
         this.container = document.querySelector(containerSelector) || document.body;
-        this.renderer = new THREE.WebGLRenderer({ antialias: true, canvas: this.game.canvas });
-        this.renderer.setSize(width, height);
-        this.renderer.setPixelRatio(window.devicePixelRatio);
+        this.renderer = new THREE.WebGLRenderer({ antialias: true, canvas: this.game.canvas, alpha: true });
+        
+        this.renderer.setSize(width, height);        
         this.renderer.shadowMap.enabled = this.shadowSettings.enabled;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         this.uniforms = {};
@@ -129,7 +130,7 @@ class ThreeJsWorld extends engine.Component {
         this.game.renderer = this.renderer;
         this.game.ground = this.ground;
         this.drawn = false;
-        this.timer = 0;
+        this.timer = 0;        
     }
 
     setupGround() {
@@ -146,8 +147,8 @@ class ThreeJsWorld extends engine.Component {
         this.groundTexture = new THREE.CanvasTexture(this.groundCanvas);
         this.groundTexture.wrapS = THREE.ClampToEdgeWrapping;
         this.groundTexture.wrapT = THREE.ClampToEdgeWrapping;
-        this.groundTexture.minFilter = THREE.LinearFilter;
-        this.groundTexture.magFilter = THREE.LinearFilter;
+        this.groundTexture.minFilter = THREE.NearestFilter;
+        this.groundTexture.magFilter = THREE.NearestFilter;
 
         if (this.heightMapSettings) {
             this.createHeightMapTerrain();
@@ -166,7 +167,6 @@ class ThreeJsWorld extends engine.Component {
     createHeightMapTerrain() {
         this.heightMapData = new Float32Array(this.extendedSize * this.extendedSize);
         this.terrainTypes = this.tileMap.terrainTypes || [];
-        this.heightStep = this.heightMapSettings.heightStep;
 
         const segments = this.heightMapResolution;
         const groundGeometry = new THREE.PlaneGeometry(
@@ -346,12 +346,16 @@ class ThreeJsWorld extends engine.Component {
         this.camera.aspect = width / height;
         this.camera.updateProjectionMatrix();
         this.renderer.setSize(width, height);
+                // Ensure canvas display size matches resolution
+        this.game.canvas.style.width = `${width}px`;
+        this.game.canvas.style.height = `${height}px`;
     }
 
     update() {
         if (!this.game.config.configs.game.is3D) {
             return;
-        }
+        }   
+    
         if (this.controls) {
             this.controls.update();
         }
@@ -582,8 +586,8 @@ class ThreeJsWorld extends engine.Component {
         const texture = new THREE.CanvasTexture(canvas);
         texture.wrapS = THREE.RepeatWrapping;
         texture.wrapT = THREE.ClampToEdgeWrapping;
-        texture.magFilter = THREE.LinearFilter;
-        texture.minFilter = THREE.LinearFilter;
+        texture.magFilter = THREE.NearestFilter;
+        texture.minFilter = THREE.NearestFilter;
         return texture;
     }
 

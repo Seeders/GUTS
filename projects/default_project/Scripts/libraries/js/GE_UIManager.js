@@ -229,6 +229,7 @@ class GE_UIManager {
         }
         // Color picker
         this.addFormRow(inspector, 'Color', 'color', 'color', shape.color);
+        this.addFormRow(inspector, 'Texture', 'texture', 'texture', shape.texture);
         
         this.addFormRow(inspector, 'X Scale', 'number', 'scaleX', shape.scaleX || 1, { min: 0.1, step: 0.1 });
         this.addFormRow(inspector, 'Y Scale', 'number', 'scaleY', shape.scaleY || 1, { min: 0.1, step: 0.1 });
@@ -292,6 +293,13 @@ class GE_UIManager {
                 if(colorName){
                     this.graphicsEditor.getFrameShape()[property] = { paletteColor: colorName };
                 } else {
+                    this.graphicsEditor.getFrameShape()[property] = val;
+                }
+                this.graphicsEditor.refreshShapes(false);
+            });            
+        } else if(type === "texture") {
+            input = this.gameEditor.createTextureInputGroup(value, 'data-property', property, row, (val) => {
+                if(val){
                     this.graphicsEditor.getFrameShape()[property] = val;
                 }
                 this.graphicsEditor.refreshShapes(false);
