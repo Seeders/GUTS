@@ -1,12 +1,10 @@
-import { DEFAULT_PROJECT_CONFIG } from "../config/default_project_config.js";
-import { VERSION } from "../config/version.js";
 
 /**
  * Model class for the editor application.
  * Manages data storage, retrieval, and manipulation.
  * Handles project configurations and object collections.
  */
-export class EditorModel {
+class EditorModel {
     /**
      * Initializes the editor model with default configurations
      * and application state

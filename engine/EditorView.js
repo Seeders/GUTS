@@ -1,6 +1,4 @@
-import { DEFAULT_PROJECT_CONFIG } from "../config/default_project_config.js";
-
-export class EditorView {
+class EditorView {
     constructor(controller) {
       this.controller = controller;
       this.moduleManager = controller.moduleManager;

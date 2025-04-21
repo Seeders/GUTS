@@ -1,4 +1,4 @@
-export class FileSystemSyncService {
+class FileSystemSyncService {
     constructor(gameEditor) {
         this.gameEditor = gameEditor;
         this.elements = {};
@@ -152,7 +152,6 @@ export class FileSystemSyncService {
             if (!response.ok) throw new Error(`Failed to list files: ${response.status}`);
             const files = await response.json();
     
-            console.log('Found files:', files);
             if (files.length === 0) {
                 console.log('No files found, initializing project in filesystem');
                 this.saveProjectToFilesystem();
@@ -207,7 +206,6 @@ export class FileSystemSyncService {
                 fileGroups[key].files.push(file);
             });
     
-            console.log('File groups:', fileGroups);
     
             const loadPromises = Object.values(fileGroups).map(group =>
                 this.loadFilesForObject(group.collectionId, group.objectId, group.files)
@@ -241,7 +239,6 @@ export class FileSystemSyncService {
             const newData = JSON.parse(content);
             objectId = newData.id || objectId;
             Object.assign(objectData, newData);
-            console.log(`Loaded JSON for ${collectionIdFromPath}/${objectId}`);
         }
     
         // Process special property files (e.g., .html, .css)
@@ -260,7 +257,6 @@ export class FileSystemSyncService {
                 const content = await response.text();
                 objectData[propertyConfig.propertyName] = content;
                 this.typeHasSpecialProperties[collectionIdFromPath] = true;
-                console.log(`Loaded ${propertyConfig.propertyName} from ${fileInfo.name}`);
             }
         }
     
@@ -361,7 +357,6 @@ export class FileSystemSyncService {
                     if (!response.ok) {
                         throw new Error(`Failed to save ${propData.ext} file: ${filePath}`);
                     }
-                    console.log(`${propData.ext.toUpperCase()} file saved: ${filePath}`);
                 }
             );
 
@@ -409,7 +404,6 @@ export class FileSystemSyncService {
             return;
         }
 
-        console.log('Files changed since last sync:', files);
         const fileGroups = {};
         const currentCollections = this.gameEditor.model.getCollections();
 

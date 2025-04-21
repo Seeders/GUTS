@@ -1,4 +1,4 @@
-export class ModuleManager {
+class ModuleManager {
   constructor(editorCore, collections, mainContentContainer, modalContainer){
     this.core = editorCore;
     this.collections = collections;
