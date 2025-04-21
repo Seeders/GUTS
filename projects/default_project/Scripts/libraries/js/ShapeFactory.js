@@ -76,7 +76,7 @@ class ShapeFactory {
         const cached = this.gltfCache.get(shape.url);
         if (cached) {
             applyTransformations(cached.scene.clone());
-        } else if (shape.url) {
+        } else if (shape.url && location.hostname !== "") {
             // Wrap gltfLoader.load in a Promise to properly await it
             await new Promise((resolve, reject) => {
                 this.gltfLoader.load(
@@ -93,6 +93,9 @@ class ShapeFactory {
                     }
                 );
             });
+        } else {
+            shape.type = "sphere";
+            return await this.handlePrimitiveShape(shape, index, group);
         }
     }
 

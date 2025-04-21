@@ -5,8 +5,6 @@
   "isIsometric": false,
   "libraries": [
     "threejs",
-    "three.OrbitControls",
-    "GLTFLoader",
     "ShapeFactory",
     "ImageManager",
     "SpatialGrid",
@@ -17,7 +15,9 @@
     "Entity",
     "Component",
     "GameState",
-    "ModelManager"
+    "ModelManager",
+    "three.OrbitControls",
+    "GLTFLoader"
   ],
   "fileName": "game",
   "interface": "main",

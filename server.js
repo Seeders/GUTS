@@ -40,7 +40,7 @@ app.post('/save-config', async (req, res) => {
             await fs.mkdir(CONFIG_DIR, { recursive: true });
         }
         if(projectName == "DEFAULT_PROJECT") {
-            await fs.writeFile(filePath1, `const ${projectName}_CONFIG = ${JSON.stringify(config, null, 2)}; \n\n export { ${projectName}_CONFIG };`, 'utf8');
+            await fs.writeFile(filePath1, `const ${projectName}_CONFIG = ${JSON.stringify(config, null, 2)}; `, 'utf8');
         } else {
             await fs.writeFile(`${filePath1}on`, `${JSON.stringify(config, null, 2)}`, 'utf8');
         }

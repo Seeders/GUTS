@@ -1,6 +1,3 @@
-import { DEFAULT_PROJECT_CONFIG } from "../config/default_project_config.js";
-import { ModuleManager } from "./ModuleManager.js";
-
 class Engine {
     constructor(target) {
         this.entityId = 0;
@@ -169,7 +166,7 @@ class Engine {
                 const data = await response.json();            
                 gameData = data.config;
             }
-        } else {
+        } else if(location.hostname !== "") {
             gameData = JSON.parse(localStorage.getItem(currentProject)); 
         }
 
@@ -177,5 +174,3 @@ class Engine {
     }
 
 }
-
-export { Engine };

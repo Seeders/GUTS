@@ -1,14 +1,9 @@
-import { EditorModel } from './EditorModel.js';
-import { EditorView } from './EditorView.js';
-import { ModuleManager } from './ModuleManager.js';
-import { FileSystemSyncService } from './FileSystemSyncService.js';
-
 /**
  * Main controller class for the editor application.
  * Coordinates between the data model and the user interface.
  * Follows MVC architecture pattern.
  */
-export class EditorController {
+class EditorController {
     /**
      * Initializes the editor controller, sets up model, and caches DOM elements
      */
