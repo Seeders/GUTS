@@ -978,4 +978,31 @@ export class EditorView {
       }
       return input;
     }
+
+    createTextureInputGroup(value, attributeName, attributeValue, container, callback){
+
+      let input = document.createElement('select');
+      if(attributeName) {
+        input.setAttribute(attributeName, attributeValue);
+      }
+      input.addEventListener('change', (e) => {   
+        callback(e.target.value);   
+      });
+      let empty = document.createElement('option');
+      empty.value = "";
+      empty.textContent = "Select...";
+      input.appendChild(empty);
+      for(let textureName in this.controller.getCollections().textures){
+          const texture = this.controller.getCollections().textures[textureName];
+          const option = document.createElement('option');
+          option.value = textureName;
+          option.textContent = texture.title;
+
+          if( textureName === value) {
+              option.selected = true; // Set the current terrain texture as selected
+          }
+          input.appendChild(option);
+      }
+      return input;
+    }
   }
