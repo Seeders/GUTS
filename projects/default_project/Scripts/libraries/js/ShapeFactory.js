@@ -142,7 +142,6 @@ class ShapeFactory {
                         (error) => reject(error)
                     );
                 });
-                document.body.appendChild(texture.image);
                 material = new THREE.MeshStandardMaterial({ map: texture });
             } else {                
                 material = new THREE.MeshStandardMaterial({ color: colorToUse });
