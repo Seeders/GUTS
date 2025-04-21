@@ -223,7 +223,7 @@ class Game extends engine.Component {
                 'mistShrine',
                 (state) => true,
                 (stats, additiveStats, multiplicitiveStats) => {
-                    multiplicitiveStats['slowEffect'].push(this.game.config.upgrades.mistSlow.slowEffect);
+                    multiplicitiveStats['slowAmount'].push(this.game.config.upgrades.mistSlow.slowAmount);
                 }
             ),
             // Global Upgrades

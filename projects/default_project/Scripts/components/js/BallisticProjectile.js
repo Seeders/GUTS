@@ -183,8 +183,8 @@ processSplashDamage() {
                 enemyHealth.hp -= damageResult.damageDealt;
                 enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);
                 this.game.spawn(enemy.position.x, enemy.position.y, "hitEffect", { damageType: this.stats.damageType , lifeSpan: .3});
-                if (this.ownerStats.slowEffect) {
-                    enemyStats.addEffect(this.game.config.effects.slow, this.game.effects.slow, this.ownerStats.slowEffect);
+                if (this.ownerStats.slowAmount) {
+                    enemyStats.addEffect(this.game.config.effects.slow, this.game.effects.slow, this.ownerStats.slowAmount);
                 }
             }
         }

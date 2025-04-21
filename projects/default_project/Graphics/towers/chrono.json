@@ -9,7 +9,7 @@
   "projectile": "cryoMist",
   "critMultiplier": 1,
   "splashRadius": 2,
-  "slowEffect": 0.7,
+  "slowAmount": 0.7,
   "render": {
     "animations": {
       "idle": [

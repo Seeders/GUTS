@@ -112,11 +112,11 @@ handleEnemyCollision(enemy) {
       damageType: this.stats.damageType,
       lifeSpan: 0.3
     });
-    if (this.ownerStats.slowEffect) {
+    if (this.ownerStats.slowAmount) {
       enemyStats.addEffect(
         this.game.config.effects.slow,
         this.game.effects.slow,
-        this.ownerStats.slowEffect
+        this.ownerStats.slowAmount
       );
     }
   }
@@ -227,11 +227,11 @@ applySplashDamage(centerEnemy) {
           damageType: this.stats.damageType,
           lifeSpan: 0.3
         });
-        if (this.ownerStats.slowEffect) {
+        if (this.ownerStats.slowAmount) {
           enemyStats.addEffect(
             this.game.config.effects.slow,
             this.game.effects.slow,
-            this.ownerStats.slowEffect
+            this.ownerStats.slowAmount
           );
         }
       }

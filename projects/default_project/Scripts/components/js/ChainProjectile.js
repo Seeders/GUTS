@@ -76,8 +76,8 @@ class ChainProjectile extends engine.Component {
 
         // Apply additional effects (e.g., slow, leech) to all hit targets
         for (let enemy of this.chainTargets) {
-            if (this.ownerStats.slowEffect) {
-                enemy.getComponent("stats").addEffect(this.game.config.effects.slow, this.game.effects.slow, this.ownerStats.slowEffect);
+            if (this.ownerStats.slowAmount) {
+                enemy.getComponent("stats").addEffect(this.game.config.effects.slow, this.game.effects.slow, this.ownerStats.slowAmount);
             }
             if (this.ownerStats.leech > 0) {
                 const healing = this.stats.damage * this.ownerStats.leech * this.game.state.stats.healingMultiplier;
