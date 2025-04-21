@@ -2,7 +2,6 @@ import { EditorModel } from './EditorModel.js';
 import { EditorView } from './EditorView.js';
 import { ModuleManager } from './ModuleManager.js';
 import { FileSystemSyncService } from './FileSystemSyncService.js';
-import { DEFAULT_PROJECT_CONFIG } from "../config/default_app_config.js";
 
 /**
  * Main controller class for the editor application.
@@ -51,7 +50,6 @@ export class EditorController {
     async init() {
         // Make sure default projects exist in localStorage
         this.model.initializeDefaultProjects();
-
         // Determine which project to load (saved or default)
         const initialProject = this.model.getInitialProject();
         await this.loadProject(initialProject);

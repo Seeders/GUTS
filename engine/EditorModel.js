@@ -1,4 +1,4 @@
-import { DEFAULT_PROJECT_CONFIG } from "../config/default_app_config.js";
+import { DEFAULT_PROJECT_CONFIG } from "../config/default_project_config.js";
 import { VERSION } from "../config/version.js";
 
 /**
@@ -96,26 +96,47 @@ export class EditorModel {
      */
     async loadProject(name) {
   
-        const config = localStorage.getItem(name);
+       // const config = localStorage.getItem(name);
         
-        if (!config) {
-            // Fallback to default project if selected doesn't exist
-            this.state.currentProject = "default_project";
-            this.state.project = DEFAULT_PROJECT_CONFIG;
-        } else {
-            this.state.currentProject = name;
-            this.state.project = JSON.parse(config);
-        }
+       
+        this.state.currentProject = name;
 
         try {
             // Remember current project for next session
             localStorage.setItem("currentProject", this.state.currentProject);
         } catch (e) {
             console.warn('Error saving to localStorage:', e);
-        }
-    
+        }    
+        if( this.state.currentProject == "default_project" ){
+            this.state.project = JSON.parse(localStorage.getItem(this.state.currentProject)); 
+            if(!this.state.project){
+                this.state.project = DEFAULT_PROJECT_CONFIG;            
+            }
+        } else {
+            if(location.hostname === "localhost"){
+                const response = await fetch('/load-config', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ projectName: this.state.currentProject }),
+                });
 
-        return this.state.project;
+                if (!response.ok) {
+                    if (response.status === 404) {                
+                        this.state.project = DEFAULT_PROJECT_CONFIG;
+                    } else {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                } else {
+                    const data = await response.json();            
+                    this.state.project = data.config;
+                }
+            } else {
+                this.state.project = JSON.parse(localStorage.getItem(this.state.currentProject)); 
+            }
+        }
+
     }
 
     /**
@@ -129,7 +150,7 @@ export class EditorModel {
         const configText = JSON.stringify(this.state.project);
         try {
             
-            if(window.location.hostname != "localhost" || this.state.currentProject != "default_project") {
+            if(window.location.hostname != "localhost") {
                 // Save to localStorage
                 localStorage.setItem(this.state.currentProject, configText);
             } else {
@@ -140,7 +161,10 @@ export class EditorModel {
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: configText
+                    body: JSON.stringify({
+                        config: configText,
+                        projectName: this.state.currentProject
+                    })
                 })
                 .then(response => {
                     if (!response.ok) throw new Error('Failed to save config');

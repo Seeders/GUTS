@@ -1,4 +1,4 @@
-import { DEFAULT_PROJECT_CONFIG } from "../config/default_app_config.js";
+import { DEFAULT_PROJECT_CONFIG } from "../config/default_project_config.js";
 import { ModuleManager } from "./ModuleManager.js";
 
 class Engine {
@@ -16,7 +16,7 @@ class Engine {
     }
 
     async init() {
-        this.config = this.loadCollections();
+        this.config = await this.loadCollections();
       
         if (!this.config) {
             console.error("Failed to load game configuration");
@@ -146,11 +146,31 @@ class Engine {
         return entity;
     }
 
-    loadCollections() {
+    async loadCollections() {
         let currentProject = localStorage.getItem("currentProject");
         let gameData = DEFAULT_PROJECT_CONFIG;
-        if (currentProject && !(currentProject == "default_project" && window.location.hostname === "localhost")) {
-            gameData = JSON.parse(localStorage.getItem(currentProject));   
+
+        if(location.hostname === "localhost"){
+            const response = await fetch('/load-config', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ projectName: currentProject }),
+            });
+
+            if (!response.ok) {
+                if (response.status === 404) {                
+                    gameData = DEFAULT_PROJECT_CONFIG;
+                } else {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+            } else {
+                const data = await response.json();            
+                gameData = data.config;
+            }
+        } else {
+            gameData = JSON.parse(localStorage.getItem(currentProject)); 
         }
 
         return gameData.objectTypes;

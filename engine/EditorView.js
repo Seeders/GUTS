@@ -1,4 +1,4 @@
-import { DEFAULT_PROJECT_CONFIG } from "../config/default_app_config.js";
+import { DEFAULT_PROJECT_CONFIG } from "../config/default_project_config.js";
 
 export class EditorView {
     constructor(controller) {
@@ -720,7 +720,7 @@ export class EditorView {
             this.showNewProjectModal();
           } else {
             this.elements.app.style.display = 'none';
-            this.controller.loadProject(e.target.value);
+            localStorage.setItem("currentProject", e.target.value);
             window.location.reload();
           }
         });
@@ -730,7 +730,7 @@ export class EditorView {
           if (confirm(`Delete project "${this.controller.getCurrentProject()}"?`)) {
             this.controller.deleteProject(this.controller.getCurrentProject());
             this.elements.app.style.display = 'none';
-            this.controller.loadProject("default_project");
+            localStorage.setItem("currentProject", "default_project");
             window.location.reload();
           }
         });

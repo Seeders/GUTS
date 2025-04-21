@@ -31,21 +31,46 @@ const SUPPORTED_EXTENSIONS = ['.json', '.js', '.html', '.css']; // Add more if n
 
 // Endpoint to save the config
 app.post('/save-config', async (req, res) => {
-    const config = req.body;
-    const filePath1 = path.join(CONFIG_DIR, 'default_app_config.js');
+    const config = JSON.parse(req.body.config);
+    const projectName = req.body.projectName.toUpperCase().replace(/ /g, '_');
+    const filePath1 = path.join(CONFIG_DIR, `${projectName}_config.js`);
 
     try {
         if (!fsSync.existsSync(CONFIG_DIR)) {
             await fs.mkdir(CONFIG_DIR, { recursive: true });
         }
-        await fs.writeFile(filePath1, "const DEFAULT_PROJECT_CONFIG = " + JSON.stringify(config, null, 2) + "; \n\n export { DEFAULT_PROJECT_CONFIG };", 'utf8');
+        if(projectName == "DEFAULT_PROJECT") {
+            await fs.writeFile(filePath1, `const ${projectName}_CONFIG = ${JSON.stringify(config, null, 2)}; \n\n export { ${projectName}_CONFIG };`, 'utf8');
+        } else {
+            await fs.writeFile(`${filePath1}on`, `${JSON.stringify(config, null, 2)}`, 'utf8');
+        }
         res.status(200).send('Config saved successfully!');
     } catch (error) {
         console.error('Error saving config:', error);
         res.status(500).send('Error saving config');
     }
 });
+app.post('/load-config', async (req, res) => {
+    const projectName = req.body.projectName.toUpperCase().replace(/ /g, '_');
+    const filePath = path.join(CONFIG_DIR, `${projectName}_config.json`);
+    try {
+        if (!projectName) {
+            return res.status(400).send('Project name is required');
+        }
 
+        if (!fsSync.existsSync(filePath)) {
+            return res.status(404).send('Config not found');
+        }
+
+        // Read and parse the JSON file        
+        const config = JSON.parse(await fsSync.promises.readFile(filePath, 'utf8'));
+
+        res.status(200).json({ config });
+    } catch (error) {
+        console.error('Error loading config:', error);
+        res.status(500).send('Error loading config');
+    }
+});
 app.post('/upload-model', upload.single('gltfFile'), async (req, res) => {
     try {
         if (!req.file) {
