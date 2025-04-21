@@ -187,13 +187,27 @@ class ThreeJsWorld extends engine.Component {
         this.ground.castShadow = true;
         this.scene.add(this.ground);
     }
-
+    findClosestTerrainType(r, g, b, terrainTypeColors) {
+        let minDistance = Infinity;
+        let bestTypeIndex = null;
+        let toleranceSquared = 36;
+        for (const [colorKey, typeIndex] of Object.entries(terrainTypeColors)) {
+            const [cr, cg, cb] = colorKey.split(',').map(Number);
+            const distance = ((r - cr) ** 2 + (g - cg) ** 2 + (b - cb) ** 2);
+            if (distance < minDistance && distance < toleranceSquared) { // Adjust tolerance as needed
+                minDistance = distance;
+                bestTypeIndex = typeIndex;
+            }
+        }
+        return bestTypeIndex;
+    }
     updateHeightMap() {
         if (!this.heightMapSettings.enabled || !this.game.terrainCanvasBuffer) return;
 
         try {
             const terrainCanvas = this.game.terrainCanvasBuffer;
-            const ctx = terrainCanvas.getContext('2d');
+            const ctx = terrainCanvas.getContext('2d', { alpha: false, willReadFrequently: true });
+            ctx.imageSmoothingEnabled = false;
             const terrainData = ctx.getImageData(0, 0, terrainCanvas.width, terrainCanvas.height).data;
 
             const terrainTypeColors = this.createTerrainTypeColorMap();
@@ -215,11 +229,10 @@ class ThreeJsWorld extends engine.Component {
                     const r = terrainData[pixelIndex];
                     const g = terrainData[pixelIndex + 1];
                     const b = terrainData[pixelIndex + 2];
-                    const colorKey = `${r},${g},${b}`;
             
-                    const typeIndex = terrainTypeColors[colorKey];
+                    const typeIndex = this.findClosestTerrainType(r,g,b,terrainTypeColors) ?? extensionHeight;
                     let height = typeIndex !== undefined ? typeIndex * this.heightStep : extensionHeight;
-            
+
                     // Check neighboring pixels for lower terrain types
                     let neighborCheckDist = this.heightMapSettings.resolutionDivisor - 1;
                     const neighbors = [

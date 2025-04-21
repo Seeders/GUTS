@@ -9,8 +9,8 @@ class UiManager extends engine.Component {
         this.canvas = canvas;
         this.canvasBuffer = canvasBuffer;
         if(this.game.config.configs.game.is3D) {
-            this.finalCtx = this.canvas.getContext("webgl");
-            this.ctx = this.canvasBuffer.getContext("webgl");
+            this.finalCtx = this.canvas.getContext("webgl2");
+            this.ctx = this.canvasBuffer.getContext("webgl2");
         } else {
             this.finalCtx = this.canvas.getContext("2d");
             this.ctx = this.canvasBuffer.getContext("2d");
