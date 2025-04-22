@@ -111,6 +111,26 @@ class EditorModel {
         } else {
             if(location.hostname !== "localhost"){
                 this.state.project = JSON.parse(localStorage.getItem(this.state.currentProject)); 
+            } else {
+                const response = await fetch('/load-config', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ projectName: this.state.currentProject }),
+                });
+    
+                if (!response.ok) {
+                    if (response.status === 404) {                
+                        gameData = DEFAULT_PROJECT_CONFIG;
+                    } else {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                } else {
+                    debugger;
+                    const data = await response.json();            
+                    this.state.project = data.config;
+                }
             }
         }
 

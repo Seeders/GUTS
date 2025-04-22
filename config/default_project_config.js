@@ -1,6 +1,40 @@
 const DEFAULT_PROJECT_CONFIG = {
   "objectTypes": {
     "attackSounds": {
+      "laser": {
+        "title": "Laser",
+        "audio": {
+          "waveform": "triangle",
+          "frequency": 197,
+          "duration": 0.1,
+          "envelope": {
+            "attack": 0.001,
+            "decay": 0.076,
+            "sustain": 0.5,
+            "release": 0.001
+          },
+          "pitchEnvelope": {
+            "start": 3.41,
+            "end": 0.23,
+            "time": 0.1
+          },
+          "effects": {
+            "filter": {
+              "type": "lowpass",
+              "frequency": 400,
+              "Q": 1
+            },
+            "distortion": 5,
+            "delay": {
+              "time": 0.27,
+              "feedback": 0.09
+            },
+            "reverb": 0,
+            "bitcrusher": 0,
+            "pan": 0
+          }
+        }
+      },
       "gunshot": {
         "title": "GunShot",
         "audio": {
@@ -43,8 +77,8 @@ const DEFAULT_PROJECT_CONFIG = {
           }
         }
       },
-      "laser": {
-        "title": "Laser",
+      "plasma": {
+        "title": "Plasma",
         "audio": {
           "waveform": "triangle",
           "frequency": 197,
@@ -68,8 +102,8 @@ const DEFAULT_PROJECT_CONFIG = {
             },
             "distortion": 5,
             "delay": {
-              "time": 0.27,
-              "feedback": 0.09
+              "time": 0,
+              "feedback": 0
             },
             "reverb": 0,
             "bitcrusher": 0,
@@ -114,40 +148,6 @@ const DEFAULT_PROJECT_CONFIG = {
               "feedback": 0
             },
             "reverb": 0.11,
-            "bitcrusher": 0,
-            "pan": 0
-          }
-        }
-      },
-      "plasma": {
-        "title": "Plasma",
-        "audio": {
-          "waveform": "triangle",
-          "frequency": 197,
-          "duration": 0.1,
-          "envelope": {
-            "attack": 0.001,
-            "decay": 0.076,
-            "sustain": 0.5,
-            "release": 0.001
-          },
-          "pitchEnvelope": {
-            "start": 3.41,
-            "end": 0.23,
-            "time": 0.1
-          },
-          "effects": {
-            "filter": {
-              "type": "lowpass",
-              "frequency": 400,
-              "Q": 1
-            },
-            "distortion": 5,
-            "delay": {
-              "time": 0,
-              "feedback": 0
-            },
-            "reverb": 0,
             "bitcrusher": 0,
             "pan": 0
           }
@@ -301,48 +301,6 @@ const DEFAULT_PROJECT_CONFIG = {
           }
         }
       },
-      "placeTower": {
-        "title": "Place Tower",
-        "audio": {
-          "waveform": "sine",
-          "frequency": 20,
-          "duration": 0.2,
-          "noise": {
-            "type": "pink",
-            "amount": 0.8,
-            "filter": {
-              "type": "lowpass",
-              "frequency": 400
-            }
-          },
-          "envelope": {
-            "attack": 0.01,
-            "decay": 0,
-            "sustain": 0.1,
-            "release": 0.001
-          },
-          "pitchEnvelope": {
-            "start": 4,
-            "end": 4,
-            "time": 0.2
-          },
-          "effects": {
-            "filter": {
-              "type": "lowpass",
-              "frequency": 500,
-              "Q": 1
-            },
-            "distortion": 0,
-            "delay": {
-              "time": 0.05,
-              "feedback": 0.2
-            },
-            "reverb": 0.3,
-            "bitcrusher": 0.4,
-            "pan": 0
-          }
-        }
-      },
       "test": {
         "title": "test",
         "audio": {
@@ -382,6 +340,48 @@ const DEFAULT_PROJECT_CONFIG = {
             },
             "reverb": 0.15,
             "bitcrusher": 0,
+            "pan": 0
+          }
+        }
+      },
+      "placeTower": {
+        "title": "Place Tower",
+        "audio": {
+          "waveform": "sine",
+          "frequency": 20,
+          "duration": 0.2,
+          "noise": {
+            "type": "pink",
+            "amount": 0.8,
+            "filter": {
+              "type": "lowpass",
+              "frequency": 400
+            }
+          },
+          "envelope": {
+            "attack": 0.01,
+            "decay": 0,
+            "sustain": 0.1,
+            "release": 0.001
+          },
+          "pitchEnvelope": {
+            "start": 4,
+            "end": 4,
+            "time": 0.2
+          },
+          "effects": {
+            "filter": {
+              "type": "lowpass",
+              "frequency": 500,
+              "Q": 1
+            },
+            "distortion": 0,
+            "delay": {
+              "time": 0.05,
+              "feedback": 0.2
+            },
+            "reverb": 0.3,
+            "bitcrusher": 0.4,
             "pan": 0
           }
         }
@@ -432,6 +432,10 @@ const DEFAULT_PROJECT_CONFIG = {
         "desc": "Towers cost 15% less Blood Shards",
         "value": 0.85
       },
+      "bloodFrenzy": {
+        "desc": "All towers deal 20% more damage",
+        "damageMultiplier": 1.2
+      },
       "bloodHarvest": {
         "desc": "Gain 25% more Blood Shards from enemies",
         "value": 1.25
@@ -440,60 +444,56 @@ const DEFAULT_PROJECT_CONFIG = {
         "desc": "All healing effects are 25% more effective",
         "healingMultiplier": 1.25
       },
-      "bloodFrenzy": {
-        "desc": "All towers deal 20% more damage",
-        "damageMultiplier": 1.2
+      "darkResilience": {
+        "desc": "Towers take 20% less damage from enemy abilities",
+        "towerDamageReduction": 0.8
       },
       "dematerializeSentry": {
         "desc": "Heal 0.5% Core HP per hit",
         "leech": 0.005
       },
-      "darkResilience": {
-        "desc": "Towers take 20% less damage from enemy abilities",
-        "towerDamageReduction": 0.8
-      },
       "essenceExtraction": {
         "desc": "Gain 25% more Essence from enemies",
         "value": 1.25
       },
-      "mistSlow": {
-        "desc": "Slow effect increased by 20%",
-        "slowAmount": 0.8
-      },
-      "mistSpread": {
-        "desc": "+25% Range and +1 Piercing",
-        "range": 1.25,
-        "piercing": 1
-      },
       "essenceOverflow": {
         "desc": "Gain 10% more Essence when above 50% Core HP",
         "value": 1.1
+      },
+      "mistSlow": {
+        "desc": "Slow effect increased by 20%",
+        "slowAmount": 0.8
       },
       "necroMastery": {
         "desc": "+20% Range and projectiles pierce one additional enemy",
         "range": 1.2,
         "piercing": 1
       },
-      "necroSummon": {
-        "desc": "10% chance to raise a skeleton when killing an enemy",
-        "summonChance": 1.1
-      },
-      "overCharge": {
-        "desc": "+30% Range",
-        "range": 1.3
-      },
       "pyreBlaze": {
         "desc": "+20% Damage and +10% Attack Speed",
         "damage": 1.2,
         "attackSpeed": 1.1
       },
-      "sentryFrenzy": {
-        "desc": "+5% Attack Speed",
-        "value": 0.95
+      "necroSummon": {
+        "desc": "10% chance to raise a skeleton when killing an enemy",
+        "summonChance": 1.1
       },
       "pyreBurn": {
         "desc": "+50% Burn Damage",
         "burnDamage": 1
+      },
+      "mistSpread": {
+        "desc": "+25% Range and +1 Piercing",
+        "range": 1.25,
+        "piercing": 1
+      },
+      "overCharge": {
+        "desc": "+30% Range",
+        "range": 1.3
+      },
+      "sentryFrenzy": {
+        "desc": "+5% Attack Speed",
+        "value": 0.95
       },
       "pyreSoul": {
         "desc": "+10% splash radius",
@@ -504,13 +504,13 @@ const DEFAULT_PROJECT_CONFIG = {
         "damage": 1.15,
         "range": 1.1
       },
-      "shadowPierce": {
-        "desc": "Projectiles pierce 2 additional enemies",
-        "piercing": 2
-      },
       "shadowCrit": {
         "desc": "+10% Critical Chance",
         "critChance": 0.1
+      },
+      "shadowPierce": {
+        "desc": "Projectiles pierce 2 additional enemies",
+        "piercing": 2
       }
     },
     "waves": {
@@ -791,6 +791,17 @@ const DEFAULT_PROJECT_CONFIG = {
       }
     },
     "wavesets": {
+      "level1_start1": {
+        "title": "Level 1 - Start 1",
+        "waves": [
+          "wave1",
+          "wave1",
+          "wave1",
+          "wave1",
+          "wave1",
+          "swarm"
+        ]
+      },
       "level1_start2": {
         "title": "Level 1 - Start 2",
         "waves": [
@@ -806,17 +817,6 @@ const DEFAULT_PROJECT_CONFIG = {
       "swarm": {
         "title": "Swarm",
         "waves": [
-          "swarm"
-        ]
-      },
-      "level1_start1": {
-        "title": "Level 1 - Start 1",
-        "waves": [
-          "wave1",
-          "wave1",
-          "wave1",
-          "wave1",
-          "wave1",
           "swarm"
         ]
       }
@@ -1833,6 +1833,213 @@ const DEFAULT_PROJECT_CONFIG = {
         },
         "armor": 50,
         "title": "blood beast"
+      },
+      "ghost": {
+        "hp": 1,
+        "speed": 1.5,
+        "value": 10,
+        "essence": 15,
+        "render": {
+          "animations": {
+            "idle": [
+              {}
+            ],
+            "walk": [
+              {},
+              {},
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 32,
+                      "id": 0
+                    },
+                    {
+                      "y": 22,
+                      "id": 1
+                    },
+                    {
+                      "y": 12,
+                      "id": 2
+                    },
+                    {
+                      "y": 7,
+                      "id": 3
+                    },
+                    {
+                      "y": 7,
+                      "id": 4
+                    },
+                    {
+                      "y": 7,
+                      "id": 5
+                    },
+                    {
+                      "y": 32,
+                      "id": 6
+                    },
+                    {
+                      "y": 32,
+                      "id": 7
+                    },
+                    {
+                      "y": 29,
+                      "id": 8
+                    }
+                  ]
+                }
+              },
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 32,
+                      "id": 0
+                    },
+                    {
+                      "y": 22,
+                      "id": 1
+                    },
+                    {
+                      "y": 12,
+                      "id": 2
+                    },
+                    {
+                      "y": 7,
+                      "id": 3
+                    },
+                    {
+                      "y": 7,
+                      "id": 4
+                    },
+                    {
+                      "y": 7,
+                      "id": 5
+                    },
+                    {
+                      "y": 32,
+                      "id": 6
+                    },
+                    {
+                      "y": 32,
+                      "id": 7
+                    },
+                    {
+                      "y": 29,
+                      "id": 8
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "sphere",
+                  "size": 16,
+                  "color": "#C2E8F7",
+                  "x": 0,
+                  "y": 31,
+                  "z": 0,
+                  "scaleX": 1
+                },
+                {
+                  "type": "sphere",
+                  "size": 14,
+                  "color": "#D8F0F9",
+                  "x": 0,
+                  "y": 21,
+                  "z": 0
+                },
+                {
+                  "type": "sphere",
+                  "size": 12,
+                  "color": "#E5F6FC",
+                  "x": 0,
+                  "y": 11,
+                  "z": 0
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 14,
+                  "color": "#E5F6FC",
+                  "x": 6,
+                  "y": 6,
+                  "z": 0,
+                  "rotationX": 180
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 14,
+                  "color": "#E5F6FC",
+                  "x": -6,
+                  "y": 6,
+                  "z": 0,
+                  "rotationX": 180
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 14,
+                  "color": "#E5F6FC",
+                  "x": 0,
+                  "y": 6,
+                  "z": 0,
+                  "rotationX": 180
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "color": "#1A1A1A",
+                  "x": 4,
+                  "y": 31,
+                  "z": 7
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "color": "#1A1A1A",
+                  "x": -4,
+                  "y": 31,
+                  "z": 7
+                },
+                {
+                  "type": "sphere",
+                  "size": 8,
+                  "color": "#1A1A1A",
+                  "x": 0,
+                  "y": 28,
+                  "z": 4,
+                  "rotationX": 45,
+                  "rotationY": 0,
+                  "rotationZ": 0
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
+          }
+        },
+        "evasion": 75,
+        "energyShield": 30,
+        "title": "ghost"
       },
       "blueDragon": {
         "hp": 500,
@@ -2924,213 +3131,6 @@ const DEFAULT_PROJECT_CONFIG = {
         "electricResistance": 25,
         "title": "Blue Dragon"
       },
-      "ghost": {
-        "hp": 1,
-        "speed": 1.5,
-        "value": 10,
-        "essence": 15,
-        "render": {
-          "animations": {
-            "idle": [
-              {}
-            ],
-            "walk": [
-              {},
-              {},
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 32,
-                      "id": 0
-                    },
-                    {
-                      "y": 22,
-                      "id": 1
-                    },
-                    {
-                      "y": 12,
-                      "id": 2
-                    },
-                    {
-                      "y": 7,
-                      "id": 3
-                    },
-                    {
-                      "y": 7,
-                      "id": 4
-                    },
-                    {
-                      "y": 7,
-                      "id": 5
-                    },
-                    {
-                      "y": 32,
-                      "id": 6
-                    },
-                    {
-                      "y": 32,
-                      "id": 7
-                    },
-                    {
-                      "y": 29,
-                      "id": 8
-                    }
-                  ]
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 32,
-                      "id": 0
-                    },
-                    {
-                      "y": 22,
-                      "id": 1
-                    },
-                    {
-                      "y": 12,
-                      "id": 2
-                    },
-                    {
-                      "y": 7,
-                      "id": 3
-                    },
-                    {
-                      "y": 7,
-                      "id": 4
-                    },
-                    {
-                      "y": 7,
-                      "id": 5
-                    },
-                    {
-                      "y": 32,
-                      "id": 6
-                    },
-                    {
-                      "y": 32,
-                      "id": 7
-                    },
-                    {
-                      "y": 29,
-                      "id": 8
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          "model": {
-            "shapes": {
-              "shapes": [
-                {
-                  "type": "sphere",
-                  "size": 16,
-                  "color": "#C2E8F7",
-                  "x": 0,
-                  "y": 31,
-                  "z": 0,
-                  "scaleX": 1
-                },
-                {
-                  "type": "sphere",
-                  "size": 14,
-                  "color": "#D8F0F9",
-                  "x": 0,
-                  "y": 21,
-                  "z": 0
-                },
-                {
-                  "type": "sphere",
-                  "size": 12,
-                  "color": "#E5F6FC",
-                  "x": 0,
-                  "y": 11,
-                  "z": 0
-                },
-                {
-                  "type": "cone",
-                  "size": 8,
-                  "height": 14,
-                  "color": "#E5F6FC",
-                  "x": 6,
-                  "y": 6,
-                  "z": 0,
-                  "rotationX": 180
-                },
-                {
-                  "type": "cone",
-                  "size": 8,
-                  "height": 14,
-                  "color": "#E5F6FC",
-                  "x": -6,
-                  "y": 6,
-                  "z": 0,
-                  "rotationX": 180
-                },
-                {
-                  "type": "cone",
-                  "size": 8,
-                  "height": 14,
-                  "color": "#E5F6FC",
-                  "x": 0,
-                  "y": 6,
-                  "z": 0,
-                  "rotationX": 180
-                },
-                {
-                  "type": "sphere",
-                  "size": 4,
-                  "color": "#1A1A1A",
-                  "x": 4,
-                  "y": 31,
-                  "z": 7
-                },
-                {
-                  "type": "sphere",
-                  "size": 4,
-                  "color": "#1A1A1A",
-                  "x": -4,
-                  "y": 31,
-                  "z": 7
-                },
-                {
-                  "type": "sphere",
-                  "size": 8,
-                  "color": "#1A1A1A",
-                  "x": 0,
-                  "y": 28,
-                  "z": 4,
-                  "rotationX": 45,
-                  "rotationY": 0,
-                  "rotationZ": 0
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            }
-          }
-        },
-        "evasion": 75,
-        "energyShield": 30,
-        "title": "ghost"
-      },
       "greenDragon": {
         "hp": 500,
         "speed": 0.5,
@@ -4184,6 +4184,3916 @@ const DEFAULT_PROJECT_CONFIG = {
         "coldResistance": 50,
         "electricResistance": 50,
         "title": "Green Dragon"
+      },
+      "orc": {
+        "essence": 5,
+        "speed": 1,
+        "value": 1,
+        "hp": 10,
+        "render": {
+          "animations": {
+            "idle": [
+              {}
+            ],
+            "walk": [
+              {},
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 26.757142857142853,
+                      "rotationY": -10,
+                      "id": 0
+                    },
+                    {
+                      "y": 41.75714285714285,
+                      "id": 1
+                    },
+                    {
+                      "y": 41.75714285714285,
+                      "id": 2
+                    },
+                    {
+                      "y": 38.257142857142846,
+                      "id": 3
+                    },
+                    {
+                      "y": 43.75714285714285,
+                      "id": 4
+                    },
+                    {
+                      "y": 43.75714285714285,
+                      "id": 5
+                    },
+                    {
+                      "y": 43.75714285714285,
+                      "id": 6
+                    },
+                    {
+                      "y": 43.75714285714285,
+                      "id": 7
+                    },
+                    {
+                      "y": 27.75714285714285,
+                      "z": -1,
+                      "rotationX": 11,
+                      "id": 8
+                    },
+                    {
+                      "y": 27.75714285714285,
+                      "z": 3.6,
+                      "rotationX": -14,
+                      "id": 9
+                    },
+                    {
+                      "x": 11.6,
+                      "y": 15.757142857142853,
+                      "z": -3.2,
+                      "rotationX": 10,
+                      "id": 10
+                    },
+                    {
+                      "x": -12.4,
+                      "y": 15.757142857142853,
+                      "z": 6.5,
+                      "rotationX": -14,
+                      "id": 11
+                    },
+                    {
+                      "y": 7.757142857142849,
+                      "z": 3,
+                      "rotationX": -4,
+                      "id": 12
+                    },
+                    {
+                      "y": 7.757142857142849,
+                      "z": -1,
+                      "rotationX": 21,
+                      "id": 13
+                    },
+                    {
+                      "y": -0.24285714285715443,
+                      "z": 5.1,
+                      "id": 14
+                    },
+                    {
+                      "x": -4.1,
+                      "y": 1,
+                      "z": -1.6,
+                      "rotationX": 26,
+                      "id": 15
+                    },
+                    {
+                      "y": 44.75714285714285,
+                      "id": 16
+                    },
+                    {
+                      "y": 44.75714285714285,
+                      "id": 17
+                    },
+                    {
+                      "y": 48.2,
+                      "id": 18
+                    },
+                    {
+                      "y": 36.75714285714285,
+                      "id": 19
+                    },
+                    {
+                      "y": 36.75714285714285,
+                      "id": 20
+                    },
+                    {
+                      "y": 17.757142857142853,
+                      "rotationY": -10,
+                      "id": 21
+                    },
+                    {
+                      "y": 40.75714285714285,
+                      "id": 22
+                    },
+                    {
+                      "y": 12.999999999999996,
+                      "z": 2.6,
+                      "rotationX": -60,
+                      "id": 23
+                    },
+                    {
+                      "x": 12.1,
+                      "y": 5,
+                      "z": 17,
+                      "id": 24
+                    },
+                    {
+                      "y": 9.5,
+                      "z": 19.7,
+                      "rotationY": 0,
+                      "rotationX": 30,
+                      "id": 25
+                    },
+                    {
+                      "y": 0,
+                      "z": 14.5,
+                      "rotationX": -150,
+                      "id": 26
+                    },
+                    {
+                      "x": 7.5,
+                      "y": 4.8,
+                      "z": 17.3,
+                      "id": 27
+                    },
+                    {
+                      "x": 16.6,
+                      "y": 4.8,
+                      "z": 17.3,
+                      "id": 28
+                    },
+                    {
+                      "x": 12.1,
+                      "y": 2.5999999999999996,
+                      "z": 21,
+                      "rotationX": 120,
+                      "id": 29
+                    },
+                    {
+                      "y": 21.757142857142853,
+                      "id": 30
+                    },
+                    {
+                      "y": 38,
+                      "z": 1,
+                      "rotationX": 105,
+                      "id": 31
+                    },
+                    {
+                      "y": 38,
+                      "z": 1,
+                      "rotationX": 75,
+                      "id": 32
+                    }
+                  ]
+                }
+              },
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 29.757142857142853,
+                      "id": 8
+                    },
+                    {
+                      "y": 29.757142857142853,
+                      "id": 9
+                    },
+                    {
+                      "y": 14.999999999999993,
+                      "id": 29
+                    }
+                  ]
+                }
+              },
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 26.757142857142853,
+                      "rotationY": 10,
+                      "id": 0
+                    },
+                    {
+                      "y": 41.75714285714285,
+                      "id": 1
+                    },
+                    {
+                      "y": 41.75714285714285,
+                      "id": 2
+                    },
+                    {
+                      "y": 38.257142857142846,
+                      "id": 3
+                    },
+                    {
+                      "y": 43.75714285714285,
+                      "id": 4
+                    },
+                    {
+                      "y": 43.75714285714285,
+                      "id": 5
+                    },
+                    {
+                      "y": 43.75714285714285,
+                      "id": 6
+                    },
+                    {
+                      "y": 43.75714285714285,
+                      "id": 7
+                    },
+                    {
+                      "y": 27.75714285714285,
+                      "z": 3,
+                      "rotationX": -14,
+                      "id": 8
+                    },
+                    {
+                      "x": -11.9,
+                      "y": 27.75714285714285,
+                      "rotationX": 16,
+                      "id": 9
+                    },
+                    {
+                      "y": 15.757142857142853,
+                      "z": 6,
+                      "rotationX": -14,
+                      "id": 10
+                    },
+                    {
+                      "y": 16,
+                      "z": -1.7,
+                      "rotationX": 11,
+                      "id": 11
+                    },
+                    {
+                      "y": 7.757142857142849,
+                      "z": -1.3,
+                      "rotationX": 16,
+                      "id": 12
+                    },
+                    {
+                      "y": 7.757142857142849,
+                      "z": 5,
+                      "rotationY": 0,
+                      "rotationX": -15,
+                      "id": 13
+                    },
+                    {
+                      "y": 0.20000000000000018,
+                      "z": -1.4,
+                      "rotationX": 16,
+                      "id": 14
+                    },
+                    {
+                      "y": -0.24285714285715443,
+                      "z": 8.1,
+                      "id": 15
+                    },
+                    {
+                      "y": 44.75714285714285,
+                      "id": 16
+                    },
+                    {
+                      "y": 44.75714285714285,
+                      "id": 17
+                    },
+                    {
+                      "y": 48.2,
+                      "id": 18
+                    },
+                    {
+                      "y": 36.75714285714285,
+                      "id": 19
+                    },
+                    {
+                      "y": 36.75714285714285,
+                      "id": 20
+                    },
+                    {
+                      "y": 17.757142857142853,
+                      "rotationY": 10,
+                      "id": 21
+                    },
+                    {
+                      "y": 40.75714285714285,
+                      "id": 22
+                    },
+                    {
+                      "y": 12.999999999999996,
+                      "rotationX": 60,
+                      "id": 23
+                    },
+                    {
+                      "x": 12.1,
+                      "y": 20,
+                      "z": 20,
+                      "id": 24
+                    },
+                    {
+                      "y": 24.4,
+                      "rotationX": -24,
+                      "id": 25
+                    },
+                    {
+                      "y": 15.2,
+                      "z": 21.8,
+                      "rotationX": 160,
+                      "id": 26
+                    },
+                    {
+                      "x": 7.6,
+                      "y": 20,
+                      "z": 20,
+                      "id": 27
+                    },
+                    {
+                      "x": 16.700000000000003,
+                      "y": 20,
+                      "z": 20,
+                      "id": 28
+                    },
+                    {
+                      "y": 22.3,
+                      "rotationX": 60,
+                      "id": 29
+                    },
+                    {
+                      "y": 21.757142857142853,
+                      "id": 30
+                    },
+                    {
+                      "y": 38,
+                      "z": 0,
+                      "rotationX": 75,
+                      "id": 31
+                    },
+                    {
+                      "y": 38,
+                      "z": 4,
+                      "rotationX": 105,
+                      "id": 32
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 14,
+                  "height": 18,
+                  "depth": 10,
+                  "x": 0,
+                  "y": 28.757142857142853,
+                  "z": 1.4857142857142973,
+                  "color": "#496a29",
+                  "name": "torso",
+                  "scaleX": 1
+                },
+                {
+                  "type": "sphere",
+                  "size": 15,
+                  "x": 0,
+                  "y": 43.75714285714285,
+                  "z": 1.4857142857143,
+                  "color": "#5c6628",
+                  "name": "head"
+                },
+                {
+                  "type": "box",
+                  "width": 5,
+                  "height": 4,
+                  "depth": 6,
+                  "x": 0,
+                  "y": 43.75714285714285,
+                  "z": 7.485714285714296,
+                  "color": "#686f20",
+                  "name": "nose"
+                },
+                {
+                  "type": "box",
+                  "width": 12,
+                  "height": 3,
+                  "depth": 6,
+                  "x": 0,
+                  "y": 40.257142857142846,
+                  "z": 5.485714285714296,
+                  "color": "#7d4023",
+                  "name": "jaw"
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "x": 4.5,
+                  "y": 45.75714285714285,
+                  "z": 5.985714285714293,
+                  "color": "#c5c5c5",
+                  "name": "eye-right"
+                },
+                {
+                  "type": "sphere",
+                  "size": 1.5,
+                  "x": 5,
+                  "y": 45.75714285714285,
+                  "z": 7.4857142857143,
+                  "color": "#000000",
+                  "name": "pupil-right"
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "x": -4.5,
+                  "y": 45.75714285714285,
+                  "z": 5.985714285714293,
+                  "color": "#c5c5c5",
+                  "name": "eye-left"
+                },
+                {
+                  "type": "sphere",
+                  "size": 1.5,
+                  "x": -5,
+                  "y": 45.75714285714285,
+                  "z": 7.4857142857143,
+                  "color": "#000000",
+                  "name": "pupil-left"
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 20,
+                  "depth": 6,
+                  "x": 11.999999999999998,
+                  "y": 29.75714285714285,
+                  "z": 1.4857142857142973,
+                  "color": "#496a29",
+                  "name": "arm-right"
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 20,
+                  "depth": 6,
+                  "x": -12.000000000000002,
+                  "y": 29.75714285714285,
+                  "z": 1.4857142857142973,
+                  "color": "#496a29",
+                  "name": "arm-left"
+                },
+                {
+                  "type": "box",
+                  "width": 8,
+                  "height": 5,
+                  "depth": 7,
+                  "x": 11.999999999999998,
+                  "y": 17.757142857142853,
+                  "z": 2.4857142857142978,
+                  "color": "#496a29",
+                  "name": "hand-right"
+                },
+                {
+                  "type": "box",
+                  "width": 8,
+                  "height": 5,
+                  "depth": 7,
+                  "x": -12.000000000000002,
+                  "y": 17.757142857142853,
+                  "z": 2.4857142857142978,
+                  "color": "#496a29",
+                  "name": "hand-left"
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 15,
+                  "depth": 6,
+                  "x": 4,
+                  "y": 9.75714285714285,
+                  "z": 1.4857142857142982,
+                  "color": "#496a29",
+                  "name": "leg-right"
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 15,
+                  "depth": 6,
+                  "x": -4,
+                  "y": 9.75714285714285,
+                  "z": 1.4857142857142982,
+                  "color": "#496a29",
+                  "name": "leg-left"
+                },
+                {
+                  "type": "box",
+                  "width": 7,
+                  "height": 3,
+                  "depth": 10,
+                  "x": 4,
+                  "y": 1.7571428571428456,
+                  "z": 3.4857142857143026,
+                  "color": "#3B3B3B",
+                  "name": "foot-right"
+                },
+                {
+                  "type": "box",
+                  "width": 7,
+                  "height": 3,
+                  "depth": 10,
+                  "x": -4,
+                  "y": 1.7571428571428456,
+                  "z": 3.4857142857143026,
+                  "color": "#3B3B3B",
+                  "name": "foot-left"
+                },
+                {
+                  "type": "box",
+                  "width": 3,
+                  "height": 6,
+                  "depth": 2,
+                  "x": 6.499999999999998,
+                  "y": 46.75714285714285,
+                  "z": 0.4857142857142964,
+                  "color": "#686b23",
+                  "name": "ear-right"
+                },
+                {
+                  "type": "box",
+                  "width": 3,
+                  "height": 6,
+                  "depth": 2,
+                  "x": -6.5,
+                  "y": 46.75714285714285,
+                  "z": 0.4857142857142964,
+                  "color": "#686b23",
+                  "name": "ear-left"
+                },
+                {
+                  "type": "cone",
+                  "size": 16,
+                  "height": 5,
+                  "x": 0,
+                  "y": 50.2,
+                  "z": 1.4857142857142929,
+                  "rotationX": 0,
+                  "color": "#555555",
+                  "name": "helmet"
+                },
+                {
+                  "type": "box",
+                  "width": 1.5,
+                  "height": 3,
+                  "depth": 0.7,
+                  "x": 4,
+                  "y": 38.75714285714285,
+                  "z": 8.485714285714296,
+                  "color": "#c5c5c5",
+                  "name": "tusk-right"
+                },
+                {
+                  "type": "box",
+                  "width": 1.5,
+                  "height": 3,
+                  "depth": 0.7,
+                  "x": -4,
+                  "y": 38.75714285714285,
+                  "z": 8.485714285714296,
+                  "color": "#c5c5c5",
+                  "name": "tusk-left"
+                },
+                {
+                  "type": "box",
+                  "width": 15,
+                  "height": 3,
+                  "depth": 11,
+                  "x": 0,
+                  "y": 19.757142857142853,
+                  "z": 1.4857142857142982,
+                  "color": "#8B4513",
+                  "name": "belt"
+                },
+                {
+                  "type": "box",
+                  "width": 7,
+                  "height": 9,
+                  "depth": 3,
+                  "x": 0,
+                  "y": 42.75714285714285,
+                  "z": -4.514285714285706,
+                  "color": "#222222",
+                  "name": "hair"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 30,
+                  "x": 11.999999999999998,
+                  "y": 14.999999999999996,
+                  "z": 7.000000000000014,
+                  "color": "#8B4513",
+                  "name": "club-handle",
+                  "rotationZ": 0,
+                  "rotationX": 90
+                },
+                {
+                  "type": "sphere",
+                  "size": 9,
+                  "x": 11.999999999999998,
+                  "y": 14.999999999999996,
+                  "z": 18.000000000000014,
+                  "color": "#8B4513",
+                  "name": "club-head"
+                },
+                {
+                  "type": "cone",
+                  "size": 4,
+                  "height": 5,
+                  "x": 12.1,
+                  "y": 19.999999999999996,
+                  "z": 18.000000000000014,
+                  "rotationY": 90,
+                  "color": "#808080",
+                  "name": "club-spike-1"
+                },
+                {
+                  "type": "cone",
+                  "size": 4,
+                  "height": 5,
+                  "x": 12.1,
+                  "y": 9.999999999999996,
+                  "z": 18.000000000000014,
+                  "rotationY": 0,
+                  "color": "#808080",
+                  "name": "club-spike-2",
+                  "rotationX": 180
+                },
+                {
+                  "type": "cone",
+                  "size": 4,
+                  "height": 5,
+                  "x": 6.6,
+                  "y": 14.999999999999996,
+                  "z": 18.000000000000014,
+                  "rotationY": 0,
+                  "color": "#808080",
+                  "name": "club-spike-3",
+                  "rotationZ": 90,
+                  "rotationX": 0
+                },
+                {
+                  "type": "cone",
+                  "size": 4,
+                  "height": 5,
+                  "x": 17.6,
+                  "y": 14.999999999999996,
+                  "z": 18.000000000000014,
+                  "rotationY": 0,
+                  "color": "#808080",
+                  "name": "club-spike-4",
+                  "rotationX": 90,
+                  "rotationZ": -90
+                },
+                {
+                  "type": "cone",
+                  "size": 4,
+                  "height": 5,
+                  "x": 11.999999999999998,
+                  "y": 14.999999999999995,
+                  "z": 24.00000000000002,
+                  "rotationX": 90,
+                  "color": "#808080",
+                  "name": "club-spike-top"
+                },
+                {
+                  "type": "box",
+                  "width": 12,
+                  "height": 4,
+                  "depth": 4,
+                  "x": 0,
+                  "y": 23.757142857142853,
+                  "z": -3.5142857142857027,
+                  "color": "#333333",
+                  "name": "back-armor"
+                },
+                {
+                  "type": "box",
+                  "width": 7,
+                  "height": 7,
+                  "depth": 2,
+                  "x": 12,
+                  "y": 40,
+                  "z": 1.4857142857142973,
+                  "color": "#796020",
+                  "name": "shoulder-pad-right",
+                  "rotationX": 90
+                },
+                {
+                  "type": "box",
+                  "width": 7,
+                  "height": 7,
+                  "depth": 2,
+                  "x": -12,
+                  "y": 40,
+                  "z": 1.4857142857142973,
+                  "color": "#796020",
+                  "name": "shoulder-pad-left",
+                  "rotationX": 90
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
+          }
+        },
+        "armor": 100,
+        "title": "Orc"
+      },
+      "pirate": {
+        "title": "Pirate",
+        "render": {
+          "animations": {
+            "idle": [
+              {}
+            ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 12,
+                  "height": 16,
+                  "depth": 7,
+                  "x": 0,
+                  "y": 24,
+                  "z": 0,
+                  "color": "#2F1A4A",
+                  "name": "torso",
+                  "scaleX": 1
+                },
+                {
+                  "type": "sphere",
+                  "size": 10,
+                  "x": 0,
+                  "y": 35,
+                  "z": 0,
+                  "color": "#E8C9A0",
+                  "name": "head"
+                },
+                {
+                  "type": "box",
+                  "width": 3,
+                  "height": 2,
+                  "depth": 4,
+                  "x": 0,
+                  "y": 35,
+                  "z": 4,
+                  "color": "#E8C9A0",
+                  "name": "nose"
+                },
+                {
+                  "type": "box",
+                  "width": 8,
+                  "height": 2,
+                  "depth": 4,
+                  "x": 0,
+                  "y": 32,
+                  "z": 3,
+                  "color": "#ECB69B",
+                  "name": "jaw"
+                },
+                {
+                  "type": "sphere",
+                  "size": 2,
+                  "x": -3,
+                  "y": 36,
+                  "z": 4,
+                  "color": "#87CEFA",
+                  "name": "eye-right"
+                },
+                {
+                  "type": "sphere",
+                  "size": 1,
+                  "x": -3.5,
+                  "y": 36,
+                  "z": 4.5,
+                  "color": "#000000",
+                  "name": "pupil-right"
+                },
+                {
+                  "type": "box",
+                  "width": 3,
+                  "height": 2,
+                  "depth": 1,
+                  "x": 2,
+                  "y": 36,
+                  "z": 5,
+                  "color": "#000000",
+                  "name": "eyepatch-left"
+                },
+                {
+                  "type": "box",
+                  "width": 4,
+                  "height": 12,
+                  "depth": 4,
+                  "x": -8,
+                  "y": 24,
+                  "z": 0,
+                  "color": "#2F1A4A",
+                  "name": "arm-right",
+                  "rotationZ": -15
+                },
+                {
+                  "type": "box",
+                  "width": 4,
+                  "height": 12,
+                  "depth": 4,
+                  "x": 8,
+                  "y": 24,
+                  "z": 0,
+                  "color": "#2F1A4A",
+                  "name": "arm-left",
+                  "rotationZ": 15
+                },
+                {
+                  "type": "box",
+                  "width": 5,
+                  "height": 3,
+                  "depth": 5,
+                  "x": -8,
+                  "y": 16,
+                  "z": 1,
+                  "color": "#E8C9A0",
+                  "name": "hand-right",
+                  "rotationX": 90
+                },
+                {
+                  "type": "box",
+                  "width": 2,
+                  "height": 4,
+                  "depth": 2,
+                  "x": 8,
+                  "y": 16,
+                  "z": 1,
+                  "color": "#C0C0C0",
+                  "name": "hook-left",
+                  "rotationZ": -45
+                },
+                {
+                  "type": "box",
+                  "width": 4,
+                  "height": 12,
+                  "depth": 4,
+                  "x": -3,
+                  "y": 8,
+                  "z": 0,
+                  "color": "#3B3B3B",
+                  "name": "leg-right"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 13,
+                  "x": 3,
+                  "y": 7.5,
+                  "z": 0,
+                  "color": "#8B4513",
+                  "name": "peg-leg-left"
+                },
+                {
+                  "type": "box",
+                  "width": 5,
+                  "height": 2,
+                  "depth": 6,
+                  "x": -3,
+                  "y": 2,
+                  "z": 2,
+                  "color": "#3B3B3B",
+                  "name": "boot-right"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 4,
+                  "height": 2,
+                  "x": 3,
+                  "y": 2,
+                  "z": 2,
+                  "color": "#8B4513",
+                  "name": "peg-foot-left"
+                },
+                {
+                  "type": "box",
+                  "width": 11,
+                  "height": 10,
+                  "depth": 8,
+                  "x": 0,
+                  "y": 15,
+                  "z": 0,
+                  "color": "#FF0000",
+                  "name": "pants"
+                },
+                {
+                  "type": "box",
+                  "width": 12,
+                  "height": 8,
+                  "depth": 2,
+                  "x": 0,
+                  "y": 32,
+                  "z": 3,
+                  "color": "#000000",
+                  "name": "beard"
+                },
+                {
+                  "type": "box",
+                  "width": 14,
+                  "height": 6,
+                  "depth": 10,
+                  "x": 0,
+                  "y": 40,
+                  "z": 0,
+                  "color": "#000000",
+                  "name": "hat"
+                },
+                {
+                  "type": "box",
+                  "width": 2,
+                  "height": 4,
+                  "depth": 2,
+                  "x": -9,
+                  "y": 14,
+                  "z": 1,
+                  "color": "#8B4513",
+                  "name": "sword-handle",
+                  "rotationZ": 0,
+                  "rotationX": -45
+                },
+                {
+                  "type": "box",
+                  "width": 2,
+                  "height": 2.2,
+                  "depth": 6,
+                  "x": -9,
+                  "y": 13,
+                  "z": 2,
+                  "color": "#C0C0C0",
+                  "name": "sword-guard",
+                  "rotationZ": 45,
+                  "rotationX": 0,
+                  "rotationY": 90
+                },
+                {
+                  "type": "box",
+                  "width": 1,
+                  "height": 1,
+                  "depth": 18,
+                  "x": -9,
+                  "y": 8,
+                  "z": 7,
+                  "color": "#C0C0C0",
+                  "name": "sword-blade",
+                  "rotationZ": 45,
+                  "rotationX": 45
+                },
+                {
+                  "type": "box",
+                  "width": 8,
+                  "height": 2,
+                  "depth": 10,
+                  "x": 0,
+                  "y": 16,
+                  "z": 0,
+                  "color": "#FFD700",
+                  "name": "sash"
+                },
+                {
+                  "type": "box",
+                  "width": 2,
+                  "height": 2,
+                  "depth": 2,
+                  "x": -2,
+                  "y": 43,
+                  "z": 0,
+                  "color": "#FF0000",
+                  "name": "hat-feather-right",
+                  "rotationZ": 45
+                },
+                {
+                  "type": "box",
+                  "width": 2,
+                  "height": 2,
+                  "depth": 2,
+                  "x": 2,
+                  "y": 43,
+                  "z": 0,
+                  "color": "#FF0000",
+                  "name": "hat-feather-left",
+                  "rotationZ": -45
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
+          }
+        }
+      },
+      "redDragon": {
+        "hp": 500,
+        "speed": 0.5,
+        "essence": 50,
+        "value": 50,
+        "boss": true,
+        "render": {
+          "animations": {
+            "idle": [
+              {}
+            ],
+            "walk": [
+              {
+                "right wing": {
+                  "shapes": [
+                    {
+                      "rotationX": 0.1,
+                      "rotationY": -0.7,
+                      "id": 1
+                    }
+                  ]
+                },
+                "head": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redMColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redMColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 4
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 5
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 6
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 7
+                    }
+                  ]
+                },
+                "jaw": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redMColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 4
+                    }
+                  ]
+                },
+                "left arm": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 4
+                    }
+                  ]
+                },
+                "right arm": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 4
+                    }
+                  ]
+                },
+                "left leg": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 4
+                    }
+                  ]
+                },
+                "right leg": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 4
+                    }
+                  ]
+                },
+                "body": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 3
+                    }
+                  ]
+                },
+                "left wing": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 3
+                    }
+                  ]
+                },
+                "tail base": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 2
+                    }
+                  ]
+                },
+                "tail tip": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 3
+                    }
+                  ]
+                }
+              },
+              {
+                "head": {
+                  "position": {
+                    "x": 0,
+                    "y": 3.2,
+                    "z": 20
+                  },
+                  "rotation": {
+                    "x": 0,
+                    "y": 0.15,
+                    "z": 0
+                  }
+                },
+                "jaw": {
+                  "rotation": {
+                    "x": 0.35,
+                    "y": 0,
+                    "z": 0
+                  }
+                },
+                "left arm": {
+                  "position": {
+                    "x": 1.5,
+                    "y": -1,
+                    "z": 6.5
+                  },
+                  "rotation": {
+                    "x": 0.4,
+                    "y": 0,
+                    "z": 0.1
+                  }
+                },
+                "right arm": {
+                  "position": {
+                    "x": 0,
+                    "y": -2,
+                    "z": 14
+                  },
+                  "rotation": {
+                    "x": -0.1,
+                    "y": 0,
+                    "z": -0.1
+                  }
+                },
+                "left leg": {
+                  "position": {
+                    "x": 0,
+                    "y": 5,
+                    "z": -10
+                  },
+                  "rotation": {
+                    "x": 0.5,
+                    "y": 0,
+                    "z": 0
+                  }
+                },
+                "right leg": {
+                  "position": {
+                    "x": 0,
+                    "y": 3,
+                    "z": 8
+                  },
+                  "rotation": {
+                    "x": -0.4,
+                    "y": 0,
+                    "z": 0
+                  }
+                },
+                "body": {
+                  "rotation": {
+                    "x": 0.6,
+                    "y": 0.05,
+                    "z": 0
+                  }
+                },
+                "left wing": {
+                  "position": {
+                    "x": 5,
+                    "y": 5.5,
+                    "z": 15
+                  },
+                  "rotation": {
+                    "x": 0.2,
+                    "y": 0.7,
+                    "z": 0
+                  },
+                  "shapes": [
+                    {
+                      "rotationX": 0.3,
+                      "rotationY": 0.9,
+                      "id": 1
+                    }
+                  ]
+                },
+                "right wing": {
+                  "position": {
+                    "x": -5,
+                    "y": 5.5,
+                    "z": 15
+                  },
+                  "rotation": {
+                    "x": 0.2,
+                    "y": -0.7,
+                    "z": 0
+                  },
+                  "shapes": [
+                    {
+                      "rotationX": 0.3,
+                      "rotationY": -0.9,
+                      "id": 1
+                    }
+                  ]
+                },
+                "tail base": {
+                  "rotation": {
+                    "x": 0.1,
+                    "y": 0.3,
+                    "z": 0
+                  }
+                },
+                "tail tip": {
+                  "rotation": {
+                    "x": 0.05,
+                    "y": 0.4,
+                    "z": 0
+                  }
+                }
+              },
+              {
+                "left wing": {
+                  "shapes": [
+                    {
+                      "rotationX": 0.1,
+                      "rotationY": 0.7,
+                      "id": 1
+                    }
+                  ]
+                },
+                "right wing": {
+                  "shapes": [
+                    {
+                      "rotationX": 0.1,
+                      "rotationY": -0.7,
+                      "id": 1
+                    }
+                  ]
+                },
+                "head": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redMColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redMColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 4
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 5
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 6
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 7
+                    }
+                  ]
+                },
+                "jaw": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redMColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 4
+                    }
+                  ]
+                },
+                "left arm": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 4
+                    }
+                  ]
+                },
+                "right arm": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 4
+                    }
+                  ]
+                },
+                "left leg": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 4
+                    }
+                  ]
+                },
+                "right leg": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 4
+                    }
+                  ]
+                },
+                "body": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 3
+                    }
+                  ]
+                },
+                "tail base": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 2
+                    }
+                  ]
+                },
+                "tail tip": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 3
+                    }
+                  ]
+                }
+              },
+              {
+                "head": {
+                  "position": {
+                    "x": 0,
+                    "y": 2.8,
+                    "z": 20
+                  },
+                  "rotation": {
+                    "x": 0,
+                    "y": -0.15,
+                    "z": 0
+                  }
+                },
+                "jaw": {
+                  "position": {
+                    "x": 0,
+                    "y": 10.3,
+                    "z": 8
+                  },
+                  "rotation": {
+                    "x": 0.35,
+                    "y": 0,
+                    "z": 0
+                  }
+                },
+                "left arm": {
+                  "position": {
+                    "x": 0,
+                    "y": -2,
+                    "z": 14
+                  },
+                  "rotation": {
+                    "x": -0.1,
+                    "y": 0,
+                    "z": 0.1
+                  }
+                },
+                "right arm": {
+                  "position": {
+                    "x": -1.5,
+                    "y": -1,
+                    "z": 6.5
+                  },
+                  "rotation": {
+                    "x": 0.4,
+                    "y": 0,
+                    "z": -0.1
+                  }
+                },
+                "left leg": {
+                  "position": {
+                    "x": 0,
+                    "y": 3,
+                    "z": 8
+                  },
+                  "rotation": {
+                    "x": -0.4,
+                    "y": 0,
+                    "z": 0
+                  }
+                },
+                "right leg": {
+                  "position": {
+                    "x": 0,
+                    "y": 5,
+                    "z": -10
+                  },
+                  "rotation": {
+                    "x": 0.5,
+                    "y": 0,
+                    "z": 0
+                  }
+                },
+                "body": {
+                  "position": {
+                    "x": 0,
+                    "y": 9.8,
+                    "z": -8
+                  },
+                  "rotation": {
+                    "x": 0.6,
+                    "y": -0.05,
+                    "z": 0
+                  }
+                },
+                "left wing": {
+                  "position": {
+                    "x": 5,
+                    "y": 4.5,
+                    "z": 15
+                  },
+                  "rotation": {
+                    "x": 0.2,
+                    "y": 0.6,
+                    "z": 0
+                  },
+                  "shapes": [
+                    {
+                      "rotationX": 0.2,
+                      "rotationY": 0.8,
+                      "id": 1
+                    }
+                  ]
+                },
+                "right wing": {
+                  "position": {
+                    "x": -5,
+                    "y": 4.5,
+                    "z": 15
+                  },
+                  "rotation": {
+                    "x": 0.2,
+                    "y": -0.6,
+                    "z": 0
+                  },
+                  "shapes": [
+                    {
+                      "rotationX": 0.2,
+                      "rotationY": -0.8,
+                      "id": 1
+                    }
+                  ]
+                },
+                "tail base": {
+                  "rotation": {
+                    "x": 0.1,
+                    "y": -0.3,
+                    "z": 0
+                  }
+                },
+                "tail tip": {
+                  "rotation": {
+                    "x": 0.05,
+                    "y": -0.4,
+                    "z": 0
+                  }
+                }
+              }
+            ]
+          },
+          "model": {
+            "head": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 18,
+                  "height": 16,
+                  "depth": 24,
+                  "x": 0,
+                  "y": 44,
+                  "z": 16,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "head-main"
+                },
+                {
+                  "type": "sphere",
+                  "size": 5,
+                  "x": -9,
+                  "y": 48,
+                  "z": 18,
+                  "color": {
+                    "paletteColor": "redMColor"
+                  },
+                  "name": "eye-right",
+                  "emissive": "#FFA500"
+                },
+                {
+                  "type": "sphere",
+                  "size": 2.5,
+                  "x": -9,
+                  "y": 48,
+                  "z": 19.5,
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
+                  "name": "pupil-right"
+                },
+                {
+                  "type": "sphere",
+                  "size": 5,
+                  "x": 9,
+                  "y": 48,
+                  "z": 18,
+                  "color": {
+                    "paletteColor": "redMColor"
+                  },
+                  "name": "eye-left",
+                  "emissive": "#FFA500"
+                },
+                {
+                  "type": "sphere",
+                  "size": 2.5,
+                  "x": 9,
+                  "y": 48,
+                  "z": 19.5,
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
+                  "name": "pupil-left"
+                },
+                {
+                  "type": "box",
+                  "width": 16,
+                  "height": 3,
+                  "depth": 8,
+                  "x": 0,
+                  "y": 52,
+                  "z": 16,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "brow-ridge"
+                },
+                {
+                  "type": "cone",
+                  "size": 3,
+                  "height": 6,
+                  "x": -6,
+                  "y": 52,
+                  "z": 26,
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
+                  "name": "horn-right"
+                },
+                {
+                  "type": "cone",
+                  "size": 3,
+                  "height": 6,
+                  "x": 6,
+                  "y": 52,
+                  "z": 26,
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
+                  "name": "horn-left"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 3,
+                "z": 20
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "jaw": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 20,
+                  "height": 8,
+                  "depth": 22,
+                  "x": 0,
+                  "y": 32,
+                  "z": 18,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "jaw-main"
+                },
+                {
+                  "type": "box",
+                  "width": 16,
+                  "height": 3,
+                  "depth": 3,
+                  "x": 0,
+                  "y": 35,
+                  "z": 26,
+                  "color": {
+                    "paletteColor": "redMColor"
+                  },
+                  "name": "gums"
+                },
+                {
+                  "type": "cone",
+                  "width": 2,
+                  "height": 2,
+                  "depth": 2,
+                  "x": -6,
+                  "y": 36.7,
+                  "z": 26,
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
+                  "name": "tooth-right",
+                  "shininess": 80,
+                  "size": 2
+                },
+                {
+                  "type": "cone",
+                  "width": 2,
+                  "height": 2,
+                  "depth": 2,
+                  "x": 6,
+                  "y": 36.7,
+                  "z": 26,
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
+                  "name": "tooth-left",
+                  "shininess": 80,
+                  "size": 2
+                },
+                {
+                  "type": "cone",
+                  "width": 2,
+                  "height": 2,
+                  "depth": 2,
+                  "x": 0,
+                  "y": 36.5,
+                  "z": 26,
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
+                  "name": "tooth-middle",
+                  "shininess": 80,
+                  "size": 2
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 10.5,
+                "z": 8
+              },
+              "rotation": {
+                "x": 0.3,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "left arm": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 10,
+                  "depth": 6,
+                  "x": 12,
+                  "y": 30,
+                  "z": 2,
+                  "rotationX": -30,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "upper-arm-left"
+                },
+                {
+                  "type": "box",
+                  "width": 5,
+                  "height": 8,
+                  "depth": 5,
+                  "x": 12,
+                  "y": 26,
+                  "z": 6,
+                  "rotationX": -15,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "lower-arm-left"
+                },
+                {
+                  "type": "box",
+                  "width": 4,
+                  "height": 4,
+                  "depth": 4,
+                  "x": 12,
+                  "y": 24,
+                  "z": 8,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "hand-left"
+                },
+                {
+                  "type": "cone",
+                  "size": 1.5,
+                  "height": 4,
+                  "x": 13,
+                  "y": 23,
+                  "z": 10,
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
+                  "name": "claw-left-1",
+                  "rotationX": 180
+                },
+                {
+                  "type": "cone",
+                  "size": 1.5,
+                  "height": 4,
+                  "x": 11,
+                  "y": 23,
+                  "z": 10,
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
+                  "name": "claw-left-2",
+                  "rotationX": 180
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": -2,
+                "z": 12
+              },
+              "rotation": {
+                "x": 0.2,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "right arm": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 10,
+                  "depth": 6,
+                  "x": -12,
+                  "y": 30,
+                  "z": 2,
+                  "rotationX": -30,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "upper-arm-right"
+                },
+                {
+                  "type": "box",
+                  "width": 5,
+                  "height": 8,
+                  "depth": 5,
+                  "x": -12,
+                  "y": 26,
+                  "z": 6,
+                  "rotationX": -15,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "lower-arm-right"
+                },
+                {
+                  "type": "box",
+                  "width": 4,
+                  "height": 4,
+                  "depth": 4,
+                  "x": -12,
+                  "y": 24,
+                  "z": 8,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "hand-right"
+                },
+                {
+                  "type": "cone",
+                  "size": 1.5,
+                  "height": 4,
+                  "x": -13,
+                  "y": 23,
+                  "z": 10,
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
+                  "name": "claw-right-1",
+                  "rotationX": 180
+                },
+                {
+                  "type": "cone",
+                  "size": 1.5,
+                  "height": 4,
+                  "x": -11,
+                  "y": 23,
+                  "z": 10,
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
+                  "name": "claw-right-2",
+                  "rotationX": 180,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": -2,
+                "z": 12
+              },
+              "rotation": {
+                "x": 0.2,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "left leg": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 10,
+                  "height": 16,
+                  "depth": 12,
+                  "x": 10,
+                  "y": 22,
+                  "z": 2,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "thigh-left",
+                  "rotationX": -10
+                },
+                {
+                  "type": "box",
+                  "width": 8,
+                  "height": 18,
+                  "depth": 8,
+                  "x": 10,
+                  "y": 10,
+                  "z": 2,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "shin-left",
+                  "rotationX": 20
+                },
+                {
+                  "type": "box",
+                  "width": 12,
+                  "height": 5,
+                  "depth": 18,
+                  "x": 10,
+                  "y": 2,
+                  "z": 2,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "foot-left",
+                  "rotationX": 15
+                },
+                {
+                  "type": "cone",
+                  "size": 3,
+                  "height": 6,
+                  "x": 7,
+                  "y": 0,
+                  "z": 11,
+                  "rotationX": 90,
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
+                  "name": "toe-left-1"
+                },
+                {
+                  "type": "cone",
+                  "size": 3,
+                  "height": 6,
+                  "x": 13,
+                  "y": 0,
+                  "z": 11,
+                  "rotationX": 90,
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
+                  "name": "toe-left-2"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 3,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "right leg": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 10,
+                  "height": 16,
+                  "depth": 12,
+                  "x": -10,
+                  "y": 22,
+                  "z": 2,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "thigh-right",
+                  "rotationX": -10
+                },
+                {
+                  "type": "box",
+                  "width": 8,
+                  "height": 18,
+                  "depth": 8,
+                  "x": -10,
+                  "y": 10,
+                  "z": 2,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "shin-right",
+                  "rotationX": 20
+                },
+                {
+                  "type": "box",
+                  "width": 12,
+                  "height": 5,
+                  "depth": 18,
+                  "x": -10,
+                  "y": 2,
+                  "z": 2,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "foot-right",
+                  "rotationX": 15
+                },
+                {
+                  "type": "cone",
+                  "size": 3,
+                  "height": 6,
+                  "x": -7,
+                  "y": 0,
+                  "z": 11,
+                  "rotationX": 90,
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
+                  "name": "toe-right-1"
+                },
+                {
+                  "type": "cone",
+                  "size": 3,
+                  "height": 6,
+                  "x": -13,
+                  "y": 0,
+                  "z": 11,
+                  "rotationX": 90,
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
+                  "name": "toe-right-2"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 3,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "body": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 20,
+                  "height": 34,
+                  "depth": 18,
+                  "x": 0,
+                  "y": 26,
+                  "z": -2,
+                  "rotationX": 30,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "torso-main"
+                },
+                {
+                  "type": "box",
+                  "width": 14,
+                  "height": 15.3,
+                  "depth": 14,
+                  "x": 0,
+                  "y": 45.46875,
+                  "z": 8,
+                  "rotationX": 10,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "neck",
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
+                },
+                {
+                  "type": "cone",
+                  "size": 6,
+                  "height": 12,
+                  "x": 0,
+                  "y": 38.39468690702089,
+                  "z": -6.745098039215698,
+                  "rotationX": -65,
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
+                  "name": "spike-1",
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
+                },
+                {
+                  "type": "cone",
+                  "size": 5,
+                  "height": 10,
+                  "x": 0,
+                  "y": 28.979127134724877,
+                  "z": -14.513725490196073,
+                  "rotationX": -66,
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
+                  "name": "spike-2",
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 10,
+                "z": -8
+              },
+              "rotation": {
+                "x": 0.6,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "left wing": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 10,
+                  "height": 2,
+                  "depth": 20,
+                  "x": 15,
+                  "y": 35,
+                  "z": -5,
+                  "rotationX": 10,
+                  "rotationY": 60,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "wing-base-left"
+                },
+                {
+                  "type": "box",
+                  "width": 40,
+                  "height": 1,
+                  "depth": 30,
+                  "x": 35,
+                  "y": 35,
+                  "z": -2.5,
+                  "rotationX": 0,
+                  "rotationY": 1,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "wing-membrane-left"
+                },
+                {
+                  "type": "cone",
+                  "size": 2,
+                  "height": 5,
+                  "x": 14,
+                  "y": 34.8,
+                  "z": 14,
+                  "rotationX": 90,
+                  "rotationY": 0,
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
+                  "name": "wing-claw-left",
+                  "rotationZ": 45,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
+                },
+                {
+                  "type": "box",
+                  "width": 20,
+                  "height": 1,
+                  "depth": 10,
+                  "x": 60,
+                  "y": 35,
+                  "z": -5.5,
+                  "rotationX": 5,
+                  "rotationY": 40,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "wing-membrane-left",
+                  "rotationZ": 0,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
+                }
+              ],
+              "position": {
+                "x": 5,
+                "y": 5,
+                "z": 15
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0.5,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "right wing": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 10,
+                  "height": 2,
+                  "depth": 20,
+                  "x": -15,
+                  "y": 35,
+                  "z": -5,
+                  "rotationX": 10,
+                  "rotationY": -60,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "wing-base-right"
+                },
+                {
+                  "type": "box",
+                  "width": 40,
+                  "height": 1,
+                  "depth": 30,
+                  "x": -35,
+                  "y": 35,
+                  "z": -2.5,
+                  "rotationX": 0,
+                  "rotationY": -1,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "wing-membrane-right"
+                },
+                {
+                  "type": "cone",
+                  "size": 2,
+                  "height": 5,
+                  "x": -14,
+                  "y": 34.8,
+                  "z": 14,
+                  "rotationX": 90,
+                  "rotationY": 0,
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
+                  "name": "wing-claw-right",
+                  "rotationZ": -45,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
+                },
+                {
+                  "type": "box",
+                  "width": 20,
+                  "height": 1,
+                  "depth": 10,
+                  "x": -60,
+                  "y": 35,
+                  "z": -5.5,
+                  "rotationX": 5,
+                  "rotationY": -40,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "wing-membrane-right",
+                  "rotationZ": 0,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
+                }
+              ],
+              "position": {
+                "x": -5,
+                "y": 5,
+                "z": 15
+              },
+              "rotation": {
+                "x": 0,
+                "y": -0.5,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "tail base": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 12,
+                  "height": 10,
+                  "depth": 20,
+                  "x": 0,
+                  "y": 22,
+                  "z": -18,
+                  "rotationX": -15,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "tail-base-segment"
+                },
+                {
+                  "type": "cone",
+                  "size": 5,
+                  "height": 10,
+                  "x": 0,
+                  "y": 26,
+                  "z": -20,
+                  "rotationX": -20,
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
+                  "name": "tail-spike-1"
+                },
+                {
+                  "type": "box",
+                  "width": 10,
+                  "height": 8,
+                  "depth": 18,
+                  "x": 0,
+                  "y": 20,
+                  "z": -34,
+                  "rotationX": -10,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "tail-mid-segment"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 6,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "tail tip": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 8,
+                  "height": 6,
+                  "depth": 16,
+                  "x": 0,
+                  "y": 18,
+                  "z": -48,
+                  "rotationX": -5,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "tail-end-segment"
+                },
+                {
+                  "type": "cone",
+                  "size": 4,
+                  "height": 8,
+                  "x": 0,
+                  "y": 21,
+                  "z": -50,
+                  "rotationX": -10,
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
+                  "name": "tail-spike-2"
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 4,
+                  "depth": 12,
+                  "x": 0,
+                  "y": 16,
+                  "z": -60,
+                  "rotationX": 0,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "tail-tip-segment"
+                },
+                {
+                  "type": "cone",
+                  "size": 3,
+                  "height": 6,
+                  "x": 0,
+                  "y": 18,
+                  "z": -62,
+                  "rotationX": -5,
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
+                  "name": "tail-spike-3"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 6,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
+          }
+        },
+        "fireResistance": 75,
+        "coldResistance": 25,
+        "electricResistance": 25,
+        "title": "Red Dragon"
+      },
+      "pterodactyl": {
+        "speed": 2,
+        "value": 10,
+        "hp": 5,
+        "essence": 5,
+        "render": {
+          "animations": {
+            "idle": [
+              {}
+            ],
+            "walk": [
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "size": 7.2,
+                      "height": 14.4,
+                      "y": 47.5,
+                      "z": -2.4,
+                      "id": 0
+                    },
+                    {
+                      "y": 49.3,
+                      "z": 9.6,
+                      "id": 1
+                    },
+                    {
+                      "y": 52.8,
+                      "z": 15.9,
+                      "id": 2
+                    },
+                    {
+                      "y": 59.5,
+                      "z": 13.5,
+                      "id": 3
+                    },
+                    {
+                      "y": 50,
+                      "z": -2.4,
+                      "rotationZ": -10,
+                      "id": 4
+                    },
+                    {
+                      "y": 50,
+                      "z": -2.4,
+                      "rotationZ": 10,
+                      "id": 5
+                    },
+                    {
+                      "y": 50,
+                      "rotationZ": -10,
+                      "id": 6
+                    },
+                    {
+                      "y": 53,
+                      "rotationZ": 10,
+                      "id": 7
+                    },
+                    {
+                      "y": 47.5,
+                      "z": -16.9,
+                      "id": 8
+                    },
+                    {
+                      "y": 47.5,
+                      "z": -19.6,
+                      "id": 9
+                    },
+                    {
+                      "y": 42.7,
+                      "z": -4.8,
+                      "rotationX": 0,
+                      "id": 10
+                    },
+                    {
+                      "y": 42.7,
+                      "z": -4.8,
+                      "rotationX": 0,
+                      "id": 11
+                    },
+                    {
+                      "y": 39.5,
+                      "z": -4.8,
+                      "rotationX": -90,
+                      "id": 12
+                    },
+                    {
+                      "y": 39.5,
+                      "z": -4.8,
+                      "rotationX": -90,
+                      "id": 13
+                    },
+                    {
+                      "y": 54.7,
+                      "z": 15.4,
+                      "id": 14
+                    },
+                    {
+                      "y": 54.7,
+                      "z": 15.4,
+                      "id": 15
+                    },
+                    {
+                      "y": 50,
+                      "rotationZ": 10,
+                      "id": 16
+                    },
+                    {
+                      "y": 53,
+                      "rotationZ": -10,
+                      "id": 17
+                    }
+                  ]
+                }
+              },
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "size": 7.2,
+                      "height": 14.4,
+                      "y": 48.5,
+                      "z": -2.4,
+                      "id": 0
+                    },
+                    {
+                      "y": 50.3,
+                      "z": 9.6,
+                      "id": 1
+                    },
+                    {
+                      "y": 53.8,
+                      "z": 15.9,
+                      "id": 2
+                    },
+                    {
+                      "y": 60.5,
+                      "z": 13.5,
+                      "id": 3
+                    },
+                    {
+                      "y": 45,
+                      "z": -2.4,
+                      "rotationZ": 30,
+                      "id": 4
+                    },
+                    {
+                      "y": 45,
+                      "z": -2.4,
+                      "rotationZ": -30,
+                      "id": 5
+                    },
+                    {
+                      "y": 45,
+                      "rotationZ": 30,
+                      "id": 6
+                    },
+                    {
+                      "y": 38,
+                      "id": 7
+                    },
+                    {
+                      "y": 48.5,
+                      "z": -16.9,
+                      "id": 8
+                    },
+                    {
+                      "y": 48.5,
+                      "z": -19.6,
+                      "id": 9
+                    },
+                    {
+                      "y": 43.7,
+                      "z": -4.8,
+                      "id": 10
+                    },
+                    {
+                      "y": 43.7,
+                      "z": -4.8,
+                      "id": 11
+                    },
+                    {
+                      "y": 41,
+                      "z": -4.8,
+                      "id": 12
+                    },
+                    {
+                      "y": 41,
+                      "z": -4.8,
+                      "id": 13
+                    },
+                    {
+                      "y": 55.7,
+                      "z": 15.4,
+                      "id": 14
+                    },
+                    {
+                      "y": 55.7,
+                      "z": 15.4,
+                      "id": 15
+                    },
+                    {
+                      "y": 45,
+                      "rotationZ": -30,
+                      "id": 16
+                    },
+                    {
+                      "y": 38,
+                      "id": 17
+                    }
+                  ]
+                }
+              },
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "size": 7.2,
+                      "height": 14.4,
+                      "y": 47.5,
+                      "z": -2.4,
+                      "id": 0
+                    },
+                    {
+                      "y": 49.3,
+                      "z": 9.6,
+                      "id": 1
+                    },
+                    {
+                      "y": 52.8,
+                      "z": 15.9,
+                      "id": 2
+                    },
+                    {
+                      "y": 59.5,
+                      "z": 13.5,
+                      "id": 3
+                    },
+                    {
+                      "y": 50,
+                      "z": -2.4,
+                      "rotationZ": -10,
+                      "id": 4
+                    },
+                    {
+                      "y": 50,
+                      "z": -2.4,
+                      "rotationZ": 10,
+                      "id": 5
+                    },
+                    {
+                      "y": 50,
+                      "rotationZ": -10,
+                      "id": 6
+                    },
+                    {
+                      "y": 53,
+                      "rotationZ": 10,
+                      "id": 7
+                    },
+                    {
+                      "y": 47.5,
+                      "z": -16.9,
+                      "id": 8
+                    },
+                    {
+                      "y": 47.5,
+                      "z": -19.6,
+                      "id": 9
+                    },
+                    {
+                      "y": 42.7,
+                      "z": -4.8,
+                      "rotationX": 0,
+                      "id": 10
+                    },
+                    {
+                      "y": 42.7,
+                      "z": -4.8,
+                      "rotationX": 0,
+                      "id": 11
+                    },
+                    {
+                      "y": 39.5,
+                      "z": -4.8,
+                      "rotationX": -90,
+                      "id": 12
+                    },
+                    {
+                      "y": 39.5,
+                      "z": -4.8,
+                      "rotationX": -90,
+                      "id": 13
+                    },
+                    {
+                      "y": 54.7,
+                      "z": 15.4,
+                      "id": 14
+                    },
+                    {
+                      "y": 54.7,
+                      "z": 15.4,
+                      "id": 15
+                    },
+                    {
+                      "y": 50,
+                      "rotationZ": 10,
+                      "id": 16
+                    },
+                    {
+                      "y": 53,
+                      "rotationZ": -10,
+                      "id": 17
+                    }
+                  ]
+                }
+              },
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "size": 7.2,
+                      "height": 14.4,
+                      "y": 46.5,
+                      "z": -2.4,
+                      "id": 0
+                    },
+                    {
+                      "y": 48.3,
+                      "z": 9.6,
+                      "id": 1
+                    },
+                    {
+                      "y": 51.8,
+                      "z": 15.9,
+                      "id": 2
+                    },
+                    {
+                      "y": 58.5,
+                      "z": 13.5,
+                      "id": 3
+                    },
+                    {
+                      "y": 43,
+                      "z": -2.4,
+                      "rotationZ": 30,
+                      "id": 4
+                    },
+                    {
+                      "y": 43,
+                      "z": -2.4,
+                      "rotationZ": -30,
+                      "id": 5
+                    },
+                    {
+                      "y": 43,
+                      "rotationZ": 50,
+                      "id": 6
+                    },
+                    {
+                      "y": 35,
+                      "rotationZ": -50,
+                      "id": 7
+                    },
+                    {
+                      "y": 46.5,
+                      "z": -16.9,
+                      "id": 8
+                    },
+                    {
+                      "y": 46.5,
+                      "z": -19.6,
+                      "id": 9
+                    },
+                    {
+                      "y": 41.7,
+                      "z": -4.8,
+                      "rotationX": 40,
+                      "id": 10
+                    },
+                    {
+                      "y": 41.7,
+                      "z": -4.8,
+                      "rotationX": 40,
+                      "id": 11
+                    },
+                    {
+                      "y": 38,
+                      "z": -5.7,
+                      "rotationX": -30,
+                      "id": 12
+                    },
+                    {
+                      "y": 38,
+                      "z": -5.7,
+                      "rotationX": -30,
+                      "id": 13
+                    },
+                    {
+                      "y": 53.7,
+                      "z": 15.4,
+                      "id": 14
+                    },
+                    {
+                      "y": 53.7,
+                      "z": 15.4,
+                      "id": 15
+                    },
+                    {
+                      "y": 43,
+                      "rotationZ": 50,
+                      "id": 16
+                    },
+                    {
+                      "y": 35,
+                      "rotationZ": 50,
+                      "id": 17
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "cylinder",
+                  "size": 7.199999999999999,
+                  "height": 14.399999999999999,
+                  "x": 0,
+                  "y": 47.48726562500001,
+                  "z": -2.3686718749999995,
+                  "color": "#7d6d5e",
+                  "rotationX": 90,
+                  "rotationZ": 0,
+                  "name": "body",
+                  "scaleX": 1
+                },
+                {
+                  "type": "cylinder",
+                  "size": 2.88,
+                  "height": 12,
+                  "x": 0,
+                  "y": 49.294765625,
+                  "z": 9.631328125000001,
+                  "color": "#7D6B5D",
+                  "rotationX": 45,
+                  "rotationZ": 0,
+                  "name": "neck"
+                },
+                {
+                  "type": "cone",
+                  "size": 2.4,
+                  "height": 10.56,
+                  "x": 0,
+                  "y": 52.76726562500002,
+                  "z": 15.871328125,
+                  "color": "#7D6B5D",
+                  "rotationX": 120,
+                  "rotationZ": 0,
+                  "name": "beak"
+                },
+                {
+                  "type": "cone",
+                  "size": 0.96,
+                  "height": 9.6,
+                  "x": 0,
+                  "y": 59.48726562500001,
+                  "z": 13.471328125,
+                  "color": "#6D5D4D",
+                  "rotationX": 0,
+                  "rotationZ": 0,
+                  "name": "head-spike"
+                },
+                {
+                  "type": "box",
+                  "width": 24,
+                  "height": 0.48,
+                  "depth": 9.6,
+                  "x": -12,
+                  "y": 47.48726562500001,
+                  "z": -2.3686718749999995,
+                  "color": "#8D7B6D",
+                  "rotationY": 0,
+                  "rotationZ": 15,
+                  "name": "wing-right"
+                },
+                {
+                  "type": "box",
+                  "width": 24,
+                  "height": 0.48,
+                  "depth": 9.6,
+                  "x": 12,
+                  "y": 47.48726562500001,
+                  "z": -2.3686718749999995,
+                  "color": "#8D7B6D",
+                  "rotationY": 0,
+                  "rotationZ": -15,
+                  "name": "wing-left"
+                },
+                {
+                  "type": "box",
+                  "width": 4,
+                  "height": 0.24,
+                  "depth": 2,
+                  "x": -12,
+                  "y": 47,
+                  "z": 3,
+                  "color": "#8D7B6D",
+                  "rotationY": 90,
+                  "rotationZ": 15,
+                  "name": "hand-right"
+                },
+                {
+                  "type": "box",
+                  "width": 10,
+                  "height": 0.24,
+                  "depth": 6,
+                  "x": 25,
+                  "y": 43.2,
+                  "z": -4.1,
+                  "color": "#8D7B6D",
+                  "rotationY": 40,
+                  "rotationZ": -30,
+                  "rotationX": 16,
+                  "name": "wingtip-left"
+                },
+                {
+                  "type": "cone",
+                  "size": 1.92,
+                  "height": 12,
+                  "x": 0,
+                  "y": 47.48726562500001,
+                  "z": -16.851171875000002,
+                  "color": "#7D6B5D",
+                  "rotationX": -90,
+                  "rotationZ": 0,
+                  "name": "tail"
+                },
+                {
+                  "type": "box",
+                  "width": 5.76,
+                  "height": 0.48,
+                  "depth": 4.8,
+                  "x": 0,
+                  "y": 47.48726562500001,
+                  "z": -19.648671875,
+                  "color": "#8D7B6D",
+                  "rotationX": 0,
+                  "rotationZ": 0,
+                  "name": "tail-tip"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 0.72,
+                  "height": 5.76,
+                  "x": -2.4,
+                  "y": 42.68726562500001,
+                  "z": -4.768671874999999,
+                  "color": "#6D5D4D",
+                  "rotationX": 20,
+                  "rotationZ": 0,
+                  "name": "leg-right"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 0.72,
+                  "height": 5.76,
+                  "x": 2.4,
+                  "y": 42.68726562500001,
+                  "z": -4.768671874999999,
+                  "color": "#6D5D4D",
+                  "rotationX": 20,
+                  "rotationZ": 0,
+                  "name": "leg-left"
+                },
+                {
+                  "type": "cone",
+                  "size": 1.44,
+                  "height": 2.4,
+                  "x": -2.4,
+                  "y": 40.04726562500001,
+                  "z": -4.851171875,
+                  "color": "#6D5D4D",
+                  "rotationX": -60,
+                  "rotationZ": 0,
+                  "name": "foot-right"
+                },
+                {
+                  "type": "cone",
+                  "size": 1.44,
+                  "height": 2.4,
+                  "x": 2.4,
+                  "y": 40.04726562500001,
+                  "z": -4.851171875,
+                  "color": "#6D5D4D",
+                  "rotationX": -60,
+                  "rotationZ": 0,
+                  "name": "foot-left"
+                },
+                {
+                  "type": "sphere",
+                  "size": 0.72,
+                  "x": -0.96,
+                  "y": 54.68726562500001,
+                  "z": 15.391328125000001,
+                  "color": "#000000",
+                  "name": "eye-right"
+                },
+                {
+                  "type": "sphere",
+                  "size": 0.72,
+                  "x": 0.96,
+                  "y": 54.68726562500001,
+                  "z": 15.391328125000001,
+                  "color": "#000000",
+                  "name": "eye-left"
+                },
+                {
+                  "type": "box",
+                  "width": 4,
+                  "height": 0.24,
+                  "depth": 2,
+                  "x": 12,
+                  "y": 47,
+                  "z": 3,
+                  "color": "#8D7B6D",
+                  "rotationY": 90,
+                  "rotationZ": 15,
+                  "name": "hand-left"
+                },
+                {
+                  "type": "box",
+                  "width": 10,
+                  "height": 0.24,
+                  "depth": 6,
+                  "x": -25,
+                  "y": 43.2,
+                  "z": -4.1,
+                  "color": "#8D7B6D",
+                  "rotationY": -40,
+                  "rotationZ": 30,
+                  "rotationX": 16,
+                  "name": "wingtip-right"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
+          }
+        },
+        "title": "Pterodactyl"
+      },
+      "skeleton": {
+        "hp": 20,
+        "speed": 1.2,
+        "value": 7,
+        "essence": 12,
+        "render": {
+          "animations": {
+            "idle": [
+              {}
+            ],
+            "walk": [
+              {},
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 40,
+                      "id": 0
+                    },
+                    {
+                      "rotationZ": 0,
+                      "rotationY": 10,
+                      "id": 1
+                    },
+                    {
+                      "y": 41,
+                      "id": 2
+                    },
+                    {
+                      "y": 41,
+                      "id": 3
+                    },
+                    {
+                      "y": 29,
+                      "rotationX": 90,
+                      "id": 4
+                    },
+                    {
+                      "y": 25,
+                      "rotationX": 120,
+                      "id": 5
+                    },
+                    {
+                      "y": 29,
+                      "id": 6
+                    },
+                    {
+                      "y": 20,
+                      "id": 7
+                    },
+                    {
+                      "z": -2,
+                      "rotationX": 15,
+                      "rotationY": 0,
+                      "id": 8
+                    },
+                    {
+                      "z": 2,
+                      "rotationX": -15,
+                      "id": 9
+                    },
+                    {
+                      "z": -4,
+                      "id": 10
+                    },
+                    {
+                      "z": 6,
+                      "id": 11
+                    }
+                  ]
+                }
+              },
+              {},
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 40,
+                      "id": 0
+                    },
+                    {
+                      "rotationY": -10,
+                      "id": 1
+                    },
+                    {
+                      "y": 41,
+                      "id": 2
+                    },
+                    {
+                      "y": 41,
+                      "id": 3
+                    },
+                    {
+                      "y": 25,
+                      "rotationX": 120,
+                      "id": 4
+                    },
+                    {
+                      "y": 29,
+                      "rotationX": 90,
+                      "id": 5
+                    },
+                    {
+                      "y": 20,
+                      "id": 6
+                    },
+                    {
+                      "y": 29,
+                      "id": 7
+                    },
+                    {
+                      "z": 2,
+                      "rotationX": -15,
+                      "id": 8
+                    },
+                    {
+                      "z": -2,
+                      "rotationX": 15,
+                      "id": 9
+                    },
+                    {
+                      "z": 6,
+                      "id": 10
+                    },
+                    {
+                      "z": -4,
+                      "id": 11
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "sphere",
+                  "size": 14,
+                  "color": "#E0DED8",
+                  "x": 0,
+                  "y": 41,
+                  "z": 0,
+                  "name": "head"
+                },
+                {
+                  "type": "box",
+                  "width": 16,
+                  "height": 20,
+                  "depth": 8,
+                  "color": "#CFCBC0",
+                  "x": 0,
+                  "y": 24,
+                  "z": 0,
+                  "name": "body",
+                  "scaleX": 1
+                },
+                {
+                  "type": "sphere",
+                  "size": 3,
+                  "color": "#000000",
+                  "x": 4,
+                  "y": 42,
+                  "z": 5,
+                  "name": "eye-left"
+                },
+                {
+                  "type": "sphere",
+                  "size": 3,
+                  "color": "#000000",
+                  "x": -4,
+                  "y": 42,
+                  "z": 5,
+                  "name": "eye-right"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 18,
+                  "color": "#E0DED8",
+                  "x": 8,
+                  "y": 27,
+                  "z": 10,
+                  "rotationX": 105,
+                  "rotationZ": 15,
+                  "name": "arm-left"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 18,
+                  "color": "#E0DED8",
+                  "x": -8,
+                  "y": 27,
+                  "z": 10,
+                  "rotationX": 105,
+                  "rotationZ": -15,
+                  "name": "arm-right"
+                },
+                {
+                  "type": "sphere",
+                  "size": 5,
+                  "color": "#E0DED8",
+                  "x": 6,
+                  "y": 25,
+                  "z": 20,
+                  "name": "hand-left"
+                },
+                {
+                  "type": "sphere",
+                  "size": 5,
+                  "color": "#E0DED8",
+                  "x": -6,
+                  "y": 25,
+                  "z": 20,
+                  "name": "hand-right"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 22,
+                  "color": "#E0DED8",
+                  "x": 5,
+                  "y": 14,
+                  "z": 0,
+                  "rotationZ": 0,
+                  "name": "leg-left",
+                  "rotationX": 0
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 22,
+                  "color": "#E0DED8",
+                  "x": -5,
+                  "y": 14,
+                  "z": 0,
+                  "rotationZ": 0,
+                  "name": "leg-right"
+                },
+                {
+                  "type": "sphere",
+                  "size": 5,
+                  "color": "#E0DED8",
+                  "x": 5,
+                  "y": 2,
+                  "z": 0,
+                  "name": "foot-left"
+                },
+                {
+                  "type": "sphere",
+                  "size": 5,
+                  "color": "#E0DED8",
+                  "x": -5,
+                  "y": 2,
+                  "z": 0,
+                  "name": "foot-right"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
+          }
+        },
+        "electricResistance": 75,
+        "title": "skeleton"
       },
       "new_trex": {
         "title": "New T-Rex",
@@ -6324,3916 +10234,6 @@ const DEFAULT_PROJECT_CONFIG = {
           }
         }
       },
-      "orc": {
-        "essence": 5,
-        "speed": 1,
-        "value": 1,
-        "hp": 10,
-        "render": {
-          "animations": {
-            "idle": [
-              {}
-            ],
-            "walk": [
-              {},
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 26.757142857142853,
-                      "rotationY": -10,
-                      "id": 0
-                    },
-                    {
-                      "y": 41.75714285714285,
-                      "id": 1
-                    },
-                    {
-                      "y": 41.75714285714285,
-                      "id": 2
-                    },
-                    {
-                      "y": 38.257142857142846,
-                      "id": 3
-                    },
-                    {
-                      "y": 43.75714285714285,
-                      "id": 4
-                    },
-                    {
-                      "y": 43.75714285714285,
-                      "id": 5
-                    },
-                    {
-                      "y": 43.75714285714285,
-                      "id": 6
-                    },
-                    {
-                      "y": 43.75714285714285,
-                      "id": 7
-                    },
-                    {
-                      "y": 27.75714285714285,
-                      "z": -1,
-                      "rotationX": 11,
-                      "id": 8
-                    },
-                    {
-                      "y": 27.75714285714285,
-                      "z": 3.6,
-                      "rotationX": -14,
-                      "id": 9
-                    },
-                    {
-                      "x": 11.6,
-                      "y": 15.757142857142853,
-                      "z": -3.2,
-                      "rotationX": 10,
-                      "id": 10
-                    },
-                    {
-                      "x": -12.4,
-                      "y": 15.757142857142853,
-                      "z": 6.5,
-                      "rotationX": -14,
-                      "id": 11
-                    },
-                    {
-                      "y": 7.757142857142849,
-                      "z": 3,
-                      "rotationX": -4,
-                      "id": 12
-                    },
-                    {
-                      "y": 7.757142857142849,
-                      "z": -1,
-                      "rotationX": 21,
-                      "id": 13
-                    },
-                    {
-                      "y": -0.24285714285715443,
-                      "z": 5.1,
-                      "id": 14
-                    },
-                    {
-                      "x": -4.1,
-                      "y": 1,
-                      "z": -1.6,
-                      "rotationX": 26,
-                      "id": 15
-                    },
-                    {
-                      "y": 44.75714285714285,
-                      "id": 16
-                    },
-                    {
-                      "y": 44.75714285714285,
-                      "id": 17
-                    },
-                    {
-                      "y": 48.2,
-                      "id": 18
-                    },
-                    {
-                      "y": 36.75714285714285,
-                      "id": 19
-                    },
-                    {
-                      "y": 36.75714285714285,
-                      "id": 20
-                    },
-                    {
-                      "y": 17.757142857142853,
-                      "rotationY": -10,
-                      "id": 21
-                    },
-                    {
-                      "y": 40.75714285714285,
-                      "id": 22
-                    },
-                    {
-                      "y": 12.999999999999996,
-                      "z": 2.6,
-                      "rotationX": -60,
-                      "id": 23
-                    },
-                    {
-                      "x": 12.1,
-                      "y": 5,
-                      "z": 17,
-                      "id": 24
-                    },
-                    {
-                      "y": 9.5,
-                      "z": 19.7,
-                      "rotationY": 0,
-                      "rotationX": 30,
-                      "id": 25
-                    },
-                    {
-                      "y": 0,
-                      "z": 14.5,
-                      "rotationX": -150,
-                      "id": 26
-                    },
-                    {
-                      "x": 7.5,
-                      "y": 4.8,
-                      "z": 17.3,
-                      "id": 27
-                    },
-                    {
-                      "x": 16.6,
-                      "y": 4.8,
-                      "z": 17.3,
-                      "id": 28
-                    },
-                    {
-                      "x": 12.1,
-                      "y": 2.5999999999999996,
-                      "z": 21,
-                      "rotationX": 120,
-                      "id": 29
-                    },
-                    {
-                      "y": 21.757142857142853,
-                      "id": 30
-                    },
-                    {
-                      "y": 38,
-                      "z": 1,
-                      "rotationX": 105,
-                      "id": 31
-                    },
-                    {
-                      "y": 38,
-                      "z": 1,
-                      "rotationX": 75,
-                      "id": 32
-                    }
-                  ]
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 29.757142857142853,
-                      "id": 8
-                    },
-                    {
-                      "y": 29.757142857142853,
-                      "id": 9
-                    },
-                    {
-                      "y": 14.999999999999993,
-                      "id": 29
-                    }
-                  ]
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 26.757142857142853,
-                      "rotationY": 10,
-                      "id": 0
-                    },
-                    {
-                      "y": 41.75714285714285,
-                      "id": 1
-                    },
-                    {
-                      "y": 41.75714285714285,
-                      "id": 2
-                    },
-                    {
-                      "y": 38.257142857142846,
-                      "id": 3
-                    },
-                    {
-                      "y": 43.75714285714285,
-                      "id": 4
-                    },
-                    {
-                      "y": 43.75714285714285,
-                      "id": 5
-                    },
-                    {
-                      "y": 43.75714285714285,
-                      "id": 6
-                    },
-                    {
-                      "y": 43.75714285714285,
-                      "id": 7
-                    },
-                    {
-                      "y": 27.75714285714285,
-                      "z": 3,
-                      "rotationX": -14,
-                      "id": 8
-                    },
-                    {
-                      "x": -11.9,
-                      "y": 27.75714285714285,
-                      "rotationX": 16,
-                      "id": 9
-                    },
-                    {
-                      "y": 15.757142857142853,
-                      "z": 6,
-                      "rotationX": -14,
-                      "id": 10
-                    },
-                    {
-                      "y": 16,
-                      "z": -1.7,
-                      "rotationX": 11,
-                      "id": 11
-                    },
-                    {
-                      "y": 7.757142857142849,
-                      "z": -1.3,
-                      "rotationX": 16,
-                      "id": 12
-                    },
-                    {
-                      "y": 7.757142857142849,
-                      "z": 5,
-                      "rotationY": 0,
-                      "rotationX": -15,
-                      "id": 13
-                    },
-                    {
-                      "y": 0.20000000000000018,
-                      "z": -1.4,
-                      "rotationX": 16,
-                      "id": 14
-                    },
-                    {
-                      "y": -0.24285714285715443,
-                      "z": 8.1,
-                      "id": 15
-                    },
-                    {
-                      "y": 44.75714285714285,
-                      "id": 16
-                    },
-                    {
-                      "y": 44.75714285714285,
-                      "id": 17
-                    },
-                    {
-                      "y": 48.2,
-                      "id": 18
-                    },
-                    {
-                      "y": 36.75714285714285,
-                      "id": 19
-                    },
-                    {
-                      "y": 36.75714285714285,
-                      "id": 20
-                    },
-                    {
-                      "y": 17.757142857142853,
-                      "rotationY": 10,
-                      "id": 21
-                    },
-                    {
-                      "y": 40.75714285714285,
-                      "id": 22
-                    },
-                    {
-                      "y": 12.999999999999996,
-                      "rotationX": 60,
-                      "id": 23
-                    },
-                    {
-                      "x": 12.1,
-                      "y": 20,
-                      "z": 20,
-                      "id": 24
-                    },
-                    {
-                      "y": 24.4,
-                      "rotationX": -24,
-                      "id": 25
-                    },
-                    {
-                      "y": 15.2,
-                      "z": 21.8,
-                      "rotationX": 160,
-                      "id": 26
-                    },
-                    {
-                      "x": 7.6,
-                      "y": 20,
-                      "z": 20,
-                      "id": 27
-                    },
-                    {
-                      "x": 16.700000000000003,
-                      "y": 20,
-                      "z": 20,
-                      "id": 28
-                    },
-                    {
-                      "y": 22.3,
-                      "rotationX": 60,
-                      "id": 29
-                    },
-                    {
-                      "y": 21.757142857142853,
-                      "id": 30
-                    },
-                    {
-                      "y": 38,
-                      "z": 0,
-                      "rotationX": 75,
-                      "id": 31
-                    },
-                    {
-                      "y": 38,
-                      "z": 4,
-                      "rotationX": 105,
-                      "id": 32
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          "model": {
-            "shapes": {
-              "shapes": [
-                {
-                  "type": "box",
-                  "width": 14,
-                  "height": 18,
-                  "depth": 10,
-                  "x": 0,
-                  "y": 28.757142857142853,
-                  "z": 1.4857142857142973,
-                  "color": "#496a29",
-                  "name": "torso",
-                  "scaleX": 1
-                },
-                {
-                  "type": "sphere",
-                  "size": 15,
-                  "x": 0,
-                  "y": 43.75714285714285,
-                  "z": 1.4857142857143,
-                  "color": "#5c6628",
-                  "name": "head"
-                },
-                {
-                  "type": "box",
-                  "width": 5,
-                  "height": 4,
-                  "depth": 6,
-                  "x": 0,
-                  "y": 43.75714285714285,
-                  "z": 7.485714285714296,
-                  "color": "#686f20",
-                  "name": "nose"
-                },
-                {
-                  "type": "box",
-                  "width": 12,
-                  "height": 3,
-                  "depth": 6,
-                  "x": 0,
-                  "y": 40.257142857142846,
-                  "z": 5.485714285714296,
-                  "color": "#7d4023",
-                  "name": "jaw"
-                },
-                {
-                  "type": "sphere",
-                  "size": 4,
-                  "x": 4.5,
-                  "y": 45.75714285714285,
-                  "z": 5.985714285714293,
-                  "color": "#c5c5c5",
-                  "name": "eye-right"
-                },
-                {
-                  "type": "sphere",
-                  "size": 1.5,
-                  "x": 5,
-                  "y": 45.75714285714285,
-                  "z": 7.4857142857143,
-                  "color": "#000000",
-                  "name": "pupil-right"
-                },
-                {
-                  "type": "sphere",
-                  "size": 4,
-                  "x": -4.5,
-                  "y": 45.75714285714285,
-                  "z": 5.985714285714293,
-                  "color": "#c5c5c5",
-                  "name": "eye-left"
-                },
-                {
-                  "type": "sphere",
-                  "size": 1.5,
-                  "x": -5,
-                  "y": 45.75714285714285,
-                  "z": 7.4857142857143,
-                  "color": "#000000",
-                  "name": "pupil-left"
-                },
-                {
-                  "type": "box",
-                  "width": 6,
-                  "height": 20,
-                  "depth": 6,
-                  "x": 11.999999999999998,
-                  "y": 29.75714285714285,
-                  "z": 1.4857142857142973,
-                  "color": "#496a29",
-                  "name": "arm-right"
-                },
-                {
-                  "type": "box",
-                  "width": 6,
-                  "height": 20,
-                  "depth": 6,
-                  "x": -12.000000000000002,
-                  "y": 29.75714285714285,
-                  "z": 1.4857142857142973,
-                  "color": "#496a29",
-                  "name": "arm-left"
-                },
-                {
-                  "type": "box",
-                  "width": 8,
-                  "height": 5,
-                  "depth": 7,
-                  "x": 11.999999999999998,
-                  "y": 17.757142857142853,
-                  "z": 2.4857142857142978,
-                  "color": "#496a29",
-                  "name": "hand-right"
-                },
-                {
-                  "type": "box",
-                  "width": 8,
-                  "height": 5,
-                  "depth": 7,
-                  "x": -12.000000000000002,
-                  "y": 17.757142857142853,
-                  "z": 2.4857142857142978,
-                  "color": "#496a29",
-                  "name": "hand-left"
-                },
-                {
-                  "type": "box",
-                  "width": 6,
-                  "height": 15,
-                  "depth": 6,
-                  "x": 4,
-                  "y": 9.75714285714285,
-                  "z": 1.4857142857142982,
-                  "color": "#496a29",
-                  "name": "leg-right"
-                },
-                {
-                  "type": "box",
-                  "width": 6,
-                  "height": 15,
-                  "depth": 6,
-                  "x": -4,
-                  "y": 9.75714285714285,
-                  "z": 1.4857142857142982,
-                  "color": "#496a29",
-                  "name": "leg-left"
-                },
-                {
-                  "type": "box",
-                  "width": 7,
-                  "height": 3,
-                  "depth": 10,
-                  "x": 4,
-                  "y": 1.7571428571428456,
-                  "z": 3.4857142857143026,
-                  "color": "#3B3B3B",
-                  "name": "foot-right"
-                },
-                {
-                  "type": "box",
-                  "width": 7,
-                  "height": 3,
-                  "depth": 10,
-                  "x": -4,
-                  "y": 1.7571428571428456,
-                  "z": 3.4857142857143026,
-                  "color": "#3B3B3B",
-                  "name": "foot-left"
-                },
-                {
-                  "type": "box",
-                  "width": 3,
-                  "height": 6,
-                  "depth": 2,
-                  "x": 6.499999999999998,
-                  "y": 46.75714285714285,
-                  "z": 0.4857142857142964,
-                  "color": "#686b23",
-                  "name": "ear-right"
-                },
-                {
-                  "type": "box",
-                  "width": 3,
-                  "height": 6,
-                  "depth": 2,
-                  "x": -6.5,
-                  "y": 46.75714285714285,
-                  "z": 0.4857142857142964,
-                  "color": "#686b23",
-                  "name": "ear-left"
-                },
-                {
-                  "type": "cone",
-                  "size": 16,
-                  "height": 5,
-                  "x": 0,
-                  "y": 50.2,
-                  "z": 1.4857142857142929,
-                  "rotationX": 0,
-                  "color": "#555555",
-                  "name": "helmet"
-                },
-                {
-                  "type": "box",
-                  "width": 1.5,
-                  "height": 3,
-                  "depth": 0.7,
-                  "x": 4,
-                  "y": 38.75714285714285,
-                  "z": 8.485714285714296,
-                  "color": "#c5c5c5",
-                  "name": "tusk-right"
-                },
-                {
-                  "type": "box",
-                  "width": 1.5,
-                  "height": 3,
-                  "depth": 0.7,
-                  "x": -4,
-                  "y": 38.75714285714285,
-                  "z": 8.485714285714296,
-                  "color": "#c5c5c5",
-                  "name": "tusk-left"
-                },
-                {
-                  "type": "box",
-                  "width": 15,
-                  "height": 3,
-                  "depth": 11,
-                  "x": 0,
-                  "y": 19.757142857142853,
-                  "z": 1.4857142857142982,
-                  "color": "#8B4513",
-                  "name": "belt"
-                },
-                {
-                  "type": "box",
-                  "width": 7,
-                  "height": 9,
-                  "depth": 3,
-                  "x": 0,
-                  "y": 42.75714285714285,
-                  "z": -4.514285714285706,
-                  "color": "#222222",
-                  "name": "hair"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 3,
-                  "height": 30,
-                  "x": 11.999999999999998,
-                  "y": 14.999999999999996,
-                  "z": 7.000000000000014,
-                  "color": "#8B4513",
-                  "name": "club-handle",
-                  "rotationZ": 0,
-                  "rotationX": 90
-                },
-                {
-                  "type": "sphere",
-                  "size": 9,
-                  "x": 11.999999999999998,
-                  "y": 14.999999999999996,
-                  "z": 18.000000000000014,
-                  "color": "#8B4513",
-                  "name": "club-head"
-                },
-                {
-                  "type": "cone",
-                  "size": 4,
-                  "height": 5,
-                  "x": 12.1,
-                  "y": 19.999999999999996,
-                  "z": 18.000000000000014,
-                  "rotationY": 90,
-                  "color": "#808080",
-                  "name": "club-spike-1"
-                },
-                {
-                  "type": "cone",
-                  "size": 4,
-                  "height": 5,
-                  "x": 12.1,
-                  "y": 9.999999999999996,
-                  "z": 18.000000000000014,
-                  "rotationY": 0,
-                  "color": "#808080",
-                  "name": "club-spike-2",
-                  "rotationX": 180
-                },
-                {
-                  "type": "cone",
-                  "size": 4,
-                  "height": 5,
-                  "x": 6.6,
-                  "y": 14.999999999999996,
-                  "z": 18.000000000000014,
-                  "rotationY": 0,
-                  "color": "#808080",
-                  "name": "club-spike-3",
-                  "rotationZ": 90,
-                  "rotationX": 0
-                },
-                {
-                  "type": "cone",
-                  "size": 4,
-                  "height": 5,
-                  "x": 17.6,
-                  "y": 14.999999999999996,
-                  "z": 18.000000000000014,
-                  "rotationY": 0,
-                  "color": "#808080",
-                  "name": "club-spike-4",
-                  "rotationX": 90,
-                  "rotationZ": -90
-                },
-                {
-                  "type": "cone",
-                  "size": 4,
-                  "height": 5,
-                  "x": 11.999999999999998,
-                  "y": 14.999999999999995,
-                  "z": 24.00000000000002,
-                  "rotationX": 90,
-                  "color": "#808080",
-                  "name": "club-spike-top"
-                },
-                {
-                  "type": "box",
-                  "width": 12,
-                  "height": 4,
-                  "depth": 4,
-                  "x": 0,
-                  "y": 23.757142857142853,
-                  "z": -3.5142857142857027,
-                  "color": "#333333",
-                  "name": "back-armor"
-                },
-                {
-                  "type": "box",
-                  "width": 7,
-                  "height": 7,
-                  "depth": 2,
-                  "x": 12,
-                  "y": 40,
-                  "z": 1.4857142857142973,
-                  "color": "#796020",
-                  "name": "shoulder-pad-right",
-                  "rotationX": 90
-                },
-                {
-                  "type": "box",
-                  "width": 7,
-                  "height": 7,
-                  "depth": 2,
-                  "x": -12,
-                  "y": 40,
-                  "z": 1.4857142857142973,
-                  "color": "#796020",
-                  "name": "shoulder-pad-left",
-                  "rotationX": 90
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            }
-          }
-        },
-        "armor": 100,
-        "title": "Orc"
-      },
-      "pirate": {
-        "title": "Pirate",
-        "render": {
-          "animations": {
-            "idle": [
-              {}
-            ]
-          },
-          "model": {
-            "shapes": {
-              "shapes": [
-                {
-                  "type": "box",
-                  "width": 12,
-                  "height": 16,
-                  "depth": 7,
-                  "x": 0,
-                  "y": 24,
-                  "z": 0,
-                  "color": "#2F1A4A",
-                  "name": "torso",
-                  "scaleX": 1
-                },
-                {
-                  "type": "sphere",
-                  "size": 10,
-                  "x": 0,
-                  "y": 35,
-                  "z": 0,
-                  "color": "#E8C9A0",
-                  "name": "head"
-                },
-                {
-                  "type": "box",
-                  "width": 3,
-                  "height": 2,
-                  "depth": 4,
-                  "x": 0,
-                  "y": 35,
-                  "z": 4,
-                  "color": "#E8C9A0",
-                  "name": "nose"
-                },
-                {
-                  "type": "box",
-                  "width": 8,
-                  "height": 2,
-                  "depth": 4,
-                  "x": 0,
-                  "y": 32,
-                  "z": 3,
-                  "color": "#ECB69B",
-                  "name": "jaw"
-                },
-                {
-                  "type": "sphere",
-                  "size": 2,
-                  "x": -3,
-                  "y": 36,
-                  "z": 4,
-                  "color": "#87CEFA",
-                  "name": "eye-right"
-                },
-                {
-                  "type": "sphere",
-                  "size": 1,
-                  "x": -3.5,
-                  "y": 36,
-                  "z": 4.5,
-                  "color": "#000000",
-                  "name": "pupil-right"
-                },
-                {
-                  "type": "box",
-                  "width": 3,
-                  "height": 2,
-                  "depth": 1,
-                  "x": 2,
-                  "y": 36,
-                  "z": 5,
-                  "color": "#000000",
-                  "name": "eyepatch-left"
-                },
-                {
-                  "type": "box",
-                  "width": 4,
-                  "height": 12,
-                  "depth": 4,
-                  "x": -8,
-                  "y": 24,
-                  "z": 0,
-                  "color": "#2F1A4A",
-                  "name": "arm-right",
-                  "rotationZ": -15
-                },
-                {
-                  "type": "box",
-                  "width": 4,
-                  "height": 12,
-                  "depth": 4,
-                  "x": 8,
-                  "y": 24,
-                  "z": 0,
-                  "color": "#2F1A4A",
-                  "name": "arm-left",
-                  "rotationZ": 15
-                },
-                {
-                  "type": "box",
-                  "width": 5,
-                  "height": 3,
-                  "depth": 5,
-                  "x": -8,
-                  "y": 16,
-                  "z": 1,
-                  "color": "#E8C9A0",
-                  "name": "hand-right",
-                  "rotationX": 90
-                },
-                {
-                  "type": "box",
-                  "width": 2,
-                  "height": 4,
-                  "depth": 2,
-                  "x": 8,
-                  "y": 16,
-                  "z": 1,
-                  "color": "#C0C0C0",
-                  "name": "hook-left",
-                  "rotationZ": -45
-                },
-                {
-                  "type": "box",
-                  "width": 4,
-                  "height": 12,
-                  "depth": 4,
-                  "x": -3,
-                  "y": 8,
-                  "z": 0,
-                  "color": "#3B3B3B",
-                  "name": "leg-right"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 3,
-                  "height": 13,
-                  "x": 3,
-                  "y": 7.5,
-                  "z": 0,
-                  "color": "#8B4513",
-                  "name": "peg-leg-left"
-                },
-                {
-                  "type": "box",
-                  "width": 5,
-                  "height": 2,
-                  "depth": 6,
-                  "x": -3,
-                  "y": 2,
-                  "z": 2,
-                  "color": "#3B3B3B",
-                  "name": "boot-right"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 4,
-                  "height": 2,
-                  "x": 3,
-                  "y": 2,
-                  "z": 2,
-                  "color": "#8B4513",
-                  "name": "peg-foot-left"
-                },
-                {
-                  "type": "box",
-                  "width": 11,
-                  "height": 10,
-                  "depth": 8,
-                  "x": 0,
-                  "y": 15,
-                  "z": 0,
-                  "color": "#FF0000",
-                  "name": "pants"
-                },
-                {
-                  "type": "box",
-                  "width": 12,
-                  "height": 8,
-                  "depth": 2,
-                  "x": 0,
-                  "y": 32,
-                  "z": 3,
-                  "color": "#000000",
-                  "name": "beard"
-                },
-                {
-                  "type": "box",
-                  "width": 14,
-                  "height": 6,
-                  "depth": 10,
-                  "x": 0,
-                  "y": 40,
-                  "z": 0,
-                  "color": "#000000",
-                  "name": "hat"
-                },
-                {
-                  "type": "box",
-                  "width": 2,
-                  "height": 4,
-                  "depth": 2,
-                  "x": -9,
-                  "y": 14,
-                  "z": 1,
-                  "color": "#8B4513",
-                  "name": "sword-handle",
-                  "rotationZ": 0,
-                  "rotationX": -45
-                },
-                {
-                  "type": "box",
-                  "width": 2,
-                  "height": 2.2,
-                  "depth": 6,
-                  "x": -9,
-                  "y": 13,
-                  "z": 2,
-                  "color": "#C0C0C0",
-                  "name": "sword-guard",
-                  "rotationZ": 45,
-                  "rotationX": 0,
-                  "rotationY": 90
-                },
-                {
-                  "type": "box",
-                  "width": 1,
-                  "height": 1,
-                  "depth": 18,
-                  "x": -9,
-                  "y": 8,
-                  "z": 7,
-                  "color": "#C0C0C0",
-                  "name": "sword-blade",
-                  "rotationZ": 45,
-                  "rotationX": 45
-                },
-                {
-                  "type": "box",
-                  "width": 8,
-                  "height": 2,
-                  "depth": 10,
-                  "x": 0,
-                  "y": 16,
-                  "z": 0,
-                  "color": "#FFD700",
-                  "name": "sash"
-                },
-                {
-                  "type": "box",
-                  "width": 2,
-                  "height": 2,
-                  "depth": 2,
-                  "x": -2,
-                  "y": 43,
-                  "z": 0,
-                  "color": "#FF0000",
-                  "name": "hat-feather-right",
-                  "rotationZ": 45
-                },
-                {
-                  "type": "box",
-                  "width": 2,
-                  "height": 2,
-                  "depth": 2,
-                  "x": 2,
-                  "y": 43,
-                  "z": 0,
-                  "color": "#FF0000",
-                  "name": "hat-feather-left",
-                  "rotationZ": -45
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            }
-          }
-        }
-      },
-      "pterodactyl": {
-        "speed": 2,
-        "value": 10,
-        "hp": 5,
-        "essence": 5,
-        "render": {
-          "animations": {
-            "idle": [
-              {}
-            ],
-            "walk": [
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "size": 7.2,
-                      "height": 14.4,
-                      "y": 47.5,
-                      "z": -2.4,
-                      "id": 0
-                    },
-                    {
-                      "y": 49.3,
-                      "z": 9.6,
-                      "id": 1
-                    },
-                    {
-                      "y": 52.8,
-                      "z": 15.9,
-                      "id": 2
-                    },
-                    {
-                      "y": 59.5,
-                      "z": 13.5,
-                      "id": 3
-                    },
-                    {
-                      "y": 50,
-                      "z": -2.4,
-                      "rotationZ": -10,
-                      "id": 4
-                    },
-                    {
-                      "y": 50,
-                      "z": -2.4,
-                      "rotationZ": 10,
-                      "id": 5
-                    },
-                    {
-                      "y": 50,
-                      "rotationZ": -10,
-                      "id": 6
-                    },
-                    {
-                      "y": 53,
-                      "rotationZ": 10,
-                      "id": 7
-                    },
-                    {
-                      "y": 47.5,
-                      "z": -16.9,
-                      "id": 8
-                    },
-                    {
-                      "y": 47.5,
-                      "z": -19.6,
-                      "id": 9
-                    },
-                    {
-                      "y": 42.7,
-                      "z": -4.8,
-                      "rotationX": 0,
-                      "id": 10
-                    },
-                    {
-                      "y": 42.7,
-                      "z": -4.8,
-                      "rotationX": 0,
-                      "id": 11
-                    },
-                    {
-                      "y": 39.5,
-                      "z": -4.8,
-                      "rotationX": -90,
-                      "id": 12
-                    },
-                    {
-                      "y": 39.5,
-                      "z": -4.8,
-                      "rotationX": -90,
-                      "id": 13
-                    },
-                    {
-                      "y": 54.7,
-                      "z": 15.4,
-                      "id": 14
-                    },
-                    {
-                      "y": 54.7,
-                      "z": 15.4,
-                      "id": 15
-                    },
-                    {
-                      "y": 50,
-                      "rotationZ": 10,
-                      "id": 16
-                    },
-                    {
-                      "y": 53,
-                      "rotationZ": -10,
-                      "id": 17
-                    }
-                  ]
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "size": 7.2,
-                      "height": 14.4,
-                      "y": 48.5,
-                      "z": -2.4,
-                      "id": 0
-                    },
-                    {
-                      "y": 50.3,
-                      "z": 9.6,
-                      "id": 1
-                    },
-                    {
-                      "y": 53.8,
-                      "z": 15.9,
-                      "id": 2
-                    },
-                    {
-                      "y": 60.5,
-                      "z": 13.5,
-                      "id": 3
-                    },
-                    {
-                      "y": 45,
-                      "z": -2.4,
-                      "rotationZ": 30,
-                      "id": 4
-                    },
-                    {
-                      "y": 45,
-                      "z": -2.4,
-                      "rotationZ": -30,
-                      "id": 5
-                    },
-                    {
-                      "y": 45,
-                      "rotationZ": 30,
-                      "id": 6
-                    },
-                    {
-                      "y": 38,
-                      "id": 7
-                    },
-                    {
-                      "y": 48.5,
-                      "z": -16.9,
-                      "id": 8
-                    },
-                    {
-                      "y": 48.5,
-                      "z": -19.6,
-                      "id": 9
-                    },
-                    {
-                      "y": 43.7,
-                      "z": -4.8,
-                      "id": 10
-                    },
-                    {
-                      "y": 43.7,
-                      "z": -4.8,
-                      "id": 11
-                    },
-                    {
-                      "y": 41,
-                      "z": -4.8,
-                      "id": 12
-                    },
-                    {
-                      "y": 41,
-                      "z": -4.8,
-                      "id": 13
-                    },
-                    {
-                      "y": 55.7,
-                      "z": 15.4,
-                      "id": 14
-                    },
-                    {
-                      "y": 55.7,
-                      "z": 15.4,
-                      "id": 15
-                    },
-                    {
-                      "y": 45,
-                      "rotationZ": -30,
-                      "id": 16
-                    },
-                    {
-                      "y": 38,
-                      "id": 17
-                    }
-                  ]
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "size": 7.2,
-                      "height": 14.4,
-                      "y": 47.5,
-                      "z": -2.4,
-                      "id": 0
-                    },
-                    {
-                      "y": 49.3,
-                      "z": 9.6,
-                      "id": 1
-                    },
-                    {
-                      "y": 52.8,
-                      "z": 15.9,
-                      "id": 2
-                    },
-                    {
-                      "y": 59.5,
-                      "z": 13.5,
-                      "id": 3
-                    },
-                    {
-                      "y": 50,
-                      "z": -2.4,
-                      "rotationZ": -10,
-                      "id": 4
-                    },
-                    {
-                      "y": 50,
-                      "z": -2.4,
-                      "rotationZ": 10,
-                      "id": 5
-                    },
-                    {
-                      "y": 50,
-                      "rotationZ": -10,
-                      "id": 6
-                    },
-                    {
-                      "y": 53,
-                      "rotationZ": 10,
-                      "id": 7
-                    },
-                    {
-                      "y": 47.5,
-                      "z": -16.9,
-                      "id": 8
-                    },
-                    {
-                      "y": 47.5,
-                      "z": -19.6,
-                      "id": 9
-                    },
-                    {
-                      "y": 42.7,
-                      "z": -4.8,
-                      "rotationX": 0,
-                      "id": 10
-                    },
-                    {
-                      "y": 42.7,
-                      "z": -4.8,
-                      "rotationX": 0,
-                      "id": 11
-                    },
-                    {
-                      "y": 39.5,
-                      "z": -4.8,
-                      "rotationX": -90,
-                      "id": 12
-                    },
-                    {
-                      "y": 39.5,
-                      "z": -4.8,
-                      "rotationX": -90,
-                      "id": 13
-                    },
-                    {
-                      "y": 54.7,
-                      "z": 15.4,
-                      "id": 14
-                    },
-                    {
-                      "y": 54.7,
-                      "z": 15.4,
-                      "id": 15
-                    },
-                    {
-                      "y": 50,
-                      "rotationZ": 10,
-                      "id": 16
-                    },
-                    {
-                      "y": 53,
-                      "rotationZ": -10,
-                      "id": 17
-                    }
-                  ]
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "size": 7.2,
-                      "height": 14.4,
-                      "y": 46.5,
-                      "z": -2.4,
-                      "id": 0
-                    },
-                    {
-                      "y": 48.3,
-                      "z": 9.6,
-                      "id": 1
-                    },
-                    {
-                      "y": 51.8,
-                      "z": 15.9,
-                      "id": 2
-                    },
-                    {
-                      "y": 58.5,
-                      "z": 13.5,
-                      "id": 3
-                    },
-                    {
-                      "y": 43,
-                      "z": -2.4,
-                      "rotationZ": 30,
-                      "id": 4
-                    },
-                    {
-                      "y": 43,
-                      "z": -2.4,
-                      "rotationZ": -30,
-                      "id": 5
-                    },
-                    {
-                      "y": 43,
-                      "rotationZ": 50,
-                      "id": 6
-                    },
-                    {
-                      "y": 35,
-                      "rotationZ": -50,
-                      "id": 7
-                    },
-                    {
-                      "y": 46.5,
-                      "z": -16.9,
-                      "id": 8
-                    },
-                    {
-                      "y": 46.5,
-                      "z": -19.6,
-                      "id": 9
-                    },
-                    {
-                      "y": 41.7,
-                      "z": -4.8,
-                      "rotationX": 40,
-                      "id": 10
-                    },
-                    {
-                      "y": 41.7,
-                      "z": -4.8,
-                      "rotationX": 40,
-                      "id": 11
-                    },
-                    {
-                      "y": 38,
-                      "z": -5.7,
-                      "rotationX": -30,
-                      "id": 12
-                    },
-                    {
-                      "y": 38,
-                      "z": -5.7,
-                      "rotationX": -30,
-                      "id": 13
-                    },
-                    {
-                      "y": 53.7,
-                      "z": 15.4,
-                      "id": 14
-                    },
-                    {
-                      "y": 53.7,
-                      "z": 15.4,
-                      "id": 15
-                    },
-                    {
-                      "y": 43,
-                      "rotationZ": 50,
-                      "id": 16
-                    },
-                    {
-                      "y": 35,
-                      "rotationZ": 50,
-                      "id": 17
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          "model": {
-            "shapes": {
-              "shapes": [
-                {
-                  "type": "cylinder",
-                  "size": 7.199999999999999,
-                  "height": 14.399999999999999,
-                  "x": 0,
-                  "y": 47.48726562500001,
-                  "z": -2.3686718749999995,
-                  "color": "#7d6d5e",
-                  "rotationX": 90,
-                  "rotationZ": 0,
-                  "name": "body",
-                  "scaleX": 1
-                },
-                {
-                  "type": "cylinder",
-                  "size": 2.88,
-                  "height": 12,
-                  "x": 0,
-                  "y": 49.294765625,
-                  "z": 9.631328125000001,
-                  "color": "#7D6B5D",
-                  "rotationX": 45,
-                  "rotationZ": 0,
-                  "name": "neck"
-                },
-                {
-                  "type": "cone",
-                  "size": 2.4,
-                  "height": 10.56,
-                  "x": 0,
-                  "y": 52.76726562500002,
-                  "z": 15.871328125,
-                  "color": "#7D6B5D",
-                  "rotationX": 120,
-                  "rotationZ": 0,
-                  "name": "beak"
-                },
-                {
-                  "type": "cone",
-                  "size": 0.96,
-                  "height": 9.6,
-                  "x": 0,
-                  "y": 59.48726562500001,
-                  "z": 13.471328125,
-                  "color": "#6D5D4D",
-                  "rotationX": 0,
-                  "rotationZ": 0,
-                  "name": "head-spike"
-                },
-                {
-                  "type": "box",
-                  "width": 24,
-                  "height": 0.48,
-                  "depth": 9.6,
-                  "x": -12,
-                  "y": 47.48726562500001,
-                  "z": -2.3686718749999995,
-                  "color": "#8D7B6D",
-                  "rotationY": 0,
-                  "rotationZ": 15,
-                  "name": "wing-right"
-                },
-                {
-                  "type": "box",
-                  "width": 24,
-                  "height": 0.48,
-                  "depth": 9.6,
-                  "x": 12,
-                  "y": 47.48726562500001,
-                  "z": -2.3686718749999995,
-                  "color": "#8D7B6D",
-                  "rotationY": 0,
-                  "rotationZ": -15,
-                  "name": "wing-left"
-                },
-                {
-                  "type": "box",
-                  "width": 4,
-                  "height": 0.24,
-                  "depth": 2,
-                  "x": -12,
-                  "y": 47,
-                  "z": 3,
-                  "color": "#8D7B6D",
-                  "rotationY": 90,
-                  "rotationZ": 15,
-                  "name": "hand-right"
-                },
-                {
-                  "type": "box",
-                  "width": 10,
-                  "height": 0.24,
-                  "depth": 6,
-                  "x": 25,
-                  "y": 43.2,
-                  "z": -4.1,
-                  "color": "#8D7B6D",
-                  "rotationY": 40,
-                  "rotationZ": -30,
-                  "rotationX": 16,
-                  "name": "wingtip-left"
-                },
-                {
-                  "type": "cone",
-                  "size": 1.92,
-                  "height": 12,
-                  "x": 0,
-                  "y": 47.48726562500001,
-                  "z": -16.851171875000002,
-                  "color": "#7D6B5D",
-                  "rotationX": -90,
-                  "rotationZ": 0,
-                  "name": "tail"
-                },
-                {
-                  "type": "box",
-                  "width": 5.76,
-                  "height": 0.48,
-                  "depth": 4.8,
-                  "x": 0,
-                  "y": 47.48726562500001,
-                  "z": -19.648671875,
-                  "color": "#8D7B6D",
-                  "rotationX": 0,
-                  "rotationZ": 0,
-                  "name": "tail-tip"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 0.72,
-                  "height": 5.76,
-                  "x": -2.4,
-                  "y": 42.68726562500001,
-                  "z": -4.768671874999999,
-                  "color": "#6D5D4D",
-                  "rotationX": 20,
-                  "rotationZ": 0,
-                  "name": "leg-right"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 0.72,
-                  "height": 5.76,
-                  "x": 2.4,
-                  "y": 42.68726562500001,
-                  "z": -4.768671874999999,
-                  "color": "#6D5D4D",
-                  "rotationX": 20,
-                  "rotationZ": 0,
-                  "name": "leg-left"
-                },
-                {
-                  "type": "cone",
-                  "size": 1.44,
-                  "height": 2.4,
-                  "x": -2.4,
-                  "y": 40.04726562500001,
-                  "z": -4.851171875,
-                  "color": "#6D5D4D",
-                  "rotationX": -60,
-                  "rotationZ": 0,
-                  "name": "foot-right"
-                },
-                {
-                  "type": "cone",
-                  "size": 1.44,
-                  "height": 2.4,
-                  "x": 2.4,
-                  "y": 40.04726562500001,
-                  "z": -4.851171875,
-                  "color": "#6D5D4D",
-                  "rotationX": -60,
-                  "rotationZ": 0,
-                  "name": "foot-left"
-                },
-                {
-                  "type": "sphere",
-                  "size": 0.72,
-                  "x": -0.96,
-                  "y": 54.68726562500001,
-                  "z": 15.391328125000001,
-                  "color": "#000000",
-                  "name": "eye-right"
-                },
-                {
-                  "type": "sphere",
-                  "size": 0.72,
-                  "x": 0.96,
-                  "y": 54.68726562500001,
-                  "z": 15.391328125000001,
-                  "color": "#000000",
-                  "name": "eye-left"
-                },
-                {
-                  "type": "box",
-                  "width": 4,
-                  "height": 0.24,
-                  "depth": 2,
-                  "x": 12,
-                  "y": 47,
-                  "z": 3,
-                  "color": "#8D7B6D",
-                  "rotationY": 90,
-                  "rotationZ": 15,
-                  "name": "hand-left"
-                },
-                {
-                  "type": "box",
-                  "width": 10,
-                  "height": 0.24,
-                  "depth": 6,
-                  "x": -25,
-                  "y": 43.2,
-                  "z": -4.1,
-                  "color": "#8D7B6D",
-                  "rotationY": -40,
-                  "rotationZ": 30,
-                  "rotationX": 16,
-                  "name": "wingtip-right"
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            }
-          }
-        },
-        "title": "Pterodactyl"
-      },
-      "redDragon": {
-        "hp": 500,
-        "speed": 0.5,
-        "essence": 50,
-        "value": 50,
-        "boss": true,
-        "render": {
-          "animations": {
-            "idle": [
-              {}
-            ],
-            "walk": [
-              {
-                "right wing": {
-                  "shapes": [
-                    {
-                      "rotationX": 0.1,
-                      "rotationY": -0.7,
-                      "id": 1
-                    }
-                  ]
-                },
-                "head": {
-                  "shapes": [
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redMColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 2
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redMColor"
-                      },
-                      "id": 3
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 4
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 5
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 6
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 7
-                    }
-                  ]
-                },
-                "jaw": {
-                  "shapes": [
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redMColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "greyLColor"
-                      },
-                      "id": 2
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "greyLColor"
-                      },
-                      "id": 3
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "greyLColor"
-                      },
-                      "id": 4
-                    }
-                  ]
-                },
-                "left arm": {
-                  "shapes": [
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 2
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 3
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 4
-                    }
-                  ]
-                },
-                "right arm": {
-                  "shapes": [
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 2
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 3
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 4
-                    }
-                  ]
-                },
-                "left leg": {
-                  "shapes": [
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 2
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 3
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 4
-                    }
-                  ]
-                },
-                "right leg": {
-                  "shapes": [
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 2
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 3
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 4
-                    }
-                  ]
-                },
-                "body": {
-                  "shapes": [
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 2
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 3
-                    }
-                  ]
-                },
-                "left wing": {
-                  "shapes": [
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 2
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 3
-                    }
-                  ]
-                },
-                "tail base": {
-                  "shapes": [
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 2
-                    }
-                  ]
-                },
-                "tail tip": {
-                  "shapes": [
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 2
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 3
-                    }
-                  ]
-                }
-              },
-              {
-                "head": {
-                  "position": {
-                    "x": 0,
-                    "y": 3.2,
-                    "z": 20
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0.15,
-                    "z": 0
-                  }
-                },
-                "jaw": {
-                  "rotation": {
-                    "x": 0.35,
-                    "y": 0,
-                    "z": 0
-                  }
-                },
-                "left arm": {
-                  "position": {
-                    "x": 1.5,
-                    "y": -1,
-                    "z": 6.5
-                  },
-                  "rotation": {
-                    "x": 0.4,
-                    "y": 0,
-                    "z": 0.1
-                  }
-                },
-                "right arm": {
-                  "position": {
-                    "x": 0,
-                    "y": -2,
-                    "z": 14
-                  },
-                  "rotation": {
-                    "x": -0.1,
-                    "y": 0,
-                    "z": -0.1
-                  }
-                },
-                "left leg": {
-                  "position": {
-                    "x": 0,
-                    "y": 5,
-                    "z": -10
-                  },
-                  "rotation": {
-                    "x": 0.5,
-                    "y": 0,
-                    "z": 0
-                  }
-                },
-                "right leg": {
-                  "position": {
-                    "x": 0,
-                    "y": 3,
-                    "z": 8
-                  },
-                  "rotation": {
-                    "x": -0.4,
-                    "y": 0,
-                    "z": 0
-                  }
-                },
-                "body": {
-                  "rotation": {
-                    "x": 0.6,
-                    "y": 0.05,
-                    "z": 0
-                  }
-                },
-                "left wing": {
-                  "position": {
-                    "x": 5,
-                    "y": 5.5,
-                    "z": 15
-                  },
-                  "rotation": {
-                    "x": 0.2,
-                    "y": 0.7,
-                    "z": 0
-                  },
-                  "shapes": [
-                    {
-                      "rotationX": 0.3,
-                      "rotationY": 0.9,
-                      "id": 1
-                    }
-                  ]
-                },
-                "right wing": {
-                  "position": {
-                    "x": -5,
-                    "y": 5.5,
-                    "z": 15
-                  },
-                  "rotation": {
-                    "x": 0.2,
-                    "y": -0.7,
-                    "z": 0
-                  },
-                  "shapes": [
-                    {
-                      "rotationX": 0.3,
-                      "rotationY": -0.9,
-                      "id": 1
-                    }
-                  ]
-                },
-                "tail base": {
-                  "rotation": {
-                    "x": 0.1,
-                    "y": 0.3,
-                    "z": 0
-                  }
-                },
-                "tail tip": {
-                  "rotation": {
-                    "x": 0.05,
-                    "y": 0.4,
-                    "z": 0
-                  }
-                }
-              },
-              {
-                "left wing": {
-                  "shapes": [
-                    {
-                      "rotationX": 0.1,
-                      "rotationY": 0.7,
-                      "id": 1
-                    }
-                  ]
-                },
-                "right wing": {
-                  "shapes": [
-                    {
-                      "rotationX": 0.1,
-                      "rotationY": -0.7,
-                      "id": 1
-                    }
-                  ]
-                },
-                "head": {
-                  "shapes": [
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redMColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 2
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redMColor"
-                      },
-                      "id": 3
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 4
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 5
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 6
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 7
-                    }
-                  ]
-                },
-                "jaw": {
-                  "shapes": [
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redMColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "greyLColor"
-                      },
-                      "id": 2
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "greyLColor"
-                      },
-                      "id": 3
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "greyLColor"
-                      },
-                      "id": 4
-                    }
-                  ]
-                },
-                "left arm": {
-                  "shapes": [
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 2
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 3
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 4
-                    }
-                  ]
-                },
-                "right arm": {
-                  "shapes": [
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 2
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 3
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 4
-                    }
-                  ]
-                },
-                "left leg": {
-                  "shapes": [
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 2
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 3
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 4
-                    }
-                  ]
-                },
-                "right leg": {
-                  "shapes": [
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 2
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 3
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 4
-                    }
-                  ]
-                },
-                "body": {
-                  "shapes": [
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 2
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 3
-                    }
-                  ]
-                },
-                "tail base": {
-                  "shapes": [
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 2
-                    }
-                  ]
-                },
-                "tail tip": {
-                  "shapes": [
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 2
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 3
-                    }
-                  ]
-                }
-              },
-              {
-                "head": {
-                  "position": {
-                    "x": 0,
-                    "y": 2.8,
-                    "z": 20
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": -0.15,
-                    "z": 0
-                  }
-                },
-                "jaw": {
-                  "position": {
-                    "x": 0,
-                    "y": 10.3,
-                    "z": 8
-                  },
-                  "rotation": {
-                    "x": 0.35,
-                    "y": 0,
-                    "z": 0
-                  }
-                },
-                "left arm": {
-                  "position": {
-                    "x": 0,
-                    "y": -2,
-                    "z": 14
-                  },
-                  "rotation": {
-                    "x": -0.1,
-                    "y": 0,
-                    "z": 0.1
-                  }
-                },
-                "right arm": {
-                  "position": {
-                    "x": -1.5,
-                    "y": -1,
-                    "z": 6.5
-                  },
-                  "rotation": {
-                    "x": 0.4,
-                    "y": 0,
-                    "z": -0.1
-                  }
-                },
-                "left leg": {
-                  "position": {
-                    "x": 0,
-                    "y": 3,
-                    "z": 8
-                  },
-                  "rotation": {
-                    "x": -0.4,
-                    "y": 0,
-                    "z": 0
-                  }
-                },
-                "right leg": {
-                  "position": {
-                    "x": 0,
-                    "y": 5,
-                    "z": -10
-                  },
-                  "rotation": {
-                    "x": 0.5,
-                    "y": 0,
-                    "z": 0
-                  }
-                },
-                "body": {
-                  "position": {
-                    "x": 0,
-                    "y": 9.8,
-                    "z": -8
-                  },
-                  "rotation": {
-                    "x": 0.6,
-                    "y": -0.05,
-                    "z": 0
-                  }
-                },
-                "left wing": {
-                  "position": {
-                    "x": 5,
-                    "y": 4.5,
-                    "z": 15
-                  },
-                  "rotation": {
-                    "x": 0.2,
-                    "y": 0.6,
-                    "z": 0
-                  },
-                  "shapes": [
-                    {
-                      "rotationX": 0.2,
-                      "rotationY": 0.8,
-                      "id": 1
-                    }
-                  ]
-                },
-                "right wing": {
-                  "position": {
-                    "x": -5,
-                    "y": 4.5,
-                    "z": 15
-                  },
-                  "rotation": {
-                    "x": 0.2,
-                    "y": -0.6,
-                    "z": 0
-                  },
-                  "shapes": [
-                    {
-                      "rotationX": 0.2,
-                      "rotationY": -0.8,
-                      "id": 1
-                    }
-                  ]
-                },
-                "tail base": {
-                  "rotation": {
-                    "x": 0.1,
-                    "y": -0.3,
-                    "z": 0
-                  }
-                },
-                "tail tip": {
-                  "rotation": {
-                    "x": 0.05,
-                    "y": -0.4,
-                    "z": 0
-                  }
-                }
-              }
-            ]
-          },
-          "model": {
-            "head": {
-              "shapes": [
-                {
-                  "type": "box",
-                  "width": 18,
-                  "height": 16,
-                  "depth": 24,
-                  "x": 0,
-                  "y": 44,
-                  "z": 16,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "head-main"
-                },
-                {
-                  "type": "sphere",
-                  "size": 5,
-                  "x": -9,
-                  "y": 48,
-                  "z": 18,
-                  "color": {
-                    "paletteColor": "redMColor"
-                  },
-                  "name": "eye-right",
-                  "emissive": "#FFA500"
-                },
-                {
-                  "type": "sphere",
-                  "size": 2.5,
-                  "x": -9,
-                  "y": 48,
-                  "z": 19.5,
-                  "color": {
-                    "paletteColor": "brownDColor"
-                  },
-                  "name": "pupil-right"
-                },
-                {
-                  "type": "sphere",
-                  "size": 5,
-                  "x": 9,
-                  "y": 48,
-                  "z": 18,
-                  "color": {
-                    "paletteColor": "redMColor"
-                  },
-                  "name": "eye-left",
-                  "emissive": "#FFA500"
-                },
-                {
-                  "type": "sphere",
-                  "size": 2.5,
-                  "x": 9,
-                  "y": 48,
-                  "z": 19.5,
-                  "color": {
-                    "paletteColor": "brownDColor"
-                  },
-                  "name": "pupil-left"
-                },
-                {
-                  "type": "box",
-                  "width": 16,
-                  "height": 3,
-                  "depth": 8,
-                  "x": 0,
-                  "y": 52,
-                  "z": 16,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "brow-ridge"
-                },
-                {
-                  "type": "cone",
-                  "size": 3,
-                  "height": 6,
-                  "x": -6,
-                  "y": 52,
-                  "z": 26,
-                  "color": {
-                    "paletteColor": "brownDColor"
-                  },
-                  "name": "horn-right"
-                },
-                {
-                  "type": "cone",
-                  "size": 3,
-                  "height": 6,
-                  "x": 6,
-                  "y": 52,
-                  "z": 26,
-                  "color": {
-                    "paletteColor": "brownDColor"
-                  },
-                  "name": "horn-left"
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 3,
-                "z": 20
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            },
-            "jaw": {
-              "shapes": [
-                {
-                  "type": "box",
-                  "width": 20,
-                  "height": 8,
-                  "depth": 22,
-                  "x": 0,
-                  "y": 32,
-                  "z": 18,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "jaw-main"
-                },
-                {
-                  "type": "box",
-                  "width": 16,
-                  "height": 3,
-                  "depth": 3,
-                  "x": 0,
-                  "y": 35,
-                  "z": 26,
-                  "color": {
-                    "paletteColor": "redMColor"
-                  },
-                  "name": "gums"
-                },
-                {
-                  "type": "cone",
-                  "width": 2,
-                  "height": 2,
-                  "depth": 2,
-                  "x": -6,
-                  "y": 36.7,
-                  "z": 26,
-                  "color": {
-                    "paletteColor": "greyLColor"
-                  },
-                  "name": "tooth-right",
-                  "shininess": 80,
-                  "size": 2
-                },
-                {
-                  "type": "cone",
-                  "width": 2,
-                  "height": 2,
-                  "depth": 2,
-                  "x": 6,
-                  "y": 36.7,
-                  "z": 26,
-                  "color": {
-                    "paletteColor": "greyLColor"
-                  },
-                  "name": "tooth-left",
-                  "shininess": 80,
-                  "size": 2
-                },
-                {
-                  "type": "cone",
-                  "width": 2,
-                  "height": 2,
-                  "depth": 2,
-                  "x": 0,
-                  "y": 36.5,
-                  "z": 26,
-                  "color": {
-                    "paletteColor": "greyLColor"
-                  },
-                  "name": "tooth-middle",
-                  "shininess": 80,
-                  "size": 2
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 10.5,
-                "z": 8
-              },
-              "rotation": {
-                "x": 0.3,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            },
-            "left arm": {
-              "shapes": [
-                {
-                  "type": "box",
-                  "width": 6,
-                  "height": 10,
-                  "depth": 6,
-                  "x": 12,
-                  "y": 30,
-                  "z": 2,
-                  "rotationX": -30,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "upper-arm-left"
-                },
-                {
-                  "type": "box",
-                  "width": 5,
-                  "height": 8,
-                  "depth": 5,
-                  "x": 12,
-                  "y": 26,
-                  "z": 6,
-                  "rotationX": -15,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "lower-arm-left"
-                },
-                {
-                  "type": "box",
-                  "width": 4,
-                  "height": 4,
-                  "depth": 4,
-                  "x": 12,
-                  "y": 24,
-                  "z": 8,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "hand-left"
-                },
-                {
-                  "type": "cone",
-                  "size": 1.5,
-                  "height": 4,
-                  "x": 13,
-                  "y": 23,
-                  "z": 10,
-                  "color": {
-                    "paletteColor": "brownDColor"
-                  },
-                  "name": "claw-left-1",
-                  "rotationX": 180
-                },
-                {
-                  "type": "cone",
-                  "size": 1.5,
-                  "height": 4,
-                  "x": 11,
-                  "y": 23,
-                  "z": 10,
-                  "color": {
-                    "paletteColor": "brownDColor"
-                  },
-                  "name": "claw-left-2",
-                  "rotationX": 180
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": -2,
-                "z": 12
-              },
-              "rotation": {
-                "x": 0.2,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            },
-            "right arm": {
-              "shapes": [
-                {
-                  "type": "box",
-                  "width": 6,
-                  "height": 10,
-                  "depth": 6,
-                  "x": -12,
-                  "y": 30,
-                  "z": 2,
-                  "rotationX": -30,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "upper-arm-right"
-                },
-                {
-                  "type": "box",
-                  "width": 5,
-                  "height": 8,
-                  "depth": 5,
-                  "x": -12,
-                  "y": 26,
-                  "z": 6,
-                  "rotationX": -15,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "lower-arm-right"
-                },
-                {
-                  "type": "box",
-                  "width": 4,
-                  "height": 4,
-                  "depth": 4,
-                  "x": -12,
-                  "y": 24,
-                  "z": 8,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "hand-right"
-                },
-                {
-                  "type": "cone",
-                  "size": 1.5,
-                  "height": 4,
-                  "x": -13,
-                  "y": 23,
-                  "z": 10,
-                  "color": {
-                    "paletteColor": "brownDColor"
-                  },
-                  "name": "claw-right-1",
-                  "rotationX": 180
-                },
-                {
-                  "type": "cone",
-                  "size": 1.5,
-                  "height": 4,
-                  "x": -11,
-                  "y": 23,
-                  "z": 10,
-                  "color": {
-                    "paletteColor": "brownDColor"
-                  },
-                  "name": "claw-right-2",
-                  "rotationX": 180,
-                  "rotationY": 0,
-                  "rotationZ": 0,
-                  "scaleX": 1,
-                  "scaleY": 1,
-                  "scaleZ": 1
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": -2,
-                "z": 12
-              },
-              "rotation": {
-                "x": 0.2,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            },
-            "left leg": {
-              "shapes": [
-                {
-                  "type": "box",
-                  "width": 10,
-                  "height": 16,
-                  "depth": 12,
-                  "x": 10,
-                  "y": 22,
-                  "z": 2,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "thigh-left",
-                  "rotationX": -10
-                },
-                {
-                  "type": "box",
-                  "width": 8,
-                  "height": 18,
-                  "depth": 8,
-                  "x": 10,
-                  "y": 10,
-                  "z": 2,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "shin-left",
-                  "rotationX": 20
-                },
-                {
-                  "type": "box",
-                  "width": 12,
-                  "height": 5,
-                  "depth": 18,
-                  "x": 10,
-                  "y": 2,
-                  "z": 2,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "foot-left",
-                  "rotationX": 15
-                },
-                {
-                  "type": "cone",
-                  "size": 3,
-                  "height": 6,
-                  "x": 7,
-                  "y": 0,
-                  "z": 11,
-                  "rotationX": 90,
-                  "color": {
-                    "paletteColor": "brownDColor"
-                  },
-                  "name": "toe-left-1"
-                },
-                {
-                  "type": "cone",
-                  "size": 3,
-                  "height": 6,
-                  "x": 13,
-                  "y": 0,
-                  "z": 11,
-                  "rotationX": 90,
-                  "color": {
-                    "paletteColor": "brownDColor"
-                  },
-                  "name": "toe-left-2"
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 3,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            },
-            "right leg": {
-              "shapes": [
-                {
-                  "type": "box",
-                  "width": 10,
-                  "height": 16,
-                  "depth": 12,
-                  "x": -10,
-                  "y": 22,
-                  "z": 2,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "thigh-right",
-                  "rotationX": -10
-                },
-                {
-                  "type": "box",
-                  "width": 8,
-                  "height": 18,
-                  "depth": 8,
-                  "x": -10,
-                  "y": 10,
-                  "z": 2,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "shin-right",
-                  "rotationX": 20
-                },
-                {
-                  "type": "box",
-                  "width": 12,
-                  "height": 5,
-                  "depth": 18,
-                  "x": -10,
-                  "y": 2,
-                  "z": 2,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "foot-right",
-                  "rotationX": 15
-                },
-                {
-                  "type": "cone",
-                  "size": 3,
-                  "height": 6,
-                  "x": -7,
-                  "y": 0,
-                  "z": 11,
-                  "rotationX": 90,
-                  "color": {
-                    "paletteColor": "brownDColor"
-                  },
-                  "name": "toe-right-1"
-                },
-                {
-                  "type": "cone",
-                  "size": 3,
-                  "height": 6,
-                  "x": -13,
-                  "y": 0,
-                  "z": 11,
-                  "rotationX": 90,
-                  "color": {
-                    "paletteColor": "brownDColor"
-                  },
-                  "name": "toe-right-2"
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 3,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            },
-            "body": {
-              "shapes": [
-                {
-                  "type": "box",
-                  "width": 20,
-                  "height": 34,
-                  "depth": 18,
-                  "x": 0,
-                  "y": 26,
-                  "z": -2,
-                  "rotationX": 30,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "torso-main"
-                },
-                {
-                  "type": "box",
-                  "width": 14,
-                  "height": 15.3,
-                  "depth": 14,
-                  "x": 0,
-                  "y": 45.46875,
-                  "z": 8,
-                  "rotationX": 10,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "neck",
-                  "rotationY": 0,
-                  "rotationZ": 0,
-                  "scaleX": 1,
-                  "scaleY": 1,
-                  "scaleZ": 1
-                },
-                {
-                  "type": "cone",
-                  "size": 6,
-                  "height": 12,
-                  "x": 0,
-                  "y": 38.39468690702089,
-                  "z": -6.745098039215698,
-                  "rotationX": -65,
-                  "color": {
-                    "paletteColor": "brownDColor"
-                  },
-                  "name": "spike-1",
-                  "rotationY": 0,
-                  "rotationZ": 0,
-                  "scaleX": 1,
-                  "scaleY": 1,
-                  "scaleZ": 1
-                },
-                {
-                  "type": "cone",
-                  "size": 5,
-                  "height": 10,
-                  "x": 0,
-                  "y": 28.979127134724877,
-                  "z": -14.513725490196073,
-                  "rotationX": -66,
-                  "color": {
-                    "paletteColor": "brownDColor"
-                  },
-                  "name": "spike-2",
-                  "rotationY": 0,
-                  "rotationZ": 0,
-                  "scaleX": 1,
-                  "scaleY": 1,
-                  "scaleZ": 1
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 10,
-                "z": -8
-              },
-              "rotation": {
-                "x": 0.6,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            },
-            "left wing": {
-              "shapes": [
-                {
-                  "type": "box",
-                  "width": 10,
-                  "height": 2,
-                  "depth": 20,
-                  "x": 15,
-                  "y": 35,
-                  "z": -5,
-                  "rotationX": 10,
-                  "rotationY": 60,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "wing-base-left"
-                },
-                {
-                  "type": "box",
-                  "width": 40,
-                  "height": 1,
-                  "depth": 30,
-                  "x": 35,
-                  "y": 35,
-                  "z": -2.5,
-                  "rotationX": 0,
-                  "rotationY": 1,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "wing-membrane-left"
-                },
-                {
-                  "type": "cone",
-                  "size": 2,
-                  "height": 5,
-                  "x": 14,
-                  "y": 34.8,
-                  "z": 14,
-                  "rotationX": 90,
-                  "rotationY": 0,
-                  "color": {
-                    "paletteColor": "brownDColor"
-                  },
-                  "name": "wing-claw-left",
-                  "rotationZ": 45,
-                  "scaleX": 1,
-                  "scaleY": 1,
-                  "scaleZ": 1
-                },
-                {
-                  "type": "box",
-                  "width": 20,
-                  "height": 1,
-                  "depth": 10,
-                  "x": 60,
-                  "y": 35,
-                  "z": -5.5,
-                  "rotationX": 5,
-                  "rotationY": 40,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "wing-membrane-left",
-                  "rotationZ": 0,
-                  "scaleX": 1,
-                  "scaleY": 1,
-                  "scaleZ": 1
-                }
-              ],
-              "position": {
-                "x": 5,
-                "y": 5,
-                "z": 15
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0.5,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            },
-            "right wing": {
-              "shapes": [
-                {
-                  "type": "box",
-                  "width": 10,
-                  "height": 2,
-                  "depth": 20,
-                  "x": -15,
-                  "y": 35,
-                  "z": -5,
-                  "rotationX": 10,
-                  "rotationY": -60,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "wing-base-right"
-                },
-                {
-                  "type": "box",
-                  "width": 40,
-                  "height": 1,
-                  "depth": 30,
-                  "x": -35,
-                  "y": 35,
-                  "z": -2.5,
-                  "rotationX": 0,
-                  "rotationY": -1,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "wing-membrane-right"
-                },
-                {
-                  "type": "cone",
-                  "size": 2,
-                  "height": 5,
-                  "x": -14,
-                  "y": 34.8,
-                  "z": 14,
-                  "rotationX": 90,
-                  "rotationY": 0,
-                  "color": {
-                    "paletteColor": "brownDColor"
-                  },
-                  "name": "wing-claw-right",
-                  "rotationZ": -45,
-                  "scaleX": 1,
-                  "scaleY": 1,
-                  "scaleZ": 1
-                },
-                {
-                  "type": "box",
-                  "width": 20,
-                  "height": 1,
-                  "depth": 10,
-                  "x": -60,
-                  "y": 35,
-                  "z": -5.5,
-                  "rotationX": 5,
-                  "rotationY": -40,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "wing-membrane-right",
-                  "rotationZ": 0,
-                  "scaleX": 1,
-                  "scaleY": 1,
-                  "scaleZ": 1
-                }
-              ],
-              "position": {
-                "x": -5,
-                "y": 5,
-                "z": 15
-              },
-              "rotation": {
-                "x": 0,
-                "y": -0.5,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            },
-            "tail base": {
-              "shapes": [
-                {
-                  "type": "box",
-                  "width": 12,
-                  "height": 10,
-                  "depth": 20,
-                  "x": 0,
-                  "y": 22,
-                  "z": -18,
-                  "rotationX": -15,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "tail-base-segment"
-                },
-                {
-                  "type": "cone",
-                  "size": 5,
-                  "height": 10,
-                  "x": 0,
-                  "y": 26,
-                  "z": -20,
-                  "rotationX": -20,
-                  "color": {
-                    "paletteColor": "brownDColor"
-                  },
-                  "name": "tail-spike-1"
-                },
-                {
-                  "type": "box",
-                  "width": 10,
-                  "height": 8,
-                  "depth": 18,
-                  "x": 0,
-                  "y": 20,
-                  "z": -34,
-                  "rotationX": -10,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "tail-mid-segment"
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 6,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            },
-            "tail tip": {
-              "shapes": [
-                {
-                  "type": "box",
-                  "width": 8,
-                  "height": 6,
-                  "depth": 16,
-                  "x": 0,
-                  "y": 18,
-                  "z": -48,
-                  "rotationX": -5,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "tail-end-segment"
-                },
-                {
-                  "type": "cone",
-                  "size": 4,
-                  "height": 8,
-                  "x": 0,
-                  "y": 21,
-                  "z": -50,
-                  "rotationX": -10,
-                  "color": {
-                    "paletteColor": "brownDColor"
-                  },
-                  "name": "tail-spike-2"
-                },
-                {
-                  "type": "box",
-                  "width": 6,
-                  "height": 4,
-                  "depth": 12,
-                  "x": 0,
-                  "y": 16,
-                  "z": -60,
-                  "rotationX": 0,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "tail-tip-segment"
-                },
-                {
-                  "type": "cone",
-                  "size": 3,
-                  "height": 6,
-                  "x": 0,
-                  "y": 18,
-                  "z": -62,
-                  "rotationX": -5,
-                  "color": {
-                    "paletteColor": "brownDColor"
-                  },
-                  "name": "tail-spike-3"
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 6,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            }
-          }
-        },
-        "fireResistance": 75,
-        "coldResistance": 25,
-        "electricResistance": 25,
-        "title": "Red Dragon"
-      },
-      "skeleton": {
-        "hp": 20,
-        "speed": 1.2,
-        "value": 7,
-        "essence": 12,
-        "render": {
-          "animations": {
-            "idle": [
-              {}
-            ],
-            "walk": [
-              {},
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 40,
-                      "id": 0
-                    },
-                    {
-                      "rotationZ": 0,
-                      "rotationY": 10,
-                      "id": 1
-                    },
-                    {
-                      "y": 41,
-                      "id": 2
-                    },
-                    {
-                      "y": 41,
-                      "id": 3
-                    },
-                    {
-                      "y": 29,
-                      "rotationX": 90,
-                      "id": 4
-                    },
-                    {
-                      "y": 25,
-                      "rotationX": 120,
-                      "id": 5
-                    },
-                    {
-                      "y": 29,
-                      "id": 6
-                    },
-                    {
-                      "y": 20,
-                      "id": 7
-                    },
-                    {
-                      "z": -2,
-                      "rotationX": 15,
-                      "rotationY": 0,
-                      "id": 8
-                    },
-                    {
-                      "z": 2,
-                      "rotationX": -15,
-                      "id": 9
-                    },
-                    {
-                      "z": -4,
-                      "id": 10
-                    },
-                    {
-                      "z": 6,
-                      "id": 11
-                    }
-                  ]
-                }
-              },
-              {},
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 40,
-                      "id": 0
-                    },
-                    {
-                      "rotationY": -10,
-                      "id": 1
-                    },
-                    {
-                      "y": 41,
-                      "id": 2
-                    },
-                    {
-                      "y": 41,
-                      "id": 3
-                    },
-                    {
-                      "y": 25,
-                      "rotationX": 120,
-                      "id": 4
-                    },
-                    {
-                      "y": 29,
-                      "rotationX": 90,
-                      "id": 5
-                    },
-                    {
-                      "y": 20,
-                      "id": 6
-                    },
-                    {
-                      "y": 29,
-                      "id": 7
-                    },
-                    {
-                      "z": 2,
-                      "rotationX": -15,
-                      "id": 8
-                    },
-                    {
-                      "z": -2,
-                      "rotationX": 15,
-                      "id": 9
-                    },
-                    {
-                      "z": 6,
-                      "id": 10
-                    },
-                    {
-                      "z": -4,
-                      "id": 11
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          "model": {
-            "shapes": {
-              "shapes": [
-                {
-                  "type": "sphere",
-                  "size": 14,
-                  "color": "#E0DED8",
-                  "x": 0,
-                  "y": 41,
-                  "z": 0,
-                  "name": "head"
-                },
-                {
-                  "type": "box",
-                  "width": 16,
-                  "height": 20,
-                  "depth": 8,
-                  "color": "#CFCBC0",
-                  "x": 0,
-                  "y": 24,
-                  "z": 0,
-                  "name": "body",
-                  "scaleX": 1
-                },
-                {
-                  "type": "sphere",
-                  "size": 3,
-                  "color": "#000000",
-                  "x": 4,
-                  "y": 42,
-                  "z": 5,
-                  "name": "eye-left"
-                },
-                {
-                  "type": "sphere",
-                  "size": 3,
-                  "color": "#000000",
-                  "x": -4,
-                  "y": 42,
-                  "z": 5,
-                  "name": "eye-right"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 3,
-                  "height": 18,
-                  "color": "#E0DED8",
-                  "x": 8,
-                  "y": 27,
-                  "z": 10,
-                  "rotationX": 105,
-                  "rotationZ": 15,
-                  "name": "arm-left"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 3,
-                  "height": 18,
-                  "color": "#E0DED8",
-                  "x": -8,
-                  "y": 27,
-                  "z": 10,
-                  "rotationX": 105,
-                  "rotationZ": -15,
-                  "name": "arm-right"
-                },
-                {
-                  "type": "sphere",
-                  "size": 5,
-                  "color": "#E0DED8",
-                  "x": 6,
-                  "y": 25,
-                  "z": 20,
-                  "name": "hand-left"
-                },
-                {
-                  "type": "sphere",
-                  "size": 5,
-                  "color": "#E0DED8",
-                  "x": -6,
-                  "y": 25,
-                  "z": 20,
-                  "name": "hand-right"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 3,
-                  "height": 22,
-                  "color": "#E0DED8",
-                  "x": 5,
-                  "y": 14,
-                  "z": 0,
-                  "rotationZ": 0,
-                  "name": "leg-left",
-                  "rotationX": 0
-                },
-                {
-                  "type": "cylinder",
-                  "size": 3,
-                  "height": 22,
-                  "color": "#E0DED8",
-                  "x": -5,
-                  "y": 14,
-                  "z": 0,
-                  "rotationZ": 0,
-                  "name": "leg-right"
-                },
-                {
-                  "type": "sphere",
-                  "size": 5,
-                  "color": "#E0DED8",
-                  "x": 5,
-                  "y": 2,
-                  "z": 0,
-                  "name": "foot-left"
-                },
-                {
-                  "type": "sphere",
-                  "size": 5,
-                  "color": "#E0DED8",
-                  "x": -5,
-                  "y": 2,
-                  "z": 0,
-                  "name": "foot-right"
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            }
-          }
-        },
-        "electricResistance": 75,
-        "title": "skeleton"
-      },
       "spike_ball": {
         "hp": 50,
         "speed": 0.5,
@@ -10502,6 +10502,642 @@ const DEFAULT_PROJECT_CONFIG = {
         "title": "spike_ball",
         "description": "A rolling spike ball monster with spinning spikes",
         "id": "spike_ball"
+      },
+      "stegosaurus": {
+        "speed": 1,
+        "hp": 30,
+        "essence": 10,
+        "value": 5,
+        "render": {
+          "animations": {
+            "idle": [
+              {}
+            ],
+            "walk": [
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "x": 1,
+                      "id": 1
+                    },
+                    {
+                      "x": 1,
+                      "id": 2
+                    },
+                    {
+                      "x": 1,
+                      "id": 3
+                    },
+                    {
+                      "x": -8,
+                      "id": 4
+                    },
+                    {
+                      "x": -9,
+                      "id": 5
+                    },
+                    {
+                      "x": 10,
+                      "id": 6
+                    },
+                    {
+                      "x": 11,
+                      "id": 7
+                    },
+                    {
+                      "x": -2,
+                      "id": 8
+                    },
+                    {
+                      "x": -6,
+                      "rotationY": 15,
+                      "id": 9
+                    },
+                    {
+                      "y": 9,
+                      "id": 10
+                    },
+                    {
+                      "y": 12,
+                      "id": 11
+                    },
+                    {
+                      "y": 12,
+                      "id": 12
+                    },
+                    {
+                      "y": 9,
+                      "id": 13
+                    },
+                    {
+                      "y": 2,
+                      "id": 14
+                    },
+                    {
+                      "y": 5,
+                      "id": 15
+                    },
+                    {
+                      "y": 5,
+                      "id": 16
+                    },
+                    {
+                      "y": 2,
+                      "id": 17
+                    },
+                    {
+                      "x": -2,
+                      "id": 20
+                    },
+                    {
+                      "x": -6,
+                      "rotationX": 15,
+                      "id": 21
+                    },
+                    {
+                      "x": 1,
+                      "id": 22
+                    }
+                  ]
+                }
+              },
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "x": -1,
+                      "id": 1
+                    },
+                    {
+                      "x": -1,
+                      "id": 2
+                    },
+                    {
+                      "x": -1,
+                      "id": 3
+                    },
+                    {
+                      "x": -10,
+                      "id": 4
+                    },
+                    {
+                      "x": -11,
+                      "id": 5
+                    },
+                    {
+                      "x": 8,
+                      "id": 6
+                    },
+                    {
+                      "x": 9,
+                      "id": 7
+                    },
+                    {
+                      "x": 2,
+                      "id": 8
+                    },
+                    {
+                      "x": 6,
+                      "rotationY": -15,
+                      "id": 9
+                    },
+                    {
+                      "y": 12,
+                      "id": 10
+                    },
+                    {
+                      "y": 9,
+                      "id": 11
+                    },
+                    {
+                      "y": 9,
+                      "id": 12
+                    },
+                    {
+                      "y": 12,
+                      "id": 13
+                    },
+                    {
+                      "y": 5,
+                      "id": 14
+                    },
+                    {
+                      "y": 2,
+                      "id": 15
+                    },
+                    {
+                      "y": 2,
+                      "id": 16
+                    },
+                    {
+                      "y": 5,
+                      "id": 17
+                    },
+                    {
+                      "x": 2,
+                      "id": 20
+                    },
+                    {
+                      "x": 6,
+                      "rotationX": -15,
+                      "id": 21
+                    },
+                    {
+                      "x": -1,
+                      "id": 22
+                    }
+                  ]
+                }
+              },
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "x": 1,
+                      "id": 1
+                    },
+                    {
+                      "x": 1,
+                      "id": 2
+                    },
+                    {
+                      "x": 1,
+                      "id": 3
+                    },
+                    {
+                      "x": -8,
+                      "id": 4
+                    },
+                    {
+                      "x": -9,
+                      "id": 5
+                    },
+                    {
+                      "x": 10,
+                      "id": 6
+                    },
+                    {
+                      "x": 11,
+                      "id": 7
+                    },
+                    {
+                      "x": -2,
+                      "id": 8
+                    },
+                    {
+                      "x": -6,
+                      "rotationY": 15,
+                      "id": 9
+                    },
+                    {
+                      "y": 12,
+                      "id": 10
+                    },
+                    {
+                      "y": 9,
+                      "id": 11
+                    },
+                    {
+                      "y": 9,
+                      "id": 12
+                    },
+                    {
+                      "y": 12,
+                      "id": 13
+                    },
+                    {
+                      "y": 5,
+                      "id": 14
+                    },
+                    {
+                      "y": 2,
+                      "id": 15
+                    },
+                    {
+                      "y": 2,
+                      "id": 16
+                    },
+                    {
+                      "y": 5,
+                      "id": 17
+                    },
+                    {
+                      "x": -2,
+                      "id": 20
+                    },
+                    {
+                      "x": -6,
+                      "rotationX": 15,
+                      "id": 21
+                    },
+                    {
+                      "x": 1,
+                      "id": 22
+                    }
+                  ]
+                }
+              },
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "x": -1,
+                      "id": 1
+                    },
+                    {
+                      "x": -1,
+                      "id": 2
+                    },
+                    {
+                      "x": -1,
+                      "id": 3
+                    },
+                    {
+                      "x": -10,
+                      "id": 4
+                    },
+                    {
+                      "x": -11,
+                      "id": 5
+                    },
+                    {
+                      "x": 8,
+                      "id": 6
+                    },
+                    {
+                      "x": 9,
+                      "id": 7
+                    },
+                    {
+                      "x": 2,
+                      "id": 8
+                    },
+                    {
+                      "x": 6,
+                      "rotationY": -15,
+                      "id": 9
+                    },
+                    {
+                      "y": 9,
+                      "id": 10
+                    },
+                    {
+                      "y": 12,
+                      "id": 11
+                    },
+                    {
+                      "y": 12,
+                      "id": 12
+                    },
+                    {
+                      "y": 9,
+                      "id": 13
+                    },
+                    {
+                      "y": 2,
+                      "id": 14
+                    },
+                    {
+                      "y": 5,
+                      "id": 15
+                    },
+                    {
+                      "y": 5,
+                      "id": 16
+                    },
+                    {
+                      "y": 2,
+                      "id": 17
+                    },
+                    {
+                      "x": 2,
+                      "id": 20
+                    },
+                    {
+                      "x": 6,
+                      "rotationX": -15,
+                      "id": 21
+                    },
+                    {
+                      "x": -1,
+                      "id": 22
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 24,
+                  "height": 12,
+                  "depth": 32,
+                  "x": 0,
+                  "y": 18,
+                  "z": 0,
+                  "color": "#5D8233",
+                  "name": "body",
+                  "scaleX": 1
+                },
+                {
+                  "type": "box",
+                  "width": 16,
+                  "height": 12,
+                  "depth": 22,
+                  "x": 0,
+                  "y": 28,
+                  "z": 24,
+                  "color": "#5D8233",
+                  "name": "head"
+                },
+                {
+                  "type": "box",
+                  "width": 14,
+                  "height": 5,
+                  "depth": 20,
+                  "x": 0,
+                  "y": 23,
+                  "z": 26,
+                  "color": "#4E6C2A",
+                  "name": "jaw"
+                },
+                {
+                  "type": "box",
+                  "width": 12,
+                  "height": 2,
+                  "depth": 1,
+                  "x": 0,
+                  "y": 23,
+                  "z": 36,
+                  "color": "#FFFFFF",
+                  "name": "teeth"
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "x": -9,
+                  "y": 32,
+                  "z": 28,
+                  "color": "#FFFF00",
+                  "name": "eye-right"
+                },
+                {
+                  "type": "sphere",
+                  "size": 2,
+                  "x": -10,
+                  "y": 32,
+                  "z": 29,
+                  "color": "#000000",
+                  "name": "pupil-right"
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "x": 9,
+                  "y": 32,
+                  "z": 28,
+                  "color": "#FFFF00",
+                  "name": "eye-left"
+                },
+                {
+                  "type": "sphere",
+                  "size": 2,
+                  "x": 10,
+                  "y": 32,
+                  "z": 29,
+                  "color": "#000000",
+                  "name": "pupil-left"
+                },
+                {
+                  "type": "box",
+                  "width": 8,
+                  "height": 6,
+                  "depth": 20,
+                  "x": 0,
+                  "y": 16,
+                  "z": -20,
+                  "color": "#5D8233",
+                  "name": "tail-base"
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 4,
+                  "depth": 16,
+                  "x": 0,
+                  "y": 15,
+                  "z": -38,
+                  "rotationY": 0,
+                  "color": "#5D8233",
+                  "name": "tail-tip"
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 12,
+                  "depth": 6,
+                  "x": 10,
+                  "y": 10,
+                  "z": 10,
+                  "color": "#4E6C2A",
+                  "name": "leg-front-left"
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 12,
+                  "depth": 6,
+                  "x": 10,
+                  "y": 10,
+                  "z": -10,
+                  "color": "#4E6C2A",
+                  "name": "leg-back-left"
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 12,
+                  "depth": 6,
+                  "x": -10,
+                  "y": 10,
+                  "z": 10,
+                  "color": "#4E6C2A",
+                  "name": "leg-front-right"
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 12,
+                  "depth": 6,
+                  "x": -10,
+                  "y": 10,
+                  "z": -10,
+                  "color": "#4E6C2A",
+                  "name": "leg-back-right"
+                },
+                {
+                  "type": "box",
+                  "width": 8,
+                  "height": 3,
+                  "depth": 10,
+                  "x": 10,
+                  "y": 3,
+                  "z": 12,
+                  "color": "#4E6C2A",
+                  "name": "foot-front-left"
+                },
+                {
+                  "type": "box",
+                  "width": 8,
+                  "height": 3,
+                  "depth": 10,
+                  "x": 10,
+                  "y": 3,
+                  "z": -8,
+                  "color": "#4E6C2A",
+                  "name": "foot-back-left"
+                },
+                {
+                  "type": "box",
+                  "width": 8,
+                  "height": 3,
+                  "depth": 10,
+                  "x": -10,
+                  "y": 3,
+                  "z": 12,
+                  "color": "#4E6C2A",
+                  "name": "foot-front-right"
+                },
+                {
+                  "type": "box",
+                  "width": 8,
+                  "height": 3,
+                  "depth": 10,
+                  "x": -10,
+                  "y": 3,
+                  "z": -8,
+                  "color": "#4E6C2A",
+                  "name": "foot-back-right"
+                },
+                {
+                  "type": "cone",
+                  "size": 6,
+                  "height": 8,
+                  "x": 0,
+                  "y": 27,
+                  "z": 0,
+                  "rotationX": 0,
+                  "color": "#436026",
+                  "name": "spike-back-1"
+                },
+                {
+                  "type": "cone",
+                  "size": 6,
+                  "height": 8,
+                  "x": 0,
+                  "y": 26,
+                  "z": -10,
+                  "rotationX": 0,
+                  "color": "#436026",
+                  "name": "spike-back-2"
+                },
+                {
+                  "type": "cone",
+                  "size": 5,
+                  "height": 6,
+                  "x": 0,
+                  "y": 22,
+                  "z": -24,
+                  "rotationX": 0,
+                  "color": "#436026",
+                  "name": "spike-tail-base"
+                },
+                {
+                  "type": "cone",
+                  "size": 4,
+                  "height": 5,
+                  "x": 0,
+                  "y": 20,
+                  "z": -36,
+                  "rotationX": 0,
+                  "color": "#436026",
+                  "name": "spike-tail-tip"
+                },
+                {
+                  "type": "cone",
+                  "size": 6,
+                  "height": 8,
+                  "x": 0,
+                  "y": 34,
+                  "z": 20,
+                  "rotationX": 0,
+                  "color": "#436026",
+                  "name": "spike-head"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
+          }
+        },
+        "title": "stegosaurus"
       },
       "viking": {
         "hp": 20,
@@ -12121,642 +12757,6 @@ const DEFAULT_PROJECT_CONFIG = {
           }
         }
       },
-      "stegosaurus": {
-        "speed": 1,
-        "hp": 30,
-        "essence": 10,
-        "value": 5,
-        "render": {
-          "animations": {
-            "idle": [
-              {}
-            ],
-            "walk": [
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "x": 1,
-                      "id": 1
-                    },
-                    {
-                      "x": 1,
-                      "id": 2
-                    },
-                    {
-                      "x": 1,
-                      "id": 3
-                    },
-                    {
-                      "x": -8,
-                      "id": 4
-                    },
-                    {
-                      "x": -9,
-                      "id": 5
-                    },
-                    {
-                      "x": 10,
-                      "id": 6
-                    },
-                    {
-                      "x": 11,
-                      "id": 7
-                    },
-                    {
-                      "x": -2,
-                      "id": 8
-                    },
-                    {
-                      "x": -6,
-                      "rotationY": 15,
-                      "id": 9
-                    },
-                    {
-                      "y": 9,
-                      "id": 10
-                    },
-                    {
-                      "y": 12,
-                      "id": 11
-                    },
-                    {
-                      "y": 12,
-                      "id": 12
-                    },
-                    {
-                      "y": 9,
-                      "id": 13
-                    },
-                    {
-                      "y": 2,
-                      "id": 14
-                    },
-                    {
-                      "y": 5,
-                      "id": 15
-                    },
-                    {
-                      "y": 5,
-                      "id": 16
-                    },
-                    {
-                      "y": 2,
-                      "id": 17
-                    },
-                    {
-                      "x": -2,
-                      "id": 20
-                    },
-                    {
-                      "x": -6,
-                      "rotationX": 15,
-                      "id": 21
-                    },
-                    {
-                      "x": 1,
-                      "id": 22
-                    }
-                  ]
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "x": -1,
-                      "id": 1
-                    },
-                    {
-                      "x": -1,
-                      "id": 2
-                    },
-                    {
-                      "x": -1,
-                      "id": 3
-                    },
-                    {
-                      "x": -10,
-                      "id": 4
-                    },
-                    {
-                      "x": -11,
-                      "id": 5
-                    },
-                    {
-                      "x": 8,
-                      "id": 6
-                    },
-                    {
-                      "x": 9,
-                      "id": 7
-                    },
-                    {
-                      "x": 2,
-                      "id": 8
-                    },
-                    {
-                      "x": 6,
-                      "rotationY": -15,
-                      "id": 9
-                    },
-                    {
-                      "y": 12,
-                      "id": 10
-                    },
-                    {
-                      "y": 9,
-                      "id": 11
-                    },
-                    {
-                      "y": 9,
-                      "id": 12
-                    },
-                    {
-                      "y": 12,
-                      "id": 13
-                    },
-                    {
-                      "y": 5,
-                      "id": 14
-                    },
-                    {
-                      "y": 2,
-                      "id": 15
-                    },
-                    {
-                      "y": 2,
-                      "id": 16
-                    },
-                    {
-                      "y": 5,
-                      "id": 17
-                    },
-                    {
-                      "x": 2,
-                      "id": 20
-                    },
-                    {
-                      "x": 6,
-                      "rotationX": -15,
-                      "id": 21
-                    },
-                    {
-                      "x": -1,
-                      "id": 22
-                    }
-                  ]
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "x": 1,
-                      "id": 1
-                    },
-                    {
-                      "x": 1,
-                      "id": 2
-                    },
-                    {
-                      "x": 1,
-                      "id": 3
-                    },
-                    {
-                      "x": -8,
-                      "id": 4
-                    },
-                    {
-                      "x": -9,
-                      "id": 5
-                    },
-                    {
-                      "x": 10,
-                      "id": 6
-                    },
-                    {
-                      "x": 11,
-                      "id": 7
-                    },
-                    {
-                      "x": -2,
-                      "id": 8
-                    },
-                    {
-                      "x": -6,
-                      "rotationY": 15,
-                      "id": 9
-                    },
-                    {
-                      "y": 12,
-                      "id": 10
-                    },
-                    {
-                      "y": 9,
-                      "id": 11
-                    },
-                    {
-                      "y": 9,
-                      "id": 12
-                    },
-                    {
-                      "y": 12,
-                      "id": 13
-                    },
-                    {
-                      "y": 5,
-                      "id": 14
-                    },
-                    {
-                      "y": 2,
-                      "id": 15
-                    },
-                    {
-                      "y": 2,
-                      "id": 16
-                    },
-                    {
-                      "y": 5,
-                      "id": 17
-                    },
-                    {
-                      "x": -2,
-                      "id": 20
-                    },
-                    {
-                      "x": -6,
-                      "rotationX": 15,
-                      "id": 21
-                    },
-                    {
-                      "x": 1,
-                      "id": 22
-                    }
-                  ]
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "x": -1,
-                      "id": 1
-                    },
-                    {
-                      "x": -1,
-                      "id": 2
-                    },
-                    {
-                      "x": -1,
-                      "id": 3
-                    },
-                    {
-                      "x": -10,
-                      "id": 4
-                    },
-                    {
-                      "x": -11,
-                      "id": 5
-                    },
-                    {
-                      "x": 8,
-                      "id": 6
-                    },
-                    {
-                      "x": 9,
-                      "id": 7
-                    },
-                    {
-                      "x": 2,
-                      "id": 8
-                    },
-                    {
-                      "x": 6,
-                      "rotationY": -15,
-                      "id": 9
-                    },
-                    {
-                      "y": 9,
-                      "id": 10
-                    },
-                    {
-                      "y": 12,
-                      "id": 11
-                    },
-                    {
-                      "y": 12,
-                      "id": 12
-                    },
-                    {
-                      "y": 9,
-                      "id": 13
-                    },
-                    {
-                      "y": 2,
-                      "id": 14
-                    },
-                    {
-                      "y": 5,
-                      "id": 15
-                    },
-                    {
-                      "y": 5,
-                      "id": 16
-                    },
-                    {
-                      "y": 2,
-                      "id": 17
-                    },
-                    {
-                      "x": 2,
-                      "id": 20
-                    },
-                    {
-                      "x": 6,
-                      "rotationX": -15,
-                      "id": 21
-                    },
-                    {
-                      "x": -1,
-                      "id": 22
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          "model": {
-            "shapes": {
-              "shapes": [
-                {
-                  "type": "box",
-                  "width": 24,
-                  "height": 12,
-                  "depth": 32,
-                  "x": 0,
-                  "y": 18,
-                  "z": 0,
-                  "color": "#5D8233",
-                  "name": "body",
-                  "scaleX": 1
-                },
-                {
-                  "type": "box",
-                  "width": 16,
-                  "height": 12,
-                  "depth": 22,
-                  "x": 0,
-                  "y": 28,
-                  "z": 24,
-                  "color": "#5D8233",
-                  "name": "head"
-                },
-                {
-                  "type": "box",
-                  "width": 14,
-                  "height": 5,
-                  "depth": 20,
-                  "x": 0,
-                  "y": 23,
-                  "z": 26,
-                  "color": "#4E6C2A",
-                  "name": "jaw"
-                },
-                {
-                  "type": "box",
-                  "width": 12,
-                  "height": 2,
-                  "depth": 1,
-                  "x": 0,
-                  "y": 23,
-                  "z": 36,
-                  "color": "#FFFFFF",
-                  "name": "teeth"
-                },
-                {
-                  "type": "sphere",
-                  "size": 4,
-                  "x": -9,
-                  "y": 32,
-                  "z": 28,
-                  "color": "#FFFF00",
-                  "name": "eye-right"
-                },
-                {
-                  "type": "sphere",
-                  "size": 2,
-                  "x": -10,
-                  "y": 32,
-                  "z": 29,
-                  "color": "#000000",
-                  "name": "pupil-right"
-                },
-                {
-                  "type": "sphere",
-                  "size": 4,
-                  "x": 9,
-                  "y": 32,
-                  "z": 28,
-                  "color": "#FFFF00",
-                  "name": "eye-left"
-                },
-                {
-                  "type": "sphere",
-                  "size": 2,
-                  "x": 10,
-                  "y": 32,
-                  "z": 29,
-                  "color": "#000000",
-                  "name": "pupil-left"
-                },
-                {
-                  "type": "box",
-                  "width": 8,
-                  "height": 6,
-                  "depth": 20,
-                  "x": 0,
-                  "y": 16,
-                  "z": -20,
-                  "color": "#5D8233",
-                  "name": "tail-base"
-                },
-                {
-                  "type": "box",
-                  "width": 6,
-                  "height": 4,
-                  "depth": 16,
-                  "x": 0,
-                  "y": 15,
-                  "z": -38,
-                  "rotationY": 0,
-                  "color": "#5D8233",
-                  "name": "tail-tip"
-                },
-                {
-                  "type": "box",
-                  "width": 6,
-                  "height": 12,
-                  "depth": 6,
-                  "x": 10,
-                  "y": 10,
-                  "z": 10,
-                  "color": "#4E6C2A",
-                  "name": "leg-front-left"
-                },
-                {
-                  "type": "box",
-                  "width": 6,
-                  "height": 12,
-                  "depth": 6,
-                  "x": 10,
-                  "y": 10,
-                  "z": -10,
-                  "color": "#4E6C2A",
-                  "name": "leg-back-left"
-                },
-                {
-                  "type": "box",
-                  "width": 6,
-                  "height": 12,
-                  "depth": 6,
-                  "x": -10,
-                  "y": 10,
-                  "z": 10,
-                  "color": "#4E6C2A",
-                  "name": "leg-front-right"
-                },
-                {
-                  "type": "box",
-                  "width": 6,
-                  "height": 12,
-                  "depth": 6,
-                  "x": -10,
-                  "y": 10,
-                  "z": -10,
-                  "color": "#4E6C2A",
-                  "name": "leg-back-right"
-                },
-                {
-                  "type": "box",
-                  "width": 8,
-                  "height": 3,
-                  "depth": 10,
-                  "x": 10,
-                  "y": 3,
-                  "z": 12,
-                  "color": "#4E6C2A",
-                  "name": "foot-front-left"
-                },
-                {
-                  "type": "box",
-                  "width": 8,
-                  "height": 3,
-                  "depth": 10,
-                  "x": 10,
-                  "y": 3,
-                  "z": -8,
-                  "color": "#4E6C2A",
-                  "name": "foot-back-left"
-                },
-                {
-                  "type": "box",
-                  "width": 8,
-                  "height": 3,
-                  "depth": 10,
-                  "x": -10,
-                  "y": 3,
-                  "z": 12,
-                  "color": "#4E6C2A",
-                  "name": "foot-front-right"
-                },
-                {
-                  "type": "box",
-                  "width": 8,
-                  "height": 3,
-                  "depth": 10,
-                  "x": -10,
-                  "y": 3,
-                  "z": -8,
-                  "color": "#4E6C2A",
-                  "name": "foot-back-right"
-                },
-                {
-                  "type": "cone",
-                  "size": 6,
-                  "height": 8,
-                  "x": 0,
-                  "y": 27,
-                  "z": 0,
-                  "rotationX": 0,
-                  "color": "#436026",
-                  "name": "spike-back-1"
-                },
-                {
-                  "type": "cone",
-                  "size": 6,
-                  "height": 8,
-                  "x": 0,
-                  "y": 26,
-                  "z": -10,
-                  "rotationX": 0,
-                  "color": "#436026",
-                  "name": "spike-back-2"
-                },
-                {
-                  "type": "cone",
-                  "size": 5,
-                  "height": 6,
-                  "x": 0,
-                  "y": 22,
-                  "z": -24,
-                  "rotationX": 0,
-                  "color": "#436026",
-                  "name": "spike-tail-base"
-                },
-                {
-                  "type": "cone",
-                  "size": 4,
-                  "height": 5,
-                  "x": 0,
-                  "y": 20,
-                  "z": -36,
-                  "rotationX": 0,
-                  "color": "#436026",
-                  "name": "spike-tail-tip"
-                },
-                {
-                  "type": "cone",
-                  "size": 6,
-                  "height": 8,
-                  "x": 0,
-                  "y": 34,
-                  "z": 20,
-                  "rotationX": 0,
-                  "color": "#436026",
-                  "name": "spike-head"
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            }
-          }
-        },
-        "title": "stegosaurus"
-      },
       "wraith": {
         "hp": 1,
         "speed": 1.8,
@@ -13376,6 +13376,12 @@ const DEFAULT_PROJECT_CONFIG = {
       }
     },
     "projectiles": {
+      "lightning": {
+        "customRenderer": "lightning",
+        "damageType": "electric",
+        "speed": 5,
+        "title": "Lightning"
+      },
       "cryoMist": {
         "damageType": "cold",
         "render": {
@@ -13446,11 +13452,96 @@ const DEFAULT_PROJECT_CONFIG = {
         "speed": 5,
         "title": "Cryomist"
       },
-      "lightning": {
-        "customRenderer": "lightning",
-        "damageType": "electric",
+      "neutronFragment": {
+        "render": {
+          "animations": {
+            "idle": [
+              {}
+            ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "sphere",
+                  "size": 6,
+                  "x": 0,
+                  "y": 25,
+                  "z": 0,
+                  "rotationX": 90,
+                  "color": "#ee6060",
+                  "scaleX": 1
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
+          }
+        },
         "speed": 5,
-        "title": "Lightning"
+        "damageType": "physical",
+        "title": "Neutron Fragment"
+      },
+      "nanoOrb": {
+        "render": {
+          "animations": {
+            "idle": [
+              {}
+            ]
+          },
+          "model": {
+            "main": {
+              "shapes": [
+                {
+                  "name": "ball",
+                  "type": "sphere",
+                  "size": 6,
+                  "x": 0,
+                  "y": 5,
+                  "z": 0,
+                  "rotationX": 90,
+                  "color": "#ee6060",
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
+                }
+              ],
+              "position": {
+                "x": -3.00653594771243,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
+          }
+        },
+        "speed": 25,
+        "damageType": "physical",
+        "title": "Nano Orb"
       },
       "missile": {
         "damageType": "fire",
@@ -13924,198 +14015,234 @@ const DEFAULT_PROJECT_CONFIG = {
         "title": "Plasma Bolt",
         "attackSound": "plasma",
         "hitSound": "plasma"
-      },
-      "nanoOrb": {
-        "render": {
-          "animations": {
-            "idle": [
-              {}
-            ]
-          },
-          "model": {
-            "main": {
-              "shapes": [
-                {
-                  "name": "ball",
-                  "type": "sphere",
-                  "size": 6,
-                  "x": 0,
-                  "y": 5,
-                  "z": 0,
-                  "rotationX": 90,
-                  "color": "#ee6060",
-                  "rotationY": 0,
-                  "rotationZ": 0,
-                  "scaleX": 1,
-                  "scaleY": 1,
-                  "scaleZ": 1
-                }
-              ],
-              "position": {
-                "x": -3.00653594771243,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            }
-          }
-        },
-        "speed": 25,
-        "damageType": "physical",
-        "title": "Nano Orb"
-      },
-      "neutronFragment": {
-        "render": {
-          "animations": {
-            "idle": [
-              {}
-            ]
-          },
-          "model": {
-            "shapes": {
-              "shapes": [
-                {
-                  "type": "sphere",
-                  "size": 6,
-                  "x": 0,
-                  "y": 25,
-                  "z": 0,
-                  "rotationX": 90,
-                  "color": "#ee6060",
-                  "scaleX": 1
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            }
-          }
-        },
-        "speed": 5,
-        "damageType": "physical",
-        "title": "Neutron Fragment"
       }
     },
     "towers": {
-      "keep": {
-        "title": "Citadel",
-        "mineAmt": 1,
-        "attackSpeed": 1,
+      "chrono": {
+        "title": "Chrono Defibrilator",
+        "info": "Projectiles explode in AoE and slow.",
+        "cost": 100,
+        "population": 3,
+        "range": 90,
+        "damage": 2,
+        "attackSpeed": 0.5,
+        "projectile": "cryoMist",
+        "critMultiplier": 1,
+        "splashRadius": 2,
+        "slowAmount": 0.7,
         "render": {
           "animations": {
             "idle": [
-              {}
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "type": "torus",
+                      "size": 36,
+                      "tubeSize": 4,
+                      "x": 0,
+                      "y": 8,
+                      "z": 0,
+                      "rotationY": 0,
+                      "color": {
+                        "paletteColor": "blueDColor"
+                      },
+                      "rotationZ": 0,
+                      "rotationX": 90,
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyMColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyMColor"
+                      },
+                      "id": 5
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 6
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueMColor"
+                      },
+                      "id": 7
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueMColor"
+                      },
+                      "id": 8
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueMColor"
+                      },
+                      "id": 9
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueMColor"
+                      },
+                      "id": 10
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueDColor"
+                      },
+                      "id": 11
+                    }
+                  ]
+                }
+              }
             ]
           },
           "model": {
             "shapes": {
               "shapes": [
                 {
-                  "type": "sphere",
-                  "width": 24,
-                  "height": 16,
-                  "depth": 24,
-                  "color": "#cfd8dc",
+                  "type": "torus",
+                  "size": 36,
+                  "tubeSize": 4,
                   "x": 0,
-                  "y": 32,
+                  "y": 8,
                   "z": 0,
-                  "size": 24,
-                  "name": "dome",
-                  "scaleX": 1
+                  "rotationY": 0,
+                  "color": {
+                    "paletteColor": "blueDColor"
+                  },
+                  "rotationZ": 0,
+                  "rotationX": 90
                 },
                 {
                   "type": "cylinder",
-                  "size": 12,
-                  "height": 22,
-                  "color": "#cfd8dc",
+                  "size": 22,
+                  "height": 10,
                   "x": 0,
-                  "y": 42,
+                  "y": 5,
                   "z": 0,
-                  "name": "spire"
+                  "color": {
+                    "paletteColor": "greyMColor"
+                  }
                 },
                 {
-                  "type": "cone",
-                  "size": 14,
-                  "height": 20,
-                  "color": "#ab47bc",
-                  "x": 0,
-                  "y": 62,
-                  "z": 0,
-                  "name": "spire roof"
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 0.7,
-                "z": 1
-              }
-            },
-            "base": {
-              "shapes": [
-                {
-                  "type": "box",
-                  "width": 40,
-                  "height": 12,
-                  "depth": 40,
-                  "color": "#3e4f57",
-                  "x": 0,
-                  "y": 6,
-                  "z": 0,
-                  "scaleX": 1,
-                  "name": "base"
-                },
-                {
-                  "type": "box",
-                  "width": 44,
-                  "height": 4,
-                  "depth": 44,
-                  "color": "#3e4f57",
-                  "x": 0,
-                  "y": 2,
-                  "z": 0,
-                  "name": "foundation"
-                },
-                {
-                  "type": "box",
-                  "width": 32,
-                  "height": 12,
-                  "depth": 32,
-                  "color": "#78909c",
+                  "type": "cylinder",
+                  "size": 16,
+                  "height": 14,
                   "x": 0,
                   "y": 17,
                   "z": 0,
-                  "name": "main structure"
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  }
+                },
+                {
+                  "type": "sphere",
+                  "size": 12,
+                  "x": 0,
+                  "y": 16,
+                  "z": 0,
+                  "color": "#A0E6FF"
+                },
+                {
+                  "type": "tetrahedron",
+                  "size": 10,
+                  "x": 0,
+                  "y": 16,
+                  "z": 0,
+                  "rotationY": 45,
+                  "color": "#203040"
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 16,
+                  "x": 0,
+                  "y": 32,
+                  "z": 0,
+                  "rotationX": 0,
+                  "color": {
+                    "paletteColor": "greyMColor"
+                  }
+                },
+                {
+                  "type": "box",
+                  "width": 38,
+                  "height": 4,
+                  "depth": 38,
+                  "x": 0,
+                  "y": 2,
+                  "z": 0,
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  }
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "x": 24,
+                  "y": 24,
+                  "z": 24,
+                  "color": {
+                    "paletteColor": "blueMColor"
+                  }
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "x": -24,
+                  "y": 24,
+                  "z": 24,
+                  "color": {
+                    "paletteColor": "blueMColor"
+                  }
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "x": 24,
+                  "y": 24,
+                  "z": -24,
+                  "color": {
+                    "paletteColor": "blueMColor"
+                  }
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "x": -24,
+                  "y": 24,
+                  "z": -24,
+                  "color": {
+                    "paletteColor": "blueMColor"
+                  }
+                },
+                {
+                  "type": "torus",
+                  "size": 48,
+                  "color": {
+                    "paletteColor": "blueDColor"
+                  },
+                  "x": 0,
+                  "y": 38,
+                  "z": 0,
+                  "rotationX": 90,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "tubeSize": 2
                 }
               ],
               "position": {
@@ -14131,105 +14258,6 @@ const DEFAULT_PROJECT_CONFIG = {
               "scale": {
                 "x": 1,
                 "y": 1,
-                "z": 1
-              }
-            },
-            "towers": {
-              "shapes": [
-                {
-                  "type": "cylinder",
-                  "size": 6,
-                  "height": 30,
-                  "color": "#cfd8dc",
-                  "x": 16,
-                  "y": 22,
-                  "z": 16,
-                  "name": "tower1"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 6,
-                  "height": 30,
-                  "color": "#cfd8dc",
-                  "x": -16,
-                  "y": 22,
-                  "z": 16,
-                  "name": "tower2"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 6,
-                  "height": 30,
-                  "color": "#cfd8dc",
-                  "x": 16,
-                  "y": 22,
-                  "z": -16,
-                  "name": "tower3"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 6,
-                  "height": 30,
-                  "color": "#cfd8dc",
-                  "x": -16,
-                  "y": 22,
-                  "z": -16,
-                  "name": "tower4"
-                },
-                {
-                  "type": "cone",
-                  "size": 8,
-                  "height": 10,
-                  "color": "#0288d1",
-                  "x": 16,
-                  "y": 42,
-                  "z": 16,
-                  "name": "tower1roof"
-                },
-                {
-                  "type": "cone",
-                  "size": 8,
-                  "height": 10,
-                  "color": "#0288d1",
-                  "x": -16,
-                  "y": 42,
-                  "z": 16,
-                  "name": "tower2roof"
-                },
-                {
-                  "type": "cone",
-                  "size": 8,
-                  "height": 10,
-                  "color": "#0288d1",
-                  "x": 16,
-                  "y": 42,
-                  "z": -16,
-                  "name": "tower3roof"
-                },
-                {
-                  "type": "cone",
-                  "size": 8,
-                  "height": 10,
-                  "color": "#0288d1",
-                  "x": -16,
-                  "y": 42,
-                  "z": -16,
-                  "name": "tower4roof"
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 0.7,
                 "z": 1
               }
             }
@@ -14634,252 +14662,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 20.5,
                   "z": 8,
                   "name": "redthing4"
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            }
-          }
-        }
-      },
-      "chrono": {
-        "title": "Chrono Defibrilator",
-        "info": "Projectiles explode in AoE and slow.",
-        "cost": 100,
-        "population": 3,
-        "range": 90,
-        "damage": 2,
-        "attackSpeed": 0.5,
-        "projectile": "cryoMist",
-        "critMultiplier": 1,
-        "splashRadius": 2,
-        "slowAmount": 0.7,
-        "render": {
-          "animations": {
-            "idle": [
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "type": "torus",
-                      "size": 36,
-                      "tubeSize": 4,
-                      "x": 0,
-                      "y": 8,
-                      "z": 0,
-                      "rotationY": 0,
-                      "color": {
-                        "paletteColor": "blueDColor"
-                      },
-                      "rotationZ": 0,
-                      "rotationX": 90,
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "greyMColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "greyDColor"
-                      },
-                      "id": 2
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "greyMColor"
-                      },
-                      "id": 5
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "greyDColor"
-                      },
-                      "id": 6
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "blueMColor"
-                      },
-                      "id": 7
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "blueMColor"
-                      },
-                      "id": 8
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "blueMColor"
-                      },
-                      "id": 9
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "blueMColor"
-                      },
-                      "id": 10
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "blueDColor"
-                      },
-                      "id": 11
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          "model": {
-            "shapes": {
-              "shapes": [
-                {
-                  "type": "torus",
-                  "size": 36,
-                  "tubeSize": 4,
-                  "x": 0,
-                  "y": 8,
-                  "z": 0,
-                  "rotationY": 0,
-                  "color": {
-                    "paletteColor": "blueDColor"
-                  },
-                  "rotationZ": 0,
-                  "rotationX": 90
-                },
-                {
-                  "type": "cylinder",
-                  "size": 22,
-                  "height": 10,
-                  "x": 0,
-                  "y": 5,
-                  "z": 0,
-                  "color": {
-                    "paletteColor": "greyMColor"
-                  }
-                },
-                {
-                  "type": "cylinder",
-                  "size": 16,
-                  "height": 14,
-                  "x": 0,
-                  "y": 17,
-                  "z": 0,
-                  "color": {
-                    "paletteColor": "greyDColor"
-                  }
-                },
-                {
-                  "type": "sphere",
-                  "size": 12,
-                  "x": 0,
-                  "y": 16,
-                  "z": 0,
-                  "color": "#A0E6FF"
-                },
-                {
-                  "type": "tetrahedron",
-                  "size": 10,
-                  "x": 0,
-                  "y": 16,
-                  "z": 0,
-                  "rotationY": 45,
-                  "color": "#203040"
-                },
-                {
-                  "type": "cone",
-                  "size": 8,
-                  "height": 16,
-                  "x": 0,
-                  "y": 32,
-                  "z": 0,
-                  "rotationX": 0,
-                  "color": {
-                    "paletteColor": "greyMColor"
-                  }
-                },
-                {
-                  "type": "box",
-                  "width": 38,
-                  "height": 4,
-                  "depth": 38,
-                  "x": 0,
-                  "y": 2,
-                  "z": 0,
-                  "color": {
-                    "paletteColor": "greyDColor"
-                  }
-                },
-                {
-                  "type": "sphere",
-                  "size": 4,
-                  "x": 24,
-                  "y": 24,
-                  "z": 24,
-                  "color": {
-                    "paletteColor": "blueMColor"
-                  }
-                },
-                {
-                  "type": "sphere",
-                  "size": 4,
-                  "x": -24,
-                  "y": 24,
-                  "z": 24,
-                  "color": {
-                    "paletteColor": "blueMColor"
-                  }
-                },
-                {
-                  "type": "sphere",
-                  "size": 4,
-                  "x": 24,
-                  "y": 24,
-                  "z": -24,
-                  "color": {
-                    "paletteColor": "blueMColor"
-                  }
-                },
-                {
-                  "type": "sphere",
-                  "size": 4,
-                  "x": -24,
-                  "y": 24,
-                  "z": -24,
-                  "color": {
-                    "paletteColor": "blueMColor"
-                  }
-                },
-                {
-                  "type": "torus",
-                  "size": 48,
-                  "color": {
-                    "paletteColor": "blueDColor"
-                  },
-                  "x": 0,
-                  "y": 38,
-                  "z": 0,
-                  "rotationX": 90,
-                  "rotationY": 0,
-                  "rotationZ": 0,
-                  "tubeSize": 2
                 }
               ],
               "position": {
@@ -16189,6 +15971,429 @@ const DEFAULT_PROJECT_CONFIG = {
           }
         }
       },
+      "keep": {
+        "title": "Citadel",
+        "mineAmt": 1,
+        "attackSpeed": 1,
+        "render": {
+          "animations": {
+            "idle": [
+              {}
+            ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "sphere",
+                  "width": 24,
+                  "height": 16,
+                  "depth": 24,
+                  "color": "#cfd8dc",
+                  "x": 0,
+                  "y": 32,
+                  "z": 0,
+                  "size": 24,
+                  "name": "dome",
+                  "scaleX": 1
+                },
+                {
+                  "type": "cylinder",
+                  "size": 12,
+                  "height": 22,
+                  "color": "#cfd8dc",
+                  "x": 0,
+                  "y": 42,
+                  "z": 0,
+                  "name": "spire"
+                },
+                {
+                  "type": "cone",
+                  "size": 14,
+                  "height": 20,
+                  "color": "#ab47bc",
+                  "x": 0,
+                  "y": 62,
+                  "z": 0,
+                  "name": "spire roof"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 0.7,
+                "z": 1
+              }
+            },
+            "base": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 40,
+                  "height": 12,
+                  "depth": 40,
+                  "color": "#3e4f57",
+                  "x": 0,
+                  "y": 6,
+                  "z": 0,
+                  "scaleX": 1,
+                  "name": "base"
+                },
+                {
+                  "type": "box",
+                  "width": 44,
+                  "height": 4,
+                  "depth": 44,
+                  "color": "#3e4f57",
+                  "x": 0,
+                  "y": 2,
+                  "z": 0,
+                  "name": "foundation"
+                },
+                {
+                  "type": "box",
+                  "width": 32,
+                  "height": 12,
+                  "depth": 32,
+                  "color": "#78909c",
+                  "x": 0,
+                  "y": 17,
+                  "z": 0,
+                  "name": "main structure"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "towers": {
+              "shapes": [
+                {
+                  "type": "cylinder",
+                  "size": 6,
+                  "height": 30,
+                  "color": "#cfd8dc",
+                  "x": 16,
+                  "y": 22,
+                  "z": 16,
+                  "name": "tower1"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 6,
+                  "height": 30,
+                  "color": "#cfd8dc",
+                  "x": -16,
+                  "y": 22,
+                  "z": 16,
+                  "name": "tower2"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 6,
+                  "height": 30,
+                  "color": "#cfd8dc",
+                  "x": 16,
+                  "y": 22,
+                  "z": -16,
+                  "name": "tower3"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 6,
+                  "height": 30,
+                  "color": "#cfd8dc",
+                  "x": -16,
+                  "y": 22,
+                  "z": -16,
+                  "name": "tower4"
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 10,
+                  "color": "#0288d1",
+                  "x": 16,
+                  "y": 42,
+                  "z": 16,
+                  "name": "tower1roof"
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 10,
+                  "color": "#0288d1",
+                  "x": -16,
+                  "y": 42,
+                  "z": 16,
+                  "name": "tower2roof"
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 10,
+                  "color": "#0288d1",
+                  "x": 16,
+                  "y": 42,
+                  "z": -16,
+                  "name": "tower3roof"
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 10,
+                  "color": "#0288d1",
+                  "x": -16,
+                  "y": 42,
+                  "z": -16,
+                  "name": "tower4roof"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 0.7,
+                "z": 1
+              }
+            }
+          }
+        }
+      },
+      "sentry": {
+        "title": "Photon Sentry",
+        "info": "Defensive attack sentry.",
+        "cost": 25,
+        "population": 1,
+        "range": 4,
+        "damage": 5,
+        "attackSpeed": 0.5,
+        "projectile": "plasmaBolt",
+        "critChance": 0.05,
+        "critMultiplier": 1.5,
+        "render": {
+          "animations": {
+            "idle": [
+              {}
+            ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "cylinder",
+                  "size": 20,
+                  "height": 4,
+                  "color": "#78909c",
+                  "x": 0,
+                  "y": 2,
+                  "z": 0,
+                  "name": "base",
+                  "rotationX": 0,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
+                },
+                {
+                  "type": "cylinder",
+                  "size": 14,
+                  "height": 26,
+                  "color": "#78909c",
+                  "x": 0,
+                  "y": 17,
+                  "z": 0,
+                  "name": "body"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "rampart": {
+              "shapes": [
+                {
+                  "type": "cylinder",
+                  "size": 12,
+                  "height": 8,
+                  "color": "#3e4f57",
+                  "x": 0,
+                  "y": 30,
+                  "z": 0,
+                  "name": "rampartbase"
+                },
+                {
+                  "type": "box",
+                  "width": 3,
+                  "height": 5,
+                  "depth": 3,
+                  "color": "#3e4f57",
+                  "x": 4,
+                  "y": 34,
+                  "z": 4,
+                  "name": "rampartblock1"
+                },
+                {
+                  "type": "box",
+                  "width": 3,
+                  "height": 5,
+                  "depth": 3,
+                  "color": "#3e4f57",
+                  "x": -4,
+                  "y": 34,
+                  "z": 4,
+                  "name": "rampartblock2"
+                },
+                {
+                  "type": "box",
+                  "width": 3,
+                  "height": 5,
+                  "depth": 3,
+                  "color": "#3e4f57",
+                  "x": 4,
+                  "y": 34,
+                  "z": -4,
+                  "name": "rampartblock3"
+                },
+                {
+                  "type": "box",
+                  "width": 3,
+                  "height": 5,
+                  "depth": 3,
+                  "color": "#3e4f57",
+                  "x": -4,
+                  "y": 34,
+                  "z": -4,
+                  "name": "rampartblock4"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1.5,
+                "y": 1,
+                "z": 1.5
+              }
+            },
+            "attacker": {
+              "shapes": [
+                {
+                  "type": "cylinder",
+                  "size": 5.7,
+                  "height": 14,
+                  "color": "#cfd8dc",
+                  "x": 0,
+                  "y": 39.6,
+                  "z": 0,
+                  "name": "attackerbody"
+                },
+                {
+                  "type": "sphere",
+                  "size": 6,
+                  "color": "#ff8c00",
+                  "x": 0,
+                  "y": 48.89655172413794,
+                  "z": 0,
+                  "name": "attacker head",
+                  "rotationX": 0,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
+                },
+                {
+                  "type": "cylinder",
+                  "size": 2,
+                  "height": 12,
+                  "color": "#cfd8dc",
+                  "x": 0,
+                  "y": 42,
+                  "z": 0,
+                  "rotationX": 90,
+                  "name": "attacker arms"
+                },
+                {
+                  "type": "sphere",
+                  "size": 3,
+                  "color": "#bf360c",
+                  "x": 0,
+                  "y": 42,
+                  "z": 6,
+                  "name": "attacker weapon"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
+          }
+        },
+        "projectileCount": 0,
+        "projectileAngle": 10
+      },
       "missileLauncher": {
         "title": "Missile Launcher",
         "info": "Projectiles explode in an AoE.",
@@ -16421,211 +16626,6 @@ const DEFAULT_PROJECT_CONFIG = {
             }
           }
         }
-      },
-      "sentry": {
-        "title": "Photon Sentry",
-        "info": "Defensive attack sentry.",
-        "cost": 25,
-        "population": 1,
-        "range": 4,
-        "damage": 5,
-        "attackSpeed": 0.5,
-        "projectile": "plasmaBolt",
-        "critChance": 0.05,
-        "critMultiplier": 1.5,
-        "render": {
-          "animations": {
-            "idle": [
-              {}
-            ]
-          },
-          "model": {
-            "shapes": {
-              "shapes": [
-                {
-                  "type": "cylinder",
-                  "size": 20,
-                  "height": 4,
-                  "color": "#78909c",
-                  "x": 0,
-                  "y": 2,
-                  "z": 0,
-                  "name": "base",
-                  "rotationX": 0,
-                  "rotationY": 0,
-                  "rotationZ": 0,
-                  "scaleX": 1,
-                  "scaleY": 1,
-                  "scaleZ": 1
-                },
-                {
-                  "type": "cylinder",
-                  "size": 14,
-                  "height": 26,
-                  "color": "#78909c",
-                  "x": 0,
-                  "y": 17,
-                  "z": 0,
-                  "name": "body"
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            },
-            "rampart": {
-              "shapes": [
-                {
-                  "type": "cylinder",
-                  "size": 12,
-                  "height": 8,
-                  "color": "#3e4f57",
-                  "x": 0,
-                  "y": 30,
-                  "z": 0,
-                  "name": "rampartbase"
-                },
-                {
-                  "type": "box",
-                  "width": 3,
-                  "height": 5,
-                  "depth": 3,
-                  "color": "#3e4f57",
-                  "x": 4,
-                  "y": 34,
-                  "z": 4,
-                  "name": "rampartblock1"
-                },
-                {
-                  "type": "box",
-                  "width": 3,
-                  "height": 5,
-                  "depth": 3,
-                  "color": "#3e4f57",
-                  "x": -4,
-                  "y": 34,
-                  "z": 4,
-                  "name": "rampartblock2"
-                },
-                {
-                  "type": "box",
-                  "width": 3,
-                  "height": 5,
-                  "depth": 3,
-                  "color": "#3e4f57",
-                  "x": 4,
-                  "y": 34,
-                  "z": -4,
-                  "name": "rampartblock3"
-                },
-                {
-                  "type": "box",
-                  "width": 3,
-                  "height": 5,
-                  "depth": 3,
-                  "color": "#3e4f57",
-                  "x": -4,
-                  "y": 34,
-                  "z": -4,
-                  "name": "rampartblock4"
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1.5,
-                "y": 1,
-                "z": 1.5
-              }
-            },
-            "attacker": {
-              "shapes": [
-                {
-                  "type": "cylinder",
-                  "size": 5.7,
-                  "height": 14,
-                  "color": "#cfd8dc",
-                  "x": 0,
-                  "y": 39.6,
-                  "z": 0,
-                  "name": "attackerbody"
-                },
-                {
-                  "type": "sphere",
-                  "size": 6,
-                  "color": "#ff8c00",
-                  "x": 0,
-                  "y": 48.89655172413794,
-                  "z": 0,
-                  "name": "attacker head",
-                  "rotationX": 0,
-                  "rotationY": 0,
-                  "rotationZ": 0,
-                  "scaleX": 1,
-                  "scaleY": 1,
-                  "scaleZ": 1
-                },
-                {
-                  "type": "cylinder",
-                  "size": 2,
-                  "height": 12,
-                  "color": "#cfd8dc",
-                  "x": 0,
-                  "y": 42,
-                  "z": 0,
-                  "rotationX": 90,
-                  "name": "attacker arms"
-                },
-                {
-                  "type": "sphere",
-                  "size": 3,
-                  "color": "#bf360c",
-                  "x": 0,
-                  "y": 42,
-                  "z": 6,
-                  "name": "attacker weapon"
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            }
-          }
-        },
-        "projectileCount": 0,
-        "projectileAngle": 10
       },
       "teslaCoil": {
         "title": "Tesla Coil",
@@ -16968,64 +16968,6 @@ const DEFAULT_PROJECT_CONFIG = {
       }
     },
     "worldObjects": {
-      "rock": {
-        "title": "Rock",
-        "render": {
-          "animations": {
-            "idle": [
-              {}
-            ]
-          },
-          "model": {
-            "shapes": {
-              "shapes": [
-                {
-                  "type": "tetrahedron",
-                  "size": 16,
-                  "color": {
-                    "paletteColor": "greyDColor"
-                  },
-                  "x": 3.5,
-                  "y": 2,
-                  "z": 2.5,
-                  "rotationX": 50,
-                  "rotationY": 140,
-                  "rotationZ": 10,
-                  "scaleX": 1
-                },
-                {
-                  "type": "tetrahedron",
-                  "size": 12,
-                  "color": {
-                    "paletteColor": "greyDColor"
-                  },
-                  "x": 10.5,
-                  "y": 2,
-                  "z": 7.5,
-                  "rotationX": 50,
-                  "rotationY": 150,
-                  "rotationZ": 10
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            }
-          }
-        }
-      },
       "tree": {
         "title": "Tree",
         "render": {
@@ -17136,6 +17078,64 @@ const DEFAULT_PROJECT_CONFIG = {
             }
           }
         }
+      },
+      "rock": {
+        "title": "Rock",
+        "render": {
+          "animations": {
+            "idle": [
+              {}
+            ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "tetrahedron",
+                  "size": 16,
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  },
+                  "x": 3.5,
+                  "y": 2,
+                  "z": 2.5,
+                  "rotationX": 50,
+                  "rotationY": 140,
+                  "rotationZ": 10,
+                  "scaleX": 1
+                },
+                {
+                  "type": "tetrahedron",
+                  "size": 12,
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  },
+                  "x": 10.5,
+                  "y": 2,
+                  "z": 7.5,
+                  "rotationX": 50,
+                  "rotationY": 150,
+                  "rotationZ": 10
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
+          }
+        }
       }
     },
     "materials": {
@@ -17208,6 +17208,10 @@ const DEFAULT_PROJECT_CONFIG = {
         "title": "Rock",
         "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAAAYCAYAAAAF6fiUAAAA40lEQVRoQ+3VPQ6DMAwFYHItBqQOzIw9I2PnDpUYeq2iTkgoyAnBvzzmyHn4syEN0/PXOXqW15wcxSWjJm8A/zeKhOASIBKCW4AoCK4ByA+soQNHn00ACCLlELIA/WPsvp/35dG46l4elLHgHgEbwNjsXOkmAExwu1YTQPv1qAAA5RkAAACUO6B8vdgG4IedlxYDUB40s9e7A4i2SSYAojW1Zt2KAe7cpJqG1p4tBqgtbPU81yCdrcsGcDaQVTiuXGwAXIGj1VUBwHZsY0QCWGhWaYbSc5JbRGUiASTD3vGuPcAKi06NGSIOm+IAAAAASUVORK5CYII="
       },
+      "start": {
+        "title": "Start",
+        "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAAAYCAYAAAAF6fiUAAAAl0lEQVRoQ+3UsQ2AMBAEQVwGEb1QOL0QuQwQqWXk7NdvLTHSwY3uy33VZ0v0HOdeEn3u8FNLNoDvj1ZCSAmwEkJagFUQUgMMD+xEL/ydTQECkXoIAgQC9M6mAAIENwDHtWfIBQSDCBBceBsngABwA3C8CxAAbgCOdwECwA3A8S5AALgBON4FCAA3AMe7AAHgBuB4FzAZwAvn4mAZ8YoyRAAAAABJRU5ErkJggg=="
+      },
       "scales": {
         "title": "Scales",
         "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAQ0lEQVQYV2OM6vL/z4ADXD1wi4GRoAJ9L83/2g5qGGaAdIPEwSaAOOgApgnFCpguZMXEK4DpRjeFEeRIkJHIDkV2EwCeFirmzbH2AwAAAABJRU5ErkJggg=="
@@ -17215,10 +17219,6 @@ const DEFAULT_PROJECT_CONFIG = {
       "water": {
         "title": "Water",
         "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAAAYCAYAAAAF6fiUAAAAlUlEQVRoQ+3UwQ2AIBBEUbEh27ME27MhNF4Jhtt+lnzPJqPzMlv26362RE89j5Loc4efWrIBfH+0EkJKgJUQ0gKsgpAaYHhgJ3rh72wKEIjUQxAgEKB3NgUQILgBOK49Qy4gGESA4MLbOAEEgBuA412AAHADcLwLEABuAI53AQLADcDxLkAAuAE43gUIADcAx7uAyQBeDUJgGasSxlsAAAAASUVORK5CYII="
-      },
-      "start": {
-        "title": "Start",
-        "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAAAYCAYAAAAF6fiUAAAAl0lEQVRoQ+3UsQ2AMBAEQVwGEb1QOL0QuQwQqWXk7NdvLTHSwY3uy33VZ0v0HOdeEn3u8FNLNoDvj1ZCSAmwEkJagFUQUgMMD+xEL/ydTQECkXoIAgQC9M6mAAIENwDHtWfIBQSDCBBceBsngABwA3C8CxAAbgCOdwECwA3A8S5AALgBON4FCAA3AMe7AAHgBuB4FzAZwAvn4mAZ8YoyRAAAAABJRU5ErkJggg=="
       }
     },
     "components": {
@@ -17226,38 +17226,38 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "Animator",
         "script": "class Animator extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n        \r\n    }\r\n    \r\n    \r\n    init({ objectType, spawnType}) {\r\n        this.animations = this.game.imageManager.getImages(objectType, spawnType); // { \"idle\": [...], \"walk\": [...] }\r\n        this.currentAnimation = \"idle\";\r\n        if(this.animations.walk) this.currentAnimation = \"walk\";\r\n        this.currentFrame = 0;\r\n        this.frameDuration = .166; // 10 frames per animation frame (~0.166s at 60 FPS)\r\n        this.frameTimer = 0;\r\n\r\n        this.baseSpeed = this.parent.getComponent(\"stats\")?.stats.speed || 1;\r\n    }\r\n\r\n    update() {\r\n        \r\n        this.frameTimer += this.game.deltaTime;\r\n        let currentSpeedPercent = this.parent.getComponent(\"stats\")?.stats.speed / this.baseSpeed || 1;\r\n\r\n        if (this.frameTimer >= this.frameDuration / currentSpeedPercent) {\r\n            this.frameTimer = 0;\r\n            const animFrames = this.animations[this.currentAnimation];\r\n            this.currentFrame = (this.currentFrame + 1) % animFrames.length;\r\n        }\r\n        // Sync direction with Renderer (if separate)\r\n        const renderer = this.parent.getComponent(\"Renderer\");\r\n        if (renderer) {\r\n            renderer.images = this.animations[this.currentAnimation][this.currentFrame];\r\n        }\r\n    }\r\n\r\n    setAnimation(animationType) {\r\n        if (this.animations[animationType] && this.currentAnimation !== animationType) {\r\n            this.currentAnimation = animationType;\r\n            this.currentFrame = 0;\r\n            this.frameTimer = 0;\r\n        }\r\n    }\r\n    \r\n}"
       },
-      "Attacker": {
-        "fileName": "Attacker",
-        "script": "class Attacker extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n init() {        \r\n        this.stats = this.getComponent('stats').stats;    \r\n        this.level = 1;\r\n        this.target = null;\r\n        this.projectiles = [];  \r\n        this.cooldown = 0;\r\n    }\r\n\r\n    update() {\r\n        if (this.cooldown > 0) this.cooldown -= this.game.deltaTime;\r\n\r\n        // Validate current target\r\n        if (this.target) {\r\n            const distance = Math.hypot(\r\n                this.target.position.x - this.parent.position.x,\r\n                this.target.position.y - this.parent.position.y\r\n            );\r\n            if (distance > this.stats.range || this.target.getComponent('health').hp <= 0) {\r\n                this.target = null;\r\n            }\r\n        }\r\n\r\n        // Find target if none\r\n        if (!this.target) {\r\n            this.findTarget();\r\n        }\r\n\r\n        // Attack if ready and has target\r\n        if (this.cooldown <= 0 && this.target) {\r\n            this.attack();\r\n        }\r\n\r\n        if (this.cooldown <= 0 && this.stats.mineAmt > 0) {\r\n            this.gather();\r\n        }\r\n        return true;\r\n    }\r\n    \r\n    findTarget() {\r\n        this.target = null;\r\n        let furthestEnemy = null;\r\n        let furthestDistance = -1;\r\n        const nearbyEntities = this.game.spatialGrid.getNearbyEntities(\r\n            this.parent.gridPosition.x, \r\n            this.parent.gridPosition.y, \r\n            this.stats.range,\r\n            \"enemy\"\r\n        );\r\n        for (let enemy of nearbyEntities) {\r\n            let enemyHP = enemy.getComponent(\"health\").hp;\r\n            let followPath = enemy.getComponent('followPath');\r\n            if (enemyHP <= 0) continue;          \r\n\r\n            let distanceToEnd = this.game.state.paths[followPath.pathIndex].length - followPath.indexInPath;\r\n            if (distanceToEnd > furthestDistance) {\r\n                furthestDistance = followPath.indexInPath;\r\n                furthestEnemy = enemy;\r\n            }  \r\n        }\r\n        \r\n        this.target = furthestEnemy;\r\n    }\r\n\r\n    gather() {\r\n        this.game.state.bloodShards += this.stats.mineAmt;\r\n        this.cooldown = this.stats.attackSpeed;\r\n    }\r\n\r\n    attack() {\r\n        if (!this.target) return; \r\n        this.launchProjectile();\r\n        this.cooldown = this.stats.attackSpeed;\r\n    }\r\n    \r\n    launchProjectile() {\r\n        this.stats = this.getComponent('stats').stats;    \r\n        let projectileType = this.stats.projectile;\r\n        let projectileDef = this.game.config.projectiles[projectileType];\r\n        \r\n\r\n        let projStats = { ...projectileDef };\r\n        delete projStats.render;\r\n        projStats.baseDamage = this.stats.damage || 1; \r\n        projStats.speed = this.stats.speed || 5;     \r\n        projStats.piercing = this.stats.piercing || 0;\r\n        projStats.splashRadius = this.stats.splashRadius || 0;\r\n        projStats.critChance = this.stats.critChance || 0.05;\r\n        projStats.critMultiplier = this.stats.critMultiplier || 2;\r\n    \r\n       \tif(projectileDef.customRenderer == \"lightning\") {\r\n         \tthis.game.spawn(this.parent.position.x, this.parent.position.y, 'lightningProjectile', { objectType: \"projectiles\", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });\r\n        } else if(projectileDef.isBallistic) {\r\n         \tthis.game.spawn(this.parent.position.x, this.parent.position.y, 'ballisticProjectile', { objectType: \"projectiles\", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });\r\n        } else if( this.stats.projectileCount > 0 ) {\r\n          this.game.spawn(this.parent.position.x, this.parent.position.y, 'multiShotProjectile', { objectType: \"projectiles\", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });\r\n        } else {\r\n          let projectile = this.game.spawn(this.parent.position.x, this.parent.position.y, 'projectile', { objectType: \"projectiles\", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });\r\n        }\r\n    }\r\n}"
-      },
       "ArrayTracker": {
         "fileName": "ArrayTracker",
         "script": "class ArrayTracker extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init( {objectType}) {\r\n        this.arr = objectType;\r\n        if(!this.game.state[this.arr]){\r\n            this.game.state[this.arr] = [];\r\n        }\r\n        this.game.state[this.arr].push(this.parent);\r\n    }\r\n\r\n    destroy(){\r\n        let index = this.game.state[this.arr].indexOf(this.parent);\r\n        this.game.state[this.arr].splice(index, 1);        \r\n    }\r\n}"
+      },
+      "Attacker": {
+        "fileName": "Attacker",
+        "script": "class Attacker extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n init() {        \r\n        this.stats = this.getComponent('stats').stats;    \r\n        this.level = 1;\r\n        this.target = null;\r\n        this.projectiles = [];  \r\n        this.cooldown = 0;\r\n    }\r\n\r\n    update() {\r\n        if (this.cooldown > 0) this.cooldown -= this.game.deltaTime;\r\n\r\n        // Validate current target\r\n        if (this.target) {\r\n            const distance = Math.hypot(\r\n                this.target.position.x - this.parent.position.x,\r\n                this.target.position.y - this.parent.position.y\r\n            );\r\n            if (distance > this.stats.range || this.target.getComponent('health').hp <= 0) {\r\n                this.target = null;\r\n            }\r\n        }\r\n\r\n        // Find target if none\r\n        if (!this.target) {\r\n            this.findTarget();\r\n        }\r\n\r\n        // Attack if ready and has target\r\n        if (this.cooldown <= 0 && this.target) {\r\n            this.attack();\r\n        }\r\n\r\n        if (this.cooldown <= 0 && this.stats.mineAmt > 0) {\r\n            this.gather();\r\n        }\r\n        return true;\r\n    }\r\n    \r\n    findTarget() {\r\n        this.target = null;\r\n        let furthestEnemy = null;\r\n        let furthestDistance = -1;\r\n        const nearbyEntities = this.game.spatialGrid.getNearbyEntities(\r\n            this.parent.gridPosition.x, \r\n            this.parent.gridPosition.y, \r\n            this.stats.range,\r\n            \"enemy\"\r\n        );\r\n        for (let enemy of nearbyEntities) {\r\n            let enemyHP = enemy.getComponent(\"health\").hp;\r\n            let followPath = enemy.getComponent('followPath');\r\n            if (enemyHP <= 0) continue;          \r\n\r\n            let distanceToEnd = this.game.state.paths[followPath.pathIndex].length - followPath.indexInPath;\r\n            if (distanceToEnd > furthestDistance) {\r\n                furthestDistance = followPath.indexInPath;\r\n                furthestEnemy = enemy;\r\n            }  \r\n        }\r\n        \r\n        this.target = furthestEnemy;\r\n    }\r\n\r\n    gather() {\r\n        this.game.state.bloodShards += this.stats.mineAmt;\r\n        this.cooldown = this.stats.attackSpeed;\r\n    }\r\n\r\n    attack() {\r\n        if (!this.target) return; \r\n        this.launchProjectile();\r\n        this.cooldown = this.stats.attackSpeed;\r\n    }\r\n    \r\n    launchProjectile() {\r\n        this.stats = this.getComponent('stats').stats;    \r\n        let projectileType = this.stats.projectile;\r\n        let projectileDef = this.game.config.projectiles[projectileType];\r\n        \r\n\r\n        let projStats = { ...projectileDef };\r\n        delete projStats.render;\r\n        projStats.baseDamage = this.stats.damage || 1; \r\n        projStats.speed = this.stats.speed || 5;     \r\n        projStats.piercing = this.stats.piercing || 0;\r\n        projStats.splashRadius = this.stats.splashRadius || 0;\r\n        projStats.critChance = this.stats.critChance || 0.05;\r\n        projStats.critMultiplier = this.stats.critMultiplier || 2;\r\n    \r\n       \tif(projectileDef.customRenderer == \"lightning\") {\r\n         \tthis.game.spawn(this.parent.position.x, this.parent.position.y, 'lightningProjectile', { objectType: \"projectiles\", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });\r\n        } else if(projectileDef.isBallistic) {\r\n         \tthis.game.spawn(this.parent.position.x, this.parent.position.y, 'ballisticProjectile', { objectType: \"projectiles\", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });\r\n        } else if( this.stats.projectileCount > 0 ) {\r\n          this.game.spawn(this.parent.position.x, this.parent.position.y, 'multiShotProjectile', { objectType: \"projectiles\", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });\r\n        } else {\r\n          let projectile = this.game.spawn(this.parent.position.x, this.parent.position.y, 'projectile', { objectType: \"projectiles\", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });\r\n        }\r\n    }\r\n}"
       },
       "AudioManager": {
         "title": "AudioManager",
         "fileName": "AudioManager",
         "script": "class AudioManager extends engine.Component {\n    constructor(game, parent, params) {\n        super(game, parent, params);\n    }\n\n    init() {\n        this.isInitialized = false;\n        this.bindInitialization();\n    }\n\n    bindInitialization() {\n        const initHandler = () => {\n            if (!this.isInitialized) {\n                this.initialize();\n            }\n        };\n        \n        document.addEventListener('click', initHandler, { once: true });\n        document.addEventListener('keydown', initHandler, { once: true });\n    }\n\n    async initialize() {\n        class SoundPool {\n            constructor(audioContext, destination, poolSize = 8) {\n                this.audioContext = audioContext;\n                this.destination = destination;\n                this.poolSize = poolSize;\n                this.sources = [];\n                this.initializePool();\n            }\n\n            initializePool() {\n                for (let i = 0; i < this.poolSize; i++) {\n                    this.sources.push(this.createSource());\n                }\n            }\n\n            createSource() {\n                const source = {\n                    active: false,\n                    id: null,\n                    envelopeGain: this.audioContext.createGain(),\n                    gainNode: this.audioContext.createGain(),\n                    filter: this.audioContext.createBiquadFilter(),\n                    distortion: this.audioContext.createWaveShaper(),\n                    compressor: this.audioContext.createDynamicsCompressor(),\n                    pannerNode: this.audioContext.createStereoPanner(),\n                    delay: this.audioContext.createDelay(5.0),\n                    delayGain: this.audioContext.createGain(),\n                    convolver: this.audioContext.createConvolver(),\n                    reverbGain: this.audioContext.createGain(),\n                    noiseFilter: this.audioContext.createBiquadFilter(),\n                    noiseGain: this.audioContext.createGain(),\n                    destination: this.destination\n                };\n\n                source.filter.type = 'lowpass';\n                source.filter.frequency.setValueAtTime(20000, this.audioContext.currentTime);\n                source.filter.Q.setValueAtTime(0.5, this.audioContext.currentTime);\n\n                source.noiseFilter.type = 'lowpass';\n                source.noiseFilter.frequency.setValueAtTime(2000, this.audioContext.currentTime);\n                source.noiseFilter.Q.setValueAtTime(1, this.audioContext.currentTime);\n                \n                source.noiseGain.gain.setValueAtTime(0, this.audioContext.currentTime);\n\n                source.distortion.curve = null;\n                source.distortion.oversample = '4x';\n\n                source.compressor.threshold.setValueAtTime(-24, this.audioContext.currentTime);\n                source.compressor.knee.setValueAtTime(30, this.audioContext.currentTime);\n                source.compressor.ratio.setValueAtTime(12, this.audioContext.currentTime);\n                source.compressor.attack.setValueAtTime(0.003, this.audioContext.currentTime);\n                source.compressor.release.setValueAtTime(0.25, this.audioContext.currentTime);\n\n                source.pannerNode.pan.setValueAtTime(0, this.audioContext.currentTime);\n\n                source.delay.delayTime.setValueAtTime(0.3, this.audioContext.currentTime);\n                source.delayGain.gain.setValueAtTime(0, this.audioContext.currentTime);\n\n                source.reverbGain.gain.setValueAtTime(0, this.audioContext.currentTime);\n\n                const chain = [\n                    source.envelopeGain,\n                    source.gainNode,\n                    source.filter,\n                    source.distortion,\n                    source.compressor,\n                    source.pannerNode\n                ];\n\n                for (let i = 0; i < chain.length - 1; i++) {\n                    chain[i].connect(chain[i + 1]);\n                }\n\n                // Route delay and reverb after filter\n                source.filter.connect(source.delay);\n                source.delay.connect(source.delayGain);\n                source.delayGain.connect(source.delay);\n                source.delayGain.connect(source.pannerNode);\n\n                source.filter.connect(source.convolver);\n                source.convolver.connect(source.reverbGain);\n                source.reverbGain.connect(source.pannerNode);\n\n                source.pannerNode.connect(source.destination);\n\n                return source;\n            }\n\n            getSource() {\n                let source = this.sources.find(src => !src.active && (!src.lastUsed || this.audioContext.currentTime - src.lastUsed > 1));\n                if (!source && this.sources.length < this.poolSize * 2) {\n                    source = this.createSource();\n                    this.sources.push(source);\n                }\n                if (source) {\n                    source.active = true;\n                    source.gainNode.gain.setValueAtTime(1, this.audioContext.currentTime);\n                    source.envelopeGain.gain.setValueAtTime(0, this.audioContext.currentTime);\n                    source.delayGain.gain.setValueAtTime(0, this.audioContext.currentTime);\n                    source.reverbGain.gain.setValueAtTime(0, this.audioContext.currentTime);\n                    source.noiseGain.gain.setValueAtTime(0, this.audioContext.currentTime);\n                }\n                return source;\n            }\n\n            releaseSource(source) {\n                if (source) {\n                    source.active = false;\n                    source.id = null;\n                    const now = this.audioContext.currentTime;\n            \n                    // Reset all nodes\n                    source.filter.frequency.cancelScheduledValues(now);\n                    source.filter.frequency.setValueAtTime(20000, now);\n                    source.distortion.curve = null;\n                    source.pannerNode.pan.setValueAtTime(0, now);\n                    source.envelopeGain.gain.setValueAtTime(0, now);\n                    source.gainNode.gain.setValueAtTime(1, now);\n                    source.delayGain.gain.setValueAtTime(0, now);\n                    source.reverbGain.gain.setValueAtTime(0, now);\n                    source.noiseGain.gain.setValueAtTime(0, now);\n            \n                    // Disconnect and clear sources if they exist\n                    if (source.source) {\n                        try {\n                            source.source.stop(now);\n                            source.source.disconnect();\n                        } catch (e) {\n                            console.warn('Error stopping source:', e);\n                        }\n                        source.source = null;\n                    }\n                    \n                    if (source.noiseSource) {\n                        try {\n                            source.noiseSource.stop(now);\n                            source.noiseSource.disconnect();\n                        } catch (e) {\n                            console.warn('Error stopping noise source:', e);\n                        }\n                        source.noiseSource = null;\n                    }\n            \n                    source.lastUsed = now;\n                }\n            }\n\n            destroy() {\n                this.sources.forEach(source => {\n                    source.envelopeGain.disconnect();\n                    source.gainNode.disconnect();\n                    source.filter.disconnect();\n                    source.distortion.disconnect();\n                    source.compressor.disconnect();\n                    source.pannerNode.disconnect();\n                    source.delay.disconnect();\n                    source.delayGain.disconnect();\n                    source.convolver.disconnect();\n                    source.reverbGain.disconnect();\n                    source.noiseFilter.disconnect();\n                    source.noiseGain.disconnect();\n                });\n                this.sources = [];\n            }\n        }\n        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();\n        this.masterBus = this.createAudioBus('master');\n        this.musicBus = this.createAudioBus('music');\n        this.sfxBus = this.createAudioBus('sfx');\n        this.uiBus = this.createAudioBus('ui');\n        this.musicBus.connect(this.masterBus);\n        this.sfxBus.connect(this.masterBus);\n        this.uiBus.connect(this.masterBus);\n        this.masterBus.connect(this.audioContext.destination);\n        this.soundPools = {\n            sfx: new SoundPool(this.audioContext, this.sfxBus.input, 6),\n            music: new SoundPool(this.audioContext, this.musicBus.input, 2),\n            ui: new SoundPool(this.audioContext, this.uiBus.input, 3)\n        };\n        this.buffers = {};\n        this.activeSounds = new Set();\n        if (this.audioContext.state === 'suspended') {\n            await this.audioContext.resume();\n        }\n        this.isInitialized = true;\n    }\n\n    createAudioBus(name) {\n        const bus = {\n            name,\n            input: this.audioContext.createGain(),\n            compressor: this.audioContext.createDynamicsCompressor(),\n            output: this.audioContext.createGain()\n        };\n        \n        bus.input.connect(bus.compressor);\n        bus.compressor.connect(bus.output);\n        \n        bus.connect = (destination) => {\n            bus.output.connect(destination.input || destination);\n        };\n        \n        bus.setVolume = (value) => {\n            const now = this.audioContext.currentTime;\n            bus.output.gain.cancelScheduledValues(now);\n            bus.output.gain.setTargetAtTime(\n                value <= 0 ? 0.000001 : value,\n                now,\n                0.02\n            );\n        };\n        \n        return bus;\n    }\n\n    getSynthSound(soundCollectionName, soundName) {\n        if (this.game.config[soundCollectionName]?.[soundName]) {\n            return this.game.config[soundCollectionName][soundName].audio;\n        }\n        console.warn('sound not found', soundCollectionName, soundName);\n        return null;\n    }\n\n    playSound(soundCollectionName, soundName) {\n        let data = this.getSynthSound(soundCollectionName, soundName);\n        if (data) {\n            this.playSynthSound(`${soundCollectionName}_${soundName}`, data);\n        }\n    }\n\n    playSynthSound(soundId, soundConfig, options = {}) {\n        if (!this.isInitialized) {\n            this.initialize();\n            return this.playSynthSound(soundId, soundConfig, options);\n        }\n        \n        const category = options.category || 'sfx';\n        const pool = this.soundPools[category];\n        \n        if (!pool) {\n            console.warn(`No sound pool for category ${category}`);\n            return null;\n        }\n        \n        let instanceCount = 0;\n        this.activeSounds.forEach(sound => {\n            if (sound.id === soundId) instanceCount++;\n        });\n        \n        if (instanceCount >= (options.maxInstances || 3)) {\n            console.warn(`Max instances reached for sound ${soundId}`);\n            return null;\n        }\n        \n        const sound = pool.getSource();\n        if (!sound) {\n            console.warn(`No available source for sound ${soundId}`);\n            return null;\n        }\n        \n        sound.id = soundId;\n        sound.category = category;\n        \n        // Create main oscillator\n        const oscillator = this.createSynthSource(soundConfig);\n        sound.source = oscillator;\n        oscillator.connect(sound.envelopeGain);\n        \n        // Add noise generator if configured\n        if (soundConfig.noise && soundConfig.noise.amount > 0) {\n            this.applyNoiseToSound(sound, soundConfig.noise);\n        }\n        \n        this.createEnvelopeFromConfig(soundConfig.envelope, sound.envelopeGain, soundConfig.duration);\n        \n        if (soundConfig.effects) {\n            this.applySynthEffects(sound, soundConfig.effects, soundConfig);\n        } \n        \n        this.configureSoundInstance(sound, options);\n        \n        const now = this.audioContext.currentTime;\n        oscillator.start(now);\n        \n        // Start noise generator if it exists\n        if (sound.noiseSource) {\n            sound.noiseSource.start(now);\n        }\n        \n        const duration = soundConfig.duration || 1;\n        const release = (soundConfig.envelope?.release) || 0.3;\n        let totalDuration = duration + release;\n        \n        if (soundConfig.effects?.delay?.time) {\n            const delayTail = soundConfig.effects.delay.time * 3;\n            if (totalDuration < delayTail) {\n                totalDuration = delayTail;\n            }\n        }\n        \n        oscillator.stop(now + totalDuration + 0.02);\n        if (sound.noiseSource) {\n            sound.noiseSource.stop(now + totalDuration + 0.02);\n        }\n        \n        this.activeSounds.add(sound);\n        \n        oscillator.onended = () => {\n            setTimeout(() => {\n                sound.active = false;\n                this.activeSounds.delete(sound);\n                pool.releaseSource(sound);\n            }, (soundConfig.effects?.delay?.time || 0) * 1000 * 3);\n        };\n        \n        return sound;\n    }\n\n    createSynthSource(config) {\n        // Default to oscillator unless waveform is 'noise'\n        const oscillator = config.waveform === 'noise'\n            ? this.createNoiseSource('white') \n            : this.audioContext.createOscillator();\n    \n        if (config.waveform !== 'noise') {\n            oscillator.type = config.waveform || 'sine';\n            const baseFreq = config.frequency || 440;\n            const now = this.audioContext.currentTime;\n    \n            // Initialize frequency\n            oscillator.frequency.cancelScheduledValues(now);\n            oscillator.frequency.setValueAtTime(baseFreq, now);\n    \n            // Apply pitch envelope if defined\n            if (config.pitchEnvelope) {\n                const startMultiplier = config.pitchEnvelope.start ?? 1;\n                const endMultiplier = config.pitchEnvelope.end ?? 1;\n                const envelopeTime = config.pitchEnvelope.time ?? config.duration ?? 1;\n    \n                if (startMultiplier !== 1 || endMultiplier !== 1) {\n                    const startFreq = baseFreq * startMultiplier;\n                    const endFreq = baseFreq * endMultiplier;\n    \n                    oscillator.frequency.setValueAtTime(startFreq, now);\n                    oscillator.frequency.exponentialRampToValueAtTime(\n                        Math.max(endFreq, 0.01),\n                        now + envelopeTime\n                    );\n                }\n            }\n        }\n    \n        return oscillator;\n    }\n\n    applyNoiseToSound(sound, noiseConfig) {\n        if (!noiseConfig || noiseConfig.amount <= 0) return;\n\n        const noiseType = noiseConfig.type || 'white';\n        const noiseAmount = Math.min(1, Math.max(0, noiseConfig.amount));\n        \n        // Create the noise source\n        sound.noiseSource = this.createNoiseSource(noiseType);\n        \n        // Configure noise filter if specified\n        if (noiseConfig.filter && noiseConfig.filter.type !== 'none') {\n            sound.noiseFilter.type = noiseConfig.filter.type || 'lowpass';\n            sound.noiseFilter.frequency.setValueAtTime(\n                noiseConfig.filter.frequency || 2000, \n                this.audioContext.currentTime\n            );\n        }\n        \n        // Set noise gain based on the amount\n        sound.noiseGain.gain.setValueAtTime(noiseAmount, this.audioContext.currentTime);\n        \n        // Connect noise through the filter and envelope\n        sound.noiseSource.connect(sound.noiseFilter);\n        sound.noiseFilter.connect(sound.noiseGain);\n        sound.noiseGain.connect(sound.envelopeGain);\n    }\n\n    createNoiseSource(noiseType = 'white') {\n        const bufferSize = this.audioContext.sampleRate * 2;\n        const noiseBuffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);\n        const output = noiseBuffer.getChannelData(0);\n        \n        // Generate different types of noise\n        switch (noiseType) {\n            case 'pink':\n                this.generatePinkNoise(output);\n                break;\n            case 'brown':\n                this.generateBrownNoise(output);\n                break;\n            case 'white':\n            default:\n                this.generateWhiteNoise(output);\n                break;\n        }\n        \n        const source = this.audioContext.createBufferSource();\n        source.buffer = noiseBuffer;\n        source.loop = true;\n        \n        return source;\n    }\n\n    generateWhiteNoise(output) {\n        for (let i = 0; i < output.length; i++) {\n            output[i] = Math.random() * 2 - 1;\n        }\n    }\n\n    generatePinkNoise(output) {\n        // Pink noise algorithm (approximation using Paul Kellet's method)\n        let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;\n        \n        for (let i = 0; i < output.length; i++) {\n            const white = Math.random() * 2 - 1;\n            \n            // Filter white noise to create pink noise\n            b0 = 0.99886 * b0 + white * 0.0555179;\n            b1 = 0.99332 * b1 + white * 0.0750759;\n            b2 = 0.96900 * b2 + white * 0.1538520;\n            b3 = 0.86650 * b3 + white * 0.3104856;\n            b4 = 0.55000 * b4 + white * 0.5329522;\n            b5 = -0.7616 * b5 - white * 0.0168980;\n            \n            output[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.11;\n            b6 = white * 0.115926;\n        }\n    }\n\n    generateBrownNoise(output) {\n        // Brown noise algorithm (random walk)\n        let lastValue = 0;\n        \n        for (let i = 0; i < output.length; i++) {\n            // Small random change from previous value\n            const white = Math.random() * 2 - 1;\n            lastValue = (lastValue + (0.02 * white)) / 1.02;\n            \n            // Keep within range\n            output[i] = lastValue * 3.5; // Amplify to make it audible\n        }\n        \n        // Normalize to prevent clipping\n        const max = Math.max(...Array.from(output).map(Math.abs));\n        if (max > 0) {\n            for (let i = 0; i < output.length; i++) {\n                output[i] /= max;\n            }\n        }\n    }\n\n    createEnvelopeFromConfig(envelope, gainNode, duration = 1) {\n        if (!envelope) {\n            console.warn('No envelope provided, using default');\n            envelope = { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.3 };\n        }\n        \n        const now = this.audioContext.currentTime;\n        \n        const attack = Math.max(0.01, envelope.attack || 0.01);\n        const decay = Math.max(0, envelope.decay || 0.1);\n        const sustain = Math.max(0, Math.min(1, envelope.sustain || 0.7));\n        const release = Math.max(0.02, envelope.release || 0.3);\n        \n        gainNode.gain.cancelScheduledValues(now);\n        gainNode.gain.setValueAtTime(0, now);\n        gainNode.gain.linearRampToValueAtTime(1, now + attack);\n        gainNode.gain.linearRampToValueAtTime(sustain, now + attack + decay);\n        gainNode.gain.setValueAtTime(sustain, now + duration);\n        gainNode.gain.setTargetAtTime(0.0001, now + duration, release / 3);\n        gainNode.gain.setValueAtTime(0, now + duration + release); // Absolute zero\n    }\n\n    applySynthEffects(sound, effectsConfig, soundConfig) {\n        const now = this.audioContext.currentTime;\n        \n        // Filter\n        if (effectsConfig.filter) {\n            sound.filter.type = effectsConfig.filter.type || 'lowpass';\n            sound.filter.frequency.setValueAtTime(effectsConfig.filter.frequency || 20000, now);\n            sound.filter.Q.setValueAtTime(effectsConfig.filter.Q || 0.5, now);\n            \n            // Apply pitch envelope to filter for noise waveforms\n            if (sound.source.buffer && soundConfig.pitchEnvelope && (soundConfig.pitchEnvelope.start !== 1 || soundConfig.pitchEnvelope.end !== 1)) {\n                const baseFreq = soundConfig.frequency || 100;\n                const startFreq = baseFreq * (soundConfig.pitchEnvelope.start + 1);\n                const endFreq = baseFreq * soundConfig.pitchEnvelope.end;\n                const duration = soundConfig.pitchEnvelope.time || soundConfig.duration || 1;\n                \n                sound.filter.frequency.cancelScheduledValues(now);\n                sound.filter.frequency.setValueAtTime(startFreq, now);\n                sound.filter.frequency.exponentialRampToValueAtTime(\n                    Math.max(endFreq, 0.01),\n                    now + duration\n                );\n                sound.filter.frequency.exponentialRampToValueAtTime(\n                    Math.max(endFreq * 0.5, 0.01),\n                    now + soundConfig.duration + (soundConfig.envelope?.release || 0.3)\n                );\n            }\n        }\n        \n        // Distortion\n        if (effectsConfig.distortion && effectsConfig.distortion > 0) {\n            sound.distortion.curve = this.makeDistortionCurve(effectsConfig.distortion);\n        } else {\n            sound.distortion.curve = null;\n        }\n        \n        // Delay\n        if (effectsConfig.delay && effectsConfig.delay.feedback > 0) {\n            sound.delay.delayTime.setValueAtTime(effectsConfig.delay.time || 0.3, now);\n            sound.delayGain.gain.setValueAtTime(Math.min(effectsConfig.delay.feedback || 0, 0.8), now);\n            sound.delayGain.gain.setTargetAtTime(0, now + soundConfig.duration + (soundConfig.envelope?.release || 0.3), 0.1);\n        } else {\n            sound.delayGain.gain.setValueAtTime(0, now);\n        }\n        \n        // Reverb\n        if (effectsConfig.reverb && effectsConfig.reverb > 0) {\n            this.generateImpulseResponse(sound.convolver);\n            sound.reverbGain.gain.setValueAtTime(Math.min(effectsConfig.reverb, 1), now);\n            sound.reverbGain.gain.setTargetAtTime(0, now + soundConfig.duration + (soundConfig.envelope?.release || 0.3), 0.2);\n        } else {\n            sound.reverbGain.gain.setValueAtTime(0, now);\n        }\n        \n        // Panning\n        if (effectsConfig.pan !== undefined) {\n            sound.pannerNode.pan.setValueAtTime(Math.max(-1, Math.min(1, effectsConfig.pan)), now);\n        }\n    }\n\n    configureSoundInstance(sound, options) {\n        const now = this.audioContext.currentTime;\n        \n        if (options.volume !== undefined) {\n            sound.gainNode.gain.cancelScheduledValues(now);\n            sound.gainNode.gain.setTargetAtTime(\n                options.volume <= 0 ? 0.000001 : Math.max(0, Math.min(options.volume, 1)),\n                now,\n                0.02\n            );\n        }\n        \n        if (options.position && sound.pannerNode.positionX) {\n            const pos = options.position;\n            sound.pannerNode.positionX.setValueAtTime(pos.x || 0, now);\n            sound.pannerNode.positionY.setValueAtTime(pos.y || 0, now);\n            sound.pannerNode.positionZ.setValueAtTime(pos.z || 0, now);\n        }\n        \n        if (options.pitch && sound.source && sound.source.playbackRate) {\n            sound.source.playbackRate.setValueAtTime(options.pitch, now);\n        }\n    }\n\n    generateImpulseResponse(convolver) {\n        const length = this.audioContext.sampleRate * 1.5; // Shorter impulse\n        const impulse = this.audioContext.createBuffer(2, length, this.audioContext.sampleRate);\n        \n        for (let channel = 0; channel < 2; channel++) {\n            const impulseData = impulse.getChannelData(channel);\n            for (let i = 0; i < length; i++) {\n                const decay = Math.pow(1 - i / length, 2);\n                impulseData[i] = (Math.random() * 2 - 1) * decay;\n            }\n        }\n        \n        convolver.buffer = impulse;\n    }\n\n    makeDistortionCurve(amount) {\n        const k = Math.max(amount, 0) * 10;\n        const n_samples = 44100;\n        const curve = new Float32Array(n_samples);\n        const deg = Math.PI / 180;\n        for (let i = 0; i < n_samples; i++) {\n            const x = (i * 2) / n_samples - 1;\n            curve[i] = (3 + k) * x * 20 * deg / (Math.PI + k * Math.abs(x));\n        }\n        return curve;\n    }\n\n    stopSound(sound) {\n        if (!sound) return;\n        \n        const now = this.audioContext.currentTime;\n        \n        if (sound.gainNode) {\n            sound.gainNode.gain.cancelScheduledValues(now);\n            sound.gainNode.gain.setValueAtTime(sound.gainNode.gain.value || 0, now);\n            sound.gainNode.gain.linearRampToValueAtTime(0, now + 0.05);\n        }\n        \n        if (sound.source) {\n            try {\n                sound.source.stop(now + 0.06);\n            } catch (e) {\n                console.warn('Error stopping source:', e);\n            }\n        }\n        \n        if (sound.noiseSource) {\n            try {\n                sound.noiseSource.stop(now + 0.06);\n            } catch (e) {\n                console.warn('Error stopping noise source:', e);\n            }\n        }\n        \n        sound.active = false;\n        this.activeSounds.delete(sound);\n    }\n\n    stopAllSounds() {\n        this.activeSounds.forEach(sound => {\n            this.stopSound(sound);\n        });\n        this.activeSounds.clear();\n    }\n}"
       },
-      "Buildable": {
-        "fileName": "Buildable",
-        "script": "class Buildable extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n  init() {        \r\n        this.placed = false;\r\n    }\r\n}"
-      },
       "BallisticProjectile": {
         "fileName": "BallisticProjectile",
         "script": "class BallisticProjectile extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\ninit({ spawnType, owner, target, stats }) {\r\n    this.type = spawnType;\r\n    this.def = this.game.config.projectiles[this.type];\r\n    this.owner = owner;\r\n    this.target = target;\r\n    this.stats = stats;\r\n    this.piercedEnemies = [];\r\n    this.ownerStats = this.owner.getComponent(\"stats\").stats;\r\n    this.distanceTraveled = 0;\r\n    this.distanceToSpawnParticle = 1;\r\n    \r\n    // Ballistic trajectory variables\r\n    this.startPosition = { ...this.parent.position, z: 10 }; // Start 10 units above ground\r\n    this.targetPosition = { ...this.target.position, z: 0 };\r\n    this.time = 0;\r\n    \r\n    this.totalDist = Math.sqrt(\r\n        (this.targetPosition.x - this.startPosition.x) ** 2 + \r\n        (this.targetPosition.y - this.startPosition.y) ** 2\r\n    );\r\n    this.maxHeight = this.totalDist / Math.PI;\r\n    \r\n    // Initialize position with Z component\r\n    this.parent.position.z = this.startPosition.z;\r\n    this.positionZ = this.startPosition.z;\r\n    \r\n    // Animation state variables\r\n    this.lastZPosition = this.positionZ;\r\n\r\n    \r\n    this.peakThreshold = this.maxHeight * 0.1; // 10% threshold for idle at peak\r\n    this.currentAnimState = 'ascend';\r\n    if(this.stats.attackSound){\r\n        this.game.audioManager.playSound('attackSounds', this.stats.attackSound);\r\n    }\r\n}\r\n\r\nsetAnimation(anim) {\r\n\r\n    if(this.game.config.configs.game.is3D) {\r\n        this.modelRenderer = this.parent.getComponent('modelRenderer');\r\n        this.modelRenderer?.setAnimation(anim);\r\n    } else {\r\n        this.animator = this.parent.getComponent('animator');\r\n        this.animator?.setAnimation(anim);\r\n    }\r\n}\r\n\r\nupdate() {\r\n    this.parent.position.z = this.positionZ;\r\n    \r\n    // Save previous z position to detect direction change\r\n    this.lastZPosition = this.positionZ;\r\n\r\n    // Calculate progress (0 to 1)\r\n    this.time += this.game.deltaTime;\r\n    const dx = this.targetPosition.x - this.parent.position.x;\r\n    const dy = this.targetPosition.y - this.parent.position.y;\r\n    const distSq = dx * dx + dy * dy;\r\n    let dist = Math.sqrt(distSq);\r\n    const speed = this.stats.speed;\r\n    this.parent.position.x += (dx / dist) * speed / (Math.PI);\r\n    this.parent.position.y += (dy / dist) * speed / (Math.PI);\r\n\r\n\r\n    const currentDist = Math.sqrt(\r\n        (this.parent.position.x - this.startPosition.x) ** 2 + \r\n        (this.parent.position.y - this.startPosition.y) ** 2\r\n    );\r\n    const xyprogressToTarget = Math.min(1, currentDist / this.totalDist);\r\n\r\n    // Parabolic trajectory calculation (2:1 isometric adjusted)\r\n    this.parent.position.z = this.maxHeight * (1 - Math.pow(2 * xyprogressToTarget - 1, 2));\r\n\r\n    this.positionZ = this.parent.position.z;\r\n    \r\n    // Calculate distance from peak height to determine if we're near the top\r\n    const distanceFromPeak = Math.abs(this.positionZ - this.maxHeight);\r\n    \r\n    // Check if animation state needs to change based on z movement and proximity to peak\r\n    if( xyprogressToTarget < .075 ) {\r\n        if (this.currentAnimState !== 'launch') {\r\n            this.setAnimation('launch');\r\n            this.currentAnimState = 'launch';\r\n        }\r\n    // } else if( xyprogressToTarget > .95 ) {\r\n    //     if (this.currentAnimState !== 'land') {\r\n    //         this.animator.setAnimation('land');\r\n    //         this.currentAnimState = 'land';\r\n    //     }\r\n    } else if (distanceFromPeak <= this.peakThreshold) {\r\n        // We're near the peak of the trajectory\r\n        if (this.currentAnimState !== 'idle') {\r\n            this.setAnimation('idle');\r\n            this.currentAnimState = 'idle';\r\n        }\r\n    } else if (this.positionZ < this.lastZPosition) {\r\n        // We're descending and not near the peak\r\n        if (this.currentAnimState !== 'descend') {\r\n            this.setAnimation('descend');\r\n            this.currentAnimState = 'descend';\r\n        }\r\n    } else if (this.positionZ > this.lastZPosition) {\r\n        // We're ascending and not near the peak\r\n        if (this.currentAnimState !== 'ascend') {\r\n            this.setAnimation('ascend');\r\n            this.currentAnimState = 'ascend';\r\n        }\r\n    }\r\n    \r\n    // Check if we've hit the ground (Z <= 0)\r\n    if (this.parent.position.z <= 0) {\r\n        this.parent.position.z = 0; // Snap to ground\r\n\r\n        // Hit detection - same as before but at current position\r\n        const targetDistSq = (this.parent.position.x - this.target.position.x) ** 2 + \r\n                            (this.parent.position.y - this.target.position.y) ** 2;\r\n\r\n\r\n\r\n            // We missed the target but hit the ground - maybe still do splash damage\r\n        if (this.stats.splashRadius > 0) {\r\n            this.processSplashDamage();\r\n        }\r\n        this.parent.destroy();\r\n        if(this.stats.hitSound){\r\n            this.game.audioManager.playSound('hitSounds', this.stats.hitSound);\r\n        }\r\n\r\n        return;\r\n    }\r\n    \r\n    // Update distance traveled for particles\r\n    const tDx = this.parent.lastPosition.x - this.parent.position.x;\r\n    const tDy = this.parent.lastPosition.y - this.parent.position.y;\r\n    const tDist = Math.sqrt(tDx * tDx + tDy * tDy);\r\n    this.distanceTraveled += tDist;\r\n    \r\n    if (this.def.particle && this.distanceTraveled > this.distanceToSpawnParticle) {\r\n\r\n        let particle = this.game.spawn(this.parent.lastPosition.x + Math.random() * 4 - 2, this.parent.lastPosition.y + Math.random() * 4 - 2, \"particle\", { objectType: \"particles\", spawnType: this.def.particle });\r\n        particle.position.z = this.parent.position.z + Math.random() * 4 - 2;\r\n        this.distanceTraveled = 0;\r\n        this.distanceToSpawnParticle += Math.random() * 2;\r\n    }\r\n}\r\n\r\n\r\nprocessSplashDamage() {\r\n    const nearbyEnemies = this.game.spatialGrid.getNearbyEntities(\r\n        this.parent.gridPosition.x, \r\n        this.parent.gridPosition.y, \r\n        this.stats.splashRadius,\r\n        \"enemy\"\r\n    );\r\n    let explosion = this.game.spawn(this.parent.position.x, this.parent.position.y, \"explosion\", { radius: this.stats.splashRadius });\r\n    for (const enemy of nearbyEnemies) {\r\n        if (enemy.isDead) continue;\r\n        \r\n        const dx = enemy.position.x - this.parent.position.x;\r\n        const dy = enemy.position.y - this.parent.position.y;\r\n        const distSq = dx * dx + dy * dy;\r\n        \r\n        let gridSize = this.game.config.configs.game.gridSize;\r\n        const splashRadiusSq = this.stats.splashRadius * this.stats.splashRadius * gridSize * gridSize;\r\n        \r\n        if (distSq <= splashRadiusSq) {\r\n            let enemyHealth = enemy.getComponent(\"health\");\r\n            let enemyEnergyShield = enemy.getComponent(\"energyshield\");\r\n            let enemyStats = enemy.getComponent(\"stats\");\r\n            let enemyStatClone = { ...enemyStats.stats };\r\n            enemyStatClone.energyShield = enemyEnergyShield.energyShield;\r\n            \r\n            let damageResult = engine.getFunction(\"calculateDamage\")(this.stats, enemyStatClone);\r\n            if (!damageResult.wasEvaded) {\r\n                enemyHealth.hp -= damageResult.damageDealt;\r\n                enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);\r\n                this.game.spawn(enemy.position.x, enemy.position.y, \"hitEffect\", { damageType: this.stats.damageType , lifeSpan: .3});\r\n                if (this.ownerStats.slowAmount) {\r\n                    enemyStats.addEffect(this.game.config.effects.slow, this.game.effects.slow, this.ownerStats.slowAmount);\r\n                }\r\n            }\r\n        }\r\n    }\r\n}\r\n}"
+      },
+      "ChainProjectile": {
+        "fileName": "ChainProjectile",
+        "script": "class ChainProjectile extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init( { spawnType, owner, target, stats }) {        \r\n        this.type = spawnType;\r\n        this.owner = owner;\r\n        this.target = target;\r\n        this.stats = stats;\r\n        this.piercedEnemies = [];\r\n        this.ownerStats = this.owner.getComponent(\"stats\").stats;\r\n        this.chainTargets = []; // Store all targets hit in one frame\r\n        this.hasStruck = false; // Flag to strike only once\r\n    }\r\n\r\n    update() {\r\n        if (this.hasStruck) {\r\n            this.parent.destroy(); // Destroy after one frame of striking\r\n            return;\r\n        }\r\n\r\n        if (!this.target || this.target.destroyed) {\r\n            this.parent.destroy();\r\n            return;\r\n        }\r\n\r\n        // Strike the initial target\r\n        let targetHealth = this.target.getComponent(\"health\");\r\n        let targetEnergyShield = this.target.getComponent(\"energyshield\");\r\n        let targetStats = {...this.target.getComponent(\"stats\").stats};\r\n        targetStats.energyShield = targetEnergyShield.energyShield;\r\n        let damageResult = engine.getFunction(\"calculateDamage\")(this.stats, targetStats);                    \r\n        if( damageResult.wasEvaded ) { return; }         \r\n        targetHealth.hp -= damageResult.damageDealt;\r\n        targetEnergyShield.absorbDamage(damageResult.damageAbsorbed);\r\n        this.piercedEnemies.push(this.target);\r\n        this.chainTargets.push(this.target);\r\n        this.game.spawn(this.target.position.x, this.target.position.y, \"hitEffect\", { damageType: this.stats.damageType, lifeSpan: 1});\r\n        // Chain to nearby enemies\r\n        if (this.stats.piercing > 0 && this.piercedEnemies.length <= this.stats.piercing) {\r\n            const nearbyEnemies = this.game.spatialGrid.getNearbyEntities(\r\n                this.target.gridPosition.x, \r\n                this.target.gridPosition.y, \r\n                this.ownerStats.range,\r\n                \"enemy\"\r\n            );\r\n\r\n            for (let enemy of nearbyEnemies) {\r\n                if (enemy.destroyed || this.piercedEnemies.includes(enemy)) continue;\r\n                const dx = enemy.position.x - this.target.position.x;\r\n                const dy = enemy.position.y - this.target.position.y;\r\n                const distSq = dx * dx + dy * dy;\r\n                let gridSize = this.game.config.configs.game.gridSize;\r\n                if (distSq <= this.ownerStats.range * this.ownerStats.range * gridSize * gridSize) {\r\n                    let enemyHealth = enemy.getComponent(\"health\");\r\n                    let enemyEnergyShield = enemy.getComponent(\"energyshield\");\r\n                    let enemyStats = {...enemy.getComponent(\"stats\").stats};\r\n                    enemyStats.energyShield = targetEnergyShield.energyShield;\r\n                    let damageResult = engine.getFunction(\"calculateDamage\")(this.stats, enemyStats); \r\n                    if(!damageResult.wasEvaded) {\r\n                        enemyHealth.hp -= damageResult.damageDealt;\r\n                        enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);\r\n                        this.piercedEnemies.push(enemy);\r\n                        this.chainTargets.push(enemy);\r\n                        this.game.spawn(enemy.position.x, enemy.position.y, \"hitEffect\", { damageType: this.stats.damageType, lifeSpan: 1 });\r\n                        if (this.piercedEnemies.length > this.stats.piercing) break;\r\n                    } else {\r\n                        break;\r\n                    }\r\n                }\r\n            }\r\n        }\r\n\r\n        // Apply additional effects (e.g., slow, leech) to all hit targets\r\n        for (let enemy of this.chainTargets) {\r\n            if (this.ownerStats.slowAmount) {\r\n                enemy.getComponent(\"stats\").addEffect(this.game.config.effects.slow, this.game.effects.slow, this.ownerStats.slowAmount);\r\n            }\r\n            if (this.ownerStats.leech > 0) {\r\n                const healing = this.stats.damage * this.ownerStats.leech * this.game.state.stats.healingMultiplier;\r\n                this.game.state.bloodCoreHP = Math.min(this.game.state.stats.maxBloodCoreHP, this.game.state.bloodCoreHP + healing);\r\n            }\r\n            if (this.ownerStats.thief && this.ownerStats.thief != 0) {\r\n                const stealAmt = this.stats.damage * this.ownerStats.thief * this.game.state.stats.bloodShardMultiplier;\r\n                this.game.state.bloodShards += stealAmt;\r\n            }\r\n        }\r\n\r\n        this.hasStruck = true; // Mark as struck, render lightning this frame\r\n    }\r\n}"
       },
       "Effect": {
         "fileName": "Effect",
         "script": "class Effect extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init( {config, applyFn, amount }) {\r\n        this.id = config.id;\r\n        this.title = config.title;\r\n        this.desc = config.desc;\r\n        this.lifeTime = config.lifeTime;\r\n        this.applyFn = applyFn;\r\n        this.amount = amount;    \r\n    }\r\n\r\n    update() {\r\n        this.lifeTime--;\r\n        if( this.lifeTime <= 0) this.parent.removeComponent(this);\r\n        return true;        \r\n    }\r\n\r\n    apply(s, add, mul) {\r\n        this.applyFn(s, add, mul, this.amount);\r\n    }\r\n}"
       },
+      "Buildable": {
+        "fileName": "Buildable",
+        "script": "class Buildable extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n  init() {        \r\n        this.placed = false;\r\n    }\r\n}"
+      },
       "EssenceBounty": {
         "fileName": "EssenceBounty",
         "script": "class EssenceBounty extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init(){\r\n        this.statsComp = this.parent.getComponent('stats');\r\n    }\r\n    destroy() {               \r\n        this.game.state.essence += this.statsComp.stats.essence * this.game.state.stats.essenceMultiplier;        \r\n    }\r\n}"
-      },
-      "ChainProjectile": {
-        "fileName": "ChainProjectile",
-        "script": "class ChainProjectile extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init( { spawnType, owner, target, stats }) {        \r\n        this.type = spawnType;\r\n        this.owner = owner;\r\n        this.target = target;\r\n        this.stats = stats;\r\n        this.piercedEnemies = [];\r\n        this.ownerStats = this.owner.getComponent(\"stats\").stats;\r\n        this.chainTargets = []; // Store all targets hit in one frame\r\n        this.hasStruck = false; // Flag to strike only once\r\n    }\r\n\r\n    update() {\r\n        if (this.hasStruck) {\r\n            this.parent.destroy(); // Destroy after one frame of striking\r\n            return;\r\n        }\r\n\r\n        if (!this.target || this.target.destroyed) {\r\n            this.parent.destroy();\r\n            return;\r\n        }\r\n\r\n        // Strike the initial target\r\n        let targetHealth = this.target.getComponent(\"health\");\r\n        let targetEnergyShield = this.target.getComponent(\"energyshield\");\r\n        let targetStats = {...this.target.getComponent(\"stats\").stats};\r\n        targetStats.energyShield = targetEnergyShield.energyShield;\r\n        let damageResult = engine.getFunction(\"calculateDamage\")(this.stats, targetStats);                    \r\n        if( damageResult.wasEvaded ) { return; }         \r\n        targetHealth.hp -= damageResult.damageDealt;\r\n        targetEnergyShield.absorbDamage(damageResult.damageAbsorbed);\r\n        this.piercedEnemies.push(this.target);\r\n        this.chainTargets.push(this.target);\r\n        this.game.spawn(this.target.position.x, this.target.position.y, \"hitEffect\", { damageType: this.stats.damageType, lifeSpan: 1});\r\n        // Chain to nearby enemies\r\n        if (this.stats.piercing > 0 && this.piercedEnemies.length <= this.stats.piercing) {\r\n            const nearbyEnemies = this.game.spatialGrid.getNearbyEntities(\r\n                this.target.gridPosition.x, \r\n                this.target.gridPosition.y, \r\n                this.ownerStats.range,\r\n                \"enemy\"\r\n            );\r\n\r\n            for (let enemy of nearbyEnemies) {\r\n                if (enemy.destroyed || this.piercedEnemies.includes(enemy)) continue;\r\n                const dx = enemy.position.x - this.target.position.x;\r\n                const dy = enemy.position.y - this.target.position.y;\r\n                const distSq = dx * dx + dy * dy;\r\n                let gridSize = this.game.config.configs.game.gridSize;\r\n                if (distSq <= this.ownerStats.range * this.ownerStats.range * gridSize * gridSize) {\r\n                    let enemyHealth = enemy.getComponent(\"health\");\r\n                    let enemyEnergyShield = enemy.getComponent(\"energyshield\");\r\n                    let enemyStats = {...enemy.getComponent(\"stats\").stats};\r\n                    enemyStats.energyShield = targetEnergyShield.energyShield;\r\n                    let damageResult = engine.getFunction(\"calculateDamage\")(this.stats, enemyStats); \r\n                    if(!damageResult.wasEvaded) {\r\n                        enemyHealth.hp -= damageResult.damageDealt;\r\n                        enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);\r\n                        this.piercedEnemies.push(enemy);\r\n                        this.chainTargets.push(enemy);\r\n                        this.game.spawn(enemy.position.x, enemy.position.y, \"hitEffect\", { damageType: this.stats.damageType, lifeSpan: 1 });\r\n                        if (this.piercedEnemies.length > this.stats.piercing) break;\r\n                    } else {\r\n                        break;\r\n                    }\r\n                }\r\n            }\r\n        }\r\n\r\n        // Apply additional effects (e.g., slow, leech) to all hit targets\r\n        for (let enemy of this.chainTargets) {\r\n            if (this.ownerStats.slowAmount) {\r\n                enemy.getComponent(\"stats\").addEffect(this.game.config.effects.slow, this.game.effects.slow, this.ownerStats.slowAmount);\r\n            }\r\n            if (this.ownerStats.leech > 0) {\r\n                const healing = this.stats.damage * this.ownerStats.leech * this.game.state.stats.healingMultiplier;\r\n                this.game.state.bloodCoreHP = Math.min(this.game.state.stats.maxBloodCoreHP, this.game.state.bloodCoreHP + healing);\r\n            }\r\n            if (this.ownerStats.thief && this.ownerStats.thief != 0) {\r\n                const stealAmt = this.stats.damage * this.ownerStats.thief * this.game.state.stats.bloodShardMultiplier;\r\n                this.game.state.bloodShards += stealAmt;\r\n            }\r\n        }\r\n\r\n        this.hasStruck = true; // Mark as struck, render lightning this frame\r\n    }\r\n}"
       },
       "FollowPath": {
         "fileName": "FollowPath",
@@ -17267,38 +17267,46 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "Game",
         "script": "class Game extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n        \r\n    init() {\r\n        this.initEffectsAndUpgrades();\r\n        this.gridSize = this.game.config.configs.game.gridSize;\r\n        let endPath = this.game.state.paths[0][this.game.state.paths[0].length - 1];\r\n        let endY = endPath.y;\r\n        let endX = endPath.x;\r\n        this.keep = this.game.spawn(endX * this.gridSize + this.gridSize / 2, \r\n                                endY * this.gridSize + this.gridSize / 2, \"tower\",\r\n                                { spawnType: 'keep', objectType: 'towers', setDirection: 1});\r\n        this.keep.placed = true;\r\n\r\n    }\r\n\r\n    update() {\r\n        this.keep.position.z = this.getTerrainHeight(this.keep.gridPosition);\r\n        if(this.game.config.configs.game.is3D){\r\n            this.getComponent(\"MapRenderer\")?.render(this.game.state.tileMapData, this.game.state.paths);\r\n        } else {\r\n            this.getComponent(\"MapRenderer\")?.renderBG(this.game.state.tileMapData, this.game.state.paths);\r\n        }\r\n        \r\n        if (!this.game.state.isPaused) {\r\n            this.currentTime = Date.now();\r\n\r\n            // Only update if a reasonable amount of time has passed\r\n            const timeSinceLastUpdate = this.currentTime - this.lastTime;\r\n\r\n            // Skip update if more than 1 second has passed (tab was inactive)\r\n            if (timeSinceLastUpdate > 1000) {\r\n                this.lastTime = this.currentTime; // Reset timer without updating\r\n                return;\r\n            }\r\n\r\n            this.game.deltaTime = Math.min(1/30, timeSinceLastUpdate / 1000); // Cap at 1/30th of a second        \r\n            this.lastTime = this.currentTime;\r\n\r\n            // Sort entities by y position for proper drawing order\r\n            this.game.state.entities.sort((a, b) => {\r\n                return (a.position.y * this.game.state.tileMap.length + a.position.x) - (b.position.y * this.game.state.tileMap.length + b.position.x)\r\n            });\r\n\r\n            this.game.state.stats = {...this.game.state.defaultStats};//reset stats to recalculate upgrades from base stats.\r\n            // Single loop through entities for update, draw and postUpdate\r\n            const entitiesToKeep = [];\r\n            for(let i = 0; i < this.game.state.entities.length; i++) {\r\n                let e = this.game.state.entities[i];\r\n                let result = e.update();    \r\n                \r\n                if(result) {\r\n                    entitiesToKeep.push(e);\r\n                    e.draw();\r\n                    e.postUpdate();\r\n                }\r\n            }\r\n            \r\n            // Replace the entities array with only entities that should be kept\r\n            this.game.state.entities = entitiesToKeep;\r\n            \r\n            this.postUpdate();\r\n            // Add any new entities\r\n            this.game.entitiesToAdd.forEach((entity) => this.game.state.addEntity(entity));\r\n            this.game.entitiesToAdd = [];\r\n        }     \r\n        if(!this.game.config.configs.game.is3D){\r\n            this.getComponent(\"MapRenderer\")?.renderFG(this.game.state.tileMapData, this.game.state.paths);\r\n        }   \r\n        \r\n    }\r\n\r\n    getTerrainHeight(gridPosition) {\r\n        if(this.game.state.tileMap.length > gridPosition.y && gridPosition.y > 0 && this.game.state.tileMap[Math.floor(gridPosition.y)] && this.game.state.tileMap[Math.floor(gridPosition.y)].length > gridPosition.x && gridPosition.x > 0){\r\n            const tile = this.game.state.tileMap[Math.floor(gridPosition.y)][Math.floor(gridPosition.x)];\r\n            if (!tile) {\r\n                return 0;\r\n            }\r\n            \r\n            const terrainHeight = tile.typeId * this.game.heightMapConfig.heightStep;\r\n            return terrainHeight;\r\n        }\r\n        return 0;\r\n    }\r\n    postUpdate() {\r\n        \r\n            if (this.game.state.gameOver || this.game.state.victory || this.game.state.isLevelingUp) return;\r\n                    \r\n            // Game over check\r\n            if (this.game.state.bloodCoreHP <= 0 && !this.game.state.gameOver) {\r\n                this.gameOver();\r\n            }\r\n    }\r\n\r\n\r\n    // Game-over and victory functions\r\n    gameOver() {\r\n        this.game.state.gameOver = true;\r\n        this.game.state.isPaused = true;\r\n        gameOverWave.textContent = this.game.state.round + 1;\r\n        gameOverMenu.style.display = 'block';\r\n        overlay.style.display = 'block';\r\n    }\r\n\r\n    gameVictory() {\r\n        this.game.state.victory = true;\r\n        this.game.state.isPaused = true;\r\n        victoryMenu.style.display = 'block';\r\n        overlay.style.display = 'block';\r\n    }\r\n\r\n\r\n    // Tower placement system\r\n  \r\n\r\n    initEffectsAndUpgrades() {\r\n\r\n        const Upgrade = class { \r\n            constructor(id, title, desc, icon, appliesTo, condition, apply, onAcquire) {\r\n                this.id = id;\r\n                this.title = title;\r\n                this.desc = desc;\r\n                this.icon = icon;\r\n                this.appliesTo = appliesTo;\r\n                this.conditionFn = condition;\r\n                this.applyFn = apply;\r\n                this.onAcquire = onAcquire;        \r\n            }\r\n\r\n            canApply(gameState) {\r\n                return this.conditionFn(gameState);\r\n            }\r\n\r\n            apply(s, add, mul) {\r\n                this.applyFn(s, add, mul);\r\n            }\r\n        }\r\n\r\n\r\n        this.game.effects = {\r\n            slow: (stats, additiveStats, multiplicitiveStats, slowAmount) => {\r\n                stats[this.game.config.effects.slow.stat] *= slowAmount;\r\n            }\r\n        }\r\n        this.game.upgrades = [\r\n            // Bat Swarm Upgrades\r\n            new Upgrade(\r\n                'sentryFrenzy',\r\n                'Sentry Frenzy',\r\n                'Sentry Swarm: ' + this.game.config.upgrades.sentryFrenzy.desc,\r\n                '🦇',\r\n                'sentry',\r\n                (state) => true,\r\n                (stats, additiveStats, multiplicitiveStats) => {\r\n                    multiplicitiveStats['attackSpeed'].push(this.game.config.upgrades.sentryFrenzy.value);\r\n                }\r\n            ),\r\n            new Upgrade(\r\n                'sentryIntelligence',\r\n                'Sentry Intelligence',\r\n                'Sentry Swarm: ' + this.game.config.upgrades.sentryIntelligence.desc,\r\n                '🦇',\r\n                'sentry',\r\n                (state) => true,\r\n                (stats, additiveStats, multiplicitiveStats) => {            \r\n                    multiplicitiveStats['damage'].push(this.game.config.upgrades.sentryIntelligence.damage);\r\n                    multiplicitiveStats['range'].push(this.game.config.upgrades.sentryIntelligence.range);        \r\n                }\r\n            ),\r\n\r\n            // Necromancer Upgrades\r\n            new Upgrade(\r\n                'necroSummon',\r\n                'Raise Dead',\r\n                'Necromancer: ' + this.game.config.upgrades.necroSummon.desc,\r\n                '💀',\r\n                'fabricator',\r\n                (state) => true,\r\n                (stats, additiveStats, multiplicitiveStats) => {\r\n                    stats.summonChance = 1;\r\n                    if(!additiveStats.summonChance) additiveStats.summonChance = [];\r\n                    additiveStats['summonChance'].push(this.game.config.upgrades.necroSummon.summonChance);\r\n                }\r\n            ),\r\n\r\n            // Shadow Turret Upgrades\r\n            new Upgrade(\r\n                'overCharge',\r\n                'Overcharge',\r\n                'Tesla Coil: ' + this.game.config.upgrades.overCharge.desc,\r\n                '📏',\r\n                'teslaCoil',\r\n                (state) => true,\r\n                (stats, additiveStats, multiplicitiveStats) => {\r\n                    additiveStats['range'].push(this.game.config.upgrades.overCharge.range);\r\n                }\r\n            ),\r\n\r\n            // Soul Pyre Upgrades\r\n            new Upgrade(\r\n                'pyreSoul',\r\n                'Radiant Soul',\r\n                'Soul Pyre: ' + this.game.config.upgrades.pyreSoul.desc,\r\n                '💉',\r\n                'soulPyre',\r\n                (state) => true,\r\n                (stats, additiveStats, multiplicitiveStats) => {\r\n                    additiveStats['splashRadius'].push(this.game.config.upgrades.pyreSoul.splashRadius);\r\n                }\r\n            ),\r\n\r\n            // Mist Shrine Upgrades\r\n            new Upgrade(\r\n                'mistSlow',\r\n                'Chilling Mist',\r\n                'Mist Shrine: ' + this.game.config.upgrades.mistSlow.desc,\r\n                '❄️',\r\n                'mistShrine',\r\n                (state) => true,\r\n                (stats, additiveStats, multiplicitiveStats) => {\r\n                    multiplicitiveStats['slowAmount'].push(this.game.config.upgrades.mistSlow.slowAmount);\r\n                }\r\n            ),\r\n            // Global Upgrades\r\n            new Upgrade(\r\n                'homeReinforcement',\r\n                'Reinforcement',\r\n                this.game.config.upgrades.bloodCore.desc,\r\n                '🛡️',\r\n                'global',\r\n                (state) => true,\r\n                (stats) => {\r\n                    stats.maxBloodCoreHP *= this.game.config.upgrades.bloodCore.maxHpMultiplier;\r\n                },\r\n                (state) => {\r\n                    state.bloodCoreHP = Math.min(state.stats.maxBloodCoreHP, state.bloodCoreHP + this.game.config.upgrades.bloodCore.healAmount);\r\n                }\r\n            ),\r\n            new Upgrade(\r\n                'essenceExtraction',\r\n                'Essence Extraction',\r\n                this.game.config.upgrades.essenceExtraction.desc,\r\n                '🔮',\r\n                'global',\r\n                (state) => true,\r\n                (stats) => {\r\n                    stats.essenceMultiplier *= this.game.config.upgrades.essenceExtraction.value;\r\n                }\r\n            ),\r\n            new Upgrade(\r\n                'essenceOverflow',\r\n                'Essence Overflow',\r\n                this.game.config.upgrades.essenceOverflow.desc,\r\n                '🔮',\r\n                'global',\r\n                (state) => state.bloodCoreHP > state.stats.maxBloodCoreHP / 2,\r\n                (stats) => {\r\n                    stats.essenceMultiplier *= this.game.config.upgrades.essenceOverflow.value;\r\n                }\r\n            ),\r\n\r\n        ];\r\n\r\n    }\r\n}"
       },
-      "Leveler": {
-        "fileName": "Leveler",
-        "script": "class Leveler extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n init( {level = 1}) {\r\n        this.level = level;\r\n    }\r\n}"
+      "HitEffectParticle": {
+        "fileName": "HitEffectParticle",
+        "script": "class HitEffectParticle extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n  init( {damageType}) {\r\n        this.damageType = damageType || \"default\";\r\n        this.particles = [];\r\n        \r\n        // Spawn particles based on damage type\r\n        const particleCount = 5;\r\n        for (let i = 0; i < particleCount; i++) {\r\n            this.particles.push({\r\n                x: 0, // Relative to parent\r\n                y: 0,\r\n                vx: (Math.random() - 0.5) * 4, // Velocity (-2 to 2)\r\n                vy: (Math.random() - 0.5) * 4,\r\n                size: Math.random() * 3 + 1, // 1-4 pixels\r\n                alpha: 1, // Fades from 1 to 0\r\n                color: this.getColor()\r\n            });\r\n        }\r\n    }\r\n\r\n    getColor() {\r\n        switch (this.damageType) {\r\n            case \"electric\": return \"rgba(0, 255, 255, \"; // Cyan for electric\r\n            case \"fire\": return \"rgba(255, 165, 0, \"; // Orange for fire\r\n            case \"ice\": return \"rgba(128, 128, 255, \"; // Blue for ice\r\n            case \"plasma\": return \"rgba(255, 0, 255, \"; // Purple for plasma\r\n            default: return \"rgba(255, 255, 255, \"; // White fallback\r\n        }\r\n    }\r\n\r\n    update() {\r\n        const lifespanComp = this.parent.getComponent(\"LifeSpan\");\r\n        if (!lifespanComp) return; // Safety check\r\n\r\n        const fadeFactor = lifespanComp.lifeSpan / 30; // Normalize to initial lifespan (30 frames)\r\n        for (let particle of this.particles) {\r\n            particle.x += particle.vx * this.game.state.timeScale;\r\n            particle.y += particle.vy * this.game.state.timeScale;\r\n            particle.alpha = fadeFactor; // Fade based on remaining lifespan\r\n            particle.size *= 0.98; // Slight shrink per frame\r\n        }\r\n    }\r\n}"
       },
       "GameLoader": {
         "title": "Game Loader",
         "fileName": "GameLoader",
         "script": "class GameLoader extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n\r\n    init() {}\r\n    \r\n    async load({config}){\r\n        this.config = config;        \r\n        this.config.configs.game.canvasWidth = window.outerWidth;\r\n        this.config.configs.game.canvasHeight = window.outerHeight;\r\n        this.state = new (this.game.libraryClasses.GameState)(this.config);  \r\n        this.game.state = this.state;\r\n        this.game.palette = this.config.palettes && this.config.configs.game.palette ? this.config.palettes[this.config.configs.game.palette] : null;\r\n        this.isometric = this.config.configs.game.isIsometric;\r\n        this.game.state.tileMapData = this.config.levels[this.game.state.level].tileMap;\r\n        this.game.state.isometric = this.config.configs.game.isIsometric;\r\n        if (this.game.state.modifierSet && this.config.modifierSets) {\r\n            this.game.state.stats = this.config.modifierSets[this.game.state.modifierSet];\r\n            this.game.state.defaultStats = { ...this.game.state.stats };\r\n        }   \r\n\r\n\r\n        this.setupCanvas(this.config.configs.game.canvasWidth, this.config.configs.game.canvasHeight);\r\n        await this.loadAssets();\r\n\r\n        this.game.translator = new (this.game.libraryClasses.CoordinateTranslator)(this.config.configs.game, this.config.levels[this.state.level].tileMap.terrainMap.length, this.isometric);\r\n        this.game.spatialGrid = new (this.game.libraryClasses.SpatialGrid)(this.config.levels[this.state.level].tileMap.terrainMap.length, this.config.configs.game.gridSize);\r\n        const terrainImages = this.game.imageManager.getImages(\"levels\", this.state.level);\r\n\r\n        // Use ModuleManager's script environment\r\n        this.game.terrainTileMapper = new (this.game.libraryClasses.TileMap)(this, {}, {CanvasUtility: this.game.libraryClasses.CanvasUtility});\r\n        this.game.terrainTileMapper.init(this.terrainCanvasBuffer, this.config.configs.game.gridSize, terrainImages, this.isometric);\r\n\r\n        this.game.gameEntity = this.game.createEntityFromConfig(0, 0, 'game', { gameConfig: this.config.configs.game, canvas: this.canvas, canvasBuffer: this.canvasBuffer, terrainCanvasBuffer: this.terrainCanvasBuffer, worldObjects: this.config.worldObjects, imageManager: this.game.imageManager, levelName: this.game.state.level, level: this.config.levels[this.game.state.level], palette: this.game.palette });\r\n        this.game.imageManager.dispose();    \r\n        this.game.audioManager = this.game.gameEntity.getComponent('AudioManager');  \r\n    }\r\n\r\n    getProject() {\r\n        return this.game.gameEntity;\r\n    }\r\n    setupCanvas(canvasWidth, canvasHeight) {\r\n        this.canvas = document.getElementById(\"gameCanvas\");\r\n        if(this.game.config.configs.game.is3D){\r\n            this.finalCtx = this.canvas.getContext(\"webgl2\");\r\n        } else {\r\n            this.finalCtx = this.canvas.getContext(\"2d\");\r\n        }\r\n        this.canvasBuffer = document.createElement(\"canvas\");\r\n        this.ctx = this.canvasBuffer.getContext(\"2d\");\r\n        this.canvasBuffer.setAttribute('width', canvasWidth);\r\n        this.canvasBuffer.setAttribute('height', canvasHeight);\r\n        this.canvas.setAttribute('width', canvasWidth);\r\n        this.canvas.setAttribute('height', canvasHeight);  \r\n        \r\n        this.terrainCanvasBuffer = document.createElement('canvas');\r\n        this.terrainCanvasBuffer.width = this.config.configs.game.gridSize * this.config.levels[this.state.level].tileMap.terrainMap[0].length;\r\n        this.terrainCanvasBuffer.height = this.config.configs.game.gridSize * this.config.levels[this.state.level].tileMap.terrainMap.length;\r\n\r\n        this.game.canvas = this.canvas;\r\n        this.game.finalCtx = this.finalCtx;\r\n        this.game.canvasBuffer = this.canvasBuffer;\r\n        this.game.ctx = this.ctx;\r\n        this.game.terrainCanvasBuffer = this.terrainCanvasBuffer;\r\n    }\r\n    async loadAssets() {\r\n        this.game.imageManager = new (this.game.libraryClasses.ImageManager)(this, { imageSize: this.config.configs.game.imageSize, palette: this.game.palette, textures:  this.game.config.textures}, {ShapeFactory: this.game.libraryClasses.ShapeFactory});    \r\n        // Load all images\r\n        for(let objectType in this.config) {\r\n            await this.game.imageManager.loadImages(objectType, this.config[objectType]);\r\n        }  \r\n        this.game.modelManager = new (this.game.libraryClasses.ModelManager)(this,{ShapeFactory: this.game.libraryClasses.ShapeFactory, palette: this.game.palette, textures: this.game.config.textures});    \r\n        for(let objectType in this.config) {\r\n            await this.game.modelManager.loadModels(objectType, this.config[objectType]);\r\n        }  \r\n \r\n    }\r\n}"
       },
-      "HitEffectParticle": {
-        "fileName": "HitEffectParticle",
-        "script": "class HitEffectParticle extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n  init( {damageType}) {\r\n        this.damageType = damageType || \"default\";\r\n        this.particles = [];\r\n        \r\n        // Spawn particles based on damage type\r\n        const particleCount = 5;\r\n        for (let i = 0; i < particleCount; i++) {\r\n            this.particles.push({\r\n                x: 0, // Relative to parent\r\n                y: 0,\r\n                vx: (Math.random() - 0.5) * 4, // Velocity (-2 to 2)\r\n                vy: (Math.random() - 0.5) * 4,\r\n                size: Math.random() * 3 + 1, // 1-4 pixels\r\n                alpha: 1, // Fades from 1 to 0\r\n                color: this.getColor()\r\n            });\r\n        }\r\n    }\r\n\r\n    getColor() {\r\n        switch (this.damageType) {\r\n            case \"electric\": return \"rgba(0, 255, 255, \"; // Cyan for electric\r\n            case \"fire\": return \"rgba(255, 165, 0, \"; // Orange for fire\r\n            case \"ice\": return \"rgba(128, 128, 255, \"; // Blue for ice\r\n            case \"plasma\": return \"rgba(255, 0, 255, \"; // Purple for plasma\r\n            default: return \"rgba(255, 255, 255, \"; // White fallback\r\n        }\r\n    }\r\n\r\n    update() {\r\n        const lifespanComp = this.parent.getComponent(\"LifeSpan\");\r\n        if (!lifespanComp) return; // Safety check\r\n\r\n        const fadeFactor = lifespanComp.lifeSpan / 30; // Normalize to initial lifespan (30 frames)\r\n        for (let particle of this.particles) {\r\n            particle.x += particle.vx * this.game.state.timeScale;\r\n            particle.y += particle.vy * this.game.state.timeScale;\r\n            particle.alpha = fadeFactor; // Fade based on remaining lifespan\r\n            particle.size *= 0.98; // Slight shrink per frame\r\n        }\r\n    }\r\n}"
+      "Leveler": {
+        "fileName": "Leveler",
+        "script": "class Leveler extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n init( {level = 1}) {\r\n        this.level = level;\r\n    }\r\n}"
+      },
+      "LifeSpan": {
+        "fileName": "LifeSpan",
+        "script": "class LifeSpan extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init( {lifeSpan}) {\r\n        this.lifeSpan = lifeSpan || this.getComponent('stats').stats.lifeSpan;\r\n    }\r\n    update() {        \r\n        if( this.lifeSpan > 0 ) {\r\n            this.lifeSpan -= this.game.deltaTime;\r\n        } else {\r\n            this.parent.destroy();\r\n        }\r\n    }\r\n}"
       },
       "MultishotProjectile": {
         "fileName": "MultishotProjectile",
         "script": "class MultishotProjectile extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\ninit({ spawnType, stats, target, owner }) {\r\n  this.type = spawnType;\r\n  this.stats = stats;\r\n  this.target = target;\r\n  const ownerStats = owner.getComponent('stats').stats;\r\n  const spreadCount = ownerStats.projectileCount || 3; // Total projectiles (e.g., 3: center + 2 sides)\r\n    const spreadAngleDegrees = ownerStats.projectileAngle || 45; // Default to 45 degrees\r\n  const spreadAngle = spreadAngleDegrees * (Math.PI / 180); // Convert degrees to radians\r\n\r\n \r\n  // Calculate the base direction to the target\r\n  const dx = target.position.x - this.parent.position.x;\r\n  const dy = target.position.y - this.parent.position.y;\r\n  const baseAngle = Math.atan2(dy, dx); // Angle from parent to target in radians\r\n  const distance = Math.sqrt(dx * dx + dy * dy);\r\n\r\n  // Total spread angle (e.g., for 3 projectiles: -spreadAngle, 0, +spreadAngle)\r\n  const totalSpread = spreadAngle * (spreadCount - 1); // Max angle covered by all projectiles\r\n\r\n  // Spawn projectiles in a symmetrical fan\r\n  for (let i = 0; i < spreadCount; i++) {\r\n    // Calculate the angle offset from the center\r\n    const offsetIndex = i - Math.floor(spreadCount / 2); // Center at 0 (e.g., -1, 0, 1 for 3)\r\n    const currentAngle = baseAngle + (offsetIndex * spreadAngle);\r\n\r\n    // Calculate the new target position based on the angle\r\n    const deltaX = Math.cos(currentAngle) * distance;\r\n    const deltaY = Math.sin(currentAngle) * distance;\r\n\r\n    this.game.spawn(\r\n      this.parent.position.x,\r\n      this.parent.position.y,\r\n      \"projectile\",\r\n      {\r\n        spawnType: ownerStats.projectile,\r\n        objectType: \"projectiles\",\r\n        owner: owner,\r\n        stats: stats,\r\n        target: target,\r\n        targetPosition: {\r\n          x: this.parent.position.x + deltaX, // Start from parent, extend to new position\r\n          y: this.parent.position.y + deltaY\r\n        }\r\n      }\r\n    );\r\n  }\r\n\r\n  this.parent.destroy();\r\n}\r\n}"
       },
-      "PlanckProjectile": {
-        "fileName": "PlanckProjectile",
-        "script": "class PlanckProjectile extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\ninit({ spawnType, owner, target, targetPosition, stats }) {\r\n  this.type = spawnType;\r\n  this.def = this.game.config.projectiles[this.type];\r\n  this.owner = owner;\r\n  this.target = target;\r\n  this.targetPosition = targetPosition;\r\n  this.stats = stats;\r\n  this.piercedEnemies = [];\r\n  this.ownerStats = this.owner.getComponent(\"stats\").stats;\r\n  this.distanceTraveled = 0;\r\n  this.distanceToSpawnParticle = 24;\r\n\r\n  // Add lifespan for projectile\r\n  this.maxLifespan = this.stats.lifespan || 5; // Default to 5 seconds\r\n  this.currentLifespan = 0;\r\n  \r\n  // Get the planck body from the component\r\n  this.planckBody = this.parent.getComponent('planckBody');\r\n  \r\n  // Calculate direction and set velocity\r\n  const currentPosition = {\r\n    x: this.parent.position.x,\r\n    y: this.parent.position.y\r\n  };\r\n  \r\n  const targetPos = this.targetPosition ? this.targetPosition : this.target.position;\r\n  const dx = targetPos.x - currentPosition.x;\r\n  const dy = targetPos.y - currentPosition.y;\r\n  const dist = Math.sqrt(dx * dx + dy * dy);\r\n  \r\n  // Normalize direction and multiply by speed\r\n  this.speed = this.stats.speed;\r\n  const velocityX = (dx / dist) * this.speed;\r\n  const velocityY = (dy / dist) * this.speed;\r\n  \r\n  // Set the linear velocity on the planck body\r\n  this.planckBody.setVelocity({ x: velocityX, y: velocityY });\r\n  \r\n  // Store a reference to this projectile in the body's user data\r\n  this.planckBody.body.setUserData(this);\r\n  \r\n  // Setup contact listener if not already done\r\n  if (!this.game.contactListenerSetup) {\r\n    this.setupContactListener();\r\n    this.game.contactListenerSetup = true;\r\n  }\r\n}\r\n\r\nsetupContactListener() {\r\n  const world = this.game.planckWorld;\r\n  \r\n  world.on('begin-contact', (contact) => {\r\n    const fixtureA = contact.getFixtureA();\r\n    const fixtureB = contact.getFixtureB();\r\n    \r\n    const bodyA = fixtureA.getBody();\r\n    const bodyB = fixtureB.getBody();\r\n    \r\n    const entityA = bodyA.getUserData();\r\n    const entityB = bodyB.getUserData();\r\n    \r\n    // Check if one is a projectile and one is an enemy\r\n    if (entityA && entityB) {\r\n      let projectile = null;\r\n      let enemy = null;\r\n      \r\n      if (entityA.parent && entityA.parent.type === \"projectile\" && !entityB.parent) {\r\n        projectile = entityA;\r\n        enemy = entityB;\r\n\r\n      } else if (entityB.parent && entityB.parent.type === \"projectile\" && !entityA.parent) {\r\n        projectile = entityB;\r\n        enemy = entityA;        \r\n      }\r\n      \r\n      if (projectile && enemy) {\r\n        // Handle collision in the next frame to avoid modifying physics during step\r\n        this.game.queuePostPhysicsCallback(() => {\r\n          projectile.handleEnemyCollision(enemy);\r\n        });\r\n      }\r\n    }\r\n  });\r\n}\r\n\r\nhandleEnemyCollision(enemy) {\r\n  // Skip if already hit this enemy or enemy is dead\r\n  if (enemy.isDead || this.piercedEnemies.includes(enemy)) {\r\n    return;\r\n  }\r\n  \r\n  // Apply damage\r\n  let enemyHealth = enemy.getComponent(\"health\");\r\n  let enemyEnergyShield = enemy.getComponent(\"energyshield\");\r\n  let enemyStats = enemy.getComponent(\"stats\");\r\n  let enemyStatClone = { ...enemyStats.stats };\r\n  enemyStatClone.energyShield = enemyEnergyShield.energyShield;\r\n\r\n  // Apply damage\r\n  let damageResult = engine.getFunction(\"calculateDamage\")(this.stats, enemyStatClone);\r\n  if (!damageResult.wasEvaded) {\r\n    enemyHealth.hp -= damageResult.damageDealt;\r\n    enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);\r\n    this.game.spawn(enemy.position.x, enemy.position.y, \"hitEffect\", {\r\n      damageType: this.stats.damageType,\r\n      lifeSpan: 0.3\r\n    });\r\n    if (this.ownerStats.slowAmount) {\r\n      enemyStats.addEffect(\r\n        this.game.config.effects.slow,\r\n        this.game.effects.slow,\r\n        this.ownerStats.slowAmount\r\n      );\r\n    }\r\n  }\r\n\r\n  // Special effects logic (summon, leech, thief)\r\n  if (\r\n    this.ownerStats.summonChance > 0 &&\r\n    enemyHealth.hp <= 0 &&\r\n    Math.random() < this.ownerStats.summonChance - 1\r\n  ) {\r\n    this.game.spawn(enemy.position.x, enemy.position.y, \"summonedTower\", {\r\n      objectType: \"towers\",\r\n      spawnType: this.ownerStats.summonType,\r\n      owner: this.owner\r\n    });\r\n  }\r\n  if (this.ownerStats.leech > 0) {\r\n    const healing = this.stats.damage * this.ownerStats.leech * this.game.state.stats.healingMultiplier;\r\n    this.game.state.bloodCoreHP = Math.min(\r\n      this.game.state.stats.maxBloodCoreHP,\r\n      this.game.state.bloodCoreHP + healing\r\n    );\r\n  }\r\n  if (this.ownerStats.thief && this.ownerStats.thief != 0) {\r\n    const stealAmt = this.stats.damage * this.ownerStats.thief * this.game.state.stats.bloodShardMultiplier;\r\n    this.game.state.bloodShards += stealAmt;\r\n  }\r\n\r\n  // Splash damage if applicable\r\n  if (this.stats.splashRadius > 0) {\r\n    this.applySplashDamage(enemy);\r\n    this.game.spawn(this.parent.position.x, this.parent.position.y, \"explosion\", {\r\n      radius: this.stats.splashRadius\r\n    });\r\n  }\r\n\r\n  // Piercing logic\r\n  if (this.stats.piercing > 0 && this.piercedEnemies.length < this.stats.piercing) {\r\n    this.piercedEnemies.push(enemy);\r\n    const nearbyEnemies = this.game.spatialGrid.getNearbyEntities(\r\n      this.parent.gridPosition.x,\r\n      this.parent.gridPosition.y,\r\n      this.ownerStats.range,\r\n      \"enemy\"\r\n    );\r\n    const newTarget = this.findNewTarget(nearbyEnemies);\r\n    if (newTarget) {\r\n      this.target = newTarget;\r\n      this.targetPosition = null; // Switch to target-based tracking\r\n      \r\n      // Recalculate velocity toward the new target\r\n      const currentPosition = {\r\n        x: this.parent.position.x,\r\n        y: this.parent.position.y\r\n      };\r\n      \r\n      const dx = newTarget.position.x - currentPosition.x;\r\n      const dy = newTarget.position.y - currentPosition.y;\r\n      const dist = Math.sqrt(dx * dx + dy * dy);\r\n      \r\n      if (dist > 0) {\r\n        const velocityX = (dx / dist) * this.speed;\r\n        const velocityY = (dy / dist) * this.speed;\r\n        this.planckBody.setVelocity({ x: velocityX, y: velocityY });\r\n      }\r\n    } else {\r\n      // No new target, keep going but don't destroy\r\n      return;\r\n    }\r\n  } else {\r\n    // No piercing or reached piercing limit, destroy projectile\r\n    //this.parent.destroy();\r\n  }\r\n}\r\n\r\napplySplashDamage(centerEnemy) {\r\n  // Get nearby enemies within splash radius\r\n  const nearbyEnemies = this.game.spatialGrid.getNearbyEntities(\r\n    this.parent.gridPosition.x,\r\n    this.parent.gridPosition.y,\r\n    this.stats.splashRadius,\r\n    \"enemy\"\r\n  );\r\n  \r\n  const gridSize = this.game.config.configs.game.gridSize;\r\n  const splashRadiusSq = this.stats.splashRadius * this.stats.splashRadius * gridSize * gridSize;\r\n  \r\n  for (const enemy of nearbyEnemies) {\r\n    // Skip the center enemy (already damaged) and dead enemies\r\n    if (enemy === centerEnemy || enemy.isDead || this.piercedEnemies.includes(enemy)) continue;\r\n    \r\n    let enemyHealth = enemy.getComponent(\"health\");\r\n    let enemyEnergyShield = enemy.getComponent(\"energyshield\");\r\n    let enemyStats = enemy.getComponent(\"stats\");\r\n    let enemyStatClone = { ...enemyStats.stats };\r\n    enemyStatClone.energyShield = enemyEnergyShield.energyShield;\r\n\r\n    const dx = enemy.position.x - this.parent.position.x;\r\n    const dy = enemy.position.y - this.parent.position.y;\r\n    const distSq = dx * dx + dy * dy;\r\n\r\n    if (distSq <= splashRadiusSq) {\r\n      let damageResult = engine.getFunction(\"calculateDamage\")(this.stats, enemyStatClone);\r\n      if (!damageResult.wasEvaded) {\r\n        enemyHealth.hp -= damageResult.damageDealt;\r\n        enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);\r\n        this.game.spawn(enemy.position.x, enemy.position.y, \"hitEffect\", {\r\n          damageType: this.stats.damageType,\r\n          lifeSpan: 0.3\r\n        });\r\n        if (this.ownerStats.slowAmount) {\r\n          enemyStats.addEffect(\r\n            this.game.config.effects.slow,\r\n            this.game.effects.slow,\r\n            this.ownerStats.slowAmount\r\n          );\r\n        }\r\n      }\r\n    }\r\n  }\r\n}\r\n\r\nupdate() {\r\n  if(this.target) this.targetCurrentPosition = {...this.target.position };\r\n  \r\n  // Update lifespan and destroy if expired\r\n  this.currentLifespan += this.game.deltaTime;\r\n  if (this.currentLifespan >= this.maxLifespan) {\r\n    this.parent.destroy();\r\n    return;\r\n  }\r\n\r\n  // Remove if target is gone (only if no targetPosition)\r\n  if (!this.targetPosition && (!this.target || this.target.destroyed)) {\r\n    if(this.targetCurrentPosition) {\r\n      this.targetPosition = this.targetCurrentPosition;\r\n      \r\n      // Recalculate velocity toward the last known position\r\n      const currentPosition = {\r\n        x: this.parent.position.x,\r\n        y: this.parent.position.y\r\n      };\r\n      \r\n      const dx = this.targetPosition.x - currentPosition.x;\r\n      const dy = this.targetPosition.y - currentPosition.y;\r\n      const dist = Math.sqrt(dx * dx + dy * dy);\r\n      \r\n      if (dist > 0) {        \r\n        const velocityX = (dx / dist) * this.speed;\r\n        const velocityY = (dy / dist) * this.speed;\r\n        this.planckBody.setVelocity({ x: velocityX, y: velocityY });\r\n      }\r\n    } else {\r\n      this.parent.destroy(); \r\n      return;\r\n    }\r\n  }\r\n    \r\n\r\n\r\n  // Particle spawning logic\r\n  const currentPos = this.planckBody.body.getPosition();\r\n  const currentVel = this.planckBody.body.getLinearVelocity();\r\n  const speed = Math.sqrt(currentVel.x * currentVel.x + currentVel.y * currentVel.y);\r\n  \r\n  // Only spawn particles if the projectile is moving\r\n  if (speed > 0 && this.def.particle) {\r\n    this.distanceTraveled += speed * this.game.deltaTime;\r\n    \r\n    if (this.distanceTraveled > this.distanceToSpawnParticle) {\r\n      this.game.spawn(currentPos.x, currentPos.y, \"particle\", { \r\n        objectType: \"particles\", \r\n        spawnType: this.def.particle\r\n      });\r\n      this.distanceTraveled = 0;\r\n      this.distanceToSpawnParticle = 24 + Math.random() * 3;\r\n    }\r\n  }\r\n}\r\n\r\n// Helper method to find a new target for piercing\r\nfindNewTarget(nearbyEnemies) {\r\n  const gridSize = this.game.config.configs.game.gridSize;\r\n  const rangeSq = this.ownerStats.range * this.ownerStats.range * gridSize * gridSize;\r\n  for (let enemy of nearbyEnemies) {\r\n    if (!enemy.destroyed && !this.piercedEnemies.includes(enemy)) {\r\n      const dx = enemy.position.x - this.parent.position.x;\r\n      const dy = enemy.position.y - this.parent.position.y;\r\n      const distSq = dx * dx + dy * dy;\r\n      if (distSq < rangeSq) {\r\n        return enemy;\r\n      }\r\n    }\r\n  }\r\n  return null;\r\n}\r\n}"
+      "MapManager": {
+        "fileName": "MapManager",
+        "script": "class MapManager extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\ninit({level}) {\r\n  this.nodeClass = class Node {\r\n    constructor(x, y, tileType, parent = null) {\r\n        this.x = x;\r\n        this.y = y;\r\n        this.tileType = tileType;\r\n        this.parent = parent;\r\n        \r\n        this.g = 0; // Cost from start to current node\r\n        this.h = 0; // Heuristic (estimated cost from current to goal)\r\n        this.f = 0; // Total cost (g + h)\r\n    }\r\n\r\n    equals(other) {\r\n        return this.x === other.x && this.y === other.y;\r\n    }\r\n\r\n    // Unique key for node based on coordinates\r\n    key() {\r\n        return `${this.x},${this.y}`;\r\n    }\r\n};\r\n  this.tileMap = level.tileMap;\r\n   \r\n   const {tileMap, paths} = this.generateMap();\r\n   this.game.state.tileMap = tileMap;\r\n   this.game.state.paths = paths;\r\n}\r\n\r\n    generateMap() {\r\n        // Extract values from the data object\r\n        const { size, terrainTypes, terrainMap } = this.tileMap;\r\n        \r\n        let paths = [];\r\n        let starts = [];\r\n        let endPoint = {x: 0, y: 0};\r\n\r\n        // Find START and END tile types by their IDs\r\n        const startTypeId = terrainTypes.findIndex(t => t.type === \"start\");\r\n        const endTypeId = terrainTypes.findIndex(t => t.type === \"end\");\r\n        // Create the tile map using the provided terrainMap\r\n        const tileMap = terrainMap.map((row, y) => \r\n            row.map((terrainId, x) => {\r\n                // Find the terrain object to get color information\r\n                const terrain = terrainTypes[terrainId]; \r\n                // Check for start/end points using IDs\r\n                if(terrainId === startTypeId) {\r\n                    starts.push({x: x, y: y});\r\n                } else if(terrainId === endTypeId) {\r\n                    endPoint = {x: x, y: y};\r\n                }\r\n                \r\n                return { \r\n                    type: terrain ? terrain.type : 'unknown',\r\n                    typeId: terrainId,\r\n                    color: terrain ? terrain.color : '#8bc34a', // Default to grass color if not found\r\n                    buildable: terrain ? terrain.buildable : false\r\n                };\r\n            })\r\n        );        \r\n        \r\n        starts.forEach((startPoint) => {\r\n            paths.push(this.findPath(startPoint, endPoint, terrainMap));\r\n        });\r\n\r\n        return { tileMap, paths };\r\n    }\r\n\r\n    findPath(startPoint, endPoint, tileMap) {\r\n        return this.aStar(startPoint, endPoint, tileMap);\r\n    }\r\n    \r\n    /**\r\n     * A* pathfinding algorithm\r\n     * @param {Object} start - Starting position {x, y}\r\n     * @param {Object} end - Ending position {x, y}\r\n     * @param {Array} tileMap - 2D array representing the map\r\n     * @returns {Array} - Array of positions forming the path, or empty array if no path found\r\n     */\r\n    aStar(start, end, tileMap) {\r\n       \r\n        const rows = tileMap.length;\r\n        const cols = tileMap[0].length;\r\n        \r\n        // Validate inputs\r\n        if (start.x < 0 || start.x >= cols || start.y < 0 || start.y >= rows) {\r\n            throw new Error('Start position is outside the map bounds');\r\n        }\r\n        if (end.x < 0 || end.x >= cols || end.y < 0 || end.y >= rows) {\r\n            throw new Error('End position is outside the map bounds');\r\n        }\r\n        \r\n        // Create start and end nodes\r\n        const startNode = new this.nodeClass(start.x, start.y, tileMap[start.y][start.x]);\r\n        const endNode = new this.nodeClass(end.x, end.y, tileMap[end.y][end.x]);\r\n        \r\n        // Initialize open and closed lists\r\n        const openList = [];\r\n        const closedList = new Set();\r\n        const openSet = new Set(); // For faster lookups\r\n        \r\n        // Add start node to open list\r\n        openList.push(startNode);\r\n        openSet.add(startNode.key());\r\n        \r\n        // Define movement directions (4-directional: up, right, down, left)\r\n        const directions = [\r\n            {x: 0, y: -1}, // Up\r\n            {x: 1, y: 0},  // Right\r\n            {x: 0, y: 1},  // Down\r\n            {x: -1, y: 0}  // Left\r\n            \r\n            // {x: 1, y: 1}, // Up\r\n            // {x: 1, y: -1},  // Right\r\n            // {x: -1, y: 1},  // Down\r\n            // {x: -1, y: -1}  // Left\r\n        ];\r\n        \r\n        // Main loop\r\n        while (openList.length > 0) {\r\n            // Sort by f value and take the lowest\r\n            openList.sort((a, b) => a.f - b.f);\r\n            const currentNode = openList.shift();\r\n            openSet.delete(currentNode.key());\r\n            \r\n            // Add current node to closed list\r\n            closedList.add(currentNode.key());\r\n            \r\n            // Check if we've reached the end\r\n            if (currentNode.equals(endNode)) {\r\n                // Reconstruct the path\r\n                return this.reconstructPath(currentNode);\r\n            }\r\n            \r\n            // Generate neighbors\r\n            for (const dir of directions) {\r\n                const neighborX = currentNode.x + dir.x;\r\n                const neighborY = currentNode.y + dir.y;\r\n                \r\n                // Check if neighbor is inside the map\r\n                if (neighborX < 0 || neighborX >= cols || neighborY < 0 || neighborY >= rows) {\r\n                    continue;\r\n                }\r\n                \r\n                const tileType = tileMap[neighborY][neighborX];\r\n                const neighbor = new this.nodeClass(neighborX, neighborY, tileType, currentNode);\r\n                const neighborKey = neighbor.key();\r\n                \r\n                // Skip if neighbor is in closed list\r\n                if (closedList.has(neighborKey)) {\r\n                    continue;\r\n                }\r\n                \r\n                // Calculate g score for this neighbor\r\n                // Path tiles will have a much lower cost than other tile types\r\n                let movementCost = this.calculateMovementCost(tileType);\r\n                const tentativeG = currentNode.g + movementCost;\r\n                \r\n                // Check if this is a better path to neighbor\r\n                if (!openSet.has(neighborKey) || tentativeG < neighbor.g) {\r\n                    // Update neighbor values\r\n                    neighbor.g = tentativeG;\r\n                    neighbor.h = this.calculateHeuristic(neighbor, endNode);\r\n                    neighbor.f = neighbor.g + neighbor.h;\r\n                    \r\n                    // Add neighbor to open list if not there already\r\n                    if (!openSet.has(neighborKey)) {\r\n                        openList.push(neighbor);\r\n                        openSet.add(neighborKey);\r\n                    }\r\n                }\r\n            }\r\n        }\r\n        \r\n        // No path found\r\n        return [];\r\n    }\r\n    \r\n    /**\r\n     * Calculate movement cost based on tile type\r\n     * Path tiles are heavily favored\r\n     * @param {number} tileTypeId - ID of the tile type\r\n     * @returns {number} - Movement cost\r\n     */\r\n    calculateMovementCost(tileTypeId) {\r\n        // Find path and end type IDs\r\n        const { terrainTypes } = this.tileMap;\r\n        const pathTypeId = terrainTypes.findIndex(t => t.type === \"path\");\r\n        const endTypeId = terrainTypes.findIndex(t => t.type === \"end\");\r\n        \r\n        // Heavily favor \"path\" and \"end\" type tiles\r\n        if (tileTypeId === pathTypeId || tileTypeId === endTypeId) {\r\n            return 1;\r\n        } else {\r\n            // Make non-path tiles much less desirable\r\n            return 100000;\r\n        }\r\n    }\r\n    \r\n    /**\r\n     * Calculate heuristic (Manhattan distance)\r\n     * @param {Node} nodeA \r\n     * @param {Node} nodeB \r\n     * @returns {number} - Heuristic value\r\n     */\r\n    calculateHeuristic(nodeA, nodeB) {\r\n        return Math.abs(nodeA.x - nodeB.x) + Math.abs(nodeA.y - nodeB.y);\r\n    }\r\n    \r\n    /**\r\n     * Reconstruct the path from the end node to the start\r\n     * @param {Node} endNode - The end node\r\n     * @returns {Array} - Array of positions {x, y} from start to end\r\n     */\r\n    reconstructPath(endNode) {\r\n        const path = [];\r\n        let currentNode = endNode;\r\n        \r\n        while (currentNode !== null) {\r\n            path.unshift({\r\n                x: currentNode.x,\r\n                y: currentNode.y,\r\n                tileType: currentNode.tileType\r\n            });\r\n            currentNode = currentNode.parent;\r\n        }\r\n        \r\n        return path;\r\n    }\r\n}"
       },
       "PlanckBody": {
         "fileName": "PlanckBody",
         "script": "class PlanckBody extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\ninit({box2DBodySize = 1, density = 1, friction= 0, layer = 0x0001, collidesWith = 0x0001}) {\r\n  \r\n   const { Box } = planck;\r\n  this.body = this.game.planckWorld.createBody({\r\n    type: \"dynamic\",\r\n    position: {x: this.parent.position.x, y: this.parent.position.y}\r\n  });\r\n  this.body.createFixture({\r\n      shape: new Box(1.0, 1.0),\r\n      density: density,\r\n      friction: friction,\r\n  });\r\n  this.speedScale = 10;\r\n}\r\n\r\nupdate() {\r\n  if (!this.body) return;\r\n  const bodyPos = this.body.getTransform().p;\r\n\r\n  // Update game object position\r\n  this.parent.position.x = bodyPos.x;\r\n  this.parent.position.y = bodyPos.y;\r\n\r\n}\r\n\r\nsetVelocity(vel) {\r\n\tthis.body.setLinearVelocity({ x: vel.x*this.speedScale, y: vel.y * this.speedScale });\r\n}\r\ngetVelocity() {\r\n  let vel = this.body.getLinearVelocity();\r\n  return { x: vel.x / this.speedScale, y: vel.y / this.speedScale };\r\n}\r\npostUpdate() {\r\n  //this.body.applyForce({ x: 10, y: 0}, { x: this.parent.position.x, y: this.parent.position.y});\r\n}\r\n}"
       },
-      "PopulationBurden": {
-        "fileName": "PopulationBurden",
-        "script": "class PopulationBurden extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init(){\r\n        this.stats = this.parent.getComponent('stats').stats;        \r\n    }\r\n    update() {\r\n        if(this.stats){ \r\n            if( this.stats.population ) {\r\n                this.game.state.stats.population += this.stats.population;\r\n            } \r\n            if( this.stats.supply ) {\r\n                this.game.state.stats.maxPopulation += this.stats.supply;\r\n            }\r\n        }\r\n    }\r\n}"
+      "PlanckProjectile": {
+        "fileName": "PlanckProjectile",
+        "script": "class PlanckProjectile extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\ninit({ spawnType, owner, target, targetPosition, stats }) {\r\n  this.type = spawnType;\r\n  this.def = this.game.config.projectiles[this.type];\r\n  this.owner = owner;\r\n  this.target = target;\r\n  this.targetPosition = targetPosition;\r\n  this.stats = stats;\r\n  this.piercedEnemies = [];\r\n  this.ownerStats = this.owner.getComponent(\"stats\").stats;\r\n  this.distanceTraveled = 0;\r\n  this.distanceToSpawnParticle = 24;\r\n\r\n  // Add lifespan for projectile\r\n  this.maxLifespan = this.stats.lifespan || 5; // Default to 5 seconds\r\n  this.currentLifespan = 0;\r\n  \r\n  // Get the planck body from the component\r\n  this.planckBody = this.parent.getComponent('planckBody');\r\n  \r\n  // Calculate direction and set velocity\r\n  const currentPosition = {\r\n    x: this.parent.position.x,\r\n    y: this.parent.position.y\r\n  };\r\n  \r\n  const targetPos = this.targetPosition ? this.targetPosition : this.target.position;\r\n  const dx = targetPos.x - currentPosition.x;\r\n  const dy = targetPos.y - currentPosition.y;\r\n  const dist = Math.sqrt(dx * dx + dy * dy);\r\n  \r\n  // Normalize direction and multiply by speed\r\n  this.speed = this.stats.speed;\r\n  const velocityX = (dx / dist) * this.speed;\r\n  const velocityY = (dy / dist) * this.speed;\r\n  \r\n  // Set the linear velocity on the planck body\r\n  this.planckBody.setVelocity({ x: velocityX, y: velocityY });\r\n  \r\n  // Store a reference to this projectile in the body's user data\r\n  this.planckBody.body.setUserData(this);\r\n  \r\n  // Setup contact listener if not already done\r\n  if (!this.game.contactListenerSetup) {\r\n    this.setupContactListener();\r\n    this.game.contactListenerSetup = true;\r\n  }\r\n}\r\n\r\nsetupContactListener() {\r\n  const world = this.game.planckWorld;\r\n  \r\n  world.on('begin-contact', (contact) => {\r\n    const fixtureA = contact.getFixtureA();\r\n    const fixtureB = contact.getFixtureB();\r\n    \r\n    const bodyA = fixtureA.getBody();\r\n    const bodyB = fixtureB.getBody();\r\n    \r\n    const entityA = bodyA.getUserData();\r\n    const entityB = bodyB.getUserData();\r\n    \r\n    // Check if one is a projectile and one is an enemy\r\n    if (entityA && entityB) {\r\n      let projectile = null;\r\n      let enemy = null;\r\n      \r\n      if (entityA.parent && entityA.parent.type === \"projectile\" && !entityB.parent) {\r\n        projectile = entityA;\r\n        enemy = entityB;\r\n\r\n      } else if (entityB.parent && entityB.parent.type === \"projectile\" && !entityA.parent) {\r\n        projectile = entityB;\r\n        enemy = entityA;        \r\n      }\r\n      \r\n      if (projectile && enemy) {\r\n        // Handle collision in the next frame to avoid modifying physics during step\r\n        this.game.queuePostPhysicsCallback(() => {\r\n          projectile.handleEnemyCollision(enemy);\r\n        });\r\n      }\r\n    }\r\n  });\r\n}\r\n\r\nhandleEnemyCollision(enemy) {\r\n  // Skip if already hit this enemy or enemy is dead\r\n  if (enemy.isDead || this.piercedEnemies.includes(enemy)) {\r\n    return;\r\n  }\r\n  \r\n  // Apply damage\r\n  let enemyHealth = enemy.getComponent(\"health\");\r\n  let enemyEnergyShield = enemy.getComponent(\"energyshield\");\r\n  let enemyStats = enemy.getComponent(\"stats\");\r\n  let enemyStatClone = { ...enemyStats.stats };\r\n  enemyStatClone.energyShield = enemyEnergyShield.energyShield;\r\n\r\n  // Apply damage\r\n  let damageResult = engine.getFunction(\"calculateDamage\")(this.stats, enemyStatClone);\r\n  if (!damageResult.wasEvaded) {\r\n    enemyHealth.hp -= damageResult.damageDealt;\r\n    enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);\r\n    this.game.spawn(enemy.position.x, enemy.position.y, \"hitEffect\", {\r\n      damageType: this.stats.damageType,\r\n      lifeSpan: 0.3\r\n    });\r\n    if (this.ownerStats.slowAmount) {\r\n      enemyStats.addEffect(\r\n        this.game.config.effects.slow,\r\n        this.game.effects.slow,\r\n        this.ownerStats.slowAmount\r\n      );\r\n    }\r\n  }\r\n\r\n  // Special effects logic (summon, leech, thief)\r\n  if (\r\n    this.ownerStats.summonChance > 0 &&\r\n    enemyHealth.hp <= 0 &&\r\n    Math.random() < this.ownerStats.summonChance - 1\r\n  ) {\r\n    this.game.spawn(enemy.position.x, enemy.position.y, \"summonedTower\", {\r\n      objectType: \"towers\",\r\n      spawnType: this.ownerStats.summonType,\r\n      owner: this.owner\r\n    });\r\n  }\r\n  if (this.ownerStats.leech > 0) {\r\n    const healing = this.stats.damage * this.ownerStats.leech * this.game.state.stats.healingMultiplier;\r\n    this.game.state.bloodCoreHP = Math.min(\r\n      this.game.state.stats.maxBloodCoreHP,\r\n      this.game.state.bloodCoreHP + healing\r\n    );\r\n  }\r\n  if (this.ownerStats.thief && this.ownerStats.thief != 0) {\r\n    const stealAmt = this.stats.damage * this.ownerStats.thief * this.game.state.stats.bloodShardMultiplier;\r\n    this.game.state.bloodShards += stealAmt;\r\n  }\r\n\r\n  // Splash damage if applicable\r\n  if (this.stats.splashRadius > 0) {\r\n    this.applySplashDamage(enemy);\r\n    this.game.spawn(this.parent.position.x, this.parent.position.y, \"explosion\", {\r\n      radius: this.stats.splashRadius\r\n    });\r\n  }\r\n\r\n  // Piercing logic\r\n  if (this.stats.piercing > 0 && this.piercedEnemies.length < this.stats.piercing) {\r\n    this.piercedEnemies.push(enemy);\r\n    const nearbyEnemies = this.game.spatialGrid.getNearbyEntities(\r\n      this.parent.gridPosition.x,\r\n      this.parent.gridPosition.y,\r\n      this.ownerStats.range,\r\n      \"enemy\"\r\n    );\r\n    const newTarget = this.findNewTarget(nearbyEnemies);\r\n    if (newTarget) {\r\n      this.target = newTarget;\r\n      this.targetPosition = null; // Switch to target-based tracking\r\n      \r\n      // Recalculate velocity toward the new target\r\n      const currentPosition = {\r\n        x: this.parent.position.x,\r\n        y: this.parent.position.y\r\n      };\r\n      \r\n      const dx = newTarget.position.x - currentPosition.x;\r\n      const dy = newTarget.position.y - currentPosition.y;\r\n      const dist = Math.sqrt(dx * dx + dy * dy);\r\n      \r\n      if (dist > 0) {\r\n        const velocityX = (dx / dist) * this.speed;\r\n        const velocityY = (dy / dist) * this.speed;\r\n        this.planckBody.setVelocity({ x: velocityX, y: velocityY });\r\n      }\r\n    } else {\r\n      // No new target, keep going but don't destroy\r\n      return;\r\n    }\r\n  } else {\r\n    // No piercing or reached piercing limit, destroy projectile\r\n    //this.parent.destroy();\r\n  }\r\n}\r\n\r\napplySplashDamage(centerEnemy) {\r\n  // Get nearby enemies within splash radius\r\n  const nearbyEnemies = this.game.spatialGrid.getNearbyEntities(\r\n    this.parent.gridPosition.x,\r\n    this.parent.gridPosition.y,\r\n    this.stats.splashRadius,\r\n    \"enemy\"\r\n  );\r\n  \r\n  const gridSize = this.game.config.configs.game.gridSize;\r\n  const splashRadiusSq = this.stats.splashRadius * this.stats.splashRadius * gridSize * gridSize;\r\n  \r\n  for (const enemy of nearbyEnemies) {\r\n    // Skip the center enemy (already damaged) and dead enemies\r\n    if (enemy === centerEnemy || enemy.isDead || this.piercedEnemies.includes(enemy)) continue;\r\n    \r\n    let enemyHealth = enemy.getComponent(\"health\");\r\n    let enemyEnergyShield = enemy.getComponent(\"energyshield\");\r\n    let enemyStats = enemy.getComponent(\"stats\");\r\n    let enemyStatClone = { ...enemyStats.stats };\r\n    enemyStatClone.energyShield = enemyEnergyShield.energyShield;\r\n\r\n    const dx = enemy.position.x - this.parent.position.x;\r\n    const dy = enemy.position.y - this.parent.position.y;\r\n    const distSq = dx * dx + dy * dy;\r\n\r\n    if (distSq <= splashRadiusSq) {\r\n      let damageResult = engine.getFunction(\"calculateDamage\")(this.stats, enemyStatClone);\r\n      if (!damageResult.wasEvaded) {\r\n        enemyHealth.hp -= damageResult.damageDealt;\r\n        enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);\r\n        this.game.spawn(enemy.position.x, enemy.position.y, \"hitEffect\", {\r\n          damageType: this.stats.damageType,\r\n          lifeSpan: 0.3\r\n        });\r\n        if (this.ownerStats.slowAmount) {\r\n          enemyStats.addEffect(\r\n            this.game.config.effects.slow,\r\n            this.game.effects.slow,\r\n            this.ownerStats.slowAmount\r\n          );\r\n        }\r\n      }\r\n    }\r\n  }\r\n}\r\n\r\nupdate() {\r\n  if(this.target) this.targetCurrentPosition = {...this.target.position };\r\n  \r\n  // Update lifespan and destroy if expired\r\n  this.currentLifespan += this.game.deltaTime;\r\n  if (this.currentLifespan >= this.maxLifespan) {\r\n    this.parent.destroy();\r\n    return;\r\n  }\r\n\r\n  // Remove if target is gone (only if no targetPosition)\r\n  if (!this.targetPosition && (!this.target || this.target.destroyed)) {\r\n    if(this.targetCurrentPosition) {\r\n      this.targetPosition = this.targetCurrentPosition;\r\n      \r\n      // Recalculate velocity toward the last known position\r\n      const currentPosition = {\r\n        x: this.parent.position.x,\r\n        y: this.parent.position.y\r\n      };\r\n      \r\n      const dx = this.targetPosition.x - currentPosition.x;\r\n      const dy = this.targetPosition.y - currentPosition.y;\r\n      const dist = Math.sqrt(dx * dx + dy * dy);\r\n      \r\n      if (dist > 0) {        \r\n        const velocityX = (dx / dist) * this.speed;\r\n        const velocityY = (dy / dist) * this.speed;\r\n        this.planckBody.setVelocity({ x: velocityX, y: velocityY });\r\n      }\r\n    } else {\r\n      this.parent.destroy(); \r\n      return;\r\n    }\r\n  }\r\n    \r\n\r\n\r\n  // Particle spawning logic\r\n  const currentPos = this.planckBody.body.getPosition();\r\n  const currentVel = this.planckBody.body.getLinearVelocity();\r\n  const speed = Math.sqrt(currentVel.x * currentVel.x + currentVel.y * currentVel.y);\r\n  \r\n  // Only spawn particles if the projectile is moving\r\n  if (speed > 0 && this.def.particle) {\r\n    this.distanceTraveled += speed * this.game.deltaTime;\r\n    \r\n    if (this.distanceTraveled > this.distanceToSpawnParticle) {\r\n      this.game.spawn(currentPos.x, currentPos.y, \"particle\", { \r\n        objectType: \"particles\", \r\n        spawnType: this.def.particle\r\n      });\r\n      this.distanceTraveled = 0;\r\n      this.distanceToSpawnParticle = 24 + Math.random() * 3;\r\n    }\r\n  }\r\n}\r\n\r\n// Helper method to find a new target for piercing\r\nfindNewTarget(nearbyEnemies) {\r\n  const gridSize = this.game.config.configs.game.gridSize;\r\n  const rangeSq = this.ownerStats.range * this.ownerStats.range * gridSize * gridSize;\r\n  for (let enemy of nearbyEnemies) {\r\n    if (!enemy.destroyed && !this.piercedEnemies.includes(enemy)) {\r\n      const dx = enemy.position.x - this.parent.position.x;\r\n      const dy = enemy.position.y - this.parent.position.y;\r\n      const distSq = dx * dx + dy * dy;\r\n      if (distSq < rangeSq) {\r\n        return enemy;\r\n      }\r\n    }\r\n  }\r\n  return null;\r\n}\r\n}"
       },
       "PlanckWorld": {
         "fileName": "PlanckWorld",
         "script": "class PlanckWorld extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n//planckWorld component\r\ninit({gravity = 10, gravityX = 0, gravityY = 0}) {\r\n  this.velocityIterations = 6;\r\n  this.positionIterations = 2;\r\n  this.physicsUpdateTimer = 0;\r\n  this.timeStep = 1 / 60; // Fixed timestep of 60fps\r\n  \r\n   const { World } = planck;\r\n    this.game.planckWorld = new World();\r\n}\r\n\r\npostUpdate() {\r\n    this.game.planckWorld.step(this.timeStep, this.velocityIterations, this.positionIterations);\r\n}\r\n}"
+      },
+      "PopulationBurden": {
+        "fileName": "PopulationBurden",
+        "script": "class PopulationBurden extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init(){\r\n        this.stats = this.parent.getComponent('stats').stats;        \r\n    }\r\n    update() {\r\n        if(this.stats){ \r\n            if( this.stats.population ) {\r\n                this.game.state.stats.population += this.stats.population;\r\n            } \r\n            if( this.stats.supply ) {\r\n                this.game.state.stats.maxPopulation += this.stats.supply;\r\n            }\r\n        }\r\n    }\r\n}"
       },
       "Projectile": {
         "fileName": "Projectile",
@@ -17325,34 +17333,9 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "WaveManager",
         "title": "AudioManager",
         "script": "class WaveManager extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init() {   \r\n        \r\n        this.resetWaveState();\r\n    }\r\n\r\n    resetWaveState() {\r\n        this.game.state.waveSets = this.game.config.levels[this.game.state.level].wavesets;\r\n        this.game.state.currentWaveIds = [];\r\n        this.game.state.currentWaveEnemies = [];\r\n        this.game.state.enemiesSpawned = [];\r\n        this.game.state.spawnTimers = []; // Array for individual spawn timers\r\n        this.game.state.spawnRate = 1;    // Base spawn rate (can be modified per waveset if needed)\r\n        this.game.state.waveTimer = 0;\r\n        this.game.state.startDelayTimer = 0;\r\n        this.game.state.round = 0;\r\n    }\r\n\r\n    update() {\r\n        // Skip wave updates if game is over or in certain states\r\n        if (this.game.state.gameOver || this.game.state.victory || this.game.state.isLevelingUp) return;\r\n\r\n        this.game.state.startDelayTimer += this.game.deltaTime;\r\n\r\n        // Process all wavesets in parallel\r\n        for (let i = 0; i < this.game.state.currentWaveIds.length; i++) {\r\n            let waveSet = this.game.config.wavesets[this.game.state.waveSets[i]];\r\n            \r\n            // Skip if still in start delay\r\n            if (waveSet.startDelay && this.game.state.startDelayTimer < waveSet.startDelay) continue;\r\n            \r\n            if(this.game.deltaTime){\r\n            // Update individual spawn timer for this waveset\r\n                this.game.state.spawnTimers[i] += this.game.deltaTime;\r\n            }\r\n            // If this waveset still has enemies to spawn\r\n            if (this.game.state.enemiesSpawned[i] < this.game.state.currentWaveEnemies[i].length) {\r\n                if (this.game.state.spawnTimers[i] >= this.game.state.spawnRate) {\r\n                    // Create enemy from the appropriate waveset using the enemy type and start point index\r\n                    const enemyType = this.game.state.currentWaveEnemies[i][this.game.state.enemiesSpawned[i]];\r\n                    const startPointIndex = i;\r\n                    \r\n                    \r\n        \t\t\t\t\t  this.game.spawn(0, 0, 'enemy', { objectType: \"enemies\", spawnType: enemyType, pathIndex: startPointIndex, friction: 1000, density: 1000});\r\n                    this.game.state.enemiesSpawned[i]++;\r\n                    this.game.state.spawnTimers[i] = 0; // Reset this waveset's timer\r\n                    \r\n                    // Calculate total progress across all wavesets\r\n                    const totalEnemies = this.game.state.currentWaveEnemies.reduce((sum, wave) => sum + wave.length, 0);\r\n                    const totalSpawned = this.game.state.enemiesSpawned.reduce((sum, count) => sum + count, 0);\r\n                    \r\n                    // Update wave progress bar\r\n                    document.getElementById('waveProgress').style.width = (totalSpawned / totalEnemies * 100) + '%';\r\n                }\r\n            }\r\n        }\r\n        \r\n        // Check if all wavesets have completed spawning\r\n        const allWavesetsComplete = this.game.state.enemiesSpawned.every((spawned, index) => \r\n            spawned >= this.game.state.currentWaveEnemies[index].length\r\n        );\r\n        \r\n        // Move to next wave if all enemies defeated and all wavesets have completed spawning\r\n        if (this.game.state.enemies.length === 0 && allWavesetsComplete) {\r\n            this.game.state.waveTimer++;\r\n            \r\n            if (this.game.state.waveTimer >= this.game.state.waveDelay) {\r\n                this.startNextWave();\r\n            }\r\n        }\r\n    }\r\n\r\n    startNextWave() {\r\n        document.getElementById('waveDisplay').textContent = this.game.state.round + 1;\r\n        \r\n        this.game.state.currentWaveIds = [];\r\n        this.game.state.currentWaveEnemies = [];\r\n        this.game.state.enemiesSpawned = [];\r\n        this.game.state.spawnTimers = [];\r\n        \r\n        let totalWaves = 0;\r\n        for (let i = 0; i < this.game.state.waveSets.length; i++) {\r\n            const waveSetId = this.game.state.waveSets[i];\r\n            const waveSet = this.game.config.wavesets[waveSetId];\r\n            \r\n            // Check if this waveset has enough waves for the current round\r\n            if (this.game.state.round < waveSet.waves.length) {\r\n                const currentWaveId = waveSet.waves[this.game.state.round];\r\n                \r\n                // Add this wave to the current active waves\r\n                this.game.state.currentWaveIds.push(currentWaveId);\r\n                this.game.state.currentWaveEnemies.push(this.game.config.waves[currentWaveId].enemies);\r\n                this.game.state.enemiesSpawned.push(0);\r\n                this.game.state.spawnTimers.push(0); // Initialize spawn timer for this waveset\r\n            }\r\n            \r\n            totalWaves = Math.max(totalWaves, waveSet.waves.length);\r\n        }\r\n        \r\n        // If all wavesets are exhausted, end the game\r\n        if (this.game.state.currentWaveIds.length === 0) {\r\n            this.game.state.victory = true;\r\n            this.game.state.isPaused = true;\r\n            document.getElementById('victoryMenu').style.display = 'block';\r\n            document.getElementById('overlay').style.display = 'block';\r\n            return;\r\n        }\r\n        \r\n        this.game.state.maxWaves = totalWaves;\r\n        this.game.state.spawnRate = 5;\r\n        this.game.state.waveTimer = 0;\r\n        this.game.state.startDelayTimer = 0;\r\n        \r\n        // Reset wave progress bar\r\n        document.getElementById('waveProgress').style.width = '0%';\r\n        this.game.state.round++;\r\n    }\r\n}"
-      },
-      "LifeSpan": {
-        "fileName": "LifeSpan",
-        "script": "class LifeSpan extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init( {lifeSpan}) {\r\n        this.lifeSpan = lifeSpan || this.getComponent('stats').stats.lifeSpan;\r\n    }\r\n    update() {        \r\n        if( this.lifeSpan > 0 ) {\r\n            this.lifeSpan -= this.game.deltaTime;\r\n        } else {\r\n            this.parent.destroy();\r\n        }\r\n    }\r\n}"
-      },
-      "MapManager": {
-        "fileName": "MapManager",
-        "script": "class MapManager extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\ninit({level}) {\r\n  this.nodeClass = class Node {\r\n    constructor(x, y, tileType, parent = null) {\r\n        this.x = x;\r\n        this.y = y;\r\n        this.tileType = tileType;\r\n        this.parent = parent;\r\n        \r\n        this.g = 0; // Cost from start to current node\r\n        this.h = 0; // Heuristic (estimated cost from current to goal)\r\n        this.f = 0; // Total cost (g + h)\r\n    }\r\n\r\n    equals(other) {\r\n        return this.x === other.x && this.y === other.y;\r\n    }\r\n\r\n    // Unique key for node based on coordinates\r\n    key() {\r\n        return `${this.x},${this.y}`;\r\n    }\r\n};\r\n  this.tileMap = level.tileMap;\r\n   \r\n   const {tileMap, paths} = this.generateMap();\r\n   this.game.state.tileMap = tileMap;\r\n   this.game.state.paths = paths;\r\n}\r\n\r\n    generateMap() {\r\n        // Extract values from the data object\r\n        const { size, terrainTypes, terrainMap } = this.tileMap;\r\n        \r\n        let paths = [];\r\n        let starts = [];\r\n        let endPoint = {x: 0, y: 0};\r\n\r\n        // Find START and END tile types by their IDs\r\n        const startTypeId = terrainTypes.findIndex(t => t.type === \"start\");\r\n        const endTypeId = terrainTypes.findIndex(t => t.type === \"end\");\r\n        // Create the tile map using the provided terrainMap\r\n        const tileMap = terrainMap.map((row, y) => \r\n            row.map((terrainId, x) => {\r\n                // Find the terrain object to get color information\r\n                const terrain = terrainTypes[terrainId]; \r\n                // Check for start/end points using IDs\r\n                if(terrainId === startTypeId) {\r\n                    starts.push({x: x, y: y});\r\n                } else if(terrainId === endTypeId) {\r\n                    endPoint = {x: x, y: y};\r\n                }\r\n                \r\n                return { \r\n                    type: terrain ? terrain.type : 'unknown',\r\n                    typeId: terrainId,\r\n                    color: terrain ? terrain.color : '#8bc34a', // Default to grass color if not found\r\n                    buildable: terrain ? terrain.buildable : false\r\n                };\r\n            })\r\n        );        \r\n        \r\n        starts.forEach((startPoint) => {\r\n            paths.push(this.findPath(startPoint, endPoint, terrainMap));\r\n        });\r\n\r\n        return { tileMap, paths };\r\n    }\r\n\r\n    findPath(startPoint, endPoint, tileMap) {\r\n        return this.aStar(startPoint, endPoint, tileMap);\r\n    }\r\n    \r\n    /**\r\n     * A* pathfinding algorithm\r\n     * @param {Object} start - Starting position {x, y}\r\n     * @param {Object} end - Ending position {x, y}\r\n     * @param {Array} tileMap - 2D array representing the map\r\n     * @returns {Array} - Array of positions forming the path, or empty array if no path found\r\n     */\r\n    aStar(start, end, tileMap) {\r\n       \r\n        const rows = tileMap.length;\r\n        const cols = tileMap[0].length;\r\n        \r\n        // Validate inputs\r\n        if (start.x < 0 || start.x >= cols || start.y < 0 || start.y >= rows) {\r\n            throw new Error('Start position is outside the map bounds');\r\n        }\r\n        if (end.x < 0 || end.x >= cols || end.y < 0 || end.y >= rows) {\r\n            throw new Error('End position is outside the map bounds');\r\n        }\r\n        \r\n        // Create start and end nodes\r\n        const startNode = new this.nodeClass(start.x, start.y, tileMap[start.y][start.x]);\r\n        const endNode = new this.nodeClass(end.x, end.y, tileMap[end.y][end.x]);\r\n        \r\n        // Initialize open and closed lists\r\n        const openList = [];\r\n        const closedList = new Set();\r\n        const openSet = new Set(); // For faster lookups\r\n        \r\n        // Add start node to open list\r\n        openList.push(startNode);\r\n        openSet.add(startNode.key());\r\n        \r\n        // Define movement directions (4-directional: up, right, down, left)\r\n        const directions = [\r\n            {x: 0, y: -1}, // Up\r\n            {x: 1, y: 0},  // Right\r\n            {x: 0, y: 1},  // Down\r\n            {x: -1, y: 0}  // Left\r\n            \r\n            // {x: 1, y: 1}, // Up\r\n            // {x: 1, y: -1},  // Right\r\n            // {x: -1, y: 1},  // Down\r\n            // {x: -1, y: -1}  // Left\r\n        ];\r\n        \r\n        // Main loop\r\n        while (openList.length > 0) {\r\n            // Sort by f value and take the lowest\r\n            openList.sort((a, b) => a.f - b.f);\r\n            const currentNode = openList.shift();\r\n            openSet.delete(currentNode.key());\r\n            \r\n            // Add current node to closed list\r\n            closedList.add(currentNode.key());\r\n            \r\n            // Check if we've reached the end\r\n            if (currentNode.equals(endNode)) {\r\n                // Reconstruct the path\r\n                return this.reconstructPath(currentNode);\r\n            }\r\n            \r\n            // Generate neighbors\r\n            for (const dir of directions) {\r\n                const neighborX = currentNode.x + dir.x;\r\n                const neighborY = currentNode.y + dir.y;\r\n                \r\n                // Check if neighbor is inside the map\r\n                if (neighborX < 0 || neighborX >= cols || neighborY < 0 || neighborY >= rows) {\r\n                    continue;\r\n                }\r\n                \r\n                const tileType = tileMap[neighborY][neighborX];\r\n                const neighbor = new this.nodeClass(neighborX, neighborY, tileType, currentNode);\r\n                const neighborKey = neighbor.key();\r\n                \r\n                // Skip if neighbor is in closed list\r\n                if (closedList.has(neighborKey)) {\r\n                    continue;\r\n                }\r\n                \r\n                // Calculate g score for this neighbor\r\n                // Path tiles will have a much lower cost than other tile types\r\n                let movementCost = this.calculateMovementCost(tileType);\r\n                const tentativeG = currentNode.g + movementCost;\r\n                \r\n                // Check if this is a better path to neighbor\r\n                if (!openSet.has(neighborKey) || tentativeG < neighbor.g) {\r\n                    // Update neighbor values\r\n                    neighbor.g = tentativeG;\r\n                    neighbor.h = this.calculateHeuristic(neighbor, endNode);\r\n                    neighbor.f = neighbor.g + neighbor.h;\r\n                    \r\n                    // Add neighbor to open list if not there already\r\n                    if (!openSet.has(neighborKey)) {\r\n                        openList.push(neighbor);\r\n                        openSet.add(neighborKey);\r\n                    }\r\n                }\r\n            }\r\n        }\r\n        \r\n        // No path found\r\n        return [];\r\n    }\r\n    \r\n    /**\r\n     * Calculate movement cost based on tile type\r\n     * Path tiles are heavily favored\r\n     * @param {number} tileTypeId - ID of the tile type\r\n     * @returns {number} - Movement cost\r\n     */\r\n    calculateMovementCost(tileTypeId) {\r\n        // Find path and end type IDs\r\n        const { terrainTypes } = this.tileMap;\r\n        const pathTypeId = terrainTypes.findIndex(t => t.type === \"path\");\r\n        const endTypeId = terrainTypes.findIndex(t => t.type === \"end\");\r\n        \r\n        // Heavily favor \"path\" and \"end\" type tiles\r\n        if (tileTypeId === pathTypeId || tileTypeId === endTypeId) {\r\n            return 1;\r\n        } else {\r\n            // Make non-path tiles much less desirable\r\n            return 100000;\r\n        }\r\n    }\r\n    \r\n    /**\r\n     * Calculate heuristic (Manhattan distance)\r\n     * @param {Node} nodeA \r\n     * @param {Node} nodeB \r\n     * @returns {number} - Heuristic value\r\n     */\r\n    calculateHeuristic(nodeA, nodeB) {\r\n        return Math.abs(nodeA.x - nodeB.x) + Math.abs(nodeA.y - nodeB.y);\r\n    }\r\n    \r\n    /**\r\n     * Reconstruct the path from the end node to the start\r\n     * @param {Node} endNode - The end node\r\n     * @returns {Array} - Array of positions {x, y} from start to end\r\n     */\r\n    reconstructPath(endNode) {\r\n        const path = [];\r\n        let currentNode = endNode;\r\n        \r\n        while (currentNode !== null) {\r\n            path.unshift({\r\n                x: currentNode.x,\r\n                y: currentNode.y,\r\n                tileType: currentNode.tileType\r\n            });\r\n            currentNode = currentNode.parent;\r\n        }\r\n        \r\n        return path;\r\n    }\r\n}"
       }
     },
     "entities": {
-      "tower": {
-        "title": "Tower",
-        "components": [
-          "Stats",
-          "ArrayTracker",
-          "Leveler",
-          "Buildable",
-          "PopulationBurden",
-          "Attacker",
-          "Animator"
-        ],
-        "renderers": [
-          "ModelRenderer",
-          "RangeIndicator",
-          "Renderer"
-        ]
-      },
       "ballisticProjectile": {
         "title": "Ballistic Projectile",
         "components": [
@@ -17364,13 +17347,6 @@ const DEFAULT_PROJECT_CONFIG = {
         "renderers": [
           "ModelRenderer",
           "Renderer"
-        ]
-      },
-      "explosion": {
-        "title": "Explosion",
-        "components": [],
-        "renderers": [
-          "Explosion"
         ]
       },
       "enemy": {
@@ -17403,6 +17379,13 @@ const DEFAULT_PROJECT_CONFIG = {
         "renderers": [
           "MapRenderer",
           "UiManager"
+        ]
+      },
+      "explosion": {
+        "title": "Explosion",
+        "components": [],
+        "renderers": [
+          "Explosion"
         ]
       },
       "GameLoader": {
@@ -17465,10 +17448,12 @@ const DEFAULT_PROJECT_CONFIG = {
           "Renderer"
         ]
       },
-      "staticObject": {
-        "title": "Static Object",
+      "projectile": {
+        "title": "Projectile",
         "components": [
+          "Stats",
           "ArrayTracker",
+          "Projectile",
           "Animator"
         ],
         "renderers": [
@@ -17476,12 +17461,10 @@ const DEFAULT_PROJECT_CONFIG = {
           "Renderer"
         ]
       },
-      "projectile": {
-        "title": "Projectile",
+      "staticObject": {
+        "title": "Static Object",
         "components": [
-          "Stats",
           "ArrayTracker",
-          "Projectile",
           "Animator"
         ],
         "renderers": [
@@ -17496,6 +17479,23 @@ const DEFAULT_PROJECT_CONFIG = {
           "ArrayTracker",
           "Attacker",
           "LifeSpan",
+          "Animator"
+        ],
+        "renderers": [
+          "ModelRenderer",
+          "RangeIndicator",
+          "Renderer"
+        ]
+      },
+      "tower": {
+        "title": "Tower",
+        "components": [
+          "Stats",
+          "ArrayTracker",
+          "Leveler",
+          "Buildable",
+          "PopulationBurden",
+          "Attacker",
           "Animator"
         ],
         "renderers": [
@@ -17547,11 +17547,11 @@ const DEFAULT_PROJECT_CONFIG = {
         "css": ":root {\r\n\t/* Solid hex colors */\r\n\t--primary-dark: #0f2418;\r\n\t/* Deep forest green */\r\n\t--primary-bg: #1a3526;\r\n\t/* Dark moss green */\r\n\t--secondary-bg: #224031;\r\n\t/* Muted pine green */\r\n\t--accent-color: #4a7c59;\r\n\t/* Fresh green (main accent) - matches grass */\r\n\t--bright-accent: #5a9e6f;\r\n\t/* Lighter, vibrant green */\r\n\t--highlight-color: #6abe54;\r\n\t/* Soft green highlight - matches necroOrb */\r\n\t--shadow-color: #3a443c;\r\n\t/* Darker green for shadows */\r\n\t--text-color: #f7f7f0;\r\n\t/* Off-white for readability - matches our palette */\r\n\t--gold-color: #e3d163;\r\n\t/* Warm gold - matches goldMine inner */\r\n\t--essence-color: #7047a3;\r\n\t/* Purple for essence - matches necromancer color */\r\n\t--health-color: #4a7c59;\r\n\t/* Forest green - matches grass */\r\n\t/* Opacity variables for use with solid colors */\r\n\t--semi-transparent: 0.6;\r\n\t--high-transparent: 0.8;\r\n\t--very-high-transparent: 0.95;\r\n\t--low-transparent: 0.3;\r\n\t--overlay-transparent: 0.75;\r\n\t--hover-transparent: 0.9;\r\n\t--full-transparent: 0.98;\r\n\t--near-full-transparent: 0.99;\r\n}\r\n\r\n* {\r\n\tmargin: 0;\r\n\tpadding: 0;\r\n\tbox-sizing: border-box;\r\n}\r\n\r\nbody {\r\n\tmargin: 0;\r\n\tpadding: 0;\r\n\tbackground-color: var(--primary-dark);\r\n\tbackground-image: radial-gradient(circle at center, var(--primary-bg) 0%, var(--primary-dark) 100%);\r\n\tcolor: var(--text-color);\r\n\tfont-family: 'Crimson Pro', serif;\r\n\toverflow: hidden;\r\n\tline-height: 1.6;\r\n}\r\n\r\n#gameContainer {\r\n    position: relative;\r\n    width: 100vw;\r\n    height: 100vh;\r\n}\r\n\r\ncanvas { \r\n    background-color: var(--secondary-bg);\r\n    transition: transform 0.3s ease;\r\n    width: 100vw;\r\n    height: 100vh;\r\n    position: absolute;\r\n    left: 0;\r\n    top: 0;\r\n    right: 0;\r\n    bottom: 0;\r\n    margin: 0;\r\n    z-index: 0;\r\n}\r\n\r\n/* ========== Tower Menu Container ========== */\r\n#towerMenu {\r\n    position: absolute;\r\n    bottom: 30px;\r\n    border-radius: 14px;\r\n    padding: .5em;\r\n    max-width: 90%;\r\n    width: 820px;\r\n    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);\r\n    border: 1px solid var(--accent-color);\r\n\tbackground-color: var(--primary-dark);\r\n    display: grid;\r\n    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));\r\n    gap: 5px;\r\n    z-index: 100;\r\n\tleft: 0;\r\n\tright: 0;\r\n\tmargin: 0 auto;\r\n\toverflow-x: auto;\r\n\toverflow-y: hidden;\r\n\tpadding: 10px;\r\n\tscrollbar-width: thin;\r\n\tscrollbar-color: var(--accent-color) transparent;\r\n}\r\n\r\n/* ========== Tower Options ========== */\r\n.tower-option {\r\n\tbackground-color: var(--secondary-bg);\r\n\tborder-radius: 8px;\r\n\tborder: 1px solid var(--accent-color);\r\n\tcolor: var(--text-color);\r\n\tcursor: pointer;\r\n\tpadding: .1em .5em;\r\n}\r\n.tower-option:hover {\r\n\tbackground-color: var(--primary-bg);\r\n\ttransition: background-color 0.3s ease;\r\n}\t\r\n\r\n#statsContainer {\r\n\twidth: 800px;\r\n\tmax-width: 90%;\r\n\tpadding: 12px;\r\n\tbackground: var(--primary-dark);\r\n\tborder-radius: 10px;\r\n\tborder: 1px solid var(--accent-color);\r\n\tborder-opacity: var(--low-transparent);\r\n\t/* Note: This won't work directly; see below */\r\n\tbackdrop-filter: blur(5px);\r\n\tposition: absolute;\r\n\tz-index: 1;\r\n\tmargin: 1em auto;\r\n\tleft: 0;\r\n\tright: 0;\r\n}\r\n\r\n#stats {\r\n\tdisplay: flex;\r\n\tjustify-content: space-around;\r\n\tgap: 20px;\r\n\tflex-wrap: wrap;\r\n}\r\n\r\n.stat {\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tgap: 8px;\r\n\tfont-size: 1.1rem;\r\n}\r\n\r\n.stat-icon {\r\n\twidth: 24px;\r\n\theight: 24px;\r\n\tborder-radius: 50%;\r\n\tbox-shadow: 0 0 8px #000;\r\n\tdisplay: flex;\r\n\tjustify-content: center;\r\n\talign-items: center;\r\n}\r\n\r\n#upgradeMenu {\r\n\tposition: absolute;\r\n\ttop: 50%;\r\n\tleft: 50%;\r\n\ttransform: translate(-50%, -50%);\r\n\tbackground: linear-gradient(to bottom, var(--secondary-bg), var(--primary-dark));\r\n\topacity: var(--very-high-transparent);\r\n\tcolor: var(--text-color);\r\n\tpadding: 25px;\r\n\tborder-radius: 12px;\r\n\tborder: 2px solid var(--accent-color);\r\n\tdisplay: none;\r\n\tz-index: 10;\r\n\twidth: 450px;\r\n\tbox-shadow: 0 0 40px var(--shadow-color);\r\n\tbackdrop-filter: blur(10px);\r\n}\r\n\r\n#upgradeMenu h2 {\r\n\ttext-align: center;\r\n\tcolor: var(--highlight-color);\r\n\tmargin-top: 0;\r\n\tborder-bottom: 1px solid var(--accent-color);\r\n\tpadding-bottom: 15px;\r\n\tfont-family: 'Cinzel', serif;\r\n\tletter-spacing: 1px;\r\n\tfont-weight: 700;\r\n}\r\n\r\n.upgrade-option {\r\n\tmargin: 18px 0;\r\n\tpadding: 18px;\r\n\tbackground: linear-gradient(to right, var(--secondary-bg), var(--primary-bg));\r\n\topacity: var(--high-transparent);\r\n\tcursor: pointer;\r\n\tborder-radius: 8px;\r\n\ttransition: all 0.3s;\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tborder: 1px solid var(--accent-color);\r\n\tborder-opacity: var(--low-transparent);\r\n\t/* Note: This won't work directly; see below */\r\n\tbox-shadow: 0 4px 8px #000;\r\n}\r\n\r\n.upgrade-option:hover {\r\n\tbackground: linear-gradient(to right, var(--accent-color), var(--bright-accent));\r\n\topacity: var(--hover-transparent);\r\n\ttransform: translateX(8px);\r\n\tbox-shadow: 0 6px 12px #000;\r\n}\r\n\r\n.upgrade-icon {\r\n\twidth: 48px;\r\n\theight: 48px;\r\n\tmargin-right: 18px;\r\n\tbackground: linear-gradient(135deg, var(--accent-color), var(--secondary-bg));\r\n\tborder-radius: 8px;\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tjustify-content: center;\r\n\tfont-size: 22px;\r\n\tbox-shadow: 0 3px 6px #000;\r\n}\r\n\r\n.upgrade-desc {\r\n\tflex-grow: 1;\r\n}\r\n\r\n.upgrade-title {\r\n\tfont-weight: bold;\r\n\tmargin-bottom: 6px;\r\n\tcolor: var(--highlight-color);\r\n\tfont-size: 1.2rem;\r\n\tfont-family: 'Cinzel', serif;\r\n}\r\n\r\n#overlay {\r\n\tposition: absolute;\r\n\ttop: 0;\r\n\tleft: 0;\r\n\twidth: 100%;\r\n\theight: 100%;\r\n\tbackground: #000;\r\n\topacity: var(--overlay-transparent);\r\n\tdisplay: none;\r\n\tz-index: 5;\r\n\tbackdrop-filter: blur(3px);\r\n}\r\n\r\n#waveInfo {\r\n\tposition: absolute;\r\n\ttop: 15px;\r\n\tleft: 50%;\r\n\ttransform: translateX(-50%);\r\n\tbackground: linear-gradient(to right, var(--secondary-bg), var(--primary-bg));\r\n\topacity: var(--high-transparent);\r\n\tpadding: 8px 20px;\r\n\tborder-radius: 20px;\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tgap: 15px;\r\n\tbox-shadow: 0 4px 12px #000;\r\n\tborder: 1px solid var(--accent-color);\r\n\tborder-opacity: var(--low-transparent);\r\n\t/* Note: This won't work directly; see below */\r\n\tbackdrop-filter: blur(5px);\r\n}\r\n\r\n#waveDisplay {\r\n\tfont-weight: bold;\r\n\tcolor: var(--highlight-color);\r\n}\r\n\r\n.progress-bar {\r\n\twidth: 220px;\r\n\theight: 12px;\r\n\tbackground: var(--primary-dark);\r\n\tborder-radius: 6px;\r\n\toverflow: hidden;\r\n\tbox-shadow: inset 0 1px 3px #000;\r\n\tborder: 1px solid var(--accent-color);\r\n\tborder-opacity: var(--low-transparent);\r\n\t/* Note: This won't work directly; see below */\r\n}\r\n\r\n.progress-fill {\r\n\theight: 100%;\r\n\tbackground: linear-gradient(to right, var(--accent-color), var(--highlight-color));\r\n\twidth: 0%;\r\n\tbox-shadow: 0 0 8px var(--shadow-color);\r\n\ttransition: width 0.3s ease;\r\n}\r\n\r\n#startGameBtn {\r\n\tpadding: 12px 35px;\r\n\tbackground: linear-gradient(to bottom, var(--bright-accent), var(--accent-color));\r\n\tcolor: white;\r\n\tborder: none;\r\n\tborder-radius: 30px;\r\n\tcursor: pointer;\r\n\tfont-family: 'Cinzel', serif;\r\n\tfont-weight: 500;\r\n\tfont-size: 1.2rem;\r\n\ttransition: all 0.3s;\r\n\tbox-shadow: 0 6px 12px #000;\r\n\ttext-shadow: 0 1px 2px #000;\r\n\tposition: absolute;\r\n\ttop: 50%;\r\n\tleft: 50%;\r\n\ttransform: translate(-50%, -50%);\r\n\tz-index: 20;\r\n}\r\n\r\n#startGameBtn:hover {\r\n\tbackground: linear-gradient(to bottom, var(--highlight-color), var(--bright-accent));\r\n\ttransform: translate(-50%, -50%) scale(1.05);\r\n\tbox-shadow: 0 8px 16px #000;\r\n}\r\n\r\n#startGameBtn:active {\r\n\ttransform: translate(-50%, -50%) scale(1);\r\n\tbox-shadow: 0 4px 8px #000;\r\n}\r\n\r\n#tooltip {\r\n\tposition: absolute;\r\n\tbackground: linear-gradient(to bottom, var(--primary-dark), var(--primary-dark));\r\n\topacity: var(--very-high-transparent);\r\n\tcolor: var(--text-color);\r\n\tpadding: 12px 15px;\r\n\tborder-radius: 8px;\r\n\tdisplay: none;\r\n\tz-index: 100;\r\n\tborder: 1px solid var(--accent-color);\r\n\tpointer-events: none;\r\n\tmax-width: 280px;\r\n\tbox-shadow: 0 0 20px var(--shadow-color);\r\n\tfont-size: 0.95rem;\r\n\tbackdrop-filter: blur(5px);\r\n}\r\n\r\n#gameOverMenu,\r\n#victoryMenu {\r\n\tposition: absolute;\r\n\ttop: 50%;\r\n\tleft: 50%;\r\n\ttransform: translate(-50%, -50%);\r\n\tbackground: linear-gradient(to bottom, var(--secondary-bg), var(--primary-dark));\r\n\topacity: var(--full-transparent);\r\n\tcolor: white;\r\n\tpadding: 40px;\r\n\ttext-align: center;\r\n\tborder-radius: 15px;\r\n\tborder: 3px solid var(--accent-color);\r\n\tz-index: 20;\r\n\tdisplay: none;\r\n\tbox-shadow: 0 0 60px var(--shadow-color);\r\n\tbackdrop-filter: blur(10px);\r\n\tmin-width: 350px;\r\n}\r\n\r\n#gameOverMenu h2,\r\n#victoryMenu h2 {\r\n\tcolor: var(--highlight-color);\r\n\tfont-size: 32px;\r\n\tmargin-bottom: 20px;\r\n\tfont-family: 'Cinzel', serif;\r\n\ttext-shadow: 0 2px 4px #000;\r\n}\r\n\r\n#gameOverMenu p,\r\n#victoryMenu p {\r\n\tfont-size: 18px;\r\n\tmargin-bottom: 25px;\r\n\tline-height: 1.6;\r\n}\r\n\r\n.menu-button {\r\n\tmargin-top: 25px;\r\n\tpadding: 12px 25px;\r\n\tbackground: linear-gradient(to bottom, var(--bright-accent), var(--accent-color));\r\n\tborder: none;\r\n\tcolor: white;\r\n\tcursor: pointer;\r\n\tborder-radius: 8px;\r\n\ttransition: all 0.3s;\r\n\tfont-family: 'Cinzel', serif;\r\n\tfont-size: 16px;\r\n\tletter-spacing: 1px;\r\n\tbox-shadow: 0 4px 8px #000;\r\n\ttext-shadow: 0 1px 2px #000;\r\n}\r\n\r\n.menu-button:hover {\r\n\tbackground: linear-gradient(to bottom, var(--highlight-color), var(--bright-accent));\r\n\ttransform: scale(1.05) translateY(-3px);\r\n\tbox-shadow: 0 6px 15px #000;\r\n}\r\n\r\n.menu-button:active {\r\n\ttransform: scale(1) translateY(0);\r\n\tbox-shadow: 0 3px 6px #000;\r\n}\r\n\r\n/* Stat icons with custom styling */\r\n#shardsDisplay {\r\n\tcolor: var(--gold-color);\r\n\tfont-weight: 600;\r\n}\r\n\r\n#essenceDisplay,\r\n#essenceNeededDisplay {\r\n\tcolor: var(--essence-color);\r\n\tfont-weight: 600;\r\n}\r\n\r\n#populationDisplay,\r\n#maxPopulationDisplay {\r\n\tcolor: var(--essence-color);\r\n\tfont-weight: 600;\r\n}\r\n\r\n#hpDisplay {\r\n\tcolor: var(--health-color);\r\n\tfont-weight: 600;\r\n}\r\n\r\n#waveDisplay {\r\n\tdisplay: inline-block;\r\n}\r\n\r\n\r\n/* Mobile-first adjustments (applies below 768px) */\r\n@media screen and (max-width: 768px) {\r\n    /* Base layout adjustments */\r\n    #gameContainer {\r\n        overflow: hidden;\r\n    }\r\n    #towerMenu {\r\n        position: fixed;\r\n\t\tbottom: 0;\r\n        left: 0;\r\n        right: 0;\r\n        width: 95vw;\r\n\t\tmax-height: 20vh;\r\n\t\toverflow-y:auto;\r\n        max-width: unset;\r\n        margin: 0 auto;\r\n        grid-template-columns: repeat(2, 1fr);\r\n    }\r\n\r\n    .tower-option {\r\n        min-width: unset;\r\n        font-size: 0.95rem;\r\n    }\r\n\r\n    /* Add a close button for mobile */\r\n    #menuCloseButton {\r\n        display: block;\r\n        position: absolute;\r\n        top: 8px;\r\n        right: 8px;\r\n        background: var(--accent-color);\r\n        border: none;\r\n        color: var(--text-color);\r\n        width: 32px;\r\n        height: 32px;\r\n        border-radius: 50%;\r\n        cursor: pointer;\r\n        z-index: 100;\r\n    }\r\n\r\n    /* Adjust stats container position */\r\n    #statsContainer {\r\n        top: 10px;\r\n        width: 95%;\r\n        padding: 8px;\r\n    }\r\n    #stats {\r\n        gap: 8px;\r\n    }\r\n\r\n    .stat {\r\n        font-size: 0.9rem;\r\n        gap: 4px;\r\n    }\r\n\r\n    /* Upgrade menu adjustments */\r\n    #upgradeMenu {\r\n        width: 90%;\r\n        padding: 15px;\r\n    }\r\n\r\n    .upgrade-option {\r\n        margin: 12px 0;\r\n        padding: 12px;\r\n        flex-direction: column;\r\n        align-items: flex-start;\r\n    }\r\n\r\n    .upgrade-icon {\r\n        width: 36px;\r\n        height: 36px;\r\n        margin-right: 12px;\r\n        font-size: 18px;\r\n    }\r\n\r\n    .upgrade-title {\r\n        font-size: 1rem;\r\n    }\r\n\r\n    /* Wave info adjustments */\r\n    #waveInfo {\r\n        top: 80px;\r\n        width: 90%;\r\n        padding: 6px 15px;\r\n    }\r\n\r\n    .progress-bar {\r\n        width: 150px;\r\n    }\r\n\r\n    /* Game over/victory menus */\r\n    #gameOverMenu, #victoryMenu {\r\n        width: 90%;\r\n        padding: 20px;\r\n    }\r\n\r\n    #gameOverMenu h2, #victoryMenu h2 {\r\n        font-size: 1.5rem;\r\n    }\r\n\r\n    /* Tooltip adjustments */\r\n    #tooltip {\r\n        max-width: 200px;\r\n        font-size: 0.85rem;\r\n        padding: 8px 10px;\r\n    }\r\n\r\n    /* Button sizes */\r\n    #startGameBtn {\r\n        padding: 10px 25px;\r\n        font-size: 1rem;\r\n    }\r\n\r\n    .menu-button {\r\n        padding: 10px 20px;\r\n        font-size: 0.9rem;\r\n    }\r\n}\r\n\r\n/* Additional adjustments for very small screens */\r\n@media screen and (max-width: 480px) {\r\n\r\n\r\n    #stats {\r\n        justify-content: center;\r\n    }\r\n\r\n    .stat {\r\n        font-size: 0.8rem;\r\n    }\r\n\r\n    .progress-bar {\r\n        width: 120px;\r\n        height: 10px;\r\n    }\r\n\r\n    #waveDisplay {\r\n        font-size: 0.9rem;\r\n    }\r\n\r\n    .upgrade-option {\r\n        padding: 10px;\r\n        margin: 8px 0;\r\n    }\r\n\r\n    .upgrade-title {\r\n        font-size: 0.9rem;\r\n    }\r\n}\r\n\r\n/* Orientation-specific adjustments */\r\n@media screen and (max-height: 500px) and (orientation: landscape) {\r\n\r\n    #statsContainer {\r\n        top: 5px;\r\n        padding: 5px;\r\n    }\r\n\r\n  \r\n}\r\n@media screen and (max-width: 480px) {\r\n\r\n\r\n    #menuCloseButton {\r\n        top: 4px;\r\n        right: 4px;\r\n        width: 28px;\r\n        height: 28px;\r\n    }\r\n}",
         "html": "<div id=\"gameContainer\">\r\n    <div id=\"waveInfo\">\r\n        <span>Wave: <span id=\"waveDisplay\">1</span></span>             \r\n        <div class=\"progress-bar\">\r\n            <div class=\"progress-fill\" id=\"waveProgress\"></div>\r\n        </div>\r\n    </div>\r\n    <div id=\"statsContainer\">\r\n        <div id=\"stats\">\r\n            <div class=\"stat\">\r\n                <div class=\"stat-icon\" style=\"background-color: var(--gold-color);\"></div>\r\n                <span>Gold: <span id=\"shardsDisplay\">50</span></span>                 \r\n            </div>\r\n            <div class=\"stat\">\r\n                <div class=\"stat-icon\" style=\"background-color: var(--essence-color);\"></div>\r\n                <span>Essence: <span id=\"essenceDisplay\">0</span>/<span id=\"essenceNeededDisplay\">100</span></span>                 \r\n            </div>\r\n            <div class=\"stat\">\r\n                <div class=\"stat-icon\" style=\"background-color: var(--essence-color);\"></div>\r\n                <span>Population: <span id=\"populationDisplay\">0</span>/<span id=\"maxPopulationDisplay\">5</span></span>                 \r\n            </div>\r\n            <div class=\"stat\">\r\n                <div class=\"stat-icon\" style=\"background-color: var(--health-color);\"></div>\r\n                <span>Core: <span id=\"hpDisplay\">100</span></span>                 \r\n            </div>\r\n        </div>\r\n    </div>\r\n    <canvas id=\"gameCanvas\" width=\"1536\" height=\"768\"></canvas>\r\n    <div id=\"towerMenu\">\r\n        <div class=\"tower-option\" data-type=\"sentry\">Photon Sentry (25)</div>\r\n        <div class=\"tower-option\" data-type=\"fusionCore\">Fusion Core (50)</div>\r\n        <div class=\"tower-option\" data-type=\"barracks\">Barracks (100)</div>\r\n        <div class=\"tower-option\" data-type=\"fabricator\">Fabricator (200)</div>\r\n        <div class=\"tower-option\" data-type=\"teslaCoil\">Tesla Coil (70)</div>\r\n        <div class=\"tower-option\" data-type=\"missileLauncher\">Missile Launcher (90)</div>\r\n        <div class=\"tower-option\" data-type=\"chrono\">Chrono Defibrilator (100)</div>\r\n        <div class=\"tower-option\" data-type=\"guardTower\">Guard Tower (70)</div>\r\n    </div>\r\n    <button id=\"startGameBtn\">Start Game</button>    \r\n</div>\r\n<div id=\"overlay\"></div>\r\n<div id=\"upgradeMenu\">\r\n    <h2>Level Up! Choose an Upgrade:</h2>\r\n    <div id=\"upgradeOptions\"></div>\r\n</div>\r\n<div id=\"tooltip\" style=\"display: none;\"></div>\r\n<div id=\"gameOverMenu\">\r\n    <h2>Home Destroyed!</h2>\r\n    <p>You survived <span id=\"gameOverWave\">0</span> waves</p>\r\n    <button class=\"menu-button\">Try Again</button>     \r\n</div>\r\n<div id=\"victoryMenu\">\r\n    <h2>Victory!</h2>\r\n    <p>You've successfully defended your Home through all waves!</p>\r\n    <button class=\"menu-button\">Play Again</button>     \r\n</div>"
       },
-      "TextureEditor": {
-        "title": "Texture Editor",
-        "fileName": "TextureEditor",
-        "css": "#texture-editor-wrapper {\n    display: flex;\n    gap: 20px;\n    padding: 10px;\n    border-radius: 5px;\n}\n\n.texture-editor-tools {\n    width: 200px;\n    flex-shrink: 0;\n}\n\n.texture-editor-canvas-container {\n    flex-grow: 1;\n    position: relative;\n    display: flex;\n    justify-content: center;\n    align-items: center;\n    border-radius: 5px;\n}\n\n#texture-canvas {\n    background-color: transparent;\n    box-shadow: 0 0 10px rgba(0,0,0,0.1);\n    image-rendering: pixelated;\n    border: 1px solid #000;\n}\n\n#noTextureMessage {\n    position: absolute;\n    color: #666;\n}\n\n.tool-section {\n    margin-bottom: 15px;\n    padding-bottom: 15px;\n}\n\n.tool-section h3 {\n    margin-top: 0;\n    margin-bottom: 10px;\n    font-size: 14px;\n}\n\n.tool-btn {\n    margin-right: 5px;\n    margin-bottom: 5px;\n    padding: 5px 10px;\n    cursor: pointer;\n}\n\n.tool-btn.active {\n    background-color: #007bff;\n    color: white;\n}\n\n.color-palette {\n    display: flex;\n    flex-wrap: wrap;\n    gap: 5px;\n    margin-bottom: 10px;\n}\n\n.color-btn {\n    width: 25px;\n    height: 25px;\n    border: 1px solid #ccc;\n    border-radius: 3px;\n    cursor: pointer;\n}\n\n.color-btn.active {\n    border: 2px solid #000;\n}\n\n.custom-color {\n    display: flex;\n    align-items: center;\n    gap: 10px;\n}\n\n#custom-color-picker {\n    width: 30px;\n    height: 30px;\n    padding: 0;\n    border: none;\n    cursor: pointer;\n}",
-        "html": "<div id=\"texture-editor-container\" class=\"texture-editor-wrapper\"> \n    <div class=\"texture-editor-tools\">\n        <div class=\"tool-section\">\n            <h3>Tools</h3>\n            <button id=\"brush-tool\" class=\"tool-btn active\">Brush</button>\n            <button id=\"eraser-tool\" class=\"tool-btn\">Eraser</button>\n            <button id=\"fill-tool\" class=\"tool-btn\">Fill</button>\n            <button id=\"eyedropper-tool\" class=\"tool-btn\">Eyedropper</button>\n        </div>\n        \n        <div class=\"tool-section\">\n            <h3>Brush Size</h3>\n            <input type=\"range\" id=\"brush-size\" min=\"1\" max=\"10\" value=\"1\">\n            <span id=\"brush-size-display\">1px</span>\n        </div>\n        \n        <div class=\"tool-section\">\n            <h3>Colors</h3>\n            <div id=\"color-palette\" class=\"color-palette\"></div>\n            <div class=\"custom-color\">\n                <input type=\"color\" id=\"custom-color-picker\" value=\"#000000\">\n                <label for=\"custom-color-picker\">Custom Color</label>\n            </div>\n            <div class=\"transparency-controls\">\n                <label for=\"transparency-slider\">Opacity: </label>\n                <input type=\"range\" id=\"transparency-slider\" min=\"0\" max=\"255\">\n                <span id=\"transparency-display\">100%</span>\n            </div>\n        </div>\n        \n        <div class=\"tool-section\">\n            <h3>Actions</h3>\n            <button id=\"new-btn\">New</button>\n            <button id=\"undo-btn\" disabled>Undo</button>\n            <button id=\"redo-btn\" disabled>Redo</button>\n            <button id=\"clear-btn\">Clear</button>\n            <button class=\"export-btn\">Save</button>\n        </div>\n        \n        <div class=\"tool-section\">\n            <h3>Import</h3>\n            <input type=\"file\" accept=\"image/*\">\n        </div>\n    </div>\n    \n    <div class=\"texture-editor-canvas-container\">\n        <canvas id=\"texture-canvas\"></canvas>\n        <div id=\"noTextureMessage\">No texture loaded</div>\n    </div>\n</div>\n"
+      "scriptEditor": {
+        "title": "Script Editor",
+        "fileName": "scriptEditor",
+        "css": "\r\n#script-editor-container .grid-background {\r\n    width: calc(100% - 450px);\r\n}\r\n/* Override global scrollbar suppression for CodeMirror */\r\n#script-editor-container .CodeMirror {\r\n    overflow-y: auto !important; /* Enable vertical scrolling */\r\n    -ms-overflow-style: auto !important; /* IE and Edge */\r\n    scrollbar-width: auto !important; /* Firefox */\r\n}\r\n\r\n/* Container and layout */\r\n#script-editor-container {\r\n    position: relative;\r\n    height: auto; /* Allow dynamic resizing */\r\n}\r\n\r\n#script-editor-container .grid-background {\r\n    width: calc(100% - 360px); /* Adjust for sidebar width */\r\n    flex: 1;\r\n    position: relative;\r\n    overflow: hidden; /* Contain children */\r\n}\r\n\r\n#script-editor-container .grid-background > div {\r\n    position: relative;\r\n    height: 100%;\r\n}\r\n#script-editor-sidebar {\r\n    width: 360px;\r\n    padding: 10px;\r\n}",
+        "html": "            <div id=\"script-editor-container\" class=\"main-content-container\">\r\n                <div id=\"script-editor-sidebar\" class=\"content-sidebar\">                    \r\n                    <h3>Script Editor</h3>\r\n                    <button id=\"save-script-btn\">Save Script</button>\r\n                </div>\r\n                <div class=\"grid-background\">\r\n                    <div>\r\n                        <textarea id=\"script-editor\" class=\"script-editor\" placeholder=\"Enter your script here...\"></textarea>                    \r\n                        <div class=\"handle\"></div>\r\n                    </div>\r\n                </div>\r\n            </div>\r\n"
       },
       "terrainEditor": {
         "title": "Terrain Editor",
@@ -17563,11 +17563,11 @@ const DEFAULT_PROJECT_CONFIG = {
         "css": "#level-editor-container :root {\r\n\t--primary: #6366f1;\r\n\t--primary-dark: #4f46e5;\r\n\t--secondary: #10b981;\r\n\t--dark: #1e293b;\r\n\t--darker: #0f172a;\r\n\t--light: #e2e8f0;\r\n\t--accent: #8b5cf6;\r\n\t--danger: #ef4444;\r\n\t--text: #f8fafc;\r\n\t--text-muted: #94a3b8;\r\n\t--border-radius: 8px;\r\n\t--shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);\r\n  }\r\n\r\n  #level-editor-container * {\r\n\tmargin: 0;\r\n\tpadding: 0;\r\n\tbox-sizing: border-box;\r\n\tfont-family: 'Inter', system-ui, -apple-system, sans-serif;\r\n  }\r\n\r\n  #level-editor-container {\r\n\tbackground-color: var(--darker);\r\n\tcolor: var(--text);\r\n  }\r\n\r\n  #level-editor-container button {\r\n\tcursor: pointer;\r\n\tborder: none;\r\n\tborder-radius: var(--border-radius);\r\n\tpadding: 8px 12px;\r\n\tfont-weight: 500;\r\n\ttransition: all 0.2s ease;\r\n  }\r\n\r\n  #level-editor-container button:hover {\r\n\topacity: 0.9;\r\n\ttransform: translateY(-1px);\r\n  }\r\n\r\n  #level-editor-container button:active {\r\n\ttransform: translateY(0);\r\n  }\r\n\r\n  #level-editor-container input {\r\n\tbackground-color: var(--dark);\r\n\tborder: 1px solid #334155;\r\n\tcolor: var(--text);\r\n\tborder-radius: var(--border-radius);\r\n\tpadding: 8px 12px;\r\n\toutline: none;\r\n  }\r\n\r\n  #level-editor-container input:focus {\r\n\tborder-color: var(--primary);\r\n\tbox-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);\r\n  }\r\n\r\n  #level-editor-container input[type=\"number\"] {\r\n\twidth: 80px;\r\n  }\r\n\r\n  #level-editor-container input[type=\"color\"] {\r\n\twidth: 40px;\r\n\theight: 40px;\r\n\tpadding: 2px;\r\n\tcursor: pointer;\r\n  }\r\n\r\n  #level-editor-container {\r\n\tdisplay: flex;\r\n\tgap: 24px;\r\n\theight: 90vh;\r\n\toverflow: hidden;\r\n\tbackground-color: var(--darker);\r\n\tcolor: var(--text);\r\n\tposition: relative;\r\n  }\r\n\r\n  #level-editor-container .content-sidebar {\r\n\tdisplay: flex;\r\n\tflex-direction: column;\r\n\twidth: 320px;\r\n\tbackground-color: var(--dark);\r\n\tborder-radius: var(--border-radius);\r\n\tbox-shadow: var(--shadow);\r\n\toverflow: hidden;\r\n  }\r\n\r\n  #level-editor-container .toolbar {\r\n\tdisplay: flex;\r\n\tpadding: 16px;\r\n\tbackground-color: rgba(255, 255, 255, 0.03);\r\n\tborder-bottom: 1px solid rgba(255, 255, 255, 0.1);\r\n  }\r\n\r\n  #level-editor-container .toolbar button {\r\n\tbackground-color: transparent;\r\n\tcolor: var(--text-muted);\r\n\tfont-weight: 600;\r\n\tpadding: 8px 16px;\r\n\tborder-radius: var(--border-radius);\r\n  }\r\n\r\n  #level-editor-container .toolbar button.active {\r\n\tbackground-color: var(--primary);\r\n\tcolor: white;\r\n  }\r\n\r\n  #level-editor-container .tools {\r\n\tpadding: 20px;\r\n\tflex-grow: 1;\r\n\toverflow-y: auto;\r\n  }\r\n\r\n  #level-editor-container .form-row {\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tjustify-content: space-between;\r\n\tmargin-bottom: 16px;\r\n  }\r\n\r\n  #level-editor-container .form-row label {\r\n\tcolor: var(--text-muted);\r\n\tfont-size: 14px;\r\n\tflex: 1;\r\n  }\r\n\r\n  #level-editor-container h3 {\r\n\tcolor: var(--light);\r\n\tfont-size: 18px;\r\n\tmargin-bottom: 24px;\r\n\tfont-weight: 600;\r\n\tborder-bottom: 1px solid rgba(255, 255, 255, 0.1);\r\n\tpadding-bottom: 12px;\r\n  }\r\n\r\n  #level-editor-container h4 {\r\n\tcolor: var(--text-muted);\r\n\tfont-size: 16px;\r\n\tmargin: 24px 0 16px;\r\n\tfont-weight: 600;\r\n  }\r\n\r\n  #level-editor-container .grid-container {\r\n\tflex-grow: 1;\r\n\tposition: relative;\r\n\tbackground-color: var(--dark);\r\n\tborder-radius: var(--border-radius);\r\n\toverflow: hidden;\r\n\tbox-shadow: var(--shadow);\r\n  }\r\n\r\n  #level-editor-container .grid-background {\r\n\tbackground-image: \r\n\t  linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),\r\n\t  linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);\r\n\tbackground-size: 20px 20px;\r\n  }\r\n\r\n  #level-editor-container #grid {\r\n\tdisplay: block;\r\n\timage-rendering: pixelated;\r\n  }\r\n\r\n  #level-editor-container .translation-controls {\r\n\tposition: absolute;\r\n\tright: 20px;\r\n\tbottom: 20px;\r\n\tdisplay: grid;\r\n\tgrid-template-columns: repeat(3, 40px);\r\n\tgrid-template-rows: repeat(3, 40px);\r\n\tgap: 4px;\r\n\tz-index: 10;\r\n  }\r\n\r\n  #level-editor-container .translation-controls button {\r\n\twidth: 40px;\r\n\theight: 40px;\r\n\tbackground-color: rgba(15, 23, 42, 0.8);\r\n\tcolor: var(--light);\r\n\tborder: 1px solid rgba(255, 255, 255, 0.1);\r\n\tfont-size: 18px;\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tjustify-content: center;\r\n  }\r\n\r\n  #level-editor-container #translate-up {\r\n\tgrid-column: 2;\r\n\tgrid-row: 1;\r\n  }\r\n\r\n  #level-editor-container #translate-left {\r\n\tgrid-column: 1;\r\n\tgrid-row: 2;\r\n  }\r\n\r\n  #level-editor-container #translate-right {\r\n\tgrid-column: 3;\r\n\tgrid-row: 2;\r\n  }\r\n\r\n  #level-editor-container #translate-down {\r\n\tgrid-column: 2;\r\n\tgrid-row: 3;\r\n  }\r\n\r\n  /* Terrain item styling */\r\n  #level-editor-container .terrain-types-container {\r\n\tdisplay: flex;\r\n\tflex-direction: column;\r\n\tgap: 12px;\r\n\tmargin-top: 16px;\r\n  }\r\n\r\n  #level-editor-container .terrain-item {\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tgap: 12px;\r\n\tpadding: 12px;\r\n\tborder-radius: var(--border-radius);\r\n\tbackground-color: rgba(255, 255, 255, 0.03);\r\n\tborder: 1px solid rgba(255, 255, 255, 0.1);\r\n\tcursor: move;\r\n\tuser-select: none;\r\n\ttransition: all 0.2s ease;\r\n  }\r\n\r\n  #level-editor-container .terrain-item:hover {\r\n\tbackground-color: rgba(255, 255, 255, 0.05);\r\n\ttransform: translateY(-2px);\r\n  }\r\n\r\n  #level-editor-container .color-option {\r\n\twidth: 36px;\r\n\theight: 36px;\r\n\tborder-radius: var(--border-radius);\r\n\tcursor: pointer;\r\n\tborder: 2px solid transparent;\r\n\tflex-shrink: 0;\r\n  }\r\n\r\n  #level-editor-container .color-option.active {\r\n\tborder-color: var(--primary);\r\n\tbox-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);\r\n  }\r\n\r\n  #level-editor-container  .terrain-label {\r\n\tflex-grow: 1;\r\n\tfont-weight: 500;\r\n  }\r\n\r\n  #level-editor-container .terrain-buttons {\r\n\tdisplay: flex;\r\n\tgap: 8px;\r\n  }\r\n\r\n  #level-editor-container .terrain-buttons button {\r\n\twidth: 30px;\r\n\theight: 30px;\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tjustify-content: center;\r\n\tpadding: 0;\r\n\tbackground-color: transparent;\r\n\tcolor: var(--text-muted);\r\n\tborder: 1px solid rgba(255, 255, 255, 0.1);\r\n  }\r\n\r\n  #level-editor-container  .terrain-buttons button:hover {\r\n\tbackground-color: rgba(255, 255, 255, 0.05);\r\n\tcolor: var(--text);\r\n  }\r\n\r\n  #level-editor-container .status-bar {\r\n\tposition: absolute;\r\n\tbottom: 0;\r\n\tleft: 0;\r\n\tright: 0;\r\n\theight: 28px;\r\n\tbackground-color: rgba(15, 23, 42, 0.9);\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tpadding: 0 16px;\r\n\tfont-size: 13px;\r\n\tcolor: var(--text-muted);\r\n\tborder-top: 1px solid rgba(255, 255, 255, 0.1);\r\n  }\r\n\r\n  /* Add a terrainsPanel container */\r\n  #level-editor-container  #terrainsPanel {\r\n\tmargin-top: 24px;\r\n\tborder-top: 1px solid rgba(255, 255, 255, 0.1);\r\n\tpadding-top: 16px;\r\n  }\r\n\r\n\r\n\r\n  /* Environment Panel Styles */\r\n  #level-editor-container #environmentPanel {\r\n\toverflow-y: auto;\r\n\tmax-height: calc(100vh - 200px);\r\n  }\r\n  \r\n  #level-editor-container .environment-objects-container {\r\n\tdisplay: flex;\r\n\tflex-direction: column;\r\n\tgap: 10px;\r\n  }\r\n  \r\n  #level-editor-container .environment-objects-container h3 {\r\n\tmargin-top: 0;\r\n\tmargin-bottom: 12px;\r\n\tcolor: #e5e7eb;\r\n\tfont-size: 16px;\r\n\tborder-bottom: 1px solid #374151;\r\n\tpadding-bottom: 8px;\r\n  }\r\n  \r\n  #level-editor-container .environment-type {\r\n\tbackground-color: #1f2937;\r\n\tborder-radius: 6px;\r\n\toverflow: hidden;\r\n\tmargin-bottom: 8px;\r\n\tbox-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);\r\n\ttransition: box-shadow 0.2s ease;\r\n  }\r\n  \r\n  #level-editor-container .environment-type:hover {\r\n\tbox-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);\r\n  }\r\n  \r\n  #level-editor-container .environment-type-header {\r\n\tpadding: 10px 12px;\r\n\tfont-weight: 500;\r\n\tcursor: pointer;\r\n\tdisplay: flex;\r\n\tjustify-content: space-between;\r\n\talign-items: center;\r\n\tbackground-color: #2d3748;\r\n\tcolor: #e5e7eb;\r\n\tposition: relative;\r\n\ttext-transform: capitalize;\r\n  }\r\n  \r\n  #level-editor-container .environment-type-header::after {\r\n\tcontent: '▼';\r\n\tfont-size: 10px;\r\n\ttransition: transform 0.2s ease;\r\n  }\r\n  \r\n  #level-editor-container .environment-type-header.open::after {\r\n\ttransform: rotate(180deg);\r\n  }\r\n  \r\n  #level-editor-container .environment-items {\r\n\tpadding: 10px;\r\n\tdisplay: flex;\r\n\tflex-wrap: wrap;\r\n\tgap: 3px;\r\n\tbackground-color: #1f2937;\r\n  }\r\n  \r\n  #level-editor-container .environment-item {\r\n\twidth: 128px;\r\n\theight: 128px;\r\n\tborder: 2px solid #4b5563;\r\n\tborder-radius: 4px;\r\n\tcursor: pointer;\r\n\tpadding: 2px;\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tjustify-content: center;\r\n\tbackground-color: #374151;\r\n\ttransition: all 0.2s ease;\r\n\tposition: relative;\r\n  }\r\n  \r\n  #level-editor-container .environment-item:hover {\r\n\tborder-color: #9ca3af;\r\n\ttransform: translateY(-2px);\r\n  }\r\n  \r\n  #level-editor-container .environment-item.active {\r\n\tborder-color: #3b82f6;\r\n\tbox-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);\r\n  }\r\n  \r\n  #level-editor-container .environment-item canvas {\r\n\tmax-width: 100%;\r\n\tmax-height: 100%;\r\n\tobject-fit: contain;\r\n  }\r\n  \r\n  /* Tooltip for environment items */\r\n  #level-editor-container .environment-item::before {\r\n\tcontent: attr(data-name);\r\n\tposition: absolute;\r\n\tbottom: calc(100% + 5px);\r\n\tleft: 50%;\r\n\ttransform: translateX(-50%);\r\n\tbackground-color: #111827;\r\n\tcolor: white;\r\n\ttext-align: center;\r\n\tborder-radius: 4px;\r\n\tpadding: 4px 8px;\r\n\tfont-size: 12px;\r\n\twhite-space: nowrap;\r\n\tvisibility: hidden;\r\n\topacity: 0;\r\n\ttransition: all 0.2s ease;\r\n\tz-index: 10;\r\n\tpointer-events: none;\r\n\tbox-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);\r\n  }\r\n  \r\n  #level-editor-container .environment-item:hover::before {\r\n\tvisibility: visible;\r\n\topacity: 1;\r\n  }\r\n  \r\n  /* Indicator for placement mode */\r\n  #level-editor-container .placement-mode-indicator {\r\n\tposition: absolute;\r\n\ttop: 10px;\r\n\tleft: 50%;\r\n\ttransform: translateX(-50%);\r\n\tbackground-color: rgba(17, 24, 39, 0.8);\r\n\tcolor: white;\r\n\tpadding: 5px 10px;\r\n\tborder-radius: 4px;\r\n\tfont-size: 14px;\r\n\tpointer-events: none;\r\n\ttransition: opacity 0.3s ease;\r\n\tbox-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);\r\n\tz-index: 100;\r\n  }\r\n  \r\n  /* Improved toolbar buttons */\r\n  #level-editor-container .toolbar .btn {\r\n\tpadding: 8px 16px;\r\n\tborder: none;\r\n\tbackground-color: #374151;\r\n\tcolor: #e5e7eb;\r\n\tcursor: pointer;\r\n\tborder-radius: 4px;\r\n\tfont-weight: 500;\r\n\ttransition: all 0.2s ease;\r\n  }\r\n  \r\n  #level-editor-container .toolbar .btn:hover {\r\n\tbackground-color: #4b5563;\r\n  }\r\n  \r\n  #level-editor-container .toolbar .btn.active {\r\n\tbackground-color: #3b82f6;\r\n\tcolor: white;\r\n  }\r\n  \r\n  /* Better spacing for the tools panels */\r\n  #level-editor-container .tools > div {\r\n\tmargin-bottom: 20px;\r\n  }\r\n  \r\n  /* Environment object count badge */\r\n  #level-editor-container .environment-type-header .object-count-container {\r\n\tflex: 1;\r\n\tmargin-left: 8px;\r\n  }\r\n  #level-editor-container .environment-type-header .object-count {\r\n\tbackground-color: #4b5563;\r\n\tcolor: white;\r\n\tpadding: 2px 6px;\r\n\tborder-radius: 10px;\r\n\tfont-size: 12px;\r\n  }\r\n  \r\n  /* Empty state for environment types */\r\n  #level-editor-container .environment-items.empty {\r\n\tpadding: 20px;\r\n\ttext-align: center;\r\n\tcolor: #9ca3af;\r\n\tfont-style: italic;\r\n  }\r\n  \r\n  /* Styles for delete mode */\r\n  #level-editor-container .delete-mode-active .grid-container {\r\n\tcursor: url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"red\" stroke-width=\"2\"><path d=\"M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2\"/><path d=\"M10 11v6M14 11v6\"/></svg>'), auto;\r\n  }\r\n  \r\n  /* Object control panel */\r\n  #level-editor-container .object-controls {\r\n\tdisplay: flex;\r\n\tjustify-content: space-between;\r\n\tpadding: 10px;\r\n\tbackground-color: #1f2937;\r\n\tborder-radius: 6px;\r\n\tmargin-bottom: 10px;\r\n\tgap: 8px;\r\n  }\r\n  \r\n  #level-editor-container .object-controls button {\r\n\tbackground-color: #374151;\r\n\tcolor: #e5e7eb;\r\n\tborder: none;\r\n\tpadding: 6px 12px;\r\n\tborder-radius: 4px;\r\n\tcursor: pointer;\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tgap: 5px;\r\n\ttransition: background-color 0.2s;\r\n  }\r\n  \r\n  #level-editor-container .object-controls button:hover {\r\n\tbackground-color: #4b5563;\r\n  }\r\n  \r\n  #level-editor-container .object-controls button.delete-mode {\r\n\tbackground-color: #ef4444;\r\n\tcolor: white;\r\n  }\r\n  \r\n  #level-editor-container .object-controls button.delete-mode:hover {\r\n\tbackground-color: #dc2626;\r\n  }\r\n  \r\n  \r\n #object-preview-canvas {\r\n\ttransition: transform 0.05s ease-out;\r\n\twill-change: transform;\r\n\timage-rendering: pixelated;\r\n\tposition: absolute;\r\n\tpointer-events: none; \r\n\tz-index: 9999;\r\n\topacity: 0.7; \r\n}\r\n  /* Responsive adjustments */\r\n  @media (max-width: 768px) {\r\n\t#level-editor-container .environment-items {\r\n\t  justify-content: center;\r\n\t}\r\n\t\r\n\t#level-editor-container .environment-item {\r\n\t  width: 56px;\r\n\t  height: 56px;\r\n\t}\r\n  }",
         "html": "<div id=\"level-editor-container\" class=\"main-content-container\">\r\n   <div class=\"content-sidebar\">\r\n     <div class=\"toolbar\">\r\n       <button id=\"terrainsBtn\" class=\"btn active\">Tiles</button>\r\n       <button id=\"environmentBtn\" class=\"btn\">Env</button>\r\n     </div>\r\n     <div class=\"tools\">\r\n       <div>\r\n         <h3>Map Settings</h3>\r\n         <div class=\"form-row\">\r\n           <label for=\"terrainMapSize\">Map Size:</label>\r\n           <input type=\"number\" id=\"terrainMapSize\" value=\"48\" step=\"1\" min=\"1\">\r\n         </div>\r\n         <div class=\"form-row\">\r\n            <label for=\"extensionTerrainType\">Surrounding Terrain Type:</label>\r\n            <select id=\"extensionTerrainType\" class=\"extensionTerrainType\"></select>\r\n          </div>\r\n       </div>\r\n       <div id=\"environmentPanel\" style=\"display:none\">\r\n\r\n       </div>\r\n       <div id=\"terrainsPanel\">\r\n         <div class=\"terrain-types-container\">\r\n           <div class=\"terrain-item\">\r\n             <div class=\"color-option active\" style=\"background-color: #10b981;\"></div>\r\n             <div class=\"terrain-label\">Grass</div>\r\n             <div class=\"terrain-buttons\">\r\n               <button title=\"Edit\">✏️</button>\r\n               <button title=\"Delete\">🗑️</button>\r\n             </div>\r\n           </div>\r\n           <div class=\"terrain-item\">\r\n             <div class=\"color-option\" style=\"background-color: #3b82f6;\"></div>\r\n             <div class=\"terrain-label\">Water</div>\r\n             <div class=\"terrain-buttons\">\r\n               <button title=\"Edit\">✏️</button>\r\n               <button title=\"Delete\">🗑️</button>\r\n             </div>\r\n           </div>\r\n           <div class=\"terrain-item\">\r\n             <div class=\"color-option\" style=\"background-color: #a3a3a3;\"></div>\r\n             <div class=\"terrain-label\">Stone</div>\r\n             <div class=\"terrain-buttons\">\r\n               <button title=\"Edit\">✏️</button>\r\n               <button title=\"Delete\">🗑️</button>\r\n             </div>\r\n           </div>\r\n         </div>\r\n       </div>\r\n     </div>\r\n   </div>\r\n   \r\n   <div class=\"grid-container grid-background\">\r\n     <canvas id=\"grid\"></canvas>\r\n     \r\n     <div class=\"translation-controls\">\r\n       <button id=\"translate-up\"><span>↑</span></button>\r\n       <button id=\"translate-left\"><span>←</span></button>\r\n       <button id=\"translate-right\"><span>→</span></button>\r\n       <button id=\"translate-down\"><span>↓</span></button>\r\n     </div>\r\n     \r\n     <div class=\"status-bar\">\r\n       Cursor: x: 0, y: 0 | Zoom: 100% | Selected: Grass\r\n     </div>\r\n   </div>\r\n </div>"
       },
-      "scriptEditor": {
-        "title": "Script Editor",
-        "fileName": "scriptEditor",
-        "css": "\r\n#script-editor-container .grid-background {\r\n    width: calc(100% - 450px);\r\n}\r\n/* Override global scrollbar suppression for CodeMirror */\r\n#script-editor-container .CodeMirror {\r\n    overflow-y: auto !important; /* Enable vertical scrolling */\r\n    -ms-overflow-style: auto !important; /* IE and Edge */\r\n    scrollbar-width: auto !important; /* Firefox */\r\n}\r\n\r\n/* Container and layout */\r\n#script-editor-container {\r\n    position: relative;\r\n    height: auto; /* Allow dynamic resizing */\r\n}\r\n\r\n#script-editor-container .grid-background {\r\n    width: calc(100% - 360px); /* Adjust for sidebar width */\r\n    flex: 1;\r\n    position: relative;\r\n    overflow: hidden; /* Contain children */\r\n}\r\n\r\n#script-editor-container .grid-background > div {\r\n    position: relative;\r\n    height: 100%;\r\n}\r\n#script-editor-sidebar {\r\n    width: 360px;\r\n    padding: 10px;\r\n}",
-        "html": "            <div id=\"script-editor-container\" class=\"main-content-container\">\r\n                <div id=\"script-editor-sidebar\" class=\"content-sidebar\">                    \r\n                    <h3>Script Editor</h3>\r\n                    <button id=\"save-script-btn\">Save Script</button>\r\n                </div>\r\n                <div class=\"grid-background\">\r\n                    <div>\r\n                        <textarea id=\"script-editor\" class=\"script-editor\" placeholder=\"Enter your script here...\"></textarea>                    \r\n                        <div class=\"handle\"></div>\r\n                    </div>\r\n                </div>\r\n            </div>\r\n"
+      "TextureEditor": {
+        "title": "Texture Editor",
+        "fileName": "TextureEditor",
+        "css": "#texture-editor-wrapper {\n    display: flex;\n    gap: 20px;\n    padding: 10px;\n    border-radius: 5px;\n}\n\n.texture-editor-tools {\n    width: 200px;\n    flex-shrink: 0;\n}\n\n.texture-editor-canvas-container {\n    flex-grow: 1;\n    position: relative;\n    display: flex;\n    justify-content: center;\n    align-items: center;\n    border-radius: 5px;\n}\n\n#texture-canvas {\n    background-color: transparent;\n    box-shadow: 0 0 10px rgba(0,0,0,0.1);\n    image-rendering: pixelated;\n    border: 1px solid #000;\n}\n\n#noTextureMessage {\n    position: absolute;\n    color: #666;\n}\n\n.tool-section {\n    margin-bottom: 15px;\n    padding-bottom: 15px;\n}\n\n.tool-section h3 {\n    margin-top: 0;\n    margin-bottom: 10px;\n    font-size: 14px;\n}\n\n.tool-btn {\n    margin-right: 5px;\n    margin-bottom: 5px;\n    padding: 5px 10px;\n    cursor: pointer;\n}\n\n.tool-btn.active {\n    background-color: #007bff;\n    color: white;\n}\n\n.color-palette {\n    display: flex;\n    flex-wrap: wrap;\n    gap: 5px;\n    margin-bottom: 10px;\n}\n\n.color-btn {\n    width: 25px;\n    height: 25px;\n    border: 1px solid #ccc;\n    border-radius: 3px;\n    cursor: pointer;\n}\n\n.color-btn.active {\n    border: 2px solid #000;\n}\n\n.custom-color {\n    display: flex;\n    align-items: center;\n    gap: 10px;\n}\n\n#custom-color-picker {\n    width: 30px;\n    height: 30px;\n    padding: 0;\n    border: none;\n    cursor: pointer;\n}",
+        "html": "<div id=\"texture-editor-container\" class=\"texture-editor-wrapper\"> \n    <div class=\"texture-editor-tools\">\n        <div class=\"tool-section\">\n            <h3>Tools</h3>\n            <button id=\"brush-tool\" class=\"tool-btn active\">Brush</button>\n            <button id=\"eraser-tool\" class=\"tool-btn\">Eraser</button>\n            <button id=\"fill-tool\" class=\"tool-btn\">Fill</button>\n            <button id=\"eyedropper-tool\" class=\"tool-btn\">Eyedropper</button>\n        </div>\n        \n        <div class=\"tool-section\">\n            <h3>Brush Size</h3>\n            <input type=\"range\" id=\"brush-size\" min=\"1\" max=\"10\" value=\"1\">\n            <span id=\"brush-size-display\">1px</span>\n        </div>\n        \n        <div class=\"tool-section\">\n            <h3>Colors</h3>\n            <div id=\"color-palette\" class=\"color-palette\"></div>\n            <div class=\"custom-color\">\n                <input type=\"color\" id=\"custom-color-picker\" value=\"#000000\">\n                <label for=\"custom-color-picker\">Custom Color</label>\n            </div>\n            <div class=\"transparency-controls\">\n                <label for=\"transparency-slider\">Opacity: </label>\n                <input type=\"range\" id=\"transparency-slider\" min=\"0\" max=\"255\">\n                <span id=\"transparency-display\">100%</span>\n            </div>\n        </div>\n        \n        <div class=\"tool-section\">\n            <h3>Actions</h3>\n            <button id=\"new-btn\">New</button>\n            <button id=\"undo-btn\" disabled>Undo</button>\n            <button id=\"redo-btn\" disabled>Redo</button>\n            <button id=\"clear-btn\">Clear</button>\n            <button class=\"export-btn\">Save</button>\n        </div>\n        \n        <div class=\"tool-section\">\n            <h3>Import</h3>\n            <input type=\"file\" accept=\"image/*\">\n        </div>\n    </div>\n    \n    <div class=\"texture-editor-canvas-container\">\n        <canvas id=\"texture-canvas\"></canvas>\n        <div id=\"noTextureMessage\">No texture loaded</div>\n    </div>\n</div>\n"
       }
     },
     "libraries": {
@@ -17632,6 +17632,14 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "Entity",
         "script": "class Entity {\r\n    constructor(game, x, y, type) {\r\n        this.game = game;\r\n        this.moduleManager = game.moduleManager;\r\n        this.position = { x: x, y: y, z: 0};\r\n        this.components = [];\r\n        this.renderers = [];\r\n        this.destroyed = false;        \r\n        this.id = ++game.entityId;\r\n        this.type = type;\r\n        this.gridPosition = { x: 0, y: 0};\r\n        this.drawPosition = { x: 0, y: 0};\r\n        this.lastPosition = {...this.position};\r\n        this.lastGridPosition = {...this.gridPosition};\r\n        this.lastDrawPosition = {...this.drawPosition};\r\n        if(this.game.gameEntity){\r\n            this.setGridPosition();\r\n            this.position.z = this.getCurrentTerrainHeight();\r\n        }\r\n    }\r\n\r\n    getCurrentTerrainHeight(){\r\n        return this.game.gameEntity.getComponent('game').getTerrainHeight(this.gridPosition);\r\n    }\r\n\r\n    getComponent(name) {\r\n        return this.components[name.toLowerCase()] || this.components[`${name.toLowerCase()}`];\r\n    }\r\n    addRenderer(RendererClassName, params) {\r\n        const RendererClass = this.moduleManager.getCompiledScript(RendererClassName, 'renderers');\r\n        const renderer = new RendererClass(this.game, this, params);\r\n        this.renderers[RendererClass.name.toLowerCase()] = renderer;\r\n        this.components[RendererClass.name.toLowerCase()] = renderer;\r\n        return renderer;\r\n    }\r\n    addComponent(ComponentClassName, params) {        \r\n        const ComponentClass = this.moduleManager.getCompiledScript(ComponentClassName, 'components');\r\n        const component = new ComponentClass(this.game, this, params);\r\n        this.components[ComponentClass.name.toLowerCase()] = component;\r\n        return component;\r\n    }\r\n    removeComponent(component) {\r\n        let index = this.components.indexOf(component);\r\n        if( index >= 0 ) {\r\n            this.components.splice(index, 1);\r\n        }\r\n    }\r\n    setGridPosition() {\r\n        if(this.game.translator){\r\n            let gridPosition = this.game.translator.pixelToGrid( this.position.x, this.position.y ); \r\n            this.gridPosition = this.game.translator.snapToGrid(gridPosition.x, gridPosition.y);   \r\n            return;\r\n        }\r\n        this.gridPosition = { x: 0, y: 0 };\r\n    }\r\n    updateLastPositions() {\r\n        this.lastPosition = {...this.position};\r\n        this.lastGridPosition = {...this.gridPosition};\r\n        this.lastDrawPosition = {...this.drawPosition};         \r\n    }\r\n    \r\n    getCurrentTile() {                     \r\n        if(this.game.state.tileMap.length > this.gridPosition.y && this.gridPosition.y > 0 && this.game.state.tileMap[Math.floor(this.gridPosition.y)] && this.game.state.tileMap[Math.floor(this.gridPosition.y)].length > this.gridPosition.x && this.gridPosition.x > 0){\r\n            return this.game.state.tileMap[Math.floor(this.gridPosition.y)][Math.floor(this.gridPosition.x)];\r\n        }\r\n        return { typeId: 0};\r\n    }\r\n    update() {    \r\n        this.setGridPosition();\r\n        for(let c in this.components) {\r\n            this.components[c].update();   \r\n            this.setGridPosition();\r\n            if(this.destroyed) break;\r\n        }                \r\n        return !this.destroyed;\r\n    }\r\n    postUpdate() {\r\n        for(let c in this.components) {\r\n            this.components[c].postUpdate();   \r\n            if(this.destroyed) break;\r\n        }     \r\n        this.updateLastPositions(); \r\n        return !this.destroyed;\r\n    }\r\n    draw() {\r\n        const isoPos = this.game.translator.pixelToIso(this.position.x, this.position.y);    \r\n        this.drawPosition = { x: isoPos.x, y: isoPos.y };\r\n\r\n        for(let r in this.renderers) {\r\n            this.renderers[r].draw();  \r\n        }\r\n\r\n    }\r\n    destroy() {\r\n        this.destroyed = true;\r\n        for(let c in this.components) {\r\n            this.components[c].destroy();   \r\n        }   \r\n        for(let r in this.renderers) {\r\n            this.renderers[r].destroy();   \r\n        }   \r\n    }\r\n}"
       },
+      "ExportScripts": {
+        "fileName": "ExportScripts",
+        "script": "class ExportScripts {\r\n  constructor(app) {\r\n     this.app = app;\r\n  }\r\n  export(project) {\r\n      // Initialize JSZip\r\n      const zip = new (this.app.libraryClasses.JSZip)();\r\n\r\n      // Iterate over each script type (e.g., \"renderers\", \"components\")\r\n      Object.keys(project).forEach(scriptType => {\r\n          const scripts = project[scriptType];\r\n\r\n          // Create a folder for the script type\r\n          const folder = zip.folder(`scripts/${scriptType}`);\r\n\r\n          // Iterate over each script key (e.g., \"renderer\", \"component\")\r\n          Object.keys(scripts).forEach(scriptKey => {\r\n              const scriptData = scripts[scriptKey];\r\n              const scriptContent = scriptData.script || ''; // Fallback to empty string if no script\r\n\r\n              // Add the script file to the folder\r\n              folder.file(`${scriptKey}.js`, scriptContent);\r\n          });\r\n      });\r\n\r\n      // Generate the zip file and trigger download\r\n      zip.generateAsync({ type: 'blob' }).then(blob => {\r\n          // Create a temporary URL for the blob\r\n          const url = window.URL.createObjectURL(blob);\r\n\r\n          // Create a temporary link element to trigger download\r\n          const link = document.createElement('a');\r\n          link.href = url;\r\n          link.download = 'scripts.zip'; // Name of the downloaded file\r\n          document.body.appendChild(link);\r\n          link.click();\r\n\r\n          // Clean up\r\n          document.body.removeChild(link);\r\n          window.URL.revokeObjectURL(url);\r\n      }).catch(error => {\r\n          console.error('Error generating zip file:', error);\r\n      });\r\n  }\r\n}"
+      },
+      "GameState": {
+        "fileName": "GameState",
+        "script": "class GameState {\r\n    constructor(gameConfig = {}) {\r\n        let state = gameConfig.configs.state;\r\n     \r\n        // Clear all existing properties\r\n        for (let prop in this) {\r\n            if (Object.prototype.hasOwnProperty.call(this, prop)) {\r\n                delete this[prop];\r\n            }\r\n        }\r\n\r\n        // Set only the properties from params\r\n        for (let key in state) {\r\n            if (Object.prototype.hasOwnProperty.call(state, key)) {\r\n                this[key] = state[key];\r\n            }\r\n        }\r\n        this.entities = [];\r\n        // If stats is present, create defaultStats as a copy\r\n  \r\n    }\r\n\r\n    addEntity(entity) {\r\n        this.entities.push(entity);\r\n    }\r\n    removeEntity(entity) {\r\n    \r\n        let index = this.entities.indexOf(entity);\r\n        if( index >= 0 ) {\r\n            this.entities.splice(index, 1);\r\n        }\r\n    }\r\n}"
+      },
       "GE_AnimationManager": {
         "title": "GE_AnimationManager",
         "fileName": "GE_AnimationManager",
@@ -17686,13 +17694,13 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "ModelManager",
         "script": "class ModelManager {\n    constructor(app, { ShapeFactory, palette, textures }) {\n        this.app = app;\n        this.models = {};\n        this.shapeFactory = new ShapeFactory(palette, textures);\n    }\n\n    clear() {\n        this.models = {};\n    }\n\n    dispose() {\n        // Cleanup when manager is no longer needed\n        for (const [key, model] of Object.entries(this.models)) {\n            this.disposeModel(model);\n        }\n        this.models = {};\n    }\n    \n    disposeModel(model) {\n        if (!model) return;\n        \n        // Handle animation objects\n        if (model.animations) {\n            for (const [animType, frames] of Object.entries(model.animations)) {\n                for (const frame of frames) {\n                    if (frame.group) {\n                        this.shapeFactory.disposeObject(frame.group);\n                        frame.group = null;\n                    }\n                }\n            }\n        }\n    }\n\n    async loadModels(prefix, config) {\n        if (!prefix || !config || typeof config !== 'object') {\n            throw new Error('Invalid prefix or config provided to loadModels');\n        }\n    \n        for (const [type, cfg] of Object.entries(config)) {\n            if (cfg.render && cfg.render.model) {\n                this.models[`${prefix}_${type}`] = await this.createModel(cfg.render.model);\n            }\n        }        \n       \n    }\n\n\n    async createModel(modelData) {\n        const modelGroup = await this.createObjectsFromJSON(modelData, {});\n            \n        if (modelGroup) {\n            // Apply shadows to all meshes\n            modelGroup.traverse((child) => {\n                if (child.isMesh) {\n                    child.castShadow = true;\n                    child.receiveShadow = true;\n                }\n            });\n            \n        }\n            \n        \n        \n        return modelGroup;\n    }\n\n    getModel(prefix, type) {\n        return this.models[`${prefix}_${type}`];\n    }\n\n    async createObjectsFromJSON(model, frameData) {\n        const rootGroup = new THREE.Group();\n        \n        for (const groupName in model) {\n            const group = await this.shapeFactory.createMergedGroupFromJSON(model, frameData, groupName);\n            if (group) {\n                rootGroup.add(group);\n            }\n        }\n    \n        return rootGroup;\n    }\n}"
       },
-      "ShapeFactory": {
-        "fileName": "ShapeFactory",
-        "script": "class ShapeFactory {\n    constructor(palette, textures) {\n        this.gltfCache = new Map();\n        this.gltfLoader = new THREE.GLTFLoader();\n        this.palette = palette;\n        this.textures = textures;\n    }\n    async createMergedGroupFromJSON(model, frameData, groupName) {\n        let mergedGroup = this.getMergedGroup(model, frameData, groupName);\n        if( mergedGroup){\n            return await this.createGroupFromJSON(groupName, mergedGroup);\n        } else {\n            return null;\n        }\n    }\n    async createGroupFromJSON(groupName, groupData) {\n        const group = new THREE.Group();\n        group.name = groupName;\n        group.userData = { isGroup: true };\n        // Use Promise.all with map instead of forEach to properly await all shapes\n        await Promise.all(groupData.shapes.map(async (shape, index) => {\n            if (shape.type === 'gltf') {\n                await this.handleGLTFShape(shape, index, group);\n            } else {\n                await this.handlePrimitiveShape(shape, index, group);\n            }\n        }));\n        group.position.x = groupData.position.x;\n        group.position.y = groupData.position.y;\n        group.position.z = groupData.position.z;\n        \n        group.rotation.x = groupData.rotation.x;\n        group.rotation.y = groupData.rotation.y;\n        group.rotation.z = groupData.rotation.z;\n\n        group.scale.x = groupData.scale.x;\n        group.scale.y = groupData.scale.y;\n        group.scale.z = groupData.scale.z;\n        return group;\n    }\n\n    async handleGLTFShape(shape, index, group) {\n        const applyTransformations = (model) => {\n            model.position.set(shape.x || 0, shape.y || 0, shape.z || 0);\n            model.scale.set(\n                shape.scaleX || 1,\n                shape.scaleY || 1,\n                shape.scaleZ || 1\n            );\n            model.rotation.set(\n                (shape.rotationX || 0) * Math.PI / 180,\n                (shape.rotationY || 0) * Math.PI / 180,\n                (shape.rotationZ || 0) * Math.PI / 180\n            );\n            \n            model.traverse(child => {\n                if (child.isMesh) {\n                    child.userData = {\n                        isShape: true,\n                        index: index,\n                        isGLTFChild: true\n                    };\n                }\n            });\n            \n            model.userData = {\n                isShape: true,\n                index: index,\n                isGLTFRoot: true,\n                castShadow: true\n            };\n            \n            group.add(model);\n        };\n\n        const cached = this.gltfCache.get(shape.url);\n        if (cached) {\n            applyTransformations(cached.scene.clone());\n        } else if (shape.url && location.hostname !== \"\") {\n            // Wrap gltfLoader.load in a Promise to properly await it\n            await new Promise((resolve, reject) => {\n                this.gltfLoader.load(\n                    shape.url,\n                    (gltf) => {\n                        this.gltfCache.set(shape.url, gltf);\n                        applyTransformations(gltf.scene.clone());\n                        resolve();\n                    },\n                    undefined, // onProgress callback (optional)\n                    (error) => {\n                        console.error(`Failed to load GLTF model at ${shape.url}:`, error);\n                        reject(error);\n                    }\n                );\n            });\n        } else {\n            shape.type = \"sphere\";\n            return await this.handlePrimitiveShape(shape, index, group);\n        }\n    }\n\n    async handlePrimitiveShape(shape, index, group) {\n        let geometry, material;\n\n        let colorToUse = shape.color;\n        if(shape.color.paletteColor){\n            colorToUse = \"#ffffff\";\n            if(this.palette && this.palette[shape.color.paletteColor]){\n                colorToUse = this.palette[shape.color.paletteColor];\n            }\n        }\n        if(shape.texture){\n            // If a texture is specified, use it instead of the color\n            // If a texture is specified, use it instead of the color\n            const textureLoader = new THREE.TextureLoader();\n                \n            const textureData = this.textures[shape.texture];\n            \n            if( textureData ) {\n                const texture = await new Promise((resolve, reject) => {\n                    textureLoader.load(\n                        textureData.image,\n                        (loadedTexture) => {\n                            loadedTexture.wrapS = THREE.RepeatWrapping; // Use ClampToEdge instead of RepeatWrapping\n                            loadedTexture.wrapT = THREE.RepeatWrapping; // Use RepeatWrapping for vertical repeat\n                            loadedTexture.magFilter = THREE.NearestFilter;\n                            loadedTexture.minFilter = THREE.NearestFilter;\n                            loadedTexture.generateMipmaps = false;\n                            loadedTexture.anisotropy = 1;\n                            loadedTexture.needsUpdate = true;\n\n                            const meshWidth = shape.width || 1; // Mesh width in world units\n                            const meshHeight = shape.height || 1; // Mesh height in world units\n            \n                            const textureWidth = loadedTexture.image.width;\n                            const textureHeight = loadedTexture.image.height;\n                            const pixelsPerUnit = 2;\n                            const repeatX = Math.ceil((meshWidth * pixelsPerUnit) / textureWidth);\n                            const repeatY = Math.ceil((meshHeight * pixelsPerUnit) / textureHeight);\n                            loadedTexture.repeat.set(repeatX, repeatY);\n \n                            resolve(loadedTexture);\n                        },\n                        undefined,\n                        (error) => reject(error)\n                    );\n                });\n                material = new THREE.MeshStandardMaterial({ map: texture });\n            } else {                \n                material = new THREE.MeshStandardMaterial({ color: colorToUse });\n            }\n        } else {            \n            // Create material with specified color\n            material = new THREE.MeshStandardMaterial({ color: colorToUse });\n        }\n\n        switch (shape.type) {\n            case 'sphere':\n                geometry = new THREE.SphereGeometry(shape.size / 2, 32, 32);\n                break;\n            case 'cube':\n                geometry = new THREE.BoxGeometry(shape.size, shape.size, shape.size);\n                break;\n            case 'box':\n                geometry = new THREE.BoxGeometry(shape.width, shape.height, shape.depth || shape.width);\n                break;\n            case 'cylinder':\n                geometry = new THREE.CylinderGeometry(shape.size / 2, shape.size / 2, shape.height, 32);\n                break;\n            case 'cone':\n                geometry = new THREE.ConeGeometry(shape.size / 2, shape.height, 32);\n                break;\n            case 'torus':\n                geometry = new THREE.TorusGeometry(shape.size / 2, shape.tubeSize || shape.size / 6, 16, 100);\n                break;\n            case 'tetrahedron':\n                geometry = new THREE.TetrahedronGeometry(shape.size / 2);\n                break;\n            default:\n                return;\n        }\n\n        const mesh = new THREE.Mesh(geometry, material);\n        mesh.userData = { isShape: true, castShadow: true, index: index };\n        \n        // Position and rotation\n        mesh.position.set(shape.x || 0, shape.y || 0, shape.z || 0);\n        mesh.rotation.set(\n            (shape.rotationX || 0) * Math.PI / 180,\n            (shape.rotationY || 0) * Math.PI / 180,\n            (shape.rotationZ || 0) * Math.PI / 180\n        );\n        mesh.scale.set(\n            shape.scaleX || 1,\n            shape.scaleY || 1,\n            shape.scaleZ || 1\n        );\n        group.add(mesh);\n    }\n\n    disposeObject(object) {\n        object.traverse(child => {\n            if (child.geometry) child.geometry.dispose();\n            if (child.material) {\n                if (Array.isArray(child.material)) {\n                    child.material.forEach(m => m.dispose());\n                } else {\n                    child.material.dispose();\n                }\n            }\n        });\n    }\n\n    getMergedGroup(model, frameData, groupName) {\n        const modelGroup = model[groupName];\n        if (!modelGroup) {\n            delete frameData?.[groupName];\n            return null;\n        }\n    \n        frameData = frameData || {};\n        let frameGroup = this.initializeFrameGroup(frameData, modelGroup, groupName);\n        \n        this.cleanupMatchingTransforms(modelGroup, frameGroup);\n        const mergedShapes = this.mergeShapes(modelGroup, frameGroup);\n        \n        this.cleanupEmptyShapes(frameGroup);\n        \n        const mergedGroup = {\n            ...modelGroup,\n            ...frameGroup,\n            shapes: mergedShapes\n        };\n    \n        if (modelGroup.shapes.length === 0) {\n            frameGroup.shapes = [];\n        }\n    \n        const returnVal = JSON.parse(JSON.stringify(mergedGroup));\n        this.cleanupFrameData(frameData, frameGroup, groupName);\n        \n        return returnVal;\n    }\n    \n    initializeFrameGroup(frameData, modelGroup, groupName) {\n        if (!frameData[groupName]) {\n            frameData[groupName] = JSON.parse(JSON.stringify(modelGroup));\n            const frameGroup = frameData[groupName];\n            frameGroup.shapes.forEach((shape, index) => {\n                shape.id = index;\n            });\n            return frameGroup;\n        }\n        return frameData[groupName];\n    }\n    \n    cleanupMatchingTransforms(modelGroup, frameGroup) {\n        const properties = ['position', 'rotation', 'scale'];\n        properties.forEach(prop => {\n            if (JSON.stringify(modelGroup[prop]) === JSON.stringify(frameGroup[prop])) {\n                delete frameGroup[prop];\n            }\n        });\n    }\n    \n    mergeShapes(modelGroup, frameGroup) {\n        return modelGroup.shapes.map((modelShape, i) => {\n            if (!frameGroup.shapes) {\n                return JSON.parse(JSON.stringify(modelShape));\n            }\n    \n            let frameShape = frameGroup.shapes.find(shape => shape.id === i) || { id: i };\n            if (!frameGroup.shapes.includes(frameShape)) {\n                frameGroup.shapes.push(frameShape);\n            }\n    \n            const mergedShape = this.mergeShapeProperties(modelShape, frameShape);\n            this.cleanupMatchingShapeTransforms(modelShape, frameShape);\n            \n            return JSON.parse(JSON.stringify(mergedShape));\n        });\n    }\n    \n    mergeShapeProperties(modelShape, frameShape) {\n        const mergedShape = {};\n        \n        for (const key in modelShape) {\n            if (key === 'id') continue;\n            \n            if (frameShape && frameShape[key] !== undefined && modelShape[key] === frameShape[key]) {\n                delete frameShape[key];\n                mergedShape[key] = modelShape[key];\n            } else if (!frameShape || frameShape[key] === undefined) {\n                mergedShape[key] = modelShape[key];\n            } else {\n                mergedShape[key] = frameShape[key];\n            }\n        }\n    \n        return { ...mergedShape, ...frameShape };\n    }\n    \n    cleanupMatchingShapeTransforms(modelShape, frameShape) {\n        const transforms = [\n            { prop: 'scale', defaultVal: 1, axes: ['X', 'Y', 'Z'] },\n            { prop: 'rotation', defaultVal: 0, axes: ['X', 'Y', 'Z'] }\n        ];\n    \n        transforms.forEach(({ prop, defaultVal, axes }) => {\n            axes.forEach(axis => {\n                const propName = `${prop}${axis}`;\n                if (frameShape[propName] === modelShape[propName] || \n                   (frameShape[propName] === defaultVal && modelShape[propName] === undefined)) {\n                    delete frameShape[propName];\n                }\n            });\n        });\n    }\n    \n    cleanupEmptyShapes(frameGroup) {\n        if (frameGroup.shapes) {\n            frameGroup.shapes = frameGroup.shapes.filter(shape => \n                Object.keys(shape).length > 0\n            );\n            \n            if (frameGroup.shapes.length === 0) {\n                delete frameGroup.shapes;\n            }\n        }\n    }\n    \n    cleanupFrameData(frameData, frameGroup, groupName) {\n        if (Object.keys(frameGroup).length === 0) {\n            delete frameData[groupName];\n        }\n    }\n\n}"
-      },
       "scriptEditor": {
         "fileName": "scriptEditor",
         "script": "class ScriptEditor {\r\n    constructor(gameEditor, config) {\r\n      \r\n        this.gameEditor = gameEditor;\r\n        this.config = config;\r\n        let theme = \"\";\r\n        if( this.gameEditor.getCollections().configs.codeMirror ) {\r\n            theme = this.gameEditor.getCollections().themes[this.gameEditor.getCollections().configs.codeMirror.theme].css;\r\n            if( theme ) { \r\n              let styleTag = document.createElement('style');\r\n              styleTag.innerHTML = theme;\r\n              styleTag.setAttribute('id', 'codeMirrorTheme');\r\n              document.head.append(styleTag);\r\n            }\r\n        }\r\n        this.container = document.getElementById('script-editor-container'); \r\n        this.MIN_HEIGHT = 200;\r\n        this.isDragging = false;\r\n        this.start_y = 0;\r\n        this.start_h = 0;\r\n        this.DEFAULT_HEIGHT = () => document.body.clientHeight - 200;\r\n\t\t\t\tthis.savePropertyName = \"script\";\r\n        if (!this.container) {\r\n            console.error(\"ScriptEditor container not found\");\r\n            return;\r\n        }\r\n\r\n        const textArea = this.container.querySelector('#script-editor');\r\n        if (!textArea) {\r\n            console.error(\"Textarea #script-editor not found\");\r\n            return;\r\n        }\r\n\r\n        this.scriptEditor = CodeMirror.fromTextArea(textArea, {\r\n            mode: 'javascript',\r\n            lineNumbers: true,\r\n            tabSize: 2,\r\n            indentWithTabs: false,\r\n            extraKeys: { 'Ctrl-Space': 'autocomplete' },\r\n            hintOptions: { completeSingle: false }\r\n        });\r\n\r\n        this.scriptEditor.setSize(null, this.DEFAULT_HEIGHT());\r\n\r\n        this.setupEventListeners();\r\n        \r\n        \r\n    }\r\n   \r\n    setupEventListeners() {\r\n     \r\n        document.body.addEventListener('editScript', (event) => {\r\n            this.scriptValue = event.detail.data;\r\n            this.savePropertyName = event.detail.propertyName;\r\n            this.scriptEditor.setValue(this.scriptValue);\r\n            this.scriptEditor.setSize(null, this.DEFAULT_HEIGHT());\r\n            this.scriptEditor.refresh();\r\n            setTimeout(() => {\r\n                this.scriptEditor.refresh();\r\n            }, 100);\r\n        });\r\n        \r\n        const saveBtn = this.container.querySelector('#save-script-btn');\r\n        if (saveBtn) {\r\n            saveBtn.addEventListener('click', () => this.saveScript());\r\n        } else {\r\n            console.warn(\"Save button not found\");\r\n        }\r\n    }\r\n\r\n    saveScript() {\r\n\r\n        if (!this.gameEditor.getCurrentObject()) {\r\n            console.warn(\"No selected object to save script to\");\r\n            return;\r\n        }\r\n        const scriptText = this.scriptEditor.getValue();\r\n   \r\n        const myCustomEvent = new CustomEvent('saveScript', {\r\n            detail: { data: scriptText, propertyName: this.savePropertyName }, \r\n            bubbles: true, \r\n            cancelable: true \r\n        });\r\n\r\n      \r\n        document.body.dispatchEvent(myCustomEvent);\r\n    }\r\n\r\n    destroy() {\r\n        if (this.container && this.container.parentNode) {\r\n            this.container.parentNode.removeChild(this.container);\r\n        }\r\n    }\r\n}\r\n"
+      },
+      "ShapeFactory": {
+        "fileName": "ShapeFactory",
+        "script": "class ShapeFactory {\n    constructor(palette, textures) {\n        this.gltfCache = new Map();\n        this.gltfLoader = new THREE.GLTFLoader();\n        this.palette = palette;\n        this.textures = textures;\n    }\n    async createMergedGroupFromJSON(model, frameData, groupName) {\n        let mergedGroup = this.getMergedGroup(model, frameData, groupName);\n        if( mergedGroup){\n            return await this.createGroupFromJSON(groupName, mergedGroup);\n        } else {\n            return null;\n        }\n    }\n    async createGroupFromJSON(groupName, groupData) {\n        const group = new THREE.Group();\n        group.name = groupName;\n        group.userData = { isGroup: true };\n        // Use Promise.all with map instead of forEach to properly await all shapes\n        await Promise.all(groupData.shapes.map(async (shape, index) => {\n            if (shape.type === 'gltf') {\n                await this.handleGLTFShape(shape, index, group);\n            } else {\n                await this.handlePrimitiveShape(shape, index, group);\n            }\n        }));\n        group.position.x = groupData.position.x;\n        group.position.y = groupData.position.y;\n        group.position.z = groupData.position.z;\n        \n        group.rotation.x = groupData.rotation.x;\n        group.rotation.y = groupData.rotation.y;\n        group.rotation.z = groupData.rotation.z;\n\n        group.scale.x = groupData.scale.x;\n        group.scale.y = groupData.scale.y;\n        group.scale.z = groupData.scale.z;\n        return group;\n    }\n\n    async handleGLTFShape(shape, index, group) {\n        const applyTransformations = (model) => {\n            model.position.set(shape.x || 0, shape.y || 0, shape.z || 0);\n            model.scale.set(\n                shape.scaleX || 1,\n                shape.scaleY || 1,\n                shape.scaleZ || 1\n            );\n            model.rotation.set(\n                (shape.rotationX || 0) * Math.PI / 180,\n                (shape.rotationY || 0) * Math.PI / 180,\n                (shape.rotationZ || 0) * Math.PI / 180\n            );\n            \n            model.traverse(child => {\n                if (child.isMesh) {\n                    child.userData = {\n                        isShape: true,\n                        index: index,\n                        isGLTFChild: true\n                    };\n                }\n            });\n            \n            model.userData = {\n                isShape: true,\n                index: index,\n                isGLTFRoot: true,\n                castShadow: true\n            };\n            \n            group.add(model);\n        };\n\n        const cached = this.gltfCache.get(shape.url);\n        if (cached) {\n            applyTransformations(cached.scene.clone());\n        } else if (shape.url && location.hostname !== \"\") {\n            // Wrap gltfLoader.load in a Promise to properly await it\n            await new Promise((resolve, reject) => {\n                this.gltfLoader.load(\n                    shape.url,\n                    (gltf) => {\n                        this.gltfCache.set(shape.url, gltf);\n                        applyTransformations(gltf.scene.clone());\n                        resolve();\n                    },\n                    undefined, // onProgress callback (optional)\n                    (error) => {\n                        console.error(`Failed to load GLTF model at ${shape.url}:`, error);\n                        reject(error);\n                    }\n                );\n            });\n        } else {\n            shape.type = \"sphere\";\n            return await this.handlePrimitiveShape(shape, index, group);\n        }\n    }\n\n    async handlePrimitiveShape(shape, index, group) {\n        let geometry, material;\n\n        let colorToUse = shape.color;\n        if(shape.color.paletteColor){\n            colorToUse = \"#ffffff\";\n            if(this.palette && this.palette[shape.color.paletteColor]){\n                colorToUse = this.palette[shape.color.paletteColor];\n            }\n        }\n        if(shape.texture){\n            // If a texture is specified, use it instead of the color\n            // If a texture is specified, use it instead of the color\n            const textureLoader = new THREE.TextureLoader();\n                \n            const textureData = this.textures[shape.texture];\n            \n            if( textureData ) {\n                const texture = await new Promise((resolve, reject) => {\n                    textureLoader.load(\n                        textureData.image,\n                        (loadedTexture) => {\n                            loadedTexture.wrapS = THREE.RepeatWrapping; // Use ClampToEdge instead of RepeatWrapping\n                            loadedTexture.wrapT = THREE.RepeatWrapping; // Use RepeatWrapping for vertical repeat\n                            loadedTexture.magFilter = THREE.NearestFilter;\n                            loadedTexture.minFilter = THREE.NearestFilter;\n                            loadedTexture.generateMipmaps = false;\n                            loadedTexture.anisotropy = 1;\n                            loadedTexture.needsUpdate = true;\n\n                            const meshWidth = shape.width || 1; // Mesh width in world units\n                            const meshHeight = shape.height || 1; // Mesh height in world units\n            \n                            const textureWidth = loadedTexture.image.width;\n                            const textureHeight = loadedTexture.image.height;\n                            const pixelsPerUnit = 2;\n                            const repeatX = Math.ceil((meshWidth * pixelsPerUnit) / textureWidth);\n                            const repeatY = Math.ceil((meshHeight * pixelsPerUnit) / textureHeight);\n                            loadedTexture.repeat.set(repeatX, repeatY);\n \n                            resolve(loadedTexture);\n                        },\n                        undefined,\n                        (error) => reject(error)\n                    );\n                });\n                material = new THREE.MeshStandardMaterial({ map: texture });\n            } else {                \n                material = new THREE.MeshStandardMaterial({ color: colorToUse });\n            }\n        } else {            \n            // Create material with specified color\n            material = new THREE.MeshStandardMaterial({ color: colorToUse });\n        }\n\n        switch (shape.type) {\n            case 'sphere':\n                geometry = new THREE.SphereGeometry(shape.size / 2, 32, 32);\n                break;\n            case 'cube':\n                geometry = new THREE.BoxGeometry(shape.size, shape.size, shape.size);\n                break;\n            case 'box':\n                geometry = new THREE.BoxGeometry(shape.width, shape.height, shape.depth || shape.width);\n                break;\n            case 'cylinder':\n                geometry = new THREE.CylinderGeometry(shape.size / 2, shape.size / 2, shape.height, 32);\n                break;\n            case 'cone':\n                geometry = new THREE.ConeGeometry(shape.size / 2, shape.height, 32);\n                break;\n            case 'torus':\n                geometry = new THREE.TorusGeometry(shape.size / 2, shape.tubeSize || shape.size / 6, 16, 100);\n                break;\n            case 'tetrahedron':\n                geometry = new THREE.TetrahedronGeometry(shape.size / 2);\n                break;\n            default:\n                return;\n        }\n\n        const mesh = new THREE.Mesh(geometry, material);\n        mesh.userData = { isShape: true, castShadow: true, index: index };\n        \n        // Position and rotation\n        mesh.position.set(shape.x || 0, shape.y || 0, shape.z || 0);\n        mesh.rotation.set(\n            (shape.rotationX || 0) * Math.PI / 180,\n            (shape.rotationY || 0) * Math.PI / 180,\n            (shape.rotationZ || 0) * Math.PI / 180\n        );\n        mesh.scale.set(\n            shape.scaleX || 1,\n            shape.scaleY || 1,\n            shape.scaleZ || 1\n        );\n        group.add(mesh);\n    }\n\n    disposeObject(object) {\n        object.traverse(child => {\n            if (child.geometry) child.geometry.dispose();\n            if (child.material) {\n                if (Array.isArray(child.material)) {\n                    child.material.forEach(m => m.dispose());\n                } else {\n                    child.material.dispose();\n                }\n            }\n        });\n    }\n\n    getMergedGroup(model, frameData, groupName) {\n        const modelGroup = model[groupName];\n        if (!modelGroup) {\n            delete frameData?.[groupName];\n            return null;\n        }\n    \n        frameData = frameData || {};\n        let frameGroup = this.initializeFrameGroup(frameData, modelGroup, groupName);\n        \n        this.cleanupMatchingTransforms(modelGroup, frameGroup);\n        const mergedShapes = this.mergeShapes(modelGroup, frameGroup);\n        \n        this.cleanupEmptyShapes(frameGroup);\n        \n        const mergedGroup = {\n            ...modelGroup,\n            ...frameGroup,\n            shapes: mergedShapes\n        };\n    \n        if (modelGroup.shapes.length === 0) {\n            frameGroup.shapes = [];\n        }\n    \n        const returnVal = JSON.parse(JSON.stringify(mergedGroup));\n        this.cleanupFrameData(frameData, frameGroup, groupName);\n        \n        return returnVal;\n    }\n    \n    initializeFrameGroup(frameData, modelGroup, groupName) {\n        if (!frameData[groupName]) {\n            frameData[groupName] = JSON.parse(JSON.stringify(modelGroup));\n            const frameGroup = frameData[groupName];\n            frameGroup.shapes.forEach((shape, index) => {\n                shape.id = index;\n            });\n            return frameGroup;\n        }\n        return frameData[groupName];\n    }\n    \n    cleanupMatchingTransforms(modelGroup, frameGroup) {\n        const properties = ['position', 'rotation', 'scale'];\n        properties.forEach(prop => {\n            if (JSON.stringify(modelGroup[prop]) === JSON.stringify(frameGroup[prop])) {\n                delete frameGroup[prop];\n            }\n        });\n    }\n    \n    mergeShapes(modelGroup, frameGroup) {\n        return modelGroup.shapes.map((modelShape, i) => {\n            if (!frameGroup.shapes) {\n                return JSON.parse(JSON.stringify(modelShape));\n            }\n    \n            let frameShape = frameGroup.shapes.find(shape => shape.id === i) || { id: i };\n            if (!frameGroup.shapes.includes(frameShape)) {\n                frameGroup.shapes.push(frameShape);\n            }\n    \n            const mergedShape = this.mergeShapeProperties(modelShape, frameShape);\n            this.cleanupMatchingShapeTransforms(modelShape, frameShape);\n            \n            return JSON.parse(JSON.stringify(mergedShape));\n        });\n    }\n    \n    mergeShapeProperties(modelShape, frameShape) {\n        const mergedShape = {};\n        \n        for (const key in modelShape) {\n            if (key === 'id') continue;\n            \n            if (frameShape && frameShape[key] !== undefined && modelShape[key] === frameShape[key]) {\n                delete frameShape[key];\n                mergedShape[key] = modelShape[key];\n            } else if (!frameShape || frameShape[key] === undefined) {\n                mergedShape[key] = modelShape[key];\n            } else {\n                mergedShape[key] = frameShape[key];\n            }\n        }\n    \n        return { ...mergedShape, ...frameShape };\n    }\n    \n    cleanupMatchingShapeTransforms(modelShape, frameShape) {\n        const transforms = [\n            { prop: 'scale', defaultVal: 1, axes: ['X', 'Y', 'Z'] },\n            { prop: 'rotation', defaultVal: 0, axes: ['X', 'Y', 'Z'] }\n        ];\n    \n        transforms.forEach(({ prop, defaultVal, axes }) => {\n            axes.forEach(axis => {\n                const propName = `${prop}${axis}`;\n                if (frameShape[propName] === modelShape[propName] || \n                   (frameShape[propName] === defaultVal && modelShape[propName] === undefined)) {\n                    delete frameShape[propName];\n                }\n            });\n        });\n    }\n    \n    cleanupEmptyShapes(frameGroup) {\n        if (frameGroup.shapes) {\n            frameGroup.shapes = frameGroup.shapes.filter(shape => \n                Object.keys(shape).length > 0\n            );\n            \n            if (frameGroup.shapes.length === 0) {\n                delete frameGroup.shapes;\n            }\n        }\n    }\n    \n    cleanupFrameData(frameData, frameGroup, groupName) {\n        if (Object.keys(frameGroup).length === 0) {\n            delete frameData[groupName];\n        }\n    }\n\n}"
       },
       "SpatialGrid": {
         "fileName": "SpatialGrid",
@@ -17718,14 +17726,6 @@ const DEFAULT_PROJECT_CONFIG = {
       "ZipExporter": {
         "fileName": "ZipExporter",
         "script": "class ZipExporter {\r\n    constructor(gameEditor) {\r\n        this.gameEditor = gameEditor;\r\n        this.elements = {};\r\n        if(window.location.hostname != \"localhost\") {\r\n            this.init();\r\n        }\r\n    }\r\n\r\n    init(aiConfig) {\r\n        this.setupHooks();\r\n        const modal = document.getElementById('modal-ZipExporterPanel');\r\n        this.config = aiConfig;\r\n        this.elements = { modal: modal };\r\n        this.setupEventListeners();\r\n    }\r\n\r\n    setCurrentObjectValues(data) {\r\n        const { selectedType, selectedObject } = this.gameEditor.model.getCurrentObjectContext();\r\n        this.gameEditor.getCollections()[selectedType][selectedObject] = data;\r\n    }\r\n\r\n    setupEventListeners() {\r\n        // Placeholder for future listeners\r\n    }\r\n\r\n    setupHooks() {\r\n        document.body.addEventListener('renderEditor', () => {\r\n      \r\n            // Export Current Object Button\r\n            if (this.elements.exportCurrentObjectBtn) this.elements.exportCurrentObjectBtn.remove();\r\n            this.elements.exportCurrentObjectBtn = document.createElement('button');\r\n            this.elements.exportCurrentObjectBtn.innerHTML = \"Export Object\";\r\n            this.elements.exportCurrentObjectBtn.id = 'save-object-btn';\r\n            this.gameEditor.elements.editor.querySelector(\".actions>div\")?.appendChild(this.elements.exportCurrentObjectBtn);\r\n            this.elements.exportCurrentObjectBtn.addEventListener('click', () => {\r\n                this.exportCurrentObject();\r\n            });\r\n\r\n            // Import Current Object Button\r\n            if (this.elements.importCurrentObjectBtn) this.elements.importCurrentObjectBtn.remove();\r\n            this.elements.importCurrentObjectBtn = document.createElement('button');\r\n            this.elements.importCurrentObjectBtn.innerHTML = \"Import Object\";\r\n            this.elements.importCurrentObjectBtn.id = 'import-object-btn';\r\n            this.gameEditor.elements.editor.querySelector(\".actions>div\")?.appendChild(this.elements.importCurrentObjectBtn);\r\n            this.elements.importCurrentObjectBtn.addEventListener('click', () => {\r\n                this.triggerImportJson();\r\n            });\r\n        });\r\n\r\n        document.body.addEventListener('selectObject', () => {\r\n            const { selectedType } = this.gameEditor.model.getCurrentObjectContext();\r\n            const category = this.gameEditor.model.getCategoryByType(selectedType);\r\n\r\n            requestAnimationFrame(() => {\r\n                // Export Project Button\r\n                if (this.elements.exportProjectBtn) this.elements.exportProjectBtn.remove();\r\n                this.elements.exportProjectBtn = document.createElement('button');\r\n                this.elements.exportProjectBtn.innerHTML = \"Export Project\";\r\n                this.elements.exportProjectBtn.id = 'export-project-btn';\r\n                this.gameEditor.elements.sidebar.querySelector(\".sidebar-actions>.primary\")?.after(this.elements.exportProjectBtn);\r\n                this.elements.exportProjectBtn.addEventListener('click', () => {\r\n                    this.exportFullProject();\r\n                });\r\n                // Import Project Button\r\n                if (this.elements.importProjectBtn) this.elements.importProjectBtn.remove();\r\n                this.elements.importProjectBtn = document.createElement('button');\r\n                this.elements.importProjectBtn.innerHTML = \"Import Project\";\r\n                this.elements.importProjectBtn.id = 'import-project-btn';\r\n                this.gameEditor.elements.sidebar.querySelector(\".sidebar-actions>.primary\")?.after(this.elements.importProjectBtn);\r\n                this.elements.importProjectBtn.addEventListener('click', () => {\r\n                    this.triggerImportProject();\r\n                });\r\n                // Export All in Category Button\r\n                if (this.elements.exportAllBtn) this.elements.exportAllBtn.remove();\r\n                this.elements.exportAllBtn = document.createElement('button');\r\n                this.elements.exportAllBtn.innerHTML = `Export All ${category}`;\r\n                this.elements.exportAllBtn.id = 'export-all-btn';\r\n                this.gameEditor.elements.sidebar.querySelector(\".sidebar-actions>.primary\")?.after(this.elements.exportAllBtn);\r\n                this.elements.exportAllBtn.addEventListener('click', () => {\r\n                    this.exportCategory(category);\r\n                });\r\n            });\r\n        });\r\n    }\r\n\r\n    // Export a JSON file\r\n    exportJSON(fileName, jsonObj) {\r\n        const blob = new Blob([JSON.stringify(jsonObj, null, 2)], { type: 'application/json' });\r\n        const url = window.URL.createObjectURL(blob);\r\n        const link = document.createElement('a');\r\n        link.href = url;\r\n        link.download = `${fileName}.json`;\r\n        document.body.appendChild(link);\r\n        link.click();\r\n        document.body.removeChild(link);\r\n        window.URL.revokeObjectURL(url);\r\n    }\r\n\r\n    // Export current object as JSON\r\n    exportCurrentObject() {\r\n        const selectedObject = this.gameEditor.model.getCurrentObject();   \r\n        this.exportJSON(selectedObject, this.gameEditor.getCurrentObject());\r\n    }\r\n\r\n    // Export a category as a zip\r\n    exportCategory(category) {\r\n        const scripts = this.gameEditor.model.getCollectionsByCategory(category);\r\n        this.exportZip(category, scripts);\r\n    }\r\n\r\n    // Export the entire project as a zip\r\n    exportFullProject() {\r\n        const allCollections = {};\r\n        const defs = this.gameEditor.model.getCollectionDefs();\r\n\r\n        defs.forEach(def => {\r\n            const category = def.category;\r\n            const collectionKey = def.id;\r\n            const collectionData = this.gameEditor.model.getCollections()[collectionKey];\r\n            if (collectionData) {\r\n                if (!allCollections[category]) {\r\n                    allCollections[category] = {};\r\n                }\r\n                allCollections[category][collectionKey] = collectionData;\r\n            }\r\n        });\r\n\r\n        this.exportZip(this.gameEditor.model.getCurrentProject(), allCollections);\r\n    }\r\n\r\n    // Generic zip export method\r\n    exportZip(fileName, projectData) {\r\n        const zip = new JSZip();\r\n\r\n        Object.keys(projectData).forEach(category => {\r\n            const collections = projectData[category];\r\n            Object.keys(collections).forEach(collection => {\r\n                const objects = collections[collection];\r\n                const folder = zip.folder(`${category}/${collection}`);\r\n\r\n                Object.keys(objects).forEach(objKey => {\r\n                    const objData = objects[objKey];\r\n                    const scriptContent = objData.script || '';\r\n                    if (scriptContent) {\r\n                        folder.file(`${objKey}.js`, scriptContent);\r\n                    } else {\r\n                        folder.file(`${objKey}.json`, JSON.stringify(objData, null, 2));\r\n                    }\r\n                });\r\n            });\r\n        });\r\n\r\n        zip.generateAsync({ type: 'blob' }).then(blob => {\r\n            const url = window.URL.createObjectURL(blob);\r\n            const link = document.createElement('a');\r\n            link.href = url;\r\n            link.download = `${fileName}.zip`;\r\n            document.body.appendChild(link);\r\n            link.click();\r\n            document.body.removeChild(link);\r\n            window.URL.revokeObjectURL(url);\r\n        }).catch(error => {\r\n            console.error('Error generating zip file:', error);\r\n        });\r\n    }\r\n\r\n    // Trigger JSON import\r\n    triggerImportJson() {\r\n        const input = document.createElement('input');\r\n        input.type = 'file';\r\n        input.accept = '.json';\r\n        input.style.display = 'none';\r\n        input.addEventListener('change', (e) => this.importJson(e));\r\n        document.body.appendChild(input);\r\n        input.click();\r\n        document.body.removeChild(input);\r\n    }\r\n    triggerImportProject() {\r\n        const input = document.createElement('input');\r\n        input.type = 'file';\r\n        input.accept = '.zip';\r\n        input.style.display = 'none';\r\n        input.addEventListener('change', (e) => this.importProject(e));\r\n        document.body.appendChild(input);\r\n        input.click();\r\n        document.body.removeChild(input);\r\n    }\r\n    // Import a single JSON file\r\n    async importJson(event) {\r\n        const file = event.target.files[0];\r\n        if (!file) return;\r\n\r\n        try {\r\n            const reader = new FileReader();\r\n            reader.onload = (e) => {\r\n                const jsonContent = JSON.parse(e.target.result);\r\n                this.setCurrentObjectValues(jsonContent);\r\n                const myCustomEvent = new CustomEvent('updateCurrentObject', { cancelable: true });\r\n                document.body.dispatchEvent(myCustomEvent);\r\n            };\r\n            reader.onerror = (error) => {\r\n                console.error('Error reading JSON file:', error);\r\n            };\r\n            reader.readAsText(file);\r\n        } catch (error) {\r\n            console.error('Error importing JSON:', error);\r\n        }\r\n    }\r\n  \r\n  \t// Import a project zip file\r\n    async importProject(event) {\r\n        const file = event.target.files[0];\r\n        if (!file) return;\r\n\r\n        try {\r\n            const jsZip = new JSZip();\r\n            const zipContent = await jsZip.loadAsync(file);\r\n\r\n            const projectData = {};\r\n\r\n            // Process all files in the zip\r\n            const fileProcessingPromises = [];\r\n\r\n            zipContent.forEach((relativePath, zipEntry) => {\r\n                if (!zipEntry.dir) {\r\n                    const promise = zipEntry.async('string').then(content => {\r\n                        // Parse path: category/collection/objectKey.ext\r\n                        const pathParts = relativePath.split('/');\r\n                        if (pathParts.length >= 3) {\r\n                            const category = pathParts[0];\r\n                            const collection = pathParts[1];\r\n                            const fileName = pathParts[2];\r\n                            const objectKey = fileName.substring(0, fileName.lastIndexOf('.'));\r\n                            const fileExt = fileName.substring(fileName.lastIndexOf('.') + 1);\r\n\r\n                            // Initialize the data structure if needed\r\n                            if (!projectData[category]) projectData[category] = {};\r\n                            if (!projectData[category][collection]) projectData[category][collection] = {};\r\n\r\n                            // Parse content based on file extension\r\n                            if (fileExt === 'js') {\r\n                                projectData[category][collection][objectKey] = { script: content };\r\n                            } else if (fileExt === 'json') {\r\n                                projectData[category][collection][objectKey] = JSON.parse(content);\r\n                            }\r\n                        }\r\n                    });\r\n                    fileProcessingPromises.push(promise);\r\n                }\r\n            });\r\n\r\n            // Wait for all files to be processed\r\n            await Promise.all(fileProcessingPromises);\r\n\r\n            // Update game editor state with imported data\r\n            const defs = this.gameEditor.model.getCollectionDefs();\r\n            defs.forEach(def => {\r\n                const category = def.category;\r\n                const collectionKey = def.id;\r\n\r\n                if (projectData[category] && projectData[category][collectionKey]) {\r\n                    if (!this.gameEditor.model.state.project.objectTypes[collectionKey]) {\r\n                        this.gameEditor.model.state.project.objectTypes[collectionKey] = {};\r\n                    }\r\n\r\n                    // Merge imported objects with existing\r\n                    Object.keys(projectData[category][collectionKey]).forEach(objKey => {\r\n                        this.gameEditor.model.state.project.objectTypes[collectionKey][objKey] = \r\n                            projectData[category][collectionKey][objKey];\r\n                    });\r\n                }\r\n            });\r\n\r\n            // Trigger UI update\r\n            const updateEvent = new CustomEvent('projectUpdated', { cancelable: true });\r\n            document.body.dispatchEvent(updateEvent);\r\n\r\n            alert('Project imported successfully');\r\n        } catch (error) {\r\n            console.error('Error importing project:', error);\r\n            alert('Error importing project. See console for details.');\r\n        }\r\n    }\r\n}"
-      },
-      "ExportScripts": {
-        "fileName": "ExportScripts",
-        "script": "class ExportScripts {\r\n  constructor(app) {\r\n     this.app = app;\r\n  }\r\n  export(project) {\r\n      // Initialize JSZip\r\n      const zip = new (this.app.libraryClasses.JSZip)();\r\n\r\n      // Iterate over each script type (e.g., \"renderers\", \"components\")\r\n      Object.keys(project).forEach(scriptType => {\r\n          const scripts = project[scriptType];\r\n\r\n          // Create a folder for the script type\r\n          const folder = zip.folder(`scripts/${scriptType}`);\r\n\r\n          // Iterate over each script key (e.g., \"renderer\", \"component\")\r\n          Object.keys(scripts).forEach(scriptKey => {\r\n              const scriptData = scripts[scriptKey];\r\n              const scriptContent = scriptData.script || ''; // Fallback to empty string if no script\r\n\r\n              // Add the script file to the folder\r\n              folder.file(`${scriptKey}.js`, scriptContent);\r\n          });\r\n      });\r\n\r\n      // Generate the zip file and trigger download\r\n      zip.generateAsync({ type: 'blob' }).then(blob => {\r\n          // Create a temporary URL for the blob\r\n          const url = window.URL.createObjectURL(blob);\r\n\r\n          // Create a temporary link element to trigger download\r\n          const link = document.createElement('a');\r\n          link.href = url;\r\n          link.download = 'scripts.zip'; // Name of the downloaded file\r\n          document.body.appendChild(link);\r\n          link.click();\r\n\r\n          // Clean up\r\n          document.body.removeChild(link);\r\n          window.URL.revokeObjectURL(url);\r\n      }).catch(error => {\r\n          console.error('Error generating zip file:', error);\r\n      });\r\n  }\r\n}"
-      },
-      "GameState": {
-        "fileName": "GameState",
-        "script": "class GameState {\r\n    constructor(gameConfig = {}) {\r\n        let state = gameConfig.configs.state;\r\n     \r\n        // Clear all existing properties\r\n        for (let prop in this) {\r\n            if (Object.prototype.hasOwnProperty.call(this, prop)) {\r\n                delete this[prop];\r\n            }\r\n        }\r\n\r\n        // Set only the properties from params\r\n        for (let key in state) {\r\n            if (Object.prototype.hasOwnProperty.call(state, key)) {\r\n                this[key] = state[key];\r\n            }\r\n        }\r\n        this.entities = [];\r\n        // If stats is present, create defaultStats as a copy\r\n  \r\n    }\r\n\r\n    addEntity(entity) {\r\n        this.entities.push(entity);\r\n    }\r\n    removeEntity(entity) {\r\n    \r\n        let index = this.entities.indexOf(entity);\r\n        if( index >= 0 ) {\r\n            this.entities.splice(index, 1);\r\n        }\r\n    }\r\n}"
       }
     },
     "modals": {
@@ -17761,21 +17761,13 @@ const DEFAULT_PROJECT_CONFIG = {
       }
     },
     "renderers": {
-      "Renderer": {
-        "fileName": "Renderer",
-        "script": "class Renderer extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n  init( { objectType, spawnType, setDirection = -2}) {\r\n        if(this.game.config.configs.game.is3D) {\r\n            return;\r\n        }\r\n        this.images = this.game.imageManager.getImages(objectType, spawnType);  \r\n        this.setDirection = setDirection;\r\n        this.currentDirection = 0; // Default direction (will be 0-7 now)\r\n        // Rotated direction zones 45 degrees counter-clockwise\r\n        // Each zone covers a 45-degree arc (π/4 radians)\r\n        this.directionZones = [\r\n            { min: Math.PI/8, max: 3*Math.PI/8 },     // 0: Down-Right (Southeast)\r\n            { min: 3*Math.PI/8, max: 5*Math.PI/8 },   // 1: Down\r\n            { min: 5*Math.PI/8, max: 7*Math.PI/8 },   // 2: Down-Left (Southwest)\r\n            { min: 7*Math.PI/8, max: -7*Math.PI/8 },  // 3: Left (West)\r\n            { min: -7*Math.PI/8, max: -5*Math.PI/8 }, // 4: Up-Left (Northwest)\r\n            { min: -5*Math.PI/8, max: -3*Math.PI/8 }, // 5: Up\r\n            { min: -3*Math.PI/8, max: -Math.PI/8 },   // 6: Up-Right (Northeast)\r\n            { min: -Math.PI/8, max: Math.PI/8 }       // 7: Right (East)\r\n        ];\r\n        this.isometric = this.game.config.configs.game.isIsometric;\r\n    }\r\n\r\n    draw() {\r\n        if(this.game.config.configs.game.is3D) {\r\n            return;\r\n        }\r\n        if( this.setDirection < 0 ) {\r\n            const dx = this.parent.position.x - this.parent.lastPosition.x; // Change in x\r\n            const dy = this.parent.position.y - this.parent.lastPosition.y; // Change in y\r\n            \r\n            // Only update direction if there's movement\r\n            if (Math.abs(dx) > 0.001 || Math.abs(dy) > 0.001) {\r\n                // Calculate angle of movement in radians\r\n                const angle = Math.atan2(dy, dx);\r\n                \r\n                // Determine which of the 8 directional zones the angle falls into\r\n                for (let i = 0; i < this.directionZones.length; i++) {\r\n                    const zone = this.directionZones[i];\r\n                    \r\n                    // Special handling for the West zone which wraps around from PI to -PI\r\n                    if (i === 3) {\r\n                        if (angle >= zone.min || angle <= zone.max) {\r\n                            this.currentDirection = i;\r\n                            break;\r\n                        }\r\n                    } \r\n                    // Normal zone check\r\n                    else if (angle >= zone.min && angle < zone.max) {\r\n                        this.currentDirection = i;\r\n                        break;\r\n                    }\r\n                }\r\n            }\r\n        } else {\r\n            this.currentDirection = this.setDirection;\r\n        }\r\n        let direction = this.currentDirection + (this.isometric ? 0 : -1);\r\n        if(direction == -1 ) direction = this.images.length - 1;//wrap around\r\n        // Draw the image for the current direction\r\n        if (this.images && this.images.length > direction) {\r\n            const image = this.images[direction];\r\n            if (image) {\r\n                const imgWidth = image.width;\r\n                const imgHeight = image.height;\r\n                \r\n                const drawX = this.parent.drawPosition.x - imgWidth / 2;\r\n                let drawY = this.parent.drawPosition.y - imgHeight / 2;\r\n                if( this.parent.position.z ) {\r\n                   drawY -= this.parent.position.z;                   \r\n                }\r\n                this.game.ctx.drawImage(image, drawX, drawY);\r\n            }\r\n        }\r\n    }\r\n}"
-      },
-      "EnergyShield": {
-        "fileName": "EnergyShield",
-        "script": "class EnergyShield extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n init(){\r\n        // Get stats component for reference\r\n        let statsComp = this.parent.getComponent('stats');\r\n        \r\n        // Shield configuration with defaults\r\n        this.maxEnergyShield = statsComp.stats.energyShield || 0;\r\n        this.energyShield = this.maxEnergyShield || 0;\r\n        this.rechargeRate = statsComp.stats.rechargeRate || 10; // Shield points per second\r\n        this.rechargeDelay = statsComp.stats.rechargeDelay || 2000; // Milliseconds before recharge starts\r\n        this.lastDamageTime = 0; // Timestamp of last damage taken\r\n        \r\n        // Add relevant stats to the stats component\r\n        statsComp.addStat('maxEnergyShield', this.maxEnergyShield);\r\n        statsComp.addStat('shieldRechargeRate', this.rechargeRate);\r\n        statsComp.addStat('shieldRechargeDelay', this.rechargeDelay);\r\n        \r\n        // Visual settings\r\n        this.shieldColor = 'rgba(77, 166, 255, 0.6)'; // Light blue default\r\n        this.shieldEmptyColor = 'rgba(77, 166, 255, 0.2)';\r\n        this.barWidth = 30;\r\n        this.barHeight = 5;\r\n        this.barOffset = 8; // Distance above health bar\r\n    }\r\n    \r\n    /**\r\n     * Handle incoming damage\r\n     * @param {number} damage - Amount of incoming damage\r\n     * @returns {Object} - Damage breakdown\r\n     */\r\n    absorbDamage(damage) {\r\n        const result = {\r\n            absorbedByShield: 0,\r\n            remainingDamage: 0\r\n        };\r\n        \r\n        // Reset recharge timer when taking damage\r\n        this.lastDamageTime = this.game.currentTime;\r\n        \r\n        if (this.energyShield > 0) {\r\n            if (damage <= this.energyShield) {\r\n                // Shield absorbs all damage\r\n                result.absorbedByShield = damage;\r\n                this.energyShield -= damage;\r\n            } else {\r\n                // Shield is depleted, remaining damage goes through\r\n                result.absorbedByShield = this.energyShield;\r\n                result.remainingDamage = damage - this.energyShield;\r\n                this.energyShield = 0;\r\n            }\r\n        } else {\r\n            // No shield available\r\n            result.remainingDamage = damage;\r\n        }\r\n        \r\n        return result;\r\n    }\r\n    \r\n    /**\r\n     * Update shield state (recharging)\r\n     */\r\n    update() {\r\n        let statsComp = this.parent.getComponent('stats');\r\n        this.maxEnergyShield = statsComp.stats.energyShield || 0;\r\n        // Check if enough time has passed since last damage\r\n        const timeSinceLastDamage = this.game.currentTime - this.lastDamageTime;\r\n        \r\n        if (timeSinceLastDamage >= this.rechargeDelay && this.energyShield < this.maxEnergyShield) {\r\n            // Calculate recharge amount based on time elapsed and rate\r\n            const deltaTime = this.game.deltaTime || 16; // Fallback to 60fps if deltaTime not available\r\n            const rechargeAmount = (this.rechargeRate * deltaTime) / 1000; // Convert to per-frame amount\r\n            \r\n            // Apply recharge\r\n            this.energyShield = Math.min(this.maxEnergyShield, this.energyShield + rechargeAmount);\r\n        }\r\n    }\r\n    \r\n    /**\r\n     * Draw shield bar\r\n     */\r\n    draw() {\r\n        if (this.maxEnergyShield <= 0) return; // Don't draw if no shield capacity\r\n        \r\n        const shieldPercentage = this.energyShield / this.maxEnergyShield;        \r\n        \r\n        // Shield bar will be slightly above that\r\n        const barY = this.parent.drawPosition.y - this.game.config.configs.game.imageSize * .3 - this.barOffset;\r\n        \r\n        // Draw shield background/empty bar\r\n        this.game.ctx.fillStyle = this.shieldEmptyColor;\r\n        this.game.ctx.fillRect(this.parent.drawPosition.x - this.barWidth/2, barY, this.barWidth, this.barHeight);\r\n        \r\n        // Draw current shield level\r\n        if (shieldPercentage > 0) {\r\n            this.game.ctx.fillStyle = this.shieldColor;\r\n            this.game.ctx.fillRect(\r\n                this.parent.drawPosition.x - this.barWidth/2, \r\n                barY, \r\n                this.barWidth * shieldPercentage, \r\n                this.barHeight\r\n            );\r\n        }\r\n        \r\n        // Draw recharge indicator if currently recharging\r\n        const timeSinceLastDamage = this.game.currentTime - this.lastDamageTime;\r\n        if (timeSinceLastDamage < this.rechargeDelay && this.energyShield < this.maxEnergyShield) {\r\n            const rechargePercentage = timeSinceLastDamage / this.rechargeDelay;\r\n            \r\n            // Draw a small indicator below the shield bar\r\n            this.game.ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';\r\n            this.game.ctx.fillRect(\r\n                this.parent.drawPosition.x - this.barWidth/2, \r\n                barY + this.barHeight + 1, \r\n                this.barWidth * rechargePercentage, \r\n                2\r\n            );\r\n        }\r\n    }\r\n    \r\n    /**\r\n     * Get current shield value\r\n     * @returns {number} Current shield amount\r\n     */\r\n    getShieldValue() {\r\n        return this.energyShield;\r\n    }\r\n    \r\n    /**\r\n     * Reset shield to full\r\n     */\r\n    resetShield() {\r\n        this.energyShield = this.maxEnergyShield;\r\n    }\r\n    \r\n    /**\r\n     * Temporarily boost shield capacity\r\n     * @param {number} amount - Amount to boost by\r\n     * @param {number} duration - Duration in milliseconds\r\n     */\r\n    boostShield(amount, duration) {\r\n        const originalMax = this.maxEnergyShield;\r\n        this.maxEnergyShield += amount;\r\n        this.energyShield += amount;\r\n        \r\n        // Reset after duration\r\n        setTimeout(() => {\r\n            this.maxEnergyShield = originalMax;\r\n            this.energyShield = Math.min(this.energyShield, this.maxEnergyShield);\r\n        }, duration);\r\n    }\r\n}"
-      },
       "Explosion": {
         "fileName": "Explosion",
         "script": "class Explosion extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n   init( {radius}) {\r\n        this.maxRadius = radius * this.game.config.configs.game.gridSize / 2;\r\n        this.currentRadius = 0;\r\n        this.alpha = 1;\r\n    }\r\n\r\n    update() {\r\n        this.currentRadius += this.maxRadius * 0.1;\r\n        this.alpha -= 0.05;\r\n        if( this.alpha < 0 ) {\r\n            this.parent.destroy();\r\n        }\r\n    }\r\n\r\n    draw() {\r\n        const pixelX = this.parent.position.x;\r\n        const pixelY = this.parent.position.y;\r\n\r\n        // Convert pixel to isometric\r\n        const isoPos = this.game.translator.pixelToIso(pixelX, pixelY);\r\n        const isoRadiusX = this.currentRadius;         // X-axis range remains roughly the same in isometric space\r\n        const isoRadiusY = this.currentRadius * 0.5;   // Y-axis range is halved due to isometric compression\r\n\r\n        this.game.ctx.beginPath();\r\n        this.game.ctx.ellipse(\r\n                isoPos.x,           // Center x in isometric coords\r\n                isoPos.y,           // Center y in isometric coords\r\n                isoRadiusX,          // X radius (wider due to isometric projection)\r\n                isoRadiusY,          // Y radius (shorter due to flattening)\r\n                0,                  // Rotation (none needed for isometric)\r\n                0,                  // Start angle\r\n                2 * Math.PI         // End angle (full circle)\r\n            );\r\n        this.game.ctx.fillStyle = `rgba(255, 200, 0, ${this.alpha * 0.5})`;\r\n        this.game.ctx.fill();\r\n\r\n        this.game.ctx.beginPath();\r\n        this.game.ctx.ellipse(\r\n                isoPos.x,           // Center x in isometric coords\r\n                isoPos.y,           // Center y in isometric coords\r\n                isoRadiusX * .7,          // X radius (wider due to isometric projection)\r\n                isoRadiusY * .7,          // Y radius (shorter due to flattening)\r\n                0,                  // Rotation (none needed for isometric)\r\n                0,                  // Start angle\r\n                2 * Math.PI         // End angle (full circle)\r\n            );\r\n        this.game.ctx.fillStyle = `rgba(255, 100, 0, ${this.alpha})`;\r\n        this.game.ctx.fill();\r\n    \r\n    }\r\n}"
       },
-      "MapRenderer": {
-        "fileName": "MapRenderer",
-        "script": "class MapRenderer extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init({canvasBuffer, terrainCanvasBuffer, worldObjects, imageManager, levelName, gameConfig, level, isEditor, palette}) {   \r\n\r\n        this.config = gameConfig;\r\n        this.imageManager = imageManager;\r\n        this.worldObjects = worldObjects;\r\n        this.selectedTowerType = null;\r\n        this.hoverCell = { x: -1, y: -1 };\r\n        this.showRange = false;\r\n        this.isMapCached = false; // Flag to track if map needs redrawing\r\n        this.currentLevel = levelName;\r\n        this.level = level;\r\n        this.tileMap = level.tileMap;\r\n        this.palette = palette;\r\n\r\n        // Create off-screen canvas for caching\r\n        if(!this.config.is3D || isEditor) {\r\n            this.ctx = canvasBuffer.getContext('2d');\r\n            this.mapCacheCanvas = document.createElement('canvas');\r\n            this.mapCacheCanvas.width = this.config.canvasWidth;\r\n            this.mapCacheCanvas.height = this.config.canvasHeight;\r\n            this.mapCacheCtx = this.mapCacheCanvas.getContext('2d');\r\n\r\n            \r\n            this.envCacheCanvasBG = document.createElement('canvas');\r\n            this.envCacheCanvasBG.width = this.config.canvasWidth;\r\n            this.envCacheCanvasBG.height = this.config.canvasHeight / 2;\r\n            this.envCacheCtxBG = this.envCacheCanvasBG.getContext('2d');\r\n\r\n            this.envCacheCanvasFG = document.createElement('canvas');\r\n            this.envCacheCanvasFG.width = this.config.canvasWidth;\r\n            this.envCacheCanvasFG.height = this.config.canvasHeight / 2;\r\n            this.envCacheCtxFG = this.envCacheCanvasFG.getContext('2d');\r\n        }\r\n        this.terrainCanvas = terrainCanvasBuffer;\r\n        this.terrainCanvas.width = this.tileMap.size * this.config.gridSize;\r\n        this.terrainCanvas.height = this.tileMap.size * this.config.gridSize;\r\n        this.terrainCtx = this.terrainCanvas.getContext('2d');\r\n        \r\n        this.terrainTileMapper = this.game.terrainTileMapper;\r\n        this.game.mapRenderer = this;\r\n        this.isometric = this.game.config.configs.game.isIsometric;\r\n    }\r\n\r\n    draw(){}\r\n    render(tileMapData) {\r\n        if(!this.isMapCached){\r\n            this.terrainCtx.clearRect(0, 0, this.terrainCanvas.width, this.terrainCanvas.height);\r\n                \r\n            // Draw the map onto the cache canvas\r\n            this.drawTileMap(tileMapData);\r\n            this.renderEnvironment();\r\n            \r\n            //this.drawPaths(this.terrainCacheCtx, paths);\r\n        }\r\n        // Mark cache as valid\r\n        this.isMapCached = true;\r\n    }\r\n    renderEnvironment() {\r\n        if (this.tileMap.environmentObjects.length === 0) return;\r\n    \r\n        // Group environment objects by type\r\n        const objectsByType = {};\r\n        this.tileMap.environmentObjects.forEach(obj => {\r\n            if (!objectsByType[obj.type]) {\r\n                objectsByType[obj.type] = [];\r\n            }\r\n            objectsByType[obj.type].push(obj);\r\n        });\r\n    \r\n        // Process each type separately\r\n        Object.entries(objectsByType).forEach(([type, objects]) => {\r\n            // Load the model for this type\r\n            const referenceModel = this.game.modelManager.getModel(\"worldObjects\", type);\r\n            if (!referenceModel) return;\r\n    \r\n            // Find all meshes and store their complete transform data\r\n            const meshData = [];\r\n            referenceModel.updateMatrixWorld(true); // Ensure world matrices are up to date\r\n    \r\n            referenceModel.traverse(node => {\r\n                if (node.isMesh) {\r\n                    const parent = node.parent;\r\n                    const parentWorldMatrix = parent.matrixWorld.clone();\r\n                    const localMatrix = node.matrix.clone();\r\n    \r\n                    // Get transform relative to model root\r\n                    const relativeMatrix = new THREE.Matrix4();\r\n                    relativeMatrix.copy(parentWorldMatrix);\r\n                    relativeMatrix.multiply(localMatrix);\r\n    \r\n                    meshData.push({\r\n                        mesh: node,\r\n                        relativeMatrix: relativeMatrix\r\n                    });\r\n                }\r\n            });\r\n            if (meshData.length === 0) return;\r\n    \r\n            // Create instanced meshes for this type\r\n            const instancedMeshes = meshData.map(({ mesh, relativeMatrix }) => {\r\n                const instancedMesh = new THREE.InstancedMesh(\r\n                    mesh.geometry,\r\n                    mesh.material,\r\n                    objects.length // Number of instances for this type\r\n                );\r\n                instancedMesh.userData.relativeMatrix = relativeMatrix;\r\n                instancedMesh.castShadow = true;\r\n                instancedMesh.receiveShadow = true;\r\n                return instancedMesh;\r\n            });\r\n    \r\n            // Set positions for all instances of this type\r\n            const matrix = new THREE.Matrix4();\r\n            const dummy = new THREE.Object3D();\r\n    \r\n            objects.forEach((obj, index) => {\r\n                // Get pixel color at object position\r\n                let hexColor = this.tileMap.terrainTypes[this.tileMap.extensionTerrainType].color.slice(1);\r\n                let numColor = parseInt(hexColor, 16); // Convert hex string to number, e.g., 0xaa3311\r\n\r\n                let r = (numColor >> 16) & 0xff; // Red channel\r\n                let g = (numColor >> 8) & 0xff;  // Green channel   \r\n                let b = numColor & 0xff;         // Blue channel\r\n                if (g > r && g > b) {\r\n                    dummy.position.set(\r\n                        obj.x, \r\n                        this.game.config.heightMaps[this.game.config.worlds[this.level.world].heightMap].heightStep * this.tileMap.extensionTerrainType, \r\n                        obj.y\r\n                    );\r\n                    dummy.rotation.y = Math.random() * Math.PI * 2;\r\n                    const scale = 0.8 + Math.random() * 0.4;\r\n                    dummy.scale.set(scale, scale, scale);\r\n                    dummy.updateMatrix();\r\n            \r\n                    // Apply transforms while preserving mesh relationships\r\n                    instancedMeshes.forEach(instancedMesh => {\r\n                        matrix.copy(dummy.matrix);\r\n                        matrix.multiply(instancedMesh.userData.relativeMatrix);\r\n                        instancedMesh.setMatrixAt(index, matrix);\r\n                    });\r\n                }\r\n            });\r\n    \r\n            // Add instanced meshes to the scene\r\n            instancedMeshes.forEach(instancedMesh => {\r\n                instancedMesh.instanceMatrix.needsUpdate = true;\r\n                this.game.scene.add(instancedMesh);\r\n            });\r\n        });\r\n    }\r\n    renderBG(tileMapData, paths) {\r\n        this.clearMap(tileMapData);\r\n        // Generate cache if not already done\r\n        if (!this.isMapCached) {\r\n            this.cacheMap(tileMapData, paths, this.isometric);            \r\n        }        \r\n  \r\n        // Draw cached map image to main canvas\r\n      \r\n       this.ctx.drawImage( this.terrainCanvas, ( this.config.canvasWidth - this.terrainCanvas.width) / 2, ( this.config.canvasHeight - this.terrainCanvas.height) / 2 );\r\n\r\n       //this.ctx.drawImage(this.terrainCanvas, 0, 0);\r\n        //this.ctx.drawImage(this.mapCacheCanvas, 0,  -this.config.canvasHeight / 2);\r\n        this.ctx.drawImage(this.envCacheCanvasBG, 0, 0);\r\n    }\r\n    renderFG() {  \r\n        this.ctx.drawImage(this.envCacheCanvasFG, 0, this.config.canvasHeight / 2);\r\n    }    \r\n    setLevel(level) {\r\n        this.currentLevel = level;\r\n        this.terrainImages = this.imageManager.getImages(\"levels\", level);\r\n\r\n    }\r\n\r\n    drawTileMap(tileMapData) {\r\n        this.terrainTileMapper.draw(tileMapData.terrainMap);\r\n    }\r\n    clearMap(tileMapData) {\r\n        this.ctx.clearRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);\r\n        this.ctx.fillStyle = tileMapData.terrainTypes[tileMapData.extensionTerrainType].color;       \r\n        this.ctx.fillRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);\r\n    }\r\n    // Call this when map data changes or on initialization\r\n    cacheMap(tileMapData, paths, isometric) {\r\n        this.terrainCtx.clearRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);\r\n                   \r\n        // Clear the cache canvas\r\n        this.mapCacheCtx.clearRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);\r\n        \r\n        // Draw the map onto the cache canvas\r\n        this.drawTileMap(tileMapData, isometric);\r\n        this.drawPaths(this.mapCacheCtx, paths);\r\n        this.drawEnvironment(tileMapData.terrainMap.length, tileMapData.terrainMap.length * tileMapData.terrainMap.length);\r\n        \r\n        // Mark cache as valid\r\n        this.isMapCached = true;\r\n    }\r\n\r\n    drawMap(tileMap) {\r\n\r\n        this.mapCacheCtx.fillStyle = '#4a7c59';\r\n        this.mapCacheCtx.fillRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);\r\n        const tileWidth = this.config.gridSize;\r\n        const tileHeight = this.config.gridSize * 0.5;\r\n        \r\n        for (let y = 0; y < tileMap.length; y++) {\r\n            for (let x = 0; x < tileMap[y].length; x++) {\r\n                const tile = tileMap[y][x];\r\n                \r\n                // Use translator to get iso coordinates\r\n                const isoCoords = this.game.translator.gridToIso(x, y);\r\n                const isoX = isoCoords.x;\r\n                const isoY = isoCoords.y;\r\n                \r\n                this.mapCacheCtx.fillStyle = tile.color;\r\n                this.mapCacheCtx.beginPath();\r\n                this.mapCacheCtx.moveTo(isoX, isoY);\r\n                this.mapCacheCtx.lineTo(isoX + tileWidth / 2, isoY + tileHeight / 2);\r\n                this.mapCacheCtx.lineTo(isoX, isoY + tileHeight);\r\n                this.mapCacheCtx.lineTo(isoX - tileWidth / 2, isoY + tileHeight / 2);\r\n                this.mapCacheCtx.closePath();\r\n                this.mapCacheCtx.fill();\r\n                this.mapCacheCtx.strokeStyle = 'rgba(0, 0, 0, 0.1)';\r\n                this.mapCacheCtx.stroke();\r\n            }\r\n        }\r\n        \r\n       \r\n        this.drawEnvironment(tileMap.length);\r\n    }\r\n\r\n    drawPaths(ctx, paths) {\r\n        const tileHeight = this.config.gridSize * 0.5;\r\n        ctx.strokeStyle = '#ffd166';\r\n        ctx.lineWidth = 2;\r\n        ctx.beginPath();\r\n        \r\n        paths.forEach(path => {\r\n            // First point in path\r\n            const firstIsoCoords = this.game.translator.gridToIso(path[0].x, path[0].y);\r\n            const firstIsoX = firstIsoCoords.x;\r\n            const firstIsoY = firstIsoCoords.y + tileHeight / 2; // Add half tile height for center of tile\r\n            \r\n            ctx.moveTo(firstIsoX, firstIsoY);\r\n            \r\n            // Remaining points in path\r\n            path.forEach(location => {\r\n                const isoCoords = this.game.translator.gridToIso(location.x, location.y);\r\n                const isoX = isoCoords.x;\r\n                const isoY = isoCoords.y + tileHeight / 2; // Add half tile height for center of tile\r\n                \r\n                ctx.lineTo(isoX, isoY);\r\n            });\r\n        });\r\n        \r\n        ctx.stroke();\r\n    }\r\n\r\n    drawEnvironment(boardSize, amountToDraw) {\r\n\r\n        let itemAmt = amountToDraw;\r\n        let environmentTypes = [];\r\n        for(let envType in this.worldObjects){\r\n            environmentTypes.push(envType);\r\n        }\r\n        this.envCacheCtxBG.clearRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);\r\n        this.envCacheCtxFG.clearRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);\r\n        \r\n        let items = [];\r\n        \r\n        // Check if we have stored environment objects\r\n        if (this.tileMap.environmentObjects && this.tileMap.environmentObjects.length > 0) {\r\n            // Use the stored objects\r\n            this.tileMap.environmentObjects.forEach(obj => {\r\n                const images = this.imageManager.getImages(\"environment\", obj.type);\r\n                if (images && images.idle && images.idle[0] && images.idle[0][obj.imageIndex]) {\r\n                    items.push({\r\n                        img: images.idle[0][obj.imageIndex],\r\n                        x: obj.x,\r\n                        y: obj.y\r\n                    });\r\n                }\r\n            });\r\n        } else {       \r\n            // for(let i = 0; i < itemAmt; i++) {\r\n            //     // Define the game board boundaries\r\n            //     const boardMinX = 0;\r\n            //     const boardMaxX = boardSize * this.config.gridSize;\r\n            //     const boardMinY = 0;\r\n            //     const boardMaxY = boardSize * this.config.gridSize;\r\n                \r\n            //     // Generate a random position that's outside the board but within a reasonable distance\r\n            //     let x, y;\r\n                \r\n            //     // Expand the area where we can place objects\r\n            //     const expandAmount = boardSize * this.config.gridSize; // Adjust this value as needed\r\n                \r\n            //     // Randomly choose whether to place on x-axis or y-axis outside the board\r\n            //     if (Math.random() < 0.5) {\r\n            //         // Place on the left or right of the board\r\n            //         x = Math.random() < 0.5 ?\r\n            //             boardMinX - Math.random() * expandAmount : // Left side\r\n            //             boardMaxX + Math.random() * expandAmount;  // Right side\r\n                    \r\n            //         // Allow y to be anywhere, including outside the board\r\n            //         y = boardMinY - expandAmount + Math.random() * (boardMaxY - boardMinY + 2 * expandAmount);\r\n            //     } else {\r\n            //         // Place on the top or bottom of the board\r\n            //         y = Math.random() < 0.5 ?\r\n            //             boardMinY - Math.random() * expandAmount : // Top side\r\n            //             boardMaxY + Math.random() * expandAmount;  // Bottom side\r\n                    \r\n            //         // Allow x to be anywhere, including outside the board\r\n            //         x = boardMinX - expandAmount + Math.random() * (boardMaxX - boardMinX + 2 * expandAmount);\r\n            //     }\r\n                \r\n            //     // Double-check that the position is actually outside the board\r\n            //     if (x < boardMinX || x > boardMaxX || y < boardMinY || y > boardMaxY) {\r\n            //         const type = environmentTypes[Math.floor(Math.random() * environmentTypes.length)];\r\n            //         const images = this.imageManager.getImages(\"environment\", type);\r\n            //         if(images){\r\n            //             items.push( { img: images.idle[0][parseInt(Math.random()*images.idle[0].length)], x: x, y: y});\r\n            //         }\r\n            //     } else {\r\n            //         i--; // Position inside board, try again\r\n            //     }\r\n            // }\r\n        }\r\n\r\n        items.sort((a, b) => {\r\n            return (a.y * boardSize + a.x) - (b.y * boardSize + b.x)\r\n        });\r\n\r\n        items.forEach((item) => {            \r\n            // Convert pixel to isometric\r\n            const isoPos = this.game.translator.pixelToIso(item.x, item.y);\r\n            const image = item.img;\r\n            const imgWidth = image.width;\r\n            const imgHeight = image.height;\r\n            \r\n            const drawX = isoPos.x;\r\n            const drawY = isoPos.y;\r\n            if( drawY < this.config.canvasHeight / 2 ) {\r\n                this.envCacheCtxBG.drawImage(image, drawX - imgWidth / 2, drawY - imgHeight / 2);\r\n            } else if(drawY - this.config.canvasHeight / 2 - imgHeight / 2 > 0) {//prevent trees in FG from getting chopped off at the top if they are too close to the middle of the frame.\r\n  \r\n                this.envCacheCtxFG.drawImage(image, drawX - imgWidth / 2, drawY - this.config.canvasHeight / 2 - imgHeight / 2);\r\n            }\r\n        });\r\n    }\r\n\r\n}"
+      "EnergyShield": {
+        "fileName": "EnergyShield",
+        "script": "class EnergyShield extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n init(){\r\n        // Get stats component for reference\r\n        let statsComp = this.parent.getComponent('stats');\r\n        \r\n        // Shield configuration with defaults\r\n        this.maxEnergyShield = statsComp.stats.energyShield || 0;\r\n        this.energyShield = this.maxEnergyShield || 0;\r\n        this.rechargeRate = statsComp.stats.rechargeRate || 10; // Shield points per second\r\n        this.rechargeDelay = statsComp.stats.rechargeDelay || 2000; // Milliseconds before recharge starts\r\n        this.lastDamageTime = 0; // Timestamp of last damage taken\r\n        \r\n        // Add relevant stats to the stats component\r\n        statsComp.addStat('maxEnergyShield', this.maxEnergyShield);\r\n        statsComp.addStat('shieldRechargeRate', this.rechargeRate);\r\n        statsComp.addStat('shieldRechargeDelay', this.rechargeDelay);\r\n        \r\n        // Visual settings\r\n        this.shieldColor = 'rgba(77, 166, 255, 0.6)'; // Light blue default\r\n        this.shieldEmptyColor = 'rgba(77, 166, 255, 0.2)';\r\n        this.barWidth = 30;\r\n        this.barHeight = 5;\r\n        this.barOffset = 8; // Distance above health bar\r\n    }\r\n    \r\n    /**\r\n     * Handle incoming damage\r\n     * @param {number} damage - Amount of incoming damage\r\n     * @returns {Object} - Damage breakdown\r\n     */\r\n    absorbDamage(damage) {\r\n        const result = {\r\n            absorbedByShield: 0,\r\n            remainingDamage: 0\r\n        };\r\n        \r\n        // Reset recharge timer when taking damage\r\n        this.lastDamageTime = this.game.currentTime;\r\n        \r\n        if (this.energyShield > 0) {\r\n            if (damage <= this.energyShield) {\r\n                // Shield absorbs all damage\r\n                result.absorbedByShield = damage;\r\n                this.energyShield -= damage;\r\n            } else {\r\n                // Shield is depleted, remaining damage goes through\r\n                result.absorbedByShield = this.energyShield;\r\n                result.remainingDamage = damage - this.energyShield;\r\n                this.energyShield = 0;\r\n            }\r\n        } else {\r\n            // No shield available\r\n            result.remainingDamage = damage;\r\n        }\r\n        \r\n        return result;\r\n    }\r\n    \r\n    /**\r\n     * Update shield state (recharging)\r\n     */\r\n    update() {\r\n        let statsComp = this.parent.getComponent('stats');\r\n        this.maxEnergyShield = statsComp.stats.energyShield || 0;\r\n        // Check if enough time has passed since last damage\r\n        const timeSinceLastDamage = this.game.currentTime - this.lastDamageTime;\r\n        \r\n        if (timeSinceLastDamage >= this.rechargeDelay && this.energyShield < this.maxEnergyShield) {\r\n            // Calculate recharge amount based on time elapsed and rate\r\n            const deltaTime = this.game.deltaTime || 16; // Fallback to 60fps if deltaTime not available\r\n            const rechargeAmount = (this.rechargeRate * deltaTime) / 1000; // Convert to per-frame amount\r\n            \r\n            // Apply recharge\r\n            this.energyShield = Math.min(this.maxEnergyShield, this.energyShield + rechargeAmount);\r\n        }\r\n    }\r\n    \r\n    /**\r\n     * Draw shield bar\r\n     */\r\n    draw() {\r\n        if (this.maxEnergyShield <= 0) return; // Don't draw if no shield capacity\r\n        \r\n        const shieldPercentage = this.energyShield / this.maxEnergyShield;        \r\n        \r\n        // Shield bar will be slightly above that\r\n        const barY = this.parent.drawPosition.y - this.game.config.configs.game.imageSize * .3 - this.barOffset;\r\n        \r\n        // Draw shield background/empty bar\r\n        this.game.ctx.fillStyle = this.shieldEmptyColor;\r\n        this.game.ctx.fillRect(this.parent.drawPosition.x - this.barWidth/2, barY, this.barWidth, this.barHeight);\r\n        \r\n        // Draw current shield level\r\n        if (shieldPercentage > 0) {\r\n            this.game.ctx.fillStyle = this.shieldColor;\r\n            this.game.ctx.fillRect(\r\n                this.parent.drawPosition.x - this.barWidth/2, \r\n                barY, \r\n                this.barWidth * shieldPercentage, \r\n                this.barHeight\r\n            );\r\n        }\r\n        \r\n        // Draw recharge indicator if currently recharging\r\n        const timeSinceLastDamage = this.game.currentTime - this.lastDamageTime;\r\n        if (timeSinceLastDamage < this.rechargeDelay && this.energyShield < this.maxEnergyShield) {\r\n            const rechargePercentage = timeSinceLastDamage / this.rechargeDelay;\r\n            \r\n            // Draw a small indicator below the shield bar\r\n            this.game.ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';\r\n            this.game.ctx.fillRect(\r\n                this.parent.drawPosition.x - this.barWidth/2, \r\n                barY + this.barHeight + 1, \r\n                this.barWidth * rechargePercentage, \r\n                2\r\n            );\r\n        }\r\n    }\r\n    \r\n    /**\r\n     * Get current shield value\r\n     * @returns {number} Current shield amount\r\n     */\r\n    getShieldValue() {\r\n        return this.energyShield;\r\n    }\r\n    \r\n    /**\r\n     * Reset shield to full\r\n     */\r\n    resetShield() {\r\n        this.energyShield = this.maxEnergyShield;\r\n    }\r\n    \r\n    /**\r\n     * Temporarily boost shield capacity\r\n     * @param {number} amount - Amount to boost by\r\n     * @param {number} duration - Duration in milliseconds\r\n     */\r\n    boostShield(amount, duration) {\r\n        const originalMax = this.maxEnergyShield;\r\n        this.maxEnergyShield += amount;\r\n        this.energyShield += amount;\r\n        \r\n        // Reset after duration\r\n        setTimeout(() => {\r\n            this.maxEnergyShield = originalMax;\r\n            this.energyShield = Math.min(this.energyShield, this.maxEnergyShield);\r\n        }, duration);\r\n    }\r\n}"
       },
       "Health": {
         "fileName": "Health",
@@ -17789,6 +17781,10 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "LightningRenderer",
         "script": "class LightningRenderer extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n  init( {owner}) {\r\n        this.ctx = this.game.ctx;\r\n        const ownerStats = owner.getComponent(\"stats\").stats;\r\n        this.startOffsetY = ownerStats.projectileStartOffsetY || this.game.config.configs.game.gridSize / 2;\r\n    }\r\n\r\n    draw() {\r\n        const projectile = this.parent.getComponent(\"ChainProjectile\");\r\n        if (!projectile || !projectile.chainTargets.length) return;\r\n\r\n        this.ctx.strokeStyle = \"rgba(0, 255, 255, 0.8)\"; // Cyan lightning\r\n        this.ctx.lineWidth = 2;\r\n        let stats = this.parent.getComponent('stats').stats;\r\n        // Start from Tesla Coil (parent position)\r\n        let startPos = this.game.translator.pixelToIso(this.parent.position.x, this.parent.position.y);\r\n        startPos.y -= this.startOffsetY;//dont shoot off the ground\r\n        for (let i = 0; i < projectile.chainTargets.length; i++) {\r\n            const target = projectile.chainTargets[i];\r\n            if (!target || target.destroyed) continue;\r\n\r\n            const endPos = this.game.translator.pixelToIso(target.position.x, target.position.y);\r\n            this.drawLightning(startPos, endPos);\r\n\r\n            // Next arc starts from this target\r\n            startPos = endPos;\r\n        }\r\n    }\r\n\r\n    drawLightning(startPos, endPos) {\r\n        this.ctx.beginPath();            \r\n        this.ctx.moveTo(startPos.x, startPos.y);\r\n\r\n        const segments = 8; // Number of zigzag points\r\n        const dx = (endPos.x - startPos.x) / segments;\r\n        const dy = (endPos.y - startPos.y) / segments;\r\n\r\n        let currentX = startPos.x;\r\n        let currentY = startPos.y;\r\n\r\n        for (let i = 1; i < segments; i++) {\r\n            currentX += dx;\r\n            currentY += dy;\r\n\r\n            // Add random offset for jagged effect\r\n            const offsetX = (Math.random() - 0.5) * 10; // Max 10px jitter\r\n            const offsetY = (Math.random() - 0.5) * 10;\r\n\r\n            this.ctx.lineTo(currentX + offsetX, currentY + offsetY);\r\n        }\r\n\r\n        this.ctx.lineTo(endPos.x, endPos.y);\r\n        this.ctx.stroke();\r\n    }\r\n}"
       },
+      "MapRenderer": {
+        "fileName": "MapRenderer",
+        "script": "class MapRenderer extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init({canvasBuffer, terrainCanvasBuffer, worldObjects, imageManager, levelName, gameConfig, level, isEditor, palette}) {   \r\n\r\n        this.config = gameConfig;\r\n        this.imageManager = imageManager;\r\n        this.worldObjects = worldObjects;\r\n        this.selectedTowerType = null;\r\n        this.hoverCell = { x: -1, y: -1 };\r\n        this.showRange = false;\r\n        this.isMapCached = false; // Flag to track if map needs redrawing\r\n        this.currentLevel = levelName;\r\n        this.level = level;\r\n        this.tileMap = level.tileMap;\r\n        this.palette = palette;\r\n\r\n        // Create off-screen canvas for caching\r\n        if(!this.config.is3D || isEditor) {\r\n            this.ctx = canvasBuffer.getContext('2d');\r\n            this.mapCacheCanvas = document.createElement('canvas');\r\n            this.mapCacheCanvas.width = this.config.canvasWidth;\r\n            this.mapCacheCanvas.height = this.config.canvasHeight;\r\n            this.mapCacheCtx = this.mapCacheCanvas.getContext('2d');\r\n\r\n            \r\n            this.envCacheCanvasBG = document.createElement('canvas');\r\n            this.envCacheCanvasBG.width = this.config.canvasWidth;\r\n            this.envCacheCanvasBG.height = this.config.canvasHeight / 2;\r\n            this.envCacheCtxBG = this.envCacheCanvasBG.getContext('2d');\r\n\r\n            this.envCacheCanvasFG = document.createElement('canvas');\r\n            this.envCacheCanvasFG.width = this.config.canvasWidth;\r\n            this.envCacheCanvasFG.height = this.config.canvasHeight / 2;\r\n            this.envCacheCtxFG = this.envCacheCanvasFG.getContext('2d');\r\n        }\r\n        this.terrainCanvas = terrainCanvasBuffer;\r\n        this.terrainCanvas.width = this.tileMap.size * this.config.gridSize;\r\n        this.terrainCanvas.height = this.tileMap.size * this.config.gridSize;\r\n        this.terrainCtx = this.terrainCanvas.getContext('2d');\r\n        \r\n        this.terrainTileMapper = this.game.terrainTileMapper;\r\n        this.game.mapRenderer = this;\r\n        this.isometric = this.game.config.configs.game.isIsometric;\r\n    }\r\n\r\n    draw(){}\r\n    render(tileMapData) {\r\n        if(!this.isMapCached){\r\n            this.terrainCtx.clearRect(0, 0, this.terrainCanvas.width, this.terrainCanvas.height);\r\n                \r\n            // Draw the map onto the cache canvas\r\n            this.drawTileMap(tileMapData);\r\n            this.renderEnvironment();\r\n            \r\n            //this.drawPaths(this.terrainCacheCtx, paths);\r\n        }\r\n        // Mark cache as valid\r\n        this.isMapCached = true;\r\n    }\r\n    renderEnvironment() {\r\n        if (this.tileMap.environmentObjects.length === 0) return;\r\n    \r\n        // Group environment objects by type\r\n        const objectsByType = {};\r\n        this.tileMap.environmentObjects.forEach(obj => {\r\n            if (!objectsByType[obj.type]) {\r\n                objectsByType[obj.type] = [];\r\n            }\r\n            objectsByType[obj.type].push(obj);\r\n        });\r\n    \r\n        // Process each type separately\r\n        Object.entries(objectsByType).forEach(([type, objects]) => {\r\n            // Load the model for this type\r\n            const referenceModel = this.game.modelManager.getModel(\"worldObjects\", type);\r\n            if (!referenceModel) return;\r\n    \r\n            // Find all meshes and store their complete transform data\r\n            const meshData = [];\r\n            referenceModel.updateMatrixWorld(true); // Ensure world matrices are up to date\r\n    \r\n            referenceModel.traverse(node => {\r\n                if (node.isMesh) {\r\n                    const parent = node.parent;\r\n                    const parentWorldMatrix = parent.matrixWorld.clone();\r\n                    const localMatrix = node.matrix.clone();\r\n    \r\n                    // Get transform relative to model root\r\n                    const relativeMatrix = new THREE.Matrix4();\r\n                    relativeMatrix.copy(parentWorldMatrix);\r\n                    relativeMatrix.multiply(localMatrix);\r\n    \r\n                    meshData.push({\r\n                        mesh: node,\r\n                        relativeMatrix: relativeMatrix\r\n                    });\r\n                }\r\n            });\r\n            if (meshData.length === 0) return;\r\n    \r\n            // Create instanced meshes for this type\r\n            const instancedMeshes = meshData.map(({ mesh, relativeMatrix }) => {\r\n                const instancedMesh = new THREE.InstancedMesh(\r\n                    mesh.geometry,\r\n                    mesh.material,\r\n                    objects.length // Number of instances for this type\r\n                );\r\n                instancedMesh.userData.relativeMatrix = relativeMatrix;\r\n                instancedMesh.castShadow = true;\r\n                instancedMesh.receiveShadow = true;\r\n                return instancedMesh;\r\n            });\r\n    \r\n            // Set positions for all instances of this type\r\n            const matrix = new THREE.Matrix4();\r\n            const dummy = new THREE.Object3D();\r\n    \r\n            objects.forEach((obj, index) => {\r\n                // Get pixel color at object position\r\n                let hexColor = this.tileMap.terrainTypes[this.tileMap.extensionTerrainType].color.slice(1);\r\n                let numColor = parseInt(hexColor, 16); // Convert hex string to number, e.g., 0xaa3311\r\n\r\n                let r = (numColor >> 16) & 0xff; // Red channel\r\n                let g = (numColor >> 8) & 0xff;  // Green channel   \r\n                let b = numColor & 0xff;         // Blue channel\r\n                if (g > r && g > b) {\r\n                    dummy.position.set(\r\n                        obj.x, \r\n                        this.game.config.heightMaps[this.game.config.worlds[this.level.world].heightMap].heightStep * this.tileMap.extensionTerrainType, \r\n                        obj.y\r\n                    );\r\n                    dummy.rotation.y = Math.random() * Math.PI * 2;\r\n                    const scale = 0.8 + Math.random() * 0.4;\r\n                    dummy.scale.set(scale, scale, scale);\r\n                    dummy.updateMatrix();\r\n            \r\n                    // Apply transforms while preserving mesh relationships\r\n                    instancedMeshes.forEach(instancedMesh => {\r\n                        matrix.copy(dummy.matrix);\r\n                        matrix.multiply(instancedMesh.userData.relativeMatrix);\r\n                        instancedMesh.setMatrixAt(index, matrix);\r\n                    });\r\n                }\r\n            });\r\n    \r\n            // Add instanced meshes to the scene\r\n            instancedMeshes.forEach(instancedMesh => {\r\n                instancedMesh.instanceMatrix.needsUpdate = true;\r\n                this.game.scene.add(instancedMesh);\r\n            });\r\n        });\r\n    }\r\n    renderBG(tileMapData, paths) {\r\n        this.clearMap(tileMapData);\r\n        // Generate cache if not already done\r\n        if (!this.isMapCached) {\r\n            this.cacheMap(tileMapData, paths, this.isometric);            \r\n        }        \r\n  \r\n        // Draw cached map image to main canvas\r\n      \r\n       this.ctx.drawImage( this.terrainCanvas, ( this.config.canvasWidth - this.terrainCanvas.width) / 2, ( this.config.canvasHeight - this.terrainCanvas.height) / 2 );\r\n\r\n       //this.ctx.drawImage(this.terrainCanvas, 0, 0);\r\n        //this.ctx.drawImage(this.mapCacheCanvas, 0,  -this.config.canvasHeight / 2);\r\n        this.ctx.drawImage(this.envCacheCanvasBG, 0, 0);\r\n    }\r\n    renderFG() {  \r\n        this.ctx.drawImage(this.envCacheCanvasFG, 0, this.config.canvasHeight / 2);\r\n    }    \r\n    setLevel(level) {\r\n        this.currentLevel = level;\r\n        this.terrainImages = this.imageManager.getImages(\"levels\", level);\r\n\r\n    }\r\n\r\n    drawTileMap(tileMapData) {\r\n        this.terrainTileMapper.draw(tileMapData.terrainMap);\r\n    }\r\n    clearMap(tileMapData) {\r\n        this.ctx.clearRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);\r\n        this.ctx.fillStyle = tileMapData.terrainTypes[tileMapData.extensionTerrainType].color;       \r\n        this.ctx.fillRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);\r\n    }\r\n    // Call this when map data changes or on initialization\r\n    cacheMap(tileMapData, paths, isometric) {\r\n        this.terrainCtx.clearRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);\r\n                   \r\n        // Clear the cache canvas\r\n        this.mapCacheCtx.clearRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);\r\n        \r\n        // Draw the map onto the cache canvas\r\n        this.drawTileMap(tileMapData, isometric);\r\n        this.drawPaths(this.mapCacheCtx, paths);\r\n        this.drawEnvironment(tileMapData.terrainMap.length, tileMapData.terrainMap.length * tileMapData.terrainMap.length);\r\n        \r\n        // Mark cache as valid\r\n        this.isMapCached = true;\r\n    }\r\n\r\n    drawMap(tileMap) {\r\n\r\n        this.mapCacheCtx.fillStyle = '#4a7c59';\r\n        this.mapCacheCtx.fillRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);\r\n        const tileWidth = this.config.gridSize;\r\n        const tileHeight = this.config.gridSize * 0.5;\r\n        \r\n        for (let y = 0; y < tileMap.length; y++) {\r\n            for (let x = 0; x < tileMap[y].length; x++) {\r\n                const tile = tileMap[y][x];\r\n                \r\n                // Use translator to get iso coordinates\r\n                const isoCoords = this.game.translator.gridToIso(x, y);\r\n                const isoX = isoCoords.x;\r\n                const isoY = isoCoords.y;\r\n                \r\n                this.mapCacheCtx.fillStyle = tile.color;\r\n                this.mapCacheCtx.beginPath();\r\n                this.mapCacheCtx.moveTo(isoX, isoY);\r\n                this.mapCacheCtx.lineTo(isoX + tileWidth / 2, isoY + tileHeight / 2);\r\n                this.mapCacheCtx.lineTo(isoX, isoY + tileHeight);\r\n                this.mapCacheCtx.lineTo(isoX - tileWidth / 2, isoY + tileHeight / 2);\r\n                this.mapCacheCtx.closePath();\r\n                this.mapCacheCtx.fill();\r\n                this.mapCacheCtx.strokeStyle = 'rgba(0, 0, 0, 0.1)';\r\n                this.mapCacheCtx.stroke();\r\n            }\r\n        }\r\n        \r\n       \r\n        this.drawEnvironment(tileMap.length);\r\n    }\r\n\r\n    drawPaths(ctx, paths) {\r\n        const tileHeight = this.config.gridSize * 0.5;\r\n        ctx.strokeStyle = '#ffd166';\r\n        ctx.lineWidth = 2;\r\n        ctx.beginPath();\r\n        \r\n        paths.forEach(path => {\r\n            // First point in path\r\n            const firstIsoCoords = this.game.translator.gridToIso(path[0].x, path[0].y);\r\n            const firstIsoX = firstIsoCoords.x;\r\n            const firstIsoY = firstIsoCoords.y + tileHeight / 2; // Add half tile height for center of tile\r\n            \r\n            ctx.moveTo(firstIsoX, firstIsoY);\r\n            \r\n            // Remaining points in path\r\n            path.forEach(location => {\r\n                const isoCoords = this.game.translator.gridToIso(location.x, location.y);\r\n                const isoX = isoCoords.x;\r\n                const isoY = isoCoords.y + tileHeight / 2; // Add half tile height for center of tile\r\n                \r\n                ctx.lineTo(isoX, isoY);\r\n            });\r\n        });\r\n        \r\n        ctx.stroke();\r\n    }\r\n\r\n    drawEnvironment(boardSize, amountToDraw) {\r\n\r\n        let itemAmt = amountToDraw;\r\n        let environmentTypes = [];\r\n        for(let envType in this.worldObjects){\r\n            environmentTypes.push(envType);\r\n        }\r\n        this.envCacheCtxBG.clearRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);\r\n        this.envCacheCtxFG.clearRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);\r\n        \r\n        let items = [];\r\n        \r\n        // Check if we have stored environment objects\r\n        if (this.tileMap.environmentObjects && this.tileMap.environmentObjects.length > 0) {\r\n            // Use the stored objects\r\n            this.tileMap.environmentObjects.forEach(obj => {\r\n                const images = this.imageManager.getImages(\"environment\", obj.type);\r\n                if (images && images.idle && images.idle[0] && images.idle[0][obj.imageIndex]) {\r\n                    items.push({\r\n                        img: images.idle[0][obj.imageIndex],\r\n                        x: obj.x,\r\n                        y: obj.y\r\n                    });\r\n                }\r\n            });\r\n        } else {       \r\n            // for(let i = 0; i < itemAmt; i++) {\r\n            //     // Define the game board boundaries\r\n            //     const boardMinX = 0;\r\n            //     const boardMaxX = boardSize * this.config.gridSize;\r\n            //     const boardMinY = 0;\r\n            //     const boardMaxY = boardSize * this.config.gridSize;\r\n                \r\n            //     // Generate a random position that's outside the board but within a reasonable distance\r\n            //     let x, y;\r\n                \r\n            //     // Expand the area where we can place objects\r\n            //     const expandAmount = boardSize * this.config.gridSize; // Adjust this value as needed\r\n                \r\n            //     // Randomly choose whether to place on x-axis or y-axis outside the board\r\n            //     if (Math.random() < 0.5) {\r\n            //         // Place on the left or right of the board\r\n            //         x = Math.random() < 0.5 ?\r\n            //             boardMinX - Math.random() * expandAmount : // Left side\r\n            //             boardMaxX + Math.random() * expandAmount;  // Right side\r\n                    \r\n            //         // Allow y to be anywhere, including outside the board\r\n            //         y = boardMinY - expandAmount + Math.random() * (boardMaxY - boardMinY + 2 * expandAmount);\r\n            //     } else {\r\n            //         // Place on the top or bottom of the board\r\n            //         y = Math.random() < 0.5 ?\r\n            //             boardMinY - Math.random() * expandAmount : // Top side\r\n            //             boardMaxY + Math.random() * expandAmount;  // Bottom side\r\n                    \r\n            //         // Allow x to be anywhere, including outside the board\r\n            //         x = boardMinX - expandAmount + Math.random() * (boardMaxX - boardMinX + 2 * expandAmount);\r\n            //     }\r\n                \r\n            //     // Double-check that the position is actually outside the board\r\n            //     if (x < boardMinX || x > boardMaxX || y < boardMinY || y > boardMaxY) {\r\n            //         const type = environmentTypes[Math.floor(Math.random() * environmentTypes.length)];\r\n            //         const images = this.imageManager.getImages(\"environment\", type);\r\n            //         if(images){\r\n            //             items.push( { img: images.idle[0][parseInt(Math.random()*images.idle[0].length)], x: x, y: y});\r\n            //         }\r\n            //     } else {\r\n            //         i--; // Position inside board, try again\r\n            //     }\r\n            // }\r\n        }\r\n\r\n        items.sort((a, b) => {\r\n            return (a.y * boardSize + a.x) - (b.y * boardSize + b.x)\r\n        });\r\n\r\n        items.forEach((item) => {            \r\n            // Convert pixel to isometric\r\n            const isoPos = this.game.translator.pixelToIso(item.x, item.y);\r\n            const image = item.img;\r\n            const imgWidth = image.width;\r\n            const imgHeight = image.height;\r\n            \r\n            const drawX = isoPos.x;\r\n            const drawY = isoPos.y;\r\n            if( drawY < this.config.canvasHeight / 2 ) {\r\n                this.envCacheCtxBG.drawImage(image, drawX - imgWidth / 2, drawY - imgHeight / 2);\r\n            } else if(drawY - this.config.canvasHeight / 2 - imgHeight / 2 > 0) {//prevent trees in FG from getting chopped off at the top if they are too close to the middle of the frame.\r\n  \r\n                this.envCacheCtxFG.drawImage(image, drawX - imgWidth / 2, drawY - this.config.canvasHeight / 2 - imgHeight / 2);\r\n            }\r\n        });\r\n    }\r\n\r\n}"
+      },
       "RangeIndicator": {
         "fileName": "RangeIndicator",
         "script": "class RangeIndicator extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init() {\r\n        this.ctx = this.game.ctx;\r\n        this.translator = this.game.translator; // Access translator for tileWidth\r\n    }\r\n\r\n    draw() {\r\n        let statsComp = this.getComponent('stats');\r\n        if (!statsComp || !statsComp.stats || !statsComp.stats.range) {\r\n            return;\r\n        }\r\n        this.drawRangeIndicator(statsComp.stats.range);\r\n    }\r\n\r\n    drawRangeIndicator(range) {    \r\n        const drawRage = range;        \r\n        const pixelX = this.parent.position.x;\r\n        const pixelY = this.parent.position.y;\r\n        let gridPos = this.translator.pixelToGrid(pixelX, pixelY);\r\n        gridPos = this.translator.snapToGrid(gridPos.x, gridPos.y);\r\n        const isoPos = this.translator.pixelToIso(pixelX, pixelY);\r\n    \r\n        let isoRangeX = drawRage * this.game.config.configs.game.gridSize;  // Matches gridToIso X scaling\r\n        let isoRangeY = drawRage * this.game.config.configs.game.gridSize * (this.game.state.isometric ? 0.5 : 1); // Matches gridToIso Y scaling\r\n    \r\n        if( this.game.state.isometric ) {\r\n            isoRangeX *= .56;\r\n            isoRangeY *= .56;\r\n        }\r\n\r\n        if (gridPos.x === this.game.state.mousePosition.gridX && gridPos.y === this.game.state.mousePosition.gridY) {\r\n            this.ctx.save();\r\n            this.ctx.beginPath();\r\n            this.ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)';\r\n            this.ctx.lineWidth = 2;\r\n    \r\n            this.ctx.ellipse(\r\n                isoPos.x,\r\n                isoPos.y,\r\n                isoRangeX,\r\n                isoRangeY,\r\n                0,\r\n                0,\r\n                2 * Math.PI\r\n            );\r\n    \r\n            this.ctx.stroke();\r\n            this.ctx.closePath();\r\n            this.ctx.restore();\r\n        }    \r\n      \r\n    }\r\n}"
@@ -17797,6 +17793,10 @@ const DEFAULT_PROJECT_CONFIG = {
         "title": "Model Renderer",
         "fileName": "ModelRenderer",
         "script": "class ModelRenderer extends engine.Component {\n    init({ objectType, spawnType, frameDuration }) {\n        if(!this.game.config.configs.game.is3D) {\n            return;\n        }\n        this.animationState = 'idle';\n        this.currentFrameIndex = 0;\n        this.frameTime = 0;\n        this.frameDuration = frameDuration || 0.17;\n        this.lastDirection = -1;\n        \n        // Load animation and model data\n        this.animationData = this.game.config[objectType]?.[spawnType]?.render?.animations;\n        this.modelData = this.game.config[objectType]?.[spawnType]?.render?.model;\n\n        // Get the model\n        this.model = this.game.modelManager.getModel(objectType, spawnType);\n        \n        if (!this.model || !this.animationData || !this.modelData) {\n            console.error(`No model or data found for ${objectType}_${spawnType}`);\n            return;\n        }\n        \n        // Create the initial model instance\n        this.modelGroup = this.model.clone();  \n        // Add the model group to the scene\n        this.game.scene.add(this.modelGroup);\n\n        this.modelGroup.position.set(0, -10000, 0);\n        \n        // Set initial animation\n        this.setAnimation('idle');\n    }\n    \n    setAnimation(animationName) {\n        if (!this.animationData[animationName]) {\n            console.warn(`Animation '${animationName}' not found, defaulting to 'idle'`);\n            animationName = 'idle';\n            \n            if (!this.animationData[animationName]) {\n                const availableAnims = Object.keys(this.animationData);\n                animationName = availableAnims.length > 0 ? availableAnims[0] : null;\n                \n                if (!animationName) {\n                    console.error('No animations available for this model');\n                    return;\n                }\n            }\n        }\n        \n        if (this.animationState !== animationName) {\n            this.animationState = animationName;\n            this.currentFrameIndex = 0;\n            this.frameTime = 0;\n            this.updateModelFrame();\n        }\n    }\n    \n    draw() {\n        if(!this.game.config.configs.game.is3D) {\n            return;\n        }\n        // Update animation frames\n        this.frameTime += this.game.deltaTime;\n        if (this.frameTime >= this.frameDuration) {\n            this.frameTime -= this.frameDuration;\n            this.advanceFrame();\n        }\n        // Update position of model to match entity position\n        if (this.parent && this.parent.position) {\n            this.modelGroup.position.set(\n                this.parent.position.x,\n                this.parent.position.z,\n                this.parent.position.y\n            );\n            \n            // Handle rotation based on movement direction\n            this.updateDirection();\n        }\n        \n   \n    }\n    \n    updateDirection() {\n        // Calculate direction based on movement\n        if (this.parent && this.parent.lastPosition) {\n            const dx = this.parent.position.x - this.parent.lastPosition.x;\n            const dy = this.parent.position.y - this.parent.lastPosition.y;\n            \n            // Only update direction if there's significant movement\n            if (Math.abs(dx) > 0.001 || Math.abs(dy) > 0.001) {\n                // Calculate angle in radians\n                let angle = Math.atan2(dy, dx);\n            \n                // Rotate model to face movement direction\n                this.modelGroup.rotation.y = -angle + Math.PI / 2;\n                \n                // Set walking animation when moving\n                if (this.animationData['walk']) {\n                    this.setAnimation('walk');\n                    return;\n                }\n            } else {\n                // Entity is stationary, use idle animation\n                this.setAnimation('idle');\n            }\n        }\n    }\n    \n    advanceFrame() {\n        const frames = this.animationData[this.animationState];\n        if (!frames || frames.length === 0) return;\n        \n        this.currentFrameIndex = (this.currentFrameIndex + 1) % frames.length;\n        this.updateModelFrame();\n    }\n    \n    updateModelFrame() {\n        // Get current animation and frame\n        const frames = this.animationData[this.animationState];\n        if (!frames?.length) return;\n        \n        const frameData = frames[this.currentFrameIndex] || {};\n        \n        // Traverse the modelGroup to apply transformations\n        this.modelGroup.traverse((obj) => {\n          // Handle group-level transformations (apply to group objects)\n            if (!obj.isMesh && obj.name && this.modelData[obj.name]) {\n                const groupName = obj.name;\n                const groupData = frameData[groupName];\n                const modelGroupData = this.modelData[groupName];\n                this.updateObjectTransforms(obj, groupData, modelGroupData);\n            }\n            \n            // Handle shape-level transformations (apply to meshes)\n            if (obj.isMesh && obj.userData?.index >= 0 && obj.parent?.name) {\n                const groupName = obj.parent.name;\n                const index = obj.userData.index;\n                const groupData = frameData[groupName];\n                const modelGroupData = this.modelData[groupName];\n                // Find shape in animationData by id (id: 1 maps to index 0)\n                let shape;\n                if (groupData?.shapes) {\n                    shape = groupData.shapes.find(s => s.id === index);\n                }\n                const modelShape = modelGroupData?.shapes?.[index];\n                \n                if (shape || modelShape) {\n                    this.updateShapeTransforms(obj, shape, modelShape);\n                }\n            }\n        });\n    }\n    \n    updateObjectTransforms(obj, groupData, modelGroupData) {\n        if (!modelGroupData) return;\n        \n        // Position\n        const pos = groupData?.position || modelGroupData.position || { x: 0, y: 0, z: 0 };\n        obj.position.set(\n            pos.x ?? modelGroupData.position?.x ?? 0,\n            pos.y ?? modelGroupData.position?.y ?? 0,\n            pos.z ?? modelGroupData.position?.z ?? 0\n        );\n        \n        // Rotation\n        const rot = groupData?.rotation || modelGroupData.rotation || { x: 0, y: 0, z: 0 };\n        obj.rotation.set(\n            rot.x ?? modelGroupData.rotation?.x ?? 0,\n            rot.y ?? modelGroupData.rotation?.y ?? 0,\n            rot.z ?? modelGroupData.rotation?.z ?? 0\n        );\n        \n        // Scale\n        const scale = groupData?.scale || modelGroupData.scale || { x: 1, y: 1, z: 1 };\n        obj.scale.set(\n            scale.x ?? modelGroupData.scale?.x ?? 1,\n            scale.y ?? modelGroupData.scale?.y ?? 1,\n            scale.z ?? modelGroupData.scale?.z ?? 1\n        );\n    }\n    updateShapeTransforms(obj, shape, modelShape) {\n        if (!modelShape) return;\n\n        // Position (local to group)\n        obj.position.set(\n            shape?.x ?? modelShape.x ?? 0,\n            shape?.y ?? modelShape.y ?? 0,\n            shape?.z ?? modelShape.z ?? 0\n        );\n        \n        // Rotation (local to group, convert degrees to radians)\n        obj.rotation.set(\n            ((shape?.rotationX ?? modelShape.rotationX) || 0) * Math.PI / 180,\n            ((shape?.rotationY ?? modelShape.rotationY) || 0) * Math.PI / 180,\n            ((shape?.rotationZ ?? modelShape.rotationZ) || 0) * Math.PI / 180\n        );\n        \n        // Scale (local to group)\n        obj.scale.set(\n            shape?.scaleX ?? modelShape.scaleX ?? 1,\n            shape?.scaleY ?? modelShape.scaleY ?? 1,\n            shape?.scaleZ ?? modelShape.scaleZ ?? 1\n        );\n\n    }\n    destroy() {\n        if(this.modelGroup){\n            // Remove model from scene\n            if (this.modelGroup && this.game.scene) {\n                this.game.scene.remove(this.modelGroup);\n            }\n            \n            // Clear all children\n            while (this.modelGroup.children.length > 0) {\n                const child = this.modelGroup.children[0];\n                this.modelGroup.remove(child);\n            }\n            \n            this.modelGroup = null;\n        }\n    }\n}"
+      },
+      "Renderer": {
+        "fileName": "Renderer",
+        "script": "class Renderer extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n  init( { objectType, spawnType, setDirection = -2}) {\r\n        if(this.game.config.configs.game.is3D) {\r\n            return;\r\n        }\r\n        this.images = this.game.imageManager.getImages(objectType, spawnType);  \r\n        this.setDirection = setDirection;\r\n        this.currentDirection = 0; // Default direction (will be 0-7 now)\r\n        // Rotated direction zones 45 degrees counter-clockwise\r\n        // Each zone covers a 45-degree arc (π/4 radians)\r\n        this.directionZones = [\r\n            { min: Math.PI/8, max: 3*Math.PI/8 },     // 0: Down-Right (Southeast)\r\n            { min: 3*Math.PI/8, max: 5*Math.PI/8 },   // 1: Down\r\n            { min: 5*Math.PI/8, max: 7*Math.PI/8 },   // 2: Down-Left (Southwest)\r\n            { min: 7*Math.PI/8, max: -7*Math.PI/8 },  // 3: Left (West)\r\n            { min: -7*Math.PI/8, max: -5*Math.PI/8 }, // 4: Up-Left (Northwest)\r\n            { min: -5*Math.PI/8, max: -3*Math.PI/8 }, // 5: Up\r\n            { min: -3*Math.PI/8, max: -Math.PI/8 },   // 6: Up-Right (Northeast)\r\n            { min: -Math.PI/8, max: Math.PI/8 }       // 7: Right (East)\r\n        ];\r\n        this.isometric = this.game.config.configs.game.isIsometric;\r\n    }\r\n\r\n    draw() {\r\n        if(this.game.config.configs.game.is3D) {\r\n            return;\r\n        }\r\n        if( this.setDirection < 0 ) {\r\n            const dx = this.parent.position.x - this.parent.lastPosition.x; // Change in x\r\n            const dy = this.parent.position.y - this.parent.lastPosition.y; // Change in y\r\n            \r\n            // Only update direction if there's movement\r\n            if (Math.abs(dx) > 0.001 || Math.abs(dy) > 0.001) {\r\n                // Calculate angle of movement in radians\r\n                const angle = Math.atan2(dy, dx);\r\n                \r\n                // Determine which of the 8 directional zones the angle falls into\r\n                for (let i = 0; i < this.directionZones.length; i++) {\r\n                    const zone = this.directionZones[i];\r\n                    \r\n                    // Special handling for the West zone which wraps around from PI to -PI\r\n                    if (i === 3) {\r\n                        if (angle >= zone.min || angle <= zone.max) {\r\n                            this.currentDirection = i;\r\n                            break;\r\n                        }\r\n                    } \r\n                    // Normal zone check\r\n                    else if (angle >= zone.min && angle < zone.max) {\r\n                        this.currentDirection = i;\r\n                        break;\r\n                    }\r\n                }\r\n            }\r\n        } else {\r\n            this.currentDirection = this.setDirection;\r\n        }\r\n        let direction = this.currentDirection + (this.isometric ? 0 : -1);\r\n        if(direction == -1 ) direction = this.images.length - 1;//wrap around\r\n        // Draw the image for the current direction\r\n        if (this.images && this.images.length > direction) {\r\n            const image = this.images[direction];\r\n            if (image) {\r\n                const imgWidth = image.width;\r\n                const imgHeight = image.height;\r\n                \r\n                const drawX = this.parent.drawPosition.x - imgWidth / 2;\r\n                let drawY = this.parent.drawPosition.y - imgHeight / 2;\r\n                if( this.parent.position.z ) {\r\n                   drawY -= this.parent.position.z;                   \r\n                }\r\n                this.game.ctx.drawImage(image, drawX, drawY);\r\n            }\r\n        }\r\n    }\r\n}"
       },
       "UiManager": {
         "fileName": "UiManager",
@@ -17810,6 +17810,27 @@ const DEFAULT_PROJECT_CONFIG = {
         "aiModel": "deepseek-r1:32b",
         "defaultPrompt": "I am developing a tower defense game featuring a simple 3d art style.  Generate a new object based on the following context.    Please provide ONLY a valid JSON object with keys MATCHING EXACTLY to the context above. It absolutely MUST have an appropriate 'id' field. Ensure all existing key types are maintained. Do not wrap the json object with any other text.",
         "fileName": "ai"
+      },
+      "codeMirror": {
+        "title": "Code Mirror",
+        "theme": "codeMirrorTheme",
+        "fileName": "codeMirror"
+      },
+      "editor": {
+        "title": "Editor Config",
+        "editorCategories": "",
+        "theme": "claude2",
+        "editorModules": [
+          "terrainModule",
+          "graphicsModule",
+          "scriptModule",
+          "aiPromptModule",
+          "audioModule",
+          "exportScriptModule",
+          "textureEditor"
+        ],
+        "path": "/",
+        "fileName": "editor"
       },
       "game": {
         "gridSize": 48,
@@ -17868,27 +17889,6 @@ const DEFAULT_PROJECT_CONFIG = {
         "modifierSet": "global",
         "fileName": "state",
         "population": 0
-      },
-      "editor": {
-        "title": "Editor Config",
-        "editorCategories": "",
-        "theme": "claude2",
-        "editorModules": [
-          "terrainModule",
-          "graphicsModule",
-          "scriptModule",
-          "aiPromptModule",
-          "audioModule",
-          "exportScriptModule",
-          "textureEditor"
-        ],
-        "path": "/",
-        "fileName": "editor"
-      },
-      "codeMirror": {
-        "title": "Code Mirror",
-        "theme": "codeMirrorTheme",
-        "fileName": "codeMirror"
       }
     },
     "editorModules": {
@@ -17940,16 +17940,18 @@ const DEFAULT_PROJECT_CONFIG = {
         "loadHook": "renderGraphicsObject",
         "saveHook": "saveGraphicsObject"
       },
-      "textureEditor": {
-        "title": "Texture Editor",
-        "container": "texture-editor-container",
-        "library": "TextureEditor",
-        "propertyName": "image",
-        "interface": "TextureEditor",
+      "scriptModule": {
+        "title": "Script Editor",
+        "container": "script-editor-container",
+        "interface": "scriptEditor",
         "inputElement": "textarea",
         "inputDataType": "string",
-        "loadHook": "editTexture",
-        "saveHook": "saveTexture"
+        "libraries": [
+          "scriptEditor"
+        ],
+        "propertyNames": "[\"script\", \"html\", \"css\"]",
+        "loadHook": "editScript",
+        "saveHook": "saveScript"
       },
       "terrainModule": {
         "title": "Terrain Editor",
@@ -17972,36 +17974,34 @@ const DEFAULT_PROJECT_CONFIG = {
         "loadHook": "editTileMap",
         "saveHook": "saveTileMap"
       },
-      "scriptModule": {
-        "title": "Script Editor",
-        "container": "script-editor-container",
-        "interface": "scriptEditor",
+      "textureEditor": {
+        "title": "Texture Editor",
+        "container": "texture-editor-container",
+        "library": "TextureEditor",
+        "propertyName": "image",
+        "interface": "TextureEditor",
         "inputElement": "textarea",
         "inputDataType": "string",
-        "libraries": [
-          "scriptEditor"
-        ],
-        "propertyNames": "[\"script\", \"html\", \"css\"]",
-        "loadHook": "editScript",
-        "saveHook": "saveScript"
+        "loadHook": "editTexture",
+        "saveHook": "saveTexture"
       }
     },
     "inputDataTypes": {
-      "string": {
-        "title": "String"
-      },
       "json": {
         "title": "JSON"
+      },
+      "string": {
+        "title": "String"
       }
     },
     "inputElementTypes": {
-      "textarea": {
-        "title": "Text Area",
-        "tag": "textarea"
-      },
       "text": {
         "title": "text",
         "tag": "input"
+      },
+      "textarea": {
+        "title": "Text Area",
+        "tag": "textarea"
       }
     },
     "themes": {
@@ -18009,6 +18009,11 @@ const DEFAULT_PROJECT_CONFIG = {
         "title": "Claude 2",
         "fileName": "claude2",
         "css": "/* Professional Theme - Clean UI */ @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');  :root {   --bg-primary: #16192e;   --bg-secondary: #1d2035;   --bg-tertiary: #252a43;   --accent-primary: #4d7cff;   --accent-muted: rgba(77, 124, 255, 0.15);   --text-primary: #e9edf5;   --text-secondary: #a9b1c3;   --border-color: rgba(108, 123, 163, 0.25);   --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.2);   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.25); }  body {   font-family: 'Inter', sans-serif;   background-color: var(--bg-primary);   color: var(--text-primary);   line-height: 1.6; }  /* Sidebar styling */ .sidebar {   background-color: var(--bg-secondary);   border-right: 1px solid var(--border-color);   box-shadow: var(--shadow-sm); }  .object-item {   background-color: transparent;   border-left: 2px solid transparent;   text-transform: none;   letter-spacing: 0.2px;   color: var(--text-secondary);   font-weight: 400;   transition: all 0.2s ease;   padding: 10px 14px;   margin-bottom: 2px; }  .object-item:hover {   background-color: var(--bg-tertiary);   border-left: 2px solid var(--accent-primary);   color: var(--text-primary); }  .object-item.selected {   background-color: var(--accent-muted);   border-left: 2px solid var(--accent-primary);   color: var(--text-primary);   font-weight: 500; }  /* Editor area */ .editor {   background-color: var(--bg-secondary);   border: 1px solid var(--border-color);   box-shadow: var(--shadow-sm);   border-radius: 4px; }  #three-js-container {   border: 1px solid var(--border-color);   border-radius: 4px;   background: var(--bg-primary); }  .preview-canvas-container {   border: 1px solid var(--border-color);   box-shadow: var(--shadow-sm);   border-radius: 4px; }  .preview {   background-color: var(--bg-secondary);   border: 1px solid var(--border-color);   box-shadow: var(--shadow-sm);   border-radius: 4px; }  #preview-canvas {   background-color: transparent;   border: 1px solid var(--border-color);   border-radius: 2px; }  /* Camera controls */ .camera-controls {   background: var(--bg-tertiary);   border: 1px solid var(--border-color);   border-radius: 4px;   padding: 12px; }  .camera-controls button {   background-color: var(--bg-secondary);   border: 1px solid var(--border-color);   color: var(--text-primary);   border-radius: 3px;   padding: 8px 12px;   transition: all 0.2s ease; }  .camera-controls button:hover {   background-color: var(--accent-muted);   border-color: var(--accent-primary); }  .camera-controls .color-picker {   border: 1px solid var(--border-color);   border-radius: 3px; }  .camera-controls .size-slider {   background: var(--bg-secondary);   border: 1px solid var(--border-color);   border-radius: 3px;   height: 5px; }  .camera-controls .size-slider::-webkit-slider-thumb {   background: var(--accent-primary);   border-radius: 50%;   cursor: pointer; }  /* Form elements */ label {   font-weight: 500;   color: var(--text-primary);   margin-bottom: 6px;   display: block;   font-size: 0.875rem; }  input, textarea, select {   border: 1px solid var(--border-color);   background-color: var(--bg-secondary);   color: var(--text-primary);   border-radius: 3px;   width: calc(100% - 24px);  padding: 8px 12px;   transition: all 0.2s ease;   font-family: 'IBM Plex Mono', monospace; }  input:focus, textarea:focus, select:focus {   outline: none;   border-color: var(--accent-primary);   box-shadow: 0 0 0 2px var(--accent-muted); }  /* Button styles */ button {   background-color: var(--bg-tertiary);   border: 1px solid var(--border-color);   color: var(--text-primary);   font-weight: 500;   padding: 8px 14px;   border-radius: 3px;   transition: all 0.2s ease; }  button:hover {   background-color: var(--accent-muted);   border-color: var(--accent-primary); }  button.primary {   background-color: var(--accent-primary);   border: 1px solid var(--accent-primary);   color: white; }  button.primary:hover {   background-color: #3a6ae6;   border-color: #3a6ae6;   box-shadow: var(--shadow-sm); }  button.danger {   background-color: rgba(235, 68, 68, 0.15);   border: 1px solid #eb4444;   color: #eb4444; }  button.danger:hover {   background-color: rgba(235, 68, 68, 0.25);   box-shadow: var(--shadow-sm); }  button.active {   background-color: rgba(52, 199, 154, 0.15);   border: 1px solid #34c79a;   color: #34c79a; }  /* Modal styling */ .modal {   background-color: rgba(22, 25, 46, 0.8); }  .modal-content {   background-color: var(--bg-secondary);   border: 1px solid var(--border-color);   box-shadow: var(--shadow-md);   border-radius: 4px; }  .property-list {   border: 1px solid var(--border-color);   background-color: var(--bg-tertiary);   border-radius: 4px; }  /* Tab navigation */ .tab-navigation {   border-bottom: 1px solid var(--border-color);   display: flex;   padding: 0 4px; }  .tab {   padding: 10px 16px;   color: var(--text-secondary);   transition: all 0.2s ease; }  .tab:hover {   background-color: var(--bg-tertiary);   color: var(--text-primary); }  .tab.active {   color: var(--accent-primary);   font-weight: 500;   border-bottom: 2px solid var(--accent-primary); }  /* Info and warning boxes */ .instructions {   background-color: var(--bg-tertiary);   border-left: 3px solid var(--accent-primary);   border-radius: 0 4px 4px 0;   padding: 12px 16px;   margin: 16px 0; }  #grid-display {   background-color: var(--bg-secondary);   border: 1px solid var(--border-color);   box-shadow: var(--shadow-sm);   border-radius: 4px; }  .success-message {   color: #34c79a;   font-weight: 500;   animation: fadeOut 2s forwards;   animation-delay: 1.5s;   padding: 8px 12px; }  @keyframes fadeOut {   from { opacity: 1; }   to { opacity: 0; } }  .warning {   background-color: rgba(235, 68, 68, 0.1);   border-left: 3px solid #eb4444;   border-radius: 0 4px 4px 0;   padding: 12px 16px;   margin: 16px 0; }  /* Main containers */ .main-content-container {   background-color: var(--bg-primary);   color: var(--text-primary); }  .content-sidebar {   background: var(--bg-secondary);   border-right: 1px solid var(--border-color);   box-shadow: var(--shadow-sm); }  #graphics-rightbar {   background: var(--bg-secondary);   border-left: 1px solid var(--border-color);   box-shadow: var(--shadow-sm); }  /* Subtle grid background */ .grid-background {   background: var(--bg-primary);   background-image:      linear-gradient(rgba(108, 123, 163, 0.05) 1px, transparent 1px),     linear-gradient(90deg, rgba(108, 123, 163, 0.05) 1px, transparent 1px);   background-size: 20px 20px; }  /* Toolbar */ .toolbar {   background: var(--bg-secondary);   border-bottom: 1px solid var(--border-color);   box-shadow: var(--shadow-sm);   padding: 8px 16px;   display: flex;   align-items: center;   gap: 8px; }  /* Button variations */ .btn {   border: 1px solid var(--border-color);   background-color: var(--bg-tertiary);   color: var(--text-primary);   font-weight: 500;   padding: 8px 14px;   border-radius: 3px;   transition: all 0.2s ease;   font-size: 0.875rem; }  .btn:hover {   background-color: var(--accent-muted);   border-color: var(--accent-primary); }  .btn-primary {   background-color: var(--accent-primary);   border: 1px solid var(--accent-primary);   color: white; }  .btn-primary:hover {   background-color: #3a6ae6;   border-color: #3a6ae6; }  .btn-danger {   background-color: rgba(235, 68, 68, 0.15);   border: 1px solid #eb4444;   color: #eb4444; }  .btn-danger:hover {   background-color: rgba(235, 68, 68, 0.25); }  .btn-secondary {   background-color: var(--bg-tertiary);   border: 1px solid var(--border-color); }  .btn-secondary:hover {   background-color: var(--accent-muted);   border-color: var(--accent-primary); }  .btn-special {   background-color: rgba(52, 199, 154, 0.15);   border: 1px solid #34c79a;   color: #34c79a; }  .btn-special:hover {   background-color: rgba(52, 199, 154, 0.25); }  /* Shape list */ #shape-list {   border-bottom: 1px solid var(--border-color);   padding-bottom: 16px;   margin-bottom: 16px; }  .shape-item {   background-color: var(--bg-tertiary);   border: 1px solid var(--border-color);   border-radius: 3px;   padding: 10px 14px;   margin-bottom: 6px;   transition: all 0.2s ease;   display: flex;   align-items: center;   gap: 8px; }  .shape-item:hover {   background-color: var(--accent-muted);   border-color: var(--accent-primary); }  .shape-item.active {   background-color: rgba(52, 199, 154, 0.1);   border-color: #34c79a;   color: #34c79a;   font-weight: 500; }  /* Inspector panel */ #inspector {   background: var(--bg-secondary);   border-top: 1px solid var(--border-color);   padding: 16px; }  .form-row {   margin-bottom: 12px; }  .form-row label {   color: var(--text-primary);   margin-bottom: 6px; }  .form-row input, .form-row select {   width: 100%;   border: 1px solid var(--border-color);   background-color: var(--bg-secondary);   color: var(--text-primary);   padding: 8px 12px;   border-radius: 3px; }  /* Scene info */ .scene-info {   background: var(--bg-tertiary);   color: var(--text-primary);   border: 1px solid var(--border-color);   border-radius: 4px;   padding: 12px 16px;   margin-bottom: 16px; }  .button-danger {   background-color: rgba(235, 68, 68, 0.15);   border: 1px solid #eb4444;   color: #eb4444;   padding: 8px 14px;   border-radius: 3px;   font-weight: 500;   transition: all 0.2s ease; }  .button-danger:hover {   background-color: rgba(235, 68, 68, 0.25); }  /* Typography */ h2, h3 {   color: var(--text-primary);   margin-bottom: 16px;   padding-bottom: 8px;   border-bottom: 1px solid var(--border-color);   font-weight: 600; }  /* Scrollbars */ ::-webkit-scrollbar {   width: 6px;   height: 6px; }  ::-webkit-scrollbar-track {   background: var(--bg-tertiary);   border-radius: 3px; }  ::-webkit-scrollbar-thumb {   background: rgba(108, 123, 163, 0.5);   border-radius: 3px; }  ::-webkit-scrollbar-thumb:hover {   background: rgba(108, 123, 163, 0.7); }"
+      },
+      "codeMirrorTheme": {
+        "title": "Code - Ez On Eyes",
+        "fileName": "codeMirrorTheme",
+        "css": ".CodeMirror {    background: #1e1e1e;    color: #d4d4d4;    font-size: 14px; } .CodeMirror-gutters {    background: #252525;  border-right: 1px solid #444; } .CodeMirror-linenumber {    color: #888; }.CodeMirror-cursor {    border-left: 1px solid #d4d4d4; } .CodeMirror-selected {    background: #3a3a3a; }.CodeMirror-focused .CodeMirror-selected {    background: #404040; /* Slightly lighter when focused */}.CodeMirror-activeline-background {    background: #2a2a2a; /* Subtle active line highlight */}.CodeMirror-matchingbracket {    color: #b5cea8; /* Muted green for matching brackets */}.CodeMirror-nonmatchingbracket {    color: #d16969; /* Soft red for non-matching */}/* Override default theme's syntax highlighting */.cm-s-default .cm-header { color: #dcdcaa; } /* Soft yellow (overrides #00f blue) */.cm-s-default .cm-quote { color: #b5cea8; } /* Muted green (overrides #090) */.cm-negative { color: #d16969; } /* Soft red */.cm-positive { color: #6a9955; } /* Muted green */.cm-header, .cm-strong { font-weight: 700; }.cm-em { font-style: italic; }.cm-s-default .cm-link { color: #d7ba7d; text-decoration: underline; } /* Muted yellow (overrides #00c blue) */.cm-strikethrough { text-decoration: line-through; }.cm-s-default .cm-keyword { color: #ce9178; } /* Soft orange (overrides #708 purple) */.cm-s-default .cm-atom { color: #d4d4d4; } /* Light gray (overrides #219 blue) */.cm-s-default .cm-number { color: #b5cea8; } /* Muted green (overrides #164) */.cm-s-default .cm-def { color: #dcdcaa; } /* Soft yellow (overrides #00f blue) */.cm-s-default .cm-variable-2 { color: #d4d4d4; } /* Light gray (overrides #05a blue) */.cm-s-default .cm-variable-3, .cm-s-default .cm-type { color: #dcdcaa; } /* Soft yellow (overrides #085 blue) */.cm-s-default .cm-comment { color: #6a9955; } /* Muted green (overrides #a50) */.cm-s-default .cm-string { color: #ce9178; } /* Soft orange (overrides #a11) */.cm-s-default .cm-string-2 { color: #d7ba7d; } /* Muted yellow (overrides #f50) */.cm-s-default .cm-meta { color: #d4d4d4; } /* Light gray (overrides #555) */.cm-s-default .cm-qualifier { color: #d4d4d4; } /* Light gray (overrides #555) */.cm-s-default .cm-builtin { color: #dcdcaa; } /* Soft yellow (overrides #30a) */.cm-s-default .cm-bracket { color: #d4d4d4; } /* Light gray (overrides #997) */.cm-s-default .cm-tag { color: #dcdcaa; } /* Soft yellow (overrides #170) */.cm-s-default .cm-attribute { color: #d4d4d4; } /* Light gray (overrides #00c blue) */.cm-s-default .cm-hr { color: #888; } /* Muted gray (overrides #999) */.cm-s-default .cm-link { color: #d7ba7d; } /* Muted yellow (overrides #00c blue) */.cm-s-default .cm-error { color: #d16969; } /* Soft red (overrides red) */.cm-invalidchar { color: #d16969; } /* Soft red *//* Search highlight */.cm-searching {    background-color: rgba(255, 255, 0, 0.2); /* Subtle yellow */}"
       },
       "cyberpunk": {
         "title": "Cyber Punk",
@@ -18020,20 +18025,15 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "Neon Dune",
         "css": "body { background-color: #1a0f05; color: #ffffff; font-family: 'Arial', sans-serif; }\r\n\r\nh1, h2, h3 { color: #00ffbf; }\r\n\r\n.button-primary { background-color: #00ffbf; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; transition: all 0.3s ease; }\r\n.button-primary:hover { transform: scale(1.05); box-shadow: 0 0 15px #00ffbf; }\r\n\r\n.link { color: #00ffbf; text-decoration: none; }\r\n.link:hover { text-decoration: underline; }\r\n\r\n.card { background-color: #2d1e13; border-radius: 10px; padding: 20px; margin: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }\r\n\r\ninput, textarea { background-color: #2d1e13; color: #ffffff; border: 1px solid #00ffbf; padding: 8px; border-radius: 5px; }\r\n\r\nheader { background-color: #00ffbf; padding: 20px; text-align: center; box-shadow: 0 4px 6px rgba(0,255,191,0.3); }\r\n\r\nfooter { background-color: #2d1e13; color: #ffffff; padding: 20px; text-align: center; border-top: 1px solid #00ffbf; }\r\n"
       },
-      "professional": {
-        "title": "Professional",
-        "fileName": "professional",
-        "css": "/* Professional Theme */ @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap');  body {     font-family: 'Inter', 'Roboto Mono', sans-serif;     background-color: #1a1a2e;     color: #e6e6fa;     line-height: 1.6; }  .sidebar {     background-color: rgba(34, 34, 54, 0.95);     border: 1px solid #4b5e87;     box-shadow: 0 4px 12px rgba(75, 94, 135, 0.2); }  .object-item {     background-color: rgba(34, 34, 54, 0.8);     border-left: 2px solid #8a4af0;     text-transform: uppercase;     letter-spacing: 0.5px;     transition: all 0.3s ease; }  .object-item:hover {     background-color: rgba(138, 74, 240, 0.15);     transform: translateX(3px); }  .object-item.selected {     background-color: rgba(138, 74, 240, 0.25);     border-left: 3px solid #8a4af0;     box-shadow: 0 0 6px rgba(138, 74, 240, 0.4); }  .editor {     background-color: rgba(34, 34, 54, 0.95);     border: 1px solid #4b5e87;     box-shadow: 0 4px 12px rgba(75, 94, 135, 0.15); }  #three-js-container {     border: 1px solid rgba(75, 94, 135, 0.6); }  .preview-canvas-container {     border: 1px solid #8a4af0;     box-shadow: 0 4px 12px rgba(138, 74, 240, 0.1); }  .preview {     background-color: rgba(34, 34, 54, 0.9);     border: 1px solid #4b5e87;     box-shadow: 0 4px 12px rgba(75, 94, 135, 0.15); }  #preview-canvas {     background-color: transparent;     border: 1px solid rgba(75, 94, 135, 0.5); }  .camera-controls {     background: rgba(26, 26, 46, 0.9);     border: 1px solid #4b5e87; }  .camera-controls button {     background-color: rgba(75, 94, 135, 0.3);     border: 1px solid #4b5e87;     color: #e6e6fa;     transition: all 0.3s ease; }  .camera-controls button:hover {     background-color: rgba(75, 94, 135, 0.5);     box-shadow: 0 2px 8px rgba(75, 94, 135, 0.3); }  .camera-controls .color-picker {     border: 1px solid #4b5e87; }  .camera-controls .size-slider {     background: #2a2a42;     border: 1px solid #4b5e87; }  label {     font-weight: 500;     text-transform: uppercase;     letter-spacing: 0.5px;     color: #8a4af0; }  input, textarea, select {     border: 1px solid #4b5e87;     background-color: rgba(34, 34, 54, 0.8);     color: #e6e6fa;     box-shadow: 0 2px 6px rgba(75, 94, 135, 0.1);     transition: all 0.3s ease; }  input:focus, textarea:focus, select:focus {     outline: none;     border-color: #8a4af0;     box-shadow: 0 0 8px rgba(138, 74, 240, 0.3); }  button {     background-color: rgba(75, 94, 135, 0.3);     border: 1px solid #4b5e87;     color: #e6e6fa;     text-transform: uppercase;     letter-spacing: 0.5px;     transition: all 0.3s ease; }  button:hover {     background-color: rgba(75, 94, 135, 0.5);     box-shadow: 0 2px 8px rgba(75, 94, 135, 0.3);     transform: translateY(-1px); }  button.primary {     background-color: rgba(138, 74, 240, 0.3);     border: 1px solid #8a4af0;     color: #e6e6fa; }  button.primary:hover {     background-color: rgba(138, 74, 240, 0.5);     box-shadow: 0 2px 8px rgba(138, 74, 240, 0.3); }  button.danger {     background-color: rgba(240, 74, 74, 0.3);     border: 1px solid #f04a4a;     color: #e6e6fa; }  button.danger:hover {     background-color: rgba(240, 74, 74, 0.5);     box-shadow: 0 2px 8px rgba(240, 74, 74, 0.3); }  button.active {     border: 1px solid #00cc99;     box-shadow: 0 0 8px rgba(0, 204, 153, 0.4);     color: #00cc99; }  .modal {     background-color: rgba(26, 26, 46, 0.9);     backdrop-filter: blur(3px); }  .modal-content {     background-color: rgba(34, 34, 54, 0.95);     border: 1px solid #4b5e87;     box-shadow: 0 8px 24px rgba(75, 94, 135, 0.2); }  .property-list {     border: 1px solid #4b5e87;     background-color: rgba(34, 34, 54, 0.8); }  .tab-navigation {     border-bottom: 1px solid #4b5e87; }  .tab {     text-transform: uppercase;     letter-spacing: 0.5px;     transition: all 0.3s ease; }  .tab:hover {     background-color: rgba(75, 94, 135, 0.2); }  .tab.active {     border-bottom: 2px solid #8a4af0;     box-shadow: 0 4px 8px -4px rgba(138, 74, 240, 0.4);     font-weight: 600; }  .instructions {     background-color: rgba(34, 34, 54, 0.8);     border-left: 3px solid #8a4af0;     box-shadow: 0 2px 6px rgba(138, 74, 240, 0.1); }  #grid-display {     background-color: rgba(26, 26, 46, 0.9);     border: 1px solid #4b5e87;     box-shadow: 0 4px 12px rgba(75, 94, 135, 0.15); }  .success-message {     color: #00cc99;     text-transform: uppercase;     letter-spacing: 0.5px;     animation: fadeOut 2s forwards;     animation-delay: 1s; }  .warning {     background-color: rgba(240, 74, 74, 0.15);     border-left: 3px solid #f04a4a;     box-shadow: 0 2px 6px rgba(240, 74, 74, 0.1); }  .main-content-container {     background-color: #1f1f38;     color: #e6e6fa; }  .content-sidebar {     background: linear-gradient(180deg, rgba(34, 34, 54, 0.95), rgba(26, 26, 46, 0.95));     border-right: 1px solid #4b5e87;     box-shadow: 0 4px 12px rgba(75, 94, 135, 0.15); }  #graphics-rightbar {     background: linear-gradient(180deg, rgba(34, 34, 54, 0.95), rgba(26, 26, 46, 0.95));     border-left: 1px solid #4b5e87;     box-shadow: 0 4px 12px rgba(75, 94, 135, 0.15); }  .grid-background {     background: #1a1a2e;     background-image: radial-gradient(rgba(75, 94, 135, 0.15) 1px, transparent 1px);     background-size: 30px 30px; }  .toolbar {     background: linear-gradient(90deg, rgba(34, 34, 54, 0.95), rgba(26, 26, 46, 0.95));     border-bottom: 1px solid #4b5e87; }  .btn {     border: 1px solid #4b5e87;     background-color: rgba(75, 94, 135, 0.3);     color: #e6e6fa;     text-transform: uppercase;     transition: all 0.3s ease; }  .btn:hover {     background-color: rgba(75, 94, 135, 0.5);     box-shadow: 0 2px 8px rgba(75, 94, 135, 0.3);     transform: translateY(-1px); }  .btn-primary {     background-color: rgba(138, 74, 240, 0.3);     border: 1px solid #8a4af0;     color: #e6e6fa; }  .btn-primary:hover {     background-color: rgba(138, 74, 240, 0.5);     box-shadow: 0 2px 8px rgba(138, 74, 240, 0.3); }  .btn-danger {     background-color: rgba(240, 74, 74, 0.3);     border: 1px solid #f04a4a;     color: #e6e6fa; }  .btn-danger:hover {     background-color: rgba(240, 74, 74, 0.5);     box-shadow: 0 2px 8px rgba(240, 74, 74, 0.3); }  .btn-secondary {     background-color: rgba(75, 94, 135, 0.25);     border: 1px solid #4b5e87; }  .btn-secondary:hover {     background-color: rgba(75, 94, 135, 0.4);     box-shadow: 0 2px 8px rgba(75, 94, 135, 0.3); }  .btn-special {     background-color: rgba(0, 204, 153, 0.3);     border: 1px solid #00cc99;     color: #e6e6fa; }  .btn-special:hover {     background-color: rgba(0, 204, 153, 0.5);     box-shadow: 0 2px 8px rgba(0, 204, 153, 0.3); }  #shape-list {     border-bottom: 1px solid rgba(75, 94, 135, 0.3); }  .shape-item {     background-color: rgba(34, 34, 54, 0.8);     border: 1px solid #4b5e87;     transition: all 0.3s ease; }  .shape-item:hover {     background-color: rgba(75, 94, 135, 0.2);     transform: translateX(3px); }  .shape-item.active {     background-color: rgba(0, 204, 153, 0.15);     border-color: #00cc99;     color: #00cc99;     box-shadow: 0 0 8px rgba(0, 204, 153, 0.3); }  #inspector {     background: rgba(34, 34, 54, 0.95);     border-top: 1px solid #4b5e87; }  .form-row label {     color: #8a4af0; }  .form-row input, .form-row select {     border: 1px solid #4b5e87;     background-color: rgba(34, 34, 54, 0.8);     color: #e6e6fa;     box-shadow: 0 2px 6px rgba(75, 94, 135, 0.1); }  .scene-info {     background: rgba(26, 26, 46, 0.9);     color: #e6e6fa;     box-shadow: 0 4px 12px rgba(75, 94, 135, 0.15);     border: 1px solid #4b5e87; }  .button-danger {     background-color: rgba(240, 74, 74, 0.3);     border: 1px solid #f04a4a;     color: #e6e6fa; }  .button-danger:hover {     background-color: rgba(240, 74, 74, 0.5);     box-shadow: 0 2px 8px rgba(240, 74, 74, 0.3); }  h2, h3 {     color: #8a4af0;     text-transform: uppercase;     letter-spacing: 1px;     margin-bottom: 12px;     padding-bottom: 4px;     border-bottom: 1px solid #4b5e87;     text-shadow: 0 0 4px rgba(138, 74, 240, 0.3); }  ::-webkit-scrollbar {     width: 6px;     height: 6px; }  ::-webkit-scrollbar-track {     background: rgba(34, 34, 54, 0.8); }  ::-webkit-scrollbar-thumb {     background: #4b5e87;     border-radius: 3px; }  ::-webkit-scrollbar-thumb:hover {     background: #8a4af0; }"
-      },
       "medieval": {
         "title": "Medieval",
         "fileName": "medieval",
         "css": "/* Medieval Theme */ @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=IM+Fell+English&display=swap');  body {     font-family: 'Cinzel', 'IM Fell English', serif;     background-color: #2b1e12; /* Dark brown, earthy tone */     color: #d4b98a; /* Parchment-like beige */ }  .sidebar {     background-color: rgba(50, 40, 30, 0.8); /* Dark wood */     border: 1px solid #8a5c2e; /* Bronze */     box-shadow: 0 0 10px rgba(138, 92, 46, 0.5), inset 0 0 20px rgba(50, 40, 30, 0.3); }  .object-item {     background-color: rgba(60, 50, 40, 0.6); /* Aged wood */     border-left: 2px solid #b8860b; /* Gold accent */     text-transform: uppercase;     letter-spacing: 1px; }  .object-item:hover {     background-color: rgba(184, 134, 11, 0.2); /* Golden hover */     transform: translateX(5px); }  .object-item.selected {     background-color: rgba(184, 134, 11, 0.3);     border-left: 4px solid #b8860b;     box-shadow: 0 0 8px rgba(184, 134, 11, 0.5); }  .editor {     background-color: rgba(50, 40, 30, 0.7);     border: 1px solid #b8860b;     box-shadow: 0 0 15px rgba(184, 134, 11, 0.3); }  #three-js-container {     border: 1px solid rgba(138, 92, 46, 0.5); /* Bronze edge */ }  .preview-canvas-container {     border: 1px solid #b8860b;     box-shadow: 0 0 10px rgba(184, 134, 11, 0.3); }  .preview {     background-color: rgba(50, 40, 30, 0.7);     border: 1px solid #8a5c2e;     box-shadow: 0 0 15px rgba(138, 92, 46, 0.3); }  #preview-canvas {     background-color: transparent;     border: 1px solid rgba(138, 92, 46, 0.5); }  .camera-controls {     background: rgba(40, 30, 20, 0.7); /* Dark stone */     border: 1px solid #8a5c2e; }  .camera-controls button {     background-color: rgba(138, 92, 46, 0.2);     border: 1px solid #8a5c2e;     color: #d4b98a; }  .camera-controls .color-picker {     border: 1px solid #8a5c2e; }  .camera-controls .size-slider {     background: #3c2f1e; /* Darker wood */     border: 1px solid #8a5c2e; }  label {     font-weight: bold;     text-transform: uppercase;     letter-spacing: 1px;     color: #b8860b; /* Gold text */ }  input, textarea, select {     border: 1px solid #8a5c2e;     background-color: rgba(60, 50, 40, 0.6);     color: #d4b98a;     box-shadow: 0 0 5px rgba(138, 92, 46, 0.3); }  input:focus, textarea:focus, select:focus {     outline: none;     border-color: #b8860b;     box-shadow: 0 0 10px rgba(184, 134, 11, 0.5); }  button {     background-color: rgba(138, 92, 46, 0.2);     border: 1px solid #8a5c2e;     color: #d4b98a;     text-transform: uppercase;     letter-spacing: 1px; }  button:hover {     background-color: rgba(138, 92, 46, 0.3);     box-shadow: 0 0 10px rgba(138, 92, 46, 0.5), 0 0 20px rgba(138, 92, 46, 0.2);     transform: translateY(-2px); }  button.primary {     background-color: rgba(184, 134, 11, 0.2);     border: 1px solid #b8860b;     color: #b8860b; }  button.primary:hover {     background-color: rgba(184, 134, 11, 0.3);     box-shadow: 0 0 10px rgba(184, 134, 11, 0.5), 0 0 20px rgba(184, 134, 11, 0.2); }  button.danger {     background-color: rgba(139, 0, 0, 0.2); /* Crimson */     border: 1px solid #8b0000;     color: #ff4040; }  button.danger:hover {     background-color: rgba(139, 0, 0, 0.3);     box-shadow: 0 0 10px rgba(139, 0, 0, 0.5), 0 0 20px rgba(139, 0, 0, 0.2); }  button.active {     border: 1px solid #228b22; /* Forest green */     box-shadow: 0 0 10px rgba(34, 139, 34, 0.5);     color: #228b22; }  .modal {     background-color: rgba(40, 30, 20, 0.85); /* Stone texture */     backdrop-filter: blur(5px); }  .modal-content {     background-color: rgba(50, 40, 30, 0.9);     border: 1px solid #8a5c2e;     box-shadow: 0 0 30px rgba(138, 92, 46, 0.3), 0 0 60px rgba(138, 92, 46, 0.1); }  .property-list {     border: 1px solid #8a5c2e;     background-color: rgba(60, 50, 40, 0.6); }  .tab-navigation {     border-bottom: 1px solid #8a5c2e; }  .tab {     text-transform: uppercase;     letter-spacing: 1px; }  .tab:hover {     background-color: rgba(138, 92, 46, 0.1); }  .tab.active {     border-bottom: 3px solid #b8860b;     box-shadow: 0 5px 10px -5px rgba(184, 134, 11, 0.5);     font-weight: bold; }  .instructions {     background-color: rgba(60, 50, 40, 0.6);     border-left: 4px solid #b8860b;     box-shadow: 0 0 10px rgba(184, 134, 11, 0.2); }  #grid-display {     background-color: rgba(40, 30, 20, 0.7);     border: 1px solid #8a5c2e;     box-shadow: 0 0 10px rgba(138, 92, 46, 0.3); }  .success-message {     color: #228b22; /* Forest green */     text-transform: uppercase;     letter-spacing: 1px;     animation: fadeOut 2s forwards;     animation-delay: 1s; }  .warning {     background-color: rgba(139, 0, 0, 0.1);     border-left: 4px solid #8b0000;     box-shadow: 0 0 10px rgba(139, 0, 0, 0.2); }  .main-content-container {     background-color: #251a10; /* Darker brown */     color: #d4b98a; }  .content-sidebar {     background: linear-gradient(180deg, rgba(60, 50, 40, 0.8), rgba(40, 30, 20, 0.8));     border-right: 1px solid #8a5c2e;     box-shadow: 0 0 20px rgba(138, 92, 46, 0.2); }  #graphics-rightbar {     background: linear-gradient(180deg, rgba(60, 50, 40, 0.8), rgba(40, 30, 20, 0.8));     border-left: 1px solid #8a5c2e;     box-shadow: 0 0 20px rgba(138, 92, 46, 0.2); }  .grid-background {     background: #1e150d;     background-image: radial-gradient(rgba(138, 92, 46, 0.1) 1px, transparent 1px);     background-size: 20px 20px; }  .toolbar {     background: linear-gradient(90deg, rgba(60, 50, 40, 0.8), rgba(40, 30, 20, 0.8));     border-bottom: 1px solid #8a5c2e; }  .btn {     border: 1px solid #8a5c2e;     background-color: rgba(138, 92, 46, 0.1);     color: #d4b98a;     text-transform: uppercase; }  .btn:hover {     background-color: rgba(138, 92, 46, 0.2);     box-shadow: 0 0 10px rgba(138, 92, 46, 0.5);     transform: translateY(-2px); }  .btn-primary {     background-color: rgba(184, 134, 11, 0.2);     border: 1px solid #b8860b;     color: #b8860b; }  .btn-primary:hover {     background-color: rgba(184, 134, 11, 0.3);     box-shadow: 0 0 10px rgba(184, 134, 11, 0.5); }  .btn-danger {     background-color: rgba(139, 0, 0, 0.2);     border: 1px solid #8b0000;     color: #ff4040; }  .btn-danger:hover {     background-color: rgba(139, 0, 0, 0.3);     box-shadow: 0 0 10px rgba(139, 0, 0, 0.5); }  .btn-secondary {     background-color: rgba(138, 92, 46, 0.15);     border: 1px solid #8a5c2e; }  .btn-secondary:hover {     background-color: rgba(138, 92, 46, 0.25);     box-shadow: 0 0 10px rgba(138, 92, 46, 0.5); }  .btn-special {     background-color: rgba(34, 139, 34, 0.2); /* Forest green */     border: 1px solid #228b22;     color: #228b22; }  .btn-special:hover {     background-color: rgba(34, 139, 34, 0.3);     box-shadow: 0 0 10px rgba(34, 139, 34, 0.5); }  #shape-list {     border-bottom: 1px solid rgba(138, 92, 46, 0.2); }  .shape-item {     background-color: rgba(60, 50, 40, 0.6);     border: 1px solid #8a5c2e; }  .shape-item:hover {     background-color: rgba(138, 92, 46, 0.1);     transform: translateX(5px); }  .shape-item.active {     background-color: rgba(34, 139, 34, 0.1);     border-color: #228b22;     color: #228b22;     box-shadow: 0 0 10px rgba(34, 139, 34, 0.3); }  #inspector {     background: rgba(60, 50, 40, 0.8);     border-top: 1px solid #8a5c2e; }  .form-row label {     color: #b8860b; }  .form-row input, .form-row select {     border: 1px solid #8a5c2e;     background-color: rgba(60, 50, 40, 0.6);     color: #d4b98a;     box-shadow: 0 0 5px rgba(138, 92, 46, 0.3); }  .scene-info {     background: rgba(40, 30, 20, 0.8);     color: #d4b98a;     box-shadow: 0 0 15px rgba(138, 92, 46, 0.3);     border: 1px solid #8a5c2e; }  .button-danger {     background-color: rgba(139, 0, 0, 0.2);     border: 1px solid #8b0000;     color: #ff4040; }  .button-danger:hover {     background-color: rgba(139, 0, 0, 0.3);     box-shadow: 0 0 10px rgba(139, 0, 0, 0.5); }  h2, h3 {     color: #b8860b;     text-transform: uppercase;     letter-spacing: 3px;     margin-bottom: 15px;     padding-bottom: 5px;     border-bottom: 1px solid #8a5c2e;     text-shadow: 0 0 5px rgba(184, 134, 11, 0.7); }   .container::before {     content: '';     position: fixed;     top: 0;     left: 0;     right: 0;     bottom: 0;     background:          linear-gradient(rgba(138, 92, 46, 0.07) 1px, transparent 1px),         linear-gradient(90deg, rgba(138, 92, 46, 0.07) 1px, transparent 1px);     background-size: 40px 40px;     background-position: center center;     z-index: -1;     perspective: 1000px;     transform-style: preserve-3d;     transform: rotateX(75deg) translateZ(-100px);     pointer-events: none; }  #json-content {     background-color: rgba(60, 50, 40, 0.8);     border: 1px solid #8a5c2e;     color: #228b22; /* Green ink */     font-family: 'IM Fell English', serif;     padding: 15px;     box-shadow: 0 0 15px rgba(138, 92, 46, 0.2), inset 0 0 30px rgba(60, 50, 40, 0.5); }  .ref-value-item {     background-color: #4a3a2a; /* Darker wood */ }  .remove-ref-btn {     background: none;     border: none;     color: #ff4040;     cursor: pointer; }  ::-webkit-scrollbar {     width: 8px;     height: 8px; }  ::-webkit-scrollbar-track {     background: rgba(60, 50, 40, 0.6); }  ::-webkit-scrollbar-thumb {     background: #8a5c2e;     border-radius: 0; }  ::-webkit-scrollbar-thumb:hover {     background: #b8860b; }  /* Category Styling for Medieval Theme */ .type-selector {     background-color: rgba(50, 40, 30, 0.7); /* Dark wood */     border: 1px solid #8a5c2e; /* Bronze */     box-shadow: inset 0 0 10px rgba(138, 92, 46, 0.3); }  .category-header {     background-color: rgba(60, 50, 40, 0.8); /* Aged wood */     border: 1px solid #8a5c2e;     color: #d4b98a; /* Parchment beige */     text-transform: uppercase;     letter-spacing: 1px;     font-weight: bold; }  .category-header:hover {     background-color: rgba(138, 92, 46, 0.2); /* Bronze hover */     box-shadow: 0 0 10px rgba(138, 92, 46, 0.5); }  .category-types {     background-color: rgba(40, 30, 20, 0.6); /* Dark stone */ }  .object-type-item {     background-color: rgba(60, 50, 40, 0.6); /* Aged wood */     border-left: 2px solid #b8860b; /* Gold accent */     color: #d4b98a;     text-transform: uppercase;     letter-spacing: 1px; }  .object-type-item:hover {     background-color: rgba(184, 134, 11, 0.2); /* Golden hover */     transform: translateX(5px); }  .object-type-item.selected {     background-color: rgba(184, 134, 11, 0.3);     border-left: 4px solid #b8860b;     box-shadow: 0 0 8px rgba(184, 134, 11, 0.5); }  .object-list {     background-color: rgba(50, 40, 30, 0.5); /* Slightly lighter wood */ }"
       },
-      "codeMirrorTheme": {
-        "title": "Code - Ez On Eyes",
-        "fileName": "codeMirrorTheme",
-        "css": ".CodeMirror {    background: #1e1e1e;    color: #d4d4d4;    font-size: 14px; } .CodeMirror-gutters {    background: #252525;  border-right: 1px solid #444; } .CodeMirror-linenumber {    color: #888; }.CodeMirror-cursor {    border-left: 1px solid #d4d4d4; } .CodeMirror-selected {    background: #3a3a3a; }.CodeMirror-focused .CodeMirror-selected {    background: #404040; /* Slightly lighter when focused */}.CodeMirror-activeline-background {    background: #2a2a2a; /* Subtle active line highlight */}.CodeMirror-matchingbracket {    color: #b5cea8; /* Muted green for matching brackets */}.CodeMirror-nonmatchingbracket {    color: #d16969; /* Soft red for non-matching */}/* Override default theme's syntax highlighting */.cm-s-default .cm-header { color: #dcdcaa; } /* Soft yellow (overrides #00f blue) */.cm-s-default .cm-quote { color: #b5cea8; } /* Muted green (overrides #090) */.cm-negative { color: #d16969; } /* Soft red */.cm-positive { color: #6a9955; } /* Muted green */.cm-header, .cm-strong { font-weight: 700; }.cm-em { font-style: italic; }.cm-s-default .cm-link { color: #d7ba7d; text-decoration: underline; } /* Muted yellow (overrides #00c blue) */.cm-strikethrough { text-decoration: line-through; }.cm-s-default .cm-keyword { color: #ce9178; } /* Soft orange (overrides #708 purple) */.cm-s-default .cm-atom { color: #d4d4d4; } /* Light gray (overrides #219 blue) */.cm-s-default .cm-number { color: #b5cea8; } /* Muted green (overrides #164) */.cm-s-default .cm-def { color: #dcdcaa; } /* Soft yellow (overrides #00f blue) */.cm-s-default .cm-variable-2 { color: #d4d4d4; } /* Light gray (overrides #05a blue) */.cm-s-default .cm-variable-3, .cm-s-default .cm-type { color: #dcdcaa; } /* Soft yellow (overrides #085 blue) */.cm-s-default .cm-comment { color: #6a9955; } /* Muted green (overrides #a50) */.cm-s-default .cm-string { color: #ce9178; } /* Soft orange (overrides #a11) */.cm-s-default .cm-string-2 { color: #d7ba7d; } /* Muted yellow (overrides #f50) */.cm-s-default .cm-meta { color: #d4d4d4; } /* Light gray (overrides #555) */.cm-s-default .cm-qualifier { color: #d4d4d4; } /* Light gray (overrides #555) */.cm-s-default .cm-builtin { color: #dcdcaa; } /* Soft yellow (overrides #30a) */.cm-s-default .cm-bracket { color: #d4d4d4; } /* Light gray (overrides #997) */.cm-s-default .cm-tag { color: #dcdcaa; } /* Soft yellow (overrides #170) */.cm-s-default .cm-attribute { color: #d4d4d4; } /* Light gray (overrides #00c blue) */.cm-s-default .cm-hr { color: #888; } /* Muted gray (overrides #999) */.cm-s-default .cm-link { color: #d7ba7d; } /* Muted yellow (overrides #00c blue) */.cm-s-default .cm-error { color: #d16969; } /* Soft red (overrides red) */.cm-invalidchar { color: #d16969; } /* Soft red *//* Search highlight */.cm-searching {    background-color: rgba(255, 255, 0, 0.2); /* Subtle yellow */}"
+      "professional": {
+        "title": "Professional",
+        "fileName": "professional",
+        "css": "/* Professional Theme */ @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap');  body {     font-family: 'Inter', 'Roboto Mono', sans-serif;     background-color: #1a1a2e;     color: #e6e6fa;     line-height: 1.6; }  .sidebar {     background-color: rgba(34, 34, 54, 0.95);     border: 1px solid #4b5e87;     box-shadow: 0 4px 12px rgba(75, 94, 135, 0.2); }  .object-item {     background-color: rgba(34, 34, 54, 0.8);     border-left: 2px solid #8a4af0;     text-transform: uppercase;     letter-spacing: 0.5px;     transition: all 0.3s ease; }  .object-item:hover {     background-color: rgba(138, 74, 240, 0.15);     transform: translateX(3px); }  .object-item.selected {     background-color: rgba(138, 74, 240, 0.25);     border-left: 3px solid #8a4af0;     box-shadow: 0 0 6px rgba(138, 74, 240, 0.4); }  .editor {     background-color: rgba(34, 34, 54, 0.95);     border: 1px solid #4b5e87;     box-shadow: 0 4px 12px rgba(75, 94, 135, 0.15); }  #three-js-container {     border: 1px solid rgba(75, 94, 135, 0.6); }  .preview-canvas-container {     border: 1px solid #8a4af0;     box-shadow: 0 4px 12px rgba(138, 74, 240, 0.1); }  .preview {     background-color: rgba(34, 34, 54, 0.9);     border: 1px solid #4b5e87;     box-shadow: 0 4px 12px rgba(75, 94, 135, 0.15); }  #preview-canvas {     background-color: transparent;     border: 1px solid rgba(75, 94, 135, 0.5); }  .camera-controls {     background: rgba(26, 26, 46, 0.9);     border: 1px solid #4b5e87; }  .camera-controls button {     background-color: rgba(75, 94, 135, 0.3);     border: 1px solid #4b5e87;     color: #e6e6fa;     transition: all 0.3s ease; }  .camera-controls button:hover {     background-color: rgba(75, 94, 135, 0.5);     box-shadow: 0 2px 8px rgba(75, 94, 135, 0.3); }  .camera-controls .color-picker {     border: 1px solid #4b5e87; }  .camera-controls .size-slider {     background: #2a2a42;     border: 1px solid #4b5e87; }  label {     font-weight: 500;     text-transform: uppercase;     letter-spacing: 0.5px;     color: #8a4af0; }  input, textarea, select {     border: 1px solid #4b5e87;     background-color: rgba(34, 34, 54, 0.8);     color: #e6e6fa;     box-shadow: 0 2px 6px rgba(75, 94, 135, 0.1);     transition: all 0.3s ease; }  input:focus, textarea:focus, select:focus {     outline: none;     border-color: #8a4af0;     box-shadow: 0 0 8px rgba(138, 74, 240, 0.3); }  button {     background-color: rgba(75, 94, 135, 0.3);     border: 1px solid #4b5e87;     color: #e6e6fa;     text-transform: uppercase;     letter-spacing: 0.5px;     transition: all 0.3s ease; }  button:hover {     background-color: rgba(75, 94, 135, 0.5);     box-shadow: 0 2px 8px rgba(75, 94, 135, 0.3);     transform: translateY(-1px); }  button.primary {     background-color: rgba(138, 74, 240, 0.3);     border: 1px solid #8a4af0;     color: #e6e6fa; }  button.primary:hover {     background-color: rgba(138, 74, 240, 0.5);     box-shadow: 0 2px 8px rgba(138, 74, 240, 0.3); }  button.danger {     background-color: rgba(240, 74, 74, 0.3);     border: 1px solid #f04a4a;     color: #e6e6fa; }  button.danger:hover {     background-color: rgba(240, 74, 74, 0.5);     box-shadow: 0 2px 8px rgba(240, 74, 74, 0.3); }  button.active {     border: 1px solid #00cc99;     box-shadow: 0 0 8px rgba(0, 204, 153, 0.4);     color: #00cc99; }  .modal {     background-color: rgba(26, 26, 46, 0.9);     backdrop-filter: blur(3px); }  .modal-content {     background-color: rgba(34, 34, 54, 0.95);     border: 1px solid #4b5e87;     box-shadow: 0 8px 24px rgba(75, 94, 135, 0.2); }  .property-list {     border: 1px solid #4b5e87;     background-color: rgba(34, 34, 54, 0.8); }  .tab-navigation {     border-bottom: 1px solid #4b5e87; }  .tab {     text-transform: uppercase;     letter-spacing: 0.5px;     transition: all 0.3s ease; }  .tab:hover {     background-color: rgba(75, 94, 135, 0.2); }  .tab.active {     border-bottom: 2px solid #8a4af0;     box-shadow: 0 4px 8px -4px rgba(138, 74, 240, 0.4);     font-weight: 600; }  .instructions {     background-color: rgba(34, 34, 54, 0.8);     border-left: 3px solid #8a4af0;     box-shadow: 0 2px 6px rgba(138, 74, 240, 0.1); }  #grid-display {     background-color: rgba(26, 26, 46, 0.9);     border: 1px solid #4b5e87;     box-shadow: 0 4px 12px rgba(75, 94, 135, 0.15); }  .success-message {     color: #00cc99;     text-transform: uppercase;     letter-spacing: 0.5px;     animation: fadeOut 2s forwards;     animation-delay: 1s; }  .warning {     background-color: rgba(240, 74, 74, 0.15);     border-left: 3px solid #f04a4a;     box-shadow: 0 2px 6px rgba(240, 74, 74, 0.1); }  .main-content-container {     background-color: #1f1f38;     color: #e6e6fa; }  .content-sidebar {     background: linear-gradient(180deg, rgba(34, 34, 54, 0.95), rgba(26, 26, 46, 0.95));     border-right: 1px solid #4b5e87;     box-shadow: 0 4px 12px rgba(75, 94, 135, 0.15); }  #graphics-rightbar {     background: linear-gradient(180deg, rgba(34, 34, 54, 0.95), rgba(26, 26, 46, 0.95));     border-left: 1px solid #4b5e87;     box-shadow: 0 4px 12px rgba(75, 94, 135, 0.15); }  .grid-background {     background: #1a1a2e;     background-image: radial-gradient(rgba(75, 94, 135, 0.15) 1px, transparent 1px);     background-size: 30px 30px; }  .toolbar {     background: linear-gradient(90deg, rgba(34, 34, 54, 0.95), rgba(26, 26, 46, 0.95));     border-bottom: 1px solid #4b5e87; }  .btn {     border: 1px solid #4b5e87;     background-color: rgba(75, 94, 135, 0.3);     color: #e6e6fa;     text-transform: uppercase;     transition: all 0.3s ease; }  .btn:hover {     background-color: rgba(75, 94, 135, 0.5);     box-shadow: 0 2px 8px rgba(75, 94, 135, 0.3);     transform: translateY(-1px); }  .btn-primary {     background-color: rgba(138, 74, 240, 0.3);     border: 1px solid #8a4af0;     color: #e6e6fa; }  .btn-primary:hover {     background-color: rgba(138, 74, 240, 0.5);     box-shadow: 0 2px 8px rgba(138, 74, 240, 0.3); }  .btn-danger {     background-color: rgba(240, 74, 74, 0.3);     border: 1px solid #f04a4a;     color: #e6e6fa; }  .btn-danger:hover {     background-color: rgba(240, 74, 74, 0.5);     box-shadow: 0 2px 8px rgba(240, 74, 74, 0.3); }  .btn-secondary {     background-color: rgba(75, 94, 135, 0.25);     border: 1px solid #4b5e87; }  .btn-secondary:hover {     background-color: rgba(75, 94, 135, 0.4);     box-shadow: 0 2px 8px rgba(75, 94, 135, 0.3); }  .btn-special {     background-color: rgba(0, 204, 153, 0.3);     border: 1px solid #00cc99;     color: #e6e6fa; }  .btn-special:hover {     background-color: rgba(0, 204, 153, 0.5);     box-shadow: 0 2px 8px rgba(0, 204, 153, 0.3); }  #shape-list {     border-bottom: 1px solid rgba(75, 94, 135, 0.3); }  .shape-item {     background-color: rgba(34, 34, 54, 0.8);     border: 1px solid #4b5e87;     transition: all 0.3s ease; }  .shape-item:hover {     background-color: rgba(75, 94, 135, 0.2);     transform: translateX(3px); }  .shape-item.active {     background-color: rgba(0, 204, 153, 0.15);     border-color: #00cc99;     color: #00cc99;     box-shadow: 0 0 8px rgba(0, 204, 153, 0.3); }  #inspector {     background: rgba(34, 34, 54, 0.95);     border-top: 1px solid #4b5e87; }  .form-row label {     color: #8a4af0; }  .form-row input, .form-row select {     border: 1px solid #4b5e87;     background-color: rgba(34, 34, 54, 0.8);     color: #e6e6fa;     box-shadow: 0 2px 6px rgba(75, 94, 135, 0.1); }  .scene-info {     background: rgba(26, 26, 46, 0.9);     color: #e6e6fa;     box-shadow: 0 4px 12px rgba(75, 94, 135, 0.15);     border: 1px solid #4b5e87; }  .button-danger {     background-color: rgba(240, 74, 74, 0.3);     border: 1px solid #f04a4a;     color: #e6e6fa; }  .button-danger:hover {     background-color: rgba(240, 74, 74, 0.5);     box-shadow: 0 2px 8px rgba(240, 74, 74, 0.3); }  h2, h3 {     color: #8a4af0;     text-transform: uppercase;     letter-spacing: 1px;     margin-bottom: 12px;     padding-bottom: 4px;     border-bottom: 1px solid #4b5e87;     text-shadow: 0 0 4px rgba(138, 74, 240, 0.3); }  ::-webkit-scrollbar {     width: 6px;     height: 6px; }  ::-webkit-scrollbar-track {     background: rgba(34, 34, 54, 0.8); }  ::-webkit-scrollbar-thumb {     background: #4b5e87;     border-radius: 3px; }  ::-webkit-scrollbar-thumb:hover {     background: #8a4af0; }"
       },
       "professional2": {
         "title": "Professional Warm",
@@ -18050,15 +18050,15 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "scifi2",
         "css": "@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap'); :root {     --primary-bg: #0a0a1a;     --secondary-bg: #121228;     --accent-color: #00ffff;     --text-color: #e0e7ff;     --border-color: #2a2a4a;     --highlight-color: #ff00ff;     --hover-color: rgba(0, 255, 255, 0.2); }  body {     background-color: var(--primary-bg);     color: var(--text-color);     font-family: 'Orbitron', 'Arial', sans-serif;     line-height: 1.6; }  .container {     background-color: var(--secondary-bg);     border: 2px solid var(--border-color);     box-shadow: 0 0 20px rgba(0, 255, 255, 0.1); }  /* Sidebar Styling */ .sidebar {     background-color: #0f0f2a;     border-right: 1px solid var(--border-color); }  .object-item, .object-type-item {     background-color: var(--secondary-bg);     border: 1px solid var(--border-color);     color: var(--text-color);     transition: all 0.3s ease; }  .object-item:hover, .object-type-item:hover {     background-color: var(--hover-color);     border-color: var(--accent-color); }  .object-item.selected, .object-type-item.selected {     background-color: var(--accent-color);     color: var(--primary-bg); }  /* Button Styling */ button {     background-color: var(--secondary-bg);     color: var(--accent-color);     border: 2px solid var(--accent-color);     transition: all 0.3s ease;     position: relative;     overflow: hidden; }  button:before {     content: '';     position: absolute;     top: 0;     left: -100%;     width: 100%;     height: 100%;     background: linear-gradient(120deg, transparent, var(--highlight-color), transparent);     transition: all 0.5s ease; }  button:hover:before {     left: 100%; }  button:hover {     background-color: var(--accent-color);     color: var(--primary-bg); }  .primary {     background-color: var(--accent-color);     color: var(--primary-bg); }  .danger {     border-color: #ff4444;     color: #ff4444; }  /* Input Styling */ input, textarea, select {     background-color: var(--secondary-bg);     color: var(--text-color);     border: 1px solid var(--border-color);     transition: border-color 0.3s ease; }  input:focus, textarea:focus, select:focus {     border-color: var(--accent-color);     outline: none;     box-shadow: 0 0 10px rgba(0, 255, 255, 0.2); }  /* Modal Styling */ .modal {     background-color: rgba(10, 10, 26, 0.9); }  .modal-content {     background-color: var(--secondary-bg);     border: 2px solid var(--border-color);     box-shadow: 0 0 30px rgba(0, 255, 255, 0.1); }  /* Graphics Editor Enhancements */ #canvas-container {     background:          linear-gradient(45deg, rgba(0,255,255,0.05) 25%, transparent 25%) 0 0,         linear-gradient(-45deg, rgba(0,255,255,0.05) 25%, transparent 25%) 0 0,         linear-gradient(45deg, transparent 75%, rgba(0,255,255,0.05) 75%) 0 0,         linear-gradient(-45deg, transparent 75%, rgba(0,255,255,0.05) 75%) 0 0;     background-size: 20px 20px;     background-color: var(--primary-bg); }  .scene-info {     background-color: rgba(18, 18, 40, 0.8);     border: 1px solid var(--border-color);     color: var(--accent-color); }  /* Toolbar Styling */ .toolbar .btn {     background-color: var(--secondary-bg);     border-color: var(--border-color);     color: var(--accent-color); }  .toolbar .btn:hover {     background-color: var(--accent-color);     color: var(--primary-bg); }  /* Tab and Category Styling */ .tab, .category-header {     color: var(--text-color);     transition: color 0.3s ease; }  .tab:hover, .category-header:hover {     color: var(--accent-color); }  .tab.active {     border-bottom-color: var(--accent-color); }  /* Scrollbar (for browsers that support) */ ::-webkit-scrollbar {     width: 10px; }  ::-webkit-scrollbar-track {     background: var(--secondary-bg); }  ::-webkit-scrollbar-thumb {     background: var(--accent-color);     border-radius: 5px; }  ::-webkit-scrollbar-thumb:hover {     background: var(--highlight-color); }  /* Subtle Sci-Fi Animations */ @keyframes pulse-border {     0%, 100% { box-shadow: 0 0 10px rgba(0, 255, 255, 0.3); }     50% { box-shadow: 0 0 20px rgba(0, 255, 255, 0.6); } }  @keyframes grid-pulse {     0%, 100% { opacity: 0.1; }     50% { opacity: 0.3; } }  /* Additional Futuristic Effects */ body::before {     content: '';     position: fixed;     top: 0;     left: 0;     width: 100%;     height: 100%;     pointer-events: none;     background:          repeating-linear-gradient(             0deg,             rgba(0, 0, 0, 0.15),             rgba(0, 0, 0, 0.15) 1px,             transparent 1px,             transparent 2px         );     opacity: 0.3;     z-index: 9999; }"
       },
-      "videogame": {
-        "title": "Video Game",
-        "fileName": "videogame",
-        "css": "@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap');  body {     font-family: 'Orbitron', 'Share Tech Mono', sans-serif;     background-color: #0a0a0a; /* Deep black */     color: #00d4ff; /* Neon blue */     overflow: hidden; }  .sidebar {     background: linear-gradient(135deg, rgba(10, 10, 10, 0.9), rgba(155, 0, 255, 0.1)); /* Black to purple fade */     border: 1px solid #ff007a; /* Hot pink */     box-shadow: 0 0 15px rgba(0, 212, 255, 0.5), inset 0 0 10px rgba(155, 0, 255, 0.3); }  .inventory-item {     background-color: rgba(12, 12, 12, 0.7);     border-left: 3px solid #9b00ff; /* Electric purple */     text-transform: uppercase;     letter-spacing: 2px;     transition: all 0.2s ease; }  .inventory-item:hover {     background-color: rgba(0, 212, 255, 0.2);     transform: scale(1.03);     box-shadow: 0 0 10px rgba(0, 212, 255, 0.7); }  .inventory-item.active {     background-color: rgba(255, 0, 122, 0.3); /* Pink glow */     border-left: 5px solid #ff007a;     box-shadow: 0 0 15px rgba(255, 0, 122, 0.8); }  .hud {     background: rgba(10, 10, 10, 0.8);     border: 1px solid #00d4ff;     box-shadow: 0 0 20px rgba(0, 212, 255, 0.4); }  #game-canvas {     border: 1px dashed #c0c0c0; /* Silver dashed */     background: radial-gradient(circle, rgba(155, 0, 255, 0.1), transparent); }  .hologram-display {     border: 2px solid #9b00ff;     box-shadow: 0 0 25px rgba(155, 0, 255, 0.6);     animation: pulseGlow 2s infinite alternate; }  @keyframes pulseGlow {     0% { box-shadow: 0 0 25px rgba(155, 0, 255, 0.6); }     100% { box-shadow: 0 0 35px rgba(155, 0, 255, 0.9); } }  .control-panel {     background: rgba(0, 0, 0, 0.85);     border: 1px solid #c0c0c0; }  .control-panel button {     background-color: rgba(0, 212, 255, 0.2);     border: 1px solid #00d4ff;     color: #fff;     text-transform: uppercase;     transition: all 0.3s ease; }  .control-panel button:hover {     background-color: rgba(0, 212, 255, 0.4);     box-shadow: 0 0 15px rgba(0, 212, 255, 0.8);     transform: translateY(-3px); }  label {     color: #ff007a; /* Hot pink */     font-weight: bold;     text-transform: uppercase;     letter-spacing: 1.5px; }  input, textarea, select {     border: 1px solid #9b00ff;     background-color: rgba(10, 10, 10, 0.7);     color: #00d4ff;     box-shadow: 0 0 8px rgba(155, 0, 255, 0.4); }  input:focus, textarea:focus, select:focus {     outline: none;     border-color: #ff007a;     box-shadow: 0 0 12px rgba(255, 0, 122, 0.7); }  button {     background-color: rgba(155, 0, 255, 0.2);     border: 1px solid #9b00ff;     color: #fff;     text-transform: uppercase;     letter-spacing: 1px;     transition: all 0.3s ease; }  button:hover {     background-color: rgba(155, 0, 255, 0.4);     box-shadow: 0 0 15px rgba(155, 0, 255, 0.7);     transform: translateY(-2px) scale(1.05); }  button.primary {     background-color: rgba(0, 212, 255, 0.3);     border: 1px solid #00d4ff;     color: #fff; }  button.primary:hover {     background-color: rgba(0, 212, 255, 0.5);     box-shadow: 0 0 20px rgba(0, 212, 255, 0.9); }  button.alert {     background-color: rgba(255, 0, 122, 0.2);     border: 1px solid #ff007a;     color: #fff; }  button.alert:hover {     background-color: rgba(255, 0, 122, 0.4);     box-shadow: 0 0 15px rgba(255, 0, 122, 0.7); }  .modal {     background: rgba(0, 0, 0, 0.9);     backdrop-filter: blur(3px); }  .modal-content {     background: linear-gradient(45deg, rgba(10, 10, 10, 0.9), rgba(0, 212, 255, 0.1));     border: 1px solid #00d4ff;     box-shadow: 0 0 30px rgba(0, 212, 255, 0.5); }  .notification {     background-color: rgba(155, 0, 255, 0.3);     border-left: 4px solid #9b00ff;     color: #fff;     animation: slideIn 0.5s ease-out; }  @keyframes slideIn {     0% { transform: translateX(100%); opacity: 0; }     100% { transform: translateX(0); opacity: 1; } }  .main-content {     background: #0a0a0a;     animation: glitch 4s infinite; }   .grid-overlay {     background: repeating-linear-gradient(45deg, rgba(155, 0, 255, 0.05), rgba(155, 0, 255, 0.05) 10px, transparent 10px, transparent 20px); }  .btn {     border: 1px solid #c0c0c0;     background-color: rgba(0, 212, 255, 0.15);     color: #fff; }  .btn:hover {     background-color: rgba(0, 212, 255, 0.3);     box-shadow: 0 0 10px rgba(0, 212, 255, 0.6); }  .btn-primary {     background-color: rgba(9b, 0, 255, 0.25);     border: 1px solid #9b00ff; }  .btn-primary:hover {     background-color: rgba(155, 0, 255, 0.45);     box-shadow: 0 0 15px rgba(155, 0, 255, 0.8); }  ::-webkit-scrollbar {     width: 6px; }  ::-webkit-scrollbar-track {     background: #0a0a0a; }  ::-webkit-scrollbar-thumb {     background: #00d4ff;     border-radius: 3px; }  ::-webkit-scrollbar-thumb:hover {     background: #ff007a; }"
-      },
       "videoGame2": {
         "title": "Video Game 2",
         "fileName": "videoGame2",
         "css": "/* retro-theme.css - Pixel Art Retro Video Game Theme */\r\n\r\n/* Import pixel font from Google Fonts */\r\n@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');\r\n\r\n/* Base Styles */\r\nbody {\r\n    background-color: #1a1a1a; /* Dark retro background */\r\n    font-family: 'Press Start 2P', cursive; /* Pixelated font */\r\n    image-rendering: pixelated; /* Ensures crisp pixel art rendering */\r\n    color: #fff; /* Default text color */\r\n}\r\n\r\n/* Container */\r\n.container {\r\n    background: #2b2b2b; /* Retro gray */\r\n    border: 4px solid #000; /* Thick black border */\r\n    padding: .5em;\r\n}\r\n\r\n/* Sidebar */\r\n.sidebar {\r\n    background: #3c3c3c; /* Mid-gray retro */\r\n    border: 4px solid #000;\r\n}\r\n\r\n.sidebar img {\r\n    image-rendering: pixelated;\r\n    border-bottom: 2px solid #000;\r\n}\r\n\r\n/* Object List */\r\n.object-item {\r\n    background: #5a5a5a; /* Darker gray */\r\n    border: 2px solid #000;\r\n    color: #fff;\r\n    font-size: 10px; /* Smaller for pixel readability */\r\n}\r\n\r\n.object-item:hover, .object-item.selected {\r\n    background: #ffcc00; /* Bright retro yellow */\r\n    color: #000;\r\n}\r\n.object-type-item.selected {\r\n    color: #ffcc00;\r\n}\r\n\r\n/* Buttons */\r\nbutton {\r\n    background: #ff3333; /* Retro red */\r\n    color: #fff;\r\n    border: 2px solid #000;\r\n    font-family: 'Press Start 2P', cursive;\r\n    font-size: 10px;\r\n    text-transform: uppercase; /* Retro game style */\r\n    transition: background 0.1s ease;\r\n}\r\n\r\nbutton:hover {\r\n    background: #33cc33; /* Retro green */\r\n}\r\n\r\nbutton.primary {\r\n    background: #33cc33; /* Green for primary actions */\r\n}\r\n\r\nbutton.primary:hover {\r\n    background: #ffcc00; /* Yellow on hover */\r\n}\r\n\r\n/* Main Content */\r\n.main-content {\r\n    background: #2b2b2b;\r\n}\r\n\r\n/* Editor */\r\n.editor {\r\n    background: #3c3c3c;\r\n    border: 4px solid #000;\r\n    color: #fff;\r\n    font-size: 10px;\r\n}\r\n\r\n/* Canvas and Grid Containers */\r\n#canvas-container, .grid-container {\r\n    background: #000; /* Black canvas background */\r\n    border: 4px solid #fff;\r\n}\r\n\r\n#canvas, #grid {\r\n    image-rendering: pixelated;\r\n    background: repeating-linear-gradient(\r\n        45deg,\r\n        #333 0px,\r\n        #333 10px,\r\n        #000 10px,\r\n        #000 20px\r\n    ); /* Retro checkerboard grid */\r\n}\r\n\r\n.scene-info {\r\n    background: rgba(0, 0, 0, 0.8);\r\n    border: 2px solid #fff;\r\n    color: #00ff00; /* Neon green */\r\n    font-size: 8px;\r\n}\r\n\r\n/* Toolbar */\r\n.toolbar {\r\n    background: #5a5a5a;\r\n    border-bottom: 2px solid #000;\r\n}\r\n\r\n.btn {\r\n    background: #ff3333; /* Retro red */\r\n    color: #fff;\r\n    border: 2px solid #000;\r\n    font-family: 'Press Start 2P', cursive;\r\n    font-size: 10px;\r\n    transition: background 0.1s ease;\r\n}\r\n\r\n.btn:hover {\r\n    background: #33cc33; /* Retro green */\r\n}\r\n\r\n.btn.btn-danger {\r\n    background: #ff0000; /* Bright red */\r\n}\r\n\r\n.btn.btn-danger:hover {\r\n    background: #cc0000; /* Darker red */\r\n}\r\n\r\n.btn.btn-secondary {\r\n    background: #6666ff; /* Retro blue */\r\n}\r\n\r\n.btn.btn-secondary:hover {\r\n    background: #9999ff; /* Lighter blue */\r\n}\r\n\r\n.btn.btn-special {\r\n    background: #ff00ff; /* Retro magenta */\r\n}\r\n\r\n.btn.btn-special:hover {\r\n    background: #cc00cc; /* Darker magenta */\r\n}\r\n\r\n/* Modals */\r\n.modal {\r\n    background: rgba(0, 0, 0, 0.8);\r\n}\r\n\r\n.modal-content {\r\n    background: #3c3c3c;\r\n    border: 4px solid #fff;\r\n    color: #fff;\r\n    font-size: 10px;\r\n}\r\n\r\n/* Form Elements */\r\n.form-group label {\r\n    color: #00ff00; /* Neon green */\r\n    font-size: 10px;\r\n}\r\n\r\ninput, textarea, select {\r\n    background: #000;\r\n    border: 2px solid #fff;\r\n    color: #ffcc00; /* Retro yellow */\r\n    font-family: 'Press Start 2P', cursive;\r\n    font-size: 10px;\r\n}\r\n\r\ninput[type=\"color\"] {\r\n    padding: 0; /* Fix color picker padding */\r\n    height: 20px; /* Consistent height */\r\n}\r\n\r\n/* Tabs */\r\n.tab-navigation {\r\n    border-bottom: 2px solid #000;\r\n}\r\n\r\n.tab {\r\n    background: #5a5a5a;\r\n    border: 2px solid #000;\r\n    color: #fff;\r\n    font-size: 10px;\r\n}\r\n\r\n.tab.active {\r\n    background: #ffcc00; /* Yellow for active tab */\r\n    color: #000;\r\n}\r\n\r\n/* Inspector and JSON Editor */\r\n#inspector, #json-editor {\r\n    background: #3c3c3c;\r\n    border: 2px solid #000;\r\n}\r\n\r\n#json-content {\r\n    background: #000;\r\n    color: #00ff00; /* Green for code-like text */\r\n}\r\n\r\n/* Translation Controls */\r\n.translation-controls button {\r\n    background: #6666ff; /* Retro blue */\r\n}\r\n\r\n.translation-controls button:hover {\r\n    background: #9999ff;\r\n}\r\n\r\n/* Shape List */\r\n.shape-item {\r\n    background: #5a5a5a;\r\n    border: 2px solid #000;\r\n    color: #fff;\r\n    font-size: 10px;\r\n}\r\n\r\n.shape-item:hover {\r\n    background: #ffcc00;\r\n    color: #000;\r\n}\r\n\r\n.type-selector .object-item {\r\n  font-size: .6em;\r\n}\r\n\r\n/* codemirror-retro.css - Retro Pixel Art Theme for CodeMirror */\r\n\r\n/* Import pixel font from Google Fonts */\r\n@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');\r\n\r\n/* Base CodeMirror Styles */\r\n.CodeMirror {\r\n    height: 100% !important;\r\n    font-family: 'Press Start 2P', cursive !important;\r\n    font-size: 10px !important; /* Small size for pixel readability */\r\n    background: #000 !important; /* Black background like a CRT screen */\r\n    color: #00ff00 !important; /* Neon green default text */\r\n    border: 4px solid #fff !important; /* Thick white border */\r\n    image-rendering: pixelated; /* Crisp rendering */\r\n}\r\n.CodeMirror-gutters {\r\n background-color: #000;\r\n}\r\n\r\n/* Retro Theme Definition */\r\n.cm-s-retro .CodeMirror-gutters {\r\n    background: #1a1a1a !important; /* Dark gray gutter */\r\n    border-right: 2px solid #fff !important; /* White separator */\r\n    color: #ffcc00 !important; /* Yellow line numbers */\r\n}\r\n\r\n.cm-s-retro .CodeMirror-linenumber {\r\n    color: #ffcc00 !important; /* Yellow line numbers */\r\n    padding: 0 5px !important;\r\n}\r\n\r\n.cm-s-retro .CodeMirror-cursor {\r\n    border-left: 2px solid #ff3333 !important; /* Red blinking cursor */\r\n    animation: blink 1s step-end infinite; /* Retro blink effect */\r\n}\r\n\r\n.cm-s-retro .CodeMirror-selected {\r\n    background: #ff3333 !important; /* Red selection highlight */\r\n    opacity: 0.5; /* Slightly transparent for retro effect */\r\n}\r\n\r\n.cm-s-retro .CodeMirror-focused .CodeMirror-selected {\r\n    background: #ff3333 !important;\r\n}\r\n\r\n/* Syntax Highlighting */\r\n.cm-s-retro .cm-comment {\r\n    color: #6666ff !important; /* Blue for comments */\r\n    font-style: italic; /* Slight retro flair */\r\n}\r\n\r\n.cm-s-retro .cm-string {\r\n    color: #ffcc00 !important; /* Yellow for strings */\r\n}\r\n\r\n.cm-s-retro .cm-number {\r\n    color: #33cc33 !important; /* Green for numbers */\r\n}\r\n\r\n.cm-s-retro .cm-keyword {\r\n    color: #ff00ff !important; /* Magenta for keywords */\r\n    font-weight: bold; /* Bold for emphasis */\r\n}\r\n\r\n.cm-s-retro .cm-operator {\r\n    color: #fff !important; /* White for operators */\r\n}\r\n\r\n.cm-s-retro .cm-variable {\r\n    color: #00ff00 !important; /* Green for variables */\r\n}\r\n\r\n.cm-s-retro .cm-variable-2 {\r\n    color: #33cc33 !important; /* Lighter green for secondary variables */\r\n}\r\n\r\n.cm-s-retro .cm-def {\r\n    color: #ff00ff !important; /* Magenta for definitions */\r\n}\r\n\r\n.cm-s-retro .cm-property {\r\n    color: #ffcc00 !important; /* Yellow for properties */\r\n}\r\n\r\n.cm-s-retro .cm-function {\r\n    color: #ff00ff !important; /* Magenta for functions */\r\n}\r\n\r\n.cm-s-retro .cm-builtin {\r\n    color: #33cc33 !important; /* Green for built-ins */\r\n}\r\n\r\n.cm-s-retro .cm-tag {\r\n    color: #ff3333 !important; /* Red for tags (if HTML mode is used) */\r\n}\r\n\r\n.cm-s-retro .cm-attribute {\r\n    color: #ffcc00 !important; /* Yellow for attributes */\r\n}\r\n\r\n/* Matching Brackets */\r\n.cm-s-retro .CodeMirror-matchingbracket {\r\n    color: #33cc33 !important; /* Green for matching brackets */\r\n    border-bottom: 2px solid #33cc33 !important;\r\n    background: none !important;\r\n}\r\n\r\n.cm-s-retro .CodeMirror-nonmatchingbracket {\r\n    color: #ff3333 !important; /* Red for non-matching brackets */\r\n    border-bottom: 2px solid #ff3333 !important;\r\n}\r\n\r\n/* Autocomplete Hints */\r\n.CodeMirror-hints {\r\n    background: #2b2b2b !important; /* Dark retro gray */\r\n    border: 2px solid #fff !important; /* White border */\r\n    color: #fff !important;\r\n    font-family: 'Press Start 2P', cursive !important;\r\n    font-size: 10px !important;\r\n    box-shadow: 4px 4px 0 #000; /* Retro shadow effect */\r\n}\r\n\r\n.CodeMirror-hints .CodeMirror-hint {\r\n    color: #ffcc00 !important; /* Yellow for hint items */\r\n    padding: 5px !important;\r\n}\r\n\r\n.CodeMirror-hints .CodeMirror-hint-active {\r\n    background: #ff3333 !important; /* Red for selected hint */\r\n    color: #000 !important;\r\n}\r\n\r\n/* Scrollbars (minimal retro style) */\r\n.CodeMirror-vscrollbar, .CodeMirror-hscrollbar {\r\n    background: #3c3c3c !important;\r\n}\r\n\r\n.CodeMirror-scrollbar-filler {\r\n    background: #000 !important;\r\n}\r\n\r\n/* Animations */\r\n@keyframes blink {\r\n    50% { opacity: 0; }\r\n}"
+      },
+      "videogame": {
+        "title": "Video Game",
+        "fileName": "videogame",
+        "css": "@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap');  body {     font-family: 'Orbitron', 'Share Tech Mono', sans-serif;     background-color: #0a0a0a; /* Deep black */     color: #00d4ff; /* Neon blue */     overflow: hidden; }  .sidebar {     background: linear-gradient(135deg, rgba(10, 10, 10, 0.9), rgba(155, 0, 255, 0.1)); /* Black to purple fade */     border: 1px solid #ff007a; /* Hot pink */     box-shadow: 0 0 15px rgba(0, 212, 255, 0.5), inset 0 0 10px rgba(155, 0, 255, 0.3); }  .inventory-item {     background-color: rgba(12, 12, 12, 0.7);     border-left: 3px solid #9b00ff; /* Electric purple */     text-transform: uppercase;     letter-spacing: 2px;     transition: all 0.2s ease; }  .inventory-item:hover {     background-color: rgba(0, 212, 255, 0.2);     transform: scale(1.03);     box-shadow: 0 0 10px rgba(0, 212, 255, 0.7); }  .inventory-item.active {     background-color: rgba(255, 0, 122, 0.3); /* Pink glow */     border-left: 5px solid #ff007a;     box-shadow: 0 0 15px rgba(255, 0, 122, 0.8); }  .hud {     background: rgba(10, 10, 10, 0.8);     border: 1px solid #00d4ff;     box-shadow: 0 0 20px rgba(0, 212, 255, 0.4); }  #game-canvas {     border: 1px dashed #c0c0c0; /* Silver dashed */     background: radial-gradient(circle, rgba(155, 0, 255, 0.1), transparent); }  .hologram-display {     border: 2px solid #9b00ff;     box-shadow: 0 0 25px rgba(155, 0, 255, 0.6);     animation: pulseGlow 2s infinite alternate; }  @keyframes pulseGlow {     0% { box-shadow: 0 0 25px rgba(155, 0, 255, 0.6); }     100% { box-shadow: 0 0 35px rgba(155, 0, 255, 0.9); } }  .control-panel {     background: rgba(0, 0, 0, 0.85);     border: 1px solid #c0c0c0; }  .control-panel button {     background-color: rgba(0, 212, 255, 0.2);     border: 1px solid #00d4ff;     color: #fff;     text-transform: uppercase;     transition: all 0.3s ease; }  .control-panel button:hover {     background-color: rgba(0, 212, 255, 0.4);     box-shadow: 0 0 15px rgba(0, 212, 255, 0.8);     transform: translateY(-3px); }  label {     color: #ff007a; /* Hot pink */     font-weight: bold;     text-transform: uppercase;     letter-spacing: 1.5px; }  input, textarea, select {     border: 1px solid #9b00ff;     background-color: rgba(10, 10, 10, 0.7);     color: #00d4ff;     box-shadow: 0 0 8px rgba(155, 0, 255, 0.4); }  input:focus, textarea:focus, select:focus {     outline: none;     border-color: #ff007a;     box-shadow: 0 0 12px rgba(255, 0, 122, 0.7); }  button {     background-color: rgba(155, 0, 255, 0.2);     border: 1px solid #9b00ff;     color: #fff;     text-transform: uppercase;     letter-spacing: 1px;     transition: all 0.3s ease; }  button:hover {     background-color: rgba(155, 0, 255, 0.4);     box-shadow: 0 0 15px rgba(155, 0, 255, 0.7);     transform: translateY(-2px) scale(1.05); }  button.primary {     background-color: rgba(0, 212, 255, 0.3);     border: 1px solid #00d4ff;     color: #fff; }  button.primary:hover {     background-color: rgba(0, 212, 255, 0.5);     box-shadow: 0 0 20px rgba(0, 212, 255, 0.9); }  button.alert {     background-color: rgba(255, 0, 122, 0.2);     border: 1px solid #ff007a;     color: #fff; }  button.alert:hover {     background-color: rgba(255, 0, 122, 0.4);     box-shadow: 0 0 15px rgba(255, 0, 122, 0.7); }  .modal {     background: rgba(0, 0, 0, 0.9);     backdrop-filter: blur(3px); }  .modal-content {     background: linear-gradient(45deg, rgba(10, 10, 10, 0.9), rgba(0, 212, 255, 0.1));     border: 1px solid #00d4ff;     box-shadow: 0 0 30px rgba(0, 212, 255, 0.5); }  .notification {     background-color: rgba(155, 0, 255, 0.3);     border-left: 4px solid #9b00ff;     color: #fff;     animation: slideIn 0.5s ease-out; }  @keyframes slideIn {     0% { transform: translateX(100%); opacity: 0; }     100% { transform: translateX(0); opacity: 1; } }  .main-content {     background: #0a0a0a;     animation: glitch 4s infinite; }   .grid-overlay {     background: repeating-linear-gradient(45deg, rgba(155, 0, 255, 0.05), rgba(155, 0, 255, 0.05) 10px, transparent 10px, transparent 20px); }  .btn {     border: 1px solid #c0c0c0;     background-color: rgba(0, 212, 255, 0.15);     color: #fff; }  .btn:hover {     background-color: rgba(0, 212, 255, 0.3);     box-shadow: 0 0 10px rgba(0, 212, 255, 0.6); }  .btn-primary {     background-color: rgba(9b, 0, 255, 0.25);     border: 1px solid #9b00ff; }  .btn-primary:hover {     background-color: rgba(155, 0, 255, 0.45);     box-shadow: 0 0 15px rgba(155, 0, 255, 0.8); }  ::-webkit-scrollbar {     width: 6px; }  ::-webkit-scrollbar-track {     background: #0a0a0a; }  ::-webkit-scrollbar-thumb {     background: #00d4ff;     border-radius: 3px; }  ::-webkit-scrollbar-thumb:hover {     background: #ff007a; }"
       }
     },
     "levels": {
