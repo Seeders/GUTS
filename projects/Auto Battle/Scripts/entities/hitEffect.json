@@ -1,0 +1,10 @@
+{
+  "title": "Hit Effect",
+  "components": [
+    "HitEffectParticle",
+    "LifeSpan"
+  ],
+  "renderers": [
+    "HitEffectRenderer"
+  ]
+}

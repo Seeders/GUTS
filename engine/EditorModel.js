@@ -122,7 +122,7 @@ class EditorModel {
     
                 if (!response.ok) {
                     if (response.status === 404) {                
-                        gameData = DEFAULT_PROJECT_CONFIG;
+                        this.state.project = DEFAULT_PROJECT_CONFIG;
                     } else {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }

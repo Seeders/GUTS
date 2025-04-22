@@ -1,0 +1,15 @@
+{
+  "title": "Game",
+  "components": [
+    "MapManager",
+    "WaveManager",
+    "UpgradeManager",
+    "AudioManager",
+    "ThreeJsWorld",
+    "Game"
+  ],
+  "renderers": [
+    "MapRenderer",
+    "UiManager"
+  ]
+}

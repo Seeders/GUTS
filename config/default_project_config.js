@@ -35,6 +35,48 @@ const DEFAULT_PROJECT_CONFIG = {
           }
         }
       },
+      "missileLaunch": {
+        "title": "Missile Launch",
+        "audio": {
+          "waveform": "noise",
+          "frequency": 341,
+          "duration": 0.4,
+          "noise": {
+            "type": "brown",
+            "amount": 0.63,
+            "filter": {
+              "type": "bandpass",
+              "frequency": 20
+            }
+          },
+          "envelope": {
+            "attack": 0.252,
+            "decay": 0.4,
+            "sustain": 0,
+            "release": 0.001
+          },
+          "pitchEnvelope": {
+            "start": 3.38,
+            "end": 0.59,
+            "time": 0.4
+          },
+          "effects": {
+            "filter": {
+              "type": "lowpass",
+              "frequency": 20000,
+              "Q": 1
+            },
+            "distortion": 0,
+            "delay": {
+              "time": 0,
+              "feedback": 0
+            },
+            "reverb": 0.11,
+            "bitcrusher": 0,
+            "pan": 0
+          }
+        }
+      },
       "gunshot": {
         "title": "GunShot",
         "audio": {
@@ -106,48 +148,6 @@ const DEFAULT_PROJECT_CONFIG = {
               "feedback": 0
             },
             "reverb": 0,
-            "bitcrusher": 0,
-            "pan": 0
-          }
-        }
-      },
-      "missileLaunch": {
-        "title": "Missile Launch",
-        "audio": {
-          "waveform": "noise",
-          "frequency": 341,
-          "duration": 0.4,
-          "noise": {
-            "type": "brown",
-            "amount": 0.63,
-            "filter": {
-              "type": "bandpass",
-              "frequency": 20
-            }
-          },
-          "envelope": {
-            "attack": 0.252,
-            "decay": 0.4,
-            "sustain": 0,
-            "release": 0.001
-          },
-          "pitchEnvelope": {
-            "start": 3.38,
-            "end": 0.59,
-            "time": 0.4
-          },
-          "effects": {
-            "filter": {
-              "type": "lowpass",
-              "frequency": 20000,
-              "Q": 1
-            },
-            "distortion": 0,
-            "delay": {
-              "time": 0,
-              "feedback": 0
-            },
-            "reverb": 0.11,
             "bitcrusher": 0,
             "pan": 0
           }
@@ -301,6 +301,48 @@ const DEFAULT_PROJECT_CONFIG = {
           }
         }
       },
+      "placeTower": {
+        "title": "Place Tower",
+        "audio": {
+          "waveform": "sine",
+          "frequency": 20,
+          "duration": 0.2,
+          "noise": {
+            "type": "pink",
+            "amount": 0.8,
+            "filter": {
+              "type": "lowpass",
+              "frequency": 400
+            }
+          },
+          "envelope": {
+            "attack": 0.01,
+            "decay": 0,
+            "sustain": 0.1,
+            "release": 0.001
+          },
+          "pitchEnvelope": {
+            "start": 4,
+            "end": 4,
+            "time": 0.2
+          },
+          "effects": {
+            "filter": {
+              "type": "lowpass",
+              "frequency": 500,
+              "Q": 1
+            },
+            "distortion": 0,
+            "delay": {
+              "time": 0.05,
+              "feedback": 0.2
+            },
+            "reverb": 0.3,
+            "bitcrusher": 0.4,
+            "pan": 0
+          }
+        }
+      },
       "test": {
         "title": "test",
         "audio": {
@@ -340,48 +382,6 @@ const DEFAULT_PROJECT_CONFIG = {
             },
             "reverb": 0.15,
             "bitcrusher": 0,
-            "pan": 0
-          }
-        }
-      },
-      "placeTower": {
-        "title": "Place Tower",
-        "audio": {
-          "waveform": "sine",
-          "frequency": 20,
-          "duration": 0.2,
-          "noise": {
-            "type": "pink",
-            "amount": 0.8,
-            "filter": {
-              "type": "lowpass",
-              "frequency": 400
-            }
-          },
-          "envelope": {
-            "attack": 0.01,
-            "decay": 0,
-            "sustain": 0.1,
-            "release": 0.001
-          },
-          "pitchEnvelope": {
-            "start": 4,
-            "end": 4,
-            "time": 0.2
-          },
-          "effects": {
-            "filter": {
-              "type": "lowpass",
-              "frequency": 500,
-              "Q": 1
-            },
-            "distortion": 0,
-            "delay": {
-              "time": 0.05,
-              "feedback": 0.2
-            },
-            "reverb": 0.3,
-            "bitcrusher": 0.4,
             "pan": 0
           }
         }
@@ -440,64 +440,64 @@ const DEFAULT_PROJECT_CONFIG = {
         "desc": "Gain 25% more Blood Shards from enemies",
         "value": 1.25
       },
-      "bloodRegeneration": {
-        "desc": "All healing effects are 25% more effective",
-        "healingMultiplier": 1.25
-      },
       "darkResilience": {
         "desc": "Towers take 20% less damage from enemy abilities",
         "towerDamageReduction": 0.8
+      },
+      "bloodRegeneration": {
+        "desc": "All healing effects are 25% more effective",
+        "healingMultiplier": 1.25
       },
       "dematerializeSentry": {
         "desc": "Heal 0.5% Core HP per hit",
         "leech": 0.005
       },
-      "essenceExtraction": {
-        "desc": "Gain 25% more Essence from enemies",
-        "value": 1.25
-      },
       "essenceOverflow": {
         "desc": "Gain 10% more Essence when above 50% Core HP",
         "value": 1.1
       },
+      "essenceExtraction": {
+        "desc": "Gain 25% more Essence from enemies",
+        "value": 1.25
+      },
       "mistSlow": {
         "desc": "Slow effect increased by 20%",
         "slowAmount": 0.8
-      },
-      "necroMastery": {
-        "desc": "+20% Range and projectiles pierce one additional enemy",
-        "range": 1.2,
-        "piercing": 1
-      },
-      "pyreBlaze": {
-        "desc": "+20% Damage and +10% Attack Speed",
-        "damage": 1.2,
-        "attackSpeed": 1.1
-      },
-      "necroSummon": {
-        "desc": "10% chance to raise a skeleton when killing an enemy",
-        "summonChance": 1.1
-      },
-      "pyreBurn": {
-        "desc": "+50% Burn Damage",
-        "burnDamage": 1
       },
       "mistSpread": {
         "desc": "+25% Range and +1 Piercing",
         "range": 1.25,
         "piercing": 1
       },
+      "necroMastery": {
+        "desc": "+20% Range and projectiles pierce one additional enemy",
+        "range": 1.2,
+        "piercing": 1
+      },
+      "necroSummon": {
+        "desc": "10% chance to raise a skeleton when killing an enemy",
+        "summonChance": 1.1
+      },
       "overCharge": {
         "desc": "+30% Range",
         "range": 1.3
       },
-      "sentryFrenzy": {
-        "desc": "+5% Attack Speed",
-        "value": 0.95
+      "pyreBlaze": {
+        "desc": "+20% Damage and +10% Attack Speed",
+        "damage": 1.2,
+        "attackSpeed": 1.1
+      },
+      "pyreBurn": {
+        "desc": "+50% Burn Damage",
+        "burnDamage": 1
       },
       "pyreSoul": {
         "desc": "+10% splash radius",
         "splashRadius": 1.1
+      },
+      "sentryFrenzy": {
+        "desc": "+5% Attack Speed",
+        "value": 0.95
       },
       "sentryIntelligence": {
         "desc": "+15% Damage and +10% Range",
@@ -1249,797 +1249,6 @@ const DEFAULT_PROJECT_CONFIG = {
         },
         "armor": 100,
         "title": "Armored Beast"
-      },
-      "banshee": {
-        "hp": 20,
-        "speed": 1.4,
-        "value": 8,
-        "essence": 14,
-        "screamDamage": 5,
-        "render": {
-          "animations": {
-            "idle": [
-              {}
-            ],
-            "walk": [
-              {},
-              {},
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 38,
-                      "id": 0
-                    },
-                    {
-                      "y": 20,
-                      "id": 1
-                    },
-                    {
-                      "y": 38,
-                      "id": 2
-                    },
-                    {
-                      "y": 38,
-                      "id": 3
-                    },
-                    {
-                      "y": 30,
-                      "id": 4
-                    },
-                    {
-                      "y": 30,
-                      "id": 5
-                    },
-                    {
-                      "y": 35,
-                      "id": 6
-                    },
-                    {
-                      "y": 35,
-                      "id": 7
-                    },
-                    {
-                      "y": 34,
-                      "id": 8
-                    },
-                    {
-                      "y": 20,
-                      "id": 9
-                    },
-                    {
-                      "y": 20,
-                      "id": 10
-                    },
-                    {
-                      "y": 20,
-                      "id": 11
-                    }
-                  ]
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 38,
-                      "id": 0
-                    },
-                    {
-                      "y": 20,
-                      "id": 1
-                    },
-                    {
-                      "y": 38,
-                      "id": 2
-                    },
-                    {
-                      "y": 38,
-                      "id": 3
-                    },
-                    {
-                      "y": 30,
-                      "id": 4
-                    },
-                    {
-                      "y": 30,
-                      "id": 5
-                    },
-                    {
-                      "y": 35,
-                      "id": 6
-                    },
-                    {
-                      "y": 35,
-                      "id": 7
-                    },
-                    {
-                      "y": 34,
-                      "id": 8
-                    },
-                    {
-                      "y": 20,
-                      "id": 9
-                    },
-                    {
-                      "y": 20,
-                      "id": 10
-                    },
-                    {
-                      "y": 20,
-                      "id": 11
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          "model": {
-            "shapes": {
-              "shapes": [
-                {
-                  "type": "sphere",
-                  "size": 12,
-                  "color": "#BCA9DF",
-                  "x": 0,
-                  "y": 36,
-                  "z": 2,
-                  "scaleX": 1
-                },
-                {
-                  "type": "cone",
-                  "size": 16,
-                  "height": 30,
-                  "color": "#9F8AC7",
-                  "x": 0,
-                  "y": 18,
-                  "z": 0,
-                  "rotationX": 180
-                },
-                {
-                  "type": "sphere",
-                  "size": 4,
-                  "color": "#FF3366",
-                  "x": 4,
-                  "y": 36,
-                  "z": 7
-                },
-                {
-                  "type": "sphere",
-                  "size": 4,
-                  "color": "#FF3366",
-                  "x": -4,
-                  "y": 36,
-                  "z": 7
-                },
-                {
-                  "type": "cylinder",
-                  "size": 3,
-                  "height": 16,
-                  "color": "#BCA9DF",
-                  "x": -8,
-                  "y": 28,
-                  "z": 10,
-                  "rotationX": 90,
-                  "rotationZ": 30
-                },
-                {
-                  "type": "cylinder",
-                  "size": 3,
-                  "height": 16,
-                  "color": "#BCA9DF",
-                  "x": 8,
-                  "y": 28,
-                  "z": 10,
-                  "rotationX": 90,
-                  "rotationZ": -30
-                },
-                {
-                  "type": "cylinder",
-                  "size": 2,
-                  "height": 12,
-                  "color": "#BCA9DF",
-                  "x": 3,
-                  "y": 33,
-                  "z": -10,
-                  "rotationX": -40
-                },
-                {
-                  "type": "cylinder",
-                  "size": 2,
-                  "height": 12,
-                  "color": "#BCA9DF",
-                  "x": -3,
-                  "y": 33,
-                  "z": -10,
-                  "rotationX": -40
-                },
-                {
-                  "type": "sphere",
-                  "size": 6,
-                  "color": "#000000",
-                  "x": 0,
-                  "y": 32,
-                  "z": 7.8,
-                  "rotationX": 45
-                },
-                {
-                  "type": "sphere",
-                  "size": 6,
-                  "color": "#BCA9DF",
-                  "x": 15,
-                  "y": 18,
-                  "z": 0
-                },
-                {
-                  "type": "sphere",
-                  "size": 6,
-                  "color": "#BCA9DF",
-                  "x": -15,
-                  "y": 18,
-                  "z": 0
-                },
-                {
-                  "type": "sphere",
-                  "size": 6,
-                  "color": "#BCA9DF",
-                  "x": 0,
-                  "y": 18,
-                  "z": -15
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            }
-          }
-        },
-        "evasion": 75,
-        "title": "banshee"
-      },
-      "bloodBeast": {
-        "hp": 50,
-        "speed": 0.6,
-        "value": 15,
-        "essence": 20,
-        "regen": 0.5,
-        "render": {
-          "animations": {
-            "idle": [
-              {}
-            ],
-            "walk": [
-              {},
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "x": -0.4465238854292495,
-                      "z": 0.039065777968608106,
-                      "id": 0
-                    },
-                    {
-                      "x": -0.4465238854292495,
-                      "z": 0.039065777968608106,
-                      "id": 1
-                    },
-                    {
-                      "x": 15.31040016276608,
-                      "z": -2.7393050647022767,
-                      "rotationX": -10,
-                      "id": 2
-                    },
-                    {
-                      "x": -16.203447933624577,
-                      "z": 2.8174366206394934,
-                      "rotationX": 10,
-                      "id": 3
-                    },
-                    {
-                      "x": 21.219246680839326,
-                      "z": -1.9,
-                      "id": 4
-                    },
-                    {
-                      "x": -22.112294451697828,
-                      "z": 2.1,
-                      "id": 5
-                    },
-                    {
-                      "x": 9.40155364469283,
-                      "z": -1.6974159987006954,
-                      "id": 6
-                    },
-                    {
-                      "x": -10.294601415551329,
-                      "z": 1.7755475546379114,
-                      "id": 7
-                    },
-                    {
-                      "x": 5.866700300967233,
-                      "z": 7.0492869137316205,
-                      "id": 8
-                    },
-                    {
-                      "x": -3.9813772291548464,
-                      "z": 8.785768690400923,
-                      "id": 9
-                    },
-                    {
-                      "x": 6.213996656301093,
-                      "z": 9.018902419756037,
-                      "id": 10
-                    },
-                    {
-                      "x": -3.6340808738209858,
-                      "z": 10.75538419642534,
-                      "id": 11
-                    },
-                    {
-                      "x": -10.294601415551329,
-                      "z": 1.7755475546379114,
-                      "id": 12
-                    },
-                    {
-                      "x": 9.40155364469283,
-                      "z": -1.6974159987006954,
-                      "id": 13
-                    }
-                  ]
-                }
-              },
-              {},
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "x": 0.4465238854292495,
-                      "z": 0.039065777968608106,
-                      "id": 0
-                    },
-                    {
-                      "x": 0.4465238854292495,
-                      "z": 0.039065777968608106,
-                      "id": 1
-                    },
-                    {
-                      "x": 16.203447933624577,
-                      "z": 2.8174366206394934,
-                      "rotationX": 10,
-                      "id": 2
-                    },
-                    {
-                      "x": -15.31040016276608,
-                      "z": -2.7393050647022767,
-                      "rotationX": -10,
-                      "id": 3
-                    },
-                    {
-                      "x": 22.112294451697828,
-                      "z": 1.9,
-                      "id": 4
-                    },
-                    {
-                      "x": -21.219246680839326,
-                      "z": -1.6,
-                      "id": 5
-                    },
-                    {
-                      "x": 10.294601415551329,
-                      "z": 1.7755475546379114,
-                      "id": 6
-                    },
-                    {
-                      "x": -9.40155364469283,
-                      "z": -1.6974159987006954,
-                      "id": 7
-                    },
-                    {
-                      "x": 3.9813772291548464,
-                      "z": 8.785768690400923,
-                      "id": 8
-                    },
-                    {
-                      "x": -5.866700300967233,
-                      "z": 7.0492869137316205,
-                      "id": 9
-                    },
-                    {
-                      "x": 3.6340808738209858,
-                      "z": 10.75538419642534,
-                      "id": 10
-                    },
-                    {
-                      "x": -6.213996656301093,
-                      "z": 9.018902419756037,
-                      "id": 11
-                    },
-                    {
-                      "x": -9.40155364469283,
-                      "z": -1.6974159987006954,
-                      "id": 12
-                    },
-                    {
-                      "x": 10.294601415551329,
-                      "z": 1.7755475546379114,
-                      "id": 13
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          "model": {
-            "shapes": {
-              "shapes": [
-                {
-                  "type": "sphere",
-                  "width": 26,
-                  "height": 20,
-                  "depth": 24,
-                  "color": "#A52A2A",
-                  "x": 0,
-                  "y": 20,
-                  "z": 0,
-                  "size": 28,
-                  "scaleX": 1
-                },
-                {
-                  "type": "sphere",
-                  "size": 18,
-                  "color": "#A52A2A",
-                  "x": 0,
-                  "y": 36,
-                  "z": 0
-                },
-                {
-                  "type": "cylinder",
-                  "size": 8,
-                  "height": 14,
-                  "color": "#8B4513",
-                  "x": 16,
-                  "y": 24,
-                  "z": 0,
-                  "rotationZ": 45
-                },
-                {
-                  "type": "cylinder",
-                  "size": 8,
-                  "height": 14,
-                  "color": "#8B4513",
-                  "x": -16,
-                  "y": 24,
-                  "z": 0,
-                  "rotationZ": -45
-                },
-                {
-                  "type": "sphere",
-                  "size": 9,
-                  "color": "#A52A2A",
-                  "x": 22,
-                  "y": 18,
-                  "z": 0
-                },
-                {
-                  "type": "sphere",
-                  "size": 9,
-                  "color": "#A52A2A",
-                  "x": -22,
-                  "y": 18,
-                  "z": 0
-                },
-                {
-                  "type": "cylinder",
-                  "size": 8,
-                  "height": 16,
-                  "color": "#8B4513",
-                  "x": 10,
-                  "y": 8,
-                  "z": 0,
-                  "rotationZ": 0
-                },
-                {
-                  "type": "cylinder",
-                  "size": 8,
-                  "height": 16,
-                  "color": "#8B4513",
-                  "x": -10,
-                  "y": 8,
-                  "z": 0,
-                  "rotationZ": 0
-                },
-                {
-                  "type": "sphere",
-                  "size": 6,
-                  "color": "#FFFFFF",
-                  "x": 5,
-                  "y": 38,
-                  "z": 8
-                },
-                {
-                  "type": "sphere",
-                  "size": 6,
-                  "color": "#FFFFFF",
-                  "x": -5,
-                  "y": 38,
-                  "z": 8
-                },
-                {
-                  "type": "sphere",
-                  "size": 3,
-                  "color": "#000000",
-                  "x": 5,
-                  "y": 38,
-                  "z": 10
-                },
-                {
-                  "type": "sphere",
-                  "size": 3,
-                  "color": "#000000",
-                  "x": -5,
-                  "y": 38,
-                  "z": 10
-                },
-                {
-                  "type": "cone",
-                  "size": 6,
-                  "height": 12,
-                  "color": "#8B4513",
-                  "x": -10,
-                  "y": 42,
-                  "z": 0,
-                  "rotationZ": 45
-                },
-                {
-                  "type": "cone",
-                  "size": 6,
-                  "height": 12,
-                  "color": "#8B4513",
-                  "x": 10,
-                  "y": 42,
-                  "z": 0,
-                  "rotationZ": -45
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            }
-          }
-        },
-        "armor": 50,
-        "title": "blood beast"
-      },
-      "ghost": {
-        "hp": 1,
-        "speed": 1.5,
-        "value": 10,
-        "essence": 15,
-        "render": {
-          "animations": {
-            "idle": [
-              {}
-            ],
-            "walk": [
-              {},
-              {},
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 32,
-                      "id": 0
-                    },
-                    {
-                      "y": 22,
-                      "id": 1
-                    },
-                    {
-                      "y": 12,
-                      "id": 2
-                    },
-                    {
-                      "y": 7,
-                      "id": 3
-                    },
-                    {
-                      "y": 7,
-                      "id": 4
-                    },
-                    {
-                      "y": 7,
-                      "id": 5
-                    },
-                    {
-                      "y": 32,
-                      "id": 6
-                    },
-                    {
-                      "y": 32,
-                      "id": 7
-                    },
-                    {
-                      "y": 29,
-                      "id": 8
-                    }
-                  ]
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 32,
-                      "id": 0
-                    },
-                    {
-                      "y": 22,
-                      "id": 1
-                    },
-                    {
-                      "y": 12,
-                      "id": 2
-                    },
-                    {
-                      "y": 7,
-                      "id": 3
-                    },
-                    {
-                      "y": 7,
-                      "id": 4
-                    },
-                    {
-                      "y": 7,
-                      "id": 5
-                    },
-                    {
-                      "y": 32,
-                      "id": 6
-                    },
-                    {
-                      "y": 32,
-                      "id": 7
-                    },
-                    {
-                      "y": 29,
-                      "id": 8
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          "model": {
-            "shapes": {
-              "shapes": [
-                {
-                  "type": "sphere",
-                  "size": 16,
-                  "color": "#C2E8F7",
-                  "x": 0,
-                  "y": 31,
-                  "z": 0,
-                  "scaleX": 1
-                },
-                {
-                  "type": "sphere",
-                  "size": 14,
-                  "color": "#D8F0F9",
-                  "x": 0,
-                  "y": 21,
-                  "z": 0
-                },
-                {
-                  "type": "sphere",
-                  "size": 12,
-                  "color": "#E5F6FC",
-                  "x": 0,
-                  "y": 11,
-                  "z": 0
-                },
-                {
-                  "type": "cone",
-                  "size": 8,
-                  "height": 14,
-                  "color": "#E5F6FC",
-                  "x": 6,
-                  "y": 6,
-                  "z": 0,
-                  "rotationX": 180
-                },
-                {
-                  "type": "cone",
-                  "size": 8,
-                  "height": 14,
-                  "color": "#E5F6FC",
-                  "x": -6,
-                  "y": 6,
-                  "z": 0,
-                  "rotationX": 180
-                },
-                {
-                  "type": "cone",
-                  "size": 8,
-                  "height": 14,
-                  "color": "#E5F6FC",
-                  "x": 0,
-                  "y": 6,
-                  "z": 0,
-                  "rotationX": 180
-                },
-                {
-                  "type": "sphere",
-                  "size": 4,
-                  "color": "#1A1A1A",
-                  "x": 4,
-                  "y": 31,
-                  "z": 7
-                },
-                {
-                  "type": "sphere",
-                  "size": 4,
-                  "color": "#1A1A1A",
-                  "x": -4,
-                  "y": 31,
-                  "z": 7
-                },
-                {
-                  "type": "sphere",
-                  "size": 8,
-                  "color": "#1A1A1A",
-                  "x": 0,
-                  "y": 28,
-                  "z": 4,
-                  "rotationX": 45,
-                  "rotationY": 0,
-                  "rotationZ": 0
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            }
-          }
-        },
-        "evasion": 75,
-        "energyShield": 30,
-        "title": "ghost"
       },
       "blueDragon": {
         "hp": 500,
@@ -3131,6 +2340,797 @@ const DEFAULT_PROJECT_CONFIG = {
         "electricResistance": 25,
         "title": "Blue Dragon"
       },
+      "banshee": {
+        "hp": 20,
+        "speed": 1.4,
+        "value": 8,
+        "essence": 14,
+        "screamDamage": 5,
+        "render": {
+          "animations": {
+            "idle": [
+              {}
+            ],
+            "walk": [
+              {},
+              {},
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 38,
+                      "id": 0
+                    },
+                    {
+                      "y": 20,
+                      "id": 1
+                    },
+                    {
+                      "y": 38,
+                      "id": 2
+                    },
+                    {
+                      "y": 38,
+                      "id": 3
+                    },
+                    {
+                      "y": 30,
+                      "id": 4
+                    },
+                    {
+                      "y": 30,
+                      "id": 5
+                    },
+                    {
+                      "y": 35,
+                      "id": 6
+                    },
+                    {
+                      "y": 35,
+                      "id": 7
+                    },
+                    {
+                      "y": 34,
+                      "id": 8
+                    },
+                    {
+                      "y": 20,
+                      "id": 9
+                    },
+                    {
+                      "y": 20,
+                      "id": 10
+                    },
+                    {
+                      "y": 20,
+                      "id": 11
+                    }
+                  ]
+                }
+              },
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 38,
+                      "id": 0
+                    },
+                    {
+                      "y": 20,
+                      "id": 1
+                    },
+                    {
+                      "y": 38,
+                      "id": 2
+                    },
+                    {
+                      "y": 38,
+                      "id": 3
+                    },
+                    {
+                      "y": 30,
+                      "id": 4
+                    },
+                    {
+                      "y": 30,
+                      "id": 5
+                    },
+                    {
+                      "y": 35,
+                      "id": 6
+                    },
+                    {
+                      "y": 35,
+                      "id": 7
+                    },
+                    {
+                      "y": 34,
+                      "id": 8
+                    },
+                    {
+                      "y": 20,
+                      "id": 9
+                    },
+                    {
+                      "y": 20,
+                      "id": 10
+                    },
+                    {
+                      "y": 20,
+                      "id": 11
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "sphere",
+                  "size": 12,
+                  "color": "#BCA9DF",
+                  "x": 0,
+                  "y": 36,
+                  "z": 2,
+                  "scaleX": 1
+                },
+                {
+                  "type": "cone",
+                  "size": 16,
+                  "height": 30,
+                  "color": "#9F8AC7",
+                  "x": 0,
+                  "y": 18,
+                  "z": 0,
+                  "rotationX": 180
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "color": "#FF3366",
+                  "x": 4,
+                  "y": 36,
+                  "z": 7
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "color": "#FF3366",
+                  "x": -4,
+                  "y": 36,
+                  "z": 7
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 16,
+                  "color": "#BCA9DF",
+                  "x": -8,
+                  "y": 28,
+                  "z": 10,
+                  "rotationX": 90,
+                  "rotationZ": 30
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 16,
+                  "color": "#BCA9DF",
+                  "x": 8,
+                  "y": 28,
+                  "z": 10,
+                  "rotationX": 90,
+                  "rotationZ": -30
+                },
+                {
+                  "type": "cylinder",
+                  "size": 2,
+                  "height": 12,
+                  "color": "#BCA9DF",
+                  "x": 3,
+                  "y": 33,
+                  "z": -10,
+                  "rotationX": -40
+                },
+                {
+                  "type": "cylinder",
+                  "size": 2,
+                  "height": 12,
+                  "color": "#BCA9DF",
+                  "x": -3,
+                  "y": 33,
+                  "z": -10,
+                  "rotationX": -40
+                },
+                {
+                  "type": "sphere",
+                  "size": 6,
+                  "color": "#000000",
+                  "x": 0,
+                  "y": 32,
+                  "z": 7.8,
+                  "rotationX": 45
+                },
+                {
+                  "type": "sphere",
+                  "size": 6,
+                  "color": "#BCA9DF",
+                  "x": 15,
+                  "y": 18,
+                  "z": 0
+                },
+                {
+                  "type": "sphere",
+                  "size": 6,
+                  "color": "#BCA9DF",
+                  "x": -15,
+                  "y": 18,
+                  "z": 0
+                },
+                {
+                  "type": "sphere",
+                  "size": 6,
+                  "color": "#BCA9DF",
+                  "x": 0,
+                  "y": 18,
+                  "z": -15
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
+          }
+        },
+        "evasion": 75,
+        "title": "banshee"
+      },
+      "bloodBeast": {
+        "hp": 50,
+        "speed": 0.6,
+        "value": 15,
+        "essence": 20,
+        "regen": 0.5,
+        "render": {
+          "animations": {
+            "idle": [
+              {}
+            ],
+            "walk": [
+              {},
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "x": -0.4465238854292495,
+                      "z": 0.039065777968608106,
+                      "id": 0
+                    },
+                    {
+                      "x": -0.4465238854292495,
+                      "z": 0.039065777968608106,
+                      "id": 1
+                    },
+                    {
+                      "x": 15.31040016276608,
+                      "z": -2.7393050647022767,
+                      "rotationX": -10,
+                      "id": 2
+                    },
+                    {
+                      "x": -16.203447933624577,
+                      "z": 2.8174366206394934,
+                      "rotationX": 10,
+                      "id": 3
+                    },
+                    {
+                      "x": 21.219246680839326,
+                      "z": -1.9,
+                      "id": 4
+                    },
+                    {
+                      "x": -22.112294451697828,
+                      "z": 2.1,
+                      "id": 5
+                    },
+                    {
+                      "x": 9.40155364469283,
+                      "z": -1.6974159987006954,
+                      "id": 6
+                    },
+                    {
+                      "x": -10.294601415551329,
+                      "z": 1.7755475546379114,
+                      "id": 7
+                    },
+                    {
+                      "x": 5.866700300967233,
+                      "z": 7.0492869137316205,
+                      "id": 8
+                    },
+                    {
+                      "x": -3.9813772291548464,
+                      "z": 8.785768690400923,
+                      "id": 9
+                    },
+                    {
+                      "x": 6.213996656301093,
+                      "z": 9.018902419756037,
+                      "id": 10
+                    },
+                    {
+                      "x": -3.6340808738209858,
+                      "z": 10.75538419642534,
+                      "id": 11
+                    },
+                    {
+                      "x": -10.294601415551329,
+                      "z": 1.7755475546379114,
+                      "id": 12
+                    },
+                    {
+                      "x": 9.40155364469283,
+                      "z": -1.6974159987006954,
+                      "id": 13
+                    }
+                  ]
+                }
+              },
+              {},
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "x": 0.4465238854292495,
+                      "z": 0.039065777968608106,
+                      "id": 0
+                    },
+                    {
+                      "x": 0.4465238854292495,
+                      "z": 0.039065777968608106,
+                      "id": 1
+                    },
+                    {
+                      "x": 16.203447933624577,
+                      "z": 2.8174366206394934,
+                      "rotationX": 10,
+                      "id": 2
+                    },
+                    {
+                      "x": -15.31040016276608,
+                      "z": -2.7393050647022767,
+                      "rotationX": -10,
+                      "id": 3
+                    },
+                    {
+                      "x": 22.112294451697828,
+                      "z": 1.9,
+                      "id": 4
+                    },
+                    {
+                      "x": -21.219246680839326,
+                      "z": -1.6,
+                      "id": 5
+                    },
+                    {
+                      "x": 10.294601415551329,
+                      "z": 1.7755475546379114,
+                      "id": 6
+                    },
+                    {
+                      "x": -9.40155364469283,
+                      "z": -1.6974159987006954,
+                      "id": 7
+                    },
+                    {
+                      "x": 3.9813772291548464,
+                      "z": 8.785768690400923,
+                      "id": 8
+                    },
+                    {
+                      "x": -5.866700300967233,
+                      "z": 7.0492869137316205,
+                      "id": 9
+                    },
+                    {
+                      "x": 3.6340808738209858,
+                      "z": 10.75538419642534,
+                      "id": 10
+                    },
+                    {
+                      "x": -6.213996656301093,
+                      "z": 9.018902419756037,
+                      "id": 11
+                    },
+                    {
+                      "x": -9.40155364469283,
+                      "z": -1.6974159987006954,
+                      "id": 12
+                    },
+                    {
+                      "x": 10.294601415551329,
+                      "z": 1.7755475546379114,
+                      "id": 13
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "sphere",
+                  "width": 26,
+                  "height": 20,
+                  "depth": 24,
+                  "color": "#A52A2A",
+                  "x": 0,
+                  "y": 20,
+                  "z": 0,
+                  "size": 28,
+                  "scaleX": 1
+                },
+                {
+                  "type": "sphere",
+                  "size": 18,
+                  "color": "#A52A2A",
+                  "x": 0,
+                  "y": 36,
+                  "z": 0
+                },
+                {
+                  "type": "cylinder",
+                  "size": 8,
+                  "height": 14,
+                  "color": "#8B4513",
+                  "x": 16,
+                  "y": 24,
+                  "z": 0,
+                  "rotationZ": 45
+                },
+                {
+                  "type": "cylinder",
+                  "size": 8,
+                  "height": 14,
+                  "color": "#8B4513",
+                  "x": -16,
+                  "y": 24,
+                  "z": 0,
+                  "rotationZ": -45
+                },
+                {
+                  "type": "sphere",
+                  "size": 9,
+                  "color": "#A52A2A",
+                  "x": 22,
+                  "y": 18,
+                  "z": 0
+                },
+                {
+                  "type": "sphere",
+                  "size": 9,
+                  "color": "#A52A2A",
+                  "x": -22,
+                  "y": 18,
+                  "z": 0
+                },
+                {
+                  "type": "cylinder",
+                  "size": 8,
+                  "height": 16,
+                  "color": "#8B4513",
+                  "x": 10,
+                  "y": 8,
+                  "z": 0,
+                  "rotationZ": 0
+                },
+                {
+                  "type": "cylinder",
+                  "size": 8,
+                  "height": 16,
+                  "color": "#8B4513",
+                  "x": -10,
+                  "y": 8,
+                  "z": 0,
+                  "rotationZ": 0
+                },
+                {
+                  "type": "sphere",
+                  "size": 6,
+                  "color": "#FFFFFF",
+                  "x": 5,
+                  "y": 38,
+                  "z": 8
+                },
+                {
+                  "type": "sphere",
+                  "size": 6,
+                  "color": "#FFFFFF",
+                  "x": -5,
+                  "y": 38,
+                  "z": 8
+                },
+                {
+                  "type": "sphere",
+                  "size": 3,
+                  "color": "#000000",
+                  "x": 5,
+                  "y": 38,
+                  "z": 10
+                },
+                {
+                  "type": "sphere",
+                  "size": 3,
+                  "color": "#000000",
+                  "x": -5,
+                  "y": 38,
+                  "z": 10
+                },
+                {
+                  "type": "cone",
+                  "size": 6,
+                  "height": 12,
+                  "color": "#8B4513",
+                  "x": -10,
+                  "y": 42,
+                  "z": 0,
+                  "rotationZ": 45
+                },
+                {
+                  "type": "cone",
+                  "size": 6,
+                  "height": 12,
+                  "color": "#8B4513",
+                  "x": 10,
+                  "y": 42,
+                  "z": 0,
+                  "rotationZ": -45
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
+          }
+        },
+        "armor": 50,
+        "title": "blood beast"
+      },
+      "ghost": {
+        "hp": 1,
+        "speed": 1.5,
+        "value": 10,
+        "essence": 15,
+        "render": {
+          "animations": {
+            "idle": [
+              {}
+            ],
+            "walk": [
+              {},
+              {},
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 32,
+                      "id": 0
+                    },
+                    {
+                      "y": 22,
+                      "id": 1
+                    },
+                    {
+                      "y": 12,
+                      "id": 2
+                    },
+                    {
+                      "y": 7,
+                      "id": 3
+                    },
+                    {
+                      "y": 7,
+                      "id": 4
+                    },
+                    {
+                      "y": 7,
+                      "id": 5
+                    },
+                    {
+                      "y": 32,
+                      "id": 6
+                    },
+                    {
+                      "y": 32,
+                      "id": 7
+                    },
+                    {
+                      "y": 29,
+                      "id": 8
+                    }
+                  ]
+                }
+              },
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 32,
+                      "id": 0
+                    },
+                    {
+                      "y": 22,
+                      "id": 1
+                    },
+                    {
+                      "y": 12,
+                      "id": 2
+                    },
+                    {
+                      "y": 7,
+                      "id": 3
+                    },
+                    {
+                      "y": 7,
+                      "id": 4
+                    },
+                    {
+                      "y": 7,
+                      "id": 5
+                    },
+                    {
+                      "y": 32,
+                      "id": 6
+                    },
+                    {
+                      "y": 32,
+                      "id": 7
+                    },
+                    {
+                      "y": 29,
+                      "id": 8
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "sphere",
+                  "size": 16,
+                  "color": "#C2E8F7",
+                  "x": 0,
+                  "y": 31,
+                  "z": 0,
+                  "scaleX": 1
+                },
+                {
+                  "type": "sphere",
+                  "size": 14,
+                  "color": "#D8F0F9",
+                  "x": 0,
+                  "y": 21,
+                  "z": 0
+                },
+                {
+                  "type": "sphere",
+                  "size": 12,
+                  "color": "#E5F6FC",
+                  "x": 0,
+                  "y": 11,
+                  "z": 0
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 14,
+                  "color": "#E5F6FC",
+                  "x": 6,
+                  "y": 6,
+                  "z": 0,
+                  "rotationX": 180
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 14,
+                  "color": "#E5F6FC",
+                  "x": -6,
+                  "y": 6,
+                  "z": 0,
+                  "rotationX": 180
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 14,
+                  "color": "#E5F6FC",
+                  "x": 0,
+                  "y": 6,
+                  "z": 0,
+                  "rotationX": 180
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "color": "#1A1A1A",
+                  "x": 4,
+                  "y": 31,
+                  "z": 7
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "color": "#1A1A1A",
+                  "x": -4,
+                  "y": 31,
+                  "z": 7
+                },
+                {
+                  "type": "sphere",
+                  "size": 8,
+                  "color": "#1A1A1A",
+                  "x": 0,
+                  "y": 28,
+                  "z": 4,
+                  "rotationX": 45,
+                  "rotationY": 0,
+                  "rotationZ": 0
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
+          }
+        },
+        "evasion": 75,
+        "energyShield": 30,
+        "title": "ghost"
+      },
       "greenDragon": {
         "hp": 500,
         "speed": 0.5,
@@ -4184,3916 +4184,6 @@ const DEFAULT_PROJECT_CONFIG = {
         "coldResistance": 50,
         "electricResistance": 50,
         "title": "Green Dragon"
-      },
-      "orc": {
-        "essence": 5,
-        "speed": 1,
-        "value": 1,
-        "hp": 10,
-        "render": {
-          "animations": {
-            "idle": [
-              {}
-            ],
-            "walk": [
-              {},
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 26.757142857142853,
-                      "rotationY": -10,
-                      "id": 0
-                    },
-                    {
-                      "y": 41.75714285714285,
-                      "id": 1
-                    },
-                    {
-                      "y": 41.75714285714285,
-                      "id": 2
-                    },
-                    {
-                      "y": 38.257142857142846,
-                      "id": 3
-                    },
-                    {
-                      "y": 43.75714285714285,
-                      "id": 4
-                    },
-                    {
-                      "y": 43.75714285714285,
-                      "id": 5
-                    },
-                    {
-                      "y": 43.75714285714285,
-                      "id": 6
-                    },
-                    {
-                      "y": 43.75714285714285,
-                      "id": 7
-                    },
-                    {
-                      "y": 27.75714285714285,
-                      "z": -1,
-                      "rotationX": 11,
-                      "id": 8
-                    },
-                    {
-                      "y": 27.75714285714285,
-                      "z": 3.6,
-                      "rotationX": -14,
-                      "id": 9
-                    },
-                    {
-                      "x": 11.6,
-                      "y": 15.757142857142853,
-                      "z": -3.2,
-                      "rotationX": 10,
-                      "id": 10
-                    },
-                    {
-                      "x": -12.4,
-                      "y": 15.757142857142853,
-                      "z": 6.5,
-                      "rotationX": -14,
-                      "id": 11
-                    },
-                    {
-                      "y": 7.757142857142849,
-                      "z": 3,
-                      "rotationX": -4,
-                      "id": 12
-                    },
-                    {
-                      "y": 7.757142857142849,
-                      "z": -1,
-                      "rotationX": 21,
-                      "id": 13
-                    },
-                    {
-                      "y": -0.24285714285715443,
-                      "z": 5.1,
-                      "id": 14
-                    },
-                    {
-                      "x": -4.1,
-                      "y": 1,
-                      "z": -1.6,
-                      "rotationX": 26,
-                      "id": 15
-                    },
-                    {
-                      "y": 44.75714285714285,
-                      "id": 16
-                    },
-                    {
-                      "y": 44.75714285714285,
-                      "id": 17
-                    },
-                    {
-                      "y": 48.2,
-                      "id": 18
-                    },
-                    {
-                      "y": 36.75714285714285,
-                      "id": 19
-                    },
-                    {
-                      "y": 36.75714285714285,
-                      "id": 20
-                    },
-                    {
-                      "y": 17.757142857142853,
-                      "rotationY": -10,
-                      "id": 21
-                    },
-                    {
-                      "y": 40.75714285714285,
-                      "id": 22
-                    },
-                    {
-                      "y": 12.999999999999996,
-                      "z": 2.6,
-                      "rotationX": -60,
-                      "id": 23
-                    },
-                    {
-                      "x": 12.1,
-                      "y": 5,
-                      "z": 17,
-                      "id": 24
-                    },
-                    {
-                      "y": 9.5,
-                      "z": 19.7,
-                      "rotationY": 0,
-                      "rotationX": 30,
-                      "id": 25
-                    },
-                    {
-                      "y": 0,
-                      "z": 14.5,
-                      "rotationX": -150,
-                      "id": 26
-                    },
-                    {
-                      "x": 7.5,
-                      "y": 4.8,
-                      "z": 17.3,
-                      "id": 27
-                    },
-                    {
-                      "x": 16.6,
-                      "y": 4.8,
-                      "z": 17.3,
-                      "id": 28
-                    },
-                    {
-                      "x": 12.1,
-                      "y": 2.5999999999999996,
-                      "z": 21,
-                      "rotationX": 120,
-                      "id": 29
-                    },
-                    {
-                      "y": 21.757142857142853,
-                      "id": 30
-                    },
-                    {
-                      "y": 38,
-                      "z": 1,
-                      "rotationX": 105,
-                      "id": 31
-                    },
-                    {
-                      "y": 38,
-                      "z": 1,
-                      "rotationX": 75,
-                      "id": 32
-                    }
-                  ]
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 29.757142857142853,
-                      "id": 8
-                    },
-                    {
-                      "y": 29.757142857142853,
-                      "id": 9
-                    },
-                    {
-                      "y": 14.999999999999993,
-                      "id": 29
-                    }
-                  ]
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 26.757142857142853,
-                      "rotationY": 10,
-                      "id": 0
-                    },
-                    {
-                      "y": 41.75714285714285,
-                      "id": 1
-                    },
-                    {
-                      "y": 41.75714285714285,
-                      "id": 2
-                    },
-                    {
-                      "y": 38.257142857142846,
-                      "id": 3
-                    },
-                    {
-                      "y": 43.75714285714285,
-                      "id": 4
-                    },
-                    {
-                      "y": 43.75714285714285,
-                      "id": 5
-                    },
-                    {
-                      "y": 43.75714285714285,
-                      "id": 6
-                    },
-                    {
-                      "y": 43.75714285714285,
-                      "id": 7
-                    },
-                    {
-                      "y": 27.75714285714285,
-                      "z": 3,
-                      "rotationX": -14,
-                      "id": 8
-                    },
-                    {
-                      "x": -11.9,
-                      "y": 27.75714285714285,
-                      "rotationX": 16,
-                      "id": 9
-                    },
-                    {
-                      "y": 15.757142857142853,
-                      "z": 6,
-                      "rotationX": -14,
-                      "id": 10
-                    },
-                    {
-                      "y": 16,
-                      "z": -1.7,
-                      "rotationX": 11,
-                      "id": 11
-                    },
-                    {
-                      "y": 7.757142857142849,
-                      "z": -1.3,
-                      "rotationX": 16,
-                      "id": 12
-                    },
-                    {
-                      "y": 7.757142857142849,
-                      "z": 5,
-                      "rotationY": 0,
-                      "rotationX": -15,
-                      "id": 13
-                    },
-                    {
-                      "y": 0.20000000000000018,
-                      "z": -1.4,
-                      "rotationX": 16,
-                      "id": 14
-                    },
-                    {
-                      "y": -0.24285714285715443,
-                      "z": 8.1,
-                      "id": 15
-                    },
-                    {
-                      "y": 44.75714285714285,
-                      "id": 16
-                    },
-                    {
-                      "y": 44.75714285714285,
-                      "id": 17
-                    },
-                    {
-                      "y": 48.2,
-                      "id": 18
-                    },
-                    {
-                      "y": 36.75714285714285,
-                      "id": 19
-                    },
-                    {
-                      "y": 36.75714285714285,
-                      "id": 20
-                    },
-                    {
-                      "y": 17.757142857142853,
-                      "rotationY": 10,
-                      "id": 21
-                    },
-                    {
-                      "y": 40.75714285714285,
-                      "id": 22
-                    },
-                    {
-                      "y": 12.999999999999996,
-                      "rotationX": 60,
-                      "id": 23
-                    },
-                    {
-                      "x": 12.1,
-                      "y": 20,
-                      "z": 20,
-                      "id": 24
-                    },
-                    {
-                      "y": 24.4,
-                      "rotationX": -24,
-                      "id": 25
-                    },
-                    {
-                      "y": 15.2,
-                      "z": 21.8,
-                      "rotationX": 160,
-                      "id": 26
-                    },
-                    {
-                      "x": 7.6,
-                      "y": 20,
-                      "z": 20,
-                      "id": 27
-                    },
-                    {
-                      "x": 16.700000000000003,
-                      "y": 20,
-                      "z": 20,
-                      "id": 28
-                    },
-                    {
-                      "y": 22.3,
-                      "rotationX": 60,
-                      "id": 29
-                    },
-                    {
-                      "y": 21.757142857142853,
-                      "id": 30
-                    },
-                    {
-                      "y": 38,
-                      "z": 0,
-                      "rotationX": 75,
-                      "id": 31
-                    },
-                    {
-                      "y": 38,
-                      "z": 4,
-                      "rotationX": 105,
-                      "id": 32
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          "model": {
-            "shapes": {
-              "shapes": [
-                {
-                  "type": "box",
-                  "width": 14,
-                  "height": 18,
-                  "depth": 10,
-                  "x": 0,
-                  "y": 28.757142857142853,
-                  "z": 1.4857142857142973,
-                  "color": "#496a29",
-                  "name": "torso",
-                  "scaleX": 1
-                },
-                {
-                  "type": "sphere",
-                  "size": 15,
-                  "x": 0,
-                  "y": 43.75714285714285,
-                  "z": 1.4857142857143,
-                  "color": "#5c6628",
-                  "name": "head"
-                },
-                {
-                  "type": "box",
-                  "width": 5,
-                  "height": 4,
-                  "depth": 6,
-                  "x": 0,
-                  "y": 43.75714285714285,
-                  "z": 7.485714285714296,
-                  "color": "#686f20",
-                  "name": "nose"
-                },
-                {
-                  "type": "box",
-                  "width": 12,
-                  "height": 3,
-                  "depth": 6,
-                  "x": 0,
-                  "y": 40.257142857142846,
-                  "z": 5.485714285714296,
-                  "color": "#7d4023",
-                  "name": "jaw"
-                },
-                {
-                  "type": "sphere",
-                  "size": 4,
-                  "x": 4.5,
-                  "y": 45.75714285714285,
-                  "z": 5.985714285714293,
-                  "color": "#c5c5c5",
-                  "name": "eye-right"
-                },
-                {
-                  "type": "sphere",
-                  "size": 1.5,
-                  "x": 5,
-                  "y": 45.75714285714285,
-                  "z": 7.4857142857143,
-                  "color": "#000000",
-                  "name": "pupil-right"
-                },
-                {
-                  "type": "sphere",
-                  "size": 4,
-                  "x": -4.5,
-                  "y": 45.75714285714285,
-                  "z": 5.985714285714293,
-                  "color": "#c5c5c5",
-                  "name": "eye-left"
-                },
-                {
-                  "type": "sphere",
-                  "size": 1.5,
-                  "x": -5,
-                  "y": 45.75714285714285,
-                  "z": 7.4857142857143,
-                  "color": "#000000",
-                  "name": "pupil-left"
-                },
-                {
-                  "type": "box",
-                  "width": 6,
-                  "height": 20,
-                  "depth": 6,
-                  "x": 11.999999999999998,
-                  "y": 29.75714285714285,
-                  "z": 1.4857142857142973,
-                  "color": "#496a29",
-                  "name": "arm-right"
-                },
-                {
-                  "type": "box",
-                  "width": 6,
-                  "height": 20,
-                  "depth": 6,
-                  "x": -12.000000000000002,
-                  "y": 29.75714285714285,
-                  "z": 1.4857142857142973,
-                  "color": "#496a29",
-                  "name": "arm-left"
-                },
-                {
-                  "type": "box",
-                  "width": 8,
-                  "height": 5,
-                  "depth": 7,
-                  "x": 11.999999999999998,
-                  "y": 17.757142857142853,
-                  "z": 2.4857142857142978,
-                  "color": "#496a29",
-                  "name": "hand-right"
-                },
-                {
-                  "type": "box",
-                  "width": 8,
-                  "height": 5,
-                  "depth": 7,
-                  "x": -12.000000000000002,
-                  "y": 17.757142857142853,
-                  "z": 2.4857142857142978,
-                  "color": "#496a29",
-                  "name": "hand-left"
-                },
-                {
-                  "type": "box",
-                  "width": 6,
-                  "height": 15,
-                  "depth": 6,
-                  "x": 4,
-                  "y": 9.75714285714285,
-                  "z": 1.4857142857142982,
-                  "color": "#496a29",
-                  "name": "leg-right"
-                },
-                {
-                  "type": "box",
-                  "width": 6,
-                  "height": 15,
-                  "depth": 6,
-                  "x": -4,
-                  "y": 9.75714285714285,
-                  "z": 1.4857142857142982,
-                  "color": "#496a29",
-                  "name": "leg-left"
-                },
-                {
-                  "type": "box",
-                  "width": 7,
-                  "height": 3,
-                  "depth": 10,
-                  "x": 4,
-                  "y": 1.7571428571428456,
-                  "z": 3.4857142857143026,
-                  "color": "#3B3B3B",
-                  "name": "foot-right"
-                },
-                {
-                  "type": "box",
-                  "width": 7,
-                  "height": 3,
-                  "depth": 10,
-                  "x": -4,
-                  "y": 1.7571428571428456,
-                  "z": 3.4857142857143026,
-                  "color": "#3B3B3B",
-                  "name": "foot-left"
-                },
-                {
-                  "type": "box",
-                  "width": 3,
-                  "height": 6,
-                  "depth": 2,
-                  "x": 6.499999999999998,
-                  "y": 46.75714285714285,
-                  "z": 0.4857142857142964,
-                  "color": "#686b23",
-                  "name": "ear-right"
-                },
-                {
-                  "type": "box",
-                  "width": 3,
-                  "height": 6,
-                  "depth": 2,
-                  "x": -6.5,
-                  "y": 46.75714285714285,
-                  "z": 0.4857142857142964,
-                  "color": "#686b23",
-                  "name": "ear-left"
-                },
-                {
-                  "type": "cone",
-                  "size": 16,
-                  "height": 5,
-                  "x": 0,
-                  "y": 50.2,
-                  "z": 1.4857142857142929,
-                  "rotationX": 0,
-                  "color": "#555555",
-                  "name": "helmet"
-                },
-                {
-                  "type": "box",
-                  "width": 1.5,
-                  "height": 3,
-                  "depth": 0.7,
-                  "x": 4,
-                  "y": 38.75714285714285,
-                  "z": 8.485714285714296,
-                  "color": "#c5c5c5",
-                  "name": "tusk-right"
-                },
-                {
-                  "type": "box",
-                  "width": 1.5,
-                  "height": 3,
-                  "depth": 0.7,
-                  "x": -4,
-                  "y": 38.75714285714285,
-                  "z": 8.485714285714296,
-                  "color": "#c5c5c5",
-                  "name": "tusk-left"
-                },
-                {
-                  "type": "box",
-                  "width": 15,
-                  "height": 3,
-                  "depth": 11,
-                  "x": 0,
-                  "y": 19.757142857142853,
-                  "z": 1.4857142857142982,
-                  "color": "#8B4513",
-                  "name": "belt"
-                },
-                {
-                  "type": "box",
-                  "width": 7,
-                  "height": 9,
-                  "depth": 3,
-                  "x": 0,
-                  "y": 42.75714285714285,
-                  "z": -4.514285714285706,
-                  "color": "#222222",
-                  "name": "hair"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 3,
-                  "height": 30,
-                  "x": 11.999999999999998,
-                  "y": 14.999999999999996,
-                  "z": 7.000000000000014,
-                  "color": "#8B4513",
-                  "name": "club-handle",
-                  "rotationZ": 0,
-                  "rotationX": 90
-                },
-                {
-                  "type": "sphere",
-                  "size": 9,
-                  "x": 11.999999999999998,
-                  "y": 14.999999999999996,
-                  "z": 18.000000000000014,
-                  "color": "#8B4513",
-                  "name": "club-head"
-                },
-                {
-                  "type": "cone",
-                  "size": 4,
-                  "height": 5,
-                  "x": 12.1,
-                  "y": 19.999999999999996,
-                  "z": 18.000000000000014,
-                  "rotationY": 90,
-                  "color": "#808080",
-                  "name": "club-spike-1"
-                },
-                {
-                  "type": "cone",
-                  "size": 4,
-                  "height": 5,
-                  "x": 12.1,
-                  "y": 9.999999999999996,
-                  "z": 18.000000000000014,
-                  "rotationY": 0,
-                  "color": "#808080",
-                  "name": "club-spike-2",
-                  "rotationX": 180
-                },
-                {
-                  "type": "cone",
-                  "size": 4,
-                  "height": 5,
-                  "x": 6.6,
-                  "y": 14.999999999999996,
-                  "z": 18.000000000000014,
-                  "rotationY": 0,
-                  "color": "#808080",
-                  "name": "club-spike-3",
-                  "rotationZ": 90,
-                  "rotationX": 0
-                },
-                {
-                  "type": "cone",
-                  "size": 4,
-                  "height": 5,
-                  "x": 17.6,
-                  "y": 14.999999999999996,
-                  "z": 18.000000000000014,
-                  "rotationY": 0,
-                  "color": "#808080",
-                  "name": "club-spike-4",
-                  "rotationX": 90,
-                  "rotationZ": -90
-                },
-                {
-                  "type": "cone",
-                  "size": 4,
-                  "height": 5,
-                  "x": 11.999999999999998,
-                  "y": 14.999999999999995,
-                  "z": 24.00000000000002,
-                  "rotationX": 90,
-                  "color": "#808080",
-                  "name": "club-spike-top"
-                },
-                {
-                  "type": "box",
-                  "width": 12,
-                  "height": 4,
-                  "depth": 4,
-                  "x": 0,
-                  "y": 23.757142857142853,
-                  "z": -3.5142857142857027,
-                  "color": "#333333",
-                  "name": "back-armor"
-                },
-                {
-                  "type": "box",
-                  "width": 7,
-                  "height": 7,
-                  "depth": 2,
-                  "x": 12,
-                  "y": 40,
-                  "z": 1.4857142857142973,
-                  "color": "#796020",
-                  "name": "shoulder-pad-right",
-                  "rotationX": 90
-                },
-                {
-                  "type": "box",
-                  "width": 7,
-                  "height": 7,
-                  "depth": 2,
-                  "x": -12,
-                  "y": 40,
-                  "z": 1.4857142857142973,
-                  "color": "#796020",
-                  "name": "shoulder-pad-left",
-                  "rotationX": 90
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            }
-          }
-        },
-        "armor": 100,
-        "title": "Orc"
-      },
-      "pirate": {
-        "title": "Pirate",
-        "render": {
-          "animations": {
-            "idle": [
-              {}
-            ]
-          },
-          "model": {
-            "shapes": {
-              "shapes": [
-                {
-                  "type": "box",
-                  "width": 12,
-                  "height": 16,
-                  "depth": 7,
-                  "x": 0,
-                  "y": 24,
-                  "z": 0,
-                  "color": "#2F1A4A",
-                  "name": "torso",
-                  "scaleX": 1
-                },
-                {
-                  "type": "sphere",
-                  "size": 10,
-                  "x": 0,
-                  "y": 35,
-                  "z": 0,
-                  "color": "#E8C9A0",
-                  "name": "head"
-                },
-                {
-                  "type": "box",
-                  "width": 3,
-                  "height": 2,
-                  "depth": 4,
-                  "x": 0,
-                  "y": 35,
-                  "z": 4,
-                  "color": "#E8C9A0",
-                  "name": "nose"
-                },
-                {
-                  "type": "box",
-                  "width": 8,
-                  "height": 2,
-                  "depth": 4,
-                  "x": 0,
-                  "y": 32,
-                  "z": 3,
-                  "color": "#ECB69B",
-                  "name": "jaw"
-                },
-                {
-                  "type": "sphere",
-                  "size": 2,
-                  "x": -3,
-                  "y": 36,
-                  "z": 4,
-                  "color": "#87CEFA",
-                  "name": "eye-right"
-                },
-                {
-                  "type": "sphere",
-                  "size": 1,
-                  "x": -3.5,
-                  "y": 36,
-                  "z": 4.5,
-                  "color": "#000000",
-                  "name": "pupil-right"
-                },
-                {
-                  "type": "box",
-                  "width": 3,
-                  "height": 2,
-                  "depth": 1,
-                  "x": 2,
-                  "y": 36,
-                  "z": 5,
-                  "color": "#000000",
-                  "name": "eyepatch-left"
-                },
-                {
-                  "type": "box",
-                  "width": 4,
-                  "height": 12,
-                  "depth": 4,
-                  "x": -8,
-                  "y": 24,
-                  "z": 0,
-                  "color": "#2F1A4A",
-                  "name": "arm-right",
-                  "rotationZ": -15
-                },
-                {
-                  "type": "box",
-                  "width": 4,
-                  "height": 12,
-                  "depth": 4,
-                  "x": 8,
-                  "y": 24,
-                  "z": 0,
-                  "color": "#2F1A4A",
-                  "name": "arm-left",
-                  "rotationZ": 15
-                },
-                {
-                  "type": "box",
-                  "width": 5,
-                  "height": 3,
-                  "depth": 5,
-                  "x": -8,
-                  "y": 16,
-                  "z": 1,
-                  "color": "#E8C9A0",
-                  "name": "hand-right",
-                  "rotationX": 90
-                },
-                {
-                  "type": "box",
-                  "width": 2,
-                  "height": 4,
-                  "depth": 2,
-                  "x": 8,
-                  "y": 16,
-                  "z": 1,
-                  "color": "#C0C0C0",
-                  "name": "hook-left",
-                  "rotationZ": -45
-                },
-                {
-                  "type": "box",
-                  "width": 4,
-                  "height": 12,
-                  "depth": 4,
-                  "x": -3,
-                  "y": 8,
-                  "z": 0,
-                  "color": "#3B3B3B",
-                  "name": "leg-right"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 3,
-                  "height": 13,
-                  "x": 3,
-                  "y": 7.5,
-                  "z": 0,
-                  "color": "#8B4513",
-                  "name": "peg-leg-left"
-                },
-                {
-                  "type": "box",
-                  "width": 5,
-                  "height": 2,
-                  "depth": 6,
-                  "x": -3,
-                  "y": 2,
-                  "z": 2,
-                  "color": "#3B3B3B",
-                  "name": "boot-right"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 4,
-                  "height": 2,
-                  "x": 3,
-                  "y": 2,
-                  "z": 2,
-                  "color": "#8B4513",
-                  "name": "peg-foot-left"
-                },
-                {
-                  "type": "box",
-                  "width": 11,
-                  "height": 10,
-                  "depth": 8,
-                  "x": 0,
-                  "y": 15,
-                  "z": 0,
-                  "color": "#FF0000",
-                  "name": "pants"
-                },
-                {
-                  "type": "box",
-                  "width": 12,
-                  "height": 8,
-                  "depth": 2,
-                  "x": 0,
-                  "y": 32,
-                  "z": 3,
-                  "color": "#000000",
-                  "name": "beard"
-                },
-                {
-                  "type": "box",
-                  "width": 14,
-                  "height": 6,
-                  "depth": 10,
-                  "x": 0,
-                  "y": 40,
-                  "z": 0,
-                  "color": "#000000",
-                  "name": "hat"
-                },
-                {
-                  "type": "box",
-                  "width": 2,
-                  "height": 4,
-                  "depth": 2,
-                  "x": -9,
-                  "y": 14,
-                  "z": 1,
-                  "color": "#8B4513",
-                  "name": "sword-handle",
-                  "rotationZ": 0,
-                  "rotationX": -45
-                },
-                {
-                  "type": "box",
-                  "width": 2,
-                  "height": 2.2,
-                  "depth": 6,
-                  "x": -9,
-                  "y": 13,
-                  "z": 2,
-                  "color": "#C0C0C0",
-                  "name": "sword-guard",
-                  "rotationZ": 45,
-                  "rotationX": 0,
-                  "rotationY": 90
-                },
-                {
-                  "type": "box",
-                  "width": 1,
-                  "height": 1,
-                  "depth": 18,
-                  "x": -9,
-                  "y": 8,
-                  "z": 7,
-                  "color": "#C0C0C0",
-                  "name": "sword-blade",
-                  "rotationZ": 45,
-                  "rotationX": 45
-                },
-                {
-                  "type": "box",
-                  "width": 8,
-                  "height": 2,
-                  "depth": 10,
-                  "x": 0,
-                  "y": 16,
-                  "z": 0,
-                  "color": "#FFD700",
-                  "name": "sash"
-                },
-                {
-                  "type": "box",
-                  "width": 2,
-                  "height": 2,
-                  "depth": 2,
-                  "x": -2,
-                  "y": 43,
-                  "z": 0,
-                  "color": "#FF0000",
-                  "name": "hat-feather-right",
-                  "rotationZ": 45
-                },
-                {
-                  "type": "box",
-                  "width": 2,
-                  "height": 2,
-                  "depth": 2,
-                  "x": 2,
-                  "y": 43,
-                  "z": 0,
-                  "color": "#FF0000",
-                  "name": "hat-feather-left",
-                  "rotationZ": -45
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            }
-          }
-        }
-      },
-      "redDragon": {
-        "hp": 500,
-        "speed": 0.5,
-        "essence": 50,
-        "value": 50,
-        "boss": true,
-        "render": {
-          "animations": {
-            "idle": [
-              {}
-            ],
-            "walk": [
-              {
-                "right wing": {
-                  "shapes": [
-                    {
-                      "rotationX": 0.1,
-                      "rotationY": -0.7,
-                      "id": 1
-                    }
-                  ]
-                },
-                "head": {
-                  "shapes": [
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redMColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 2
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redMColor"
-                      },
-                      "id": 3
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 4
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 5
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 6
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 7
-                    }
-                  ]
-                },
-                "jaw": {
-                  "shapes": [
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redMColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "greyLColor"
-                      },
-                      "id": 2
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "greyLColor"
-                      },
-                      "id": 3
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "greyLColor"
-                      },
-                      "id": 4
-                    }
-                  ]
-                },
-                "left arm": {
-                  "shapes": [
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 2
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 3
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 4
-                    }
-                  ]
-                },
-                "right arm": {
-                  "shapes": [
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 2
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 3
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 4
-                    }
-                  ]
-                },
-                "left leg": {
-                  "shapes": [
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 2
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 3
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 4
-                    }
-                  ]
-                },
-                "right leg": {
-                  "shapes": [
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 2
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 3
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 4
-                    }
-                  ]
-                },
-                "body": {
-                  "shapes": [
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 2
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 3
-                    }
-                  ]
-                },
-                "left wing": {
-                  "shapes": [
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 2
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 3
-                    }
-                  ]
-                },
-                "tail base": {
-                  "shapes": [
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 2
-                    }
-                  ]
-                },
-                "tail tip": {
-                  "shapes": [
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 2
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 3
-                    }
-                  ]
-                }
-              },
-              {
-                "head": {
-                  "position": {
-                    "x": 0,
-                    "y": 3.2,
-                    "z": 20
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": 0.15,
-                    "z": 0
-                  }
-                },
-                "jaw": {
-                  "rotation": {
-                    "x": 0.35,
-                    "y": 0,
-                    "z": 0
-                  }
-                },
-                "left arm": {
-                  "position": {
-                    "x": 1.5,
-                    "y": -1,
-                    "z": 6.5
-                  },
-                  "rotation": {
-                    "x": 0.4,
-                    "y": 0,
-                    "z": 0.1
-                  }
-                },
-                "right arm": {
-                  "position": {
-                    "x": 0,
-                    "y": -2,
-                    "z": 14
-                  },
-                  "rotation": {
-                    "x": -0.1,
-                    "y": 0,
-                    "z": -0.1
-                  }
-                },
-                "left leg": {
-                  "position": {
-                    "x": 0,
-                    "y": 5,
-                    "z": -10
-                  },
-                  "rotation": {
-                    "x": 0.5,
-                    "y": 0,
-                    "z": 0
-                  }
-                },
-                "right leg": {
-                  "position": {
-                    "x": 0,
-                    "y": 3,
-                    "z": 8
-                  },
-                  "rotation": {
-                    "x": -0.4,
-                    "y": 0,
-                    "z": 0
-                  }
-                },
-                "body": {
-                  "rotation": {
-                    "x": 0.6,
-                    "y": 0.05,
-                    "z": 0
-                  }
-                },
-                "left wing": {
-                  "position": {
-                    "x": 5,
-                    "y": 5.5,
-                    "z": 15
-                  },
-                  "rotation": {
-                    "x": 0.2,
-                    "y": 0.7,
-                    "z": 0
-                  },
-                  "shapes": [
-                    {
-                      "rotationX": 0.3,
-                      "rotationY": 0.9,
-                      "id": 1
-                    }
-                  ]
-                },
-                "right wing": {
-                  "position": {
-                    "x": -5,
-                    "y": 5.5,
-                    "z": 15
-                  },
-                  "rotation": {
-                    "x": 0.2,
-                    "y": -0.7,
-                    "z": 0
-                  },
-                  "shapes": [
-                    {
-                      "rotationX": 0.3,
-                      "rotationY": -0.9,
-                      "id": 1
-                    }
-                  ]
-                },
-                "tail base": {
-                  "rotation": {
-                    "x": 0.1,
-                    "y": 0.3,
-                    "z": 0
-                  }
-                },
-                "tail tip": {
-                  "rotation": {
-                    "x": 0.05,
-                    "y": 0.4,
-                    "z": 0
-                  }
-                }
-              },
-              {
-                "left wing": {
-                  "shapes": [
-                    {
-                      "rotationX": 0.1,
-                      "rotationY": 0.7,
-                      "id": 1
-                    }
-                  ]
-                },
-                "right wing": {
-                  "shapes": [
-                    {
-                      "rotationX": 0.1,
-                      "rotationY": -0.7,
-                      "id": 1
-                    }
-                  ]
-                },
-                "head": {
-                  "shapes": [
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redMColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 2
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redMColor"
-                      },
-                      "id": 3
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 4
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 5
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 6
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 7
-                    }
-                  ]
-                },
-                "jaw": {
-                  "shapes": [
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redMColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "greyLColor"
-                      },
-                      "id": 2
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "greyLColor"
-                      },
-                      "id": 3
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "greyLColor"
-                      },
-                      "id": 4
-                    }
-                  ]
-                },
-                "left arm": {
-                  "shapes": [
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 2
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 3
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 4
-                    }
-                  ]
-                },
-                "right arm": {
-                  "shapes": [
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 2
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 3
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 4
-                    }
-                  ]
-                },
-                "left leg": {
-                  "shapes": [
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 2
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 3
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 4
-                    }
-                  ]
-                },
-                "right leg": {
-                  "shapes": [
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 2
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 3
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 4
-                    }
-                  ]
-                },
-                "body": {
-                  "shapes": [
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 2
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 3
-                    }
-                  ]
-                },
-                "tail base": {
-                  "shapes": [
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 2
-                    }
-                  ]
-                },
-                "tail tip": {
-                  "shapes": [
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "redDColor"
-                      },
-                      "id": 2
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "brownDColor"
-                      },
-                      "id": 3
-                    }
-                  ]
-                }
-              },
-              {
-                "head": {
-                  "position": {
-                    "x": 0,
-                    "y": 2.8,
-                    "z": 20
-                  },
-                  "rotation": {
-                    "x": 0,
-                    "y": -0.15,
-                    "z": 0
-                  }
-                },
-                "jaw": {
-                  "position": {
-                    "x": 0,
-                    "y": 10.3,
-                    "z": 8
-                  },
-                  "rotation": {
-                    "x": 0.35,
-                    "y": 0,
-                    "z": 0
-                  }
-                },
-                "left arm": {
-                  "position": {
-                    "x": 0,
-                    "y": -2,
-                    "z": 14
-                  },
-                  "rotation": {
-                    "x": -0.1,
-                    "y": 0,
-                    "z": 0.1
-                  }
-                },
-                "right arm": {
-                  "position": {
-                    "x": -1.5,
-                    "y": -1,
-                    "z": 6.5
-                  },
-                  "rotation": {
-                    "x": 0.4,
-                    "y": 0,
-                    "z": -0.1
-                  }
-                },
-                "left leg": {
-                  "position": {
-                    "x": 0,
-                    "y": 3,
-                    "z": 8
-                  },
-                  "rotation": {
-                    "x": -0.4,
-                    "y": 0,
-                    "z": 0
-                  }
-                },
-                "right leg": {
-                  "position": {
-                    "x": 0,
-                    "y": 5,
-                    "z": -10
-                  },
-                  "rotation": {
-                    "x": 0.5,
-                    "y": 0,
-                    "z": 0
-                  }
-                },
-                "body": {
-                  "position": {
-                    "x": 0,
-                    "y": 9.8,
-                    "z": -8
-                  },
-                  "rotation": {
-                    "x": 0.6,
-                    "y": -0.05,
-                    "z": 0
-                  }
-                },
-                "left wing": {
-                  "position": {
-                    "x": 5,
-                    "y": 4.5,
-                    "z": 15
-                  },
-                  "rotation": {
-                    "x": 0.2,
-                    "y": 0.6,
-                    "z": 0
-                  },
-                  "shapes": [
-                    {
-                      "rotationX": 0.2,
-                      "rotationY": 0.8,
-                      "id": 1
-                    }
-                  ]
-                },
-                "right wing": {
-                  "position": {
-                    "x": -5,
-                    "y": 4.5,
-                    "z": 15
-                  },
-                  "rotation": {
-                    "x": 0.2,
-                    "y": -0.6,
-                    "z": 0
-                  },
-                  "shapes": [
-                    {
-                      "rotationX": 0.2,
-                      "rotationY": -0.8,
-                      "id": 1
-                    }
-                  ]
-                },
-                "tail base": {
-                  "rotation": {
-                    "x": 0.1,
-                    "y": -0.3,
-                    "z": 0
-                  }
-                },
-                "tail tip": {
-                  "rotation": {
-                    "x": 0.05,
-                    "y": -0.4,
-                    "z": 0
-                  }
-                }
-              }
-            ]
-          },
-          "model": {
-            "head": {
-              "shapes": [
-                {
-                  "type": "box",
-                  "width": 18,
-                  "height": 16,
-                  "depth": 24,
-                  "x": 0,
-                  "y": 44,
-                  "z": 16,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "head-main"
-                },
-                {
-                  "type": "sphere",
-                  "size": 5,
-                  "x": -9,
-                  "y": 48,
-                  "z": 18,
-                  "color": {
-                    "paletteColor": "redMColor"
-                  },
-                  "name": "eye-right",
-                  "emissive": "#FFA500"
-                },
-                {
-                  "type": "sphere",
-                  "size": 2.5,
-                  "x": -9,
-                  "y": 48,
-                  "z": 19.5,
-                  "color": {
-                    "paletteColor": "brownDColor"
-                  },
-                  "name": "pupil-right"
-                },
-                {
-                  "type": "sphere",
-                  "size": 5,
-                  "x": 9,
-                  "y": 48,
-                  "z": 18,
-                  "color": {
-                    "paletteColor": "redMColor"
-                  },
-                  "name": "eye-left",
-                  "emissive": "#FFA500"
-                },
-                {
-                  "type": "sphere",
-                  "size": 2.5,
-                  "x": 9,
-                  "y": 48,
-                  "z": 19.5,
-                  "color": {
-                    "paletteColor": "brownDColor"
-                  },
-                  "name": "pupil-left"
-                },
-                {
-                  "type": "box",
-                  "width": 16,
-                  "height": 3,
-                  "depth": 8,
-                  "x": 0,
-                  "y": 52,
-                  "z": 16,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "brow-ridge"
-                },
-                {
-                  "type": "cone",
-                  "size": 3,
-                  "height": 6,
-                  "x": -6,
-                  "y": 52,
-                  "z": 26,
-                  "color": {
-                    "paletteColor": "brownDColor"
-                  },
-                  "name": "horn-right"
-                },
-                {
-                  "type": "cone",
-                  "size": 3,
-                  "height": 6,
-                  "x": 6,
-                  "y": 52,
-                  "z": 26,
-                  "color": {
-                    "paletteColor": "brownDColor"
-                  },
-                  "name": "horn-left"
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 3,
-                "z": 20
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            },
-            "jaw": {
-              "shapes": [
-                {
-                  "type": "box",
-                  "width": 20,
-                  "height": 8,
-                  "depth": 22,
-                  "x": 0,
-                  "y": 32,
-                  "z": 18,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "jaw-main"
-                },
-                {
-                  "type": "box",
-                  "width": 16,
-                  "height": 3,
-                  "depth": 3,
-                  "x": 0,
-                  "y": 35,
-                  "z": 26,
-                  "color": {
-                    "paletteColor": "redMColor"
-                  },
-                  "name": "gums"
-                },
-                {
-                  "type": "cone",
-                  "width": 2,
-                  "height": 2,
-                  "depth": 2,
-                  "x": -6,
-                  "y": 36.7,
-                  "z": 26,
-                  "color": {
-                    "paletteColor": "greyLColor"
-                  },
-                  "name": "tooth-right",
-                  "shininess": 80,
-                  "size": 2
-                },
-                {
-                  "type": "cone",
-                  "width": 2,
-                  "height": 2,
-                  "depth": 2,
-                  "x": 6,
-                  "y": 36.7,
-                  "z": 26,
-                  "color": {
-                    "paletteColor": "greyLColor"
-                  },
-                  "name": "tooth-left",
-                  "shininess": 80,
-                  "size": 2
-                },
-                {
-                  "type": "cone",
-                  "width": 2,
-                  "height": 2,
-                  "depth": 2,
-                  "x": 0,
-                  "y": 36.5,
-                  "z": 26,
-                  "color": {
-                    "paletteColor": "greyLColor"
-                  },
-                  "name": "tooth-middle",
-                  "shininess": 80,
-                  "size": 2
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 10.5,
-                "z": 8
-              },
-              "rotation": {
-                "x": 0.3,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            },
-            "left arm": {
-              "shapes": [
-                {
-                  "type": "box",
-                  "width": 6,
-                  "height": 10,
-                  "depth": 6,
-                  "x": 12,
-                  "y": 30,
-                  "z": 2,
-                  "rotationX": -30,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "upper-arm-left"
-                },
-                {
-                  "type": "box",
-                  "width": 5,
-                  "height": 8,
-                  "depth": 5,
-                  "x": 12,
-                  "y": 26,
-                  "z": 6,
-                  "rotationX": -15,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "lower-arm-left"
-                },
-                {
-                  "type": "box",
-                  "width": 4,
-                  "height": 4,
-                  "depth": 4,
-                  "x": 12,
-                  "y": 24,
-                  "z": 8,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "hand-left"
-                },
-                {
-                  "type": "cone",
-                  "size": 1.5,
-                  "height": 4,
-                  "x": 13,
-                  "y": 23,
-                  "z": 10,
-                  "color": {
-                    "paletteColor": "brownDColor"
-                  },
-                  "name": "claw-left-1",
-                  "rotationX": 180
-                },
-                {
-                  "type": "cone",
-                  "size": 1.5,
-                  "height": 4,
-                  "x": 11,
-                  "y": 23,
-                  "z": 10,
-                  "color": {
-                    "paletteColor": "brownDColor"
-                  },
-                  "name": "claw-left-2",
-                  "rotationX": 180
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": -2,
-                "z": 12
-              },
-              "rotation": {
-                "x": 0.2,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            },
-            "right arm": {
-              "shapes": [
-                {
-                  "type": "box",
-                  "width": 6,
-                  "height": 10,
-                  "depth": 6,
-                  "x": -12,
-                  "y": 30,
-                  "z": 2,
-                  "rotationX": -30,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "upper-arm-right"
-                },
-                {
-                  "type": "box",
-                  "width": 5,
-                  "height": 8,
-                  "depth": 5,
-                  "x": -12,
-                  "y": 26,
-                  "z": 6,
-                  "rotationX": -15,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "lower-arm-right"
-                },
-                {
-                  "type": "box",
-                  "width": 4,
-                  "height": 4,
-                  "depth": 4,
-                  "x": -12,
-                  "y": 24,
-                  "z": 8,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "hand-right"
-                },
-                {
-                  "type": "cone",
-                  "size": 1.5,
-                  "height": 4,
-                  "x": -13,
-                  "y": 23,
-                  "z": 10,
-                  "color": {
-                    "paletteColor": "brownDColor"
-                  },
-                  "name": "claw-right-1",
-                  "rotationX": 180
-                },
-                {
-                  "type": "cone",
-                  "size": 1.5,
-                  "height": 4,
-                  "x": -11,
-                  "y": 23,
-                  "z": 10,
-                  "color": {
-                    "paletteColor": "brownDColor"
-                  },
-                  "name": "claw-right-2",
-                  "rotationX": 180,
-                  "rotationY": 0,
-                  "rotationZ": 0,
-                  "scaleX": 1,
-                  "scaleY": 1,
-                  "scaleZ": 1
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": -2,
-                "z": 12
-              },
-              "rotation": {
-                "x": 0.2,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            },
-            "left leg": {
-              "shapes": [
-                {
-                  "type": "box",
-                  "width": 10,
-                  "height": 16,
-                  "depth": 12,
-                  "x": 10,
-                  "y": 22,
-                  "z": 2,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "thigh-left",
-                  "rotationX": -10
-                },
-                {
-                  "type": "box",
-                  "width": 8,
-                  "height": 18,
-                  "depth": 8,
-                  "x": 10,
-                  "y": 10,
-                  "z": 2,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "shin-left",
-                  "rotationX": 20
-                },
-                {
-                  "type": "box",
-                  "width": 12,
-                  "height": 5,
-                  "depth": 18,
-                  "x": 10,
-                  "y": 2,
-                  "z": 2,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "foot-left",
-                  "rotationX": 15
-                },
-                {
-                  "type": "cone",
-                  "size": 3,
-                  "height": 6,
-                  "x": 7,
-                  "y": 0,
-                  "z": 11,
-                  "rotationX": 90,
-                  "color": {
-                    "paletteColor": "brownDColor"
-                  },
-                  "name": "toe-left-1"
-                },
-                {
-                  "type": "cone",
-                  "size": 3,
-                  "height": 6,
-                  "x": 13,
-                  "y": 0,
-                  "z": 11,
-                  "rotationX": 90,
-                  "color": {
-                    "paletteColor": "brownDColor"
-                  },
-                  "name": "toe-left-2"
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 3,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            },
-            "right leg": {
-              "shapes": [
-                {
-                  "type": "box",
-                  "width": 10,
-                  "height": 16,
-                  "depth": 12,
-                  "x": -10,
-                  "y": 22,
-                  "z": 2,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "thigh-right",
-                  "rotationX": -10
-                },
-                {
-                  "type": "box",
-                  "width": 8,
-                  "height": 18,
-                  "depth": 8,
-                  "x": -10,
-                  "y": 10,
-                  "z": 2,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "shin-right",
-                  "rotationX": 20
-                },
-                {
-                  "type": "box",
-                  "width": 12,
-                  "height": 5,
-                  "depth": 18,
-                  "x": -10,
-                  "y": 2,
-                  "z": 2,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "foot-right",
-                  "rotationX": 15
-                },
-                {
-                  "type": "cone",
-                  "size": 3,
-                  "height": 6,
-                  "x": -7,
-                  "y": 0,
-                  "z": 11,
-                  "rotationX": 90,
-                  "color": {
-                    "paletteColor": "brownDColor"
-                  },
-                  "name": "toe-right-1"
-                },
-                {
-                  "type": "cone",
-                  "size": 3,
-                  "height": 6,
-                  "x": -13,
-                  "y": 0,
-                  "z": 11,
-                  "rotationX": 90,
-                  "color": {
-                    "paletteColor": "brownDColor"
-                  },
-                  "name": "toe-right-2"
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 3,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            },
-            "body": {
-              "shapes": [
-                {
-                  "type": "box",
-                  "width": 20,
-                  "height": 34,
-                  "depth": 18,
-                  "x": 0,
-                  "y": 26,
-                  "z": -2,
-                  "rotationX": 30,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "torso-main"
-                },
-                {
-                  "type": "box",
-                  "width": 14,
-                  "height": 15.3,
-                  "depth": 14,
-                  "x": 0,
-                  "y": 45.46875,
-                  "z": 8,
-                  "rotationX": 10,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "neck",
-                  "rotationY": 0,
-                  "rotationZ": 0,
-                  "scaleX": 1,
-                  "scaleY": 1,
-                  "scaleZ": 1
-                },
-                {
-                  "type": "cone",
-                  "size": 6,
-                  "height": 12,
-                  "x": 0,
-                  "y": 38.39468690702089,
-                  "z": -6.745098039215698,
-                  "rotationX": -65,
-                  "color": {
-                    "paletteColor": "brownDColor"
-                  },
-                  "name": "spike-1",
-                  "rotationY": 0,
-                  "rotationZ": 0,
-                  "scaleX": 1,
-                  "scaleY": 1,
-                  "scaleZ": 1
-                },
-                {
-                  "type": "cone",
-                  "size": 5,
-                  "height": 10,
-                  "x": 0,
-                  "y": 28.979127134724877,
-                  "z": -14.513725490196073,
-                  "rotationX": -66,
-                  "color": {
-                    "paletteColor": "brownDColor"
-                  },
-                  "name": "spike-2",
-                  "rotationY": 0,
-                  "rotationZ": 0,
-                  "scaleX": 1,
-                  "scaleY": 1,
-                  "scaleZ": 1
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 10,
-                "z": -8
-              },
-              "rotation": {
-                "x": 0.6,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            },
-            "left wing": {
-              "shapes": [
-                {
-                  "type": "box",
-                  "width": 10,
-                  "height": 2,
-                  "depth": 20,
-                  "x": 15,
-                  "y": 35,
-                  "z": -5,
-                  "rotationX": 10,
-                  "rotationY": 60,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "wing-base-left"
-                },
-                {
-                  "type": "box",
-                  "width": 40,
-                  "height": 1,
-                  "depth": 30,
-                  "x": 35,
-                  "y": 35,
-                  "z": -2.5,
-                  "rotationX": 0,
-                  "rotationY": 1,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "wing-membrane-left"
-                },
-                {
-                  "type": "cone",
-                  "size": 2,
-                  "height": 5,
-                  "x": 14,
-                  "y": 34.8,
-                  "z": 14,
-                  "rotationX": 90,
-                  "rotationY": 0,
-                  "color": {
-                    "paletteColor": "brownDColor"
-                  },
-                  "name": "wing-claw-left",
-                  "rotationZ": 45,
-                  "scaleX": 1,
-                  "scaleY": 1,
-                  "scaleZ": 1
-                },
-                {
-                  "type": "box",
-                  "width": 20,
-                  "height": 1,
-                  "depth": 10,
-                  "x": 60,
-                  "y": 35,
-                  "z": -5.5,
-                  "rotationX": 5,
-                  "rotationY": 40,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "wing-membrane-left",
-                  "rotationZ": 0,
-                  "scaleX": 1,
-                  "scaleY": 1,
-                  "scaleZ": 1
-                }
-              ],
-              "position": {
-                "x": 5,
-                "y": 5,
-                "z": 15
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0.5,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            },
-            "right wing": {
-              "shapes": [
-                {
-                  "type": "box",
-                  "width": 10,
-                  "height": 2,
-                  "depth": 20,
-                  "x": -15,
-                  "y": 35,
-                  "z": -5,
-                  "rotationX": 10,
-                  "rotationY": -60,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "wing-base-right"
-                },
-                {
-                  "type": "box",
-                  "width": 40,
-                  "height": 1,
-                  "depth": 30,
-                  "x": -35,
-                  "y": 35,
-                  "z": -2.5,
-                  "rotationX": 0,
-                  "rotationY": -1,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "wing-membrane-right"
-                },
-                {
-                  "type": "cone",
-                  "size": 2,
-                  "height": 5,
-                  "x": -14,
-                  "y": 34.8,
-                  "z": 14,
-                  "rotationX": 90,
-                  "rotationY": 0,
-                  "color": {
-                    "paletteColor": "brownDColor"
-                  },
-                  "name": "wing-claw-right",
-                  "rotationZ": -45,
-                  "scaleX": 1,
-                  "scaleY": 1,
-                  "scaleZ": 1
-                },
-                {
-                  "type": "box",
-                  "width": 20,
-                  "height": 1,
-                  "depth": 10,
-                  "x": -60,
-                  "y": 35,
-                  "z": -5.5,
-                  "rotationX": 5,
-                  "rotationY": -40,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "wing-membrane-right",
-                  "rotationZ": 0,
-                  "scaleX": 1,
-                  "scaleY": 1,
-                  "scaleZ": 1
-                }
-              ],
-              "position": {
-                "x": -5,
-                "y": 5,
-                "z": 15
-              },
-              "rotation": {
-                "x": 0,
-                "y": -0.5,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            },
-            "tail base": {
-              "shapes": [
-                {
-                  "type": "box",
-                  "width": 12,
-                  "height": 10,
-                  "depth": 20,
-                  "x": 0,
-                  "y": 22,
-                  "z": -18,
-                  "rotationX": -15,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "tail-base-segment"
-                },
-                {
-                  "type": "cone",
-                  "size": 5,
-                  "height": 10,
-                  "x": 0,
-                  "y": 26,
-                  "z": -20,
-                  "rotationX": -20,
-                  "color": {
-                    "paletteColor": "brownDColor"
-                  },
-                  "name": "tail-spike-1"
-                },
-                {
-                  "type": "box",
-                  "width": 10,
-                  "height": 8,
-                  "depth": 18,
-                  "x": 0,
-                  "y": 20,
-                  "z": -34,
-                  "rotationX": -10,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "tail-mid-segment"
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 6,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            },
-            "tail tip": {
-              "shapes": [
-                {
-                  "type": "box",
-                  "width": 8,
-                  "height": 6,
-                  "depth": 16,
-                  "x": 0,
-                  "y": 18,
-                  "z": -48,
-                  "rotationX": -5,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "tail-end-segment"
-                },
-                {
-                  "type": "cone",
-                  "size": 4,
-                  "height": 8,
-                  "x": 0,
-                  "y": 21,
-                  "z": -50,
-                  "rotationX": -10,
-                  "color": {
-                    "paletteColor": "brownDColor"
-                  },
-                  "name": "tail-spike-2"
-                },
-                {
-                  "type": "box",
-                  "width": 6,
-                  "height": 4,
-                  "depth": 12,
-                  "x": 0,
-                  "y": 16,
-                  "z": -60,
-                  "rotationX": 0,
-                  "color": {
-                    "paletteColor": "redDColor"
-                  },
-                  "name": "tail-tip-segment"
-                },
-                {
-                  "type": "cone",
-                  "size": 3,
-                  "height": 6,
-                  "x": 0,
-                  "y": 18,
-                  "z": -62,
-                  "rotationX": -5,
-                  "color": {
-                    "paletteColor": "brownDColor"
-                  },
-                  "name": "tail-spike-3"
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 6,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            }
-          }
-        },
-        "fireResistance": 75,
-        "coldResistance": 25,
-        "electricResistance": 25,
-        "title": "Red Dragon"
-      },
-      "pterodactyl": {
-        "speed": 2,
-        "value": 10,
-        "hp": 5,
-        "essence": 5,
-        "render": {
-          "animations": {
-            "idle": [
-              {}
-            ],
-            "walk": [
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "size": 7.2,
-                      "height": 14.4,
-                      "y": 47.5,
-                      "z": -2.4,
-                      "id": 0
-                    },
-                    {
-                      "y": 49.3,
-                      "z": 9.6,
-                      "id": 1
-                    },
-                    {
-                      "y": 52.8,
-                      "z": 15.9,
-                      "id": 2
-                    },
-                    {
-                      "y": 59.5,
-                      "z": 13.5,
-                      "id": 3
-                    },
-                    {
-                      "y": 50,
-                      "z": -2.4,
-                      "rotationZ": -10,
-                      "id": 4
-                    },
-                    {
-                      "y": 50,
-                      "z": -2.4,
-                      "rotationZ": 10,
-                      "id": 5
-                    },
-                    {
-                      "y": 50,
-                      "rotationZ": -10,
-                      "id": 6
-                    },
-                    {
-                      "y": 53,
-                      "rotationZ": 10,
-                      "id": 7
-                    },
-                    {
-                      "y": 47.5,
-                      "z": -16.9,
-                      "id": 8
-                    },
-                    {
-                      "y": 47.5,
-                      "z": -19.6,
-                      "id": 9
-                    },
-                    {
-                      "y": 42.7,
-                      "z": -4.8,
-                      "rotationX": 0,
-                      "id": 10
-                    },
-                    {
-                      "y": 42.7,
-                      "z": -4.8,
-                      "rotationX": 0,
-                      "id": 11
-                    },
-                    {
-                      "y": 39.5,
-                      "z": -4.8,
-                      "rotationX": -90,
-                      "id": 12
-                    },
-                    {
-                      "y": 39.5,
-                      "z": -4.8,
-                      "rotationX": -90,
-                      "id": 13
-                    },
-                    {
-                      "y": 54.7,
-                      "z": 15.4,
-                      "id": 14
-                    },
-                    {
-                      "y": 54.7,
-                      "z": 15.4,
-                      "id": 15
-                    },
-                    {
-                      "y": 50,
-                      "rotationZ": 10,
-                      "id": 16
-                    },
-                    {
-                      "y": 53,
-                      "rotationZ": -10,
-                      "id": 17
-                    }
-                  ]
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "size": 7.2,
-                      "height": 14.4,
-                      "y": 48.5,
-                      "z": -2.4,
-                      "id": 0
-                    },
-                    {
-                      "y": 50.3,
-                      "z": 9.6,
-                      "id": 1
-                    },
-                    {
-                      "y": 53.8,
-                      "z": 15.9,
-                      "id": 2
-                    },
-                    {
-                      "y": 60.5,
-                      "z": 13.5,
-                      "id": 3
-                    },
-                    {
-                      "y": 45,
-                      "z": -2.4,
-                      "rotationZ": 30,
-                      "id": 4
-                    },
-                    {
-                      "y": 45,
-                      "z": -2.4,
-                      "rotationZ": -30,
-                      "id": 5
-                    },
-                    {
-                      "y": 45,
-                      "rotationZ": 30,
-                      "id": 6
-                    },
-                    {
-                      "y": 38,
-                      "id": 7
-                    },
-                    {
-                      "y": 48.5,
-                      "z": -16.9,
-                      "id": 8
-                    },
-                    {
-                      "y": 48.5,
-                      "z": -19.6,
-                      "id": 9
-                    },
-                    {
-                      "y": 43.7,
-                      "z": -4.8,
-                      "id": 10
-                    },
-                    {
-                      "y": 43.7,
-                      "z": -4.8,
-                      "id": 11
-                    },
-                    {
-                      "y": 41,
-                      "z": -4.8,
-                      "id": 12
-                    },
-                    {
-                      "y": 41,
-                      "z": -4.8,
-                      "id": 13
-                    },
-                    {
-                      "y": 55.7,
-                      "z": 15.4,
-                      "id": 14
-                    },
-                    {
-                      "y": 55.7,
-                      "z": 15.4,
-                      "id": 15
-                    },
-                    {
-                      "y": 45,
-                      "rotationZ": -30,
-                      "id": 16
-                    },
-                    {
-                      "y": 38,
-                      "id": 17
-                    }
-                  ]
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "size": 7.2,
-                      "height": 14.4,
-                      "y": 47.5,
-                      "z": -2.4,
-                      "id": 0
-                    },
-                    {
-                      "y": 49.3,
-                      "z": 9.6,
-                      "id": 1
-                    },
-                    {
-                      "y": 52.8,
-                      "z": 15.9,
-                      "id": 2
-                    },
-                    {
-                      "y": 59.5,
-                      "z": 13.5,
-                      "id": 3
-                    },
-                    {
-                      "y": 50,
-                      "z": -2.4,
-                      "rotationZ": -10,
-                      "id": 4
-                    },
-                    {
-                      "y": 50,
-                      "z": -2.4,
-                      "rotationZ": 10,
-                      "id": 5
-                    },
-                    {
-                      "y": 50,
-                      "rotationZ": -10,
-                      "id": 6
-                    },
-                    {
-                      "y": 53,
-                      "rotationZ": 10,
-                      "id": 7
-                    },
-                    {
-                      "y": 47.5,
-                      "z": -16.9,
-                      "id": 8
-                    },
-                    {
-                      "y": 47.5,
-                      "z": -19.6,
-                      "id": 9
-                    },
-                    {
-                      "y": 42.7,
-                      "z": -4.8,
-                      "rotationX": 0,
-                      "id": 10
-                    },
-                    {
-                      "y": 42.7,
-                      "z": -4.8,
-                      "rotationX": 0,
-                      "id": 11
-                    },
-                    {
-                      "y": 39.5,
-                      "z": -4.8,
-                      "rotationX": -90,
-                      "id": 12
-                    },
-                    {
-                      "y": 39.5,
-                      "z": -4.8,
-                      "rotationX": -90,
-                      "id": 13
-                    },
-                    {
-                      "y": 54.7,
-                      "z": 15.4,
-                      "id": 14
-                    },
-                    {
-                      "y": 54.7,
-                      "z": 15.4,
-                      "id": 15
-                    },
-                    {
-                      "y": 50,
-                      "rotationZ": 10,
-                      "id": 16
-                    },
-                    {
-                      "y": 53,
-                      "rotationZ": -10,
-                      "id": 17
-                    }
-                  ]
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "size": 7.2,
-                      "height": 14.4,
-                      "y": 46.5,
-                      "z": -2.4,
-                      "id": 0
-                    },
-                    {
-                      "y": 48.3,
-                      "z": 9.6,
-                      "id": 1
-                    },
-                    {
-                      "y": 51.8,
-                      "z": 15.9,
-                      "id": 2
-                    },
-                    {
-                      "y": 58.5,
-                      "z": 13.5,
-                      "id": 3
-                    },
-                    {
-                      "y": 43,
-                      "z": -2.4,
-                      "rotationZ": 30,
-                      "id": 4
-                    },
-                    {
-                      "y": 43,
-                      "z": -2.4,
-                      "rotationZ": -30,
-                      "id": 5
-                    },
-                    {
-                      "y": 43,
-                      "rotationZ": 50,
-                      "id": 6
-                    },
-                    {
-                      "y": 35,
-                      "rotationZ": -50,
-                      "id": 7
-                    },
-                    {
-                      "y": 46.5,
-                      "z": -16.9,
-                      "id": 8
-                    },
-                    {
-                      "y": 46.5,
-                      "z": -19.6,
-                      "id": 9
-                    },
-                    {
-                      "y": 41.7,
-                      "z": -4.8,
-                      "rotationX": 40,
-                      "id": 10
-                    },
-                    {
-                      "y": 41.7,
-                      "z": -4.8,
-                      "rotationX": 40,
-                      "id": 11
-                    },
-                    {
-                      "y": 38,
-                      "z": -5.7,
-                      "rotationX": -30,
-                      "id": 12
-                    },
-                    {
-                      "y": 38,
-                      "z": -5.7,
-                      "rotationX": -30,
-                      "id": 13
-                    },
-                    {
-                      "y": 53.7,
-                      "z": 15.4,
-                      "id": 14
-                    },
-                    {
-                      "y": 53.7,
-                      "z": 15.4,
-                      "id": 15
-                    },
-                    {
-                      "y": 43,
-                      "rotationZ": 50,
-                      "id": 16
-                    },
-                    {
-                      "y": 35,
-                      "rotationZ": 50,
-                      "id": 17
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          "model": {
-            "shapes": {
-              "shapes": [
-                {
-                  "type": "cylinder",
-                  "size": 7.199999999999999,
-                  "height": 14.399999999999999,
-                  "x": 0,
-                  "y": 47.48726562500001,
-                  "z": -2.3686718749999995,
-                  "color": "#7d6d5e",
-                  "rotationX": 90,
-                  "rotationZ": 0,
-                  "name": "body",
-                  "scaleX": 1
-                },
-                {
-                  "type": "cylinder",
-                  "size": 2.88,
-                  "height": 12,
-                  "x": 0,
-                  "y": 49.294765625,
-                  "z": 9.631328125000001,
-                  "color": "#7D6B5D",
-                  "rotationX": 45,
-                  "rotationZ": 0,
-                  "name": "neck"
-                },
-                {
-                  "type": "cone",
-                  "size": 2.4,
-                  "height": 10.56,
-                  "x": 0,
-                  "y": 52.76726562500002,
-                  "z": 15.871328125,
-                  "color": "#7D6B5D",
-                  "rotationX": 120,
-                  "rotationZ": 0,
-                  "name": "beak"
-                },
-                {
-                  "type": "cone",
-                  "size": 0.96,
-                  "height": 9.6,
-                  "x": 0,
-                  "y": 59.48726562500001,
-                  "z": 13.471328125,
-                  "color": "#6D5D4D",
-                  "rotationX": 0,
-                  "rotationZ": 0,
-                  "name": "head-spike"
-                },
-                {
-                  "type": "box",
-                  "width": 24,
-                  "height": 0.48,
-                  "depth": 9.6,
-                  "x": -12,
-                  "y": 47.48726562500001,
-                  "z": -2.3686718749999995,
-                  "color": "#8D7B6D",
-                  "rotationY": 0,
-                  "rotationZ": 15,
-                  "name": "wing-right"
-                },
-                {
-                  "type": "box",
-                  "width": 24,
-                  "height": 0.48,
-                  "depth": 9.6,
-                  "x": 12,
-                  "y": 47.48726562500001,
-                  "z": -2.3686718749999995,
-                  "color": "#8D7B6D",
-                  "rotationY": 0,
-                  "rotationZ": -15,
-                  "name": "wing-left"
-                },
-                {
-                  "type": "box",
-                  "width": 4,
-                  "height": 0.24,
-                  "depth": 2,
-                  "x": -12,
-                  "y": 47,
-                  "z": 3,
-                  "color": "#8D7B6D",
-                  "rotationY": 90,
-                  "rotationZ": 15,
-                  "name": "hand-right"
-                },
-                {
-                  "type": "box",
-                  "width": 10,
-                  "height": 0.24,
-                  "depth": 6,
-                  "x": 25,
-                  "y": 43.2,
-                  "z": -4.1,
-                  "color": "#8D7B6D",
-                  "rotationY": 40,
-                  "rotationZ": -30,
-                  "rotationX": 16,
-                  "name": "wingtip-left"
-                },
-                {
-                  "type": "cone",
-                  "size": 1.92,
-                  "height": 12,
-                  "x": 0,
-                  "y": 47.48726562500001,
-                  "z": -16.851171875000002,
-                  "color": "#7D6B5D",
-                  "rotationX": -90,
-                  "rotationZ": 0,
-                  "name": "tail"
-                },
-                {
-                  "type": "box",
-                  "width": 5.76,
-                  "height": 0.48,
-                  "depth": 4.8,
-                  "x": 0,
-                  "y": 47.48726562500001,
-                  "z": -19.648671875,
-                  "color": "#8D7B6D",
-                  "rotationX": 0,
-                  "rotationZ": 0,
-                  "name": "tail-tip"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 0.72,
-                  "height": 5.76,
-                  "x": -2.4,
-                  "y": 42.68726562500001,
-                  "z": -4.768671874999999,
-                  "color": "#6D5D4D",
-                  "rotationX": 20,
-                  "rotationZ": 0,
-                  "name": "leg-right"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 0.72,
-                  "height": 5.76,
-                  "x": 2.4,
-                  "y": 42.68726562500001,
-                  "z": -4.768671874999999,
-                  "color": "#6D5D4D",
-                  "rotationX": 20,
-                  "rotationZ": 0,
-                  "name": "leg-left"
-                },
-                {
-                  "type": "cone",
-                  "size": 1.44,
-                  "height": 2.4,
-                  "x": -2.4,
-                  "y": 40.04726562500001,
-                  "z": -4.851171875,
-                  "color": "#6D5D4D",
-                  "rotationX": -60,
-                  "rotationZ": 0,
-                  "name": "foot-right"
-                },
-                {
-                  "type": "cone",
-                  "size": 1.44,
-                  "height": 2.4,
-                  "x": 2.4,
-                  "y": 40.04726562500001,
-                  "z": -4.851171875,
-                  "color": "#6D5D4D",
-                  "rotationX": -60,
-                  "rotationZ": 0,
-                  "name": "foot-left"
-                },
-                {
-                  "type": "sphere",
-                  "size": 0.72,
-                  "x": -0.96,
-                  "y": 54.68726562500001,
-                  "z": 15.391328125000001,
-                  "color": "#000000",
-                  "name": "eye-right"
-                },
-                {
-                  "type": "sphere",
-                  "size": 0.72,
-                  "x": 0.96,
-                  "y": 54.68726562500001,
-                  "z": 15.391328125000001,
-                  "color": "#000000",
-                  "name": "eye-left"
-                },
-                {
-                  "type": "box",
-                  "width": 4,
-                  "height": 0.24,
-                  "depth": 2,
-                  "x": 12,
-                  "y": 47,
-                  "z": 3,
-                  "color": "#8D7B6D",
-                  "rotationY": 90,
-                  "rotationZ": 15,
-                  "name": "hand-left"
-                },
-                {
-                  "type": "box",
-                  "width": 10,
-                  "height": 0.24,
-                  "depth": 6,
-                  "x": -25,
-                  "y": 43.2,
-                  "z": -4.1,
-                  "color": "#8D7B6D",
-                  "rotationY": -40,
-                  "rotationZ": 30,
-                  "rotationX": 16,
-                  "name": "wingtip-right"
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            }
-          }
-        },
-        "title": "Pterodactyl"
-      },
-      "skeleton": {
-        "hp": 20,
-        "speed": 1.2,
-        "value": 7,
-        "essence": 12,
-        "render": {
-          "animations": {
-            "idle": [
-              {}
-            ],
-            "walk": [
-              {},
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 40,
-                      "id": 0
-                    },
-                    {
-                      "rotationZ": 0,
-                      "rotationY": 10,
-                      "id": 1
-                    },
-                    {
-                      "y": 41,
-                      "id": 2
-                    },
-                    {
-                      "y": 41,
-                      "id": 3
-                    },
-                    {
-                      "y": 29,
-                      "rotationX": 90,
-                      "id": 4
-                    },
-                    {
-                      "y": 25,
-                      "rotationX": 120,
-                      "id": 5
-                    },
-                    {
-                      "y": 29,
-                      "id": 6
-                    },
-                    {
-                      "y": 20,
-                      "id": 7
-                    },
-                    {
-                      "z": -2,
-                      "rotationX": 15,
-                      "rotationY": 0,
-                      "id": 8
-                    },
-                    {
-                      "z": 2,
-                      "rotationX": -15,
-                      "id": 9
-                    },
-                    {
-                      "z": -4,
-                      "id": 10
-                    },
-                    {
-                      "z": 6,
-                      "id": 11
-                    }
-                  ]
-                }
-              },
-              {},
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 40,
-                      "id": 0
-                    },
-                    {
-                      "rotationY": -10,
-                      "id": 1
-                    },
-                    {
-                      "y": 41,
-                      "id": 2
-                    },
-                    {
-                      "y": 41,
-                      "id": 3
-                    },
-                    {
-                      "y": 25,
-                      "rotationX": 120,
-                      "id": 4
-                    },
-                    {
-                      "y": 29,
-                      "rotationX": 90,
-                      "id": 5
-                    },
-                    {
-                      "y": 20,
-                      "id": 6
-                    },
-                    {
-                      "y": 29,
-                      "id": 7
-                    },
-                    {
-                      "z": 2,
-                      "rotationX": -15,
-                      "id": 8
-                    },
-                    {
-                      "z": -2,
-                      "rotationX": 15,
-                      "id": 9
-                    },
-                    {
-                      "z": 6,
-                      "id": 10
-                    },
-                    {
-                      "z": -4,
-                      "id": 11
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          "model": {
-            "shapes": {
-              "shapes": [
-                {
-                  "type": "sphere",
-                  "size": 14,
-                  "color": "#E0DED8",
-                  "x": 0,
-                  "y": 41,
-                  "z": 0,
-                  "name": "head"
-                },
-                {
-                  "type": "box",
-                  "width": 16,
-                  "height": 20,
-                  "depth": 8,
-                  "color": "#CFCBC0",
-                  "x": 0,
-                  "y": 24,
-                  "z": 0,
-                  "name": "body",
-                  "scaleX": 1
-                },
-                {
-                  "type": "sphere",
-                  "size": 3,
-                  "color": "#000000",
-                  "x": 4,
-                  "y": 42,
-                  "z": 5,
-                  "name": "eye-left"
-                },
-                {
-                  "type": "sphere",
-                  "size": 3,
-                  "color": "#000000",
-                  "x": -4,
-                  "y": 42,
-                  "z": 5,
-                  "name": "eye-right"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 3,
-                  "height": 18,
-                  "color": "#E0DED8",
-                  "x": 8,
-                  "y": 27,
-                  "z": 10,
-                  "rotationX": 105,
-                  "rotationZ": 15,
-                  "name": "arm-left"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 3,
-                  "height": 18,
-                  "color": "#E0DED8",
-                  "x": -8,
-                  "y": 27,
-                  "z": 10,
-                  "rotationX": 105,
-                  "rotationZ": -15,
-                  "name": "arm-right"
-                },
-                {
-                  "type": "sphere",
-                  "size": 5,
-                  "color": "#E0DED8",
-                  "x": 6,
-                  "y": 25,
-                  "z": 20,
-                  "name": "hand-left"
-                },
-                {
-                  "type": "sphere",
-                  "size": 5,
-                  "color": "#E0DED8",
-                  "x": -6,
-                  "y": 25,
-                  "z": 20,
-                  "name": "hand-right"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 3,
-                  "height": 22,
-                  "color": "#E0DED8",
-                  "x": 5,
-                  "y": 14,
-                  "z": 0,
-                  "rotationZ": 0,
-                  "name": "leg-left",
-                  "rotationX": 0
-                },
-                {
-                  "type": "cylinder",
-                  "size": 3,
-                  "height": 22,
-                  "color": "#E0DED8",
-                  "x": -5,
-                  "y": 14,
-                  "z": 0,
-                  "rotationZ": 0,
-                  "name": "leg-right"
-                },
-                {
-                  "type": "sphere",
-                  "size": 5,
-                  "color": "#E0DED8",
-                  "x": 5,
-                  "y": 2,
-                  "z": 0,
-                  "name": "foot-left"
-                },
-                {
-                  "type": "sphere",
-                  "size": 5,
-                  "color": "#E0DED8",
-                  "x": -5,
-                  "y": 2,
-                  "z": 0,
-                  "name": "foot-right"
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            }
-          }
-        },
-        "electricResistance": 75,
-        "title": "skeleton"
       },
       "new_trex": {
         "title": "New T-Rex",
@@ -10234,6 +6324,3916 @@ const DEFAULT_PROJECT_CONFIG = {
           }
         }
       },
+      "orc": {
+        "essence": 5,
+        "speed": 1,
+        "value": 1,
+        "hp": 10,
+        "render": {
+          "animations": {
+            "idle": [
+              {}
+            ],
+            "walk": [
+              {},
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 26.757142857142853,
+                      "rotationY": -10,
+                      "id": 0
+                    },
+                    {
+                      "y": 41.75714285714285,
+                      "id": 1
+                    },
+                    {
+                      "y": 41.75714285714285,
+                      "id": 2
+                    },
+                    {
+                      "y": 38.257142857142846,
+                      "id": 3
+                    },
+                    {
+                      "y": 43.75714285714285,
+                      "id": 4
+                    },
+                    {
+                      "y": 43.75714285714285,
+                      "id": 5
+                    },
+                    {
+                      "y": 43.75714285714285,
+                      "id": 6
+                    },
+                    {
+                      "y": 43.75714285714285,
+                      "id": 7
+                    },
+                    {
+                      "y": 27.75714285714285,
+                      "z": -1,
+                      "rotationX": 11,
+                      "id": 8
+                    },
+                    {
+                      "y": 27.75714285714285,
+                      "z": 3.6,
+                      "rotationX": -14,
+                      "id": 9
+                    },
+                    {
+                      "x": 11.6,
+                      "y": 15.757142857142853,
+                      "z": -3.2,
+                      "rotationX": 10,
+                      "id": 10
+                    },
+                    {
+                      "x": -12.4,
+                      "y": 15.757142857142853,
+                      "z": 6.5,
+                      "rotationX": -14,
+                      "id": 11
+                    },
+                    {
+                      "y": 7.757142857142849,
+                      "z": 3,
+                      "rotationX": -4,
+                      "id": 12
+                    },
+                    {
+                      "y": 7.757142857142849,
+                      "z": -1,
+                      "rotationX": 21,
+                      "id": 13
+                    },
+                    {
+                      "y": -0.24285714285715443,
+                      "z": 5.1,
+                      "id": 14
+                    },
+                    {
+                      "x": -4.1,
+                      "y": 1,
+                      "z": -1.6,
+                      "rotationX": 26,
+                      "id": 15
+                    },
+                    {
+                      "y": 44.75714285714285,
+                      "id": 16
+                    },
+                    {
+                      "y": 44.75714285714285,
+                      "id": 17
+                    },
+                    {
+                      "y": 48.2,
+                      "id": 18
+                    },
+                    {
+                      "y": 36.75714285714285,
+                      "id": 19
+                    },
+                    {
+                      "y": 36.75714285714285,
+                      "id": 20
+                    },
+                    {
+                      "y": 17.757142857142853,
+                      "rotationY": -10,
+                      "id": 21
+                    },
+                    {
+                      "y": 40.75714285714285,
+                      "id": 22
+                    },
+                    {
+                      "y": 12.999999999999996,
+                      "z": 2.6,
+                      "rotationX": -60,
+                      "id": 23
+                    },
+                    {
+                      "x": 12.1,
+                      "y": 5,
+                      "z": 17,
+                      "id": 24
+                    },
+                    {
+                      "y": 9.5,
+                      "z": 19.7,
+                      "rotationY": 0,
+                      "rotationX": 30,
+                      "id": 25
+                    },
+                    {
+                      "y": 0,
+                      "z": 14.5,
+                      "rotationX": -150,
+                      "id": 26
+                    },
+                    {
+                      "x": 7.5,
+                      "y": 4.8,
+                      "z": 17.3,
+                      "id": 27
+                    },
+                    {
+                      "x": 16.6,
+                      "y": 4.8,
+                      "z": 17.3,
+                      "id": 28
+                    },
+                    {
+                      "x": 12.1,
+                      "y": 2.5999999999999996,
+                      "z": 21,
+                      "rotationX": 120,
+                      "id": 29
+                    },
+                    {
+                      "y": 21.757142857142853,
+                      "id": 30
+                    },
+                    {
+                      "y": 38,
+                      "z": 1,
+                      "rotationX": 105,
+                      "id": 31
+                    },
+                    {
+                      "y": 38,
+                      "z": 1,
+                      "rotationX": 75,
+                      "id": 32
+                    }
+                  ]
+                }
+              },
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 29.757142857142853,
+                      "id": 8
+                    },
+                    {
+                      "y": 29.757142857142853,
+                      "id": 9
+                    },
+                    {
+                      "y": 14.999999999999993,
+                      "id": 29
+                    }
+                  ]
+                }
+              },
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 26.757142857142853,
+                      "rotationY": 10,
+                      "id": 0
+                    },
+                    {
+                      "y": 41.75714285714285,
+                      "id": 1
+                    },
+                    {
+                      "y": 41.75714285714285,
+                      "id": 2
+                    },
+                    {
+                      "y": 38.257142857142846,
+                      "id": 3
+                    },
+                    {
+                      "y": 43.75714285714285,
+                      "id": 4
+                    },
+                    {
+                      "y": 43.75714285714285,
+                      "id": 5
+                    },
+                    {
+                      "y": 43.75714285714285,
+                      "id": 6
+                    },
+                    {
+                      "y": 43.75714285714285,
+                      "id": 7
+                    },
+                    {
+                      "y": 27.75714285714285,
+                      "z": 3,
+                      "rotationX": -14,
+                      "id": 8
+                    },
+                    {
+                      "x": -11.9,
+                      "y": 27.75714285714285,
+                      "rotationX": 16,
+                      "id": 9
+                    },
+                    {
+                      "y": 15.757142857142853,
+                      "z": 6,
+                      "rotationX": -14,
+                      "id": 10
+                    },
+                    {
+                      "y": 16,
+                      "z": -1.7,
+                      "rotationX": 11,
+                      "id": 11
+                    },
+                    {
+                      "y": 7.757142857142849,
+                      "z": -1.3,
+                      "rotationX": 16,
+                      "id": 12
+                    },
+                    {
+                      "y": 7.757142857142849,
+                      "z": 5,
+                      "rotationY": 0,
+                      "rotationX": -15,
+                      "id": 13
+                    },
+                    {
+                      "y": 0.20000000000000018,
+                      "z": -1.4,
+                      "rotationX": 16,
+                      "id": 14
+                    },
+                    {
+                      "y": -0.24285714285715443,
+                      "z": 8.1,
+                      "id": 15
+                    },
+                    {
+                      "y": 44.75714285714285,
+                      "id": 16
+                    },
+                    {
+                      "y": 44.75714285714285,
+                      "id": 17
+                    },
+                    {
+                      "y": 48.2,
+                      "id": 18
+                    },
+                    {
+                      "y": 36.75714285714285,
+                      "id": 19
+                    },
+                    {
+                      "y": 36.75714285714285,
+                      "id": 20
+                    },
+                    {
+                      "y": 17.757142857142853,
+                      "rotationY": 10,
+                      "id": 21
+                    },
+                    {
+                      "y": 40.75714285714285,
+                      "id": 22
+                    },
+                    {
+                      "y": 12.999999999999996,
+                      "rotationX": 60,
+                      "id": 23
+                    },
+                    {
+                      "x": 12.1,
+                      "y": 20,
+                      "z": 20,
+                      "id": 24
+                    },
+                    {
+                      "y": 24.4,
+                      "rotationX": -24,
+                      "id": 25
+                    },
+                    {
+                      "y": 15.2,
+                      "z": 21.8,
+                      "rotationX": 160,
+                      "id": 26
+                    },
+                    {
+                      "x": 7.6,
+                      "y": 20,
+                      "z": 20,
+                      "id": 27
+                    },
+                    {
+                      "x": 16.700000000000003,
+                      "y": 20,
+                      "z": 20,
+                      "id": 28
+                    },
+                    {
+                      "y": 22.3,
+                      "rotationX": 60,
+                      "id": 29
+                    },
+                    {
+                      "y": 21.757142857142853,
+                      "id": 30
+                    },
+                    {
+                      "y": 38,
+                      "z": 0,
+                      "rotationX": 75,
+                      "id": 31
+                    },
+                    {
+                      "y": 38,
+                      "z": 4,
+                      "rotationX": 105,
+                      "id": 32
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 14,
+                  "height": 18,
+                  "depth": 10,
+                  "x": 0,
+                  "y": 28.757142857142853,
+                  "z": 1.4857142857142973,
+                  "color": "#496a29",
+                  "name": "torso",
+                  "scaleX": 1
+                },
+                {
+                  "type": "sphere",
+                  "size": 15,
+                  "x": 0,
+                  "y": 43.75714285714285,
+                  "z": 1.4857142857143,
+                  "color": "#5c6628",
+                  "name": "head"
+                },
+                {
+                  "type": "box",
+                  "width": 5,
+                  "height": 4,
+                  "depth": 6,
+                  "x": 0,
+                  "y": 43.75714285714285,
+                  "z": 7.485714285714296,
+                  "color": "#686f20",
+                  "name": "nose"
+                },
+                {
+                  "type": "box",
+                  "width": 12,
+                  "height": 3,
+                  "depth": 6,
+                  "x": 0,
+                  "y": 40.257142857142846,
+                  "z": 5.485714285714296,
+                  "color": "#7d4023",
+                  "name": "jaw"
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "x": 4.5,
+                  "y": 45.75714285714285,
+                  "z": 5.985714285714293,
+                  "color": "#c5c5c5",
+                  "name": "eye-right"
+                },
+                {
+                  "type": "sphere",
+                  "size": 1.5,
+                  "x": 5,
+                  "y": 45.75714285714285,
+                  "z": 7.4857142857143,
+                  "color": "#000000",
+                  "name": "pupil-right"
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "x": -4.5,
+                  "y": 45.75714285714285,
+                  "z": 5.985714285714293,
+                  "color": "#c5c5c5",
+                  "name": "eye-left"
+                },
+                {
+                  "type": "sphere",
+                  "size": 1.5,
+                  "x": -5,
+                  "y": 45.75714285714285,
+                  "z": 7.4857142857143,
+                  "color": "#000000",
+                  "name": "pupil-left"
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 20,
+                  "depth": 6,
+                  "x": 11.999999999999998,
+                  "y": 29.75714285714285,
+                  "z": 1.4857142857142973,
+                  "color": "#496a29",
+                  "name": "arm-right"
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 20,
+                  "depth": 6,
+                  "x": -12.000000000000002,
+                  "y": 29.75714285714285,
+                  "z": 1.4857142857142973,
+                  "color": "#496a29",
+                  "name": "arm-left"
+                },
+                {
+                  "type": "box",
+                  "width": 8,
+                  "height": 5,
+                  "depth": 7,
+                  "x": 11.999999999999998,
+                  "y": 17.757142857142853,
+                  "z": 2.4857142857142978,
+                  "color": "#496a29",
+                  "name": "hand-right"
+                },
+                {
+                  "type": "box",
+                  "width": 8,
+                  "height": 5,
+                  "depth": 7,
+                  "x": -12.000000000000002,
+                  "y": 17.757142857142853,
+                  "z": 2.4857142857142978,
+                  "color": "#496a29",
+                  "name": "hand-left"
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 15,
+                  "depth": 6,
+                  "x": 4,
+                  "y": 9.75714285714285,
+                  "z": 1.4857142857142982,
+                  "color": "#496a29",
+                  "name": "leg-right"
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 15,
+                  "depth": 6,
+                  "x": -4,
+                  "y": 9.75714285714285,
+                  "z": 1.4857142857142982,
+                  "color": "#496a29",
+                  "name": "leg-left"
+                },
+                {
+                  "type": "box",
+                  "width": 7,
+                  "height": 3,
+                  "depth": 10,
+                  "x": 4,
+                  "y": 1.7571428571428456,
+                  "z": 3.4857142857143026,
+                  "color": "#3B3B3B",
+                  "name": "foot-right"
+                },
+                {
+                  "type": "box",
+                  "width": 7,
+                  "height": 3,
+                  "depth": 10,
+                  "x": -4,
+                  "y": 1.7571428571428456,
+                  "z": 3.4857142857143026,
+                  "color": "#3B3B3B",
+                  "name": "foot-left"
+                },
+                {
+                  "type": "box",
+                  "width": 3,
+                  "height": 6,
+                  "depth": 2,
+                  "x": 6.499999999999998,
+                  "y": 46.75714285714285,
+                  "z": 0.4857142857142964,
+                  "color": "#686b23",
+                  "name": "ear-right"
+                },
+                {
+                  "type": "box",
+                  "width": 3,
+                  "height": 6,
+                  "depth": 2,
+                  "x": -6.5,
+                  "y": 46.75714285714285,
+                  "z": 0.4857142857142964,
+                  "color": "#686b23",
+                  "name": "ear-left"
+                },
+                {
+                  "type": "cone",
+                  "size": 16,
+                  "height": 5,
+                  "x": 0,
+                  "y": 50.2,
+                  "z": 1.4857142857142929,
+                  "rotationX": 0,
+                  "color": "#555555",
+                  "name": "helmet"
+                },
+                {
+                  "type": "box",
+                  "width": 1.5,
+                  "height": 3,
+                  "depth": 0.7,
+                  "x": 4,
+                  "y": 38.75714285714285,
+                  "z": 8.485714285714296,
+                  "color": "#c5c5c5",
+                  "name": "tusk-right"
+                },
+                {
+                  "type": "box",
+                  "width": 1.5,
+                  "height": 3,
+                  "depth": 0.7,
+                  "x": -4,
+                  "y": 38.75714285714285,
+                  "z": 8.485714285714296,
+                  "color": "#c5c5c5",
+                  "name": "tusk-left"
+                },
+                {
+                  "type": "box",
+                  "width": 15,
+                  "height": 3,
+                  "depth": 11,
+                  "x": 0,
+                  "y": 19.757142857142853,
+                  "z": 1.4857142857142982,
+                  "color": "#8B4513",
+                  "name": "belt"
+                },
+                {
+                  "type": "box",
+                  "width": 7,
+                  "height": 9,
+                  "depth": 3,
+                  "x": 0,
+                  "y": 42.75714285714285,
+                  "z": -4.514285714285706,
+                  "color": "#222222",
+                  "name": "hair"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 30,
+                  "x": 11.999999999999998,
+                  "y": 14.999999999999996,
+                  "z": 7.000000000000014,
+                  "color": "#8B4513",
+                  "name": "club-handle",
+                  "rotationZ": 0,
+                  "rotationX": 90
+                },
+                {
+                  "type": "sphere",
+                  "size": 9,
+                  "x": 11.999999999999998,
+                  "y": 14.999999999999996,
+                  "z": 18.000000000000014,
+                  "color": "#8B4513",
+                  "name": "club-head"
+                },
+                {
+                  "type": "cone",
+                  "size": 4,
+                  "height": 5,
+                  "x": 12.1,
+                  "y": 19.999999999999996,
+                  "z": 18.000000000000014,
+                  "rotationY": 90,
+                  "color": "#808080",
+                  "name": "club-spike-1"
+                },
+                {
+                  "type": "cone",
+                  "size": 4,
+                  "height": 5,
+                  "x": 12.1,
+                  "y": 9.999999999999996,
+                  "z": 18.000000000000014,
+                  "rotationY": 0,
+                  "color": "#808080",
+                  "name": "club-spike-2",
+                  "rotationX": 180
+                },
+                {
+                  "type": "cone",
+                  "size": 4,
+                  "height": 5,
+                  "x": 6.6,
+                  "y": 14.999999999999996,
+                  "z": 18.000000000000014,
+                  "rotationY": 0,
+                  "color": "#808080",
+                  "name": "club-spike-3",
+                  "rotationZ": 90,
+                  "rotationX": 0
+                },
+                {
+                  "type": "cone",
+                  "size": 4,
+                  "height": 5,
+                  "x": 17.6,
+                  "y": 14.999999999999996,
+                  "z": 18.000000000000014,
+                  "rotationY": 0,
+                  "color": "#808080",
+                  "name": "club-spike-4",
+                  "rotationX": 90,
+                  "rotationZ": -90
+                },
+                {
+                  "type": "cone",
+                  "size": 4,
+                  "height": 5,
+                  "x": 11.999999999999998,
+                  "y": 14.999999999999995,
+                  "z": 24.00000000000002,
+                  "rotationX": 90,
+                  "color": "#808080",
+                  "name": "club-spike-top"
+                },
+                {
+                  "type": "box",
+                  "width": 12,
+                  "height": 4,
+                  "depth": 4,
+                  "x": 0,
+                  "y": 23.757142857142853,
+                  "z": -3.5142857142857027,
+                  "color": "#333333",
+                  "name": "back-armor"
+                },
+                {
+                  "type": "box",
+                  "width": 7,
+                  "height": 7,
+                  "depth": 2,
+                  "x": 12,
+                  "y": 40,
+                  "z": 1.4857142857142973,
+                  "color": "#796020",
+                  "name": "shoulder-pad-right",
+                  "rotationX": 90
+                },
+                {
+                  "type": "box",
+                  "width": 7,
+                  "height": 7,
+                  "depth": 2,
+                  "x": -12,
+                  "y": 40,
+                  "z": 1.4857142857142973,
+                  "color": "#796020",
+                  "name": "shoulder-pad-left",
+                  "rotationX": 90
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
+          }
+        },
+        "armor": 100,
+        "title": "Orc"
+      },
+      "pirate": {
+        "title": "Pirate",
+        "render": {
+          "animations": {
+            "idle": [
+              {}
+            ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 12,
+                  "height": 16,
+                  "depth": 7,
+                  "x": 0,
+                  "y": 24,
+                  "z": 0,
+                  "color": "#2F1A4A",
+                  "name": "torso",
+                  "scaleX": 1
+                },
+                {
+                  "type": "sphere",
+                  "size": 10,
+                  "x": 0,
+                  "y": 35,
+                  "z": 0,
+                  "color": "#E8C9A0",
+                  "name": "head"
+                },
+                {
+                  "type": "box",
+                  "width": 3,
+                  "height": 2,
+                  "depth": 4,
+                  "x": 0,
+                  "y": 35,
+                  "z": 4,
+                  "color": "#E8C9A0",
+                  "name": "nose"
+                },
+                {
+                  "type": "box",
+                  "width": 8,
+                  "height": 2,
+                  "depth": 4,
+                  "x": 0,
+                  "y": 32,
+                  "z": 3,
+                  "color": "#ECB69B",
+                  "name": "jaw"
+                },
+                {
+                  "type": "sphere",
+                  "size": 2,
+                  "x": -3,
+                  "y": 36,
+                  "z": 4,
+                  "color": "#87CEFA",
+                  "name": "eye-right"
+                },
+                {
+                  "type": "sphere",
+                  "size": 1,
+                  "x": -3.5,
+                  "y": 36,
+                  "z": 4.5,
+                  "color": "#000000",
+                  "name": "pupil-right"
+                },
+                {
+                  "type": "box",
+                  "width": 3,
+                  "height": 2,
+                  "depth": 1,
+                  "x": 2,
+                  "y": 36,
+                  "z": 5,
+                  "color": "#000000",
+                  "name": "eyepatch-left"
+                },
+                {
+                  "type": "box",
+                  "width": 4,
+                  "height": 12,
+                  "depth": 4,
+                  "x": -8,
+                  "y": 24,
+                  "z": 0,
+                  "color": "#2F1A4A",
+                  "name": "arm-right",
+                  "rotationZ": -15
+                },
+                {
+                  "type": "box",
+                  "width": 4,
+                  "height": 12,
+                  "depth": 4,
+                  "x": 8,
+                  "y": 24,
+                  "z": 0,
+                  "color": "#2F1A4A",
+                  "name": "arm-left",
+                  "rotationZ": 15
+                },
+                {
+                  "type": "box",
+                  "width": 5,
+                  "height": 3,
+                  "depth": 5,
+                  "x": -8,
+                  "y": 16,
+                  "z": 1,
+                  "color": "#E8C9A0",
+                  "name": "hand-right",
+                  "rotationX": 90
+                },
+                {
+                  "type": "box",
+                  "width": 2,
+                  "height": 4,
+                  "depth": 2,
+                  "x": 8,
+                  "y": 16,
+                  "z": 1,
+                  "color": "#C0C0C0",
+                  "name": "hook-left",
+                  "rotationZ": -45
+                },
+                {
+                  "type": "box",
+                  "width": 4,
+                  "height": 12,
+                  "depth": 4,
+                  "x": -3,
+                  "y": 8,
+                  "z": 0,
+                  "color": "#3B3B3B",
+                  "name": "leg-right"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 13,
+                  "x": 3,
+                  "y": 7.5,
+                  "z": 0,
+                  "color": "#8B4513",
+                  "name": "peg-leg-left"
+                },
+                {
+                  "type": "box",
+                  "width": 5,
+                  "height": 2,
+                  "depth": 6,
+                  "x": -3,
+                  "y": 2,
+                  "z": 2,
+                  "color": "#3B3B3B",
+                  "name": "boot-right"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 4,
+                  "height": 2,
+                  "x": 3,
+                  "y": 2,
+                  "z": 2,
+                  "color": "#8B4513",
+                  "name": "peg-foot-left"
+                },
+                {
+                  "type": "box",
+                  "width": 11,
+                  "height": 10,
+                  "depth": 8,
+                  "x": 0,
+                  "y": 15,
+                  "z": 0,
+                  "color": "#FF0000",
+                  "name": "pants"
+                },
+                {
+                  "type": "box",
+                  "width": 12,
+                  "height": 8,
+                  "depth": 2,
+                  "x": 0,
+                  "y": 32,
+                  "z": 3,
+                  "color": "#000000",
+                  "name": "beard"
+                },
+                {
+                  "type": "box",
+                  "width": 14,
+                  "height": 6,
+                  "depth": 10,
+                  "x": 0,
+                  "y": 40,
+                  "z": 0,
+                  "color": "#000000",
+                  "name": "hat"
+                },
+                {
+                  "type": "box",
+                  "width": 2,
+                  "height": 4,
+                  "depth": 2,
+                  "x": -9,
+                  "y": 14,
+                  "z": 1,
+                  "color": "#8B4513",
+                  "name": "sword-handle",
+                  "rotationZ": 0,
+                  "rotationX": -45
+                },
+                {
+                  "type": "box",
+                  "width": 2,
+                  "height": 2.2,
+                  "depth": 6,
+                  "x": -9,
+                  "y": 13,
+                  "z": 2,
+                  "color": "#C0C0C0",
+                  "name": "sword-guard",
+                  "rotationZ": 45,
+                  "rotationX": 0,
+                  "rotationY": 90
+                },
+                {
+                  "type": "box",
+                  "width": 1,
+                  "height": 1,
+                  "depth": 18,
+                  "x": -9,
+                  "y": 8,
+                  "z": 7,
+                  "color": "#C0C0C0",
+                  "name": "sword-blade",
+                  "rotationZ": 45,
+                  "rotationX": 45
+                },
+                {
+                  "type": "box",
+                  "width": 8,
+                  "height": 2,
+                  "depth": 10,
+                  "x": 0,
+                  "y": 16,
+                  "z": 0,
+                  "color": "#FFD700",
+                  "name": "sash"
+                },
+                {
+                  "type": "box",
+                  "width": 2,
+                  "height": 2,
+                  "depth": 2,
+                  "x": -2,
+                  "y": 43,
+                  "z": 0,
+                  "color": "#FF0000",
+                  "name": "hat-feather-right",
+                  "rotationZ": 45
+                },
+                {
+                  "type": "box",
+                  "width": 2,
+                  "height": 2,
+                  "depth": 2,
+                  "x": 2,
+                  "y": 43,
+                  "z": 0,
+                  "color": "#FF0000",
+                  "name": "hat-feather-left",
+                  "rotationZ": -45
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
+          }
+        }
+      },
+      "pterodactyl": {
+        "speed": 2,
+        "value": 10,
+        "hp": 5,
+        "essence": 5,
+        "render": {
+          "animations": {
+            "idle": [
+              {}
+            ],
+            "walk": [
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "size": 7.2,
+                      "height": 14.4,
+                      "y": 47.5,
+                      "z": -2.4,
+                      "id": 0
+                    },
+                    {
+                      "y": 49.3,
+                      "z": 9.6,
+                      "id": 1
+                    },
+                    {
+                      "y": 52.8,
+                      "z": 15.9,
+                      "id": 2
+                    },
+                    {
+                      "y": 59.5,
+                      "z": 13.5,
+                      "id": 3
+                    },
+                    {
+                      "y": 50,
+                      "z": -2.4,
+                      "rotationZ": -10,
+                      "id": 4
+                    },
+                    {
+                      "y": 50,
+                      "z": -2.4,
+                      "rotationZ": 10,
+                      "id": 5
+                    },
+                    {
+                      "y": 50,
+                      "rotationZ": -10,
+                      "id": 6
+                    },
+                    {
+                      "y": 53,
+                      "rotationZ": 10,
+                      "id": 7
+                    },
+                    {
+                      "y": 47.5,
+                      "z": -16.9,
+                      "id": 8
+                    },
+                    {
+                      "y": 47.5,
+                      "z": -19.6,
+                      "id": 9
+                    },
+                    {
+                      "y": 42.7,
+                      "z": -4.8,
+                      "rotationX": 0,
+                      "id": 10
+                    },
+                    {
+                      "y": 42.7,
+                      "z": -4.8,
+                      "rotationX": 0,
+                      "id": 11
+                    },
+                    {
+                      "y": 39.5,
+                      "z": -4.8,
+                      "rotationX": -90,
+                      "id": 12
+                    },
+                    {
+                      "y": 39.5,
+                      "z": -4.8,
+                      "rotationX": -90,
+                      "id": 13
+                    },
+                    {
+                      "y": 54.7,
+                      "z": 15.4,
+                      "id": 14
+                    },
+                    {
+                      "y": 54.7,
+                      "z": 15.4,
+                      "id": 15
+                    },
+                    {
+                      "y": 50,
+                      "rotationZ": 10,
+                      "id": 16
+                    },
+                    {
+                      "y": 53,
+                      "rotationZ": -10,
+                      "id": 17
+                    }
+                  ]
+                }
+              },
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "size": 7.2,
+                      "height": 14.4,
+                      "y": 48.5,
+                      "z": -2.4,
+                      "id": 0
+                    },
+                    {
+                      "y": 50.3,
+                      "z": 9.6,
+                      "id": 1
+                    },
+                    {
+                      "y": 53.8,
+                      "z": 15.9,
+                      "id": 2
+                    },
+                    {
+                      "y": 60.5,
+                      "z": 13.5,
+                      "id": 3
+                    },
+                    {
+                      "y": 45,
+                      "z": -2.4,
+                      "rotationZ": 30,
+                      "id": 4
+                    },
+                    {
+                      "y": 45,
+                      "z": -2.4,
+                      "rotationZ": -30,
+                      "id": 5
+                    },
+                    {
+                      "y": 45,
+                      "rotationZ": 30,
+                      "id": 6
+                    },
+                    {
+                      "y": 38,
+                      "id": 7
+                    },
+                    {
+                      "y": 48.5,
+                      "z": -16.9,
+                      "id": 8
+                    },
+                    {
+                      "y": 48.5,
+                      "z": -19.6,
+                      "id": 9
+                    },
+                    {
+                      "y": 43.7,
+                      "z": -4.8,
+                      "id": 10
+                    },
+                    {
+                      "y": 43.7,
+                      "z": -4.8,
+                      "id": 11
+                    },
+                    {
+                      "y": 41,
+                      "z": -4.8,
+                      "id": 12
+                    },
+                    {
+                      "y": 41,
+                      "z": -4.8,
+                      "id": 13
+                    },
+                    {
+                      "y": 55.7,
+                      "z": 15.4,
+                      "id": 14
+                    },
+                    {
+                      "y": 55.7,
+                      "z": 15.4,
+                      "id": 15
+                    },
+                    {
+                      "y": 45,
+                      "rotationZ": -30,
+                      "id": 16
+                    },
+                    {
+                      "y": 38,
+                      "id": 17
+                    }
+                  ]
+                }
+              },
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "size": 7.2,
+                      "height": 14.4,
+                      "y": 47.5,
+                      "z": -2.4,
+                      "id": 0
+                    },
+                    {
+                      "y": 49.3,
+                      "z": 9.6,
+                      "id": 1
+                    },
+                    {
+                      "y": 52.8,
+                      "z": 15.9,
+                      "id": 2
+                    },
+                    {
+                      "y": 59.5,
+                      "z": 13.5,
+                      "id": 3
+                    },
+                    {
+                      "y": 50,
+                      "z": -2.4,
+                      "rotationZ": -10,
+                      "id": 4
+                    },
+                    {
+                      "y": 50,
+                      "z": -2.4,
+                      "rotationZ": 10,
+                      "id": 5
+                    },
+                    {
+                      "y": 50,
+                      "rotationZ": -10,
+                      "id": 6
+                    },
+                    {
+                      "y": 53,
+                      "rotationZ": 10,
+                      "id": 7
+                    },
+                    {
+                      "y": 47.5,
+                      "z": -16.9,
+                      "id": 8
+                    },
+                    {
+                      "y": 47.5,
+                      "z": -19.6,
+                      "id": 9
+                    },
+                    {
+                      "y": 42.7,
+                      "z": -4.8,
+                      "rotationX": 0,
+                      "id": 10
+                    },
+                    {
+                      "y": 42.7,
+                      "z": -4.8,
+                      "rotationX": 0,
+                      "id": 11
+                    },
+                    {
+                      "y": 39.5,
+                      "z": -4.8,
+                      "rotationX": -90,
+                      "id": 12
+                    },
+                    {
+                      "y": 39.5,
+                      "z": -4.8,
+                      "rotationX": -90,
+                      "id": 13
+                    },
+                    {
+                      "y": 54.7,
+                      "z": 15.4,
+                      "id": 14
+                    },
+                    {
+                      "y": 54.7,
+                      "z": 15.4,
+                      "id": 15
+                    },
+                    {
+                      "y": 50,
+                      "rotationZ": 10,
+                      "id": 16
+                    },
+                    {
+                      "y": 53,
+                      "rotationZ": -10,
+                      "id": 17
+                    }
+                  ]
+                }
+              },
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "size": 7.2,
+                      "height": 14.4,
+                      "y": 46.5,
+                      "z": -2.4,
+                      "id": 0
+                    },
+                    {
+                      "y": 48.3,
+                      "z": 9.6,
+                      "id": 1
+                    },
+                    {
+                      "y": 51.8,
+                      "z": 15.9,
+                      "id": 2
+                    },
+                    {
+                      "y": 58.5,
+                      "z": 13.5,
+                      "id": 3
+                    },
+                    {
+                      "y": 43,
+                      "z": -2.4,
+                      "rotationZ": 30,
+                      "id": 4
+                    },
+                    {
+                      "y": 43,
+                      "z": -2.4,
+                      "rotationZ": -30,
+                      "id": 5
+                    },
+                    {
+                      "y": 43,
+                      "rotationZ": 50,
+                      "id": 6
+                    },
+                    {
+                      "y": 35,
+                      "rotationZ": -50,
+                      "id": 7
+                    },
+                    {
+                      "y": 46.5,
+                      "z": -16.9,
+                      "id": 8
+                    },
+                    {
+                      "y": 46.5,
+                      "z": -19.6,
+                      "id": 9
+                    },
+                    {
+                      "y": 41.7,
+                      "z": -4.8,
+                      "rotationX": 40,
+                      "id": 10
+                    },
+                    {
+                      "y": 41.7,
+                      "z": -4.8,
+                      "rotationX": 40,
+                      "id": 11
+                    },
+                    {
+                      "y": 38,
+                      "z": -5.7,
+                      "rotationX": -30,
+                      "id": 12
+                    },
+                    {
+                      "y": 38,
+                      "z": -5.7,
+                      "rotationX": -30,
+                      "id": 13
+                    },
+                    {
+                      "y": 53.7,
+                      "z": 15.4,
+                      "id": 14
+                    },
+                    {
+                      "y": 53.7,
+                      "z": 15.4,
+                      "id": 15
+                    },
+                    {
+                      "y": 43,
+                      "rotationZ": 50,
+                      "id": 16
+                    },
+                    {
+                      "y": 35,
+                      "rotationZ": 50,
+                      "id": 17
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "cylinder",
+                  "size": 7.199999999999999,
+                  "height": 14.399999999999999,
+                  "x": 0,
+                  "y": 47.48726562500001,
+                  "z": -2.3686718749999995,
+                  "color": "#7d6d5e",
+                  "rotationX": 90,
+                  "rotationZ": 0,
+                  "name": "body",
+                  "scaleX": 1
+                },
+                {
+                  "type": "cylinder",
+                  "size": 2.88,
+                  "height": 12,
+                  "x": 0,
+                  "y": 49.294765625,
+                  "z": 9.631328125000001,
+                  "color": "#7D6B5D",
+                  "rotationX": 45,
+                  "rotationZ": 0,
+                  "name": "neck"
+                },
+                {
+                  "type": "cone",
+                  "size": 2.4,
+                  "height": 10.56,
+                  "x": 0,
+                  "y": 52.76726562500002,
+                  "z": 15.871328125,
+                  "color": "#7D6B5D",
+                  "rotationX": 120,
+                  "rotationZ": 0,
+                  "name": "beak"
+                },
+                {
+                  "type": "cone",
+                  "size": 0.96,
+                  "height": 9.6,
+                  "x": 0,
+                  "y": 59.48726562500001,
+                  "z": 13.471328125,
+                  "color": "#6D5D4D",
+                  "rotationX": 0,
+                  "rotationZ": 0,
+                  "name": "head-spike"
+                },
+                {
+                  "type": "box",
+                  "width": 24,
+                  "height": 0.48,
+                  "depth": 9.6,
+                  "x": -12,
+                  "y": 47.48726562500001,
+                  "z": -2.3686718749999995,
+                  "color": "#8D7B6D",
+                  "rotationY": 0,
+                  "rotationZ": 15,
+                  "name": "wing-right"
+                },
+                {
+                  "type": "box",
+                  "width": 24,
+                  "height": 0.48,
+                  "depth": 9.6,
+                  "x": 12,
+                  "y": 47.48726562500001,
+                  "z": -2.3686718749999995,
+                  "color": "#8D7B6D",
+                  "rotationY": 0,
+                  "rotationZ": -15,
+                  "name": "wing-left"
+                },
+                {
+                  "type": "box",
+                  "width": 4,
+                  "height": 0.24,
+                  "depth": 2,
+                  "x": -12,
+                  "y": 47,
+                  "z": 3,
+                  "color": "#8D7B6D",
+                  "rotationY": 90,
+                  "rotationZ": 15,
+                  "name": "hand-right"
+                },
+                {
+                  "type": "box",
+                  "width": 10,
+                  "height": 0.24,
+                  "depth": 6,
+                  "x": 25,
+                  "y": 43.2,
+                  "z": -4.1,
+                  "color": "#8D7B6D",
+                  "rotationY": 40,
+                  "rotationZ": -30,
+                  "rotationX": 16,
+                  "name": "wingtip-left"
+                },
+                {
+                  "type": "cone",
+                  "size": 1.92,
+                  "height": 12,
+                  "x": 0,
+                  "y": 47.48726562500001,
+                  "z": -16.851171875000002,
+                  "color": "#7D6B5D",
+                  "rotationX": -90,
+                  "rotationZ": 0,
+                  "name": "tail"
+                },
+                {
+                  "type": "box",
+                  "width": 5.76,
+                  "height": 0.48,
+                  "depth": 4.8,
+                  "x": 0,
+                  "y": 47.48726562500001,
+                  "z": -19.648671875,
+                  "color": "#8D7B6D",
+                  "rotationX": 0,
+                  "rotationZ": 0,
+                  "name": "tail-tip"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 0.72,
+                  "height": 5.76,
+                  "x": -2.4,
+                  "y": 42.68726562500001,
+                  "z": -4.768671874999999,
+                  "color": "#6D5D4D",
+                  "rotationX": 20,
+                  "rotationZ": 0,
+                  "name": "leg-right"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 0.72,
+                  "height": 5.76,
+                  "x": 2.4,
+                  "y": 42.68726562500001,
+                  "z": -4.768671874999999,
+                  "color": "#6D5D4D",
+                  "rotationX": 20,
+                  "rotationZ": 0,
+                  "name": "leg-left"
+                },
+                {
+                  "type": "cone",
+                  "size": 1.44,
+                  "height": 2.4,
+                  "x": -2.4,
+                  "y": 40.04726562500001,
+                  "z": -4.851171875,
+                  "color": "#6D5D4D",
+                  "rotationX": -60,
+                  "rotationZ": 0,
+                  "name": "foot-right"
+                },
+                {
+                  "type": "cone",
+                  "size": 1.44,
+                  "height": 2.4,
+                  "x": 2.4,
+                  "y": 40.04726562500001,
+                  "z": -4.851171875,
+                  "color": "#6D5D4D",
+                  "rotationX": -60,
+                  "rotationZ": 0,
+                  "name": "foot-left"
+                },
+                {
+                  "type": "sphere",
+                  "size": 0.72,
+                  "x": -0.96,
+                  "y": 54.68726562500001,
+                  "z": 15.391328125000001,
+                  "color": "#000000",
+                  "name": "eye-right"
+                },
+                {
+                  "type": "sphere",
+                  "size": 0.72,
+                  "x": 0.96,
+                  "y": 54.68726562500001,
+                  "z": 15.391328125000001,
+                  "color": "#000000",
+                  "name": "eye-left"
+                },
+                {
+                  "type": "box",
+                  "width": 4,
+                  "height": 0.24,
+                  "depth": 2,
+                  "x": 12,
+                  "y": 47,
+                  "z": 3,
+                  "color": "#8D7B6D",
+                  "rotationY": 90,
+                  "rotationZ": 15,
+                  "name": "hand-left"
+                },
+                {
+                  "type": "box",
+                  "width": 10,
+                  "height": 0.24,
+                  "depth": 6,
+                  "x": -25,
+                  "y": 43.2,
+                  "z": -4.1,
+                  "color": "#8D7B6D",
+                  "rotationY": -40,
+                  "rotationZ": 30,
+                  "rotationX": 16,
+                  "name": "wingtip-right"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
+          }
+        },
+        "title": "Pterodactyl"
+      },
+      "redDragon": {
+        "hp": 500,
+        "speed": 0.5,
+        "essence": 50,
+        "value": 50,
+        "boss": true,
+        "render": {
+          "animations": {
+            "idle": [
+              {}
+            ],
+            "walk": [
+              {
+                "right wing": {
+                  "shapes": [
+                    {
+                      "rotationX": 0.1,
+                      "rotationY": -0.7,
+                      "id": 1
+                    }
+                  ]
+                },
+                "head": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redMColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redMColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 4
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 5
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 6
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 7
+                    }
+                  ]
+                },
+                "jaw": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redMColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 4
+                    }
+                  ]
+                },
+                "left arm": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 4
+                    }
+                  ]
+                },
+                "right arm": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 4
+                    }
+                  ]
+                },
+                "left leg": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 4
+                    }
+                  ]
+                },
+                "right leg": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 4
+                    }
+                  ]
+                },
+                "body": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 3
+                    }
+                  ]
+                },
+                "left wing": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 3
+                    }
+                  ]
+                },
+                "tail base": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 2
+                    }
+                  ]
+                },
+                "tail tip": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 3
+                    }
+                  ]
+                }
+              },
+              {
+                "head": {
+                  "position": {
+                    "x": 0,
+                    "y": 3.2,
+                    "z": 20
+                  },
+                  "rotation": {
+                    "x": 0,
+                    "y": 0.15,
+                    "z": 0
+                  }
+                },
+                "jaw": {
+                  "rotation": {
+                    "x": 0.35,
+                    "y": 0,
+                    "z": 0
+                  }
+                },
+                "left arm": {
+                  "position": {
+                    "x": 1.5,
+                    "y": -1,
+                    "z": 6.5
+                  },
+                  "rotation": {
+                    "x": 0.4,
+                    "y": 0,
+                    "z": 0.1
+                  }
+                },
+                "right arm": {
+                  "position": {
+                    "x": 0,
+                    "y": -2,
+                    "z": 14
+                  },
+                  "rotation": {
+                    "x": -0.1,
+                    "y": 0,
+                    "z": -0.1
+                  }
+                },
+                "left leg": {
+                  "position": {
+                    "x": 0,
+                    "y": 5,
+                    "z": -10
+                  },
+                  "rotation": {
+                    "x": 0.5,
+                    "y": 0,
+                    "z": 0
+                  }
+                },
+                "right leg": {
+                  "position": {
+                    "x": 0,
+                    "y": 3,
+                    "z": 8
+                  },
+                  "rotation": {
+                    "x": -0.4,
+                    "y": 0,
+                    "z": 0
+                  }
+                },
+                "body": {
+                  "rotation": {
+                    "x": 0.6,
+                    "y": 0.05,
+                    "z": 0
+                  }
+                },
+                "left wing": {
+                  "position": {
+                    "x": 5,
+                    "y": 5.5,
+                    "z": 15
+                  },
+                  "rotation": {
+                    "x": 0.2,
+                    "y": 0.7,
+                    "z": 0
+                  },
+                  "shapes": [
+                    {
+                      "rotationX": 0.3,
+                      "rotationY": 0.9,
+                      "id": 1
+                    }
+                  ]
+                },
+                "right wing": {
+                  "position": {
+                    "x": -5,
+                    "y": 5.5,
+                    "z": 15
+                  },
+                  "rotation": {
+                    "x": 0.2,
+                    "y": -0.7,
+                    "z": 0
+                  },
+                  "shapes": [
+                    {
+                      "rotationX": 0.3,
+                      "rotationY": -0.9,
+                      "id": 1
+                    }
+                  ]
+                },
+                "tail base": {
+                  "rotation": {
+                    "x": 0.1,
+                    "y": 0.3,
+                    "z": 0
+                  }
+                },
+                "tail tip": {
+                  "rotation": {
+                    "x": 0.05,
+                    "y": 0.4,
+                    "z": 0
+                  }
+                }
+              },
+              {
+                "left wing": {
+                  "shapes": [
+                    {
+                      "rotationX": 0.1,
+                      "rotationY": 0.7,
+                      "id": 1
+                    }
+                  ]
+                },
+                "right wing": {
+                  "shapes": [
+                    {
+                      "rotationX": 0.1,
+                      "rotationY": -0.7,
+                      "id": 1
+                    }
+                  ]
+                },
+                "head": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redMColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redMColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 4
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 5
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 6
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 7
+                    }
+                  ]
+                },
+                "jaw": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redMColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyLColor"
+                      },
+                      "id": 4
+                    }
+                  ]
+                },
+                "left arm": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 4
+                    }
+                  ]
+                },
+                "right arm": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 4
+                    }
+                  ]
+                },
+                "left leg": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 4
+                    }
+                  ]
+                },
+                "right leg": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 4
+                    }
+                  ]
+                },
+                "body": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 3
+                    }
+                  ]
+                },
+                "tail base": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 2
+                    }
+                  ]
+                },
+                "tail tip": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "redDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "brownDColor"
+                      },
+                      "id": 3
+                    }
+                  ]
+                }
+              },
+              {
+                "head": {
+                  "position": {
+                    "x": 0,
+                    "y": 2.8,
+                    "z": 20
+                  },
+                  "rotation": {
+                    "x": 0,
+                    "y": -0.15,
+                    "z": 0
+                  }
+                },
+                "jaw": {
+                  "position": {
+                    "x": 0,
+                    "y": 10.3,
+                    "z": 8
+                  },
+                  "rotation": {
+                    "x": 0.35,
+                    "y": 0,
+                    "z": 0
+                  }
+                },
+                "left arm": {
+                  "position": {
+                    "x": 0,
+                    "y": -2,
+                    "z": 14
+                  },
+                  "rotation": {
+                    "x": -0.1,
+                    "y": 0,
+                    "z": 0.1
+                  }
+                },
+                "right arm": {
+                  "position": {
+                    "x": -1.5,
+                    "y": -1,
+                    "z": 6.5
+                  },
+                  "rotation": {
+                    "x": 0.4,
+                    "y": 0,
+                    "z": -0.1
+                  }
+                },
+                "left leg": {
+                  "position": {
+                    "x": 0,
+                    "y": 3,
+                    "z": 8
+                  },
+                  "rotation": {
+                    "x": -0.4,
+                    "y": 0,
+                    "z": 0
+                  }
+                },
+                "right leg": {
+                  "position": {
+                    "x": 0,
+                    "y": 5,
+                    "z": -10
+                  },
+                  "rotation": {
+                    "x": 0.5,
+                    "y": 0,
+                    "z": 0
+                  }
+                },
+                "body": {
+                  "position": {
+                    "x": 0,
+                    "y": 9.8,
+                    "z": -8
+                  },
+                  "rotation": {
+                    "x": 0.6,
+                    "y": -0.05,
+                    "z": 0
+                  }
+                },
+                "left wing": {
+                  "position": {
+                    "x": 5,
+                    "y": 4.5,
+                    "z": 15
+                  },
+                  "rotation": {
+                    "x": 0.2,
+                    "y": 0.6,
+                    "z": 0
+                  },
+                  "shapes": [
+                    {
+                      "rotationX": 0.2,
+                      "rotationY": 0.8,
+                      "id": 1
+                    }
+                  ]
+                },
+                "right wing": {
+                  "position": {
+                    "x": -5,
+                    "y": 4.5,
+                    "z": 15
+                  },
+                  "rotation": {
+                    "x": 0.2,
+                    "y": -0.6,
+                    "z": 0
+                  },
+                  "shapes": [
+                    {
+                      "rotationX": 0.2,
+                      "rotationY": -0.8,
+                      "id": 1
+                    }
+                  ]
+                },
+                "tail base": {
+                  "rotation": {
+                    "x": 0.1,
+                    "y": -0.3,
+                    "z": 0
+                  }
+                },
+                "tail tip": {
+                  "rotation": {
+                    "x": 0.05,
+                    "y": -0.4,
+                    "z": 0
+                  }
+                }
+              }
+            ]
+          },
+          "model": {
+            "head": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 18,
+                  "height": 16,
+                  "depth": 24,
+                  "x": 0,
+                  "y": 44,
+                  "z": 16,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "head-main"
+                },
+                {
+                  "type": "sphere",
+                  "size": 5,
+                  "x": -9,
+                  "y": 48,
+                  "z": 18,
+                  "color": {
+                    "paletteColor": "redMColor"
+                  },
+                  "name": "eye-right",
+                  "emissive": "#FFA500"
+                },
+                {
+                  "type": "sphere",
+                  "size": 2.5,
+                  "x": -9,
+                  "y": 48,
+                  "z": 19.5,
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
+                  "name": "pupil-right"
+                },
+                {
+                  "type": "sphere",
+                  "size": 5,
+                  "x": 9,
+                  "y": 48,
+                  "z": 18,
+                  "color": {
+                    "paletteColor": "redMColor"
+                  },
+                  "name": "eye-left",
+                  "emissive": "#FFA500"
+                },
+                {
+                  "type": "sphere",
+                  "size": 2.5,
+                  "x": 9,
+                  "y": 48,
+                  "z": 19.5,
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
+                  "name": "pupil-left"
+                },
+                {
+                  "type": "box",
+                  "width": 16,
+                  "height": 3,
+                  "depth": 8,
+                  "x": 0,
+                  "y": 52,
+                  "z": 16,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "brow-ridge"
+                },
+                {
+                  "type": "cone",
+                  "size": 3,
+                  "height": 6,
+                  "x": -6,
+                  "y": 52,
+                  "z": 26,
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
+                  "name": "horn-right"
+                },
+                {
+                  "type": "cone",
+                  "size": 3,
+                  "height": 6,
+                  "x": 6,
+                  "y": 52,
+                  "z": 26,
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
+                  "name": "horn-left"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 3,
+                "z": 20
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "jaw": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 20,
+                  "height": 8,
+                  "depth": 22,
+                  "x": 0,
+                  "y": 32,
+                  "z": 18,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "jaw-main"
+                },
+                {
+                  "type": "box",
+                  "width": 16,
+                  "height": 3,
+                  "depth": 3,
+                  "x": 0,
+                  "y": 35,
+                  "z": 26,
+                  "color": {
+                    "paletteColor": "redMColor"
+                  },
+                  "name": "gums"
+                },
+                {
+                  "type": "cone",
+                  "width": 2,
+                  "height": 2,
+                  "depth": 2,
+                  "x": -6,
+                  "y": 36.7,
+                  "z": 26,
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
+                  "name": "tooth-right",
+                  "shininess": 80,
+                  "size": 2
+                },
+                {
+                  "type": "cone",
+                  "width": 2,
+                  "height": 2,
+                  "depth": 2,
+                  "x": 6,
+                  "y": 36.7,
+                  "z": 26,
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
+                  "name": "tooth-left",
+                  "shininess": 80,
+                  "size": 2
+                },
+                {
+                  "type": "cone",
+                  "width": 2,
+                  "height": 2,
+                  "depth": 2,
+                  "x": 0,
+                  "y": 36.5,
+                  "z": 26,
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
+                  "name": "tooth-middle",
+                  "shininess": 80,
+                  "size": 2
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 10.5,
+                "z": 8
+              },
+              "rotation": {
+                "x": 0.3,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "left arm": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 10,
+                  "depth": 6,
+                  "x": 12,
+                  "y": 30,
+                  "z": 2,
+                  "rotationX": -30,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "upper-arm-left"
+                },
+                {
+                  "type": "box",
+                  "width": 5,
+                  "height": 8,
+                  "depth": 5,
+                  "x": 12,
+                  "y": 26,
+                  "z": 6,
+                  "rotationX": -15,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "lower-arm-left"
+                },
+                {
+                  "type": "box",
+                  "width": 4,
+                  "height": 4,
+                  "depth": 4,
+                  "x": 12,
+                  "y": 24,
+                  "z": 8,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "hand-left"
+                },
+                {
+                  "type": "cone",
+                  "size": 1.5,
+                  "height": 4,
+                  "x": 13,
+                  "y": 23,
+                  "z": 10,
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
+                  "name": "claw-left-1",
+                  "rotationX": 180
+                },
+                {
+                  "type": "cone",
+                  "size": 1.5,
+                  "height": 4,
+                  "x": 11,
+                  "y": 23,
+                  "z": 10,
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
+                  "name": "claw-left-2",
+                  "rotationX": 180
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": -2,
+                "z": 12
+              },
+              "rotation": {
+                "x": 0.2,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "right arm": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 10,
+                  "depth": 6,
+                  "x": -12,
+                  "y": 30,
+                  "z": 2,
+                  "rotationX": -30,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "upper-arm-right"
+                },
+                {
+                  "type": "box",
+                  "width": 5,
+                  "height": 8,
+                  "depth": 5,
+                  "x": -12,
+                  "y": 26,
+                  "z": 6,
+                  "rotationX": -15,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "lower-arm-right"
+                },
+                {
+                  "type": "box",
+                  "width": 4,
+                  "height": 4,
+                  "depth": 4,
+                  "x": -12,
+                  "y": 24,
+                  "z": 8,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "hand-right"
+                },
+                {
+                  "type": "cone",
+                  "size": 1.5,
+                  "height": 4,
+                  "x": -13,
+                  "y": 23,
+                  "z": 10,
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
+                  "name": "claw-right-1",
+                  "rotationX": 180
+                },
+                {
+                  "type": "cone",
+                  "size": 1.5,
+                  "height": 4,
+                  "x": -11,
+                  "y": 23,
+                  "z": 10,
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
+                  "name": "claw-right-2",
+                  "rotationX": 180,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": -2,
+                "z": 12
+              },
+              "rotation": {
+                "x": 0.2,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "left leg": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 10,
+                  "height": 16,
+                  "depth": 12,
+                  "x": 10,
+                  "y": 22,
+                  "z": 2,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "thigh-left",
+                  "rotationX": -10
+                },
+                {
+                  "type": "box",
+                  "width": 8,
+                  "height": 18,
+                  "depth": 8,
+                  "x": 10,
+                  "y": 10,
+                  "z": 2,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "shin-left",
+                  "rotationX": 20
+                },
+                {
+                  "type": "box",
+                  "width": 12,
+                  "height": 5,
+                  "depth": 18,
+                  "x": 10,
+                  "y": 2,
+                  "z": 2,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "foot-left",
+                  "rotationX": 15
+                },
+                {
+                  "type": "cone",
+                  "size": 3,
+                  "height": 6,
+                  "x": 7,
+                  "y": 0,
+                  "z": 11,
+                  "rotationX": 90,
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
+                  "name": "toe-left-1"
+                },
+                {
+                  "type": "cone",
+                  "size": 3,
+                  "height": 6,
+                  "x": 13,
+                  "y": 0,
+                  "z": 11,
+                  "rotationX": 90,
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
+                  "name": "toe-left-2"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 3,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "right leg": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 10,
+                  "height": 16,
+                  "depth": 12,
+                  "x": -10,
+                  "y": 22,
+                  "z": 2,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "thigh-right",
+                  "rotationX": -10
+                },
+                {
+                  "type": "box",
+                  "width": 8,
+                  "height": 18,
+                  "depth": 8,
+                  "x": -10,
+                  "y": 10,
+                  "z": 2,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "shin-right",
+                  "rotationX": 20
+                },
+                {
+                  "type": "box",
+                  "width": 12,
+                  "height": 5,
+                  "depth": 18,
+                  "x": -10,
+                  "y": 2,
+                  "z": 2,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "foot-right",
+                  "rotationX": 15
+                },
+                {
+                  "type": "cone",
+                  "size": 3,
+                  "height": 6,
+                  "x": -7,
+                  "y": 0,
+                  "z": 11,
+                  "rotationX": 90,
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
+                  "name": "toe-right-1"
+                },
+                {
+                  "type": "cone",
+                  "size": 3,
+                  "height": 6,
+                  "x": -13,
+                  "y": 0,
+                  "z": 11,
+                  "rotationX": 90,
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
+                  "name": "toe-right-2"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 3,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "body": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 20,
+                  "height": 34,
+                  "depth": 18,
+                  "x": 0,
+                  "y": 26,
+                  "z": -2,
+                  "rotationX": 30,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "torso-main"
+                },
+                {
+                  "type": "box",
+                  "width": 14,
+                  "height": 15.3,
+                  "depth": 14,
+                  "x": 0,
+                  "y": 45.46875,
+                  "z": 8,
+                  "rotationX": 10,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "neck",
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
+                },
+                {
+                  "type": "cone",
+                  "size": 6,
+                  "height": 12,
+                  "x": 0,
+                  "y": 38.39468690702089,
+                  "z": -6.745098039215698,
+                  "rotationX": -65,
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
+                  "name": "spike-1",
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
+                },
+                {
+                  "type": "cone",
+                  "size": 5,
+                  "height": 10,
+                  "x": 0,
+                  "y": 28.979127134724877,
+                  "z": -14.513725490196073,
+                  "rotationX": -66,
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
+                  "name": "spike-2",
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 10,
+                "z": -8
+              },
+              "rotation": {
+                "x": 0.6,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "left wing": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 10,
+                  "height": 2,
+                  "depth": 20,
+                  "x": 15,
+                  "y": 35,
+                  "z": -5,
+                  "rotationX": 10,
+                  "rotationY": 60,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "wing-base-left"
+                },
+                {
+                  "type": "box",
+                  "width": 40,
+                  "height": 1,
+                  "depth": 30,
+                  "x": 35,
+                  "y": 35,
+                  "z": -2.5,
+                  "rotationX": 0,
+                  "rotationY": 1,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "wing-membrane-left"
+                },
+                {
+                  "type": "cone",
+                  "size": 2,
+                  "height": 5,
+                  "x": 14,
+                  "y": 34.8,
+                  "z": 14,
+                  "rotationX": 90,
+                  "rotationY": 0,
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
+                  "name": "wing-claw-left",
+                  "rotationZ": 45,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
+                },
+                {
+                  "type": "box",
+                  "width": 20,
+                  "height": 1,
+                  "depth": 10,
+                  "x": 60,
+                  "y": 35,
+                  "z": -5.5,
+                  "rotationX": 5,
+                  "rotationY": 40,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "wing-membrane-left",
+                  "rotationZ": 0,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
+                }
+              ],
+              "position": {
+                "x": 5,
+                "y": 5,
+                "z": 15
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0.5,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "right wing": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 10,
+                  "height": 2,
+                  "depth": 20,
+                  "x": -15,
+                  "y": 35,
+                  "z": -5,
+                  "rotationX": 10,
+                  "rotationY": -60,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "wing-base-right"
+                },
+                {
+                  "type": "box",
+                  "width": 40,
+                  "height": 1,
+                  "depth": 30,
+                  "x": -35,
+                  "y": 35,
+                  "z": -2.5,
+                  "rotationX": 0,
+                  "rotationY": -1,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "wing-membrane-right"
+                },
+                {
+                  "type": "cone",
+                  "size": 2,
+                  "height": 5,
+                  "x": -14,
+                  "y": 34.8,
+                  "z": 14,
+                  "rotationX": 90,
+                  "rotationY": 0,
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
+                  "name": "wing-claw-right",
+                  "rotationZ": -45,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
+                },
+                {
+                  "type": "box",
+                  "width": 20,
+                  "height": 1,
+                  "depth": 10,
+                  "x": -60,
+                  "y": 35,
+                  "z": -5.5,
+                  "rotationX": 5,
+                  "rotationY": -40,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "wing-membrane-right",
+                  "rotationZ": 0,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
+                }
+              ],
+              "position": {
+                "x": -5,
+                "y": 5,
+                "z": 15
+              },
+              "rotation": {
+                "x": 0,
+                "y": -0.5,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "tail base": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 12,
+                  "height": 10,
+                  "depth": 20,
+                  "x": 0,
+                  "y": 22,
+                  "z": -18,
+                  "rotationX": -15,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "tail-base-segment"
+                },
+                {
+                  "type": "cone",
+                  "size": 5,
+                  "height": 10,
+                  "x": 0,
+                  "y": 26,
+                  "z": -20,
+                  "rotationX": -20,
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
+                  "name": "tail-spike-1"
+                },
+                {
+                  "type": "box",
+                  "width": 10,
+                  "height": 8,
+                  "depth": 18,
+                  "x": 0,
+                  "y": 20,
+                  "z": -34,
+                  "rotationX": -10,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "tail-mid-segment"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 6,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "tail tip": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 8,
+                  "height": 6,
+                  "depth": 16,
+                  "x": 0,
+                  "y": 18,
+                  "z": -48,
+                  "rotationX": -5,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "tail-end-segment"
+                },
+                {
+                  "type": "cone",
+                  "size": 4,
+                  "height": 8,
+                  "x": 0,
+                  "y": 21,
+                  "z": -50,
+                  "rotationX": -10,
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
+                  "name": "tail-spike-2"
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 4,
+                  "depth": 12,
+                  "x": 0,
+                  "y": 16,
+                  "z": -60,
+                  "rotationX": 0,
+                  "color": {
+                    "paletteColor": "redDColor"
+                  },
+                  "name": "tail-tip-segment"
+                },
+                {
+                  "type": "cone",
+                  "size": 3,
+                  "height": 6,
+                  "x": 0,
+                  "y": 18,
+                  "z": -62,
+                  "rotationX": -5,
+                  "color": {
+                    "paletteColor": "brownDColor"
+                  },
+                  "name": "tail-spike-3"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 6,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
+          }
+        },
+        "fireResistance": 75,
+        "coldResistance": 25,
+        "electricResistance": 25,
+        "title": "Red Dragon"
+      },
+      "skeleton": {
+        "hp": 20,
+        "speed": 1.2,
+        "value": 7,
+        "essence": 12,
+        "render": {
+          "animations": {
+            "idle": [
+              {}
+            ],
+            "walk": [
+              {},
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 40,
+                      "id": 0
+                    },
+                    {
+                      "rotationZ": 0,
+                      "rotationY": 10,
+                      "id": 1
+                    },
+                    {
+                      "y": 41,
+                      "id": 2
+                    },
+                    {
+                      "y": 41,
+                      "id": 3
+                    },
+                    {
+                      "y": 29,
+                      "rotationX": 90,
+                      "id": 4
+                    },
+                    {
+                      "y": 25,
+                      "rotationX": 120,
+                      "id": 5
+                    },
+                    {
+                      "y": 29,
+                      "id": 6
+                    },
+                    {
+                      "y": 20,
+                      "id": 7
+                    },
+                    {
+                      "z": -2,
+                      "rotationX": 15,
+                      "rotationY": 0,
+                      "id": 8
+                    },
+                    {
+                      "z": 2,
+                      "rotationX": -15,
+                      "id": 9
+                    },
+                    {
+                      "z": -4,
+                      "id": 10
+                    },
+                    {
+                      "z": 6,
+                      "id": 11
+                    }
+                  ]
+                }
+              },
+              {},
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 40,
+                      "id": 0
+                    },
+                    {
+                      "rotationY": -10,
+                      "id": 1
+                    },
+                    {
+                      "y": 41,
+                      "id": 2
+                    },
+                    {
+                      "y": 41,
+                      "id": 3
+                    },
+                    {
+                      "y": 25,
+                      "rotationX": 120,
+                      "id": 4
+                    },
+                    {
+                      "y": 29,
+                      "rotationX": 90,
+                      "id": 5
+                    },
+                    {
+                      "y": 20,
+                      "id": 6
+                    },
+                    {
+                      "y": 29,
+                      "id": 7
+                    },
+                    {
+                      "z": 2,
+                      "rotationX": -15,
+                      "id": 8
+                    },
+                    {
+                      "z": -2,
+                      "rotationX": 15,
+                      "id": 9
+                    },
+                    {
+                      "z": 6,
+                      "id": 10
+                    },
+                    {
+                      "z": -4,
+                      "id": 11
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "sphere",
+                  "size": 14,
+                  "color": "#E0DED8",
+                  "x": 0,
+                  "y": 41,
+                  "z": 0,
+                  "name": "head"
+                },
+                {
+                  "type": "box",
+                  "width": 16,
+                  "height": 20,
+                  "depth": 8,
+                  "color": "#CFCBC0",
+                  "x": 0,
+                  "y": 24,
+                  "z": 0,
+                  "name": "body",
+                  "scaleX": 1
+                },
+                {
+                  "type": "sphere",
+                  "size": 3,
+                  "color": "#000000",
+                  "x": 4,
+                  "y": 42,
+                  "z": 5,
+                  "name": "eye-left"
+                },
+                {
+                  "type": "sphere",
+                  "size": 3,
+                  "color": "#000000",
+                  "x": -4,
+                  "y": 42,
+                  "z": 5,
+                  "name": "eye-right"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 18,
+                  "color": "#E0DED8",
+                  "x": 8,
+                  "y": 27,
+                  "z": 10,
+                  "rotationX": 105,
+                  "rotationZ": 15,
+                  "name": "arm-left"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 18,
+                  "color": "#E0DED8",
+                  "x": -8,
+                  "y": 27,
+                  "z": 10,
+                  "rotationX": 105,
+                  "rotationZ": -15,
+                  "name": "arm-right"
+                },
+                {
+                  "type": "sphere",
+                  "size": 5,
+                  "color": "#E0DED8",
+                  "x": 6,
+                  "y": 25,
+                  "z": 20,
+                  "name": "hand-left"
+                },
+                {
+                  "type": "sphere",
+                  "size": 5,
+                  "color": "#E0DED8",
+                  "x": -6,
+                  "y": 25,
+                  "z": 20,
+                  "name": "hand-right"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 22,
+                  "color": "#E0DED8",
+                  "x": 5,
+                  "y": 14,
+                  "z": 0,
+                  "rotationZ": 0,
+                  "name": "leg-left",
+                  "rotationX": 0
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 22,
+                  "color": "#E0DED8",
+                  "x": -5,
+                  "y": 14,
+                  "z": 0,
+                  "rotationZ": 0,
+                  "name": "leg-right"
+                },
+                {
+                  "type": "sphere",
+                  "size": 5,
+                  "color": "#E0DED8",
+                  "x": 5,
+                  "y": 2,
+                  "z": 0,
+                  "name": "foot-left"
+                },
+                {
+                  "type": "sphere",
+                  "size": 5,
+                  "color": "#E0DED8",
+                  "x": -5,
+                  "y": 2,
+                  "z": 0,
+                  "name": "foot-right"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
+          }
+        },
+        "electricResistance": 75,
+        "title": "skeleton"
+      },
       "spike_ball": {
         "hp": 50,
         "speed": 0.5,
@@ -11139,730 +11139,6 @@ const DEFAULT_PROJECT_CONFIG = {
         },
         "title": "stegosaurus"
       },
-      "viking": {
-        "hp": 20,
-        "value": 10,
-        "essence": 15,
-        "speed": 1,
-        "render": {
-          "animations": {
-            "idle": [
-              {}
-            ],
-            "walk": [
-              {},
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "z": 5.48,
-                      "id": 0
-                    },
-                    {
-                      "z": 5.48,
-                      "id": 1
-                    },
-                    {
-                      "z": 11.48,
-                      "id": 2
-                    },
-                    {
-                      "z": 9.48,
-                      "id": 3
-                    },
-                    {
-                      "z": 9.98,
-                      "name": "eye-left",
-                      "id": 4
-                    },
-                    {
-                      "z": 11.48,
-                      "name": "pupil-left",
-                      "id": 5
-                    },
-                    {
-                      "z": 9.98,
-                      "name": "eye-right",
-                      "id": 6
-                    },
-                    {
-                      "z": 11.48,
-                      "name": "pupil-right",
-                      "id": 7
-                    },
-                    {
-                      "y": 31.75,
-                      "z": 5.48,
-                      "name": "arm-left",
-                      "rotationX": -20,
-                      "id": 8
-                    },
-                    {
-                      "y": 31.75,
-                      "z": 5.48,
-                      "name": "arm-right",
-                      "rotationX": 20,
-                      "id": 9
-                    },
-                    {
-                      "y": 24.75,
-                      "z": 15.48,
-                      "name": "hand-left",
-                      "id": 10
-                    },
-                    {
-                      "y": 24.75,
-                      "z": 2,
-                      "name": "hand-right",
-                      "rotationX": 105,
-                      "id": 11
-                    },
-                    {
-                      "z": 10,
-                      "name": "leg-left",
-                      "rotationX": -15,
-                      "id": 12
-                    },
-                    {
-                      "y": 12.75,
-                      "name": "leg-right",
-                      "rotationX": 5,
-                      "id": 13
-                    },
-                    {
-                      "y": 2.75,
-                      "z": 13,
-                      "name": "foot-left",
-                      "id": 14
-                    },
-                    {
-                      "y": 4.75,
-                      "z": 2,
-                      "name": "foot-right",
-                      "id": 15
-                    },
-                    {
-                      "z": 5.48,
-                      "id": 16
-                    },
-                    {
-                      "z": 8.5,
-                      "id": 17
-                    },
-                    {
-                      "z": 5.5,
-                      "id": 18
-                    },
-                    {
-                      "z": 5,
-                      "id": 19
-                    },
-                    {
-                      "z": -1,
-                      "id": 20
-                    },
-                    {
-                      "z": -1,
-                      "rotationX": -10,
-                      "id": 21
-                    },
-                    {
-                      "y": 30,
-                      "z": 5,
-                      "rotationX": 20,
-                      "id": 22
-                    },
-                    {
-                      "y": 30,
-                      "z": 6,
-                      "rotationX": -20,
-                      "id": 23
-                    },
-                    {
-                      "x": -14,
-                      "y": 25,
-                      "z": 8,
-                      "rotationZ": 30,
-                      "rotationX": 110,
-                      "id": 24
-                    },
-                    {
-                      "x": -14,
-                      "y": 25,
-                      "z": 7,
-                      "rotationZ": 30,
-                      "rotationX": 110,
-                      "id": 25
-                    },
-                    {
-                      "y": 25,
-                      "z": 15.48,
-                      "rotationX": 0,
-                      "id": 26
-                    },
-                    {
-                      "y": 38,
-                      "z": 15.5,
-                      "rotationX": 90,
-                      "id": 27
-                    },
-                    {
-                      "y": 46,
-                      "z": 15.5,
-                      "rotationY": 90,
-                      "id": 28
-                    },
-                    {
-                      "z": 5.5,
-                      "id": 29
-                    },
-                    {
-                      "z": 5.5,
-                      "id": 30
-                    }
-                  ]
-                }
-              },
-              {},
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 27.75,
-                      "z": 5.48,
-                      "id": 0
-                    },
-                    {
-                      "y": 42.75,
-                      "z": 5.48,
-                      "id": 1
-                    },
-                    {
-                      "y": 42.75,
-                      "z": 11.48,
-                      "id": 2
-                    },
-                    {
-                      "y": 39.25,
-                      "z": 9.48,
-                      "id": 3
-                    },
-                    {
-                      "y": 44.75,
-                      "z": 9.98,
-                      "id": 4
-                    },
-                    {
-                      "y": 44.75,
-                      "z": 11.48,
-                      "id": 5
-                    },
-                    {
-                      "y": 44.75,
-                      "z": 9.98,
-                      "id": 6
-                    },
-                    {
-                      "y": 44.75,
-                      "z": 11.48,
-                      "id": 7
-                    },
-                    {
-                      "y": 28.75,
-                      "z": 5.48,
-                      "rotationX": 20,
-                      "id": 8
-                    },
-                    {
-                      "y": 28.75,
-                      "z": 5.48,
-                      "rotationX": -20,
-                      "id": 9
-                    },
-                    {
-                      "y": 20.75,
-                      "z": -4.52,
-                      "id": 10
-                    },
-                    {
-                      "y": 20.75,
-                      "z": 15,
-                      "id": 11
-                    },
-                    {
-                      "y": 12.75,
-                      "rotationX": 5,
-                      "id": 12
-                    },
-                    {
-                      "z": 10,
-                      "rotationX": -15,
-                      "id": 13
-                    },
-                    {
-                      "y": 4.75,
-                      "z": 1.48,
-                      "id": 14
-                    },
-                    {
-                      "y": 2.75,
-                      "z": 13,
-                      "id": 15
-                    },
-                    {
-                      "y": 18.75,
-                      "z": 5.48,
-                      "id": 16
-                    },
-                    {
-                      "y": 39,
-                      "z": 8.5,
-                      "id": 17
-                    },
-                    {
-                      "y": 50,
-                      "z": 5.5,
-                      "id": 18
-                    },
-                    {
-                      "y": 48.1,
-                      "z": 5,
-                      "id": 19
-                    },
-                    {
-                      "y": 44,
-                      "z": -1,
-                      "id": 20
-                    },
-                    {
-                      "y": 27,
-                      "z": -1,
-                      "rotationX": -10,
-                      "id": 21
-                    },
-                    {
-                      "z": 7,
-                      "rotationX": -20,
-                      "id": 22
-                    },
-                    {
-                      "z": 4,
-                      "rotationX": 15,
-                      "id": 23
-                    },
-                    {
-                      "y": 21,
-                      "z": 19,
-                      "rotationX": 75,
-                      "id": 24
-                    },
-                    {
-                      "y": 21,
-                      "z": 17.48,
-                      "rotationX": 75,
-                      "id": 25
-                    },
-                    {
-                      "y": 21,
-                      "z": -4.52,
-                      "rotationX": 0,
-                      "id": 26
-                    },
-                    {
-                      "height": 12,
-                      "depth": 14,
-                      "y": 10,
-                      "z": -4.5,
-                      "id": 27
-                    },
-                    {
-                      "y": 2,
-                      "z": -5,
-                      "rotationX": 180,
-                      "id": 28
-                    },
-                    {
-                      "y": 57,
-                      "z": 5.5,
-                      "id": 29
-                    },
-                    {
-                      "y": 57,
-                      "z": 5.5,
-                      "id": 30
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          "model": {
-            "shapes": {
-              "shapes": [
-                {
-                  "type": "box",
-                  "width": 14,
-                  "height": 18,
-                  "depth": 10,
-                  "x": 0,
-                  "y": 28.75,
-                  "z": 1.48,
-                  "color": "#8B4513",
-                  "name": "torso",
-                  "scaleX": 1
-                },
-                {
-                  "type": "sphere",
-                  "size": 15,
-                  "x": 0,
-                  "y": 43.75,
-                  "z": 1.48,
-                  "color": "#e8c9a0",
-                  "name": "head"
-                },
-                {
-                  "type": "box",
-                  "width": 5,
-                  "height": 4,
-                  "depth": 6,
-                  "x": 0,
-                  "y": 43.75,
-                  "z": 7.48,
-                  "color": "#E8C9A0",
-                  "name": "nose"
-                },
-                {
-                  "type": "box",
-                  "width": 12,
-                  "height": 3,
-                  "depth": 6,
-                  "x": 0,
-                  "y": 40.25,
-                  "z": 5.48,
-                  "color": "#ecb69b",
-                  "name": "jaw"
-                },
-                {
-                  "type": "sphere",
-                  "size": 4,
-                  "x": 4.5,
-                  "y": 45.75,
-                  "z": 5.98,
-                  "color": "#87CEFA",
-                  "name": "eye-right"
-                },
-                {
-                  "type": "sphere",
-                  "size": 1.5,
-                  "x": 5,
-                  "y": 45.75,
-                  "z": 7.48,
-                  "color": "#000000",
-                  "name": "pupil-right"
-                },
-                {
-                  "type": "sphere",
-                  "size": 4,
-                  "x": -4.5,
-                  "y": 45.75,
-                  "z": 5.98,
-                  "color": "#87CEFA",
-                  "name": "eye-left"
-                },
-                {
-                  "type": "sphere",
-                  "size": 1.5,
-                  "x": -5,
-                  "y": 45.75,
-                  "z": 7.48,
-                  "color": "#000000",
-                  "name": "pupil-left"
-                },
-                {
-                  "type": "box",
-                  "width": 6,
-                  "height": 20,
-                  "depth": 6,
-                  "x": 12,
-                  "y": 29.75,
-                  "z": 1.48,
-                  "color": "#8B4513",
-                  "name": "arm-right"
-                },
-                {
-                  "type": "box",
-                  "width": 6,
-                  "height": 20,
-                  "depth": 6,
-                  "x": -12,
-                  "y": 29.75,
-                  "z": 1.48,
-                  "color": "#8B4513",
-                  "name": "arm-left"
-                },
-                {
-                  "type": "box",
-                  "width": 8,
-                  "height": 5,
-                  "depth": 7,
-                  "x": 12,
-                  "y": 17.75,
-                  "z": 2.48,
-                  "color": "#E8C9A0",
-                  "name": "hand-right"
-                },
-                {
-                  "type": "box",
-                  "width": 8,
-                  "height": 5,
-                  "depth": 7,
-                  "x": -12,
-                  "y": 17.75,
-                  "z": 2.48,
-                  "color": "#E8C9A0",
-                  "name": "hand-left"
-                },
-                {
-                  "type": "box",
-                  "width": 6,
-                  "height": 15,
-                  "depth": 6,
-                  "x": 4,
-                  "y": 9.75,
-                  "z": 1.48,
-                  "color": "#8B4513",
-                  "name": "leg-right"
-                },
-                {
-                  "type": "box",
-                  "width": 6,
-                  "height": 15,
-                  "depth": 6,
-                  "x": -4,
-                  "y": 9.75,
-                  "z": 1.48,
-                  "color": "#8B4513",
-                  "name": "leg-left"
-                },
-                {
-                  "type": "box",
-                  "width": 7,
-                  "height": 3,
-                  "depth": 10,
-                  "x": 4,
-                  "y": 1.75,
-                  "z": 3.48,
-                  "color": "#3B3B3B",
-                  "name": "foot-right"
-                },
-                {
-                  "type": "box",
-                  "width": 7,
-                  "height": 3,
-                  "depth": 10,
-                  "x": -4,
-                  "y": 1.75,
-                  "z": 3.48,
-                  "color": "#3B3B3B",
-                  "name": "foot-left"
-                },
-                {
-                  "type": "box",
-                  "width": 15,
-                  "height": 3,
-                  "depth": 11,
-                  "x": 0,
-                  "y": 19.75,
-                  "z": 1.48,
-                  "color": "#8B4513",
-                  "name": "belt"
-                },
-                {
-                  "type": "box",
-                  "width": 18,
-                  "height": 12,
-                  "depth": 3,
-                  "x": 0,
-                  "y": 40,
-                  "z": 4.5,
-                  "color": "#FFD700",
-                  "name": "beard"
-                },
-                {
-                  "type": "box",
-                  "width": 20,
-                  "height": 8,
-                  "depth": 8,
-                  "x": 0,
-                  "y": 51,
-                  "z": 1.5,
-                  "color": "#A0522D",
-                  "name": "helmet-top"
-                },
-                {
-                  "type": "box",
-                  "width": 22,
-                  "height": 4.7,
-                  "depth": 14.5,
-                  "x": 0,
-                  "y": 49.1,
-                  "z": 1,
-                  "color": "#A9A9A9",
-                  "name": "helmet-band"
-                },
-                {
-                  "type": "box",
-                  "width": 12,
-                  "height": 6,
-                  "depth": 2,
-                  "x": 0,
-                  "y": 45,
-                  "z": -5,
-                  "color": "#ffd700",
-                  "name": "hair"
-                },
-                {
-                  "type": "box",
-                  "width": 16,
-                  "height": 20,
-                  "depth": 2,
-                  "x": 0,
-                  "y": 28,
-                  "z": -6,
-                  "color": "#CD853F",
-                  "name": "cape"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 9,
-                  "height": 5,
-                  "x": -12,
-                  "y": 24,
-                  "z": 1.5,
-                  "color": "#A9A9A9",
-                  "name": "bracelet-right",
-                  "rotationZ": 0,
-                  "rotationX": 0
-                },
-                {
-                  "type": "cylinder",
-                  "size": 9,
-                  "height": 5,
-                  "x": 12,
-                  "y": 24,
-                  "z": 1.5,
-                  "color": "#A9A9A9",
-                  "name": "bracelet-left",
-                  "rotationZ": 0,
-                  "rotationX": 0
-                },
-                {
-                  "type": "cylinder",
-                  "size": 12,
-                  "height": 1,
-                  "x": -12,
-                  "y": 18,
-                  "z": 9,
-                  "color": "#cd853f",
-                  "name": "shield-wood",
-                  "rotationZ": 0,
-                  "rotationX": 90
-                },
-                {
-                  "type": "cylinder",
-                  "size": 16,
-                  "height": 2,
-                  "x": -12,
-                  "y": 18,
-                  "z": 8,
-                  "color": "#A9A9A9",
-                  "name": "shield",
-                  "rotationZ": 0,
-                  "rotationX": 90
-                },
-                {
-                  "type": "cylinder",
-                  "size": 2,
-                  "height": 35,
-                  "x": 12,
-                  "y": 18,
-                  "z": 1.48,
-                  "color": "#8B4513",
-                  "name": "axe-handle",
-                  "rotationZ": 0,
-                  "rotationX": 90
-                },
-                {
-                  "type": "box",
-                  "width": 2,
-                  "height": 14,
-                  "depth": 12,
-                  "x": 12,
-                  "y": 18,
-                  "z": 15,
-                  "color": "#A9A9A9",
-                  "name": "axe-head",
-                  "rotationY": 0,
-                  "rotationZ": 0,
-                  "rotationX": 0
-                },
-                {
-                  "type": "cone",
-                  "size": 6,
-                  "height": 4,
-                  "x": 12,
-                  "y": 18,
-                  "z": 21.5,
-                  "rotationX": 90,
-                  "color": "#A9A9A9",
-                  "name": "axe-spike"
-                },
-                {
-                  "type": "cone",
-                  "size": 4,
-                  "height": 10,
-                  "x": 5,
-                  "y": 58,
-                  "z": 1.5,
-                  "rotationX": 0,
-                  "color": "#858585",
-                  "name": "helmet-horn-right",
-                  "rotationZ": -30
-                },
-                {
-                  "type": "cone",
-                  "size": 4,
-                  "height": 10,
-                  "x": -5,
-                  "y": 58,
-                  "z": 1.5,
-                  "rotationX": 0,
-                  "color": "#858585",
-                  "name": "helmet-horn-left",
-                  "rotationZ": 30
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            }
-          }
-        },
-        "coldResistance": 75,
-        "title": "Viking"
-      },
       "trex": {
         "title": "T-Rex",
         "hp": 50,
@@ -12757,6 +12033,730 @@ const DEFAULT_PROJECT_CONFIG = {
           }
         }
       },
+      "viking": {
+        "hp": 20,
+        "value": 10,
+        "essence": 15,
+        "speed": 1,
+        "render": {
+          "animations": {
+            "idle": [
+              {}
+            ],
+            "walk": [
+              {},
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "z": 5.48,
+                      "id": 0
+                    },
+                    {
+                      "z": 5.48,
+                      "id": 1
+                    },
+                    {
+                      "z": 11.48,
+                      "id": 2
+                    },
+                    {
+                      "z": 9.48,
+                      "id": 3
+                    },
+                    {
+                      "z": 9.98,
+                      "name": "eye-left",
+                      "id": 4
+                    },
+                    {
+                      "z": 11.48,
+                      "name": "pupil-left",
+                      "id": 5
+                    },
+                    {
+                      "z": 9.98,
+                      "name": "eye-right",
+                      "id": 6
+                    },
+                    {
+                      "z": 11.48,
+                      "name": "pupil-right",
+                      "id": 7
+                    },
+                    {
+                      "y": 31.75,
+                      "z": 5.48,
+                      "name": "arm-left",
+                      "rotationX": -20,
+                      "id": 8
+                    },
+                    {
+                      "y": 31.75,
+                      "z": 5.48,
+                      "name": "arm-right",
+                      "rotationX": 20,
+                      "id": 9
+                    },
+                    {
+                      "y": 24.75,
+                      "z": 15.48,
+                      "name": "hand-left",
+                      "id": 10
+                    },
+                    {
+                      "y": 24.75,
+                      "z": 2,
+                      "name": "hand-right",
+                      "rotationX": 105,
+                      "id": 11
+                    },
+                    {
+                      "z": 10,
+                      "name": "leg-left",
+                      "rotationX": -15,
+                      "id": 12
+                    },
+                    {
+                      "y": 12.75,
+                      "name": "leg-right",
+                      "rotationX": 5,
+                      "id": 13
+                    },
+                    {
+                      "y": 2.75,
+                      "z": 13,
+                      "name": "foot-left",
+                      "id": 14
+                    },
+                    {
+                      "y": 4.75,
+                      "z": 2,
+                      "name": "foot-right",
+                      "id": 15
+                    },
+                    {
+                      "z": 5.48,
+                      "id": 16
+                    },
+                    {
+                      "z": 8.5,
+                      "id": 17
+                    },
+                    {
+                      "z": 5.5,
+                      "id": 18
+                    },
+                    {
+                      "z": 5,
+                      "id": 19
+                    },
+                    {
+                      "z": -1,
+                      "id": 20
+                    },
+                    {
+                      "z": -1,
+                      "rotationX": -10,
+                      "id": 21
+                    },
+                    {
+                      "y": 30,
+                      "z": 5,
+                      "rotationX": 20,
+                      "id": 22
+                    },
+                    {
+                      "y": 30,
+                      "z": 6,
+                      "rotationX": -20,
+                      "id": 23
+                    },
+                    {
+                      "x": -14,
+                      "y": 25,
+                      "z": 8,
+                      "rotationZ": 30,
+                      "rotationX": 110,
+                      "id": 24
+                    },
+                    {
+                      "x": -14,
+                      "y": 25,
+                      "z": 7,
+                      "rotationZ": 30,
+                      "rotationX": 110,
+                      "id": 25
+                    },
+                    {
+                      "y": 25,
+                      "z": 15.48,
+                      "rotationX": 0,
+                      "id": 26
+                    },
+                    {
+                      "y": 38,
+                      "z": 15.5,
+                      "rotationX": 90,
+                      "id": 27
+                    },
+                    {
+                      "y": 46,
+                      "z": 15.5,
+                      "rotationY": 90,
+                      "id": 28
+                    },
+                    {
+                      "z": 5.5,
+                      "id": 29
+                    },
+                    {
+                      "z": 5.5,
+                      "id": 30
+                    }
+                  ]
+                }
+              },
+              {},
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 27.75,
+                      "z": 5.48,
+                      "id": 0
+                    },
+                    {
+                      "y": 42.75,
+                      "z": 5.48,
+                      "id": 1
+                    },
+                    {
+                      "y": 42.75,
+                      "z": 11.48,
+                      "id": 2
+                    },
+                    {
+                      "y": 39.25,
+                      "z": 9.48,
+                      "id": 3
+                    },
+                    {
+                      "y": 44.75,
+                      "z": 9.98,
+                      "id": 4
+                    },
+                    {
+                      "y": 44.75,
+                      "z": 11.48,
+                      "id": 5
+                    },
+                    {
+                      "y": 44.75,
+                      "z": 9.98,
+                      "id": 6
+                    },
+                    {
+                      "y": 44.75,
+                      "z": 11.48,
+                      "id": 7
+                    },
+                    {
+                      "y": 28.75,
+                      "z": 5.48,
+                      "rotationX": 20,
+                      "id": 8
+                    },
+                    {
+                      "y": 28.75,
+                      "z": 5.48,
+                      "rotationX": -20,
+                      "id": 9
+                    },
+                    {
+                      "y": 20.75,
+                      "z": -4.52,
+                      "id": 10
+                    },
+                    {
+                      "y": 20.75,
+                      "z": 15,
+                      "id": 11
+                    },
+                    {
+                      "y": 12.75,
+                      "rotationX": 5,
+                      "id": 12
+                    },
+                    {
+                      "z": 10,
+                      "rotationX": -15,
+                      "id": 13
+                    },
+                    {
+                      "y": 4.75,
+                      "z": 1.48,
+                      "id": 14
+                    },
+                    {
+                      "y": 2.75,
+                      "z": 13,
+                      "id": 15
+                    },
+                    {
+                      "y": 18.75,
+                      "z": 5.48,
+                      "id": 16
+                    },
+                    {
+                      "y": 39,
+                      "z": 8.5,
+                      "id": 17
+                    },
+                    {
+                      "y": 50,
+                      "z": 5.5,
+                      "id": 18
+                    },
+                    {
+                      "y": 48.1,
+                      "z": 5,
+                      "id": 19
+                    },
+                    {
+                      "y": 44,
+                      "z": -1,
+                      "id": 20
+                    },
+                    {
+                      "y": 27,
+                      "z": -1,
+                      "rotationX": -10,
+                      "id": 21
+                    },
+                    {
+                      "z": 7,
+                      "rotationX": -20,
+                      "id": 22
+                    },
+                    {
+                      "z": 4,
+                      "rotationX": 15,
+                      "id": 23
+                    },
+                    {
+                      "y": 21,
+                      "z": 19,
+                      "rotationX": 75,
+                      "id": 24
+                    },
+                    {
+                      "y": 21,
+                      "z": 17.48,
+                      "rotationX": 75,
+                      "id": 25
+                    },
+                    {
+                      "y": 21,
+                      "z": -4.52,
+                      "rotationX": 0,
+                      "id": 26
+                    },
+                    {
+                      "height": 12,
+                      "depth": 14,
+                      "y": 10,
+                      "z": -4.5,
+                      "id": 27
+                    },
+                    {
+                      "y": 2,
+                      "z": -5,
+                      "rotationX": 180,
+                      "id": 28
+                    },
+                    {
+                      "y": 57,
+                      "z": 5.5,
+                      "id": 29
+                    },
+                    {
+                      "y": 57,
+                      "z": 5.5,
+                      "id": 30
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 14,
+                  "height": 18,
+                  "depth": 10,
+                  "x": 0,
+                  "y": 28.75,
+                  "z": 1.48,
+                  "color": "#8B4513",
+                  "name": "torso",
+                  "scaleX": 1
+                },
+                {
+                  "type": "sphere",
+                  "size": 15,
+                  "x": 0,
+                  "y": 43.75,
+                  "z": 1.48,
+                  "color": "#e8c9a0",
+                  "name": "head"
+                },
+                {
+                  "type": "box",
+                  "width": 5,
+                  "height": 4,
+                  "depth": 6,
+                  "x": 0,
+                  "y": 43.75,
+                  "z": 7.48,
+                  "color": "#E8C9A0",
+                  "name": "nose"
+                },
+                {
+                  "type": "box",
+                  "width": 12,
+                  "height": 3,
+                  "depth": 6,
+                  "x": 0,
+                  "y": 40.25,
+                  "z": 5.48,
+                  "color": "#ecb69b",
+                  "name": "jaw"
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "x": 4.5,
+                  "y": 45.75,
+                  "z": 5.98,
+                  "color": "#87CEFA",
+                  "name": "eye-right"
+                },
+                {
+                  "type": "sphere",
+                  "size": 1.5,
+                  "x": 5,
+                  "y": 45.75,
+                  "z": 7.48,
+                  "color": "#000000",
+                  "name": "pupil-right"
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "x": -4.5,
+                  "y": 45.75,
+                  "z": 5.98,
+                  "color": "#87CEFA",
+                  "name": "eye-left"
+                },
+                {
+                  "type": "sphere",
+                  "size": 1.5,
+                  "x": -5,
+                  "y": 45.75,
+                  "z": 7.48,
+                  "color": "#000000",
+                  "name": "pupil-left"
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 20,
+                  "depth": 6,
+                  "x": 12,
+                  "y": 29.75,
+                  "z": 1.48,
+                  "color": "#8B4513",
+                  "name": "arm-right"
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 20,
+                  "depth": 6,
+                  "x": -12,
+                  "y": 29.75,
+                  "z": 1.48,
+                  "color": "#8B4513",
+                  "name": "arm-left"
+                },
+                {
+                  "type": "box",
+                  "width": 8,
+                  "height": 5,
+                  "depth": 7,
+                  "x": 12,
+                  "y": 17.75,
+                  "z": 2.48,
+                  "color": "#E8C9A0",
+                  "name": "hand-right"
+                },
+                {
+                  "type": "box",
+                  "width": 8,
+                  "height": 5,
+                  "depth": 7,
+                  "x": -12,
+                  "y": 17.75,
+                  "z": 2.48,
+                  "color": "#E8C9A0",
+                  "name": "hand-left"
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 15,
+                  "depth": 6,
+                  "x": 4,
+                  "y": 9.75,
+                  "z": 1.48,
+                  "color": "#8B4513",
+                  "name": "leg-right"
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 15,
+                  "depth": 6,
+                  "x": -4,
+                  "y": 9.75,
+                  "z": 1.48,
+                  "color": "#8B4513",
+                  "name": "leg-left"
+                },
+                {
+                  "type": "box",
+                  "width": 7,
+                  "height": 3,
+                  "depth": 10,
+                  "x": 4,
+                  "y": 1.75,
+                  "z": 3.48,
+                  "color": "#3B3B3B",
+                  "name": "foot-right"
+                },
+                {
+                  "type": "box",
+                  "width": 7,
+                  "height": 3,
+                  "depth": 10,
+                  "x": -4,
+                  "y": 1.75,
+                  "z": 3.48,
+                  "color": "#3B3B3B",
+                  "name": "foot-left"
+                },
+                {
+                  "type": "box",
+                  "width": 15,
+                  "height": 3,
+                  "depth": 11,
+                  "x": 0,
+                  "y": 19.75,
+                  "z": 1.48,
+                  "color": "#8B4513",
+                  "name": "belt"
+                },
+                {
+                  "type": "box",
+                  "width": 18,
+                  "height": 12,
+                  "depth": 3,
+                  "x": 0,
+                  "y": 40,
+                  "z": 4.5,
+                  "color": "#FFD700",
+                  "name": "beard"
+                },
+                {
+                  "type": "box",
+                  "width": 20,
+                  "height": 8,
+                  "depth": 8,
+                  "x": 0,
+                  "y": 51,
+                  "z": 1.5,
+                  "color": "#A0522D",
+                  "name": "helmet-top"
+                },
+                {
+                  "type": "box",
+                  "width": 22,
+                  "height": 4.7,
+                  "depth": 14.5,
+                  "x": 0,
+                  "y": 49.1,
+                  "z": 1,
+                  "color": "#A9A9A9",
+                  "name": "helmet-band"
+                },
+                {
+                  "type": "box",
+                  "width": 12,
+                  "height": 6,
+                  "depth": 2,
+                  "x": 0,
+                  "y": 45,
+                  "z": -5,
+                  "color": "#ffd700",
+                  "name": "hair"
+                },
+                {
+                  "type": "box",
+                  "width": 16,
+                  "height": 20,
+                  "depth": 2,
+                  "x": 0,
+                  "y": 28,
+                  "z": -6,
+                  "color": "#CD853F",
+                  "name": "cape"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 9,
+                  "height": 5,
+                  "x": -12,
+                  "y": 24,
+                  "z": 1.5,
+                  "color": "#A9A9A9",
+                  "name": "bracelet-right",
+                  "rotationZ": 0,
+                  "rotationX": 0
+                },
+                {
+                  "type": "cylinder",
+                  "size": 9,
+                  "height": 5,
+                  "x": 12,
+                  "y": 24,
+                  "z": 1.5,
+                  "color": "#A9A9A9",
+                  "name": "bracelet-left",
+                  "rotationZ": 0,
+                  "rotationX": 0
+                },
+                {
+                  "type": "cylinder",
+                  "size": 12,
+                  "height": 1,
+                  "x": -12,
+                  "y": 18,
+                  "z": 9,
+                  "color": "#cd853f",
+                  "name": "shield-wood",
+                  "rotationZ": 0,
+                  "rotationX": 90
+                },
+                {
+                  "type": "cylinder",
+                  "size": 16,
+                  "height": 2,
+                  "x": -12,
+                  "y": 18,
+                  "z": 8,
+                  "color": "#A9A9A9",
+                  "name": "shield",
+                  "rotationZ": 0,
+                  "rotationX": 90
+                },
+                {
+                  "type": "cylinder",
+                  "size": 2,
+                  "height": 35,
+                  "x": 12,
+                  "y": 18,
+                  "z": 1.48,
+                  "color": "#8B4513",
+                  "name": "axe-handle",
+                  "rotationZ": 0,
+                  "rotationX": 90
+                },
+                {
+                  "type": "box",
+                  "width": 2,
+                  "height": 14,
+                  "depth": 12,
+                  "x": 12,
+                  "y": 18,
+                  "z": 15,
+                  "color": "#A9A9A9",
+                  "name": "axe-head",
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "rotationX": 0
+                },
+                {
+                  "type": "cone",
+                  "size": 6,
+                  "height": 4,
+                  "x": 12,
+                  "y": 18,
+                  "z": 21.5,
+                  "rotationX": 90,
+                  "color": "#A9A9A9",
+                  "name": "axe-spike"
+                },
+                {
+                  "type": "cone",
+                  "size": 4,
+                  "height": 10,
+                  "x": 5,
+                  "y": 58,
+                  "z": 1.5,
+                  "rotationX": 0,
+                  "color": "#858585",
+                  "name": "helmet-horn-right",
+                  "rotationZ": -30
+                },
+                {
+                  "type": "cone",
+                  "size": 4,
+                  "height": 10,
+                  "x": -5,
+                  "y": 58,
+                  "z": 1.5,
+                  "rotationX": 0,
+                  "color": "#858585",
+                  "name": "helmet-horn-left",
+                  "rotationZ": 30
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
+          }
+        },
+        "coldResistance": 75,
+        "title": "Viking"
+      },
       "wraith": {
         "hp": 1,
         "speed": 1.8,
@@ -13376,12 +13376,6 @@ const DEFAULT_PROJECT_CONFIG = {
       }
     },
     "projectiles": {
-      "lightning": {
-        "customRenderer": "lightning",
-        "damageType": "electric",
-        "speed": 5,
-        "title": "Lightning"
-      },
       "cryoMist": {
         "damageType": "cold",
         "render": {
@@ -13452,96 +13446,11 @@ const DEFAULT_PROJECT_CONFIG = {
         "speed": 5,
         "title": "Cryomist"
       },
-      "neutronFragment": {
-        "render": {
-          "animations": {
-            "idle": [
-              {}
-            ]
-          },
-          "model": {
-            "shapes": {
-              "shapes": [
-                {
-                  "type": "sphere",
-                  "size": 6,
-                  "x": 0,
-                  "y": 25,
-                  "z": 0,
-                  "rotationX": 90,
-                  "color": "#ee6060",
-                  "scaleX": 1
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            }
-          }
-        },
+      "lightning": {
+        "customRenderer": "lightning",
+        "damageType": "electric",
         "speed": 5,
-        "damageType": "physical",
-        "title": "Neutron Fragment"
-      },
-      "nanoOrb": {
-        "render": {
-          "animations": {
-            "idle": [
-              {}
-            ]
-          },
-          "model": {
-            "main": {
-              "shapes": [
-                {
-                  "name": "ball",
-                  "type": "sphere",
-                  "size": 6,
-                  "x": 0,
-                  "y": 5,
-                  "z": 0,
-                  "rotationX": 90,
-                  "color": "#ee6060",
-                  "rotationY": 0,
-                  "rotationZ": 0,
-                  "scaleX": 1,
-                  "scaleY": 1,
-                  "scaleZ": 1
-                }
-              ],
-              "position": {
-                "x": -3.00653594771243,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            }
-          }
-        },
-        "speed": 25,
-        "damageType": "physical",
-        "title": "Nano Orb"
+        "title": "Lightning"
       },
       "missile": {
         "damageType": "fire",
@@ -13903,6 +13812,97 @@ const DEFAULT_PROJECT_CONFIG = {
         "hitSound": "explosion",
         "attackSound": "missileLaunch"
       },
+      "nanoOrb": {
+        "render": {
+          "animations": {
+            "idle": [
+              {}
+            ]
+          },
+          "model": {
+            "main": {
+              "shapes": [
+                {
+                  "name": "ball",
+                  "type": "sphere",
+                  "size": 6,
+                  "x": 0,
+                  "y": 5,
+                  "z": 0,
+                  "rotationX": 90,
+                  "color": "#ee6060",
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
+                }
+              ],
+              "position": {
+                "x": -3.00653594771243,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
+          }
+        },
+        "speed": 25,
+        "damageType": "physical",
+        "title": "Nano Orb"
+      },
+      "neutronFragment": {
+        "render": {
+          "animations": {
+            "idle": [
+              {}
+            ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "sphere",
+                  "size": 6,
+                  "x": 0,
+                  "y": 25,
+                  "z": 0,
+                  "rotationX": 90,
+                  "color": "#ee6060",
+                  "scaleX": 1
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
+          }
+        },
+        "speed": 5,
+        "damageType": "physical",
+        "title": "Neutron Fragment"
+      },
       "plasmaBolt": {
         "damageType": "physical",
         "render": {
@@ -14018,252 +14018,6 @@ const DEFAULT_PROJECT_CONFIG = {
       }
     },
     "towers": {
-      "chrono": {
-        "title": "Chrono Defibrilator",
-        "info": "Projectiles explode in AoE and slow.",
-        "cost": 100,
-        "population": 3,
-        "range": 90,
-        "damage": 2,
-        "attackSpeed": 0.5,
-        "projectile": "cryoMist",
-        "critMultiplier": 1,
-        "splashRadius": 2,
-        "slowAmount": 0.7,
-        "render": {
-          "animations": {
-            "idle": [
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "type": "torus",
-                      "size": 36,
-                      "tubeSize": 4,
-                      "x": 0,
-                      "y": 8,
-                      "z": 0,
-                      "rotationY": 0,
-                      "color": {
-                        "paletteColor": "blueDColor"
-                      },
-                      "rotationZ": 0,
-                      "rotationX": 90,
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "greyMColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "greyDColor"
-                      },
-                      "id": 2
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "greyMColor"
-                      },
-                      "id": 5
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "greyDColor"
-                      },
-                      "id": 6
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "blueMColor"
-                      },
-                      "id": 7
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "blueMColor"
-                      },
-                      "id": 8
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "blueMColor"
-                      },
-                      "id": 9
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "blueMColor"
-                      },
-                      "id": 10
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "blueDColor"
-                      },
-                      "id": 11
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          "model": {
-            "shapes": {
-              "shapes": [
-                {
-                  "type": "torus",
-                  "size": 36,
-                  "tubeSize": 4,
-                  "x": 0,
-                  "y": 8,
-                  "z": 0,
-                  "rotationY": 0,
-                  "color": {
-                    "paletteColor": "blueDColor"
-                  },
-                  "rotationZ": 0,
-                  "rotationX": 90
-                },
-                {
-                  "type": "cylinder",
-                  "size": 22,
-                  "height": 10,
-                  "x": 0,
-                  "y": 5,
-                  "z": 0,
-                  "color": {
-                    "paletteColor": "greyMColor"
-                  }
-                },
-                {
-                  "type": "cylinder",
-                  "size": 16,
-                  "height": 14,
-                  "x": 0,
-                  "y": 17,
-                  "z": 0,
-                  "color": {
-                    "paletteColor": "greyDColor"
-                  }
-                },
-                {
-                  "type": "sphere",
-                  "size": 12,
-                  "x": 0,
-                  "y": 16,
-                  "z": 0,
-                  "color": "#A0E6FF"
-                },
-                {
-                  "type": "tetrahedron",
-                  "size": 10,
-                  "x": 0,
-                  "y": 16,
-                  "z": 0,
-                  "rotationY": 45,
-                  "color": "#203040"
-                },
-                {
-                  "type": "cone",
-                  "size": 8,
-                  "height": 16,
-                  "x": 0,
-                  "y": 32,
-                  "z": 0,
-                  "rotationX": 0,
-                  "color": {
-                    "paletteColor": "greyMColor"
-                  }
-                },
-                {
-                  "type": "box",
-                  "width": 38,
-                  "height": 4,
-                  "depth": 38,
-                  "x": 0,
-                  "y": 2,
-                  "z": 0,
-                  "color": {
-                    "paletteColor": "greyDColor"
-                  }
-                },
-                {
-                  "type": "sphere",
-                  "size": 4,
-                  "x": 24,
-                  "y": 24,
-                  "z": 24,
-                  "color": {
-                    "paletteColor": "blueMColor"
-                  }
-                },
-                {
-                  "type": "sphere",
-                  "size": 4,
-                  "x": -24,
-                  "y": 24,
-                  "z": 24,
-                  "color": {
-                    "paletteColor": "blueMColor"
-                  }
-                },
-                {
-                  "type": "sphere",
-                  "size": 4,
-                  "x": 24,
-                  "y": 24,
-                  "z": -24,
-                  "color": {
-                    "paletteColor": "blueMColor"
-                  }
-                },
-                {
-                  "type": "sphere",
-                  "size": 4,
-                  "x": -24,
-                  "y": 24,
-                  "z": -24,
-                  "color": {
-                    "paletteColor": "blueMColor"
-                  }
-                },
-                {
-                  "type": "torus",
-                  "size": 48,
-                  "color": {
-                    "paletteColor": "blueDColor"
-                  },
-                  "x": 0,
-                  "y": 38,
-                  "z": 0,
-                  "rotationX": 90,
-                  "rotationY": 0,
-                  "rotationZ": 0,
-                  "tubeSize": 2
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            }
-          }
-        }
-      },
       "barracks": {
         "title": "Barracks",
         "info": "Provides 5 additional max population.",
@@ -14662,6 +14416,252 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 20.5,
                   "z": 8,
                   "name": "redthing4"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
+          }
+        }
+      },
+      "chrono": {
+        "title": "Chrono Defibrilator",
+        "info": "Projectiles explode in AoE and slow.",
+        "cost": 100,
+        "population": 3,
+        "range": 90,
+        "damage": 2,
+        "attackSpeed": 0.5,
+        "projectile": "cryoMist",
+        "critMultiplier": 1,
+        "splashRadius": 2,
+        "slowAmount": 0.7,
+        "render": {
+          "animations": {
+            "idle": [
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "type": "torus",
+                      "size": 36,
+                      "tubeSize": 4,
+                      "x": 0,
+                      "y": 8,
+                      "z": 0,
+                      "rotationY": 0,
+                      "color": {
+                        "paletteColor": "blueDColor"
+                      },
+                      "rotationZ": 0,
+                      "rotationX": 90,
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyMColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyMColor"
+                      },
+                      "id": 5
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 6
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueMColor"
+                      },
+                      "id": 7
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueMColor"
+                      },
+                      "id": 8
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueMColor"
+                      },
+                      "id": 9
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueMColor"
+                      },
+                      "id": 10
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueDColor"
+                      },
+                      "id": 11
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "torus",
+                  "size": 36,
+                  "tubeSize": 4,
+                  "x": 0,
+                  "y": 8,
+                  "z": 0,
+                  "rotationY": 0,
+                  "color": {
+                    "paletteColor": "blueDColor"
+                  },
+                  "rotationZ": 0,
+                  "rotationX": 90
+                },
+                {
+                  "type": "cylinder",
+                  "size": 22,
+                  "height": 10,
+                  "x": 0,
+                  "y": 5,
+                  "z": 0,
+                  "color": {
+                    "paletteColor": "greyMColor"
+                  }
+                },
+                {
+                  "type": "cylinder",
+                  "size": 16,
+                  "height": 14,
+                  "x": 0,
+                  "y": 17,
+                  "z": 0,
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  }
+                },
+                {
+                  "type": "sphere",
+                  "size": 12,
+                  "x": 0,
+                  "y": 16,
+                  "z": 0,
+                  "color": "#A0E6FF"
+                },
+                {
+                  "type": "tetrahedron",
+                  "size": 10,
+                  "x": 0,
+                  "y": 16,
+                  "z": 0,
+                  "rotationY": 45,
+                  "color": "#203040"
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 16,
+                  "x": 0,
+                  "y": 32,
+                  "z": 0,
+                  "rotationX": 0,
+                  "color": {
+                    "paletteColor": "greyMColor"
+                  }
+                },
+                {
+                  "type": "box",
+                  "width": 38,
+                  "height": 4,
+                  "depth": 38,
+                  "x": 0,
+                  "y": 2,
+                  "z": 0,
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  }
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "x": 24,
+                  "y": 24,
+                  "z": 24,
+                  "color": {
+                    "paletteColor": "blueMColor"
+                  }
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "x": -24,
+                  "y": 24,
+                  "z": 24,
+                  "color": {
+                    "paletteColor": "blueMColor"
+                  }
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "x": 24,
+                  "y": 24,
+                  "z": -24,
+                  "color": {
+                    "paletteColor": "blueMColor"
+                  }
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "x": -24,
+                  "y": 24,
+                  "z": -24,
+                  "color": {
+                    "paletteColor": "blueMColor"
+                  }
+                },
+                {
+                  "type": "torus",
+                  "size": 48,
+                  "color": {
+                    "paletteColor": "blueDColor"
+                  },
+                  "x": 0,
+                  "y": 38,
+                  "z": 0,
+                  "rotationX": 90,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "tubeSize": 2
                 }
               ],
               "position": {
@@ -15791,186 +15791,6 @@ const DEFAULT_PROJECT_CONFIG = {
           }
         }
       },
-      "laserTurret": {
-        "title": "Laser Turret",
-        "info": "Fires focused laser beams dealing high damage at mid range.",
-        "cost": 120,
-        "population": 3,
-        "range": 5,
-        "damage": 20,
-        "attackSpeed": 0.5,
-        "projectile": "lightning",
-        "critChance": 0,
-        "critMultiplier": 0,
-        "piercing": 0,
-        "burnDamage": 0,
-        "render": {
-          "animations": {
-            "idle": [
-              {}
-            ]
-          },
-          "model": {
-            "shapes": {
-              "shapes": [
-                {
-                  "type": "box",
-                  "width": 32,
-                  "height": 8,
-                  "depth": 32,
-                  "x": 0,
-                  "y": 4,
-                  "z": 1.8,
-                  "color": {
-                    "paletteColor": "greyMColor"
-                  },
-                  "name": "base"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 22,
-                  "height": 10,
-                  "x": 0,
-                  "y": 14,
-                  "z": 1.8,
-                  "color": {
-                    "paletteColor": "greyDColor"
-                  },
-                  "name": "core"
-                },
-                {
-                  "type": "box",
-                  "width": 12,
-                  "height": 12,
-                  "depth": 18,
-                  "x": 0,
-                  "y": 24,
-                  "z": 1.8,
-                  "color": {
-                    "paletteColor": "greyMColor"
-                  },
-                  "rotationX": 12,
-                  "name": "cannon-head"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 6,
-                  "height": 18,
-                  "x": 0,
-                  "y": 28,
-                  "z": 12,
-                  "rotationX": 90,
-                  "color": {
-                    "paletteColor": "greyDColor"
-                  },
-                  "name": "plasma-barrel"
-                },
-                {
-                  "type": "cone",
-                  "size": 5,
-                  "height": 8,
-                  "x": 0,
-                  "y": 28,
-                  "z": 20,
-                  "rotationX": 90,
-                  "color": {
-                    "paletteColor": "greyLColor"
-                  },
-                  "name": "plasma-emitter"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 3,
-                  "height": 10,
-                  "x": -8,
-                  "y": 20,
-                  "z": 1.8,
-                  "color": {
-                    "paletteColor": "blueMColor"
-                  },
-                  "name": "left-energy-coil"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 3,
-                  "height": 10,
-                  "x": 8,
-                  "y": 20,
-                  "z": 1.8,
-                  "color": {
-                    "paletteColor": "blueMColor"
-                  },
-                  "name": "right-energy-coil"
-                },
-                {
-                  "type": "sphere",
-                  "size": 4,
-                  "x": 0,
-                  "y": 28,
-                  "z": 20,
-                  "color": {
-                    "paletteColor": "purpleMColor"
-                  },
-                  "name": "charge-orb"
-                },
-                {
-                  "type": "box",
-                  "width": 6,
-                  "height": 6,
-                  "depth": 24,
-                  "x": -12,
-                  "y": 14,
-                  "z": 1.8,
-                  "color": {
-                    "paletteColor": "blueMColor"
-                  },
-                  "name": "left-glow-panel"
-                },
-                {
-                  "type": "box",
-                  "width": 6,
-                  "height": 6,
-                  "depth": 24,
-                  "x": 12,
-                  "y": 14,
-                  "z": 1.8,
-                  "color": {
-                    "paletteColor": "blueMColor"
-                  },
-                  "name": "right-glow-panel"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 8,
-                  "height": 4,
-                  "x": 0,
-                  "y": 32,
-                  "z": 1.8,
-                  "color": {
-                    "paletteColor": "purpleMColor"
-                  },
-                  "name": "top-energy-ring"
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            }
-          }
-        }
-      },
       "keep": {
         "title": "Citadel",
         "mineAmt": 1,
@@ -16189,17 +16009,19 @@ const DEFAULT_PROJECT_CONFIG = {
           }
         }
       },
-      "sentry": {
-        "title": "Photon Sentry",
-        "info": "Defensive attack sentry.",
-        "cost": 25,
-        "population": 1,
-        "range": 4,
-        "damage": 5,
+      "laserTurret": {
+        "title": "Laser Turret",
+        "info": "Fires focused laser beams dealing high damage at mid range.",
+        "cost": 120,
+        "population": 3,
+        "range": 5,
+        "damage": 20,
         "attackSpeed": 0.5,
-        "projectile": "plasmaBolt",
-        "critChance": 0.05,
-        "critMultiplier": 1.5,
+        "projectile": "lightning",
+        "critChance": 0,
+        "critMultiplier": 0,
+        "piercing": 0,
+        "burnDamage": 0,
         "render": {
           "animations": {
             "idle": [
@@ -16210,167 +16032,142 @@ const DEFAULT_PROJECT_CONFIG = {
             "shapes": {
               "shapes": [
                 {
-                  "type": "cylinder",
-                  "size": 20,
-                  "height": 4,
-                  "color": "#78909c",
-                  "x": 0,
-                  "y": 2,
-                  "z": 0,
-                  "name": "base",
-                  "rotationX": 0,
-                  "rotationY": 0,
-                  "rotationZ": 0,
-                  "scaleX": 1,
-                  "scaleY": 1,
-                  "scaleZ": 1
-                },
-                {
-                  "type": "cylinder",
-                  "size": 14,
-                  "height": 26,
-                  "color": "#78909c",
-                  "x": 0,
-                  "y": 17,
-                  "z": 0,
-                  "name": "body"
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            },
-            "rampart": {
-              "shapes": [
-                {
-                  "type": "cylinder",
-                  "size": 12,
+                  "type": "box",
+                  "width": 32,
                   "height": 8,
-                  "color": "#3e4f57",
+                  "depth": 32,
                   "x": 0,
-                  "y": 30,
-                  "z": 0,
-                  "name": "rampartbase"
-                },
-                {
-                  "type": "box",
-                  "width": 3,
-                  "height": 5,
-                  "depth": 3,
-                  "color": "#3e4f57",
-                  "x": 4,
-                  "y": 34,
-                  "z": 4,
-                  "name": "rampartblock1"
-                },
-                {
-                  "type": "box",
-                  "width": 3,
-                  "height": 5,
-                  "depth": 3,
-                  "color": "#3e4f57",
-                  "x": -4,
-                  "y": 34,
-                  "z": 4,
-                  "name": "rampartblock2"
-                },
-                {
-                  "type": "box",
-                  "width": 3,
-                  "height": 5,
-                  "depth": 3,
-                  "color": "#3e4f57",
-                  "x": 4,
-                  "y": 34,
-                  "z": -4,
-                  "name": "rampartblock3"
-                },
-                {
-                  "type": "box",
-                  "width": 3,
-                  "height": 5,
-                  "depth": 3,
-                  "color": "#3e4f57",
-                  "x": -4,
-                  "y": 34,
-                  "z": -4,
-                  "name": "rampartblock4"
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1.5,
-                "y": 1,
-                "z": 1.5
-              }
-            },
-            "attacker": {
-              "shapes": [
-                {
-                  "type": "cylinder",
-                  "size": 5.7,
-                  "height": 14,
-                  "color": "#cfd8dc",
-                  "x": 0,
-                  "y": 39.6,
-                  "z": 0,
-                  "name": "attackerbody"
-                },
-                {
-                  "type": "sphere",
-                  "size": 6,
-                  "color": "#ff8c00",
-                  "x": 0,
-                  "y": 48.89655172413794,
-                  "z": 0,
-                  "name": "attacker head",
-                  "rotationX": 0,
-                  "rotationY": 0,
-                  "rotationZ": 0,
-                  "scaleX": 1,
-                  "scaleY": 1,
-                  "scaleZ": 1
+                  "y": 4,
+                  "z": 1.8,
+                  "color": {
+                    "paletteColor": "greyMColor"
+                  },
+                  "name": "base"
                 },
                 {
                   "type": "cylinder",
-                  "size": 2,
+                  "size": 22,
+                  "height": 10,
+                  "x": 0,
+                  "y": 14,
+                  "z": 1.8,
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  },
+                  "name": "core"
+                },
+                {
+                  "type": "box",
+                  "width": 12,
                   "height": 12,
-                  "color": "#cfd8dc",
+                  "depth": 18,
                   "x": 0,
-                  "y": 42,
-                  "z": 0,
+                  "y": 24,
+                  "z": 1.8,
+                  "color": {
+                    "paletteColor": "greyMColor"
+                  },
+                  "rotationX": 12,
+                  "name": "cannon-head"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 6,
+                  "height": 18,
+                  "x": 0,
+                  "y": 28,
+                  "z": 12,
                   "rotationX": 90,
-                  "name": "attacker arms"
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  },
+                  "name": "plasma-barrel"
+                },
+                {
+                  "type": "cone",
+                  "size": 5,
+                  "height": 8,
+                  "x": 0,
+                  "y": 28,
+                  "z": 20,
+                  "rotationX": 90,
+                  "color": {
+                    "paletteColor": "greyLColor"
+                  },
+                  "name": "plasma-emitter"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 10,
+                  "x": -8,
+                  "y": 20,
+                  "z": 1.8,
+                  "color": {
+                    "paletteColor": "blueMColor"
+                  },
+                  "name": "left-energy-coil"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 10,
+                  "x": 8,
+                  "y": 20,
+                  "z": 1.8,
+                  "color": {
+                    "paletteColor": "blueMColor"
+                  },
+                  "name": "right-energy-coil"
                 },
                 {
                   "type": "sphere",
-                  "size": 3,
-                  "color": "#bf360c",
+                  "size": 4,
                   "x": 0,
-                  "y": 42,
-                  "z": 6,
-                  "name": "attacker weapon"
+                  "y": 28,
+                  "z": 20,
+                  "color": {
+                    "paletteColor": "purpleMColor"
+                  },
+                  "name": "charge-orb"
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 6,
+                  "depth": 24,
+                  "x": -12,
+                  "y": 14,
+                  "z": 1.8,
+                  "color": {
+                    "paletteColor": "blueMColor"
+                  },
+                  "name": "left-glow-panel"
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 6,
+                  "depth": 24,
+                  "x": 12,
+                  "y": 14,
+                  "z": 1.8,
+                  "color": {
+                    "paletteColor": "blueMColor"
+                  },
+                  "name": "right-glow-panel"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 8,
+                  "height": 4,
+                  "x": 0,
+                  "y": 32,
+                  "z": 1.8,
+                  "color": {
+                    "paletteColor": "purpleMColor"
+                  },
+                  "name": "top-energy-ring"
                 }
               ],
               "position": {
@@ -16390,9 +16187,7 @@ const DEFAULT_PROJECT_CONFIG = {
               }
             }
           }
-        },
-        "projectileCount": 0,
-        "projectileAngle": 10
+        }
       },
       "missileLauncher": {
         "title": "Missile Launcher",
@@ -16626,6 +16421,211 @@ const DEFAULT_PROJECT_CONFIG = {
             }
           }
         }
+      },
+      "sentry": {
+        "title": "Photon Sentry",
+        "info": "Defensive attack sentry.",
+        "cost": 25,
+        "population": 1,
+        "range": 4,
+        "damage": 5,
+        "attackSpeed": 0.5,
+        "projectile": "plasmaBolt",
+        "critChance": 0.05,
+        "critMultiplier": 1.5,
+        "render": {
+          "animations": {
+            "idle": [
+              {}
+            ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "cylinder",
+                  "size": 20,
+                  "height": 4,
+                  "color": "#78909c",
+                  "x": 0,
+                  "y": 2,
+                  "z": 0,
+                  "name": "base",
+                  "rotationX": 0,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
+                },
+                {
+                  "type": "cylinder",
+                  "size": 14,
+                  "height": 26,
+                  "color": "#78909c",
+                  "x": 0,
+                  "y": 17,
+                  "z": 0,
+                  "name": "body"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "rampart": {
+              "shapes": [
+                {
+                  "type": "cylinder",
+                  "size": 12,
+                  "height": 8,
+                  "color": "#3e4f57",
+                  "x": 0,
+                  "y": 30,
+                  "z": 0,
+                  "name": "rampartbase"
+                },
+                {
+                  "type": "box",
+                  "width": 3,
+                  "height": 5,
+                  "depth": 3,
+                  "color": "#3e4f57",
+                  "x": 4,
+                  "y": 34,
+                  "z": 4,
+                  "name": "rampartblock1"
+                },
+                {
+                  "type": "box",
+                  "width": 3,
+                  "height": 5,
+                  "depth": 3,
+                  "color": "#3e4f57",
+                  "x": -4,
+                  "y": 34,
+                  "z": 4,
+                  "name": "rampartblock2"
+                },
+                {
+                  "type": "box",
+                  "width": 3,
+                  "height": 5,
+                  "depth": 3,
+                  "color": "#3e4f57",
+                  "x": 4,
+                  "y": 34,
+                  "z": -4,
+                  "name": "rampartblock3"
+                },
+                {
+                  "type": "box",
+                  "width": 3,
+                  "height": 5,
+                  "depth": 3,
+                  "color": "#3e4f57",
+                  "x": -4,
+                  "y": 34,
+                  "z": -4,
+                  "name": "rampartblock4"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1.5,
+                "y": 1,
+                "z": 1.5
+              }
+            },
+            "attacker": {
+              "shapes": [
+                {
+                  "type": "cylinder",
+                  "size": 5.7,
+                  "height": 14,
+                  "color": "#cfd8dc",
+                  "x": 0,
+                  "y": 39.6,
+                  "z": 0,
+                  "name": "attackerbody"
+                },
+                {
+                  "type": "sphere",
+                  "size": 6,
+                  "color": "#ff8c00",
+                  "x": 0,
+                  "y": 48.89655172413794,
+                  "z": 0,
+                  "name": "attacker head",
+                  "rotationX": 0,
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
+                },
+                {
+                  "type": "cylinder",
+                  "size": 2,
+                  "height": 12,
+                  "color": "#cfd8dc",
+                  "x": 0,
+                  "y": 42,
+                  "z": 0,
+                  "rotationX": 90,
+                  "name": "attacker arms"
+                },
+                {
+                  "type": "sphere",
+                  "size": 3,
+                  "color": "#bf360c",
+                  "x": 0,
+                  "y": 42,
+                  "z": 6,
+                  "name": "attacker weapon"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
+          }
+        },
+        "projectileCount": 0,
+        "projectileAngle": 10
       },
       "teslaCoil": {
         "title": "Tesla Coil",
@@ -16968,6 +16968,64 @@ const DEFAULT_PROJECT_CONFIG = {
       }
     },
     "worldObjects": {
+      "rock": {
+        "title": "Rock",
+        "render": {
+          "animations": {
+            "idle": [
+              {}
+            ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "tetrahedron",
+                  "size": 16,
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  },
+                  "x": 3.5,
+                  "y": 2,
+                  "z": 2.5,
+                  "rotationX": 50,
+                  "rotationY": 140,
+                  "rotationZ": 10,
+                  "scaleX": 1
+                },
+                {
+                  "type": "tetrahedron",
+                  "size": 12,
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  },
+                  "x": 10.5,
+                  "y": 2,
+                  "z": 7.5,
+                  "rotationX": 50,
+                  "rotationY": 150,
+                  "rotationZ": 10
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
+          }
+        }
+      },
       "tree": {
         "title": "Tree",
         "render": {
@@ -17078,64 +17136,6 @@ const DEFAULT_PROJECT_CONFIG = {
             }
           }
         }
-      },
-      "rock": {
-        "title": "Rock",
-        "render": {
-          "animations": {
-            "idle": [
-              {}
-            ]
-          },
-          "model": {
-            "shapes": {
-              "shapes": [
-                {
-                  "type": "tetrahedron",
-                  "size": 16,
-                  "color": {
-                    "paletteColor": "greyDColor"
-                  },
-                  "x": 3.5,
-                  "y": 2,
-                  "z": 2.5,
-                  "rotationX": 50,
-                  "rotationY": 140,
-                  "rotationZ": 10,
-                  "scaleX": 1
-                },
-                {
-                  "type": "tetrahedron",
-                  "size": 12,
-                  "color": {
-                    "paletteColor": "greyDColor"
-                  },
-                  "x": 10.5,
-                  "y": 2,
-                  "z": 7.5,
-                  "rotationX": 50,
-                  "rotationY": 150,
-                  "rotationZ": 10
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            }
-          }
-        }
       }
     },
     "materials": {
@@ -17208,13 +17208,13 @@ const DEFAULT_PROJECT_CONFIG = {
         "title": "Rock",
         "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAAAYCAYAAAAF6fiUAAAA40lEQVRoQ+3VPQ6DMAwFYHItBqQOzIw9I2PnDpUYeq2iTkgoyAnBvzzmyHn4syEN0/PXOXqW15wcxSWjJm8A/zeKhOASIBKCW4AoCK4ByA+soQNHn00ACCLlELIA/WPsvp/35dG46l4elLHgHgEbwNjsXOkmAExwu1YTQPv1qAAA5RkAAACUO6B8vdgG4IedlxYDUB40s9e7A4i2SSYAojW1Zt2KAe7cpJqG1p4tBqgtbPU81yCdrcsGcDaQVTiuXGwAXIGj1VUBwHZsY0QCWGhWaYbSc5JbRGUiASTD3vGuPcAKi06NGSIOm+IAAAAASUVORK5CYII="
       },
-      "start": {
-        "title": "Start",
-        "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAAAYCAYAAAAF6fiUAAAAl0lEQVRoQ+3UsQ2AMBAEQVwGEb1QOL0QuQwQqWXk7NdvLTHSwY3uy33VZ0v0HOdeEn3u8FNLNoDvj1ZCSAmwEkJagFUQUgMMD+xEL/ydTQECkXoIAgQC9M6mAAIENwDHtWfIBQSDCBBceBsngABwA3C8CxAAbgCOdwECwA3A8S5AALgBON4FCAA3AMe7AAHgBuB4FzAZwAvn4mAZ8YoyRAAAAABJRU5ErkJggg=="
-      },
       "scales": {
         "title": "Scales",
         "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAQ0lEQVQYV2OM6vL/z4ADXD1wi4GRoAJ9L83/2g5qGGaAdIPEwSaAOOgApgnFCpguZMXEK4DpRjeFEeRIkJHIDkV2EwCeFirmzbH2AwAAAABJRU5ErkJggg=="
+      },
+      "start": {
+        "title": "Start",
+        "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAAAYCAYAAAAF6fiUAAAAl0lEQVRoQ+3UsQ2AMBAEQVwGEb1QOL0QuQwQqWXk7NdvLTHSwY3uy33VZ0v0HOdeEn3u8FNLNoDvj1ZCSAmwEkJagFUQUgMMD+xEL/ydTQECkXoIAgQC9M6mAAIENwDHtWfIBQSDCBBceBsngABwA3C8CxAAbgCOdwECwA3A8S5AALgBON4FCAA3AMe7AAHgBuB4FzAZwAvn4mAZ8YoyRAAAAABJRU5ErkJggg=="
       },
       "water": {
         "title": "Water",
@@ -17222,13 +17222,17 @@ const DEFAULT_PROJECT_CONFIG = {
       }
     },
     "components": {
+      "ArrayTracker": {
+        "fileName": "ArrayTracker",
+        "script": "class ArrayTracker extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init( {objectType}) {\r\n        this.arr = objectType;\r\n        if(!this.game.state[this.arr]){\r\n            this.game.state[this.arr] = [];\r\n        }\r\n        this.game.state[this.arr].push(this.parent);\r\n    }\r\n\r\n    destroy(){\r\n        let index = this.game.state[this.arr].indexOf(this.parent);\r\n        this.game.state[this.arr].splice(index, 1);        \r\n    }\r\n}"
+      },
       "Animator": {
         "fileName": "Animator",
         "script": "class Animator extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n        \r\n    }\r\n    \r\n    \r\n    init({ objectType, spawnType}) {\r\n        this.animations = this.game.imageManager.getImages(objectType, spawnType); // { \"idle\": [...], \"walk\": [...] }\r\n        this.currentAnimation = \"idle\";\r\n        if(this.animations.walk) this.currentAnimation = \"walk\";\r\n        this.currentFrame = 0;\r\n        this.frameDuration = .166; // 10 frames per animation frame (~0.166s at 60 FPS)\r\n        this.frameTimer = 0;\r\n\r\n        this.baseSpeed = this.parent.getComponent(\"stats\")?.stats.speed || 1;\r\n    }\r\n\r\n    update() {\r\n        \r\n        this.frameTimer += this.game.deltaTime;\r\n        let currentSpeedPercent = this.parent.getComponent(\"stats\")?.stats.speed / this.baseSpeed || 1;\r\n\r\n        if (this.frameTimer >= this.frameDuration / currentSpeedPercent) {\r\n            this.frameTimer = 0;\r\n            const animFrames = this.animations[this.currentAnimation];\r\n            this.currentFrame = (this.currentFrame + 1) % animFrames.length;\r\n        }\r\n        // Sync direction with Renderer (if separate)\r\n        const renderer = this.parent.getComponent(\"Renderer\");\r\n        if (renderer) {\r\n            renderer.images = this.animations[this.currentAnimation][this.currentFrame];\r\n        }\r\n    }\r\n\r\n    setAnimation(animationType) {\r\n        if (this.animations[animationType] && this.currentAnimation !== animationType) {\r\n            this.currentAnimation = animationType;\r\n            this.currentFrame = 0;\r\n            this.frameTimer = 0;\r\n        }\r\n    }\r\n    \r\n}"
       },
-      "ArrayTracker": {
-        "fileName": "ArrayTracker",
-        "script": "class ArrayTracker extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init( {objectType}) {\r\n        this.arr = objectType;\r\n        if(!this.game.state[this.arr]){\r\n            this.game.state[this.arr] = [];\r\n        }\r\n        this.game.state[this.arr].push(this.parent);\r\n    }\r\n\r\n    destroy(){\r\n        let index = this.game.state[this.arr].indexOf(this.parent);\r\n        this.game.state[this.arr].splice(index, 1);        \r\n    }\r\n}"
+      "BallisticProjectile": {
+        "fileName": "BallisticProjectile",
+        "script": "class BallisticProjectile extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\ninit({ spawnType, owner, target, stats }) {\r\n    this.type = spawnType;\r\n    this.def = this.game.config.projectiles[this.type];\r\n    this.owner = owner;\r\n    this.target = target;\r\n    this.stats = stats;\r\n    this.piercedEnemies = [];\r\n    this.ownerStats = this.owner.getComponent(\"stats\").stats;\r\n    this.distanceTraveled = 0;\r\n    this.distanceToSpawnParticle = 1;\r\n    \r\n    // Ballistic trajectory variables\r\n    this.startPosition = { ...this.parent.position, z: 10 }; // Start 10 units above ground\r\n    this.targetPosition = { ...this.target.position, z: 0 };\r\n    this.time = 0;\r\n    \r\n    this.totalDist = Math.sqrt(\r\n        (this.targetPosition.x - this.startPosition.x) ** 2 + \r\n        (this.targetPosition.y - this.startPosition.y) ** 2\r\n    );\r\n    this.maxHeight = this.totalDist / Math.PI;\r\n    \r\n    // Initialize position with Z component\r\n    this.parent.position.z = this.startPosition.z;\r\n    this.positionZ = this.startPosition.z;\r\n    \r\n    // Animation state variables\r\n    this.lastZPosition = this.positionZ;\r\n\r\n    \r\n    this.peakThreshold = this.maxHeight * 0.1; // 10% threshold for idle at peak\r\n    this.currentAnimState = 'ascend';\r\n    if(this.stats.attackSound){\r\n        this.game.audioManager.playSound('attackSounds', this.stats.attackSound);\r\n    }\r\n}\r\n\r\nsetAnimation(anim) {\r\n\r\n    if(this.game.config.configs.game.is3D) {\r\n        this.modelRenderer = this.parent.getComponent('modelRenderer');\r\n        this.modelRenderer?.setAnimation(anim);\r\n    } else {\r\n        this.animator = this.parent.getComponent('animator');\r\n        this.animator?.setAnimation(anim);\r\n    }\r\n}\r\n\r\nupdate() {\r\n    this.parent.position.z = this.positionZ;\r\n    \r\n    // Save previous z position to detect direction change\r\n    this.lastZPosition = this.positionZ;\r\n\r\n    // Calculate progress (0 to 1)\r\n    this.time += this.game.deltaTime;\r\n    const dx = this.targetPosition.x - this.parent.position.x;\r\n    const dy = this.targetPosition.y - this.parent.position.y;\r\n    const distSq = dx * dx + dy * dy;\r\n    let dist = Math.sqrt(distSq);\r\n    const speed = this.stats.speed;\r\n    this.parent.position.x += (dx / dist) * speed / (Math.PI);\r\n    this.parent.position.y += (dy / dist) * speed / (Math.PI);\r\n\r\n\r\n    const currentDist = Math.sqrt(\r\n        (this.parent.position.x - this.startPosition.x) ** 2 + \r\n        (this.parent.position.y - this.startPosition.y) ** 2\r\n    );\r\n    const xyprogressToTarget = Math.min(1, currentDist / this.totalDist);\r\n\r\n    // Parabolic trajectory calculation (2:1 isometric adjusted)\r\n    this.parent.position.z = this.maxHeight * (1 - Math.pow(2 * xyprogressToTarget - 1, 2));\r\n\r\n    this.positionZ = this.parent.position.z;\r\n    \r\n    // Calculate distance from peak height to determine if we're near the top\r\n    const distanceFromPeak = Math.abs(this.positionZ - this.maxHeight);\r\n    \r\n    // Check if animation state needs to change based on z movement and proximity to peak\r\n    if( xyprogressToTarget < .075 ) {\r\n        if (this.currentAnimState !== 'launch') {\r\n            this.setAnimation('launch');\r\n            this.currentAnimState = 'launch';\r\n        }\r\n    // } else if( xyprogressToTarget > .95 ) {\r\n    //     if (this.currentAnimState !== 'land') {\r\n    //         this.animator.setAnimation('land');\r\n    //         this.currentAnimState = 'land';\r\n    //     }\r\n    } else if (distanceFromPeak <= this.peakThreshold) {\r\n        // We're near the peak of the trajectory\r\n        if (this.currentAnimState !== 'idle') {\r\n            this.setAnimation('idle');\r\n            this.currentAnimState = 'idle';\r\n        }\r\n    } else if (this.positionZ < this.lastZPosition) {\r\n        // We're descending and not near the peak\r\n        if (this.currentAnimState !== 'descend') {\r\n            this.setAnimation('descend');\r\n            this.currentAnimState = 'descend';\r\n        }\r\n    } else if (this.positionZ > this.lastZPosition) {\r\n        // We're ascending and not near the peak\r\n        if (this.currentAnimState !== 'ascend') {\r\n            this.setAnimation('ascend');\r\n            this.currentAnimState = 'ascend';\r\n        }\r\n    }\r\n    \r\n    // Check if we've hit the ground (Z <= 0)\r\n    if (this.parent.position.z <= 0) {\r\n        this.parent.position.z = 0; // Snap to ground\r\n\r\n        // Hit detection - same as before but at current position\r\n        const targetDistSq = (this.parent.position.x - this.target.position.x) ** 2 + \r\n                            (this.parent.position.y - this.target.position.y) ** 2;\r\n\r\n\r\n\r\n            // We missed the target but hit the ground - maybe still do splash damage\r\n        if (this.stats.splashRadius > 0) {\r\n            this.processSplashDamage();\r\n        }\r\n        this.parent.destroy();\r\n        if(this.stats.hitSound){\r\n            this.game.audioManager.playSound('hitSounds', this.stats.hitSound);\r\n        }\r\n\r\n        return;\r\n    }\r\n    \r\n    // Update distance traveled for particles\r\n    const tDx = this.parent.lastPosition.x - this.parent.position.x;\r\n    const tDy = this.parent.lastPosition.y - this.parent.position.y;\r\n    const tDist = Math.sqrt(tDx * tDx + tDy * tDy);\r\n    this.distanceTraveled += tDist;\r\n    \r\n    if (this.def.particle && this.distanceTraveled > this.distanceToSpawnParticle) {\r\n\r\n        let particle = this.game.spawn(this.parent.lastPosition.x + Math.random() * 4 - 2, this.parent.lastPosition.y + Math.random() * 4 - 2, \"particle\", { objectType: \"particles\", spawnType: this.def.particle });\r\n        particle.position.z = this.parent.position.z + Math.random() * 4 - 2;\r\n        this.distanceTraveled = 0;\r\n        this.distanceToSpawnParticle += Math.random() * 2;\r\n    }\r\n}\r\n\r\n\r\nprocessSplashDamage() {\r\n    const nearbyEnemies = this.game.spatialGrid.getNearbyEntities(\r\n        this.parent.gridPosition.x, \r\n        this.parent.gridPosition.y, \r\n        this.stats.splashRadius,\r\n        \"enemy\"\r\n    );\r\n    let explosion = this.game.spawn(this.parent.position.x, this.parent.position.y, \"explosion\", { radius: this.stats.splashRadius });\r\n    for (const enemy of nearbyEnemies) {\r\n        if (enemy.isDead) continue;\r\n        \r\n        const dx = enemy.position.x - this.parent.position.x;\r\n        const dy = enemy.position.y - this.parent.position.y;\r\n        const distSq = dx * dx + dy * dy;\r\n        \r\n        let gridSize = this.game.config.configs.game.gridSize;\r\n        const splashRadiusSq = this.stats.splashRadius * this.stats.splashRadius * gridSize * gridSize;\r\n        \r\n        if (distSq <= splashRadiusSq) {\r\n            let enemyHealth = enemy.getComponent(\"health\");\r\n            let enemyEnergyShield = enemy.getComponent(\"energyshield\");\r\n            let enemyStats = enemy.getComponent(\"stats\");\r\n            let enemyStatClone = { ...enemyStats.stats };\r\n            enemyStatClone.energyShield = enemyEnergyShield.energyShield;\r\n            \r\n            let damageResult = engine.getFunction(\"calculateDamage\")(this.stats, enemyStatClone);\r\n            if (!damageResult.wasEvaded) {\r\n                enemyHealth.hp -= damageResult.damageDealt;\r\n                enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);\r\n                this.game.spawn(enemy.position.x, enemy.position.y, \"hitEffect\", { damageType: this.stats.damageType , lifeSpan: .3});\r\n                if (this.ownerStats.slowAmount) {\r\n                    enemyStats.addEffect(this.game.config.effects.slow, this.game.effects.slow, this.ownerStats.slowAmount);\r\n                }\r\n            }\r\n        }\r\n    }\r\n}\r\n}"
       },
       "Attacker": {
         "fileName": "Attacker",
@@ -17239,9 +17243,9 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "AudioManager",
         "script": "class AudioManager extends engine.Component {\n    constructor(game, parent, params) {\n        super(game, parent, params);\n    }\n\n    init() {\n        this.isInitialized = false;\n        this.bindInitialization();\n    }\n\n    bindInitialization() {\n        const initHandler = () => {\n            if (!this.isInitialized) {\n                this.initialize();\n            }\n        };\n        \n        document.addEventListener('click', initHandler, { once: true });\n        document.addEventListener('keydown', initHandler, { once: true });\n    }\n\n    async initialize() {\n        class SoundPool {\n            constructor(audioContext, destination, poolSize = 8) {\n                this.audioContext = audioContext;\n                this.destination = destination;\n                this.poolSize = poolSize;\n                this.sources = [];\n                this.initializePool();\n            }\n\n            initializePool() {\n                for (let i = 0; i < this.poolSize; i++) {\n                    this.sources.push(this.createSource());\n                }\n            }\n\n            createSource() {\n                const source = {\n                    active: false,\n                    id: null,\n                    envelopeGain: this.audioContext.createGain(),\n                    gainNode: this.audioContext.createGain(),\n                    filter: this.audioContext.createBiquadFilter(),\n                    distortion: this.audioContext.createWaveShaper(),\n                    compressor: this.audioContext.createDynamicsCompressor(),\n                    pannerNode: this.audioContext.createStereoPanner(),\n                    delay: this.audioContext.createDelay(5.0),\n                    delayGain: this.audioContext.createGain(),\n                    convolver: this.audioContext.createConvolver(),\n                    reverbGain: this.audioContext.createGain(),\n                    noiseFilter: this.audioContext.createBiquadFilter(),\n                    noiseGain: this.audioContext.createGain(),\n                    destination: this.destination\n                };\n\n                source.filter.type = 'lowpass';\n                source.filter.frequency.setValueAtTime(20000, this.audioContext.currentTime);\n                source.filter.Q.setValueAtTime(0.5, this.audioContext.currentTime);\n\n                source.noiseFilter.type = 'lowpass';\n                source.noiseFilter.frequency.setValueAtTime(2000, this.audioContext.currentTime);\n                source.noiseFilter.Q.setValueAtTime(1, this.audioContext.currentTime);\n                \n                source.noiseGain.gain.setValueAtTime(0, this.audioContext.currentTime);\n\n                source.distortion.curve = null;\n                source.distortion.oversample = '4x';\n\n                source.compressor.threshold.setValueAtTime(-24, this.audioContext.currentTime);\n                source.compressor.knee.setValueAtTime(30, this.audioContext.currentTime);\n                source.compressor.ratio.setValueAtTime(12, this.audioContext.currentTime);\n                source.compressor.attack.setValueAtTime(0.003, this.audioContext.currentTime);\n                source.compressor.release.setValueAtTime(0.25, this.audioContext.currentTime);\n\n                source.pannerNode.pan.setValueAtTime(0, this.audioContext.currentTime);\n\n                source.delay.delayTime.setValueAtTime(0.3, this.audioContext.currentTime);\n                source.delayGain.gain.setValueAtTime(0, this.audioContext.currentTime);\n\n                source.reverbGain.gain.setValueAtTime(0, this.audioContext.currentTime);\n\n                const chain = [\n                    source.envelopeGain,\n                    source.gainNode,\n                    source.filter,\n                    source.distortion,\n                    source.compressor,\n                    source.pannerNode\n                ];\n\n                for (let i = 0; i < chain.length - 1; i++) {\n                    chain[i].connect(chain[i + 1]);\n                }\n\n                // Route delay and reverb after filter\n                source.filter.connect(source.delay);\n                source.delay.connect(source.delayGain);\n                source.delayGain.connect(source.delay);\n                source.delayGain.connect(source.pannerNode);\n\n                source.filter.connect(source.convolver);\n                source.convolver.connect(source.reverbGain);\n                source.reverbGain.connect(source.pannerNode);\n\n                source.pannerNode.connect(source.destination);\n\n                return source;\n            }\n\n            getSource() {\n                let source = this.sources.find(src => !src.active && (!src.lastUsed || this.audioContext.currentTime - src.lastUsed > 1));\n                if (!source && this.sources.length < this.poolSize * 2) {\n                    source = this.createSource();\n                    this.sources.push(source);\n                }\n                if (source) {\n                    source.active = true;\n                    source.gainNode.gain.setValueAtTime(1, this.audioContext.currentTime);\n                    source.envelopeGain.gain.setValueAtTime(0, this.audioContext.currentTime);\n                    source.delayGain.gain.setValueAtTime(0, this.audioContext.currentTime);\n                    source.reverbGain.gain.setValueAtTime(0, this.audioContext.currentTime);\n                    source.noiseGain.gain.setValueAtTime(0, this.audioContext.currentTime);\n                }\n                return source;\n            }\n\n            releaseSource(source) {\n                if (source) {\n                    source.active = false;\n                    source.id = null;\n                    const now = this.audioContext.currentTime;\n            \n                    // Reset all nodes\n                    source.filter.frequency.cancelScheduledValues(now);\n                    source.filter.frequency.setValueAtTime(20000, now);\n                    source.distortion.curve = null;\n                    source.pannerNode.pan.setValueAtTime(0, now);\n                    source.envelopeGain.gain.setValueAtTime(0, now);\n                    source.gainNode.gain.setValueAtTime(1, now);\n                    source.delayGain.gain.setValueAtTime(0, now);\n                    source.reverbGain.gain.setValueAtTime(0, now);\n                    source.noiseGain.gain.setValueAtTime(0, now);\n            \n                    // Disconnect and clear sources if they exist\n                    if (source.source) {\n                        try {\n                            source.source.stop(now);\n                            source.source.disconnect();\n                        } catch (e) {\n                            console.warn('Error stopping source:', e);\n                        }\n                        source.source = null;\n                    }\n                    \n                    if (source.noiseSource) {\n                        try {\n                            source.noiseSource.stop(now);\n                            source.noiseSource.disconnect();\n                        } catch (e) {\n                            console.warn('Error stopping noise source:', e);\n                        }\n                        source.noiseSource = null;\n                    }\n            \n                    source.lastUsed = now;\n                }\n            }\n\n            destroy() {\n                this.sources.forEach(source => {\n                    source.envelopeGain.disconnect();\n                    source.gainNode.disconnect();\n                    source.filter.disconnect();\n                    source.distortion.disconnect();\n                    source.compressor.disconnect();\n                    source.pannerNode.disconnect();\n                    source.delay.disconnect();\n                    source.delayGain.disconnect();\n                    source.convolver.disconnect();\n                    source.reverbGain.disconnect();\n                    source.noiseFilter.disconnect();\n                    source.noiseGain.disconnect();\n                });\n                this.sources = [];\n            }\n        }\n        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();\n        this.masterBus = this.createAudioBus('master');\n        this.musicBus = this.createAudioBus('music');\n        this.sfxBus = this.createAudioBus('sfx');\n        this.uiBus = this.createAudioBus('ui');\n        this.musicBus.connect(this.masterBus);\n        this.sfxBus.connect(this.masterBus);\n        this.uiBus.connect(this.masterBus);\n        this.masterBus.connect(this.audioContext.destination);\n        this.soundPools = {\n            sfx: new SoundPool(this.audioContext, this.sfxBus.input, 6),\n            music: new SoundPool(this.audioContext, this.musicBus.input, 2),\n            ui: new SoundPool(this.audioContext, this.uiBus.input, 3)\n        };\n        this.buffers = {};\n        this.activeSounds = new Set();\n        if (this.audioContext.state === 'suspended') {\n            await this.audioContext.resume();\n        }\n        this.isInitialized = true;\n    }\n\n    createAudioBus(name) {\n        const bus = {\n            name,\n            input: this.audioContext.createGain(),\n            compressor: this.audioContext.createDynamicsCompressor(),\n            output: this.audioContext.createGain()\n        };\n        \n        bus.input.connect(bus.compressor);\n        bus.compressor.connect(bus.output);\n        \n        bus.connect = (destination) => {\n            bus.output.connect(destination.input || destination);\n        };\n        \n        bus.setVolume = (value) => {\n            const now = this.audioContext.currentTime;\n            bus.output.gain.cancelScheduledValues(now);\n            bus.output.gain.setTargetAtTime(\n                value <= 0 ? 0.000001 : value,\n                now,\n                0.02\n            );\n        };\n        \n        return bus;\n    }\n\n    getSynthSound(soundCollectionName, soundName) {\n        if (this.game.config[soundCollectionName]?.[soundName]) {\n            return this.game.config[soundCollectionName][soundName].audio;\n        }\n        console.warn('sound not found', soundCollectionName, soundName);\n        return null;\n    }\n\n    playSound(soundCollectionName, soundName) {\n        let data = this.getSynthSound(soundCollectionName, soundName);\n        if (data) {\n            this.playSynthSound(`${soundCollectionName}_${soundName}`, data);\n        }\n    }\n\n    playSynthSound(soundId, soundConfig, options = {}) {\n        if (!this.isInitialized) {\n            this.initialize();\n            return this.playSynthSound(soundId, soundConfig, options);\n        }\n        \n        const category = options.category || 'sfx';\n        const pool = this.soundPools[category];\n        \n        if (!pool) {\n            console.warn(`No sound pool for category ${category}`);\n            return null;\n        }\n        \n        let instanceCount = 0;\n        this.activeSounds.forEach(sound => {\n            if (sound.id === soundId) instanceCount++;\n        });\n        \n        if (instanceCount >= (options.maxInstances || 3)) {\n            console.warn(`Max instances reached for sound ${soundId}`);\n            return null;\n        }\n        \n        const sound = pool.getSource();\n        if (!sound) {\n            console.warn(`No available source for sound ${soundId}`);\n            return null;\n        }\n        \n        sound.id = soundId;\n        sound.category = category;\n        \n        // Create main oscillator\n        const oscillator = this.createSynthSource(soundConfig);\n        sound.source = oscillator;\n        oscillator.connect(sound.envelopeGain);\n        \n        // Add noise generator if configured\n        if (soundConfig.noise && soundConfig.noise.amount > 0) {\n            this.applyNoiseToSound(sound, soundConfig.noise);\n        }\n        \n        this.createEnvelopeFromConfig(soundConfig.envelope, sound.envelopeGain, soundConfig.duration);\n        \n        if (soundConfig.effects) {\n            this.applySynthEffects(sound, soundConfig.effects, soundConfig);\n        } \n        \n        this.configureSoundInstance(sound, options);\n        \n        const now = this.audioContext.currentTime;\n        oscillator.start(now);\n        \n        // Start noise generator if it exists\n        if (sound.noiseSource) {\n            sound.noiseSource.start(now);\n        }\n        \n        const duration = soundConfig.duration || 1;\n        const release = (soundConfig.envelope?.release) || 0.3;\n        let totalDuration = duration + release;\n        \n        if (soundConfig.effects?.delay?.time) {\n            const delayTail = soundConfig.effects.delay.time * 3;\n            if (totalDuration < delayTail) {\n                totalDuration = delayTail;\n            }\n        }\n        \n        oscillator.stop(now + totalDuration + 0.02);\n        if (sound.noiseSource) {\n            sound.noiseSource.stop(now + totalDuration + 0.02);\n        }\n        \n        this.activeSounds.add(sound);\n        \n        oscillator.onended = () => {\n            setTimeout(() => {\n                sound.active = false;\n                this.activeSounds.delete(sound);\n                pool.releaseSource(sound);\n            }, (soundConfig.effects?.delay?.time || 0) * 1000 * 3);\n        };\n        \n        return sound;\n    }\n\n    createSynthSource(config) {\n        // Default to oscillator unless waveform is 'noise'\n        const oscillator = config.waveform === 'noise'\n            ? this.createNoiseSource('white') \n            : this.audioContext.createOscillator();\n    \n        if (config.waveform !== 'noise') {\n            oscillator.type = config.waveform || 'sine';\n            const baseFreq = config.frequency || 440;\n            const now = this.audioContext.currentTime;\n    \n            // Initialize frequency\n            oscillator.frequency.cancelScheduledValues(now);\n            oscillator.frequency.setValueAtTime(baseFreq, now);\n    \n            // Apply pitch envelope if defined\n            if (config.pitchEnvelope) {\n                const startMultiplier = config.pitchEnvelope.start ?? 1;\n                const endMultiplier = config.pitchEnvelope.end ?? 1;\n                const envelopeTime = config.pitchEnvelope.time ?? config.duration ?? 1;\n    \n                if (startMultiplier !== 1 || endMultiplier !== 1) {\n                    const startFreq = baseFreq * startMultiplier;\n                    const endFreq = baseFreq * endMultiplier;\n    \n                    oscillator.frequency.setValueAtTime(startFreq, now);\n                    oscillator.frequency.exponentialRampToValueAtTime(\n                        Math.max(endFreq, 0.01),\n                        now + envelopeTime\n                    );\n                }\n            }\n        }\n    \n        return oscillator;\n    }\n\n    applyNoiseToSound(sound, noiseConfig) {\n        if (!noiseConfig || noiseConfig.amount <= 0) return;\n\n        const noiseType = noiseConfig.type || 'white';\n        const noiseAmount = Math.min(1, Math.max(0, noiseConfig.amount));\n        \n        // Create the noise source\n        sound.noiseSource = this.createNoiseSource(noiseType);\n        \n        // Configure noise filter if specified\n        if (noiseConfig.filter && noiseConfig.filter.type !== 'none') {\n            sound.noiseFilter.type = noiseConfig.filter.type || 'lowpass';\n            sound.noiseFilter.frequency.setValueAtTime(\n                noiseConfig.filter.frequency || 2000, \n                this.audioContext.currentTime\n            );\n        }\n        \n        // Set noise gain based on the amount\n        sound.noiseGain.gain.setValueAtTime(noiseAmount, this.audioContext.currentTime);\n        \n        // Connect noise through the filter and envelope\n        sound.noiseSource.connect(sound.noiseFilter);\n        sound.noiseFilter.connect(sound.noiseGain);\n        sound.noiseGain.connect(sound.envelopeGain);\n    }\n\n    createNoiseSource(noiseType = 'white') {\n        const bufferSize = this.audioContext.sampleRate * 2;\n        const noiseBuffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);\n        const output = noiseBuffer.getChannelData(0);\n        \n        // Generate different types of noise\n        switch (noiseType) {\n            case 'pink':\n                this.generatePinkNoise(output);\n                break;\n            case 'brown':\n                this.generateBrownNoise(output);\n                break;\n            case 'white':\n            default:\n                this.generateWhiteNoise(output);\n                break;\n        }\n        \n        const source = this.audioContext.createBufferSource();\n        source.buffer = noiseBuffer;\n        source.loop = true;\n        \n        return source;\n    }\n\n    generateWhiteNoise(output) {\n        for (let i = 0; i < output.length; i++) {\n            output[i] = Math.random() * 2 - 1;\n        }\n    }\n\n    generatePinkNoise(output) {\n        // Pink noise algorithm (approximation using Paul Kellet's method)\n        let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;\n        \n        for (let i = 0; i < output.length; i++) {\n            const white = Math.random() * 2 - 1;\n            \n            // Filter white noise to create pink noise\n            b0 = 0.99886 * b0 + white * 0.0555179;\n            b1 = 0.99332 * b1 + white * 0.0750759;\n            b2 = 0.96900 * b2 + white * 0.1538520;\n            b3 = 0.86650 * b3 + white * 0.3104856;\n            b4 = 0.55000 * b4 + white * 0.5329522;\n            b5 = -0.7616 * b5 - white * 0.0168980;\n            \n            output[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.11;\n            b6 = white * 0.115926;\n        }\n    }\n\n    generateBrownNoise(output) {\n        // Brown noise algorithm (random walk)\n        let lastValue = 0;\n        \n        for (let i = 0; i < output.length; i++) {\n            // Small random change from previous value\n            const white = Math.random() * 2 - 1;\n            lastValue = (lastValue + (0.02 * white)) / 1.02;\n            \n            // Keep within range\n            output[i] = lastValue * 3.5; // Amplify to make it audible\n        }\n        \n        // Normalize to prevent clipping\n        const max = Math.max(...Array.from(output).map(Math.abs));\n        if (max > 0) {\n            for (let i = 0; i < output.length; i++) {\n                output[i] /= max;\n            }\n        }\n    }\n\n    createEnvelopeFromConfig(envelope, gainNode, duration = 1) {\n        if (!envelope) {\n            console.warn('No envelope provided, using default');\n            envelope = { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.3 };\n        }\n        \n        const now = this.audioContext.currentTime;\n        \n        const attack = Math.max(0.01, envelope.attack || 0.01);\n        const decay = Math.max(0, envelope.decay || 0.1);\n        const sustain = Math.max(0, Math.min(1, envelope.sustain || 0.7));\n        const release = Math.max(0.02, envelope.release || 0.3);\n        \n        gainNode.gain.cancelScheduledValues(now);\n        gainNode.gain.setValueAtTime(0, now);\n        gainNode.gain.linearRampToValueAtTime(1, now + attack);\n        gainNode.gain.linearRampToValueAtTime(sustain, now + attack + decay);\n        gainNode.gain.setValueAtTime(sustain, now + duration);\n        gainNode.gain.setTargetAtTime(0.0001, now + duration, release / 3);\n        gainNode.gain.setValueAtTime(0, now + duration + release); // Absolute zero\n    }\n\n    applySynthEffects(sound, effectsConfig, soundConfig) {\n        const now = this.audioContext.currentTime;\n        \n        // Filter\n        if (effectsConfig.filter) {\n            sound.filter.type = effectsConfig.filter.type || 'lowpass';\n            sound.filter.frequency.setValueAtTime(effectsConfig.filter.frequency || 20000, now);\n            sound.filter.Q.setValueAtTime(effectsConfig.filter.Q || 0.5, now);\n            \n            // Apply pitch envelope to filter for noise waveforms\n            if (sound.source.buffer && soundConfig.pitchEnvelope && (soundConfig.pitchEnvelope.start !== 1 || soundConfig.pitchEnvelope.end !== 1)) {\n                const baseFreq = soundConfig.frequency || 100;\n                const startFreq = baseFreq * (soundConfig.pitchEnvelope.start + 1);\n                const endFreq = baseFreq * soundConfig.pitchEnvelope.end;\n                const duration = soundConfig.pitchEnvelope.time || soundConfig.duration || 1;\n                \n                sound.filter.frequency.cancelScheduledValues(now);\n                sound.filter.frequency.setValueAtTime(startFreq, now);\n                sound.filter.frequency.exponentialRampToValueAtTime(\n                    Math.max(endFreq, 0.01),\n                    now + duration\n                );\n                sound.filter.frequency.exponentialRampToValueAtTime(\n                    Math.max(endFreq * 0.5, 0.01),\n                    now + soundConfig.duration + (soundConfig.envelope?.release || 0.3)\n                );\n            }\n        }\n        \n        // Distortion\n        if (effectsConfig.distortion && effectsConfig.distortion > 0) {\n            sound.distortion.curve = this.makeDistortionCurve(effectsConfig.distortion);\n        } else {\n            sound.distortion.curve = null;\n        }\n        \n        // Delay\n        if (effectsConfig.delay && effectsConfig.delay.feedback > 0) {\n            sound.delay.delayTime.setValueAtTime(effectsConfig.delay.time || 0.3, now);\n            sound.delayGain.gain.setValueAtTime(Math.min(effectsConfig.delay.feedback || 0, 0.8), now);\n            sound.delayGain.gain.setTargetAtTime(0, now + soundConfig.duration + (soundConfig.envelope?.release || 0.3), 0.1);\n        } else {\n            sound.delayGain.gain.setValueAtTime(0, now);\n        }\n        \n        // Reverb\n        if (effectsConfig.reverb && effectsConfig.reverb > 0) {\n            this.generateImpulseResponse(sound.convolver);\n            sound.reverbGain.gain.setValueAtTime(Math.min(effectsConfig.reverb, 1), now);\n            sound.reverbGain.gain.setTargetAtTime(0, now + soundConfig.duration + (soundConfig.envelope?.release || 0.3), 0.2);\n        } else {\n            sound.reverbGain.gain.setValueAtTime(0, now);\n        }\n        \n        // Panning\n        if (effectsConfig.pan !== undefined) {\n            sound.pannerNode.pan.setValueAtTime(Math.max(-1, Math.min(1, effectsConfig.pan)), now);\n        }\n    }\n\n    configureSoundInstance(sound, options) {\n        const now = this.audioContext.currentTime;\n        \n        if (options.volume !== undefined) {\n            sound.gainNode.gain.cancelScheduledValues(now);\n            sound.gainNode.gain.setTargetAtTime(\n                options.volume <= 0 ? 0.000001 : Math.max(0, Math.min(options.volume, 1)),\n                now,\n                0.02\n            );\n        }\n        \n        if (options.position && sound.pannerNode.positionX) {\n            const pos = options.position;\n            sound.pannerNode.positionX.setValueAtTime(pos.x || 0, now);\n            sound.pannerNode.positionY.setValueAtTime(pos.y || 0, now);\n            sound.pannerNode.positionZ.setValueAtTime(pos.z || 0, now);\n        }\n        \n        if (options.pitch && sound.source && sound.source.playbackRate) {\n            sound.source.playbackRate.setValueAtTime(options.pitch, now);\n        }\n    }\n\n    generateImpulseResponse(convolver) {\n        const length = this.audioContext.sampleRate * 1.5; // Shorter impulse\n        const impulse = this.audioContext.createBuffer(2, length, this.audioContext.sampleRate);\n        \n        for (let channel = 0; channel < 2; channel++) {\n            const impulseData = impulse.getChannelData(channel);\n            for (let i = 0; i < length; i++) {\n                const decay = Math.pow(1 - i / length, 2);\n                impulseData[i] = (Math.random() * 2 - 1) * decay;\n            }\n        }\n        \n        convolver.buffer = impulse;\n    }\n\n    makeDistortionCurve(amount) {\n        const k = Math.max(amount, 0) * 10;\n        const n_samples = 44100;\n        const curve = new Float32Array(n_samples);\n        const deg = Math.PI / 180;\n        for (let i = 0; i < n_samples; i++) {\n            const x = (i * 2) / n_samples - 1;\n            curve[i] = (3 + k) * x * 20 * deg / (Math.PI + k * Math.abs(x));\n        }\n        return curve;\n    }\n\n    stopSound(sound) {\n        if (!sound) return;\n        \n        const now = this.audioContext.currentTime;\n        \n        if (sound.gainNode) {\n            sound.gainNode.gain.cancelScheduledValues(now);\n            sound.gainNode.gain.setValueAtTime(sound.gainNode.gain.value || 0, now);\n            sound.gainNode.gain.linearRampToValueAtTime(0, now + 0.05);\n        }\n        \n        if (sound.source) {\n            try {\n                sound.source.stop(now + 0.06);\n            } catch (e) {\n                console.warn('Error stopping source:', e);\n            }\n        }\n        \n        if (sound.noiseSource) {\n            try {\n                sound.noiseSource.stop(now + 0.06);\n            } catch (e) {\n                console.warn('Error stopping noise source:', e);\n            }\n        }\n        \n        sound.active = false;\n        this.activeSounds.delete(sound);\n    }\n\n    stopAllSounds() {\n        this.activeSounds.forEach(sound => {\n            this.stopSound(sound);\n        });\n        this.activeSounds.clear();\n    }\n}"
       },
-      "BallisticProjectile": {
-        "fileName": "BallisticProjectile",
-        "script": "class BallisticProjectile extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\ninit({ spawnType, owner, target, stats }) {\r\n    this.type = spawnType;\r\n    this.def = this.game.config.projectiles[this.type];\r\n    this.owner = owner;\r\n    this.target = target;\r\n    this.stats = stats;\r\n    this.piercedEnemies = [];\r\n    this.ownerStats = this.owner.getComponent(\"stats\").stats;\r\n    this.distanceTraveled = 0;\r\n    this.distanceToSpawnParticle = 1;\r\n    \r\n    // Ballistic trajectory variables\r\n    this.startPosition = { ...this.parent.position, z: 10 }; // Start 10 units above ground\r\n    this.targetPosition = { ...this.target.position, z: 0 };\r\n    this.time = 0;\r\n    \r\n    this.totalDist = Math.sqrt(\r\n        (this.targetPosition.x - this.startPosition.x) ** 2 + \r\n        (this.targetPosition.y - this.startPosition.y) ** 2\r\n    );\r\n    this.maxHeight = this.totalDist / Math.PI;\r\n    \r\n    // Initialize position with Z component\r\n    this.parent.position.z = this.startPosition.z;\r\n    this.positionZ = this.startPosition.z;\r\n    \r\n    // Animation state variables\r\n    this.lastZPosition = this.positionZ;\r\n\r\n    \r\n    this.peakThreshold = this.maxHeight * 0.1; // 10% threshold for idle at peak\r\n    this.currentAnimState = 'ascend';\r\n    if(this.stats.attackSound){\r\n        this.game.audioManager.playSound('attackSounds', this.stats.attackSound);\r\n    }\r\n}\r\n\r\nsetAnimation(anim) {\r\n\r\n    if(this.game.config.configs.game.is3D) {\r\n        this.modelRenderer = this.parent.getComponent('modelRenderer');\r\n        this.modelRenderer?.setAnimation(anim);\r\n    } else {\r\n        this.animator = this.parent.getComponent('animator');\r\n        this.animator?.setAnimation(anim);\r\n    }\r\n}\r\n\r\nupdate() {\r\n    this.parent.position.z = this.positionZ;\r\n    \r\n    // Save previous z position to detect direction change\r\n    this.lastZPosition = this.positionZ;\r\n\r\n    // Calculate progress (0 to 1)\r\n    this.time += this.game.deltaTime;\r\n    const dx = this.targetPosition.x - this.parent.position.x;\r\n    const dy = this.targetPosition.y - this.parent.position.y;\r\n    const distSq = dx * dx + dy * dy;\r\n    let dist = Math.sqrt(distSq);\r\n    const speed = this.stats.speed;\r\n    this.parent.position.x += (dx / dist) * speed / (Math.PI);\r\n    this.parent.position.y += (dy / dist) * speed / (Math.PI);\r\n\r\n\r\n    const currentDist = Math.sqrt(\r\n        (this.parent.position.x - this.startPosition.x) ** 2 + \r\n        (this.parent.position.y - this.startPosition.y) ** 2\r\n    );\r\n    const xyprogressToTarget = Math.min(1, currentDist / this.totalDist);\r\n\r\n    // Parabolic trajectory calculation (2:1 isometric adjusted)\r\n    this.parent.position.z = this.maxHeight * (1 - Math.pow(2 * xyprogressToTarget - 1, 2));\r\n\r\n    this.positionZ = this.parent.position.z;\r\n    \r\n    // Calculate distance from peak height to determine if we're near the top\r\n    const distanceFromPeak = Math.abs(this.positionZ - this.maxHeight);\r\n    \r\n    // Check if animation state needs to change based on z movement and proximity to peak\r\n    if( xyprogressToTarget < .075 ) {\r\n        if (this.currentAnimState !== 'launch') {\r\n            this.setAnimation('launch');\r\n            this.currentAnimState = 'launch';\r\n        }\r\n    // } else if( xyprogressToTarget > .95 ) {\r\n    //     if (this.currentAnimState !== 'land') {\r\n    //         this.animator.setAnimation('land');\r\n    //         this.currentAnimState = 'land';\r\n    //     }\r\n    } else if (distanceFromPeak <= this.peakThreshold) {\r\n        // We're near the peak of the trajectory\r\n        if (this.currentAnimState !== 'idle') {\r\n            this.setAnimation('idle');\r\n            this.currentAnimState = 'idle';\r\n        }\r\n    } else if (this.positionZ < this.lastZPosition) {\r\n        // We're descending and not near the peak\r\n        if (this.currentAnimState !== 'descend') {\r\n            this.setAnimation('descend');\r\n            this.currentAnimState = 'descend';\r\n        }\r\n    } else if (this.positionZ > this.lastZPosition) {\r\n        // We're ascending and not near the peak\r\n        if (this.currentAnimState !== 'ascend') {\r\n            this.setAnimation('ascend');\r\n            this.currentAnimState = 'ascend';\r\n        }\r\n    }\r\n    \r\n    // Check if we've hit the ground (Z <= 0)\r\n    if (this.parent.position.z <= 0) {\r\n        this.parent.position.z = 0; // Snap to ground\r\n\r\n        // Hit detection - same as before but at current position\r\n        const targetDistSq = (this.parent.position.x - this.target.position.x) ** 2 + \r\n                            (this.parent.position.y - this.target.position.y) ** 2;\r\n\r\n\r\n\r\n            // We missed the target but hit the ground - maybe still do splash damage\r\n        if (this.stats.splashRadius > 0) {\r\n            this.processSplashDamage();\r\n        }\r\n        this.parent.destroy();\r\n        if(this.stats.hitSound){\r\n            this.game.audioManager.playSound('hitSounds', this.stats.hitSound);\r\n        }\r\n\r\n        return;\r\n    }\r\n    \r\n    // Update distance traveled for particles\r\n    const tDx = this.parent.lastPosition.x - this.parent.position.x;\r\n    const tDy = this.parent.lastPosition.y - this.parent.position.y;\r\n    const tDist = Math.sqrt(tDx * tDx + tDy * tDy);\r\n    this.distanceTraveled += tDist;\r\n    \r\n    if (this.def.particle && this.distanceTraveled > this.distanceToSpawnParticle) {\r\n\r\n        let particle = this.game.spawn(this.parent.lastPosition.x + Math.random() * 4 - 2, this.parent.lastPosition.y + Math.random() * 4 - 2, \"particle\", { objectType: \"particles\", spawnType: this.def.particle });\r\n        particle.position.z = this.parent.position.z + Math.random() * 4 - 2;\r\n        this.distanceTraveled = 0;\r\n        this.distanceToSpawnParticle += Math.random() * 2;\r\n    }\r\n}\r\n\r\n\r\nprocessSplashDamage() {\r\n    const nearbyEnemies = this.game.spatialGrid.getNearbyEntities(\r\n        this.parent.gridPosition.x, \r\n        this.parent.gridPosition.y, \r\n        this.stats.splashRadius,\r\n        \"enemy\"\r\n    );\r\n    let explosion = this.game.spawn(this.parent.position.x, this.parent.position.y, \"explosion\", { radius: this.stats.splashRadius });\r\n    for (const enemy of nearbyEnemies) {\r\n        if (enemy.isDead) continue;\r\n        \r\n        const dx = enemy.position.x - this.parent.position.x;\r\n        const dy = enemy.position.y - this.parent.position.y;\r\n        const distSq = dx * dx + dy * dy;\r\n        \r\n        let gridSize = this.game.config.configs.game.gridSize;\r\n        const splashRadiusSq = this.stats.splashRadius * this.stats.splashRadius * gridSize * gridSize;\r\n        \r\n        if (distSq <= splashRadiusSq) {\r\n            let enemyHealth = enemy.getComponent(\"health\");\r\n            let enemyEnergyShield = enemy.getComponent(\"energyshield\");\r\n            let enemyStats = enemy.getComponent(\"stats\");\r\n            let enemyStatClone = { ...enemyStats.stats };\r\n            enemyStatClone.energyShield = enemyEnergyShield.energyShield;\r\n            \r\n            let damageResult = engine.getFunction(\"calculateDamage\")(this.stats, enemyStatClone);\r\n            if (!damageResult.wasEvaded) {\r\n                enemyHealth.hp -= damageResult.damageDealt;\r\n                enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);\r\n                this.game.spawn(enemy.position.x, enemy.position.y, \"hitEffect\", { damageType: this.stats.damageType , lifeSpan: .3});\r\n                if (this.ownerStats.slowAmount) {\r\n                    enemyStats.addEffect(this.game.config.effects.slow, this.game.effects.slow, this.ownerStats.slowAmount);\r\n                }\r\n            }\r\n        }\r\n    }\r\n}\r\n}"
+      "Buildable": {
+        "fileName": "Buildable",
+        "script": "class Buildable extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n  init() {        \r\n        this.placed = false;\r\n    }\r\n}"
       },
       "ChainProjectile": {
         "fileName": "ChainProjectile",
@@ -17250,10 +17254,6 @@ const DEFAULT_PROJECT_CONFIG = {
       "Effect": {
         "fileName": "Effect",
         "script": "class Effect extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init( {config, applyFn, amount }) {\r\n        this.id = config.id;\r\n        this.title = config.title;\r\n        this.desc = config.desc;\r\n        this.lifeTime = config.lifeTime;\r\n        this.applyFn = applyFn;\r\n        this.amount = amount;    \r\n    }\r\n\r\n    update() {\r\n        this.lifeTime--;\r\n        if( this.lifeTime <= 0) this.parent.removeComponent(this);\r\n        return true;        \r\n    }\r\n\r\n    apply(s, add, mul) {\r\n        this.applyFn(s, add, mul, this.amount);\r\n    }\r\n}"
-      },
-      "Buildable": {
-        "fileName": "Buildable",
-        "script": "class Buildable extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n  init() {        \r\n        this.placed = false;\r\n    }\r\n}"
       },
       "EssenceBounty": {
         "fileName": "EssenceBounty",
@@ -17267,14 +17267,14 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "Game",
         "script": "class Game extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n        \r\n    init() {\r\n        this.initEffectsAndUpgrades();\r\n        this.gridSize = this.game.config.configs.game.gridSize;\r\n        let endPath = this.game.state.paths[0][this.game.state.paths[0].length - 1];\r\n        let endY = endPath.y;\r\n        let endX = endPath.x;\r\n        this.keep = this.game.spawn(endX * this.gridSize + this.gridSize / 2, \r\n                                endY * this.gridSize + this.gridSize / 2, \"tower\",\r\n                                { spawnType: 'keep', objectType: 'towers', setDirection: 1});\r\n        this.keep.placed = true;\r\n\r\n    }\r\n\r\n    update() {\r\n        this.keep.position.z = this.getTerrainHeight(this.keep.gridPosition);\r\n        if(this.game.config.configs.game.is3D){\r\n            this.getComponent(\"MapRenderer\")?.render(this.game.state.tileMapData, this.game.state.paths);\r\n        } else {\r\n            this.getComponent(\"MapRenderer\")?.renderBG(this.game.state.tileMapData, this.game.state.paths);\r\n        }\r\n        \r\n        if (!this.game.state.isPaused) {\r\n            this.currentTime = Date.now();\r\n\r\n            // Only update if a reasonable amount of time has passed\r\n            const timeSinceLastUpdate = this.currentTime - this.lastTime;\r\n\r\n            // Skip update if more than 1 second has passed (tab was inactive)\r\n            if (timeSinceLastUpdate > 1000) {\r\n                this.lastTime = this.currentTime; // Reset timer without updating\r\n                return;\r\n            }\r\n\r\n            this.game.deltaTime = Math.min(1/30, timeSinceLastUpdate / 1000); // Cap at 1/30th of a second        \r\n            this.lastTime = this.currentTime;\r\n\r\n            // Sort entities by y position for proper drawing order\r\n            this.game.state.entities.sort((a, b) => {\r\n                return (a.position.y * this.game.state.tileMap.length + a.position.x) - (b.position.y * this.game.state.tileMap.length + b.position.x)\r\n            });\r\n\r\n            this.game.state.stats = {...this.game.state.defaultStats};//reset stats to recalculate upgrades from base stats.\r\n            // Single loop through entities for update, draw and postUpdate\r\n            const entitiesToKeep = [];\r\n            for(let i = 0; i < this.game.state.entities.length; i++) {\r\n                let e = this.game.state.entities[i];\r\n                let result = e.update();    \r\n                \r\n                if(result) {\r\n                    entitiesToKeep.push(e);\r\n                    e.draw();\r\n                    e.postUpdate();\r\n                }\r\n            }\r\n            \r\n            // Replace the entities array with only entities that should be kept\r\n            this.game.state.entities = entitiesToKeep;\r\n            \r\n            this.postUpdate();\r\n            // Add any new entities\r\n            this.game.entitiesToAdd.forEach((entity) => this.game.state.addEntity(entity));\r\n            this.game.entitiesToAdd = [];\r\n        }     \r\n        if(!this.game.config.configs.game.is3D){\r\n            this.getComponent(\"MapRenderer\")?.renderFG(this.game.state.tileMapData, this.game.state.paths);\r\n        }   \r\n        \r\n    }\r\n\r\n    getTerrainHeight(gridPosition) {\r\n        if(this.game.state.tileMap.length > gridPosition.y && gridPosition.y > 0 && this.game.state.tileMap[Math.floor(gridPosition.y)] && this.game.state.tileMap[Math.floor(gridPosition.y)].length > gridPosition.x && gridPosition.x > 0){\r\n            const tile = this.game.state.tileMap[Math.floor(gridPosition.y)][Math.floor(gridPosition.x)];\r\n            if (!tile) {\r\n                return 0;\r\n            }\r\n            \r\n            const terrainHeight = tile.typeId * this.game.heightMapConfig.heightStep;\r\n            return terrainHeight;\r\n        }\r\n        return 0;\r\n    }\r\n    postUpdate() {\r\n        \r\n            if (this.game.state.gameOver || this.game.state.victory || this.game.state.isLevelingUp) return;\r\n                    \r\n            // Game over check\r\n            if (this.game.state.bloodCoreHP <= 0 && !this.game.state.gameOver) {\r\n                this.gameOver();\r\n            }\r\n    }\r\n\r\n\r\n    // Game-over and victory functions\r\n    gameOver() {\r\n        this.game.state.gameOver = true;\r\n        this.game.state.isPaused = true;\r\n        gameOverWave.textContent = this.game.state.round + 1;\r\n        gameOverMenu.style.display = 'block';\r\n        overlay.style.display = 'block';\r\n    }\r\n\r\n    gameVictory() {\r\n        this.game.state.victory = true;\r\n        this.game.state.isPaused = true;\r\n        victoryMenu.style.display = 'block';\r\n        overlay.style.display = 'block';\r\n    }\r\n\r\n\r\n    // Tower placement system\r\n  \r\n\r\n    initEffectsAndUpgrades() {\r\n\r\n        const Upgrade = class { \r\n            constructor(id, title, desc, icon, appliesTo, condition, apply, onAcquire) {\r\n                this.id = id;\r\n                this.title = title;\r\n                this.desc = desc;\r\n                this.icon = icon;\r\n                this.appliesTo = appliesTo;\r\n                this.conditionFn = condition;\r\n                this.applyFn = apply;\r\n                this.onAcquire = onAcquire;        \r\n            }\r\n\r\n            canApply(gameState) {\r\n                return this.conditionFn(gameState);\r\n            }\r\n\r\n            apply(s, add, mul) {\r\n                this.applyFn(s, add, mul);\r\n            }\r\n        }\r\n\r\n\r\n        this.game.effects = {\r\n            slow: (stats, additiveStats, multiplicitiveStats, slowAmount) => {\r\n                stats[this.game.config.effects.slow.stat] *= slowAmount;\r\n            }\r\n        }\r\n        this.game.upgrades = [\r\n            // Bat Swarm Upgrades\r\n            new Upgrade(\r\n                'sentryFrenzy',\r\n                'Sentry Frenzy',\r\n                'Sentry Swarm: ' + this.game.config.upgrades.sentryFrenzy.desc,\r\n                '🦇',\r\n                'sentry',\r\n                (state) => true,\r\n                (stats, additiveStats, multiplicitiveStats) => {\r\n                    multiplicitiveStats['attackSpeed'].push(this.game.config.upgrades.sentryFrenzy.value);\r\n                }\r\n            ),\r\n            new Upgrade(\r\n                'sentryIntelligence',\r\n                'Sentry Intelligence',\r\n                'Sentry Swarm: ' + this.game.config.upgrades.sentryIntelligence.desc,\r\n                '🦇',\r\n                'sentry',\r\n                (state) => true,\r\n                (stats, additiveStats, multiplicitiveStats) => {            \r\n                    multiplicitiveStats['damage'].push(this.game.config.upgrades.sentryIntelligence.damage);\r\n                    multiplicitiveStats['range'].push(this.game.config.upgrades.sentryIntelligence.range);        \r\n                }\r\n            ),\r\n\r\n            // Necromancer Upgrades\r\n            new Upgrade(\r\n                'necroSummon',\r\n                'Raise Dead',\r\n                'Necromancer: ' + this.game.config.upgrades.necroSummon.desc,\r\n                '💀',\r\n                'fabricator',\r\n                (state) => true,\r\n                (stats, additiveStats, multiplicitiveStats) => {\r\n                    stats.summonChance = 1;\r\n                    if(!additiveStats.summonChance) additiveStats.summonChance = [];\r\n                    additiveStats['summonChance'].push(this.game.config.upgrades.necroSummon.summonChance);\r\n                }\r\n            ),\r\n\r\n            // Shadow Turret Upgrades\r\n            new Upgrade(\r\n                'overCharge',\r\n                'Overcharge',\r\n                'Tesla Coil: ' + this.game.config.upgrades.overCharge.desc,\r\n                '📏',\r\n                'teslaCoil',\r\n                (state) => true,\r\n                (stats, additiveStats, multiplicitiveStats) => {\r\n                    additiveStats['range'].push(this.game.config.upgrades.overCharge.range);\r\n                }\r\n            ),\r\n\r\n            // Soul Pyre Upgrades\r\n            new Upgrade(\r\n                'pyreSoul',\r\n                'Radiant Soul',\r\n                'Soul Pyre: ' + this.game.config.upgrades.pyreSoul.desc,\r\n                '💉',\r\n                'soulPyre',\r\n                (state) => true,\r\n                (stats, additiveStats, multiplicitiveStats) => {\r\n                    additiveStats['splashRadius'].push(this.game.config.upgrades.pyreSoul.splashRadius);\r\n                }\r\n            ),\r\n\r\n            // Mist Shrine Upgrades\r\n            new Upgrade(\r\n                'mistSlow',\r\n                'Chilling Mist',\r\n                'Mist Shrine: ' + this.game.config.upgrades.mistSlow.desc,\r\n                '❄️',\r\n                'mistShrine',\r\n                (state) => true,\r\n                (stats, additiveStats, multiplicitiveStats) => {\r\n                    multiplicitiveStats['slowAmount'].push(this.game.config.upgrades.mistSlow.slowAmount);\r\n                }\r\n            ),\r\n            // Global Upgrades\r\n            new Upgrade(\r\n                'homeReinforcement',\r\n                'Reinforcement',\r\n                this.game.config.upgrades.bloodCore.desc,\r\n                '🛡️',\r\n                'global',\r\n                (state) => true,\r\n                (stats) => {\r\n                    stats.maxBloodCoreHP *= this.game.config.upgrades.bloodCore.maxHpMultiplier;\r\n                },\r\n                (state) => {\r\n                    state.bloodCoreHP = Math.min(state.stats.maxBloodCoreHP, state.bloodCoreHP + this.game.config.upgrades.bloodCore.healAmount);\r\n                }\r\n            ),\r\n            new Upgrade(\r\n                'essenceExtraction',\r\n                'Essence Extraction',\r\n                this.game.config.upgrades.essenceExtraction.desc,\r\n                '🔮',\r\n                'global',\r\n                (state) => true,\r\n                (stats) => {\r\n                    stats.essenceMultiplier *= this.game.config.upgrades.essenceExtraction.value;\r\n                }\r\n            ),\r\n            new Upgrade(\r\n                'essenceOverflow',\r\n                'Essence Overflow',\r\n                this.game.config.upgrades.essenceOverflow.desc,\r\n                '🔮',\r\n                'global',\r\n                (state) => state.bloodCoreHP > state.stats.maxBloodCoreHP / 2,\r\n                (stats) => {\r\n                    stats.essenceMultiplier *= this.game.config.upgrades.essenceOverflow.value;\r\n                }\r\n            ),\r\n\r\n        ];\r\n\r\n    }\r\n}"
       },
-      "HitEffectParticle": {
-        "fileName": "HitEffectParticle",
-        "script": "class HitEffectParticle extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n  init( {damageType}) {\r\n        this.damageType = damageType || \"default\";\r\n        this.particles = [];\r\n        \r\n        // Spawn particles based on damage type\r\n        const particleCount = 5;\r\n        for (let i = 0; i < particleCount; i++) {\r\n            this.particles.push({\r\n                x: 0, // Relative to parent\r\n                y: 0,\r\n                vx: (Math.random() - 0.5) * 4, // Velocity (-2 to 2)\r\n                vy: (Math.random() - 0.5) * 4,\r\n                size: Math.random() * 3 + 1, // 1-4 pixels\r\n                alpha: 1, // Fades from 1 to 0\r\n                color: this.getColor()\r\n            });\r\n        }\r\n    }\r\n\r\n    getColor() {\r\n        switch (this.damageType) {\r\n            case \"electric\": return \"rgba(0, 255, 255, \"; // Cyan for electric\r\n            case \"fire\": return \"rgba(255, 165, 0, \"; // Orange for fire\r\n            case \"ice\": return \"rgba(128, 128, 255, \"; // Blue for ice\r\n            case \"plasma\": return \"rgba(255, 0, 255, \"; // Purple for plasma\r\n            default: return \"rgba(255, 255, 255, \"; // White fallback\r\n        }\r\n    }\r\n\r\n    update() {\r\n        const lifespanComp = this.parent.getComponent(\"LifeSpan\");\r\n        if (!lifespanComp) return; // Safety check\r\n\r\n        const fadeFactor = lifespanComp.lifeSpan / 30; // Normalize to initial lifespan (30 frames)\r\n        for (let particle of this.particles) {\r\n            particle.x += particle.vx * this.game.state.timeScale;\r\n            particle.y += particle.vy * this.game.state.timeScale;\r\n            particle.alpha = fadeFactor; // Fade based on remaining lifespan\r\n            particle.size *= 0.98; // Slight shrink per frame\r\n        }\r\n    }\r\n}"
-      },
       "GameLoader": {
         "title": "Game Loader",
         "fileName": "GameLoader",
         "script": "class GameLoader extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n\r\n    init() {}\r\n    \r\n    async load({config}){\r\n        this.config = config;        \r\n        this.config.configs.game.canvasWidth = window.outerWidth;\r\n        this.config.configs.game.canvasHeight = window.outerHeight;\r\n        this.state = new (this.game.libraryClasses.GameState)(this.config);  \r\n        this.game.state = this.state;\r\n        this.game.palette = this.config.palettes && this.config.configs.game.palette ? this.config.palettes[this.config.configs.game.palette] : null;\r\n        this.isometric = this.config.configs.game.isIsometric;\r\n        this.game.state.tileMapData = this.config.levels[this.game.state.level].tileMap;\r\n        this.game.state.isometric = this.config.configs.game.isIsometric;\r\n        if (this.game.state.modifierSet && this.config.modifierSets) {\r\n            this.game.state.stats = this.config.modifierSets[this.game.state.modifierSet];\r\n            this.game.state.defaultStats = { ...this.game.state.stats };\r\n        }   \r\n\r\n\r\n        this.setupCanvas(this.config.configs.game.canvasWidth, this.config.configs.game.canvasHeight);\r\n        await this.loadAssets();\r\n\r\n        this.game.translator = new (this.game.libraryClasses.CoordinateTranslator)(this.config.configs.game, this.config.levels[this.state.level].tileMap.terrainMap.length, this.isometric);\r\n        this.game.spatialGrid = new (this.game.libraryClasses.SpatialGrid)(this.config.levels[this.state.level].tileMap.terrainMap.length, this.config.configs.game.gridSize);\r\n        const terrainImages = this.game.imageManager.getImages(\"levels\", this.state.level);\r\n\r\n        // Use ModuleManager's script environment\r\n        this.game.terrainTileMapper = new (this.game.libraryClasses.TileMap)(this, {}, {CanvasUtility: this.game.libraryClasses.CanvasUtility});\r\n        this.game.terrainTileMapper.init(this.terrainCanvasBuffer, this.config.configs.game.gridSize, terrainImages, this.isometric);\r\n\r\n        this.game.gameEntity = this.game.createEntityFromConfig(0, 0, 'game', { gameConfig: this.config.configs.game, canvas: this.canvas, canvasBuffer: this.canvasBuffer, terrainCanvasBuffer: this.terrainCanvasBuffer, worldObjects: this.config.worldObjects, imageManager: this.game.imageManager, levelName: this.game.state.level, level: this.config.levels[this.game.state.level], palette: this.game.palette });\r\n        this.game.imageManager.dispose();    \r\n        this.game.audioManager = this.game.gameEntity.getComponent('AudioManager');  \r\n    }\r\n\r\n    getProject() {\r\n        return this.game.gameEntity;\r\n    }\r\n    setupCanvas(canvasWidth, canvasHeight) {\r\n        this.canvas = document.getElementById(\"gameCanvas\");\r\n        if(this.game.config.configs.game.is3D){\r\n            this.finalCtx = this.canvas.getContext(\"webgl2\");\r\n        } else {\r\n            this.finalCtx = this.canvas.getContext(\"2d\");\r\n        }\r\n        this.canvasBuffer = document.createElement(\"canvas\");\r\n        this.ctx = this.canvasBuffer.getContext(\"2d\");\r\n        this.canvasBuffer.setAttribute('width', canvasWidth);\r\n        this.canvasBuffer.setAttribute('height', canvasHeight);\r\n        this.canvas.setAttribute('width', canvasWidth);\r\n        this.canvas.setAttribute('height', canvasHeight);  \r\n        \r\n        this.terrainCanvasBuffer = document.createElement('canvas');\r\n        this.terrainCanvasBuffer.width = this.config.configs.game.gridSize * this.config.levels[this.state.level].tileMap.terrainMap[0].length;\r\n        this.terrainCanvasBuffer.height = this.config.configs.game.gridSize * this.config.levels[this.state.level].tileMap.terrainMap.length;\r\n\r\n        this.game.canvas = this.canvas;\r\n        this.game.finalCtx = this.finalCtx;\r\n        this.game.canvasBuffer = this.canvasBuffer;\r\n        this.game.ctx = this.ctx;\r\n        this.game.terrainCanvasBuffer = this.terrainCanvasBuffer;\r\n    }\r\n    async loadAssets() {\r\n        this.game.imageManager = new (this.game.libraryClasses.ImageManager)(this, { imageSize: this.config.configs.game.imageSize, palette: this.game.palette, textures:  this.game.config.textures}, {ShapeFactory: this.game.libraryClasses.ShapeFactory});    \r\n        // Load all images\r\n        for(let objectType in this.config) {\r\n            await this.game.imageManager.loadImages(objectType, this.config[objectType]);\r\n        }  \r\n        this.game.modelManager = new (this.game.libraryClasses.ModelManager)(this,{ShapeFactory: this.game.libraryClasses.ShapeFactory, palette: this.game.palette, textures: this.game.config.textures});    \r\n        for(let objectType in this.config) {\r\n            await this.game.modelManager.loadModels(objectType, this.config[objectType]);\r\n        }  \r\n \r\n    }\r\n}"
+      },
+      "HitEffectParticle": {
+        "fileName": "HitEffectParticle",
+        "script": "class HitEffectParticle extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n  init( {damageType}) {\r\n        this.damageType = damageType || \"default\";\r\n        this.particles = [];\r\n        \r\n        // Spawn particles based on damage type\r\n        const particleCount = 5;\r\n        for (let i = 0; i < particleCount; i++) {\r\n            this.particles.push({\r\n                x: 0, // Relative to parent\r\n                y: 0,\r\n                vx: (Math.random() - 0.5) * 4, // Velocity (-2 to 2)\r\n                vy: (Math.random() - 0.5) * 4,\r\n                size: Math.random() * 3 + 1, // 1-4 pixels\r\n                alpha: 1, // Fades from 1 to 0\r\n                color: this.getColor()\r\n            });\r\n        }\r\n    }\r\n\r\n    getColor() {\r\n        switch (this.damageType) {\r\n            case \"electric\": return \"rgba(0, 255, 255, \"; // Cyan for electric\r\n            case \"fire\": return \"rgba(255, 165, 0, \"; // Orange for fire\r\n            case \"ice\": return \"rgba(128, 128, 255, \"; // Blue for ice\r\n            case \"plasma\": return \"rgba(255, 0, 255, \"; // Purple for plasma\r\n            default: return \"rgba(255, 255, 255, \"; // White fallback\r\n        }\r\n    }\r\n\r\n    update() {\r\n        const lifespanComp = this.parent.getComponent(\"LifeSpan\");\r\n        if (!lifespanComp) return; // Safety check\r\n\r\n        const fadeFactor = lifespanComp.lifeSpan / 30; // Normalize to initial lifespan (30 frames)\r\n        for (let particle of this.particles) {\r\n            particle.x += particle.vx * this.game.state.timeScale;\r\n            particle.y += particle.vy * this.game.state.timeScale;\r\n            particle.alpha = fadeFactor; // Fade based on remaining lifespan\r\n            particle.size *= 0.98; // Slight shrink per frame\r\n        }\r\n    }\r\n}"
       },
       "Leveler": {
         "fileName": "Leveler",
@@ -17284,13 +17284,13 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "LifeSpan",
         "script": "class LifeSpan extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init( {lifeSpan}) {\r\n        this.lifeSpan = lifeSpan || this.getComponent('stats').stats.lifeSpan;\r\n    }\r\n    update() {        \r\n        if( this.lifeSpan > 0 ) {\r\n            this.lifeSpan -= this.game.deltaTime;\r\n        } else {\r\n            this.parent.destroy();\r\n        }\r\n    }\r\n}"
       },
-      "MultishotProjectile": {
-        "fileName": "MultishotProjectile",
-        "script": "class MultishotProjectile extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\ninit({ spawnType, stats, target, owner }) {\r\n  this.type = spawnType;\r\n  this.stats = stats;\r\n  this.target = target;\r\n  const ownerStats = owner.getComponent('stats').stats;\r\n  const spreadCount = ownerStats.projectileCount || 3; // Total projectiles (e.g., 3: center + 2 sides)\r\n    const spreadAngleDegrees = ownerStats.projectileAngle || 45; // Default to 45 degrees\r\n  const spreadAngle = spreadAngleDegrees * (Math.PI / 180); // Convert degrees to radians\r\n\r\n \r\n  // Calculate the base direction to the target\r\n  const dx = target.position.x - this.parent.position.x;\r\n  const dy = target.position.y - this.parent.position.y;\r\n  const baseAngle = Math.atan2(dy, dx); // Angle from parent to target in radians\r\n  const distance = Math.sqrt(dx * dx + dy * dy);\r\n\r\n  // Total spread angle (e.g., for 3 projectiles: -spreadAngle, 0, +spreadAngle)\r\n  const totalSpread = spreadAngle * (spreadCount - 1); // Max angle covered by all projectiles\r\n\r\n  // Spawn projectiles in a symmetrical fan\r\n  for (let i = 0; i < spreadCount; i++) {\r\n    // Calculate the angle offset from the center\r\n    const offsetIndex = i - Math.floor(spreadCount / 2); // Center at 0 (e.g., -1, 0, 1 for 3)\r\n    const currentAngle = baseAngle + (offsetIndex * spreadAngle);\r\n\r\n    // Calculate the new target position based on the angle\r\n    const deltaX = Math.cos(currentAngle) * distance;\r\n    const deltaY = Math.sin(currentAngle) * distance;\r\n\r\n    this.game.spawn(\r\n      this.parent.position.x,\r\n      this.parent.position.y,\r\n      \"projectile\",\r\n      {\r\n        spawnType: ownerStats.projectile,\r\n        objectType: \"projectiles\",\r\n        owner: owner,\r\n        stats: stats,\r\n        target: target,\r\n        targetPosition: {\r\n          x: this.parent.position.x + deltaX, // Start from parent, extend to new position\r\n          y: this.parent.position.y + deltaY\r\n        }\r\n      }\r\n    );\r\n  }\r\n\r\n  this.parent.destroy();\r\n}\r\n}"
-      },
       "MapManager": {
         "fileName": "MapManager",
         "script": "class MapManager extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\ninit({level}) {\r\n  this.nodeClass = class Node {\r\n    constructor(x, y, tileType, parent = null) {\r\n        this.x = x;\r\n        this.y = y;\r\n        this.tileType = tileType;\r\n        this.parent = parent;\r\n        \r\n        this.g = 0; // Cost from start to current node\r\n        this.h = 0; // Heuristic (estimated cost from current to goal)\r\n        this.f = 0; // Total cost (g + h)\r\n    }\r\n\r\n    equals(other) {\r\n        return this.x === other.x && this.y === other.y;\r\n    }\r\n\r\n    // Unique key for node based on coordinates\r\n    key() {\r\n        return `${this.x},${this.y}`;\r\n    }\r\n};\r\n  this.tileMap = level.tileMap;\r\n   \r\n   const {tileMap, paths} = this.generateMap();\r\n   this.game.state.tileMap = tileMap;\r\n   this.game.state.paths = paths;\r\n}\r\n\r\n    generateMap() {\r\n        // Extract values from the data object\r\n        const { size, terrainTypes, terrainMap } = this.tileMap;\r\n        \r\n        let paths = [];\r\n        let starts = [];\r\n        let endPoint = {x: 0, y: 0};\r\n\r\n        // Find START and END tile types by their IDs\r\n        const startTypeId = terrainTypes.findIndex(t => t.type === \"start\");\r\n        const endTypeId = terrainTypes.findIndex(t => t.type === \"end\");\r\n        // Create the tile map using the provided terrainMap\r\n        const tileMap = terrainMap.map((row, y) => \r\n            row.map((terrainId, x) => {\r\n                // Find the terrain object to get color information\r\n                const terrain = terrainTypes[terrainId]; \r\n                // Check for start/end points using IDs\r\n                if(terrainId === startTypeId) {\r\n                    starts.push({x: x, y: y});\r\n                } else if(terrainId === endTypeId) {\r\n                    endPoint = {x: x, y: y};\r\n                }\r\n                \r\n                return { \r\n                    type: terrain ? terrain.type : 'unknown',\r\n                    typeId: terrainId,\r\n                    color: terrain ? terrain.color : '#8bc34a', // Default to grass color if not found\r\n                    buildable: terrain ? terrain.buildable : false\r\n                };\r\n            })\r\n        );        \r\n        \r\n        starts.forEach((startPoint) => {\r\n            paths.push(this.findPath(startPoint, endPoint, terrainMap));\r\n        });\r\n\r\n        return { tileMap, paths };\r\n    }\r\n\r\n    findPath(startPoint, endPoint, tileMap) {\r\n        return this.aStar(startPoint, endPoint, tileMap);\r\n    }\r\n    \r\n    /**\r\n     * A* pathfinding algorithm\r\n     * @param {Object} start - Starting position {x, y}\r\n     * @param {Object} end - Ending position {x, y}\r\n     * @param {Array} tileMap - 2D array representing the map\r\n     * @returns {Array} - Array of positions forming the path, or empty array if no path found\r\n     */\r\n    aStar(start, end, tileMap) {\r\n       \r\n        const rows = tileMap.length;\r\n        const cols = tileMap[0].length;\r\n        \r\n        // Validate inputs\r\n        if (start.x < 0 || start.x >= cols || start.y < 0 || start.y >= rows) {\r\n            throw new Error('Start position is outside the map bounds');\r\n        }\r\n        if (end.x < 0 || end.x >= cols || end.y < 0 || end.y >= rows) {\r\n            throw new Error('End position is outside the map bounds');\r\n        }\r\n        \r\n        // Create start and end nodes\r\n        const startNode = new this.nodeClass(start.x, start.y, tileMap[start.y][start.x]);\r\n        const endNode = new this.nodeClass(end.x, end.y, tileMap[end.y][end.x]);\r\n        \r\n        // Initialize open and closed lists\r\n        const openList = [];\r\n        const closedList = new Set();\r\n        const openSet = new Set(); // For faster lookups\r\n        \r\n        // Add start node to open list\r\n        openList.push(startNode);\r\n        openSet.add(startNode.key());\r\n        \r\n        // Define movement directions (4-directional: up, right, down, left)\r\n        const directions = [\r\n            {x: 0, y: -1}, // Up\r\n            {x: 1, y: 0},  // Right\r\n            {x: 0, y: 1},  // Down\r\n            {x: -1, y: 0}  // Left\r\n            \r\n            // {x: 1, y: 1}, // Up\r\n            // {x: 1, y: -1},  // Right\r\n            // {x: -1, y: 1},  // Down\r\n            // {x: -1, y: -1}  // Left\r\n        ];\r\n        \r\n        // Main loop\r\n        while (openList.length > 0) {\r\n            // Sort by f value and take the lowest\r\n            openList.sort((a, b) => a.f - b.f);\r\n            const currentNode = openList.shift();\r\n            openSet.delete(currentNode.key());\r\n            \r\n            // Add current node to closed list\r\n            closedList.add(currentNode.key());\r\n            \r\n            // Check if we've reached the end\r\n            if (currentNode.equals(endNode)) {\r\n                // Reconstruct the path\r\n                return this.reconstructPath(currentNode);\r\n            }\r\n            \r\n            // Generate neighbors\r\n            for (const dir of directions) {\r\n                const neighborX = currentNode.x + dir.x;\r\n                const neighborY = currentNode.y + dir.y;\r\n                \r\n                // Check if neighbor is inside the map\r\n                if (neighborX < 0 || neighborX >= cols || neighborY < 0 || neighborY >= rows) {\r\n                    continue;\r\n                }\r\n                \r\n                const tileType = tileMap[neighborY][neighborX];\r\n                const neighbor = new this.nodeClass(neighborX, neighborY, tileType, currentNode);\r\n                const neighborKey = neighbor.key();\r\n                \r\n                // Skip if neighbor is in closed list\r\n                if (closedList.has(neighborKey)) {\r\n                    continue;\r\n                }\r\n                \r\n                // Calculate g score for this neighbor\r\n                // Path tiles will have a much lower cost than other tile types\r\n                let movementCost = this.calculateMovementCost(tileType);\r\n                const tentativeG = currentNode.g + movementCost;\r\n                \r\n                // Check if this is a better path to neighbor\r\n                if (!openSet.has(neighborKey) || tentativeG < neighbor.g) {\r\n                    // Update neighbor values\r\n                    neighbor.g = tentativeG;\r\n                    neighbor.h = this.calculateHeuristic(neighbor, endNode);\r\n                    neighbor.f = neighbor.g + neighbor.h;\r\n                    \r\n                    // Add neighbor to open list if not there already\r\n                    if (!openSet.has(neighborKey)) {\r\n                        openList.push(neighbor);\r\n                        openSet.add(neighborKey);\r\n                    }\r\n                }\r\n            }\r\n        }\r\n        \r\n        // No path found\r\n        return [];\r\n    }\r\n    \r\n    /**\r\n     * Calculate movement cost based on tile type\r\n     * Path tiles are heavily favored\r\n     * @param {number} tileTypeId - ID of the tile type\r\n     * @returns {number} - Movement cost\r\n     */\r\n    calculateMovementCost(tileTypeId) {\r\n        // Find path and end type IDs\r\n        const { terrainTypes } = this.tileMap;\r\n        const pathTypeId = terrainTypes.findIndex(t => t.type === \"path\");\r\n        const endTypeId = terrainTypes.findIndex(t => t.type === \"end\");\r\n        \r\n        // Heavily favor \"path\" and \"end\" type tiles\r\n        if (tileTypeId === pathTypeId || tileTypeId === endTypeId) {\r\n            return 1;\r\n        } else {\r\n            // Make non-path tiles much less desirable\r\n            return 100000;\r\n        }\r\n    }\r\n    \r\n    /**\r\n     * Calculate heuristic (Manhattan distance)\r\n     * @param {Node} nodeA \r\n     * @param {Node} nodeB \r\n     * @returns {number} - Heuristic value\r\n     */\r\n    calculateHeuristic(nodeA, nodeB) {\r\n        return Math.abs(nodeA.x - nodeB.x) + Math.abs(nodeA.y - nodeB.y);\r\n    }\r\n    \r\n    /**\r\n     * Reconstruct the path from the end node to the start\r\n     * @param {Node} endNode - The end node\r\n     * @returns {Array} - Array of positions {x, y} from start to end\r\n     */\r\n    reconstructPath(endNode) {\r\n        const path = [];\r\n        let currentNode = endNode;\r\n        \r\n        while (currentNode !== null) {\r\n            path.unshift({\r\n                x: currentNode.x,\r\n                y: currentNode.y,\r\n                tileType: currentNode.tileType\r\n            });\r\n            currentNode = currentNode.parent;\r\n        }\r\n        \r\n        return path;\r\n    }\r\n}"
+      },
+      "MultishotProjectile": {
+        "fileName": "MultishotProjectile",
+        "script": "class MultishotProjectile extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\ninit({ spawnType, stats, target, owner }) {\r\n  this.type = spawnType;\r\n  this.stats = stats;\r\n  this.target = target;\r\n  const ownerStats = owner.getComponent('stats').stats;\r\n  const spreadCount = ownerStats.projectileCount || 3; // Total projectiles (e.g., 3: center + 2 sides)\r\n    const spreadAngleDegrees = ownerStats.projectileAngle || 45; // Default to 45 degrees\r\n  const spreadAngle = spreadAngleDegrees * (Math.PI / 180); // Convert degrees to radians\r\n\r\n \r\n  // Calculate the base direction to the target\r\n  const dx = target.position.x - this.parent.position.x;\r\n  const dy = target.position.y - this.parent.position.y;\r\n  const baseAngle = Math.atan2(dy, dx); // Angle from parent to target in radians\r\n  const distance = Math.sqrt(dx * dx + dy * dy);\r\n\r\n  // Total spread angle (e.g., for 3 projectiles: -spreadAngle, 0, +spreadAngle)\r\n  const totalSpread = spreadAngle * (spreadCount - 1); // Max angle covered by all projectiles\r\n\r\n  // Spawn projectiles in a symmetrical fan\r\n  for (let i = 0; i < spreadCount; i++) {\r\n    // Calculate the angle offset from the center\r\n    const offsetIndex = i - Math.floor(spreadCount / 2); // Center at 0 (e.g., -1, 0, 1 for 3)\r\n    const currentAngle = baseAngle + (offsetIndex * spreadAngle);\r\n\r\n    // Calculate the new target position based on the angle\r\n    const deltaX = Math.cos(currentAngle) * distance;\r\n    const deltaY = Math.sin(currentAngle) * distance;\r\n\r\n    this.game.spawn(\r\n      this.parent.position.x,\r\n      this.parent.position.y,\r\n      \"projectile\",\r\n      {\r\n        spawnType: ownerStats.projectile,\r\n        objectType: \"projectiles\",\r\n        owner: owner,\r\n        stats: stats,\r\n        target: target,\r\n        targetPosition: {\r\n          x: this.parent.position.x + deltaX, // Start from parent, extend to new position\r\n          y: this.parent.position.y + deltaY\r\n        }\r\n      }\r\n    );\r\n  }\r\n\r\n  this.parent.destroy();\r\n}\r\n}"
       },
       "PlanckBody": {
         "fileName": "PlanckBody",
@@ -17325,30 +17325,17 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "ThreeJsWorld",
         "script": "class ThreeJsWorld extends engine.Component {\n    init({\n        containerSelector = '#gameContainer',\n        width = window.innerWidth,\n        height = window.innerHeight,\n        useControls = true}) {\n        if (!this.game.config.configs.game.is3D) {\n            return;\n        }\n        this.level = this.game.config.levels[this.game.state.level];\n        this.world = this.game.config.worlds[this.level.world];\n        this.lightingSettings = this.game.config.lightings[this.world.lighting];\n        this.shadowSettings = this.game.config.shadows[this.world.shadow];\n        this.fogSettings = this.game.config.fogs[this.world.fog]; \n        this.heightMapSettings = this.game.config.heightMaps[this.world.heightMap];      \n        this.cameraSettings = this.game.config.cameras[this.world.camera];\n\n        this.heightStep = this.heightMapSettings.heightStep;\n        this.showStats = false;\n        this.clock = new THREE.Clock();\n        this.onWindowResizeHandler = this.onWindowResize.bind(this);\n        this.game.heightMapConfig = this.heightMapSettings;\n        this.terrainSize = 768;\n        this.extensionSize = this.world.extensionSize;\n        this.extendedSize = this.terrainSize + 2 * this.world.extensionSize;\n        this.heightMapResolution = this.extendedSize / this.heightMapSettings.resolutionDivisor;\n        this.container = document.querySelector(containerSelector) || document.body;\n        this.renderer = new THREE.WebGLRenderer({ antialias: true, canvas: this.game.canvas, alpha: true });\n        \n        this.renderer.setSize(width, height);        \n        this.renderer.shadowMap.enabled = this.shadowSettings.enabled;\n        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;\n        this.uniforms = {};\n        this.scene = new THREE.Scene();\n        this.scene.background = new THREE.Color(this.world.backgroundColor);\n\n        if (this.fogSettings.enabled) {\n            this.scene.fog = new THREE.FogExp2(this.fogSettings.color, this.fogSettings.density);\n        }\n\n        this.camera = new THREE.PerspectiveCamera(\n            this.cameraSettings.fov,\n            width / height,\n            this.cameraSettings.near,\n            this.cameraSettings.far\n        );\n        let cameraPos = JSON.parse(this.cameraSettings.position);\n\n        this.camera.position.set(\n            cameraPos.x,\n            cameraPos.y,\n            cameraPos.z\n        );\n        let lookAt = JSON.parse(this.cameraSettings.lookAt);\n        this.camera.lookAt(\n            lookAt.x,\n            lookAt.y,\n            lookAt.z\n        );\n\n        if (useControls) {\n            this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);\n            this.controls.target.set(\n                lookAt.x,\n                lookAt.y,\n                lookAt.z\n            );\n            this.controls.maxPolarAngle = Math.PI / 2.05;\n            this.controls.minPolarAngle = 0.1;\n            this.controls.enableDamping = true;\n            this.controls.dampingFactor = 0.05;\n            this.controls.update();\n        }\n\n        this.ambientLight = new THREE.AmbientLight(\n            this.lightingSettings.ambientColor,\n            this.lightingSettings.ambientIntensity\n        );\n        this.scene.add(this.ambientLight);\n\n        this.directionalLight = new THREE.DirectionalLight(\n            this.lightingSettings.directionalColor,\n            this.lightingSettings.directionalIntensity\n        );\n        this.directionalLight.position.set(this.extendedSize, this.extendedSize, this.extendedSize);\n        this.directionalLight.castShadow = this.shadowSettings.enabled;\n\n        if (this.shadowSettings.enabled) {\n            this.directionalLight.shadow.mapSize.width = this.shadowSettings.mapSize;\n            this.directionalLight.shadow.mapSize.height = this.shadowSettings.mapSize;\n            this.directionalLight.shadow.camera.near = 0.5;\n            this.directionalLight.shadow.camera.far = 20000;\n            this.directionalLight.shadow.bias = this.shadowSettings.bias;\n            this.directionalLight.shadow.normalBias = this.shadowSettings.normalBias;\n            this.directionalLight.shadow.radius = this.shadowSettings.radius;\n\n            const d = this.extendedSize * 0.75;\n            this.directionalLight.shadow.camera.left = -d;\n            this.directionalLight.shadow.camera.right = d;\n            this.directionalLight.shadow.camera.top = d;\n            this.directionalLight.shadow.camera.bottom = -d;\n\n            this.directionalLight.target.position.set(-this.extendedSize, -this.extendedSize, -this.extendedSize);\n            this.directionalLight.target.updateMatrixWorld();\n            this.directionalLight.shadow.camera.updateProjectionMatrix();\n        }\n\n        this.scene.add(this.directionalLight);\n        this.scene.add(this.directionalLight.target);\n\n        this.hemisphereLight = new THREE.HemisphereLight(\n            this.lightingSettings.skyColor,\n            this.lightingSettings.groundColor,\n            this.lightingSettings.hemisphereIntensity\n        );\n        this.scene.add(this.hemisphereLight);\n        this.tileMap = this.game.config.levels[this.game.state.level].tileMap;\n        this.setupGround();\n        this.generateLiquidSurfaceMesh(0);\n        this.generateLiquidSurfaceMesh(1);\n        if (this.showStats) {\n            this.stats = new Stats();\n            this.container.appendChild(this.stats.dom);\n        }\n\n        window.addEventListener('resize', this.onWindowResizeHandler);\n\n        this.game.scene = this.scene;\n        this.game.camera = this.camera;\n        this.game.renderer = this.renderer;\n        this.game.ground = this.ground;\n        this.drawn = false;\n        this.timer = 0;        \n    }\n\n    setupGround() {\n        this.groundCanvas = document.createElement('canvas');\n        this.groundCanvas.width = this.extendedSize;\n        this.groundCanvas.height = this.extendedSize;\n        this.groundCtx = this.groundCanvas.getContext('2d');\n\n        let bgColor = this.tileMap.terrainTypes[this.tileMap.extensionTerrainType].color;\n        let colorToUse = bgColor.paletteColor ? this.game.palette[bgColor.paletteColor] : bgColor;\n        this.groundCtx.fillStyle = colorToUse;\n        this.groundCtx.fillRect(0, 0, this.extendedSize, this.extendedSize);\n\n        this.groundTexture = new THREE.CanvasTexture(this.groundCanvas);\n        this.groundTexture.wrapS = THREE.ClampToEdgeWrapping;\n        this.groundTexture.wrapT = THREE.ClampToEdgeWrapping;\n        this.groundTexture.minFilter = THREE.NearestFilter;\n        this.groundTexture.magFilter = THREE.NearestFilter;\n\n        if (this.heightMapSettings) {\n            this.createHeightMapTerrain();\n        } else {\n            const groundGeometry = new THREE.PlaneGeometry(this.extendedSize, this.extendedSize);\n            this.groundMaterial = this.getGroundMaterial();\n            this.ground = new THREE.Mesh(groundGeometry, this.groundMaterial);\n            this.ground.rotation.x = -Math.PI / 2;\n            this.ground.position.set(this.terrainSize / 2, 0, this.terrainSize / 2);\n            this.ground.receiveShadow = true;\n            this.ground.castShadow = true;\n            this.scene.add(this.ground);\n        }\n    }\n\n    createHeightMapTerrain() {\n        this.heightMapData = new Float32Array(this.extendedSize * this.extendedSize);\n        this.terrainTypes = this.tileMap.terrainTypes || [];\n\n        const segments = this.heightMapResolution;\n        const groundGeometry = new THREE.PlaneGeometry(\n            this.extendedSize,\n            this.extendedSize,\n            segments,\n            segments\n        );\n\n        this.groundVertices = groundGeometry.attributes.position;\n\n        this.groundMaterial = this.getGroundMaterial();\n\n        this.ground = new THREE.Mesh(groundGeometry, this.groundMaterial);\n        this.ground.rotation.x = -Math.PI / 2;\n        this.ground.position.set(this.terrainSize / 2, 0, this.terrainSize / 2);\n        this.ground.receiveShadow = true;\n        this.ground.castShadow = true;\n        this.scene.add(this.ground);\n    }\n    findClosestTerrainType(r, g, b, terrainTypeColors) {\n        let minDistance = Infinity;\n        let bestTypeIndex = null;\n        let toleranceSquared = 36;\n        for (const [colorKey, typeIndex] of Object.entries(terrainTypeColors)) {\n            const [cr, cg, cb] = colorKey.split(',').map(Number);\n            const distance = ((r - cr) ** 2 + (g - cg) ** 2 + (b - cb) ** 2);\n            if (distance < minDistance && distance < toleranceSquared) { // Adjust tolerance as needed\n                minDistance = distance;\n                bestTypeIndex = typeIndex;\n            }\n        }\n        return bestTypeIndex;\n    }\n    updateHeightMap() {\n        if (!this.heightMapSettings.enabled || !this.game.terrainCanvasBuffer) return;\n\n        try {\n            const terrainCanvas = this.game.terrainCanvasBuffer;\n            const ctx = terrainCanvas.getContext('2d', { alpha: false, willReadFrequently: true });\n            ctx.imageSmoothingEnabled = false;\n            const terrainData = ctx.getImageData(0, 0, terrainCanvas.width, terrainCanvas.height).data;\n\n            const terrainTypeColors = this.createTerrainTypeColorMap();\n\n            this.heightMapData = new Float32Array(this.extendedSize * this.extendedSize);\n\n            const extensionTerrainType = this.tileMap.extensionTerrainType;\n            const extensionHeight = extensionTerrainType * this.heightStep;\n\n            for (let z = 0; z < this.extendedSize; z++) {\n                for (let x = 0; x < this.extendedSize; x++) {\n                    this.heightMapData[z * this.extendedSize + x] = extensionHeight;\n                }\n            }\n\n            for (let z = 0; z < this.terrainSize; z++) {\n                for (let x = 0; x < this.terrainSize; x++) {\n                    const pixelIndex = (z * terrainCanvas.width + x) * 4;\n                    const r = terrainData[pixelIndex];\n                    const g = terrainData[pixelIndex + 1];\n                    const b = terrainData[pixelIndex + 2];\n            \n                    const typeIndex = this.findClosestTerrainType(r,g,b,terrainTypeColors) ?? extensionHeight;\n                    let height = typeIndex !== undefined ? typeIndex * this.heightStep : extensionHeight;\n\n                    // Check neighboring pixels for lower terrain types\n                    let neighborCheckDist = this.heightMapSettings.resolutionDivisor - 1;\n                    const neighbors = [\n                        { x: x-neighborCheckDist, z: z },   // left\n                        { x: x+neighborCheckDist, z: z },   // right\n                        { x: x, z: z-neighborCheckDist },   // top\n                        { x: x, z: z+neighborCheckDist + 1 },   // bottom\n                        { x: x-neighborCheckDist, z: z-neighborCheckDist }, // top-left\n                        { x: x+neighborCheckDist, z: z-neighborCheckDist }, // top-right\n                        { x: x-neighborCheckDist, z: z+neighborCheckDist }, // bottom-left\n                        { x: x+neighborCheckDist, z: z+neighborCheckDist }  // bottom-right\n                    ];\n                    let lowestNeighborType = Infinity;\n                    for (const neighbor of neighbors) {\n                        if (neighbor.x >= 0 && neighbor.x < this.terrainSize && \n                            neighbor.z >= 0 && neighbor.z < this.terrainSize) {\n                            \n                            const neighborIndex = (neighbor.z * terrainCanvas.width + neighbor.x) * 4;\n                            const nr = terrainData[neighborIndex];\n                            const ng = terrainData[neighborIndex + 1];\n                            const nb = terrainData[neighborIndex + 2];\n                            const neighborKey = `${nr},${ng},${nb}`;\n                            \n                            const neighborTypeIndex = terrainTypeColors[neighborKey];\n                            if (neighborTypeIndex !== undefined && neighborTypeIndex < typeIndex && neighborTypeIndex < lowestNeighborType) {\n                                // If neighbor is lower terrain, use its height\n                                lowestNeighborType = neighborTypeIndex;\n                            }\n                        }\n                    }\n                    if (lowestNeighborType < typeIndex) {\n                        height = lowestNeighborType * this.heightStep;\n                    }\n            \n                    const extX = x + this.extensionSize;\n                    const extZ = z + this.extensionSize;\n                    this.heightMapData[extZ * this.extendedSize + extX] = height;\n                }\n            }\n\n            this.applyHeightMapToGeometry();\n\n        } catch (e) {\n            console.warn('Failed to update height map:', e);\n        }\n    }\n\n    createTerrainTypeColorMap() {\n        const colorMap = {};\n        const terrainTypes = this.terrainTypes;\n\n        for (let i = 0; i < terrainTypes.length; i++) {\n            const terrainType = terrainTypes[i];\n            let color = terrainType.color || {};\n\n            if (color.paletteColor && this.game.palette) {\n                const hexColor = this.game.palette[color.paletteColor];\n                if (hexColor) {\n                    const r = parseInt(hexColor.slice(1, 3), 16);\n                    const g = parseInt(hexColor.slice(3, 5), 16);\n                    const b = parseInt(hexColor.slice(5, 7), 16);\n                    colorMap[`${r},${g},${b}`] = i;\n                }\n            } else {\n                const hexColor = color;\n                if (hexColor) {\n                    const r = parseInt(hexColor.slice(1, 3), 16);\n                    const g = parseInt(hexColor.slice(3, 5), 16);\n                    const b = parseInt(hexColor.slice(5, 7), 16);\n                    colorMap[`${r},${g},${b}`] = i;\n                }\n            }\n        }\n\n        return colorMap;\n    }\n\n    applyHeightMapToGeometry() {\n        if (!this.ground || !this.groundVertices) return;\n\n        const positions = this.groundVertices.array;\n        const geometry = this.ground.geometry;\n        const segments = this.heightMapResolution;\n        const verticesPerRow = segments + 1;\n\n        for (let z = 0; z < verticesPerRow; z++) {\n            for (let x = 0; x < verticesPerRow; x++) {\n                const vertexIndex = (z * verticesPerRow + x);\n                const idx = vertexIndex * 3;\n\n                const nx = x / segments;\n                const nz = z / segments;\n\n                const terrainX = Math.floor(nx * (this.extendedSize - 1));\n                const terrainZ = Math.floor(nz * (this.extendedSize - 1));\n\n                const heightIndex = terrainZ * this.extendedSize + terrainX;\n                const height = this.heightMapData[heightIndex] || 0;\n\n                // const finalHeight = this.heightMapSettings.smoothing ?\n                //     this.smoothHeight(terrainX, terrainZ) : height;\n\n                positions[idx + 2] = height;\n            }\n        }\n\n        this.groundVertices.needsUpdate = true;\n        geometry.computeVertexNormals();\n    }\n\n    getGroundMaterial() {\n        return new THREE.MeshStandardMaterial({\n            map: this.groundTexture,\n            side: THREE.DoubleSide,\n            metalness: 0.0,\n            roughness: 0.8\n        });\n    }\n\n    onWindowResize() {\n        const width = this.container.clientWidth || window.innerWidth;\n        const height = this.container.clientHeight || window.innerHeight;\n\n        this.camera.aspect = width / height;\n        this.camera.updateProjectionMatrix();\n        this.renderer.setSize(width, height);\n                // Ensure canvas display size matches resolution\n        this.game.canvas.style.width = `${width}px`;\n        this.game.canvas.style.height = `${height}px`;\n    }\n\n    update() {\n        if (!this.game.config.configs.game.is3D) {\n            return;\n        }   \n    \n        if (this.controls) {\n            this.controls.update();\n        }\n        if (!isNaN(this.game.deltaTime)) {\n            this.timer += this.game.deltaTime;\n        }\n        if (this.stats) {\n            this.stats.update();\n        }\n        if (!this.drawn && this.groundTexture && this.game.mapRenderer && this.game.mapRenderer.isMapCached) {\n            this.groundCtx.drawImage(this.game.terrainCanvasBuffer, this.extensionSize, this.extensionSize);\n            this.groundTexture.needsUpdate = true;\n\n            if (this.heightMapSettings.enabled) {\n                this.updateHeightMap();\n            }\n\n            this.addGrassToTerrain();\n            this.drawn = true;\n        }\n        for(const key in this.uniforms) {\n            this.uniforms[key].time = { value: this.timer };            \n        }\n        this.renderer.render(this.scene, this.camera);\n    }\n\n    addGrassToTerrain() {\n        const bladeWidth = 12;\n        const bladeHeight = 18;\n        const grassGeometry = this.createCurvedBladeGeometry(bladeWidth, bladeHeight);\n        grassGeometry.translate(0, bladeHeight / 2, 0);\n        const grassCount = 500000;\n\n        const gridSize = this.game.config.configs.game.gridSize;\n        const phases = new Float32Array(grassCount);\n        for (let i = 0; i < grassCount; i++) {\n            phases[i] = Math.random() * Math.PI * 2;\n        }\n        grassGeometry.setAttribute('instancePhase', new THREE.InstancedBufferAttribute(phases, 1));\n\n        const grassTexture = this.createGrassTexture();\n        const grassShader = this.game.config.shaders[this.level.grassShader];\n        this.uniforms['grass'] = JSON.parse(grassShader.uniforms);\n        \n        this.uniforms['grass'].windDirection = { value: new THREE.Vector2(this.uniforms['grass'].windDirection.value[0], this.uniforms['grass'].windDirection.value[1]).normalize()};\n        this.uniforms['grass'].map = { value: grassTexture };\n        this.uniforms['grass'].fogColor = { value: new THREE.Color(this.fogSettings.color) };\n        this.uniforms['grass'].fogDensity = this.fogSettings.enabled ? { value: this.fogSettings.density } : 0;\n        const lightDirection = new THREE.Vector3();\n        lightDirection.subVectors(this.directionalLight.position, this.directionalLight.target.position);\n        lightDirection.normalize();\n\n        this.uniforms['grass'].directionalLightColor = { value: new THREE.Color(this.lightingSettings.directionalColor) };\n        this.uniforms['grass'].directionalLightIntensity = { value: this.lightingSettings.directionalIntensity };\n        this.uniforms['grass'].directionalLightDirection = { value: lightDirection };\n        this.uniforms['grass'].ambientLightColor = { value: new THREE.Color(this.lightingSettings.ambientColor) };\n        this.uniforms['grass'].ambientLightIntensity = { value: this.lightingSettings.ambientIntensity };\n        this.uniforms['grass'].skyColor =  { value: new THREE.Color(this.lightingSettings.skyColor) }; // HemisphereLight sky color\n        this.uniforms['grass'].groundColor = { value: new THREE.Color(this.lightingSettings.groundColor) }; // HemisphereLight ground color\n        this.uniforms['grass'].hemisphereIntensity = { value: this.lightingSettings.hemisphereIntensity };\n\n        const uniforms = this.uniforms['grass'];\n        this.grassMaterial = new THREE.ShaderMaterial({\n            vertexShader: grassShader.vertexScript,\n            fragmentShader: grassShader.fragmentScript,\n            uniforms: uniforms,\n            transparent: true\n        });\n\n        this.grassShader = this.grassMaterial;\n        \n        grassGeometry.computeVertexNormals(); \n        const grass = new THREE.InstancedMesh(grassGeometry, this.grassMaterial, grassCount);\n        grass.castShadow = true;\n        grass.receiveShadow = false;\n\n        const dummy = new THREE.Object3D();\n        const grassArea = this.extendedSize;  \n        const ctx = this.groundCanvas.getContext('2d');\n        const terrainData = ctx.getImageData(0, 0, this.groundCanvas.width, this.groundCanvas.height).data;\n\n        // Create a density map for grass placement\n        // Create a density map for grass placement\n        const densityMap = new Float32Array(this.extendedSize * this.extendedSize);\n        for (let z = 0; z < this.extendedSize; z++) {\n            for (let x = 0; x < this.extendedSize; x++) {\n                // Check current pixel for green dominance\n                const pixelIndex = (z * this.groundCanvas.width + x) * 4;\n                const isGreenDominant = (pixel) => {\n                    const r = terrainData[pixel];\n                    const g = terrainData[pixel + 1];\n                    const b = terrainData[pixel + 2];\n                    return g > r && g > b;\n                };\n\n                // Only set density if current pixel and all neighbors are green\n                if (isGreenDominant(pixelIndex)) {\n                    // Check 8 neighboring pixels\n                    let checkDist = Math.ceil(gridSize / 10);\n                    const neighbors = [\n                        [-checkDist, -checkDist], [0, -checkDist], [checkDist, -checkDist],\n                        [-checkDist,  0],                           [checkDist,  0],\n                        [-checkDist,  checkDist], [0,  checkDist], [checkDist,  checkDist]\n                    ];\n\n                    let allNeighborsGreen = true;\n                    for (const [dx, dz] of neighbors) {\n                        const nx = x + dx;\n                        const nz = z + dz;\n                        \n                        // Skip if neighbor is outside bounds\n                        if (nx < 0 || nx >= this.extendedSize || nz < 0 || nz >= this.extendedSize) {\n                            allNeighborsGreen = false;\n                            break;\n                        }\n\n                        const neighborIndex = (nz * this.groundCanvas.width + nx) * 4;\n                        if (!isGreenDominant(neighborIndex)) {\n                            allNeighborsGreen = false;\n                            break;\n                        }\n                    }\n\n                    densityMap[z * this.extendedSize + x] = allNeighborsGreen ? 1 : 0;\n                } else {\n                    densityMap[z * this.extendedSize + x] = 0;\n                }\n            }\n        }\n\n        // Place grass based on density\n        let placed = 0;\n        for (let i = 0; i < grassCount * 2 && placed < grassCount; i++) {\n            const x = Math.floor(Math.random() * grassArea);\n            const z = Math.floor(Math.random() * grassArea);\n            if (densityMap[z * this.extendedSize + x] > 0) {\n                const rotationY = Math.random() * Math.PI * 2;\n                const scale = 0.7 + Math.random() * 0.5;\n                let height = this.heightMapSettings.enabled\n                    ? this.heightMapData[Math.min(z, this.extendedSize - 1) * this.extendedSize + Math.min(x, this.extendedSize - 1)] || 0\n                    : 0;\n                dummy.position.set(x - grassArea / 2 + this.terrainSize / 2, height - bladeHeight, z - grassArea / 2 + this.terrainSize / 2);\n                dummy.rotation.set(0, rotationY, 0);\n                dummy.scale.set(scale, scale, scale);\n                dummy.updateMatrix();\n                grass.setMatrixAt(placed++, dummy.matrix);\n            }\n        }\n\n        grass.instanceMatrix.needsUpdate = true;\n        this.scene.add(grass);\n        this.grass = grass;\n    }\n\n    onDestroy() {\n        window.removeEventListener('resize', this.onWindowResizeHandler);\n        this.renderer.dispose();\n        if (this.stats?.dom?.parentElement) {\n            this.stats.dom.parentElement.removeChild(this.stats.dom);\n        }\n        if (this.renderer.domElement?.parentElement) {\n            this.renderer.domElement.parentElement.removeChild(this.renderer.domElement);\n        }\n        if (this.grass) {\n            this.grass.geometry.dispose();\n            this.grass.material.dispose();\n        }\n        this.ground.geometry?.dispose();\n        this.groundMaterial?.dispose();\n        this.groundTexture?.dispose();\n        this.groundCanvas = null;\n        this.game.scene = null;\n        this.game.camera = null;\n        this.game.renderer = null;\n    }\n\n    createCurvedBladeGeometry(width = 0.1, height = 1) {\n        const shape = new THREE.Shape();\n        shape.moveTo(0, 0);\n        shape.quadraticCurveTo(width * 0.5, height * 0.5, 0, height);\n    \n        const shapeGeom = new THREE.ShapeGeometry(shape, 12);\n        const positions = shapeGeom.attributes.position.array;\n        const uvs = shapeGeom.attributes.uv.array;\n        const vertexCount = positions.length / 3;\n    \n        const newUVs = new Float32Array(uvs.length);\n        const newNormals = new Float32Array(positions.length);\n    \n        for (let i = 0; i < vertexCount; i++) {\n            const posIndex = i * 3;\n            const uvIndex = i * 2;\n            const x = positions[posIndex];\n            const y = positions[posIndex + 1];\n            const normalizedY = y / height;\n    \n            newUVs[uvIndex] = uvs[uvIndex];\n            newUVs[uvIndex + 1] = normalizedY;\n    \n            // Compute normal: approximate outward direction along curve\n            const t = y / height; // Parameter along curve\n            const curveX = width * 0.5 * (1 - t); // Quadratic curve approximation\n            const tangent = new THREE.Vector2(curveX - x, y - (y - height * 0.5)).normalize();\n            const normal = new THREE.Vector2(-tangent.y, tangent.x); // Perpendicular to tangent\n            newNormals[posIndex] = normal.x;\n            newNormals[posIndex + 1] = 0;\n            newNormals[posIndex + 2] = normal.y;\n        }\n    \n        shapeGeom.setAttribute('uv', new THREE.BufferAttribute(newUVs, 2));\n        shapeGeom.setAttribute('normal', new THREE.BufferAttribute(newNormals, 3));\n        return shapeGeom;\n    }\n    createGrassTexture() {\n        const canvas = document.createElement('canvas');\n        canvas.width = 4;\n        canvas.height = 32;\n        const ctx = canvas.getContext('2d');\n\n        const gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);\n        gradient.addColorStop(0.0, this.game.palette[\"greenMColor\"]);\n        gradient.addColorStop(0.8, this.game.palette[\"greenMColor\"]);\n        gradient.addColorStop(1.0, this.game.palette[\"redLColor\"]);\n\n        ctx.fillStyle = gradient;\n        ctx.fillRect(0, 0, canvas.width, canvas.height);\n\n        const texture = new THREE.CanvasTexture(canvas);\n        texture.wrapS = THREE.RepeatWrapping;\n        texture.wrapT = THREE.ClampToEdgeWrapping;\n        texture.magFilter = THREE.NearestFilter;\n        texture.minFilter = THREE.NearestFilter;\n        return texture;\n    }\n\n    generateLiquidSurfaceMesh(terrainType) {\n        const terrainMap = this.tileMap.terrainMap;\n        const gridSize = this.game.config.configs.game.gridSize;\n        const rows = terrainMap.length;\n        const cols = terrainMap[0].length;\n        \n        // Arrays to store vertices, indices, and UVs for the BufferGeometry\n        const vertices = [];\n        const indices = [];\n        const uvs = [];\n        \n        // Amount to extend the perimeter (e.g., 10% of gridSize)\n        const extensionAmount = gridSize * 0.25; // Adjust as needed        \n  \n        // Helper function to check if a tile is a water tile\n        const isWaterTile = (x, z) => {\n            if (x < 0 || x >= cols || z < 0 || z >= rows) return false;\n            return terrainMap[z][x] === terrainType;\n        };\n        \n        // Step 1: Generate a grid of vertices, but only for positions needed by water tiles\n        const usedPositions = new Set();\n        for (let z = 0; z < rows; z++) {\n            for (let x = 0; x < cols; x++) {\n                if (terrainMap[z][x] === terrainType) {\n                    usedPositions.add(`${x},${z}`);     // Bottom-left\n                    usedPositions.add(`${x + 1},${z}`); // Bottom-right\n                    usedPositions.add(`${x + 1},${z + 1}`); // Bottom-right in your view (+z is south)\n                    usedPositions.add(`${x},${z + 1}`); // Top-left\n                }\n            }\n        }\n        \n        // Step 2: Create vertices for all used positions and store their original positions\n        const positionToVertexIndex = new Map();\n        const originalPositions = []; // Store original (x, z) for each vertex\n        let vertexIndex = 0;\n        for (const pos of usedPositions) {\n            const [x, z] = pos.split(',').map(Number);\n            positionToVertexIndex.set(pos, vertexIndex++);\n            vertices.push(x * gridSize, 0.1, z * gridSize);\n            originalPositions.push([x, z]); // Store original grid position\n            uvs.push(x, z); // UVs based on grid position\n        }\n        \n        // Step 3: Generate indices for water tiles, connecting them into a single mesh\n        for (let z = 0; z < rows; z++) {\n            for (let x = 0; x < cols; x++) {\n                if (terrainMap[z][x] === terrainType) {\n                    const bl = positionToVertexIndex.get(`${x},${z}`);\n                    const br = positionToVertexIndex.get(`${x + 1},${z}`);\n                    const tr = positionToVertexIndex.get(`${x + 1},${z + 1}`); // Bottom-right in your view\n                    const tl = positionToVertexIndex.get(`${x},${z + 1}`);\n        \n                    indices.push(bl, br, tl);\n                    indices.push(br, tr, tl);\n                }\n            }\n        }\n        \n        // Step 4: Identify perimeter vertices and their extension directions\n        const perimeterExtensions = new Map(); // Map vertexIndex to { extendLeft, extendRight, extendUp, extendDown }\n        for (let z = 0; z < rows; z++) {\n            for (let x = 0; x < cols; x++) {\n                if (terrainMap[z][x] === terrainType) {\n                    const isLeftEdge = !isWaterTile(x - 1, z);\n                    const isRightEdge = !isWaterTile(x + 1, z);\n                    const isBottomEdge = !isWaterTile(x, z - 1); // North\n                    const isTopEdge = !isWaterTile(x, z + 1);    // South\n        \n                    // Bottom-left vertex (x, z)\n                    if (isLeftEdge || isBottomEdge) {\n                        const vIdx = positionToVertexIndex.get(`${x},${z}`);\n                        if (!perimeterExtensions.has(vIdx)) perimeterExtensions.set(vIdx, { extendLeft: false, extendRight: false, extendUp: false, extendDown: false });\n                        const ext = perimeterExtensions.get(vIdx);\n                        if (isLeftEdge) ext.extendLeft = true;\n                        if (isBottomEdge) ext.extendUp = true; // North\n                    }\n        \n                    // Bottom-right vertex (x + 1, z)\n                    if (isRightEdge || isBottomEdge) {\n                        const vIdx = positionToVertexIndex.get(`${x + 1},${z}`);\n                        if (!perimeterExtensions.has(vIdx)) perimeterExtensions.set(vIdx, { extendLeft: false, extendRight: false, extendUp: false, extendDown: false });\n                        const ext = perimeterExtensions.get(vIdx);\n                        if (isRightEdge) ext.extendRight = true;\n                        if (isBottomEdge) ext.extendUp = true; // North\n                    }\n        \n                    // Top-right vertex (x + 1, z + 1) - Bottom-right in your view\n                    if (isRightEdge || isTopEdge) {\n                        const vIdx = positionToVertexIndex.get(`${x + 1},${z + 1}`);\n                        if (!perimeterExtensions.has(vIdx)) perimeterExtensions.set(vIdx, { extendLeft: false, extendRight: false, extendUp: false, extendDown: false });\n                        const ext = perimeterExtensions.get(vIdx);\n                        if (isRightEdge) ext.extendRight = true;\n                        if (isTopEdge) ext.extendDown = true; // South\n                    }\n        \n                    // Top-left vertex (x, z + 1)\n                    if (isLeftEdge || isTopEdge) {\n                        const vIdx = positionToVertexIndex.get(`${x},${z + 1}`);\n                        if (!perimeterExtensions.has(vIdx)) perimeterExtensions.set(vIdx, { extendLeft: false, extendRight: false, extendUp: false, extendDown: false });\n                        const ext = perimeterExtensions.get(vIdx);\n                        if (isLeftEdge) ext.extendLeft = true;\n                        if (isTopEdge) ext.extendDown = true; // South\n                    }\n                }\n            }\n        }\n        \n        // Step 5: Apply perimeter extensions\n        perimeterExtensions.forEach((ext, vertexIndex) => {\n            const idx = vertexIndex * 3;\n            const [origX, origZ] = originalPositions[vertexIndex];\n        \n            // Log the bottom-right corner for debugging\n            if (ext.extendRight && ext.extendDown) {\n                console.log(`Bottom-right corner at (${origX}, ${origZ}): Before extension - x: ${vertices[idx]}, z: ${vertices[idx + 2]}`);\n            }\n        \n            if (ext.extendLeft) vertices[idx] -= extensionAmount; // Extend left\n            if (ext.extendRight) vertices[idx] += extensionAmount; // Extend right\n            if (ext.extendUp) vertices[idx + 2] -= extensionAmount; // Extend north (decrease z)\n            if (ext.extendDown) vertices[idx + 2] += extensionAmount; // Extend south (increase z)\n        \n            if (ext.extendRight && ext.extendDown) {\n                console.log(`Bottom-right corner at (${origX}, ${origZ}): After extension - x: ${vertices[idx]}, z: ${vertices[idx + 2]}`);\n            }\n        });\n        \n        // Step 6: Create the BufferGeometry\n        const geometry = new THREE.BufferGeometry();\n        geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));\n        geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));\n        geometry.setIndex(indices);\n        geometry.computeVertexNormals(); // For lighting\n        // Parse the hex color to RGB\n        const parseHexColor = (hex) => {\n            const r = parseInt(hex.slice(1, 3), 16) / 255;\n            const g = parseInt(hex.slice(3, 5), 16) / 255;\n            const b = parseInt(hex.slice(5, 7), 16) / 255;\n            return { r, g, b };\n        };\n        const waterShader = this.game.config.shaders[this.level.waterShader];\n        // Use the hex color in a ShaderMaterial\n        this.uniforms[terrainType] = JSON.parse(waterShader.uniforms);\n        let vectorizeProps = JSON.parse(waterShader.vectors);\n        vectorizeProps.forEach((prop => {\n            if (this.uniforms[terrainType][prop]) {\n                if( prop.toLowerCase().endsWith(\"color\")){\n                    const colorToUse = this.tileMap.terrainTypes[terrainType].color;\n                    const { r, g, b } = parseHexColor(colorToUse);\n                    this.uniforms[terrainType][prop].value = new THREE.Vector3(r, g, b);\n                } else {\n                    let arr = this.uniforms[terrainType][prop].value;\n                    this.uniforms[terrainType][prop].value = new THREE.Vector3(arr[0], arr[1], arr[2]);\n                }\n            }\n        }));\n        this.uniforms[terrainType].fogColor = { value: new THREE.Color(this.fogSettings.color) };\n        this.uniforms[terrainType].fogDensity = this.fogSettings.enabled ? { value: this.fogSettings.density } : 0;\n        // Reference the uniforms\n        const uniforms = this.uniforms[terrainType];\n        \n        // Create the shader material\n        const material = new THREE.ShaderMaterial({\n            uniforms: uniforms,\n            vertexShader: waterShader.vertexScript,\n            fragmentShader: waterShader.fragmentScript,\n            side: THREE.DoubleSide,\n            transparent: true\n        });\n\n        // Replace the MeshBasicMaterial with this ShaderMaterial in the mesh creation\n        const waterMesh = new THREE.Mesh(geometry, material);        \n        waterMesh.position.y = (terrainType + 2) * this.heightMapSettings.heightStep;\n        this.scene.add(waterMesh); // Assuming `this.scene` is your THREE.js scene\n    }\n}"
       },
-      "UpgradeManager": {
-        "fileName": "UpgradeManager",
-        "script": "class UpgradeManager extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n\r\n init() {\r\nthis.game.state.activeUpgrades = {};\r\n}\r\n    update() {\r\n       this.applyActiveUpgrades();\r\n        // Level Up check\r\n        if (this.game.state.essence >= this.game.state.essenceToNextLevel && !this.game.state.isLevelingUp) {\r\n            this.showUpgradeMenu();\r\n        }\r\n    }\r\n\r\n    applyActiveUpgrades() {\r\n        engine.getFunction(\"calculateStats\")(this.game.state.stats, this.game.state.activeUpgrades['global']);    \r\n    }\r\n\r\n    \r\n    // Upgrade system\r\n    showUpgradeMenu() {\r\n        if (this.game.state.isLevelingUp) return; // Prevent re-triggering\r\n        \r\n        this.game.state.isLevelingUp = true;\r\n        this.game.state.isPaused = true;\r\n        \r\n        this.game.uiManager.upgradeMenu.style.display = 'block';\r\n        this.game.uiManager.overlay.style.display = 'block';\r\n        this.game.uiManager.upgradeOptionsDiv.innerHTML = '';\r\n        \r\n        // Filter upgrades based on conditions\r\n        const availableUpgrades = this.game.upgrades.filter(upgrade => upgrade.canApply(this.game.state));\r\n        \r\n        // Choose 3 random upgrades\r\n        const options = [];\r\n        while (options.length < 3 && availableUpgrades.length > 0) {\r\n            const index = Math.floor(Math.random() * availableUpgrades.length);\r\n            options.push(availableUpgrades[index]);\r\n            availableUpgrades.splice(index, 1);\r\n        }\r\n        \r\n        // Create upgrade options\r\n        options.forEach(upgrade => {\r\n            const div = document.createElement('div');\r\n            div.className = 'upgrade-option';\r\n            div.innerHTML = `\r\n                <div class=\"upgrade-icon\">${upgrade.icon}</div>\r\n                <div class=\"upgrade-desc\">\r\n                    <div class=\"upgrade-title\">${upgrade.title}</div>\r\n                    ${upgrade.desc}\r\n                </div>\r\n            `;\r\n            div.onclick = () => this.selectUpgrade(upgrade);\r\n            this.game.uiManager.upgradeOptionsDiv.appendChild(div);\r\n        });\r\n    }\r\n\r\n    selectUpgrade(upgrade) {       \r\n        // Add to active upgrades list if not already\r\n        if (!this.game.state.activeUpgrades[upgrade.appliesTo]) {\r\n            this.game.state.activeUpgrades[upgrade.appliesTo] = [upgrade];\r\n        } else {\r\n            this.game.state.activeUpgrades[upgrade.appliesTo].push(upgrade);\r\n        }\r\n\r\n        this.applyActiveUpgrades();\r\n        if(upgrade.onAcquire) {\r\n            upgrade.onAcquire(this.game.state);\r\n        }\r\n        \r\n        upgradeMenu.style.display = 'none';\r\n        overlay.style.display = 'none';\r\n        \r\n        this.game.state.essence -= this.game.state.essenceToNextLevel;\r\n        this.game.state.level++;\r\n        this.game.state.essenceToNextLevel = Math.floor(this.game.state.essenceToNextLevel * 1.4);        \r\n        \r\n        this.game.state.isLevelingUp = false;\r\n        this.game.state.isPaused = false;\r\n    }\r\n}"
-      },
       "WaveManager": {
         "fileName": "WaveManager",
         "title": "AudioManager",
         "script": "class WaveManager extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init() {   \r\n        \r\n        this.resetWaveState();\r\n    }\r\n\r\n    resetWaveState() {\r\n        this.game.state.waveSets = this.game.config.levels[this.game.state.level].wavesets;\r\n        this.game.state.currentWaveIds = [];\r\n        this.game.state.currentWaveEnemies = [];\r\n        this.game.state.enemiesSpawned = [];\r\n        this.game.state.spawnTimers = []; // Array for individual spawn timers\r\n        this.game.state.spawnRate = 1;    // Base spawn rate (can be modified per waveset if needed)\r\n        this.game.state.waveTimer = 0;\r\n        this.game.state.startDelayTimer = 0;\r\n        this.game.state.round = 0;\r\n    }\r\n\r\n    update() {\r\n        // Skip wave updates if game is over or in certain states\r\n        if (this.game.state.gameOver || this.game.state.victory || this.game.state.isLevelingUp) return;\r\n\r\n        this.game.state.startDelayTimer += this.game.deltaTime;\r\n\r\n        // Process all wavesets in parallel\r\n        for (let i = 0; i < this.game.state.currentWaveIds.length; i++) {\r\n            let waveSet = this.game.config.wavesets[this.game.state.waveSets[i]];\r\n            \r\n            // Skip if still in start delay\r\n            if (waveSet.startDelay && this.game.state.startDelayTimer < waveSet.startDelay) continue;\r\n            \r\n            if(this.game.deltaTime){\r\n            // Update individual spawn timer for this waveset\r\n                this.game.state.spawnTimers[i] += this.game.deltaTime;\r\n            }\r\n            // If this waveset still has enemies to spawn\r\n            if (this.game.state.enemiesSpawned[i] < this.game.state.currentWaveEnemies[i].length) {\r\n                if (this.game.state.spawnTimers[i] >= this.game.state.spawnRate) {\r\n                    // Create enemy from the appropriate waveset using the enemy type and start point index\r\n                    const enemyType = this.game.state.currentWaveEnemies[i][this.game.state.enemiesSpawned[i]];\r\n                    const startPointIndex = i;\r\n                    \r\n                    \r\n        \t\t\t\t\t  this.game.spawn(0, 0, 'enemy', { objectType: \"enemies\", spawnType: enemyType, pathIndex: startPointIndex, friction: 1000, density: 1000});\r\n                    this.game.state.enemiesSpawned[i]++;\r\n                    this.game.state.spawnTimers[i] = 0; // Reset this waveset's timer\r\n                    \r\n                    // Calculate total progress across all wavesets\r\n                    const totalEnemies = this.game.state.currentWaveEnemies.reduce((sum, wave) => sum + wave.length, 0);\r\n                    const totalSpawned = this.game.state.enemiesSpawned.reduce((sum, count) => sum + count, 0);\r\n                    \r\n                    // Update wave progress bar\r\n                    document.getElementById('waveProgress').style.width = (totalSpawned / totalEnemies * 100) + '%';\r\n                }\r\n            }\r\n        }\r\n        \r\n        // Check if all wavesets have completed spawning\r\n        const allWavesetsComplete = this.game.state.enemiesSpawned.every((spawned, index) => \r\n            spawned >= this.game.state.currentWaveEnemies[index].length\r\n        );\r\n        \r\n        // Move to next wave if all enemies defeated and all wavesets have completed spawning\r\n        if (this.game.state.enemies.length === 0 && allWavesetsComplete) {\r\n            this.game.state.waveTimer++;\r\n            \r\n            if (this.game.state.waveTimer >= this.game.state.waveDelay) {\r\n                this.startNextWave();\r\n            }\r\n        }\r\n    }\r\n\r\n    startNextWave() {\r\n        document.getElementById('waveDisplay').textContent = this.game.state.round + 1;\r\n        \r\n        this.game.state.currentWaveIds = [];\r\n        this.game.state.currentWaveEnemies = [];\r\n        this.game.state.enemiesSpawned = [];\r\n        this.game.state.spawnTimers = [];\r\n        \r\n        let totalWaves = 0;\r\n        for (let i = 0; i < this.game.state.waveSets.length; i++) {\r\n            const waveSetId = this.game.state.waveSets[i];\r\n            const waveSet = this.game.config.wavesets[waveSetId];\r\n            \r\n            // Check if this waveset has enough waves for the current round\r\n            if (this.game.state.round < waveSet.waves.length) {\r\n                const currentWaveId = waveSet.waves[this.game.state.round];\r\n                \r\n                // Add this wave to the current active waves\r\n                this.game.state.currentWaveIds.push(currentWaveId);\r\n                this.game.state.currentWaveEnemies.push(this.game.config.waves[currentWaveId].enemies);\r\n                this.game.state.enemiesSpawned.push(0);\r\n                this.game.state.spawnTimers.push(0); // Initialize spawn timer for this waveset\r\n            }\r\n            \r\n            totalWaves = Math.max(totalWaves, waveSet.waves.length);\r\n        }\r\n        \r\n        // If all wavesets are exhausted, end the game\r\n        if (this.game.state.currentWaveIds.length === 0) {\r\n            this.game.state.victory = true;\r\n            this.game.state.isPaused = true;\r\n            document.getElementById('victoryMenu').style.display = 'block';\r\n            document.getElementById('overlay').style.display = 'block';\r\n            return;\r\n        }\r\n        \r\n        this.game.state.maxWaves = totalWaves;\r\n        this.game.state.spawnRate = 5;\r\n        this.game.state.waveTimer = 0;\r\n        this.game.state.startDelayTimer = 0;\r\n        \r\n        // Reset wave progress bar\r\n        document.getElementById('waveProgress').style.width = '0%';\r\n        this.game.state.round++;\r\n    }\r\n}"
+      },
+      "UpgradeManager": {
+        "fileName": "UpgradeManager",
+        "script": "class UpgradeManager extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n\r\n init() {\r\nthis.game.state.activeUpgrades = {};\r\n}\r\n    update() {\r\n       this.applyActiveUpgrades();\r\n        // Level Up check\r\n        if (this.game.state.essence >= this.game.state.essenceToNextLevel && !this.game.state.isLevelingUp) {\r\n            this.showUpgradeMenu();\r\n        }\r\n    }\r\n\r\n    applyActiveUpgrades() {\r\n        engine.getFunction(\"calculateStats\")(this.game.state.stats, this.game.state.activeUpgrades['global']);    \r\n    }\r\n\r\n    \r\n    // Upgrade system\r\n    showUpgradeMenu() {\r\n        if (this.game.state.isLevelingUp) return; // Prevent re-triggering\r\n        \r\n        this.game.state.isLevelingUp = true;\r\n        this.game.state.isPaused = true;\r\n        \r\n        this.game.uiManager.upgradeMenu.style.display = 'block';\r\n        this.game.uiManager.overlay.style.display = 'block';\r\n        this.game.uiManager.upgradeOptionsDiv.innerHTML = '';\r\n        \r\n        // Filter upgrades based on conditions\r\n        const availableUpgrades = this.game.upgrades.filter(upgrade => upgrade.canApply(this.game.state));\r\n        \r\n        // Choose 3 random upgrades\r\n        const options = [];\r\n        while (options.length < 3 && availableUpgrades.length > 0) {\r\n            const index = Math.floor(Math.random() * availableUpgrades.length);\r\n            options.push(availableUpgrades[index]);\r\n            availableUpgrades.splice(index, 1);\r\n        }\r\n        \r\n        // Create upgrade options\r\n        options.forEach(upgrade => {\r\n            const div = document.createElement('div');\r\n            div.className = 'upgrade-option';\r\n            div.innerHTML = `\r\n                <div class=\"upgrade-icon\">${upgrade.icon}</div>\r\n                <div class=\"upgrade-desc\">\r\n                    <div class=\"upgrade-title\">${upgrade.title}</div>\r\n                    ${upgrade.desc}\r\n                </div>\r\n            `;\r\n            div.onclick = () => this.selectUpgrade(upgrade);\r\n            this.game.uiManager.upgradeOptionsDiv.appendChild(div);\r\n        });\r\n    }\r\n\r\n    selectUpgrade(upgrade) {       \r\n        // Add to active upgrades list if not already\r\n        if (!this.game.state.activeUpgrades[upgrade.appliesTo]) {\r\n            this.game.state.activeUpgrades[upgrade.appliesTo] = [upgrade];\r\n        } else {\r\n            this.game.state.activeUpgrades[upgrade.appliesTo].push(upgrade);\r\n        }\r\n\r\n        this.applyActiveUpgrades();\r\n        if(upgrade.onAcquire) {\r\n            upgrade.onAcquire(this.game.state);\r\n        }\r\n        \r\n        upgradeMenu.style.display = 'none';\r\n        overlay.style.display = 'none';\r\n        \r\n        this.game.state.essence -= this.game.state.essenceToNextLevel;\r\n        this.game.state.level++;\r\n        this.game.state.essenceToNextLevel = Math.floor(this.game.state.essenceToNextLevel * 1.4);        \r\n        \r\n        this.game.state.isLevelingUp = false;\r\n        this.game.state.isPaused = false;\r\n    }\r\n}"
       }
     },
     "entities": {
-      "ballisticProjectile": {
-        "title": "Ballistic Projectile",
-        "components": [
-          "Stats",
-          "ArrayTracker",
-          "BallisticProjectile",
-          "Animator"
-        ],
-        "renderers": [
-          "ModelRenderer",
-          "Renderer"
-        ]
-      },
       "enemy": {
         "title": "Enemy",
         "components": [
@@ -17366,6 +17353,26 @@ const DEFAULT_PROJECT_CONFIG = {
           "Renderer"
         ]
       },
+      "ballisticProjectile": {
+        "title": "Ballistic Projectile",
+        "components": [
+          "Stats",
+          "ArrayTracker",
+          "BallisticProjectile",
+          "Animator"
+        ],
+        "renderers": [
+          "ModelRenderer",
+          "Renderer"
+        ]
+      },
+      "explosion": {
+        "title": "Explosion",
+        "components": [],
+        "renderers": [
+          "Explosion"
+        ]
+      },
       "game": {
         "title": "Game",
         "components": [
@@ -17380,20 +17387,6 @@ const DEFAULT_PROJECT_CONFIG = {
           "MapRenderer",
           "UiManager"
         ]
-      },
-      "explosion": {
-        "title": "Explosion",
-        "components": [],
-        "renderers": [
-          "Explosion"
-        ]
-      },
-      "GameLoader": {
-        "title": "Game Loader",
-        "components": [
-          "GameLoader"
-        ],
-        "renderers": []
       },
       "hitEffect": {
         "title": "Hit Effect",
@@ -17415,6 +17408,13 @@ const DEFAULT_PROJECT_CONFIG = {
         "renderers": [
           "LightningRenderer"
         ]
+      },
+      "GameLoader": {
+        "title": "Game Loader",
+        "components": [
+          "GameLoader"
+        ],
+        "renderers": []
       },
       "multiShotProjectile": {
         "title": "Multi-Shot Projectile",
@@ -17529,16 +17529,11 @@ const DEFAULT_PROJECT_CONFIG = {
         "css": "#audio-editor-container {\r\n    padding: 20px;\r\n    margin: 0 auto;\r\n    border-radius: 8px;\r\n    flex-direction: column;\r\n}\r\n\r\n#audio-editor-container .main-flex-container {\r\n    display: flex;\r\n    flex-wrap: wrap;\r\n    gap: 20px;\r\n}\r\n\r\n#audio-editor-container #status-container {\r\n    width: 100%;\r\n    padding: 10px;\r\n    text-align: center;\r\n}\r\n\r\n#audio-editor-container #status-message {\r\n    color: #333;\r\n    font-weight: bold;\r\n}\r\n\r\n#audio-editor-container .parameters-container {\r\n    flex: 1;\r\n    min-width: 300px;\r\n    padding: 15px;\r\n    margin: 10px 0;\r\n    border-radius: 8px;\r\n    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);\r\n}\r\n\r\n#audio-editor-container .control-buttons {\r\n    margin-bottom: 10px;\r\n    display: flex;\r\n    gap: 10px;\r\n    flex-wrap: wrap;\r\n}\r\n\r\n#audio-editor-container .parameter-group {\r\n    display: grid;\r\n    gap: 10px;\r\n    margin-top: 15px;\r\n}\r\n\r\n#audio-editor-container .parameter-group label {\r\n    display: flex;\r\n    align-items: center;\r\n    gap: 10px;\r\n    font-size: 0.9em;\r\n}\r\n\r\n#audio-editor-container .value-display {\r\n    min-width: 60px;\r\n    text-align: right;\r\n    font-family: monospace;\r\n}\r\n\r\n#audio-editor-container input[type=\"range\"] {\r\n    flex-grow: 1;\r\n}\r\n\r\n\r\n@media (max-width: 600px) {\r\n    #audio-editor-container .parameters-container {\r\n        min-width: 100%;\r\n    }\r\n    \r\n    #audio-editor-container .control-buttons {\r\n        flex-direction: column;\r\n    }\r\n    \r\n    #audio-editor-container .parameter-group label {\r\n        flex-direction: column;\r\n        align-items: flex-start;\r\n    }\r\n}",
         "html": "<div id=\"audio-editor-container\">       \r\n     <div id=\"status-container\">\r\n        <span id=\"status-message\">Ready</span>\r\n    </div>\r\n\r\n    <div class=\"main-flex-container\">\r\n        <!-- Status Message Area -->\r\n\r\n        <!-- Basic Parameters -->\r\n        <div class=\"parameters-container\">\r\n            <!-- Playback Controls -->\r\n            <div class=\"control-buttons\">\r\n                <button id=\"playBtn\" class=\"primary-button\">Play</button>\r\n                <button id=\"exportBtn\">Save</button>\r\n                <button id=\"randomSoundBtn\">🎲 Randomize Sound</button>\r\n            </div>\r\n            <h3>Basic Parameters</h3>\r\n            <div class=\"parameter-group\">\r\n                <label>\r\n                    Waveform:\r\n                    <select id=\"waveform\">\r\n                        <option value=\"sine\">Sine</option>\r\n                        <option value=\"square\">Square</option>\r\n                        <option value=\"sawtooth\">Sawtooth</option>\r\n                        <option value=\"triangle\">Triangle</option>\r\n                        <option value=\"noise\">Noise</option>\r\n                    </select>\r\n                </label>\r\n                <label>\r\n                    Frequency:\r\n                    <input type=\"range\" id=\"frequency\" min=\"20\" max=\"2000\" value=\"440\" step=\"1\">\r\n                    <span class=\"value-display\">440 Hz</span>\r\n                </label>\r\n                <label>\r\n                    Duration:\r\n                    <input type=\"range\" id=\"duration\" min=\"0.1\" max=\"5\" value=\"1\" step=\"0.1\">\r\n                    <span class=\"value-display\">1.00 s</span>\r\n                </label>\r\n                <label>\r\n                    Volume:\r\n                    <input type=\"range\" id=\"volume\" min=\"0\" max=\"1\" value=\"0.7\" step=\"0.01\">\r\n                    <span class=\"value-display\">70%</span>\r\n                </label>\r\n            </div>\r\n        </div>\r\n        <div class=\"parameters-container\">\r\n            <h3>Noise Generator</h3>\r\n            <div class=\"parameter-group\">\r\n                <label >\r\n                    Noise Type:\r\n                    <select id=\"noiseType\">\r\n                        <option value=\"white\">White</option>\r\n                        <option value=\"pink\">Pink</option>\r\n                        <option value=\"brown\">Brown</option>\r\n                    </select>\r\n                </label>\r\n                <label>\r\n                    Noise Amount:\r\n                    <input type=\"range\" id=\"noiseAmount\" min=\"0\" max=\"1\" value=\"0\" step=\"0.01\">\r\n                    <span class=\"value-display\">0%</span>\r\n                </label>\r\n                <label >\r\n                    Noise Filter:\r\n                    <select id=\"noiseFilterType\">\r\n                        <option value=\"none\">None</option>\r\n                        <option value=\"lowpass\">Low Pass</option>\r\n                        <option value=\"highpass\">High Pass</option>\r\n                        <option value=\"bandpass\">Band Pass</option>\r\n                    </select>\r\n                </label>\r\n                <label>\r\n                    Noise Filter Freq:\r\n                    <input type=\"range\" id=\"noiseFilterFreq\" min=\"20\" max=\"20000\" value=\"2000\" step=\"1\">\r\n                    <span class=\"value-display\">2000 Hz</span>\r\n                </label>\r\n            </div>\r\n            <!-- ADSR Envelope -->\r\n            <div class=\"parameters-container\">\r\n                <h3>Envelope (ADSR)</h3>\r\n                <div class=\"parameter-group\">\r\n                    <label>\r\n                        Attack:\r\n                        <input type=\"range\" id=\"attack\" min=\"0.001\" max=\"2\" value=\"0.01\" step=\"0.001\">\r\n                        <span class=\"value-display\">0.010 s</span>\r\n                    </label>\r\n                    <label>\r\n                        Decay:\r\n                        <input type=\"range\" id=\"decay\" min=\"0\" max=\"2\" value=\"0.1\" step=\"0.001\">\r\n                        <span class=\"value-display\">0.10 s</span>\r\n                    </label>\r\n                    <label>\r\n                        Sustain:\r\n                        <input type=\"range\" id=\"sustain\" min=\"0\" max=\"1\" value=\"0.7\" step=\"0.01\">\r\n                        <span class=\"value-display\">70%</span>\r\n                    </label>\r\n                    <label>\r\n                        Release:\r\n                        <input type=\"range\" id=\"release\" min=\"0.001\" max=\"5\" value=\"0.3\" step=\"0.001\">\r\n                        <span class=\"value-display\">0.30 s</span>\r\n                    </label>\r\n                </div>\r\n            </div>\r\n        </div>\r\n\r\n        <!-- Pitch Envelope -->\r\n        <div class=\"parameters-container\">\r\n            <h3>Pitch Envelope</h3>\r\n            <div class=\"parameter-group\">\r\n                <label>\r\n                    Start:\r\n                    <input type=\"range\" id=\"pitchEnvStart\" min=\"0.1\" max=\"4\" value=\"1\" step=\"0.01\">\r\n                    <span class=\"value-display\">1.00x</span>\r\n                </label>\r\n                <label>\r\n                    End:\r\n                    <input type=\"range\" id=\"pitchEnvEnd\" min=\"0.1\" max=\"4\" value=\"1\" step=\"0.01\">\r\n                    <span class=\"value-display\">1.00x</span>\r\n                </label>\r\n            </div>\r\n        </div>\r\n\r\n        <!-- Effects -->\r\n        <div class=\"parameters-container\">\r\n            <h3>Effects</h3>\r\n            <div class=\"parameter-group\">\r\n                <label>\r\n                    Filter Type:\r\n                    <select id=\"filterType\">\r\n                        <option value=\"lowpass\">Low Pass</option>\r\n                        <option value=\"highpass\">High Pass</option>\r\n                        <option value=\"bandpass\">Band Pass</option>\r\n                        <option value=\"notch\">Notch</option>\r\n                    </select>\r\n                </label>\r\n                <label>\r\n                    Filter Frequency:\r\n                    <input type=\"range\" id=\"filterFreq\" min=\"20\" max=\"20000\" value=\"1000\" step=\"1\">\r\n                    <span class=\"value-display\">1000 Hz</span>\r\n                </label>\r\n                <label>\r\n                    Filter Q:\r\n                    <input type=\"range\" id=\"filterQ\" min=\"0.1\" max=\"20\" value=\"1\" step=\"0.1\">\r\n                    <span class=\"value-display\">Q: 1.0</span>\r\n                </label>\r\n                <label>\r\n                    Distortion:\r\n                    <input type=\"range\" id=\"distortion\" min=\"0\" max=\"100\" value=\"0\" step=\"1\">\r\n                    <span class=\"value-display\">0%</span>\r\n                </label>\r\n                <label>\r\n                    Delay Time:\r\n                    <input type=\"range\" id=\"delayTime\" min=\"0\" max=\"2\" value=\"0.3\" step=\"0.01\">\r\n                    <span class=\"value-display\">0.30 s</span>\r\n                </label>\r\n                <label>\r\n                    Delay Feedback:\r\n                    <input type=\"range\" id=\"delayFeedback\" min=\"0\" max=\"0.9\" value=\"0\" step=\"0.01\">\r\n                    <span class=\"value-display\">0%</span>\r\n                </label>\r\n                <label>\r\n                    Reverb:\r\n                    <input type=\"range\" id=\"reverbAmount\" min=\"0\" max=\"1\" value=\"0\" step=\"0.01\">\r\n                    <span class=\"value-display\">0%</span>\r\n                </label>\r\n                <label>\r\n                    Bitcrusher:\r\n                    <input type=\"range\" id=\"bitcrusher\" min=\"0\" max=\"1\" value=\"0\" step=\"0.01\">\r\n                    <span class=\"value-display\">0%</span>\r\n                </label>\r\n                <label>\r\n                    Panning:\r\n                    <input type=\"range\" id=\"panning\" min=\"-1\" max=\"1\" value=\"0\" step=\"0.01\">\r\n                    <span class=\"value-display\">Center</span>\r\n                </label>\r\n            </div>\r\n        </div>\r\n    </div>\r\n</div>\r\n"
       },
-      "graphicsEditor": {
-        "title": "Graphics Editor",
-        "modals": [
-          "rotateShapes",
-          "moveAllShapes",
-          "generateIsometric"
-        ],
-        "fileName": "graphicsEditor",
-        "css": "\r\n#graphics-editor-container #grid-display {\r\n    position: absolute;\r\n    top: 10px;\r\n    left: 10px;\r\n    padding: 5px 10px;\r\n    border-radius: 0;\r\n    font-family: 'Courier New', monospace;\r\n}\r\n#graphics-editor-container .btn {\r\n    padding: 0;\r\n}\r\n\r\n#graphics-editor-container .btn-add {\r\n  background-color: rgba(16, 185, 129, 0.3);\r\n  border: 1px solid #10b981;\r\n  color: #f4e1d2;\r\n}\r\n#graphics-editor-container .btn-add:hover {\r\n  background-color: rgba(16, 185, 129, 0.5);\r\n  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);\r\n}\r\n#graphics-editor-container #graphics-rightbar {\r\n    width: 360px;\r\n    display: flex;\r\n    flex-direction: column;\r\n}\r\n\r\n#graphics-editor-container #canvas-container {\r\n    flex: 1;\r\n    position: relative;\r\n}\r\n\r\n#graphics-editor-container #graphics-editor-canvas {\r\n    width: 100%;\r\n    height: 100%;\r\n    cursor: grab;\r\n    outline: none;\r\n}\r\n\r\n#graphics-editor-container .toolbar {\r\n    display: flex;\r\n    flex-direction: column;\r\n    padding: 10px 5px;\r\n    gap: 5px;  \r\n    align-items: normal;\r\n}\r\n#graphics-editor-container .toolbar > div {\r\n    display: flex;\r\n    gap: 7px;\r\n    justify-content: space-between;\r\n}\r\n#graphics-editor-container .toolbar > div > div {\r\n    display: flex;\r\n    gap: 5px;\r\n}\r\n\r\n#graphics-editor-container #shape-list {\r\n    flex: 1;\r\n    overflow-y: auto;\r\n    padding: 15px;\r\n}\r\n\r\n#graphics-editor-container .shape-item {\r\n    padding: 12px;\r\n    margin-bottom: 8px;\r\n    border-radius: 0;\r\n    cursor: pointer;\r\n    transition: all 0.2s ease;\r\n}\r\n\r\n#graphics-editor-container #inspector {\r\n    padding: 15px;\r\n}\r\n\r\n#graphics-editor-container .scene-info {\r\n    padding: 10px 15px;\r\n    position: absolute;\r\n    bottom: 15px;\r\n    left: 15px;\r\n    border-radius: 0;\r\n    font-size: 13px;\r\n}\r\n#graphics-editor-container #move-modal button, #rotate-modal button, #isometric-modal button {\r\n    width: 48%;\r\n}\r\n\r\n\r\n#graphics-editor-container .ref-container {\r\n    display: flex;\r\n    gap: 10px;\r\n}\r\n\r\n#graphics-editor-container .ref-select {\r\n    flex: 1;\r\n    min-width: 150px;\r\n}\r\n\r\n#graphics-editor-container .ref-values {\r\n    display: flex;\r\n    flex-wrap: wrap;\r\n    gap: 5px;\r\n    margin-bottom: 5px;\r\n}\r\n\r\n#graphics-editor-container .ref-value-item {\r\n    border-radius: 4px;\r\n    padding: 3px 6px;\r\n    display: flex;\r\n    align-items: center;\r\n    gap: 5px;\r\n}\r\n\r\n#graphics-editor-container .remove-ref-btn {\r\n    padding: 0 3px;\r\n    font-size: 14px;\r\n}\r\n\r\n#graphics-editor-container #rotate-group-modal .modal-content {\r\n    width: 400px;\r\n    padding: 20px;\r\n}\r\n\r\n#graphics-editor-container #rotate-group-modal .form-row {\r\n    display: flex;\r\n    align-items: center;\r\n    margin-bottom: 15px;\r\n}\r\n\r\n#graphics-editor-container #rotate-group-modal label {\r\n    width: 100px;\r\n    display: inline-block;\r\n}\r\n\r\n#graphics-editor-container #rotate-group-modal input[type=\"range\"] {\r\n    flex-grow: 1;\r\n    margin: 0 10px;\r\n}\r\n\r\n#graphics-editor-container #rotate-group-modal .button-row {\r\n    display: flex;\r\n    justify-content: flex-end;\r\n    margin-top: 20px;\r\n}\r\n\r\n#graphics-editor-container #rotate-group-modal button {\r\n    margin-left: 10px;\r\n    padding: 6px 12px;\r\n    cursor: pointer;\r\n}\r\n\r\n/* Base styling for shape list */\r\n#graphics-editor-container #shape-list {\r\n    padding: 10px;\r\n    user-select: none; /* Prevent text selection during drag */\r\n  }\r\n  \r\n  /* Common styles for items */\r\n  #graphics-editor-container  .shape-item, .group-item {\r\n    padding: 8px;\r\n    margin: 5px 0;\r\n    border-radius: 4px;\r\n    cursor: grab;\r\n    border: 1px solid transparent;\r\n    transition: border-color 0.2s;\r\n  }\r\n  \r\n  /* Shapes styling */\r\n  #graphics-editor-container  .shape-item {\r\n    border-left: 1px solid #555;\r\n  }\r\n  \r\n  #graphics-editor-container  .shape-item:active {\r\n    cursor: grabbing;\r\n  }\r\n  \r\n  /* Group styling */\r\n  #graphics-editor-container  .group-item {\r\n    border-left: 4px solid #007bff; /* Visual distinction for groups */\r\n    font-weight: 500;\r\n  }\r\n  \r\n  /* Selected states - use border instead of background */\r\n  #graphics-editor-container  .shape-item.selected, \r\n  #graphics-editor-container  .group-item.selected {\r\n    border-color: #4080ff;\r\n  }\r\n  \r\n  /* Drag-over states */\r\n  #graphics-editor-container .group-item.drag-over,\r\n  #graphics-editor-container  #shape-list.drag-over {\r\n    border-color: #40a040;\r\n    box-shadow: 0 0 3px rgba(0, 100, 0, 0.5);\r\n  }\r\n  \r\n  /* Animation for when dragging */\r\n  #graphics-editor-container .shape-item.dragging {\r\n    opacity: 0.7;\r\n  }\r\n  \r\n  /* Group shapes container */\r\n  #graphics-editor-container .group-shapes {\r\n    margin-left: 15px;\r\n    padding: 5px;\r\n    border-left: 2px dashed #666;\r\n  }\r\n  \r\n  /* Ungrouped shapes section */\r\n  #graphics-editor-container #shape-list .ungrouped-shapes {\r\n    margin-top: 10px;\r\n    padding: 10px;\r\n    border: 1px dashed #666;\r\n  }\r\n\r\n  #graphics-editor-container .transform-buttons {\r\n    display: flex;\r\n    gap: 10px;\r\n    margin-bottom: 10px;\r\n}\r\n\r\n#graphics-editor-container .transform-buttons button {\r\n    flex: 1;\r\n    padding: 8px;\r\n    background: #444;\r\n    border: 1px solid #666;\r\n    color: white;\r\n    cursor: pointer;\r\n}\r\n\r\n#graphics-editor-container .transform-buttons button.active {\r\n    background: #0066cc;\r\n    border-color: #0088ff;\r\n}",
-        "html": "<div id=\"graphics-editor-container\" class=\"main-content-container\">\r\n   <div id=\"graphics-sidebar\" class=\"content-sidebar\">\r\n      <div id=\"toolbar\" class=\"toolbar\">\r\n         <div>    \r\n            <div>\r\n               <button id=\"add-animation\" class=\"btn btn-add\" title=\"Add Animation\">+A</button>                        \r\n               <button id=\"delete-animation\" class=\"btn btn-danger\" title=\"Delete Animation\">-A</button>                        \r\n            </div>                   \r\n            <div>\r\n               <button id=\"add-frame\" class=\"btn btn-add\" title=\"Add Frame\">+F</button>                        \r\n               <button id=\"delete-frame\" class=\"btn btn-danger\" title=\"Delete Frame\">-F</button>                        \r\n            </div>\r\n            <div>\r\n               <button id=\"create-group\" class=\"btn btn-add\" title=\"Create Group\">+G</button>\r\n               <button id=\"delete-group\" class=\"btn btn-danger\" title=\"Delete Group\">-G</button>\r\n            </div>\r\n            <div>                    \r\n               <button id=\"add-shape\" class=\"btn btn-add\" title=\"Add Shape\">+S</button>                        \r\n               <button id=\"delete-shape\" class=\"btn btn-danger\" title=\"Delete Shape\">-S</button>           \r\n            </div>\r\n         </div>  \r\n         <div>\r\n            <div>\r\n               <button id=\"preview-animation\" class=\"btn btn-primary\" title=\"Preview Animation\">▶</button> \r\n               <button id=\"generate-isometric\" class=\"btn btn-primary\" title=\"Generate Isometric Sprites\">Iso</button>                    \r\n            </div>\r\n         </div>\r\n      </div>\r\n      <div id=\"frame-list\"></div>\r\n      <div id=\"group-list\"></div>\r\n      <div id=\"shape-list\"></div>\r\n   </div>\r\n   <div id=\"canvas-container\" class=\"grid-background\">\r\n      <canvas id=\"graphics-editor-canvas\"></canvas>\r\n      <div class=\"scene-info\">\r\n         <div>Shapes: <span id=\"shape-count\">0</span></div>\r\n         <div>Selected: <span id=\"selected-shape\">None</span></div>\r\n         <div><small>Controls: Left-click to select, Drag to rotate, Right-drag to pan, Scroll to zoom</small></div>\r\n      </div>\r\n   </div>\r\n   <div id=\"graphics-rightbar\">\r\n      <div id=\"inspector\"></div>\r\n      <div id=\"json-editor\" style=\"display: none\">                        \r\n        <textarea id=\"json-content\" placeholder=\"Edit JSON here...\"></textarea>                    \r\n\t\t\t</div>\r\n   </div>\r\n</div>\r\n"
+      "scriptEditor": {
+        "title": "Script Editor",
+        "fileName": "scriptEditor",
+        "css": "\r\n#script-editor-container .grid-background {\r\n    width: calc(100% - 450px);\r\n}\r\n/* Override global scrollbar suppression for CodeMirror */\r\n#script-editor-container .CodeMirror {\r\n    overflow-y: auto !important; /* Enable vertical scrolling */\r\n    -ms-overflow-style: auto !important; /* IE and Edge */\r\n    scrollbar-width: auto !important; /* Firefox */\r\n}\r\n\r\n/* Container and layout */\r\n#script-editor-container {\r\n    position: relative;\r\n    height: auto; /* Allow dynamic resizing */\r\n}\r\n\r\n#script-editor-container .grid-background {\r\n    width: calc(100% - 360px); /* Adjust for sidebar width */\r\n    flex: 1;\r\n    position: relative;\r\n    overflow: hidden; /* Contain children */\r\n}\r\n\r\n#script-editor-container .grid-background > div {\r\n    position: relative;\r\n    height: 100%;\r\n}\r\n#script-editor-sidebar {\r\n    width: 360px;\r\n    padding: 10px;\r\n}",
+        "html": "            <div id=\"script-editor-container\" class=\"main-content-container\">\r\n                <div id=\"script-editor-sidebar\" class=\"content-sidebar\">                    \r\n                    <h3>Script Editor</h3>\r\n                    <button id=\"save-script-btn\">Save Script</button>\r\n                </div>\r\n                <div class=\"grid-background\">\r\n                    <div>\r\n                        <textarea id=\"script-editor\" class=\"script-editor\" placeholder=\"Enter your script here...\"></textarea>                    \r\n                        <div class=\"handle\"></div>\r\n                    </div>\r\n                </div>\r\n            </div>\r\n"
       },
       "main": {
         "title": "Main Interface",
@@ -17546,12 +17541,6 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "main",
         "css": ":root {\r\n\t/* Solid hex colors */\r\n\t--primary-dark: #0f2418;\r\n\t/* Deep forest green */\r\n\t--primary-bg: #1a3526;\r\n\t/* Dark moss green */\r\n\t--secondary-bg: #224031;\r\n\t/* Muted pine green */\r\n\t--accent-color: #4a7c59;\r\n\t/* Fresh green (main accent) - matches grass */\r\n\t--bright-accent: #5a9e6f;\r\n\t/* Lighter, vibrant green */\r\n\t--highlight-color: #6abe54;\r\n\t/* Soft green highlight - matches necroOrb */\r\n\t--shadow-color: #3a443c;\r\n\t/* Darker green for shadows */\r\n\t--text-color: #f7f7f0;\r\n\t/* Off-white for readability - matches our palette */\r\n\t--gold-color: #e3d163;\r\n\t/* Warm gold - matches goldMine inner */\r\n\t--essence-color: #7047a3;\r\n\t/* Purple for essence - matches necromancer color */\r\n\t--health-color: #4a7c59;\r\n\t/* Forest green - matches grass */\r\n\t/* Opacity variables for use with solid colors */\r\n\t--semi-transparent: 0.6;\r\n\t--high-transparent: 0.8;\r\n\t--very-high-transparent: 0.95;\r\n\t--low-transparent: 0.3;\r\n\t--overlay-transparent: 0.75;\r\n\t--hover-transparent: 0.9;\r\n\t--full-transparent: 0.98;\r\n\t--near-full-transparent: 0.99;\r\n}\r\n\r\n* {\r\n\tmargin: 0;\r\n\tpadding: 0;\r\n\tbox-sizing: border-box;\r\n}\r\n\r\nbody {\r\n\tmargin: 0;\r\n\tpadding: 0;\r\n\tbackground-color: var(--primary-dark);\r\n\tbackground-image: radial-gradient(circle at center, var(--primary-bg) 0%, var(--primary-dark) 100%);\r\n\tcolor: var(--text-color);\r\n\tfont-family: 'Crimson Pro', serif;\r\n\toverflow: hidden;\r\n\tline-height: 1.6;\r\n}\r\n\r\n#gameContainer {\r\n    position: relative;\r\n    width: 100vw;\r\n    height: 100vh;\r\n}\r\n\r\ncanvas { \r\n    background-color: var(--secondary-bg);\r\n    transition: transform 0.3s ease;\r\n    width: 100vw;\r\n    height: 100vh;\r\n    position: absolute;\r\n    left: 0;\r\n    top: 0;\r\n    right: 0;\r\n    bottom: 0;\r\n    margin: 0;\r\n    z-index: 0;\r\n}\r\n\r\n/* ========== Tower Menu Container ========== */\r\n#towerMenu {\r\n    position: absolute;\r\n    bottom: 30px;\r\n    border-radius: 14px;\r\n    padding: .5em;\r\n    max-width: 90%;\r\n    width: 820px;\r\n    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);\r\n    border: 1px solid var(--accent-color);\r\n\tbackground-color: var(--primary-dark);\r\n    display: grid;\r\n    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));\r\n    gap: 5px;\r\n    z-index: 100;\r\n\tleft: 0;\r\n\tright: 0;\r\n\tmargin: 0 auto;\r\n\toverflow-x: auto;\r\n\toverflow-y: hidden;\r\n\tpadding: 10px;\r\n\tscrollbar-width: thin;\r\n\tscrollbar-color: var(--accent-color) transparent;\r\n}\r\n\r\n/* ========== Tower Options ========== */\r\n.tower-option {\r\n\tbackground-color: var(--secondary-bg);\r\n\tborder-radius: 8px;\r\n\tborder: 1px solid var(--accent-color);\r\n\tcolor: var(--text-color);\r\n\tcursor: pointer;\r\n\tpadding: .1em .5em;\r\n}\r\n.tower-option:hover {\r\n\tbackground-color: var(--primary-bg);\r\n\ttransition: background-color 0.3s ease;\r\n}\t\r\n\r\n#statsContainer {\r\n\twidth: 800px;\r\n\tmax-width: 90%;\r\n\tpadding: 12px;\r\n\tbackground: var(--primary-dark);\r\n\tborder-radius: 10px;\r\n\tborder: 1px solid var(--accent-color);\r\n\tborder-opacity: var(--low-transparent);\r\n\t/* Note: This won't work directly; see below */\r\n\tbackdrop-filter: blur(5px);\r\n\tposition: absolute;\r\n\tz-index: 1;\r\n\tmargin: 1em auto;\r\n\tleft: 0;\r\n\tright: 0;\r\n}\r\n\r\n#stats {\r\n\tdisplay: flex;\r\n\tjustify-content: space-around;\r\n\tgap: 20px;\r\n\tflex-wrap: wrap;\r\n}\r\n\r\n.stat {\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tgap: 8px;\r\n\tfont-size: 1.1rem;\r\n}\r\n\r\n.stat-icon {\r\n\twidth: 24px;\r\n\theight: 24px;\r\n\tborder-radius: 50%;\r\n\tbox-shadow: 0 0 8px #000;\r\n\tdisplay: flex;\r\n\tjustify-content: center;\r\n\talign-items: center;\r\n}\r\n\r\n#upgradeMenu {\r\n\tposition: absolute;\r\n\ttop: 50%;\r\n\tleft: 50%;\r\n\ttransform: translate(-50%, -50%);\r\n\tbackground: linear-gradient(to bottom, var(--secondary-bg), var(--primary-dark));\r\n\topacity: var(--very-high-transparent);\r\n\tcolor: var(--text-color);\r\n\tpadding: 25px;\r\n\tborder-radius: 12px;\r\n\tborder: 2px solid var(--accent-color);\r\n\tdisplay: none;\r\n\tz-index: 10;\r\n\twidth: 450px;\r\n\tbox-shadow: 0 0 40px var(--shadow-color);\r\n\tbackdrop-filter: blur(10px);\r\n}\r\n\r\n#upgradeMenu h2 {\r\n\ttext-align: center;\r\n\tcolor: var(--highlight-color);\r\n\tmargin-top: 0;\r\n\tborder-bottom: 1px solid var(--accent-color);\r\n\tpadding-bottom: 15px;\r\n\tfont-family: 'Cinzel', serif;\r\n\tletter-spacing: 1px;\r\n\tfont-weight: 700;\r\n}\r\n\r\n.upgrade-option {\r\n\tmargin: 18px 0;\r\n\tpadding: 18px;\r\n\tbackground: linear-gradient(to right, var(--secondary-bg), var(--primary-bg));\r\n\topacity: var(--high-transparent);\r\n\tcursor: pointer;\r\n\tborder-radius: 8px;\r\n\ttransition: all 0.3s;\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tborder: 1px solid var(--accent-color);\r\n\tborder-opacity: var(--low-transparent);\r\n\t/* Note: This won't work directly; see below */\r\n\tbox-shadow: 0 4px 8px #000;\r\n}\r\n\r\n.upgrade-option:hover {\r\n\tbackground: linear-gradient(to right, var(--accent-color), var(--bright-accent));\r\n\topacity: var(--hover-transparent);\r\n\ttransform: translateX(8px);\r\n\tbox-shadow: 0 6px 12px #000;\r\n}\r\n\r\n.upgrade-icon {\r\n\twidth: 48px;\r\n\theight: 48px;\r\n\tmargin-right: 18px;\r\n\tbackground: linear-gradient(135deg, var(--accent-color), var(--secondary-bg));\r\n\tborder-radius: 8px;\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tjustify-content: center;\r\n\tfont-size: 22px;\r\n\tbox-shadow: 0 3px 6px #000;\r\n}\r\n\r\n.upgrade-desc {\r\n\tflex-grow: 1;\r\n}\r\n\r\n.upgrade-title {\r\n\tfont-weight: bold;\r\n\tmargin-bottom: 6px;\r\n\tcolor: var(--highlight-color);\r\n\tfont-size: 1.2rem;\r\n\tfont-family: 'Cinzel', serif;\r\n}\r\n\r\n#overlay {\r\n\tposition: absolute;\r\n\ttop: 0;\r\n\tleft: 0;\r\n\twidth: 100%;\r\n\theight: 100%;\r\n\tbackground: #000;\r\n\topacity: var(--overlay-transparent);\r\n\tdisplay: none;\r\n\tz-index: 5;\r\n\tbackdrop-filter: blur(3px);\r\n}\r\n\r\n#waveInfo {\r\n\tposition: absolute;\r\n\ttop: 15px;\r\n\tleft: 50%;\r\n\ttransform: translateX(-50%);\r\n\tbackground: linear-gradient(to right, var(--secondary-bg), var(--primary-bg));\r\n\topacity: var(--high-transparent);\r\n\tpadding: 8px 20px;\r\n\tborder-radius: 20px;\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tgap: 15px;\r\n\tbox-shadow: 0 4px 12px #000;\r\n\tborder: 1px solid var(--accent-color);\r\n\tborder-opacity: var(--low-transparent);\r\n\t/* Note: This won't work directly; see below */\r\n\tbackdrop-filter: blur(5px);\r\n}\r\n\r\n#waveDisplay {\r\n\tfont-weight: bold;\r\n\tcolor: var(--highlight-color);\r\n}\r\n\r\n.progress-bar {\r\n\twidth: 220px;\r\n\theight: 12px;\r\n\tbackground: var(--primary-dark);\r\n\tborder-radius: 6px;\r\n\toverflow: hidden;\r\n\tbox-shadow: inset 0 1px 3px #000;\r\n\tborder: 1px solid var(--accent-color);\r\n\tborder-opacity: var(--low-transparent);\r\n\t/* Note: This won't work directly; see below */\r\n}\r\n\r\n.progress-fill {\r\n\theight: 100%;\r\n\tbackground: linear-gradient(to right, var(--accent-color), var(--highlight-color));\r\n\twidth: 0%;\r\n\tbox-shadow: 0 0 8px var(--shadow-color);\r\n\ttransition: width 0.3s ease;\r\n}\r\n\r\n#startGameBtn {\r\n\tpadding: 12px 35px;\r\n\tbackground: linear-gradient(to bottom, var(--bright-accent), var(--accent-color));\r\n\tcolor: white;\r\n\tborder: none;\r\n\tborder-radius: 30px;\r\n\tcursor: pointer;\r\n\tfont-family: 'Cinzel', serif;\r\n\tfont-weight: 500;\r\n\tfont-size: 1.2rem;\r\n\ttransition: all 0.3s;\r\n\tbox-shadow: 0 6px 12px #000;\r\n\ttext-shadow: 0 1px 2px #000;\r\n\tposition: absolute;\r\n\ttop: 50%;\r\n\tleft: 50%;\r\n\ttransform: translate(-50%, -50%);\r\n\tz-index: 20;\r\n}\r\n\r\n#startGameBtn:hover {\r\n\tbackground: linear-gradient(to bottom, var(--highlight-color), var(--bright-accent));\r\n\ttransform: translate(-50%, -50%) scale(1.05);\r\n\tbox-shadow: 0 8px 16px #000;\r\n}\r\n\r\n#startGameBtn:active {\r\n\ttransform: translate(-50%, -50%) scale(1);\r\n\tbox-shadow: 0 4px 8px #000;\r\n}\r\n\r\n#tooltip {\r\n\tposition: absolute;\r\n\tbackground: linear-gradient(to bottom, var(--primary-dark), var(--primary-dark));\r\n\topacity: var(--very-high-transparent);\r\n\tcolor: var(--text-color);\r\n\tpadding: 12px 15px;\r\n\tborder-radius: 8px;\r\n\tdisplay: none;\r\n\tz-index: 100;\r\n\tborder: 1px solid var(--accent-color);\r\n\tpointer-events: none;\r\n\tmax-width: 280px;\r\n\tbox-shadow: 0 0 20px var(--shadow-color);\r\n\tfont-size: 0.95rem;\r\n\tbackdrop-filter: blur(5px);\r\n}\r\n\r\n#gameOverMenu,\r\n#victoryMenu {\r\n\tposition: absolute;\r\n\ttop: 50%;\r\n\tleft: 50%;\r\n\ttransform: translate(-50%, -50%);\r\n\tbackground: linear-gradient(to bottom, var(--secondary-bg), var(--primary-dark));\r\n\topacity: var(--full-transparent);\r\n\tcolor: white;\r\n\tpadding: 40px;\r\n\ttext-align: center;\r\n\tborder-radius: 15px;\r\n\tborder: 3px solid var(--accent-color);\r\n\tz-index: 20;\r\n\tdisplay: none;\r\n\tbox-shadow: 0 0 60px var(--shadow-color);\r\n\tbackdrop-filter: blur(10px);\r\n\tmin-width: 350px;\r\n}\r\n\r\n#gameOverMenu h2,\r\n#victoryMenu h2 {\r\n\tcolor: var(--highlight-color);\r\n\tfont-size: 32px;\r\n\tmargin-bottom: 20px;\r\n\tfont-family: 'Cinzel', serif;\r\n\ttext-shadow: 0 2px 4px #000;\r\n}\r\n\r\n#gameOverMenu p,\r\n#victoryMenu p {\r\n\tfont-size: 18px;\r\n\tmargin-bottom: 25px;\r\n\tline-height: 1.6;\r\n}\r\n\r\n.menu-button {\r\n\tmargin-top: 25px;\r\n\tpadding: 12px 25px;\r\n\tbackground: linear-gradient(to bottom, var(--bright-accent), var(--accent-color));\r\n\tborder: none;\r\n\tcolor: white;\r\n\tcursor: pointer;\r\n\tborder-radius: 8px;\r\n\ttransition: all 0.3s;\r\n\tfont-family: 'Cinzel', serif;\r\n\tfont-size: 16px;\r\n\tletter-spacing: 1px;\r\n\tbox-shadow: 0 4px 8px #000;\r\n\ttext-shadow: 0 1px 2px #000;\r\n}\r\n\r\n.menu-button:hover {\r\n\tbackground: linear-gradient(to bottom, var(--highlight-color), var(--bright-accent));\r\n\ttransform: scale(1.05) translateY(-3px);\r\n\tbox-shadow: 0 6px 15px #000;\r\n}\r\n\r\n.menu-button:active {\r\n\ttransform: scale(1) translateY(0);\r\n\tbox-shadow: 0 3px 6px #000;\r\n}\r\n\r\n/* Stat icons with custom styling */\r\n#shardsDisplay {\r\n\tcolor: var(--gold-color);\r\n\tfont-weight: 600;\r\n}\r\n\r\n#essenceDisplay,\r\n#essenceNeededDisplay {\r\n\tcolor: var(--essence-color);\r\n\tfont-weight: 600;\r\n}\r\n\r\n#populationDisplay,\r\n#maxPopulationDisplay {\r\n\tcolor: var(--essence-color);\r\n\tfont-weight: 600;\r\n}\r\n\r\n#hpDisplay {\r\n\tcolor: var(--health-color);\r\n\tfont-weight: 600;\r\n}\r\n\r\n#waveDisplay {\r\n\tdisplay: inline-block;\r\n}\r\n\r\n\r\n/* Mobile-first adjustments (applies below 768px) */\r\n@media screen and (max-width: 768px) {\r\n    /* Base layout adjustments */\r\n    #gameContainer {\r\n        overflow: hidden;\r\n    }\r\n    #towerMenu {\r\n        position: fixed;\r\n\t\tbottom: 0;\r\n        left: 0;\r\n        right: 0;\r\n        width: 95vw;\r\n\t\tmax-height: 20vh;\r\n\t\toverflow-y:auto;\r\n        max-width: unset;\r\n        margin: 0 auto;\r\n        grid-template-columns: repeat(2, 1fr);\r\n    }\r\n\r\n    .tower-option {\r\n        min-width: unset;\r\n        font-size: 0.95rem;\r\n    }\r\n\r\n    /* Add a close button for mobile */\r\n    #menuCloseButton {\r\n        display: block;\r\n        position: absolute;\r\n        top: 8px;\r\n        right: 8px;\r\n        background: var(--accent-color);\r\n        border: none;\r\n        color: var(--text-color);\r\n        width: 32px;\r\n        height: 32px;\r\n        border-radius: 50%;\r\n        cursor: pointer;\r\n        z-index: 100;\r\n    }\r\n\r\n    /* Adjust stats container position */\r\n    #statsContainer {\r\n        top: 10px;\r\n        width: 95%;\r\n        padding: 8px;\r\n    }\r\n    #stats {\r\n        gap: 8px;\r\n    }\r\n\r\n    .stat {\r\n        font-size: 0.9rem;\r\n        gap: 4px;\r\n    }\r\n\r\n    /* Upgrade menu adjustments */\r\n    #upgradeMenu {\r\n        width: 90%;\r\n        padding: 15px;\r\n    }\r\n\r\n    .upgrade-option {\r\n        margin: 12px 0;\r\n        padding: 12px;\r\n        flex-direction: column;\r\n        align-items: flex-start;\r\n    }\r\n\r\n    .upgrade-icon {\r\n        width: 36px;\r\n        height: 36px;\r\n        margin-right: 12px;\r\n        font-size: 18px;\r\n    }\r\n\r\n    .upgrade-title {\r\n        font-size: 1rem;\r\n    }\r\n\r\n    /* Wave info adjustments */\r\n    #waveInfo {\r\n        top: 80px;\r\n        width: 90%;\r\n        padding: 6px 15px;\r\n    }\r\n\r\n    .progress-bar {\r\n        width: 150px;\r\n    }\r\n\r\n    /* Game over/victory menus */\r\n    #gameOverMenu, #victoryMenu {\r\n        width: 90%;\r\n        padding: 20px;\r\n    }\r\n\r\n    #gameOverMenu h2, #victoryMenu h2 {\r\n        font-size: 1.5rem;\r\n    }\r\n\r\n    /* Tooltip adjustments */\r\n    #tooltip {\r\n        max-width: 200px;\r\n        font-size: 0.85rem;\r\n        padding: 8px 10px;\r\n    }\r\n\r\n    /* Button sizes */\r\n    #startGameBtn {\r\n        padding: 10px 25px;\r\n        font-size: 1rem;\r\n    }\r\n\r\n    .menu-button {\r\n        padding: 10px 20px;\r\n        font-size: 0.9rem;\r\n    }\r\n}\r\n\r\n/* Additional adjustments for very small screens */\r\n@media screen and (max-width: 480px) {\r\n\r\n\r\n    #stats {\r\n        justify-content: center;\r\n    }\r\n\r\n    .stat {\r\n        font-size: 0.8rem;\r\n    }\r\n\r\n    .progress-bar {\r\n        width: 120px;\r\n        height: 10px;\r\n    }\r\n\r\n    #waveDisplay {\r\n        font-size: 0.9rem;\r\n    }\r\n\r\n    .upgrade-option {\r\n        padding: 10px;\r\n        margin: 8px 0;\r\n    }\r\n\r\n    .upgrade-title {\r\n        font-size: 0.9rem;\r\n    }\r\n}\r\n\r\n/* Orientation-specific adjustments */\r\n@media screen and (max-height: 500px) and (orientation: landscape) {\r\n\r\n    #statsContainer {\r\n        top: 5px;\r\n        padding: 5px;\r\n    }\r\n\r\n  \r\n}\r\n@media screen and (max-width: 480px) {\r\n\r\n\r\n    #menuCloseButton {\r\n        top: 4px;\r\n        right: 4px;\r\n        width: 28px;\r\n        height: 28px;\r\n    }\r\n}",
         "html": "<div id=\"gameContainer\">\r\n    <div id=\"waveInfo\">\r\n        <span>Wave: <span id=\"waveDisplay\">1</span></span>             \r\n        <div class=\"progress-bar\">\r\n            <div class=\"progress-fill\" id=\"waveProgress\"></div>\r\n        </div>\r\n    </div>\r\n    <div id=\"statsContainer\">\r\n        <div id=\"stats\">\r\n            <div class=\"stat\">\r\n                <div class=\"stat-icon\" style=\"background-color: var(--gold-color);\"></div>\r\n                <span>Gold: <span id=\"shardsDisplay\">50</span></span>                 \r\n            </div>\r\n            <div class=\"stat\">\r\n                <div class=\"stat-icon\" style=\"background-color: var(--essence-color);\"></div>\r\n                <span>Essence: <span id=\"essenceDisplay\">0</span>/<span id=\"essenceNeededDisplay\">100</span></span>                 \r\n            </div>\r\n            <div class=\"stat\">\r\n                <div class=\"stat-icon\" style=\"background-color: var(--essence-color);\"></div>\r\n                <span>Population: <span id=\"populationDisplay\">0</span>/<span id=\"maxPopulationDisplay\">5</span></span>                 \r\n            </div>\r\n            <div class=\"stat\">\r\n                <div class=\"stat-icon\" style=\"background-color: var(--health-color);\"></div>\r\n                <span>Core: <span id=\"hpDisplay\">100</span></span>                 \r\n            </div>\r\n        </div>\r\n    </div>\r\n    <canvas id=\"gameCanvas\" width=\"1536\" height=\"768\"></canvas>\r\n    <div id=\"towerMenu\">\r\n        <div class=\"tower-option\" data-type=\"sentry\">Photon Sentry (25)</div>\r\n        <div class=\"tower-option\" data-type=\"fusionCore\">Fusion Core (50)</div>\r\n        <div class=\"tower-option\" data-type=\"barracks\">Barracks (100)</div>\r\n        <div class=\"tower-option\" data-type=\"fabricator\">Fabricator (200)</div>\r\n        <div class=\"tower-option\" data-type=\"teslaCoil\">Tesla Coil (70)</div>\r\n        <div class=\"tower-option\" data-type=\"missileLauncher\">Missile Launcher (90)</div>\r\n        <div class=\"tower-option\" data-type=\"chrono\">Chrono Defibrilator (100)</div>\r\n        <div class=\"tower-option\" data-type=\"guardTower\">Guard Tower (70)</div>\r\n    </div>\r\n    <button id=\"startGameBtn\">Start Game</button>    \r\n</div>\r\n<div id=\"overlay\"></div>\r\n<div id=\"upgradeMenu\">\r\n    <h2>Level Up! Choose an Upgrade:</h2>\r\n    <div id=\"upgradeOptions\"></div>\r\n</div>\r\n<div id=\"tooltip\" style=\"display: none;\"></div>\r\n<div id=\"gameOverMenu\">\r\n    <h2>Home Destroyed!</h2>\r\n    <p>You survived <span id=\"gameOverWave\">0</span> waves</p>\r\n    <button class=\"menu-button\">Try Again</button>     \r\n</div>\r\n<div id=\"victoryMenu\">\r\n    <h2>Victory!</h2>\r\n    <p>You've successfully defended your Home through all waves!</p>\r\n    <button class=\"menu-button\">Play Again</button>     \r\n</div>"
-      },
-      "scriptEditor": {
-        "title": "Script Editor",
-        "fileName": "scriptEditor",
-        "css": "\r\n#script-editor-container .grid-background {\r\n    width: calc(100% - 450px);\r\n}\r\n/* Override global scrollbar suppression for CodeMirror */\r\n#script-editor-container .CodeMirror {\r\n    overflow-y: auto !important; /* Enable vertical scrolling */\r\n    -ms-overflow-style: auto !important; /* IE and Edge */\r\n    scrollbar-width: auto !important; /* Firefox */\r\n}\r\n\r\n/* Container and layout */\r\n#script-editor-container {\r\n    position: relative;\r\n    height: auto; /* Allow dynamic resizing */\r\n}\r\n\r\n#script-editor-container .grid-background {\r\n    width: calc(100% - 360px); /* Adjust for sidebar width */\r\n    flex: 1;\r\n    position: relative;\r\n    overflow: hidden; /* Contain children */\r\n}\r\n\r\n#script-editor-container .grid-background > div {\r\n    position: relative;\r\n    height: 100%;\r\n}\r\n#script-editor-sidebar {\r\n    width: 360px;\r\n    padding: 10px;\r\n}",
-        "html": "            <div id=\"script-editor-container\" class=\"main-content-container\">\r\n                <div id=\"script-editor-sidebar\" class=\"content-sidebar\">                    \r\n                    <h3>Script Editor</h3>\r\n                    <button id=\"save-script-btn\">Save Script</button>\r\n                </div>\r\n                <div class=\"grid-background\">\r\n                    <div>\r\n                        <textarea id=\"script-editor\" class=\"script-editor\" placeholder=\"Enter your script here...\"></textarea>                    \r\n                        <div class=\"handle\"></div>\r\n                    </div>\r\n                </div>\r\n            </div>\r\n"
       },
       "terrainEditor": {
         "title": "Terrain Editor",
@@ -17562,6 +17551,17 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "terrainEditor",
         "css": "#level-editor-container :root {\r\n\t--primary: #6366f1;\r\n\t--primary-dark: #4f46e5;\r\n\t--secondary: #10b981;\r\n\t--dark: #1e293b;\r\n\t--darker: #0f172a;\r\n\t--light: #e2e8f0;\r\n\t--accent: #8b5cf6;\r\n\t--danger: #ef4444;\r\n\t--text: #f8fafc;\r\n\t--text-muted: #94a3b8;\r\n\t--border-radius: 8px;\r\n\t--shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);\r\n  }\r\n\r\n  #level-editor-container * {\r\n\tmargin: 0;\r\n\tpadding: 0;\r\n\tbox-sizing: border-box;\r\n\tfont-family: 'Inter', system-ui, -apple-system, sans-serif;\r\n  }\r\n\r\n  #level-editor-container {\r\n\tbackground-color: var(--darker);\r\n\tcolor: var(--text);\r\n  }\r\n\r\n  #level-editor-container button {\r\n\tcursor: pointer;\r\n\tborder: none;\r\n\tborder-radius: var(--border-radius);\r\n\tpadding: 8px 12px;\r\n\tfont-weight: 500;\r\n\ttransition: all 0.2s ease;\r\n  }\r\n\r\n  #level-editor-container button:hover {\r\n\topacity: 0.9;\r\n\ttransform: translateY(-1px);\r\n  }\r\n\r\n  #level-editor-container button:active {\r\n\ttransform: translateY(0);\r\n  }\r\n\r\n  #level-editor-container input {\r\n\tbackground-color: var(--dark);\r\n\tborder: 1px solid #334155;\r\n\tcolor: var(--text);\r\n\tborder-radius: var(--border-radius);\r\n\tpadding: 8px 12px;\r\n\toutline: none;\r\n  }\r\n\r\n  #level-editor-container input:focus {\r\n\tborder-color: var(--primary);\r\n\tbox-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);\r\n  }\r\n\r\n  #level-editor-container input[type=\"number\"] {\r\n\twidth: 80px;\r\n  }\r\n\r\n  #level-editor-container input[type=\"color\"] {\r\n\twidth: 40px;\r\n\theight: 40px;\r\n\tpadding: 2px;\r\n\tcursor: pointer;\r\n  }\r\n\r\n  #level-editor-container {\r\n\tdisplay: flex;\r\n\tgap: 24px;\r\n\theight: 90vh;\r\n\toverflow: hidden;\r\n\tbackground-color: var(--darker);\r\n\tcolor: var(--text);\r\n\tposition: relative;\r\n  }\r\n\r\n  #level-editor-container .content-sidebar {\r\n\tdisplay: flex;\r\n\tflex-direction: column;\r\n\twidth: 320px;\r\n\tbackground-color: var(--dark);\r\n\tborder-radius: var(--border-radius);\r\n\tbox-shadow: var(--shadow);\r\n\toverflow: hidden;\r\n  }\r\n\r\n  #level-editor-container .toolbar {\r\n\tdisplay: flex;\r\n\tpadding: 16px;\r\n\tbackground-color: rgba(255, 255, 255, 0.03);\r\n\tborder-bottom: 1px solid rgba(255, 255, 255, 0.1);\r\n  }\r\n\r\n  #level-editor-container .toolbar button {\r\n\tbackground-color: transparent;\r\n\tcolor: var(--text-muted);\r\n\tfont-weight: 600;\r\n\tpadding: 8px 16px;\r\n\tborder-radius: var(--border-radius);\r\n  }\r\n\r\n  #level-editor-container .toolbar button.active {\r\n\tbackground-color: var(--primary);\r\n\tcolor: white;\r\n  }\r\n\r\n  #level-editor-container .tools {\r\n\tpadding: 20px;\r\n\tflex-grow: 1;\r\n\toverflow-y: auto;\r\n  }\r\n\r\n  #level-editor-container .form-row {\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tjustify-content: space-between;\r\n\tmargin-bottom: 16px;\r\n  }\r\n\r\n  #level-editor-container .form-row label {\r\n\tcolor: var(--text-muted);\r\n\tfont-size: 14px;\r\n\tflex: 1;\r\n  }\r\n\r\n  #level-editor-container h3 {\r\n\tcolor: var(--light);\r\n\tfont-size: 18px;\r\n\tmargin-bottom: 24px;\r\n\tfont-weight: 600;\r\n\tborder-bottom: 1px solid rgba(255, 255, 255, 0.1);\r\n\tpadding-bottom: 12px;\r\n  }\r\n\r\n  #level-editor-container h4 {\r\n\tcolor: var(--text-muted);\r\n\tfont-size: 16px;\r\n\tmargin: 24px 0 16px;\r\n\tfont-weight: 600;\r\n  }\r\n\r\n  #level-editor-container .grid-container {\r\n\tflex-grow: 1;\r\n\tposition: relative;\r\n\tbackground-color: var(--dark);\r\n\tborder-radius: var(--border-radius);\r\n\toverflow: hidden;\r\n\tbox-shadow: var(--shadow);\r\n  }\r\n\r\n  #level-editor-container .grid-background {\r\n\tbackground-image: \r\n\t  linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),\r\n\t  linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);\r\n\tbackground-size: 20px 20px;\r\n  }\r\n\r\n  #level-editor-container #grid {\r\n\tdisplay: block;\r\n\timage-rendering: pixelated;\r\n  }\r\n\r\n  #level-editor-container .translation-controls {\r\n\tposition: absolute;\r\n\tright: 20px;\r\n\tbottom: 20px;\r\n\tdisplay: grid;\r\n\tgrid-template-columns: repeat(3, 40px);\r\n\tgrid-template-rows: repeat(3, 40px);\r\n\tgap: 4px;\r\n\tz-index: 10;\r\n  }\r\n\r\n  #level-editor-container .translation-controls button {\r\n\twidth: 40px;\r\n\theight: 40px;\r\n\tbackground-color: rgba(15, 23, 42, 0.8);\r\n\tcolor: var(--light);\r\n\tborder: 1px solid rgba(255, 255, 255, 0.1);\r\n\tfont-size: 18px;\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tjustify-content: center;\r\n  }\r\n\r\n  #level-editor-container #translate-up {\r\n\tgrid-column: 2;\r\n\tgrid-row: 1;\r\n  }\r\n\r\n  #level-editor-container #translate-left {\r\n\tgrid-column: 1;\r\n\tgrid-row: 2;\r\n  }\r\n\r\n  #level-editor-container #translate-right {\r\n\tgrid-column: 3;\r\n\tgrid-row: 2;\r\n  }\r\n\r\n  #level-editor-container #translate-down {\r\n\tgrid-column: 2;\r\n\tgrid-row: 3;\r\n  }\r\n\r\n  /* Terrain item styling */\r\n  #level-editor-container .terrain-types-container {\r\n\tdisplay: flex;\r\n\tflex-direction: column;\r\n\tgap: 12px;\r\n\tmargin-top: 16px;\r\n  }\r\n\r\n  #level-editor-container .terrain-item {\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tgap: 12px;\r\n\tpadding: 12px;\r\n\tborder-radius: var(--border-radius);\r\n\tbackground-color: rgba(255, 255, 255, 0.03);\r\n\tborder: 1px solid rgba(255, 255, 255, 0.1);\r\n\tcursor: move;\r\n\tuser-select: none;\r\n\ttransition: all 0.2s ease;\r\n  }\r\n\r\n  #level-editor-container .terrain-item:hover {\r\n\tbackground-color: rgba(255, 255, 255, 0.05);\r\n\ttransform: translateY(-2px);\r\n  }\r\n\r\n  #level-editor-container .color-option {\r\n\twidth: 36px;\r\n\theight: 36px;\r\n\tborder-radius: var(--border-radius);\r\n\tcursor: pointer;\r\n\tborder: 2px solid transparent;\r\n\tflex-shrink: 0;\r\n  }\r\n\r\n  #level-editor-container .color-option.active {\r\n\tborder-color: var(--primary);\r\n\tbox-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);\r\n  }\r\n\r\n  #level-editor-container  .terrain-label {\r\n\tflex-grow: 1;\r\n\tfont-weight: 500;\r\n  }\r\n\r\n  #level-editor-container .terrain-buttons {\r\n\tdisplay: flex;\r\n\tgap: 8px;\r\n  }\r\n\r\n  #level-editor-container .terrain-buttons button {\r\n\twidth: 30px;\r\n\theight: 30px;\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tjustify-content: center;\r\n\tpadding: 0;\r\n\tbackground-color: transparent;\r\n\tcolor: var(--text-muted);\r\n\tborder: 1px solid rgba(255, 255, 255, 0.1);\r\n  }\r\n\r\n  #level-editor-container  .terrain-buttons button:hover {\r\n\tbackground-color: rgba(255, 255, 255, 0.05);\r\n\tcolor: var(--text);\r\n  }\r\n\r\n  #level-editor-container .status-bar {\r\n\tposition: absolute;\r\n\tbottom: 0;\r\n\tleft: 0;\r\n\tright: 0;\r\n\theight: 28px;\r\n\tbackground-color: rgba(15, 23, 42, 0.9);\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tpadding: 0 16px;\r\n\tfont-size: 13px;\r\n\tcolor: var(--text-muted);\r\n\tborder-top: 1px solid rgba(255, 255, 255, 0.1);\r\n  }\r\n\r\n  /* Add a terrainsPanel container */\r\n  #level-editor-container  #terrainsPanel {\r\n\tmargin-top: 24px;\r\n\tborder-top: 1px solid rgba(255, 255, 255, 0.1);\r\n\tpadding-top: 16px;\r\n  }\r\n\r\n\r\n\r\n  /* Environment Panel Styles */\r\n  #level-editor-container #environmentPanel {\r\n\toverflow-y: auto;\r\n\tmax-height: calc(100vh - 200px);\r\n  }\r\n  \r\n  #level-editor-container .environment-objects-container {\r\n\tdisplay: flex;\r\n\tflex-direction: column;\r\n\tgap: 10px;\r\n  }\r\n  \r\n  #level-editor-container .environment-objects-container h3 {\r\n\tmargin-top: 0;\r\n\tmargin-bottom: 12px;\r\n\tcolor: #e5e7eb;\r\n\tfont-size: 16px;\r\n\tborder-bottom: 1px solid #374151;\r\n\tpadding-bottom: 8px;\r\n  }\r\n  \r\n  #level-editor-container .environment-type {\r\n\tbackground-color: #1f2937;\r\n\tborder-radius: 6px;\r\n\toverflow: hidden;\r\n\tmargin-bottom: 8px;\r\n\tbox-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);\r\n\ttransition: box-shadow 0.2s ease;\r\n  }\r\n  \r\n  #level-editor-container .environment-type:hover {\r\n\tbox-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);\r\n  }\r\n  \r\n  #level-editor-container .environment-type-header {\r\n\tpadding: 10px 12px;\r\n\tfont-weight: 500;\r\n\tcursor: pointer;\r\n\tdisplay: flex;\r\n\tjustify-content: space-between;\r\n\talign-items: center;\r\n\tbackground-color: #2d3748;\r\n\tcolor: #e5e7eb;\r\n\tposition: relative;\r\n\ttext-transform: capitalize;\r\n  }\r\n  \r\n  #level-editor-container .environment-type-header::after {\r\n\tcontent: '▼';\r\n\tfont-size: 10px;\r\n\ttransition: transform 0.2s ease;\r\n  }\r\n  \r\n  #level-editor-container .environment-type-header.open::after {\r\n\ttransform: rotate(180deg);\r\n  }\r\n  \r\n  #level-editor-container .environment-items {\r\n\tpadding: 10px;\r\n\tdisplay: flex;\r\n\tflex-wrap: wrap;\r\n\tgap: 3px;\r\n\tbackground-color: #1f2937;\r\n  }\r\n  \r\n  #level-editor-container .environment-item {\r\n\twidth: 128px;\r\n\theight: 128px;\r\n\tborder: 2px solid #4b5563;\r\n\tborder-radius: 4px;\r\n\tcursor: pointer;\r\n\tpadding: 2px;\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tjustify-content: center;\r\n\tbackground-color: #374151;\r\n\ttransition: all 0.2s ease;\r\n\tposition: relative;\r\n  }\r\n  \r\n  #level-editor-container .environment-item:hover {\r\n\tborder-color: #9ca3af;\r\n\ttransform: translateY(-2px);\r\n  }\r\n  \r\n  #level-editor-container .environment-item.active {\r\n\tborder-color: #3b82f6;\r\n\tbox-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);\r\n  }\r\n  \r\n  #level-editor-container .environment-item canvas {\r\n\tmax-width: 100%;\r\n\tmax-height: 100%;\r\n\tobject-fit: contain;\r\n  }\r\n  \r\n  /* Tooltip for environment items */\r\n  #level-editor-container .environment-item::before {\r\n\tcontent: attr(data-name);\r\n\tposition: absolute;\r\n\tbottom: calc(100% + 5px);\r\n\tleft: 50%;\r\n\ttransform: translateX(-50%);\r\n\tbackground-color: #111827;\r\n\tcolor: white;\r\n\ttext-align: center;\r\n\tborder-radius: 4px;\r\n\tpadding: 4px 8px;\r\n\tfont-size: 12px;\r\n\twhite-space: nowrap;\r\n\tvisibility: hidden;\r\n\topacity: 0;\r\n\ttransition: all 0.2s ease;\r\n\tz-index: 10;\r\n\tpointer-events: none;\r\n\tbox-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);\r\n  }\r\n  \r\n  #level-editor-container .environment-item:hover::before {\r\n\tvisibility: visible;\r\n\topacity: 1;\r\n  }\r\n  \r\n  /* Indicator for placement mode */\r\n  #level-editor-container .placement-mode-indicator {\r\n\tposition: absolute;\r\n\ttop: 10px;\r\n\tleft: 50%;\r\n\ttransform: translateX(-50%);\r\n\tbackground-color: rgba(17, 24, 39, 0.8);\r\n\tcolor: white;\r\n\tpadding: 5px 10px;\r\n\tborder-radius: 4px;\r\n\tfont-size: 14px;\r\n\tpointer-events: none;\r\n\ttransition: opacity 0.3s ease;\r\n\tbox-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);\r\n\tz-index: 100;\r\n  }\r\n  \r\n  /* Improved toolbar buttons */\r\n  #level-editor-container .toolbar .btn {\r\n\tpadding: 8px 16px;\r\n\tborder: none;\r\n\tbackground-color: #374151;\r\n\tcolor: #e5e7eb;\r\n\tcursor: pointer;\r\n\tborder-radius: 4px;\r\n\tfont-weight: 500;\r\n\ttransition: all 0.2s ease;\r\n  }\r\n  \r\n  #level-editor-container .toolbar .btn:hover {\r\n\tbackground-color: #4b5563;\r\n  }\r\n  \r\n  #level-editor-container .toolbar .btn.active {\r\n\tbackground-color: #3b82f6;\r\n\tcolor: white;\r\n  }\r\n  \r\n  /* Better spacing for the tools panels */\r\n  #level-editor-container .tools > div {\r\n\tmargin-bottom: 20px;\r\n  }\r\n  \r\n  /* Environment object count badge */\r\n  #level-editor-container .environment-type-header .object-count-container {\r\n\tflex: 1;\r\n\tmargin-left: 8px;\r\n  }\r\n  #level-editor-container .environment-type-header .object-count {\r\n\tbackground-color: #4b5563;\r\n\tcolor: white;\r\n\tpadding: 2px 6px;\r\n\tborder-radius: 10px;\r\n\tfont-size: 12px;\r\n  }\r\n  \r\n  /* Empty state for environment types */\r\n  #level-editor-container .environment-items.empty {\r\n\tpadding: 20px;\r\n\ttext-align: center;\r\n\tcolor: #9ca3af;\r\n\tfont-style: italic;\r\n  }\r\n  \r\n  /* Styles for delete mode */\r\n  #level-editor-container .delete-mode-active .grid-container {\r\n\tcursor: url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"red\" stroke-width=\"2\"><path d=\"M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2\"/><path d=\"M10 11v6M14 11v6\"/></svg>'), auto;\r\n  }\r\n  \r\n  /* Object control panel */\r\n  #level-editor-container .object-controls {\r\n\tdisplay: flex;\r\n\tjustify-content: space-between;\r\n\tpadding: 10px;\r\n\tbackground-color: #1f2937;\r\n\tborder-radius: 6px;\r\n\tmargin-bottom: 10px;\r\n\tgap: 8px;\r\n  }\r\n  \r\n  #level-editor-container .object-controls button {\r\n\tbackground-color: #374151;\r\n\tcolor: #e5e7eb;\r\n\tborder: none;\r\n\tpadding: 6px 12px;\r\n\tborder-radius: 4px;\r\n\tcursor: pointer;\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tgap: 5px;\r\n\ttransition: background-color 0.2s;\r\n  }\r\n  \r\n  #level-editor-container .object-controls button:hover {\r\n\tbackground-color: #4b5563;\r\n  }\r\n  \r\n  #level-editor-container .object-controls button.delete-mode {\r\n\tbackground-color: #ef4444;\r\n\tcolor: white;\r\n  }\r\n  \r\n  #level-editor-container .object-controls button.delete-mode:hover {\r\n\tbackground-color: #dc2626;\r\n  }\r\n  \r\n  \r\n #object-preview-canvas {\r\n\ttransition: transform 0.05s ease-out;\r\n\twill-change: transform;\r\n\timage-rendering: pixelated;\r\n\tposition: absolute;\r\n\tpointer-events: none; \r\n\tz-index: 9999;\r\n\topacity: 0.7; \r\n}\r\n  /* Responsive adjustments */\r\n  @media (max-width: 768px) {\r\n\t#level-editor-container .environment-items {\r\n\t  justify-content: center;\r\n\t}\r\n\t\r\n\t#level-editor-container .environment-item {\r\n\t  width: 56px;\r\n\t  height: 56px;\r\n\t}\r\n  }",
         "html": "<div id=\"level-editor-container\" class=\"main-content-container\">\r\n   <div class=\"content-sidebar\">\r\n     <div class=\"toolbar\">\r\n       <button id=\"terrainsBtn\" class=\"btn active\">Tiles</button>\r\n       <button id=\"environmentBtn\" class=\"btn\">Env</button>\r\n     </div>\r\n     <div class=\"tools\">\r\n       <div>\r\n         <h3>Map Settings</h3>\r\n         <div class=\"form-row\">\r\n           <label for=\"terrainMapSize\">Map Size:</label>\r\n           <input type=\"number\" id=\"terrainMapSize\" value=\"48\" step=\"1\" min=\"1\">\r\n         </div>\r\n         <div class=\"form-row\">\r\n            <label for=\"extensionTerrainType\">Surrounding Terrain Type:</label>\r\n            <select id=\"extensionTerrainType\" class=\"extensionTerrainType\"></select>\r\n          </div>\r\n       </div>\r\n       <div id=\"environmentPanel\" style=\"display:none\">\r\n\r\n       </div>\r\n       <div id=\"terrainsPanel\">\r\n         <div class=\"terrain-types-container\">\r\n           <div class=\"terrain-item\">\r\n             <div class=\"color-option active\" style=\"background-color: #10b981;\"></div>\r\n             <div class=\"terrain-label\">Grass</div>\r\n             <div class=\"terrain-buttons\">\r\n               <button title=\"Edit\">✏️</button>\r\n               <button title=\"Delete\">🗑️</button>\r\n             </div>\r\n           </div>\r\n           <div class=\"terrain-item\">\r\n             <div class=\"color-option\" style=\"background-color: #3b82f6;\"></div>\r\n             <div class=\"terrain-label\">Water</div>\r\n             <div class=\"terrain-buttons\">\r\n               <button title=\"Edit\">✏️</button>\r\n               <button title=\"Delete\">🗑️</button>\r\n             </div>\r\n           </div>\r\n           <div class=\"terrain-item\">\r\n             <div class=\"color-option\" style=\"background-color: #a3a3a3;\"></div>\r\n             <div class=\"terrain-label\">Stone</div>\r\n             <div class=\"terrain-buttons\">\r\n               <button title=\"Edit\">✏️</button>\r\n               <button title=\"Delete\">🗑️</button>\r\n             </div>\r\n           </div>\r\n         </div>\r\n       </div>\r\n     </div>\r\n   </div>\r\n   \r\n   <div class=\"grid-container grid-background\">\r\n     <canvas id=\"grid\"></canvas>\r\n     \r\n     <div class=\"translation-controls\">\r\n       <button id=\"translate-up\"><span>↑</span></button>\r\n       <button id=\"translate-left\"><span>←</span></button>\r\n       <button id=\"translate-right\"><span>→</span></button>\r\n       <button id=\"translate-down\"><span>↓</span></button>\r\n     </div>\r\n     \r\n     <div class=\"status-bar\">\r\n       Cursor: x: 0, y: 0 | Zoom: 100% | Selected: Grass\r\n     </div>\r\n   </div>\r\n </div>"
+      },
+      "graphicsEditor": {
+        "title": "Graphics Editor",
+        "modals": [
+          "rotateShapes",
+          "moveAllShapes",
+          "generateIsometric"
+        ],
+        "fileName": "graphicsEditor",
+        "css": "\r\n#graphics-editor-container #grid-display {\r\n    position: absolute;\r\n    top: 10px;\r\n    left: 10px;\r\n    padding: 5px 10px;\r\n    border-radius: 0;\r\n    font-family: 'Courier New', monospace;\r\n}\r\n#graphics-editor-container .btn {\r\n    padding: 0;\r\n}\r\n\r\n#graphics-editor-container .btn-add {\r\n  background-color: rgba(16, 185, 129, 0.3);\r\n  border: 1px solid #10b981;\r\n  color: #f4e1d2;\r\n}\r\n#graphics-editor-container .btn-add:hover {\r\n  background-color: rgba(16, 185, 129, 0.5);\r\n  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);\r\n}\r\n#graphics-editor-container #graphics-rightbar {\r\n    width: 360px;\r\n    display: flex;\r\n    flex-direction: column;\r\n}\r\n\r\n#graphics-editor-container #canvas-container {\r\n    flex: 1;\r\n    position: relative;\r\n}\r\n\r\n#graphics-editor-container #graphics-editor-canvas {\r\n    width: 100%;\r\n    height: 100%;\r\n    cursor: grab;\r\n    outline: none;\r\n}\r\n\r\n#graphics-editor-container .toolbar {\r\n    display: flex;\r\n    flex-direction: column;\r\n    padding: 10px 5px;\r\n    gap: 5px;  \r\n    align-items: normal;\r\n}\r\n#graphics-editor-container .toolbar > div {\r\n    display: flex;\r\n    gap: 7px;\r\n    justify-content: space-between;\r\n}\r\n#graphics-editor-container .toolbar > div > div {\r\n    display: flex;\r\n    gap: 5px;\r\n}\r\n\r\n#graphics-editor-container #shape-list {\r\n    flex: 1;\r\n    overflow-y: auto;\r\n    padding: 15px;\r\n}\r\n\r\n#graphics-editor-container .shape-item {\r\n    padding: 12px;\r\n    margin-bottom: 8px;\r\n    border-radius: 0;\r\n    cursor: pointer;\r\n    transition: all 0.2s ease;\r\n}\r\n\r\n#graphics-editor-container #inspector {\r\n    padding: 15px;\r\n}\r\n\r\n#graphics-editor-container .scene-info {\r\n    padding: 10px 15px;\r\n    position: absolute;\r\n    bottom: 15px;\r\n    left: 15px;\r\n    border-radius: 0;\r\n    font-size: 13px;\r\n}\r\n#graphics-editor-container #move-modal button, #rotate-modal button, #isometric-modal button {\r\n    width: 48%;\r\n}\r\n\r\n\r\n#graphics-editor-container .ref-container {\r\n    display: flex;\r\n    gap: 10px;\r\n}\r\n\r\n#graphics-editor-container .ref-select {\r\n    flex: 1;\r\n    min-width: 150px;\r\n}\r\n\r\n#graphics-editor-container .ref-values {\r\n    display: flex;\r\n    flex-wrap: wrap;\r\n    gap: 5px;\r\n    margin-bottom: 5px;\r\n}\r\n\r\n#graphics-editor-container .ref-value-item {\r\n    border-radius: 4px;\r\n    padding: 3px 6px;\r\n    display: flex;\r\n    align-items: center;\r\n    gap: 5px;\r\n}\r\n\r\n#graphics-editor-container .remove-ref-btn {\r\n    padding: 0 3px;\r\n    font-size: 14px;\r\n}\r\n\r\n#graphics-editor-container #rotate-group-modal .modal-content {\r\n    width: 400px;\r\n    padding: 20px;\r\n}\r\n\r\n#graphics-editor-container #rotate-group-modal .form-row {\r\n    display: flex;\r\n    align-items: center;\r\n    margin-bottom: 15px;\r\n}\r\n\r\n#graphics-editor-container #rotate-group-modal label {\r\n    width: 100px;\r\n    display: inline-block;\r\n}\r\n\r\n#graphics-editor-container #rotate-group-modal input[type=\"range\"] {\r\n    flex-grow: 1;\r\n    margin: 0 10px;\r\n}\r\n\r\n#graphics-editor-container #rotate-group-modal .button-row {\r\n    display: flex;\r\n    justify-content: flex-end;\r\n    margin-top: 20px;\r\n}\r\n\r\n#graphics-editor-container #rotate-group-modal button {\r\n    margin-left: 10px;\r\n    padding: 6px 12px;\r\n    cursor: pointer;\r\n}\r\n\r\n/* Base styling for shape list */\r\n#graphics-editor-container #shape-list {\r\n    padding: 10px;\r\n    user-select: none; /* Prevent text selection during drag */\r\n  }\r\n  \r\n  /* Common styles for items */\r\n  #graphics-editor-container  .shape-item, .group-item {\r\n    padding: 8px;\r\n    margin: 5px 0;\r\n    border-radius: 4px;\r\n    cursor: grab;\r\n    border: 1px solid transparent;\r\n    transition: border-color 0.2s;\r\n  }\r\n  \r\n  /* Shapes styling */\r\n  #graphics-editor-container  .shape-item {\r\n    border-left: 1px solid #555;\r\n  }\r\n  \r\n  #graphics-editor-container  .shape-item:active {\r\n    cursor: grabbing;\r\n  }\r\n  \r\n  /* Group styling */\r\n  #graphics-editor-container  .group-item {\r\n    border-left: 4px solid #007bff; /* Visual distinction for groups */\r\n    font-weight: 500;\r\n  }\r\n  \r\n  /* Selected states - use border instead of background */\r\n  #graphics-editor-container  .shape-item.selected, \r\n  #graphics-editor-container  .group-item.selected {\r\n    border-color: #4080ff;\r\n  }\r\n  \r\n  /* Drag-over states */\r\n  #graphics-editor-container .group-item.drag-over,\r\n  #graphics-editor-container  #shape-list.drag-over {\r\n    border-color: #40a040;\r\n    box-shadow: 0 0 3px rgba(0, 100, 0, 0.5);\r\n  }\r\n  \r\n  /* Animation for when dragging */\r\n  #graphics-editor-container .shape-item.dragging {\r\n    opacity: 0.7;\r\n  }\r\n  \r\n  /* Group shapes container */\r\n  #graphics-editor-container .group-shapes {\r\n    margin-left: 15px;\r\n    padding: 5px;\r\n    border-left: 2px dashed #666;\r\n  }\r\n  \r\n  /* Ungrouped shapes section */\r\n  #graphics-editor-container #shape-list .ungrouped-shapes {\r\n    margin-top: 10px;\r\n    padding: 10px;\r\n    border: 1px dashed #666;\r\n  }\r\n\r\n  #graphics-editor-container .transform-buttons {\r\n    display: flex;\r\n    gap: 10px;\r\n    margin-bottom: 10px;\r\n}\r\n\r\n#graphics-editor-container .transform-buttons button {\r\n    flex: 1;\r\n    padding: 8px;\r\n    background: #444;\r\n    border: 1px solid #666;\r\n    color: white;\r\n    cursor: pointer;\r\n}\r\n\r\n#graphics-editor-container .transform-buttons button.active {\r\n    background: #0066cc;\r\n    border-color: #0088ff;\r\n}",
+        "html": "<div id=\"graphics-editor-container\" class=\"main-content-container\">\r\n   <div id=\"graphics-sidebar\" class=\"content-sidebar\">\r\n      <div id=\"toolbar\" class=\"toolbar\">\r\n         <div>    \r\n            <div>\r\n               <button id=\"add-animation\" class=\"btn btn-add\" title=\"Add Animation\">+A</button>                        \r\n               <button id=\"delete-animation\" class=\"btn btn-danger\" title=\"Delete Animation\">-A</button>                        \r\n            </div>                   \r\n            <div>\r\n               <button id=\"add-frame\" class=\"btn btn-add\" title=\"Add Frame\">+F</button>                        \r\n               <button id=\"delete-frame\" class=\"btn btn-danger\" title=\"Delete Frame\">-F</button>                        \r\n            </div>\r\n            <div>\r\n               <button id=\"create-group\" class=\"btn btn-add\" title=\"Create Group\">+G</button>\r\n               <button id=\"delete-group\" class=\"btn btn-danger\" title=\"Delete Group\">-G</button>\r\n            </div>\r\n            <div>                    \r\n               <button id=\"add-shape\" class=\"btn btn-add\" title=\"Add Shape\">+S</button>                        \r\n               <button id=\"delete-shape\" class=\"btn btn-danger\" title=\"Delete Shape\">-S</button>           \r\n            </div>\r\n         </div>  \r\n         <div>\r\n            <div>\r\n               <button id=\"preview-animation\" class=\"btn btn-primary\" title=\"Preview Animation\">▶</button> \r\n               <button id=\"generate-isometric\" class=\"btn btn-primary\" title=\"Generate Isometric Sprites\">Iso</button>                    \r\n            </div>\r\n         </div>\r\n      </div>\r\n      <div id=\"frame-list\"></div>\r\n      <div id=\"group-list\"></div>\r\n      <div id=\"shape-list\"></div>\r\n   </div>\r\n   <div id=\"canvas-container\" class=\"grid-background\">\r\n      <canvas id=\"graphics-editor-canvas\"></canvas>\r\n      <div class=\"scene-info\">\r\n         <div>Shapes: <span id=\"shape-count\">0</span></div>\r\n         <div>Selected: <span id=\"selected-shape\">None</span></div>\r\n         <div><small>Controls: Left-click to select, Drag to rotate, Right-drag to pan, Scroll to zoom</small></div>\r\n      </div>\r\n   </div>\r\n   <div id=\"graphics-rightbar\">\r\n      <div id=\"inspector\"></div>\r\n      <div id=\"json-editor\" style=\"display: none\">                        \r\n        <textarea id=\"json-content\" placeholder=\"Edit JSON here...\"></textarea>                    \r\n\t\t\t</div>\r\n   </div>\r\n</div>\r\n"
       },
       "TextureEditor": {
         "title": "Texture Editor",
@@ -17594,12 +17594,6 @@ const DEFAULT_PROJECT_CONFIG = {
         "href-disabled": "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
         "fileName": "jszip.min.js"
       },
-      "three.OrbitControls": {
-        "title": "THREE.OrbitControls",
-        "href": "https://cdn.jsdelivr.net/npm/three-orbitcontrols@2.110.3/OrbitControls.min.js",
-        "isModule": true,
-        "fileName": "three.OrbitControls"
-      },
       "threejs": {
         "title": "THREE",
         "href": "https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js",
@@ -17608,29 +17602,35 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "threejs",
         "isModule": true
       },
+      "three.OrbitControls": {
+        "title": "THREE.OrbitControls",
+        "href": "https://cdn.jsdelivr.net/npm/three-orbitcontrols@2.110.3/OrbitControls.min.js",
+        "isModule": true,
+        "fileName": "three.OrbitControls"
+      },
       "aiPromptPanel": {
         "fileName": "aiPromptPanel",
         "script": "class AIPromptPanel {\r\n    constructor(gameEditor) {\r\n        this.gameEditor = gameEditor;\r\n      console.log(this.gameEditor);\r\n        const aiConfig = this.gameEditor.getCollections().configs.ai;\r\n        this.elements = {\r\n            launchBtn: null,\r\n            aiPromptModal: null,\r\n            promptTextarea: null,\r\n            sendBtn: null,\r\n            closeBtn: null,\r\n            previewArea: null,\r\n            applyBtn: null\r\n        };\r\n        this.init(aiConfig);\r\n    }\r\n\r\n    init(aiConfig) {\r\n       this.setupHooks();\r\n        // Create the AI Prompt Modal\r\n        const modal = document.getElementById('modal-aiPromptPanel');\r\n\r\n        this.config = aiConfig;\r\n        // Cache elements\r\n        this.elements = {\r\n            aiPromptModal: modal,\r\n            promptTextarea: modal.querySelector('#ai-prompt-textarea'),\r\n            prePromptTextarea: modal.querySelector('#ai-pre-prompt-textarea'),\r\n            sendBtn: modal.querySelector('#send-ai-prompt-btn'),\r\n            closeBtn: modal.querySelector('#close-ai-prompt-modal'),\r\n            previewArea: modal.querySelector('#ai-response-preview'),\r\n            applyBtn: modal.querySelector('#apply-ai-response-btn')\r\n        };\r\n\r\n        // Setup event listeners\r\n        this.setupEventListeners();\r\n    }\r\n\r\n    setupEventListeners() {\r\n        this.elements.sendBtn.addEventListener('click', () => this.sendPromptToAI());\r\n        this.elements.closeBtn.addEventListener('click', () => {\r\n            this.elements.aiPromptModal.classList.remove('show');\r\n        });\r\n        this.elements.applyBtn.addEventListener('click', () => {\r\n            this.applyAIResponse();\r\n        });\r\n    }\r\n\r\n    setupHooks() {\r\n        \r\n        document.body.addEventListener('renderEditor', () => {\r\n            if(this.elements.launchBtn) this.elements.launchBtn.remove();\r\n            this.elements.launchBtn = document.createElement('button');\r\n            this.elements.launchBtn.innerHTML = \"AI Prompt\";\r\n            this.elements.launchBtn.id = 'ai-prompt-modal';\r\n            this.gameEditor.elements.editor.querySelector(\".actions>div\")?.appendChild(this.elements.launchBtn);\r\n            this.elements.launchBtn.addEventListener('click', () => {\r\n                this.showModal();\r\n            });\r\n        });\r\n    }\r\n\r\n    generateContextPrompt(object) {\r\n        const type = this.gameEditor.model.getSingularType(this.gameEditor.model.state.selectedType);\r\n\t\tlet defaultPrompt = this.config.defaultPrompt.trim().replace(/\\$\\{type\\}/g, type);\r\n        let outputObj = {...object};\r\n        const { selectedObject } = this.gameEditor.model.state;\r\n        outputObj.id = selectedObject;\r\n        \r\n        return `${defaultPrompt}\\n\\nContext Object: \\n\\n${JSON.stringify(outputObj, null, 2)}`;\r\n\t\t\r\n    }\r\n\r\n    async sendPromptToAI() {\r\n        const prompt = `${this.elements.prePromptTextarea.value} \\n\\n ${this.elements.promptTextarea.value}`;\r\n\r\n        try {\r\n            this.elements.previewArea.value = \"Generating ...\"; // Use .value for textarea\r\n\r\n            const { aiEndPoint, aiModel, apiKey, headers, requestBody } = this.prepareAIConfig(prompt);\r\n            console.log('Request config:', { aiEndPoint, aiModel, apiKey, headers, requestBody });\r\n\r\n            const response = await fetch(aiEndPoint, {\r\n                method: 'POST',\r\n                headers,\r\n                body: JSON.stringify(requestBody)\r\n            });\r\n\r\n            if (!response.ok) {\r\n                throw new Error(`AI generation failed: ${response.statusText}`);\r\n            }\r\n\r\n            const responseData = await response.json();\r\n            console.log('Raw API response:', responseData);\r\n\r\n            const aiOutput = this.extractAIOutput(responseData);\r\n            const cleanedOutput = this.cleanOutput(aiOutput);\r\n            console.log('Cleaned output:', cleanedOutput);\r\n\r\n            const parsedResponse = this.parseJSONResponse(cleanedOutput);\r\n            this.elements.previewArea.value = JSON.stringify(parsedResponse, null, 2); // Use .value\r\n            this.elements.applyBtn.style.display = 'block';\r\n        } catch (error) {\r\n            console.error('AI Generation Error:', error);\r\n            this.elements.previewArea.value = `Error: ${error.message}`; // Use .value\r\n            this.elements.applyBtn.style.display = 'none';\r\n        }\r\n    }\r\n\r\n    prepareAIConfig(prompt) {\r\n        let updated = false;\r\n\r\n        let aiEndPoint = this.config.aiEndPoint || \"http://127.0.0.1:11434/api/generate\";\r\n        let aiModel = this.config.aiModel || \"deepseek-r1:32b\";\r\n        const apiKey = this.config.aiApiKey || \"\";\r\n\r\n        if (!this.config.aiEndPoint) {\r\n            this.config.aiEndPoint = aiEndPoint;\r\n            updated = true;\r\n        }\r\n        if (!this.config.aiModel) {\r\n            this.config.aiModel = aiModel;\r\n            updated = true;\r\n        }\r\n        if (updated) {\r\n            this.gameEditor.renderObjectList();\r\n            this.gameEditor.saveToLocalStorage();\r\n        }\r\n\r\n        const headers = { 'Content-Type': 'application/json' };\r\n        let requestBody = { \r\n            prompt, \r\n            model: aiModel, \r\n            jsonOnly: true, \r\n            stream: false \r\n        };\r\n\r\n        if (apiKey) {\r\n            headers.Authorization = `Bearer ${apiKey}`;\r\n            requestBody = {\r\n                model: aiModel,\r\n                messages: [\r\n                    { role: 'system', content: 'You are a helpful assistant that generates valid JSON objects based on user prompts.' },\r\n                    { role: 'user', content: prompt }\r\n                ],\r\n                temperature: 0.7,\r\n                max_tokens: 500\r\n            };\r\n        }\r\n\r\n        return { aiEndPoint, aiModel, apiKey, headers, requestBody };\r\n    }\r\n\r\n    extractAIOutput(responseData) {\r\n        return responseData.response || responseData.result || responseData;\r\n    }\r\n\r\n cleanOutput(aiOutput) {\r\n        const outputString = typeof aiOutput === 'string' ? aiOutput : JSON.stringify(aiOutput);\r\n        return outputString\r\n            .replace(/```json\\s*/g, '') // Remove ```json and optional whitespace/newlines\r\n            .replace(/```\\s*/g, '')     // Remove ``` and optional whitespace/newlines\r\n            .replace(/<think\\s*>[\\s\\S]*?<\\/think\\s*>/gi, '') // Remove <think> tags\r\n            .replace(/<think[\\s\\S]*?\\/>/gi, '') // Remove self-closing <think> tags\r\n            .trim(); // Remove leading/trailing whitespace\r\n    }\r\n\r\n    parseJSONResponse(cleanedOutput) {\r\n        try {\r\n            return JSON.parse(cleanedOutput);\r\n        } catch (parseError) {\r\n            throw new Error('Invalid JSON response from AI:\\n' + cleanedOutput);\r\n        }\r\n    }\r\n\r\n    applyAIResponse() {\r\n        try {\r\n            const responseText = this.elements.previewArea.value; // Use .value for textarea\r\n            const parsedResponse = JSON.parse(responseText);\r\n\r\n            if (!parsedResponse.id) {\r\n                alert(\"Must include id in new object.\");\r\n                return;\r\n            }\r\n\r\n            const { selectedType } = this.gameEditor.model.state;\r\n            this.gameEditor.model.getCollections()[selectedType][parsedResponse.id] = parsedResponse;\r\n\r\n            this.gameEditor.renderObjectList();\r\n            this.gameEditor.selectObject(parsedResponse.id); // Use new id instead of old selectedObject\r\n\r\n            this.elements.aiPromptModal.classList.remove('show');\r\n        } catch (error) {\r\n            console.error('Error applying AI response:', error);\r\n            alert('Failed to apply AI response. Please check the JSON format.');\r\n        }\r\n    }\r\n\r\n    showModal() {\r\n        const currentObject = this.gameEditor.getCurrentObject();\r\n        this.elements.prePromptTextarea.value = this.generateContextPrompt(currentObject); // Use .value\r\n        this.elements.previewArea.value = ''; // Use .value\r\n        this.elements.applyBtn.style.display = 'none';\r\n        this.elements.aiPromptModal.classList.add('show');\r\n    }\r\n}\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n"
-      },
-      "CanvasUtility": {
-        "fileName": "CanvasUtility",
-        "script": "class CanvasUtility {\r\n    constructor() {\r\n        this.canvas = document.createElement('canvas');\r\n        this.ctx = this.canvas.getContext('2d', { willReadFrequently: true });\r\n\t\tthis.ctx.globalCompositeOperation = 'destination-over';// Set the composite operation to preserve transparency\r\n        \r\n\t\tthis.tempCanvas = document.createElement('canvas');\r\n        this.tempCtx = this.tempCanvas.getContext('2d', { willReadFrequently: true });\r\n\t\tthis.tempCtx.globalCompositeOperation = 'destination-over';// Set the composite operation to preserve transparency\r\n    }\r\n\r\n    setSize(width, height) {\r\n        this.canvas.width = width;\r\n        this.canvas.height = height;\r\n    }\r\n    paintTexture(imageData) {\r\n        this.setSize(imageData.width, imageData.height);\r\n        this.ctx.putImageData(imageData, 0, 0);\r\n        return this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);\r\n    }\r\n\trotateTexture(imageData, angle) {\r\n        // Set the canvas size to accommodate the rotated image\r\n        // Note: If the rotation results in a change in width/height, adjust these values accordingly\r\n        this.setSize(imageData.width, imageData.height);\r\n\r\n        // Draw the original imageData to the canvas\r\n        this.ctx.putImageData(imageData, 0, 0);\r\n\r\n        // Apply the rotation\r\n        this.ctx.translate(this.canvas.width / 2, this.canvas.height / 2);\r\n        this.ctx.rotate(angle);\r\n        this.ctx.translate(-this.canvas.width / 2, -this.canvas.height / 2);\r\n\r\n        // Create a temporary canvas to hold the current state\r\n        this.tempCanvas.width = this.canvas.width;\r\n        this.tempCanvas.height = this.canvas.height;\r\n        this.tempCtx.drawImage(this.canvas, 0, 0);\r\n\r\n        // Clear the main canvas and draw the rotated image\r\n        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);\r\n        this.ctx.drawImage(this.tempCanvas, 0, 0);\r\n\r\n        // Capture the rotated image data\r\n        let rotatedData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);\r\n \r\n\r\n        return rotatedData;\r\n    }\r\n\tflipTextureVertical(imageData) {\r\n        this.setSize(imageData.width, imageData.height);\r\n\r\n        // Draw the original image data to the canvas\r\n        this.ctx.putImageData(imageData, 0, 0);\r\n\r\n        // Use an off-screen canvas to perform the flip\r\n        this.tempCanvas.width = imageData.width;\r\n        this.tempCanvas.height = imageData.height;\r\n  \r\n        // Apply the flip on the off-screen canvas\r\n        this.tempCtx.translate(0, this.tempCanvas.height);\r\n\t\tthis.tempCtx.scale(1, -1);\r\n\t\tthis.tempCtx.drawImage(this.canvas, 0, 0);\r\n\r\n        // Extract the flipped image data\r\n        return this.tempCtx.getImageData(0, 0, this.tempCanvas.width, this.tempCanvas.height);\r\n    }\r\n\r\n    flipTextureHorizontal(imageData) {\r\n        this.setSize(imageData.width, imageData.height);\r\n\r\n        // Draw the original image data to the canvas\r\n        this.ctx.putImageData(imageData, 0, 0);\r\n\r\n        // Use an off-screen canvas to perform the flip\r\n        this.tempCanvas.width = imageData.width;\r\n        this.tempCanvas.height = imageData.height;\r\n        // Apply the flip on the off-screen canvas\r\n\t\tthis.tempCtx.translate(this.tempCanvas.width, 0);\r\n\t\tthis.tempCtx.scale(-1, 1);\r\n\t\tthis.tempCtx.drawImage(this.canvas, 0, 0);\r\n\r\n        // Extract the flipped image data\r\n        return this.tempCtx.getImageData(0, 0, this.tempCanvas.width, this.tempCanvas.height);\r\n    }\r\n\tdrawImage(image) {\r\n        this.setSize(image.width, image.height);\r\n        this.ctx.drawImage(image, 0, 0);\r\n        return this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);\r\n    }\r\n\r\n\trotateImage(image, angle) {\r\n\t\tthis.setSize(image.width, image.height);\r\n\t\t// Set up the rotation\r\n\t\tthis.ctx.translate(this.canvas.width / 2, this.canvas.height / 2);\r\n\t\tthis.ctx.rotate(angle);\r\n\t\tthis.ctx.translate(-this.canvas.width / 2, -this.canvas.height / 2);\r\n\t\tthis.ctx.fillStyle = 'rgba(0, 0, 0, 0)'; // Fully transparent\r\n\t\tthis.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);\r\n\t\r\n\t\t// Draw the image\r\n\t\tthis.ctx.drawImage(image, 0, 0);\r\n\t\treturn this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);\r\n\t}\r\n\r\n    flipImageVertical(image) {\r\n        this.setSize(image.width, image.height);\r\n        this.ctx.translate(0, this.canvas.height);\r\n        this.ctx.scale(1, -1);\r\n        this.ctx.drawImage(image, 0, 0);\r\n        return this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);\r\n    }\r\n\r\n    flipCanvasVertical() {\r\n        this.ctx.translate(0, this.canvas.height);\r\n        this.ctx.scale(1, -1);\r\n        return this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);\r\n    }\r\n\r\n    flipImageHorizontal(image) {\r\n        this.setSize(image.width, image.height);\r\n        this.ctx.translate(this.canvas.width, 0);\r\n        this.ctx.scale(-1, 1);\r\n        this.ctx.drawImage(image, 0, 0);\r\n        return this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);\r\n    }\r\n}"
       },
       "audioEditor": {
         "fileName": "audioEditor",
         "script": "class AudioEditor {\r\n    constructor(gameEditor) {\r\n        this.gameEditor = gameEditor;\r\n        let configObj = { state: {}, config: this.gameEditor.getCollections() };\r\n        this.audioManager = new (this.gameEditor.scriptContext.getComponent(\"AudioManager\"))(configObj, null, {} );\r\n        this.audioManager.init();\r\n        this.volume = 1;\r\n        this.setupEventListeners();\r\n        this.updateNoiseUI(); \r\n    }\r\n\r\n    setupEventListeners() {\r\n        const updateStatus = (message, type = 'default') => {\r\n            const status = document.getElementById('status-message');\r\n            if (status) {\r\n                status.textContent = message;\r\n                status.className = type === 'success' ? 'success' : type === 'error' ? 'error' : '';\r\n            }\r\n        };\r\n\r\n        const updateSliderDisplay = (sliderId, formatFn) => {\r\n            const slider = document.getElementById(sliderId);\r\n            if (slider) {\r\n                const updateDisplayValue = () => {\r\n                    const display = slider.nextElementSibling;\r\n                    if (display && display.classList.contains('value-display')) {\r\n                        display.textContent = formatFn(parseFloat(slider.value));\r\n                    }\r\n                };\r\n                \r\n                slider.addEventListener('input', updateDisplayValue);\r\n                updateDisplayValue();\r\n            }\r\n        };\r\n\r\n        document.body.addEventListener('editAudio', (event) => {\r\n            try {\r\n                const settings = event.detail.data;\r\n                this.updateUIFromSettings(settings);                \r\n                updateStatus('Audio settings imported', 'success');\r\n            } catch (err) {\r\n                updateStatus('Error importing audio settings: ' + err.message, 'error');\r\n            }\r\n        });\r\n\r\n        const playBtn = document.getElementById('playBtn');\r\n        \r\n        playBtn?.addEventListener('click', () => {\r\n            this.playCurrentSound();\r\n        });\r\n\r\n        document.getElementById('exportBtn')?.addEventListener('click', () => {\r\n            const settings = this.getUISettings();\r\n            this.saveAudio(settings);\r\n            updateStatus('Audio settings exported', 'success');\r\n        });\r\n\r\n        this.setupUIControls(updateSliderDisplay);\r\n\r\n\r\n\r\n    }\r\n    setVolume(value) {\r\n        this.volume = value;\r\n    }\r\n    setupUIControls(updateSliderDisplay) {\r\n        updateSliderDisplay('volume', (val) => `${Math.round(val * 100)}%`);\r\n        document.getElementById('volume')?.addEventListener('input', (e) => {\r\n            const volume = parseFloat(e.target.value);\r\n            this.setVolume(volume, e);\r\n        });\r\n\r\n        updateSliderDisplay('frequency', (val) => `${val} Hz`);\r\n        updateSliderDisplay('duration', (val) => `${val.toFixed(2)} s`);\r\n        \r\n        updateSliderDisplay('attack', (val) => `${val.toFixed(3)} s`);\r\n        updateSliderDisplay('decay', (val) => `${val.toFixed(2)} s`);\r\n        updateSliderDisplay('sustain', (val) => `${Math.round(val * 100)}%`);\r\n        updateSliderDisplay('release', (val) => `${val.toFixed(2)} s`);\r\n        \r\n        updateSliderDisplay('pitchEnvStart', (val) => `${val.toFixed(2)}x`);\r\n        updateSliderDisplay('pitchEnvEnd', (val) => `${val.toFixed(2)}x`);\r\n        \r\n\r\n        updateSliderDisplay('filterFreq', (val) => `${val} Hz`);\r\n\r\n        \r\n        updateSliderDisplay('filterQ', (val) => `Q: ${val.toFixed(1)}`);\r\n        \r\n        updateSliderDisplay('distortion', (val) => `${Math.round(val)}%`);\r\n\r\n        \r\n        updateSliderDisplay('delayTime', (val) => `${val.toFixed(2)} s`);\r\n \r\n        \r\n        updateSliderDisplay('delayFeedback', (val) => `${Math.round(val * 100)}%`);\r\n\r\n        \r\n        updateSliderDisplay('reverbAmount', (val) => `${Math.round(val * 100)}%`);\r\n   \r\n        \r\n        updateSliderDisplay('bitcrusher', (val) => `${Math.round(val * 100)}%`);\r\n\r\n        \r\n        updateSliderDisplay('panning', (val) => {\r\n            if (val === 0) return \"Center\";\r\n            return val < 0 ? `${Math.abs(Math.round(val * 100))}% Left` : `${Math.round(val * 100)}% Right`;\r\n        });\r\n\r\n    }\r\n\r\n    getUISettings() {\r\n        return {\r\n            waveform: document.getElementById('waveform')?.value || 'sine',\r\n            frequency: parseFloat(document.getElementById('frequency')?.value || 440),\r\n            duration: parseFloat(document.getElementById('duration')?.value || 1),\r\n            noise: {\r\n                type: document.getElementById('noiseType')?.value || 'white',\r\n                amount: parseFloat(document.getElementById('noiseAmount')?.value || 0),\r\n                filter: {\r\n                    type: document.getElementById('noiseFilterType')?.value || 'none',\r\n                    frequency: parseFloat(document.getElementById('noiseFilterFreq')?.value || 2000)\r\n                }\r\n            },\r\n            envelope: {\r\n                attack: parseFloat(document.getElementById('attack')?.value || 0.01),\r\n                decay: parseFloat(document.getElementById('decay')?.value || 0.1),\r\n                sustain: parseFloat(document.getElementById('sustain')?.value || 0.7),\r\n                release: parseFloat(document.getElementById('release')?.value || 0.3),\r\n            },\r\n            pitchEnvelope: {\r\n                start: parseFloat(document.getElementById('pitchEnvStart')?.value || 1),\r\n                end: parseFloat(document.getElementById('pitchEnvEnd')?.value || 1),\r\n                time: parseFloat(document.getElementById('duration')?.value || 1)\r\n            },\r\n            effects: {\r\n                filter: {\r\n                    type: document.getElementById('filterType')?.value || 'lowpass',\r\n                    frequency: parseFloat(document.getElementById('filterFreq')?.value || 1000),\r\n                    Q: parseFloat(document.getElementById('filterQ')?.value || 1)\r\n                },\r\n                distortion: parseFloat(document.getElementById('distortion')?.value || 0),\r\n                delay: {\r\n                    time: parseFloat(document.getElementById('delayTime')?.value || 0.3),\r\n                    feedback: parseFloat(document.getElementById('delayFeedback')?.value || 0)\r\n                },\r\n                reverb: parseFloat(document.getElementById('reverbAmount')?.value || 0),\r\n                bitcrusher: parseFloat(document.getElementById('bitcrusher')?.value || 0),\r\n                pan: parseFloat(document.getElementById('panning')?.value || 0)\r\n            }\r\n        };\r\n    }\r\n\r\n    updateUIFromSettings(settings) {\r\n        if (!settings) return;\r\n        \r\n        this.setElementValue('waveform', settings.waveform);\r\n        this.setElementValue('frequency', settings.frequency);\r\n        this.setElementValue('duration', settings.duration);\r\n        \r\n        if (settings.envelope) {\r\n            this.setElementValue('attack', settings.envelope.attack);\r\n            this.setElementValue('decay', settings.envelope.decay);\r\n            this.setElementValue('sustain', settings.envelope.sustain);\r\n            this.setElementValue('release', settings.envelope.release);\r\n        }\r\n        \r\n        if (settings.pitchEnvelope) {\r\n            this.setElementValue('pitchEnvStart', settings.pitchEnvelope.start);\r\n            this.setElementValue('pitchEnvEnd', settings.pitchEnvelope.end);\r\n        }\r\n        \r\n        if (settings.effects) {\r\n            if (settings.effects.filter) {\r\n                this.setElementValue('filterType', settings.effects.filter.type);\r\n                this.setElementValue('filterFreq', settings.effects.filter.frequency);\r\n                this.setElementValue('filterQ', settings.effects.filter.Q);\r\n                \r\n            }\r\n            \r\n            this.setElementValue('distortion', settings.effects.distortion);\r\n            \r\n            if (settings.effects.delay) {\r\n                this.setElementValue('delayTime', settings.effects.delay.time);\r\n                this.setElementValue('delayFeedback', settings.effects.delay.feedback);\r\n            }\r\n            \r\n            this.setElementValue('reverbAmount', settings.effects.reverb);\r\n            \r\n            this.setElementValue('bitcrusher', settings.effects.bitcrusher);\r\n\r\n            this.setElementValue('panning', settings.effects.pan);\r\n        }\r\n        if (settings.noise) {\r\n            this.setElementValue('noiseType', settings.noise.type);\r\n            this.setElementValue('noiseAmount', settings.noise.amount);\r\n            \r\n            if (settings.noise.filter) {\r\n                this.setElementValue('noiseFilterType', settings.noise.filter.type);\r\n                this.setElementValue('noiseFilterFreq', settings.noise.filter.frequency);\r\n            }\r\n        }\r\n        document.querySelectorAll('input[type=\"range\"]').forEach(el => {\r\n            el.dispatchEvent(new Event('input'));\r\n        });\r\n        document.getElementById('randomSoundBtn')?.addEventListener('click', () => {\r\n            this.generateRandomSound();\r\n            this.playCurrentSound();\r\n        });\r\n    }\r\n    generateRandomSound() {\r\n        // Waveform options (including noise)\r\n        const waveforms = ['sine', 'square', 'sawtooth', 'triangle', 'noise'];\r\n        \r\n        // Noise types\r\n        const noiseTypes = ['white', 'pink', 'brown'];\r\n        \r\n        // Filter types\r\n        const filterTypes = ['lowpass', 'highpass', 'bandpass', 'none'];\r\n        \r\n        // Random helpers\r\n        const random = (min, max) => Math.random() * (max - min) + min;\r\n        const randomInt = (min, max) => Math.floor(random(min, max + 1));\r\n        const randomItem = (arr) => arr[randomInt(0, arr.length - 1)];\r\n        \r\n        // Generate random settings\r\n        const settings = {\r\n            waveform: randomItem(waveforms),\r\n            frequency: random(50, 2000),\r\n            duration: random(0.1, 3),\r\n            noise: {\r\n                type: randomItem(noiseTypes),\r\n                amount: random(0, 0), // Keep below 1.0 to avoid overpowering\r\n                filter: {\r\n                    type: randomItem(filterTypes),\r\n                    frequency: random(100, 10000),\r\n                    Q: random(0.5, 5)\r\n                }\r\n            },\r\n            envelope: {\r\n                attack: random(0.001, 0.5),\r\n                decay: random(0.01, 1),\r\n                sustain: random(0, 1),\r\n                release: random(0.01, 2)\r\n            },\r\n            pitchEnvelope: {\r\n                start: random(0.5, 2),\r\n                end: random(0.5, 2),\r\n                time: random(0.1, 2)\r\n            },\r\n            effects: {\r\n                filter: {\r\n                    type: randomItem(filterTypes),\r\n                    frequency: random(50, 10000),\r\n                    Q: random(0.5, 5)\r\n                },\r\n                distortion: random(0, 0.8),\r\n                delay: {\r\n                    time: random(0, 1),\r\n                    feedback: random(0, 0.7) // Avoid infinite feedback\r\n                },\r\n                reverb: random(0, 0.7),\r\n                bitcrusher: random(0, 0.5),\r\n                pan: random(-1, 1)\r\n            }\r\n        };\r\n\r\n        // Special case: If waveform is noise, disable oscillator frequency\r\n        if (settings.waveform === 'noise') {\r\n            settings.noise.amount = 1.0; // Full noise when selected\r\n            settings.frequency = 440; // Dummy value (unused)\r\n        }\r\n\r\n        // Ensure noise filter isn't \"none\" if noise is active\r\n        if (settings.noise.amount > 0 && settings.noise.filter.type === 'none') {\r\n            settings.noise.filter.type = randomItem(filterTypes.filter(t => t !== 'none'));\r\n        }\r\n\r\n        // Update UI with the new random sound\r\n        this.updateUIFromSettings(settings);\r\n        return settings;\r\n    }\r\n\r\n    updateNoiseUI() {\r\n    \r\n        // Setup the slider display update\r\n        this.setupNoiseControls();\r\n    }\r\n    \r\n    setupNoiseControls() {\r\n        const updateSliderDisplay = (sliderId, formatFn) => {\r\n            const slider = document.getElementById(sliderId);\r\n            if (slider) {\r\n                const updateDisplayValue = () => {\r\n                    const display = slider.nextElementSibling;\r\n                    if (display && display.classList.contains('value-display')) {\r\n                        display.textContent = formatFn(parseFloat(slider.value));\r\n                    }\r\n                };\r\n                \r\n                slider.addEventListener('input', updateDisplayValue);\r\n                updateDisplayValue();\r\n            }\r\n        };\r\n    \r\n        updateSliderDisplay('noiseAmount', (val) => `${Math.round(val * 100)}%`);\r\n        updateSliderDisplay('noiseFilterFreq', (val) => `${val} Hz`);\r\n    }\r\n\r\n    setElementValue(id, value) {\r\n        const element = document.getElementById(id);\r\n        if (element) element.value = value;\r\n    }\r\n\r\n\r\n    saveAudio(settingsObj) {\r\n        document.body.dispatchEvent(new CustomEvent('saveAudio', {   \r\n            detail: { data: settingsObj, propertyName: 'audio' },\r\n        }));\r\n    }\r\n\r\n    playCurrentSound() {\r\n        const settings = this.getUISettings();\r\n        this.audioManager.playSynthSound('audioEditorSound', settings);\r\n    }\r\n    \r\n}\r\n\r\n// setupKeyboard() {\r\n//     const keyboard = document.getElementById('keyboard');\r\n//     if (!keyboard) return;\r\n    \r\n//     keyboard.innerHTML = '';\r\n    \r\n//     const keyboardLayout = [\r\n//         { note: 'C4', key: 'a', frequency: 261.63, type: 'white' },\r\n//         { note: 'C#4', key: 'w', frequency: 277.18, type: 'black' },\r\n//         { note: 'D4', key: 's', frequency: 293.66, type: 'white' },\r\n//         { note: 'D#4', key: 'e', frequency: 311.13, type: 'black' },\r\n//         { note: 'E4', key: 'd', frequency: 329.63, type: 'white' },\r\n//         { note: 'F4', key: 'f', frequency: 349.23, type: 'white' },\r\n//         { note: 'F#4', key: 't', frequency: 369.99, type: 'black' },\r\n//         { note: 'G4', key: 'g', frequency: 392.00, type: 'white' },\r\n//         { note: 'G#4', key: 'y', frequency: 415.30, type: 'black' },\r\n//         { note: 'A4', key: 'h', frequency: 440.00, type: 'white' },\r\n//         { note: 'A#4', key: 'u', frequency: 466.16, type: 'black' },\r\n//         { note: 'B4', key: 'j', frequency: 493.88, type: 'white' },\r\n//         { note: 'C5', key: 'k', frequency: 523.25, type: 'white' }\r\n//     ];\r\n    \r\n//     keyboardLayout.forEach(note => {\r\n//         const key = document.createElement('div');\r\n//         key.className = `key ${note.type}`;\r\n//         key.dataset.note = note.note;\r\n//         key.dataset.frequency = note.frequency;\r\n//         key.innerHTML = `<span>${note.note}</span><span class=\"key-label\">${note.key}</span>`;\r\n        \r\n//         key.addEventListener('mousedown', () => {\r\n//             key.classList.add('active');\r\n//             this.playNote(note.frequency);\r\n//         });\r\n//         key.addEventListener('mouseup', () => {\r\n//             key.classList.remove('active');\r\n//             this.stopNote(note.frequency);\r\n//         });\r\n//         key.addEventListener('mouseleave', () => {\r\n//             if (key.classList.contains('active')) {\r\n//                 key.classList.remove('active');\r\n//                 this.stopNote(note.frequency);\r\n//             }\r\n//         });\r\n        \r\n//         keyboard.appendChild(key);\r\n//     });\r\n    \r\n//     const keyToNote = {};\r\n//     keyboardLayout.forEach(note => {\r\n//         keyToNote[note.key] = note.frequency;\r\n//     });\r\n    \r\n//     window.addEventListener('keydown', (e) => {\r\n//         if (e.repeat) return;\r\n//         const key = e.key.toLowerCase();\r\n//         if (keyToNote[key]) {\r\n//             this.playNote(keyToNote[key]);\r\n//             const keyElement = Array.from(keyboard.children).find(\r\n//                 k => k.dataset.frequency == keyToNote[key]\r\n//             );\r\n//             if (keyElement) keyElement.classList.add('active');\r\n//         }\r\n//     });\r\n    \r\n//     window.addEventListener('keyup', (e) => {\r\n//         const key = e.key.toLowerCase();\r\n//         if (keyToNote[key]) {\r\n//             this.stopNote(keyToNote[key]);\r\n//             const keyElement = Array.from(keyboard.children).find(\r\n//                 k => k.dataset.frequency == keyToNote[key]\r\n//             );\r\n//             if (keyElement) keyElement.classList.remove('active');\r\n//         }\r\n//     });\r\n// }\r\n\r\n// stopNote(frequency) {\r\n//     if (!this.activeNotes.has(frequency)) return;\r\n    \r\n//     const note = this.activeNotes.get(frequency);\r\n//     const now = this.audioContext.currentTime;\r\n//     const settings = this.getUISettings();\r\n//     const release = settings.envelope.release;\r\n    \r\n//     note.envelopeGain.gain.cancelScheduledValues(now);\r\n//     note.envelopeGain.gain.setValueAtTime(note.envelopeGain.gain.value, now);\r\n//     note.envelopeGain.gain.linearRampToValueAtTime(0, now + release);\r\n    \r\n//     note.oscillator.stop(now + release + 0.1);\r\n    \r\n//     setTimeout(() => {\r\n//         this.activeNotes.delete(frequency);\r\n//     }, (release + 0.2) * 1000);\r\n// }\r\n// playNote(frequency) {\r\n//     if (this.activeNotes.has(frequency)) {\r\n//         this.stopNote(frequency);\r\n//     }\r\n    \r\n//     const settings = this.getUISettings();\r\n//     settings.frequency = frequency;\r\n    \r\n//     const now = this.audioContext.currentTime;\r\n//     const oscillator = this.createOscillator(settings);\r\n//     oscillator.connect(this.filter);\r\n//     oscillator.start(now);\r\n    \r\n//     this.activeNotes.set(frequency, {\r\n//         oscillator,\r\n//         envelopeGain: this.masterGainNode,\r\n//         startTime: now\r\n//     });\r\n    \r\n//     this.connectVisualizer(oscillator);\r\n// }\r\n// Audio Visualizer class\r\nclass AudioVisualizer {\r\n    constructor(canvas, audioContext) {\r\n        this.canvas = canvas;\r\n        this.ctx = canvas.getContext('2d');\r\n        this.audioContext = audioContext;\r\n        this.analyzer = audioContext.createAnalyser();\r\n        this.analyzer.fftSize = 2048;\r\n        this.bufferLength = this.analyzer.frequencyBinCount;\r\n        this.dataArray = new Uint8Array(this.bufferLength);\r\n        this.analyzer.connect(audioContext.destination);\r\n        \r\n      \r\n        \r\n        // Start visualization loop\r\n        this.visualize();\r\n    }\r\n    \r\n    connectSource(source) {\r\n        source.connect(this.analyzer);\r\n    }\r\n    \r\n    drawWaveform(audioBuffer) {\r\n        const data = audioBuffer.getChannelData(0);\r\n        const step = Math.ceil(data.length / this.canvas.width);\r\n        const amp = this.canvas.height / 2;\r\n        \r\n        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);\r\n        this.ctx.beginPath();\r\n        this.ctx.moveTo(0, amp);\r\n        \r\n        for (let i = 0; i < this.canvas.width; i++) {\r\n            const idx = Math.floor(i * step);\r\n            const y = amp + data[idx] * amp;\r\n            this.ctx.lineTo(i, y);\r\n        }\r\n        \r\n        this.ctx.strokeStyle = '#2196F3';\r\n        this.ctx.stroke();\r\n    }\r\n    \r\n    visualize() {\r\n        requestAnimationFrame(() => this.visualize());\r\n        \r\n        this.analyzer.getByteTimeDomainData(this.dataArray);\r\n        \r\n        this.ctx.fillStyle = 'rgb(200, 200, 200)';\r\n        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);\r\n        \r\n        this.ctx.lineWidth = 2;\r\n        this.ctx.strokeStyle = 'rgb(0, 0, 0)';\r\n        this.ctx.beginPath();\r\n        \r\n        const sliceWidth = this.canvas.width * 1.0 / this.bufferLength;\r\n        let x = 0;\r\n        \r\n        for (let i = 0; i < this.bufferLength; i++) {\r\n            const v = this.dataArray[i] / 128.0;\r\n            const y = v * this.canvas.height / 2;\r\n            \r\n            if (i === 0) {\r\n                this.ctx.moveTo(x, y);\r\n            } else {\r\n                this.ctx.lineTo(x, y);\r\n            }\r\n            \r\n            x += sliceWidth;\r\n        }\r\n        \r\n        this.ctx.lineTo(this.canvas.width, this.canvas.height / 2);\r\n        this.ctx.stroke();\r\n    }\r\n    \r\n}"
       },
+      "CanvasUtility": {
+        "fileName": "CanvasUtility",
+        "script": "class CanvasUtility {\r\n    constructor() {\r\n        this.canvas = document.createElement('canvas');\r\n        this.ctx = this.canvas.getContext('2d', { willReadFrequently: true });\r\n\t\tthis.ctx.globalCompositeOperation = 'destination-over';// Set the composite operation to preserve transparency\r\n        \r\n\t\tthis.tempCanvas = document.createElement('canvas');\r\n        this.tempCtx = this.tempCanvas.getContext('2d', { willReadFrequently: true });\r\n\t\tthis.tempCtx.globalCompositeOperation = 'destination-over';// Set the composite operation to preserve transparency\r\n    }\r\n\r\n    setSize(width, height) {\r\n        this.canvas.width = width;\r\n        this.canvas.height = height;\r\n    }\r\n    paintTexture(imageData) {\r\n        this.setSize(imageData.width, imageData.height);\r\n        this.ctx.putImageData(imageData, 0, 0);\r\n        return this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);\r\n    }\r\n\trotateTexture(imageData, angle) {\r\n        // Set the canvas size to accommodate the rotated image\r\n        // Note: If the rotation results in a change in width/height, adjust these values accordingly\r\n        this.setSize(imageData.width, imageData.height);\r\n\r\n        // Draw the original imageData to the canvas\r\n        this.ctx.putImageData(imageData, 0, 0);\r\n\r\n        // Apply the rotation\r\n        this.ctx.translate(this.canvas.width / 2, this.canvas.height / 2);\r\n        this.ctx.rotate(angle);\r\n        this.ctx.translate(-this.canvas.width / 2, -this.canvas.height / 2);\r\n\r\n        // Create a temporary canvas to hold the current state\r\n        this.tempCanvas.width = this.canvas.width;\r\n        this.tempCanvas.height = this.canvas.height;\r\n        this.tempCtx.drawImage(this.canvas, 0, 0);\r\n\r\n        // Clear the main canvas and draw the rotated image\r\n        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);\r\n        this.ctx.drawImage(this.tempCanvas, 0, 0);\r\n\r\n        // Capture the rotated image data\r\n        let rotatedData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);\r\n \r\n\r\n        return rotatedData;\r\n    }\r\n\tflipTextureVertical(imageData) {\r\n        this.setSize(imageData.width, imageData.height);\r\n\r\n        // Draw the original image data to the canvas\r\n        this.ctx.putImageData(imageData, 0, 0);\r\n\r\n        // Use an off-screen canvas to perform the flip\r\n        this.tempCanvas.width = imageData.width;\r\n        this.tempCanvas.height = imageData.height;\r\n  \r\n        // Apply the flip on the off-screen canvas\r\n        this.tempCtx.translate(0, this.tempCanvas.height);\r\n\t\tthis.tempCtx.scale(1, -1);\r\n\t\tthis.tempCtx.drawImage(this.canvas, 0, 0);\r\n\r\n        // Extract the flipped image data\r\n        return this.tempCtx.getImageData(0, 0, this.tempCanvas.width, this.tempCanvas.height);\r\n    }\r\n\r\n    flipTextureHorizontal(imageData) {\r\n        this.setSize(imageData.width, imageData.height);\r\n\r\n        // Draw the original image data to the canvas\r\n        this.ctx.putImageData(imageData, 0, 0);\r\n\r\n        // Use an off-screen canvas to perform the flip\r\n        this.tempCanvas.width = imageData.width;\r\n        this.tempCanvas.height = imageData.height;\r\n        // Apply the flip on the off-screen canvas\r\n\t\tthis.tempCtx.translate(this.tempCanvas.width, 0);\r\n\t\tthis.tempCtx.scale(-1, 1);\r\n\t\tthis.tempCtx.drawImage(this.canvas, 0, 0);\r\n\r\n        // Extract the flipped image data\r\n        return this.tempCtx.getImageData(0, 0, this.tempCanvas.width, this.tempCanvas.height);\r\n    }\r\n\tdrawImage(image) {\r\n        this.setSize(image.width, image.height);\r\n        this.ctx.drawImage(image, 0, 0);\r\n        return this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);\r\n    }\r\n\r\n\trotateImage(image, angle) {\r\n\t\tthis.setSize(image.width, image.height);\r\n\t\t// Set up the rotation\r\n\t\tthis.ctx.translate(this.canvas.width / 2, this.canvas.height / 2);\r\n\t\tthis.ctx.rotate(angle);\r\n\t\tthis.ctx.translate(-this.canvas.width / 2, -this.canvas.height / 2);\r\n\t\tthis.ctx.fillStyle = 'rgba(0, 0, 0, 0)'; // Fully transparent\r\n\t\tthis.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);\r\n\t\r\n\t\t// Draw the image\r\n\t\tthis.ctx.drawImage(image, 0, 0);\r\n\t\treturn this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);\r\n\t}\r\n\r\n    flipImageVertical(image) {\r\n        this.setSize(image.width, image.height);\r\n        this.ctx.translate(0, this.canvas.height);\r\n        this.ctx.scale(1, -1);\r\n        this.ctx.drawImage(image, 0, 0);\r\n        return this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);\r\n    }\r\n\r\n    flipCanvasVertical() {\r\n        this.ctx.translate(0, this.canvas.height);\r\n        this.ctx.scale(1, -1);\r\n        return this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);\r\n    }\r\n\r\n    flipImageHorizontal(image) {\r\n        this.setSize(image.width, image.height);\r\n        this.ctx.translate(this.canvas.width, 0);\r\n        this.ctx.scale(-1, 1);\r\n        this.ctx.drawImage(image, 0, 0);\r\n        return this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);\r\n    }\r\n}"
+      },
       "Component": {
         "fileName": "Component",
         "script": "class Component {\r\n    constructor(game, parent, params) { \r\n        this.game = game;\r\n        this.parent = parent;\r\n        this.init(params);\r\n    }\r\n    init(params) {}\r\n    getComponent(type) {\r\n        return this.parent.getComponent(type);\r\n    }\r\n    update() {}\r\n    postUpdate() {}\r\n    destroy() {}\r\n}\r\n"
       },
-      "CoordinateTranslator": {
-        "fileName": "CoordinateTranslator",
-        "script": "class CoordinateTranslator {\r\n    constructor(config, mapSize, isometric = false) {\r\n        this.isometric = isometric;\r\n        this.tileWidth = config.gridSize;\r\n        this.tileHeight = config.gridSize * 0.5;\r\n        this.canvasWidth = config.canvasWidth;\r\n        this.canvasHeight = config.canvasHeight;\r\n        this.mapSize = mapSize;\r\n    }\r\n\r\n    // Pixel (top-down) to Grid\r\n    pixelToGrid(pixelX, pixelY) {\r\n        return {\r\n            x: pixelX / this.tileWidth,\r\n            y: pixelY / this.tileWidth\r\n        };\r\n    }\r\n\r\n    // Grid to Isometric (with vertical centering)\r\n    gridToIso(gridX, gridY) {\r\n        // If not isometric, return grid coordinates as-is\r\n        if (!this.isometric) {\r\n            return { x: gridX * this.tileWidth, y: gridY * this.tileWidth };\r\n        }\r\n\r\n        const isoX = (gridX - gridY) * (this.tileWidth / 2) + this.canvasWidth / 2;\r\n       \r\n        // Calculate the height the grid would occupy\r\n        const totalGridHeight = this.mapSize * this.tileHeight;\r\n       \r\n        // Center vertically by adding an offset\r\n        const verticalOffset = (this.canvasHeight - totalGridHeight) / 2;\r\n       \r\n        const isoY = (gridX + gridY) * (this.tileHeight / 2) + verticalOffset;\r\n       \r\n        return { x: isoX, y: isoY };\r\n    }\r\n\r\n    // Pixel (top-down) to Isometric\r\n    pixelToIso(pixelX, pixelY) {\r\n        if(!this.isometric){\r\n            return {\r\n                x: pixelX + ( this.canvasWidth - this.mapSize * this.tileWidth) / 2,\r\n                y: pixelY + ( this.canvasHeight - this.mapSize * this.tileWidth) / 2\r\n            }\r\n        }\r\n        const grid = this.pixelToGrid(pixelX, pixelY);\r\n        return this.gridToIso(grid.x, grid.y);\r\n    }\r\n\r\n    isoToGrid(isoX, isoY) {\r\n        // If not isometric, convert directly to grid\r\n        if (!this.isometric) {\r\n            return {\r\n                x: isoX / this.tileWidth,\r\n                y: isoY / this.tileWidth\r\n            };\r\n        }\r\n\r\n        const adjustedX = isoX - this.canvasWidth / 2;\r\n       \r\n        // Calculate the same vertical offset as in gridToIso\r\n        const totalGridHeight = this.mapSize * this.tileHeight;\r\n        const verticalOffset = (this.canvasHeight - totalGridHeight) / 2;\r\n       \r\n        // Subtract the offset before conversion\r\n        const adjustedY = isoY - verticalOffset;\r\n       \r\n        const gridX = (adjustedX / (this.tileWidth / 2) + adjustedY / (this.tileHeight / 2)) / 2;\r\n        const gridY = (adjustedY / (this.tileHeight / 2) - adjustedX / (this.tileWidth / 2)) / 2;\r\n       \r\n        return { x: gridX, y: gridY };\r\n    }\r\n\r\n    isoToPixel(isoX, isoY) {\r\n        const grid = this.isoToGrid(isoX, isoY);\r\n        return {\r\n            x: grid.x * this.tileWidth,\r\n            y: grid.y * this.tileWidth\r\n        };\r\n    }\r\n\r\n    // Snap grid coordinates to nearest integer\r\n    snapToGrid(gridX, gridY) {\r\n        return { x: Math.floor(gridX), y: Math.floor(gridY) };\r\n    }\r\n}"
-      },
       "Entity": {
         "fileName": "Entity",
         "script": "class Entity {\r\n    constructor(game, x, y, type) {\r\n        this.game = game;\r\n        this.moduleManager = game.moduleManager;\r\n        this.position = { x: x, y: y, z: 0};\r\n        this.components = [];\r\n        this.renderers = [];\r\n        this.destroyed = false;        \r\n        this.id = ++game.entityId;\r\n        this.type = type;\r\n        this.gridPosition = { x: 0, y: 0};\r\n        this.drawPosition = { x: 0, y: 0};\r\n        this.lastPosition = {...this.position};\r\n        this.lastGridPosition = {...this.gridPosition};\r\n        this.lastDrawPosition = {...this.drawPosition};\r\n        if(this.game.gameEntity){\r\n            this.setGridPosition();\r\n            this.position.z = this.getCurrentTerrainHeight();\r\n        }\r\n    }\r\n\r\n    getCurrentTerrainHeight(){\r\n        return this.game.gameEntity.getComponent('game').getTerrainHeight(this.gridPosition);\r\n    }\r\n\r\n    getComponent(name) {\r\n        return this.components[name.toLowerCase()] || this.components[`${name.toLowerCase()}`];\r\n    }\r\n    addRenderer(RendererClassName, params) {\r\n        const RendererClass = this.moduleManager.getCompiledScript(RendererClassName, 'renderers');\r\n        const renderer = new RendererClass(this.game, this, params);\r\n        this.renderers[RendererClass.name.toLowerCase()] = renderer;\r\n        this.components[RendererClass.name.toLowerCase()] = renderer;\r\n        return renderer;\r\n    }\r\n    addComponent(ComponentClassName, params) {        \r\n        const ComponentClass = this.moduleManager.getCompiledScript(ComponentClassName, 'components');\r\n        const component = new ComponentClass(this.game, this, params);\r\n        this.components[ComponentClass.name.toLowerCase()] = component;\r\n        return component;\r\n    }\r\n    removeComponent(component) {\r\n        let index = this.components.indexOf(component);\r\n        if( index >= 0 ) {\r\n            this.components.splice(index, 1);\r\n        }\r\n    }\r\n    setGridPosition() {\r\n        if(this.game.translator){\r\n            let gridPosition = this.game.translator.pixelToGrid( this.position.x, this.position.y ); \r\n            this.gridPosition = this.game.translator.snapToGrid(gridPosition.x, gridPosition.y);   \r\n            return;\r\n        }\r\n        this.gridPosition = { x: 0, y: 0 };\r\n    }\r\n    updateLastPositions() {\r\n        this.lastPosition = {...this.position};\r\n        this.lastGridPosition = {...this.gridPosition};\r\n        this.lastDrawPosition = {...this.drawPosition};         \r\n    }\r\n    \r\n    getCurrentTile() {                     \r\n        if(this.game.state.tileMap.length > this.gridPosition.y && this.gridPosition.y > 0 && this.game.state.tileMap[Math.floor(this.gridPosition.y)] && this.game.state.tileMap[Math.floor(this.gridPosition.y)].length > this.gridPosition.x && this.gridPosition.x > 0){\r\n            return this.game.state.tileMap[Math.floor(this.gridPosition.y)][Math.floor(this.gridPosition.x)];\r\n        }\r\n        return { typeId: 0};\r\n    }\r\n    update() {    \r\n        this.setGridPosition();\r\n        for(let c in this.components) {\r\n            this.components[c].update();   \r\n            this.setGridPosition();\r\n            if(this.destroyed) break;\r\n        }                \r\n        return !this.destroyed;\r\n    }\r\n    postUpdate() {\r\n        for(let c in this.components) {\r\n            this.components[c].postUpdate();   \r\n            if(this.destroyed) break;\r\n        }     \r\n        this.updateLastPositions(); \r\n        return !this.destroyed;\r\n    }\r\n    draw() {\r\n        const isoPos = this.game.translator.pixelToIso(this.position.x, this.position.y);    \r\n        this.drawPosition = { x: isoPos.x, y: isoPos.y };\r\n\r\n        for(let r in this.renderers) {\r\n            this.renderers[r].draw();  \r\n        }\r\n\r\n    }\r\n    destroy() {\r\n        this.destroyed = true;\r\n        for(let c in this.components) {\r\n            this.components[c].destroy();   \r\n        }   \r\n        for(let r in this.renderers) {\r\n            this.renderers[r].destroy();   \r\n        }   \r\n    }\r\n}"
+      },
+      "CoordinateTranslator": {
+        "fileName": "CoordinateTranslator",
+        "script": "class CoordinateTranslator {\r\n    constructor(config, mapSize, isometric = false) {\r\n        this.isometric = isometric;\r\n        this.tileWidth = config.gridSize;\r\n        this.tileHeight = config.gridSize * 0.5;\r\n        this.canvasWidth = config.canvasWidth;\r\n        this.canvasHeight = config.canvasHeight;\r\n        this.mapSize = mapSize;\r\n    }\r\n\r\n    // Pixel (top-down) to Grid\r\n    pixelToGrid(pixelX, pixelY) {\r\n        return {\r\n            x: pixelX / this.tileWidth,\r\n            y: pixelY / this.tileWidth\r\n        };\r\n    }\r\n\r\n    // Grid to Isometric (with vertical centering)\r\n    gridToIso(gridX, gridY) {\r\n        // If not isometric, return grid coordinates as-is\r\n        if (!this.isometric) {\r\n            return { x: gridX * this.tileWidth, y: gridY * this.tileWidth };\r\n        }\r\n\r\n        const isoX = (gridX - gridY) * (this.tileWidth / 2) + this.canvasWidth / 2;\r\n       \r\n        // Calculate the height the grid would occupy\r\n        const totalGridHeight = this.mapSize * this.tileHeight;\r\n       \r\n        // Center vertically by adding an offset\r\n        const verticalOffset = (this.canvasHeight - totalGridHeight) / 2;\r\n       \r\n        const isoY = (gridX + gridY) * (this.tileHeight / 2) + verticalOffset;\r\n       \r\n        return { x: isoX, y: isoY };\r\n    }\r\n\r\n    // Pixel (top-down) to Isometric\r\n    pixelToIso(pixelX, pixelY) {\r\n        if(!this.isometric){\r\n            return {\r\n                x: pixelX + ( this.canvasWidth - this.mapSize * this.tileWidth) / 2,\r\n                y: pixelY + ( this.canvasHeight - this.mapSize * this.tileWidth) / 2\r\n            }\r\n        }\r\n        const grid = this.pixelToGrid(pixelX, pixelY);\r\n        return this.gridToIso(grid.x, grid.y);\r\n    }\r\n\r\n    isoToGrid(isoX, isoY) {\r\n        // If not isometric, convert directly to grid\r\n        if (!this.isometric) {\r\n            return {\r\n                x: isoX / this.tileWidth,\r\n                y: isoY / this.tileWidth\r\n            };\r\n        }\r\n\r\n        const adjustedX = isoX - this.canvasWidth / 2;\r\n       \r\n        // Calculate the same vertical offset as in gridToIso\r\n        const totalGridHeight = this.mapSize * this.tileHeight;\r\n        const verticalOffset = (this.canvasHeight - totalGridHeight) / 2;\r\n       \r\n        // Subtract the offset before conversion\r\n        const adjustedY = isoY - verticalOffset;\r\n       \r\n        const gridX = (adjustedX / (this.tileWidth / 2) + adjustedY / (this.tileHeight / 2)) / 2;\r\n        const gridY = (adjustedY / (this.tileHeight / 2) - adjustedX / (this.tileWidth / 2)) / 2;\r\n       \r\n        return { x: gridX, y: gridY };\r\n    }\r\n\r\n    isoToPixel(isoX, isoY) {\r\n        const grid = this.isoToGrid(isoX, isoY);\r\n        return {\r\n            x: grid.x * this.tileWidth,\r\n            y: grid.y * this.tileWidth\r\n        };\r\n    }\r\n\r\n    // Snap grid coordinates to nearest integer\r\n    snapToGrid(gridX, gridY) {\r\n        return { x: Math.floor(gridX), y: Math.floor(gridY) };\r\n    }\r\n}"
       },
       "ExportScripts": {
         "fileName": "ExportScripts",
@@ -17675,15 +17675,15 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "GE_ShapeManager",
         "script": "class GE_ShapeManager {\r\n    constructor(gameEditor, graphicsEditor) {\r\n        this.gameEditor = gameEditor;\r\n        this.graphicsEditor = graphicsEditor;\r\n        this.originalMaterials = new Map();\r\n        \r\n    }    \r\n\r\n    init() {   \r\n        this.initEventListeners();\r\n\r\n    }\r\n    initEventListeners() {\r\n        // Button event listeners\r\n        const buttonMappings = {\r\n            'add-shape': this.addSelectedShape.bind(this),\r\n            'delete-shape': this.deleteSelectedShape.bind(this)\r\n        };\r\n        Object.entries(buttonMappings).forEach(([id, handler]) => {\r\n            const button = document.getElementById(id);\r\n            if (button) button.addEventListener('click', handler);\r\n        });\r\n        \r\n        document.getElementById('move-cancel').addEventListener('click', () => {            \r\n            const inspector = document.getElementById('inspector');\r\n            inspector.innerHTML = ``;\r\n        });\r\n    }\r\n    getShapeData(shapeId){\r\n        let currentGroup = this.graphicsEditor.getCurrentGroup();\r\n        if(!currentGroup){\r\n            currentGroup = { shapes: [] };\r\n            let currentAnimation = this.graphicsEditor.getCurrentAnimation();\r\n            let currentFrame = currentAnimation[this.graphicsEditor.state.currentFrame];\r\n            if(!currentFrame){\r\n                currentFrame = {};\r\n            }\r\n            currentFrame[this.graphicsEditor.state.currentGroup] = currentGroup;\r\n            currentAnimation[this.graphicsEditor.state.currentFrame] = currentFrame;\r\n        }\r\n        currentGroup.shapes = currentGroup.shapes || [];\r\n        if(currentGroup.shapes.length == 0){\r\n            let shapeData = JSON.parse(JSON.stringify(this.graphicsEditor.state.renderData.model[this.graphicsEditor.state.currentGroup])).shapes[shapeId];\r\n            shapeData.id = shapeId;\r\n            currentGroup.shapes = [shapeData];\r\n            return shapeData;\r\n        }\r\n        let shapeData = (currentGroup.shapes).find(s => s.id == shapeId);\r\n        if(this.graphicsEditor.state.editingModel){\r\n            shapeData = currentGroup.shapes[shapeId];\r\n        }\r\n        return shapeData;\r\n    }\r\n    selectShape(index) {\r\n        if (this.graphicsEditor.animationManager.isPreviewingAnimation) {\r\n            this.graphicsEditor.setPreviewAnimationState(false);\r\n        }\r\n        \r\n        // Toggle selection if clicking the same shape\r\n        this.graphicsEditor.state.selectedShapeIndex = (this.graphicsEditor.state.selectedShapeIndex === index) ? -1 : index;\r\n\r\n        // Update shape list and highlighting\r\n        this.graphicsEditor.uiManager.updateList();\r\n        // Show inspector for selected shape\r\n        const shape = this.graphicsEditor.getMergedShape();\r\n        if (shape) {\r\n            this.highlightSelectedShape();\r\n            this.graphicsEditor.createInspector(shape);\r\n            this.graphicsEditor.gizmoManager.transformSelectedObject();\r\n        } else {\r\n            this.destroyOutlines();\r\n            this.graphicsEditor.gizmoManager.destroyGizmo();\r\n            this.graphicsEditor.groupManager.selectGroup(this.graphicsEditor.state.currentGroup);\r\n        }\r\n    }\r\n    destroyOutlines() {\r\n        // Remove existing outlines\r\n        this.graphicsEditor.sceneRenderer.scene.children.forEach(obj => {\r\n            if (obj.userData.isOutline) {\r\n                this.graphicsEditor.sceneRenderer.scene.remove(obj);\r\n                if (obj.geometry) obj.geometry.dispose();\r\n                if (obj.material) obj.material.dispose();\r\n            }\r\n        });\r\n    \r\n        // Reset any highlighted materials\r\n        this.originalMaterials.forEach((material, object) => {\r\n            object.material = material;\r\n        });\r\n        this.originalMaterials.clear();\r\n    }\r\n    highlightSelectedShape() {\r\n        this.destroyOutlines();\r\n\r\n    \r\n        // If no shape is selected or invalid selection, return\r\n        if (this.graphicsEditor.state.selectedShapeIndex < 0) {\r\n            return;\r\n        }\r\n    \r\n        // Get the selected group name from state\r\n        const currentGroup = this.graphicsEditor.state.currentGroup;\r\n        if (!currentGroup) {\r\n            console.warn(\"No group selected\");\r\n            return;\r\n        }\r\n    \r\n        // Find the THREE.Group with matching name under rootGroup\r\n        let selectedGroup = null;\r\n        this.graphicsEditor.rootGroup.traverse(obj => {\r\n            if (obj.isGroup && obj.name === currentGroup) {\r\n                selectedGroup = obj;\r\n            }\r\n        });\r\n    \r\n        if (!selectedGroup) {\r\n            console.warn(`No group found with name ${currentGroup}`);\r\n            return;\r\n        }\r\n    \r\n        const currentFrameData = this.graphicsEditor.getCurrentFrame();\r\n    \r\n        if (!currentFrameData) {\r\n            console.warn(\"No frame data found\");\r\n            return;\r\n        }\r\n    \r\n        const groupShapes = currentFrameData[currentGroup];\r\n    \r\n        if (!groupShapes || this.graphicsEditor.state.selectedShapeIndex >= groupShapes.length) {\r\n            console.warn(`Invalid shape index ${this.graphicsEditor.state.selectedShapeIndex} for group ${currentGroup}`);\r\n            return;\r\n        }\r\n    \r\n        // Find all meshes belonging to the selected shape within the group\r\n        const selectedMeshes = [];\r\n        selectedGroup.traverse(obj => {\r\n            if (obj.isMesh && (\r\n                // Direct shape object that matches the index\r\n                (obj.userData.isShape &&\r\n                 obj.userData.index === this.graphicsEditor.state.selectedShapeIndex) ||\r\n                // Parent is a shape object that matches the index\r\n                (obj.parent &&\r\n                 obj.parent.userData.isShape &&\r\n                 obj.parent.userData.index === this.graphicsEditor.state.selectedShapeIndex) ||\r\n                // GLTF child of selected shape that matches the index\r\n                (obj.userData.isGLTFChild &&\r\n                 obj.parent &&\r\n                 obj.parent.userData.index === this.graphicsEditor.state.selectedShapeIndex)\r\n            )) {\r\n                selectedMeshes.push(obj);\r\n            }\r\n        });\r\n    \r\n        // Handle highlighting for all relevant meshes\r\n        selectedMeshes.forEach(mesh => {\r\n            // Apply emissive highlight to original mesh\r\n            this.originalMaterials.set(mesh, mesh.material);\r\n            const highlightMaterial = mesh.material.clone();\r\n            highlightMaterial.emissive = new window.THREE.Color(0x555555);\r\n            highlightMaterial.emissiveIntensity = 0.5;\r\n            mesh.material = highlightMaterial;\r\n    \r\n            // Create the outline geometry\r\n            const outlineGeometry = mesh.geometry.clone();\r\n            const outlineMaterial = new window.THREE.MeshBasicMaterial({\r\n                color: 0xffff00,\r\n                side: window.THREE.BackSide\r\n            });\r\n    \r\n            // Create the outline mesh\r\n            const outline = new window.THREE.Mesh(outlineGeometry, outlineMaterial);\r\n            outline.userData.isOutline = true;\r\n            \r\n            // Create a new group to hold the outline\r\n            let outlineGroup = new window.THREE.Group();\r\n            outlineGroup.userData.isOutline = true;\r\n            \r\n            // Add the outline to the group\r\n            outlineGroup.add(outline);\r\n            \r\n            // Find all parent groups up to rootGroup and copy their transformations\r\n            let currentParent = mesh.parent;\r\n            let transformChain = [];\r\n            \r\n            while (currentParent && currentParent !== this.graphicsEditor.rootGroup) {\r\n                transformChain.unshift({\r\n                    position: currentParent.position.clone(),\r\n                    rotation: currentParent.rotation.clone(),\r\n                    scale: currentParent.scale.clone(),\r\n                    quaternion: currentParent.quaternion.clone()\r\n                });\r\n                currentParent = currentParent.parent;\r\n            }\r\n            \r\n            // Apply all parent transformations to our outline group\r\n            transformChain.forEach(transform => {\r\n                // Create a temporary group to apply each parent's transform\r\n                const tempGroup = new window.THREE.Group();\r\n                tempGroup.position.copy(transform.position);\r\n                tempGroup.rotation.copy(transform.rotation);\r\n                tempGroup.scale.copy(transform.scale);\r\n                \r\n                // Add our current group to this temp group\r\n                tempGroup.add(outlineGroup);\r\n                \r\n                // Move outlineGroup up one level\r\n                outlineGroup = tempGroup;\r\n                outlineGroup.userData.isOutline = true;\r\n            });\r\n            \r\n            // Add mesh's local transform\r\n            outline.position.copy(mesh.position);\r\n            outline.rotation.copy(mesh.rotation);\r\n            outline.scale.copy(mesh.scale);\r\n            \r\n            // Scale the outline slightly larger (in local space)\r\n            outline.scale.multiplyScalar(1.05);\r\n            \r\n            // Add the complete outline group to the scene\r\n            this.graphicsEditor.sceneRenderer.scene.add(outlineGroup);\r\n        });\r\n    }\r\n    addNewShape() {\r\n        if(!this.graphicsEditor.state.editingModel) {            \r\n            return;\r\n        }\r\n        const newShape = {\r\n            type: 'sphere',\r\n            size: 2,\r\n            color: '#ff0000',\r\n            x: 0,\r\n            y: 0,\r\n            z: 0,\r\n            rotationX: 0,\r\n            rotationY: 0,\r\n            rotationZ: 0\r\n        };\r\n        this.graphicsEditor.getCurrentGroup().shapes.push(newShape);\r\n        this.graphicsEditor.state.selectedShapeIndex = this.graphicsEditor.getCurrentGroup().shapes.length - 1;\r\n        this.graphicsEditor.refreshShapes(true); \r\n    }\r\n\r\n    addSelectedShape() {\r\n        if(!this.graphicsEditor.state.editingModel) {            \r\n            return;\r\n        }\r\n        if (this.graphicsEditor.state.selectedShapeIndex >= 0) {\r\n            const originalShape = this.graphicsEditor.state.editingModel ? \r\n                                    this.graphicsEditor.getCurrentGroup().shapes[this.graphicsEditor.state.selectedShapeIndex] : \r\n                                    this.graphicsEditor.getCurrentGroup().shapes.find(s => s.id == this.graphicsEditor.state.selectedShapeIndex);\r\n            const newShape = JSON.parse(JSON.stringify(originalShape));\r\n            this.graphicsEditor.getCurrentGroup().shapes.push(newShape);\r\n            this.graphicsEditor.state.selectedShapeIndex = this.graphicsEditor.getCurrentGroup().shapes.length - 1;\r\n            this.graphicsEditor.refreshShapes(true);\r\n        } else {\r\n            this.addNewShape();\r\n        }\r\n    }\r\n\r\n    deleteSelectedShape() {\r\n        if(!this.graphicsEditor.state.editingModel) {            \r\n            return;\r\n        }\r\n        if (this.graphicsEditor.state.selectedShapeIndex >= 0) {\r\n            this.graphicsEditor.getCurrentGroup().shapes.splice(this.graphicsEditor.state.selectedShapeIndex, 1);\r\n            if (this.graphicsEditor.getCurrentGroup().shapes.length > 0) {\r\n                this.graphicsEditor.state.selectedShapeIndex = Math.min(this.graphicsEditor.state.selectedShapeIndex, this.graphicsEditor.getCurrentGroup().shapes.length - 1);\r\n            } else {\r\n                this.graphicsEditor.state.selectedShapeIndex = -1;\r\n            }\r\n            this.graphicsEditor.refreshShapes(true);\r\n        }\r\n    }\r\n\r\n}"
       },
-      "GraphicsEditor": {
-        "fileName": "GraphicsEditor",
-        "title": "GraphicsEditor",
-        "script": "/**\n * @class GraphicsEditor\n * @description Manages 3D graphics editing functionality including shapes, animations, and UI\n */\nclass GraphicsEditor {\n    /**\n     * @param {Object} gameEditor - Main game editor instance\n     * @param {Object} config - Editor configuration\n     * @param {Object} managers - Required manager instances\n     * @param {Function} managers.ShapeFactory - Factory for creating shapes\n     * @param {Function} managers.GE_SceneRenderer - Handles scene rendering\n     * @param {Function} managers.GE_ShapeManager - Manages shape operations\n     * @param {Function} managers.GE_AnimationManager - Handles animations\n     * @param {Function} managers.GE_RotationUtils - Rotation utility functions\n     * @param {Function} managers.GE_UIManager - Manages UI interactions\n     * @param {Function} managers.GE_GroupManager - Handles shape grouping\n     * @param {Function} managers.GE_GizmoManager - Manages transformation gizmos\n     */\n    constructor(gameEditor, config, {ShapeFactory, GE_SceneRenderer, GE_ShapeManager, GE_AnimationManager, GE_RotationUtils, GE_UIManager, GE_GroupManager, GE_GizmoManager}) {\n        this.gameEditor = gameEditor;\n        this.config = config;\n        this.shapeFactory = new ShapeFactory(this.gameEditor.getPalette(), this.gameEditor.getCollections().textures);\n        this.canvas = document.getElementById('graphics-editor-canvas');\n        // Initialize sub-modules\n        this.sceneRenderer = new GE_SceneRenderer(gameEditor, this);\n        this.shapeManager = new GE_ShapeManager(gameEditor, this);\n        this.uiManager = new GE_UIManager(gameEditor, this);\n        this.animationManager = new GE_AnimationManager(gameEditor, this);\n        this.groupManager = new GE_GroupManager(gameEditor, this);\n        this.gizmoManager = new GE_GizmoManager(gameEditor, this);\n        this.rotationUtils = GE_RotationUtils;\n        // State management (simplified)\n        this.state = {\n            editingModel: true,\n            selectedShapeIndex: -1,\n            currentAnimation: \"\",\n            selectedGroup: \"main\",\n            currentFrame: 0,\n            renderData: { model: {}, animations: { idle: [{ main: { shapes: [], position: {x: 0, y: 0, z: 0}, rotation: {x:0,y:0,z:0}, scale: {x:1, y:1, z:1}} }] } }\n        };\n        \n        this.rootGroup = new window.THREE.Group(); // Main container for all shapes\n        this.rootGroup.name = \"rootGroup\";\n        this.init();\n    }\n    /**\n     * Initializes all manager components\n     * @private\n     */\n    init() {\n        this.sceneRenderer.init();\n        this.uiManager.init();\n        this.shapeManager.init();\n        this.animationManager.init();\n        this.groupManager.init();\n        this.gizmoManager.init();\n        this.sceneRenderer.animate();    \n    }\n\n    /**\n     * Displays isometric sprite previews\n     * @param {Array<Object>} sprites - Array of sprite data\n     */\n    displayIsometricSprites(sprites){\n        this.uiManager.displayIsometricSprites(sprites);\n    }\n\n    /**\n     * Renders all shapes in the scene\n     * @param {boolean} [fireSave=true] - Whether to trigger a save after rendering\n     * @returns {Promise<void>}\n     */\n    async renderShapes(fireSave = true) {\n        await this.clearScene();\n        await this.setupLights();\n        \n        if (!this.validateCurrentFrame()) {\n            return;\n        }\n        \n        await this.renderGroups();\n        await this.updateUI(fireSave);\n        await this.updateSelection();\n    }\n\n    /**\n     * Clears all objects from the scene\n     * @private\n     * @returns {Promise<void>}\n     */    \n    async clearScene() {\n        while (this.rootGroup.children.length > 0) {\n            const obj = this.rootGroup.children[0];\n            this.shapeFactory.disposeObject(obj);\n            this.shapeManager.originalMaterials.delete(obj);\n            this.rootGroup.remove(obj);\n        }\n    }\n\n    /**\n     * Sets up scene lighting\n     * @private\n     * @returns {Promise<void>}\n     */    \n    async setupLights() {\n        if (this.sceneRenderer.scene.getObjectByName('ambient-light')) {\n            return;\n        }\n    \n        const ambientLight = new window.THREE.AmbientLight(0xffffff, 0.6);\n        ambientLight.name = 'ambient-light';\n        this.sceneRenderer.scene.add(ambientLight);\n    \n        const directionalLight = new window.THREE.DirectionalLight(0xffffff, 0.8);\n        directionalLight.position.set(5, 10, 7.5);\n        directionalLight.name = 'dir-light';\n        this.sceneRenderer.scene.add(directionalLight);\n    }    \n\n    /**\n     * Validates the current animation frame\n     * @private\n     * @returns {boolean} - Whether the current frame is valid\n     */\n    validateCurrentFrame() {\n        if (!this.state.editingModel && !this.getCurrentFrame()) {\n            console.warn(\n                \"Animation or frame doesn't exist:\", \n                this.state.currentAnimation, \n                this.state.currentFrame\n            );\n            return false;\n        }\n        return true;\n    }\n    \n    /**\n     * Renders all shapes in the scene\n     * @param {boolean} [fireSave=true] - Whether to trigger a save after rendering\n     * @returns {Promise<void>}\n     */\n    async renderGroups() {\n        const model = this.state.renderData.model;\n        for (const groupName in model) {     \n            const mergedGroup = this.getMergedGroup(groupName);\n            if (mergedGroup) {\n                let threeGroup = await this.shapeFactory.createGroupFromJSON(groupName, mergedGroup); \n                threeGroup.name = groupName;\n                this.rootGroup.add(threeGroup);\n            }\n        }\n    }\n\n    /**\n     * Renders all shapes in the scene\n     * @param {boolean} [fireSave=true] - Whether to trigger a save after rendering\n     * @returns {Promise<void>}\n     */\n    async updateUI(fireSave) {\n        this.updateShapeCount();\n        await this.handleSave(fireSave);\n    }\n\n    /**\n     * Updates the shape count display in the UI\n     * @private\n     */\n    updateShapeCount() {\n        const model = this.state.renderData.model;\n        const totalShapes = Object.values(model).reduce((total, group) => {\n            return total + (Array.isArray(group.shapes) ? group.shapes.length : 0);\n        }, 0);\n        document.getElementById('shape-count').textContent = totalShapes;\n    }\n    \n    /**\n     * Handles saving the current state\n     * @param {boolean} fireSave - Whether to trigger a save event\n     * @returns {Promise<void>}\n     */\n    async handleSave(fireSave) {\n        if (fireSave) {\n            const saveEvent = new CustomEvent('saveGraphicsObject', {\n                detail: { \n                    data: this.state.renderData, \n                    propertyName: 'render' \n                },\n                bubbles: true,\n                cancelable: true\n            });\n            document.body.dispatchEvent(saveEvent);\n        } else {\n            const valueElement = this.gameEditor.elements.editor\n                .querySelector('#render-value');\n            if (valueElement) {\n                let renderDataCopy = JSON.parse(JSON.stringify(this.state.renderData));\n                Object.keys(renderDataCopy.animations).forEach(animationName => {\n                    const animation = renderDataCopy.animations[animationName];\n                    animation.forEach(frame => {\n                        Object.keys(frame).forEach(groupName => {\n                            const group = frame[groupName];\n                            if (group && group.shapes) {\n                                // Filter shapes with more than just ID\n                                group.shapes = group.shapes.filter(shape => \n                                    Object.keys(shape).length > 1\n                                );\n                                \n                                // Remove empty shapes array\n                                if (group.shapes.length === 0) {\n                                    delete group.shapes;\n                                }\n                \n                                // Remove empty group\n                                if (Object.keys(group).length === 0) {\n                                    delete frame[groupName];\n                                }\n                            }\n                        });               \n                    });\n                });\n                valueElement.value = JSON.stringify(renderDataCopy);\n            }\n        }\n    }\n\n    /**\n     * Updates the selection highlight and gizmo positions\n     * @returns {Promise<void>}\n     */\n    async updateSelection() {\n        this.shapeManager.highlightSelectedShape();\n        this.gizmoManager.updateGizmoPosition();\n    }\n\n    /**\n     * Gets the current animation data\n     * @returns {Object|null} Current animation or null if none exists\n     */\n    getCurrentAnimation() {\n     \n        return this.state.renderData.animations[this.state.currentAnimation] || null;\n    }\n\n    /**\n     * Gets the current frame data\n     * @returns {Object|null} Current frame data or model data if in editing mode\n     */\n    getCurrentFrame() {\n        if(this.state.editingModel){\n            return this.state.renderData.model;\n        } else {\n            let currentAnimation = this.getCurrentAnimation();\n            return currentAnimation ? currentAnimation[this.state.currentFrame] : null;\n        }\n    }\n\n    /**\n     * Gets the current group data\n     * @returns {Object|null} Current group data or null if none exists\n     */\n    getCurrentGroup() {\n        let currentFrame = this.getCurrentFrame();\n        return currentFrame ? currentFrame[this.state.currentGroup] : null;\n    }\n\n    /**\n     * Refreshes the shape list and renders the scene\n     * @param {boolean} param - Whether to trigger a save after refresh\n     */\n    refreshShapes(param) {\n        this.uiManager.updateList();\n        this.renderShapes(param);\n    }\n\n    /**\n     * Creates an inspector panel for the given shape\n     * @param {Object} shape - Shape to create inspector for\n     */\n    createInspector(shape) {\n        this.uiManager.createInspector(shape);\n    }\n\n    /**\n     * Sets the animation preview state\n     * @param {Object} state - New animation state\n     * @returns {Promise<void>}\n     */\n    setPreviewAnimationState(state) {\n        return this.animationManager.setPreviewAnimationState(state);\n    }\n\n    /**\n     * Selects a shape by index\n     * @param {number} index - Index of shape to select\n     * @returns {Promise<void>}\n     */\n    selectShape(index) {\n        return this.shapeManager.selectShape(index);\n    }\n\n    /**\n     * Gets a merged group by name\n     * @param {string} groupName - Name of group to get\n     * @returns {Object|null} Merged group data or null\n     */\n    getMergedGroup(groupName){\n        let model = this.state.renderData.model;\n        const modelGroup = model[groupName];\n        if(this.state.editingModel){\n            return modelGroup;\n        }\n        return this.shapeFactory.getMergedGroup(model, this.getCurrentAnimation()[this.state.currentFrame], groupName );\n    }\n\n    /**\n     * Gets the current frame's shape data\n     * @returns {Object|null} Shape data or null if not found\n     */\n    getFrameShape() {\n        // If we're in model editing mode, return merged shape\n        if (this.state.editingModel) {\n            return this.getMergedShape();\n        }\n    \n        // Return null if no shape is selected\n        if (this.state.selectedShapeIndex < 0) {\n            return null;\n        }\n    \n        // Get or create group data\n        let groupData = this.getCurrentGroup() || \n            JSON.parse(JSON.stringify(this.state.renderData.model[this.state.currentGroup]));\n    \n        if (!groupData?.shapes) {\n            return null;\n        }\n    \n        // Find existing shape or create new one\n        let shape = groupData.shapes.find(s => s.id === this.state.selectedShapeIndex);\n        if (shape) {\n            return shape;\n        }\n    \n        // Create new shape if not found\n        return this.createBlankFrameShape();\n    }\n\n    /**\n     * Creates a new blank frame shape\n     * @private\n     * @returns {Object|null} New shape or null if frame doesn't exist\n     */\n    createBlankFrameShape() {\n        const shape = { id: this.state.selectedShapeIndex };\n        const currentFrame = this.getCurrentFrame();\n        \n        if (!currentFrame) {\n            return null;\n        }\n    \n        // Add shape to current group or create new group\n        if (!currentFrame[this.state.currentGroup]) {\n            currentFrame[this.state.currentGroup] = { shapes: [] };\n        }\n        \n        currentFrame[this.state.currentGroup].shapes.push(shape);\n        return shape;\n    }\n    /**\n     * Gets the currently selected shape merged with its group\n     * @returns {Object|null} - Merged shape or null if not found\n     */\n    getMergedShape() {\n        if (this.state.selectedShapeIndex < 0) {\n            return null;\n        }\n    \n        const selectedGroup = this.getMergedGroup(this.state.currentGroup);\n        const shapes = selectedGroup?.shapes || [];\n        const shape = shapes[this.state.selectedShapeIndex];\n    \n        if (!shape) {\n            return null;\n        }\n    \n        if (this.state.editingModel) {\n            return shape;\n        }\n    \n        return this.mergeShapeWithCurrentGroup(shape);\n    }\n    /**\n     * Merges a shape with its current group\n     * @param {Object} shape - Shape to merge\n     * @returns {Object} - Merged shape\n     */\n    mergeShapeWithCurrentGroup(shape) {\n        // Set shape ID\n        shape.id = this.state.selectedShapeIndex;\n    \n        // Get or create current group data\n        const currentGroupData = this.getCurrentGroup() || { shapes: [] };\n        if (!Array.isArray(currentGroupData.shapes)) {\n            currentGroupData.shapes = [];\n        }\n    \n        // Update shape in current group\n        this.updateShapeInGroup(shape, currentGroupData);\n    \n        // Update animation data\n        this.updateAnimationData(currentGroupData);\n    \n        return shape;\n    }\n    /**\n     * Updates a shape within its group\n     * @param {Object} shape - Shape to update\n     * @param {Object} groupData - Group containing the shape\n     */\n    updateShapeInGroup(shape, groupData) {\n        const shapeIndex = groupData.shapes.findIndex(s => s.id === shape.id);\n        \n        if (shapeIndex >= 0) {\n            groupData.shapes[shapeIndex] = shape; // Replace existing\n        } else {\n            groupData.shapes.push(shape); // Add new\n        }\n    }\n    \n    /**\n     * Updates animation data for the current group\n     * @param {Object} groupData - Group data to update\n     */\n    updateAnimationData(groupData) {\n        const path = [\n            this.state.currentAnimation,\n            this.state.currentFrame,\n            this.state.currentGroup\n        ];\n    \n        // Update nested property safely\n        let current = this.state.renderData.animations;\n        path.forEach((key, index) => {\n            if (index === path.length - 1) {\n                current[key] = groupData;\n            } else {\n                current = current[key];\n            }\n        });\n    }\n    /**\n     * Gets the currently selected object from the scene\n     * @returns {THREE.Object3D} - Selected object or root group\n     */\n    getSelectedObject() {\n        const currentGroup = this.state.currentGroup;\n        \n        if (!currentGroup) {\n            return this.rootGroup;\n        }\n    \n        const foundGroup = this.findGroupByName(currentGroup);\n        if (!foundGroup) {\n            return this.rootGroup;\n        }\n    \n        const foundShape = this.findShapeInGroup(foundGroup);\n        return foundShape || foundGroup || this.rootGroup;\n    }\n        /**\n     * Finds a group by name in the scene\n     * @param {string} groupName - Name of the group to find\n     * @returns {THREE.Group|null} - Found group or null\n     */\n    findGroupByName(groupName) {\n        let found = null;\n        this.rootGroup.traverse(obj => {\n            if (obj.isGroup && obj.name === groupName && obj.userData.isGroup) {\n                found = obj;\n            }\n        });\n        return found;\n    }\n        /**\n     * Finds a shape within a group\n     * @param {THREE.Group} group - Group to search in\n     * @returns {THREE.Object3D|null} - Found shape or null\n     */\n    findShapeInGroup(group) {\n        let found = null;\n        group.traverse(obj => {\n            if (obj.userData.isShape && obj.userData.index === this.state.selectedShapeIndex) {\n                found = obj;\n            }\n        });\n        return found;\n    }\n}\n"
-      },
       "GE_UIManager": {
         "title": "GE_UIManager",
         "fileName": "GE_UIManager",
         "script": "class GE_UIManager {\r\n    constructor(gameEditor, graphicsEditor) {\r\n        this.gameEditor = gameEditor;\r\n        this.graphicsEditor = graphicsEditor;\r\n        this.mouse = new window.THREE.Vector2();\r\n        this.raycaster = new window.THREE.Raycaster();\r\n        this.isDragging = false;\r\n        this.clickStartTime = 0;\r\n    }    \r\n     \r\n\r\n    init() {   \r\n        this.initEventListeners();\r\n    }\r\n    \r\n    \r\n    \r\n    initEventListeners() {\r\n        // Button event listeners\r\n        const buttonMappings = {\r\n            'generate-isometric': this.showIsometricModal.bind(this),\r\n        };\r\n        Object.entries(buttonMappings).forEach(([id, handler]) => {\r\n            const button = document.getElementById(id);\r\n            if (button) button.addEventListener('click', handler);\r\n        });\r\n\r\n        // Canvas interaction\r\n        this.graphicsEditor.canvas.addEventListener('mousedown', this.handleMouseDown.bind(this));\r\n        this.graphicsEditor.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));\r\n        this.graphicsEditor.canvas.addEventListener('mouseup', this.handleMouseUp.bind(this));\r\n\r\n        // Additional event listeners\r\n\r\n        \r\n        // Move modal listeners\r\n\r\n        // Isometric modal listeners\r\n        document.getElementById('iso-cancel').addEventListener('click', () => {\r\n            document.getElementById('modal-generateIsoSprites').classList.remove('show');\r\n        });\r\n    }\r\n    handleMouseDown(event) {\r\n        this.isDragging = false;\r\n        this.clickStartTime = Date.now();\r\n    }\r\n\r\n    handleMouseMove() {\r\n        if (Date.now() - this.clickStartTime > 100) {\r\n            this.isDragging = true;\r\n        }\r\n    }\r\n\r\n    handleMouseUp(event) {\r\n        if (this.isDragging) return;\r\n    \r\n        const rect = this.graphicsEditor.canvas.getBoundingClientRect();\r\n        this.mouse.x = ((event.clientX - rect.left) / this.graphicsEditor.canvas.clientWidth) * 2 - 1;\r\n        this.mouse.y = -((event.clientY - rect.top) / this.graphicsEditor.canvas.clientHeight) * 2 + 1;\r\n    \r\n        this.raycaster.setFromCamera(this.mouse, this.graphicsEditor.sceneRenderer.camera);\r\n    \r\n        // Instead of looking only at scene.children, search through all descendant meshes\r\n        const meshes = [];\r\n        this.graphicsEditor.rootGroup.traverse(obj => {\r\n            if (obj.isMesh && obj.userData.isShape) {\r\n                meshes.push(obj);\r\n            }\r\n        });\r\n    \r\n        const intersects = this.raycaster.intersectObjects(meshes, true);\r\n    \r\n        if (intersects.length > 0) {\r\n            // Find the parent mesh with the isShape flag if we've hit a child mesh\r\n            let hitObject = intersects[0].object;\r\n            while (hitObject && !hitObject.userData.isShape) {\r\n                hitObject = hitObject.parent;\r\n            }\r\n            \r\n            if (hitObject && hitObject.userData.index !== undefined) {\r\n                this.graphicsEditor.selectShape(hitObject.userData.index);\r\n            }\r\n        }\r\n    }\r\n    \r\n\r\n    showIsometricModal() {\r\n        document.getElementById('modal-generateIsoSprites').classList.add('show');\r\n    }\r\n    displayIsometricSprites(sprites) {\r\n        const modal = document.createElement('div');\r\n        modal.style.cssText = `\r\n            position: fixed; top: 0; left: 0; width: 100%; height: 100%; \r\n            background-color: rgba(0, 0, 0, 0.7); z-index: 1000; \r\n            display: flex; align-items: center; justify-content: center;\r\n        `;\r\n        const content = document.createElement('div');\r\n        content.style.cssText = `\r\n            background: #333; padding: 20px; border-radius: 8px; \r\n            max-width: 80%; max-height: 80%; overflow: auto;\r\n        `;\r\n    \r\n        const angleLabels = ['NE', 'N', 'NW', 'W', 'SW', 'S', 'SE', 'E']; // Labels for 8 angles\r\n    \r\n        for (const animType in sprites) {\r\n            const animSection = document.createElement('div');\r\n            const title = document.createElement('h3');\r\n            title.textContent = `${animType} Animation`;\r\n            title.style.color = '#e0e0e0';\r\n            animSection.appendChild(title);\r\n    \r\n            // Create a container for all angles\r\n            const anglesContainer = document.createElement('div');\r\n            anglesContainer.style.cssText = `margin: 10px 0;`;\r\n    \r\n            // For each angle (0-7)\r\n            for (let angle = 0; angle < 8; angle++) {\r\n                const angleSection = document.createElement('div');\r\n    \r\n                const grid = document.createElement('div');\r\n                grid.style.cssText = `\r\n                    display: grid; \r\n                    grid-template-columns: repeat(${Math.min(sprites[animType].length, 4)}, 1fr); \r\n                    gap: 5px; \r\n                    margin-bottom: 15px;\r\n                `;\r\n    \r\n                // Add all frames for this specific angle\r\n                sprites[animType].forEach(frame => {\r\n                    const img = document.createElement('img');\r\n                    img.src = frame[angle]; // Get the specific angle's sprite\r\n                    img.style.maxWidth = '100%';\r\n                    grid.appendChild(img);\r\n                });\r\n    \r\n                angleSection.appendChild(grid);\r\n                anglesContainer.appendChild(angleSection);\r\n            }\r\n    \r\n            animSection.appendChild(anglesContainer);\r\n            content.appendChild(animSection);\r\n        }\r\n    \r\n        const closeButton = document.createElement('button');\r\n        closeButton.textContent = 'Close';\r\n        closeButton.style.cssText = `\r\n            margin-top: 20px; padding: 8px 16px; background-color: #4CAF50; \r\n            color: #fff; border: none; border-radius: 6px; cursor: pointer;\r\n        `;\r\n        closeButton.addEventListener('click', () => document.body.removeChild(modal));\r\n        content.appendChild(closeButton);\r\n        modal.appendChild(content);\r\n        document.body.appendChild(modal);\r\n    }\r\n    \r\n    createGroupInspector(group) {\r\n        console.log('create group inspector', group);\r\n        const inspector = document.getElementById('inspector');\r\n        inspector.innerHTML = \"\";\r\n        inspector.className = 'inspector';\r\n\r\n        \r\n        this.addFormRow(inspector, 'X Scale', 'number', 'scaleX', group.scale.x || 1, { min: 0.1, step: 0.1 });\r\n        this.addFormRow(inspector, 'Y Scale', 'number', 'scaleY', group.scale.y || 1, { min: 0.1, step: 0.1 });\r\n        this.addFormRow(inspector, 'Z Scale', 'number', 'scaleZ', group.scale.z || 1, { min: 0.1, step: 0.1 });\r\n        // Position inputs\r\n        this.addFormRow(inspector, 'X Position', 'number', 'x', group.position.x || 0, { step: 0.1 });\r\n        this.addFormRow(inspector, 'Y Position', 'number', 'y', group.position.y || 0, { step: 0.1 });\r\n        this.addFormRow(inspector, 'Z Position', 'number', 'z', group.position.z || 0, { step: 0.1 });\r\n        \r\n        // Rotation inputs\r\n        this.addFormRow(inspector, 'X Rotation', 'number', 'rotationX', group.rotation.x || 0, { step: 5 });\r\n        this.addFormRow(inspector, 'Y Rotation', 'number', 'rotationY', group.rotation.y || 0, { step: 5 });\r\n        this.addFormRow(inspector, 'Z Rotation', 'number', 'rotationZ', group.rotation.z || 0, { step: 5 });\r\n        \r\n    }\r\n\r\n    createInspector(shape) {\r\n        console.log('create shape inspector', shape);\r\n        const inspector = document.getElementById('inspector');\r\n        inspector.innerHTML = \"\";\r\n        inspector.className = 'inspector';\r\n\r\n        this.addFormRow(inspector, 'Name', 'text', 'name', shape.name || \"\");\r\n        \r\n        // Type selector\r\n        this.addFormRow(inspector, 'Type', 'select', 'type', shape.type, {\r\n            options: ['cube', 'sphere', 'box', 'cylinder', 'cone', 'torus', 'tetrahedron', 'gltf'],\r\n            change: (e) => {\r\n                let currentShape = this.graphicsEditor.getFrameShape();\r\n                let newValue = e.target.value;\r\n                if (newValue != 'gltf') {\r\n                    delete currentShape.url\r\n                }                 \r\n                currentShape.type = newValue;\r\n                this.graphicsEditor.refreshShapes(false);\r\n            }\r\n        });\r\n        \r\n        if (shape.type === 'gltf') {            \r\n            let input = this.addFormRow(inspector, 'Model', 'file', 'url', shape.url, { 'change' :  async (e) => {\r\n                e.preventDefault();\r\n\r\n                // Get the file from the input element\r\n                const file = e.target.files[0]; // Access the file object\r\n                if (!file) {\r\n                    console.error('No file selected');\r\n                    return;\r\n                }\r\n                // // Create FormData and append the file\r\n                 const formData = new FormData();\r\n                 formData.append('gltfFile', file); // 'gltfFile' matches the multer.single('gltfFile') on the server\r\n\r\n                try {\r\n                     const response = await fetch('/upload-model', {\r\n                         method: 'POST',\r\n                         body: formData // Send the FormData with the file\r\n                     });\r\n\r\n                     const result = await response.json();\r\n                     shape.url = result.filePath; \r\n                     this.graphicsEditor.getFrameShape().url = result.filePath;\r\n                     this.graphicsEditor.refreshShapes(false);\r\n                } catch (error) {\r\n                     console.error('Error uploading file:', error);\r\n                }\r\n            }});\r\n            input.setAttribute(\"accept\",\".gltf\");\r\n        }\r\n        // Color picker\r\n        this.addFormRow(inspector, 'Color', 'color', 'color', shape.color);\r\n        this.addFormRow(inspector, 'Texture', 'texture', 'texture', shape.texture);\r\n        \r\n        this.addFormRow(inspector, 'X Scale', 'number', 'scaleX', shape.scaleX || 1, { min: 0.1, step: 0.1 });\r\n        this.addFormRow(inspector, 'Y Scale', 'number', 'scaleY', shape.scaleY || 1, { min: 0.1, step: 0.1 });\r\n        this.addFormRow(inspector, 'Z Scale', 'number', 'scaleZ', shape.scaleZ || 1, { min: 0.1, step: 0.1 });\r\n        // Position inputs\r\n        this.addFormRow(inspector, 'X Position', 'number', 'x', shape.x || 0, { step: 0.1 });\r\n        this.addFormRow(inspector, 'Y Position', 'number', 'y', shape.y || 0, { step: 0.1 });\r\n        this.addFormRow(inspector, 'Z Position', 'number', 'z', shape.z || 0, { step: 0.1 });\r\n        \r\n        // Rotation inputs\r\n        this.addFormRow(inspector, 'X Rotation', 'number', 'rotationX', shape.rotationX || 0, { step: 5 });\r\n        this.addFormRow(inspector, 'Y Rotation', 'number', 'rotationY', shape.rotationY || 0, { step: 5 });\r\n        this.addFormRow(inspector, 'Z Rotation', 'number', 'rotationZ', shape.rotationZ || 0, { step: 5 });\r\n        \r\n        // Size inputs\r\n        if (['cube', 'sphere', 'tetrahedron', 'torus'].includes(shape.type)) {\r\n            this.addFormRow(inspector, 'Size', 'number', 'size', shape.size || 2, { min: 0.1, step: 0.1 });\r\n        }\r\n        \r\n        if (shape.type === 'box') {\r\n            this.addFormRow(inspector, 'Width', 'number', 'width', shape.width || 2, { min: 0.1, step: 0.1 });\r\n            this.addFormRow(inspector, 'Height', 'number', 'height', shape.height || 2, { min: 0.1, step: 0.1 });\r\n            this.addFormRow(inspector, 'Depth', 'number', 'depth', shape.depth || 2, { min: 0.1, step: 0.1 });\r\n        }\r\n        \r\n        if (['cylinder', 'cone'].includes(shape.type)) {\r\n            this.addFormRow(inspector, 'Size', 'number', 'size', shape.size || 2, { min: 0.1, step: 0.1 });\r\n            this.addFormRow(inspector, 'Height', 'number', 'height', shape.height || 3, { min: 0.1, step: 0.1 });\r\n        }\r\n        \r\n        if (shape.type === 'torus') {\r\n            this.addFormRow(inspector, 'Tube Size', 'number', 'tubeSize', shape.tubeSize || shape.size / 6, { min: 0.1, step: 0.1 });\r\n        }\r\n    }\r\n\r\n\r\n    addFormRow(container, label, type, property, value, options = {}) {\r\n        const row = document.createElement('div');\r\n        row.className = 'form-row';\r\n        \r\n        const labelElement = document.createElement('label');\r\n        labelElement.textContent = label;\r\n        row.appendChild(labelElement);\r\n        \r\n        let input;\r\n        \r\n        if (type === 'select') {\r\n            input = document.createElement('select');\r\n            input.setAttribute('data-property', property);\r\n            (options.options || []).forEach(optionValue => {\r\n                const option = document.createElement('option');\r\n                option.value = optionValue;\r\n                option.textContent = optionValue;\r\n                if (value === optionValue) {\r\n                    option.selected = true;\r\n                }\r\n                input.appendChild(option);\r\n            });\r\n        } else if(type === \"color\") {\r\n            input = this.gameEditor.createColorInputGroup(value, 'data-property', property, row, (val, colorName) => {\r\n                if(colorName){\r\n                    this.graphicsEditor.getFrameShape()[property] = { paletteColor: colorName };\r\n                } else {\r\n                    this.graphicsEditor.getFrameShape()[property] = val;\r\n                }\r\n                this.graphicsEditor.refreshShapes(false);\r\n            });            \r\n        } else if(type === \"texture\") {\r\n            input = this.gameEditor.createTextureInputGroup(value, 'data-property', property, row, (val) => {\r\n                if(val){\r\n                    this.graphicsEditor.getFrameShape()[property] = val;\r\n                }\r\n                this.graphicsEditor.refreshShapes(false);\r\n            });            \r\n        } else if(type === \"file\") {\r\n            let inputContainer = document.createElement('div');\r\n            inputContainer.style = \"flex: 1; display: flex; flex-direction: column; font-size: .75em;\";\r\n            input = document.createElement('input');\r\n            input.style = \"width: calc(100% - 18px);\"\r\n            input.type = type;\r\n            input.setAttribute('data-property', property);\r\n            inputContainer.appendChild(input);\r\n            if( value ) {\r\n                let urlName = document.createElement('span');\r\n                urlName.innerText = value;            \r\n                inputContainer.appendChild(urlName);\r\n            }\r\n            row.appendChild(inputContainer);\r\n            container.appendChild(row);\r\n            input.addEventListener('change', options.change );\r\n            return input;\r\n        } else {\r\n            input = document.createElement('input');\r\n            input.type = type;\r\n            input.value = value;\r\n            input.setAttribute('data-property', property);\r\n            \r\n            if (type === 'number') {\r\n                input.min = options.min !== undefined ? options.min : -64;\r\n                input.max = options.max !== undefined ? options.max : 64;\r\n                input.step = options.step || 1;\r\n            }\r\n        }\r\n        \r\n        input.addEventListener('change', options.change || ((e) => {\r\n            let newValue = e.target.value;\r\n            if (type === 'number') {\r\n                newValue = parseFloat(newValue);\r\n                console.log('change', this.graphicsEditor.shapeManager.currentTransformTarget);\r\n                // If we're editing a transform property, also update the transform target\r\n                if (this.graphicsEditor.shapeManager.currentTransformTarget && ['x', 'y', 'z', 'rotationX', 'rotationY', 'rotationZ', 'scaleX', 'scaleY', 'scaleZ'].includes(property)) {\r\n                    if (property === 'x') this.graphicsEditor.shapeManager.currentTransformTarget.position.x = newValue;\r\n                    if (property === 'y') this.graphicsEditor.shapeManager.currentTransformTarget.position.y = newValue;\r\n                    if (property === 'z') this.graphicsEditor.shapeManager.currentTransformTarget.position.z = newValue;\r\n                    \r\n                    if (property === 'rotationX') this.graphicsEditor.shapeManager.currentTransformTarget.rotation.x = this.graphicsEditor.rotationUtils.degToRad(newValue);\r\n                    if (property === 'rotationY') this.graphicsEditor.shapeManager.currentTransformTarget.rotation.y = this.graphicsEditor.rotationUtils.degToRad(newValue);\r\n                    if (property === 'rotationZ') this.graphicsEditor.shapeManager.currentTransformTarget.rotation.z = this.graphicsEditor.rotationUtils.degToRad(newValue);\r\n                    \r\n                    if (property === 'scaleX') this.graphicsEditor.shapeManager.currentTransformTarget.scale.x = newValue;\r\n                    if (property === 'scaleY') this.graphicsEditor.shapeManager.currentTransformTarget.scale.y = newValue;\r\n                    if (property === 'scaleZ') this.graphicsEditor.shapeManager.currentTransformTarget.scale.z = newValue;\r\n                    \r\n                    // Update gizmo position after directly changing values\r\n                }\r\n            } else if(type === 'file') {\r\n                return;\r\n            }\r\n            \r\n            this.updatePropertyValue(property, newValue);\r\n            this.graphicsEditor.refreshShapes(false);\r\n        }));\r\n        \r\n        row.appendChild(input);\r\n        container.appendChild(row);\r\n        return input;\r\n    }\r\n    updatePropertyValue(property, value) {\r\n        const shapeData = this.graphicsEditor.getFrameShape();\r\n        if (shapeData) {\r\n            shapeData[property] = value;\r\n            return;\r\n        }\r\n        let groupData = this.graphicsEditor.getCurrentGroup();\r\n        if(!groupData){\r\n            groupData = {};\r\n            let currentFrame = this.graphicsEditor.getCurrentFrame();\r\n            if(currentFrame) {\r\n                currentFrame[this.graphicsEditor.state.currentGroup] = groupData;\r\n            }\r\n        }\r\n        \r\n        // Handle transform properties\r\n        if (property.startsWith('scale')) {\r\n            if(!groupData.scale) groupData.scale = {};\r\n            const axis = property.charAt(property.length - 1).toLowerCase();\r\n            groupData.scale[axis] = value;\r\n        } else if (property.startsWith('rotation')) {\r\n            if(!groupData.rotation) groupData.rotation = {};\r\n            const axis = property.charAt(property.length - 1).toLowerCase();\r\n            groupData.rotation[axis] = value;\r\n        } else if (['x', 'y', 'z'].includes(property)) {\r\n            if(!groupData.position) groupData.position = {};\r\n            groupData.position[property] = value;\r\n        }\r\n    }\r\n\r\n  \r\n\r\n    updateList() {\r\n        const frameList = document.getElementById('frame-list');\r\n        frameList.innerHTML = '';\r\n        const groupList = document.getElementById('group-list');\r\n        groupList.innerHTML = '';\r\n        const shapeList = document.getElementById('shape-list');\r\n        shapeList.innerHTML = '';\r\n        this.updateFrameList();\r\n        this.graphicsEditor.groupManager.updateGroupList();\r\n        this.updateShapeList();\r\n    }\r\n\r\n    updateFrameList() {\r\n        const list = document.getElementById('frame-list');\r\n        // Animation selector\r\n        const animSelector = document.createElement('select');\r\n        animSelector.style.marginBottom = '10px';\r\n\r\n        const option = document.createElement('option');\r\n        option.value = '__model__';\r\n        option.textContent = 'model';\r\n        if (this.graphicsEditor.state.editingModel) option.selected = true;\r\n        animSelector.appendChild(option);\r\n\r\n\r\n        Object.keys(this.graphicsEditor.state.renderData.animations).forEach(anim => {\r\n            const option = document.createElement('option');\r\n            option.value = anim;\r\n            option.textContent = anim;\r\n            if (anim === this.graphicsEditor.state.currentAnimation) option.selected = true;\r\n            animSelector.appendChild(option);\r\n        });\r\n        animSelector.addEventListener('change', (e) => {\r\n            this.graphicsEditor.setPreviewAnimationState(false);\r\n            if(e.target.value == '__model__'){\r\n                this.graphicsEditor.state.editingModel = true;\r\n                this.graphicsEditor.state.currentAnimation = \"\";                \r\n            } else {\r\n                this.graphicsEditor.state.editingModel = false;\r\n                this.graphicsEditor.state.currentAnimation = animSelector.value;                \r\n            }\r\n            this.graphicsEditor.state.currentFrame = 0;\r\n            this.graphicsEditor.refreshShapes(false);\r\n            requestAnimationFrame(() => {\r\n                this.graphicsEditor.state.selectedShapeIndex = -1;\r\n                this.graphicsEditor.shapeManager.selectShape(0);\r\n            })\r\n        });\r\n        list.appendChild(animSelector);\r\n        if(this.graphicsEditor.state.editingModel) return;\r\n        // Frame list\r\n        const frameList = document.createElement('div');\r\n        frameList.style.marginBottom = '10px';\r\n        this.graphicsEditor.getCurrentAnimation().forEach((frame, index) => {\r\n            const frameItem = document.createElement('div');\r\n            frameItem.textContent = `Frame ${index + 1}`;\r\n            frameItem.style.padding = '5px';\r\n            frameItem.style.cursor = 'pointer';\r\n            if (index === this.graphicsEditor.state.currentFrame) frameItem.style.backgroundColor = '#555';\r\n            frameItem.addEventListener('click', () => {\r\n                this.graphicsEditor.setPreviewAnimationState(false);\r\n                this.graphicsEditor.state.currentFrame = index;  \r\n                this.graphicsEditor.refreshShapes(false);\r\n                requestAnimationFrame(() => {  \r\n                    this.graphicsEditor.state.selectedShapeIndex = -1;\r\n                    this.graphicsEditor.shapeManager.selectShape(0);\r\n                })\r\n            });\r\n            frameList.appendChild(frameItem);\r\n        });\r\n        list.appendChild(frameList);\r\n    }\r\n\r\n\r\n    updateShapeList() {\r\n        const list = document.getElementById('shape-list');\r\n        if (!list) return;\r\n        \r\n\r\n        // Get shapes from the currently selected group\r\n        const currentGroup = this.graphicsEditor.state.currentGroup;\r\n        const selectedGroup = this.graphicsEditor.getMergedGroup(currentGroup);\r\n        const shapes = selectedGroup && selectedGroup.shapes ? selectedGroup.shapes : selectedGroup || [];\r\n       \r\n        // Create shape list items\r\n        for (let i = 0; i < shapes.length; i++) {\r\n            const shape = shapes[i];\r\n            if (!shape) continue;\r\n           \r\n            const shapeItem = document.createElement('div');\r\n            shapeItem.classList.add('shape-item');\r\n           \r\n            // Mark as selected if this shape is the selected one and we're in the right group\r\n            if (i === this.graphicsEditor.state.selectedShapeIndex) {\r\n                shapeItem.classList.add('selected');\r\n            }\r\n           \r\n            shapeItem.textContent = `${shape.name} - ${shape.type || 'Shape'}`;\r\n            shapeItem.addEventListener('click', (e) => {               \r\n                this.graphicsEditor.shapeManager.selectShape(parseInt(e.target.dataset.index));\r\n            });\r\n           \r\n            // Make the shape draggable\r\n            shapeItem.draggable = true;\r\n            shapeItem.dataset.index = i;\r\n            shapeItem.dataset.group = currentGroup;\r\n            \r\n            // Add dragstart event to set the drag data\r\n            shapeItem.addEventListener('dragstart', (e) => {\r\n                // Store only the selected shape's index and source group\r\n                const data = {\r\n                    shapeIndex: i,\r\n                    sourceGroup: currentGroup\r\n                };\r\n                \r\n                // Set the drag data\r\n                e.dataTransfer.setData('text/plain', JSON.stringify(data));\r\n                \r\n                // Add a visual indicator\r\n                shapeItem.classList.add('dragging');\r\n                \r\n                // Set drag effect\r\n                e.dataTransfer.effectAllowed = 'move';\r\n            });\r\n            \r\n            // Add dragend event to clean up\r\n            shapeItem.addEventListener('dragend', () => {\r\n                shapeItem.classList.remove('dragging');\r\n            });\r\n           \r\n            list.appendChild(shapeItem);\r\n        }\r\n        \r\n        // Set up the shape list container as a drop target\r\n        list.addEventListener('dragover', (e) => {\r\n            // Only respond if we're dragging over the shape list itself, not an individual shape\r\n            if (e.target === list) {\r\n                e.preventDefault();\r\n                e.dataTransfer.dropEffect = 'move';\r\n                list.classList.add('drag-over');\r\n            }\r\n        });\r\n        \r\n        list.addEventListener('dragleave', (e) => {\r\n            // Only respond if we're leaving the shape list\r\n            if (e.target === list) {\r\n                list.classList.remove('drag-over');\r\n            }\r\n        });\r\n        \r\n        list.addEventListener('drop', (e) => {\r\n            e.preventDefault();\r\n            list.classList.remove('drag-over');\r\n            \r\n            const data = e.dataTransfer.getData('text/plain');\r\n            if (!data) return;\r\n            \r\n            try {\r\n                const dragData = JSON.parse(data);\r\n                const { shapeIndex, sourceGroup } = dragData;\r\n                \r\n                // Only process if this is a different group\r\n                if (sourceGroup && sourceGroup !== currentGroup) {\r\n                    this.graphicsEditor.groupManager.moveToGroup(\r\n                        parseInt(shapeIndex),\r\n                        sourceGroup,\r\n                        currentGroup\r\n                    );\r\n                }\r\n            } catch (err) {\r\n                console.error('Error processing drop in shape list:', err);\r\n            }\r\n        });\r\n    }\r\n\r\n}"
+      },
+      "GraphicsEditor": {
+        "fileName": "GraphicsEditor",
+        "title": "GraphicsEditor",
+        "script": "/**\n * @class GraphicsEditor\n * @description Manages 3D graphics editing functionality including shapes, animations, and UI\n */\nclass GraphicsEditor {\n    /**\n     * @param {Object} gameEditor - Main game editor instance\n     * @param {Object} config - Editor configuration\n     * @param {Object} managers - Required manager instances\n     * @param {Function} managers.ShapeFactory - Factory for creating shapes\n     * @param {Function} managers.GE_SceneRenderer - Handles scene rendering\n     * @param {Function} managers.GE_ShapeManager - Manages shape operations\n     * @param {Function} managers.GE_AnimationManager - Handles animations\n     * @param {Function} managers.GE_RotationUtils - Rotation utility functions\n     * @param {Function} managers.GE_UIManager - Manages UI interactions\n     * @param {Function} managers.GE_GroupManager - Handles shape grouping\n     * @param {Function} managers.GE_GizmoManager - Manages transformation gizmos\n     */\n    constructor(gameEditor, config, {ShapeFactory, GE_SceneRenderer, GE_ShapeManager, GE_AnimationManager, GE_RotationUtils, GE_UIManager, GE_GroupManager, GE_GizmoManager}) {\n        this.gameEditor = gameEditor;\n        this.config = config;\n        this.shapeFactory = new ShapeFactory(this.gameEditor.getPalette(), this.gameEditor.getCollections().textures);\n        this.canvas = document.getElementById('graphics-editor-canvas');\n        // Initialize sub-modules\n        this.sceneRenderer = new GE_SceneRenderer(gameEditor, this);\n        this.shapeManager = new GE_ShapeManager(gameEditor, this);\n        this.uiManager = new GE_UIManager(gameEditor, this);\n        this.animationManager = new GE_AnimationManager(gameEditor, this);\n        this.groupManager = new GE_GroupManager(gameEditor, this);\n        this.gizmoManager = new GE_GizmoManager(gameEditor, this);\n        this.rotationUtils = GE_RotationUtils;\n        // State management (simplified)\n        this.state = {\n            editingModel: true,\n            selectedShapeIndex: -1,\n            currentAnimation: \"\",\n            selectedGroup: \"main\",\n            currentFrame: 0,\n            renderData: { model: {}, animations: { idle: [{ main: { shapes: [], position: {x: 0, y: 0, z: 0}, rotation: {x:0,y:0,z:0}, scale: {x:1, y:1, z:1}} }] } }\n        };\n        \n        this.rootGroup = new window.THREE.Group(); // Main container for all shapes\n        this.rootGroup.name = \"rootGroup\";\n        this.init();\n    }\n    /**\n     * Initializes all manager components\n     * @private\n     */\n    init() {\n        this.sceneRenderer.init();\n        this.uiManager.init();\n        this.shapeManager.init();\n        this.animationManager.init();\n        this.groupManager.init();\n        this.gizmoManager.init();\n        this.sceneRenderer.animate();    \n    }\n\n    /**\n     * Displays isometric sprite previews\n     * @param {Array<Object>} sprites - Array of sprite data\n     */\n    displayIsometricSprites(sprites){\n        this.uiManager.displayIsometricSprites(sprites);\n    }\n\n    /**\n     * Renders all shapes in the scene\n     * @param {boolean} [fireSave=true] - Whether to trigger a save after rendering\n     * @returns {Promise<void>}\n     */\n    async renderShapes(fireSave = true) {\n        await this.clearScene();\n        await this.setupLights();\n        \n        if (!this.validateCurrentFrame()) {\n            return;\n        }\n        \n        await this.renderGroups();\n        await this.updateUI(fireSave);\n        await this.updateSelection();\n    }\n\n    /**\n     * Clears all objects from the scene\n     * @private\n     * @returns {Promise<void>}\n     */    \n    async clearScene() {\n        while (this.rootGroup.children.length > 0) {\n            const obj = this.rootGroup.children[0];\n            this.shapeFactory.disposeObject(obj);\n            this.shapeManager.originalMaterials.delete(obj);\n            this.rootGroup.remove(obj);\n        }\n    }\n\n    /**\n     * Sets up scene lighting\n     * @private\n     * @returns {Promise<void>}\n     */    \n    async setupLights() {\n        if (this.sceneRenderer.scene.getObjectByName('ambient-light')) {\n            return;\n        }\n    \n        const ambientLight = new window.THREE.AmbientLight(0xffffff, 0.6);\n        ambientLight.name = 'ambient-light';\n        this.sceneRenderer.scene.add(ambientLight);\n    \n        const directionalLight = new window.THREE.DirectionalLight(0xffffff, 0.8);\n        directionalLight.position.set(5, 10, 7.5);\n        directionalLight.name = 'dir-light';\n        this.sceneRenderer.scene.add(directionalLight);\n    }    \n\n    /**\n     * Validates the current animation frame\n     * @private\n     * @returns {boolean} - Whether the current frame is valid\n     */\n    validateCurrentFrame() {\n        if (!this.state.editingModel && !this.getCurrentFrame()) {\n            console.warn(\n                \"Animation or frame doesn't exist:\", \n                this.state.currentAnimation, \n                this.state.currentFrame\n            );\n            return false;\n        }\n        return true;\n    }\n    \n    /**\n     * Renders all shapes in the scene\n     * @param {boolean} [fireSave=true] - Whether to trigger a save after rendering\n     * @returns {Promise<void>}\n     */\n    async renderGroups() {\n        const model = this.state.renderData.model;\n        for (const groupName in model) {     \n            const mergedGroup = this.getMergedGroup(groupName);\n            if (mergedGroup) {\n                let threeGroup = await this.shapeFactory.createGroupFromJSON(groupName, mergedGroup); \n                threeGroup.name = groupName;\n                this.rootGroup.add(threeGroup);\n            }\n        }\n    }\n\n    /**\n     * Renders all shapes in the scene\n     * @param {boolean} [fireSave=true] - Whether to trigger a save after rendering\n     * @returns {Promise<void>}\n     */\n    async updateUI(fireSave) {\n        this.updateShapeCount();\n        await this.handleSave(fireSave);\n    }\n\n    /**\n     * Updates the shape count display in the UI\n     * @private\n     */\n    updateShapeCount() {\n        const model = this.state.renderData.model;\n        const totalShapes = Object.values(model).reduce((total, group) => {\n            return total + (Array.isArray(group.shapes) ? group.shapes.length : 0);\n        }, 0);\n        document.getElementById('shape-count').textContent = totalShapes;\n    }\n    \n    /**\n     * Handles saving the current state\n     * @param {boolean} fireSave - Whether to trigger a save event\n     * @returns {Promise<void>}\n     */\n    async handleSave(fireSave) {\n        if (fireSave) {\n            const saveEvent = new CustomEvent('saveGraphicsObject', {\n                detail: { \n                    data: this.state.renderData, \n                    propertyName: 'render' \n                },\n                bubbles: true,\n                cancelable: true\n            });\n            document.body.dispatchEvent(saveEvent);\n        } else {\n            const valueElement = this.gameEditor.elements.editor\n                .querySelector('#render-value');\n            if (valueElement) {\n                let renderDataCopy = JSON.parse(JSON.stringify(this.state.renderData));\n                Object.keys(renderDataCopy.animations).forEach(animationName => {\n                    const animation = renderDataCopy.animations[animationName];\n                    animation.forEach(frame => {\n                        Object.keys(frame).forEach(groupName => {\n                            const group = frame[groupName];\n                            if (group && group.shapes) {\n                                // Filter shapes with more than just ID\n                                group.shapes = group.shapes.filter(shape => \n                                    Object.keys(shape).length > 1\n                                );\n                                \n                                // Remove empty shapes array\n                                if (group.shapes.length === 0) {\n                                    delete group.shapes;\n                                }\n                \n                                // Remove empty group\n                                if (Object.keys(group).length === 0) {\n                                    delete frame[groupName];\n                                }\n                            }\n                        });               \n                    });\n                });\n                valueElement.value = JSON.stringify(renderDataCopy);\n            }\n        }\n    }\n\n    /**\n     * Updates the selection highlight and gizmo positions\n     * @returns {Promise<void>}\n     */\n    async updateSelection() {\n        this.shapeManager.highlightSelectedShape();\n        this.gizmoManager.updateGizmoPosition();\n    }\n\n    /**\n     * Gets the current animation data\n     * @returns {Object|null} Current animation or null if none exists\n     */\n    getCurrentAnimation() {\n     \n        return this.state.renderData.animations[this.state.currentAnimation] || null;\n    }\n\n    /**\n     * Gets the current frame data\n     * @returns {Object|null} Current frame data or model data if in editing mode\n     */\n    getCurrentFrame() {\n        if(this.state.editingModel){\n            return this.state.renderData.model;\n        } else {\n            let currentAnimation = this.getCurrentAnimation();\n            return currentAnimation ? currentAnimation[this.state.currentFrame] : null;\n        }\n    }\n\n    /**\n     * Gets the current group data\n     * @returns {Object|null} Current group data or null if none exists\n     */\n    getCurrentGroup() {\n        let currentFrame = this.getCurrentFrame();\n        return currentFrame ? currentFrame[this.state.currentGroup] : null;\n    }\n\n    /**\n     * Refreshes the shape list and renders the scene\n     * @param {boolean} param - Whether to trigger a save after refresh\n     */\n    refreshShapes(param) {\n        this.uiManager.updateList();\n        this.renderShapes(param);\n    }\n\n    /**\n     * Creates an inspector panel for the given shape\n     * @param {Object} shape - Shape to create inspector for\n     */\n    createInspector(shape) {\n        this.uiManager.createInspector(shape);\n    }\n\n    /**\n     * Sets the animation preview state\n     * @param {Object} state - New animation state\n     * @returns {Promise<void>}\n     */\n    setPreviewAnimationState(state) {\n        return this.animationManager.setPreviewAnimationState(state);\n    }\n\n    /**\n     * Selects a shape by index\n     * @param {number} index - Index of shape to select\n     * @returns {Promise<void>}\n     */\n    selectShape(index) {\n        return this.shapeManager.selectShape(index);\n    }\n\n    /**\n     * Gets a merged group by name\n     * @param {string} groupName - Name of group to get\n     * @returns {Object|null} Merged group data or null\n     */\n    getMergedGroup(groupName){\n        let model = this.state.renderData.model;\n        const modelGroup = model[groupName];\n        if(this.state.editingModel){\n            return modelGroup;\n        }\n        return this.shapeFactory.getMergedGroup(model, this.getCurrentAnimation()[this.state.currentFrame], groupName );\n    }\n\n    /**\n     * Gets the current frame's shape data\n     * @returns {Object|null} Shape data or null if not found\n     */\n    getFrameShape() {\n        // If we're in model editing mode, return merged shape\n        if (this.state.editingModel) {\n            return this.getMergedShape();\n        }\n    \n        // Return null if no shape is selected\n        if (this.state.selectedShapeIndex < 0) {\n            return null;\n        }\n    \n        // Get or create group data\n        let groupData = this.getCurrentGroup() || \n            JSON.parse(JSON.stringify(this.state.renderData.model[this.state.currentGroup]));\n    \n        if (!groupData?.shapes) {\n            return null;\n        }\n    \n        // Find existing shape or create new one\n        let shape = groupData.shapes.find(s => s.id === this.state.selectedShapeIndex);\n        if (shape) {\n            return shape;\n        }\n    \n        // Create new shape if not found\n        return this.createBlankFrameShape();\n    }\n\n    /**\n     * Creates a new blank frame shape\n     * @private\n     * @returns {Object|null} New shape or null if frame doesn't exist\n     */\n    createBlankFrameShape() {\n        const shape = { id: this.state.selectedShapeIndex };\n        const currentFrame = this.getCurrentFrame();\n        \n        if (!currentFrame) {\n            return null;\n        }\n    \n        // Add shape to current group or create new group\n        if (!currentFrame[this.state.currentGroup]) {\n            currentFrame[this.state.currentGroup] = { shapes: [] };\n        }\n        \n        currentFrame[this.state.currentGroup].shapes.push(shape);\n        return shape;\n    }\n    /**\n     * Gets the currently selected shape merged with its group\n     * @returns {Object|null} - Merged shape or null if not found\n     */\n    getMergedShape() {\n        if (this.state.selectedShapeIndex < 0) {\n            return null;\n        }\n    \n        const selectedGroup = this.getMergedGroup(this.state.currentGroup);\n        const shapes = selectedGroup?.shapes || [];\n        const shape = shapes[this.state.selectedShapeIndex];\n    \n        if (!shape) {\n            return null;\n        }\n    \n        if (this.state.editingModel) {\n            return shape;\n        }\n    \n        return this.mergeShapeWithCurrentGroup(shape);\n    }\n    /**\n     * Merges a shape with its current group\n     * @param {Object} shape - Shape to merge\n     * @returns {Object} - Merged shape\n     */\n    mergeShapeWithCurrentGroup(shape) {\n        // Set shape ID\n        shape.id = this.state.selectedShapeIndex;\n    \n        // Get or create current group data\n        const currentGroupData = this.getCurrentGroup() || { shapes: [] };\n        if (!Array.isArray(currentGroupData.shapes)) {\n            currentGroupData.shapes = [];\n        }\n    \n        // Update shape in current group\n        this.updateShapeInGroup(shape, currentGroupData);\n    \n        // Update animation data\n        this.updateAnimationData(currentGroupData);\n    \n        return shape;\n    }\n    /**\n     * Updates a shape within its group\n     * @param {Object} shape - Shape to update\n     * @param {Object} groupData - Group containing the shape\n     */\n    updateShapeInGroup(shape, groupData) {\n        const shapeIndex = groupData.shapes.findIndex(s => s.id === shape.id);\n        \n        if (shapeIndex >= 0) {\n            groupData.shapes[shapeIndex] = shape; // Replace existing\n        } else {\n            groupData.shapes.push(shape); // Add new\n        }\n    }\n    \n    /**\n     * Updates animation data for the current group\n     * @param {Object} groupData - Group data to update\n     */\n    updateAnimationData(groupData) {\n        const path = [\n            this.state.currentAnimation,\n            this.state.currentFrame,\n            this.state.currentGroup\n        ];\n    \n        // Update nested property safely\n        let current = this.state.renderData.animations;\n        path.forEach((key, index) => {\n            if (index === path.length - 1) {\n                current[key] = groupData;\n            } else {\n                current = current[key];\n            }\n        });\n    }\n    /**\n     * Gets the currently selected object from the scene\n     * @returns {THREE.Object3D} - Selected object or root group\n     */\n    getSelectedObject() {\n        const currentGroup = this.state.currentGroup;\n        \n        if (!currentGroup) {\n            return this.rootGroup;\n        }\n    \n        const foundGroup = this.findGroupByName(currentGroup);\n        if (!foundGroup) {\n            return this.rootGroup;\n        }\n    \n        const foundShape = this.findShapeInGroup(foundGroup);\n        return foundShape || foundGroup || this.rootGroup;\n    }\n        /**\n     * Finds a group by name in the scene\n     * @param {string} groupName - Name of the group to find\n     * @returns {THREE.Group|null} - Found group or null\n     */\n    findGroupByName(groupName) {\n        let found = null;\n        this.rootGroup.traverse(obj => {\n            if (obj.isGroup && obj.name === groupName && obj.userData.isGroup) {\n                found = obj;\n            }\n        });\n        return found;\n    }\n        /**\n     * Finds a shape within a group\n     * @param {THREE.Group} group - Group to search in\n     * @returns {THREE.Object3D|null} - Found shape or null\n     */\n    findShapeInGroup(group) {\n        let found = null;\n        group.traverse(obj => {\n            if (obj.userData.isShape && obj.userData.index === this.state.selectedShapeIndex) {\n                found = obj;\n            }\n        });\n        return found;\n    }\n}\n"
       },
       "ImageManager": {
         "fileName": "ImageManager",
@@ -17749,15 +17749,15 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "generateIsoSprites",
         "html": "\r\n                <h3 style=\"margin-bottom: 20px; color: #e0e0e0; font-size: 18px;\">Generate Isometric Sprites</h3>\r\n                <div class=\"form-row\">\r\n                    <label for=\"iso-frustum\">Frustum Size:</label>\r\n                    <input type=\"number\" id=\"iso-frustum\" value=\"48\" step=\"1\" min=\"1\">\r\n                </div>\r\n                <div class=\"form-row\">\r\n                    <label for=\"iso-distance\">Distance:</label>\r\n                    <input type=\"number\" id=\"iso-distance\" value=\"100\" step=\"1\" min=\"1\">\r\n                </div>\r\n                <div class=\"form-row\">\r\n                    <label for=\"iso-size\">Sprite Size:</label>\r\n                    <input type=\"number\" id=\"iso-size\" value=\"64\" step=\"1\" min=\"1\">\r\n                </div>\r\n                <div style=\"display: flex; gap: 10px; margin-top: 20px;\">\r\n                    <button id=\"iso-cancel\">Cancel</button>\r\n                    <button id=\"iso-generate\">Generate</button>\r\n                </div>\r\n"
       },
-      "moveAllShapes": {
-        "title": "Move All Shapes",
-        "fileName": "moveAllShapes",
-        "html": "\r\n<h3>Move All Shapes</h3>\r\n<div class=\"form-row\">\r\n    <label for=\"move-x\">X Offset:</label>\r\n    <input type=\"number\" id=\"move-x\" value=\"0\" step=\"0.5\">\r\n</div>\r\n<div class=\"form-row\">\r\n    <label for=\"move-y\">Y Offset:</label>\r\n    <input type=\"number\" id=\"move-y\" value=\"0\" step=\"0.5\">\r\n</div>\r\n<div class=\"form-row\">\r\n    <label for=\"move-z\">Z Offset:</label>\r\n    <input type=\"number\" id=\"move-z\" value=\"0\" step=\"0.5\">\r\n</div>\r\n<div style=\"display: flex; gap: 10px; margin-top: 20px;\">\r\n    <button id=\"move-cancel\">Cancel</button>\r\n    <button id=\"move-apply\">Apply</button>\r\n</div>\r\n"
-      },
       "rotateShapes": {
         "title": "Rotate Shapes",
         "fileName": "rotateShapes",
         "html": "\r\n                <h3>Rotate All Shapes</h3>\r\n                <div class=\"form-row\">\r\n                    <label for=\"rotate-angle\">Angle (degrees):</label>\r\n                    <input type=\"number\" id=\"rotate-angle\" value=\"0\" step=\"1\">\r\n                </div>\r\n                <div class=\"form-row\">\r\n                    <label for=\"rotate-axis\">Axis:</label>\r\n                    <select id=\"rotate-axis\">\r\n                        <option value=\"x\">X</option>\r\n                        <option value=\"y\" selected>Y</option>\r\n                        <option value=\"z\">Z</option>\r\n                    </select>\r\n                </div>\r\n                <div style=\"display: flex; gap: 10px; margin-top: 20px;\">\r\n                    <button id=\"rotate-cancel\">Cancel</button>\r\n                    <button id=\"rotate-apply\">Apply</button>\r\n                </div>\r\n"
+      },
+      "moveAllShapes": {
+        "title": "Move All Shapes",
+        "fileName": "moveAllShapes",
+        "html": "\r\n<h3>Move All Shapes</h3>\r\n<div class=\"form-row\">\r\n    <label for=\"move-x\">X Offset:</label>\r\n    <input type=\"number\" id=\"move-x\" value=\"0\" step=\"0.5\">\r\n</div>\r\n<div class=\"form-row\">\r\n    <label for=\"move-y\">Y Offset:</label>\r\n    <input type=\"number\" id=\"move-y\" value=\"0\" step=\"0.5\">\r\n</div>\r\n<div class=\"form-row\">\r\n    <label for=\"move-z\">Z Offset:</label>\r\n    <input type=\"number\" id=\"move-z\" value=\"0\" step=\"0.5\">\r\n</div>\r\n<div style=\"display: flex; gap: 10px; margin-top: 20px;\">\r\n    <button id=\"move-cancel\">Cancel</button>\r\n    <button id=\"move-apply\">Apply</button>\r\n</div>\r\n"
       }
     },
     "renderers": {
@@ -17769,30 +17769,30 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "EnergyShield",
         "script": "class EnergyShield extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n init(){\r\n        // Get stats component for reference\r\n        let statsComp = this.parent.getComponent('stats');\r\n        \r\n        // Shield configuration with defaults\r\n        this.maxEnergyShield = statsComp.stats.energyShield || 0;\r\n        this.energyShield = this.maxEnergyShield || 0;\r\n        this.rechargeRate = statsComp.stats.rechargeRate || 10; // Shield points per second\r\n        this.rechargeDelay = statsComp.stats.rechargeDelay || 2000; // Milliseconds before recharge starts\r\n        this.lastDamageTime = 0; // Timestamp of last damage taken\r\n        \r\n        // Add relevant stats to the stats component\r\n        statsComp.addStat('maxEnergyShield', this.maxEnergyShield);\r\n        statsComp.addStat('shieldRechargeRate', this.rechargeRate);\r\n        statsComp.addStat('shieldRechargeDelay', this.rechargeDelay);\r\n        \r\n        // Visual settings\r\n        this.shieldColor = 'rgba(77, 166, 255, 0.6)'; // Light blue default\r\n        this.shieldEmptyColor = 'rgba(77, 166, 255, 0.2)';\r\n        this.barWidth = 30;\r\n        this.barHeight = 5;\r\n        this.barOffset = 8; // Distance above health bar\r\n    }\r\n    \r\n    /**\r\n     * Handle incoming damage\r\n     * @param {number} damage - Amount of incoming damage\r\n     * @returns {Object} - Damage breakdown\r\n     */\r\n    absorbDamage(damage) {\r\n        const result = {\r\n            absorbedByShield: 0,\r\n            remainingDamage: 0\r\n        };\r\n        \r\n        // Reset recharge timer when taking damage\r\n        this.lastDamageTime = this.game.currentTime;\r\n        \r\n        if (this.energyShield > 0) {\r\n            if (damage <= this.energyShield) {\r\n                // Shield absorbs all damage\r\n                result.absorbedByShield = damage;\r\n                this.energyShield -= damage;\r\n            } else {\r\n                // Shield is depleted, remaining damage goes through\r\n                result.absorbedByShield = this.energyShield;\r\n                result.remainingDamage = damage - this.energyShield;\r\n                this.energyShield = 0;\r\n            }\r\n        } else {\r\n            // No shield available\r\n            result.remainingDamage = damage;\r\n        }\r\n        \r\n        return result;\r\n    }\r\n    \r\n    /**\r\n     * Update shield state (recharging)\r\n     */\r\n    update() {\r\n        let statsComp = this.parent.getComponent('stats');\r\n        this.maxEnergyShield = statsComp.stats.energyShield || 0;\r\n        // Check if enough time has passed since last damage\r\n        const timeSinceLastDamage = this.game.currentTime - this.lastDamageTime;\r\n        \r\n        if (timeSinceLastDamage >= this.rechargeDelay && this.energyShield < this.maxEnergyShield) {\r\n            // Calculate recharge amount based on time elapsed and rate\r\n            const deltaTime = this.game.deltaTime || 16; // Fallback to 60fps if deltaTime not available\r\n            const rechargeAmount = (this.rechargeRate * deltaTime) / 1000; // Convert to per-frame amount\r\n            \r\n            // Apply recharge\r\n            this.energyShield = Math.min(this.maxEnergyShield, this.energyShield + rechargeAmount);\r\n        }\r\n    }\r\n    \r\n    /**\r\n     * Draw shield bar\r\n     */\r\n    draw() {\r\n        if (this.maxEnergyShield <= 0) return; // Don't draw if no shield capacity\r\n        \r\n        const shieldPercentage = this.energyShield / this.maxEnergyShield;        \r\n        \r\n        // Shield bar will be slightly above that\r\n        const barY = this.parent.drawPosition.y - this.game.config.configs.game.imageSize * .3 - this.barOffset;\r\n        \r\n        // Draw shield background/empty bar\r\n        this.game.ctx.fillStyle = this.shieldEmptyColor;\r\n        this.game.ctx.fillRect(this.parent.drawPosition.x - this.barWidth/2, barY, this.barWidth, this.barHeight);\r\n        \r\n        // Draw current shield level\r\n        if (shieldPercentage > 0) {\r\n            this.game.ctx.fillStyle = this.shieldColor;\r\n            this.game.ctx.fillRect(\r\n                this.parent.drawPosition.x - this.barWidth/2, \r\n                barY, \r\n                this.barWidth * shieldPercentage, \r\n                this.barHeight\r\n            );\r\n        }\r\n        \r\n        // Draw recharge indicator if currently recharging\r\n        const timeSinceLastDamage = this.game.currentTime - this.lastDamageTime;\r\n        if (timeSinceLastDamage < this.rechargeDelay && this.energyShield < this.maxEnergyShield) {\r\n            const rechargePercentage = timeSinceLastDamage / this.rechargeDelay;\r\n            \r\n            // Draw a small indicator below the shield bar\r\n            this.game.ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';\r\n            this.game.ctx.fillRect(\r\n                this.parent.drawPosition.x - this.barWidth/2, \r\n                barY + this.barHeight + 1, \r\n                this.barWidth * rechargePercentage, \r\n                2\r\n            );\r\n        }\r\n    }\r\n    \r\n    /**\r\n     * Get current shield value\r\n     * @returns {number} Current shield amount\r\n     */\r\n    getShieldValue() {\r\n        return this.energyShield;\r\n    }\r\n    \r\n    /**\r\n     * Reset shield to full\r\n     */\r\n    resetShield() {\r\n        this.energyShield = this.maxEnergyShield;\r\n    }\r\n    \r\n    /**\r\n     * Temporarily boost shield capacity\r\n     * @param {number} amount - Amount to boost by\r\n     * @param {number} duration - Duration in milliseconds\r\n     */\r\n    boostShield(amount, duration) {\r\n        const originalMax = this.maxEnergyShield;\r\n        this.maxEnergyShield += amount;\r\n        this.energyShield += amount;\r\n        \r\n        // Reset after duration\r\n        setTimeout(() => {\r\n            this.maxEnergyShield = originalMax;\r\n            this.energyShield = Math.min(this.energyShield, this.maxEnergyShield);\r\n        }, duration);\r\n    }\r\n}"
       },
-      "Health": {
-        "fileName": "Health",
-        "script": "class Health extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n  init(){\r\n        let statsComp = this.parent.getComponent('stats');\r\n        this.hp = statsComp.stats.hp;\r\n        \r\n        statsComp.addStat('maxHp', this.hp);\r\n    }\r\n    update() {        \r\n        if (this.hp <= 0){            \r\n            this.parent.destroy();\r\n        }\r\n    }\r\n\r\n    draw() {\r\n        let imageSize = this.game.config.configs.game.imageSize;\r\n        let statsComp = this.parent.getComponent('stats');\r\n        const healthPercentage = this.hp / statsComp.stats.maxHp;\r\n        const barWidth = 30;\r\n        this.game.ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';\r\n\r\n        const isoPos = this.game.translator.pixelToIso(this.parent.position.x, this.parent.position.y)\r\n\r\n        this.game.ctx.fillRect(isoPos.x - barWidth/2, isoPos.y - imageSize * .3, barWidth, 5);\r\n        if( healthPercentage >= 0 ) {\r\n            this.game.ctx.fillStyle = healthPercentage > 0.5 ? 'rgba(0, 255, 0, 0.5)' : healthPercentage > 0.25 ? 'rgba(255, 255, 0, 0.5)' : 'rgba(255, 0, 0, 0.5)';\r\n            this.game.ctx.fillRect(isoPos.x - barWidth/2, isoPos.y - imageSize * .3, barWidth * healthPercentage, 5);\r\n        }\r\n    }\r\n}"
-      },
       "HitEffectRenderer": {
         "fileName": "HitEffectRenderer",
         "script": "class HitEffectRenderer extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n init( ) {\r\n        this.ctx = this.game.ctx;\r\n    }\r\n\r\n    draw() {\r\n        const particleComp = this.parent.getComponent(\"HitEffectParticle\");\r\n        if (!particleComp || !particleComp.particles.length) return;\r\n\r\n        const basePos = this.game.translator.pixelToIso(this.parent.position.x, this.parent.position.y);\r\n\r\n        for (let particle of particleComp.particles) {\r\n            this.ctx.fillStyle = `${particle.color}${particle.alpha})`;\r\n            this.ctx.beginPath();\r\n            const drawX = basePos.x + particle.x;\r\n            const drawY = basePos.y + particle.y;\r\n            this.ctx.arc(drawX, drawY, particle.size, 0, Math.PI * 2);\r\n            this.ctx.fill();\r\n        }\r\n    }\r\n}"
+      },
+      "Health": {
+        "fileName": "Health",
+        "script": "class Health extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n  init(){\r\n        let statsComp = this.parent.getComponent('stats');\r\n        this.hp = statsComp.stats.hp;\r\n        \r\n        statsComp.addStat('maxHp', this.hp);\r\n    }\r\n    update() {        \r\n        if (this.hp <= 0){            \r\n            this.parent.destroy();\r\n        }\r\n    }\r\n\r\n    draw() {\r\n        let imageSize = this.game.config.configs.game.imageSize;\r\n        let statsComp = this.parent.getComponent('stats');\r\n        const healthPercentage = this.hp / statsComp.stats.maxHp;\r\n        const barWidth = 30;\r\n        this.game.ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';\r\n\r\n        const isoPos = this.game.translator.pixelToIso(this.parent.position.x, this.parent.position.y)\r\n\r\n        this.game.ctx.fillRect(isoPos.x - barWidth/2, isoPos.y - imageSize * .3, barWidth, 5);\r\n        if( healthPercentage >= 0 ) {\r\n            this.game.ctx.fillStyle = healthPercentage > 0.5 ? 'rgba(0, 255, 0, 0.5)' : healthPercentage > 0.25 ? 'rgba(255, 255, 0, 0.5)' : 'rgba(255, 0, 0, 0.5)';\r\n            this.game.ctx.fillRect(isoPos.x - barWidth/2, isoPos.y - imageSize * .3, barWidth * healthPercentage, 5);\r\n        }\r\n    }\r\n}"
       },
       "LightningRenderer": {
         "fileName": "LightningRenderer",
         "script": "class LightningRenderer extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n  init( {owner}) {\r\n        this.ctx = this.game.ctx;\r\n        const ownerStats = owner.getComponent(\"stats\").stats;\r\n        this.startOffsetY = ownerStats.projectileStartOffsetY || this.game.config.configs.game.gridSize / 2;\r\n    }\r\n\r\n    draw() {\r\n        const projectile = this.parent.getComponent(\"ChainProjectile\");\r\n        if (!projectile || !projectile.chainTargets.length) return;\r\n\r\n        this.ctx.strokeStyle = \"rgba(0, 255, 255, 0.8)\"; // Cyan lightning\r\n        this.ctx.lineWidth = 2;\r\n        let stats = this.parent.getComponent('stats').stats;\r\n        // Start from Tesla Coil (parent position)\r\n        let startPos = this.game.translator.pixelToIso(this.parent.position.x, this.parent.position.y);\r\n        startPos.y -= this.startOffsetY;//dont shoot off the ground\r\n        for (let i = 0; i < projectile.chainTargets.length; i++) {\r\n            const target = projectile.chainTargets[i];\r\n            if (!target || target.destroyed) continue;\r\n\r\n            const endPos = this.game.translator.pixelToIso(target.position.x, target.position.y);\r\n            this.drawLightning(startPos, endPos);\r\n\r\n            // Next arc starts from this target\r\n            startPos = endPos;\r\n        }\r\n    }\r\n\r\n    drawLightning(startPos, endPos) {\r\n        this.ctx.beginPath();            \r\n        this.ctx.moveTo(startPos.x, startPos.y);\r\n\r\n        const segments = 8; // Number of zigzag points\r\n        const dx = (endPos.x - startPos.x) / segments;\r\n        const dy = (endPos.y - startPos.y) / segments;\r\n\r\n        let currentX = startPos.x;\r\n        let currentY = startPos.y;\r\n\r\n        for (let i = 1; i < segments; i++) {\r\n            currentX += dx;\r\n            currentY += dy;\r\n\r\n            // Add random offset for jagged effect\r\n            const offsetX = (Math.random() - 0.5) * 10; // Max 10px jitter\r\n            const offsetY = (Math.random() - 0.5) * 10;\r\n\r\n            this.ctx.lineTo(currentX + offsetX, currentY + offsetY);\r\n        }\r\n\r\n        this.ctx.lineTo(endPos.x, endPos.y);\r\n        this.ctx.stroke();\r\n    }\r\n}"
       },
-      "MapRenderer": {
-        "fileName": "MapRenderer",
-        "script": "class MapRenderer extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init({canvasBuffer, terrainCanvasBuffer, worldObjects, imageManager, levelName, gameConfig, level, isEditor, palette}) {   \r\n\r\n        this.config = gameConfig;\r\n        this.imageManager = imageManager;\r\n        this.worldObjects = worldObjects;\r\n        this.selectedTowerType = null;\r\n        this.hoverCell = { x: -1, y: -1 };\r\n        this.showRange = false;\r\n        this.isMapCached = false; // Flag to track if map needs redrawing\r\n        this.currentLevel = levelName;\r\n        this.level = level;\r\n        this.tileMap = level.tileMap;\r\n        this.palette = palette;\r\n\r\n        // Create off-screen canvas for caching\r\n        if(!this.config.is3D || isEditor) {\r\n            this.ctx = canvasBuffer.getContext('2d');\r\n            this.mapCacheCanvas = document.createElement('canvas');\r\n            this.mapCacheCanvas.width = this.config.canvasWidth;\r\n            this.mapCacheCanvas.height = this.config.canvasHeight;\r\n            this.mapCacheCtx = this.mapCacheCanvas.getContext('2d');\r\n\r\n            \r\n            this.envCacheCanvasBG = document.createElement('canvas');\r\n            this.envCacheCanvasBG.width = this.config.canvasWidth;\r\n            this.envCacheCanvasBG.height = this.config.canvasHeight / 2;\r\n            this.envCacheCtxBG = this.envCacheCanvasBG.getContext('2d');\r\n\r\n            this.envCacheCanvasFG = document.createElement('canvas');\r\n            this.envCacheCanvasFG.width = this.config.canvasWidth;\r\n            this.envCacheCanvasFG.height = this.config.canvasHeight / 2;\r\n            this.envCacheCtxFG = this.envCacheCanvasFG.getContext('2d');\r\n        }\r\n        this.terrainCanvas = terrainCanvasBuffer;\r\n        this.terrainCanvas.width = this.tileMap.size * this.config.gridSize;\r\n        this.terrainCanvas.height = this.tileMap.size * this.config.gridSize;\r\n        this.terrainCtx = this.terrainCanvas.getContext('2d');\r\n        \r\n        this.terrainTileMapper = this.game.terrainTileMapper;\r\n        this.game.mapRenderer = this;\r\n        this.isometric = this.game.config.configs.game.isIsometric;\r\n    }\r\n\r\n    draw(){}\r\n    render(tileMapData) {\r\n        if(!this.isMapCached){\r\n            this.terrainCtx.clearRect(0, 0, this.terrainCanvas.width, this.terrainCanvas.height);\r\n                \r\n            // Draw the map onto the cache canvas\r\n            this.drawTileMap(tileMapData);\r\n            this.renderEnvironment();\r\n            \r\n            //this.drawPaths(this.terrainCacheCtx, paths);\r\n        }\r\n        // Mark cache as valid\r\n        this.isMapCached = true;\r\n    }\r\n    renderEnvironment() {\r\n        if (this.tileMap.environmentObjects.length === 0) return;\r\n    \r\n        // Group environment objects by type\r\n        const objectsByType = {};\r\n        this.tileMap.environmentObjects.forEach(obj => {\r\n            if (!objectsByType[obj.type]) {\r\n                objectsByType[obj.type] = [];\r\n            }\r\n            objectsByType[obj.type].push(obj);\r\n        });\r\n    \r\n        // Process each type separately\r\n        Object.entries(objectsByType).forEach(([type, objects]) => {\r\n            // Load the model for this type\r\n            const referenceModel = this.game.modelManager.getModel(\"worldObjects\", type);\r\n            if (!referenceModel) return;\r\n    \r\n            // Find all meshes and store their complete transform data\r\n            const meshData = [];\r\n            referenceModel.updateMatrixWorld(true); // Ensure world matrices are up to date\r\n    \r\n            referenceModel.traverse(node => {\r\n                if (node.isMesh) {\r\n                    const parent = node.parent;\r\n                    const parentWorldMatrix = parent.matrixWorld.clone();\r\n                    const localMatrix = node.matrix.clone();\r\n    \r\n                    // Get transform relative to model root\r\n                    const relativeMatrix = new THREE.Matrix4();\r\n                    relativeMatrix.copy(parentWorldMatrix);\r\n                    relativeMatrix.multiply(localMatrix);\r\n    \r\n                    meshData.push({\r\n                        mesh: node,\r\n                        relativeMatrix: relativeMatrix\r\n                    });\r\n                }\r\n            });\r\n            if (meshData.length === 0) return;\r\n    \r\n            // Create instanced meshes for this type\r\n            const instancedMeshes = meshData.map(({ mesh, relativeMatrix }) => {\r\n                const instancedMesh = new THREE.InstancedMesh(\r\n                    mesh.geometry,\r\n                    mesh.material,\r\n                    objects.length // Number of instances for this type\r\n                );\r\n                instancedMesh.userData.relativeMatrix = relativeMatrix;\r\n                instancedMesh.castShadow = true;\r\n                instancedMesh.receiveShadow = true;\r\n                return instancedMesh;\r\n            });\r\n    \r\n            // Set positions for all instances of this type\r\n            const matrix = new THREE.Matrix4();\r\n            const dummy = new THREE.Object3D();\r\n    \r\n            objects.forEach((obj, index) => {\r\n                // Get pixel color at object position\r\n                let hexColor = this.tileMap.terrainTypes[this.tileMap.extensionTerrainType].color.slice(1);\r\n                let numColor = parseInt(hexColor, 16); // Convert hex string to number, e.g., 0xaa3311\r\n\r\n                let r = (numColor >> 16) & 0xff; // Red channel\r\n                let g = (numColor >> 8) & 0xff;  // Green channel   \r\n                let b = numColor & 0xff;         // Blue channel\r\n                if (g > r && g > b) {\r\n                    dummy.position.set(\r\n                        obj.x, \r\n                        this.game.config.heightMaps[this.game.config.worlds[this.level.world].heightMap].heightStep * this.tileMap.extensionTerrainType, \r\n                        obj.y\r\n                    );\r\n                    dummy.rotation.y = Math.random() * Math.PI * 2;\r\n                    const scale = 0.8 + Math.random() * 0.4;\r\n                    dummy.scale.set(scale, scale, scale);\r\n                    dummy.updateMatrix();\r\n            \r\n                    // Apply transforms while preserving mesh relationships\r\n                    instancedMeshes.forEach(instancedMesh => {\r\n                        matrix.copy(dummy.matrix);\r\n                        matrix.multiply(instancedMesh.userData.relativeMatrix);\r\n                        instancedMesh.setMatrixAt(index, matrix);\r\n                    });\r\n                }\r\n            });\r\n    \r\n            // Add instanced meshes to the scene\r\n            instancedMeshes.forEach(instancedMesh => {\r\n                instancedMesh.instanceMatrix.needsUpdate = true;\r\n                this.game.scene.add(instancedMesh);\r\n            });\r\n        });\r\n    }\r\n    renderBG(tileMapData, paths) {\r\n        this.clearMap(tileMapData);\r\n        // Generate cache if not already done\r\n        if (!this.isMapCached) {\r\n            this.cacheMap(tileMapData, paths, this.isometric);            \r\n        }        \r\n  \r\n        // Draw cached map image to main canvas\r\n      \r\n       this.ctx.drawImage( this.terrainCanvas, ( this.config.canvasWidth - this.terrainCanvas.width) / 2, ( this.config.canvasHeight - this.terrainCanvas.height) / 2 );\r\n\r\n       //this.ctx.drawImage(this.terrainCanvas, 0, 0);\r\n        //this.ctx.drawImage(this.mapCacheCanvas, 0,  -this.config.canvasHeight / 2);\r\n        this.ctx.drawImage(this.envCacheCanvasBG, 0, 0);\r\n    }\r\n    renderFG() {  \r\n        this.ctx.drawImage(this.envCacheCanvasFG, 0, this.config.canvasHeight / 2);\r\n    }    \r\n    setLevel(level) {\r\n        this.currentLevel = level;\r\n        this.terrainImages = this.imageManager.getImages(\"levels\", level);\r\n\r\n    }\r\n\r\n    drawTileMap(tileMapData) {\r\n        this.terrainTileMapper.draw(tileMapData.terrainMap);\r\n    }\r\n    clearMap(tileMapData) {\r\n        this.ctx.clearRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);\r\n        this.ctx.fillStyle = tileMapData.terrainTypes[tileMapData.extensionTerrainType].color;       \r\n        this.ctx.fillRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);\r\n    }\r\n    // Call this when map data changes or on initialization\r\n    cacheMap(tileMapData, paths, isometric) {\r\n        this.terrainCtx.clearRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);\r\n                   \r\n        // Clear the cache canvas\r\n        this.mapCacheCtx.clearRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);\r\n        \r\n        // Draw the map onto the cache canvas\r\n        this.drawTileMap(tileMapData, isometric);\r\n        this.drawPaths(this.mapCacheCtx, paths);\r\n        this.drawEnvironment(tileMapData.terrainMap.length, tileMapData.terrainMap.length * tileMapData.terrainMap.length);\r\n        \r\n        // Mark cache as valid\r\n        this.isMapCached = true;\r\n    }\r\n\r\n    drawMap(tileMap) {\r\n\r\n        this.mapCacheCtx.fillStyle = '#4a7c59';\r\n        this.mapCacheCtx.fillRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);\r\n        const tileWidth = this.config.gridSize;\r\n        const tileHeight = this.config.gridSize * 0.5;\r\n        \r\n        for (let y = 0; y < tileMap.length; y++) {\r\n            for (let x = 0; x < tileMap[y].length; x++) {\r\n                const tile = tileMap[y][x];\r\n                \r\n                // Use translator to get iso coordinates\r\n                const isoCoords = this.game.translator.gridToIso(x, y);\r\n                const isoX = isoCoords.x;\r\n                const isoY = isoCoords.y;\r\n                \r\n                this.mapCacheCtx.fillStyle = tile.color;\r\n                this.mapCacheCtx.beginPath();\r\n                this.mapCacheCtx.moveTo(isoX, isoY);\r\n                this.mapCacheCtx.lineTo(isoX + tileWidth / 2, isoY + tileHeight / 2);\r\n                this.mapCacheCtx.lineTo(isoX, isoY + tileHeight);\r\n                this.mapCacheCtx.lineTo(isoX - tileWidth / 2, isoY + tileHeight / 2);\r\n                this.mapCacheCtx.closePath();\r\n                this.mapCacheCtx.fill();\r\n                this.mapCacheCtx.strokeStyle = 'rgba(0, 0, 0, 0.1)';\r\n                this.mapCacheCtx.stroke();\r\n            }\r\n        }\r\n        \r\n       \r\n        this.drawEnvironment(tileMap.length);\r\n    }\r\n\r\n    drawPaths(ctx, paths) {\r\n        const tileHeight = this.config.gridSize * 0.5;\r\n        ctx.strokeStyle = '#ffd166';\r\n        ctx.lineWidth = 2;\r\n        ctx.beginPath();\r\n        \r\n        paths.forEach(path => {\r\n            // First point in path\r\n            const firstIsoCoords = this.game.translator.gridToIso(path[0].x, path[0].y);\r\n            const firstIsoX = firstIsoCoords.x;\r\n            const firstIsoY = firstIsoCoords.y + tileHeight / 2; // Add half tile height for center of tile\r\n            \r\n            ctx.moveTo(firstIsoX, firstIsoY);\r\n            \r\n            // Remaining points in path\r\n            path.forEach(location => {\r\n                const isoCoords = this.game.translator.gridToIso(location.x, location.y);\r\n                const isoX = isoCoords.x;\r\n                const isoY = isoCoords.y + tileHeight / 2; // Add half tile height for center of tile\r\n                \r\n                ctx.lineTo(isoX, isoY);\r\n            });\r\n        });\r\n        \r\n        ctx.stroke();\r\n    }\r\n\r\n    drawEnvironment(boardSize, amountToDraw) {\r\n\r\n        let itemAmt = amountToDraw;\r\n        let environmentTypes = [];\r\n        for(let envType in this.worldObjects){\r\n            environmentTypes.push(envType);\r\n        }\r\n        this.envCacheCtxBG.clearRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);\r\n        this.envCacheCtxFG.clearRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);\r\n        \r\n        let items = [];\r\n        \r\n        // Check if we have stored environment objects\r\n        if (this.tileMap.environmentObjects && this.tileMap.environmentObjects.length > 0) {\r\n            // Use the stored objects\r\n            this.tileMap.environmentObjects.forEach(obj => {\r\n                const images = this.imageManager.getImages(\"environment\", obj.type);\r\n                if (images && images.idle && images.idle[0] && images.idle[0][obj.imageIndex]) {\r\n                    items.push({\r\n                        img: images.idle[0][obj.imageIndex],\r\n                        x: obj.x,\r\n                        y: obj.y\r\n                    });\r\n                }\r\n            });\r\n        } else {       \r\n            // for(let i = 0; i < itemAmt; i++) {\r\n            //     // Define the game board boundaries\r\n            //     const boardMinX = 0;\r\n            //     const boardMaxX = boardSize * this.config.gridSize;\r\n            //     const boardMinY = 0;\r\n            //     const boardMaxY = boardSize * this.config.gridSize;\r\n                \r\n            //     // Generate a random position that's outside the board but within a reasonable distance\r\n            //     let x, y;\r\n                \r\n            //     // Expand the area where we can place objects\r\n            //     const expandAmount = boardSize * this.config.gridSize; // Adjust this value as needed\r\n                \r\n            //     // Randomly choose whether to place on x-axis or y-axis outside the board\r\n            //     if (Math.random() < 0.5) {\r\n            //         // Place on the left or right of the board\r\n            //         x = Math.random() < 0.5 ?\r\n            //             boardMinX - Math.random() * expandAmount : // Left side\r\n            //             boardMaxX + Math.random() * expandAmount;  // Right side\r\n                    \r\n            //         // Allow y to be anywhere, including outside the board\r\n            //         y = boardMinY - expandAmount + Math.random() * (boardMaxY - boardMinY + 2 * expandAmount);\r\n            //     } else {\r\n            //         // Place on the top or bottom of the board\r\n            //         y = Math.random() < 0.5 ?\r\n            //             boardMinY - Math.random() * expandAmount : // Top side\r\n            //             boardMaxY + Math.random() * expandAmount;  // Bottom side\r\n                    \r\n            //         // Allow x to be anywhere, including outside the board\r\n            //         x = boardMinX - expandAmount + Math.random() * (boardMaxX - boardMinX + 2 * expandAmount);\r\n            //     }\r\n                \r\n            //     // Double-check that the position is actually outside the board\r\n            //     if (x < boardMinX || x > boardMaxX || y < boardMinY || y > boardMaxY) {\r\n            //         const type = environmentTypes[Math.floor(Math.random() * environmentTypes.length)];\r\n            //         const images = this.imageManager.getImages(\"environment\", type);\r\n            //         if(images){\r\n            //             items.push( { img: images.idle[0][parseInt(Math.random()*images.idle[0].length)], x: x, y: y});\r\n            //         }\r\n            //     } else {\r\n            //         i--; // Position inside board, try again\r\n            //     }\r\n            // }\r\n        }\r\n\r\n        items.sort((a, b) => {\r\n            return (a.y * boardSize + a.x) - (b.y * boardSize + b.x)\r\n        });\r\n\r\n        items.forEach((item) => {            \r\n            // Convert pixel to isometric\r\n            const isoPos = this.game.translator.pixelToIso(item.x, item.y);\r\n            const image = item.img;\r\n            const imgWidth = image.width;\r\n            const imgHeight = image.height;\r\n            \r\n            const drawX = isoPos.x;\r\n            const drawY = isoPos.y;\r\n            if( drawY < this.config.canvasHeight / 2 ) {\r\n                this.envCacheCtxBG.drawImage(image, drawX - imgWidth / 2, drawY - imgHeight / 2);\r\n            } else if(drawY - this.config.canvasHeight / 2 - imgHeight / 2 > 0) {//prevent trees in FG from getting chopped off at the top if they are too close to the middle of the frame.\r\n  \r\n                this.envCacheCtxFG.drawImage(image, drawX - imgWidth / 2, drawY - this.config.canvasHeight / 2 - imgHeight / 2);\r\n            }\r\n        });\r\n    }\r\n\r\n}"
+      "ModelRenderer": {
+        "title": "Model Renderer",
+        "fileName": "ModelRenderer",
+        "script": "class ModelRenderer extends engine.Component {\n    init({ objectType, spawnType, frameDuration }) {\n        if(!this.game.config.configs.game.is3D) {\n            return;\n        }\n        this.animationState = 'idle';\n        this.currentFrameIndex = 0;\n        this.frameTime = 0;\n        this.frameDuration = frameDuration || 0.17;\n        this.lastDirection = -1;\n        \n        // Load animation and model data\n        this.animationData = this.game.config[objectType]?.[spawnType]?.render?.animations;\n        this.modelData = this.game.config[objectType]?.[spawnType]?.render?.model;\n\n        // Get the model\n        this.model = this.game.modelManager.getModel(objectType, spawnType);\n        \n        if (!this.model || !this.animationData || !this.modelData) {\n            console.error(`No model or data found for ${objectType}_${spawnType}`);\n            return;\n        }\n        \n        // Create the initial model instance\n        this.modelGroup = this.model.clone();  \n        // Add the model group to the scene\n        this.game.scene.add(this.modelGroup);\n\n        this.modelGroup.position.set(0, -10000, 0);\n        \n        // Set initial animation\n        this.setAnimation('idle');\n    }\n    \n    setAnimation(animationName) {\n        if (!this.animationData[animationName]) {\n            console.warn(`Animation '${animationName}' not found, defaulting to 'idle'`);\n            animationName = 'idle';\n            \n            if (!this.animationData[animationName]) {\n                const availableAnims = Object.keys(this.animationData);\n                animationName = availableAnims.length > 0 ? availableAnims[0] : null;\n                \n                if (!animationName) {\n                    console.error('No animations available for this model');\n                    return;\n                }\n            }\n        }\n        \n        if (this.animationState !== animationName) {\n            this.animationState = animationName;\n            this.currentFrameIndex = 0;\n            this.frameTime = 0;\n            this.updateModelFrame();\n        }\n    }\n    \n    draw() {\n        if(!this.game.config.configs.game.is3D) {\n            return;\n        }\n        // Update animation frames\n        this.frameTime += this.game.deltaTime;\n        if (this.frameTime >= this.frameDuration) {\n            this.frameTime -= this.frameDuration;\n            this.advanceFrame();\n        }\n        // Update position of model to match entity position\n        if (this.parent && this.parent.position) {\n            this.modelGroup.position.set(\n                this.parent.position.x,\n                this.parent.position.z,\n                this.parent.position.y\n            );\n            \n            // Handle rotation based on movement direction\n            this.updateDirection();\n        }\n        \n   \n    }\n    \n    updateDirection() {\n        // Calculate direction based on movement\n        if (this.parent && this.parent.lastPosition) {\n            const dx = this.parent.position.x - this.parent.lastPosition.x;\n            const dy = this.parent.position.y - this.parent.lastPosition.y;\n            \n            // Only update direction if there's significant movement\n            if (Math.abs(dx) > 0.001 || Math.abs(dy) > 0.001) {\n                // Calculate angle in radians\n                let angle = Math.atan2(dy, dx);\n            \n                // Rotate model to face movement direction\n                this.modelGroup.rotation.y = -angle + Math.PI / 2;\n                \n                // Set walking animation when moving\n                if (this.animationData['walk']) {\n                    this.setAnimation('walk');\n                    return;\n                }\n            } else {\n                // Entity is stationary, use idle animation\n                this.setAnimation('idle');\n            }\n        }\n    }\n    \n    advanceFrame() {\n        const frames = this.animationData[this.animationState];\n        if (!frames || frames.length === 0) return;\n        \n        this.currentFrameIndex = (this.currentFrameIndex + 1) % frames.length;\n        this.updateModelFrame();\n    }\n    \n    updateModelFrame() {\n        // Get current animation and frame\n        const frames = this.animationData[this.animationState];\n        if (!frames?.length) return;\n        \n        const frameData = frames[this.currentFrameIndex] || {};\n        \n        // Traverse the modelGroup to apply transformations\n        this.modelGroup.traverse((obj) => {\n          // Handle group-level transformations (apply to group objects)\n            if (!obj.isMesh && obj.name && this.modelData[obj.name]) {\n                const groupName = obj.name;\n                const groupData = frameData[groupName];\n                const modelGroupData = this.modelData[groupName];\n                this.updateObjectTransforms(obj, groupData, modelGroupData);\n            }\n            \n            // Handle shape-level transformations (apply to meshes)\n            if (obj.isMesh && obj.userData?.index >= 0 && obj.parent?.name) {\n                const groupName = obj.parent.name;\n                const index = obj.userData.index;\n                const groupData = frameData[groupName];\n                const modelGroupData = this.modelData[groupName];\n                // Find shape in animationData by id (id: 1 maps to index 0)\n                let shape;\n                if (groupData?.shapes) {\n                    shape = groupData.shapes.find(s => s.id === index);\n                }\n                const modelShape = modelGroupData?.shapes?.[index];\n                \n                if (shape || modelShape) {\n                    this.updateShapeTransforms(obj, shape, modelShape);\n                }\n            }\n        });\n    }\n    \n    updateObjectTransforms(obj, groupData, modelGroupData) {\n        if (!modelGroupData) return;\n        \n        // Position\n        const pos = groupData?.position || modelGroupData.position || { x: 0, y: 0, z: 0 };\n        obj.position.set(\n            pos.x ?? modelGroupData.position?.x ?? 0,\n            pos.y ?? modelGroupData.position?.y ?? 0,\n            pos.z ?? modelGroupData.position?.z ?? 0\n        );\n        \n        // Rotation\n        const rot = groupData?.rotation || modelGroupData.rotation || { x: 0, y: 0, z: 0 };\n        obj.rotation.set(\n            rot.x ?? modelGroupData.rotation?.x ?? 0,\n            rot.y ?? modelGroupData.rotation?.y ?? 0,\n            rot.z ?? modelGroupData.rotation?.z ?? 0\n        );\n        \n        // Scale\n        const scale = groupData?.scale || modelGroupData.scale || { x: 1, y: 1, z: 1 };\n        obj.scale.set(\n            scale.x ?? modelGroupData.scale?.x ?? 1,\n            scale.y ?? modelGroupData.scale?.y ?? 1,\n            scale.z ?? modelGroupData.scale?.z ?? 1\n        );\n    }\n    updateShapeTransforms(obj, shape, modelShape) {\n        if (!modelShape) return;\n\n        // Position (local to group)\n        obj.position.set(\n            shape?.x ?? modelShape.x ?? 0,\n            shape?.y ?? modelShape.y ?? 0,\n            shape?.z ?? modelShape.z ?? 0\n        );\n        \n        // Rotation (local to group, convert degrees to radians)\n        obj.rotation.set(\n            ((shape?.rotationX ?? modelShape.rotationX) || 0) * Math.PI / 180,\n            ((shape?.rotationY ?? modelShape.rotationY) || 0) * Math.PI / 180,\n            ((shape?.rotationZ ?? modelShape.rotationZ) || 0) * Math.PI / 180\n        );\n        \n        // Scale (local to group)\n        obj.scale.set(\n            shape?.scaleX ?? modelShape.scaleX ?? 1,\n            shape?.scaleY ?? modelShape.scaleY ?? 1,\n            shape?.scaleZ ?? modelShape.scaleZ ?? 1\n        );\n\n    }\n    destroy() {\n        if(this.modelGroup){\n            // Remove model from scene\n            if (this.modelGroup && this.game.scene) {\n                this.game.scene.remove(this.modelGroup);\n            }\n            \n            // Clear all children\n            while (this.modelGroup.children.length > 0) {\n                const child = this.modelGroup.children[0];\n                this.modelGroup.remove(child);\n            }\n            \n            this.modelGroup = null;\n        }\n    }\n}"
       },
       "RangeIndicator": {
         "fileName": "RangeIndicator",
         "script": "class RangeIndicator extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init() {\r\n        this.ctx = this.game.ctx;\r\n        this.translator = this.game.translator; // Access translator for tileWidth\r\n    }\r\n\r\n    draw() {\r\n        let statsComp = this.getComponent('stats');\r\n        if (!statsComp || !statsComp.stats || !statsComp.stats.range) {\r\n            return;\r\n        }\r\n        this.drawRangeIndicator(statsComp.stats.range);\r\n    }\r\n\r\n    drawRangeIndicator(range) {    \r\n        const drawRage = range;        \r\n        const pixelX = this.parent.position.x;\r\n        const pixelY = this.parent.position.y;\r\n        let gridPos = this.translator.pixelToGrid(pixelX, pixelY);\r\n        gridPos = this.translator.snapToGrid(gridPos.x, gridPos.y);\r\n        const isoPos = this.translator.pixelToIso(pixelX, pixelY);\r\n    \r\n        let isoRangeX = drawRage * this.game.config.configs.game.gridSize;  // Matches gridToIso X scaling\r\n        let isoRangeY = drawRage * this.game.config.configs.game.gridSize * (this.game.state.isometric ? 0.5 : 1); // Matches gridToIso Y scaling\r\n    \r\n        if( this.game.state.isometric ) {\r\n            isoRangeX *= .56;\r\n            isoRangeY *= .56;\r\n        }\r\n\r\n        if (gridPos.x === this.game.state.mousePosition.gridX && gridPos.y === this.game.state.mousePosition.gridY) {\r\n            this.ctx.save();\r\n            this.ctx.beginPath();\r\n            this.ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)';\r\n            this.ctx.lineWidth = 2;\r\n    \r\n            this.ctx.ellipse(\r\n                isoPos.x,\r\n                isoPos.y,\r\n                isoRangeX,\r\n                isoRangeY,\r\n                0,\r\n                0,\r\n                2 * Math.PI\r\n            );\r\n    \r\n            this.ctx.stroke();\r\n            this.ctx.closePath();\r\n            this.ctx.restore();\r\n        }    \r\n      \r\n    }\r\n}"
       },
-      "ModelRenderer": {
-        "title": "Model Renderer",
-        "fileName": "ModelRenderer",
-        "script": "class ModelRenderer extends engine.Component {\n    init({ objectType, spawnType, frameDuration }) {\n        if(!this.game.config.configs.game.is3D) {\n            return;\n        }\n        this.animationState = 'idle';\n        this.currentFrameIndex = 0;\n        this.frameTime = 0;\n        this.frameDuration = frameDuration || 0.17;\n        this.lastDirection = -1;\n        \n        // Load animation and model data\n        this.animationData = this.game.config[objectType]?.[spawnType]?.render?.animations;\n        this.modelData = this.game.config[objectType]?.[spawnType]?.render?.model;\n\n        // Get the model\n        this.model = this.game.modelManager.getModel(objectType, spawnType);\n        \n        if (!this.model || !this.animationData || !this.modelData) {\n            console.error(`No model or data found for ${objectType}_${spawnType}`);\n            return;\n        }\n        \n        // Create the initial model instance\n        this.modelGroup = this.model.clone();  \n        // Add the model group to the scene\n        this.game.scene.add(this.modelGroup);\n\n        this.modelGroup.position.set(0, -10000, 0);\n        \n        // Set initial animation\n        this.setAnimation('idle');\n    }\n    \n    setAnimation(animationName) {\n        if (!this.animationData[animationName]) {\n            console.warn(`Animation '${animationName}' not found, defaulting to 'idle'`);\n            animationName = 'idle';\n            \n            if (!this.animationData[animationName]) {\n                const availableAnims = Object.keys(this.animationData);\n                animationName = availableAnims.length > 0 ? availableAnims[0] : null;\n                \n                if (!animationName) {\n                    console.error('No animations available for this model');\n                    return;\n                }\n            }\n        }\n        \n        if (this.animationState !== animationName) {\n            this.animationState = animationName;\n            this.currentFrameIndex = 0;\n            this.frameTime = 0;\n            this.updateModelFrame();\n        }\n    }\n    \n    draw() {\n        if(!this.game.config.configs.game.is3D) {\n            return;\n        }\n        // Update animation frames\n        this.frameTime += this.game.deltaTime;\n        if (this.frameTime >= this.frameDuration) {\n            this.frameTime -= this.frameDuration;\n            this.advanceFrame();\n        }\n        // Update position of model to match entity position\n        if (this.parent && this.parent.position) {\n            this.modelGroup.position.set(\n                this.parent.position.x,\n                this.parent.position.z,\n                this.parent.position.y\n            );\n            \n            // Handle rotation based on movement direction\n            this.updateDirection();\n        }\n        \n   \n    }\n    \n    updateDirection() {\n        // Calculate direction based on movement\n        if (this.parent && this.parent.lastPosition) {\n            const dx = this.parent.position.x - this.parent.lastPosition.x;\n            const dy = this.parent.position.y - this.parent.lastPosition.y;\n            \n            // Only update direction if there's significant movement\n            if (Math.abs(dx) > 0.001 || Math.abs(dy) > 0.001) {\n                // Calculate angle in radians\n                let angle = Math.atan2(dy, dx);\n            \n                // Rotate model to face movement direction\n                this.modelGroup.rotation.y = -angle + Math.PI / 2;\n                \n                // Set walking animation when moving\n                if (this.animationData['walk']) {\n                    this.setAnimation('walk');\n                    return;\n                }\n            } else {\n                // Entity is stationary, use idle animation\n                this.setAnimation('idle');\n            }\n        }\n    }\n    \n    advanceFrame() {\n        const frames = this.animationData[this.animationState];\n        if (!frames || frames.length === 0) return;\n        \n        this.currentFrameIndex = (this.currentFrameIndex + 1) % frames.length;\n        this.updateModelFrame();\n    }\n    \n    updateModelFrame() {\n        // Get current animation and frame\n        const frames = this.animationData[this.animationState];\n        if (!frames?.length) return;\n        \n        const frameData = frames[this.currentFrameIndex] || {};\n        \n        // Traverse the modelGroup to apply transformations\n        this.modelGroup.traverse((obj) => {\n          // Handle group-level transformations (apply to group objects)\n            if (!obj.isMesh && obj.name && this.modelData[obj.name]) {\n                const groupName = obj.name;\n                const groupData = frameData[groupName];\n                const modelGroupData = this.modelData[groupName];\n                this.updateObjectTransforms(obj, groupData, modelGroupData);\n            }\n            \n            // Handle shape-level transformations (apply to meshes)\n            if (obj.isMesh && obj.userData?.index >= 0 && obj.parent?.name) {\n                const groupName = obj.parent.name;\n                const index = obj.userData.index;\n                const groupData = frameData[groupName];\n                const modelGroupData = this.modelData[groupName];\n                // Find shape in animationData by id (id: 1 maps to index 0)\n                let shape;\n                if (groupData?.shapes) {\n                    shape = groupData.shapes.find(s => s.id === index);\n                }\n                const modelShape = modelGroupData?.shapes?.[index];\n                \n                if (shape || modelShape) {\n                    this.updateShapeTransforms(obj, shape, modelShape);\n                }\n            }\n        });\n    }\n    \n    updateObjectTransforms(obj, groupData, modelGroupData) {\n        if (!modelGroupData) return;\n        \n        // Position\n        const pos = groupData?.position || modelGroupData.position || { x: 0, y: 0, z: 0 };\n        obj.position.set(\n            pos.x ?? modelGroupData.position?.x ?? 0,\n            pos.y ?? modelGroupData.position?.y ?? 0,\n            pos.z ?? modelGroupData.position?.z ?? 0\n        );\n        \n        // Rotation\n        const rot = groupData?.rotation || modelGroupData.rotation || { x: 0, y: 0, z: 0 };\n        obj.rotation.set(\n            rot.x ?? modelGroupData.rotation?.x ?? 0,\n            rot.y ?? modelGroupData.rotation?.y ?? 0,\n            rot.z ?? modelGroupData.rotation?.z ?? 0\n        );\n        \n        // Scale\n        const scale = groupData?.scale || modelGroupData.scale || { x: 1, y: 1, z: 1 };\n        obj.scale.set(\n            scale.x ?? modelGroupData.scale?.x ?? 1,\n            scale.y ?? modelGroupData.scale?.y ?? 1,\n            scale.z ?? modelGroupData.scale?.z ?? 1\n        );\n    }\n    updateShapeTransforms(obj, shape, modelShape) {\n        if (!modelShape) return;\n\n        // Position (local to group)\n        obj.position.set(\n            shape?.x ?? modelShape.x ?? 0,\n            shape?.y ?? modelShape.y ?? 0,\n            shape?.z ?? modelShape.z ?? 0\n        );\n        \n        // Rotation (local to group, convert degrees to radians)\n        obj.rotation.set(\n            ((shape?.rotationX ?? modelShape.rotationX) || 0) * Math.PI / 180,\n            ((shape?.rotationY ?? modelShape.rotationY) || 0) * Math.PI / 180,\n            ((shape?.rotationZ ?? modelShape.rotationZ) || 0) * Math.PI / 180\n        );\n        \n        // Scale (local to group)\n        obj.scale.set(\n            shape?.scaleX ?? modelShape.scaleX ?? 1,\n            shape?.scaleY ?? modelShape.scaleY ?? 1,\n            shape?.scaleZ ?? modelShape.scaleZ ?? 1\n        );\n\n    }\n    destroy() {\n        if(this.modelGroup){\n            // Remove model from scene\n            if (this.modelGroup && this.game.scene) {\n                this.game.scene.remove(this.modelGroup);\n            }\n            \n            // Clear all children\n            while (this.modelGroup.children.length > 0) {\n                const child = this.modelGroup.children[0];\n                this.modelGroup.remove(child);\n            }\n            \n            this.modelGroup = null;\n        }\n    }\n}"
+      "MapRenderer": {
+        "fileName": "MapRenderer",
+        "script": "class MapRenderer extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init({canvasBuffer, terrainCanvasBuffer, worldObjects, imageManager, levelName, gameConfig, level, isEditor, palette}) {   \r\n\r\n        this.config = gameConfig;\r\n        this.imageManager = imageManager;\r\n        this.worldObjects = worldObjects;\r\n        this.selectedTowerType = null;\r\n        this.hoverCell = { x: -1, y: -1 };\r\n        this.showRange = false;\r\n        this.isMapCached = false; // Flag to track if map needs redrawing\r\n        this.currentLevel = levelName;\r\n        this.level = level;\r\n        this.tileMap = level.tileMap;\r\n        this.palette = palette;\r\n\r\n        // Create off-screen canvas for caching\r\n        if(!this.config.is3D || isEditor) {\r\n            this.ctx = canvasBuffer.getContext('2d');\r\n            this.mapCacheCanvas = document.createElement('canvas');\r\n            this.mapCacheCanvas.width = this.config.canvasWidth;\r\n            this.mapCacheCanvas.height = this.config.canvasHeight;\r\n            this.mapCacheCtx = this.mapCacheCanvas.getContext('2d');\r\n\r\n            \r\n            this.envCacheCanvasBG = document.createElement('canvas');\r\n            this.envCacheCanvasBG.width = this.config.canvasWidth;\r\n            this.envCacheCanvasBG.height = this.config.canvasHeight / 2;\r\n            this.envCacheCtxBG = this.envCacheCanvasBG.getContext('2d');\r\n\r\n            this.envCacheCanvasFG = document.createElement('canvas');\r\n            this.envCacheCanvasFG.width = this.config.canvasWidth;\r\n            this.envCacheCanvasFG.height = this.config.canvasHeight / 2;\r\n            this.envCacheCtxFG = this.envCacheCanvasFG.getContext('2d');\r\n        }\r\n        this.terrainCanvas = terrainCanvasBuffer;\r\n        this.terrainCanvas.width = this.tileMap.size * this.config.gridSize;\r\n        this.terrainCanvas.height = this.tileMap.size * this.config.gridSize;\r\n        this.terrainCtx = this.terrainCanvas.getContext('2d');\r\n        \r\n        this.terrainTileMapper = this.game.terrainTileMapper;\r\n        this.game.mapRenderer = this;\r\n        this.isometric = this.game.config.configs.game.isIsometric;\r\n    }\r\n\r\n    draw(){}\r\n    render(tileMapData) {\r\n        if(!this.isMapCached){\r\n            this.terrainCtx.clearRect(0, 0, this.terrainCanvas.width, this.terrainCanvas.height);\r\n                \r\n            // Draw the map onto the cache canvas\r\n            this.drawTileMap(tileMapData);\r\n            this.renderEnvironment();\r\n            \r\n            //this.drawPaths(this.terrainCacheCtx, paths);\r\n        }\r\n        // Mark cache as valid\r\n        this.isMapCached = true;\r\n    }\r\n    renderEnvironment() {\r\n        if (this.tileMap.environmentObjects.length === 0) return;\r\n    \r\n        // Group environment objects by type\r\n        const objectsByType = {};\r\n        this.tileMap.environmentObjects.forEach(obj => {\r\n            if (!objectsByType[obj.type]) {\r\n                objectsByType[obj.type] = [];\r\n            }\r\n            objectsByType[obj.type].push(obj);\r\n        });\r\n    \r\n        // Process each type separately\r\n        Object.entries(objectsByType).forEach(([type, objects]) => {\r\n            // Load the model for this type\r\n            const referenceModel = this.game.modelManager.getModel(\"worldObjects\", type);\r\n            if (!referenceModel) return;\r\n    \r\n            // Find all meshes and store their complete transform data\r\n            const meshData = [];\r\n            referenceModel.updateMatrixWorld(true); // Ensure world matrices are up to date\r\n    \r\n            referenceModel.traverse(node => {\r\n                if (node.isMesh) {\r\n                    const parent = node.parent;\r\n                    const parentWorldMatrix = parent.matrixWorld.clone();\r\n                    const localMatrix = node.matrix.clone();\r\n    \r\n                    // Get transform relative to model root\r\n                    const relativeMatrix = new THREE.Matrix4();\r\n                    relativeMatrix.copy(parentWorldMatrix);\r\n                    relativeMatrix.multiply(localMatrix);\r\n    \r\n                    meshData.push({\r\n                        mesh: node,\r\n                        relativeMatrix: relativeMatrix\r\n                    });\r\n                }\r\n            });\r\n            if (meshData.length === 0) return;\r\n    \r\n            // Create instanced meshes for this type\r\n            const instancedMeshes = meshData.map(({ mesh, relativeMatrix }) => {\r\n                const instancedMesh = new THREE.InstancedMesh(\r\n                    mesh.geometry,\r\n                    mesh.material,\r\n                    objects.length // Number of instances for this type\r\n                );\r\n                instancedMesh.userData.relativeMatrix = relativeMatrix;\r\n                instancedMesh.castShadow = true;\r\n                instancedMesh.receiveShadow = true;\r\n                return instancedMesh;\r\n            });\r\n    \r\n            // Set positions for all instances of this type\r\n            const matrix = new THREE.Matrix4();\r\n            const dummy = new THREE.Object3D();\r\n    \r\n            objects.forEach((obj, index) => {\r\n                // Get pixel color at object position\r\n                let hexColor = this.tileMap.terrainTypes[this.tileMap.extensionTerrainType].color.slice(1);\r\n                let numColor = parseInt(hexColor, 16); // Convert hex string to number, e.g., 0xaa3311\r\n\r\n                let r = (numColor >> 16) & 0xff; // Red channel\r\n                let g = (numColor >> 8) & 0xff;  // Green channel   \r\n                let b = numColor & 0xff;         // Blue channel\r\n                if (g > r && g > b) {\r\n                    dummy.position.set(\r\n                        obj.x, \r\n                        this.game.config.heightMaps[this.game.config.worlds[this.level.world].heightMap].heightStep * this.tileMap.extensionTerrainType, \r\n                        obj.y\r\n                    );\r\n                    dummy.rotation.y = Math.random() * Math.PI * 2;\r\n                    const scale = 0.8 + Math.random() * 0.4;\r\n                    dummy.scale.set(scale, scale, scale);\r\n                    dummy.updateMatrix();\r\n            \r\n                    // Apply transforms while preserving mesh relationships\r\n                    instancedMeshes.forEach(instancedMesh => {\r\n                        matrix.copy(dummy.matrix);\r\n                        matrix.multiply(instancedMesh.userData.relativeMatrix);\r\n                        instancedMesh.setMatrixAt(index, matrix);\r\n                    });\r\n                }\r\n            });\r\n    \r\n            // Add instanced meshes to the scene\r\n            instancedMeshes.forEach(instancedMesh => {\r\n                instancedMesh.instanceMatrix.needsUpdate = true;\r\n                this.game.scene.add(instancedMesh);\r\n            });\r\n        });\r\n    }\r\n    renderBG(tileMapData, paths) {\r\n        this.clearMap(tileMapData);\r\n        // Generate cache if not already done\r\n        if (!this.isMapCached) {\r\n            this.cacheMap(tileMapData, paths, this.isometric);            \r\n        }        \r\n  \r\n        // Draw cached map image to main canvas\r\n      \r\n       this.ctx.drawImage( this.terrainCanvas, ( this.config.canvasWidth - this.terrainCanvas.width) / 2, ( this.config.canvasHeight - this.terrainCanvas.height) / 2 );\r\n\r\n       //this.ctx.drawImage(this.terrainCanvas, 0, 0);\r\n        //this.ctx.drawImage(this.mapCacheCanvas, 0,  -this.config.canvasHeight / 2);\r\n        this.ctx.drawImage(this.envCacheCanvasBG, 0, 0);\r\n    }\r\n    renderFG() {  \r\n        this.ctx.drawImage(this.envCacheCanvasFG, 0, this.config.canvasHeight / 2);\r\n    }    \r\n    setLevel(level) {\r\n        this.currentLevel = level;\r\n        this.terrainImages = this.imageManager.getImages(\"levels\", level);\r\n\r\n    }\r\n\r\n    drawTileMap(tileMapData) {\r\n        this.terrainTileMapper.draw(tileMapData.terrainMap);\r\n    }\r\n    clearMap(tileMapData) {\r\n        this.ctx.clearRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);\r\n        this.ctx.fillStyle = tileMapData.terrainTypes[tileMapData.extensionTerrainType].color;       \r\n        this.ctx.fillRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);\r\n    }\r\n    // Call this when map data changes or on initialization\r\n    cacheMap(tileMapData, paths, isometric) {\r\n        this.terrainCtx.clearRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);\r\n                   \r\n        // Clear the cache canvas\r\n        this.mapCacheCtx.clearRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);\r\n        \r\n        // Draw the map onto the cache canvas\r\n        this.drawTileMap(tileMapData, isometric);\r\n        this.drawPaths(this.mapCacheCtx, paths);\r\n        this.drawEnvironment(tileMapData.terrainMap.length, tileMapData.terrainMap.length * tileMapData.terrainMap.length);\r\n        \r\n        // Mark cache as valid\r\n        this.isMapCached = true;\r\n    }\r\n\r\n    drawMap(tileMap) {\r\n\r\n        this.mapCacheCtx.fillStyle = '#4a7c59';\r\n        this.mapCacheCtx.fillRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);\r\n        const tileWidth = this.config.gridSize;\r\n        const tileHeight = this.config.gridSize * 0.5;\r\n        \r\n        for (let y = 0; y < tileMap.length; y++) {\r\n            for (let x = 0; x < tileMap[y].length; x++) {\r\n                const tile = tileMap[y][x];\r\n                \r\n                // Use translator to get iso coordinates\r\n                const isoCoords = this.game.translator.gridToIso(x, y);\r\n                const isoX = isoCoords.x;\r\n                const isoY = isoCoords.y;\r\n                \r\n                this.mapCacheCtx.fillStyle = tile.color;\r\n                this.mapCacheCtx.beginPath();\r\n                this.mapCacheCtx.moveTo(isoX, isoY);\r\n                this.mapCacheCtx.lineTo(isoX + tileWidth / 2, isoY + tileHeight / 2);\r\n                this.mapCacheCtx.lineTo(isoX, isoY + tileHeight);\r\n                this.mapCacheCtx.lineTo(isoX - tileWidth / 2, isoY + tileHeight / 2);\r\n                this.mapCacheCtx.closePath();\r\n                this.mapCacheCtx.fill();\r\n                this.mapCacheCtx.strokeStyle = 'rgba(0, 0, 0, 0.1)';\r\n                this.mapCacheCtx.stroke();\r\n            }\r\n        }\r\n        \r\n       \r\n        this.drawEnvironment(tileMap.length);\r\n    }\r\n\r\n    drawPaths(ctx, paths) {\r\n        const tileHeight = this.config.gridSize * 0.5;\r\n        ctx.strokeStyle = '#ffd166';\r\n        ctx.lineWidth = 2;\r\n        ctx.beginPath();\r\n        \r\n        paths.forEach(path => {\r\n            // First point in path\r\n            const firstIsoCoords = this.game.translator.gridToIso(path[0].x, path[0].y);\r\n            const firstIsoX = firstIsoCoords.x;\r\n            const firstIsoY = firstIsoCoords.y + tileHeight / 2; // Add half tile height for center of tile\r\n            \r\n            ctx.moveTo(firstIsoX, firstIsoY);\r\n            \r\n            // Remaining points in path\r\n            path.forEach(location => {\r\n                const isoCoords = this.game.translator.gridToIso(location.x, location.y);\r\n                const isoX = isoCoords.x;\r\n                const isoY = isoCoords.y + tileHeight / 2; // Add half tile height for center of tile\r\n                \r\n                ctx.lineTo(isoX, isoY);\r\n            });\r\n        });\r\n        \r\n        ctx.stroke();\r\n    }\r\n\r\n    drawEnvironment(boardSize, amountToDraw) {\r\n\r\n        let itemAmt = amountToDraw;\r\n        let environmentTypes = [];\r\n        for(let envType in this.worldObjects){\r\n            environmentTypes.push(envType);\r\n        }\r\n        this.envCacheCtxBG.clearRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);\r\n        this.envCacheCtxFG.clearRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);\r\n        \r\n        let items = [];\r\n        \r\n        // Check if we have stored environment objects\r\n        if (this.tileMap.environmentObjects && this.tileMap.environmentObjects.length > 0) {\r\n            // Use the stored objects\r\n            this.tileMap.environmentObjects.forEach(obj => {\r\n                const images = this.imageManager.getImages(\"environment\", obj.type);\r\n                if (images && images.idle && images.idle[0] && images.idle[0][obj.imageIndex]) {\r\n                    items.push({\r\n                        img: images.idle[0][obj.imageIndex],\r\n                        x: obj.x,\r\n                        y: obj.y\r\n                    });\r\n                }\r\n            });\r\n        } else {       \r\n            // for(let i = 0; i < itemAmt; i++) {\r\n            //     // Define the game board boundaries\r\n            //     const boardMinX = 0;\r\n            //     const boardMaxX = boardSize * this.config.gridSize;\r\n            //     const boardMinY = 0;\r\n            //     const boardMaxY = boardSize * this.config.gridSize;\r\n                \r\n            //     // Generate a random position that's outside the board but within a reasonable distance\r\n            //     let x, y;\r\n                \r\n            //     // Expand the area where we can place objects\r\n            //     const expandAmount = boardSize * this.config.gridSize; // Adjust this value as needed\r\n                \r\n            //     // Randomly choose whether to place on x-axis or y-axis outside the board\r\n            //     if (Math.random() < 0.5) {\r\n            //         // Place on the left or right of the board\r\n            //         x = Math.random() < 0.5 ?\r\n            //             boardMinX - Math.random() * expandAmount : // Left side\r\n            //             boardMaxX + Math.random() * expandAmount;  // Right side\r\n                    \r\n            //         // Allow y to be anywhere, including outside the board\r\n            //         y = boardMinY - expandAmount + Math.random() * (boardMaxY - boardMinY + 2 * expandAmount);\r\n            //     } else {\r\n            //         // Place on the top or bottom of the board\r\n            //         y = Math.random() < 0.5 ?\r\n            //             boardMinY - Math.random() * expandAmount : // Top side\r\n            //             boardMaxY + Math.random() * expandAmount;  // Bottom side\r\n                    \r\n            //         // Allow x to be anywhere, including outside the board\r\n            //         x = boardMinX - expandAmount + Math.random() * (boardMaxX - boardMinX + 2 * expandAmount);\r\n            //     }\r\n                \r\n            //     // Double-check that the position is actually outside the board\r\n            //     if (x < boardMinX || x > boardMaxX || y < boardMinY || y > boardMaxY) {\r\n            //         const type = environmentTypes[Math.floor(Math.random() * environmentTypes.length)];\r\n            //         const images = this.imageManager.getImages(\"environment\", type);\r\n            //         if(images){\r\n            //             items.push( { img: images.idle[0][parseInt(Math.random()*images.idle[0].length)], x: x, y: y});\r\n            //         }\r\n            //     } else {\r\n            //         i--; // Position inside board, try again\r\n            //     }\r\n            // }\r\n        }\r\n\r\n        items.sort((a, b) => {\r\n            return (a.y * boardSize + a.x) - (b.y * boardSize + b.x)\r\n        });\r\n\r\n        items.forEach((item) => {            \r\n            // Convert pixel to isometric\r\n            const isoPos = this.game.translator.pixelToIso(item.x, item.y);\r\n            const image = item.img;\r\n            const imgWidth = image.width;\r\n            const imgHeight = image.height;\r\n            \r\n            const drawX = isoPos.x;\r\n            const drawY = isoPos.y;\r\n            if( drawY < this.config.canvasHeight / 2 ) {\r\n                this.envCacheCtxBG.drawImage(image, drawX - imgWidth / 2, drawY - imgHeight / 2);\r\n            } else if(drawY - this.config.canvasHeight / 2 - imgHeight / 2 > 0) {//prevent trees in FG from getting chopped off at the top if they are too close to the middle of the frame.\r\n  \r\n                this.envCacheCtxFG.drawImage(image, drawX - imgWidth / 2, drawY - this.config.canvasHeight / 2 - imgHeight / 2);\r\n            }\r\n        });\r\n    }\r\n\r\n}"
       },
       "Renderer": {
         "fileName": "Renderer",
@@ -17911,10 +17911,6 @@ const DEFAULT_PROJECT_CONFIG = {
           "audioEditor"
         ]
       },
-      "exportScriptModule": {
-        "title": "Export Scripts Module",
-        "library": "ZipExporter"
-      },
       "graphicsModule": {
         "title": "Graphics Editor",
         "container": "graphics-editor-container",
@@ -17939,6 +17935,10 @@ const DEFAULT_PROJECT_CONFIG = {
         "inputDataType": "json",
         "loadHook": "renderGraphicsObject",
         "saveHook": "saveGraphicsObject"
+      },
+      "exportScriptModule": {
+        "title": "Export Scripts Module",
+        "library": "ZipExporter"
       },
       "scriptModule": {
         "title": "Script Editor",
@@ -18050,18 +18050,1244 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "scifi2",
         "css": "@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap'); :root {     --primary-bg: #0a0a1a;     --secondary-bg: #121228;     --accent-color: #00ffff;     --text-color: #e0e7ff;     --border-color: #2a2a4a;     --highlight-color: #ff00ff;     --hover-color: rgba(0, 255, 255, 0.2); }  body {     background-color: var(--primary-bg);     color: var(--text-color);     font-family: 'Orbitron', 'Arial', sans-serif;     line-height: 1.6; }  .container {     background-color: var(--secondary-bg);     border: 2px solid var(--border-color);     box-shadow: 0 0 20px rgba(0, 255, 255, 0.1); }  /* Sidebar Styling */ .sidebar {     background-color: #0f0f2a;     border-right: 1px solid var(--border-color); }  .object-item, .object-type-item {     background-color: var(--secondary-bg);     border: 1px solid var(--border-color);     color: var(--text-color);     transition: all 0.3s ease; }  .object-item:hover, .object-type-item:hover {     background-color: var(--hover-color);     border-color: var(--accent-color); }  .object-item.selected, .object-type-item.selected {     background-color: var(--accent-color);     color: var(--primary-bg); }  /* Button Styling */ button {     background-color: var(--secondary-bg);     color: var(--accent-color);     border: 2px solid var(--accent-color);     transition: all 0.3s ease;     position: relative;     overflow: hidden; }  button:before {     content: '';     position: absolute;     top: 0;     left: -100%;     width: 100%;     height: 100%;     background: linear-gradient(120deg, transparent, var(--highlight-color), transparent);     transition: all 0.5s ease; }  button:hover:before {     left: 100%; }  button:hover {     background-color: var(--accent-color);     color: var(--primary-bg); }  .primary {     background-color: var(--accent-color);     color: var(--primary-bg); }  .danger {     border-color: #ff4444;     color: #ff4444; }  /* Input Styling */ input, textarea, select {     background-color: var(--secondary-bg);     color: var(--text-color);     border: 1px solid var(--border-color);     transition: border-color 0.3s ease; }  input:focus, textarea:focus, select:focus {     border-color: var(--accent-color);     outline: none;     box-shadow: 0 0 10px rgba(0, 255, 255, 0.2); }  /* Modal Styling */ .modal {     background-color: rgba(10, 10, 26, 0.9); }  .modal-content {     background-color: var(--secondary-bg);     border: 2px solid var(--border-color);     box-shadow: 0 0 30px rgba(0, 255, 255, 0.1); }  /* Graphics Editor Enhancements */ #canvas-container {     background:          linear-gradient(45deg, rgba(0,255,255,0.05) 25%, transparent 25%) 0 0,         linear-gradient(-45deg, rgba(0,255,255,0.05) 25%, transparent 25%) 0 0,         linear-gradient(45deg, transparent 75%, rgba(0,255,255,0.05) 75%) 0 0,         linear-gradient(-45deg, transparent 75%, rgba(0,255,255,0.05) 75%) 0 0;     background-size: 20px 20px;     background-color: var(--primary-bg); }  .scene-info {     background-color: rgba(18, 18, 40, 0.8);     border: 1px solid var(--border-color);     color: var(--accent-color); }  /* Toolbar Styling */ .toolbar .btn {     background-color: var(--secondary-bg);     border-color: var(--border-color);     color: var(--accent-color); }  .toolbar .btn:hover {     background-color: var(--accent-color);     color: var(--primary-bg); }  /* Tab and Category Styling */ .tab, .category-header {     color: var(--text-color);     transition: color 0.3s ease; }  .tab:hover, .category-header:hover {     color: var(--accent-color); }  .tab.active {     border-bottom-color: var(--accent-color); }  /* Scrollbar (for browsers that support) */ ::-webkit-scrollbar {     width: 10px; }  ::-webkit-scrollbar-track {     background: var(--secondary-bg); }  ::-webkit-scrollbar-thumb {     background: var(--accent-color);     border-radius: 5px; }  ::-webkit-scrollbar-thumb:hover {     background: var(--highlight-color); }  /* Subtle Sci-Fi Animations */ @keyframes pulse-border {     0%, 100% { box-shadow: 0 0 10px rgba(0, 255, 255, 0.3); }     50% { box-shadow: 0 0 20px rgba(0, 255, 255, 0.6); } }  @keyframes grid-pulse {     0%, 100% { opacity: 0.1; }     50% { opacity: 0.3; } }  /* Additional Futuristic Effects */ body::before {     content: '';     position: fixed;     top: 0;     left: 0;     width: 100%;     height: 100%;     pointer-events: none;     background:          repeating-linear-gradient(             0deg,             rgba(0, 0, 0, 0.15),             rgba(0, 0, 0, 0.15) 1px,             transparent 1px,             transparent 2px         );     opacity: 0.3;     z-index: 9999; }"
       },
-      "videoGame2": {
-        "title": "Video Game 2",
-        "fileName": "videoGame2",
-        "css": "/* retro-theme.css - Pixel Art Retro Video Game Theme */\r\n\r\n/* Import pixel font from Google Fonts */\r\n@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');\r\n\r\n/* Base Styles */\r\nbody {\r\n    background-color: #1a1a1a; /* Dark retro background */\r\n    font-family: 'Press Start 2P', cursive; /* Pixelated font */\r\n    image-rendering: pixelated; /* Ensures crisp pixel art rendering */\r\n    color: #fff; /* Default text color */\r\n}\r\n\r\n/* Container */\r\n.container {\r\n    background: #2b2b2b; /* Retro gray */\r\n    border: 4px solid #000; /* Thick black border */\r\n    padding: .5em;\r\n}\r\n\r\n/* Sidebar */\r\n.sidebar {\r\n    background: #3c3c3c; /* Mid-gray retro */\r\n    border: 4px solid #000;\r\n}\r\n\r\n.sidebar img {\r\n    image-rendering: pixelated;\r\n    border-bottom: 2px solid #000;\r\n}\r\n\r\n/* Object List */\r\n.object-item {\r\n    background: #5a5a5a; /* Darker gray */\r\n    border: 2px solid #000;\r\n    color: #fff;\r\n    font-size: 10px; /* Smaller for pixel readability */\r\n}\r\n\r\n.object-item:hover, .object-item.selected {\r\n    background: #ffcc00; /* Bright retro yellow */\r\n    color: #000;\r\n}\r\n.object-type-item.selected {\r\n    color: #ffcc00;\r\n}\r\n\r\n/* Buttons */\r\nbutton {\r\n    background: #ff3333; /* Retro red */\r\n    color: #fff;\r\n    border: 2px solid #000;\r\n    font-family: 'Press Start 2P', cursive;\r\n    font-size: 10px;\r\n    text-transform: uppercase; /* Retro game style */\r\n    transition: background 0.1s ease;\r\n}\r\n\r\nbutton:hover {\r\n    background: #33cc33; /* Retro green */\r\n}\r\n\r\nbutton.primary {\r\n    background: #33cc33; /* Green for primary actions */\r\n}\r\n\r\nbutton.primary:hover {\r\n    background: #ffcc00; /* Yellow on hover */\r\n}\r\n\r\n/* Main Content */\r\n.main-content {\r\n    background: #2b2b2b;\r\n}\r\n\r\n/* Editor */\r\n.editor {\r\n    background: #3c3c3c;\r\n    border: 4px solid #000;\r\n    color: #fff;\r\n    font-size: 10px;\r\n}\r\n\r\n/* Canvas and Grid Containers */\r\n#canvas-container, .grid-container {\r\n    background: #000; /* Black canvas background */\r\n    border: 4px solid #fff;\r\n}\r\n\r\n#canvas, #grid {\r\n    image-rendering: pixelated;\r\n    background: repeating-linear-gradient(\r\n        45deg,\r\n        #333 0px,\r\n        #333 10px,\r\n        #000 10px,\r\n        #000 20px\r\n    ); /* Retro checkerboard grid */\r\n}\r\n\r\n.scene-info {\r\n    background: rgba(0, 0, 0, 0.8);\r\n    border: 2px solid #fff;\r\n    color: #00ff00; /* Neon green */\r\n    font-size: 8px;\r\n}\r\n\r\n/* Toolbar */\r\n.toolbar {\r\n    background: #5a5a5a;\r\n    border-bottom: 2px solid #000;\r\n}\r\n\r\n.btn {\r\n    background: #ff3333; /* Retro red */\r\n    color: #fff;\r\n    border: 2px solid #000;\r\n    font-family: 'Press Start 2P', cursive;\r\n    font-size: 10px;\r\n    transition: background 0.1s ease;\r\n}\r\n\r\n.btn:hover {\r\n    background: #33cc33; /* Retro green */\r\n}\r\n\r\n.btn.btn-danger {\r\n    background: #ff0000; /* Bright red */\r\n}\r\n\r\n.btn.btn-danger:hover {\r\n    background: #cc0000; /* Darker red */\r\n}\r\n\r\n.btn.btn-secondary {\r\n    background: #6666ff; /* Retro blue */\r\n}\r\n\r\n.btn.btn-secondary:hover {\r\n    background: #9999ff; /* Lighter blue */\r\n}\r\n\r\n.btn.btn-special {\r\n    background: #ff00ff; /* Retro magenta */\r\n}\r\n\r\n.btn.btn-special:hover {\r\n    background: #cc00cc; /* Darker magenta */\r\n}\r\n\r\n/* Modals */\r\n.modal {\r\n    background: rgba(0, 0, 0, 0.8);\r\n}\r\n\r\n.modal-content {\r\n    background: #3c3c3c;\r\n    border: 4px solid #fff;\r\n    color: #fff;\r\n    font-size: 10px;\r\n}\r\n\r\n/* Form Elements */\r\n.form-group label {\r\n    color: #00ff00; /* Neon green */\r\n    font-size: 10px;\r\n}\r\n\r\ninput, textarea, select {\r\n    background: #000;\r\n    border: 2px solid #fff;\r\n    color: #ffcc00; /* Retro yellow */\r\n    font-family: 'Press Start 2P', cursive;\r\n    font-size: 10px;\r\n}\r\n\r\ninput[type=\"color\"] {\r\n    padding: 0; /* Fix color picker padding */\r\n    height: 20px; /* Consistent height */\r\n}\r\n\r\n/* Tabs */\r\n.tab-navigation {\r\n    border-bottom: 2px solid #000;\r\n}\r\n\r\n.tab {\r\n    background: #5a5a5a;\r\n    border: 2px solid #000;\r\n    color: #fff;\r\n    font-size: 10px;\r\n}\r\n\r\n.tab.active {\r\n    background: #ffcc00; /* Yellow for active tab */\r\n    color: #000;\r\n}\r\n\r\n/* Inspector and JSON Editor */\r\n#inspector, #json-editor {\r\n    background: #3c3c3c;\r\n    border: 2px solid #000;\r\n}\r\n\r\n#json-content {\r\n    background: #000;\r\n    color: #00ff00; /* Green for code-like text */\r\n}\r\n\r\n/* Translation Controls */\r\n.translation-controls button {\r\n    background: #6666ff; /* Retro blue */\r\n}\r\n\r\n.translation-controls button:hover {\r\n    background: #9999ff;\r\n}\r\n\r\n/* Shape List */\r\n.shape-item {\r\n    background: #5a5a5a;\r\n    border: 2px solid #000;\r\n    color: #fff;\r\n    font-size: 10px;\r\n}\r\n\r\n.shape-item:hover {\r\n    background: #ffcc00;\r\n    color: #000;\r\n}\r\n\r\n.type-selector .object-item {\r\n  font-size: .6em;\r\n}\r\n\r\n/* codemirror-retro.css - Retro Pixel Art Theme for CodeMirror */\r\n\r\n/* Import pixel font from Google Fonts */\r\n@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');\r\n\r\n/* Base CodeMirror Styles */\r\n.CodeMirror {\r\n    height: 100% !important;\r\n    font-family: 'Press Start 2P', cursive !important;\r\n    font-size: 10px !important; /* Small size for pixel readability */\r\n    background: #000 !important; /* Black background like a CRT screen */\r\n    color: #00ff00 !important; /* Neon green default text */\r\n    border: 4px solid #fff !important; /* Thick white border */\r\n    image-rendering: pixelated; /* Crisp rendering */\r\n}\r\n.CodeMirror-gutters {\r\n background-color: #000;\r\n}\r\n\r\n/* Retro Theme Definition */\r\n.cm-s-retro .CodeMirror-gutters {\r\n    background: #1a1a1a !important; /* Dark gray gutter */\r\n    border-right: 2px solid #fff !important; /* White separator */\r\n    color: #ffcc00 !important; /* Yellow line numbers */\r\n}\r\n\r\n.cm-s-retro .CodeMirror-linenumber {\r\n    color: #ffcc00 !important; /* Yellow line numbers */\r\n    padding: 0 5px !important;\r\n}\r\n\r\n.cm-s-retro .CodeMirror-cursor {\r\n    border-left: 2px solid #ff3333 !important; /* Red blinking cursor */\r\n    animation: blink 1s step-end infinite; /* Retro blink effect */\r\n}\r\n\r\n.cm-s-retro .CodeMirror-selected {\r\n    background: #ff3333 !important; /* Red selection highlight */\r\n    opacity: 0.5; /* Slightly transparent for retro effect */\r\n}\r\n\r\n.cm-s-retro .CodeMirror-focused .CodeMirror-selected {\r\n    background: #ff3333 !important;\r\n}\r\n\r\n/* Syntax Highlighting */\r\n.cm-s-retro .cm-comment {\r\n    color: #6666ff !important; /* Blue for comments */\r\n    font-style: italic; /* Slight retro flair */\r\n}\r\n\r\n.cm-s-retro .cm-string {\r\n    color: #ffcc00 !important; /* Yellow for strings */\r\n}\r\n\r\n.cm-s-retro .cm-number {\r\n    color: #33cc33 !important; /* Green for numbers */\r\n}\r\n\r\n.cm-s-retro .cm-keyword {\r\n    color: #ff00ff !important; /* Magenta for keywords */\r\n    font-weight: bold; /* Bold for emphasis */\r\n}\r\n\r\n.cm-s-retro .cm-operator {\r\n    color: #fff !important; /* White for operators */\r\n}\r\n\r\n.cm-s-retro .cm-variable {\r\n    color: #00ff00 !important; /* Green for variables */\r\n}\r\n\r\n.cm-s-retro .cm-variable-2 {\r\n    color: #33cc33 !important; /* Lighter green for secondary variables */\r\n}\r\n\r\n.cm-s-retro .cm-def {\r\n    color: #ff00ff !important; /* Magenta for definitions */\r\n}\r\n\r\n.cm-s-retro .cm-property {\r\n    color: #ffcc00 !important; /* Yellow for properties */\r\n}\r\n\r\n.cm-s-retro .cm-function {\r\n    color: #ff00ff !important; /* Magenta for functions */\r\n}\r\n\r\n.cm-s-retro .cm-builtin {\r\n    color: #33cc33 !important; /* Green for built-ins */\r\n}\r\n\r\n.cm-s-retro .cm-tag {\r\n    color: #ff3333 !important; /* Red for tags (if HTML mode is used) */\r\n}\r\n\r\n.cm-s-retro .cm-attribute {\r\n    color: #ffcc00 !important; /* Yellow for attributes */\r\n}\r\n\r\n/* Matching Brackets */\r\n.cm-s-retro .CodeMirror-matchingbracket {\r\n    color: #33cc33 !important; /* Green for matching brackets */\r\n    border-bottom: 2px solid #33cc33 !important;\r\n    background: none !important;\r\n}\r\n\r\n.cm-s-retro .CodeMirror-nonmatchingbracket {\r\n    color: #ff3333 !important; /* Red for non-matching brackets */\r\n    border-bottom: 2px solid #ff3333 !important;\r\n}\r\n\r\n/* Autocomplete Hints */\r\n.CodeMirror-hints {\r\n    background: #2b2b2b !important; /* Dark retro gray */\r\n    border: 2px solid #fff !important; /* White border */\r\n    color: #fff !important;\r\n    font-family: 'Press Start 2P', cursive !important;\r\n    font-size: 10px !important;\r\n    box-shadow: 4px 4px 0 #000; /* Retro shadow effect */\r\n}\r\n\r\n.CodeMirror-hints .CodeMirror-hint {\r\n    color: #ffcc00 !important; /* Yellow for hint items */\r\n    padding: 5px !important;\r\n}\r\n\r\n.CodeMirror-hints .CodeMirror-hint-active {\r\n    background: #ff3333 !important; /* Red for selected hint */\r\n    color: #000 !important;\r\n}\r\n\r\n/* Scrollbars (minimal retro style) */\r\n.CodeMirror-vscrollbar, .CodeMirror-hscrollbar {\r\n    background: #3c3c3c !important;\r\n}\r\n\r\n.CodeMirror-scrollbar-filler {\r\n    background: #000 !important;\r\n}\r\n\r\n/* Animations */\r\n@keyframes blink {\r\n    50% { opacity: 0; }\r\n}"
-      },
       "videogame": {
         "title": "Video Game",
         "fileName": "videogame",
         "css": "@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap');  body {     font-family: 'Orbitron', 'Share Tech Mono', sans-serif;     background-color: #0a0a0a; /* Deep black */     color: #00d4ff; /* Neon blue */     overflow: hidden; }  .sidebar {     background: linear-gradient(135deg, rgba(10, 10, 10, 0.9), rgba(155, 0, 255, 0.1)); /* Black to purple fade */     border: 1px solid #ff007a; /* Hot pink */     box-shadow: 0 0 15px rgba(0, 212, 255, 0.5), inset 0 0 10px rgba(155, 0, 255, 0.3); }  .inventory-item {     background-color: rgba(12, 12, 12, 0.7);     border-left: 3px solid #9b00ff; /* Electric purple */     text-transform: uppercase;     letter-spacing: 2px;     transition: all 0.2s ease; }  .inventory-item:hover {     background-color: rgba(0, 212, 255, 0.2);     transform: scale(1.03);     box-shadow: 0 0 10px rgba(0, 212, 255, 0.7); }  .inventory-item.active {     background-color: rgba(255, 0, 122, 0.3); /* Pink glow */     border-left: 5px solid #ff007a;     box-shadow: 0 0 15px rgba(255, 0, 122, 0.8); }  .hud {     background: rgba(10, 10, 10, 0.8);     border: 1px solid #00d4ff;     box-shadow: 0 0 20px rgba(0, 212, 255, 0.4); }  #game-canvas {     border: 1px dashed #c0c0c0; /* Silver dashed */     background: radial-gradient(circle, rgba(155, 0, 255, 0.1), transparent); }  .hologram-display {     border: 2px solid #9b00ff;     box-shadow: 0 0 25px rgba(155, 0, 255, 0.6);     animation: pulseGlow 2s infinite alternate; }  @keyframes pulseGlow {     0% { box-shadow: 0 0 25px rgba(155, 0, 255, 0.6); }     100% { box-shadow: 0 0 35px rgba(155, 0, 255, 0.9); } }  .control-panel {     background: rgba(0, 0, 0, 0.85);     border: 1px solid #c0c0c0; }  .control-panel button {     background-color: rgba(0, 212, 255, 0.2);     border: 1px solid #00d4ff;     color: #fff;     text-transform: uppercase;     transition: all 0.3s ease; }  .control-panel button:hover {     background-color: rgba(0, 212, 255, 0.4);     box-shadow: 0 0 15px rgba(0, 212, 255, 0.8);     transform: translateY(-3px); }  label {     color: #ff007a; /* Hot pink */     font-weight: bold;     text-transform: uppercase;     letter-spacing: 1.5px; }  input, textarea, select {     border: 1px solid #9b00ff;     background-color: rgba(10, 10, 10, 0.7);     color: #00d4ff;     box-shadow: 0 0 8px rgba(155, 0, 255, 0.4); }  input:focus, textarea:focus, select:focus {     outline: none;     border-color: #ff007a;     box-shadow: 0 0 12px rgba(255, 0, 122, 0.7); }  button {     background-color: rgba(155, 0, 255, 0.2);     border: 1px solid #9b00ff;     color: #fff;     text-transform: uppercase;     letter-spacing: 1px;     transition: all 0.3s ease; }  button:hover {     background-color: rgba(155, 0, 255, 0.4);     box-shadow: 0 0 15px rgba(155, 0, 255, 0.7);     transform: translateY(-2px) scale(1.05); }  button.primary {     background-color: rgba(0, 212, 255, 0.3);     border: 1px solid #00d4ff;     color: #fff; }  button.primary:hover {     background-color: rgba(0, 212, 255, 0.5);     box-shadow: 0 0 20px rgba(0, 212, 255, 0.9); }  button.alert {     background-color: rgba(255, 0, 122, 0.2);     border: 1px solid #ff007a;     color: #fff; }  button.alert:hover {     background-color: rgba(255, 0, 122, 0.4);     box-shadow: 0 0 15px rgba(255, 0, 122, 0.7); }  .modal {     background: rgba(0, 0, 0, 0.9);     backdrop-filter: blur(3px); }  .modal-content {     background: linear-gradient(45deg, rgba(10, 10, 10, 0.9), rgba(0, 212, 255, 0.1));     border: 1px solid #00d4ff;     box-shadow: 0 0 30px rgba(0, 212, 255, 0.5); }  .notification {     background-color: rgba(155, 0, 255, 0.3);     border-left: 4px solid #9b00ff;     color: #fff;     animation: slideIn 0.5s ease-out; }  @keyframes slideIn {     0% { transform: translateX(100%); opacity: 0; }     100% { transform: translateX(0); opacity: 1; } }  .main-content {     background: #0a0a0a;     animation: glitch 4s infinite; }   .grid-overlay {     background: repeating-linear-gradient(45deg, rgba(155, 0, 255, 0.05), rgba(155, 0, 255, 0.05) 10px, transparent 10px, transparent 20px); }  .btn {     border: 1px solid #c0c0c0;     background-color: rgba(0, 212, 255, 0.15);     color: #fff; }  .btn:hover {     background-color: rgba(0, 212, 255, 0.3);     box-shadow: 0 0 10px rgba(0, 212, 255, 0.6); }  .btn-primary {     background-color: rgba(9b, 0, 255, 0.25);     border: 1px solid #9b00ff; }  .btn-primary:hover {     background-color: rgba(155, 0, 255, 0.45);     box-shadow: 0 0 15px rgba(155, 0, 255, 0.8); }  ::-webkit-scrollbar {     width: 6px; }  ::-webkit-scrollbar-track {     background: #0a0a0a; }  ::-webkit-scrollbar-thumb {     background: #00d4ff;     border-radius: 3px; }  ::-webkit-scrollbar-thumb:hover {     background: #ff007a; }"
+      },
+      "videoGame2": {
+        "title": "Video Game 2",
+        "fileName": "videoGame2",
+        "css": "/* retro-theme.css - Pixel Art Retro Video Game Theme */\r\n\r\n/* Import pixel font from Google Fonts */\r\n@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');\r\n\r\n/* Base Styles */\r\nbody {\r\n    background-color: #1a1a1a; /* Dark retro background */\r\n    font-family: 'Press Start 2P', cursive; /* Pixelated font */\r\n    image-rendering: pixelated; /* Ensures crisp pixel art rendering */\r\n    color: #fff; /* Default text color */\r\n}\r\n\r\n/* Container */\r\n.container {\r\n    background: #2b2b2b; /* Retro gray */\r\n    border: 4px solid #000; /* Thick black border */\r\n    padding: .5em;\r\n}\r\n\r\n/* Sidebar */\r\n.sidebar {\r\n    background: #3c3c3c; /* Mid-gray retro */\r\n    border: 4px solid #000;\r\n}\r\n\r\n.sidebar img {\r\n    image-rendering: pixelated;\r\n    border-bottom: 2px solid #000;\r\n}\r\n\r\n/* Object List */\r\n.object-item {\r\n    background: #5a5a5a; /* Darker gray */\r\n    border: 2px solid #000;\r\n    color: #fff;\r\n    font-size: 10px; /* Smaller for pixel readability */\r\n}\r\n\r\n.object-item:hover, .object-item.selected {\r\n    background: #ffcc00; /* Bright retro yellow */\r\n    color: #000;\r\n}\r\n.object-type-item.selected {\r\n    color: #ffcc00;\r\n}\r\n\r\n/* Buttons */\r\nbutton {\r\n    background: #ff3333; /* Retro red */\r\n    color: #fff;\r\n    border: 2px solid #000;\r\n    font-family: 'Press Start 2P', cursive;\r\n    font-size: 10px;\r\n    text-transform: uppercase; /* Retro game style */\r\n    transition: background 0.1s ease;\r\n}\r\n\r\nbutton:hover {\r\n    background: #33cc33; /* Retro green */\r\n}\r\n\r\nbutton.primary {\r\n    background: #33cc33; /* Green for primary actions */\r\n}\r\n\r\nbutton.primary:hover {\r\n    background: #ffcc00; /* Yellow on hover */\r\n}\r\n\r\n/* Main Content */\r\n.main-content {\r\n    background: #2b2b2b;\r\n}\r\n\r\n/* Editor */\r\n.editor {\r\n    background: #3c3c3c;\r\n    border: 4px solid #000;\r\n    color: #fff;\r\n    font-size: 10px;\r\n}\r\n\r\n/* Canvas and Grid Containers */\r\n#canvas-container, .grid-container {\r\n    background: #000; /* Black canvas background */\r\n    border: 4px solid #fff;\r\n}\r\n\r\n#canvas, #grid {\r\n    image-rendering: pixelated;\r\n    background: repeating-linear-gradient(\r\n        45deg,\r\n        #333 0px,\r\n        #333 10px,\r\n        #000 10px,\r\n        #000 20px\r\n    ); /* Retro checkerboard grid */\r\n}\r\n\r\n.scene-info {\r\n    background: rgba(0, 0, 0, 0.8);\r\n    border: 2px solid #fff;\r\n    color: #00ff00; /* Neon green */\r\n    font-size: 8px;\r\n}\r\n\r\n/* Toolbar */\r\n.toolbar {\r\n    background: #5a5a5a;\r\n    border-bottom: 2px solid #000;\r\n}\r\n\r\n.btn {\r\n    background: #ff3333; /* Retro red */\r\n    color: #fff;\r\n    border: 2px solid #000;\r\n    font-family: 'Press Start 2P', cursive;\r\n    font-size: 10px;\r\n    transition: background 0.1s ease;\r\n}\r\n\r\n.btn:hover {\r\n    background: #33cc33; /* Retro green */\r\n}\r\n\r\n.btn.btn-danger {\r\n    background: #ff0000; /* Bright red */\r\n}\r\n\r\n.btn.btn-danger:hover {\r\n    background: #cc0000; /* Darker red */\r\n}\r\n\r\n.btn.btn-secondary {\r\n    background: #6666ff; /* Retro blue */\r\n}\r\n\r\n.btn.btn-secondary:hover {\r\n    background: #9999ff; /* Lighter blue */\r\n}\r\n\r\n.btn.btn-special {\r\n    background: #ff00ff; /* Retro magenta */\r\n}\r\n\r\n.btn.btn-special:hover {\r\n    background: #cc00cc; /* Darker magenta */\r\n}\r\n\r\n/* Modals */\r\n.modal {\r\n    background: rgba(0, 0, 0, 0.8);\r\n}\r\n\r\n.modal-content {\r\n    background: #3c3c3c;\r\n    border: 4px solid #fff;\r\n    color: #fff;\r\n    font-size: 10px;\r\n}\r\n\r\n/* Form Elements */\r\n.form-group label {\r\n    color: #00ff00; /* Neon green */\r\n    font-size: 10px;\r\n}\r\n\r\ninput, textarea, select {\r\n    background: #000;\r\n    border: 2px solid #fff;\r\n    color: #ffcc00; /* Retro yellow */\r\n    font-family: 'Press Start 2P', cursive;\r\n    font-size: 10px;\r\n}\r\n\r\ninput[type=\"color\"] {\r\n    padding: 0; /* Fix color picker padding */\r\n    height: 20px; /* Consistent height */\r\n}\r\n\r\n/* Tabs */\r\n.tab-navigation {\r\n    border-bottom: 2px solid #000;\r\n}\r\n\r\n.tab {\r\n    background: #5a5a5a;\r\n    border: 2px solid #000;\r\n    color: #fff;\r\n    font-size: 10px;\r\n}\r\n\r\n.tab.active {\r\n    background: #ffcc00; /* Yellow for active tab */\r\n    color: #000;\r\n}\r\n\r\n/* Inspector and JSON Editor */\r\n#inspector, #json-editor {\r\n    background: #3c3c3c;\r\n    border: 2px solid #000;\r\n}\r\n\r\n#json-content {\r\n    background: #000;\r\n    color: #00ff00; /* Green for code-like text */\r\n}\r\n\r\n/* Translation Controls */\r\n.translation-controls button {\r\n    background: #6666ff; /* Retro blue */\r\n}\r\n\r\n.translation-controls button:hover {\r\n    background: #9999ff;\r\n}\r\n\r\n/* Shape List */\r\n.shape-item {\r\n    background: #5a5a5a;\r\n    border: 2px solid #000;\r\n    color: #fff;\r\n    font-size: 10px;\r\n}\r\n\r\n.shape-item:hover {\r\n    background: #ffcc00;\r\n    color: #000;\r\n}\r\n\r\n.type-selector .object-item {\r\n  font-size: .6em;\r\n}\r\n\r\n/* codemirror-retro.css - Retro Pixel Art Theme for CodeMirror */\r\n\r\n/* Import pixel font from Google Fonts */\r\n@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');\r\n\r\n/* Base CodeMirror Styles */\r\n.CodeMirror {\r\n    height: 100% !important;\r\n    font-family: 'Press Start 2P', cursive !important;\r\n    font-size: 10px !important; /* Small size for pixel readability */\r\n    background: #000 !important; /* Black background like a CRT screen */\r\n    color: #00ff00 !important; /* Neon green default text */\r\n    border: 4px solid #fff !important; /* Thick white border */\r\n    image-rendering: pixelated; /* Crisp rendering */\r\n}\r\n.CodeMirror-gutters {\r\n background-color: #000;\r\n}\r\n\r\n/* Retro Theme Definition */\r\n.cm-s-retro .CodeMirror-gutters {\r\n    background: #1a1a1a !important; /* Dark gray gutter */\r\n    border-right: 2px solid #fff !important; /* White separator */\r\n    color: #ffcc00 !important; /* Yellow line numbers */\r\n}\r\n\r\n.cm-s-retro .CodeMirror-linenumber {\r\n    color: #ffcc00 !important; /* Yellow line numbers */\r\n    padding: 0 5px !important;\r\n}\r\n\r\n.cm-s-retro .CodeMirror-cursor {\r\n    border-left: 2px solid #ff3333 !important; /* Red blinking cursor */\r\n    animation: blink 1s step-end infinite; /* Retro blink effect */\r\n}\r\n\r\n.cm-s-retro .CodeMirror-selected {\r\n    background: #ff3333 !important; /* Red selection highlight */\r\n    opacity: 0.5; /* Slightly transparent for retro effect */\r\n}\r\n\r\n.cm-s-retro .CodeMirror-focused .CodeMirror-selected {\r\n    background: #ff3333 !important;\r\n}\r\n\r\n/* Syntax Highlighting */\r\n.cm-s-retro .cm-comment {\r\n    color: #6666ff !important; /* Blue for comments */\r\n    font-style: italic; /* Slight retro flair */\r\n}\r\n\r\n.cm-s-retro .cm-string {\r\n    color: #ffcc00 !important; /* Yellow for strings */\r\n}\r\n\r\n.cm-s-retro .cm-number {\r\n    color: #33cc33 !important; /* Green for numbers */\r\n}\r\n\r\n.cm-s-retro .cm-keyword {\r\n    color: #ff00ff !important; /* Magenta for keywords */\r\n    font-weight: bold; /* Bold for emphasis */\r\n}\r\n\r\n.cm-s-retro .cm-operator {\r\n    color: #fff !important; /* White for operators */\r\n}\r\n\r\n.cm-s-retro .cm-variable {\r\n    color: #00ff00 !important; /* Green for variables */\r\n}\r\n\r\n.cm-s-retro .cm-variable-2 {\r\n    color: #33cc33 !important; /* Lighter green for secondary variables */\r\n}\r\n\r\n.cm-s-retro .cm-def {\r\n    color: #ff00ff !important; /* Magenta for definitions */\r\n}\r\n\r\n.cm-s-retro .cm-property {\r\n    color: #ffcc00 !important; /* Yellow for properties */\r\n}\r\n\r\n.cm-s-retro .cm-function {\r\n    color: #ff00ff !important; /* Magenta for functions */\r\n}\r\n\r\n.cm-s-retro .cm-builtin {\r\n    color: #33cc33 !important; /* Green for built-ins */\r\n}\r\n\r\n.cm-s-retro .cm-tag {\r\n    color: #ff3333 !important; /* Red for tags (if HTML mode is used) */\r\n}\r\n\r\n.cm-s-retro .cm-attribute {\r\n    color: #ffcc00 !important; /* Yellow for attributes */\r\n}\r\n\r\n/* Matching Brackets */\r\n.cm-s-retro .CodeMirror-matchingbracket {\r\n    color: #33cc33 !important; /* Green for matching brackets */\r\n    border-bottom: 2px solid #33cc33 !important;\r\n    background: none !important;\r\n}\r\n\r\n.cm-s-retro .CodeMirror-nonmatchingbracket {\r\n    color: #ff3333 !important; /* Red for non-matching brackets */\r\n    border-bottom: 2px solid #ff3333 !important;\r\n}\r\n\r\n/* Autocomplete Hints */\r\n.CodeMirror-hints {\r\n    background: #2b2b2b !important; /* Dark retro gray */\r\n    border: 2px solid #fff !important; /* White border */\r\n    color: #fff !important;\r\n    font-family: 'Press Start 2P', cursive !important;\r\n    font-size: 10px !important;\r\n    box-shadow: 4px 4px 0 #000; /* Retro shadow effect */\r\n}\r\n\r\n.CodeMirror-hints .CodeMirror-hint {\r\n    color: #ffcc00 !important; /* Yellow for hint items */\r\n    padding: 5px !important;\r\n}\r\n\r\n.CodeMirror-hints .CodeMirror-hint-active {\r\n    background: #ff3333 !important; /* Red for selected hint */\r\n    color: #000 !important;\r\n}\r\n\r\n/* Scrollbars (minimal retro style) */\r\n.CodeMirror-vscrollbar, .CodeMirror-hscrollbar {\r\n    background: #3c3c3c !important;\r\n}\r\n\r\n.CodeMirror-scrollbar-filler {\r\n    background: #000 !important;\r\n}\r\n\r\n/* Animations */\r\n@keyframes blink {\r\n    50% { opacity: 0; }\r\n}"
       }
     },
     "levels": {
+      "level2": {
+        "title": "Level 2",
+        "wavesets": [
+          "swarm",
+          "swarm",
+          "swarm"
+        ],
+        "tileMap": {
+          "size": 32,
+          "terrainTypes": [
+            {
+              "type": "water",
+              "color": "#2d85c6",
+              "image": [
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC"
+              ],
+              "buildable": false
+            },
+            {
+              "type": "rock",
+              "color": "#9e9e9e",
+              "image": [
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2OcN2/efwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEAIf9RHEX0vjVAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2OcN2/efwYqgqSkJEZk4xipbQHIcGRLaGIBsiU0swBmCU0tAFkyagHBBD4aRKNBRDAECCoYTUWjQUQwBAgqGE1FAx9EAECFSQ0HGbi8AAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2NkoDFgpLH5DMPAgnnz5v2nZTAxjlpAKHhHg4hQCDGMBtFoEBEMAYIKRlPRaBARDAGCCmieigCFBDkNArgMlAAAAABJRU5ErkJggg==",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASElEQVRIS2NkoDFgpLH5DMPAgnnz5v2nRjAlJSVhDQ1GalkAciQ2S6hqATZLRi3ASB/o8TAaRKNBRHohMpqKCIbZaBCNwCACAOcCUBnjhUZTAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2OcN2/efwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEAIf9RHEX0vjVAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2OcN2/efwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDB0E5FSUlJjDTzAchwUPjRxAKY4TSxANlwkAUAUEhJDYCk3yoAAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAQElEQVRIS2OcN2/efwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFAB7VMRQSdQqICRQv0EtQ99CwDb3jkNHe23xQAAAABJRU5ErkJggg==",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2OcN2/efwYqgqSkJEZk4xhHLUAP3dEgIpjeRoNoNIgIhgBBBaOpaDSICIYAXgXoKQikmGo1GjbDwRZQ5mbCukctIBhGAC4oUBlpvrH3AAAAAElFTkSuQmCC"
+              ],
+              "buildable": false
+            },
+            {
+              "type": "grass",
+              "color": "#4a7c59",
+              "image": [
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS2P0qon8z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCoYTUUjIIgAnCQy6fQdcSIAAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATklEQVRIS2P0qon8z0AlsK1lOSO6UYxDygKQ69F9QVUfwIIH2RKaWIDsE5pZAPPNqAUEc9BoEI0GEcEQIKhgNBWNBhHBECCoYDQVEQwiAA75PFN7PN69AAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2NkoDFgpLH5DKMWEAxhRq+ayP8EVVGgYNQCgoE3GkSjQUQwBAgqGE1Fo0FEMAQIKhhNRQSDCAB4BShTjqMEpwAAAABJRU5ErkJggg==",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2NkoDFgpLH5DKMWEAxhRq+ayP8EVRFQsK1lOc6gpooFIPtxWUI1C3BZMmoBSvRji4fRIBoNItIKkdFURDC8RoNocAYRADzPTBkQkiUcAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS2P0qon8z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCoYTUUjIIgAnCQy6fQdcSIAAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2P0qon8z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCqgWSra1rKcEWQ7TSyAGU4TC5ANp7oF6IbTxQIARN88U7u38m0AAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2P0qon8z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCpgJKiCQgWjFhAMQJoHEQCyWyhTURksDgAAAABJRU5ErkJggg==",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2P0qon8z0AlsK1lOSO6UYyjFiAHyWgQEUxro0E0GkQEQ4CggtFUNMyDCFsEg7xMlQoHl+FgCwgGLIUKRi0gGIA0DyIAQT9MGVwsaTUAAAAASUVORK5CYII="
+              ],
+              "buildable": true
+            },
+            {
+              "type": "forest",
+              "color": "#1c6438",
+              "image": [
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS2OUSbH4z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCoYTUUjIIgA71YpQQB/w8QAAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATklEQVRIS2OUSbH4z0Al8GTOCUZ0oxiHlAUg16P7gqo+gAUPsiU0sQDZJzSzAOabUQsI5qDRIBoNIoIhQFDBaCoaDSKCIUBQwWgqIhhEAIHMNK76+kj9AAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2NkoDFgpLH5DKMWEAxhRpkUi/8EVVGgYNQCgoE3GkSjQUQwBAgqGE1Fo0FEMAQIKhhNRQSDCACNcyCuKmmRrQAAAABJRU5ErkJggg==",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2NkoDFgpLH5DKMWEAxhRpkUi/8EVRFQ8GTOCZxBTRULQPbjsoRqFuCyZNQClOjHFg+jQTQaRKQVIqOpiGB4jQbR4AwiAPx6TBmX9XIXAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS2OUSbH4z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCoYTUUjIIgA71YpQQB/w8QAAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2OUSbH4z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCqgWSp6MucEI8h2mlgAM5wmFiAbTnUL0A2niwUAO0c0rkd3ClIAAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2OUSbH4z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCpgJKiCQgWjFhAMQJoHEQBLXiCu2Bx7HwAAAABJRU5ErkJggg==",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2OUSbH4z0Al8GTOCUZ0oxhHLUAOktEgIpjWRoNoNIgIhgBBBaOpaJgHEbYIBnmZKhUOLsPBFhAMWAoVjFpAMABpHkQAAPlMGX+pQM0AAAAASUVORK5CYII="
+              ],
+              "buildable": true
+            },
+            {
+              "type": "path",
+              "color": "#f5d69a",
+              "image": [
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8em3WfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEADJ7UXnV1RQ5AAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATklEQVRIS2P8em3WfwYqAW6tNEZ0oxiHlAUg16P7gqo+gAUPsiU0sQDZJzSzAOabUQsI5qDRIBoNIoIhQFDBaCoaDSKCIUBQwWgqIhhEAJvSVIWbYGLaAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2NkoDFgpLH5DKMWEAxhxq/XZv0nqIoCBaMWEAy80SAaDSKCIUBQwWgqGg0igiFAUMFoKiIYRAACV0CFxNTeCQAAAABJRU5ErkJggg==",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2NkoDFgpLH5DKMWEAxhxq/XZv0nqIqAAm6tNJxBTRULQPbjsoRqFuCyZNQClOjHFg+jQTQaRKQVIqOpiGB4jQbR4AwiAFzITBnELKoVAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8em3WfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEADJ7UXnV1RQ5AAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2P8em3WfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFABzVIRt1YaI8h2mlgAM5wmFiAbTnUL0A2niwUAqyRUhRUUb34AAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2P8em3WfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFABI0EVFCoYtYBgANI8iAAWGUCFGtCTSgAAAABJRU5ErkJggg==",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2P8em3WfwYqAW6tNEZ0oxhHLUAOktEgIpjWRoNoNIgIhgBBBaOpaJgHEbYIBnmZKhUOLsPBFhAMWAoVjFpAMABpHkQAYThMGX3v4DMAAAAASUVORK5CYII="
+              ],
+              "buildable": false
+            },
+            {
+              "type": "lava",
+              "color": "#cc6315",
+              "image": [
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2M8kyz6n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABABafNmFbBL82AAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2M8kyz6n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABABafNmFbBL82AAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2M8kyz6n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABABafNmFbBL82AAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2M8kyz6n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABABafNmFbBL82AAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2M8kyz6n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABABafNmFbBL82AAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2M8kyz6n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABABafNmFbBL82AAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2M8kyz6n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABABafNmFbBL82AAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2M8kyz6n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABABafNmFbBL82AAAAAElFTkSuQmCC"
+              ],
+              "buildable": false
+            },
+            {
+              "type": "end",
+              "color": "#ff9999",
+              "image": [
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC"
+              ],
+              "buildable": false
+            },
+            {
+              "type": "start",
+              "color": "#ffff80",
+              "image": [
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII="
+              ],
+              "buildable": false
+            }
+          ],
+          "terrainMap": [
+            [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              7,
+              2,
+              2,
+              2,
+              2,
+              4,
+              4,
+              4,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              4,
+              4,
+              4,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              4,
+              4,
+              4,
+              2,
+              4,
+              4,
+              4,
+              2,
+              4,
+              4,
+              4,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              4,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              4,
+              4,
+              2,
+              2,
+              4,
+              4,
+              2,
+              4,
+              4,
+              4,
+              2,
+              4,
+              4,
+              4,
+              2,
+              4,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              4,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              4,
+              4,
+              4,
+              2,
+              4,
+              4,
+              4,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              4,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              4,
+              2,
+              2,
+              2,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              4,
+              4,
+              4,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              0,
+              3,
+              2,
+              4,
+              2,
+              2,
+              4,
+              2,
+              3,
+              2,
+              2,
+              1,
+              1,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              3,
+              2,
+              2,
+              4,
+              2,
+              2,
+              4,
+              2,
+              3,
+              2,
+              2,
+              1,
+              1,
+              2,
+              2,
+              4,
+              4,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              4,
+              2,
+              2,
+              4,
+              4,
+              4,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              0,
+              0,
+              0,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              4,
+              2,
+              2,
+              0,
+              0,
+              0,
+              2,
+              4,
+              2,
+              3,
+              3,
+              2,
+              2,
+              4,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              0,
+              0,
+              0,
+              2,
+              4,
+              2,
+              3,
+              2,
+              2,
+              2,
+              2,
+              4,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              4,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              6,
+              2,
+              4,
+              2,
+              4,
+              4,
+              4,
+              4,
+              2,
+              2,
+              2,
+              2,
+              4,
+              4,
+              4,
+              4,
+              4,
+              7
+            ],
+            [
+              2,
+              4,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              3,
+              3,
+              2,
+              4,
+              4,
+              4,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              3,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              5,
+              5,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              5,
+              5,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              5,
+              5,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              0,
+              4,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              2,
+              2,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              0,
+              4,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              4,
+              4,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              4,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              4,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              7,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ]
+          ],
+          "terrainBGColor": "#467554",
+          "environmentObjects": []
+        },
+        "world": "shire"
+      },
       "level1": {
         "title": "Level 1",
         "wavesets": [
@@ -19706,1232 +20932,6 @@ const DEFAULT_PROJECT_CONFIG = {
         "world": "shire",
         "grassShader": "grass",
         "waterShader": "water"
-      },
-      "level2": {
-        "title": "Level 2",
-        "wavesets": [
-          "swarm",
-          "swarm",
-          "swarm"
-        ],
-        "tileMap": {
-          "size": 32,
-          "terrainTypes": [
-            {
-              "type": "water",
-              "color": "#2d85c6",
-              "image": [
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC"
-              ],
-              "buildable": false
-            },
-            {
-              "type": "rock",
-              "color": "#9e9e9e",
-              "image": [
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2OcN2/efwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEAIf9RHEX0vjVAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2OcN2/efwYqgqSkJEZk4xipbQHIcGRLaGIBsiU0swBmCU0tAFkyagHBBD4aRKNBRDAECCoYTUWjQUQwBAgqGE1FAx9EAECFSQ0HGbi8AAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2NkoDFgpLH5DMPAgnnz5v2nZTAxjlpAKHhHg4hQCDGMBtFoEBEMAYIKRlPRaBARDAGCCmieigCFBDkNArgMlAAAAABJRU5ErkJggg==",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASElEQVRIS2NkoDFgpLH5DMPAgnnz5v2nRjAlJSVhDQ1GalkAciQ2S6hqATZLRi3ASB/o8TAaRKNBRHohMpqKCIbZaBCNwCACAOcCUBnjhUZTAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2OcN2/efwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEAIf9RHEX0vjVAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2OcN2/efwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDB0E5FSUlJjDTzAchwUPjRxAKY4TSxANlwkAUAUEhJDYCk3yoAAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAQElEQVRIS2OcN2/efwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFAB7VMRQSdQqICRQv0EtQ99CwDb3jkNHe23xQAAAABJRU5ErkJggg==",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2OcN2/efwYqgqSkJEZk4xhHLUAP3dEgIpjeRoNoNIgIhgBBBaOpaDSICIYAXgXoKQikmGo1GjbDwRZQ5mbCukctIBhGAC4oUBlpvrH3AAAAAElFTkSuQmCC"
-              ],
-              "buildable": false
-            },
-            {
-              "type": "grass",
-              "color": "#4a7c59",
-              "image": [
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS2P0qon8z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCoYTUUjIIgAnCQy6fQdcSIAAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATklEQVRIS2P0qon8z0AlsK1lOSO6UYxDygKQ69F9QVUfwIIH2RKaWIDsE5pZAPPNqAUEc9BoEI0GEcEQIKhgNBWNBhHBECCoYDQVEQwiAA75PFN7PN69AAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2NkoDFgpLH5DKMWEAxhRq+ayP8EVVGgYNQCgoE3GkSjQUQwBAgqGE1Fo0FEMAQIKhhNRQSDCAB4BShTjqMEpwAAAABJRU5ErkJggg==",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2NkoDFgpLH5DKMWEAxhRq+ayP8EVRFQsK1lOc6gpooFIPtxWUI1C3BZMmoBSvRji4fRIBoNItIKkdFURDC8RoNocAYRADzPTBkQkiUcAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS2P0qon8z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCoYTUUjIIgAnCQy6fQdcSIAAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2P0qon8z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCqgWSra1rKcEWQ7TSyAGU4TC5ANp7oF6IbTxQIARN88U7u38m0AAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2P0qon8z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCpgJKiCQgWjFhAMQJoHEQCyWyhTURksDgAAAABJRU5ErkJggg==",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2P0qon8z0AlsK1lOSO6UYyjFiAHyWgQEUxro0E0GkQEQ4CggtFUNMyDCFsEg7xMlQoHl+FgCwgGLIUKRi0gGIA0DyIAQT9MGVwsaTUAAAAASUVORK5CYII="
-              ],
-              "buildable": true
-            },
-            {
-              "type": "forest",
-              "color": "#1c6438",
-              "image": [
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS2OUSbH4z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCoYTUUjIIgA71YpQQB/w8QAAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATklEQVRIS2OUSbH4z0Al8GTOCUZ0oxiHlAUg16P7gqo+gAUPsiU0sQDZJzSzAOabUQsI5qDRIBoNIoIhQFDBaCoaDSKCIUBQwWgqIhhEAIHMNK76+kj9AAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2NkoDFgpLH5DKMWEAxhRpkUi/8EVVGgYNQCgoE3GkSjQUQwBAgqGE1Fo0FEMAQIKhhNRQSDCACNcyCuKmmRrQAAAABJRU5ErkJggg==",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2NkoDFgpLH5DKMWEAxhRpkUi/8EVRFQ8GTOCZxBTRULQPbjsoRqFuCyZNQClOjHFg+jQTQaRKQVIqOpiGB4jQbR4AwiAPx6TBmX9XIXAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS2OUSbH4z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCoYTUUjIIgA71YpQQB/w8QAAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2OUSbH4z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCqgWSp6MucEI8h2mlgAM5wmFiAbTnUL0A2niwUAO0c0rkd3ClIAAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2OUSbH4z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCpgJKiCQgWjFhAMQJoHEQBLXiCu2Bx7HwAAAABJRU5ErkJggg==",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2OUSbH4z0Al8GTOCUZ0oxhHLUAOktEgIpjWRoNoNIgIhgBBBaOpaJgHEbYIBnmZKhUOLsPBFhAMWAoVjFpAMABpHkQAAPlMGX+pQM0AAAAASUVORK5CYII="
-              ],
-              "buildable": true
-            },
-            {
-              "type": "path",
-              "color": "#f5d69a",
-              "image": [
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8em3WfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEADJ7UXnV1RQ5AAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATklEQVRIS2P8em3WfwYqAW6tNEZ0oxiHlAUg16P7gqo+gAUPsiU0sQDZJzSzAOabUQsI5qDRIBoNIoIhQFDBaCoaDSKCIUBQwWgqIhhEAJvSVIWbYGLaAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2NkoDFgpLH5DKMWEAxhxq/XZv0nqIoCBaMWEAy80SAaDSKCIUBQwWgqGg0igiFAUMFoKiIYRAACV0CFxNTeCQAAAABJRU5ErkJggg==",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2NkoDFgpLH5DKMWEAxhxq/XZv0nqIqAAm6tNJxBTRULQPbjsoRqFuCyZNQClOjHFg+jQTQaRKQVIqOpiGB4jQbR4AwiAFzITBnELKoVAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8em3WfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEADJ7UXnV1RQ5AAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2P8em3WfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFABzVIRt1YaI8h2mlgAM5wmFiAbTnUL0A2niwUAqyRUhRUUb34AAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2P8em3WfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFABI0EVFCoYtYBgANI8iAAWGUCFGtCTSgAAAABJRU5ErkJggg==",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2P8em3WfwYqAW6tNEZ0oxhHLUAOktEgIpjWRoNoNIgIhgBBBaOpaJgHEbYIBnmZKhUOLsPBFhAMWAoVjFpAMABpHkQAYThMGX3v4DMAAAAASUVORK5CYII="
-              ],
-              "buildable": false
-            },
-            {
-              "type": "lava",
-              "color": "#cc6315",
-              "image": [
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2M8kyz6n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABABafNmFbBL82AAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2M8kyz6n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABABafNmFbBL82AAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2M8kyz6n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABABafNmFbBL82AAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2M8kyz6n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABABafNmFbBL82AAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2M8kyz6n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABABafNmFbBL82AAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2M8kyz6n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABABafNmFbBL82AAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2M8kyz6n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABABafNmFbBL82AAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2M8kyz6n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABABafNmFbBL82AAAAAElFTkSuQmCC"
-              ],
-              "buildable": false
-            },
-            {
-              "type": "end",
-              "color": "#ff9999",
-              "image": [
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC"
-              ],
-              "buildable": false
-            },
-            {
-              "type": "start",
-              "color": "#ffff80",
-              "image": [
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII="
-              ],
-              "buildable": false
-            }
-          ],
-          "terrainMap": [
-            [
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              7,
-              2,
-              2,
-              2,
-              2,
-              4,
-              4,
-              4,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              4,
-              4,
-              4,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              4,
-              4,
-              4,
-              2,
-              4,
-              4,
-              4,
-              2,
-              4,
-              4,
-              4,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              4,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              4,
-              4,
-              2,
-              2,
-              4,
-              4,
-              2,
-              4,
-              4,
-              4,
-              2,
-              4,
-              4,
-              4,
-              2,
-              4,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              4,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              4,
-              4,
-              4,
-              2,
-              4,
-              4,
-              4,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              4,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              4,
-              2,
-              2,
-              2,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              4,
-              4,
-              4,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              0,
-              3,
-              2,
-              4,
-              2,
-              2,
-              4,
-              2,
-              3,
-              2,
-              2,
-              1,
-              1,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              3,
-              2,
-              2,
-              4,
-              2,
-              2,
-              4,
-              2,
-              3,
-              2,
-              2,
-              1,
-              1,
-              2,
-              2,
-              4,
-              4,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              4,
-              2,
-              2,
-              4,
-              4,
-              4,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              0,
-              0,
-              0,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              4,
-              2,
-              2,
-              0,
-              0,
-              0,
-              2,
-              4,
-              2,
-              3,
-              3,
-              2,
-              2,
-              4,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              0,
-              0,
-              0,
-              2,
-              4,
-              2,
-              3,
-              2,
-              2,
-              2,
-              2,
-              4,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              4,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              6,
-              2,
-              4,
-              2,
-              4,
-              4,
-              4,
-              4,
-              2,
-              2,
-              2,
-              2,
-              4,
-              4,
-              4,
-              4,
-              4,
-              7
-            ],
-            [
-              2,
-              4,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              3,
-              3,
-              2,
-              4,
-              4,
-              4,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              3,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              5,
-              5,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              5,
-              5,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              5,
-              5,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              0,
-              4,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              2,
-              2,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              0,
-              4,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              4,
-              4,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              4,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              4,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              7,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2
-            ]
-          ],
-          "terrainBGColor": "#467554",
-          "environmentObjects": []
-        },
-        "world": "shire"
       }
     }
   },

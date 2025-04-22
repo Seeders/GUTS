@@ -1,0 +1,30 @@
+{
+  "gridSize": 48,
+  "imageSize": 128,
+  "title": "Default Project",
+  "isIsometric": false,
+  "libraries": [
+    "threejs",
+    "ShapeFactory",
+    "ImageManager",
+    "SpatialGrid",
+    "CoordinateTranslator",
+    "CanvasUtility",
+    "TerrainImageProcessor",
+    "TileMap",
+    "Entity",
+    "Component",
+    "GameState",
+    "ModelManager",
+    "three.OrbitControls",
+    "GLTFLoader"
+  ],
+  "fileName": "game",
+  "interface": "main",
+  "loaderComponent": "GameLoader",
+  "loaderEntity": "GameLoader",
+  "canvasWidth": 1600,
+  "canvasHeight": 1000,
+  "is3D": true,
+  "palette": "main"
+}

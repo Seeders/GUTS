@@ -1,0 +1,8 @@
+{
+  "title": "Terrain Editor",
+  "modals": [
+    "addTerrainType",
+    "generateIsoSprites"
+  ],
+  "fileName": "terrainEditor"
+}

@@ -1,0 +1,12 @@
+{
+  "title": "Preview Tower",
+  "components": [
+    "Stats",
+    "Animator"
+  ],
+  "renderers": [
+    "ModelRenderer",
+    "RangeIndicator",
+    "Renderer"
+  ]
+}

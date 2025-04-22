@@ -1,0 +1,67 @@
+<div id="level-editor-container" class="main-content-container">
+   <div class="content-sidebar">
+     <div class="toolbar">
+       <button id="terrainsBtn" class="btn active">Tiles</button>
+       <button id="environmentBtn" class="btn">Env</button>
+     </div>
+     <div class="tools">
+       <div>
+         <h3>Map Settings</h3>
+         <div class="form-row">
+           <label for="terrainMapSize">Map Size:</label>
+           <input type="number" id="terrainMapSize" value="48" step="1" min="1">
+         </div>
+         <div class="form-row">
+            <label for="extensionTerrainType">Surrounding Terrain Type:</label>
+            <select id="extensionTerrainType" class="extensionTerrainType"></select>
+          </div>
+       </div>
+       <div id="environmentPanel" style="display:none">
+
+       </div>
+       <div id="terrainsPanel">
+         <div class="terrain-types-container">
+           <div class="terrain-item">
+             <div class="color-option active" style="background-color: #10b981;"></div>
+             <div class="terrain-label">Grass</div>
+             <div class="terrain-buttons">
+               <button title="Edit">✏️</button>
+               <button title="Delete">🗑️</button>
+             </div>
+           </div>
+           <div class="terrain-item">
+             <div class="color-option" style="background-color: #3b82f6;"></div>
+             <div class="terrain-label">Water</div>
+             <div class="terrain-buttons">
+               <button title="Edit">✏️</button>
+               <button title="Delete">🗑️</button>
+             </div>
+           </div>
+           <div class="terrain-item">
+             <div class="color-option" style="background-color: #a3a3a3;"></div>
+             <div class="terrain-label">Stone</div>
+             <div class="terrain-buttons">
+               <button title="Edit">✏️</button>
+               <button title="Delete">🗑️</button>
+             </div>
+           </div>
+         </div>
+       </div>
+     </div>
+   </div>
+   
+   <div class="grid-container grid-background">
+     <canvas id="grid"></canvas>
+     
+     <div class="translation-controls">
+       <button id="translate-up"><span>↑</span></button>
+       <button id="translate-left"><span>←</span></button>
+       <button id="translate-right"><span>→</span></button>
+       <button id="translate-down"><span>↓</span></button>
+     </div>
+     
+     <div class="status-bar">
+       Cursor: x: 0, y: 0 | Zoom: 100% | Selected: Grass
+     </div>
+   </div>
+ </div>

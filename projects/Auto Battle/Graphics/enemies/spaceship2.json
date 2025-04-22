@@ -1,0 +1,338 @@
+{
+  "title": "Space Ship 2",
+  "hp": 500,
+  "speed": 0.5,
+  "essence": 50,
+  "value": 50,
+  "boss": true,
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ]
+    },
+    "model": {
+      "main": {
+        "position": {
+          "x": 0,
+          "y": 17.7,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 4,
+          "y": 4,
+          "z": 4
+        },
+        "shapes": [
+          {
+            "type": "box",
+            "width": 3,
+            "height": 1.2,
+            "depth": 10,
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "rotationX": 0,
+            "rotationY": 0,
+            "rotationZ": 0,
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1,
+            "color": {
+              "paletteColor": "greyMColor"
+            },
+            "texture": "sleekMetal"
+          },
+          {
+            "type": "box",
+            "width": 1,
+            "height": 2,
+            "depth": 6,
+            "x": 0,
+            "y": 0.6,
+            "z": 0.1,
+            "rotationX": 0,
+            "rotationY": 0,
+            "rotationZ": 0,
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1,
+            "color": {
+              "paletteColor": "greyDColor"
+            },
+            "texture": "sleekMetal"
+          },
+          {
+            "type": "box",
+            "width": 8,
+            "height": 0.3,
+            "depth": 4,
+            "x": -2.9,
+            "y": -1.5,
+            "z": 1,
+            "rotationX": 0,
+            "rotationY": 0,
+            "rotationZ": 45,
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1,
+            "color": {
+              "paletteColor": "greyDColor"
+            },
+            "texture": "carbonFiber"
+          },
+          {
+            "type": "box",
+            "width": 8,
+            "height": 0.3,
+            "depth": 4,
+            "x": 2.9,
+            "y": -1.5,
+            "z": 1,
+            "rotationX": 0,
+            "rotationY": 0,
+            "rotationZ": -45,
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1,
+            "color": {
+              "paletteColor": "greyDColor"
+            },
+            "texture": "carbonFiber"
+          },
+          {
+            "type": "cylinder",
+            "size": 0.8,
+            "height": 2.5,
+            "x": -1,
+            "y": -0.5,
+            "z": -4,
+            "rotationX": 90,
+            "rotationY": 0,
+            "rotationZ": 0,
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1,
+            "color": {
+              "paletteColor": "greyMColor"
+            },
+            "texture": "plasmaGlow"
+          },
+          {
+            "type": "cylinder",
+            "size": 0.8,
+            "height": 2.5,
+            "x": 1,
+            "y": -0.5,
+            "z": -4,
+            "rotationX": 90,
+            "rotationY": 0,
+            "rotationZ": 0,
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1,
+            "color": {
+              "paletteColor": "greyMColor"
+            },
+            "texture": "plasmaGlow"
+          },
+          {
+            "type": "cone",
+            "size": 1.2,
+            "height": 1.8,
+            "x": -1,
+            "y": -0.5,
+            "z": -6,
+            "rotationX": 90,
+            "rotationY": 0,
+            "rotationZ": 0,
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1,
+            "color": {
+              "paletteColor": "redMColor"
+            },
+            "texture": "exhaustGlow"
+          },
+          {
+            "type": "cone",
+            "size": 1.2,
+            "height": 1.8,
+            "x": 1,
+            "y": -0.5,
+            "z": -6,
+            "rotationX": 90,
+            "rotationY": 0,
+            "rotationZ": 0,
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1,
+            "color": {
+              "paletteColor": "redMColor"
+            },
+            "texture": "exhaustGlow"
+          },
+          {
+            "type": "sphere",
+            "size": 1.8,
+            "x": 0,
+            "y": 0.5769470404984423,
+            "z": 4,
+            "rotationX": 0,
+            "rotationY": 0,
+            "rotationZ": 0,
+            "scaleX": 1,
+            "scaleY": 0.8,
+            "scaleZ": 1,
+            "color": {
+              "paletteColor": "blueMColor"
+            },
+            "texture": "tintedGlass"
+          },
+          {
+            "type": "box",
+            "width": 1.1,
+            "height": 0.8,
+            "depth": 2,
+            "x": 0,
+            "y": 0.5769470404984423,
+            "z": 3.5,
+            "rotationX": 0,
+            "rotationY": 0,
+            "rotationZ": 0,
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1,
+            "color": {
+              "paletteColor": "greyDColor"
+            },
+            "texture": "sleekMetal"
+          },
+          {
+            "type": "cylinder",
+            "size": 3,
+            "color": {
+              "paletteColor": "greyDColor"
+            },
+            "x": 0,
+            "y": 0,
+            "z": 5,
+            "rotationX": 0,
+            "rotationY": 0,
+            "rotationZ": 0,
+            "height": 1.1,
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1
+          },
+          {
+            "type": "cylinder",
+            "size": 0.2,
+            "color": {
+              "paletteColor": "greyDColor"
+            },
+            "x": 1,
+            "y": 0,
+            "z": 6.3,
+            "rotationX": 90,
+            "rotationY": 0,
+            "rotationZ": 0
+          },
+          {
+            "type": "cylinder",
+            "size": 0.2,
+            "color": {
+              "paletteColor": "greyDColor"
+            },
+            "x": -1,
+            "y": 0,
+            "z": 6.3,
+            "rotationX": 90,
+            "rotationY": 0,
+            "rotationZ": 0
+          },
+          {
+            "type": "cylinder",
+            "size": 0.2,
+            "color": {
+              "paletteColor": "greyDColor"
+            },
+            "x": -5.7,
+            "y": -4.3,
+            "z": 2.8,
+            "rotationX": 90,
+            "rotationY": 0,
+            "rotationZ": 0,
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1,
+            "height": 6
+          },
+          {
+            "type": "cylinder",
+            "size": 0.2,
+            "color": {
+              "paletteColor": "greyDColor"
+            },
+            "x": 5.7,
+            "y": -4.3,
+            "z": 2.8,
+            "rotationX": 90,
+            "rotationY": 0,
+            "rotationZ": 0,
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1,
+            "height": 6
+          },
+          {
+            "type": "box",
+            "width": 2,
+            "height": 0.2,
+            "depth": 1,
+            "x": 1,
+            "y": 0.9,
+            "z": -4,
+            "rotationX": 0,
+            "rotationY": 0,
+            "rotationZ": 45,
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1,
+            "color": {
+              "paletteColor": "greyDColor"
+            },
+            "texture": "carbonFiber"
+          },
+          {
+            "type": "box",
+            "width": 2,
+            "height": 0.2,
+            "depth": 1,
+            "x": -1,
+            "y": 0.9,
+            "z": -4,
+            "rotationX": 0,
+            "rotationY": 0,
+            "rotationZ": -45,
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1,
+            "color": {
+              "paletteColor": "greyDColor"
+            },
+            "texture": "carbonFiber"
+          }
+        ]
+      }
+    }
+  },
+  "fireResistance": 75,
+  "coldResistance": 25,
+  "electricResistance": 25
+}

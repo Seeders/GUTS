@@ -213,6 +213,12 @@ class FileSystemSyncService {
     
             await Promise.all(loadPromises);
             let collectionDefs = this.gameEditor.model.getCollectionDefs();
+            for(let i = collectionDefs.length - 1; i >= 0; i--) {
+                const def = collectionDefs[i];
+                if(!this.currentCollections[def.id.toLowerCase()]){
+                    collectionDefs.splice(i, 1);
+                }
+            }
             this.gameEditor.model.state.project = {
                 objectTypes: this.currentCollections,
                 objectTypeDefinitions: collectionDefs
