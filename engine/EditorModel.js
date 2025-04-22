@@ -127,7 +127,6 @@ class EditorModel {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
                 } else {
-                    debugger;
                     const data = await response.json();            
                     this.state.project = data.config;
                 }

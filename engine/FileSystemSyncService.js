@@ -212,7 +212,6 @@ class FileSystemSyncService {
             );
     
             await Promise.all(loadPromises);
-            debugger;
             let collectionDefs = this.gameEditor.model.getCollectionDefs();
             this.gameEditor.model.state.project = {
                 objectTypes: this.currentCollections,
