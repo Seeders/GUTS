@@ -43,9 +43,9 @@ class InfiniWorld extends engine.Component {
       this.scene.fog = new THREE.FogExp2(0x87ceeb, 0.0002);
   
       // Terrain configuration
-      this.chunkSize = 128;
-      this.chunkResolution = 16;
-      this.renderDistance = 16;
+      this.chunkSize = 512;
+      this.chunkResolution = 32;
+      this.renderDistance = 8;
       this.chunks = new Map();
       this.heightScale = 10;
       this.objectCache = new Map();
@@ -57,7 +57,7 @@ class InfiniWorld extends engine.Component {
           groundColor: { r: 0.502, g: 0.753, b: 0.439 }, // Matches worker
           noiseSettings: {
             elevation: { scale: 0.0002, octaves: 4, persistence: 0.5, lacunarity: 2.0, heightScale: 10 },
-            detail: { scale: 0.01, octaves: 2, persistence: 0.8, lacunarity: 1.5, heightScale: 2 }
+            detail: { scale: 0.001, octaves: 2, persistence: 0.8, lacunarity: 1.5, heightScale: 2 }
           },
           objects: [
             { type: 'tree', density: 0.02, maxSlope: 0.8 },
@@ -68,7 +68,7 @@ class InfiniWorld extends engine.Component {
           groundColor: { r: 0.251, g: 0.502, b: 0.251 }, // Matches worker
           noiseSettings: {
             elevation: { scale: 0.0003, octaves: 5, persistence: 0.6, lacunarity: 2.2, heightScale: 15 },
-            detail: { scale: 0.015, octaves: 3, persistence: 0.7, lacunarity: 1.8, heightScale: 3 }
+            detail: { scale: 0.001, octaves: 3, persistence: 0.7, lacunarity: 1.8, heightScale: 3 }
           },
           objects: [
             { type: 'tree', density: 0.05, maxSlope: 0.8 },
@@ -79,7 +79,7 @@ class InfiniWorld extends engine.Component {
           groundColor: { r: 0.565, g: 0.565, b: 0.565 }, // Matches worker
           noiseSettings: {
             elevation: { scale: 0.00005, octaves: 6, persistence: 0.7, lacunarity: 2.5, heightScale: 200 },
-            detail: { scale: 0.02, octaves: 4, persistence: 0.6, lacunarity: 2.0, heightScale: 5 },
+            detail: { scale: 0.002, octaves: 4, persistence: 0.6, lacunarity: 2.0, heightScale: 5 },
             ridge: { scale: 0.001, power: 2.5, heightScale: 20 }
           },
           objects: [{ type: 'rock', density: 0.3, maxSlope: 0.6 }]
@@ -88,7 +88,7 @@ class InfiniWorld extends engine.Component {
           groundColor: { r: 0.878, g: 0.753, b: 0.439 }, // Matches worker
           noiseSettings: {
             elevation: { scale: 0.0001, octaves: 3, persistence: 0.4, lacunarity: 1.8, heightScale: 5 },
-            detail: { scale: 0.005, octaves: 2, persistence: 0.5, lacunarity: 1.3, heightScale: 1 }
+            detail: { scale: 0.001, octaves: 2, persistence: 0.5, lacunarity: 1.3, heightScale: 1 }
           },
           objects: [{ type: 'rock', density: 0.1, maxSlope: 0.25 }]
         }
@@ -619,8 +619,8 @@ class InfiniWorld extends engine.Component {
           constructor() {
             this.noise = new SimplexNoise(12345); // Fixed seed for consistency
             this.biomes = ${JSON.stringify(this.biomes)};
-            this.chunkSize = 128;
-            this.chunkResolution = 16;
+            this.chunkSize = ${this.chunkSize};
+            this.chunkResolution = ${this.chunkResolution};
           }
   
           fractalNoise(x, y, settings) {

@@ -2,7 +2,7 @@
   "title": "Player",
   "components": [
     "Stats",
-    "AircraftController",
+    "PlayerController",
     "Animator"
   ],
   "renderers": [

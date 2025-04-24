@@ -1,7 +1,7 @@
 class AircraftController extends engine.Component {
     init({
         infiniWorld,
-        maxThrust = 600,
+        maxThrust = 4000,
         acceleration = 700,
         strafeAcceleration = 15,
         verticalAcceleration = 15,
@@ -10,7 +10,7 @@ class AircraftController extends engine.Component {
         rollSpeed = 2,
         mouseSensitivity = 0.0015, // Further lowered for precision
         dampingFactor = 0.15, // Increased for smoother inputs
-        maxSpeed = 600,
+        maxSpeed = 4000,
         cameraSmoothing = 0.3 // Increased for smoother camera
     }) {
         this.infiniWorld = infiniWorld;
@@ -164,8 +164,21 @@ class AircraftController extends engine.Component {
             this.camera.position.lerp(targetPos, smoothingAlpha);
             this.lastCameraPosition.copy(this.camera.position);
     
+            // Extract roll from smoothedAircraftQuaternion
+            const forward = smoothedForward.clone();
+            const up = new THREE.Vector3(0, 1, 0).applyQuaternion(this.smoothedAircraftQuaternion);
+            const right = new THREE.Vector3().crossVectors(forward, up).normalize();
+            up.crossVectors(right, forward).normalize(); // Recompute up to ensure orthogonality
+    
+            // Compute quaternion to look at target while preserving roll
+            const lookAtMatrix = new THREE.Matrix4().lookAt(
+                this.camera.position,
+                lookTarget,
+                up // Use aircraft's up vector to preserve roll
+            );
+            this.camera.quaternion.setFromRotationMatrix(lookAtMatrix);
+    
             this.lastCameraLookAt.lerp(lookTarget, smoothingAlpha);
-            this.camera.lookAt(this.lastCameraLookAt);
         } else {
             this.camera.position.copy(this.smoothedAircraftPosition);
             this.camera.quaternion.copy(this.smoothedAircraftQuaternion);
