@@ -10,7 +10,7 @@ class PlayerController extends engine.Component {
         cameraHeight = 20,
         stepHeight = 0.3,
         cameraSmoothing = 0.2,
-        collisionRadius = 0.5
+        collisionRadius = 5
     }) {
         this.infiniWorld = infiniWorld;
         this.scene = infiniWorld.scene;
@@ -203,11 +203,20 @@ class PlayerController extends engine.Component {
         
         if (this.isFirstPerson) {
             // Position camera at character's eye level
-            const eyePosition = this.parent.position.clone().add(new THREE.Vector3(0, this.cameraHeight, 0));
+            const eyePosition = this.parent.position.clone().add(new THREE.Vector3(0, this.cameraHeight - 10, 0));
+            
+            // Apply forward offset along character's forward direction
+            const forwardDir = new THREE.Vector3(0, 0, 1).applyQuaternion(combinedQuat); // Character's forward
+            const forwardOffset = 5; // Adjust this value (e.g., 0.1 to 0.5) to move camera in front of head
+            eyePosition.add(forwardDir.multiplyScalar(forwardOffset));
+            
             this.camera.position.copy(eyePosition);
             
-            // Apply camera rotation
-            this.camera.quaternion.copy(combinedQuat);
+            // Apply camera rotation with 180-degree yaw offset and inverted pitch
+            const yawOffsetQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI); // 180 degrees
+            const invertedPitchQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -this.cameraPitch); // Invert pitch
+            const finalQuat = new THREE.Quaternion().multiplyQuaternions(yawQuat, yawOffsetQuat).multiply(invertedPitchQuat);
+            this.camera.quaternion.copy(finalQuat);
         } else {
             // Third person: camera behind character
             const forwardDir = new THREE.Vector3(0, 0, 1).applyQuaternion(combinedQuat);
@@ -414,7 +423,7 @@ class PlayerController extends engine.Component {
         
         // Apply velocity to position
         const movement = this.velocity.clone().multiplyScalar(dt);
-        this.parent.position.add(movement);
+        this.applyMovementWithCollisions(movement, dt);
         
         // Check terrain collision and adjust height
         if (!this.isGrounded) {
@@ -440,7 +449,127 @@ class PlayerController extends engine.Component {
             this.debug.raycastHelpers = [];
         }
     }
+
+    applyMovementWithCollisions(movement, dt) {
+        const currentPosition = this.parent.position.clone();
+        let remainingMovement = movement.clone();
+        const maxSteps = 3; // Limit steps to prevent infinite loops
+        let stepCount = 0;
     
+        while (remainingMovement.length() > 0.001 && stepCount < maxSteps) {
+            stepCount++;
+            
+            // Calculate new position for this step
+            const stepMovement = remainingMovement.clone().multiplyScalar(1 / (maxSteps - stepCount + 1));
+            const newPosition = this.parent.position.clone().add(stepMovement);
+            const playerAABB = this.getAABB(newPosition);
+    
+            // Check for tree collisions
+            const collisions = this.infiniWorld.checkTreeCollisions(playerAABB);
+    
+            if (collisions.length === 0) {
+                // No collisions, apply this step's movement
+                this.parent.position.copy(newPosition);
+                remainingMovement.sub(stepMovement);
+                continue;
+            }
+    
+            // Handle collisions
+            let resolved = false;
+    
+            // Try moving in X direction
+            const tryX = this.parent.position.clone().add(new THREE.Vector3(stepMovement.x, stepMovement.y, 0));
+            const tryXAABB = this.getAABB(tryX);
+            const xCollisions = this.infiniWorld.checkTreeCollisions(tryXAABB);
+    
+            if (xCollisions.length === 0) {
+                this.parent.position.copy(tryX);
+                this.velocity.z = 0; // Stop Z movement
+                remainingMovement.z = 0;
+                resolved = true;
+            } else {
+                // Try moving in Z direction
+                const tryZ = this.parent.position.clone().add(new THREE.Vector3(0, stepMovement.y, stepMovement.z));
+                const tryZAABB = this.getAABB(tryZ);
+                const zCollisions = this.infiniWorld.checkTreeCollisions(tryZAABB);
+    
+                if (zCollisions.length === 0) {
+                    this.parent.position.copy(tryZ);
+                    this.velocity.x = 0; // Stop X movement
+                    remainingMovement.x = 0;
+                    resolved = true;
+                }
+            }
+    
+            if (!resolved) {
+                // No valid movement in X or Z, stop horizontal movement
+                this.velocity.x = 0;
+                this.velocity.z = 0;
+                remainingMovement.x = 0;
+                remainingMovement.z = 0;
+    
+                // Allow vertical movement (e.g., gravity or jumping)
+                this.parent.position.y += stepMovement.y;
+                remainingMovement.y = 0;
+            }
+    
+            // Push out if still colliding
+            const finalAABB = this.getAABB(this.parent.position);
+            const finalCollisions = this.infiniWorld.checkTreeCollisions(finalAABB);
+            if (finalCollisions.length > 0) {
+                // Calculate push-out vector (simplified example)
+                for (const treeAABB of finalCollisions) {
+                    const pushOut = this.calculatePushOut(finalAABB, treeAABB);
+                    this.parent.position.add(pushOut);
+                    this.velocity.set(0, this.velocity.y, 0); // Stop horizontal velocity
+                }
+            }
+        }
+    
+        // Return true if any movement was applied
+        return !this.parent.position.equals(currentPosition);
+    }
+    
+    // Helper function to calculate push-out vector
+    calculatePushOut(playerAABB, treeAABB) {
+        const pushOut = new THREE.Vector3();
+        const overlapX = Math.min(playerAABB.max.x - treeAABB.min.x, treeAABB.max.x - playerAABB.min.x);
+        const overlapZ = Math.min(playerAABB.max.z - treeAABB.min.z, treeAABB.max.z - playerAABB.min.z);
+    
+        if (overlapX < overlapZ) {
+            // Push out in X direction
+            if (playerAABB.min.x < treeAABB.min.x) {
+                pushOut.x = -(overlapX + 0.001); // Small epsilon to avoid re-collision
+            } else {
+                pushOut.x = overlapX + 0.001;
+            }
+        } else {
+            // Push out in Z direction
+            if (playerAABB.min.z < treeAABB.min.z) {
+                pushOut.z = -(overlapZ + 0.001);
+            } else {
+                pushOut.z = overlapZ + 0.001;
+            }
+        }
+    
+        return pushOut;
+    }
+
+    getAABB(position = this.position) {
+        return {
+            min: {
+                x: position.x - this.collisionRadius,
+                y: position.y,
+                z: position.z - this.collisionRadius
+            },
+            max: {
+                x: position.x + this.collisionRadius,
+                y: position.y + this.characterHeight,
+                z: position.z + this.collisionRadius
+            }
+        };
+    }
+
     onDestroy() {
         if (this.controls) this.controls.dispose();
         document.removeEventListener('keydown', this.onKeyDown);

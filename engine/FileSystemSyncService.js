@@ -215,7 +215,7 @@ class FileSystemSyncService {
             let collectionDefs = this.gameEditor.model.getCollectionDefs();
             for(let i = collectionDefs.length - 1; i >= 0; i--) {
                 const def = collectionDefs[i];
-                if(!this.currentCollections[def.id.toLowerCase()]){
+                if(!this.currentCollections[def.id]){
                     collectionDefs.splice(i, 1);
                 }
             }

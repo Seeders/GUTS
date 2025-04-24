@@ -219,23 +219,22 @@ class InfiniWorld extends engine.Component {
       const chunkKey = `${cx},${cz}`;
       const chunkData = this.pendingChunks.get(chunkKey);
       if (!chunkData) return;
-  
+    
       try {
-        // Create geometry
+        // Existing geometry and terrain mesh creation...
         const geometry = new THREE.BufferGeometry();
         geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
         geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
         geometry.setIndex(indices);
         geometry.computeVertexNormals();
-  
+    
         // Flip normals
         const normals = geometry.attributes.normal.array;
         for (let i = 0; i < normals.length; i += 3) {
           normals[i + 1] *= -1;
         }
         geometry.attributes.normal.needsUpdate = true;
-  
-        // Create terrain mesh
+    
         const material = new THREE.MeshStandardMaterial({
           vertexColors: true,
           roughness: 0.8,
@@ -248,17 +247,26 @@ class InfiniWorld extends engine.Component {
         mesh.receiveShadow = true;
         this.scene.add(mesh);
         chunkData.terrainMesh = mesh;
-  
-        // Process vegetation
-        vegetation.forEach(({ type, instances }) => {
-          const model = this.game.modelManager.getModel("worldObjects", type);
-          if (!model) {
-            console.warn(`Model not found: ${type}`);
-            return;
+    
+        // Initialize collision data
+        chunkData.collisionAABBs = new Map(); // Map type to AABBs
+    
+        // Process vegetation and collision data
+        vegetation.forEach(({ type, data }) => {
+          if (type.endsWith('_collision')) {
+            // Store collision AABBs
+            const objectType = type.replace('_collision', '');
+            chunkData.collisionAABBs.set(objectType, data);
+          } else {
+            const model = this.game.modelManager.getModel('worldObjects', type);
+            if (!model) {
+              console.warn(`Model not found: ${type}`);
+              return;
+            }
+            this.processModelType(type, model, data, chunkData);
           }
-          this.processModelType(type, model, instances, chunkData);
         });
-  
+    
         chunkData.isGenerating = false;
         this.pendingChunks.delete(chunkKey);
       } catch (error) {
@@ -268,6 +276,51 @@ class InfiniWorld extends engine.Component {
       }
     }
   
+    checkTreeCollisions(playerAABB) {
+      const collisions = [];
+      const cameraChunkX = Math.floor(this.camera.position.x / this.chunkSize);
+      const cameraChunkZ = Math.floor(this.camera.position.z / this.chunkSize);
+    
+      // Check nearby chunks
+      for (let x = cameraChunkX - 1; x <= cameraChunkX + 1; x++) {
+        for (let z = cameraChunkZ - 1; z <= cameraChunkZ + 1; z++) {
+          const chunkKey = `${x},${z}`;
+          const chunkData = this.chunks.get(chunkKey);
+          if (!chunkData) continue;
+    
+          const treeAABBs = chunkData.collisionAABBs.get('tree');
+          if(treeAABBs){
+            treeAABBs.forEach(aabb => {
+              if (this.aabbIntersects(playerAABB, aabb)) {
+                collisions.push(aabb);
+              }
+            });
+          }
+          const rockAABBs = chunkData.collisionAABBs.get('rock');
+          if(rockAABBs){
+            rockAABBs.forEach(aabb => {
+              if (this.aabbIntersects(playerAABB, aabb)) {
+                collisions.push(aabb);
+              }
+            });
+          }
+        }
+      }
+      return collisions;
+    }
+    
+    aabbIntersects(aabb1, aabb2) {
+      return (
+        aabb1.min.x <= aabb2.max.x &&
+        aabb1.max.x >= aabb2.min.x &&
+        aabb1.min.y <= aabb2.max.y &&
+        aabb1.max.y >= aabb2.min.y &&
+        aabb1.min.z <= aabb2.max.z &&
+        aabb1.max.z >= aabb2.min.z
+      );
+    }
+
+
     update() {
       if (!this.game.config.configs.game.is3D) return;
       this.timer += this.game.deltaTime || 0;
@@ -529,21 +582,17 @@ class InfiniWorld extends engine.Component {
   
     getWorkerCode() {
       return `
-        // SimplexNoise implementation (based on Stefan Gustavson's algorithm)
         class SimplexNoise {
-          constructor(seed = 12345) { // Fixed seed for consistency
-            // Permutation table for randomization
+          constructor(seed = 12345) {
             this.perm = new Uint8Array(256);
             this.seed = seed;
             this.initPermutation();
           }
   
-          // Initialize permutation table with a seed
           initPermutation() {
             for (let i = 0; i < 256; i++) {
               this.perm[i] = i;
             }
-            // Shuffle using a simple seeded random
             let rand = this.seededRandom();
             for (let i = 255; i > 0; i--) {
               const j = Math.floor(rand() * (i + 1));
@@ -551,7 +600,6 @@ class InfiniWorld extends engine.Component {
             }
           }
   
-          // Simple seeded random number generator
           seededRandom() {
             let x = Math.sin(this.seed++) * 10000;
             return () => {
@@ -560,51 +608,40 @@ class InfiniWorld extends engine.Component {
             };
           }
   
-          // 2D Simplex noise function
           noise2D(x, y) {
-            // Skew input coordinates to simplex grid
             const s = (x + y) * 0.366025403784; // F = (sqrt(3) - 1) / 2
             const i = Math.floor(x + s);
             const j = Math.floor(y + s);
   
-            // Unskew back to get simplex cell origin
             const t = (i + j) * 0.211324865405; // G = (3 - sqrt(3)) / 6
             const X0 = i - t;
             const Y0 = j - t;
             const x0 = x - X0;
             const y0 = y - Y0;
   
-            // Determine which simplex we're in
             const i1 = x0 > y0 ? 1 : 0;
             const j1 = x0 > y0 ? 0 : 1;
   
-            // Offsets for second and third corners
             const x1 = x0 - i1 + 0.211324865405;
             const y1 = y0 - j1 + 0.211324865405;
             const x2 = x0 - 1 + 0.42264973081;
             const y2 = y0 - 1 + 0.42264973081;
   
-            // Gradient indices
             const gi0 = this.perm[(i + this.perm[j & 255]) & 255] % 4;
             const gi1 = this.perm[(i + i1 + this.perm[(j + j1) & 255]) & 255] % 4;
             const gi2 = this.perm[(i + 1 + this.perm[(j + 1) & 255]) & 255] % 4;
   
-            // Calculate contributions from each corner
             const n0 = this.contribution(x0, y0, gi0);
             const n1 = this.contribution(x1, y1, gi1);
             const n2 = this.contribution(x2, y2, gi2);
   
-            // Sum contributions and normalize to [-1, 1]
             return (n0 + n1 + n2) * 70; // Scale to approximate [-1, 1]
           }
   
-          // Calculate contribution from a corner
           contribution(x, y, gi) {
-            // Distance falloff
             const t = 0.5 - x * x - y * y;
             if (t < 0) return 0;
   
-            // Gradient vectors (simplified 2D)
             const gradients = [
               [1, 1], [-1, 1], [1, -1], [-1, -1]
             ];
@@ -614,15 +651,14 @@ class InfiniWorld extends engine.Component {
           }
         }
   
-        // Worker logic for chunk generation
         class WorkerUtils {
           constructor() {
-            this.noise = new SimplexNoise(12345); // Fixed seed for consistency
+            this.noise = new SimplexNoise(12345);
             this.biomes = ${JSON.stringify(this.biomes)};
             this.chunkSize = ${this.chunkSize};
             this.chunkResolution = ${this.chunkResolution};
           }
-  
+
           fractalNoise(x, y, settings) {
             let value = 0;
             let amplitude = 1;
@@ -634,7 +670,7 @@ class InfiniWorld extends engine.Component {
             }
             return value * settings.heightScale;
           }
-  
+
           getBiomeWeights(wx, wz) {
             const biomeNoise = this.noise.noise2D(wx * 0.00001, wz * 0.00001);
             const biomeValue = (biomeNoise + 1) / 2;
@@ -645,7 +681,7 @@ class InfiniWorld extends engine.Component {
               { biome: 'mountain', range: [0.5, 0.8] },
               { biome: 'desert', range: [0.7, 1.0] }
             ];
-  
+
             thresholds.forEach(({ biome, range }) => {
               const [min, max] = range;
               let weight = 0;
@@ -655,7 +691,7 @@ class InfiniWorld extends engine.Component {
               }
               weights[biome] = weight;
             });
-  
+
             const totalWeight = Object.values(weights).reduce((sum, w) => sum + w, 0);
             if (totalWeight > 0) {
               for (const biome in weights) {
@@ -666,7 +702,7 @@ class InfiniWorld extends engine.Component {
             }
             return weights;
           }
-  
+
           getHeight(wx, wz) {
             const weights = this.getBiomeWeights(wx, wz);
             let totalHeight = 0;
@@ -685,14 +721,14 @@ class InfiniWorld extends engine.Component {
             }
             return totalHeight;
           }
-  
+
           calculateSlope(wx, wz) {
             const delta = 1.0;
             const dx = this.getHeight(wx + delta, wz) - this.getHeight(wx - delta, wz);
             const dz = this.getHeight(wx, wz + delta) - this.getHeight(wx, wz - delta);
             return Math.sqrt(dx * dx + dz * dz) / (2 * delta);
           }
-  
+
           generateChunk(cx, cz, chunkSize, chunkResolution) {
             const geometryData = {
               positions: [],
@@ -700,7 +736,7 @@ class InfiniWorld extends engine.Component {
               normals: [],
               biomeMap: []
             };
-  
+
             const size = chunkSize / chunkResolution;
             for (let z = 0; z <= chunkResolution; z++) {
               for (let x = 0; x <= chunkResolution; x++) {
@@ -717,7 +753,7 @@ class InfiniWorld extends engine.Component {
                 });
               }
             }
-  
+
             const indices = [];
             for (let z = 0; z < chunkResolution; z++) {
               for (let x = 0; x < chunkResolution; x++) {
@@ -729,7 +765,7 @@ class InfiniWorld extends engine.Component {
                 indices.push(b, c, d);
               }
             }
-  
+
             geometryData.biomeMap.forEach(({ weights }) => {
               let r = 0, g = 0, b = 0;
               for (const biomeName in weights) {
@@ -741,34 +777,109 @@ class InfiniWorld extends engine.Component {
               }
               geometryData.colors.push(r, g, b);
             });
-  
+
+            // Vegetation generation
             const vegetation = new Map();
             geometryData.biomeMap.forEach(({ weights, position, slope }) => {
-              const biomeName = Object.keys(weights).reduce((a, b) => weights[a] > weights[b] ? a : b);
-              const biome = this.biomes[biomeName];
-              biome.objects.forEach(objDef => {
-                if (Math.random() < objDef.density && slope <= objDef.maxSlope) {
-                  const instances = vegetation.get(objDef.type) || [];
-                  instances.push({
-                    position: { x: position.x, y: position.y + 0.2, z: position.z },
+              const objectTypes = new Map();
+              for (const biomeName in weights) {
+                const biome = this.biomes[biomeName];
+                biome.objects.forEach(objDef => {
+                  if (!objectTypes.has(objDef.type)) {
+                    objectTypes.set(objDef.type, []);
+                  }
+                  objectTypes.get(objDef.type).push({
+                    density: objDef.density,
+                    maxSlope: objDef.maxSlope,
+                    weight: weights[biomeName]
+                  });
+                });
+              }
+
+              objectTypes.forEach((defs, type) => {
+                let blendedDensity = 0;
+                let blendedMaxSlope = 0;
+                let totalWeight = 0;
+
+                defs.forEach(def => {
+                  blendedDensity += def.density * def.weight;
+                  blendedMaxSlope += def.maxSlope * def.weight;
+                  totalWeight += def.weight;
+                });
+
+                if (totalWeight === 0) return;
+
+                blendedDensity /= totalWeight;
+                blendedMaxSlope /= totalWeight;
+
+                const instances = vegetation.get(type) || [];
+                const collisionData = vegetation.get(type + '_collision') || [];
+
+                if (Math.random() < blendedDensity && slope <= blendedMaxSlope) {
+                  const instance = {
+                    position: { x: position.x, y: position.y - 5, z: position.z },
                     rotation: Math.random() * Math.PI * 2,
                     scale: 0.8 + Math.random() * 0.4
-                  });
-                  vegetation.set(objDef.type, instances);
+                  };
+                  instances.push(instance);
+
+                  // Define AABB for collision
+                  let aabb;
+                  if (type === 'tree') {
+                    const trunkRadius = 5.0 * instance.scale;
+                    const trunkHeight = 20.0 * instance.scale;
+                    aabb = {
+                      min: {
+                        x: position.x - trunkRadius,
+                        y: position.y,
+                        z: position.z - trunkRadius
+                      },
+                      max: {
+                        x: position.x + trunkRadius,
+                        y: position.y + trunkHeight,
+                        z: position.z + trunkRadius
+                      }
+                    };
+                  } else if (type === 'rock') {
+                    const rockRadius = 1.0 * instance.scale;
+                    const rockHeight = 1.0 * instance.scale;
+                    aabb = {
+                      min: {
+                        x: position.x - rockRadius,
+                        y: position.y,
+                        z: position.z - rockRadius
+                      },
+                      max: {
+                        x: position.x + rockRadius,
+                        y: position.y + rockHeight,
+                        z: position.z + rockRadius
+                      }
+                    };
+                  }
+
+                  if (aabb) {
+                    collisionData.push(aabb);
+                  }
+                }
+
+                vegetation.set(type, instances);
+                if (collisionData.length > 0) {
+                  vegetation.set(type + '_collision', collisionData);
                 }
               });
             });
-  
+
             return {
               cx,
               cz,
               positions: geometryData.positions,
               indices,
               colors: geometryData.colors,
-              vegetation: Array.from(vegetation.entries()).map(([type, instances]) => ({ type, instances }))
+              vegetation: Array.from(vegetation.entries()).map(([type, data]) => ({ type, data }))
             };
           }
         }
+
   
         const utils = new WorkerUtils();
   
