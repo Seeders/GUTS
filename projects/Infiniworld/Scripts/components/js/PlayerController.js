@@ -1,13 +1,13 @@
 class PlayerController extends engine.Component {
     init({
         infiniWorld,
-        walkSpeed = 200,
-        runSpeed = 400,
-        jumpForce = 350,
+        walkSpeed = 50,
+        runSpeed = 100,
+        jumpForce = 200,
         gravity = 980,
         mouseSensitivity = 0.02,
         characterHeight = 1.8,
-        cameraHeight = 1.65,
+        cameraHeight = 20,
         stepHeight = 0.3,
         cameraSmoothing = 0.2,
         collisionRadius = 0.5
@@ -51,6 +51,9 @@ class PlayerController extends engine.Component {
         this.isGrounded = false;
         this.isJumping = false;
         this.isRunning = false;
+        // Add a flag to track if jump was requested and can be executed
+        this.jumpRequested = false;
+        this.canJump = true;
         this.collisions = {
             down: false,
             forward: false,
@@ -62,7 +65,7 @@ class PlayerController extends engine.Component {
         // Camera properties
         this.isFirstPerson = false;
         this.thirdPersonDistance = 25;
-        this.thirdPersonHeight = 15;
+        this.thirdPersonHeight = 25;
         this.cameraTargetPosition = new THREE.Vector3();
         this.cameraLookAt = new THREE.Vector3();
         this.cameraPitch = 0;
@@ -109,6 +112,11 @@ class PlayerController extends engine.Component {
     onKeyDown(event) {
         if (event.code in this.keys) {
             this.keys[event.code] = true;
+            
+            // Set jump request only when first pressed (not held)
+            if (event.code === 'Space' && !event.repeat && this.isGrounded && this.canJump) {
+                this.jumpRequested = true;
+            }
         }
         
         // Toggle camera view
@@ -141,6 +149,11 @@ class PlayerController extends engine.Component {
     onKeyUp(event) {
         if (event.code in this.keys) {
             this.keys[event.code] = false;
+            
+            // Reset canJump when space is released
+            if (event.code === 'Space') {
+                this.canJump = true;
+            }
         }
     }
     
@@ -151,7 +164,7 @@ class PlayerController extends engine.Component {
             
             // Update rotation angles based on mouse movement
             this.cameraYaw -= event.movementX * sensitivity;
-            this.cameraPitch -= event.movementY * sensitivity;
+            this.cameraPitch += event.movementY * sensitivity;
             
             // Clamp pitch to prevent camera flipping
             this.cameraPitch = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, this.cameraPitch));
@@ -168,11 +181,11 @@ class PlayerController extends engine.Component {
         const rotation = new THREE.Euler(0, this.cameraYaw, 0, 'YXZ');
         const quaternion = new THREE.Quaternion().setFromEuler(rotation);
         
-        this.forward.set(0, 0, -1).applyQuaternion(quaternion).normalize();
+        this.forward.set(0, 0, 1).applyQuaternion(quaternion).normalize();
         this.forward.y = 0; // Project onto XZ plane for movement
         this.forward.normalize();
         
-        this.right.set(1, 0, 0).applyQuaternion(quaternion).normalize();
+        this.right.set(-1, 0, 0).applyQuaternion(quaternion).normalize();
         this.right.y = 0; // Project onto XZ plane for movement
         this.right.normalize();
         
@@ -201,7 +214,7 @@ class PlayerController extends engine.Component {
             const upDir = new THREE.Vector3(0, 1, 0);
             
             // Calculate camera position behind the character
-            const offsetDistance = -this.thirdPersonDistance;
+            const offsetDistance = this.thirdPersonDistance;
             const offsetHeight = this.thirdPersonHeight;
             const targetPosition = this.parent.position.clone()
                 .add(new THREE.Vector3(0, offsetHeight, 0))
@@ -339,11 +352,13 @@ class PlayerController extends engine.Component {
         // Calculate velocity from input
         const speed = this.isRunning ? this.runSpeed : this.walkSpeed;
         
-        // Handle jumping
-        if (this.isGrounded && this.keys.Space) {
+        // Handle jumping - only jump if explicitly requested and on ground
+        if (this.isGrounded && this.jumpRequested) {
             this.velocity.y = this.jumpForce;
             this.isGrounded = false;
             this.isJumping = true;
+            this.jumpRequested = false; // Reset jump request
+            this.canJump = false; // Prevent repeated jumps until key is released
         }
         
         if (this.isGrounded) {
