@@ -51,10 +51,10 @@ class InfiniWorld extends engine.Component {
       this.objectCache = new Map();
   
       // Initialize SimplexNoise and biomes for getTerrainHeight
-      this.noise = new (this.game.libraryClasses.SimplexNoise)();
+      this.noise = new (this.game.libraryClasses.SimplexNoise)(12345); // Fixed seed for consistency
       this.biomes = {
         plains: {
-          groundColor: new THREE.Color(0x80c070),
+          groundColor: { r: 0.502, g: 0.753, b: 0.439 }, // Matches worker
           noiseSettings: {
             elevation: { scale: 0.0002, octaves: 4, persistence: 0.5, lacunarity: 2.0, heightScale: 10 },
             detail: { scale: 0.01, octaves: 2, persistence: 0.8, lacunarity: 1.5, heightScale: 2 }
@@ -65,7 +65,7 @@ class InfiniWorld extends engine.Component {
           ]
         },
         forest: {
-          groundColor: new THREE.Color(0x408040),
+          groundColor: { r: 0.251, g: 0.502, b: 0.251 }, // Matches worker
           noiseSettings: {
             elevation: { scale: 0.0003, octaves: 5, persistence: 0.6, lacunarity: 2.2, heightScale: 15 },
             detail: { scale: 0.015, octaves: 3, persistence: 0.7, lacunarity: 1.8, heightScale: 3 }
@@ -76,7 +76,7 @@ class InfiniWorld extends engine.Component {
           ]
         },
         mountain: {
-          groundColor: new THREE.Color(0x909090),
+          groundColor: { r: 0.565, g: 0.565, b: 0.565 }, // Matches worker
           noiseSettings: {
             elevation: { scale: 0.00005, octaves: 6, persistence: 0.7, lacunarity: 2.5, heightScale: 200 },
             detail: { scale: 0.02, octaves: 4, persistence: 0.6, lacunarity: 2.0, heightScale: 5 },
@@ -85,7 +85,7 @@ class InfiniWorld extends engine.Component {
           objects: [{ type: 'rock', density: 0.3, maxSlope: 0.6 }]
         },
         desert: {
-          groundColor: new THREE.Color(0xe0c070),
+          groundColor: { r: 0.878, g: 0.753, b: 0.439 }, // Matches worker
           noiseSettings: {
             elevation: { scale: 0.0001, octaves: 3, persistence: 0.4, lacunarity: 1.8, heightScale: 5 },
             detail: { scale: 0.005, octaves: 2, persistence: 0.5, lacunarity: 1.3, heightScale: 1 }
@@ -490,134 +490,94 @@ class InfiniWorld extends engine.Component {
       return `
         // SimplexNoise implementation (based on Stefan Gustavson's algorithm)
         class SimplexNoise {
-            constructor(seed = 0) {
-                // Permutation table for randomization
-                this.perm = new Uint8Array(256);
-                this.seed = seed;
-                this.initPermutation();
+          constructor(seed = 12345) { // Fixed seed for consistency
+            // Permutation table for randomization
+            this.perm = new Uint8Array(256);
+            this.seed = seed;
+            this.initPermutation();
+          }
+  
+          // Initialize permutation table with a seed
+          initPermutation() {
+            for (let i = 0; i < 256; i++) {
+              this.perm[i] = i;
             }
-
-            // Initialize permutation table with a seed
-            initPermutation() {
-                for (let i = 0; i < 256; i++) {
-                    this.perm[i] = i;
-                }
-                // Shuffle using a simple seeded random
-                let rand = this.seededRandom();
-                for (let i = 255; i > 0; i--) {
-                    const j = Math.floor(rand() * (i + 1));
-                    [this.perm[i], this.perm[j]] = [this.perm[j], this.perm[i]];
-                }
+            // Shuffle using a simple seeded random
+            let rand = this.seededRandom();
+            for (let i = 255; i > 0; i--) {
+              const j = Math.floor(rand() * (i + 1));
+              [this.perm[i], this.perm[j]] = [this.perm[j], this.perm[i]];
             }
-
-            // Simple seeded random number generator
-            seededRandom() {
-                let x = Math.sin(this.seed++) * 10000;
-                return () => {
-                    x = Math.sin(x + this.seed++) * 10000;
-                    return x - Math.floor(x);
-                };
-            }
-
-            // 2D Simplex noise function
-            noise2D(x, y) {
-                // Skew input coordinates to simplex grid
-                const s = (x + y) * 0.366025403784; // F = (sqrt(3) - 1) / 2
-                const i = Math.floor(x + s);
-                const j = Math.floor(y + s);
-
-                // Unskew back to get simplex cell origin
-                const t = (i + j) * 0.211324865405; // G = (3 - sqrt(3)) / 6
-                const X0 = i - t;
-                const Y0 = j - t;
-                const x0 = x - X0;
-                const y0 = y - Y0;
-
-                // Determine which simplex we're in
-                const i1 = x0 > y0 ? 1 : 0;
-                const j1 = x0 > y0 ? 0 : 1;
-
-                // Offsets for second and third corners
-                const x1 = x0 - i1 + 0.211324865405;
-                const y1 = y0 - j1 + 0.211324865405;
-                const x2 = x0 - 1 + 0.42264973081;
-                const y2 = y0 - 1 + 0.42264973081;
-
-                // Gradient indices
-                const gi0 = this.perm[(i + this.perm[j & 255]) & 255] % 4;
-                const gi1 = this.perm[(i + i1 + this.perm[(j + j1) & 255]) & 255] % 4;
-                const gi2 = this.perm[(i + 1 + this.perm[(j + 1) & 255]) & 255] % 4;
-
-                // Calculate contributions from each corner
-                const n0 = this.contribution(x0, y0, gi0);
-                const n1 = this.contribution(x1, y1, gi1);
-                const n2 = this.contribution(x2, y2, gi2);
-
-                // Sum contributions and normalize to [-1, 1]
-                return (n0 + n1 + n2) * 70; // Scale to approximate [-1, 1]
-            }
-
-            // Calculate contribution from a corner
-            contribution(x, y, gi) {
-                // Distance falloff
-                const t = 0.5 - x * x - y * y;
-                if (t < 0) return 0;
-
-                // Gradient vectors (simplified 2D)
-                const gradients = [
-                    [1, 1], [-1, 1], [1, -1], [-1, -1]
-                ];
-                const grad = gradients[gi];
-                const t2 = t * t;
-                return t2 * t2 * (grad[0] * x + grad[1] * y);
-            }
+          }
+  
+          // Simple seeded random number generator
+          seededRandom() {
+            let x = Math.sin(this.seed++) * 10000;
+            return () => {
+              x = Math.sin(x + this.seed++) * 10000;
+              return x - Math.floor(x);
+            };
+          }
+  
+          // 2D Simplex noise function
+          noise2D(x, y) {
+            // Skew input coordinates to simplex grid
+            const s = (x + y) * 0.366025403784; // F = (sqrt(3) - 1) / 2
+            const i = Math.floor(x + s);
+            const j = Math.floor(y + s);
+  
+            // Unskew back to get simplex cell origin
+            const t = (i + j) * 0.211324865405; // G = (3 - sqrt(3)) / 6
+            const X0 = i - t;
+            const Y0 = j - t;
+            const x0 = x - X0;
+            const y0 = y - Y0;
+  
+            // Determine which simplex we're in
+            const i1 = x0 > y0 ? 1 : 0;
+            const j1 = x0 > y0 ? 0 : 1;
+  
+            // Offsets for second and third corners
+            const x1 = x0 - i1 + 0.211324865405;
+            const y1 = y0 - j1 + 0.211324865405;
+            const x2 = x0 - 1 + 0.42264973081;
+            const y2 = y0 - 1 + 0.42264973081;
+  
+            // Gradient indices
+            const gi0 = this.perm[(i + this.perm[j & 255]) & 255] % 4;
+            const gi1 = this.perm[(i + i1 + this.perm[(j + j1) & 255]) & 255] % 4;
+            const gi2 = this.perm[(i + 1 + this.perm[(j + 1) & 255]) & 255] % 4;
+  
+            // Calculate contributions from each corner
+            const n0 = this.contribution(x0, y0, gi0);
+            const n1 = this.contribution(x1, y1, gi1);
+            const n2 = this.contribution(x2, y2, gi2);
+  
+            // Sum contributions and normalize to [-1, 1]
+            return (n0 + n1 + n2) * 70; // Scale to approximate [-1, 1]
+          }
+  
+          // Calculate contribution from a corner
+          contribution(x, y, gi) {
+            // Distance falloff
+            const t = 0.5 - x * x - y * y;
+            if (t < 0) return 0;
+  
+            // Gradient vectors (simplified 2D)
+            const gradients = [
+              [1, 1], [-1, 1], [1, -1], [-1, -1]
+            ];
+            const grad = gradients[gi];
+            const t2 = t * t;
+            return t2 * t2 * (grad[0] * x + grad[1] * y);
+          }
         }
   
         // Worker logic for chunk generation
         class WorkerUtils {
           constructor() {
-            this.noise = new SimplexNoise();
-            this.biomes = {
-              plains: {
-                groundColor: { r: 0.502, g: 0.753, b: 0.439 },
-                noiseSettings: {
-                  elevation: { scale: 0.0002, octaves: 4, persistence: 0.5, lacunarity: 2.0, heightScale: 10 },
-                  detail: { scale: 0.01, octaves: 2, persistence: 0.8, lacunarity: 1.5, heightScale: 2 }
-                },
-                objects: [
-                  { type: 'tree', density: 0.02, maxSlope: 0.8 },
-                  { type: 'rock', density: 0.01, maxSlope: 0.3 }
-                ]
-              },
-              forest: {
-                groundColor: { r: 0.251, g: 0.502, b: 0.251 },
-                noiseSettings: {
-                  elevation: { scale: 0.0003, octaves: 5, persistence: 0.6, lacunarity: 2.2, heightScale: 15 },
-                  detail: { scale: 0.015, octaves: 3, persistence: 0.7, lacunarity: 1.8, heightScale: 3 }
-                },
-                objects: [
-                  { type: 'tree', density: 0.05, maxSlope: 0.8 },
-                  { type: 'rock', density: 0.05, maxSlope: 0.2 }
-                ]
-              },
-              mountain: {
-                groundColor: { r: 0.565, g: 0.565, b: 0.565 },
-                noiseSettings: {
-                  elevation: { scale: 0.00005, octaves: 6, persistence: 0.7, lacunarity: 2.5, heightScale: 200 },
-                  detail: { scale: 0.02, octaves: 4, persistence: 0.6, lacunarity: 2.0, heightScale: 5 },
-                  ridge: { scale: 0.001, power: 2.5, heightScale: 20 }
-                },
-                objects: [{ type: 'rock', density: 0.3, maxSlope: 0.6 }]
-              },
-              desert: {
-                groundColor: { r: 0.878, g: 0.753, b: 0.439 },
-                noiseSettings: {
-                  elevation: { scale: 0.0001, octaves: 3, persistence: 0.4, lacunarity: 1.8, heightScale: 5 },
-                  detail: { scale: 0.005, octaves: 2, persistence: 0.5, lacunarity: 1.3, heightScale: 1 }
-                },
-                objects: [{ type: 'rock', density: 0.1, maxSlope: 0.25 }]
-              }
-            };
+            this.noise = new SimplexNoise(12345); // Fixed seed for consistency
+            this.biomes = ${JSON.stringify(this.biomes)};
             this.chunkSize = 128;
             this.chunkResolution = 16;
           }
