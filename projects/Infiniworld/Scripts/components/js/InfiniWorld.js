@@ -40,12 +40,12 @@ class InfiniWorld extends engine.Component {
         this.scene.add(this.directionalLight);
 
         // Fog setup
-        this.scene.fog = new THREE.FogExp2(0x87ceeb, 0.002);
+        this.scene.fog = new THREE.FogExp2(0x87ceeb, 0.0002);
 
         // Terrain configuration
         this.chunkSize = 128;
-        this.chunkResolution = 64;
-        this.renderDistance = 4;
+        this.chunkResolution = 16;
+        this.renderDistance = 16;
         this.chunks = new Map();
         this.noise = new (this.game.libraryClasses.SimplexNoise)();
         this.heightScale = 10;
@@ -69,7 +69,7 @@ class InfiniWorld extends engine.Component {
                 power: 2.5,
             },
             biome: {
-                scale: 0.0005,
+                scale: 0.00001,
                 transitionSharpness: 4.0,
             }
         };
@@ -81,26 +81,95 @@ class InfiniWorld extends engine.Component {
                     { type: 'tree', density: 0.02, maxSlope: 0.8 },
                     { type: 'rock', density: 0.01, maxSlope: 0.3 }
                 ],
-                groundColor: new THREE.Color(0x80c070)
+                groundColor: new THREE.Color(0x80c070),
+                noiseSettings: {
+                    elevation: {
+                        scale: 0.0002,
+                        octaves: 4,
+                        persistence: 0.5,
+                        lacunarity: 2.0,
+                        heightScale: 10
+                    },
+                    detail: {
+                        scale: 0.01,
+                        octaves: 2,
+                        persistence: 0.8,
+                        lacunarity: 1.5,
+                        heightScale: 2
+                    }
+                }
             },
             forest: {
                 objects: [
-                    { type: 'tree', density: 0.2, maxSlope: 0.8 },
+                    { type: 'tree', density: 0.05, maxSlope: 0.8 },
                     { type: 'rock', density: 0.05, maxSlope: 0.2 }
                 ],
-                groundColor: new THREE.Color(0x408040)
+                groundColor: new THREE.Color(0x408040),
+                noiseSettings: {
+                    elevation: {
+                        scale: 0.0003,
+                        octaves: 5,
+                        persistence: 0.6,
+                        lacunarity: 2.2,
+                        heightScale: 15
+                    },
+                    detail: {
+                        scale: 0.015,
+                        octaves: 3,
+                        persistence: 0.7,
+                        lacunarity: 1.8,
+                        heightScale: 3
+                    }
+                }
             },
             mountain: {
                 objects: [
                     { type: 'rock', density: 0.3, maxSlope: 0.6 }
                 ],
-                groundColor: new THREE.Color(0x909090)
+                groundColor: new THREE.Color(0x909090),
+                noiseSettings: {
+                    elevation: {
+                        scale: 0.00005,
+                        octaves: 6,
+                        persistence: 0.7,
+                        lacunarity: 2.5,
+                        heightScale: 200
+                    },
+                    detail: {
+                        scale: 0.02,
+                        octaves: 4,
+                        persistence: 0.6,
+                        lacunarity: 2.0,
+                        heightScale: 5
+                    },
+                    ridge: {
+                        scale: 0.001,
+                        power: 2.5,
+                        heightScale: 20
+                    }
+                }
             },
             desert: {
                 objects: [
                     { type: 'rock', density: 0.1, maxSlope: 0.25 }
                 ],
-                groundColor: new THREE.Color(0xe0c070)
+                groundColor: new THREE.Color(0xe0c070),
+                noiseSettings: {
+                    elevation: {
+                        scale: 0.0001,
+                        octaves: 3,
+                        persistence: 0.4,
+                        lacunarity: 1.8,
+                        heightScale: 5 // Low height for flatter terrain
+                    },
+                    detail: {
+                        scale: 0.005,
+                        octaves: 2,
+                        persistence: 0.5,
+                        lacunarity: 1.3,
+                        heightScale: 1 // Minimal detail for smooth dunes
+                    }
+                }
             }
         };
         this.objectCache = new Map(); // Cache for instanced meshes
@@ -129,16 +198,35 @@ class InfiniWorld extends engine.Component {
         await Promise.all(promises);
     }
     getHeight(wx, wz) {
-        let elevation = this.fractalNoise(wx, wz, this.terrainNoiseSettings.elevation);
-        elevation += this.fractalNoise(wx * 2, wz * 2, this.terrainNoiseSettings.detail) * 0.3;
+        const weights = this.getBiomeWeights(wx, wz);
+        let totalHeight = 0;
         
-        const ridgeNoise = Math.abs(this.noise.noise2D(
-            wx * this.terrainNoiseSettings.ridge.scale,
-            wz * this.terrainNoiseSettings.ridge.scale
-        ));
-        elevation += Math.pow(ridgeNoise, this.terrainNoiseSettings.ridge.power) * 20;
+        for (const biomeName in weights) {
+            const weight = weights[biomeName];
+            if (weight === 0) continue;
+            
+            const biome = this.biomes[biomeName];
+            let height = 0;
+            
+            // Elevation noise
+            height += this.fractalNoise(wx, wz, biome.noiseSettings.elevation);
+            
+            // Detail noise
+            height += this.fractalNoise(wx * 2, wz * 2, biome.noiseSettings.detail);
+            
+            // Ridge noise for mountains only
+            if (biomeName === 'mountain' && biome.noiseSettings.ridge) {
+                const ridgeNoise = Math.abs(this.noise.noise2D(
+                    wx * biome.noiseSettings.ridge.scale,
+                    wz * biome.noiseSettings.ridge.scale
+                ));
+                height += Math.pow(ridgeNoise, biome.noiseSettings.ridge.power) * biome.noiseSettings.ridge.heightScale;
+            }
+            
+            totalHeight += height * weight;
+        }
         
-        return elevation * this.heightScale;
+        return totalHeight;
     }
 
     fractalNoise(x, y, settings) {
@@ -155,34 +243,75 @@ class InfiniWorld extends engine.Component {
             amplitude *= settings.persistence;
             frequency *= settings.lacunarity;
         }
-        return value;
+        return value * settings.heightScale;
     }
-
-    getBiome(wx, wz) {
+    getBiomeWeights(wx, wz) {
         const biomeNoise = this.noise.noise2D(
-            wx * this.terrainNoiseSettings.biome.scale,
-            wz * this.terrainNoiseSettings.biome.scale
+            wx * 0.00001, // Use a low scale for gradual biome transitions
+            wz * 0.00001
         );
         
-        const biomeValue = (biomeNoise + 1) / 2;
-        if (biomeValue < 0.3) return this.biomes.plains;
-        if (biomeValue < 0.5) return this.biomes.forest;
-        if (biomeValue < 0.7) return this.biomes.mountain;
-        return this.biomes.desert;
+        const biomeValue = (biomeNoise + 1) / 2; // Normalize to [0, 1]
+        const weights = {};
+        
+        // Define biome thresholds with overlap for blending
+        const thresholds = [
+            { biome: 'plains', range: [0.0, 0.4] },
+            { biome: 'forest', range: [0.2, 0.6] },
+            { biome: 'mountain', range: [0.5, 0.8] },
+            { biome: 'desert', range: [0.7, 1.0] }
+        ];
+        
+        thresholds.forEach(({ biome, range }) => {
+            const [min, max] = range;
+            let weight = 0;
+            if (biomeValue >= min && biomeValue <= max) {
+                // Linear interpolation within the range
+                weight = 1 - Math.abs(biomeValue - (min + max) / 2) / ((max - min) / 2);
+                weight = Math.max(0, weight); // Clamp to [0, 1]
+            }
+            weights[biome] = weight;
+        });
+        
+        // Normalize weights to sum to 1
+        const totalWeight = Object.values(weights).reduce((sum, w) => sum + w, 0);
+        if (totalWeight > 0) {
+            for (const biome in weights) {
+                weights[biome] /= totalWeight;
+            }
+        } else {
+            // Fallback to plains if no weights are assigned
+            weights.plains = 1;
+        }
+        
+        return weights;
+    }
+    getBiome(wx, wz) {
+        const weights = this.getBiomeWeights(wx, wz);
+        let maxWeight = 0;
+        let selectedBiome = 'plains';
+        
+        for (const biomeName in weights) {
+            if (weights[biomeName] > maxWeight) {
+                maxWeight = weights[biomeName];
+                selectedBiome = biomeName;
+            }
+        }
+        
+        return this.biomes[selectedBiome];
     }
 
     async generateChunk(cx, cz) {
         const chunkKey = `${cx},${cz}`;
         if (this.chunks.has(chunkKey)) return;
-
-        // Create chunk data placeholder
+    
         const chunkData = {
             terrainMesh: null,
             objectMeshes: new Map(),
-            isGenerating: true // Track generation state
+            isGenerating: true
         };
         this.chunks.set(chunkKey, chunkData);
-
+    
         try {
             await new Promise(resolve => setTimeout(() => {
                 const geometry = new THREE.PlaneGeometry(
@@ -193,62 +322,72 @@ class InfiniWorld extends engine.Component {
                 ).rotateX(-Math.PI/2);
                 const positions = geometry.attributes.position.array;
                 const biomeMap = [];
-
+    
                 for (let i = 0; i < positions.length; i += 3) {
                     const vx = positions[i];
                     const vz = positions[i + 2];
                     const wx = cx * this.chunkSize + vx;
                     const wz = cz * this.chunkSize + vz;
-
+    
                     const height = this.getHeight(wx, wz);
                     positions[i + 1] = height;
-
+    
                     biomeMap.push({
-                        biome: this.getBiome(wx, wz),
+                        weights: this.getBiomeWeights(wx, wz),
                         position: new THREE.Vector3(wx, height, wz),
                         slope: this.calculateSlope(wx, wz)
                     });
                 }
                 geometry.computeVertexNormals();
-
-                // Flip normals to face upward
+    
                 const normals = geometry.attributes.normal.array;
                 for (let i = 0; i < normals.length; i += 3) {
                     normals[i + 1] *= -1;
                 }
                 geometry.attributes.normal.needsUpdate = true;
-
+    
                 const colors = new Float32Array(positions.length);
                 for (let i = 0; i < positions.length; i += 3) {
                     const biomeData = biomeMap[i/3];
-                    const color = biomeData.biome.groundColor.clone();
-                    color.multiplyScalar(0.9 + (positions[i + 1] / this.heightScale) * 0.2);
-
+                    const color = new THREE.Color(0, 0, 0);
+                    
+                    // Blend colors based on biome weights
+                    for (const biomeName in biomeData.weights) {
+                        const weight = biomeData.weights[biomeName];
+                        const biomeColor = this.biomes[biomeName].groundColor;
+                        // Scale the biome color by weight and add to total color
+                        const scaledColor = biomeColor.clone().multiplyScalar(weight);
+                        color.add(scaledColor);
+                    }
+                    
+                    // Adjust color based on height
+                    color.multiplyScalar(0.9 + (positions[i + 1] / 30) * 0.2);
+    
                     colors[i] = color.r;
                     colors[i + 1] = color.g;
                     colors[i + 2] = color.b;
                 }
                 geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
+    
                 const material = new THREE.MeshStandardMaterial({
                     vertexColors: true,
                     roughness: 0.8,
                     metalness: 0.0,
                     side: THREE.FrontSide
                 });
-
+    
                 const mesh = new THREE.Mesh(geometry, material);
                 mesh.position.set(cx * this.chunkSize, 0, cz * this.chunkSize);
                 mesh.castShadow = true;
                 mesh.receiveShadow = true;
                 this.scene.add(mesh);
-
+    
                 chunkData.terrainMesh = mesh;
-
-                // Collect vegetation instances by type
+    
                 const vegetationMap = new Map();
-
-                biomeMap.forEach(({ biome, position, slope }) => {
+                biomeMap.forEach(({ weights, position, slope }) => {
+                    const biomeName = Object.keys(weights).reduce((a, b) => weights[a] > weights[b] ? a : b);
+                    const biome = this.biomes[biomeName];
                     biome.objects.forEach(objDef => {
                         if (Math.random() < objDef.density && slope <= objDef.maxSlope) {
                             const instances = vegetationMap.get(objDef.type) || [];
@@ -262,28 +401,24 @@ class InfiniWorld extends engine.Component {
                         }
                     });
                 });
-
-                // Create instanced meshes for each object type
+    
                 vegetationMap.forEach((instances, type) => {
                     const model = this.game.modelManager.getModel("worldObjects", type);
                     if (!model) {
                         console.warn(`Model not found: ${type}`);
                         return;
                     }
-
-                    // Process complex models with multiple meshes
                     this.processModelType(type, model, instances, chunkData);
                 });
-
-                chunkData.isGenerating = false; // Mark generation complete
+    
+                chunkData.isGenerating = false;
                 resolve();
             }, 0));
         } catch (error) {
             console.error(`Failed to generate chunk ${chunkKey}:`, error);
-            this.chunks.delete(chunkKey); // Remove failed chunk
+            this.chunks.delete(chunkKey);
         }
     }
-
 
     adjustPosition(position) {
         position.y = this.getHeight(position.x, position.z) + 0.2;
@@ -311,27 +446,32 @@ class InfiniWorld extends engine.Component {
         const cameraChunkX = Math.floor(this.camera.position.x / this.chunkSize);
         const cameraChunkZ = Math.floor(this.camera.position.z / this.chunkSize);
         const newChunks = new Set();
-        const promises = [];
-
+        const chunksToGenerate = [];
+        const maxChunksPerFrame = 2; // Limit to 2 chunks per frame
+    
+        // Identify chunks to generate
         for (let x = cameraChunkX - this.renderDistance; x <= cameraChunkX + this.renderDistance; x++) {
             for (let z = cameraChunkZ - this.renderDistance; z <= cameraChunkZ + this.renderDistance; z++) {
                 const chunkKey = `${x},${z}`;
                 newChunks.add(chunkKey);
                 if (!this.chunks.has(chunkKey)) {
-                    promises.push(this.generateChunk(x, z));
+                    chunksToGenerate.push({ x, z });
                 }
             }
         }
-
+        chunksToGenerate.sort((a, b) => {
+            const distA = Math.hypot(a.x - cameraChunkX, a.z - cameraChunkZ);
+            const distB = Math.hypot(b.x - cameraChunkX, b.z - cameraChunkZ);
+            return distA - distB;
+        });
+        // Generate up to maxChunksPerFrame
+        const promises = chunksToGenerate.slice(0, maxChunksPerFrame).map(({ x, z }) => this.generateChunk(x, z));
         await Promise.all(promises);
-
-        // Remove old chunks
+    
+        // Remove old chunks (unchanged)
         for (const [chunkKey, chunkData] of this.chunks) {
-            if (!newChunks.has(chunkKey)) {
-                // Skip if chunk is still generating
-                if (chunkData.isGenerating) continue;
-
-                // Dispose terrain mesh
+            if (!newChunks.has(chunkKey) && !chunkData.isGenerating) {
+                // Dispose terrain mesh and object meshes (unchanged)
                 if (chunkData.terrainMesh) {
                     this.scene.remove(chunkData.terrainMesh);
                     chunkData.terrainMesh.geometry.dispose();
@@ -343,8 +483,6 @@ class InfiniWorld extends engine.Component {
                         }
                     }
                 }
-
-                // Dispose instanced meshes
                 chunkData.objectMeshes.forEach((groups, type) => {
                     groups.forEach(group => {
                         if (group.mesh) {
@@ -357,11 +495,10 @@ class InfiniWorld extends engine.Component {
                                     group.mesh.material.dispose();
                                 }
                             }
-                            group.mesh.dispose(); // Dispose InstancedMesh
+                            group.mesh.dispose();
                         }
                     });
                 });
-
                 this.chunks.delete(chunkKey);
             }
         }

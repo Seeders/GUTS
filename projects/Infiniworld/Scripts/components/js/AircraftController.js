@@ -1,8 +1,8 @@
 class AircraftController extends engine.Component {
     init({
         infiniWorld,
-        maxThrust = 200,
-        acceleration = 20,
+        maxThrust = 600,
+        acceleration = 700,
         strafeAcceleration = 15,
         verticalAcceleration = 15,
         pitchSpeed = 1.5, // Reduced for consistent control
@@ -10,7 +10,7 @@ class AircraftController extends engine.Component {
         rollSpeed = 2,
         mouseSensitivity = 0.0015, // Further lowered for precision
         dampingFactor = 0.15, // Increased for smoother inputs
-        maxSpeed = 200,
+        maxSpeed = 600,
         cameraSmoothing = 0.3 // Increased for smoother camera
     }) {
         this.infiniWorld = infiniWorld;
@@ -141,29 +141,29 @@ class AircraftController extends engine.Component {
     }
 
     updateCameraPosition() {
-        const dt = Math.min(this.game.deltaTime, 0.1);
-        const smoothingAlpha = 1 - Math.pow(1 - this.cameraSmoothing, dt * 60);
-
+        const dt = Math.min(this.game.deltaTime, 0.033); // Cap at ~30 FPS
+        const smoothingAlpha = this.cameraSmoothing * dt * 60; // Linear interpolation
+    
         // Smooth aircraft position and quaternion
         this.smoothedAircraftPosition.lerp(this.parent.position, smoothingAlpha);
         this.smoothedAircraftQuaternion.slerp(this.parent.quaternion, smoothingAlpha);
-
+    
         // Calculate forward vector from smoothed quaternion
         const smoothedForward = new THREE.Vector3(0, 0, 1).applyQuaternion(this.smoothedAircraftQuaternion);
-
+    
         // Calculate look-at target
         const lookTarget = this.smoothedAircraftPosition.clone().add(
             smoothedForward.clone().multiplyScalar(this.cameraLookAhead)
         );
-
+    
         if (this.isThirdPerson) {
             const offset = new THREE.Vector3(0, this.thirdPersonHeight, -this.thirdPersonDistance)
                 .applyQuaternion(this.smoothedAircraftQuaternion);
             const targetPos = this.smoothedAircraftPosition.clone().add(offset);
-
+    
             this.camera.position.lerp(targetPos, smoothingAlpha);
             this.lastCameraPosition.copy(this.camera.position);
-
+    
             this.lastCameraLookAt.lerp(lookTarget, smoothingAlpha);
             this.camera.lookAt(this.lastCameraLookAt);
         } else {
