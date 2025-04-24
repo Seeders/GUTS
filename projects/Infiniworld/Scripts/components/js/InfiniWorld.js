@@ -291,40 +291,81 @@ class InfiniWorld extends engine.Component {
     }
   
     processModelType(type, model, instances, chunkData) {
-      const meshes = [];
-      model.traverse(child => {
-        if (child instanceof THREE.Mesh) {
-          meshes.push({
-            geometry: child.geometry,
-            material: child.material.clone()
-          });
-        }
-      });
-  
-      const instanceGroups = meshes.map(({ geometry, material }) => {
-        const instancedMesh = new THREE.InstancedMesh(geometry, material, instances.length);
-        this.scene.add(instancedMesh);
-        return { mesh: instancedMesh, instances: [] };
-      });
-  
-      instances.forEach((instance, index) => {
-        instanceGroups.forEach(group => {
-          const matrix = new THREE.Matrix4().compose(
-            new THREE.Vector3(instance.position.x, instance.position.y, instance.position.z),
-            new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), instance.rotation),
-            new THREE.Vector3().setScalar(instance.scale)
-          );
-          group.mesh.setMatrixAt(index, matrix);
-          group.instances.push(index);
+        // Ensure model’s world matrices are up-to-date
+        model.updateMatrixWorld(true);
+    
+        // Collect mesh data with transformations relative to model root
+        const meshData = [];
+        model.traverse(node => {
+          if (node.isMesh) {
+            const parent = node.parent;
+            const parentWorldMatrix = parent.matrixWorld.clone();
+            const localMatrix = node.matrix.clone();
+    
+            // Compute transformation relative to model root
+            const relativeMatrix = new THREE.Matrix4();
+            relativeMatrix.copy(parentWorldMatrix);
+            relativeMatrix.multiply(localMatrix);
+    
+            meshData.push({
+              mesh: node,
+              relativeMatrix: relativeMatrix
+            });
+          }
         });
-      });
-  
-      instanceGroups.forEach(group => {
-        group.mesh.instanceMatrix.needsUpdate = true;
-      });
-  
-      chunkData.objectMeshes.set(type, instanceGroups);
+    
+        if (meshData.length === 0) {
+          console.warn(`No meshes found in model: ${type}`);
+          return;
+        }
+    
+        // Create instanced meshes for each mesh in the model
+        const instanceGroups = meshData.map(({ mesh, relativeMatrix }) => {
+          const instancedMesh = new THREE.InstancedMesh(
+            mesh.geometry,
+            mesh.material.clone(), // Clone material to avoid shared state
+            instances.length
+          );
+          instancedMesh.userData.relativeMatrix = relativeMatrix;
+          instancedMesh.castShadow = true;
+          instancedMesh.receiveShadow = true;
+          this.scene.add(instancedMesh);
+          return { mesh: instancedMesh, instances: [] };
+        });
+    
+        // Set instance transformations
+        const matrix = new THREE.Matrix4();
+        const dummy = new THREE.Object3D();
+    
+        instances.forEach((instance, index) => {
+          // Set base transformation from worker data
+          dummy.position.set(
+            instance.position.x,
+            instance.position.y,
+            instance.position.z
+          );
+          dummy.rotation.y = instance.rotation;
+          dummy.scale.setScalar(instance.scale);
+          dummy.updateMatrix();
+    
+          // Apply base transformation combined with each mesh’s relative matrix
+          instanceGroups.forEach((group, meshIndex) => {
+            matrix.copy(dummy.matrix);
+            matrix.multiply(group.mesh.userData.relativeMatrix);
+            group.mesh.setMatrixAt(index, matrix);
+            group.instances.push(index);
+          });
+        });
+    
+        // Update instance matrices
+        instanceGroups.forEach(group => {
+          group.mesh.instanceMatrix.needsUpdate = true;
+        });
+    
+        // Store instance groups in chunk data
+        chunkData.objectMeshes.set(type, instanceGroups);
     }
+    
   
     getTerrainHeight(x, z) {
       const weights = this.getBiomeWeights(x, z);
