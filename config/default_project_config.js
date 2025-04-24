@@ -1,6 +1,116 @@
 const DEFAULT_PROJECT_CONFIG = {
   "objectTypes": {
     "attackSounds": {
+      "gunshot": {
+        "title": "GunShot",
+        "audio": {
+          "waveform": "noise",
+          "frequency": 200,
+          "duration": 0.5,
+          "noise": {
+            "type": "pink",
+            "amount": 0.8,
+            "filter": {
+              "type": "lowpass",
+              "frequency": 400
+            }
+          },
+          "envelope": {
+            "attack": 0.01,
+            "decay": 0.3,
+            "sustain": 0.2,
+            "release": 0.1
+          },
+          "pitchEnvelope": {
+            "start": 4,
+            "end": 2,
+            "time": 0.5
+          },
+          "effects": {
+            "filter": {
+              "type": "lowpass",
+              "frequency": 800,
+              "Q": 1
+            },
+            "distortion": 2,
+            "delay": {
+              "time": 0.1,
+              "feedback": 0.3
+            },
+            "reverb": 0.4,
+            "bitcrusher": 0.5,
+            "pan": 0
+          }
+        }
+      },
+      "TeslaAttack": {
+        "title": "Tesla Attack",
+        "audio": {
+          "waveform": "noise",
+          "frequency": 200,
+          "duration": 0.15,
+          "envelope": {
+            "attack": 0.001,
+            "decay": 0.03,
+            "sustain": 0.4,
+            "release": 0.02
+          },
+          "pitchEnvelope": {
+            "start": 2.5,
+            "end": 0.8,
+            "time": 0.15
+          },
+          "effects": {
+            "filter": {
+              "type": "bandpass",
+              "frequency": 1200,
+              "Q": 3
+            },
+            "distortion": 30,
+            "delay": {
+              "time": 0.05,
+              "feedback": 0.05
+            },
+            "reverb": 0.05,
+            "bitcrusher": 0.5,
+            "pan": 0
+          }
+        }
+      },
+      "plasma": {
+        "title": "Plasma",
+        "audio": {
+          "waveform": "triangle",
+          "frequency": 197,
+          "duration": 0.1,
+          "envelope": {
+            "attack": 0.001,
+            "decay": 0.076,
+            "sustain": 0.5,
+            "release": 0.001
+          },
+          "pitchEnvelope": {
+            "start": 3.41,
+            "end": 0.23,
+            "time": 0.1
+          },
+          "effects": {
+            "filter": {
+              "type": "lowpass",
+              "frequency": 400,
+              "Q": 1
+            },
+            "distortion": 5,
+            "delay": {
+              "time": 0,
+              "feedback": 0
+            },
+            "reverb": 0,
+            "bitcrusher": 0,
+            "pan": 0
+          }
+        }
+      },
       "laser": {
         "title": "Laser",
         "audio": {
@@ -73,116 +183,6 @@ const DEFAULT_PROJECT_CONFIG = {
             },
             "reverb": 0.11,
             "bitcrusher": 0,
-            "pan": 0
-          }
-        }
-      },
-      "gunshot": {
-        "title": "GunShot",
-        "audio": {
-          "waveform": "noise",
-          "frequency": 200,
-          "duration": 0.5,
-          "noise": {
-            "type": "pink",
-            "amount": 0.8,
-            "filter": {
-              "type": "lowpass",
-              "frequency": 400
-            }
-          },
-          "envelope": {
-            "attack": 0.01,
-            "decay": 0.3,
-            "sustain": 0.2,
-            "release": 0.1
-          },
-          "pitchEnvelope": {
-            "start": 4,
-            "end": 2,
-            "time": 0.5
-          },
-          "effects": {
-            "filter": {
-              "type": "lowpass",
-              "frequency": 800,
-              "Q": 1
-            },
-            "distortion": 2,
-            "delay": {
-              "time": 0.1,
-              "feedback": 0.3
-            },
-            "reverb": 0.4,
-            "bitcrusher": 0.5,
-            "pan": 0
-          }
-        }
-      },
-      "plasma": {
-        "title": "Plasma",
-        "audio": {
-          "waveform": "triangle",
-          "frequency": 197,
-          "duration": 0.1,
-          "envelope": {
-            "attack": 0.001,
-            "decay": 0.076,
-            "sustain": 0.5,
-            "release": 0.001
-          },
-          "pitchEnvelope": {
-            "start": 3.41,
-            "end": 0.23,
-            "time": 0.1
-          },
-          "effects": {
-            "filter": {
-              "type": "lowpass",
-              "frequency": 400,
-              "Q": 1
-            },
-            "distortion": 5,
-            "delay": {
-              "time": 0,
-              "feedback": 0
-            },
-            "reverb": 0,
-            "bitcrusher": 0,
-            "pan": 0
-          }
-        }
-      },
-      "TeslaAttack": {
-        "title": "Tesla Attack",
-        "audio": {
-          "waveform": "noise",
-          "frequency": 200,
-          "duration": 0.15,
-          "envelope": {
-            "attack": 0.001,
-            "decay": 0.03,
-            "sustain": 0.4,
-            "release": 0.02
-          },
-          "pitchEnvelope": {
-            "start": 2.5,
-            "end": 0.8,
-            "time": 0.15
-          },
-          "effects": {
-            "filter": {
-              "type": "bandpass",
-              "frequency": 1200,
-              "Q": 3
-            },
-            "distortion": 30,
-            "delay": {
-              "time": 0.05,
-              "feedback": 0.05
-            },
-            "reverb": 0.05,
-            "bitcrusher": 0.5,
             "pan": 0
           }
         }
@@ -423,18 +423,18 @@ const DEFAULT_PROJECT_CONFIG = {
       }
     },
     "upgrades": {
-      "bloodCore": {
-        "desc": "Increase max Core HP by 20% and heal 30 HP",
-        "maxHpMultiplier": 1.2,
-        "healAmount": 30
+      "bloodFrenzy": {
+        "desc": "All towers deal 20% more damage",
+        "damageMultiplier": 1.2
       },
       "bloodEff": {
         "desc": "Towers cost 15% less Blood Shards",
         "value": 0.85
       },
-      "bloodFrenzy": {
-        "desc": "All towers deal 20% more damage",
-        "damageMultiplier": 1.2
+      "bloodCore": {
+        "desc": "Increase max Core HP by 20% and heal 30 HP",
+        "maxHpMultiplier": 1.2,
+        "healAmount": 30
       },
       "bloodHarvest": {
         "desc": "Gain 25% more Blood Shards from enemies",
@@ -444,6 +444,10 @@ const DEFAULT_PROJECT_CONFIG = {
         "desc": "Towers take 20% less damage from enemy abilities",
         "towerDamageReduction": 0.8
       },
+      "essenceOverflow": {
+        "desc": "Gain 10% more Essence when above 50% Core HP",
+        "value": 1.1
+      },
       "bloodRegeneration": {
         "desc": "All healing effects are 25% more effective",
         "healingMultiplier": 1.25
@@ -451,10 +455,6 @@ const DEFAULT_PROJECT_CONFIG = {
       "dematerializeSentry": {
         "desc": "Heal 0.5% Core HP per hit",
         "leech": 0.005
-      },
-      "essenceOverflow": {
-        "desc": "Gain 10% more Essence when above 50% Core HP",
-        "value": 1.1
       },
       "essenceExtraction": {
         "desc": "Gain 25% more Essence from enemies",
@@ -478,14 +478,18 @@ const DEFAULT_PROJECT_CONFIG = {
         "desc": "10% chance to raise a skeleton when killing an enemy",
         "summonChance": 1.1
       },
-      "overCharge": {
-        "desc": "+30% Range",
-        "range": 1.3
-      },
       "pyreBlaze": {
         "desc": "+20% Damage and +10% Attack Speed",
         "damage": 1.2,
         "attackSpeed": 1.1
+      },
+      "overCharge": {
+        "desc": "+30% Range",
+        "range": 1.3
+      },
+      "sentryFrenzy": {
+        "desc": "+5% Attack Speed",
+        "value": 0.95
       },
       "pyreBurn": {
         "desc": "+50% Burn Damage",
@@ -494,10 +498,6 @@ const DEFAULT_PROJECT_CONFIG = {
       "pyreSoul": {
         "desc": "+10% splash radius",
         "splashRadius": 1.1
-      },
-      "sentryFrenzy": {
-        "desc": "+5% Attack Speed",
-        "value": 0.95
       },
       "sentryIntelligence": {
         "desc": "+15% Damage and +10% Range",
@@ -791,17 +791,6 @@ const DEFAULT_PROJECT_CONFIG = {
       }
     },
     "wavesets": {
-      "level1_start1": {
-        "title": "Level 1 - Start 1",
-        "waves": [
-          "wave1",
-          "wave1",
-          "wave1",
-          "wave1",
-          "wave1",
-          "swarm"
-        ]
-      },
       "level1_start2": {
         "title": "Level 1 - Start 2",
         "waves": [
@@ -813,6 +802,17 @@ const DEFAULT_PROJECT_CONFIG = {
           "swarm"
         ],
         "startDelay": 5
+      },
+      "level1_start1": {
+        "title": "Level 1 - Start 1",
+        "waves": [
+          "wave1",
+          "wave1",
+          "wave1",
+          "wave1",
+          "wave1",
+          "swarm"
+        ]
       },
       "swarm": {
         "title": "Swarm",
@@ -1249,6 +1249,590 @@ const DEFAULT_PROJECT_CONFIG = {
         },
         "armor": 100,
         "title": "Armored Beast"
+      },
+      "bloodBeast": {
+        "hp": 50,
+        "speed": 0.6,
+        "value": 15,
+        "essence": 20,
+        "regen": 0.5,
+        "render": {
+          "animations": {
+            "idle": [
+              {}
+            ],
+            "walk": [
+              {},
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "x": -0.4465238854292495,
+                      "z": 0.039065777968608106,
+                      "id": 0
+                    },
+                    {
+                      "x": -0.4465238854292495,
+                      "z": 0.039065777968608106,
+                      "id": 1
+                    },
+                    {
+                      "x": 15.31040016276608,
+                      "z": -2.7393050647022767,
+                      "rotationX": -10,
+                      "id": 2
+                    },
+                    {
+                      "x": -16.203447933624577,
+                      "z": 2.8174366206394934,
+                      "rotationX": 10,
+                      "id": 3
+                    },
+                    {
+                      "x": 21.219246680839326,
+                      "z": -1.9,
+                      "id": 4
+                    },
+                    {
+                      "x": -22.112294451697828,
+                      "z": 2.1,
+                      "id": 5
+                    },
+                    {
+                      "x": 9.40155364469283,
+                      "z": -1.6974159987006954,
+                      "id": 6
+                    },
+                    {
+                      "x": -10.294601415551329,
+                      "z": 1.7755475546379114,
+                      "id": 7
+                    },
+                    {
+                      "x": 5.866700300967233,
+                      "z": 7.0492869137316205,
+                      "id": 8
+                    },
+                    {
+                      "x": -3.9813772291548464,
+                      "z": 8.785768690400923,
+                      "id": 9
+                    },
+                    {
+                      "x": 6.213996656301093,
+                      "z": 9.018902419756037,
+                      "id": 10
+                    },
+                    {
+                      "x": -3.6340808738209858,
+                      "z": 10.75538419642534,
+                      "id": 11
+                    },
+                    {
+                      "x": -10.294601415551329,
+                      "z": 1.7755475546379114,
+                      "id": 12
+                    },
+                    {
+                      "x": 9.40155364469283,
+                      "z": -1.6974159987006954,
+                      "id": 13
+                    }
+                  ]
+                }
+              },
+              {},
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "x": 0.4465238854292495,
+                      "z": 0.039065777968608106,
+                      "id": 0
+                    },
+                    {
+                      "x": 0.4465238854292495,
+                      "z": 0.039065777968608106,
+                      "id": 1
+                    },
+                    {
+                      "x": 16.203447933624577,
+                      "z": 2.8174366206394934,
+                      "rotationX": 10,
+                      "id": 2
+                    },
+                    {
+                      "x": -15.31040016276608,
+                      "z": -2.7393050647022767,
+                      "rotationX": -10,
+                      "id": 3
+                    },
+                    {
+                      "x": 22.112294451697828,
+                      "z": 1.9,
+                      "id": 4
+                    },
+                    {
+                      "x": -21.219246680839326,
+                      "z": -1.6,
+                      "id": 5
+                    },
+                    {
+                      "x": 10.294601415551329,
+                      "z": 1.7755475546379114,
+                      "id": 6
+                    },
+                    {
+                      "x": -9.40155364469283,
+                      "z": -1.6974159987006954,
+                      "id": 7
+                    },
+                    {
+                      "x": 3.9813772291548464,
+                      "z": 8.785768690400923,
+                      "id": 8
+                    },
+                    {
+                      "x": -5.866700300967233,
+                      "z": 7.0492869137316205,
+                      "id": 9
+                    },
+                    {
+                      "x": 3.6340808738209858,
+                      "z": 10.75538419642534,
+                      "id": 10
+                    },
+                    {
+                      "x": -6.213996656301093,
+                      "z": 9.018902419756037,
+                      "id": 11
+                    },
+                    {
+                      "x": -9.40155364469283,
+                      "z": -1.6974159987006954,
+                      "id": 12
+                    },
+                    {
+                      "x": 10.294601415551329,
+                      "z": 1.7755475546379114,
+                      "id": 13
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "sphere",
+                  "width": 26,
+                  "height": 20,
+                  "depth": 24,
+                  "color": "#A52A2A",
+                  "x": 0,
+                  "y": 20,
+                  "z": 0,
+                  "size": 28,
+                  "scaleX": 1
+                },
+                {
+                  "type": "sphere",
+                  "size": 18,
+                  "color": "#A52A2A",
+                  "x": 0,
+                  "y": 36,
+                  "z": 0
+                },
+                {
+                  "type": "cylinder",
+                  "size": 8,
+                  "height": 14,
+                  "color": "#8B4513",
+                  "x": 16,
+                  "y": 24,
+                  "z": 0,
+                  "rotationZ": 45
+                },
+                {
+                  "type": "cylinder",
+                  "size": 8,
+                  "height": 14,
+                  "color": "#8B4513",
+                  "x": -16,
+                  "y": 24,
+                  "z": 0,
+                  "rotationZ": -45
+                },
+                {
+                  "type": "sphere",
+                  "size": 9,
+                  "color": "#A52A2A",
+                  "x": 22,
+                  "y": 18,
+                  "z": 0
+                },
+                {
+                  "type": "sphere",
+                  "size": 9,
+                  "color": "#A52A2A",
+                  "x": -22,
+                  "y": 18,
+                  "z": 0
+                },
+                {
+                  "type": "cylinder",
+                  "size": 8,
+                  "height": 16,
+                  "color": "#8B4513",
+                  "x": 10,
+                  "y": 8,
+                  "z": 0,
+                  "rotationZ": 0
+                },
+                {
+                  "type": "cylinder",
+                  "size": 8,
+                  "height": 16,
+                  "color": "#8B4513",
+                  "x": -10,
+                  "y": 8,
+                  "z": 0,
+                  "rotationZ": 0
+                },
+                {
+                  "type": "sphere",
+                  "size": 6,
+                  "color": "#FFFFFF",
+                  "x": 5,
+                  "y": 38,
+                  "z": 8
+                },
+                {
+                  "type": "sphere",
+                  "size": 6,
+                  "color": "#FFFFFF",
+                  "x": -5,
+                  "y": 38,
+                  "z": 8
+                },
+                {
+                  "type": "sphere",
+                  "size": 3,
+                  "color": "#000000",
+                  "x": 5,
+                  "y": 38,
+                  "z": 10
+                },
+                {
+                  "type": "sphere",
+                  "size": 3,
+                  "color": "#000000",
+                  "x": -5,
+                  "y": 38,
+                  "z": 10
+                },
+                {
+                  "type": "cone",
+                  "size": 6,
+                  "height": 12,
+                  "color": "#8B4513",
+                  "x": -10,
+                  "y": 42,
+                  "z": 0,
+                  "rotationZ": 45
+                },
+                {
+                  "type": "cone",
+                  "size": 6,
+                  "height": 12,
+                  "color": "#8B4513",
+                  "x": 10,
+                  "y": 42,
+                  "z": 0,
+                  "rotationZ": -45
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
+          }
+        },
+        "armor": 50,
+        "title": "blood beast"
+      },
+      "banshee": {
+        "hp": 20,
+        "speed": 1.4,
+        "value": 8,
+        "essence": 14,
+        "screamDamage": 5,
+        "render": {
+          "animations": {
+            "idle": [
+              {}
+            ],
+            "walk": [
+              {},
+              {},
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 38,
+                      "id": 0
+                    },
+                    {
+                      "y": 20,
+                      "id": 1
+                    },
+                    {
+                      "y": 38,
+                      "id": 2
+                    },
+                    {
+                      "y": 38,
+                      "id": 3
+                    },
+                    {
+                      "y": 30,
+                      "id": 4
+                    },
+                    {
+                      "y": 30,
+                      "id": 5
+                    },
+                    {
+                      "y": 35,
+                      "id": 6
+                    },
+                    {
+                      "y": 35,
+                      "id": 7
+                    },
+                    {
+                      "y": 34,
+                      "id": 8
+                    },
+                    {
+                      "y": 20,
+                      "id": 9
+                    },
+                    {
+                      "y": 20,
+                      "id": 10
+                    },
+                    {
+                      "y": 20,
+                      "id": 11
+                    }
+                  ]
+                }
+              },
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 38,
+                      "id": 0
+                    },
+                    {
+                      "y": 20,
+                      "id": 1
+                    },
+                    {
+                      "y": 38,
+                      "id": 2
+                    },
+                    {
+                      "y": 38,
+                      "id": 3
+                    },
+                    {
+                      "y": 30,
+                      "id": 4
+                    },
+                    {
+                      "y": 30,
+                      "id": 5
+                    },
+                    {
+                      "y": 35,
+                      "id": 6
+                    },
+                    {
+                      "y": 35,
+                      "id": 7
+                    },
+                    {
+                      "y": 34,
+                      "id": 8
+                    },
+                    {
+                      "y": 20,
+                      "id": 9
+                    },
+                    {
+                      "y": 20,
+                      "id": 10
+                    },
+                    {
+                      "y": 20,
+                      "id": 11
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "sphere",
+                  "size": 12,
+                  "color": "#BCA9DF",
+                  "x": 0,
+                  "y": 36,
+                  "z": 2,
+                  "scaleX": 1
+                },
+                {
+                  "type": "cone",
+                  "size": 16,
+                  "height": 30,
+                  "color": "#9F8AC7",
+                  "x": 0,
+                  "y": 18,
+                  "z": 0,
+                  "rotationX": 180
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "color": "#FF3366",
+                  "x": 4,
+                  "y": 36,
+                  "z": 7
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "color": "#FF3366",
+                  "x": -4,
+                  "y": 36,
+                  "z": 7
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 16,
+                  "color": "#BCA9DF",
+                  "x": -8,
+                  "y": 28,
+                  "z": 10,
+                  "rotationX": 90,
+                  "rotationZ": 30
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 16,
+                  "color": "#BCA9DF",
+                  "x": 8,
+                  "y": 28,
+                  "z": 10,
+                  "rotationX": 90,
+                  "rotationZ": -30
+                },
+                {
+                  "type": "cylinder",
+                  "size": 2,
+                  "height": 12,
+                  "color": "#BCA9DF",
+                  "x": 3,
+                  "y": 33,
+                  "z": -10,
+                  "rotationX": -40
+                },
+                {
+                  "type": "cylinder",
+                  "size": 2,
+                  "height": 12,
+                  "color": "#BCA9DF",
+                  "x": -3,
+                  "y": 33,
+                  "z": -10,
+                  "rotationX": -40
+                },
+                {
+                  "type": "sphere",
+                  "size": 6,
+                  "color": "#000000",
+                  "x": 0,
+                  "y": 32,
+                  "z": 7.8,
+                  "rotationX": 45
+                },
+                {
+                  "type": "sphere",
+                  "size": 6,
+                  "color": "#BCA9DF",
+                  "x": 15,
+                  "y": 18,
+                  "z": 0
+                },
+                {
+                  "type": "sphere",
+                  "size": 6,
+                  "color": "#BCA9DF",
+                  "x": -15,
+                  "y": 18,
+                  "z": 0
+                },
+                {
+                  "type": "sphere",
+                  "size": 6,
+                  "color": "#BCA9DF",
+                  "x": 0,
+                  "y": 18,
+                  "z": -15
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
+          }
+        },
+        "evasion": 75,
+        "title": "banshee"
       },
       "blueDragon": {
         "hp": 500,
@@ -2340,797 +2924,6 @@ const DEFAULT_PROJECT_CONFIG = {
         "electricResistance": 25,
         "title": "Blue Dragon"
       },
-      "banshee": {
-        "hp": 20,
-        "speed": 1.4,
-        "value": 8,
-        "essence": 14,
-        "screamDamage": 5,
-        "render": {
-          "animations": {
-            "idle": [
-              {}
-            ],
-            "walk": [
-              {},
-              {},
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 38,
-                      "id": 0
-                    },
-                    {
-                      "y": 20,
-                      "id": 1
-                    },
-                    {
-                      "y": 38,
-                      "id": 2
-                    },
-                    {
-                      "y": 38,
-                      "id": 3
-                    },
-                    {
-                      "y": 30,
-                      "id": 4
-                    },
-                    {
-                      "y": 30,
-                      "id": 5
-                    },
-                    {
-                      "y": 35,
-                      "id": 6
-                    },
-                    {
-                      "y": 35,
-                      "id": 7
-                    },
-                    {
-                      "y": 34,
-                      "id": 8
-                    },
-                    {
-                      "y": 20,
-                      "id": 9
-                    },
-                    {
-                      "y": 20,
-                      "id": 10
-                    },
-                    {
-                      "y": 20,
-                      "id": 11
-                    }
-                  ]
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 38,
-                      "id": 0
-                    },
-                    {
-                      "y": 20,
-                      "id": 1
-                    },
-                    {
-                      "y": 38,
-                      "id": 2
-                    },
-                    {
-                      "y": 38,
-                      "id": 3
-                    },
-                    {
-                      "y": 30,
-                      "id": 4
-                    },
-                    {
-                      "y": 30,
-                      "id": 5
-                    },
-                    {
-                      "y": 35,
-                      "id": 6
-                    },
-                    {
-                      "y": 35,
-                      "id": 7
-                    },
-                    {
-                      "y": 34,
-                      "id": 8
-                    },
-                    {
-                      "y": 20,
-                      "id": 9
-                    },
-                    {
-                      "y": 20,
-                      "id": 10
-                    },
-                    {
-                      "y": 20,
-                      "id": 11
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          "model": {
-            "shapes": {
-              "shapes": [
-                {
-                  "type": "sphere",
-                  "size": 12,
-                  "color": "#BCA9DF",
-                  "x": 0,
-                  "y": 36,
-                  "z": 2,
-                  "scaleX": 1
-                },
-                {
-                  "type": "cone",
-                  "size": 16,
-                  "height": 30,
-                  "color": "#9F8AC7",
-                  "x": 0,
-                  "y": 18,
-                  "z": 0,
-                  "rotationX": 180
-                },
-                {
-                  "type": "sphere",
-                  "size": 4,
-                  "color": "#FF3366",
-                  "x": 4,
-                  "y": 36,
-                  "z": 7
-                },
-                {
-                  "type": "sphere",
-                  "size": 4,
-                  "color": "#FF3366",
-                  "x": -4,
-                  "y": 36,
-                  "z": 7
-                },
-                {
-                  "type": "cylinder",
-                  "size": 3,
-                  "height": 16,
-                  "color": "#BCA9DF",
-                  "x": -8,
-                  "y": 28,
-                  "z": 10,
-                  "rotationX": 90,
-                  "rotationZ": 30
-                },
-                {
-                  "type": "cylinder",
-                  "size": 3,
-                  "height": 16,
-                  "color": "#BCA9DF",
-                  "x": 8,
-                  "y": 28,
-                  "z": 10,
-                  "rotationX": 90,
-                  "rotationZ": -30
-                },
-                {
-                  "type": "cylinder",
-                  "size": 2,
-                  "height": 12,
-                  "color": "#BCA9DF",
-                  "x": 3,
-                  "y": 33,
-                  "z": -10,
-                  "rotationX": -40
-                },
-                {
-                  "type": "cylinder",
-                  "size": 2,
-                  "height": 12,
-                  "color": "#BCA9DF",
-                  "x": -3,
-                  "y": 33,
-                  "z": -10,
-                  "rotationX": -40
-                },
-                {
-                  "type": "sphere",
-                  "size": 6,
-                  "color": "#000000",
-                  "x": 0,
-                  "y": 32,
-                  "z": 7.8,
-                  "rotationX": 45
-                },
-                {
-                  "type": "sphere",
-                  "size": 6,
-                  "color": "#BCA9DF",
-                  "x": 15,
-                  "y": 18,
-                  "z": 0
-                },
-                {
-                  "type": "sphere",
-                  "size": 6,
-                  "color": "#BCA9DF",
-                  "x": -15,
-                  "y": 18,
-                  "z": 0
-                },
-                {
-                  "type": "sphere",
-                  "size": 6,
-                  "color": "#BCA9DF",
-                  "x": 0,
-                  "y": 18,
-                  "z": -15
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            }
-          }
-        },
-        "evasion": 75,
-        "title": "banshee"
-      },
-      "bloodBeast": {
-        "hp": 50,
-        "speed": 0.6,
-        "value": 15,
-        "essence": 20,
-        "regen": 0.5,
-        "render": {
-          "animations": {
-            "idle": [
-              {}
-            ],
-            "walk": [
-              {},
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "x": -0.4465238854292495,
-                      "z": 0.039065777968608106,
-                      "id": 0
-                    },
-                    {
-                      "x": -0.4465238854292495,
-                      "z": 0.039065777968608106,
-                      "id": 1
-                    },
-                    {
-                      "x": 15.31040016276608,
-                      "z": -2.7393050647022767,
-                      "rotationX": -10,
-                      "id": 2
-                    },
-                    {
-                      "x": -16.203447933624577,
-                      "z": 2.8174366206394934,
-                      "rotationX": 10,
-                      "id": 3
-                    },
-                    {
-                      "x": 21.219246680839326,
-                      "z": -1.9,
-                      "id": 4
-                    },
-                    {
-                      "x": -22.112294451697828,
-                      "z": 2.1,
-                      "id": 5
-                    },
-                    {
-                      "x": 9.40155364469283,
-                      "z": -1.6974159987006954,
-                      "id": 6
-                    },
-                    {
-                      "x": -10.294601415551329,
-                      "z": 1.7755475546379114,
-                      "id": 7
-                    },
-                    {
-                      "x": 5.866700300967233,
-                      "z": 7.0492869137316205,
-                      "id": 8
-                    },
-                    {
-                      "x": -3.9813772291548464,
-                      "z": 8.785768690400923,
-                      "id": 9
-                    },
-                    {
-                      "x": 6.213996656301093,
-                      "z": 9.018902419756037,
-                      "id": 10
-                    },
-                    {
-                      "x": -3.6340808738209858,
-                      "z": 10.75538419642534,
-                      "id": 11
-                    },
-                    {
-                      "x": -10.294601415551329,
-                      "z": 1.7755475546379114,
-                      "id": 12
-                    },
-                    {
-                      "x": 9.40155364469283,
-                      "z": -1.6974159987006954,
-                      "id": 13
-                    }
-                  ]
-                }
-              },
-              {},
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "x": 0.4465238854292495,
-                      "z": 0.039065777968608106,
-                      "id": 0
-                    },
-                    {
-                      "x": 0.4465238854292495,
-                      "z": 0.039065777968608106,
-                      "id": 1
-                    },
-                    {
-                      "x": 16.203447933624577,
-                      "z": 2.8174366206394934,
-                      "rotationX": 10,
-                      "id": 2
-                    },
-                    {
-                      "x": -15.31040016276608,
-                      "z": -2.7393050647022767,
-                      "rotationX": -10,
-                      "id": 3
-                    },
-                    {
-                      "x": 22.112294451697828,
-                      "z": 1.9,
-                      "id": 4
-                    },
-                    {
-                      "x": -21.219246680839326,
-                      "z": -1.6,
-                      "id": 5
-                    },
-                    {
-                      "x": 10.294601415551329,
-                      "z": 1.7755475546379114,
-                      "id": 6
-                    },
-                    {
-                      "x": -9.40155364469283,
-                      "z": -1.6974159987006954,
-                      "id": 7
-                    },
-                    {
-                      "x": 3.9813772291548464,
-                      "z": 8.785768690400923,
-                      "id": 8
-                    },
-                    {
-                      "x": -5.866700300967233,
-                      "z": 7.0492869137316205,
-                      "id": 9
-                    },
-                    {
-                      "x": 3.6340808738209858,
-                      "z": 10.75538419642534,
-                      "id": 10
-                    },
-                    {
-                      "x": -6.213996656301093,
-                      "z": 9.018902419756037,
-                      "id": 11
-                    },
-                    {
-                      "x": -9.40155364469283,
-                      "z": -1.6974159987006954,
-                      "id": 12
-                    },
-                    {
-                      "x": 10.294601415551329,
-                      "z": 1.7755475546379114,
-                      "id": 13
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          "model": {
-            "shapes": {
-              "shapes": [
-                {
-                  "type": "sphere",
-                  "width": 26,
-                  "height": 20,
-                  "depth": 24,
-                  "color": "#A52A2A",
-                  "x": 0,
-                  "y": 20,
-                  "z": 0,
-                  "size": 28,
-                  "scaleX": 1
-                },
-                {
-                  "type": "sphere",
-                  "size": 18,
-                  "color": "#A52A2A",
-                  "x": 0,
-                  "y": 36,
-                  "z": 0
-                },
-                {
-                  "type": "cylinder",
-                  "size": 8,
-                  "height": 14,
-                  "color": "#8B4513",
-                  "x": 16,
-                  "y": 24,
-                  "z": 0,
-                  "rotationZ": 45
-                },
-                {
-                  "type": "cylinder",
-                  "size": 8,
-                  "height": 14,
-                  "color": "#8B4513",
-                  "x": -16,
-                  "y": 24,
-                  "z": 0,
-                  "rotationZ": -45
-                },
-                {
-                  "type": "sphere",
-                  "size": 9,
-                  "color": "#A52A2A",
-                  "x": 22,
-                  "y": 18,
-                  "z": 0
-                },
-                {
-                  "type": "sphere",
-                  "size": 9,
-                  "color": "#A52A2A",
-                  "x": -22,
-                  "y": 18,
-                  "z": 0
-                },
-                {
-                  "type": "cylinder",
-                  "size": 8,
-                  "height": 16,
-                  "color": "#8B4513",
-                  "x": 10,
-                  "y": 8,
-                  "z": 0,
-                  "rotationZ": 0
-                },
-                {
-                  "type": "cylinder",
-                  "size": 8,
-                  "height": 16,
-                  "color": "#8B4513",
-                  "x": -10,
-                  "y": 8,
-                  "z": 0,
-                  "rotationZ": 0
-                },
-                {
-                  "type": "sphere",
-                  "size": 6,
-                  "color": "#FFFFFF",
-                  "x": 5,
-                  "y": 38,
-                  "z": 8
-                },
-                {
-                  "type": "sphere",
-                  "size": 6,
-                  "color": "#FFFFFF",
-                  "x": -5,
-                  "y": 38,
-                  "z": 8
-                },
-                {
-                  "type": "sphere",
-                  "size": 3,
-                  "color": "#000000",
-                  "x": 5,
-                  "y": 38,
-                  "z": 10
-                },
-                {
-                  "type": "sphere",
-                  "size": 3,
-                  "color": "#000000",
-                  "x": -5,
-                  "y": 38,
-                  "z": 10
-                },
-                {
-                  "type": "cone",
-                  "size": 6,
-                  "height": 12,
-                  "color": "#8B4513",
-                  "x": -10,
-                  "y": 42,
-                  "z": 0,
-                  "rotationZ": 45
-                },
-                {
-                  "type": "cone",
-                  "size": 6,
-                  "height": 12,
-                  "color": "#8B4513",
-                  "x": 10,
-                  "y": 42,
-                  "z": 0,
-                  "rotationZ": -45
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            }
-          }
-        },
-        "armor": 50,
-        "title": "blood beast"
-      },
-      "ghost": {
-        "hp": 1,
-        "speed": 1.5,
-        "value": 10,
-        "essence": 15,
-        "render": {
-          "animations": {
-            "idle": [
-              {}
-            ],
-            "walk": [
-              {},
-              {},
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 32,
-                      "id": 0
-                    },
-                    {
-                      "y": 22,
-                      "id": 1
-                    },
-                    {
-                      "y": 12,
-                      "id": 2
-                    },
-                    {
-                      "y": 7,
-                      "id": 3
-                    },
-                    {
-                      "y": 7,
-                      "id": 4
-                    },
-                    {
-                      "y": 7,
-                      "id": 5
-                    },
-                    {
-                      "y": 32,
-                      "id": 6
-                    },
-                    {
-                      "y": 32,
-                      "id": 7
-                    },
-                    {
-                      "y": 29,
-                      "id": 8
-                    }
-                  ]
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 32,
-                      "id": 0
-                    },
-                    {
-                      "y": 22,
-                      "id": 1
-                    },
-                    {
-                      "y": 12,
-                      "id": 2
-                    },
-                    {
-                      "y": 7,
-                      "id": 3
-                    },
-                    {
-                      "y": 7,
-                      "id": 4
-                    },
-                    {
-                      "y": 7,
-                      "id": 5
-                    },
-                    {
-                      "y": 32,
-                      "id": 6
-                    },
-                    {
-                      "y": 32,
-                      "id": 7
-                    },
-                    {
-                      "y": 29,
-                      "id": 8
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          "model": {
-            "shapes": {
-              "shapes": [
-                {
-                  "type": "sphere",
-                  "size": 16,
-                  "color": "#C2E8F7",
-                  "x": 0,
-                  "y": 31,
-                  "z": 0,
-                  "scaleX": 1
-                },
-                {
-                  "type": "sphere",
-                  "size": 14,
-                  "color": "#D8F0F9",
-                  "x": 0,
-                  "y": 21,
-                  "z": 0
-                },
-                {
-                  "type": "sphere",
-                  "size": 12,
-                  "color": "#E5F6FC",
-                  "x": 0,
-                  "y": 11,
-                  "z": 0
-                },
-                {
-                  "type": "cone",
-                  "size": 8,
-                  "height": 14,
-                  "color": "#E5F6FC",
-                  "x": 6,
-                  "y": 6,
-                  "z": 0,
-                  "rotationX": 180
-                },
-                {
-                  "type": "cone",
-                  "size": 8,
-                  "height": 14,
-                  "color": "#E5F6FC",
-                  "x": -6,
-                  "y": 6,
-                  "z": 0,
-                  "rotationX": 180
-                },
-                {
-                  "type": "cone",
-                  "size": 8,
-                  "height": 14,
-                  "color": "#E5F6FC",
-                  "x": 0,
-                  "y": 6,
-                  "z": 0,
-                  "rotationX": 180
-                },
-                {
-                  "type": "sphere",
-                  "size": 4,
-                  "color": "#1A1A1A",
-                  "x": 4,
-                  "y": 31,
-                  "z": 7
-                },
-                {
-                  "type": "sphere",
-                  "size": 4,
-                  "color": "#1A1A1A",
-                  "x": -4,
-                  "y": 31,
-                  "z": 7
-                },
-                {
-                  "type": "sphere",
-                  "size": 8,
-                  "color": "#1A1A1A",
-                  "x": 0,
-                  "y": 28,
-                  "z": 4,
-                  "rotationX": 45,
-                  "rotationY": 0,
-                  "rotationZ": 0
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            }
-          }
-        },
-        "evasion": 75,
-        "energyShield": 30,
-        "title": "ghost"
-      },
       "greenDragon": {
         "hp": 500,
         "speed": 0.5,
@@ -4184,6 +3977,213 @@ const DEFAULT_PROJECT_CONFIG = {
         "coldResistance": 50,
         "electricResistance": 50,
         "title": "Green Dragon"
+      },
+      "ghost": {
+        "hp": 1,
+        "speed": 1.5,
+        "value": 10,
+        "essence": 15,
+        "render": {
+          "animations": {
+            "idle": [
+              {}
+            ],
+            "walk": [
+              {},
+              {},
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 32,
+                      "id": 0
+                    },
+                    {
+                      "y": 22,
+                      "id": 1
+                    },
+                    {
+                      "y": 12,
+                      "id": 2
+                    },
+                    {
+                      "y": 7,
+                      "id": 3
+                    },
+                    {
+                      "y": 7,
+                      "id": 4
+                    },
+                    {
+                      "y": 7,
+                      "id": 5
+                    },
+                    {
+                      "y": 32,
+                      "id": 6
+                    },
+                    {
+                      "y": 32,
+                      "id": 7
+                    },
+                    {
+                      "y": 29,
+                      "id": 8
+                    }
+                  ]
+                }
+              },
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 32,
+                      "id": 0
+                    },
+                    {
+                      "y": 22,
+                      "id": 1
+                    },
+                    {
+                      "y": 12,
+                      "id": 2
+                    },
+                    {
+                      "y": 7,
+                      "id": 3
+                    },
+                    {
+                      "y": 7,
+                      "id": 4
+                    },
+                    {
+                      "y": 7,
+                      "id": 5
+                    },
+                    {
+                      "y": 32,
+                      "id": 6
+                    },
+                    {
+                      "y": 32,
+                      "id": 7
+                    },
+                    {
+                      "y": 29,
+                      "id": 8
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "sphere",
+                  "size": 16,
+                  "color": "#C2E8F7",
+                  "x": 0,
+                  "y": 31,
+                  "z": 0,
+                  "scaleX": 1
+                },
+                {
+                  "type": "sphere",
+                  "size": 14,
+                  "color": "#D8F0F9",
+                  "x": 0,
+                  "y": 21,
+                  "z": 0
+                },
+                {
+                  "type": "sphere",
+                  "size": 12,
+                  "color": "#E5F6FC",
+                  "x": 0,
+                  "y": 11,
+                  "z": 0
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 14,
+                  "color": "#E5F6FC",
+                  "x": 6,
+                  "y": 6,
+                  "z": 0,
+                  "rotationX": 180
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 14,
+                  "color": "#E5F6FC",
+                  "x": -6,
+                  "y": 6,
+                  "z": 0,
+                  "rotationX": 180
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 14,
+                  "color": "#E5F6FC",
+                  "x": 0,
+                  "y": 6,
+                  "z": 0,
+                  "rotationX": 180
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "color": "#1A1A1A",
+                  "x": 4,
+                  "y": 31,
+                  "z": 7
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "color": "#1A1A1A",
+                  "x": -4,
+                  "y": 31,
+                  "z": 7
+                },
+                {
+                  "type": "sphere",
+                  "size": 8,
+                  "color": "#1A1A1A",
+                  "x": 0,
+                  "y": 28,
+                  "z": 4,
+                  "rotationX": 45,
+                  "rotationY": 0,
+                  "rotationZ": 0
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
+          }
+        },
+        "evasion": 75,
+        "energyShield": 30,
+        "title": "ghost"
       },
       "new_trex": {
         "title": "New T-Rex",
@@ -6324,772 +6324,6 @@ const DEFAULT_PROJECT_CONFIG = {
           }
         }
       },
-      "orc": {
-        "essence": 5,
-        "speed": 1,
-        "value": 1,
-        "hp": 10,
-        "render": {
-          "animations": {
-            "idle": [
-              {}
-            ],
-            "walk": [
-              {},
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 26.757142857142853,
-                      "rotationY": -10,
-                      "id": 0
-                    },
-                    {
-                      "y": 41.75714285714285,
-                      "id": 1
-                    },
-                    {
-                      "y": 41.75714285714285,
-                      "id": 2
-                    },
-                    {
-                      "y": 38.257142857142846,
-                      "id": 3
-                    },
-                    {
-                      "y": 43.75714285714285,
-                      "id": 4
-                    },
-                    {
-                      "y": 43.75714285714285,
-                      "id": 5
-                    },
-                    {
-                      "y": 43.75714285714285,
-                      "id": 6
-                    },
-                    {
-                      "y": 43.75714285714285,
-                      "id": 7
-                    },
-                    {
-                      "y": 27.75714285714285,
-                      "z": -1,
-                      "rotationX": 11,
-                      "id": 8
-                    },
-                    {
-                      "y": 27.75714285714285,
-                      "z": 3.6,
-                      "rotationX": -14,
-                      "id": 9
-                    },
-                    {
-                      "x": 11.6,
-                      "y": 15.757142857142853,
-                      "z": -3.2,
-                      "rotationX": 10,
-                      "id": 10
-                    },
-                    {
-                      "x": -12.4,
-                      "y": 15.757142857142853,
-                      "z": 6.5,
-                      "rotationX": -14,
-                      "id": 11
-                    },
-                    {
-                      "y": 7.757142857142849,
-                      "z": 3,
-                      "rotationX": -4,
-                      "id": 12
-                    },
-                    {
-                      "y": 7.757142857142849,
-                      "z": -1,
-                      "rotationX": 21,
-                      "id": 13
-                    },
-                    {
-                      "y": -0.24285714285715443,
-                      "z": 5.1,
-                      "id": 14
-                    },
-                    {
-                      "x": -4.1,
-                      "y": 1,
-                      "z": -1.6,
-                      "rotationX": 26,
-                      "id": 15
-                    },
-                    {
-                      "y": 44.75714285714285,
-                      "id": 16
-                    },
-                    {
-                      "y": 44.75714285714285,
-                      "id": 17
-                    },
-                    {
-                      "y": 48.2,
-                      "id": 18
-                    },
-                    {
-                      "y": 36.75714285714285,
-                      "id": 19
-                    },
-                    {
-                      "y": 36.75714285714285,
-                      "id": 20
-                    },
-                    {
-                      "y": 17.757142857142853,
-                      "rotationY": -10,
-                      "id": 21
-                    },
-                    {
-                      "y": 40.75714285714285,
-                      "id": 22
-                    },
-                    {
-                      "y": 12.999999999999996,
-                      "z": 2.6,
-                      "rotationX": -60,
-                      "id": 23
-                    },
-                    {
-                      "x": 12.1,
-                      "y": 5,
-                      "z": 17,
-                      "id": 24
-                    },
-                    {
-                      "y": 9.5,
-                      "z": 19.7,
-                      "rotationY": 0,
-                      "rotationX": 30,
-                      "id": 25
-                    },
-                    {
-                      "y": 0,
-                      "z": 14.5,
-                      "rotationX": -150,
-                      "id": 26
-                    },
-                    {
-                      "x": 7.5,
-                      "y": 4.8,
-                      "z": 17.3,
-                      "id": 27
-                    },
-                    {
-                      "x": 16.6,
-                      "y": 4.8,
-                      "z": 17.3,
-                      "id": 28
-                    },
-                    {
-                      "x": 12.1,
-                      "y": 2.5999999999999996,
-                      "z": 21,
-                      "rotationX": 120,
-                      "id": 29
-                    },
-                    {
-                      "y": 21.757142857142853,
-                      "id": 30
-                    },
-                    {
-                      "y": 38,
-                      "z": 1,
-                      "rotationX": 105,
-                      "id": 31
-                    },
-                    {
-                      "y": 38,
-                      "z": 1,
-                      "rotationX": 75,
-                      "id": 32
-                    }
-                  ]
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 29.757142857142853,
-                      "id": 8
-                    },
-                    {
-                      "y": 29.757142857142853,
-                      "id": 9
-                    },
-                    {
-                      "y": 14.999999999999993,
-                      "id": 29
-                    }
-                  ]
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 26.757142857142853,
-                      "rotationY": 10,
-                      "id": 0
-                    },
-                    {
-                      "y": 41.75714285714285,
-                      "id": 1
-                    },
-                    {
-                      "y": 41.75714285714285,
-                      "id": 2
-                    },
-                    {
-                      "y": 38.257142857142846,
-                      "id": 3
-                    },
-                    {
-                      "y": 43.75714285714285,
-                      "id": 4
-                    },
-                    {
-                      "y": 43.75714285714285,
-                      "id": 5
-                    },
-                    {
-                      "y": 43.75714285714285,
-                      "id": 6
-                    },
-                    {
-                      "y": 43.75714285714285,
-                      "id": 7
-                    },
-                    {
-                      "y": 27.75714285714285,
-                      "z": 3,
-                      "rotationX": -14,
-                      "id": 8
-                    },
-                    {
-                      "x": -11.9,
-                      "y": 27.75714285714285,
-                      "rotationX": 16,
-                      "id": 9
-                    },
-                    {
-                      "y": 15.757142857142853,
-                      "z": 6,
-                      "rotationX": -14,
-                      "id": 10
-                    },
-                    {
-                      "y": 16,
-                      "z": -1.7,
-                      "rotationX": 11,
-                      "id": 11
-                    },
-                    {
-                      "y": 7.757142857142849,
-                      "z": -1.3,
-                      "rotationX": 16,
-                      "id": 12
-                    },
-                    {
-                      "y": 7.757142857142849,
-                      "z": 5,
-                      "rotationY": 0,
-                      "rotationX": -15,
-                      "id": 13
-                    },
-                    {
-                      "y": 0.20000000000000018,
-                      "z": -1.4,
-                      "rotationX": 16,
-                      "id": 14
-                    },
-                    {
-                      "y": -0.24285714285715443,
-                      "z": 8.1,
-                      "id": 15
-                    },
-                    {
-                      "y": 44.75714285714285,
-                      "id": 16
-                    },
-                    {
-                      "y": 44.75714285714285,
-                      "id": 17
-                    },
-                    {
-                      "y": 48.2,
-                      "id": 18
-                    },
-                    {
-                      "y": 36.75714285714285,
-                      "id": 19
-                    },
-                    {
-                      "y": 36.75714285714285,
-                      "id": 20
-                    },
-                    {
-                      "y": 17.757142857142853,
-                      "rotationY": 10,
-                      "id": 21
-                    },
-                    {
-                      "y": 40.75714285714285,
-                      "id": 22
-                    },
-                    {
-                      "y": 12.999999999999996,
-                      "rotationX": 60,
-                      "id": 23
-                    },
-                    {
-                      "x": 12.1,
-                      "y": 20,
-                      "z": 20,
-                      "id": 24
-                    },
-                    {
-                      "y": 24.4,
-                      "rotationX": -24,
-                      "id": 25
-                    },
-                    {
-                      "y": 15.2,
-                      "z": 21.8,
-                      "rotationX": 160,
-                      "id": 26
-                    },
-                    {
-                      "x": 7.6,
-                      "y": 20,
-                      "z": 20,
-                      "id": 27
-                    },
-                    {
-                      "x": 16.700000000000003,
-                      "y": 20,
-                      "z": 20,
-                      "id": 28
-                    },
-                    {
-                      "y": 22.3,
-                      "rotationX": 60,
-                      "id": 29
-                    },
-                    {
-                      "y": 21.757142857142853,
-                      "id": 30
-                    },
-                    {
-                      "y": 38,
-                      "z": 0,
-                      "rotationX": 75,
-                      "id": 31
-                    },
-                    {
-                      "y": 38,
-                      "z": 4,
-                      "rotationX": 105,
-                      "id": 32
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          "model": {
-            "shapes": {
-              "shapes": [
-                {
-                  "type": "box",
-                  "width": 14,
-                  "height": 18,
-                  "depth": 10,
-                  "x": 0,
-                  "y": 28.757142857142853,
-                  "z": 1.4857142857142973,
-                  "color": "#496a29",
-                  "name": "torso",
-                  "scaleX": 1
-                },
-                {
-                  "type": "sphere",
-                  "size": 15,
-                  "x": 0,
-                  "y": 43.75714285714285,
-                  "z": 1.4857142857143,
-                  "color": "#5c6628",
-                  "name": "head"
-                },
-                {
-                  "type": "box",
-                  "width": 5,
-                  "height": 4,
-                  "depth": 6,
-                  "x": 0,
-                  "y": 43.75714285714285,
-                  "z": 7.485714285714296,
-                  "color": "#686f20",
-                  "name": "nose"
-                },
-                {
-                  "type": "box",
-                  "width": 12,
-                  "height": 3,
-                  "depth": 6,
-                  "x": 0,
-                  "y": 40.257142857142846,
-                  "z": 5.485714285714296,
-                  "color": "#7d4023",
-                  "name": "jaw"
-                },
-                {
-                  "type": "sphere",
-                  "size": 4,
-                  "x": 4.5,
-                  "y": 45.75714285714285,
-                  "z": 5.985714285714293,
-                  "color": "#c5c5c5",
-                  "name": "eye-right"
-                },
-                {
-                  "type": "sphere",
-                  "size": 1.5,
-                  "x": 5,
-                  "y": 45.75714285714285,
-                  "z": 7.4857142857143,
-                  "color": "#000000",
-                  "name": "pupil-right"
-                },
-                {
-                  "type": "sphere",
-                  "size": 4,
-                  "x": -4.5,
-                  "y": 45.75714285714285,
-                  "z": 5.985714285714293,
-                  "color": "#c5c5c5",
-                  "name": "eye-left"
-                },
-                {
-                  "type": "sphere",
-                  "size": 1.5,
-                  "x": -5,
-                  "y": 45.75714285714285,
-                  "z": 7.4857142857143,
-                  "color": "#000000",
-                  "name": "pupil-left"
-                },
-                {
-                  "type": "box",
-                  "width": 6,
-                  "height": 20,
-                  "depth": 6,
-                  "x": 11.999999999999998,
-                  "y": 29.75714285714285,
-                  "z": 1.4857142857142973,
-                  "color": "#496a29",
-                  "name": "arm-right"
-                },
-                {
-                  "type": "box",
-                  "width": 6,
-                  "height": 20,
-                  "depth": 6,
-                  "x": -12.000000000000002,
-                  "y": 29.75714285714285,
-                  "z": 1.4857142857142973,
-                  "color": "#496a29",
-                  "name": "arm-left"
-                },
-                {
-                  "type": "box",
-                  "width": 8,
-                  "height": 5,
-                  "depth": 7,
-                  "x": 11.999999999999998,
-                  "y": 17.757142857142853,
-                  "z": 2.4857142857142978,
-                  "color": "#496a29",
-                  "name": "hand-right"
-                },
-                {
-                  "type": "box",
-                  "width": 8,
-                  "height": 5,
-                  "depth": 7,
-                  "x": -12.000000000000002,
-                  "y": 17.757142857142853,
-                  "z": 2.4857142857142978,
-                  "color": "#496a29",
-                  "name": "hand-left"
-                },
-                {
-                  "type": "box",
-                  "width": 6,
-                  "height": 15,
-                  "depth": 6,
-                  "x": 4,
-                  "y": 9.75714285714285,
-                  "z": 1.4857142857142982,
-                  "color": "#496a29",
-                  "name": "leg-right"
-                },
-                {
-                  "type": "box",
-                  "width": 6,
-                  "height": 15,
-                  "depth": 6,
-                  "x": -4,
-                  "y": 9.75714285714285,
-                  "z": 1.4857142857142982,
-                  "color": "#496a29",
-                  "name": "leg-left"
-                },
-                {
-                  "type": "box",
-                  "width": 7,
-                  "height": 3,
-                  "depth": 10,
-                  "x": 4,
-                  "y": 1.7571428571428456,
-                  "z": 3.4857142857143026,
-                  "color": "#3B3B3B",
-                  "name": "foot-right"
-                },
-                {
-                  "type": "box",
-                  "width": 7,
-                  "height": 3,
-                  "depth": 10,
-                  "x": -4,
-                  "y": 1.7571428571428456,
-                  "z": 3.4857142857143026,
-                  "color": "#3B3B3B",
-                  "name": "foot-left"
-                },
-                {
-                  "type": "box",
-                  "width": 3,
-                  "height": 6,
-                  "depth": 2,
-                  "x": 6.499999999999998,
-                  "y": 46.75714285714285,
-                  "z": 0.4857142857142964,
-                  "color": "#686b23",
-                  "name": "ear-right"
-                },
-                {
-                  "type": "box",
-                  "width": 3,
-                  "height": 6,
-                  "depth": 2,
-                  "x": -6.5,
-                  "y": 46.75714285714285,
-                  "z": 0.4857142857142964,
-                  "color": "#686b23",
-                  "name": "ear-left"
-                },
-                {
-                  "type": "cone",
-                  "size": 16,
-                  "height": 5,
-                  "x": 0,
-                  "y": 50.2,
-                  "z": 1.4857142857142929,
-                  "rotationX": 0,
-                  "color": "#555555",
-                  "name": "helmet"
-                },
-                {
-                  "type": "box",
-                  "width": 1.5,
-                  "height": 3,
-                  "depth": 0.7,
-                  "x": 4,
-                  "y": 38.75714285714285,
-                  "z": 8.485714285714296,
-                  "color": "#c5c5c5",
-                  "name": "tusk-right"
-                },
-                {
-                  "type": "box",
-                  "width": 1.5,
-                  "height": 3,
-                  "depth": 0.7,
-                  "x": -4,
-                  "y": 38.75714285714285,
-                  "z": 8.485714285714296,
-                  "color": "#c5c5c5",
-                  "name": "tusk-left"
-                },
-                {
-                  "type": "box",
-                  "width": 15,
-                  "height": 3,
-                  "depth": 11,
-                  "x": 0,
-                  "y": 19.757142857142853,
-                  "z": 1.4857142857142982,
-                  "color": "#8B4513",
-                  "name": "belt"
-                },
-                {
-                  "type": "box",
-                  "width": 7,
-                  "height": 9,
-                  "depth": 3,
-                  "x": 0,
-                  "y": 42.75714285714285,
-                  "z": -4.514285714285706,
-                  "color": "#222222",
-                  "name": "hair"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 3,
-                  "height": 30,
-                  "x": 11.999999999999998,
-                  "y": 14.999999999999996,
-                  "z": 7.000000000000014,
-                  "color": "#8B4513",
-                  "name": "club-handle",
-                  "rotationZ": 0,
-                  "rotationX": 90
-                },
-                {
-                  "type": "sphere",
-                  "size": 9,
-                  "x": 11.999999999999998,
-                  "y": 14.999999999999996,
-                  "z": 18.000000000000014,
-                  "color": "#8B4513",
-                  "name": "club-head"
-                },
-                {
-                  "type": "cone",
-                  "size": 4,
-                  "height": 5,
-                  "x": 12.1,
-                  "y": 19.999999999999996,
-                  "z": 18.000000000000014,
-                  "rotationY": 90,
-                  "color": "#808080",
-                  "name": "club-spike-1"
-                },
-                {
-                  "type": "cone",
-                  "size": 4,
-                  "height": 5,
-                  "x": 12.1,
-                  "y": 9.999999999999996,
-                  "z": 18.000000000000014,
-                  "rotationY": 0,
-                  "color": "#808080",
-                  "name": "club-spike-2",
-                  "rotationX": 180
-                },
-                {
-                  "type": "cone",
-                  "size": 4,
-                  "height": 5,
-                  "x": 6.6,
-                  "y": 14.999999999999996,
-                  "z": 18.000000000000014,
-                  "rotationY": 0,
-                  "color": "#808080",
-                  "name": "club-spike-3",
-                  "rotationZ": 90,
-                  "rotationX": 0
-                },
-                {
-                  "type": "cone",
-                  "size": 4,
-                  "height": 5,
-                  "x": 17.6,
-                  "y": 14.999999999999996,
-                  "z": 18.000000000000014,
-                  "rotationY": 0,
-                  "color": "#808080",
-                  "name": "club-spike-4",
-                  "rotationX": 90,
-                  "rotationZ": -90
-                },
-                {
-                  "type": "cone",
-                  "size": 4,
-                  "height": 5,
-                  "x": 11.999999999999998,
-                  "y": 14.999999999999995,
-                  "z": 24.00000000000002,
-                  "rotationX": 90,
-                  "color": "#808080",
-                  "name": "club-spike-top"
-                },
-                {
-                  "type": "box",
-                  "width": 12,
-                  "height": 4,
-                  "depth": 4,
-                  "x": 0,
-                  "y": 23.757142857142853,
-                  "z": -3.5142857142857027,
-                  "color": "#333333",
-                  "name": "back-armor"
-                },
-                {
-                  "type": "box",
-                  "width": 7,
-                  "height": 7,
-                  "depth": 2,
-                  "x": 12,
-                  "y": 40,
-                  "z": 1.4857142857142973,
-                  "color": "#796020",
-                  "name": "shoulder-pad-right",
-                  "rotationX": 90
-                },
-                {
-                  "type": "box",
-                  "width": 7,
-                  "height": 7,
-                  "depth": 2,
-                  "x": -12,
-                  "y": 40,
-                  "z": 1.4857142857142973,
-                  "color": "#796020",
-                  "name": "shoulder-pad-left",
-                  "rotationX": 90
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            }
-          }
-        },
-        "armor": 100,
-        "title": "Orc"
-      },
       "pirate": {
         "title": "Pirate",
         "render": {
@@ -8057,6 +7291,1052 @@ const DEFAULT_PROJECT_CONFIG = {
           }
         },
         "title": "Pterodactyl"
+      },
+      "orc": {
+        "essence": 5,
+        "speed": 1,
+        "value": 1,
+        "hp": 10,
+        "render": {
+          "animations": {
+            "idle": [
+              {}
+            ],
+            "walk": [
+              {},
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 26.757142857142853,
+                      "rotationY": -10,
+                      "id": 0
+                    },
+                    {
+                      "y": 41.75714285714285,
+                      "id": 1
+                    },
+                    {
+                      "y": 41.75714285714285,
+                      "id": 2
+                    },
+                    {
+                      "y": 38.257142857142846,
+                      "id": 3
+                    },
+                    {
+                      "y": 43.75714285714285,
+                      "id": 4
+                    },
+                    {
+                      "y": 43.75714285714285,
+                      "id": 5
+                    },
+                    {
+                      "y": 43.75714285714285,
+                      "id": 6
+                    },
+                    {
+                      "y": 43.75714285714285,
+                      "id": 7
+                    },
+                    {
+                      "y": 27.75714285714285,
+                      "z": -1,
+                      "rotationX": 11,
+                      "id": 8
+                    },
+                    {
+                      "y": 27.75714285714285,
+                      "z": 3.6,
+                      "rotationX": -14,
+                      "id": 9
+                    },
+                    {
+                      "x": 11.6,
+                      "y": 15.757142857142853,
+                      "z": -3.2,
+                      "rotationX": 10,
+                      "id": 10
+                    },
+                    {
+                      "x": -12.4,
+                      "y": 15.757142857142853,
+                      "z": 6.5,
+                      "rotationX": -14,
+                      "id": 11
+                    },
+                    {
+                      "y": 7.757142857142849,
+                      "z": 3,
+                      "rotationX": -4,
+                      "id": 12
+                    },
+                    {
+                      "y": 7.757142857142849,
+                      "z": -1,
+                      "rotationX": 21,
+                      "id": 13
+                    },
+                    {
+                      "y": -0.24285714285715443,
+                      "z": 5.1,
+                      "id": 14
+                    },
+                    {
+                      "x": -4.1,
+                      "y": 1,
+                      "z": -1.6,
+                      "rotationX": 26,
+                      "id": 15
+                    },
+                    {
+                      "y": 44.75714285714285,
+                      "id": 16
+                    },
+                    {
+                      "y": 44.75714285714285,
+                      "id": 17
+                    },
+                    {
+                      "y": 48.2,
+                      "id": 18
+                    },
+                    {
+                      "y": 36.75714285714285,
+                      "id": 19
+                    },
+                    {
+                      "y": 36.75714285714285,
+                      "id": 20
+                    },
+                    {
+                      "y": 17.757142857142853,
+                      "rotationY": -10,
+                      "id": 21
+                    },
+                    {
+                      "y": 40.75714285714285,
+                      "id": 22
+                    },
+                    {
+                      "y": 12.999999999999996,
+                      "z": 2.6,
+                      "rotationX": -60,
+                      "id": 23
+                    },
+                    {
+                      "x": 12.1,
+                      "y": 5,
+                      "z": 17,
+                      "id": 24
+                    },
+                    {
+                      "y": 9.5,
+                      "z": 19.7,
+                      "rotationY": 0,
+                      "rotationX": 30,
+                      "id": 25
+                    },
+                    {
+                      "y": 0,
+                      "z": 14.5,
+                      "rotationX": -150,
+                      "id": 26
+                    },
+                    {
+                      "x": 7.5,
+                      "y": 4.8,
+                      "z": 17.3,
+                      "id": 27
+                    },
+                    {
+                      "x": 16.6,
+                      "y": 4.8,
+                      "z": 17.3,
+                      "id": 28
+                    },
+                    {
+                      "x": 12.1,
+                      "y": 2.5999999999999996,
+                      "z": 21,
+                      "rotationX": 120,
+                      "id": 29
+                    },
+                    {
+                      "y": 21.757142857142853,
+                      "id": 30
+                    },
+                    {
+                      "y": 38,
+                      "z": 1,
+                      "rotationX": 105,
+                      "id": 31
+                    },
+                    {
+                      "y": 38,
+                      "z": 1,
+                      "rotationX": 75,
+                      "id": 32
+                    }
+                  ]
+                }
+              },
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 29.757142857142853,
+                      "id": 8
+                    },
+                    {
+                      "y": 29.757142857142853,
+                      "id": 9
+                    },
+                    {
+                      "y": 14.999999999999993,
+                      "id": 29
+                    }
+                  ]
+                }
+              },
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 26.757142857142853,
+                      "rotationY": 10,
+                      "id": 0
+                    },
+                    {
+                      "y": 41.75714285714285,
+                      "id": 1
+                    },
+                    {
+                      "y": 41.75714285714285,
+                      "id": 2
+                    },
+                    {
+                      "y": 38.257142857142846,
+                      "id": 3
+                    },
+                    {
+                      "y": 43.75714285714285,
+                      "id": 4
+                    },
+                    {
+                      "y": 43.75714285714285,
+                      "id": 5
+                    },
+                    {
+                      "y": 43.75714285714285,
+                      "id": 6
+                    },
+                    {
+                      "y": 43.75714285714285,
+                      "id": 7
+                    },
+                    {
+                      "y": 27.75714285714285,
+                      "z": 3,
+                      "rotationX": -14,
+                      "id": 8
+                    },
+                    {
+                      "x": -11.9,
+                      "y": 27.75714285714285,
+                      "rotationX": 16,
+                      "id": 9
+                    },
+                    {
+                      "y": 15.757142857142853,
+                      "z": 6,
+                      "rotationX": -14,
+                      "id": 10
+                    },
+                    {
+                      "y": 16,
+                      "z": -1.7,
+                      "rotationX": 11,
+                      "id": 11
+                    },
+                    {
+                      "y": 7.757142857142849,
+                      "z": -1.3,
+                      "rotationX": 16,
+                      "id": 12
+                    },
+                    {
+                      "y": 7.757142857142849,
+                      "z": 5,
+                      "rotationY": 0,
+                      "rotationX": -15,
+                      "id": 13
+                    },
+                    {
+                      "y": 0.20000000000000018,
+                      "z": -1.4,
+                      "rotationX": 16,
+                      "id": 14
+                    },
+                    {
+                      "y": -0.24285714285715443,
+                      "z": 8.1,
+                      "id": 15
+                    },
+                    {
+                      "y": 44.75714285714285,
+                      "id": 16
+                    },
+                    {
+                      "y": 44.75714285714285,
+                      "id": 17
+                    },
+                    {
+                      "y": 48.2,
+                      "id": 18
+                    },
+                    {
+                      "y": 36.75714285714285,
+                      "id": 19
+                    },
+                    {
+                      "y": 36.75714285714285,
+                      "id": 20
+                    },
+                    {
+                      "y": 17.757142857142853,
+                      "rotationY": 10,
+                      "id": 21
+                    },
+                    {
+                      "y": 40.75714285714285,
+                      "id": 22
+                    },
+                    {
+                      "y": 12.999999999999996,
+                      "rotationX": 60,
+                      "id": 23
+                    },
+                    {
+                      "x": 12.1,
+                      "y": 20,
+                      "z": 20,
+                      "id": 24
+                    },
+                    {
+                      "y": 24.4,
+                      "rotationX": -24,
+                      "id": 25
+                    },
+                    {
+                      "y": 15.2,
+                      "z": 21.8,
+                      "rotationX": 160,
+                      "id": 26
+                    },
+                    {
+                      "x": 7.6,
+                      "y": 20,
+                      "z": 20,
+                      "id": 27
+                    },
+                    {
+                      "x": 16.700000000000003,
+                      "y": 20,
+                      "z": 20,
+                      "id": 28
+                    },
+                    {
+                      "y": 22.3,
+                      "rotationX": 60,
+                      "id": 29
+                    },
+                    {
+                      "y": 21.757142857142853,
+                      "id": 30
+                    },
+                    {
+                      "y": 38,
+                      "z": 0,
+                      "rotationX": 75,
+                      "id": 31
+                    },
+                    {
+                      "y": 38,
+                      "z": 4,
+                      "rotationX": 105,
+                      "id": 32
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "box",
+                  "width": 14,
+                  "height": 18,
+                  "depth": 10,
+                  "x": 0,
+                  "y": 28.757142857142853,
+                  "z": 1.4857142857142973,
+                  "color": "#496a29",
+                  "name": "torso",
+                  "scaleX": 1
+                },
+                {
+                  "type": "sphere",
+                  "size": 15,
+                  "x": 0,
+                  "y": 43.75714285714285,
+                  "z": 1.4857142857143,
+                  "color": "#5c6628",
+                  "name": "head"
+                },
+                {
+                  "type": "box",
+                  "width": 5,
+                  "height": 4,
+                  "depth": 6,
+                  "x": 0,
+                  "y": 43.75714285714285,
+                  "z": 7.485714285714296,
+                  "color": "#686f20",
+                  "name": "nose"
+                },
+                {
+                  "type": "box",
+                  "width": 12,
+                  "height": 3,
+                  "depth": 6,
+                  "x": 0,
+                  "y": 40.257142857142846,
+                  "z": 5.485714285714296,
+                  "color": "#7d4023",
+                  "name": "jaw"
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "x": 4.5,
+                  "y": 45.75714285714285,
+                  "z": 5.985714285714293,
+                  "color": "#c5c5c5",
+                  "name": "eye-right"
+                },
+                {
+                  "type": "sphere",
+                  "size": 1.5,
+                  "x": 5,
+                  "y": 45.75714285714285,
+                  "z": 7.4857142857143,
+                  "color": "#000000",
+                  "name": "pupil-right"
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "x": -4.5,
+                  "y": 45.75714285714285,
+                  "z": 5.985714285714293,
+                  "color": "#c5c5c5",
+                  "name": "eye-left"
+                },
+                {
+                  "type": "sphere",
+                  "size": 1.5,
+                  "x": -5,
+                  "y": 45.75714285714285,
+                  "z": 7.4857142857143,
+                  "color": "#000000",
+                  "name": "pupil-left"
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 20,
+                  "depth": 6,
+                  "x": 11.999999999999998,
+                  "y": 29.75714285714285,
+                  "z": 1.4857142857142973,
+                  "color": "#496a29",
+                  "name": "arm-right"
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 20,
+                  "depth": 6,
+                  "x": -12.000000000000002,
+                  "y": 29.75714285714285,
+                  "z": 1.4857142857142973,
+                  "color": "#496a29",
+                  "name": "arm-left"
+                },
+                {
+                  "type": "box",
+                  "width": 8,
+                  "height": 5,
+                  "depth": 7,
+                  "x": 11.999999999999998,
+                  "y": 17.757142857142853,
+                  "z": 2.4857142857142978,
+                  "color": "#496a29",
+                  "name": "hand-right"
+                },
+                {
+                  "type": "box",
+                  "width": 8,
+                  "height": 5,
+                  "depth": 7,
+                  "x": -12.000000000000002,
+                  "y": 17.757142857142853,
+                  "z": 2.4857142857142978,
+                  "color": "#496a29",
+                  "name": "hand-left"
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 15,
+                  "depth": 6,
+                  "x": 4,
+                  "y": 9.75714285714285,
+                  "z": 1.4857142857142982,
+                  "color": "#496a29",
+                  "name": "leg-right"
+                },
+                {
+                  "type": "box",
+                  "width": 6,
+                  "height": 15,
+                  "depth": 6,
+                  "x": -4,
+                  "y": 9.75714285714285,
+                  "z": 1.4857142857142982,
+                  "color": "#496a29",
+                  "name": "leg-left"
+                },
+                {
+                  "type": "box",
+                  "width": 7,
+                  "height": 3,
+                  "depth": 10,
+                  "x": 4,
+                  "y": 1.7571428571428456,
+                  "z": 3.4857142857143026,
+                  "color": "#3B3B3B",
+                  "name": "foot-right"
+                },
+                {
+                  "type": "box",
+                  "width": 7,
+                  "height": 3,
+                  "depth": 10,
+                  "x": -4,
+                  "y": 1.7571428571428456,
+                  "z": 3.4857142857143026,
+                  "color": "#3B3B3B",
+                  "name": "foot-left"
+                },
+                {
+                  "type": "box",
+                  "width": 3,
+                  "height": 6,
+                  "depth": 2,
+                  "x": 6.499999999999998,
+                  "y": 46.75714285714285,
+                  "z": 0.4857142857142964,
+                  "color": "#686b23",
+                  "name": "ear-right"
+                },
+                {
+                  "type": "box",
+                  "width": 3,
+                  "height": 6,
+                  "depth": 2,
+                  "x": -6.5,
+                  "y": 46.75714285714285,
+                  "z": 0.4857142857142964,
+                  "color": "#686b23",
+                  "name": "ear-left"
+                },
+                {
+                  "type": "cone",
+                  "size": 16,
+                  "height": 5,
+                  "x": 0,
+                  "y": 50.2,
+                  "z": 1.4857142857142929,
+                  "rotationX": 0,
+                  "color": "#555555",
+                  "name": "helmet"
+                },
+                {
+                  "type": "box",
+                  "width": 1.5,
+                  "height": 3,
+                  "depth": 0.7,
+                  "x": 4,
+                  "y": 38.75714285714285,
+                  "z": 8.485714285714296,
+                  "color": "#c5c5c5",
+                  "name": "tusk-right"
+                },
+                {
+                  "type": "box",
+                  "width": 1.5,
+                  "height": 3,
+                  "depth": 0.7,
+                  "x": -4,
+                  "y": 38.75714285714285,
+                  "z": 8.485714285714296,
+                  "color": "#c5c5c5",
+                  "name": "tusk-left"
+                },
+                {
+                  "type": "box",
+                  "width": 15,
+                  "height": 3,
+                  "depth": 11,
+                  "x": 0,
+                  "y": 19.757142857142853,
+                  "z": 1.4857142857142982,
+                  "color": "#8B4513",
+                  "name": "belt"
+                },
+                {
+                  "type": "box",
+                  "width": 7,
+                  "height": 9,
+                  "depth": 3,
+                  "x": 0,
+                  "y": 42.75714285714285,
+                  "z": -4.514285714285706,
+                  "color": "#222222",
+                  "name": "hair"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 30,
+                  "x": 11.999999999999998,
+                  "y": 14.999999999999996,
+                  "z": 7.000000000000014,
+                  "color": "#8B4513",
+                  "name": "club-handle",
+                  "rotationZ": 0,
+                  "rotationX": 90
+                },
+                {
+                  "type": "sphere",
+                  "size": 9,
+                  "x": 11.999999999999998,
+                  "y": 14.999999999999996,
+                  "z": 18.000000000000014,
+                  "color": "#8B4513",
+                  "name": "club-head"
+                },
+                {
+                  "type": "cone",
+                  "size": 4,
+                  "height": 5,
+                  "x": 12.1,
+                  "y": 19.999999999999996,
+                  "z": 18.000000000000014,
+                  "rotationY": 90,
+                  "color": "#808080",
+                  "name": "club-spike-1"
+                },
+                {
+                  "type": "cone",
+                  "size": 4,
+                  "height": 5,
+                  "x": 12.1,
+                  "y": 9.999999999999996,
+                  "z": 18.000000000000014,
+                  "rotationY": 0,
+                  "color": "#808080",
+                  "name": "club-spike-2",
+                  "rotationX": 180
+                },
+                {
+                  "type": "cone",
+                  "size": 4,
+                  "height": 5,
+                  "x": 6.6,
+                  "y": 14.999999999999996,
+                  "z": 18.000000000000014,
+                  "rotationY": 0,
+                  "color": "#808080",
+                  "name": "club-spike-3",
+                  "rotationZ": 90,
+                  "rotationX": 0
+                },
+                {
+                  "type": "cone",
+                  "size": 4,
+                  "height": 5,
+                  "x": 17.6,
+                  "y": 14.999999999999996,
+                  "z": 18.000000000000014,
+                  "rotationY": 0,
+                  "color": "#808080",
+                  "name": "club-spike-4",
+                  "rotationX": 90,
+                  "rotationZ": -90
+                },
+                {
+                  "type": "cone",
+                  "size": 4,
+                  "height": 5,
+                  "x": 11.999999999999998,
+                  "y": 14.999999999999995,
+                  "z": 24.00000000000002,
+                  "rotationX": 90,
+                  "color": "#808080",
+                  "name": "club-spike-top"
+                },
+                {
+                  "type": "box",
+                  "width": 12,
+                  "height": 4,
+                  "depth": 4,
+                  "x": 0,
+                  "y": 23.757142857142853,
+                  "z": -3.5142857142857027,
+                  "color": "#333333",
+                  "name": "back-armor"
+                },
+                {
+                  "type": "box",
+                  "width": 7,
+                  "height": 7,
+                  "depth": 2,
+                  "x": 12,
+                  "y": 40,
+                  "z": 1.4857142857142973,
+                  "color": "#796020",
+                  "name": "shoulder-pad-right",
+                  "rotationX": 90
+                },
+                {
+                  "type": "box",
+                  "width": 7,
+                  "height": 7,
+                  "depth": 2,
+                  "x": -12,
+                  "y": 40,
+                  "z": 1.4857142857142973,
+                  "color": "#796020",
+                  "name": "shoulder-pad-left",
+                  "rotationX": 90
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
+          }
+        },
+        "armor": 100,
+        "title": "Orc"
+      },
+      "skeleton": {
+        "hp": 20,
+        "speed": 1.2,
+        "value": 7,
+        "essence": 12,
+        "render": {
+          "animations": {
+            "idle": [
+              {}
+            ],
+            "walk": [
+              {},
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 40,
+                      "id": 0
+                    },
+                    {
+                      "rotationZ": 0,
+                      "rotationY": 10,
+                      "id": 1
+                    },
+                    {
+                      "y": 41,
+                      "id": 2
+                    },
+                    {
+                      "y": 41,
+                      "id": 3
+                    },
+                    {
+                      "y": 29,
+                      "rotationX": 90,
+                      "id": 4
+                    },
+                    {
+                      "y": 25,
+                      "rotationX": 120,
+                      "id": 5
+                    },
+                    {
+                      "y": 29,
+                      "id": 6
+                    },
+                    {
+                      "y": 20,
+                      "id": 7
+                    },
+                    {
+                      "z": -2,
+                      "rotationX": 15,
+                      "rotationY": 0,
+                      "id": 8
+                    },
+                    {
+                      "z": 2,
+                      "rotationX": -15,
+                      "id": 9
+                    },
+                    {
+                      "z": -4,
+                      "id": 10
+                    },
+                    {
+                      "z": 6,
+                      "id": 11
+                    }
+                  ]
+                }
+              },
+              {},
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 40,
+                      "id": 0
+                    },
+                    {
+                      "rotationY": -10,
+                      "id": 1
+                    },
+                    {
+                      "y": 41,
+                      "id": 2
+                    },
+                    {
+                      "y": 41,
+                      "id": 3
+                    },
+                    {
+                      "y": 25,
+                      "rotationX": 120,
+                      "id": 4
+                    },
+                    {
+                      "y": 29,
+                      "rotationX": 90,
+                      "id": 5
+                    },
+                    {
+                      "y": 20,
+                      "id": 6
+                    },
+                    {
+                      "y": 29,
+                      "id": 7
+                    },
+                    {
+                      "z": 2,
+                      "rotationX": -15,
+                      "id": 8
+                    },
+                    {
+                      "z": -2,
+                      "rotationX": 15,
+                      "id": 9
+                    },
+                    {
+                      "z": 6,
+                      "id": 10
+                    },
+                    {
+                      "z": -4,
+                      "id": 11
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "sphere",
+                  "size": 14,
+                  "color": "#E0DED8",
+                  "x": 0,
+                  "y": 41,
+                  "z": 0,
+                  "name": "head"
+                },
+                {
+                  "type": "box",
+                  "width": 16,
+                  "height": 20,
+                  "depth": 8,
+                  "color": "#CFCBC0",
+                  "x": 0,
+                  "y": 24,
+                  "z": 0,
+                  "name": "body",
+                  "scaleX": 1
+                },
+                {
+                  "type": "sphere",
+                  "size": 3,
+                  "color": "#000000",
+                  "x": 4,
+                  "y": 42,
+                  "z": 5,
+                  "name": "eye-left"
+                },
+                {
+                  "type": "sphere",
+                  "size": 3,
+                  "color": "#000000",
+                  "x": -4,
+                  "y": 42,
+                  "z": 5,
+                  "name": "eye-right"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 18,
+                  "color": "#E0DED8",
+                  "x": 8,
+                  "y": 27,
+                  "z": 10,
+                  "rotationX": 105,
+                  "rotationZ": 15,
+                  "name": "arm-left"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 18,
+                  "color": "#E0DED8",
+                  "x": -8,
+                  "y": 27,
+                  "z": 10,
+                  "rotationX": 105,
+                  "rotationZ": -15,
+                  "name": "arm-right"
+                },
+                {
+                  "type": "sphere",
+                  "size": 5,
+                  "color": "#E0DED8",
+                  "x": 6,
+                  "y": 25,
+                  "z": 20,
+                  "name": "hand-left"
+                },
+                {
+                  "type": "sphere",
+                  "size": 5,
+                  "color": "#E0DED8",
+                  "x": -6,
+                  "y": 25,
+                  "z": 20,
+                  "name": "hand-right"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 22,
+                  "color": "#E0DED8",
+                  "x": 5,
+                  "y": 14,
+                  "z": 0,
+                  "rotationZ": 0,
+                  "name": "leg-left",
+                  "rotationX": 0
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 22,
+                  "color": "#E0DED8",
+                  "x": -5,
+                  "y": 14,
+                  "z": 0,
+                  "rotationZ": 0,
+                  "name": "leg-right"
+                },
+                {
+                  "type": "sphere",
+                  "size": 5,
+                  "color": "#E0DED8",
+                  "x": 5,
+                  "y": 2,
+                  "z": 0,
+                  "name": "foot-left"
+                },
+                {
+                  "type": "sphere",
+                  "size": 5,
+                  "color": "#E0DED8",
+                  "x": -5,
+                  "y": 2,
+                  "z": 0,
+                  "name": "foot-right"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
+          }
+        },
+        "electricResistance": 75,
+        "title": "skeleton"
       },
       "redDragon": {
         "hp": 500,
@@ -9954,286 +10234,6 @@ const DEFAULT_PROJECT_CONFIG = {
         "electricResistance": 25,
         "title": "Red Dragon"
       },
-      "skeleton": {
-        "hp": 20,
-        "speed": 1.2,
-        "value": 7,
-        "essence": 12,
-        "render": {
-          "animations": {
-            "idle": [
-              {}
-            ],
-            "walk": [
-              {},
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 40,
-                      "id": 0
-                    },
-                    {
-                      "rotationZ": 0,
-                      "rotationY": 10,
-                      "id": 1
-                    },
-                    {
-                      "y": 41,
-                      "id": 2
-                    },
-                    {
-                      "y": 41,
-                      "id": 3
-                    },
-                    {
-                      "y": 29,
-                      "rotationX": 90,
-                      "id": 4
-                    },
-                    {
-                      "y": 25,
-                      "rotationX": 120,
-                      "id": 5
-                    },
-                    {
-                      "y": 29,
-                      "id": 6
-                    },
-                    {
-                      "y": 20,
-                      "id": 7
-                    },
-                    {
-                      "z": -2,
-                      "rotationX": 15,
-                      "rotationY": 0,
-                      "id": 8
-                    },
-                    {
-                      "z": 2,
-                      "rotationX": -15,
-                      "id": 9
-                    },
-                    {
-                      "z": -4,
-                      "id": 10
-                    },
-                    {
-                      "z": 6,
-                      "id": 11
-                    }
-                  ]
-                }
-              },
-              {},
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 40,
-                      "id": 0
-                    },
-                    {
-                      "rotationY": -10,
-                      "id": 1
-                    },
-                    {
-                      "y": 41,
-                      "id": 2
-                    },
-                    {
-                      "y": 41,
-                      "id": 3
-                    },
-                    {
-                      "y": 25,
-                      "rotationX": 120,
-                      "id": 4
-                    },
-                    {
-                      "y": 29,
-                      "rotationX": 90,
-                      "id": 5
-                    },
-                    {
-                      "y": 20,
-                      "id": 6
-                    },
-                    {
-                      "y": 29,
-                      "id": 7
-                    },
-                    {
-                      "z": 2,
-                      "rotationX": -15,
-                      "id": 8
-                    },
-                    {
-                      "z": -2,
-                      "rotationX": 15,
-                      "id": 9
-                    },
-                    {
-                      "z": 6,
-                      "id": 10
-                    },
-                    {
-                      "z": -4,
-                      "id": 11
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          "model": {
-            "shapes": {
-              "shapes": [
-                {
-                  "type": "sphere",
-                  "size": 14,
-                  "color": "#E0DED8",
-                  "x": 0,
-                  "y": 41,
-                  "z": 0,
-                  "name": "head"
-                },
-                {
-                  "type": "box",
-                  "width": 16,
-                  "height": 20,
-                  "depth": 8,
-                  "color": "#CFCBC0",
-                  "x": 0,
-                  "y": 24,
-                  "z": 0,
-                  "name": "body",
-                  "scaleX": 1
-                },
-                {
-                  "type": "sphere",
-                  "size": 3,
-                  "color": "#000000",
-                  "x": 4,
-                  "y": 42,
-                  "z": 5,
-                  "name": "eye-left"
-                },
-                {
-                  "type": "sphere",
-                  "size": 3,
-                  "color": "#000000",
-                  "x": -4,
-                  "y": 42,
-                  "z": 5,
-                  "name": "eye-right"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 3,
-                  "height": 18,
-                  "color": "#E0DED8",
-                  "x": 8,
-                  "y": 27,
-                  "z": 10,
-                  "rotationX": 105,
-                  "rotationZ": 15,
-                  "name": "arm-left"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 3,
-                  "height": 18,
-                  "color": "#E0DED8",
-                  "x": -8,
-                  "y": 27,
-                  "z": 10,
-                  "rotationX": 105,
-                  "rotationZ": -15,
-                  "name": "arm-right"
-                },
-                {
-                  "type": "sphere",
-                  "size": 5,
-                  "color": "#E0DED8",
-                  "x": 6,
-                  "y": 25,
-                  "z": 20,
-                  "name": "hand-left"
-                },
-                {
-                  "type": "sphere",
-                  "size": 5,
-                  "color": "#E0DED8",
-                  "x": -6,
-                  "y": 25,
-                  "z": 20,
-                  "name": "hand-right"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 3,
-                  "height": 22,
-                  "color": "#E0DED8",
-                  "x": 5,
-                  "y": 14,
-                  "z": 0,
-                  "rotationZ": 0,
-                  "name": "leg-left",
-                  "rotationX": 0
-                },
-                {
-                  "type": "cylinder",
-                  "size": 3,
-                  "height": 22,
-                  "color": "#E0DED8",
-                  "x": -5,
-                  "y": 14,
-                  "z": 0,
-                  "rotationZ": 0,
-                  "name": "leg-right"
-                },
-                {
-                  "type": "sphere",
-                  "size": 5,
-                  "color": "#E0DED8",
-                  "x": 5,
-                  "y": 2,
-                  "z": 0,
-                  "name": "foot-left"
-                },
-                {
-                  "type": "sphere",
-                  "size": 5,
-                  "color": "#E0DED8",
-                  "x": -5,
-                  "y": 2,
-                  "z": 0,
-                  "name": "foot-right"
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            }
-          }
-        },
-        "electricResistance": 75,
-        "title": "skeleton"
-      },
       "spike_ball": {
         "hp": 50,
         "speed": 0.5,
@@ -11139,6 +11139,362 @@ const DEFAULT_PROJECT_CONFIG = {
         },
         "title": "stegosaurus"
       },
+      "zombie": {
+        "hp": 30,
+        "speed": 0.8,
+        "value": 5,
+        "essence": 10,
+        "render": {
+          "animations": {
+            "idle": [
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenMColor"
+                      },
+                      "id": 6
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenMColor"
+                      },
+                      "id": 7
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenMColor"
+                      },
+                      "id": 8
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenMColor"
+                      },
+                      "id": 9
+                    }
+                  ]
+                }
+              }
+            ],
+            "walk": [
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "color": "#FFFFFF",
+                      "id": 2
+                    },
+                    {
+                      "x": 12,
+                      "rotationZ": -20,
+                      "id": 6
+                    },
+                    {
+                      "x": -12,
+                      "rotationZ": 20,
+                      "id": 7
+                    },
+                    {
+                      "height": 20,
+                      "y": 10,
+                      "z": -2,
+                      "rotationX": 30,
+                      "id": 8
+                    },
+                    {
+                      "rotationX": -10,
+                      "id": 9
+                    }
+                  ]
+                }
+              },
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 33,
+                      "id": 0
+                    },
+                    {
+                      "y": 25,
+                      "id": 1
+                    },
+                    {
+                      "color": "#FFFFFF",
+                      "y": 46,
+                      "id": 2
+                    },
+                    {
+                      "y": 46,
+                      "id": 3
+                    },
+                    {
+                      "y": 46,
+                      "id": 4
+                    },
+                    {
+                      "y": 46,
+                      "id": 5
+                    },
+                    {
+                      "x": 10,
+                      "id": 6
+                    },
+                    {
+                      "x": -10,
+                      "id": 7
+                    },
+                    {
+                      "y": 10,
+                      "z": -2,
+                      "rotationX": 30,
+                      "id": 8
+                    },
+                    {
+                      "height": 20,
+                      "y": 10,
+                      "z": -2,
+                      "rotationX": 30,
+                      "id": 9
+                    }
+                  ]
+                }
+              },
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 33,
+                      "id": 0
+                    },
+                    {
+                      "color": "#FFFFFF",
+                      "y": 46,
+                      "id": 2
+                    },
+                    {
+                      "y": 46,
+                      "id": 3
+                    },
+                    {
+                      "y": 46,
+                      "id": 4
+                    },
+                    {
+                      "y": 46,
+                      "id": 5
+                    },
+                    {
+                      "rotationZ": 20,
+                      "id": 6
+                    },
+                    {
+                      "rotationZ": -20,
+                      "id": 7
+                    },
+                    {
+                      "y": 10,
+                      "z": -2,
+                      "rotationX": 30,
+                      "id": 8
+                    },
+                    {
+                      "height": 20,
+                      "y": 10,
+                      "z": -2,
+                      "rotationX": 30,
+                      "id": 9
+                    }
+                  ]
+                }
+              },
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 25,
+                      "id": 1
+                    },
+                    {
+                      "color": "#FFFFFF",
+                      "id": 2
+                    },
+                    {
+                      "x": 10,
+                      "id": 6
+                    },
+                    {
+                      "x": -10,
+                      "id": 7
+                    },
+                    {
+                      "height": 20,
+                      "y": 10,
+                      "z": -2,
+                      "rotationX": 30,
+                      "id": 8
+                    },
+                    {
+                      "rotationX": 10,
+                      "id": 9
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "gltf",
+                  "size": 16,
+                  "color": "#60A060",
+                  "x": 0,
+                  "y": 32,
+                  "z": 0,
+                  "name": "head",
+                  "scaleX": 500,
+                  "scaleY": 500,
+                  "scaleZ": 500,
+                  "url": "samples/models/Avocado/Avocado.gltf"
+                },
+                {
+                  "type": "cylinder",
+                  "width": 20,
+                  "height": 24,
+                  "depth": 10,
+                  "color": {
+                    "paletteColor": "greenDColor"
+                  },
+                  "x": 0,
+                  "y": 24,
+                  "z": 0,
+                  "size": 16,
+                  "name": "body",
+                  "scaleX": 1
+                },
+                {
+                  "type": "sphere",
+                  "size": 5,
+                  "color": "#ffffff",
+                  "x": 4,
+                  "y": 45,
+                  "z": 7,
+                  "name": "eye-left",
+                  "scaleX": 1
+                },
+                {
+                  "type": "sphere",
+                  "size": 5,
+                  "color": "#FFFFFF",
+                  "x": -4,
+                  "y": 45,
+                  "z": 7,
+                  "name": "eye-right"
+                },
+                {
+                  "type": "sphere",
+                  "size": 2,
+                  "color": "#000000",
+                  "x": 4,
+                  "y": 45,
+                  "z": 9,
+                  "name": "pupil-left"
+                },
+                {
+                  "type": "sphere",
+                  "size": 2,
+                  "color": "#000000",
+                  "x": -4,
+                  "y": 45,
+                  "z": 9,
+                  "name": "pupil-right"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 4,
+                  "height": 20,
+                  "color": {
+                    "paletteColor": "greenMColor"
+                  },
+                  "x": 8,
+                  "y": 29,
+                  "z": 10,
+                  "rotationX": 90,
+                  "rotationZ": 0,
+                  "name": "arm-left"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 4,
+                  "height": 20,
+                  "color": {
+                    "paletteColor": "greenMColor"
+                  },
+                  "x": -8,
+                  "y": 29,
+                  "z": 10,
+                  "rotationX": 90,
+                  "rotationZ": 0,
+                  "name": "arm-right"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 4,
+                  "height": 24,
+                  "color": {
+                    "paletteColor": "greenMColor"
+                  },
+                  "x": 5,
+                  "y": 12,
+                  "z": 0,
+                  "rotationZ": 0,
+                  "name": "leg-left"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 4,
+                  "height": 24,
+                  "color": {
+                    "paletteColor": "greenMColor"
+                  },
+                  "x": -5,
+                  "y": 12,
+                  "z": 0,
+                  "rotationZ": 0,
+                  "rotationX": 0,
+                  "name": "leg-right"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
+          }
+        },
+        "title": "zombie"
+      },
       "trex": {
         "title": "T-Rex",
         "hp": 50,
@@ -12033,6 +12389,144 @@ const DEFAULT_PROJECT_CONFIG = {
           }
         }
       },
+      "wraith": {
+        "hp": 1,
+        "speed": 1.8,
+        "value": 12,
+        "essence": 18,
+        "dodgeChance": 0.2,
+        "render": {
+          "animations": {
+            "idle": [
+              {}
+            ],
+            "walk": [
+              {},
+              {},
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 25,
+                      "id": 0
+                    },
+                    {
+                      "y": 25,
+                      "id": 1
+                    },
+                    {
+                      "y": 25,
+                      "id": 2
+                    },
+                    {
+                      "y": 23,
+                      "id": 3
+                    },
+                    {
+                      "y": 23,
+                      "id": 4
+                    }
+                  ]
+                }
+              },
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 25,
+                      "id": 0
+                    },
+                    {
+                      "y": 25,
+                      "id": 1
+                    },
+                    {
+                      "y": 25,
+                      "id": 2
+                    },
+                    {
+                      "y": 23,
+                      "id": 3
+                    },
+                    {
+                      "y": 23,
+                      "id": 4
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "sphere",
+                  "size": 16,
+                  "color": "#3A6A8A",
+                  "x": 0,
+                  "y": 24,
+                  "z": 0,
+                  "scaleX": 1
+                },
+                {
+                  "type": "sphere",
+                  "size": 8,
+                  "color": "#FFFFFF",
+                  "x": 0,
+                  "y": 24,
+                  "z": 6
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "color": "#000000",
+                  "x": 0,
+                  "y": 24,
+                  "z": 8.5
+                },
+                {
+                  "type": "cylinder",
+                  "size": 6,
+                  "height": 4,
+                  "color": "#2A5A7A",
+                  "x": -8,
+                  "y": 22,
+                  "z": 0,
+                  "rotationZ": 30
+                },
+                {
+                  "type": "cylinder",
+                  "size": 6,
+                  "height": 4,
+                  "color": "#2A5A7A",
+                  "x": 8,
+                  "y": 22,
+                  "z": 0,
+                  "rotationZ": -30
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
+          }
+        },
+        "energyShield": 50,
+        "title": "wraith"
+      },
       "viking": {
         "hp": 20,
         "value": 10,
@@ -12756,500 +13250,6 @@ const DEFAULT_PROJECT_CONFIG = {
         },
         "coldResistance": 75,
         "title": "Viking"
-      },
-      "wraith": {
-        "hp": 1,
-        "speed": 1.8,
-        "value": 12,
-        "essence": 18,
-        "dodgeChance": 0.2,
-        "render": {
-          "animations": {
-            "idle": [
-              {}
-            ],
-            "walk": [
-              {},
-              {},
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 25,
-                      "id": 0
-                    },
-                    {
-                      "y": 25,
-                      "id": 1
-                    },
-                    {
-                      "y": 25,
-                      "id": 2
-                    },
-                    {
-                      "y": 23,
-                      "id": 3
-                    },
-                    {
-                      "y": 23,
-                      "id": 4
-                    }
-                  ]
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 25,
-                      "id": 0
-                    },
-                    {
-                      "y": 25,
-                      "id": 1
-                    },
-                    {
-                      "y": 25,
-                      "id": 2
-                    },
-                    {
-                      "y": 23,
-                      "id": 3
-                    },
-                    {
-                      "y": 23,
-                      "id": 4
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          "model": {
-            "shapes": {
-              "shapes": [
-                {
-                  "type": "sphere",
-                  "size": 16,
-                  "color": "#3A6A8A",
-                  "x": 0,
-                  "y": 24,
-                  "z": 0,
-                  "scaleX": 1
-                },
-                {
-                  "type": "sphere",
-                  "size": 8,
-                  "color": "#FFFFFF",
-                  "x": 0,
-                  "y": 24,
-                  "z": 6
-                },
-                {
-                  "type": "sphere",
-                  "size": 4,
-                  "color": "#000000",
-                  "x": 0,
-                  "y": 24,
-                  "z": 8.5
-                },
-                {
-                  "type": "cylinder",
-                  "size": 6,
-                  "height": 4,
-                  "color": "#2A5A7A",
-                  "x": -8,
-                  "y": 22,
-                  "z": 0,
-                  "rotationZ": 30
-                },
-                {
-                  "type": "cylinder",
-                  "size": 6,
-                  "height": 4,
-                  "color": "#2A5A7A",
-                  "x": 8,
-                  "y": 22,
-                  "z": 0,
-                  "rotationZ": -30
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            }
-          }
-        },
-        "energyShield": 50,
-        "title": "wraith"
-      },
-      "zombie": {
-        "hp": 30,
-        "speed": 0.8,
-        "value": 5,
-        "essence": 10,
-        "render": {
-          "animations": {
-            "idle": [
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "color": {
-                        "paletteColor": "greenDColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "greenMColor"
-                      },
-                      "id": 6
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "greenMColor"
-                      },
-                      "id": 7
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "greenMColor"
-                      },
-                      "id": 8
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "greenMColor"
-                      },
-                      "id": 9
-                    }
-                  ]
-                }
-              }
-            ],
-            "walk": [
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "color": "#FFFFFF",
-                      "id": 2
-                    },
-                    {
-                      "x": 12,
-                      "rotationZ": -20,
-                      "id": 6
-                    },
-                    {
-                      "x": -12,
-                      "rotationZ": 20,
-                      "id": 7
-                    },
-                    {
-                      "height": 20,
-                      "y": 10,
-                      "z": -2,
-                      "rotationX": 30,
-                      "id": 8
-                    },
-                    {
-                      "rotationX": -10,
-                      "id": 9
-                    }
-                  ]
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 33,
-                      "id": 0
-                    },
-                    {
-                      "y": 25,
-                      "id": 1
-                    },
-                    {
-                      "color": "#FFFFFF",
-                      "y": 46,
-                      "id": 2
-                    },
-                    {
-                      "y": 46,
-                      "id": 3
-                    },
-                    {
-                      "y": 46,
-                      "id": 4
-                    },
-                    {
-                      "y": 46,
-                      "id": 5
-                    },
-                    {
-                      "x": 10,
-                      "id": 6
-                    },
-                    {
-                      "x": -10,
-                      "id": 7
-                    },
-                    {
-                      "y": 10,
-                      "z": -2,
-                      "rotationX": 30,
-                      "id": 8
-                    },
-                    {
-                      "height": 20,
-                      "y": 10,
-                      "z": -2,
-                      "rotationX": 30,
-                      "id": 9
-                    }
-                  ]
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 33,
-                      "id": 0
-                    },
-                    {
-                      "color": "#FFFFFF",
-                      "y": 46,
-                      "id": 2
-                    },
-                    {
-                      "y": 46,
-                      "id": 3
-                    },
-                    {
-                      "y": 46,
-                      "id": 4
-                    },
-                    {
-                      "y": 46,
-                      "id": 5
-                    },
-                    {
-                      "rotationZ": 20,
-                      "id": 6
-                    },
-                    {
-                      "rotationZ": -20,
-                      "id": 7
-                    },
-                    {
-                      "y": 10,
-                      "z": -2,
-                      "rotationX": 30,
-                      "id": 8
-                    },
-                    {
-                      "height": 20,
-                      "y": 10,
-                      "z": -2,
-                      "rotationX": 30,
-                      "id": 9
-                    }
-                  ]
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 25,
-                      "id": 1
-                    },
-                    {
-                      "color": "#FFFFFF",
-                      "id": 2
-                    },
-                    {
-                      "x": 10,
-                      "id": 6
-                    },
-                    {
-                      "x": -10,
-                      "id": 7
-                    },
-                    {
-                      "height": 20,
-                      "y": 10,
-                      "z": -2,
-                      "rotationX": 30,
-                      "id": 8
-                    },
-                    {
-                      "rotationX": 10,
-                      "id": 9
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          "model": {
-            "shapes": {
-              "shapes": [
-                {
-                  "type": "gltf",
-                  "size": 16,
-                  "color": "#60A060",
-                  "x": 0,
-                  "y": 32,
-                  "z": 0,
-                  "name": "head",
-                  "scaleX": 500,
-                  "scaleY": 500,
-                  "scaleZ": 500,
-                  "url": "samples/models/Avocado/Avocado.gltf"
-                },
-                {
-                  "type": "cylinder",
-                  "width": 20,
-                  "height": 24,
-                  "depth": 10,
-                  "color": {
-                    "paletteColor": "greenDColor"
-                  },
-                  "x": 0,
-                  "y": 24,
-                  "z": 0,
-                  "size": 16,
-                  "name": "body",
-                  "scaleX": 1
-                },
-                {
-                  "type": "sphere",
-                  "size": 5,
-                  "color": "#ffffff",
-                  "x": 4,
-                  "y": 45,
-                  "z": 7,
-                  "name": "eye-left",
-                  "scaleX": 1
-                },
-                {
-                  "type": "sphere",
-                  "size": 5,
-                  "color": "#FFFFFF",
-                  "x": -4,
-                  "y": 45,
-                  "z": 7,
-                  "name": "eye-right"
-                },
-                {
-                  "type": "sphere",
-                  "size": 2,
-                  "color": "#000000",
-                  "x": 4,
-                  "y": 45,
-                  "z": 9,
-                  "name": "pupil-left"
-                },
-                {
-                  "type": "sphere",
-                  "size": 2,
-                  "color": "#000000",
-                  "x": -4,
-                  "y": 45,
-                  "z": 9,
-                  "name": "pupil-right"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 4,
-                  "height": 20,
-                  "color": {
-                    "paletteColor": "greenMColor"
-                  },
-                  "x": 8,
-                  "y": 29,
-                  "z": 10,
-                  "rotationX": 90,
-                  "rotationZ": 0,
-                  "name": "arm-left"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 4,
-                  "height": 20,
-                  "color": {
-                    "paletteColor": "greenMColor"
-                  },
-                  "x": -8,
-                  "y": 29,
-                  "z": 10,
-                  "rotationX": 90,
-                  "rotationZ": 0,
-                  "name": "arm-right"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 4,
-                  "height": 24,
-                  "color": {
-                    "paletteColor": "greenMColor"
-                  },
-                  "x": 5,
-                  "y": 12,
-                  "z": 0,
-                  "rotationZ": 0,
-                  "name": "leg-left"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 4,
-                  "height": 24,
-                  "color": {
-                    "paletteColor": "greenMColor"
-                  },
-                  "x": -5,
-                  "y": 12,
-                  "z": 0,
-                  "rotationZ": 0,
-                  "rotationX": 0,
-                  "name": "leg-right"
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            }
-          }
-        },
-        "title": "zombie"
       }
     },
     "particles": {
@@ -13451,6 +13451,54 @@ const DEFAULT_PROJECT_CONFIG = {
         "damageType": "electric",
         "speed": 5,
         "title": "Lightning"
+      },
+      "nanoOrb": {
+        "render": {
+          "animations": {
+            "idle": [
+              {}
+            ]
+          },
+          "model": {
+            "main": {
+              "shapes": [
+                {
+                  "name": "ball",
+                  "type": "sphere",
+                  "size": 6,
+                  "x": 0,
+                  "y": 5,
+                  "z": 0,
+                  "rotationX": 90,
+                  "color": "#ee6060",
+                  "rotationY": 0,
+                  "rotationZ": 0,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
+                }
+              ],
+              "position": {
+                "x": -3.00653594771243,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
+          }
+        },
+        "speed": 25,
+        "damageType": "physical",
+        "title": "Nano Orb"
       },
       "missile": {
         "damageType": "fire",
@@ -13811,54 +13859,6 @@ const DEFAULT_PROJECT_CONFIG = {
         "shadows": false,
         "hitSound": "explosion",
         "attackSound": "missileLaunch"
-      },
-      "nanoOrb": {
-        "render": {
-          "animations": {
-            "idle": [
-              {}
-            ]
-          },
-          "model": {
-            "main": {
-              "shapes": [
-                {
-                  "name": "ball",
-                  "type": "sphere",
-                  "size": 6,
-                  "x": 0,
-                  "y": 5,
-                  "z": 0,
-                  "rotationX": 90,
-                  "color": "#ee6060",
-                  "rotationY": 0,
-                  "rotationZ": 0,
-                  "scaleX": 1,
-                  "scaleY": 1,
-                  "scaleZ": 1
-                }
-              ],
-              "position": {
-                "x": -3.00653594771243,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            }
-          }
-        },
-        "speed": 25,
-        "damageType": "physical",
-        "title": "Nano Orb"
       },
       "neutronFragment": {
         "render": {
@@ -17168,19 +17168,19 @@ const DEFAULT_PROJECT_CONFIG = {
       }
     },
     "shaders": {
-      "grass": {
-        "title": "Grass",
-        "fragmentScript": "varying vec2 vUv;\nuniform sampler2D map;\nuniform vec3 fogColor;\nuniform float fogDensity;\nuniform vec3 directionalLightColor; // DirectionalLight color\nuniform float directionalLightIntensity; // DirectionalLight intensity\nuniform vec3 directionalLightDirection; // DirectionalLight direction (world space)\nuniform vec3 ambientLightColor; // AmbientLight color\nuniform float ambientLightIntensity; // AmbientLight intensity\nuniform vec3 skyColor; // HemisphereLight sky color\nuniform vec3 groundColor; // HemisphereLight ground color\nuniform float hemisphereIntensity; // HemisphereLight intensity\nvarying vec3 vWorldPosition;\nvarying vec3 vNormal;\n\nvoid main() {\n    vec4 texColor = texture2D(map, vUv);\n    vec3 color = texColor.rgb;\n\n    // Directional light (Lambertian diffuse)\n    vec3 lightDir = normalize(directionalLightDirection); // Ensure direction is normalized\n    float diff = max(dot(vNormal, lightDir), 0.0);\n    vec3 diffuse = directionalLightColor * directionalLightIntensity * diff * color;\n\n    // Ambient light\n    vec3 ambient = ambientLightColor * ambientLightIntensity * color;\n\n    // Hemisphere light\n    vec3 hemiDir = vec3(0.0, 1.0, 0.0); // Up direction for hemisphere\n    float hemiDot = dot(vNormal, hemiDir) * 0.5 + 0.5; // Remap to 0-1\n    vec3 hemi = mix(groundColor, skyColor, hemiDot) * hemisphereIntensity * color;\n\n    // Combine lighting contributions\n    vec3 litColor = diffuse + ambient + hemi;\n\n    // Apply fog\n    float fogDistance = length(vWorldPosition - cameraPosition);\n    float fogFactor = exp2(-fogDensity * fogDensity * fogDistance * fogDistance * 1.442695);\n    fogFactor = clamp(fogFactor, 0.0, 1.0);\n\n    vec3 finalColor = mix(fogColor, litColor, fogFactor);\n\n    gl_FragColor = vec4(finalColor, texColor.a);\n}",
-        "vertexScript": "varying vec2 vUv;\nuniform float time;\nuniform float windSpeed;\nuniform float windStrength;\nuniform vec2 windDirection;\nattribute float instancePhase;\nvarying vec3 vWorldPosition;\nvarying vec3 vNormal; // Add for lighting\n\nvoid main() {\n    vUv = uv;\n    vec2 dir = normalize(windDirection);\n    float wave = sin(time * windSpeed + instancePhase) * windStrength;\n    wave *= uv.y;\n\n    vec3 displacement = vec3(\n        dir.x * wave,\n        0.0,\n        dir.y * wave\n    );\n\n    // Compute world position in world space\n    vec4 worldPosition = modelMatrix * instanceMatrix * vec4(position + displacement, 1.0);\n    vWorldPosition = worldPosition.xyz; // Store correct world position\n  \n    vec3 normal = normalize(normal); // Assuming grass geometry has normals\n    vNormal = normalize((modelMatrix * instanceMatrix * vec4(normal, 0.0)).xyz);\n\n    // Compute view position for gl_Position\n    vec4 mvPosition = viewMatrix * worldPosition;\n    gl_Position = projectionMatrix * mvPosition;\n    vUv = uv;\n}",
-        "uniforms": "{ \"time\": { \"value\": 0 }, \"windSpeed\": { \"value\": 0.8 }, \"windStrength\": { \"value\": 2 }, \"windDirection\": { \"value\": [0.8, 0.6]} }",
-        "vectors": "[\"windDirection\"]"
-      },
       "water": {
         "title": "Water",
         "fragmentScript": "uniform float time;\nuniform float waveHeight;\nuniform vec3 liquidColor;\nuniform vec3 foamColor;\nuniform float waveFrequency;\nuniform float fresnelPower;\nuniform vec3 lightDirection;\nuniform float ambientIntensity;\nuniform float specularIntensity;\nvarying vec2 vUv;\nvarying vec3 vNormal;\nvarying vec3 vViewPosition;\nvarying float vWaveHeight;\nvarying float vNormalizedWaveHeight; // New varying for normalized height\nvarying vec3 vWorldPosition;\nuniform vec3 fogColor;\nuniform float fogDensity;\n\nvoid main() {\n    vec2 uv = vUv;\n    vec3 normal = normalize(vNormal);\n    vec3 viewDir = normalize(vViewPosition);\n    vec3 lightDir = normalize(lightDirection);\n\n    // Fresnel effect for edge transparency\n    float fresnel = pow(1.0 - max(dot(normal, viewDir), 0.0), fresnelPower);\n\n    // Diffuse lighting\n    float diffuse = max(dot(normal, lightDir), 0.0) * 0.25;\n\n    // Specular (Blinn-Phong)\n    vec3 halfwayDir = normalize(lightDir + viewDir);\n    float specular = pow(max(dot(normal, halfwayDir), 0.0), 32.0) * specularIntensity;\n\n    // Base color with subtle wave height modulation\n    vec3 baseColor = liquidColor * (0.8 + 0.2 * vNormalizedWaveHeight); // Slight tint variation\n\n    // Foam effect based on normalized wave height\n    float foamFactor = smoothstep(0.8, 1.0, vNormalizedWaveHeight); // Tighter range for foam at peaks\n    vec3 color = mix(baseColor, foamColor, foamFactor);\n  \n    float fogDistance = length(vWorldPosition - cameraPosition); // Distance from fragment to camera\n    float fogFactor = exp2(-fogDensity * fogDensity * fogDistance * fogDistance * 1.442695); // 1.442695 = ln(2)\n    fogFactor = clamp(fogFactor, 0.0, 1.0);\n    // Combine lighting components\n    vec3 lightColor = color * (ambientIntensity + diffuse) + vec3(specular);\n\t\tvec3 finalColor = mix(fogColor, lightColor, fogFactor);\n    // Apply fresnel for transparency at edges\n    float alpha = mix(0.6, 1.0, fresnel);\n\n    gl_FragColor = vec4(finalColor, alpha);\n}",
         "vertexScript": " uniform float time;\nuniform float waveHeight;\nuniform float waveFrequency;\nuniform float waveSpeed;\nvarying vec2 vUv;\nvarying vec3 vNormal;\nvarying vec3 vViewPosition;\nvarying float vWaveHeight;\nvarying float vNormalizedWaveHeight; // New varying for normalized height\nvarying vec3 vWorldPosition;\n// Simple noise function for wave variation\nfloat snoise(vec2 co) {\n    return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453);\n}\n\nvoid main() {\n    vUv = uv;\n\n    // Combine multiple waves for more natural movement\n    float wave1 = sin(uv.x * waveFrequency + time * waveSpeed) * waveHeight;\n    float wave2 = sin(uv.y * waveFrequency * 0.7 + time * waveSpeed * 0.8) * waveHeight * 0.5;\n    float wave3 = cos((uv.x + uv.y) * waveFrequency * 0.5 + time * waveSpeed * 1.2) * waveHeight * 0.3;\n    float displacementY = (wave1 + wave2 + wave3) * 0.5;\n\n    // Store wave height for fragment shader\n    vWaveHeight = displacementY;\n\n    // Normalize wave height based on maximum possible displacement\n    float maxWaveHeight = waveHeight * (1.0 + 0.5 + 0.3) * 0.5; // Sum of wave amplitudes\n    vNormalizedWaveHeight = displacementY / maxWaveHeight;\n\n    // Update position with displacement\n    vec3 newPosition = vec3(position.x, position.y + displacementY, position.z);\n\n    // Compute normal for lighting\n    float offset = 0.01;\n    float waveX = (sin((uv.x + offset) * waveFrequency + time * waveSpeed) +\n                   sin((uv.y + offset) * waveFrequency * 0.7 + time * waveSpeed * 0.8) * 0.5 +\n                   cos((uv.x + uv.y + offset) * waveFrequency * 0.5 + time * waveSpeed * 1.2) * 0.3) * waveHeight * 0.5;\n    float waveZ = (sin((uv.x) * waveFrequency + time * waveSpeed) +\n                   sin((uv.y + offset) * waveFrequency * 0.7 + time * waveSpeed * 0.8) * 0.5 +\n                   cos((uv.x + uv.y + offset) * waveFrequency * 0.5 + time * waveSpeed * 1.2) * 0.3) * waveHeight * 0.5;\n    vec3 tangent = normalize(vec3(1.0, (waveX - displacementY) / offset, 0.0));\n    vec3 bitangent = normalize(vec3(0.0, (waveZ - displacementY) / offset, 1.0));\n    vNormal = normalize(cross(tangent, bitangent));\n\n    // Pass view position for fresnel and lighting\n    vec4 worldPosition = modelMatrix * vec4(newPosition, 1.0);\n    vViewPosition = (cameraPosition - worldPosition.xyz);\n    vWorldPosition = worldPosition.xyz;\n    // Apply projection and model-view transforms\n    gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);\n}",
         "uniforms": "{\"time\":{\"value\":0},\"waveHeight\":{\"value\":3},\"waveFrequency\":{\"value\":5},\"waveSpeed\":{\"value\":0.25},\"liquidColor\":{\"value\":\"\"},\"foamColor\":{\"value\":\"\"},\"fresnelPower\":{\"value\":0},\"lightDirection\":{\"value\":[0.5,0.5,0.5]},\"ambientIntensity\":{\"value\":1},\"specularIntensity\":{\"value\":1}}",
         "vectors": "[\"foamColor\",\"liquidColor\",\"lightDirection\"]"
+      },
+      "grass": {
+        "title": "Grass",
+        "fragmentScript": "varying vec2 vUv;\nuniform sampler2D map;\nuniform vec3 fogColor;\nuniform float fogDensity;\nuniform vec3 directionalLightColor; // DirectionalLight color\nuniform float directionalLightIntensity; // DirectionalLight intensity\nuniform vec3 directionalLightDirection; // DirectionalLight direction (world space)\nuniform vec3 ambientLightColor; // AmbientLight color\nuniform float ambientLightIntensity; // AmbientLight intensity\nuniform vec3 skyColor; // HemisphereLight sky color\nuniform vec3 groundColor; // HemisphereLight ground color\nuniform float hemisphereIntensity; // HemisphereLight intensity\nvarying vec3 vWorldPosition;\nvarying vec3 vNormal;\n\nvoid main() {\n    vec4 texColor = texture2D(map, vUv);\n    vec3 color = texColor.rgb;\n\n    // Directional light (Lambertian diffuse)\n    vec3 lightDir = normalize(directionalLightDirection); // Ensure direction is normalized\n    float diff = max(dot(vNormal, lightDir), 0.0);\n    vec3 diffuse = directionalLightColor * directionalLightIntensity * diff * color;\n\n    // Ambient light\n    vec3 ambient = ambientLightColor * ambientLightIntensity * color;\n\n    // Hemisphere light\n    vec3 hemiDir = vec3(0.0, 1.0, 0.0); // Up direction for hemisphere\n    float hemiDot = dot(vNormal, hemiDir) * 0.5 + 0.5; // Remap to 0-1\n    vec3 hemi = mix(groundColor, skyColor, hemiDot) * hemisphereIntensity * color;\n\n    // Combine lighting contributions\n    vec3 litColor = diffuse + ambient + hemi;\n\n    // Apply fog\n    float fogDistance = length(vWorldPosition - cameraPosition);\n    float fogFactor = exp2(-fogDensity * fogDensity * fogDistance * fogDistance * 1.442695);\n    fogFactor = clamp(fogFactor, 0.0, 1.0);\n\n    vec3 finalColor = mix(fogColor, litColor, fogFactor);\n\n    gl_FragColor = vec4(finalColor, texColor.a);\n}",
+        "vertexScript": "varying vec2 vUv;\nuniform float time;\nuniform float windSpeed;\nuniform float windStrength;\nuniform vec2 windDirection;\nattribute float instancePhase;\nvarying vec3 vWorldPosition;\nvarying vec3 vNormal; // Add for lighting\n\nvoid main() {\n    vUv = uv;\n    vec2 dir = normalize(windDirection);\n    float wave = sin(time * windSpeed + instancePhase) * windStrength;\n    wave *= uv.y;\n\n    vec3 displacement = vec3(\n        dir.x * wave,\n        0.0,\n        dir.y * wave\n    );\n\n    // Compute world position in world space\n    vec4 worldPosition = modelMatrix * instanceMatrix * vec4(position + displacement, 1.0);\n    vWorldPosition = worldPosition.xyz; // Store correct world position\n  \n    vec3 normal = normalize(normal); // Assuming grass geometry has normals\n    vNormal = normalize((modelMatrix * instanceMatrix * vec4(normal, 0.0)).xyz);\n\n    // Compute view position for gl_Position\n    vec4 mvPosition = viewMatrix * worldPosition;\n    gl_Position = projectionMatrix * mvPosition;\n    vUv = uv;\n}",
+        "uniforms": "{ \"time\": { \"value\": 0 }, \"windSpeed\": { \"value\": 0.8 }, \"windStrength\": { \"value\": 2 }, \"windDirection\": { \"value\": [0.8, 0.6]} }",
+        "vectors": "[\"windDirection\"]"
       }
     },
     "textures": {
@@ -17191,10 +17191,6 @@ const DEFAULT_PROJECT_CONFIG = {
       "forest": {
         "title": "Forest",
         "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAAAYCAYAAAAF6fiUAAAAl0lEQVRoQ+3UsQ2AMBAEQVwOEX1QMH0QuRwQqWXk7NdvLTHSwY3uy3Huz5boua9aEn3u8FNLNoDvj1ZCSAmwEkJagFUQUgMMD+xEL/ydTQECkXoIAgQC9M6mAAIENwDHtWfIBQSDCBBceBsngABwA3C8CxAAbgCOdwECwA3A8S5AALgBON4FCAA3AMe7AAHgBuB4FzAZwAs/vWAZcNxDRQAAAABJRU5ErkJggg=="
-      },
-      "grass": {
-        "title": "Grass",
-        "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAAAYCAYAAAAF6fiUAAAAl0lEQVRoQ+3UsQ2AMBAEQVwhOYVQBIWQu0IQqWXk7NdvLTHSwY3uy3Htz5bouc9aEn3u8FNLNoDvj1ZCSAmwEkJagFUQUgMMD+xEL/ydTQECkXoIAgQC9M6mAAIENwDHtWfIBQSDCBBceBsngABwA3C8CxAAbgCOdwECwA3A8S5AALgBON4FCAA3AMe7AAHgBuB4FzAZwAsfF2AZYnfKcAAAAABJRU5ErkJggg=="
       },
       "lava": {
         "title": "Lava",
@@ -17207,6 +17203,10 @@ const DEFAULT_PROJECT_CONFIG = {
       "rock": {
         "title": "Rock",
         "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAAAYCAYAAAAF6fiUAAAA40lEQVRoQ+3VPQ6DMAwFYHItBqQOzIw9I2PnDpUYeq2iTkgoyAnBvzzmyHn4syEN0/PXOXqW15wcxSWjJm8A/zeKhOASIBKCW4AoCK4ByA+soQNHn00ACCLlELIA/WPsvp/35dG46l4elLHgHgEbwNjsXOkmAExwu1YTQPv1qAAA5RkAAACUO6B8vdgG4IedlxYDUB40s9e7A4i2SSYAojW1Zt2KAe7cpJqG1p4tBqgtbPU81yCdrcsGcDaQVTiuXGwAXIGj1VUBwHZsY0QCWGhWaYbSc5JbRGUiASTD3vGuPcAKi06NGSIOm+IAAAAASUVORK5CYII="
+      },
+      "grass": {
+        "title": "Grass",
+        "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAAAYCAYAAAAF6fiUAAAAl0lEQVRoQ+3UsQ2AMBAEQVwhOYVQBIWQu0IQqWXk7NdvLTHSwY3uy3Htz5bouc9aEn3u8FNLNoDvj1ZCSAmwEkJagFUQUgMMD+xEL/ydTQECkXoIAgQC9M6mAAIENwDHtWfIBQSDCBBceBsngABwA3C8CxAAbgCOdwECwA3A8S5AALgBON4FCAA3AMe7AAHgBuB4FzAZwAsfF2AZYnfKcAAAAABJRU5ErkJggg=="
       },
       "scales": {
         "title": "Scales",
@@ -17222,50 +17222,46 @@ const DEFAULT_PROJECT_CONFIG = {
       }
     },
     "components": {
+      "Animator": {
+        "fileName": "Animator",
+        "script": "class Animator extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n        \r\n    }\r\n    \r\n    \r\n    init({ objectType, spawnType}) {\r\n        this.animations = this.game.imageManager.getImages(objectType, spawnType); // { \"idle\": [...], \"walk\": [...] }\r\n        this.currentAnimation = \"idle\";\r\n        if(this.animations.walk) this.currentAnimation = \"walk\";\r\n        this.currentFrame = 0;\r\n        this.frameDuration = .166; // 10 frames per animation frame (~0.166s at 60 FPS)\r\n        this.frameTimer = 0;\r\n\r\n        this.baseSpeed = this.parent.getComponent(\"stats\")?.stats.speed || 1;\r\n    }\r\n\r\n    update() {\r\n        \r\n        this.frameTimer += this.game.deltaTime;\r\n        let currentSpeedPercent = this.parent.getComponent(\"stats\")?.stats.speed / this.baseSpeed || 1;\r\n\r\n        if (this.frameTimer >= this.frameDuration / currentSpeedPercent) {\r\n            this.frameTimer = 0;\r\n            const animFrames = this.animations[this.currentAnimation];\r\n            this.currentFrame = (this.currentFrame + 1) % animFrames.length;\r\n        }\r\n        // Sync direction with Renderer (if separate)\r\n        const renderer = this.parent.getComponent(\"Renderer\");\r\n        if (renderer) {\r\n            renderer.images = this.animations[this.currentAnimation][this.currentFrame];\r\n        }\r\n    }\r\n\r\n    setAnimation(animationType) {\r\n        if (this.animations[animationType] && this.currentAnimation !== animationType) {\r\n            this.currentAnimation = animationType;\r\n            this.currentFrame = 0;\r\n            this.frameTimer = 0;\r\n        }\r\n    }\r\n    \r\n}"
+      },
       "ArrayTracker": {
         "fileName": "ArrayTracker",
         "script": "class ArrayTracker extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init( {objectType}) {\r\n        this.arr = objectType;\r\n        if(!this.game.state[this.arr]){\r\n            this.game.state[this.arr] = [];\r\n        }\r\n        this.game.state[this.arr].push(this.parent);\r\n    }\r\n\r\n    destroy(){\r\n        let index = this.game.state[this.arr].indexOf(this.parent);\r\n        this.game.state[this.arr].splice(index, 1);        \r\n    }\r\n}"
       },
-      "Animator": {
-        "fileName": "Animator",
-        "script": "class Animator extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n        \r\n    }\r\n    \r\n    \r\n    init({ objectType, spawnType}) {\r\n        this.animations = this.game.imageManager.getImages(objectType, spawnType); // { \"idle\": [...], \"walk\": [...] }\r\n        this.currentAnimation = \"idle\";\r\n        if(this.animations.walk) this.currentAnimation = \"walk\";\r\n        this.currentFrame = 0;\r\n        this.frameDuration = .166; // 10 frames per animation frame (~0.166s at 60 FPS)\r\n        this.frameTimer = 0;\r\n\r\n        this.baseSpeed = this.parent.getComponent(\"stats\")?.stats.speed || 1;\r\n    }\r\n\r\n    update() {\r\n        \r\n        this.frameTimer += this.game.deltaTime;\r\n        let currentSpeedPercent = this.parent.getComponent(\"stats\")?.stats.speed / this.baseSpeed || 1;\r\n\r\n        if (this.frameTimer >= this.frameDuration / currentSpeedPercent) {\r\n            this.frameTimer = 0;\r\n            const animFrames = this.animations[this.currentAnimation];\r\n            this.currentFrame = (this.currentFrame + 1) % animFrames.length;\r\n        }\r\n        // Sync direction with Renderer (if separate)\r\n        const renderer = this.parent.getComponent(\"Renderer\");\r\n        if (renderer) {\r\n            renderer.images = this.animations[this.currentAnimation][this.currentFrame];\r\n        }\r\n    }\r\n\r\n    setAnimation(animationType) {\r\n        if (this.animations[animationType] && this.currentAnimation !== animationType) {\r\n            this.currentAnimation = animationType;\r\n            this.currentFrame = 0;\r\n            this.frameTimer = 0;\r\n        }\r\n    }\r\n    \r\n}"
+      "Effect": {
+        "fileName": "Effect",
+        "script": "class Effect extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init( {config, applyFn, amount }) {\r\n        this.id = config.id;\r\n        this.title = config.title;\r\n        this.desc = config.desc;\r\n        this.lifeTime = config.lifeTime;\r\n        this.applyFn = applyFn;\r\n        this.amount = amount;    \r\n    }\r\n\r\n    update() {\r\n        this.lifeTime--;\r\n        if( this.lifeTime <= 0) this.parent.removeComponent(this);\r\n        return true;        \r\n    }\r\n\r\n    apply(s, add, mul) {\r\n        this.applyFn(s, add, mul, this.amount);\r\n    }\r\n}"
+      },
+      "Attacker": {
+        "fileName": "Attacker",
+        "script": "class Attacker extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n init() {        \r\n        this.stats = this.getComponent('stats').stats;    \r\n        this.level = 1;\r\n        this.target = null;\r\n        this.projectiles = [];  \r\n        this.cooldown = 0;\r\n    }\r\n\r\n    update() {\r\n        if (this.cooldown > 0) this.cooldown -= this.game.deltaTime;\r\n\r\n        // Validate current target\r\n        if (this.target) {\r\n            const distance = Math.hypot(\r\n                this.target.position.x - this.parent.position.x,\r\n                this.target.position.y - this.parent.position.y\r\n            );\r\n            if (distance > this.stats.range || this.target.getComponent('health').hp <= 0) {\r\n                this.target = null;\r\n            }\r\n        }\r\n\r\n        // Find target if none\r\n        if (!this.target) {\r\n            this.findTarget();\r\n        }\r\n\r\n        // Attack if ready and has target\r\n        if (this.cooldown <= 0 && this.target) {\r\n            this.attack();\r\n        }\r\n\r\n        if (this.cooldown <= 0 && this.stats.mineAmt > 0) {\r\n            this.gather();\r\n        }\r\n        return true;\r\n    }\r\n    \r\n    findTarget() {\r\n        this.target = null;\r\n        let furthestEnemy = null;\r\n        let furthestDistance = -1;\r\n        const nearbyEntities = this.game.spatialGrid.getNearbyEntities(\r\n            this.parent.gridPosition.x, \r\n            this.parent.gridPosition.y, \r\n            this.stats.range,\r\n            \"enemy\"\r\n        );\r\n        for (let enemy of nearbyEntities) {\r\n            let enemyHP = enemy.getComponent(\"health\").hp;\r\n            let followPath = enemy.getComponent('followPath');\r\n            if (enemyHP <= 0) continue;          \r\n\r\n            let distanceToEnd = this.game.state.paths[followPath.pathIndex].length - followPath.indexInPath;\r\n            if (distanceToEnd > furthestDistance) {\r\n                furthestDistance = followPath.indexInPath;\r\n                furthestEnemy = enemy;\r\n            }  \r\n        }\r\n        \r\n        this.target = furthestEnemy;\r\n    }\r\n\r\n    gather() {\r\n        this.game.state.bloodShards += this.stats.mineAmt;\r\n        this.cooldown = this.stats.attackSpeed;\r\n    }\r\n\r\n    attack() {\r\n        if (!this.target) return; \r\n        this.launchProjectile();\r\n        this.cooldown = this.stats.attackSpeed;\r\n    }\r\n    \r\n    launchProjectile() {\r\n        this.stats = this.getComponent('stats').stats;    \r\n        let projectileType = this.stats.projectile;\r\n        let projectileDef = this.game.config.projectiles[projectileType];\r\n        \r\n\r\n        let projStats = { ...projectileDef };\r\n        delete projStats.render;\r\n        projStats.baseDamage = this.stats.damage || 1; \r\n        projStats.speed = this.stats.speed || 5;     \r\n        projStats.piercing = this.stats.piercing || 0;\r\n        projStats.splashRadius = this.stats.splashRadius || 0;\r\n        projStats.critChance = this.stats.critChance || 0.05;\r\n        projStats.critMultiplier = this.stats.critMultiplier || 2;\r\n    \r\n       \tif(projectileDef.customRenderer == \"lightning\") {\r\n         \tthis.game.spawn(this.parent.position.x, this.parent.position.y, 'lightningProjectile', { objectType: \"projectiles\", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });\r\n        } else if(projectileDef.isBallistic) {\r\n         \tthis.game.spawn(this.parent.position.x, this.parent.position.y, 'ballisticProjectile', { objectType: \"projectiles\", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });\r\n        } else if( this.stats.projectileCount > 0 ) {\r\n          this.game.spawn(this.parent.position.x, this.parent.position.y, 'multiShotProjectile', { objectType: \"projectiles\", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });\r\n        } else {\r\n          let projectile = this.game.spawn(this.parent.position.x, this.parent.position.y, 'projectile', { objectType: \"projectiles\", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });\r\n        }\r\n    }\r\n}"
+      },
+      "EssenceBounty": {
+        "fileName": "EssenceBounty",
+        "script": "class EssenceBounty extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init(){\r\n        this.statsComp = this.parent.getComponent('stats');\r\n    }\r\n    destroy() {               \r\n        this.game.state.essence += this.statsComp.stats.essence * this.game.state.stats.essenceMultiplier;        \r\n    }\r\n}"
       },
       "BallisticProjectile": {
         "fileName": "BallisticProjectile",
         "script": "class BallisticProjectile extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\ninit({ spawnType, owner, target, stats }) {\r\n    this.type = spawnType;\r\n    this.def = this.game.config.projectiles[this.type];\r\n    this.owner = owner;\r\n    this.target = target;\r\n    this.stats = stats;\r\n    this.piercedEnemies = [];\r\n    this.ownerStats = this.owner.getComponent(\"stats\").stats;\r\n    this.distanceTraveled = 0;\r\n    this.distanceToSpawnParticle = 1;\r\n    \r\n    // Ballistic trajectory variables\r\n    this.startPosition = { ...this.parent.position, z: 10 }; // Start 10 units above ground\r\n    this.targetPosition = { ...this.target.position, z: 0 };\r\n    this.time = 0;\r\n    \r\n    this.totalDist = Math.sqrt(\r\n        (this.targetPosition.x - this.startPosition.x) ** 2 + \r\n        (this.targetPosition.y - this.startPosition.y) ** 2\r\n    );\r\n    this.maxHeight = this.totalDist / Math.PI;\r\n    \r\n    // Initialize position with Z component\r\n    this.parent.position.z = this.startPosition.z;\r\n    this.positionZ = this.startPosition.z;\r\n    \r\n    // Animation state variables\r\n    this.lastZPosition = this.positionZ;\r\n\r\n    \r\n    this.peakThreshold = this.maxHeight * 0.1; // 10% threshold for idle at peak\r\n    this.currentAnimState = 'ascend';\r\n    if(this.stats.attackSound){\r\n        this.game.audioManager.playSound('attackSounds', this.stats.attackSound);\r\n    }\r\n}\r\n\r\nsetAnimation(anim) {\r\n\r\n    if(this.game.config.configs.game.is3D) {\r\n        this.modelRenderer = this.parent.getComponent('modelRenderer');\r\n        this.modelRenderer?.setAnimation(anim);\r\n    } else {\r\n        this.animator = this.parent.getComponent('animator');\r\n        this.animator?.setAnimation(anim);\r\n    }\r\n}\r\n\r\nupdate() {\r\n    this.parent.position.z = this.positionZ;\r\n    \r\n    // Save previous z position to detect direction change\r\n    this.lastZPosition = this.positionZ;\r\n\r\n    // Calculate progress (0 to 1)\r\n    this.time += this.game.deltaTime;\r\n    const dx = this.targetPosition.x - this.parent.position.x;\r\n    const dy = this.targetPosition.y - this.parent.position.y;\r\n    const distSq = dx * dx + dy * dy;\r\n    let dist = Math.sqrt(distSq);\r\n    const speed = this.stats.speed;\r\n    this.parent.position.x += (dx / dist) * speed / (Math.PI);\r\n    this.parent.position.y += (dy / dist) * speed / (Math.PI);\r\n\r\n\r\n    const currentDist = Math.sqrt(\r\n        (this.parent.position.x - this.startPosition.x) ** 2 + \r\n        (this.parent.position.y - this.startPosition.y) ** 2\r\n    );\r\n    const xyprogressToTarget = Math.min(1, currentDist / this.totalDist);\r\n\r\n    // Parabolic trajectory calculation (2:1 isometric adjusted)\r\n    this.parent.position.z = this.maxHeight * (1 - Math.pow(2 * xyprogressToTarget - 1, 2));\r\n\r\n    this.positionZ = this.parent.position.z;\r\n    \r\n    // Calculate distance from peak height to determine if we're near the top\r\n    const distanceFromPeak = Math.abs(this.positionZ - this.maxHeight);\r\n    \r\n    // Check if animation state needs to change based on z movement and proximity to peak\r\n    if( xyprogressToTarget < .075 ) {\r\n        if (this.currentAnimState !== 'launch') {\r\n            this.setAnimation('launch');\r\n            this.currentAnimState = 'launch';\r\n        }\r\n    // } else if( xyprogressToTarget > .95 ) {\r\n    //     if (this.currentAnimState !== 'land') {\r\n    //         this.animator.setAnimation('land');\r\n    //         this.currentAnimState = 'land';\r\n    //     }\r\n    } else if (distanceFromPeak <= this.peakThreshold) {\r\n        // We're near the peak of the trajectory\r\n        if (this.currentAnimState !== 'idle') {\r\n            this.setAnimation('idle');\r\n            this.currentAnimState = 'idle';\r\n        }\r\n    } else if (this.positionZ < this.lastZPosition) {\r\n        // We're descending and not near the peak\r\n        if (this.currentAnimState !== 'descend') {\r\n            this.setAnimation('descend');\r\n            this.currentAnimState = 'descend';\r\n        }\r\n    } else if (this.positionZ > this.lastZPosition) {\r\n        // We're ascending and not near the peak\r\n        if (this.currentAnimState !== 'ascend') {\r\n            this.setAnimation('ascend');\r\n            this.currentAnimState = 'ascend';\r\n        }\r\n    }\r\n    \r\n    // Check if we've hit the ground (Z <= 0)\r\n    if (this.parent.position.z <= 0) {\r\n        this.parent.position.z = 0; // Snap to ground\r\n\r\n        // Hit detection - same as before but at current position\r\n        const targetDistSq = (this.parent.position.x - this.target.position.x) ** 2 + \r\n                            (this.parent.position.y - this.target.position.y) ** 2;\r\n\r\n\r\n\r\n            // We missed the target but hit the ground - maybe still do splash damage\r\n        if (this.stats.splashRadius > 0) {\r\n            this.processSplashDamage();\r\n        }\r\n        this.parent.destroy();\r\n        if(this.stats.hitSound){\r\n            this.game.audioManager.playSound('hitSounds', this.stats.hitSound);\r\n        }\r\n\r\n        return;\r\n    }\r\n    \r\n    // Update distance traveled for particles\r\n    const tDx = this.parent.lastPosition.x - this.parent.position.x;\r\n    const tDy = this.parent.lastPosition.y - this.parent.position.y;\r\n    const tDist = Math.sqrt(tDx * tDx + tDy * tDy);\r\n    this.distanceTraveled += tDist;\r\n    \r\n    if (this.def.particle && this.distanceTraveled > this.distanceToSpawnParticle) {\r\n\r\n        let particle = this.game.spawn(this.parent.lastPosition.x + Math.random() * 4 - 2, this.parent.lastPosition.y + Math.random() * 4 - 2, \"particle\", { objectType: \"particles\", spawnType: this.def.particle });\r\n        particle.position.z = this.parent.position.z + Math.random() * 4 - 2;\r\n        this.distanceTraveled = 0;\r\n        this.distanceToSpawnParticle += Math.random() * 2;\r\n    }\r\n}\r\n\r\n\r\nprocessSplashDamage() {\r\n    const nearbyEnemies = this.game.spatialGrid.getNearbyEntities(\r\n        this.parent.gridPosition.x, \r\n        this.parent.gridPosition.y, \r\n        this.stats.splashRadius,\r\n        \"enemy\"\r\n    );\r\n    let explosion = this.game.spawn(this.parent.position.x, this.parent.position.y, \"explosion\", { radius: this.stats.splashRadius });\r\n    for (const enemy of nearbyEnemies) {\r\n        if (enemy.isDead) continue;\r\n        \r\n        const dx = enemy.position.x - this.parent.position.x;\r\n        const dy = enemy.position.y - this.parent.position.y;\r\n        const distSq = dx * dx + dy * dy;\r\n        \r\n        let gridSize = this.game.config.configs.game.gridSize;\r\n        const splashRadiusSq = this.stats.splashRadius * this.stats.splashRadius * gridSize * gridSize;\r\n        \r\n        if (distSq <= splashRadiusSq) {\r\n            let enemyHealth = enemy.getComponent(\"health\");\r\n            let enemyEnergyShield = enemy.getComponent(\"energyshield\");\r\n            let enemyStats = enemy.getComponent(\"stats\");\r\n            let enemyStatClone = { ...enemyStats.stats };\r\n            enemyStatClone.energyShield = enemyEnergyShield.energyShield;\r\n            \r\n            let damageResult = engine.getFunction(\"calculateDamage\")(this.stats, enemyStatClone);\r\n            if (!damageResult.wasEvaded) {\r\n                enemyHealth.hp -= damageResult.damageDealt;\r\n                enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);\r\n                this.game.spawn(enemy.position.x, enemy.position.y, \"hitEffect\", { damageType: this.stats.damageType , lifeSpan: .3});\r\n                if (this.ownerStats.slowAmount) {\r\n                    enemyStats.addEffect(this.game.config.effects.slow, this.game.effects.slow, this.ownerStats.slowAmount);\r\n                }\r\n            }\r\n        }\r\n    }\r\n}\r\n}"
       },
-      "Attacker": {
-        "fileName": "Attacker",
-        "script": "class Attacker extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n init() {        \r\n        this.stats = this.getComponent('stats').stats;    \r\n        this.level = 1;\r\n        this.target = null;\r\n        this.projectiles = [];  \r\n        this.cooldown = 0;\r\n    }\r\n\r\n    update() {\r\n        if (this.cooldown > 0) this.cooldown -= this.game.deltaTime;\r\n\r\n        // Validate current target\r\n        if (this.target) {\r\n            const distance = Math.hypot(\r\n                this.target.position.x - this.parent.position.x,\r\n                this.target.position.y - this.parent.position.y\r\n            );\r\n            if (distance > this.stats.range || this.target.getComponent('health').hp <= 0) {\r\n                this.target = null;\r\n            }\r\n        }\r\n\r\n        // Find target if none\r\n        if (!this.target) {\r\n            this.findTarget();\r\n        }\r\n\r\n        // Attack if ready and has target\r\n        if (this.cooldown <= 0 && this.target) {\r\n            this.attack();\r\n        }\r\n\r\n        if (this.cooldown <= 0 && this.stats.mineAmt > 0) {\r\n            this.gather();\r\n        }\r\n        return true;\r\n    }\r\n    \r\n    findTarget() {\r\n        this.target = null;\r\n        let furthestEnemy = null;\r\n        let furthestDistance = -1;\r\n        const nearbyEntities = this.game.spatialGrid.getNearbyEntities(\r\n            this.parent.gridPosition.x, \r\n            this.parent.gridPosition.y, \r\n            this.stats.range,\r\n            \"enemy\"\r\n        );\r\n        for (let enemy of nearbyEntities) {\r\n            let enemyHP = enemy.getComponent(\"health\").hp;\r\n            let followPath = enemy.getComponent('followPath');\r\n            if (enemyHP <= 0) continue;          \r\n\r\n            let distanceToEnd = this.game.state.paths[followPath.pathIndex].length - followPath.indexInPath;\r\n            if (distanceToEnd > furthestDistance) {\r\n                furthestDistance = followPath.indexInPath;\r\n                furthestEnemy = enemy;\r\n            }  \r\n        }\r\n        \r\n        this.target = furthestEnemy;\r\n    }\r\n\r\n    gather() {\r\n        this.game.state.bloodShards += this.stats.mineAmt;\r\n        this.cooldown = this.stats.attackSpeed;\r\n    }\r\n\r\n    attack() {\r\n        if (!this.target) return; \r\n        this.launchProjectile();\r\n        this.cooldown = this.stats.attackSpeed;\r\n    }\r\n    \r\n    launchProjectile() {\r\n        this.stats = this.getComponent('stats').stats;    \r\n        let projectileType = this.stats.projectile;\r\n        let projectileDef = this.game.config.projectiles[projectileType];\r\n        \r\n\r\n        let projStats = { ...projectileDef };\r\n        delete projStats.render;\r\n        projStats.baseDamage = this.stats.damage || 1; \r\n        projStats.speed = this.stats.speed || 5;     \r\n        projStats.piercing = this.stats.piercing || 0;\r\n        projStats.splashRadius = this.stats.splashRadius || 0;\r\n        projStats.critChance = this.stats.critChance || 0.05;\r\n        projStats.critMultiplier = this.stats.critMultiplier || 2;\r\n    \r\n       \tif(projectileDef.customRenderer == \"lightning\") {\r\n         \tthis.game.spawn(this.parent.position.x, this.parent.position.y, 'lightningProjectile', { objectType: \"projectiles\", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });\r\n        } else if(projectileDef.isBallistic) {\r\n         \tthis.game.spawn(this.parent.position.x, this.parent.position.y, 'ballisticProjectile', { objectType: \"projectiles\", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });\r\n        } else if( this.stats.projectileCount > 0 ) {\r\n          this.game.spawn(this.parent.position.x, this.parent.position.y, 'multiShotProjectile', { objectType: \"projectiles\", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });\r\n        } else {\r\n          let projectile = this.game.spawn(this.parent.position.x, this.parent.position.y, 'projectile', { objectType: \"projectiles\", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });\r\n        }\r\n    }\r\n}"
+      "ChainProjectile": {
+        "fileName": "ChainProjectile",
+        "script": "class ChainProjectile extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init( { spawnType, owner, target, stats }) {        \r\n        this.type = spawnType;\r\n        this.owner = owner;\r\n        this.target = target;\r\n        this.stats = stats;\r\n        this.piercedEnemies = [];\r\n        this.ownerStats = this.owner.getComponent(\"stats\").stats;\r\n        this.chainTargets = []; // Store all targets hit in one frame\r\n        this.hasStruck = false; // Flag to strike only once\r\n    }\r\n\r\n    update() {\r\n        if (this.hasStruck) {\r\n            this.parent.destroy(); // Destroy after one frame of striking\r\n            return;\r\n        }\r\n\r\n        if (!this.target || this.target.destroyed) {\r\n            this.parent.destroy();\r\n            return;\r\n        }\r\n\r\n        // Strike the initial target\r\n        let targetHealth = this.target.getComponent(\"health\");\r\n        let targetEnergyShield = this.target.getComponent(\"energyshield\");\r\n        let targetStats = {...this.target.getComponent(\"stats\").stats};\r\n        targetStats.energyShield = targetEnergyShield.energyShield;\r\n        let damageResult = engine.getFunction(\"calculateDamage\")(this.stats, targetStats);                    \r\n        if( damageResult.wasEvaded ) { return; }         \r\n        targetHealth.hp -= damageResult.damageDealt;\r\n        targetEnergyShield.absorbDamage(damageResult.damageAbsorbed);\r\n        this.piercedEnemies.push(this.target);\r\n        this.chainTargets.push(this.target);\r\n        this.game.spawn(this.target.position.x, this.target.position.y, \"hitEffect\", { damageType: this.stats.damageType, lifeSpan: 1});\r\n        // Chain to nearby enemies\r\n        if (this.stats.piercing > 0 && this.piercedEnemies.length <= this.stats.piercing) {\r\n            const nearbyEnemies = this.game.spatialGrid.getNearbyEntities(\r\n                this.target.gridPosition.x, \r\n                this.target.gridPosition.y, \r\n                this.ownerStats.range,\r\n                \"enemy\"\r\n            );\r\n\r\n            for (let enemy of nearbyEnemies) {\r\n                if (enemy.destroyed || this.piercedEnemies.includes(enemy)) continue;\r\n                const dx = enemy.position.x - this.target.position.x;\r\n                const dy = enemy.position.y - this.target.position.y;\r\n                const distSq = dx * dx + dy * dy;\r\n                let gridSize = this.game.config.configs.game.gridSize;\r\n                if (distSq <= this.ownerStats.range * this.ownerStats.range * gridSize * gridSize) {\r\n                    let enemyHealth = enemy.getComponent(\"health\");\r\n                    let enemyEnergyShield = enemy.getComponent(\"energyshield\");\r\n                    let enemyStats = {...enemy.getComponent(\"stats\").stats};\r\n                    enemyStats.energyShield = targetEnergyShield.energyShield;\r\n                    let damageResult = engine.getFunction(\"calculateDamage\")(this.stats, enemyStats); \r\n                    if(!damageResult.wasEvaded) {\r\n                        enemyHealth.hp -= damageResult.damageDealt;\r\n                        enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);\r\n                        this.piercedEnemies.push(enemy);\r\n                        this.chainTargets.push(enemy);\r\n                        this.game.spawn(enemy.position.x, enemy.position.y, \"hitEffect\", { damageType: this.stats.damageType, lifeSpan: 1 });\r\n                        if (this.piercedEnemies.length > this.stats.piercing) break;\r\n                    } else {\r\n                        break;\r\n                    }\r\n                }\r\n            }\r\n        }\r\n\r\n        // Apply additional effects (e.g., slow, leech) to all hit targets\r\n        for (let enemy of this.chainTargets) {\r\n            if (this.ownerStats.slowAmount) {\r\n                enemy.getComponent(\"stats\").addEffect(this.game.config.effects.slow, this.game.effects.slow, this.ownerStats.slowAmount);\r\n            }\r\n            if (this.ownerStats.leech > 0) {\r\n                const healing = this.stats.damage * this.ownerStats.leech * this.game.state.stats.healingMultiplier;\r\n                this.game.state.bloodCoreHP = Math.min(this.game.state.stats.maxBloodCoreHP, this.game.state.bloodCoreHP + healing);\r\n            }\r\n            if (this.ownerStats.thief && this.ownerStats.thief != 0) {\r\n                const stealAmt = this.stats.damage * this.ownerStats.thief * this.game.state.stats.bloodShardMultiplier;\r\n                this.game.state.bloodShards += stealAmt;\r\n            }\r\n        }\r\n\r\n        this.hasStruck = true; // Mark as struck, render lightning this frame\r\n    }\r\n}"
+      },
+      "Buildable": {
+        "fileName": "Buildable",
+        "script": "class Buildable extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n  init() {        \r\n        this.placed = false;\r\n    }\r\n}"
       },
       "AudioManager": {
         "title": "AudioManager",
         "fileName": "AudioManager",
         "script": "class AudioManager extends engine.Component {\n    constructor(game, parent, params) {\n        super(game, parent, params);\n    }\n\n    init() {\n        this.isInitialized = false;\n        this.bindInitialization();\n    }\n\n    bindInitialization() {\n        const initHandler = () => {\n            if (!this.isInitialized) {\n                this.initialize();\n            }\n        };\n        \n        document.addEventListener('click', initHandler, { once: true });\n        document.addEventListener('keydown', initHandler, { once: true });\n    }\n\n    async initialize() {\n        class SoundPool {\n            constructor(audioContext, destination, poolSize = 8) {\n                this.audioContext = audioContext;\n                this.destination = destination;\n                this.poolSize = poolSize;\n                this.sources = [];\n                this.initializePool();\n            }\n\n            initializePool() {\n                for (let i = 0; i < this.poolSize; i++) {\n                    this.sources.push(this.createSource());\n                }\n            }\n\n            createSource() {\n                const source = {\n                    active: false,\n                    id: null,\n                    envelopeGain: this.audioContext.createGain(),\n                    gainNode: this.audioContext.createGain(),\n                    filter: this.audioContext.createBiquadFilter(),\n                    distortion: this.audioContext.createWaveShaper(),\n                    compressor: this.audioContext.createDynamicsCompressor(),\n                    pannerNode: this.audioContext.createStereoPanner(),\n                    delay: this.audioContext.createDelay(5.0),\n                    delayGain: this.audioContext.createGain(),\n                    convolver: this.audioContext.createConvolver(),\n                    reverbGain: this.audioContext.createGain(),\n                    noiseFilter: this.audioContext.createBiquadFilter(),\n                    noiseGain: this.audioContext.createGain(),\n                    destination: this.destination\n                };\n\n                source.filter.type = 'lowpass';\n                source.filter.frequency.setValueAtTime(20000, this.audioContext.currentTime);\n                source.filter.Q.setValueAtTime(0.5, this.audioContext.currentTime);\n\n                source.noiseFilter.type = 'lowpass';\n                source.noiseFilter.frequency.setValueAtTime(2000, this.audioContext.currentTime);\n                source.noiseFilter.Q.setValueAtTime(1, this.audioContext.currentTime);\n                \n                source.noiseGain.gain.setValueAtTime(0, this.audioContext.currentTime);\n\n                source.distortion.curve = null;\n                source.distortion.oversample = '4x';\n\n                source.compressor.threshold.setValueAtTime(-24, this.audioContext.currentTime);\n                source.compressor.knee.setValueAtTime(30, this.audioContext.currentTime);\n                source.compressor.ratio.setValueAtTime(12, this.audioContext.currentTime);\n                source.compressor.attack.setValueAtTime(0.003, this.audioContext.currentTime);\n                source.compressor.release.setValueAtTime(0.25, this.audioContext.currentTime);\n\n                source.pannerNode.pan.setValueAtTime(0, this.audioContext.currentTime);\n\n                source.delay.delayTime.setValueAtTime(0.3, this.audioContext.currentTime);\n                source.delayGain.gain.setValueAtTime(0, this.audioContext.currentTime);\n\n                source.reverbGain.gain.setValueAtTime(0, this.audioContext.currentTime);\n\n                const chain = [\n                    source.envelopeGain,\n                    source.gainNode,\n                    source.filter,\n                    source.distortion,\n                    source.compressor,\n                    source.pannerNode\n                ];\n\n                for (let i = 0; i < chain.length - 1; i++) {\n                    chain[i].connect(chain[i + 1]);\n                }\n\n                // Route delay and reverb after filter\n                source.filter.connect(source.delay);\n                source.delay.connect(source.delayGain);\n                source.delayGain.connect(source.delay);\n                source.delayGain.connect(source.pannerNode);\n\n                source.filter.connect(source.convolver);\n                source.convolver.connect(source.reverbGain);\n                source.reverbGain.connect(source.pannerNode);\n\n                source.pannerNode.connect(source.destination);\n\n                return source;\n            }\n\n            getSource() {\n                let source = this.sources.find(src => !src.active && (!src.lastUsed || this.audioContext.currentTime - src.lastUsed > 1));\n                if (!source && this.sources.length < this.poolSize * 2) {\n                    source = this.createSource();\n                    this.sources.push(source);\n                }\n                if (source) {\n                    source.active = true;\n                    source.gainNode.gain.setValueAtTime(1, this.audioContext.currentTime);\n                    source.envelopeGain.gain.setValueAtTime(0, this.audioContext.currentTime);\n                    source.delayGain.gain.setValueAtTime(0, this.audioContext.currentTime);\n                    source.reverbGain.gain.setValueAtTime(0, this.audioContext.currentTime);\n                    source.noiseGain.gain.setValueAtTime(0, this.audioContext.currentTime);\n                }\n                return source;\n            }\n\n            releaseSource(source) {\n                if (source) {\n                    source.active = false;\n                    source.id = null;\n                    const now = this.audioContext.currentTime;\n            \n                    // Reset all nodes\n                    source.filter.frequency.cancelScheduledValues(now);\n                    source.filter.frequency.setValueAtTime(20000, now);\n                    source.distortion.curve = null;\n                    source.pannerNode.pan.setValueAtTime(0, now);\n                    source.envelopeGain.gain.setValueAtTime(0, now);\n                    source.gainNode.gain.setValueAtTime(1, now);\n                    source.delayGain.gain.setValueAtTime(0, now);\n                    source.reverbGain.gain.setValueAtTime(0, now);\n                    source.noiseGain.gain.setValueAtTime(0, now);\n            \n                    // Disconnect and clear sources if they exist\n                    if (source.source) {\n                        try {\n                            source.source.stop(now);\n                            source.source.disconnect();\n                        } catch (e) {\n                            console.warn('Error stopping source:', e);\n                        }\n                        source.source = null;\n                    }\n                    \n                    if (source.noiseSource) {\n                        try {\n                            source.noiseSource.stop(now);\n                            source.noiseSource.disconnect();\n                        } catch (e) {\n                            console.warn('Error stopping noise source:', e);\n                        }\n                        source.noiseSource = null;\n                    }\n            \n                    source.lastUsed = now;\n                }\n            }\n\n            destroy() {\n                this.sources.forEach(source => {\n                    source.envelopeGain.disconnect();\n                    source.gainNode.disconnect();\n                    source.filter.disconnect();\n                    source.distortion.disconnect();\n                    source.compressor.disconnect();\n                    source.pannerNode.disconnect();\n                    source.delay.disconnect();\n                    source.delayGain.disconnect();\n                    source.convolver.disconnect();\n                    source.reverbGain.disconnect();\n                    source.noiseFilter.disconnect();\n                    source.noiseGain.disconnect();\n                });\n                this.sources = [];\n            }\n        }\n        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();\n        this.masterBus = this.createAudioBus('master');\n        this.musicBus = this.createAudioBus('music');\n        this.sfxBus = this.createAudioBus('sfx');\n        this.uiBus = this.createAudioBus('ui');\n        this.musicBus.connect(this.masterBus);\n        this.sfxBus.connect(this.masterBus);\n        this.uiBus.connect(this.masterBus);\n        this.masterBus.connect(this.audioContext.destination);\n        this.soundPools = {\n            sfx: new SoundPool(this.audioContext, this.sfxBus.input, 6),\n            music: new SoundPool(this.audioContext, this.musicBus.input, 2),\n            ui: new SoundPool(this.audioContext, this.uiBus.input, 3)\n        };\n        this.buffers = {};\n        this.activeSounds = new Set();\n        if (this.audioContext.state === 'suspended') {\n            await this.audioContext.resume();\n        }\n        this.isInitialized = true;\n    }\n\n    createAudioBus(name) {\n        const bus = {\n            name,\n            input: this.audioContext.createGain(),\n            compressor: this.audioContext.createDynamicsCompressor(),\n            output: this.audioContext.createGain()\n        };\n        \n        bus.input.connect(bus.compressor);\n        bus.compressor.connect(bus.output);\n        \n        bus.connect = (destination) => {\n            bus.output.connect(destination.input || destination);\n        };\n        \n        bus.setVolume = (value) => {\n            const now = this.audioContext.currentTime;\n            bus.output.gain.cancelScheduledValues(now);\n            bus.output.gain.setTargetAtTime(\n                value <= 0 ? 0.000001 : value,\n                now,\n                0.02\n            );\n        };\n        \n        return bus;\n    }\n\n    getSynthSound(soundCollectionName, soundName) {\n        if (this.game.config[soundCollectionName]?.[soundName]) {\n            return this.game.config[soundCollectionName][soundName].audio;\n        }\n        console.warn('sound not found', soundCollectionName, soundName);\n        return null;\n    }\n\n    playSound(soundCollectionName, soundName) {\n        let data = this.getSynthSound(soundCollectionName, soundName);\n        if (data) {\n            this.playSynthSound(`${soundCollectionName}_${soundName}`, data);\n        }\n    }\n\n    playSynthSound(soundId, soundConfig, options = {}) {\n        if (!this.isInitialized) {\n            this.initialize();\n            return this.playSynthSound(soundId, soundConfig, options);\n        }\n        \n        const category = options.category || 'sfx';\n        const pool = this.soundPools[category];\n        \n        if (!pool) {\n            console.warn(`No sound pool for category ${category}`);\n            return null;\n        }\n        \n        let instanceCount = 0;\n        this.activeSounds.forEach(sound => {\n            if (sound.id === soundId) instanceCount++;\n        });\n        \n        if (instanceCount >= (options.maxInstances || 3)) {\n            console.warn(`Max instances reached for sound ${soundId}`);\n            return null;\n        }\n        \n        const sound = pool.getSource();\n        if (!sound) {\n            console.warn(`No available source for sound ${soundId}`);\n            return null;\n        }\n        \n        sound.id = soundId;\n        sound.category = category;\n        \n        // Create main oscillator\n        const oscillator = this.createSynthSource(soundConfig);\n        sound.source = oscillator;\n        oscillator.connect(sound.envelopeGain);\n        \n        // Add noise generator if configured\n        if (soundConfig.noise && soundConfig.noise.amount > 0) {\n            this.applyNoiseToSound(sound, soundConfig.noise);\n        }\n        \n        this.createEnvelopeFromConfig(soundConfig.envelope, sound.envelopeGain, soundConfig.duration);\n        \n        if (soundConfig.effects) {\n            this.applySynthEffects(sound, soundConfig.effects, soundConfig);\n        } \n        \n        this.configureSoundInstance(sound, options);\n        \n        const now = this.audioContext.currentTime;\n        oscillator.start(now);\n        \n        // Start noise generator if it exists\n        if (sound.noiseSource) {\n            sound.noiseSource.start(now);\n        }\n        \n        const duration = soundConfig.duration || 1;\n        const release = (soundConfig.envelope?.release) || 0.3;\n        let totalDuration = duration + release;\n        \n        if (soundConfig.effects?.delay?.time) {\n            const delayTail = soundConfig.effects.delay.time * 3;\n            if (totalDuration < delayTail) {\n                totalDuration = delayTail;\n            }\n        }\n        \n        oscillator.stop(now + totalDuration + 0.02);\n        if (sound.noiseSource) {\n            sound.noiseSource.stop(now + totalDuration + 0.02);\n        }\n        \n        this.activeSounds.add(sound);\n        \n        oscillator.onended = () => {\n            setTimeout(() => {\n                sound.active = false;\n                this.activeSounds.delete(sound);\n                pool.releaseSource(sound);\n            }, (soundConfig.effects?.delay?.time || 0) * 1000 * 3);\n        };\n        \n        return sound;\n    }\n\n    createSynthSource(config) {\n        // Default to oscillator unless waveform is 'noise'\n        const oscillator = config.waveform === 'noise'\n            ? this.createNoiseSource('white') \n            : this.audioContext.createOscillator();\n    \n        if (config.waveform !== 'noise') {\n            oscillator.type = config.waveform || 'sine';\n            const baseFreq = config.frequency || 440;\n            const now = this.audioContext.currentTime;\n    \n            // Initialize frequency\n            oscillator.frequency.cancelScheduledValues(now);\n            oscillator.frequency.setValueAtTime(baseFreq, now);\n    \n            // Apply pitch envelope if defined\n            if (config.pitchEnvelope) {\n                const startMultiplier = config.pitchEnvelope.start ?? 1;\n                const endMultiplier = config.pitchEnvelope.end ?? 1;\n                const envelopeTime = config.pitchEnvelope.time ?? config.duration ?? 1;\n    \n                if (startMultiplier !== 1 || endMultiplier !== 1) {\n                    const startFreq = baseFreq * startMultiplier;\n                    const endFreq = baseFreq * endMultiplier;\n    \n                    oscillator.frequency.setValueAtTime(startFreq, now);\n                    oscillator.frequency.exponentialRampToValueAtTime(\n                        Math.max(endFreq, 0.01),\n                        now + envelopeTime\n                    );\n                }\n            }\n        }\n    \n        return oscillator;\n    }\n\n    applyNoiseToSound(sound, noiseConfig) {\n        if (!noiseConfig || noiseConfig.amount <= 0) return;\n\n        const noiseType = noiseConfig.type || 'white';\n        const noiseAmount = Math.min(1, Math.max(0, noiseConfig.amount));\n        \n        // Create the noise source\n        sound.noiseSource = this.createNoiseSource(noiseType);\n        \n        // Configure noise filter if specified\n        if (noiseConfig.filter && noiseConfig.filter.type !== 'none') {\n            sound.noiseFilter.type = noiseConfig.filter.type || 'lowpass';\n            sound.noiseFilter.frequency.setValueAtTime(\n                noiseConfig.filter.frequency || 2000, \n                this.audioContext.currentTime\n            );\n        }\n        \n        // Set noise gain based on the amount\n        sound.noiseGain.gain.setValueAtTime(noiseAmount, this.audioContext.currentTime);\n        \n        // Connect noise through the filter and envelope\n        sound.noiseSource.connect(sound.noiseFilter);\n        sound.noiseFilter.connect(sound.noiseGain);\n        sound.noiseGain.connect(sound.envelopeGain);\n    }\n\n    createNoiseSource(noiseType = 'white') {\n        const bufferSize = this.audioContext.sampleRate * 2;\n        const noiseBuffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);\n        const output = noiseBuffer.getChannelData(0);\n        \n        // Generate different types of noise\n        switch (noiseType) {\n            case 'pink':\n                this.generatePinkNoise(output);\n                break;\n            case 'brown':\n                this.generateBrownNoise(output);\n                break;\n            case 'white':\n            default:\n                this.generateWhiteNoise(output);\n                break;\n        }\n        \n        const source = this.audioContext.createBufferSource();\n        source.buffer = noiseBuffer;\n        source.loop = true;\n        \n        return source;\n    }\n\n    generateWhiteNoise(output) {\n        for (let i = 0; i < output.length; i++) {\n            output[i] = Math.random() * 2 - 1;\n        }\n    }\n\n    generatePinkNoise(output) {\n        // Pink noise algorithm (approximation using Paul Kellet's method)\n        let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;\n        \n        for (let i = 0; i < output.length; i++) {\n            const white = Math.random() * 2 - 1;\n            \n            // Filter white noise to create pink noise\n            b0 = 0.99886 * b0 + white * 0.0555179;\n            b1 = 0.99332 * b1 + white * 0.0750759;\n            b2 = 0.96900 * b2 + white * 0.1538520;\n            b3 = 0.86650 * b3 + white * 0.3104856;\n            b4 = 0.55000 * b4 + white * 0.5329522;\n            b5 = -0.7616 * b5 - white * 0.0168980;\n            \n            output[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.11;\n            b6 = white * 0.115926;\n        }\n    }\n\n    generateBrownNoise(output) {\n        // Brown noise algorithm (random walk)\n        let lastValue = 0;\n        \n        for (let i = 0; i < output.length; i++) {\n            // Small random change from previous value\n            const white = Math.random() * 2 - 1;\n            lastValue = (lastValue + (0.02 * white)) / 1.02;\n            \n            // Keep within range\n            output[i] = lastValue * 3.5; // Amplify to make it audible\n        }\n        \n        // Normalize to prevent clipping\n        const max = Math.max(...Array.from(output).map(Math.abs));\n        if (max > 0) {\n            for (let i = 0; i < output.length; i++) {\n                output[i] /= max;\n            }\n        }\n    }\n\n    createEnvelopeFromConfig(envelope, gainNode, duration = 1) {\n        if (!envelope) {\n            console.warn('No envelope provided, using default');\n            envelope = { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.3 };\n        }\n        \n        const now = this.audioContext.currentTime;\n        \n        const attack = Math.max(0.01, envelope.attack || 0.01);\n        const decay = Math.max(0, envelope.decay || 0.1);\n        const sustain = Math.max(0, Math.min(1, envelope.sustain || 0.7));\n        const release = Math.max(0.02, envelope.release || 0.3);\n        \n        gainNode.gain.cancelScheduledValues(now);\n        gainNode.gain.setValueAtTime(0, now);\n        gainNode.gain.linearRampToValueAtTime(1, now + attack);\n        gainNode.gain.linearRampToValueAtTime(sustain, now + attack + decay);\n        gainNode.gain.setValueAtTime(sustain, now + duration);\n        gainNode.gain.setTargetAtTime(0.0001, now + duration, release / 3);\n        gainNode.gain.setValueAtTime(0, now + duration + release); // Absolute zero\n    }\n\n    applySynthEffects(sound, effectsConfig, soundConfig) {\n        const now = this.audioContext.currentTime;\n        \n        // Filter\n        if (effectsConfig.filter) {\n            sound.filter.type = effectsConfig.filter.type || 'lowpass';\n            sound.filter.frequency.setValueAtTime(effectsConfig.filter.frequency || 20000, now);\n            sound.filter.Q.setValueAtTime(effectsConfig.filter.Q || 0.5, now);\n            \n            // Apply pitch envelope to filter for noise waveforms\n            if (sound.source.buffer && soundConfig.pitchEnvelope && (soundConfig.pitchEnvelope.start !== 1 || soundConfig.pitchEnvelope.end !== 1)) {\n                const baseFreq = soundConfig.frequency || 100;\n                const startFreq = baseFreq * (soundConfig.pitchEnvelope.start + 1);\n                const endFreq = baseFreq * soundConfig.pitchEnvelope.end;\n                const duration = soundConfig.pitchEnvelope.time || soundConfig.duration || 1;\n                \n                sound.filter.frequency.cancelScheduledValues(now);\n                sound.filter.frequency.setValueAtTime(startFreq, now);\n                sound.filter.frequency.exponentialRampToValueAtTime(\n                    Math.max(endFreq, 0.01),\n                    now + duration\n                );\n                sound.filter.frequency.exponentialRampToValueAtTime(\n                    Math.max(endFreq * 0.5, 0.01),\n                    now + soundConfig.duration + (soundConfig.envelope?.release || 0.3)\n                );\n            }\n        }\n        \n        // Distortion\n        if (effectsConfig.distortion && effectsConfig.distortion > 0) {\n            sound.distortion.curve = this.makeDistortionCurve(effectsConfig.distortion);\n        } else {\n            sound.distortion.curve = null;\n        }\n        \n        // Delay\n        if (effectsConfig.delay && effectsConfig.delay.feedback > 0) {\n            sound.delay.delayTime.setValueAtTime(effectsConfig.delay.time || 0.3, now);\n            sound.delayGain.gain.setValueAtTime(Math.min(effectsConfig.delay.feedback || 0, 0.8), now);\n            sound.delayGain.gain.setTargetAtTime(0, now + soundConfig.duration + (soundConfig.envelope?.release || 0.3), 0.1);\n        } else {\n            sound.delayGain.gain.setValueAtTime(0, now);\n        }\n        \n        // Reverb\n        if (effectsConfig.reverb && effectsConfig.reverb > 0) {\n            this.generateImpulseResponse(sound.convolver);\n            sound.reverbGain.gain.setValueAtTime(Math.min(effectsConfig.reverb, 1), now);\n            sound.reverbGain.gain.setTargetAtTime(0, now + soundConfig.duration + (soundConfig.envelope?.release || 0.3), 0.2);\n        } else {\n            sound.reverbGain.gain.setValueAtTime(0, now);\n        }\n        \n        // Panning\n        if (effectsConfig.pan !== undefined) {\n            sound.pannerNode.pan.setValueAtTime(Math.max(-1, Math.min(1, effectsConfig.pan)), now);\n        }\n    }\n\n    configureSoundInstance(sound, options) {\n        const now = this.audioContext.currentTime;\n        \n        if (options.volume !== undefined) {\n            sound.gainNode.gain.cancelScheduledValues(now);\n            sound.gainNode.gain.setTargetAtTime(\n                options.volume <= 0 ? 0.000001 : Math.max(0, Math.min(options.volume, 1)),\n                now,\n                0.02\n            );\n        }\n        \n        if (options.position && sound.pannerNode.positionX) {\n            const pos = options.position;\n            sound.pannerNode.positionX.setValueAtTime(pos.x || 0, now);\n            sound.pannerNode.positionY.setValueAtTime(pos.y || 0, now);\n            sound.pannerNode.positionZ.setValueAtTime(pos.z || 0, now);\n        }\n        \n        if (options.pitch && sound.source && sound.source.playbackRate) {\n            sound.source.playbackRate.setValueAtTime(options.pitch, now);\n        }\n    }\n\n    generateImpulseResponse(convolver) {\n        const length = this.audioContext.sampleRate * 1.5; // Shorter impulse\n        const impulse = this.audioContext.createBuffer(2, length, this.audioContext.sampleRate);\n        \n        for (let channel = 0; channel < 2; channel++) {\n            const impulseData = impulse.getChannelData(channel);\n            for (let i = 0; i < length; i++) {\n                const decay = Math.pow(1 - i / length, 2);\n                impulseData[i] = (Math.random() * 2 - 1) * decay;\n            }\n        }\n        \n        convolver.buffer = impulse;\n    }\n\n    makeDistortionCurve(amount) {\n        const k = Math.max(amount, 0) * 10;\n        const n_samples = 44100;\n        const curve = new Float32Array(n_samples);\n        const deg = Math.PI / 180;\n        for (let i = 0; i < n_samples; i++) {\n            const x = (i * 2) / n_samples - 1;\n            curve[i] = (3 + k) * x * 20 * deg / (Math.PI + k * Math.abs(x));\n        }\n        return curve;\n    }\n\n    stopSound(sound) {\n        if (!sound) return;\n        \n        const now = this.audioContext.currentTime;\n        \n        if (sound.gainNode) {\n            sound.gainNode.gain.cancelScheduledValues(now);\n            sound.gainNode.gain.setValueAtTime(sound.gainNode.gain.value || 0, now);\n            sound.gainNode.gain.linearRampToValueAtTime(0, now + 0.05);\n        }\n        \n        if (sound.source) {\n            try {\n                sound.source.stop(now + 0.06);\n            } catch (e) {\n                console.warn('Error stopping source:', e);\n            }\n        }\n        \n        if (sound.noiseSource) {\n            try {\n                sound.noiseSource.stop(now + 0.06);\n            } catch (e) {\n                console.warn('Error stopping noise source:', e);\n            }\n        }\n        \n        sound.active = false;\n        this.activeSounds.delete(sound);\n    }\n\n    stopAllSounds() {\n        this.activeSounds.forEach(sound => {\n            this.stopSound(sound);\n        });\n        this.activeSounds.clear();\n    }\n}"
       },
-      "Buildable": {
-        "fileName": "Buildable",
-        "script": "class Buildable extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n  init() {        \r\n        this.placed = false;\r\n    }\r\n}"
-      },
-      "ChainProjectile": {
-        "fileName": "ChainProjectile",
-        "script": "class ChainProjectile extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init( { spawnType, owner, target, stats }) {        \r\n        this.type = spawnType;\r\n        this.owner = owner;\r\n        this.target = target;\r\n        this.stats = stats;\r\n        this.piercedEnemies = [];\r\n        this.ownerStats = this.owner.getComponent(\"stats\").stats;\r\n        this.chainTargets = []; // Store all targets hit in one frame\r\n        this.hasStruck = false; // Flag to strike only once\r\n    }\r\n\r\n    update() {\r\n        if (this.hasStruck) {\r\n            this.parent.destroy(); // Destroy after one frame of striking\r\n            return;\r\n        }\r\n\r\n        if (!this.target || this.target.destroyed) {\r\n            this.parent.destroy();\r\n            return;\r\n        }\r\n\r\n        // Strike the initial target\r\n        let targetHealth = this.target.getComponent(\"health\");\r\n        let targetEnergyShield = this.target.getComponent(\"energyshield\");\r\n        let targetStats = {...this.target.getComponent(\"stats\").stats};\r\n        targetStats.energyShield = targetEnergyShield.energyShield;\r\n        let damageResult = engine.getFunction(\"calculateDamage\")(this.stats, targetStats);                    \r\n        if( damageResult.wasEvaded ) { return; }         \r\n        targetHealth.hp -= damageResult.damageDealt;\r\n        targetEnergyShield.absorbDamage(damageResult.damageAbsorbed);\r\n        this.piercedEnemies.push(this.target);\r\n        this.chainTargets.push(this.target);\r\n        this.game.spawn(this.target.position.x, this.target.position.y, \"hitEffect\", { damageType: this.stats.damageType, lifeSpan: 1});\r\n        // Chain to nearby enemies\r\n        if (this.stats.piercing > 0 && this.piercedEnemies.length <= this.stats.piercing) {\r\n            const nearbyEnemies = this.game.spatialGrid.getNearbyEntities(\r\n                this.target.gridPosition.x, \r\n                this.target.gridPosition.y, \r\n                this.ownerStats.range,\r\n                \"enemy\"\r\n            );\r\n\r\n            for (let enemy of nearbyEnemies) {\r\n                if (enemy.destroyed || this.piercedEnemies.includes(enemy)) continue;\r\n                const dx = enemy.position.x - this.target.position.x;\r\n                const dy = enemy.position.y - this.target.position.y;\r\n                const distSq = dx * dx + dy * dy;\r\n                let gridSize = this.game.config.configs.game.gridSize;\r\n                if (distSq <= this.ownerStats.range * this.ownerStats.range * gridSize * gridSize) {\r\n                    let enemyHealth = enemy.getComponent(\"health\");\r\n                    let enemyEnergyShield = enemy.getComponent(\"energyshield\");\r\n                    let enemyStats = {...enemy.getComponent(\"stats\").stats};\r\n                    enemyStats.energyShield = targetEnergyShield.energyShield;\r\n                    let damageResult = engine.getFunction(\"calculateDamage\")(this.stats, enemyStats); \r\n                    if(!damageResult.wasEvaded) {\r\n                        enemyHealth.hp -= damageResult.damageDealt;\r\n                        enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);\r\n                        this.piercedEnemies.push(enemy);\r\n                        this.chainTargets.push(enemy);\r\n                        this.game.spawn(enemy.position.x, enemy.position.y, \"hitEffect\", { damageType: this.stats.damageType, lifeSpan: 1 });\r\n                        if (this.piercedEnemies.length > this.stats.piercing) break;\r\n                    } else {\r\n                        break;\r\n                    }\r\n                }\r\n            }\r\n        }\r\n\r\n        // Apply additional effects (e.g., slow, leech) to all hit targets\r\n        for (let enemy of this.chainTargets) {\r\n            if (this.ownerStats.slowAmount) {\r\n                enemy.getComponent(\"stats\").addEffect(this.game.config.effects.slow, this.game.effects.slow, this.ownerStats.slowAmount);\r\n            }\r\n            if (this.ownerStats.leech > 0) {\r\n                const healing = this.stats.damage * this.ownerStats.leech * this.game.state.stats.healingMultiplier;\r\n                this.game.state.bloodCoreHP = Math.min(this.game.state.stats.maxBloodCoreHP, this.game.state.bloodCoreHP + healing);\r\n            }\r\n            if (this.ownerStats.thief && this.ownerStats.thief != 0) {\r\n                const stealAmt = this.stats.damage * this.ownerStats.thief * this.game.state.stats.bloodShardMultiplier;\r\n                this.game.state.bloodShards += stealAmt;\r\n            }\r\n        }\r\n\r\n        this.hasStruck = true; // Mark as struck, render lightning this frame\r\n    }\r\n}"
-      },
-      "Effect": {
-        "fileName": "Effect",
-        "script": "class Effect extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init( {config, applyFn, amount }) {\r\n        this.id = config.id;\r\n        this.title = config.title;\r\n        this.desc = config.desc;\r\n        this.lifeTime = config.lifeTime;\r\n        this.applyFn = applyFn;\r\n        this.amount = amount;    \r\n    }\r\n\r\n    update() {\r\n        this.lifeTime--;\r\n        if( this.lifeTime <= 0) this.parent.removeComponent(this);\r\n        return true;        \r\n    }\r\n\r\n    apply(s, add, mul) {\r\n        this.applyFn(s, add, mul, this.amount);\r\n    }\r\n}"
-      },
-      "EssenceBounty": {
-        "fileName": "EssenceBounty",
-        "script": "class EssenceBounty extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init(){\r\n        this.statsComp = this.parent.getComponent('stats');\r\n    }\r\n    destroy() {               \r\n        this.game.state.essence += this.statsComp.stats.essence * this.game.state.stats.essenceMultiplier;        \r\n    }\r\n}"
-      },
       "FollowPath": {
         "fileName": "FollowPath",
         "script": "class FollowPath extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    init({ pathIndex = 0 }) {\r\n        this.gridSize = this.game.config.configs.game.gridSize;\r\n        this.pathIndex = pathIndex;\r\n        this.indexInPath = 0;\r\n        // Store grid coordinates\r\n        this.x = this.game.state.paths[this.pathIndex][this.indexInPath].x;\r\n        this.y = this.game.state.paths[this.pathIndex][this.indexInPath].y;\r\n        // Convert to pixel position\r\n        this.parent.position = { \r\n            x: this.x * this.gridSize + this.gridSize / 2, \r\n            y: this.y * this.gridSize + this.gridSize / 2 \r\n        };\r\n        this.progress = 0; // Progress between grid points (0 to 1)\r\n        \r\n        // Convert pixel-based speed to grid-based speed\r\n        this.stats = this.getComponent('stats').stats;\r\n        this.gridSpeed = this.stats.speed / this.gridSize;\r\n    }\r\n\r\n    update() {\r\n        this.stats = this.getComponent('stats').stats;\r\n        this.gridSize = this.game.config.configs.game.gridSize;\r\n\r\n        if (this.indexInPath < this.game.state.paths[this.pathIndex].length - 1) {\r\n            const target = this.game.state.paths[this.pathIndex][this.indexInPath + 1];\r\n            \r\n            // Use converted grid-based speed\r\n            this.progress += this.gridSpeed * this.game.deltaTime * 100;\r\n            \r\n            if (this.progress >= 1) {\r\n                this.indexInPath++;\r\n                this.progress = 0;\r\n                this.x = target.x;\r\n                this.y = target.y;\r\n            } else {\r\n                // Interpolate between current and target grid positions\r\n                this.x = this.game.state.paths[this.pathIndex][this.indexInPath].x * (1 - this.progress) + \r\n                        target.x * this.progress;\r\n                this.y = this.game.state.paths[this.pathIndex][this.indexInPath].y * (1 - this.progress) + \r\n                        target.y * this.progress;\r\n            }\r\n            \r\n            // Convert grid coordinates to pixel coordinates\r\n            this.parent.position.x = this.x * this.gridSize + this.gridSize / 2;\r\n            this.parent.position.y = this.y * this.gridSize + this.gridSize / 2;\r\n            this.parent.position.z = this.game.gameEntity.getComponent('game').getTerrainHeight(this.parent.gridPosition);\r\n        } else {\r\n            this.game.state.bloodCoreHP -= this.stats.value;\r\n            this.parent.destroy();\r\n            return false;\r\n        }\r\n    }\r\n}"
-      },
-      "Game": {
-        "fileName": "Game",
-        "script": "class Game extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n        \r\n    init() {\r\n        this.initEffectsAndUpgrades();\r\n        this.gridSize = this.game.config.configs.game.gridSize;\r\n        let endPath = this.game.state.paths[0][this.game.state.paths[0].length - 1];\r\n        let endY = endPath.y;\r\n        let endX = endPath.x;\r\n        this.keep = this.game.spawn(endX * this.gridSize + this.gridSize / 2, \r\n                                endY * this.gridSize + this.gridSize / 2, \"tower\",\r\n                                { spawnType: 'keep', objectType: 'towers', setDirection: 1});\r\n        this.keep.placed = true;\r\n\r\n    }\r\n\r\n    update() {\r\n        this.keep.position.z = this.getTerrainHeight(this.keep.gridPosition);\r\n        if(this.game.config.configs.game.is3D){\r\n            this.getComponent(\"MapRenderer\")?.render(this.game.state.tileMapData, this.game.state.paths);\r\n        } else {\r\n            this.getComponent(\"MapRenderer\")?.renderBG(this.game.state.tileMapData, this.game.state.paths);\r\n        }\r\n        \r\n        if (!this.game.state.isPaused) {\r\n            this.currentTime = Date.now();\r\n\r\n            // Only update if a reasonable amount of time has passed\r\n            const timeSinceLastUpdate = this.currentTime - this.lastTime;\r\n\r\n            // Skip update if more than 1 second has passed (tab was inactive)\r\n            if (timeSinceLastUpdate > 1000) {\r\n                this.lastTime = this.currentTime; // Reset timer without updating\r\n                return;\r\n            }\r\n\r\n            this.game.deltaTime = Math.min(1/30, timeSinceLastUpdate / 1000); // Cap at 1/30th of a second        \r\n            this.lastTime = this.currentTime;\r\n\r\n            // Sort entities by y position for proper drawing order\r\n            this.game.state.entities.sort((a, b) => {\r\n                return (a.position.y * this.game.state.tileMap.length + a.position.x) - (b.position.y * this.game.state.tileMap.length + b.position.x)\r\n            });\r\n\r\n            this.game.state.stats = {...this.game.state.defaultStats};//reset stats to recalculate upgrades from base stats.\r\n            // Single loop through entities for update, draw and postUpdate\r\n            const entitiesToKeep = [];\r\n            for(let i = 0; i < this.game.state.entities.length; i++) {\r\n                let e = this.game.state.entities[i];\r\n                let result = e.update();    \r\n                \r\n                if(result) {\r\n                    entitiesToKeep.push(e);\r\n                    e.draw();\r\n                    e.postUpdate();\r\n                }\r\n            }\r\n            \r\n            // Replace the entities array with only entities that should be kept\r\n            this.game.state.entities = entitiesToKeep;\r\n            \r\n            this.postUpdate();\r\n            // Add any new entities\r\n            this.game.entitiesToAdd.forEach((entity) => this.game.state.addEntity(entity));\r\n            this.game.entitiesToAdd = [];\r\n        }     \r\n        if(!this.game.config.configs.game.is3D){\r\n            this.getComponent(\"MapRenderer\")?.renderFG(this.game.state.tileMapData, this.game.state.paths);\r\n        }   \r\n        \r\n    }\r\n\r\n    getTerrainHeight(gridPosition) {\r\n        if(this.game.state.tileMap.length > gridPosition.y && gridPosition.y > 0 && this.game.state.tileMap[Math.floor(gridPosition.y)] && this.game.state.tileMap[Math.floor(gridPosition.y)].length > gridPosition.x && gridPosition.x > 0){\r\n            const tile = this.game.state.tileMap[Math.floor(gridPosition.y)][Math.floor(gridPosition.x)];\r\n            if (!tile) {\r\n                return 0;\r\n            }\r\n            \r\n            const terrainHeight = tile.typeId * this.game.heightMapConfig.heightStep;\r\n            return terrainHeight;\r\n        }\r\n        return 0;\r\n    }\r\n    postUpdate() {\r\n        \r\n            if (this.game.state.gameOver || this.game.state.victory || this.game.state.isLevelingUp) return;\r\n                    \r\n            // Game over check\r\n            if (this.game.state.bloodCoreHP <= 0 && !this.game.state.gameOver) {\r\n                this.gameOver();\r\n            }\r\n    }\r\n\r\n\r\n    // Game-over and victory functions\r\n    gameOver() {\r\n        this.game.state.gameOver = true;\r\n        this.game.state.isPaused = true;\r\n        gameOverWave.textContent = this.game.state.round + 1;\r\n        gameOverMenu.style.display = 'block';\r\n        overlay.style.display = 'block';\r\n    }\r\n\r\n    gameVictory() {\r\n        this.game.state.victory = true;\r\n        this.game.state.isPaused = true;\r\n        victoryMenu.style.display = 'block';\r\n        overlay.style.display = 'block';\r\n    }\r\n\r\n\r\n    // Tower placement system\r\n  \r\n\r\n    initEffectsAndUpgrades() {\r\n\r\n        const Upgrade = class { \r\n            constructor(id, title, desc, icon, appliesTo, condition, apply, onAcquire) {\r\n                this.id = id;\r\n                this.title = title;\r\n                this.desc = desc;\r\n                this.icon = icon;\r\n                this.appliesTo = appliesTo;\r\n                this.conditionFn = condition;\r\n                this.applyFn = apply;\r\n                this.onAcquire = onAcquire;        \r\n            }\r\n\r\n            canApply(gameState) {\r\n                return this.conditionFn(gameState);\r\n            }\r\n\r\n            apply(s, add, mul) {\r\n                this.applyFn(s, add, mul);\r\n            }\r\n        }\r\n\r\n\r\n        this.game.effects = {\r\n            slow: (stats, additiveStats, multiplicitiveStats, slowAmount) => {\r\n                stats[this.game.config.effects.slow.stat] *= slowAmount;\r\n            }\r\n        }\r\n        this.game.upgrades = [\r\n            // Bat Swarm Upgrades\r\n            new Upgrade(\r\n                'sentryFrenzy',\r\n                'Sentry Frenzy',\r\n                'Sentry Swarm: ' + this.game.config.upgrades.sentryFrenzy.desc,\r\n                '🦇',\r\n                'sentry',\r\n                (state) => true,\r\n                (stats, additiveStats, multiplicitiveStats) => {\r\n                    multiplicitiveStats['attackSpeed'].push(this.game.config.upgrades.sentryFrenzy.value);\r\n                }\r\n            ),\r\n            new Upgrade(\r\n                'sentryIntelligence',\r\n                'Sentry Intelligence',\r\n                'Sentry Swarm: ' + this.game.config.upgrades.sentryIntelligence.desc,\r\n                '🦇',\r\n                'sentry',\r\n                (state) => true,\r\n                (stats, additiveStats, multiplicitiveStats) => {            \r\n                    multiplicitiveStats['damage'].push(this.game.config.upgrades.sentryIntelligence.damage);\r\n                    multiplicitiveStats['range'].push(this.game.config.upgrades.sentryIntelligence.range);        \r\n                }\r\n            ),\r\n\r\n            // Necromancer Upgrades\r\n            new Upgrade(\r\n                'necroSummon',\r\n                'Raise Dead',\r\n                'Necromancer: ' + this.game.config.upgrades.necroSummon.desc,\r\n                '💀',\r\n                'fabricator',\r\n                (state) => true,\r\n                (stats, additiveStats, multiplicitiveStats) => {\r\n                    stats.summonChance = 1;\r\n                    if(!additiveStats.summonChance) additiveStats.summonChance = [];\r\n                    additiveStats['summonChance'].push(this.game.config.upgrades.necroSummon.summonChance);\r\n                }\r\n            ),\r\n\r\n            // Shadow Turret Upgrades\r\n            new Upgrade(\r\n                'overCharge',\r\n                'Overcharge',\r\n                'Tesla Coil: ' + this.game.config.upgrades.overCharge.desc,\r\n                '📏',\r\n                'teslaCoil',\r\n                (state) => true,\r\n                (stats, additiveStats, multiplicitiveStats) => {\r\n                    additiveStats['range'].push(this.game.config.upgrades.overCharge.range);\r\n                }\r\n            ),\r\n\r\n            // Soul Pyre Upgrades\r\n            new Upgrade(\r\n                'pyreSoul',\r\n                'Radiant Soul',\r\n                'Soul Pyre: ' + this.game.config.upgrades.pyreSoul.desc,\r\n                '💉',\r\n                'soulPyre',\r\n                (state) => true,\r\n                (stats, additiveStats, multiplicitiveStats) => {\r\n                    additiveStats['splashRadius'].push(this.game.config.upgrades.pyreSoul.splashRadius);\r\n                }\r\n            ),\r\n\r\n            // Mist Shrine Upgrades\r\n            new Upgrade(\r\n                'mistSlow',\r\n                'Chilling Mist',\r\n                'Mist Shrine: ' + this.game.config.upgrades.mistSlow.desc,\r\n                '❄️',\r\n                'mistShrine',\r\n                (state) => true,\r\n                (stats, additiveStats, multiplicitiveStats) => {\r\n                    multiplicitiveStats['slowAmount'].push(this.game.config.upgrades.mistSlow.slowAmount);\r\n                }\r\n            ),\r\n            // Global Upgrades\r\n            new Upgrade(\r\n                'homeReinforcement',\r\n                'Reinforcement',\r\n                this.game.config.upgrades.bloodCore.desc,\r\n                '🛡️',\r\n                'global',\r\n                (state) => true,\r\n                (stats) => {\r\n                    stats.maxBloodCoreHP *= this.game.config.upgrades.bloodCore.maxHpMultiplier;\r\n                },\r\n                (state) => {\r\n                    state.bloodCoreHP = Math.min(state.stats.maxBloodCoreHP, state.bloodCoreHP + this.game.config.upgrades.bloodCore.healAmount);\r\n                }\r\n            ),\r\n            new Upgrade(\r\n                'essenceExtraction',\r\n                'Essence Extraction',\r\n                this.game.config.upgrades.essenceExtraction.desc,\r\n                '🔮',\r\n                'global',\r\n                (state) => true,\r\n                (stats) => {\r\n                    stats.essenceMultiplier *= this.game.config.upgrades.essenceExtraction.value;\r\n                }\r\n            ),\r\n            new Upgrade(\r\n                'essenceOverflow',\r\n                'Essence Overflow',\r\n                this.game.config.upgrades.essenceOverflow.desc,\r\n                '🔮',\r\n                'global',\r\n                (state) => state.bloodCoreHP > state.stats.maxBloodCoreHP / 2,\r\n                (stats) => {\r\n                    stats.essenceMultiplier *= this.game.config.upgrades.essenceOverflow.value;\r\n                }\r\n            ),\r\n\r\n        ];\r\n\r\n    }\r\n}"
       },
       "GameLoader": {
         "title": "Game Loader",
@@ -17276,13 +17272,17 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "HitEffectParticle",
         "script": "class HitEffectParticle extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n  init( {damageType}) {\r\n        this.damageType = damageType || \"default\";\r\n        this.particles = [];\r\n        \r\n        // Spawn particles based on damage type\r\n        const particleCount = 5;\r\n        for (let i = 0; i < particleCount; i++) {\r\n            this.particles.push({\r\n                x: 0, // Relative to parent\r\n                y: 0,\r\n                vx: (Math.random() - 0.5) * 4, // Velocity (-2 to 2)\r\n                vy: (Math.random() - 0.5) * 4,\r\n                size: Math.random() * 3 + 1, // 1-4 pixels\r\n                alpha: 1, // Fades from 1 to 0\r\n                color: this.getColor()\r\n            });\r\n        }\r\n    }\r\n\r\n    getColor() {\r\n        switch (this.damageType) {\r\n            case \"electric\": return \"rgba(0, 255, 255, \"; // Cyan for electric\r\n            case \"fire\": return \"rgba(255, 165, 0, \"; // Orange for fire\r\n            case \"ice\": return \"rgba(128, 128, 255, \"; // Blue for ice\r\n            case \"plasma\": return \"rgba(255, 0, 255, \"; // Purple for plasma\r\n            default: return \"rgba(255, 255, 255, \"; // White fallback\r\n        }\r\n    }\r\n\r\n    update() {\r\n        const lifespanComp = this.parent.getComponent(\"LifeSpan\");\r\n        if (!lifespanComp) return; // Safety check\r\n\r\n        const fadeFactor = lifespanComp.lifeSpan / 30; // Normalize to initial lifespan (30 frames)\r\n        for (let particle of this.particles) {\r\n            particle.x += particle.vx * this.game.state.timeScale;\r\n            particle.y += particle.vy * this.game.state.timeScale;\r\n            particle.alpha = fadeFactor; // Fade based on remaining lifespan\r\n            particle.size *= 0.98; // Slight shrink per frame\r\n        }\r\n    }\r\n}"
       },
-      "Leveler": {
-        "fileName": "Leveler",
-        "script": "class Leveler extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n init( {level = 1}) {\r\n        this.level = level;\r\n    }\r\n}"
+      "Game": {
+        "fileName": "Game",
+        "script": "class Game extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n        \r\n    init() {\r\n        this.initEffectsAndUpgrades();\r\n        this.gridSize = this.game.config.configs.game.gridSize;\r\n        let endPath = this.game.state.paths[0][this.game.state.paths[0].length - 1];\r\n        let endY = endPath.y;\r\n        let endX = endPath.x;\r\n        this.keep = this.game.spawn(endX * this.gridSize + this.gridSize / 2, \r\n                                endY * this.gridSize + this.gridSize / 2, \"tower\",\r\n                                { spawnType: 'keep', objectType: 'towers', setDirection: 1});\r\n        this.keep.placed = true;\r\n\r\n    }\r\n\r\n    update() {\r\n        this.keep.position.z = this.getTerrainHeight(this.keep.gridPosition);\r\n        if(this.game.config.configs.game.is3D){\r\n            this.getComponent(\"MapRenderer\")?.render(this.game.state.tileMapData, this.game.state.paths);\r\n        } else {\r\n            this.getComponent(\"MapRenderer\")?.renderBG(this.game.state.tileMapData, this.game.state.paths);\r\n        }\r\n        \r\n        if (!this.game.state.isPaused) {\r\n            this.currentTime = Date.now();\r\n\r\n            // Only update if a reasonable amount of time has passed\r\n            const timeSinceLastUpdate = this.currentTime - this.lastTime;\r\n\r\n            // Skip update if more than 1 second has passed (tab was inactive)\r\n            if (timeSinceLastUpdate > 1000) {\r\n                this.lastTime = this.currentTime; // Reset timer without updating\r\n                return;\r\n            }\r\n\r\n            this.game.deltaTime = Math.min(1/30, timeSinceLastUpdate / 1000); // Cap at 1/30th of a second        \r\n            this.lastTime = this.currentTime;\r\n\r\n            // Sort entities by y position for proper drawing order\r\n            this.game.state.entities.sort((a, b) => {\r\n                return (a.position.y * this.game.state.tileMap.length + a.position.x) - (b.position.y * this.game.state.tileMap.length + b.position.x)\r\n            });\r\n\r\n            this.game.state.stats = {...this.game.state.defaultStats};//reset stats to recalculate upgrades from base stats.\r\n            // Single loop through entities for update, draw and postUpdate\r\n            const entitiesToKeep = [];\r\n            for(let i = 0; i < this.game.state.entities.length; i++) {\r\n                let e = this.game.state.entities[i];\r\n                let result = e.update();    \r\n                \r\n                if(result) {\r\n                    entitiesToKeep.push(e);\r\n                    e.draw();\r\n                    e.postUpdate();\r\n                }\r\n            }\r\n            \r\n            // Replace the entities array with only entities that should be kept\r\n            this.game.state.entities = entitiesToKeep;\r\n            \r\n            this.postUpdate();\r\n            // Add any new entities\r\n            this.game.entitiesToAdd.forEach((entity) => this.game.state.addEntity(entity));\r\n            this.game.entitiesToAdd = [];\r\n        }     \r\n        if(!this.game.config.configs.game.is3D){\r\n            this.getComponent(\"MapRenderer\")?.renderFG(this.game.state.tileMapData, this.game.state.paths);\r\n        }   \r\n        \r\n    }\r\n\r\n    getTerrainHeight(gridPosition) {\r\n        if(this.game.state.tileMap.length > gridPosition.y && gridPosition.y > 0 && this.game.state.tileMap[Math.floor(gridPosition.y)] && this.game.state.tileMap[Math.floor(gridPosition.y)].length > gridPosition.x && gridPosition.x > 0){\r\n            const tile = this.game.state.tileMap[Math.floor(gridPosition.y)][Math.floor(gridPosition.x)];\r\n            if (!tile) {\r\n                return 0;\r\n            }\r\n            \r\n            const terrainHeight = tile.typeId * this.game.heightMapConfig.heightStep;\r\n            return terrainHeight;\r\n        }\r\n        return 0;\r\n    }\r\n    postUpdate() {\r\n        \r\n            if (this.game.state.gameOver || this.game.state.victory || this.game.state.isLevelingUp) return;\r\n                    \r\n            // Game over check\r\n            if (this.game.state.bloodCoreHP <= 0 && !this.game.state.gameOver) {\r\n                this.gameOver();\r\n            }\r\n    }\r\n\r\n\r\n    // Game-over and victory functions\r\n    gameOver() {\r\n        this.game.state.gameOver = true;\r\n        this.game.state.isPaused = true;\r\n        gameOverWave.textContent = this.game.state.round + 1;\r\n        gameOverMenu.style.display = 'block';\r\n        overlay.style.display = 'block';\r\n    }\r\n\r\n    gameVictory() {\r\n        this.game.state.victory = true;\r\n        this.game.state.isPaused = true;\r\n        victoryMenu.style.display = 'block';\r\n        overlay.style.display = 'block';\r\n    }\r\n\r\n\r\n    // Tower placement system\r\n  \r\n\r\n    initEffectsAndUpgrades() {\r\n\r\n        const Upgrade = class { \r\n            constructor(id, title, desc, icon, appliesTo, condition, apply, onAcquire) {\r\n                this.id = id;\r\n                this.title = title;\r\n                this.desc = desc;\r\n                this.icon = icon;\r\n                this.appliesTo = appliesTo;\r\n                this.conditionFn = condition;\r\n                this.applyFn = apply;\r\n                this.onAcquire = onAcquire;        \r\n            }\r\n\r\n            canApply(gameState) {\r\n                return this.conditionFn(gameState);\r\n            }\r\n\r\n            apply(s, add, mul) {\r\n                this.applyFn(s, add, mul);\r\n            }\r\n        }\r\n\r\n\r\n        this.game.effects = {\r\n            slow: (stats, additiveStats, multiplicitiveStats, slowAmount) => {\r\n                stats[this.game.config.effects.slow.stat] *= slowAmount;\r\n            }\r\n        }\r\n        this.game.upgrades = [\r\n            // Bat Swarm Upgrades\r\n            new Upgrade(\r\n                'sentryFrenzy',\r\n                'Sentry Frenzy',\r\n                'Sentry Swarm: ' + this.game.config.upgrades.sentryFrenzy.desc,\r\n                '🦇',\r\n                'sentry',\r\n                (state) => true,\r\n                (stats, additiveStats, multiplicitiveStats) => {\r\n                    multiplicitiveStats['attackSpeed'].push(this.game.config.upgrades.sentryFrenzy.value);\r\n                }\r\n            ),\r\n            new Upgrade(\r\n                'sentryIntelligence',\r\n                'Sentry Intelligence',\r\n                'Sentry Swarm: ' + this.game.config.upgrades.sentryIntelligence.desc,\r\n                '🦇',\r\n                'sentry',\r\n                (state) => true,\r\n                (stats, additiveStats, multiplicitiveStats) => {            \r\n                    multiplicitiveStats['damage'].push(this.game.config.upgrades.sentryIntelligence.damage);\r\n                    multiplicitiveStats['range'].push(this.game.config.upgrades.sentryIntelligence.range);        \r\n                }\r\n            ),\r\n\r\n            // Necromancer Upgrades\r\n            new Upgrade(\r\n                'necroSummon',\r\n                'Raise Dead',\r\n                'Necromancer: ' + this.game.config.upgrades.necroSummon.desc,\r\n                '💀',\r\n                'fabricator',\r\n                (state) => true,\r\n                (stats, additiveStats, multiplicitiveStats) => {\r\n                    stats.summonChance = 1;\r\n                    if(!additiveStats.summonChance) additiveStats.summonChance = [];\r\n                    additiveStats['summonChance'].push(this.game.config.upgrades.necroSummon.summonChance);\r\n                }\r\n            ),\r\n\r\n            // Shadow Turret Upgrades\r\n            new Upgrade(\r\n                'overCharge',\r\n                'Overcharge',\r\n                'Tesla Coil: ' + this.game.config.upgrades.overCharge.desc,\r\n                '📏',\r\n                'teslaCoil',\r\n                (state) => true,\r\n                (stats, additiveStats, multiplicitiveStats) => {\r\n                    additiveStats['range'].push(this.game.config.upgrades.overCharge.range);\r\n                }\r\n            ),\r\n\r\n            // Soul Pyre Upgrades\r\n            new Upgrade(\r\n                'pyreSoul',\r\n                'Radiant Soul',\r\n                'Soul Pyre: ' + this.game.config.upgrades.pyreSoul.desc,\r\n                '💉',\r\n                'soulPyre',\r\n                (state) => true,\r\n                (stats, additiveStats, multiplicitiveStats) => {\r\n                    additiveStats['splashRadius'].push(this.game.config.upgrades.pyreSoul.splashRadius);\r\n                }\r\n            ),\r\n\r\n            // Mist Shrine Upgrades\r\n            new Upgrade(\r\n                'mistSlow',\r\n                'Chilling Mist',\r\n                'Mist Shrine: ' + this.game.config.upgrades.mistSlow.desc,\r\n                '❄️',\r\n                'mistShrine',\r\n                (state) => true,\r\n                (stats, additiveStats, multiplicitiveStats) => {\r\n                    multiplicitiveStats['slowAmount'].push(this.game.config.upgrades.mistSlow.slowAmount);\r\n                }\r\n            ),\r\n            // Global Upgrades\r\n            new Upgrade(\r\n                'homeReinforcement',\r\n                'Reinforcement',\r\n                this.game.config.upgrades.bloodCore.desc,\r\n                '🛡️',\r\n                'global',\r\n                (state) => true,\r\n                (stats) => {\r\n                    stats.maxBloodCoreHP *= this.game.config.upgrades.bloodCore.maxHpMultiplier;\r\n                },\r\n                (state) => {\r\n                    state.bloodCoreHP = Math.min(state.stats.maxBloodCoreHP, state.bloodCoreHP + this.game.config.upgrades.bloodCore.healAmount);\r\n                }\r\n            ),\r\n            new Upgrade(\r\n                'essenceExtraction',\r\n                'Essence Extraction',\r\n                this.game.config.upgrades.essenceExtraction.desc,\r\n                '🔮',\r\n                'global',\r\n                (state) => true,\r\n                (stats) => {\r\n                    stats.essenceMultiplier *= this.game.config.upgrades.essenceExtraction.value;\r\n                }\r\n            ),\r\n            new Upgrade(\r\n                'essenceOverflow',\r\n                'Essence Overflow',\r\n                this.game.config.upgrades.essenceOverflow.desc,\r\n                '🔮',\r\n                'global',\r\n                (state) => state.bloodCoreHP > state.stats.maxBloodCoreHP / 2,\r\n                (stats) => {\r\n                    stats.essenceMultiplier *= this.game.config.upgrades.essenceOverflow.value;\r\n                }\r\n            ),\r\n\r\n        ];\r\n\r\n    }\r\n}"
       },
       "LifeSpan": {
         "fileName": "LifeSpan",
         "script": "class LifeSpan extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init( {lifeSpan}) {\r\n        this.lifeSpan = lifeSpan || this.getComponent('stats').stats.lifeSpan;\r\n    }\r\n    update() {        \r\n        if( this.lifeSpan > 0 ) {\r\n            this.lifeSpan -= this.game.deltaTime;\r\n        } else {\r\n            this.parent.destroy();\r\n        }\r\n    }\r\n}"
+      },
+      "Leveler": {
+        "fileName": "Leveler",
+        "script": "class Leveler extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n init( {level = 1}) {\r\n        this.level = level;\r\n    }\r\n}"
       },
       "MapManager": {
         "fileName": "MapManager",
@@ -17292,43 +17292,43 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "MultishotProjectile",
         "script": "class MultishotProjectile extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\ninit({ spawnType, stats, target, owner }) {\r\n  this.type = spawnType;\r\n  this.stats = stats;\r\n  this.target = target;\r\n  const ownerStats = owner.getComponent('stats').stats;\r\n  const spreadCount = ownerStats.projectileCount || 3; // Total projectiles (e.g., 3: center + 2 sides)\r\n    const spreadAngleDegrees = ownerStats.projectileAngle || 45; // Default to 45 degrees\r\n  const spreadAngle = spreadAngleDegrees * (Math.PI / 180); // Convert degrees to radians\r\n\r\n \r\n  // Calculate the base direction to the target\r\n  const dx = target.position.x - this.parent.position.x;\r\n  const dy = target.position.y - this.parent.position.y;\r\n  const baseAngle = Math.atan2(dy, dx); // Angle from parent to target in radians\r\n  const distance = Math.sqrt(dx * dx + dy * dy);\r\n\r\n  // Total spread angle (e.g., for 3 projectiles: -spreadAngle, 0, +spreadAngle)\r\n  const totalSpread = spreadAngle * (spreadCount - 1); // Max angle covered by all projectiles\r\n\r\n  // Spawn projectiles in a symmetrical fan\r\n  for (let i = 0; i < spreadCount; i++) {\r\n    // Calculate the angle offset from the center\r\n    const offsetIndex = i - Math.floor(spreadCount / 2); // Center at 0 (e.g., -1, 0, 1 for 3)\r\n    const currentAngle = baseAngle + (offsetIndex * spreadAngle);\r\n\r\n    // Calculate the new target position based on the angle\r\n    const deltaX = Math.cos(currentAngle) * distance;\r\n    const deltaY = Math.sin(currentAngle) * distance;\r\n\r\n    this.game.spawn(\r\n      this.parent.position.x,\r\n      this.parent.position.y,\r\n      \"projectile\",\r\n      {\r\n        spawnType: ownerStats.projectile,\r\n        objectType: \"projectiles\",\r\n        owner: owner,\r\n        stats: stats,\r\n        target: target,\r\n        targetPosition: {\r\n          x: this.parent.position.x + deltaX, // Start from parent, extend to new position\r\n          y: this.parent.position.y + deltaY\r\n        }\r\n      }\r\n    );\r\n  }\r\n\r\n  this.parent.destroy();\r\n}\r\n}"
       },
-      "PlanckBody": {
-        "fileName": "PlanckBody",
-        "script": "class PlanckBody extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\ninit({box2DBodySize = 1, density = 1, friction= 0, layer = 0x0001, collidesWith = 0x0001}) {\r\n  \r\n   const { Box } = planck;\r\n  this.body = this.game.planckWorld.createBody({\r\n    type: \"dynamic\",\r\n    position: {x: this.parent.position.x, y: this.parent.position.y}\r\n  });\r\n  this.body.createFixture({\r\n      shape: new Box(1.0, 1.0),\r\n      density: density,\r\n      friction: friction,\r\n  });\r\n  this.speedScale = 10;\r\n}\r\n\r\nupdate() {\r\n  if (!this.body) return;\r\n  const bodyPos = this.body.getTransform().p;\r\n\r\n  // Update game object position\r\n  this.parent.position.x = bodyPos.x;\r\n  this.parent.position.y = bodyPos.y;\r\n\r\n}\r\n\r\nsetVelocity(vel) {\r\n\tthis.body.setLinearVelocity({ x: vel.x*this.speedScale, y: vel.y * this.speedScale });\r\n}\r\ngetVelocity() {\r\n  let vel = this.body.getLinearVelocity();\r\n  return { x: vel.x / this.speedScale, y: vel.y / this.speedScale };\r\n}\r\npostUpdate() {\r\n  //this.body.applyForce({ x: 10, y: 0}, { x: this.parent.position.x, y: this.parent.position.y});\r\n}\r\n}"
-      },
-      "PlanckProjectile": {
-        "fileName": "PlanckProjectile",
-        "script": "class PlanckProjectile extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\ninit({ spawnType, owner, target, targetPosition, stats }) {\r\n  this.type = spawnType;\r\n  this.def = this.game.config.projectiles[this.type];\r\n  this.owner = owner;\r\n  this.target = target;\r\n  this.targetPosition = targetPosition;\r\n  this.stats = stats;\r\n  this.piercedEnemies = [];\r\n  this.ownerStats = this.owner.getComponent(\"stats\").stats;\r\n  this.distanceTraveled = 0;\r\n  this.distanceToSpawnParticle = 24;\r\n\r\n  // Add lifespan for projectile\r\n  this.maxLifespan = this.stats.lifespan || 5; // Default to 5 seconds\r\n  this.currentLifespan = 0;\r\n  \r\n  // Get the planck body from the component\r\n  this.planckBody = this.parent.getComponent('planckBody');\r\n  \r\n  // Calculate direction and set velocity\r\n  const currentPosition = {\r\n    x: this.parent.position.x,\r\n    y: this.parent.position.y\r\n  };\r\n  \r\n  const targetPos = this.targetPosition ? this.targetPosition : this.target.position;\r\n  const dx = targetPos.x - currentPosition.x;\r\n  const dy = targetPos.y - currentPosition.y;\r\n  const dist = Math.sqrt(dx * dx + dy * dy);\r\n  \r\n  // Normalize direction and multiply by speed\r\n  this.speed = this.stats.speed;\r\n  const velocityX = (dx / dist) * this.speed;\r\n  const velocityY = (dy / dist) * this.speed;\r\n  \r\n  // Set the linear velocity on the planck body\r\n  this.planckBody.setVelocity({ x: velocityX, y: velocityY });\r\n  \r\n  // Store a reference to this projectile in the body's user data\r\n  this.planckBody.body.setUserData(this);\r\n  \r\n  // Setup contact listener if not already done\r\n  if (!this.game.contactListenerSetup) {\r\n    this.setupContactListener();\r\n    this.game.contactListenerSetup = true;\r\n  }\r\n}\r\n\r\nsetupContactListener() {\r\n  const world = this.game.planckWorld;\r\n  \r\n  world.on('begin-contact', (contact) => {\r\n    const fixtureA = contact.getFixtureA();\r\n    const fixtureB = contact.getFixtureB();\r\n    \r\n    const bodyA = fixtureA.getBody();\r\n    const bodyB = fixtureB.getBody();\r\n    \r\n    const entityA = bodyA.getUserData();\r\n    const entityB = bodyB.getUserData();\r\n    \r\n    // Check if one is a projectile and one is an enemy\r\n    if (entityA && entityB) {\r\n      let projectile = null;\r\n      let enemy = null;\r\n      \r\n      if (entityA.parent && entityA.parent.type === \"projectile\" && !entityB.parent) {\r\n        projectile = entityA;\r\n        enemy = entityB;\r\n\r\n      } else if (entityB.parent && entityB.parent.type === \"projectile\" && !entityA.parent) {\r\n        projectile = entityB;\r\n        enemy = entityA;        \r\n      }\r\n      \r\n      if (projectile && enemy) {\r\n        // Handle collision in the next frame to avoid modifying physics during step\r\n        this.game.queuePostPhysicsCallback(() => {\r\n          projectile.handleEnemyCollision(enemy);\r\n        });\r\n      }\r\n    }\r\n  });\r\n}\r\n\r\nhandleEnemyCollision(enemy) {\r\n  // Skip if already hit this enemy or enemy is dead\r\n  if (enemy.isDead || this.piercedEnemies.includes(enemy)) {\r\n    return;\r\n  }\r\n  \r\n  // Apply damage\r\n  let enemyHealth = enemy.getComponent(\"health\");\r\n  let enemyEnergyShield = enemy.getComponent(\"energyshield\");\r\n  let enemyStats = enemy.getComponent(\"stats\");\r\n  let enemyStatClone = { ...enemyStats.stats };\r\n  enemyStatClone.energyShield = enemyEnergyShield.energyShield;\r\n\r\n  // Apply damage\r\n  let damageResult = engine.getFunction(\"calculateDamage\")(this.stats, enemyStatClone);\r\n  if (!damageResult.wasEvaded) {\r\n    enemyHealth.hp -= damageResult.damageDealt;\r\n    enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);\r\n    this.game.spawn(enemy.position.x, enemy.position.y, \"hitEffect\", {\r\n      damageType: this.stats.damageType,\r\n      lifeSpan: 0.3\r\n    });\r\n    if (this.ownerStats.slowAmount) {\r\n      enemyStats.addEffect(\r\n        this.game.config.effects.slow,\r\n        this.game.effects.slow,\r\n        this.ownerStats.slowAmount\r\n      );\r\n    }\r\n  }\r\n\r\n  // Special effects logic (summon, leech, thief)\r\n  if (\r\n    this.ownerStats.summonChance > 0 &&\r\n    enemyHealth.hp <= 0 &&\r\n    Math.random() < this.ownerStats.summonChance - 1\r\n  ) {\r\n    this.game.spawn(enemy.position.x, enemy.position.y, \"summonedTower\", {\r\n      objectType: \"towers\",\r\n      spawnType: this.ownerStats.summonType,\r\n      owner: this.owner\r\n    });\r\n  }\r\n  if (this.ownerStats.leech > 0) {\r\n    const healing = this.stats.damage * this.ownerStats.leech * this.game.state.stats.healingMultiplier;\r\n    this.game.state.bloodCoreHP = Math.min(\r\n      this.game.state.stats.maxBloodCoreHP,\r\n      this.game.state.bloodCoreHP + healing\r\n    );\r\n  }\r\n  if (this.ownerStats.thief && this.ownerStats.thief != 0) {\r\n    const stealAmt = this.stats.damage * this.ownerStats.thief * this.game.state.stats.bloodShardMultiplier;\r\n    this.game.state.bloodShards += stealAmt;\r\n  }\r\n\r\n  // Splash damage if applicable\r\n  if (this.stats.splashRadius > 0) {\r\n    this.applySplashDamage(enemy);\r\n    this.game.spawn(this.parent.position.x, this.parent.position.y, \"explosion\", {\r\n      radius: this.stats.splashRadius\r\n    });\r\n  }\r\n\r\n  // Piercing logic\r\n  if (this.stats.piercing > 0 && this.piercedEnemies.length < this.stats.piercing) {\r\n    this.piercedEnemies.push(enemy);\r\n    const nearbyEnemies = this.game.spatialGrid.getNearbyEntities(\r\n      this.parent.gridPosition.x,\r\n      this.parent.gridPosition.y,\r\n      this.ownerStats.range,\r\n      \"enemy\"\r\n    );\r\n    const newTarget = this.findNewTarget(nearbyEnemies);\r\n    if (newTarget) {\r\n      this.target = newTarget;\r\n      this.targetPosition = null; // Switch to target-based tracking\r\n      \r\n      // Recalculate velocity toward the new target\r\n      const currentPosition = {\r\n        x: this.parent.position.x,\r\n        y: this.parent.position.y\r\n      };\r\n      \r\n      const dx = newTarget.position.x - currentPosition.x;\r\n      const dy = newTarget.position.y - currentPosition.y;\r\n      const dist = Math.sqrt(dx * dx + dy * dy);\r\n      \r\n      if (dist > 0) {\r\n        const velocityX = (dx / dist) * this.speed;\r\n        const velocityY = (dy / dist) * this.speed;\r\n        this.planckBody.setVelocity({ x: velocityX, y: velocityY });\r\n      }\r\n    } else {\r\n      // No new target, keep going but don't destroy\r\n      return;\r\n    }\r\n  } else {\r\n    // No piercing or reached piercing limit, destroy projectile\r\n    //this.parent.destroy();\r\n  }\r\n}\r\n\r\napplySplashDamage(centerEnemy) {\r\n  // Get nearby enemies within splash radius\r\n  const nearbyEnemies = this.game.spatialGrid.getNearbyEntities(\r\n    this.parent.gridPosition.x,\r\n    this.parent.gridPosition.y,\r\n    this.stats.splashRadius,\r\n    \"enemy\"\r\n  );\r\n  \r\n  const gridSize = this.game.config.configs.game.gridSize;\r\n  const splashRadiusSq = this.stats.splashRadius * this.stats.splashRadius * gridSize * gridSize;\r\n  \r\n  for (const enemy of nearbyEnemies) {\r\n    // Skip the center enemy (already damaged) and dead enemies\r\n    if (enemy === centerEnemy || enemy.isDead || this.piercedEnemies.includes(enemy)) continue;\r\n    \r\n    let enemyHealth = enemy.getComponent(\"health\");\r\n    let enemyEnergyShield = enemy.getComponent(\"energyshield\");\r\n    let enemyStats = enemy.getComponent(\"stats\");\r\n    let enemyStatClone = { ...enemyStats.stats };\r\n    enemyStatClone.energyShield = enemyEnergyShield.energyShield;\r\n\r\n    const dx = enemy.position.x - this.parent.position.x;\r\n    const dy = enemy.position.y - this.parent.position.y;\r\n    const distSq = dx * dx + dy * dy;\r\n\r\n    if (distSq <= splashRadiusSq) {\r\n      let damageResult = engine.getFunction(\"calculateDamage\")(this.stats, enemyStatClone);\r\n      if (!damageResult.wasEvaded) {\r\n        enemyHealth.hp -= damageResult.damageDealt;\r\n        enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);\r\n        this.game.spawn(enemy.position.x, enemy.position.y, \"hitEffect\", {\r\n          damageType: this.stats.damageType,\r\n          lifeSpan: 0.3\r\n        });\r\n        if (this.ownerStats.slowAmount) {\r\n          enemyStats.addEffect(\r\n            this.game.config.effects.slow,\r\n            this.game.effects.slow,\r\n            this.ownerStats.slowAmount\r\n          );\r\n        }\r\n      }\r\n    }\r\n  }\r\n}\r\n\r\nupdate() {\r\n  if(this.target) this.targetCurrentPosition = {...this.target.position };\r\n  \r\n  // Update lifespan and destroy if expired\r\n  this.currentLifespan += this.game.deltaTime;\r\n  if (this.currentLifespan >= this.maxLifespan) {\r\n    this.parent.destroy();\r\n    return;\r\n  }\r\n\r\n  // Remove if target is gone (only if no targetPosition)\r\n  if (!this.targetPosition && (!this.target || this.target.destroyed)) {\r\n    if(this.targetCurrentPosition) {\r\n      this.targetPosition = this.targetCurrentPosition;\r\n      \r\n      // Recalculate velocity toward the last known position\r\n      const currentPosition = {\r\n        x: this.parent.position.x,\r\n        y: this.parent.position.y\r\n      };\r\n      \r\n      const dx = this.targetPosition.x - currentPosition.x;\r\n      const dy = this.targetPosition.y - currentPosition.y;\r\n      const dist = Math.sqrt(dx * dx + dy * dy);\r\n      \r\n      if (dist > 0) {        \r\n        const velocityX = (dx / dist) * this.speed;\r\n        const velocityY = (dy / dist) * this.speed;\r\n        this.planckBody.setVelocity({ x: velocityX, y: velocityY });\r\n      }\r\n    } else {\r\n      this.parent.destroy(); \r\n      return;\r\n    }\r\n  }\r\n    \r\n\r\n\r\n  // Particle spawning logic\r\n  const currentPos = this.planckBody.body.getPosition();\r\n  const currentVel = this.planckBody.body.getLinearVelocity();\r\n  const speed = Math.sqrt(currentVel.x * currentVel.x + currentVel.y * currentVel.y);\r\n  \r\n  // Only spawn particles if the projectile is moving\r\n  if (speed > 0 && this.def.particle) {\r\n    this.distanceTraveled += speed * this.game.deltaTime;\r\n    \r\n    if (this.distanceTraveled > this.distanceToSpawnParticle) {\r\n      this.game.spawn(currentPos.x, currentPos.y, \"particle\", { \r\n        objectType: \"particles\", \r\n        spawnType: this.def.particle\r\n      });\r\n      this.distanceTraveled = 0;\r\n      this.distanceToSpawnParticle = 24 + Math.random() * 3;\r\n    }\r\n  }\r\n}\r\n\r\n// Helper method to find a new target for piercing\r\nfindNewTarget(nearbyEnemies) {\r\n  const gridSize = this.game.config.configs.game.gridSize;\r\n  const rangeSq = this.ownerStats.range * this.ownerStats.range * gridSize * gridSize;\r\n  for (let enemy of nearbyEnemies) {\r\n    if (!enemy.destroyed && !this.piercedEnemies.includes(enemy)) {\r\n      const dx = enemy.position.x - this.parent.position.x;\r\n      const dy = enemy.position.y - this.parent.position.y;\r\n      const distSq = dx * dx + dy * dy;\r\n      if (distSq < rangeSq) {\r\n        return enemy;\r\n      }\r\n    }\r\n  }\r\n  return null;\r\n}\r\n}"
-      },
       "PlanckWorld": {
         "fileName": "PlanckWorld",
         "script": "class PlanckWorld extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n//planckWorld component\r\ninit({gravity = 10, gravityX = 0, gravityY = 0}) {\r\n  this.velocityIterations = 6;\r\n  this.positionIterations = 2;\r\n  this.physicsUpdateTimer = 0;\r\n  this.timeStep = 1 / 60; // Fixed timestep of 60fps\r\n  \r\n   const { World } = planck;\r\n    this.game.planckWorld = new World();\r\n}\r\n\r\npostUpdate() {\r\n    this.game.planckWorld.step(this.timeStep, this.velocityIterations, this.positionIterations);\r\n}\r\n}"
+      },
+      "PlanckBody": {
+        "fileName": "PlanckBody",
+        "script": "class PlanckBody extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\ninit({box2DBodySize = 1, density = 1, friction= 0, layer = 0x0001, collidesWith = 0x0001}) {\r\n  \r\n   const { Box } = planck;\r\n  this.body = this.game.planckWorld.createBody({\r\n    type: \"dynamic\",\r\n    position: {x: this.parent.position.x, y: this.parent.position.y}\r\n  });\r\n  this.body.createFixture({\r\n      shape: new Box(1.0, 1.0),\r\n      density: density,\r\n      friction: friction,\r\n  });\r\n  this.speedScale = 10;\r\n}\r\n\r\nupdate() {\r\n  if (!this.body) return;\r\n  const bodyPos = this.body.getTransform().p;\r\n\r\n  // Update game object position\r\n  this.parent.position.x = bodyPos.x;\r\n  this.parent.position.y = bodyPos.y;\r\n\r\n}\r\n\r\nsetVelocity(vel) {\r\n\tthis.body.setLinearVelocity({ x: vel.x*this.speedScale, y: vel.y * this.speedScale });\r\n}\r\ngetVelocity() {\r\n  let vel = this.body.getLinearVelocity();\r\n  return { x: vel.x / this.speedScale, y: vel.y / this.speedScale };\r\n}\r\npostUpdate() {\r\n  //this.body.applyForce({ x: 10, y: 0}, { x: this.parent.position.x, y: this.parent.position.y});\r\n}\r\n}"
       },
       "PopulationBurden": {
         "fileName": "PopulationBurden",
         "script": "class PopulationBurden extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init(){\r\n        this.stats = this.parent.getComponent('stats').stats;        \r\n    }\r\n    update() {\r\n        if(this.stats){ \r\n            if( this.stats.population ) {\r\n                this.game.state.stats.population += this.stats.population;\r\n            } \r\n            if( this.stats.supply ) {\r\n                this.game.state.stats.maxPopulation += this.stats.supply;\r\n            }\r\n        }\r\n    }\r\n}"
       },
-      "Projectile": {
-        "fileName": "Projectile",
-        "script": "class Projectile extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\ninit({ spawnType, owner, target, targetPosition, stats }) {\r\n  this.type = spawnType;\r\n  this.def = this.game.config.projectiles[this.type];\r\n  this.owner = owner;\r\n  this.target = target;\r\n  this.targetPosition = targetPosition;\r\n  this.stats = stats;\r\n  this.piercedEnemies = [];\r\n  this.ownerStats = this.owner.getComponent(\"stats\").stats;\r\n  this.distanceTraveled = 0;\r\n  this.distanceToSpawnParticle = 24;\r\n\r\n  // Add lifespan for projectile (e.g., 5 seconds)\r\n  this.maxLifespan = this.stats.lifespan || 5; // Default to 5 seconds, adjust as needed\r\n  this.currentLifespan = 0;  \r\n  if(this.stats.attackSound){\r\n    this.game.audioManager.playSound('attackSounds', this.stats.attackSound);\r\n  }\r\n}\r\n\r\nupdate() {\r\n  let hitSoundPlayed = false;\r\n  if(this.target) this.targetCurrentPosition = {...this.target.position };\r\n  // Update lifespan and destroy if expired\r\n  this.currentLifespan += this.game.deltaTime; // Assuming deltaTime is in seconds\r\n  if (this.currentLifespan >= this.maxLifespan) {\r\n    this.parent.destroy();\r\n    return;\r\n  }\r\n\r\n  // Remove if target is gone (only if no targetPosition)\r\n  if (!this.targetPosition && (!this.target || this.target.destroyed)) {\r\n    if(this.targetCurrentPosition) {\r\n    \tthis.targetPosition = this.targetCurrentPosition;\r\n    } else {\r\n     \tthis.parent.destroy(); \r\n    \treturn;\r\n    }\r\n  }\r\n\r\n  // Determine movement target\r\n  const targetPos = this.targetPosition ? this.targetPosition : this.target.position;\r\n  const dx = targetPos.x - this.parent.position.x;\r\n  const dy = targetPos.y - this.parent.position.y;\r\n  const distSq = dx * dx + dy * dy;\r\n  const dist = Math.sqrt(distSq);\r\n  const speed = this.stats.speed;\r\n\r\n  // Hit detection\r\n  const hitRadiusSq = 15 * 15; // Same as your original hit detection radius\r\n  let hitDetected = false;\r\n\r\n  if (this.targetPosition) {\r\n    // Check nearby enemies for hit detection when using targetPosition\r\n    const nearbyEnemies = this.game.spatialGrid.getNearbyEntities(\r\n      this.parent.gridPosition.x,\r\n      this.parent.gridPosition.y,\r\n      this.stats.splashRadius || 15, // Use splashRadius or default to 15,\r\n      \"enemy\"\r\n    );\r\n\r\n    for (const enemy of nearbyEnemies) {\r\n      if (enemy.isDead || this.piercedEnemies.includes(enemy)) continue;\r\n\r\n      const dxEnemy = enemy.position.x - this.parent.position.x;\r\n      const dyEnemy = enemy.position.y - this.parent.position.y;\r\n      const enemyDistSq = dxEnemy * dxEnemy + dyEnemy * dyEnemy;\r\n\r\n      if (enemyDistSq <= hitRadiusSq) {\r\n        // Hit detected\r\n        if(this.stats.hitSound && !hitDetected && !hitSoundPlayed){\r\n          this.game.audioManager.playSound('hitSounds', this.stats.hitSound);\r\n          hitSoundPlayed = true;\r\n        }\r\n        hitDetected = true;\r\n        let enemyHealth = enemy.getComponent(\"health\");\r\n        let enemyEnergyShield = enemy.getComponent(\"energyshield\");\r\n        let enemyStats = enemy.getComponent(\"stats\");\r\n        let enemyStatClone = { ...enemyStats.stats };\r\n        enemyStatClone.energyShield = enemyEnergyShield.energyShield;\r\n\r\n        // Apply damage\r\n        let damageResult = engine.getFunction(\"calculateDamage\")(this.stats, enemyStatClone);\r\n        if (!damageResult.wasEvaded) {\r\n          enemyHealth.hp -= damageResult.damageDealt;\r\n          enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);\r\n          this.game.spawn(enemy.position.x, enemy.position.y, \"hitEffect\", {\r\n            damageType: this.stats.damageType,\r\n            lifeSpan: 0.3\r\n          });\r\n          if (this.ownerStats.slowAmount) {\r\n            enemyStats.addEffect(\r\n              this.game.config.effects.slow,\r\n              this.game.effects.slow,\r\n              this.ownerStats.slowAmount\r\n            );\r\n          }\r\n        }\r\n\r\n        // Piercing logic\r\n        if (this.stats.piercing > 0 && this.piercedEnemies.length < this.stats.piercing) {\r\n          this.piercedEnemies.push(enemy);\r\n          let newTarget = this.findNewTarget(nearbyEnemies);\r\n          if (newTarget) {\r\n            this.target = newTarget;\r\n            this.targetPosition = null; // Switch to target-based tracking\r\n            return;\r\n          }\r\n        }\r\n\r\n        // Splash damage if applicable\r\n        if (this.stats.splashRadius > 0) {\r\n          this.applySplashDamage(nearbyEnemies);\r\n          this.game.spawn(this.parent.position.x, this.parent.position.y, \"explosion\", {\r\n            radius: this.stats.splashRadius\r\n          });\r\n        }\r\n\r\n        // Destroy projectile if no piercing or piercing limit reached\r\n        if (this.stats.piercing <= 0 || this.piercedEnemies.length >= this.stats.piercing) {\r\n          this.parent.destroy();\r\n          return;\r\n        }\r\n      }\r\n    }\r\n  } else if (distSq < hitRadiusSq) {\r\n    // Original target-based hit detection\r\n    let targetHealth = this.target.getComponent(\"health\");\r\n    let targetEnergyShield = this.target.getComponent(\"energyshield\");\r\n    let targetStats = this.target.getComponent(\"stats\");\r\n    let targetStatClone = { ...targetStats.stats };\r\n    targetStatClone.energyShield = targetEnergyShield.energyShield;\r\n\r\n    // Apply damage and effects (unchanged from your original code)\r\n    let damageResult = engine.getFunction(\"calculateDamage\")(this.stats, targetStatClone);\r\n    if (!damageResult.wasEvaded) {\r\n      if(this.stats.hitSound && !hitSoundPlayed){\r\n        this.game.audioManager.playSound('hitSounds', this.stats.hitSound);\r\n        hitSoundPlayed = true;\r\n      }\r\n      targetHealth.hp -= damageResult.damageDealt;\r\n      targetEnergyShield.absorbDamage(damageResult.damageAbsorbed);\r\n      this.game.spawn(this.target.position.x, this.target.position.y, \"hitEffect\", {\r\n        damageType: this.stats.damageType,\r\n        lifeSpan: 0.3\r\n      });\r\n      if (this.ownerStats.slowAmount) {\r\n        targetStats.addEffect(\r\n          this.game.config.effects.slow,\r\n          this.game.effects.slow,\r\n          this.ownerStats.slowAmount\r\n        );\r\n      }\r\n    }\r\n\r\n    // Summon skeleton, leech, thief logic (unchanged)\r\n    if (\r\n      this.ownerStats.summonChance > 0 &&\r\n      targetHealth.hp <= 0 &&\r\n      Math.random() < this.ownerStats.summonChance - 1\r\n    ) {\r\n      this.game.spawn(this.target.position.x, this.target.position.y, \"summonedTower\", {\r\n        objectType: \"towers\",\r\n        spawnType: this.ownerStats.summonType,\r\n        owner: this.owner\r\n      });\r\n    }\r\n    if (this.ownerStats.leech > 0) {\r\n      const healing = this.stats.damage * this.ownerStats.leech * this.game.state.stats.healingMultiplier;\r\n      this.game.state.bloodCoreHP = Math.min(\r\n        this.game.state.stats.maxBloodCoreHP,\r\n        this.game.state.bloodCoreHP + healing\r\n      );\r\n    }\r\n    if (this.ownerStats.thief && this.ownerStats.thief != 0) {\r\n      const stealAmt = this.stats.damage * this.ownerStats.thief * this.game.state.stats.bloodShardMultiplier;\r\n      this.game.state.bloodShards += stealAmt;\r\n    }\r\n\r\n    // Piercing logic\r\n    if (this.stats.piercing > 0 && this.piercedEnemies.length < this.stats.piercing) {\r\n      this.piercedEnemies.push(this.target);\r\n      const newTarget = this.findNewTarget(\r\n        this.game.spatialGrid.getNearbyEntities(\r\n          this.parent.gridPosition.x,\r\n          this.parent.gridPosition.y,\r\n          this.ownerStats.range\r\n        )\r\n      );\r\n      if (newTarget) {\r\n        this.target = newTarget;\r\n        return;\r\n      }\r\n    }\r\n\r\n    this.parent.destroy();\r\n    return;\r\n  }\r\n\r\n  // Move projectile\r\n  this.parent.position.x += (dx / dist) * speed;\r\n  this.parent.position.y += (dy / dist) * speed;\r\n\r\n  // Continue moving past targetPosition by updating it if reached\r\n  if (this.targetPosition && distSq < speed * speed) {\r\n    // If close to targetPosition, extend it in the same direction\r\n    const directionX = dx / dist;\r\n    const directionY = dy / dist;\r\n    this.targetPosition.x += directionX * speed * 10; // Extend further (adjust multiplier)\r\n    this.targetPosition.y += directionY * speed * 10;\r\n  }\r\n\r\n  // Particle spawning logic (unchanged)\r\n  const tDx = this.parent.lastPosition.x - this.parent.position.x;\r\n  const tDy = this.parent.lastPosition.y - this.parent.position.y;\r\n  const tDistSq = tDx * tDx + tDy * tDy;\r\n  const tDist = Math.sqrt(tDistSq);\r\n\r\n  this.distanceTraveled += tDist;\r\n  if (this.def.particle && this.distanceTraveled > this.distanceToSpawnParticle) {\r\n    this.game.spawn(this.parent.position.x, this.parent.position.y, \"particle\", { objectType: \"particles\", spawnType: this.def.particle});\r\n    this.distanceTraveled = 0;\r\n    this.distanceToSpawnParticle += Math.random() * 3;\r\n  }\r\n}\r\n\r\n// Helper method to find a new target for piercing\r\nfindNewTarget(nearbyEnemies) {\r\n  const gridSize = this.game.config.configs.game.gridSize;\r\n  const rangeSq = this.ownerStats.range * this.ownerStats.range * gridSize * gridSize;\r\n  for (let enemy of nearbyEnemies) {\r\n    if (!enemy.destroyed && !this.piercedEnemies.includes(enemy)) {\r\n      const dx = enemy.position.x - this.parent.position.x;\r\n      const dy = enemy.position.y - this.parent.position.y;\r\n      const distSq = dx * dx + dy * dy;\r\n      if (distSq < rangeSq) {\r\n        return enemy;\r\n      }\r\n    }\r\n  }\r\n  return null;\r\n}\r\n\r\n// Helper method to apply splash damage\r\napplySplashDamage(nearbyEnemies) {\r\n  const gridSize = this.game.config.configs.game.gridSize;\r\n  const splashRadiusSq = this.stats.splashRadius * this.stats.splashRadius * gridSize * gridSize;\r\n  for (const enemy of nearbyEnemies) {\r\n    if (enemy.isDead || this.piercedEnemies.includes(enemy)) continue;\r\n    let enemyHealth = enemy.getComponent(\"health\");\r\n    let enemyEnergyShield = enemy.getComponent(\"energyshield\");\r\n    let enemyStats = enemy.getComponent(\"stats\");\r\n    let enemyStatClone = { ...enemyStats.stats };\r\n    enemyStatClone.energyShield = enemyEnergyShield.energyShield;\r\n\r\n    const dx = enemy.position.x - this.parent.position.x;\r\n    const dy = enemy.position.y - this.parent.position.y;\r\n    const distSq = dx * dx + dy * dy;\r\n\r\n    if (distSq <= splashRadiusSq) {\r\n      let damageResult = engine.getFunction(\"calculateDamage\")(this.stats, enemyStatClone);\r\n      if (!damageResult.wasEvaded) {\r\n        enemyHealth.hp -= damageResult.damageDealt;\r\n        enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);\r\n        this.game.spawn(enemy.position.x, enemy.position.y, \"hitEffect\", {\r\n          damageType: this.stats.damageType,\r\n          lifeSpan: 0.3\r\n        });\r\n        if (this.ownerStats.slowAmount) {\r\n          enemyStats.addEffect(\r\n            this.game.config.effects.slow,\r\n            this.game.effects.slow,\r\n            this.ownerStats.slowAmount\r\n          );\r\n        }\r\n      }\r\n    }\r\n  }\r\n}\r\n}"
-      },
-      "SpacialGridEntity": {
-        "fileName": "SpacialGridEntity",
-        "script": "class SpacialGridEntity extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n   update() {\r\n        this.game.spatialGrid.insert(this.parent);\r\n    }\r\n    destroy() {\r\n        this.game.spatialGrid.remove(this.parent);\r\n    }\r\n}"
+      "PlanckProjectile": {
+        "fileName": "PlanckProjectile",
+        "script": "class PlanckProjectile extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\ninit({ spawnType, owner, target, targetPosition, stats }) {\r\n  this.type = spawnType;\r\n  this.def = this.game.config.projectiles[this.type];\r\n  this.owner = owner;\r\n  this.target = target;\r\n  this.targetPosition = targetPosition;\r\n  this.stats = stats;\r\n  this.piercedEnemies = [];\r\n  this.ownerStats = this.owner.getComponent(\"stats\").stats;\r\n  this.distanceTraveled = 0;\r\n  this.distanceToSpawnParticle = 24;\r\n\r\n  // Add lifespan for projectile\r\n  this.maxLifespan = this.stats.lifespan || 5; // Default to 5 seconds\r\n  this.currentLifespan = 0;\r\n  \r\n  // Get the planck body from the component\r\n  this.planckBody = this.parent.getComponent('planckBody');\r\n  \r\n  // Calculate direction and set velocity\r\n  const currentPosition = {\r\n    x: this.parent.position.x,\r\n    y: this.parent.position.y\r\n  };\r\n  \r\n  const targetPos = this.targetPosition ? this.targetPosition : this.target.position;\r\n  const dx = targetPos.x - currentPosition.x;\r\n  const dy = targetPos.y - currentPosition.y;\r\n  const dist = Math.sqrt(dx * dx + dy * dy);\r\n  \r\n  // Normalize direction and multiply by speed\r\n  this.speed = this.stats.speed;\r\n  const velocityX = (dx / dist) * this.speed;\r\n  const velocityY = (dy / dist) * this.speed;\r\n  \r\n  // Set the linear velocity on the planck body\r\n  this.planckBody.setVelocity({ x: velocityX, y: velocityY });\r\n  \r\n  // Store a reference to this projectile in the body's user data\r\n  this.planckBody.body.setUserData(this);\r\n  \r\n  // Setup contact listener if not already done\r\n  if (!this.game.contactListenerSetup) {\r\n    this.setupContactListener();\r\n    this.game.contactListenerSetup = true;\r\n  }\r\n}\r\n\r\nsetupContactListener() {\r\n  const world = this.game.planckWorld;\r\n  \r\n  world.on('begin-contact', (contact) => {\r\n    const fixtureA = contact.getFixtureA();\r\n    const fixtureB = contact.getFixtureB();\r\n    \r\n    const bodyA = fixtureA.getBody();\r\n    const bodyB = fixtureB.getBody();\r\n    \r\n    const entityA = bodyA.getUserData();\r\n    const entityB = bodyB.getUserData();\r\n    \r\n    // Check if one is a projectile and one is an enemy\r\n    if (entityA && entityB) {\r\n      let projectile = null;\r\n      let enemy = null;\r\n      \r\n      if (entityA.parent && entityA.parent.type === \"projectile\" && !entityB.parent) {\r\n        projectile = entityA;\r\n        enemy = entityB;\r\n\r\n      } else if (entityB.parent && entityB.parent.type === \"projectile\" && !entityA.parent) {\r\n        projectile = entityB;\r\n        enemy = entityA;        \r\n      }\r\n      \r\n      if (projectile && enemy) {\r\n        // Handle collision in the next frame to avoid modifying physics during step\r\n        this.game.queuePostPhysicsCallback(() => {\r\n          projectile.handleEnemyCollision(enemy);\r\n        });\r\n      }\r\n    }\r\n  });\r\n}\r\n\r\nhandleEnemyCollision(enemy) {\r\n  // Skip if already hit this enemy or enemy is dead\r\n  if (enemy.isDead || this.piercedEnemies.includes(enemy)) {\r\n    return;\r\n  }\r\n  \r\n  // Apply damage\r\n  let enemyHealth = enemy.getComponent(\"health\");\r\n  let enemyEnergyShield = enemy.getComponent(\"energyshield\");\r\n  let enemyStats = enemy.getComponent(\"stats\");\r\n  let enemyStatClone = { ...enemyStats.stats };\r\n  enemyStatClone.energyShield = enemyEnergyShield.energyShield;\r\n\r\n  // Apply damage\r\n  let damageResult = engine.getFunction(\"calculateDamage\")(this.stats, enemyStatClone);\r\n  if (!damageResult.wasEvaded) {\r\n    enemyHealth.hp -= damageResult.damageDealt;\r\n    enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);\r\n    this.game.spawn(enemy.position.x, enemy.position.y, \"hitEffect\", {\r\n      damageType: this.stats.damageType,\r\n      lifeSpan: 0.3\r\n    });\r\n    if (this.ownerStats.slowAmount) {\r\n      enemyStats.addEffect(\r\n        this.game.config.effects.slow,\r\n        this.game.effects.slow,\r\n        this.ownerStats.slowAmount\r\n      );\r\n    }\r\n  }\r\n\r\n  // Special effects logic (summon, leech, thief)\r\n  if (\r\n    this.ownerStats.summonChance > 0 &&\r\n    enemyHealth.hp <= 0 &&\r\n    Math.random() < this.ownerStats.summonChance - 1\r\n  ) {\r\n    this.game.spawn(enemy.position.x, enemy.position.y, \"summonedTower\", {\r\n      objectType: \"towers\",\r\n      spawnType: this.ownerStats.summonType,\r\n      owner: this.owner\r\n    });\r\n  }\r\n  if (this.ownerStats.leech > 0) {\r\n    const healing = this.stats.damage * this.ownerStats.leech * this.game.state.stats.healingMultiplier;\r\n    this.game.state.bloodCoreHP = Math.min(\r\n      this.game.state.stats.maxBloodCoreHP,\r\n      this.game.state.bloodCoreHP + healing\r\n    );\r\n  }\r\n  if (this.ownerStats.thief && this.ownerStats.thief != 0) {\r\n    const stealAmt = this.stats.damage * this.ownerStats.thief * this.game.state.stats.bloodShardMultiplier;\r\n    this.game.state.bloodShards += stealAmt;\r\n  }\r\n\r\n  // Splash damage if applicable\r\n  if (this.stats.splashRadius > 0) {\r\n    this.applySplashDamage(enemy);\r\n    this.game.spawn(this.parent.position.x, this.parent.position.y, \"explosion\", {\r\n      radius: this.stats.splashRadius\r\n    });\r\n  }\r\n\r\n  // Piercing logic\r\n  if (this.stats.piercing > 0 && this.piercedEnemies.length < this.stats.piercing) {\r\n    this.piercedEnemies.push(enemy);\r\n    const nearbyEnemies = this.game.spatialGrid.getNearbyEntities(\r\n      this.parent.gridPosition.x,\r\n      this.parent.gridPosition.y,\r\n      this.ownerStats.range,\r\n      \"enemy\"\r\n    );\r\n    const newTarget = this.findNewTarget(nearbyEnemies);\r\n    if (newTarget) {\r\n      this.target = newTarget;\r\n      this.targetPosition = null; // Switch to target-based tracking\r\n      \r\n      // Recalculate velocity toward the new target\r\n      const currentPosition = {\r\n        x: this.parent.position.x,\r\n        y: this.parent.position.y\r\n      };\r\n      \r\n      const dx = newTarget.position.x - currentPosition.x;\r\n      const dy = newTarget.position.y - currentPosition.y;\r\n      const dist = Math.sqrt(dx * dx + dy * dy);\r\n      \r\n      if (dist > 0) {\r\n        const velocityX = (dx / dist) * this.speed;\r\n        const velocityY = (dy / dist) * this.speed;\r\n        this.planckBody.setVelocity({ x: velocityX, y: velocityY });\r\n      }\r\n    } else {\r\n      // No new target, keep going but don't destroy\r\n      return;\r\n    }\r\n  } else {\r\n    // No piercing or reached piercing limit, destroy projectile\r\n    //this.parent.destroy();\r\n  }\r\n}\r\n\r\napplySplashDamage(centerEnemy) {\r\n  // Get nearby enemies within splash radius\r\n  const nearbyEnemies = this.game.spatialGrid.getNearbyEntities(\r\n    this.parent.gridPosition.x,\r\n    this.parent.gridPosition.y,\r\n    this.stats.splashRadius,\r\n    \"enemy\"\r\n  );\r\n  \r\n  const gridSize = this.game.config.configs.game.gridSize;\r\n  const splashRadiusSq = this.stats.splashRadius * this.stats.splashRadius * gridSize * gridSize;\r\n  \r\n  for (const enemy of nearbyEnemies) {\r\n    // Skip the center enemy (already damaged) and dead enemies\r\n    if (enemy === centerEnemy || enemy.isDead || this.piercedEnemies.includes(enemy)) continue;\r\n    \r\n    let enemyHealth = enemy.getComponent(\"health\");\r\n    let enemyEnergyShield = enemy.getComponent(\"energyshield\");\r\n    let enemyStats = enemy.getComponent(\"stats\");\r\n    let enemyStatClone = { ...enemyStats.stats };\r\n    enemyStatClone.energyShield = enemyEnergyShield.energyShield;\r\n\r\n    const dx = enemy.position.x - this.parent.position.x;\r\n    const dy = enemy.position.y - this.parent.position.y;\r\n    const distSq = dx * dx + dy * dy;\r\n\r\n    if (distSq <= splashRadiusSq) {\r\n      let damageResult = engine.getFunction(\"calculateDamage\")(this.stats, enemyStatClone);\r\n      if (!damageResult.wasEvaded) {\r\n        enemyHealth.hp -= damageResult.damageDealt;\r\n        enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);\r\n        this.game.spawn(enemy.position.x, enemy.position.y, \"hitEffect\", {\r\n          damageType: this.stats.damageType,\r\n          lifeSpan: 0.3\r\n        });\r\n        if (this.ownerStats.slowAmount) {\r\n          enemyStats.addEffect(\r\n            this.game.config.effects.slow,\r\n            this.game.effects.slow,\r\n            this.ownerStats.slowAmount\r\n          );\r\n        }\r\n      }\r\n    }\r\n  }\r\n}\r\n\r\nupdate() {\r\n  if(this.target) this.targetCurrentPosition = {...this.target.position };\r\n  \r\n  // Update lifespan and destroy if expired\r\n  this.currentLifespan += this.game.deltaTime;\r\n  if (this.currentLifespan >= this.maxLifespan) {\r\n    this.parent.destroy();\r\n    return;\r\n  }\r\n\r\n  // Remove if target is gone (only if no targetPosition)\r\n  if (!this.targetPosition && (!this.target || this.target.destroyed)) {\r\n    if(this.targetCurrentPosition) {\r\n      this.targetPosition = this.targetCurrentPosition;\r\n      \r\n      // Recalculate velocity toward the last known position\r\n      const currentPosition = {\r\n        x: this.parent.position.x,\r\n        y: this.parent.position.y\r\n      };\r\n      \r\n      const dx = this.targetPosition.x - currentPosition.x;\r\n      const dy = this.targetPosition.y - currentPosition.y;\r\n      const dist = Math.sqrt(dx * dx + dy * dy);\r\n      \r\n      if (dist > 0) {        \r\n        const velocityX = (dx / dist) * this.speed;\r\n        const velocityY = (dy / dist) * this.speed;\r\n        this.planckBody.setVelocity({ x: velocityX, y: velocityY });\r\n      }\r\n    } else {\r\n      this.parent.destroy(); \r\n      return;\r\n    }\r\n  }\r\n    \r\n\r\n\r\n  // Particle spawning logic\r\n  const currentPos = this.planckBody.body.getPosition();\r\n  const currentVel = this.planckBody.body.getLinearVelocity();\r\n  const speed = Math.sqrt(currentVel.x * currentVel.x + currentVel.y * currentVel.y);\r\n  \r\n  // Only spawn particles if the projectile is moving\r\n  if (speed > 0 && this.def.particle) {\r\n    this.distanceTraveled += speed * this.game.deltaTime;\r\n    \r\n    if (this.distanceTraveled > this.distanceToSpawnParticle) {\r\n      this.game.spawn(currentPos.x, currentPos.y, \"particle\", { \r\n        objectType: \"particles\", \r\n        spawnType: this.def.particle\r\n      });\r\n      this.distanceTraveled = 0;\r\n      this.distanceToSpawnParticle = 24 + Math.random() * 3;\r\n    }\r\n  }\r\n}\r\n\r\n// Helper method to find a new target for piercing\r\nfindNewTarget(nearbyEnemies) {\r\n  const gridSize = this.game.config.configs.game.gridSize;\r\n  const rangeSq = this.ownerStats.range * this.ownerStats.range * gridSize * gridSize;\r\n  for (let enemy of nearbyEnemies) {\r\n    if (!enemy.destroyed && !this.piercedEnemies.includes(enemy)) {\r\n      const dx = enemy.position.x - this.parent.position.x;\r\n      const dy = enemy.position.y - this.parent.position.y;\r\n      const distSq = dx * dx + dy * dy;\r\n      if (distSq < rangeSq) {\r\n        return enemy;\r\n      }\r\n    }\r\n  }\r\n  return null;\r\n}\r\n}"
       },
       "Stats": {
         "fileName": "Stats",
         "script": "class Stats extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n  init( {objectType, spawnType} ) {        \r\n        \r\n        let stats = this.game.config[objectType][spawnType];\r\n        this.type = spawnType;\r\n        this.stats = {...stats};\r\n        this.defaultStats = {...this.stats};\r\n        this.activeEffects = {};\r\n    }\r\n    update() {\r\n        this.stats = {...this.defaultStats};\r\n        this.applyEffects();\r\n        this.applyUpgrades();\r\n    }\r\n    addStat(statName, statValue) {\r\n        this.stats[statName] = statValue;\r\n        this.defaultStats[statName] = statValue;\r\n    }\r\n    addEffect(effectConfig, effectFn, effectAmt) {        \r\n        this.activeEffects[effectConfig.id] = this.parent.addComponent(\"effect\", { config: effectConfig, applyFn: effectFn, amount: effectAmt });\r\n    }\r\n    applyEffects() {\r\n        let effectArr = [];\r\n        for(let effectId in this.activeEffects) {\r\n            if(this.activeEffects[effectId] && this.activeEffects[effectId].lifeTime > 0){\r\n                effectArr.push(this.activeEffects[effectId]);\r\n            } else {\r\n                this.activeEffects[effectId] = undefined;\r\n            }\r\n        }        \r\n        \r\n        engine.getFunction(\"calculateStats\")(this.stats, effectArr);\r\n    }\r\n    \r\n    applyUpgrades() {\r\n        engine.getFunction(\"calculateStats\")(this.stats, this.game.state.activeUpgrades[this.type]);        \r\n    }\r\n}"
       },
-      "ThreeJsWorld": {
-        "title": "ThreeJsWorld",
-        "fileName": "ThreeJsWorld",
-        "script": "class ThreeJsWorld extends engine.Component {\n    init({\n        containerSelector = '#gameContainer',\n        width = window.innerWidth,\n        height = window.innerHeight,\n        useControls = true}) {\n        if (!this.game.config.configs.game.is3D) {\n            return;\n        }\n        this.level = this.game.config.levels[this.game.state.level];\n        this.world = this.game.config.worlds[this.level.world];\n        this.lightingSettings = this.game.config.lightings[this.world.lighting];\n        this.shadowSettings = this.game.config.shadows[this.world.shadow];\n        this.fogSettings = this.game.config.fogs[this.world.fog]; \n        this.heightMapSettings = this.game.config.heightMaps[this.world.heightMap];      \n        this.cameraSettings = this.game.config.cameras[this.world.camera];\n\n        this.heightStep = this.heightMapSettings.heightStep;\n        this.showStats = false;\n        this.clock = new THREE.Clock();\n        this.onWindowResizeHandler = this.onWindowResize.bind(this);\n        this.game.heightMapConfig = this.heightMapSettings;\n        this.terrainSize = 768;\n        this.extensionSize = this.world.extensionSize;\n        this.extendedSize = this.terrainSize + 2 * this.world.extensionSize;\n        this.heightMapResolution = this.extendedSize / this.heightMapSettings.resolutionDivisor;\n        this.container = document.querySelector(containerSelector) || document.body;\n        this.renderer = new THREE.WebGLRenderer({ antialias: true, canvas: this.game.canvas, alpha: true });\n        \n        this.renderer.setSize(width, height);        \n        this.renderer.shadowMap.enabled = this.shadowSettings.enabled;\n        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;\n        this.uniforms = {};\n        this.scene = new THREE.Scene();\n        this.scene.background = new THREE.Color(this.world.backgroundColor);\n\n        if (this.fogSettings.enabled) {\n            this.scene.fog = new THREE.FogExp2(this.fogSettings.color, this.fogSettings.density);\n        }\n\n        this.camera = new THREE.PerspectiveCamera(\n            this.cameraSettings.fov,\n            width / height,\n            this.cameraSettings.near,\n            this.cameraSettings.far\n        );\n        let cameraPos = JSON.parse(this.cameraSettings.position);\n\n        this.camera.position.set(\n            cameraPos.x,\n            cameraPos.y,\n            cameraPos.z\n        );\n        let lookAt = JSON.parse(this.cameraSettings.lookAt);\n        this.camera.lookAt(\n            lookAt.x,\n            lookAt.y,\n            lookAt.z\n        );\n\n        if (useControls) {\n            this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);\n            this.controls.target.set(\n                lookAt.x,\n                lookAt.y,\n                lookAt.z\n            );\n            this.controls.maxPolarAngle = Math.PI / 2.05;\n            this.controls.minPolarAngle = 0.1;\n            this.controls.enableDamping = true;\n            this.controls.dampingFactor = 0.05;\n            this.controls.update();\n        }\n\n        this.ambientLight = new THREE.AmbientLight(\n            this.lightingSettings.ambientColor,\n            this.lightingSettings.ambientIntensity\n        );\n        this.scene.add(this.ambientLight);\n\n        this.directionalLight = new THREE.DirectionalLight(\n            this.lightingSettings.directionalColor,\n            this.lightingSettings.directionalIntensity\n        );\n        this.directionalLight.position.set(this.extendedSize, this.extendedSize, this.extendedSize);\n        this.directionalLight.castShadow = this.shadowSettings.enabled;\n\n        if (this.shadowSettings.enabled) {\n            this.directionalLight.shadow.mapSize.width = this.shadowSettings.mapSize;\n            this.directionalLight.shadow.mapSize.height = this.shadowSettings.mapSize;\n            this.directionalLight.shadow.camera.near = 0.5;\n            this.directionalLight.shadow.camera.far = 20000;\n            this.directionalLight.shadow.bias = this.shadowSettings.bias;\n            this.directionalLight.shadow.normalBias = this.shadowSettings.normalBias;\n            this.directionalLight.shadow.radius = this.shadowSettings.radius;\n\n            const d = this.extendedSize * 0.75;\n            this.directionalLight.shadow.camera.left = -d;\n            this.directionalLight.shadow.camera.right = d;\n            this.directionalLight.shadow.camera.top = d;\n            this.directionalLight.shadow.camera.bottom = -d;\n\n            this.directionalLight.target.position.set(-this.extendedSize, -this.extendedSize, -this.extendedSize);\n            this.directionalLight.target.updateMatrixWorld();\n            this.directionalLight.shadow.camera.updateProjectionMatrix();\n        }\n\n        this.scene.add(this.directionalLight);\n        this.scene.add(this.directionalLight.target);\n\n        this.hemisphereLight = new THREE.HemisphereLight(\n            this.lightingSettings.skyColor,\n            this.lightingSettings.groundColor,\n            this.lightingSettings.hemisphereIntensity\n        );\n        this.scene.add(this.hemisphereLight);\n        this.tileMap = this.game.config.levels[this.game.state.level].tileMap;\n        this.setupGround();\n        this.generateLiquidSurfaceMesh(0);\n        this.generateLiquidSurfaceMesh(1);\n        if (this.showStats) {\n            this.stats = new Stats();\n            this.container.appendChild(this.stats.dom);\n        }\n\n        window.addEventListener('resize', this.onWindowResizeHandler);\n\n        this.game.scene = this.scene;\n        this.game.camera = this.camera;\n        this.game.renderer = this.renderer;\n        this.game.ground = this.ground;\n        this.drawn = false;\n        this.timer = 0;        \n    }\n\n    setupGround() {\n        this.groundCanvas = document.createElement('canvas');\n        this.groundCanvas.width = this.extendedSize;\n        this.groundCanvas.height = this.extendedSize;\n        this.groundCtx = this.groundCanvas.getContext('2d');\n\n        let bgColor = this.tileMap.terrainTypes[this.tileMap.extensionTerrainType].color;\n        let colorToUse = bgColor.paletteColor ? this.game.palette[bgColor.paletteColor] : bgColor;\n        this.groundCtx.fillStyle = colorToUse;\n        this.groundCtx.fillRect(0, 0, this.extendedSize, this.extendedSize);\n\n        this.groundTexture = new THREE.CanvasTexture(this.groundCanvas);\n        this.groundTexture.wrapS = THREE.ClampToEdgeWrapping;\n        this.groundTexture.wrapT = THREE.ClampToEdgeWrapping;\n        this.groundTexture.minFilter = THREE.NearestFilter;\n        this.groundTexture.magFilter = THREE.NearestFilter;\n\n        if (this.heightMapSettings) {\n            this.createHeightMapTerrain();\n        } else {\n            const groundGeometry = new THREE.PlaneGeometry(this.extendedSize, this.extendedSize);\n            this.groundMaterial = this.getGroundMaterial();\n            this.ground = new THREE.Mesh(groundGeometry, this.groundMaterial);\n            this.ground.rotation.x = -Math.PI / 2;\n            this.ground.position.set(this.terrainSize / 2, 0, this.terrainSize / 2);\n            this.ground.receiveShadow = true;\n            this.ground.castShadow = true;\n            this.scene.add(this.ground);\n        }\n    }\n\n    createHeightMapTerrain() {\n        this.heightMapData = new Float32Array(this.extendedSize * this.extendedSize);\n        this.terrainTypes = this.tileMap.terrainTypes || [];\n\n        const segments = this.heightMapResolution;\n        const groundGeometry = new THREE.PlaneGeometry(\n            this.extendedSize,\n            this.extendedSize,\n            segments,\n            segments\n        );\n\n        this.groundVertices = groundGeometry.attributes.position;\n\n        this.groundMaterial = this.getGroundMaterial();\n\n        this.ground = new THREE.Mesh(groundGeometry, this.groundMaterial);\n        this.ground.rotation.x = -Math.PI / 2;\n        this.ground.position.set(this.terrainSize / 2, 0, this.terrainSize / 2);\n        this.ground.receiveShadow = true;\n        this.ground.castShadow = true;\n        this.scene.add(this.ground);\n    }\n    findClosestTerrainType(r, g, b, terrainTypeColors) {\n        let minDistance = Infinity;\n        let bestTypeIndex = null;\n        let toleranceSquared = 36;\n        for (const [colorKey, typeIndex] of Object.entries(terrainTypeColors)) {\n            const [cr, cg, cb] = colorKey.split(',').map(Number);\n            const distance = ((r - cr) ** 2 + (g - cg) ** 2 + (b - cb) ** 2);\n            if (distance < minDistance && distance < toleranceSquared) { // Adjust tolerance as needed\n                minDistance = distance;\n                bestTypeIndex = typeIndex;\n            }\n        }\n        return bestTypeIndex;\n    }\n    updateHeightMap() {\n        if (!this.heightMapSettings.enabled || !this.game.terrainCanvasBuffer) return;\n\n        try {\n            const terrainCanvas = this.game.terrainCanvasBuffer;\n            const ctx = terrainCanvas.getContext('2d', { alpha: false, willReadFrequently: true });\n            ctx.imageSmoothingEnabled = false;\n            const terrainData = ctx.getImageData(0, 0, terrainCanvas.width, terrainCanvas.height).data;\n\n            const terrainTypeColors = this.createTerrainTypeColorMap();\n\n            this.heightMapData = new Float32Array(this.extendedSize * this.extendedSize);\n\n            const extensionTerrainType = this.tileMap.extensionTerrainType;\n            const extensionHeight = extensionTerrainType * this.heightStep;\n\n            for (let z = 0; z < this.extendedSize; z++) {\n                for (let x = 0; x < this.extendedSize; x++) {\n                    this.heightMapData[z * this.extendedSize + x] = extensionHeight;\n                }\n            }\n\n            for (let z = 0; z < this.terrainSize; z++) {\n                for (let x = 0; x < this.terrainSize; x++) {\n                    const pixelIndex = (z * terrainCanvas.width + x) * 4;\n                    const r = terrainData[pixelIndex];\n                    const g = terrainData[pixelIndex + 1];\n                    const b = terrainData[pixelIndex + 2];\n            \n                    const typeIndex = this.findClosestTerrainType(r,g,b,terrainTypeColors) ?? extensionHeight;\n                    let height = typeIndex !== undefined ? typeIndex * this.heightStep : extensionHeight;\n\n                    // Check neighboring pixels for lower terrain types\n                    let neighborCheckDist = this.heightMapSettings.resolutionDivisor - 1;\n                    const neighbors = [\n                        { x: x-neighborCheckDist, z: z },   // left\n                        { x: x+neighborCheckDist, z: z },   // right\n                        { x: x, z: z-neighborCheckDist },   // top\n                        { x: x, z: z+neighborCheckDist + 1 },   // bottom\n                        { x: x-neighborCheckDist, z: z-neighborCheckDist }, // top-left\n                        { x: x+neighborCheckDist, z: z-neighborCheckDist }, // top-right\n                        { x: x-neighborCheckDist, z: z+neighborCheckDist }, // bottom-left\n                        { x: x+neighborCheckDist, z: z+neighborCheckDist }  // bottom-right\n                    ];\n                    let lowestNeighborType = Infinity;\n                    for (const neighbor of neighbors) {\n                        if (neighbor.x >= 0 && neighbor.x < this.terrainSize && \n                            neighbor.z >= 0 && neighbor.z < this.terrainSize) {\n                            \n                            const neighborIndex = (neighbor.z * terrainCanvas.width + neighbor.x) * 4;\n                            const nr = terrainData[neighborIndex];\n                            const ng = terrainData[neighborIndex + 1];\n                            const nb = terrainData[neighborIndex + 2];\n                            const neighborKey = `${nr},${ng},${nb}`;\n                            \n                            const neighborTypeIndex = terrainTypeColors[neighborKey];\n                            if (neighborTypeIndex !== undefined && neighborTypeIndex < typeIndex && neighborTypeIndex < lowestNeighborType) {\n                                // If neighbor is lower terrain, use its height\n                                lowestNeighborType = neighborTypeIndex;\n                            }\n                        }\n                    }\n                    if (lowestNeighborType < typeIndex) {\n                        height = lowestNeighborType * this.heightStep;\n                    }\n            \n                    const extX = x + this.extensionSize;\n                    const extZ = z + this.extensionSize;\n                    this.heightMapData[extZ * this.extendedSize + extX] = height;\n                }\n            }\n\n            this.applyHeightMapToGeometry();\n\n        } catch (e) {\n            console.warn('Failed to update height map:', e);\n        }\n    }\n\n    createTerrainTypeColorMap() {\n        const colorMap = {};\n        const terrainTypes = this.terrainTypes;\n\n        for (let i = 0; i < terrainTypes.length; i++) {\n            const terrainType = terrainTypes[i];\n            let color = terrainType.color || {};\n\n            if (color.paletteColor && this.game.palette) {\n                const hexColor = this.game.palette[color.paletteColor];\n                if (hexColor) {\n                    const r = parseInt(hexColor.slice(1, 3), 16);\n                    const g = parseInt(hexColor.slice(3, 5), 16);\n                    const b = parseInt(hexColor.slice(5, 7), 16);\n                    colorMap[`${r},${g},${b}`] = i;\n                }\n            } else {\n                const hexColor = color;\n                if (hexColor) {\n                    const r = parseInt(hexColor.slice(1, 3), 16);\n                    const g = parseInt(hexColor.slice(3, 5), 16);\n                    const b = parseInt(hexColor.slice(5, 7), 16);\n                    colorMap[`${r},${g},${b}`] = i;\n                }\n            }\n        }\n\n        return colorMap;\n    }\n\n    applyHeightMapToGeometry() {\n        if (!this.ground || !this.groundVertices) return;\n\n        const positions = this.groundVertices.array;\n        const geometry = this.ground.geometry;\n        const segments = this.heightMapResolution;\n        const verticesPerRow = segments + 1;\n\n        for (let z = 0; z < verticesPerRow; z++) {\n            for (let x = 0; x < verticesPerRow; x++) {\n                const vertexIndex = (z * verticesPerRow + x);\n                const idx = vertexIndex * 3;\n\n                const nx = x / segments;\n                const nz = z / segments;\n\n                const terrainX = Math.floor(nx * (this.extendedSize - 1));\n                const terrainZ = Math.floor(nz * (this.extendedSize - 1));\n\n                const heightIndex = terrainZ * this.extendedSize + terrainX;\n                const height = this.heightMapData[heightIndex] || 0;\n\n                // const finalHeight = this.heightMapSettings.smoothing ?\n                //     this.smoothHeight(terrainX, terrainZ) : height;\n\n                positions[idx + 2] = height;\n            }\n        }\n\n        this.groundVertices.needsUpdate = true;\n        geometry.computeVertexNormals();\n    }\n\n    getGroundMaterial() {\n        return new THREE.MeshStandardMaterial({\n            map: this.groundTexture,\n            side: THREE.DoubleSide,\n            metalness: 0.0,\n            roughness: 0.8\n        });\n    }\n\n    onWindowResize() {\n        const width = this.container.clientWidth || window.innerWidth;\n        const height = this.container.clientHeight || window.innerHeight;\n\n        this.camera.aspect = width / height;\n        this.camera.updateProjectionMatrix();\n        this.renderer.setSize(width, height);\n                // Ensure canvas display size matches resolution\n        this.game.canvas.style.width = `${width}px`;\n        this.game.canvas.style.height = `${height}px`;\n    }\n\n    update() {\n        if (!this.game.config.configs.game.is3D) {\n            return;\n        }   \n    \n        if (this.controls) {\n            this.controls.update();\n        }\n        if (!isNaN(this.game.deltaTime)) {\n            this.timer += this.game.deltaTime;\n        }\n        if (this.stats) {\n            this.stats.update();\n        }\n        if (!this.drawn && this.groundTexture && this.game.mapRenderer && this.game.mapRenderer.isMapCached) {\n            this.groundCtx.drawImage(this.game.terrainCanvasBuffer, this.extensionSize, this.extensionSize);\n            this.groundTexture.needsUpdate = true;\n\n            if (this.heightMapSettings.enabled) {\n                this.updateHeightMap();\n            }\n\n            this.addGrassToTerrain();\n            this.drawn = true;\n        }\n        for(const key in this.uniforms) {\n            this.uniforms[key].time = { value: this.timer };            \n        }\n        this.renderer.render(this.scene, this.camera);\n    }\n\n    addGrassToTerrain() {\n        const bladeWidth = 12;\n        const bladeHeight = 18;\n        const grassGeometry = this.createCurvedBladeGeometry(bladeWidth, bladeHeight);\n        grassGeometry.translate(0, bladeHeight / 2, 0);\n        const grassCount = 500000;\n\n        const gridSize = this.game.config.configs.game.gridSize;\n        const phases = new Float32Array(grassCount);\n        for (let i = 0; i < grassCount; i++) {\n            phases[i] = Math.random() * Math.PI * 2;\n        }\n        grassGeometry.setAttribute('instancePhase', new THREE.InstancedBufferAttribute(phases, 1));\n\n        const grassTexture = this.createGrassTexture();\n        const grassShader = this.game.config.shaders[this.level.grassShader];\n        this.uniforms['grass'] = JSON.parse(grassShader.uniforms);\n        \n        this.uniforms['grass'].windDirection = { value: new THREE.Vector2(this.uniforms['grass'].windDirection.value[0], this.uniforms['grass'].windDirection.value[1]).normalize()};\n        this.uniforms['grass'].map = { value: grassTexture };\n        this.uniforms['grass'].fogColor = { value: new THREE.Color(this.fogSettings.color) };\n        this.uniforms['grass'].fogDensity = this.fogSettings.enabled ? { value: this.fogSettings.density } : 0;\n        const lightDirection = new THREE.Vector3();\n        lightDirection.subVectors(this.directionalLight.position, this.directionalLight.target.position);\n        lightDirection.normalize();\n\n        this.uniforms['grass'].directionalLightColor = { value: new THREE.Color(this.lightingSettings.directionalColor) };\n        this.uniforms['grass'].directionalLightIntensity = { value: this.lightingSettings.directionalIntensity };\n        this.uniforms['grass'].directionalLightDirection = { value: lightDirection };\n        this.uniforms['grass'].ambientLightColor = { value: new THREE.Color(this.lightingSettings.ambientColor) };\n        this.uniforms['grass'].ambientLightIntensity = { value: this.lightingSettings.ambientIntensity };\n        this.uniforms['grass'].skyColor =  { value: new THREE.Color(this.lightingSettings.skyColor) }; // HemisphereLight sky color\n        this.uniforms['grass'].groundColor = { value: new THREE.Color(this.lightingSettings.groundColor) }; // HemisphereLight ground color\n        this.uniforms['grass'].hemisphereIntensity = { value: this.lightingSettings.hemisphereIntensity };\n\n        const uniforms = this.uniforms['grass'];\n        this.grassMaterial = new THREE.ShaderMaterial({\n            vertexShader: grassShader.vertexScript,\n            fragmentShader: grassShader.fragmentScript,\n            uniforms: uniforms,\n            transparent: true\n        });\n\n        this.grassShader = this.grassMaterial;\n        \n        grassGeometry.computeVertexNormals(); \n        const grass = new THREE.InstancedMesh(grassGeometry, this.grassMaterial, grassCount);\n        grass.castShadow = true;\n        grass.receiveShadow = false;\n\n        const dummy = new THREE.Object3D();\n        const grassArea = this.extendedSize;  \n        const ctx = this.groundCanvas.getContext('2d');\n        const terrainData = ctx.getImageData(0, 0, this.groundCanvas.width, this.groundCanvas.height).data;\n\n        // Create a density map for grass placement\n        // Create a density map for grass placement\n        const densityMap = new Float32Array(this.extendedSize * this.extendedSize);\n        for (let z = 0; z < this.extendedSize; z++) {\n            for (let x = 0; x < this.extendedSize; x++) {\n                // Check current pixel for green dominance\n                const pixelIndex = (z * this.groundCanvas.width + x) * 4;\n                const isGreenDominant = (pixel) => {\n                    const r = terrainData[pixel];\n                    const g = terrainData[pixel + 1];\n                    const b = terrainData[pixel + 2];\n                    return g > r && g > b;\n                };\n\n                // Only set density if current pixel and all neighbors are green\n                if (isGreenDominant(pixelIndex)) {\n                    // Check 8 neighboring pixels\n                    let checkDist = Math.ceil(gridSize / 10);\n                    const neighbors = [\n                        [-checkDist, -checkDist], [0, -checkDist], [checkDist, -checkDist],\n                        [-checkDist,  0],                           [checkDist,  0],\n                        [-checkDist,  checkDist], [0,  checkDist], [checkDist,  checkDist]\n                    ];\n\n                    let allNeighborsGreen = true;\n                    for (const [dx, dz] of neighbors) {\n                        const nx = x + dx;\n                        const nz = z + dz;\n                        \n                        // Skip if neighbor is outside bounds\n                        if (nx < 0 || nx >= this.extendedSize || nz < 0 || nz >= this.extendedSize) {\n                            allNeighborsGreen = false;\n                            break;\n                        }\n\n                        const neighborIndex = (nz * this.groundCanvas.width + nx) * 4;\n                        if (!isGreenDominant(neighborIndex)) {\n                            allNeighborsGreen = false;\n                            break;\n                        }\n                    }\n\n                    densityMap[z * this.extendedSize + x] = allNeighborsGreen ? 1 : 0;\n                } else {\n                    densityMap[z * this.extendedSize + x] = 0;\n                }\n            }\n        }\n\n        // Place grass based on density\n        let placed = 0;\n        for (let i = 0; i < grassCount * 2 && placed < grassCount; i++) {\n            const x = Math.floor(Math.random() * grassArea);\n            const z = Math.floor(Math.random() * grassArea);\n            if (densityMap[z * this.extendedSize + x] > 0) {\n                const rotationY = Math.random() * Math.PI * 2;\n                const scale = 0.7 + Math.random() * 0.5;\n                let height = this.heightMapSettings.enabled\n                    ? this.heightMapData[Math.min(z, this.extendedSize - 1) * this.extendedSize + Math.min(x, this.extendedSize - 1)] || 0\n                    : 0;\n                dummy.position.set(x - grassArea / 2 + this.terrainSize / 2, height - bladeHeight, z - grassArea / 2 + this.terrainSize / 2);\n                dummy.rotation.set(0, rotationY, 0);\n                dummy.scale.set(scale, scale, scale);\n                dummy.updateMatrix();\n                grass.setMatrixAt(placed++, dummy.matrix);\n            }\n        }\n\n        grass.instanceMatrix.needsUpdate = true;\n        this.scene.add(grass);\n        this.grass = grass;\n    }\n\n    onDestroy() {\n        window.removeEventListener('resize', this.onWindowResizeHandler);\n        this.renderer.dispose();\n        if (this.stats?.dom?.parentElement) {\n            this.stats.dom.parentElement.removeChild(this.stats.dom);\n        }\n        if (this.renderer.domElement?.parentElement) {\n            this.renderer.domElement.parentElement.removeChild(this.renderer.domElement);\n        }\n        if (this.grass) {\n            this.grass.geometry.dispose();\n            this.grass.material.dispose();\n        }\n        this.ground.geometry?.dispose();\n        this.groundMaterial?.dispose();\n        this.groundTexture?.dispose();\n        this.groundCanvas = null;\n        this.game.scene = null;\n        this.game.camera = null;\n        this.game.renderer = null;\n    }\n\n    createCurvedBladeGeometry(width = 0.1, height = 1) {\n        const shape = new THREE.Shape();\n        shape.moveTo(0, 0);\n        shape.quadraticCurveTo(width * 0.5, height * 0.5, 0, height);\n    \n        const shapeGeom = new THREE.ShapeGeometry(shape, 12);\n        const positions = shapeGeom.attributes.position.array;\n        const uvs = shapeGeom.attributes.uv.array;\n        const vertexCount = positions.length / 3;\n    \n        const newUVs = new Float32Array(uvs.length);\n        const newNormals = new Float32Array(positions.length);\n    \n        for (let i = 0; i < vertexCount; i++) {\n            const posIndex = i * 3;\n            const uvIndex = i * 2;\n            const x = positions[posIndex];\n            const y = positions[posIndex + 1];\n            const normalizedY = y / height;\n    \n            newUVs[uvIndex] = uvs[uvIndex];\n            newUVs[uvIndex + 1] = normalizedY;\n    \n            // Compute normal: approximate outward direction along curve\n            const t = y / height; // Parameter along curve\n            const curveX = width * 0.5 * (1 - t); // Quadratic curve approximation\n            const tangent = new THREE.Vector2(curveX - x, y - (y - height * 0.5)).normalize();\n            const normal = new THREE.Vector2(-tangent.y, tangent.x); // Perpendicular to tangent\n            newNormals[posIndex] = normal.x;\n            newNormals[posIndex + 1] = 0;\n            newNormals[posIndex + 2] = normal.y;\n        }\n    \n        shapeGeom.setAttribute('uv', new THREE.BufferAttribute(newUVs, 2));\n        shapeGeom.setAttribute('normal', new THREE.BufferAttribute(newNormals, 3));\n        return shapeGeom;\n    }\n    createGrassTexture() {\n        const canvas = document.createElement('canvas');\n        canvas.width = 4;\n        canvas.height = 32;\n        const ctx = canvas.getContext('2d');\n\n        const gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);\n        gradient.addColorStop(0.0, this.game.palette[\"greenMColor\"]);\n        gradient.addColorStop(0.8, this.game.palette[\"greenMColor\"]);\n        gradient.addColorStop(1.0, this.game.palette[\"redLColor\"]);\n\n        ctx.fillStyle = gradient;\n        ctx.fillRect(0, 0, canvas.width, canvas.height);\n\n        const texture = new THREE.CanvasTexture(canvas);\n        texture.wrapS = THREE.RepeatWrapping;\n        texture.wrapT = THREE.ClampToEdgeWrapping;\n        texture.magFilter = THREE.NearestFilter;\n        texture.minFilter = THREE.NearestFilter;\n        return texture;\n    }\n\n    generateLiquidSurfaceMesh(terrainType) {\n        const terrainMap = this.tileMap.terrainMap;\n        const gridSize = this.game.config.configs.game.gridSize;\n        const rows = terrainMap.length;\n        const cols = terrainMap[0].length;\n        \n        // Arrays to store vertices, indices, and UVs for the BufferGeometry\n        const vertices = [];\n        const indices = [];\n        const uvs = [];\n        \n        // Amount to extend the perimeter (e.g., 10% of gridSize)\n        const extensionAmount = gridSize * 0.25; // Adjust as needed        \n  \n        // Helper function to check if a tile is a water tile\n        const isWaterTile = (x, z) => {\n            if (x < 0 || x >= cols || z < 0 || z >= rows) return false;\n            return terrainMap[z][x] === terrainType;\n        };\n        \n        // Step 1: Generate a grid of vertices, but only for positions needed by water tiles\n        const usedPositions = new Set();\n        for (let z = 0; z < rows; z++) {\n            for (let x = 0; x < cols; x++) {\n                if (terrainMap[z][x] === terrainType) {\n                    usedPositions.add(`${x},${z}`);     // Bottom-left\n                    usedPositions.add(`${x + 1},${z}`); // Bottom-right\n                    usedPositions.add(`${x + 1},${z + 1}`); // Bottom-right in your view (+z is south)\n                    usedPositions.add(`${x},${z + 1}`); // Top-left\n                }\n            }\n        }\n        \n        // Step 2: Create vertices for all used positions and store their original positions\n        const positionToVertexIndex = new Map();\n        const originalPositions = []; // Store original (x, z) for each vertex\n        let vertexIndex = 0;\n        for (const pos of usedPositions) {\n            const [x, z] = pos.split(',').map(Number);\n            positionToVertexIndex.set(pos, vertexIndex++);\n            vertices.push(x * gridSize, 0.1, z * gridSize);\n            originalPositions.push([x, z]); // Store original grid position\n            uvs.push(x, z); // UVs based on grid position\n        }\n        \n        // Step 3: Generate indices for water tiles, connecting them into a single mesh\n        for (let z = 0; z < rows; z++) {\n            for (let x = 0; x < cols; x++) {\n                if (terrainMap[z][x] === terrainType) {\n                    const bl = positionToVertexIndex.get(`${x},${z}`);\n                    const br = positionToVertexIndex.get(`${x + 1},${z}`);\n                    const tr = positionToVertexIndex.get(`${x + 1},${z + 1}`); // Bottom-right in your view\n                    const tl = positionToVertexIndex.get(`${x},${z + 1}`);\n        \n                    indices.push(bl, br, tl);\n                    indices.push(br, tr, tl);\n                }\n            }\n        }\n        \n        // Step 4: Identify perimeter vertices and their extension directions\n        const perimeterExtensions = new Map(); // Map vertexIndex to { extendLeft, extendRight, extendUp, extendDown }\n        for (let z = 0; z < rows; z++) {\n            for (let x = 0; x < cols; x++) {\n                if (terrainMap[z][x] === terrainType) {\n                    const isLeftEdge = !isWaterTile(x - 1, z);\n                    const isRightEdge = !isWaterTile(x + 1, z);\n                    const isBottomEdge = !isWaterTile(x, z - 1); // North\n                    const isTopEdge = !isWaterTile(x, z + 1);    // South\n        \n                    // Bottom-left vertex (x, z)\n                    if (isLeftEdge || isBottomEdge) {\n                        const vIdx = positionToVertexIndex.get(`${x},${z}`);\n                        if (!perimeterExtensions.has(vIdx)) perimeterExtensions.set(vIdx, { extendLeft: false, extendRight: false, extendUp: false, extendDown: false });\n                        const ext = perimeterExtensions.get(vIdx);\n                        if (isLeftEdge) ext.extendLeft = true;\n                        if (isBottomEdge) ext.extendUp = true; // North\n                    }\n        \n                    // Bottom-right vertex (x + 1, z)\n                    if (isRightEdge || isBottomEdge) {\n                        const vIdx = positionToVertexIndex.get(`${x + 1},${z}`);\n                        if (!perimeterExtensions.has(vIdx)) perimeterExtensions.set(vIdx, { extendLeft: false, extendRight: false, extendUp: false, extendDown: false });\n                        const ext = perimeterExtensions.get(vIdx);\n                        if (isRightEdge) ext.extendRight = true;\n                        if (isBottomEdge) ext.extendUp = true; // North\n                    }\n        \n                    // Top-right vertex (x + 1, z + 1) - Bottom-right in your view\n                    if (isRightEdge || isTopEdge) {\n                        const vIdx = positionToVertexIndex.get(`${x + 1},${z + 1}`);\n                        if (!perimeterExtensions.has(vIdx)) perimeterExtensions.set(vIdx, { extendLeft: false, extendRight: false, extendUp: false, extendDown: false });\n                        const ext = perimeterExtensions.get(vIdx);\n                        if (isRightEdge) ext.extendRight = true;\n                        if (isTopEdge) ext.extendDown = true; // South\n                    }\n        \n                    // Top-left vertex (x, z + 1)\n                    if (isLeftEdge || isTopEdge) {\n                        const vIdx = positionToVertexIndex.get(`${x},${z + 1}`);\n                        if (!perimeterExtensions.has(vIdx)) perimeterExtensions.set(vIdx, { extendLeft: false, extendRight: false, extendUp: false, extendDown: false });\n                        const ext = perimeterExtensions.get(vIdx);\n                        if (isLeftEdge) ext.extendLeft = true;\n                        if (isTopEdge) ext.extendDown = true; // South\n                    }\n                }\n            }\n        }\n        \n        // Step 5: Apply perimeter extensions\n        perimeterExtensions.forEach((ext, vertexIndex) => {\n            const idx = vertexIndex * 3;\n            const [origX, origZ] = originalPositions[vertexIndex];\n        \n            // Log the bottom-right corner for debugging\n            if (ext.extendRight && ext.extendDown) {\n                console.log(`Bottom-right corner at (${origX}, ${origZ}): Before extension - x: ${vertices[idx]}, z: ${vertices[idx + 2]}`);\n            }\n        \n            if (ext.extendLeft) vertices[idx] -= extensionAmount; // Extend left\n            if (ext.extendRight) vertices[idx] += extensionAmount; // Extend right\n            if (ext.extendUp) vertices[idx + 2] -= extensionAmount; // Extend north (decrease z)\n            if (ext.extendDown) vertices[idx + 2] += extensionAmount; // Extend south (increase z)\n        \n            if (ext.extendRight && ext.extendDown) {\n                console.log(`Bottom-right corner at (${origX}, ${origZ}): After extension - x: ${vertices[idx]}, z: ${vertices[idx + 2]}`);\n            }\n        });\n        \n        // Step 6: Create the BufferGeometry\n        const geometry = new THREE.BufferGeometry();\n        geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));\n        geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));\n        geometry.setIndex(indices);\n        geometry.computeVertexNormals(); // For lighting\n        // Parse the hex color to RGB\n        const parseHexColor = (hex) => {\n            const r = parseInt(hex.slice(1, 3), 16) / 255;\n            const g = parseInt(hex.slice(3, 5), 16) / 255;\n            const b = parseInt(hex.slice(5, 7), 16) / 255;\n            return { r, g, b };\n        };\n        const waterShader = this.game.config.shaders[this.level.waterShader];\n        // Use the hex color in a ShaderMaterial\n        this.uniforms[terrainType] = JSON.parse(waterShader.uniforms);\n        let vectorizeProps = JSON.parse(waterShader.vectors);\n        vectorizeProps.forEach((prop => {\n            if (this.uniforms[terrainType][prop]) {\n                if( prop.toLowerCase().endsWith(\"color\")){\n                    const colorToUse = this.tileMap.terrainTypes[terrainType].color;\n                    const { r, g, b } = parseHexColor(colorToUse);\n                    this.uniforms[terrainType][prop].value = new THREE.Vector3(r, g, b);\n                } else {\n                    let arr = this.uniforms[terrainType][prop].value;\n                    this.uniforms[terrainType][prop].value = new THREE.Vector3(arr[0], arr[1], arr[2]);\n                }\n            }\n        }));\n        this.uniforms[terrainType].fogColor = { value: new THREE.Color(this.fogSettings.color) };\n        this.uniforms[terrainType].fogDensity = this.fogSettings.enabled ? { value: this.fogSettings.density } : 0;\n        // Reference the uniforms\n        const uniforms = this.uniforms[terrainType];\n        \n        // Create the shader material\n        const material = new THREE.ShaderMaterial({\n            uniforms: uniforms,\n            vertexShader: waterShader.vertexScript,\n            fragmentShader: waterShader.fragmentScript,\n            side: THREE.DoubleSide,\n            transparent: true\n        });\n\n        // Replace the MeshBasicMaterial with this ShaderMaterial in the mesh creation\n        const waterMesh = new THREE.Mesh(geometry, material);        \n        waterMesh.position.y = (terrainType + 2) * this.heightMapSettings.heightStep;\n        this.scene.add(waterMesh); // Assuming `this.scene` is your THREE.js scene\n    }\n}"
-      },
       "WaveManager": {
         "fileName": "WaveManager",
         "title": "AudioManager",
         "script": "class WaveManager extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init() {   \r\n        \r\n        this.resetWaveState();\r\n    }\r\n\r\n    resetWaveState() {\r\n        this.game.state.waveSets = this.game.config.levels[this.game.state.level].wavesets;\r\n        this.game.state.currentWaveIds = [];\r\n        this.game.state.currentWaveEnemies = [];\r\n        this.game.state.enemiesSpawned = [];\r\n        this.game.state.spawnTimers = []; // Array for individual spawn timers\r\n        this.game.state.spawnRate = 1;    // Base spawn rate (can be modified per waveset if needed)\r\n        this.game.state.waveTimer = 0;\r\n        this.game.state.startDelayTimer = 0;\r\n        this.game.state.round = 0;\r\n    }\r\n\r\n    update() {\r\n        // Skip wave updates if game is over or in certain states\r\n        if (this.game.state.gameOver || this.game.state.victory || this.game.state.isLevelingUp) return;\r\n\r\n        this.game.state.startDelayTimer += this.game.deltaTime;\r\n\r\n        // Process all wavesets in parallel\r\n        for (let i = 0; i < this.game.state.currentWaveIds.length; i++) {\r\n            let waveSet = this.game.config.wavesets[this.game.state.waveSets[i]];\r\n            \r\n            // Skip if still in start delay\r\n            if (waveSet.startDelay && this.game.state.startDelayTimer < waveSet.startDelay) continue;\r\n            \r\n            if(this.game.deltaTime){\r\n            // Update individual spawn timer for this waveset\r\n                this.game.state.spawnTimers[i] += this.game.deltaTime;\r\n            }\r\n            // If this waveset still has enemies to spawn\r\n            if (this.game.state.enemiesSpawned[i] < this.game.state.currentWaveEnemies[i].length) {\r\n                if (this.game.state.spawnTimers[i] >= this.game.state.spawnRate) {\r\n                    // Create enemy from the appropriate waveset using the enemy type and start point index\r\n                    const enemyType = this.game.state.currentWaveEnemies[i][this.game.state.enemiesSpawned[i]];\r\n                    const startPointIndex = i;\r\n                    \r\n                    \r\n        \t\t\t\t\t  this.game.spawn(0, 0, 'enemy', { objectType: \"enemies\", spawnType: enemyType, pathIndex: startPointIndex, friction: 1000, density: 1000});\r\n                    this.game.state.enemiesSpawned[i]++;\r\n                    this.game.state.spawnTimers[i] = 0; // Reset this waveset's timer\r\n                    \r\n                    // Calculate total progress across all wavesets\r\n                    const totalEnemies = this.game.state.currentWaveEnemies.reduce((sum, wave) => sum + wave.length, 0);\r\n                    const totalSpawned = this.game.state.enemiesSpawned.reduce((sum, count) => sum + count, 0);\r\n                    \r\n                    // Update wave progress bar\r\n                    document.getElementById('waveProgress').style.width = (totalSpawned / totalEnemies * 100) + '%';\r\n                }\r\n            }\r\n        }\r\n        \r\n        // Check if all wavesets have completed spawning\r\n        const allWavesetsComplete = this.game.state.enemiesSpawned.every((spawned, index) => \r\n            spawned >= this.game.state.currentWaveEnemies[index].length\r\n        );\r\n        \r\n        // Move to next wave if all enemies defeated and all wavesets have completed spawning\r\n        if (this.game.state.enemies.length === 0 && allWavesetsComplete) {\r\n            this.game.state.waveTimer++;\r\n            \r\n            if (this.game.state.waveTimer >= this.game.state.waveDelay) {\r\n                this.startNextWave();\r\n            }\r\n        }\r\n    }\r\n\r\n    startNextWave() {\r\n        document.getElementById('waveDisplay').textContent = this.game.state.round + 1;\r\n        \r\n        this.game.state.currentWaveIds = [];\r\n        this.game.state.currentWaveEnemies = [];\r\n        this.game.state.enemiesSpawned = [];\r\n        this.game.state.spawnTimers = [];\r\n        \r\n        let totalWaves = 0;\r\n        for (let i = 0; i < this.game.state.waveSets.length; i++) {\r\n            const waveSetId = this.game.state.waveSets[i];\r\n            const waveSet = this.game.config.wavesets[waveSetId];\r\n            \r\n            // Check if this waveset has enough waves for the current round\r\n            if (this.game.state.round < waveSet.waves.length) {\r\n                const currentWaveId = waveSet.waves[this.game.state.round];\r\n                \r\n                // Add this wave to the current active waves\r\n                this.game.state.currentWaveIds.push(currentWaveId);\r\n                this.game.state.currentWaveEnemies.push(this.game.config.waves[currentWaveId].enemies);\r\n                this.game.state.enemiesSpawned.push(0);\r\n                this.game.state.spawnTimers.push(0); // Initialize spawn timer for this waveset\r\n            }\r\n            \r\n            totalWaves = Math.max(totalWaves, waveSet.waves.length);\r\n        }\r\n        \r\n        // If all wavesets are exhausted, end the game\r\n        if (this.game.state.currentWaveIds.length === 0) {\r\n            this.game.state.victory = true;\r\n            this.game.state.isPaused = true;\r\n            document.getElementById('victoryMenu').style.display = 'block';\r\n            document.getElementById('overlay').style.display = 'block';\r\n            return;\r\n        }\r\n        \r\n        this.game.state.maxWaves = totalWaves;\r\n        this.game.state.spawnRate = 5;\r\n        this.game.state.waveTimer = 0;\r\n        this.game.state.startDelayTimer = 0;\r\n        \r\n        // Reset wave progress bar\r\n        document.getElementById('waveProgress').style.width = '0%';\r\n        this.game.state.round++;\r\n    }\r\n}"
+      },
+      "SpacialGridEntity": {
+        "fileName": "SpacialGridEntity",
+        "script": "class SpacialGridEntity extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n   update() {\r\n        this.game.spatialGrid.insert(this.parent);\r\n    }\r\n    destroy() {\r\n        this.game.spatialGrid.remove(this.parent);\r\n    }\r\n}"
+      },
+      "Projectile": {
+        "fileName": "Projectile",
+        "script": "class Projectile extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\ninit({ spawnType, owner, target, targetPosition, stats }) {\r\n  this.type = spawnType;\r\n  this.def = this.game.config.projectiles[this.type];\r\n  this.owner = owner;\r\n  this.target = target;\r\n  this.targetPosition = targetPosition;\r\n  this.stats = stats;\r\n  this.piercedEnemies = [];\r\n  this.ownerStats = this.owner.getComponent(\"stats\").stats;\r\n  this.distanceTraveled = 0;\r\n  this.distanceToSpawnParticle = 24;\r\n\r\n  // Add lifespan for projectile (e.g., 5 seconds)\r\n  this.maxLifespan = this.stats.lifespan || 5; // Default to 5 seconds, adjust as needed\r\n  this.currentLifespan = 0;  \r\n  if(this.stats.attackSound){\r\n    this.game.audioManager.playSound('attackSounds', this.stats.attackSound);\r\n  }\r\n}\r\n\r\nupdate() {\r\n  let hitSoundPlayed = false;\r\n  if(this.target) this.targetCurrentPosition = {...this.target.position };\r\n  // Update lifespan and destroy if expired\r\n  this.currentLifespan += this.game.deltaTime; // Assuming deltaTime is in seconds\r\n  if (this.currentLifespan >= this.maxLifespan) {\r\n    this.parent.destroy();\r\n    return;\r\n  }\r\n\r\n  // Remove if target is gone (only if no targetPosition)\r\n  if (!this.targetPosition && (!this.target || this.target.destroyed)) {\r\n    if(this.targetCurrentPosition) {\r\n    \tthis.targetPosition = this.targetCurrentPosition;\r\n    } else {\r\n     \tthis.parent.destroy(); \r\n    \treturn;\r\n    }\r\n  }\r\n\r\n  // Determine movement target\r\n  const targetPos = this.targetPosition ? this.targetPosition : this.target.position;\r\n  const dx = targetPos.x - this.parent.position.x;\r\n  const dy = targetPos.y - this.parent.position.y;\r\n  const distSq = dx * dx + dy * dy;\r\n  const dist = Math.sqrt(distSq);\r\n  const speed = this.stats.speed;\r\n\r\n  // Hit detection\r\n  const hitRadiusSq = 15 * 15; // Same as your original hit detection radius\r\n  let hitDetected = false;\r\n\r\n  if (this.targetPosition) {\r\n    // Check nearby enemies for hit detection when using targetPosition\r\n    const nearbyEnemies = this.game.spatialGrid.getNearbyEntities(\r\n      this.parent.gridPosition.x,\r\n      this.parent.gridPosition.y,\r\n      this.stats.splashRadius || 15, // Use splashRadius or default to 15,\r\n      \"enemy\"\r\n    );\r\n\r\n    for (const enemy of nearbyEnemies) {\r\n      if (enemy.isDead || this.piercedEnemies.includes(enemy)) continue;\r\n\r\n      const dxEnemy = enemy.position.x - this.parent.position.x;\r\n      const dyEnemy = enemy.position.y - this.parent.position.y;\r\n      const enemyDistSq = dxEnemy * dxEnemy + dyEnemy * dyEnemy;\r\n\r\n      if (enemyDistSq <= hitRadiusSq) {\r\n        // Hit detected\r\n        if(this.stats.hitSound && !hitDetected && !hitSoundPlayed){\r\n          this.game.audioManager.playSound('hitSounds', this.stats.hitSound);\r\n          hitSoundPlayed = true;\r\n        }\r\n        hitDetected = true;\r\n        let enemyHealth = enemy.getComponent(\"health\");\r\n        let enemyEnergyShield = enemy.getComponent(\"energyshield\");\r\n        let enemyStats = enemy.getComponent(\"stats\");\r\n        let enemyStatClone = { ...enemyStats.stats };\r\n        enemyStatClone.energyShield = enemyEnergyShield.energyShield;\r\n\r\n        // Apply damage\r\n        let damageResult = engine.getFunction(\"calculateDamage\")(this.stats, enemyStatClone);\r\n        if (!damageResult.wasEvaded) {\r\n          enemyHealth.hp -= damageResult.damageDealt;\r\n          enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);\r\n          this.game.spawn(enemy.position.x, enemy.position.y, \"hitEffect\", {\r\n            damageType: this.stats.damageType,\r\n            lifeSpan: 0.3\r\n          });\r\n          if (this.ownerStats.slowAmount) {\r\n            enemyStats.addEffect(\r\n              this.game.config.effects.slow,\r\n              this.game.effects.slow,\r\n              this.ownerStats.slowAmount\r\n            );\r\n          }\r\n        }\r\n\r\n        // Piercing logic\r\n        if (this.stats.piercing > 0 && this.piercedEnemies.length < this.stats.piercing) {\r\n          this.piercedEnemies.push(enemy);\r\n          let newTarget = this.findNewTarget(nearbyEnemies);\r\n          if (newTarget) {\r\n            this.target = newTarget;\r\n            this.targetPosition = null; // Switch to target-based tracking\r\n            return;\r\n          }\r\n        }\r\n\r\n        // Splash damage if applicable\r\n        if (this.stats.splashRadius > 0) {\r\n          this.applySplashDamage(nearbyEnemies);\r\n          this.game.spawn(this.parent.position.x, this.parent.position.y, \"explosion\", {\r\n            radius: this.stats.splashRadius\r\n          });\r\n        }\r\n\r\n        // Destroy projectile if no piercing or piercing limit reached\r\n        if (this.stats.piercing <= 0 || this.piercedEnemies.length >= this.stats.piercing) {\r\n          this.parent.destroy();\r\n          return;\r\n        }\r\n      }\r\n    }\r\n  } else if (distSq < hitRadiusSq) {\r\n    // Original target-based hit detection\r\n    let targetHealth = this.target.getComponent(\"health\");\r\n    let targetEnergyShield = this.target.getComponent(\"energyshield\");\r\n    let targetStats = this.target.getComponent(\"stats\");\r\n    let targetStatClone = { ...targetStats.stats };\r\n    targetStatClone.energyShield = targetEnergyShield.energyShield;\r\n\r\n    // Apply damage and effects (unchanged from your original code)\r\n    let damageResult = engine.getFunction(\"calculateDamage\")(this.stats, targetStatClone);\r\n    if (!damageResult.wasEvaded) {\r\n      if(this.stats.hitSound && !hitSoundPlayed){\r\n        this.game.audioManager.playSound('hitSounds', this.stats.hitSound);\r\n        hitSoundPlayed = true;\r\n      }\r\n      targetHealth.hp -= damageResult.damageDealt;\r\n      targetEnergyShield.absorbDamage(damageResult.damageAbsorbed);\r\n      this.game.spawn(this.target.position.x, this.target.position.y, \"hitEffect\", {\r\n        damageType: this.stats.damageType,\r\n        lifeSpan: 0.3\r\n      });\r\n      if (this.ownerStats.slowAmount) {\r\n        targetStats.addEffect(\r\n          this.game.config.effects.slow,\r\n          this.game.effects.slow,\r\n          this.ownerStats.slowAmount\r\n        );\r\n      }\r\n    }\r\n\r\n    // Summon skeleton, leech, thief logic (unchanged)\r\n    if (\r\n      this.ownerStats.summonChance > 0 &&\r\n      targetHealth.hp <= 0 &&\r\n      Math.random() < this.ownerStats.summonChance - 1\r\n    ) {\r\n      this.game.spawn(this.target.position.x, this.target.position.y, \"summonedTower\", {\r\n        objectType: \"towers\",\r\n        spawnType: this.ownerStats.summonType,\r\n        owner: this.owner\r\n      });\r\n    }\r\n    if (this.ownerStats.leech > 0) {\r\n      const healing = this.stats.damage * this.ownerStats.leech * this.game.state.stats.healingMultiplier;\r\n      this.game.state.bloodCoreHP = Math.min(\r\n        this.game.state.stats.maxBloodCoreHP,\r\n        this.game.state.bloodCoreHP + healing\r\n      );\r\n    }\r\n    if (this.ownerStats.thief && this.ownerStats.thief != 0) {\r\n      const stealAmt = this.stats.damage * this.ownerStats.thief * this.game.state.stats.bloodShardMultiplier;\r\n      this.game.state.bloodShards += stealAmt;\r\n    }\r\n\r\n    // Piercing logic\r\n    if (this.stats.piercing > 0 && this.piercedEnemies.length < this.stats.piercing) {\r\n      this.piercedEnemies.push(this.target);\r\n      const newTarget = this.findNewTarget(\r\n        this.game.spatialGrid.getNearbyEntities(\r\n          this.parent.gridPosition.x,\r\n          this.parent.gridPosition.y,\r\n          this.ownerStats.range\r\n        )\r\n      );\r\n      if (newTarget) {\r\n        this.target = newTarget;\r\n        return;\r\n      }\r\n    }\r\n\r\n    this.parent.destroy();\r\n    return;\r\n  }\r\n\r\n  // Move projectile\r\n  this.parent.position.x += (dx / dist) * speed;\r\n  this.parent.position.y += (dy / dist) * speed;\r\n\r\n  // Continue moving past targetPosition by updating it if reached\r\n  if (this.targetPosition && distSq < speed * speed) {\r\n    // If close to targetPosition, extend it in the same direction\r\n    const directionX = dx / dist;\r\n    const directionY = dy / dist;\r\n    this.targetPosition.x += directionX * speed * 10; // Extend further (adjust multiplier)\r\n    this.targetPosition.y += directionY * speed * 10;\r\n  }\r\n\r\n  // Particle spawning logic (unchanged)\r\n  const tDx = this.parent.lastPosition.x - this.parent.position.x;\r\n  const tDy = this.parent.lastPosition.y - this.parent.position.y;\r\n  const tDistSq = tDx * tDx + tDy * tDy;\r\n  const tDist = Math.sqrt(tDistSq);\r\n\r\n  this.distanceTraveled += tDist;\r\n  if (this.def.particle && this.distanceTraveled > this.distanceToSpawnParticle) {\r\n    this.game.spawn(this.parent.position.x, this.parent.position.y, \"particle\", { objectType: \"particles\", spawnType: this.def.particle});\r\n    this.distanceTraveled = 0;\r\n    this.distanceToSpawnParticle += Math.random() * 3;\r\n  }\r\n}\r\n\r\n// Helper method to find a new target for piercing\r\nfindNewTarget(nearbyEnemies) {\r\n  const gridSize = this.game.config.configs.game.gridSize;\r\n  const rangeSq = this.ownerStats.range * this.ownerStats.range * gridSize * gridSize;\r\n  for (let enemy of nearbyEnemies) {\r\n    if (!enemy.destroyed && !this.piercedEnemies.includes(enemy)) {\r\n      const dx = enemy.position.x - this.parent.position.x;\r\n      const dy = enemy.position.y - this.parent.position.y;\r\n      const distSq = dx * dx + dy * dy;\r\n      if (distSq < rangeSq) {\r\n        return enemy;\r\n      }\r\n    }\r\n  }\r\n  return null;\r\n}\r\n\r\n// Helper method to apply splash damage\r\napplySplashDamage(nearbyEnemies) {\r\n  const gridSize = this.game.config.configs.game.gridSize;\r\n  const splashRadiusSq = this.stats.splashRadius * this.stats.splashRadius * gridSize * gridSize;\r\n  for (const enemy of nearbyEnemies) {\r\n    if (enemy.isDead || this.piercedEnemies.includes(enemy)) continue;\r\n    let enemyHealth = enemy.getComponent(\"health\");\r\n    let enemyEnergyShield = enemy.getComponent(\"energyshield\");\r\n    let enemyStats = enemy.getComponent(\"stats\");\r\n    let enemyStatClone = { ...enemyStats.stats };\r\n    enemyStatClone.energyShield = enemyEnergyShield.energyShield;\r\n\r\n    const dx = enemy.position.x - this.parent.position.x;\r\n    const dy = enemy.position.y - this.parent.position.y;\r\n    const distSq = dx * dx + dy * dy;\r\n\r\n    if (distSq <= splashRadiusSq) {\r\n      let damageResult = engine.getFunction(\"calculateDamage\")(this.stats, enemyStatClone);\r\n      if (!damageResult.wasEvaded) {\r\n        enemyHealth.hp -= damageResult.damageDealt;\r\n        enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);\r\n        this.game.spawn(enemy.position.x, enemy.position.y, \"hitEffect\", {\r\n          damageType: this.stats.damageType,\r\n          lifeSpan: 0.3\r\n        });\r\n        if (this.ownerStats.slowAmount) {\r\n          enemyStats.addEffect(\r\n            this.game.config.effects.slow,\r\n            this.game.effects.slow,\r\n            this.ownerStats.slowAmount\r\n          );\r\n        }\r\n      }\r\n    }\r\n  }\r\n}\r\n}"
+      },
+      "ThreeJsWorld": {
+        "title": "ThreeJsWorld",
+        "fileName": "ThreeJsWorld",
+        "script": "class ThreeJsWorld extends engine.Component {\n    init({\n        containerSelector = '#gameContainer',\n        width = window.innerWidth,\n        height = window.innerHeight,\n        useControls = true}) {\n        if (!this.game.config.configs.game.is3D) {\n            return;\n        }\n        this.level = this.game.config.levels[this.game.state.level];\n        this.world = this.game.config.worlds[this.level.world];\n        this.lightingSettings = this.game.config.lightings[this.world.lighting];\n        this.shadowSettings = this.game.config.shadows[this.world.shadow];\n        this.fogSettings = this.game.config.fogs[this.world.fog]; \n        this.heightMapSettings = this.game.config.heightMaps[this.world.heightMap];      \n        this.cameraSettings = this.game.config.cameras[this.world.camera];\n\n        this.heightStep = this.heightMapSettings.heightStep;\n        this.showStats = false;\n        this.clock = new THREE.Clock();\n        this.onWindowResizeHandler = this.onWindowResize.bind(this);\n        this.game.heightMapConfig = this.heightMapSettings;\n        this.terrainSize = 768;\n        this.extensionSize = this.world.extensionSize;\n        this.extendedSize = this.terrainSize + 2 * this.world.extensionSize;\n        this.heightMapResolution = this.extendedSize / this.heightMapSettings.resolutionDivisor;\n        this.container = document.querySelector(containerSelector) || document.body;\n        this.renderer = new THREE.WebGLRenderer({ antialias: true, canvas: this.game.canvas, alpha: true });\n        \n        this.renderer.setSize(width, height);        \n        this.renderer.shadowMap.enabled = this.shadowSettings.enabled;\n        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;\n        this.uniforms = {};\n        this.scene = new THREE.Scene();\n        this.scene.background = new THREE.Color(this.world.backgroundColor);\n\n        if (this.fogSettings.enabled) {\n            this.scene.fog = new THREE.FogExp2(this.fogSettings.color, this.fogSettings.density);\n        }\n\n        this.camera = new THREE.PerspectiveCamera(\n            this.cameraSettings.fov,\n            width / height,\n            this.cameraSettings.near,\n            this.cameraSettings.far\n        );\n        let cameraPos = JSON.parse(this.cameraSettings.position);\n\n        this.camera.position.set(\n            cameraPos.x,\n            cameraPos.y,\n            cameraPos.z\n        );\n        let lookAt = JSON.parse(this.cameraSettings.lookAt);\n        this.camera.lookAt(\n            lookAt.x,\n            lookAt.y,\n            lookAt.z\n        );\n\n        if (useControls) {\n            this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);\n            this.controls.target.set(\n                lookAt.x,\n                lookAt.y,\n                lookAt.z\n            );\n            this.controls.maxPolarAngle = Math.PI / 2.05;\n            this.controls.minPolarAngle = 0.1;\n            this.controls.enableDamping = true;\n            this.controls.dampingFactor = 0.05;\n            this.controls.update();\n        }\n\n        this.ambientLight = new THREE.AmbientLight(\n            this.lightingSettings.ambientColor,\n            this.lightingSettings.ambientIntensity\n        );\n        this.scene.add(this.ambientLight);\n\n        this.directionalLight = new THREE.DirectionalLight(\n            this.lightingSettings.directionalColor,\n            this.lightingSettings.directionalIntensity\n        );\n        this.directionalLight.position.set(this.extendedSize, this.extendedSize, this.extendedSize);\n        this.directionalLight.castShadow = this.shadowSettings.enabled;\n\n        if (this.shadowSettings.enabled) {\n            this.directionalLight.shadow.mapSize.width = this.shadowSettings.mapSize;\n            this.directionalLight.shadow.mapSize.height = this.shadowSettings.mapSize;\n            this.directionalLight.shadow.camera.near = 0.5;\n            this.directionalLight.shadow.camera.far = 20000;\n            this.directionalLight.shadow.bias = this.shadowSettings.bias;\n            this.directionalLight.shadow.normalBias = this.shadowSettings.normalBias;\n            this.directionalLight.shadow.radius = this.shadowSettings.radius;\n\n            const d = this.extendedSize * 0.75;\n            this.directionalLight.shadow.camera.left = -d;\n            this.directionalLight.shadow.camera.right = d;\n            this.directionalLight.shadow.camera.top = d;\n            this.directionalLight.shadow.camera.bottom = -d;\n\n            this.directionalLight.target.position.set(-this.extendedSize, -this.extendedSize, -this.extendedSize);\n            this.directionalLight.target.updateMatrixWorld();\n            this.directionalLight.shadow.camera.updateProjectionMatrix();\n        }\n\n        this.scene.add(this.directionalLight);\n        this.scene.add(this.directionalLight.target);\n\n        this.hemisphereLight = new THREE.HemisphereLight(\n            this.lightingSettings.skyColor,\n            this.lightingSettings.groundColor,\n            this.lightingSettings.hemisphereIntensity\n        );\n        this.scene.add(this.hemisphereLight);\n        this.tileMap = this.game.config.levels[this.game.state.level].tileMap;\n        this.setupGround();\n        this.generateLiquidSurfaceMesh(0);\n        this.generateLiquidSurfaceMesh(1);\n        if (this.showStats) {\n            this.stats = new Stats();\n            this.container.appendChild(this.stats.dom);\n        }\n\n        window.addEventListener('resize', this.onWindowResizeHandler);\n\n        this.game.scene = this.scene;\n        this.game.camera = this.camera;\n        this.game.renderer = this.renderer;\n        this.game.ground = this.ground;\n        this.drawn = false;\n        this.timer = 0;        \n    }\n\n    setupGround() {\n        this.groundCanvas = document.createElement('canvas');\n        this.groundCanvas.width = this.extendedSize;\n        this.groundCanvas.height = this.extendedSize;\n        this.groundCtx = this.groundCanvas.getContext('2d');\n\n        let bgColor = this.tileMap.terrainTypes[this.tileMap.extensionTerrainType].color;\n        let colorToUse = bgColor.paletteColor ? this.game.palette[bgColor.paletteColor] : bgColor;\n        this.groundCtx.fillStyle = colorToUse;\n        this.groundCtx.fillRect(0, 0, this.extendedSize, this.extendedSize);\n\n        this.groundTexture = new THREE.CanvasTexture(this.groundCanvas);\n        this.groundTexture.wrapS = THREE.ClampToEdgeWrapping;\n        this.groundTexture.wrapT = THREE.ClampToEdgeWrapping;\n        this.groundTexture.minFilter = THREE.NearestFilter;\n        this.groundTexture.magFilter = THREE.NearestFilter;\n\n        if (this.heightMapSettings) {\n            this.createHeightMapTerrain();\n        } else {\n            const groundGeometry = new THREE.PlaneGeometry(this.extendedSize, this.extendedSize);\n            this.groundMaterial = this.getGroundMaterial();\n            this.ground = new THREE.Mesh(groundGeometry, this.groundMaterial);\n            this.ground.rotation.x = -Math.PI / 2;\n            this.ground.position.set(this.terrainSize / 2, 0, this.terrainSize / 2);\n            this.ground.receiveShadow = true;\n            this.ground.castShadow = true;\n            this.scene.add(this.ground);\n        }\n    }\n\n    createHeightMapTerrain() {\n        this.heightMapData = new Float32Array(this.extendedSize * this.extendedSize);\n        this.terrainTypes = this.tileMap.terrainTypes || [];\n\n        const segments = this.heightMapResolution;\n        const groundGeometry = new THREE.PlaneGeometry(\n            this.extendedSize,\n            this.extendedSize,\n            segments,\n            segments\n        );\n\n        this.groundVertices = groundGeometry.attributes.position;\n\n        this.groundMaterial = this.getGroundMaterial();\n\n        this.ground = new THREE.Mesh(groundGeometry, this.groundMaterial);\n        this.ground.rotation.x = -Math.PI / 2;\n        this.ground.position.set(this.terrainSize / 2, 0, this.terrainSize / 2);\n        this.ground.receiveShadow = true;\n        this.ground.castShadow = true;\n        this.scene.add(this.ground);\n    }\n    findClosestTerrainType(r, g, b, terrainTypeColors) {\n        let minDistance = Infinity;\n        let bestTypeIndex = null;\n        let toleranceSquared = 36;\n        for (const [colorKey, typeIndex] of Object.entries(terrainTypeColors)) {\n            const [cr, cg, cb] = colorKey.split(',').map(Number);\n            const distance = ((r - cr) ** 2 + (g - cg) ** 2 + (b - cb) ** 2);\n            if (distance < minDistance && distance < toleranceSquared) { // Adjust tolerance as needed\n                minDistance = distance;\n                bestTypeIndex = typeIndex;\n            }\n        }\n        return bestTypeIndex;\n    }\n    updateHeightMap() {\n        if (!this.heightMapSettings.enabled || !this.game.terrainCanvasBuffer) return;\n\n        try {\n            const terrainCanvas = this.game.terrainCanvasBuffer;\n            const ctx = terrainCanvas.getContext('2d', { alpha: false, willReadFrequently: true });\n            ctx.imageSmoothingEnabled = false;\n            const terrainData = ctx.getImageData(0, 0, terrainCanvas.width, terrainCanvas.height).data;\n\n            const terrainTypeColors = this.createTerrainTypeColorMap();\n\n            this.heightMapData = new Float32Array(this.extendedSize * this.extendedSize);\n\n            const extensionTerrainType = this.tileMap.extensionTerrainType;\n            const extensionHeight = extensionTerrainType * this.heightStep;\n\n            for (let z = 0; z < this.extendedSize; z++) {\n                for (let x = 0; x < this.extendedSize; x++) {\n                    this.heightMapData[z * this.extendedSize + x] = extensionHeight;\n                }\n            }\n\n            for (let z = 0; z < this.terrainSize; z++) {\n                for (let x = 0; x < this.terrainSize; x++) {\n                    const pixelIndex = (z * terrainCanvas.width + x) * 4;\n                    const r = terrainData[pixelIndex];\n                    const g = terrainData[pixelIndex + 1];\n                    const b = terrainData[pixelIndex + 2];\n            \n                    const typeIndex = this.findClosestTerrainType(r,g,b,terrainTypeColors) ?? extensionHeight;\n                    let height = typeIndex !== undefined ? typeIndex * this.heightStep : extensionHeight;\n\n                    // Check neighboring pixels for lower terrain types\n                    let neighborCheckDist = this.heightMapSettings.resolutionDivisor - 1;\n                    const neighbors = [\n                        { x: x-neighborCheckDist, z: z },   // left\n                        { x: x+neighborCheckDist, z: z },   // right\n                        { x: x, z: z-neighborCheckDist },   // top\n                        { x: x, z: z+neighborCheckDist + 1 },   // bottom\n                        { x: x-neighborCheckDist, z: z-neighborCheckDist }, // top-left\n                        { x: x+neighborCheckDist, z: z-neighborCheckDist }, // top-right\n                        { x: x-neighborCheckDist, z: z+neighborCheckDist }, // bottom-left\n                        { x: x+neighborCheckDist, z: z+neighborCheckDist }  // bottom-right\n                    ];\n                    let lowestNeighborType = Infinity;\n                    for (const neighbor of neighbors) {\n                        if (neighbor.x >= 0 && neighbor.x < this.terrainSize && \n                            neighbor.z >= 0 && neighbor.z < this.terrainSize) {\n                            \n                            const neighborIndex = (neighbor.z * terrainCanvas.width + neighbor.x) * 4;\n                            const nr = terrainData[neighborIndex];\n                            const ng = terrainData[neighborIndex + 1];\n                            const nb = terrainData[neighborIndex + 2];\n                            const neighborKey = `${nr},${ng},${nb}`;\n                            \n                            const neighborTypeIndex = terrainTypeColors[neighborKey];\n                            if (neighborTypeIndex !== undefined && neighborTypeIndex < typeIndex && neighborTypeIndex < lowestNeighborType) {\n                                // If neighbor is lower terrain, use its height\n                                lowestNeighborType = neighborTypeIndex;\n                            }\n                        }\n                    }\n                    if (lowestNeighborType < typeIndex) {\n                        height = lowestNeighborType * this.heightStep;\n                    }\n            \n                    const extX = x + this.extensionSize;\n                    const extZ = z + this.extensionSize;\n                    this.heightMapData[extZ * this.extendedSize + extX] = height;\n                }\n            }\n\n            this.applyHeightMapToGeometry();\n\n        } catch (e) {\n            console.warn('Failed to update height map:', e);\n        }\n    }\n\n    createTerrainTypeColorMap() {\n        const colorMap = {};\n        const terrainTypes = this.terrainTypes;\n\n        for (let i = 0; i < terrainTypes.length; i++) {\n            const terrainType = terrainTypes[i];\n            let color = terrainType.color || {};\n\n            if (color.paletteColor && this.game.palette) {\n                const hexColor = this.game.palette[color.paletteColor];\n                if (hexColor) {\n                    const r = parseInt(hexColor.slice(1, 3), 16);\n                    const g = parseInt(hexColor.slice(3, 5), 16);\n                    const b = parseInt(hexColor.slice(5, 7), 16);\n                    colorMap[`${r},${g},${b}`] = i;\n                }\n            } else {\n                const hexColor = color;\n                if (hexColor) {\n                    const r = parseInt(hexColor.slice(1, 3), 16);\n                    const g = parseInt(hexColor.slice(3, 5), 16);\n                    const b = parseInt(hexColor.slice(5, 7), 16);\n                    colorMap[`${r},${g},${b}`] = i;\n                }\n            }\n        }\n\n        return colorMap;\n    }\n\n    applyHeightMapToGeometry() {\n        if (!this.ground || !this.groundVertices) return;\n\n        const positions = this.groundVertices.array;\n        const geometry = this.ground.geometry;\n        const segments = this.heightMapResolution;\n        const verticesPerRow = segments + 1;\n\n        for (let z = 0; z < verticesPerRow; z++) {\n            for (let x = 0; x < verticesPerRow; x++) {\n                const vertexIndex = (z * verticesPerRow + x);\n                const idx = vertexIndex * 3;\n\n                const nx = x / segments;\n                const nz = z / segments;\n\n                const terrainX = Math.floor(nx * (this.extendedSize - 1));\n                const terrainZ = Math.floor(nz * (this.extendedSize - 1));\n\n                const heightIndex = terrainZ * this.extendedSize + terrainX;\n                const height = this.heightMapData[heightIndex] || 0;\n\n                // const finalHeight = this.heightMapSettings.smoothing ?\n                //     this.smoothHeight(terrainX, terrainZ) : height;\n\n                positions[idx + 2] = height;\n            }\n        }\n\n        this.groundVertices.needsUpdate = true;\n        geometry.computeVertexNormals();\n    }\n\n    getGroundMaterial() {\n        return new THREE.MeshStandardMaterial({\n            map: this.groundTexture,\n            side: THREE.DoubleSide,\n            metalness: 0.0,\n            roughness: 0.8\n        });\n    }\n\n    onWindowResize() {\n        const width = this.container.clientWidth || window.innerWidth;\n        const height = this.container.clientHeight || window.innerHeight;\n\n        this.camera.aspect = width / height;\n        this.camera.updateProjectionMatrix();\n        this.renderer.setSize(width, height);\n                // Ensure canvas display size matches resolution\n        this.game.canvas.style.width = `${width}px`;\n        this.game.canvas.style.height = `${height}px`;\n    }\n\n    update() {\n        if (!this.game.config.configs.game.is3D) {\n            return;\n        }   \n    \n        if (this.controls) {\n            this.controls.update();\n        }\n        if (!isNaN(this.game.deltaTime)) {\n            this.timer += this.game.deltaTime;\n        }\n        if (this.stats) {\n            this.stats.update();\n        }\n        if (!this.drawn && this.groundTexture && this.game.mapRenderer && this.game.mapRenderer.isMapCached) {\n            this.groundCtx.drawImage(this.game.terrainCanvasBuffer, this.extensionSize, this.extensionSize);\n            this.groundTexture.needsUpdate = true;\n\n            if (this.heightMapSettings.enabled) {\n                this.updateHeightMap();\n            }\n\n            this.addGrassToTerrain();\n            this.drawn = true;\n        }\n        for(const key in this.uniforms) {\n            this.uniforms[key].time = { value: this.timer };            \n        }\n        this.renderer.render(this.scene, this.camera);\n    }\n\n    addGrassToTerrain() {\n        const bladeWidth = 12;\n        const bladeHeight = 18;\n        const grassGeometry = this.createCurvedBladeGeometry(bladeWidth, bladeHeight);\n        grassGeometry.translate(0, bladeHeight / 2, 0);\n        const grassCount = 500000;\n\n        const gridSize = this.game.config.configs.game.gridSize;\n        const phases = new Float32Array(grassCount);\n        for (let i = 0; i < grassCount; i++) {\n            phases[i] = Math.random() * Math.PI * 2;\n        }\n        grassGeometry.setAttribute('instancePhase', new THREE.InstancedBufferAttribute(phases, 1));\n\n        const grassTexture = this.createGrassTexture();\n        const grassShader = this.game.config.shaders[this.level.grassShader];\n        this.uniforms['grass'] = JSON.parse(grassShader.uniforms);\n        \n        this.uniforms['grass'].windDirection = { value: new THREE.Vector2(this.uniforms['grass'].windDirection.value[0], this.uniforms['grass'].windDirection.value[1]).normalize()};\n        this.uniforms['grass'].map = { value: grassTexture };\n        this.uniforms['grass'].fogColor = { value: new THREE.Color(this.fogSettings.color) };\n        this.uniforms['grass'].fogDensity = this.fogSettings.enabled ? { value: this.fogSettings.density } : 0;\n        const lightDirection = new THREE.Vector3();\n        lightDirection.subVectors(this.directionalLight.position, this.directionalLight.target.position);\n        lightDirection.normalize();\n\n        this.uniforms['grass'].directionalLightColor = { value: new THREE.Color(this.lightingSettings.directionalColor) };\n        this.uniforms['grass'].directionalLightIntensity = { value: this.lightingSettings.directionalIntensity };\n        this.uniforms['grass'].directionalLightDirection = { value: lightDirection };\n        this.uniforms['grass'].ambientLightColor = { value: new THREE.Color(this.lightingSettings.ambientColor) };\n        this.uniforms['grass'].ambientLightIntensity = { value: this.lightingSettings.ambientIntensity };\n        this.uniforms['grass'].skyColor =  { value: new THREE.Color(this.lightingSettings.skyColor) }; // HemisphereLight sky color\n        this.uniforms['grass'].groundColor = { value: new THREE.Color(this.lightingSettings.groundColor) }; // HemisphereLight ground color\n        this.uniforms['grass'].hemisphereIntensity = { value: this.lightingSettings.hemisphereIntensity };\n\n        const uniforms = this.uniforms['grass'];\n        this.grassMaterial = new THREE.ShaderMaterial({\n            vertexShader: grassShader.vertexScript,\n            fragmentShader: grassShader.fragmentScript,\n            uniforms: uniforms,\n            transparent: true\n        });\n\n        this.grassShader = this.grassMaterial;\n        \n        grassGeometry.computeVertexNormals(); \n        const grass = new THREE.InstancedMesh(grassGeometry, this.grassMaterial, grassCount);\n        grass.castShadow = true;\n        grass.receiveShadow = false;\n\n        const dummy = new THREE.Object3D();\n        const grassArea = this.extendedSize;  \n        const ctx = this.groundCanvas.getContext('2d');\n        const terrainData = ctx.getImageData(0, 0, this.groundCanvas.width, this.groundCanvas.height).data;\n\n        // Create a density map for grass placement\n        // Create a density map for grass placement\n        const densityMap = new Float32Array(this.extendedSize * this.extendedSize);\n        for (let z = 0; z < this.extendedSize; z++) {\n            for (let x = 0; x < this.extendedSize; x++) {\n                // Check current pixel for green dominance\n                const pixelIndex = (z * this.groundCanvas.width + x) * 4;\n                const isGreenDominant = (pixel) => {\n                    const r = terrainData[pixel];\n                    const g = terrainData[pixel + 1];\n                    const b = terrainData[pixel + 2];\n                    return g > r && g > b;\n                };\n\n                // Only set density if current pixel and all neighbors are green\n                if (isGreenDominant(pixelIndex)) {\n                    // Check 8 neighboring pixels\n                    let checkDist = Math.ceil(gridSize / 10);\n                    const neighbors = [\n                        [-checkDist, -checkDist], [0, -checkDist], [checkDist, -checkDist],\n                        [-checkDist,  0],                           [checkDist,  0],\n                        [-checkDist,  checkDist], [0,  checkDist], [checkDist,  checkDist]\n                    ];\n\n                    let allNeighborsGreen = true;\n                    for (const [dx, dz] of neighbors) {\n                        const nx = x + dx;\n                        const nz = z + dz;\n                        \n                        // Skip if neighbor is outside bounds\n                        if (nx < 0 || nx >= this.extendedSize || nz < 0 || nz >= this.extendedSize) {\n                            allNeighborsGreen = false;\n                            break;\n                        }\n\n                        const neighborIndex = (nz * this.groundCanvas.width + nx) * 4;\n                        if (!isGreenDominant(neighborIndex)) {\n                            allNeighborsGreen = false;\n                            break;\n                        }\n                    }\n\n                    densityMap[z * this.extendedSize + x] = allNeighborsGreen ? 1 : 0;\n                } else {\n                    densityMap[z * this.extendedSize + x] = 0;\n                }\n            }\n        }\n\n        // Place grass based on density\n        let placed = 0;\n        for (let i = 0; i < grassCount * 2 && placed < grassCount; i++) {\n            const x = Math.floor(Math.random() * grassArea);\n            const z = Math.floor(Math.random() * grassArea);\n            if (densityMap[z * this.extendedSize + x] > 0) {\n                const rotationY = Math.random() * Math.PI * 2;\n                const scale = 0.7 + Math.random() * 0.5;\n                let height = this.heightMapSettings.enabled\n                    ? this.heightMapData[Math.min(z, this.extendedSize - 1) * this.extendedSize + Math.min(x, this.extendedSize - 1)] || 0\n                    : 0;\n                dummy.position.set(x - grassArea / 2 + this.terrainSize / 2, height - bladeHeight, z - grassArea / 2 + this.terrainSize / 2);\n                dummy.rotation.set(0, rotationY, 0);\n                dummy.scale.set(scale, scale, scale);\n                dummy.updateMatrix();\n                grass.setMatrixAt(placed++, dummy.matrix);\n            }\n        }\n\n        grass.instanceMatrix.needsUpdate = true;\n        this.scene.add(grass);\n        this.grass = grass;\n    }\n\n    onDestroy() {\n        window.removeEventListener('resize', this.onWindowResizeHandler);\n        this.renderer.dispose();\n        if (this.stats?.dom?.parentElement) {\n            this.stats.dom.parentElement.removeChild(this.stats.dom);\n        }\n        if (this.renderer.domElement?.parentElement) {\n            this.renderer.domElement.parentElement.removeChild(this.renderer.domElement);\n        }\n        if (this.grass) {\n            this.grass.geometry.dispose();\n            this.grass.material.dispose();\n        }\n        this.ground.geometry?.dispose();\n        this.groundMaterial?.dispose();\n        this.groundTexture?.dispose();\n        this.groundCanvas = null;\n        this.game.scene = null;\n        this.game.camera = null;\n        this.game.renderer = null;\n    }\n\n    createCurvedBladeGeometry(width = 0.1, height = 1) {\n        const shape = new THREE.Shape();\n        shape.moveTo(0, 0);\n        shape.quadraticCurveTo(width * 0.5, height * 0.5, 0, height);\n    \n        const shapeGeom = new THREE.ShapeGeometry(shape, 12);\n        const positions = shapeGeom.attributes.position.array;\n        const uvs = shapeGeom.attributes.uv.array;\n        const vertexCount = positions.length / 3;\n    \n        const newUVs = new Float32Array(uvs.length);\n        const newNormals = new Float32Array(positions.length);\n    \n        for (let i = 0; i < vertexCount; i++) {\n            const posIndex = i * 3;\n            const uvIndex = i * 2;\n            const x = positions[posIndex];\n            const y = positions[posIndex + 1];\n            const normalizedY = y / height;\n    \n            newUVs[uvIndex] = uvs[uvIndex];\n            newUVs[uvIndex + 1] = normalizedY;\n    \n            // Compute normal: approximate outward direction along curve\n            const t = y / height; // Parameter along curve\n            const curveX = width * 0.5 * (1 - t); // Quadratic curve approximation\n            const tangent = new THREE.Vector2(curveX - x, y - (y - height * 0.5)).normalize();\n            const normal = new THREE.Vector2(-tangent.y, tangent.x); // Perpendicular to tangent\n            newNormals[posIndex] = normal.x;\n            newNormals[posIndex + 1] = 0;\n            newNormals[posIndex + 2] = normal.y;\n        }\n    \n        shapeGeom.setAttribute('uv', new THREE.BufferAttribute(newUVs, 2));\n        shapeGeom.setAttribute('normal', new THREE.BufferAttribute(newNormals, 3));\n        return shapeGeom;\n    }\n    createGrassTexture() {\n        const canvas = document.createElement('canvas');\n        canvas.width = 4;\n        canvas.height = 32;\n        const ctx = canvas.getContext('2d');\n\n        const gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);\n        gradient.addColorStop(0.0, this.game.palette[\"greenMColor\"]);\n        gradient.addColorStop(0.8, this.game.palette[\"greenMColor\"]);\n        gradient.addColorStop(1.0, this.game.palette[\"redLColor\"]);\n\n        ctx.fillStyle = gradient;\n        ctx.fillRect(0, 0, canvas.width, canvas.height);\n\n        const texture = new THREE.CanvasTexture(canvas);\n        texture.wrapS = THREE.RepeatWrapping;\n        texture.wrapT = THREE.ClampToEdgeWrapping;\n        texture.magFilter = THREE.NearestFilter;\n        texture.minFilter = THREE.NearestFilter;\n        return texture;\n    }\n\n    generateLiquidSurfaceMesh(terrainType) {\n        const terrainMap = this.tileMap.terrainMap;\n        const gridSize = this.game.config.configs.game.gridSize;\n        const rows = terrainMap.length;\n        const cols = terrainMap[0].length;\n        \n        // Arrays to store vertices, indices, and UVs for the BufferGeometry\n        const vertices = [];\n        const indices = [];\n        const uvs = [];\n        \n        // Amount to extend the perimeter (e.g., 10% of gridSize)\n        const extensionAmount = gridSize * 0.25; // Adjust as needed        \n  \n        // Helper function to check if a tile is a water tile\n        const isWaterTile = (x, z) => {\n            if (x < 0 || x >= cols || z < 0 || z >= rows) return false;\n            return terrainMap[z][x] === terrainType;\n        };\n        \n        // Step 1: Generate a grid of vertices, but only for positions needed by water tiles\n        const usedPositions = new Set();\n        for (let z = 0; z < rows; z++) {\n            for (let x = 0; x < cols; x++) {\n                if (terrainMap[z][x] === terrainType) {\n                    usedPositions.add(`${x},${z}`);     // Bottom-left\n                    usedPositions.add(`${x + 1},${z}`); // Bottom-right\n                    usedPositions.add(`${x + 1},${z + 1}`); // Bottom-right in your view (+z is south)\n                    usedPositions.add(`${x},${z + 1}`); // Top-left\n                }\n            }\n        }\n        \n        // Step 2: Create vertices for all used positions and store their original positions\n        const positionToVertexIndex = new Map();\n        const originalPositions = []; // Store original (x, z) for each vertex\n        let vertexIndex = 0;\n        for (const pos of usedPositions) {\n            const [x, z] = pos.split(',').map(Number);\n            positionToVertexIndex.set(pos, vertexIndex++);\n            vertices.push(x * gridSize, 0.1, z * gridSize);\n            originalPositions.push([x, z]); // Store original grid position\n            uvs.push(x, z); // UVs based on grid position\n        }\n        \n        // Step 3: Generate indices for water tiles, connecting them into a single mesh\n        for (let z = 0; z < rows; z++) {\n            for (let x = 0; x < cols; x++) {\n                if (terrainMap[z][x] === terrainType) {\n                    const bl = positionToVertexIndex.get(`${x},${z}`);\n                    const br = positionToVertexIndex.get(`${x + 1},${z}`);\n                    const tr = positionToVertexIndex.get(`${x + 1},${z + 1}`); // Bottom-right in your view\n                    const tl = positionToVertexIndex.get(`${x},${z + 1}`);\n        \n                    indices.push(bl, br, tl);\n                    indices.push(br, tr, tl);\n                }\n            }\n        }\n        \n        // Step 4: Identify perimeter vertices and their extension directions\n        const perimeterExtensions = new Map(); // Map vertexIndex to { extendLeft, extendRight, extendUp, extendDown }\n        for (let z = 0; z < rows; z++) {\n            for (let x = 0; x < cols; x++) {\n                if (terrainMap[z][x] === terrainType) {\n                    const isLeftEdge = !isWaterTile(x - 1, z);\n                    const isRightEdge = !isWaterTile(x + 1, z);\n                    const isBottomEdge = !isWaterTile(x, z - 1); // North\n                    const isTopEdge = !isWaterTile(x, z + 1);    // South\n        \n                    // Bottom-left vertex (x, z)\n                    if (isLeftEdge || isBottomEdge) {\n                        const vIdx = positionToVertexIndex.get(`${x},${z}`);\n                        if (!perimeterExtensions.has(vIdx)) perimeterExtensions.set(vIdx, { extendLeft: false, extendRight: false, extendUp: false, extendDown: false });\n                        const ext = perimeterExtensions.get(vIdx);\n                        if (isLeftEdge) ext.extendLeft = true;\n                        if (isBottomEdge) ext.extendUp = true; // North\n                    }\n        \n                    // Bottom-right vertex (x + 1, z)\n                    if (isRightEdge || isBottomEdge) {\n                        const vIdx = positionToVertexIndex.get(`${x + 1},${z}`);\n                        if (!perimeterExtensions.has(vIdx)) perimeterExtensions.set(vIdx, { extendLeft: false, extendRight: false, extendUp: false, extendDown: false });\n                        const ext = perimeterExtensions.get(vIdx);\n                        if (isRightEdge) ext.extendRight = true;\n                        if (isBottomEdge) ext.extendUp = true; // North\n                    }\n        \n                    // Top-right vertex (x + 1, z + 1) - Bottom-right in your view\n                    if (isRightEdge || isTopEdge) {\n                        const vIdx = positionToVertexIndex.get(`${x + 1},${z + 1}`);\n                        if (!perimeterExtensions.has(vIdx)) perimeterExtensions.set(vIdx, { extendLeft: false, extendRight: false, extendUp: false, extendDown: false });\n                        const ext = perimeterExtensions.get(vIdx);\n                        if (isRightEdge) ext.extendRight = true;\n                        if (isTopEdge) ext.extendDown = true; // South\n                    }\n        \n                    // Top-left vertex (x, z + 1)\n                    if (isLeftEdge || isTopEdge) {\n                        const vIdx = positionToVertexIndex.get(`${x},${z + 1}`);\n                        if (!perimeterExtensions.has(vIdx)) perimeterExtensions.set(vIdx, { extendLeft: false, extendRight: false, extendUp: false, extendDown: false });\n                        const ext = perimeterExtensions.get(vIdx);\n                        if (isLeftEdge) ext.extendLeft = true;\n                        if (isTopEdge) ext.extendDown = true; // South\n                    }\n                }\n            }\n        }\n        \n        // Step 5: Apply perimeter extensions\n        perimeterExtensions.forEach((ext, vertexIndex) => {\n            const idx = vertexIndex * 3;\n            const [origX, origZ] = originalPositions[vertexIndex];\n        \n            // Log the bottom-right corner for debugging\n            if (ext.extendRight && ext.extendDown) {\n                console.log(`Bottom-right corner at (${origX}, ${origZ}): Before extension - x: ${vertices[idx]}, z: ${vertices[idx + 2]}`);\n            }\n        \n            if (ext.extendLeft) vertices[idx] -= extensionAmount; // Extend left\n            if (ext.extendRight) vertices[idx] += extensionAmount; // Extend right\n            if (ext.extendUp) vertices[idx + 2] -= extensionAmount; // Extend north (decrease z)\n            if (ext.extendDown) vertices[idx + 2] += extensionAmount; // Extend south (increase z)\n        \n            if (ext.extendRight && ext.extendDown) {\n                console.log(`Bottom-right corner at (${origX}, ${origZ}): After extension - x: ${vertices[idx]}, z: ${vertices[idx + 2]}`);\n            }\n        });\n        \n        // Step 6: Create the BufferGeometry\n        const geometry = new THREE.BufferGeometry();\n        geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));\n        geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));\n        geometry.setIndex(indices);\n        geometry.computeVertexNormals(); // For lighting\n        // Parse the hex color to RGB\n        const parseHexColor = (hex) => {\n            const r = parseInt(hex.slice(1, 3), 16) / 255;\n            const g = parseInt(hex.slice(3, 5), 16) / 255;\n            const b = parseInt(hex.slice(5, 7), 16) / 255;\n            return { r, g, b };\n        };\n        const waterShader = this.game.config.shaders[this.level.waterShader];\n        // Use the hex color in a ShaderMaterial\n        this.uniforms[terrainType] = JSON.parse(waterShader.uniforms);\n        let vectorizeProps = JSON.parse(waterShader.vectors);\n        vectorizeProps.forEach((prop => {\n            if (this.uniforms[terrainType][prop]) {\n                if( prop.toLowerCase().endsWith(\"color\")){\n                    const colorToUse = this.tileMap.terrainTypes[terrainType].color;\n                    const { r, g, b } = parseHexColor(colorToUse);\n                    this.uniforms[terrainType][prop].value = new THREE.Vector3(r, g, b);\n                } else {\n                    let arr = this.uniforms[terrainType][prop].value;\n                    this.uniforms[terrainType][prop].value = new THREE.Vector3(arr[0], arr[1], arr[2]);\n                }\n            }\n        }));\n        this.uniforms[terrainType].fogColor = { value: new THREE.Color(this.fogSettings.color) };\n        this.uniforms[terrainType].fogDensity = this.fogSettings.enabled ? { value: this.fogSettings.density } : 0;\n        // Reference the uniforms\n        const uniforms = this.uniforms[terrainType];\n        \n        // Create the shader material\n        const material = new THREE.ShaderMaterial({\n            uniforms: uniforms,\n            vertexShader: waterShader.vertexScript,\n            fragmentShader: waterShader.fragmentScript,\n            side: THREE.DoubleSide,\n            transparent: true\n        });\n\n        // Replace the MeshBasicMaterial with this ShaderMaterial in the mesh creation\n        const waterMesh = new THREE.Mesh(geometry, material);        \n        waterMesh.position.y = (terrainType + 2) * this.heightMapSettings.heightStep;\n        this.scene.add(waterMesh); // Assuming `this.scene` is your THREE.js scene\n    }\n}"
       },
       "UpgradeManager": {
         "fileName": "UpgradeManager",
@@ -17353,6 +17353,23 @@ const DEFAULT_PROJECT_CONFIG = {
           "Renderer"
         ]
       },
+      "GameLoader": {
+        "title": "Game Loader",
+        "components": [
+          "GameLoader"
+        ],
+        "renderers": []
+      },
+      "hitEffect": {
+        "title": "Hit Effect",
+        "components": [
+          "HitEffectParticle",
+          "LifeSpan"
+        ],
+        "renderers": [
+          "HitEffectRenderer"
+        ]
+      },
       "ballisticProjectile": {
         "title": "Ballistic Projectile",
         "components": [
@@ -17364,13 +17381,6 @@ const DEFAULT_PROJECT_CONFIG = {
         "renderers": [
           "ModelRenderer",
           "Renderer"
-        ]
-      },
-      "explosion": {
-        "title": "Explosion",
-        "components": [],
-        "renderers": [
-          "Explosion"
         ]
       },
       "game": {
@@ -17388,33 +17398,12 @@ const DEFAULT_PROJECT_CONFIG = {
           "UiManager"
         ]
       },
-      "hitEffect": {
-        "title": "Hit Effect",
-        "components": [
-          "HitEffectParticle",
-          "LifeSpan"
-        ],
+      "explosion": {
+        "title": "Explosion",
+        "components": [],
         "renderers": [
-          "HitEffectRenderer"
+          "Explosion"
         ]
-      },
-      "lightningProjectile": {
-        "title": "Lightning Projectile",
-        "components": [
-          "Stats",
-          "ArrayTracker",
-          "ChainProjectile"
-        ],
-        "renderers": [
-          "LightningRenderer"
-        ]
-      },
-      "GameLoader": {
-        "title": "Game Loader",
-        "components": [
-          "GameLoader"
-        ],
-        "renderers": []
       },
       "multiShotProjectile": {
         "title": "Multi-Shot Projectile",
@@ -17434,6 +17423,17 @@ const DEFAULT_PROJECT_CONFIG = {
         "renderers": [
           "ModelRenderer",
           "Renderer"
+        ]
+      },
+      "lightningProjectile": {
+        "title": "Lightning Projectile",
+        "components": [
+          "Stats",
+          "ArrayTracker",
+          "ChainProjectile"
+        ],
+        "renderers": [
+          "LightningRenderer"
         ]
       },
       "previewTower": {
@@ -17523,6 +17523,17 @@ const DEFAULT_PROJECT_CONFIG = {
         ],
         "fileName": "aiPromptPanel"
       },
+      "graphicsEditor": {
+        "title": "Graphics Editor",
+        "modals": [
+          "rotateShapes",
+          "moveAllShapes",
+          "generateIsometric"
+        ],
+        "fileName": "graphicsEditor",
+        "css": "\r\n#graphics-editor-container #grid-display {\r\n    position: absolute;\r\n    top: 10px;\r\n    left: 10px;\r\n    padding: 5px 10px;\r\n    border-radius: 0;\r\n    font-family: 'Courier New', monospace;\r\n}\r\n#graphics-editor-container .btn {\r\n    padding: 0;\r\n}\r\n\r\n#graphics-editor-container .btn-add {\r\n  background-color: rgba(16, 185, 129, 0.3);\r\n  border: 1px solid #10b981;\r\n  color: #f4e1d2;\r\n}\r\n#graphics-editor-container .btn-add:hover {\r\n  background-color: rgba(16, 185, 129, 0.5);\r\n  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);\r\n}\r\n#graphics-editor-container #graphics-rightbar {\r\n    width: 360px;\r\n    display: flex;\r\n    flex-direction: column;\r\n}\r\n\r\n#graphics-editor-container #canvas-container {\r\n    flex: 1;\r\n    position: relative;\r\n}\r\n\r\n#graphics-editor-container #graphics-editor-canvas {\r\n    width: 100%;\r\n    height: 100%;\r\n    cursor: grab;\r\n    outline: none;\r\n}\r\n\r\n#graphics-editor-container .toolbar {\r\n    display: flex;\r\n    flex-direction: column;\r\n    padding: 10px 5px;\r\n    gap: 5px;  \r\n    align-items: normal;\r\n}\r\n#graphics-editor-container .toolbar > div {\r\n    display: flex;\r\n    gap: 7px;\r\n    justify-content: space-between;\r\n}\r\n#graphics-editor-container .toolbar > div > div {\r\n    display: flex;\r\n    gap: 5px;\r\n}\r\n\r\n#graphics-editor-container #shape-list {\r\n    flex: 1;\r\n    overflow-y: auto;\r\n    padding: 15px;\r\n}\r\n\r\n#graphics-editor-container .shape-item {\r\n    padding: 12px;\r\n    margin-bottom: 8px;\r\n    border-radius: 0;\r\n    cursor: pointer;\r\n    transition: all 0.2s ease;\r\n}\r\n\r\n#graphics-editor-container #inspector {\r\n    padding: 15px;\r\n}\r\n\r\n#graphics-editor-container .scene-info {\r\n    padding: 10px 15px;\r\n    position: absolute;\r\n    bottom: 15px;\r\n    left: 15px;\r\n    border-radius: 0;\r\n    font-size: 13px;\r\n}\r\n#graphics-editor-container #move-modal button, #rotate-modal button, #isometric-modal button {\r\n    width: 48%;\r\n}\r\n\r\n\r\n#graphics-editor-container .ref-container {\r\n    display: flex;\r\n    gap: 10px;\r\n}\r\n\r\n#graphics-editor-container .ref-select {\r\n    flex: 1;\r\n    min-width: 150px;\r\n}\r\n\r\n#graphics-editor-container .ref-values {\r\n    display: flex;\r\n    flex-wrap: wrap;\r\n    gap: 5px;\r\n    margin-bottom: 5px;\r\n}\r\n\r\n#graphics-editor-container .ref-value-item {\r\n    border-radius: 4px;\r\n    padding: 3px 6px;\r\n    display: flex;\r\n    align-items: center;\r\n    gap: 5px;\r\n}\r\n\r\n#graphics-editor-container .remove-ref-btn {\r\n    padding: 0 3px;\r\n    font-size: 14px;\r\n}\r\n\r\n#graphics-editor-container #rotate-group-modal .modal-content {\r\n    width: 400px;\r\n    padding: 20px;\r\n}\r\n\r\n#graphics-editor-container #rotate-group-modal .form-row {\r\n    display: flex;\r\n    align-items: center;\r\n    margin-bottom: 15px;\r\n}\r\n\r\n#graphics-editor-container #rotate-group-modal label {\r\n    width: 100px;\r\n    display: inline-block;\r\n}\r\n\r\n#graphics-editor-container #rotate-group-modal input[type=\"range\"] {\r\n    flex-grow: 1;\r\n    margin: 0 10px;\r\n}\r\n\r\n#graphics-editor-container #rotate-group-modal .button-row {\r\n    display: flex;\r\n    justify-content: flex-end;\r\n    margin-top: 20px;\r\n}\r\n\r\n#graphics-editor-container #rotate-group-modal button {\r\n    margin-left: 10px;\r\n    padding: 6px 12px;\r\n    cursor: pointer;\r\n}\r\n\r\n/* Base styling for shape list */\r\n#graphics-editor-container #shape-list {\r\n    padding: 10px;\r\n    user-select: none; /* Prevent text selection during drag */\r\n  }\r\n  \r\n  /* Common styles for items */\r\n  #graphics-editor-container  .shape-item, .group-item {\r\n    padding: 8px;\r\n    margin: 5px 0;\r\n    border-radius: 4px;\r\n    cursor: grab;\r\n    border: 1px solid transparent;\r\n    transition: border-color 0.2s;\r\n  }\r\n  \r\n  /* Shapes styling */\r\n  #graphics-editor-container  .shape-item {\r\n    border-left: 1px solid #555;\r\n  }\r\n  \r\n  #graphics-editor-container  .shape-item:active {\r\n    cursor: grabbing;\r\n  }\r\n  \r\n  /* Group styling */\r\n  #graphics-editor-container  .group-item {\r\n    border-left: 4px solid #007bff; /* Visual distinction for groups */\r\n    font-weight: 500;\r\n  }\r\n  \r\n  /* Selected states - use border instead of background */\r\n  #graphics-editor-container  .shape-item.selected, \r\n  #graphics-editor-container  .group-item.selected {\r\n    border-color: #4080ff;\r\n  }\r\n  \r\n  /* Drag-over states */\r\n  #graphics-editor-container .group-item.drag-over,\r\n  #graphics-editor-container  #shape-list.drag-over {\r\n    border-color: #40a040;\r\n    box-shadow: 0 0 3px rgba(0, 100, 0, 0.5);\r\n  }\r\n  \r\n  /* Animation for when dragging */\r\n  #graphics-editor-container .shape-item.dragging {\r\n    opacity: 0.7;\r\n  }\r\n  \r\n  /* Group shapes container */\r\n  #graphics-editor-container .group-shapes {\r\n    margin-left: 15px;\r\n    padding: 5px;\r\n    border-left: 2px dashed #666;\r\n  }\r\n  \r\n  /* Ungrouped shapes section */\r\n  #graphics-editor-container #shape-list .ungrouped-shapes {\r\n    margin-top: 10px;\r\n    padding: 10px;\r\n    border: 1px dashed #666;\r\n  }\r\n\r\n  #graphics-editor-container .transform-buttons {\r\n    display: flex;\r\n    gap: 10px;\r\n    margin-bottom: 10px;\r\n}\r\n\r\n#graphics-editor-container .transform-buttons button {\r\n    flex: 1;\r\n    padding: 8px;\r\n    background: #444;\r\n    border: 1px solid #666;\r\n    color: white;\r\n    cursor: pointer;\r\n}\r\n\r\n#graphics-editor-container .transform-buttons button.active {\r\n    background: #0066cc;\r\n    border-color: #0088ff;\r\n}",
+        "html": "<div id=\"graphics-editor-container\" class=\"main-content-container\">\r\n   <div id=\"graphics-sidebar\" class=\"content-sidebar\">\r\n      <div id=\"toolbar\" class=\"toolbar\">\r\n         <div>    \r\n            <div>\r\n               <button id=\"add-animation\" class=\"btn btn-add\" title=\"Add Animation\">+A</button>                        \r\n               <button id=\"delete-animation\" class=\"btn btn-danger\" title=\"Delete Animation\">-A</button>                        \r\n            </div>                   \r\n            <div>\r\n               <button id=\"add-frame\" class=\"btn btn-add\" title=\"Add Frame\">+F</button>                        \r\n               <button id=\"delete-frame\" class=\"btn btn-danger\" title=\"Delete Frame\">-F</button>                        \r\n            </div>\r\n            <div>\r\n               <button id=\"create-group\" class=\"btn btn-add\" title=\"Create Group\">+G</button>\r\n               <button id=\"delete-group\" class=\"btn btn-danger\" title=\"Delete Group\">-G</button>\r\n            </div>\r\n            <div>                    \r\n               <button id=\"add-shape\" class=\"btn btn-add\" title=\"Add Shape\">+S</button>                        \r\n               <button id=\"delete-shape\" class=\"btn btn-danger\" title=\"Delete Shape\">-S</button>           \r\n            </div>\r\n         </div>  \r\n         <div>\r\n            <div>\r\n               <button id=\"preview-animation\" class=\"btn btn-primary\" title=\"Preview Animation\">▶</button> \r\n               <button id=\"generate-isometric\" class=\"btn btn-primary\" title=\"Generate Isometric Sprites\">Iso</button>                    \r\n            </div>\r\n         </div>\r\n      </div>\r\n      <div id=\"frame-list\"></div>\r\n      <div id=\"group-list\"></div>\r\n      <div id=\"shape-list\"></div>\r\n   </div>\r\n   <div id=\"canvas-container\" class=\"grid-background\">\r\n      <canvas id=\"graphics-editor-canvas\"></canvas>\r\n      <div class=\"scene-info\">\r\n         <div>Shapes: <span id=\"shape-count\">0</span></div>\r\n         <div>Selected: <span id=\"selected-shape\">None</span></div>\r\n         <div><small>Controls: Left-click to select, Drag to rotate, Right-drag to pan, Scroll to zoom</small></div>\r\n      </div>\r\n   </div>\r\n   <div id=\"graphics-rightbar\">\r\n      <div id=\"inspector\"></div>\r\n      <div id=\"json-editor\" style=\"display: none\">                        \r\n        <textarea id=\"json-content\" placeholder=\"Edit JSON here...\"></textarea>                    \r\n\t\t\t</div>\r\n   </div>\r\n</div>\r\n"
+      },
       "audioEditor": {
         "title": "Audio Editor",
         "fileName": "audioEditor",
@@ -17551,17 +17562,6 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "terrainEditor",
         "css": "#level-editor-container :root {\r\n\t--primary: #6366f1;\r\n\t--primary-dark: #4f46e5;\r\n\t--secondary: #10b981;\r\n\t--dark: #1e293b;\r\n\t--darker: #0f172a;\r\n\t--light: #e2e8f0;\r\n\t--accent: #8b5cf6;\r\n\t--danger: #ef4444;\r\n\t--text: #f8fafc;\r\n\t--text-muted: #94a3b8;\r\n\t--border-radius: 8px;\r\n\t--shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);\r\n  }\r\n\r\n  #level-editor-container * {\r\n\tmargin: 0;\r\n\tpadding: 0;\r\n\tbox-sizing: border-box;\r\n\tfont-family: 'Inter', system-ui, -apple-system, sans-serif;\r\n  }\r\n\r\n  #level-editor-container {\r\n\tbackground-color: var(--darker);\r\n\tcolor: var(--text);\r\n  }\r\n\r\n  #level-editor-container button {\r\n\tcursor: pointer;\r\n\tborder: none;\r\n\tborder-radius: var(--border-radius);\r\n\tpadding: 8px 12px;\r\n\tfont-weight: 500;\r\n\ttransition: all 0.2s ease;\r\n  }\r\n\r\n  #level-editor-container button:hover {\r\n\topacity: 0.9;\r\n\ttransform: translateY(-1px);\r\n  }\r\n\r\n  #level-editor-container button:active {\r\n\ttransform: translateY(0);\r\n  }\r\n\r\n  #level-editor-container input {\r\n\tbackground-color: var(--dark);\r\n\tborder: 1px solid #334155;\r\n\tcolor: var(--text);\r\n\tborder-radius: var(--border-radius);\r\n\tpadding: 8px 12px;\r\n\toutline: none;\r\n  }\r\n\r\n  #level-editor-container input:focus {\r\n\tborder-color: var(--primary);\r\n\tbox-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);\r\n  }\r\n\r\n  #level-editor-container input[type=\"number\"] {\r\n\twidth: 80px;\r\n  }\r\n\r\n  #level-editor-container input[type=\"color\"] {\r\n\twidth: 40px;\r\n\theight: 40px;\r\n\tpadding: 2px;\r\n\tcursor: pointer;\r\n  }\r\n\r\n  #level-editor-container {\r\n\tdisplay: flex;\r\n\tgap: 24px;\r\n\theight: 90vh;\r\n\toverflow: hidden;\r\n\tbackground-color: var(--darker);\r\n\tcolor: var(--text);\r\n\tposition: relative;\r\n  }\r\n\r\n  #level-editor-container .content-sidebar {\r\n\tdisplay: flex;\r\n\tflex-direction: column;\r\n\twidth: 320px;\r\n\tbackground-color: var(--dark);\r\n\tborder-radius: var(--border-radius);\r\n\tbox-shadow: var(--shadow);\r\n\toverflow: hidden;\r\n  }\r\n\r\n  #level-editor-container .toolbar {\r\n\tdisplay: flex;\r\n\tpadding: 16px;\r\n\tbackground-color: rgba(255, 255, 255, 0.03);\r\n\tborder-bottom: 1px solid rgba(255, 255, 255, 0.1);\r\n  }\r\n\r\n  #level-editor-container .toolbar button {\r\n\tbackground-color: transparent;\r\n\tcolor: var(--text-muted);\r\n\tfont-weight: 600;\r\n\tpadding: 8px 16px;\r\n\tborder-radius: var(--border-radius);\r\n  }\r\n\r\n  #level-editor-container .toolbar button.active {\r\n\tbackground-color: var(--primary);\r\n\tcolor: white;\r\n  }\r\n\r\n  #level-editor-container .tools {\r\n\tpadding: 20px;\r\n\tflex-grow: 1;\r\n\toverflow-y: auto;\r\n  }\r\n\r\n  #level-editor-container .form-row {\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tjustify-content: space-between;\r\n\tmargin-bottom: 16px;\r\n  }\r\n\r\n  #level-editor-container .form-row label {\r\n\tcolor: var(--text-muted);\r\n\tfont-size: 14px;\r\n\tflex: 1;\r\n  }\r\n\r\n  #level-editor-container h3 {\r\n\tcolor: var(--light);\r\n\tfont-size: 18px;\r\n\tmargin-bottom: 24px;\r\n\tfont-weight: 600;\r\n\tborder-bottom: 1px solid rgba(255, 255, 255, 0.1);\r\n\tpadding-bottom: 12px;\r\n  }\r\n\r\n  #level-editor-container h4 {\r\n\tcolor: var(--text-muted);\r\n\tfont-size: 16px;\r\n\tmargin: 24px 0 16px;\r\n\tfont-weight: 600;\r\n  }\r\n\r\n  #level-editor-container .grid-container {\r\n\tflex-grow: 1;\r\n\tposition: relative;\r\n\tbackground-color: var(--dark);\r\n\tborder-radius: var(--border-radius);\r\n\toverflow: hidden;\r\n\tbox-shadow: var(--shadow);\r\n  }\r\n\r\n  #level-editor-container .grid-background {\r\n\tbackground-image: \r\n\t  linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),\r\n\t  linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);\r\n\tbackground-size: 20px 20px;\r\n  }\r\n\r\n  #level-editor-container #grid {\r\n\tdisplay: block;\r\n\timage-rendering: pixelated;\r\n  }\r\n\r\n  #level-editor-container .translation-controls {\r\n\tposition: absolute;\r\n\tright: 20px;\r\n\tbottom: 20px;\r\n\tdisplay: grid;\r\n\tgrid-template-columns: repeat(3, 40px);\r\n\tgrid-template-rows: repeat(3, 40px);\r\n\tgap: 4px;\r\n\tz-index: 10;\r\n  }\r\n\r\n  #level-editor-container .translation-controls button {\r\n\twidth: 40px;\r\n\theight: 40px;\r\n\tbackground-color: rgba(15, 23, 42, 0.8);\r\n\tcolor: var(--light);\r\n\tborder: 1px solid rgba(255, 255, 255, 0.1);\r\n\tfont-size: 18px;\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tjustify-content: center;\r\n  }\r\n\r\n  #level-editor-container #translate-up {\r\n\tgrid-column: 2;\r\n\tgrid-row: 1;\r\n  }\r\n\r\n  #level-editor-container #translate-left {\r\n\tgrid-column: 1;\r\n\tgrid-row: 2;\r\n  }\r\n\r\n  #level-editor-container #translate-right {\r\n\tgrid-column: 3;\r\n\tgrid-row: 2;\r\n  }\r\n\r\n  #level-editor-container #translate-down {\r\n\tgrid-column: 2;\r\n\tgrid-row: 3;\r\n  }\r\n\r\n  /* Terrain item styling */\r\n  #level-editor-container .terrain-types-container {\r\n\tdisplay: flex;\r\n\tflex-direction: column;\r\n\tgap: 12px;\r\n\tmargin-top: 16px;\r\n  }\r\n\r\n  #level-editor-container .terrain-item {\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tgap: 12px;\r\n\tpadding: 12px;\r\n\tborder-radius: var(--border-radius);\r\n\tbackground-color: rgba(255, 255, 255, 0.03);\r\n\tborder: 1px solid rgba(255, 255, 255, 0.1);\r\n\tcursor: move;\r\n\tuser-select: none;\r\n\ttransition: all 0.2s ease;\r\n  }\r\n\r\n  #level-editor-container .terrain-item:hover {\r\n\tbackground-color: rgba(255, 255, 255, 0.05);\r\n\ttransform: translateY(-2px);\r\n  }\r\n\r\n  #level-editor-container .color-option {\r\n\twidth: 36px;\r\n\theight: 36px;\r\n\tborder-radius: var(--border-radius);\r\n\tcursor: pointer;\r\n\tborder: 2px solid transparent;\r\n\tflex-shrink: 0;\r\n  }\r\n\r\n  #level-editor-container .color-option.active {\r\n\tborder-color: var(--primary);\r\n\tbox-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);\r\n  }\r\n\r\n  #level-editor-container  .terrain-label {\r\n\tflex-grow: 1;\r\n\tfont-weight: 500;\r\n  }\r\n\r\n  #level-editor-container .terrain-buttons {\r\n\tdisplay: flex;\r\n\tgap: 8px;\r\n  }\r\n\r\n  #level-editor-container .terrain-buttons button {\r\n\twidth: 30px;\r\n\theight: 30px;\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tjustify-content: center;\r\n\tpadding: 0;\r\n\tbackground-color: transparent;\r\n\tcolor: var(--text-muted);\r\n\tborder: 1px solid rgba(255, 255, 255, 0.1);\r\n  }\r\n\r\n  #level-editor-container  .terrain-buttons button:hover {\r\n\tbackground-color: rgba(255, 255, 255, 0.05);\r\n\tcolor: var(--text);\r\n  }\r\n\r\n  #level-editor-container .status-bar {\r\n\tposition: absolute;\r\n\tbottom: 0;\r\n\tleft: 0;\r\n\tright: 0;\r\n\theight: 28px;\r\n\tbackground-color: rgba(15, 23, 42, 0.9);\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tpadding: 0 16px;\r\n\tfont-size: 13px;\r\n\tcolor: var(--text-muted);\r\n\tborder-top: 1px solid rgba(255, 255, 255, 0.1);\r\n  }\r\n\r\n  /* Add a terrainsPanel container */\r\n  #level-editor-container  #terrainsPanel {\r\n\tmargin-top: 24px;\r\n\tborder-top: 1px solid rgba(255, 255, 255, 0.1);\r\n\tpadding-top: 16px;\r\n  }\r\n\r\n\r\n\r\n  /* Environment Panel Styles */\r\n  #level-editor-container #environmentPanel {\r\n\toverflow-y: auto;\r\n\tmax-height: calc(100vh - 200px);\r\n  }\r\n  \r\n  #level-editor-container .environment-objects-container {\r\n\tdisplay: flex;\r\n\tflex-direction: column;\r\n\tgap: 10px;\r\n  }\r\n  \r\n  #level-editor-container .environment-objects-container h3 {\r\n\tmargin-top: 0;\r\n\tmargin-bottom: 12px;\r\n\tcolor: #e5e7eb;\r\n\tfont-size: 16px;\r\n\tborder-bottom: 1px solid #374151;\r\n\tpadding-bottom: 8px;\r\n  }\r\n  \r\n  #level-editor-container .environment-type {\r\n\tbackground-color: #1f2937;\r\n\tborder-radius: 6px;\r\n\toverflow: hidden;\r\n\tmargin-bottom: 8px;\r\n\tbox-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);\r\n\ttransition: box-shadow 0.2s ease;\r\n  }\r\n  \r\n  #level-editor-container .environment-type:hover {\r\n\tbox-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);\r\n  }\r\n  \r\n  #level-editor-container .environment-type-header {\r\n\tpadding: 10px 12px;\r\n\tfont-weight: 500;\r\n\tcursor: pointer;\r\n\tdisplay: flex;\r\n\tjustify-content: space-between;\r\n\talign-items: center;\r\n\tbackground-color: #2d3748;\r\n\tcolor: #e5e7eb;\r\n\tposition: relative;\r\n\ttext-transform: capitalize;\r\n  }\r\n  \r\n  #level-editor-container .environment-type-header::after {\r\n\tcontent: '▼';\r\n\tfont-size: 10px;\r\n\ttransition: transform 0.2s ease;\r\n  }\r\n  \r\n  #level-editor-container .environment-type-header.open::after {\r\n\ttransform: rotate(180deg);\r\n  }\r\n  \r\n  #level-editor-container .environment-items {\r\n\tpadding: 10px;\r\n\tdisplay: flex;\r\n\tflex-wrap: wrap;\r\n\tgap: 3px;\r\n\tbackground-color: #1f2937;\r\n  }\r\n  \r\n  #level-editor-container .environment-item {\r\n\twidth: 128px;\r\n\theight: 128px;\r\n\tborder: 2px solid #4b5563;\r\n\tborder-radius: 4px;\r\n\tcursor: pointer;\r\n\tpadding: 2px;\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tjustify-content: center;\r\n\tbackground-color: #374151;\r\n\ttransition: all 0.2s ease;\r\n\tposition: relative;\r\n  }\r\n  \r\n  #level-editor-container .environment-item:hover {\r\n\tborder-color: #9ca3af;\r\n\ttransform: translateY(-2px);\r\n  }\r\n  \r\n  #level-editor-container .environment-item.active {\r\n\tborder-color: #3b82f6;\r\n\tbox-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);\r\n  }\r\n  \r\n  #level-editor-container .environment-item canvas {\r\n\tmax-width: 100%;\r\n\tmax-height: 100%;\r\n\tobject-fit: contain;\r\n  }\r\n  \r\n  /* Tooltip for environment items */\r\n  #level-editor-container .environment-item::before {\r\n\tcontent: attr(data-name);\r\n\tposition: absolute;\r\n\tbottom: calc(100% + 5px);\r\n\tleft: 50%;\r\n\ttransform: translateX(-50%);\r\n\tbackground-color: #111827;\r\n\tcolor: white;\r\n\ttext-align: center;\r\n\tborder-radius: 4px;\r\n\tpadding: 4px 8px;\r\n\tfont-size: 12px;\r\n\twhite-space: nowrap;\r\n\tvisibility: hidden;\r\n\topacity: 0;\r\n\ttransition: all 0.2s ease;\r\n\tz-index: 10;\r\n\tpointer-events: none;\r\n\tbox-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);\r\n  }\r\n  \r\n  #level-editor-container .environment-item:hover::before {\r\n\tvisibility: visible;\r\n\topacity: 1;\r\n  }\r\n  \r\n  /* Indicator for placement mode */\r\n  #level-editor-container .placement-mode-indicator {\r\n\tposition: absolute;\r\n\ttop: 10px;\r\n\tleft: 50%;\r\n\ttransform: translateX(-50%);\r\n\tbackground-color: rgba(17, 24, 39, 0.8);\r\n\tcolor: white;\r\n\tpadding: 5px 10px;\r\n\tborder-radius: 4px;\r\n\tfont-size: 14px;\r\n\tpointer-events: none;\r\n\ttransition: opacity 0.3s ease;\r\n\tbox-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);\r\n\tz-index: 100;\r\n  }\r\n  \r\n  /* Improved toolbar buttons */\r\n  #level-editor-container .toolbar .btn {\r\n\tpadding: 8px 16px;\r\n\tborder: none;\r\n\tbackground-color: #374151;\r\n\tcolor: #e5e7eb;\r\n\tcursor: pointer;\r\n\tborder-radius: 4px;\r\n\tfont-weight: 500;\r\n\ttransition: all 0.2s ease;\r\n  }\r\n  \r\n  #level-editor-container .toolbar .btn:hover {\r\n\tbackground-color: #4b5563;\r\n  }\r\n  \r\n  #level-editor-container .toolbar .btn.active {\r\n\tbackground-color: #3b82f6;\r\n\tcolor: white;\r\n  }\r\n  \r\n  /* Better spacing for the tools panels */\r\n  #level-editor-container .tools > div {\r\n\tmargin-bottom: 20px;\r\n  }\r\n  \r\n  /* Environment object count badge */\r\n  #level-editor-container .environment-type-header .object-count-container {\r\n\tflex: 1;\r\n\tmargin-left: 8px;\r\n  }\r\n  #level-editor-container .environment-type-header .object-count {\r\n\tbackground-color: #4b5563;\r\n\tcolor: white;\r\n\tpadding: 2px 6px;\r\n\tborder-radius: 10px;\r\n\tfont-size: 12px;\r\n  }\r\n  \r\n  /* Empty state for environment types */\r\n  #level-editor-container .environment-items.empty {\r\n\tpadding: 20px;\r\n\ttext-align: center;\r\n\tcolor: #9ca3af;\r\n\tfont-style: italic;\r\n  }\r\n  \r\n  /* Styles for delete mode */\r\n  #level-editor-container .delete-mode-active .grid-container {\r\n\tcursor: url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"red\" stroke-width=\"2\"><path d=\"M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2\"/><path d=\"M10 11v6M14 11v6\"/></svg>'), auto;\r\n  }\r\n  \r\n  /* Object control panel */\r\n  #level-editor-container .object-controls {\r\n\tdisplay: flex;\r\n\tjustify-content: space-between;\r\n\tpadding: 10px;\r\n\tbackground-color: #1f2937;\r\n\tborder-radius: 6px;\r\n\tmargin-bottom: 10px;\r\n\tgap: 8px;\r\n  }\r\n  \r\n  #level-editor-container .object-controls button {\r\n\tbackground-color: #374151;\r\n\tcolor: #e5e7eb;\r\n\tborder: none;\r\n\tpadding: 6px 12px;\r\n\tborder-radius: 4px;\r\n\tcursor: pointer;\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tgap: 5px;\r\n\ttransition: background-color 0.2s;\r\n  }\r\n  \r\n  #level-editor-container .object-controls button:hover {\r\n\tbackground-color: #4b5563;\r\n  }\r\n  \r\n  #level-editor-container .object-controls button.delete-mode {\r\n\tbackground-color: #ef4444;\r\n\tcolor: white;\r\n  }\r\n  \r\n  #level-editor-container .object-controls button.delete-mode:hover {\r\n\tbackground-color: #dc2626;\r\n  }\r\n  \r\n  \r\n #object-preview-canvas {\r\n\ttransition: transform 0.05s ease-out;\r\n\twill-change: transform;\r\n\timage-rendering: pixelated;\r\n\tposition: absolute;\r\n\tpointer-events: none; \r\n\tz-index: 9999;\r\n\topacity: 0.7; \r\n}\r\n  /* Responsive adjustments */\r\n  @media (max-width: 768px) {\r\n\t#level-editor-container .environment-items {\r\n\t  justify-content: center;\r\n\t}\r\n\t\r\n\t#level-editor-container .environment-item {\r\n\t  width: 56px;\r\n\t  height: 56px;\r\n\t}\r\n  }",
         "html": "<div id=\"level-editor-container\" class=\"main-content-container\">\r\n   <div class=\"content-sidebar\">\r\n     <div class=\"toolbar\">\r\n       <button id=\"terrainsBtn\" class=\"btn active\">Tiles</button>\r\n       <button id=\"environmentBtn\" class=\"btn\">Env</button>\r\n     </div>\r\n     <div class=\"tools\">\r\n       <div>\r\n         <h3>Map Settings</h3>\r\n         <div class=\"form-row\">\r\n           <label for=\"terrainMapSize\">Map Size:</label>\r\n           <input type=\"number\" id=\"terrainMapSize\" value=\"48\" step=\"1\" min=\"1\">\r\n         </div>\r\n         <div class=\"form-row\">\r\n            <label for=\"extensionTerrainType\">Surrounding Terrain Type:</label>\r\n            <select id=\"extensionTerrainType\" class=\"extensionTerrainType\"></select>\r\n          </div>\r\n       </div>\r\n       <div id=\"environmentPanel\" style=\"display:none\">\r\n\r\n       </div>\r\n       <div id=\"terrainsPanel\">\r\n         <div class=\"terrain-types-container\">\r\n           <div class=\"terrain-item\">\r\n             <div class=\"color-option active\" style=\"background-color: #10b981;\"></div>\r\n             <div class=\"terrain-label\">Grass</div>\r\n             <div class=\"terrain-buttons\">\r\n               <button title=\"Edit\">✏️</button>\r\n               <button title=\"Delete\">🗑️</button>\r\n             </div>\r\n           </div>\r\n           <div class=\"terrain-item\">\r\n             <div class=\"color-option\" style=\"background-color: #3b82f6;\"></div>\r\n             <div class=\"terrain-label\">Water</div>\r\n             <div class=\"terrain-buttons\">\r\n               <button title=\"Edit\">✏️</button>\r\n               <button title=\"Delete\">🗑️</button>\r\n             </div>\r\n           </div>\r\n           <div class=\"terrain-item\">\r\n             <div class=\"color-option\" style=\"background-color: #a3a3a3;\"></div>\r\n             <div class=\"terrain-label\">Stone</div>\r\n             <div class=\"terrain-buttons\">\r\n               <button title=\"Edit\">✏️</button>\r\n               <button title=\"Delete\">🗑️</button>\r\n             </div>\r\n           </div>\r\n         </div>\r\n       </div>\r\n     </div>\r\n   </div>\r\n   \r\n   <div class=\"grid-container grid-background\">\r\n     <canvas id=\"grid\"></canvas>\r\n     \r\n     <div class=\"translation-controls\">\r\n       <button id=\"translate-up\"><span>↑</span></button>\r\n       <button id=\"translate-left\"><span>←</span></button>\r\n       <button id=\"translate-right\"><span>→</span></button>\r\n       <button id=\"translate-down\"><span>↓</span></button>\r\n     </div>\r\n     \r\n     <div class=\"status-bar\">\r\n       Cursor: x: 0, y: 0 | Zoom: 100% | Selected: Grass\r\n     </div>\r\n   </div>\r\n </div>"
-      },
-      "graphicsEditor": {
-        "title": "Graphics Editor",
-        "modals": [
-          "rotateShapes",
-          "moveAllShapes",
-          "generateIsometric"
-        ],
-        "fileName": "graphicsEditor",
-        "css": "\r\n#graphics-editor-container #grid-display {\r\n    position: absolute;\r\n    top: 10px;\r\n    left: 10px;\r\n    padding: 5px 10px;\r\n    border-radius: 0;\r\n    font-family: 'Courier New', monospace;\r\n}\r\n#graphics-editor-container .btn {\r\n    padding: 0;\r\n}\r\n\r\n#graphics-editor-container .btn-add {\r\n  background-color: rgba(16, 185, 129, 0.3);\r\n  border: 1px solid #10b981;\r\n  color: #f4e1d2;\r\n}\r\n#graphics-editor-container .btn-add:hover {\r\n  background-color: rgba(16, 185, 129, 0.5);\r\n  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);\r\n}\r\n#graphics-editor-container #graphics-rightbar {\r\n    width: 360px;\r\n    display: flex;\r\n    flex-direction: column;\r\n}\r\n\r\n#graphics-editor-container #canvas-container {\r\n    flex: 1;\r\n    position: relative;\r\n}\r\n\r\n#graphics-editor-container #graphics-editor-canvas {\r\n    width: 100%;\r\n    height: 100%;\r\n    cursor: grab;\r\n    outline: none;\r\n}\r\n\r\n#graphics-editor-container .toolbar {\r\n    display: flex;\r\n    flex-direction: column;\r\n    padding: 10px 5px;\r\n    gap: 5px;  \r\n    align-items: normal;\r\n}\r\n#graphics-editor-container .toolbar > div {\r\n    display: flex;\r\n    gap: 7px;\r\n    justify-content: space-between;\r\n}\r\n#graphics-editor-container .toolbar > div > div {\r\n    display: flex;\r\n    gap: 5px;\r\n}\r\n\r\n#graphics-editor-container #shape-list {\r\n    flex: 1;\r\n    overflow-y: auto;\r\n    padding: 15px;\r\n}\r\n\r\n#graphics-editor-container .shape-item {\r\n    padding: 12px;\r\n    margin-bottom: 8px;\r\n    border-radius: 0;\r\n    cursor: pointer;\r\n    transition: all 0.2s ease;\r\n}\r\n\r\n#graphics-editor-container #inspector {\r\n    padding: 15px;\r\n}\r\n\r\n#graphics-editor-container .scene-info {\r\n    padding: 10px 15px;\r\n    position: absolute;\r\n    bottom: 15px;\r\n    left: 15px;\r\n    border-radius: 0;\r\n    font-size: 13px;\r\n}\r\n#graphics-editor-container #move-modal button, #rotate-modal button, #isometric-modal button {\r\n    width: 48%;\r\n}\r\n\r\n\r\n#graphics-editor-container .ref-container {\r\n    display: flex;\r\n    gap: 10px;\r\n}\r\n\r\n#graphics-editor-container .ref-select {\r\n    flex: 1;\r\n    min-width: 150px;\r\n}\r\n\r\n#graphics-editor-container .ref-values {\r\n    display: flex;\r\n    flex-wrap: wrap;\r\n    gap: 5px;\r\n    margin-bottom: 5px;\r\n}\r\n\r\n#graphics-editor-container .ref-value-item {\r\n    border-radius: 4px;\r\n    padding: 3px 6px;\r\n    display: flex;\r\n    align-items: center;\r\n    gap: 5px;\r\n}\r\n\r\n#graphics-editor-container .remove-ref-btn {\r\n    padding: 0 3px;\r\n    font-size: 14px;\r\n}\r\n\r\n#graphics-editor-container #rotate-group-modal .modal-content {\r\n    width: 400px;\r\n    padding: 20px;\r\n}\r\n\r\n#graphics-editor-container #rotate-group-modal .form-row {\r\n    display: flex;\r\n    align-items: center;\r\n    margin-bottom: 15px;\r\n}\r\n\r\n#graphics-editor-container #rotate-group-modal label {\r\n    width: 100px;\r\n    display: inline-block;\r\n}\r\n\r\n#graphics-editor-container #rotate-group-modal input[type=\"range\"] {\r\n    flex-grow: 1;\r\n    margin: 0 10px;\r\n}\r\n\r\n#graphics-editor-container #rotate-group-modal .button-row {\r\n    display: flex;\r\n    justify-content: flex-end;\r\n    margin-top: 20px;\r\n}\r\n\r\n#graphics-editor-container #rotate-group-modal button {\r\n    margin-left: 10px;\r\n    padding: 6px 12px;\r\n    cursor: pointer;\r\n}\r\n\r\n/* Base styling for shape list */\r\n#graphics-editor-container #shape-list {\r\n    padding: 10px;\r\n    user-select: none; /* Prevent text selection during drag */\r\n  }\r\n  \r\n  /* Common styles for items */\r\n  #graphics-editor-container  .shape-item, .group-item {\r\n    padding: 8px;\r\n    margin: 5px 0;\r\n    border-radius: 4px;\r\n    cursor: grab;\r\n    border: 1px solid transparent;\r\n    transition: border-color 0.2s;\r\n  }\r\n  \r\n  /* Shapes styling */\r\n  #graphics-editor-container  .shape-item {\r\n    border-left: 1px solid #555;\r\n  }\r\n  \r\n  #graphics-editor-container  .shape-item:active {\r\n    cursor: grabbing;\r\n  }\r\n  \r\n  /* Group styling */\r\n  #graphics-editor-container  .group-item {\r\n    border-left: 4px solid #007bff; /* Visual distinction for groups */\r\n    font-weight: 500;\r\n  }\r\n  \r\n  /* Selected states - use border instead of background */\r\n  #graphics-editor-container  .shape-item.selected, \r\n  #graphics-editor-container  .group-item.selected {\r\n    border-color: #4080ff;\r\n  }\r\n  \r\n  /* Drag-over states */\r\n  #graphics-editor-container .group-item.drag-over,\r\n  #graphics-editor-container  #shape-list.drag-over {\r\n    border-color: #40a040;\r\n    box-shadow: 0 0 3px rgba(0, 100, 0, 0.5);\r\n  }\r\n  \r\n  /* Animation for when dragging */\r\n  #graphics-editor-container .shape-item.dragging {\r\n    opacity: 0.7;\r\n  }\r\n  \r\n  /* Group shapes container */\r\n  #graphics-editor-container .group-shapes {\r\n    margin-left: 15px;\r\n    padding: 5px;\r\n    border-left: 2px dashed #666;\r\n  }\r\n  \r\n  /* Ungrouped shapes section */\r\n  #graphics-editor-container #shape-list .ungrouped-shapes {\r\n    margin-top: 10px;\r\n    padding: 10px;\r\n    border: 1px dashed #666;\r\n  }\r\n\r\n  #graphics-editor-container .transform-buttons {\r\n    display: flex;\r\n    gap: 10px;\r\n    margin-bottom: 10px;\r\n}\r\n\r\n#graphics-editor-container .transform-buttons button {\r\n    flex: 1;\r\n    padding: 8px;\r\n    background: #444;\r\n    border: 1px solid #666;\r\n    color: white;\r\n    cursor: pointer;\r\n}\r\n\r\n#graphics-editor-container .transform-buttons button.active {\r\n    background: #0066cc;\r\n    border-color: #0088ff;\r\n}",
-        "html": "<div id=\"graphics-editor-container\" class=\"main-content-container\">\r\n   <div id=\"graphics-sidebar\" class=\"content-sidebar\">\r\n      <div id=\"toolbar\" class=\"toolbar\">\r\n         <div>    \r\n            <div>\r\n               <button id=\"add-animation\" class=\"btn btn-add\" title=\"Add Animation\">+A</button>                        \r\n               <button id=\"delete-animation\" class=\"btn btn-danger\" title=\"Delete Animation\">-A</button>                        \r\n            </div>                   \r\n            <div>\r\n               <button id=\"add-frame\" class=\"btn btn-add\" title=\"Add Frame\">+F</button>                        \r\n               <button id=\"delete-frame\" class=\"btn btn-danger\" title=\"Delete Frame\">-F</button>                        \r\n            </div>\r\n            <div>\r\n               <button id=\"create-group\" class=\"btn btn-add\" title=\"Create Group\">+G</button>\r\n               <button id=\"delete-group\" class=\"btn btn-danger\" title=\"Delete Group\">-G</button>\r\n            </div>\r\n            <div>                    \r\n               <button id=\"add-shape\" class=\"btn btn-add\" title=\"Add Shape\">+S</button>                        \r\n               <button id=\"delete-shape\" class=\"btn btn-danger\" title=\"Delete Shape\">-S</button>           \r\n            </div>\r\n         </div>  \r\n         <div>\r\n            <div>\r\n               <button id=\"preview-animation\" class=\"btn btn-primary\" title=\"Preview Animation\">▶</button> \r\n               <button id=\"generate-isometric\" class=\"btn btn-primary\" title=\"Generate Isometric Sprites\">Iso</button>                    \r\n            </div>\r\n         </div>\r\n      </div>\r\n      <div id=\"frame-list\"></div>\r\n      <div id=\"group-list\"></div>\r\n      <div id=\"shape-list\"></div>\r\n   </div>\r\n   <div id=\"canvas-container\" class=\"grid-background\">\r\n      <canvas id=\"graphics-editor-canvas\"></canvas>\r\n      <div class=\"scene-info\">\r\n         <div>Shapes: <span id=\"shape-count\">0</span></div>\r\n         <div>Selected: <span id=\"selected-shape\">None</span></div>\r\n         <div><small>Controls: Left-click to select, Drag to rotate, Right-drag to pan, Scroll to zoom</small></div>\r\n      </div>\r\n   </div>\r\n   <div id=\"graphics-rightbar\">\r\n      <div id=\"inspector\"></div>\r\n      <div id=\"json-editor\" style=\"display: none\">                        \r\n        <textarea id=\"json-content\" placeholder=\"Edit JSON here...\"></textarea>                    \r\n\t\t\t</div>\r\n   </div>\r\n</div>\r\n"
       },
       "TextureEditor": {
         "title": "Texture Editor",
@@ -17594,6 +17594,12 @@ const DEFAULT_PROJECT_CONFIG = {
         "href-disabled": "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
         "fileName": "jszip.min.js"
       },
+      "three.OrbitControls": {
+        "title": "THREE.OrbitControls",
+        "href": "https://cdn.jsdelivr.net/npm/three-orbitcontrols@2.110.3/OrbitControls.min.js",
+        "isModule": true,
+        "fileName": "three.OrbitControls"
+      },
       "threejs": {
         "title": "THREE",
         "href": "https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js",
@@ -17601,12 +17607,6 @@ const DEFAULT_PROJECT_CONFIG = {
         "requireName": "three",
         "fileName": "threejs",
         "isModule": true
-      },
-      "three.OrbitControls": {
-        "title": "THREE.OrbitControls",
-        "href": "https://cdn.jsdelivr.net/npm/three-orbitcontrols@2.110.3/OrbitControls.min.js",
-        "isModule": true,
-        "fileName": "three.OrbitControls"
       },
       "aiPromptPanel": {
         "fileName": "aiPromptPanel",
@@ -17624,13 +17624,13 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "Component",
         "script": "class Component {\r\n    constructor(game, parent, params) { \r\n        this.game = game;\r\n        this.parent = parent;\r\n        this.init(params);\r\n    }\r\n    init(params) {}\r\n    getComponent(type) {\r\n        return this.parent.getComponent(type);\r\n    }\r\n    update() {}\r\n    postUpdate() {}\r\n    destroy() {}\r\n}\r\n"
       },
-      "Entity": {
-        "fileName": "Entity",
-        "script": "class Entity {\r\n    constructor(game, x, y, type) {\r\n        this.game = game;\r\n        this.moduleManager = game.moduleManager;\r\n        this.position = { x: x, y: y, z: 0};\r\n        this.components = [];\r\n        this.renderers = [];\r\n        this.destroyed = false;        \r\n        this.id = ++game.entityId;\r\n        this.type = type;\r\n        this.gridPosition = { x: 0, y: 0};\r\n        this.drawPosition = { x: 0, y: 0};\r\n        this.lastPosition = {...this.position};\r\n        this.lastGridPosition = {...this.gridPosition};\r\n        this.lastDrawPosition = {...this.drawPosition};\r\n        if(this.game.gameEntity){\r\n            this.setGridPosition();\r\n            this.position.z = this.getCurrentTerrainHeight();\r\n        }\r\n    }\r\n\r\n    getCurrentTerrainHeight(){\r\n        return this.game.gameEntity.getComponent('game').getTerrainHeight(this.gridPosition);\r\n    }\r\n\r\n    getComponent(name) {\r\n        return this.components[name.toLowerCase()] || this.components[`${name.toLowerCase()}`];\r\n    }\r\n    addRenderer(RendererClassName, params) {\r\n        const RendererClass = this.moduleManager.getCompiledScript(RendererClassName, 'renderers');\r\n        const renderer = new RendererClass(this.game, this, params);\r\n        this.renderers[RendererClass.name.toLowerCase()] = renderer;\r\n        this.components[RendererClass.name.toLowerCase()] = renderer;\r\n        return renderer;\r\n    }\r\n    addComponent(ComponentClassName, params) {        \r\n        const ComponentClass = this.moduleManager.getCompiledScript(ComponentClassName, 'components');\r\n        const component = new ComponentClass(this.game, this, params);\r\n        this.components[ComponentClass.name.toLowerCase()] = component;\r\n        return component;\r\n    }\r\n    removeComponent(component) {\r\n        let index = this.components.indexOf(component);\r\n        if( index >= 0 ) {\r\n            this.components.splice(index, 1);\r\n        }\r\n    }\r\n    setGridPosition() {\r\n        if(this.game.translator){\r\n            let gridPosition = this.game.translator.pixelToGrid( this.position.x, this.position.y ); \r\n            this.gridPosition = this.game.translator.snapToGrid(gridPosition.x, gridPosition.y);   \r\n            return;\r\n        }\r\n        this.gridPosition = { x: 0, y: 0 };\r\n    }\r\n    updateLastPositions() {\r\n        this.lastPosition = {...this.position};\r\n        this.lastGridPosition = {...this.gridPosition};\r\n        this.lastDrawPosition = {...this.drawPosition};         \r\n    }\r\n    \r\n    getCurrentTile() {                     \r\n        if(this.game.state.tileMap.length > this.gridPosition.y && this.gridPosition.y > 0 && this.game.state.tileMap[Math.floor(this.gridPosition.y)] && this.game.state.tileMap[Math.floor(this.gridPosition.y)].length > this.gridPosition.x && this.gridPosition.x > 0){\r\n            return this.game.state.tileMap[Math.floor(this.gridPosition.y)][Math.floor(this.gridPosition.x)];\r\n        }\r\n        return { typeId: 0};\r\n    }\r\n    update() {    \r\n        this.setGridPosition();\r\n        for(let c in this.components) {\r\n            this.components[c].update();   \r\n            this.setGridPosition();\r\n            if(this.destroyed) break;\r\n        }                \r\n        return !this.destroyed;\r\n    }\r\n    postUpdate() {\r\n        for(let c in this.components) {\r\n            this.components[c].postUpdate();   \r\n            if(this.destroyed) break;\r\n        }     \r\n        this.updateLastPositions(); \r\n        return !this.destroyed;\r\n    }\r\n    draw() {\r\n        const isoPos = this.game.translator.pixelToIso(this.position.x, this.position.y);    \r\n        this.drawPosition = { x: isoPos.x, y: isoPos.y };\r\n\r\n        for(let r in this.renderers) {\r\n            this.renderers[r].draw();  \r\n        }\r\n\r\n    }\r\n    destroy() {\r\n        this.destroyed = true;\r\n        for(let c in this.components) {\r\n            this.components[c].destroy();   \r\n        }   \r\n        for(let r in this.renderers) {\r\n            this.renderers[r].destroy();   \r\n        }   \r\n    }\r\n}"
-      },
       "CoordinateTranslator": {
         "fileName": "CoordinateTranslator",
         "script": "class CoordinateTranslator {\r\n    constructor(config, mapSize, isometric = false) {\r\n        this.isometric = isometric;\r\n        this.tileWidth = config.gridSize;\r\n        this.tileHeight = config.gridSize * 0.5;\r\n        this.canvasWidth = config.canvasWidth;\r\n        this.canvasHeight = config.canvasHeight;\r\n        this.mapSize = mapSize;\r\n    }\r\n\r\n    // Pixel (top-down) to Grid\r\n    pixelToGrid(pixelX, pixelY) {\r\n        return {\r\n            x: pixelX / this.tileWidth,\r\n            y: pixelY / this.tileWidth\r\n        };\r\n    }\r\n\r\n    // Grid to Isometric (with vertical centering)\r\n    gridToIso(gridX, gridY) {\r\n        // If not isometric, return grid coordinates as-is\r\n        if (!this.isometric) {\r\n            return { x: gridX * this.tileWidth, y: gridY * this.tileWidth };\r\n        }\r\n\r\n        const isoX = (gridX - gridY) * (this.tileWidth / 2) + this.canvasWidth / 2;\r\n       \r\n        // Calculate the height the grid would occupy\r\n        const totalGridHeight = this.mapSize * this.tileHeight;\r\n       \r\n        // Center vertically by adding an offset\r\n        const verticalOffset = (this.canvasHeight - totalGridHeight) / 2;\r\n       \r\n        const isoY = (gridX + gridY) * (this.tileHeight / 2) + verticalOffset;\r\n       \r\n        return { x: isoX, y: isoY };\r\n    }\r\n\r\n    // Pixel (top-down) to Isometric\r\n    pixelToIso(pixelX, pixelY) {\r\n        if(!this.isometric){\r\n            return {\r\n                x: pixelX + ( this.canvasWidth - this.mapSize * this.tileWidth) / 2,\r\n                y: pixelY + ( this.canvasHeight - this.mapSize * this.tileWidth) / 2\r\n            }\r\n        }\r\n        const grid = this.pixelToGrid(pixelX, pixelY);\r\n        return this.gridToIso(grid.x, grid.y);\r\n    }\r\n\r\n    isoToGrid(isoX, isoY) {\r\n        // If not isometric, convert directly to grid\r\n        if (!this.isometric) {\r\n            return {\r\n                x: isoX / this.tileWidth,\r\n                y: isoY / this.tileWidth\r\n            };\r\n        }\r\n\r\n        const adjustedX = isoX - this.canvasWidth / 2;\r\n       \r\n        // Calculate the same vertical offset as in gridToIso\r\n        const totalGridHeight = this.mapSize * this.tileHeight;\r\n        const verticalOffset = (this.canvasHeight - totalGridHeight) / 2;\r\n       \r\n        // Subtract the offset before conversion\r\n        const adjustedY = isoY - verticalOffset;\r\n       \r\n        const gridX = (adjustedX / (this.tileWidth / 2) + adjustedY / (this.tileHeight / 2)) / 2;\r\n        const gridY = (adjustedY / (this.tileHeight / 2) - adjustedX / (this.tileWidth / 2)) / 2;\r\n       \r\n        return { x: gridX, y: gridY };\r\n    }\r\n\r\n    isoToPixel(isoX, isoY) {\r\n        const grid = this.isoToGrid(isoX, isoY);\r\n        return {\r\n            x: grid.x * this.tileWidth,\r\n            y: grid.y * this.tileWidth\r\n        };\r\n    }\r\n\r\n    // Snap grid coordinates to nearest integer\r\n    snapToGrid(gridX, gridY) {\r\n        return { x: Math.floor(gridX), y: Math.floor(gridY) };\r\n    }\r\n}"
+      },
+      "Entity": {
+        "fileName": "Entity",
+        "script": "class Entity {\r\n    constructor(game, x, y, type) {\r\n        this.game = game;\r\n        this.moduleManager = game.moduleManager;\r\n        this.position = { x: x, y: y, z: 0};\r\n        this.components = [];\r\n        this.renderers = [];\r\n        this.destroyed = false;        \r\n        this.id = ++game.entityId;\r\n        this.type = type;\r\n        this.gridPosition = { x: 0, y: 0};\r\n        this.drawPosition = { x: 0, y: 0};\r\n        this.lastPosition = {...this.position};\r\n        this.lastGridPosition = {...this.gridPosition};\r\n        this.lastDrawPosition = {...this.drawPosition};\r\n        if(this.game.gameEntity){\r\n            this.setGridPosition();\r\n            this.position.z = this.getCurrentTerrainHeight();\r\n        }\r\n    }\r\n\r\n    getCurrentTerrainHeight(){\r\n        return this.game.gameEntity.getComponent('game').getTerrainHeight(this.gridPosition);\r\n    }\r\n\r\n    getComponent(name) {\r\n        return this.components[name.toLowerCase()] || this.components[`${name.toLowerCase()}`];\r\n    }\r\n    addRenderer(RendererClassName, params) {\r\n        const RendererClass = this.moduleManager.getCompiledScript(RendererClassName, 'renderers');\r\n        const renderer = new RendererClass(this.game, this, params);\r\n        this.renderers[RendererClass.name.toLowerCase()] = renderer;\r\n        this.components[RendererClass.name.toLowerCase()] = renderer;\r\n        return renderer;\r\n    }\r\n    addComponent(ComponentClassName, params) {        \r\n        const ComponentClass = this.moduleManager.getCompiledScript(ComponentClassName, 'components');\r\n        const component = new ComponentClass(this.game, this, params);\r\n        this.components[ComponentClass.name.toLowerCase()] = component;\r\n        return component;\r\n    }\r\n    removeComponent(component) {\r\n        let index = this.components.indexOf(component);\r\n        if( index >= 0 ) {\r\n            this.components.splice(index, 1);\r\n        }\r\n    }\r\n    setGridPosition() {\r\n        if(this.game.translator){\r\n            let gridPosition = this.game.translator.pixelToGrid( this.position.x, this.position.y ); \r\n            this.gridPosition = this.game.translator.snapToGrid(gridPosition.x, gridPosition.y);   \r\n            return;\r\n        }\r\n        this.gridPosition = { x: 0, y: 0 };\r\n    }\r\n    updateLastPositions() {\r\n        this.lastPosition = {...this.position};\r\n        this.lastGridPosition = {...this.gridPosition};\r\n        this.lastDrawPosition = {...this.drawPosition};         \r\n    }\r\n    \r\n    getCurrentTile() {                     \r\n        if(this.game.state.tileMap.length > this.gridPosition.y && this.gridPosition.y > 0 && this.game.state.tileMap[Math.floor(this.gridPosition.y)] && this.game.state.tileMap[Math.floor(this.gridPosition.y)].length > this.gridPosition.x && this.gridPosition.x > 0){\r\n            return this.game.state.tileMap[Math.floor(this.gridPosition.y)][Math.floor(this.gridPosition.x)];\r\n        }\r\n        return { typeId: 0};\r\n    }\r\n    update() {    \r\n        this.setGridPosition();\r\n        for(let c in this.components) {\r\n            this.components[c].update();   \r\n            this.setGridPosition();\r\n            if(this.destroyed) break;\r\n        }                \r\n        return !this.destroyed;\r\n    }\r\n    postUpdate() {\r\n        for(let c in this.components) {\r\n            this.components[c].postUpdate();   \r\n            if(this.destroyed) break;\r\n        }     \r\n        this.updateLastPositions(); \r\n        return !this.destroyed;\r\n    }\r\n    draw() {\r\n        const isoPos = this.game.translator.pixelToIso(this.position.x, this.position.y);    \r\n        this.drawPosition = { x: isoPos.x, y: isoPos.y };\r\n\r\n        for(let r in this.renderers) {\r\n            this.renderers[r].draw();  \r\n        }\r\n\r\n    }\r\n    destroy() {\r\n        this.destroyed = true;\r\n        for(let c in this.components) {\r\n            this.components[c].destroy();   \r\n        }   \r\n        for(let r in this.renderers) {\r\n            this.renderers[r].destroy();   \r\n        }   \r\n    }\r\n}"
       },
       "ExportScripts": {
         "fileName": "ExportScripts",
@@ -17655,15 +17655,15 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "GE_GizmoManager",
         "script": "class GE_GizmoManager {\r\n    constructor(gameEditor, graphicsEditor) {\r\n        this.gameEditor = gameEditor;\r\n        this.graphicsEditor = graphicsEditor;\r\n        this.gizmoMode = 'translate';\r\n        this.gizmoGroup = null;\r\n        this.isDragging = false;\r\n        this.selectedAxis = null;\r\n        this.mouse = new window.THREE.Vector2();\r\n        this.lastMouse = new window.THREE.Vector2();\r\n        this.raycaster = new window.THREE.Raycaster();\r\n        this.originalScale = new window.THREE.Vector3(1, 1, 1);\r\n        this.originalPosition = new window.THREE.Vector3(0, 0, 0);\r\n        this.originalRotation = new window.THREE.Vector3(0, 0, 0);\r\n    }\r\n\r\n    init() {\r\n\r\n        const canvas = this.graphicsEditor.sceneRenderer.renderer.domElement;\r\n        canvas.addEventListener('mousedown', this.onMouseDown.bind(this));\r\n        canvas.addEventListener('mousemove', this.onDrag.bind(this));\r\n        canvas.addEventListener('mouseup', this.onMouseUp.bind(this));\r\n\r\n    }\r\n\r\n    destroyGizmo() {\r\n        if (this.gizmoGroup) {\r\n            this.gizmoGroup.children.forEach(child => {\r\n                if (child.geometry) child.geometry.dispose();\r\n                if (child.material) child.material.dispose();\r\n            });\r\n            this.graphicsEditor.sceneRenderer.scene.remove(this.gizmoGroup);\r\n            this.gizmoGroup = null;\r\n        }\r\n    }\r\n\r\n    createGizmo() {\r\n        this.destroyGizmo();\r\n        this.gizmoGroup = new window.THREE.Group();\r\n        this.graphicsEditor.sceneRenderer.scene.add(this.gizmoGroup);\r\n    \r\n        let center = new window.THREE.Vector3();\r\n        let xOffset = 1, yOffset = 1, zOffset = 1;\r\n    \r\n        if (this.currentTransformTarget.children.length > 0) {\r\n            const boundingBox = new window.THREE.Box3().setFromObject(this.currentTransformTarget);\r\n            const size = new window.THREE.Vector3();\r\n            if (!boundingBox.isEmpty() && isFinite(boundingBox.min.x)) {\r\n                boundingBox.getSize(size);\r\n                boundingBox.getCenter(center);\r\n                xOffset = size.x / 2 + 1;\r\n                yOffset = size.y / 2 + 1;\r\n                zOffset = size.z / 2 + 1;\r\n            } else {\r\n                this.currentTransformTarget.getWorldPosition(center);\r\n                console.warn(\"Invalid bounding box; using group position.\");\r\n            }\r\n        } else {\r\n            const boundingBox = new window.THREE.Box3().setFromObject(this.currentTransformTarget);\r\n            const size = new window.THREE.Vector3();\r\n            if (!boundingBox.isEmpty() && isFinite(boundingBox.min.x)) {\r\n                boundingBox.getSize(size);\r\n                boundingBox.getCenter(center);\r\n                xOffset = size.x / 2 + 1;\r\n                yOffset = size.y / 2 + 1;\r\n                zOffset = size.z / 2 + 1;\r\n            } else {\r\n                this.currentTransformTarget.getWorldPosition(center);\r\n                console.warn(\"Invalid bounding box; using group position.\");\r\n            }\r\n        }\r\n    \r\n        this.gizmoGroup.position.copy(center);\r\n    \r\n        if (this.graphicsEditor.state.gizmoMode === \"translate\") {\r\n            const arrowLength = 5;\r\n            const arrowHeadLength = 2;\r\n            const arrowHeadWidth = 1;\r\n    \r\n            // X-axis (red)\r\n            const xCylinderGeometry = new window.THREE.CylinderGeometry(0.5, 0.5, arrowLength - arrowHeadLength, 8);\r\n            const xCylinderMaterial = new window.THREE.MeshBasicMaterial({ color: 0xff0000 });\r\n            const xCylinder = new window.THREE.Mesh(xCylinderGeometry, xCylinderMaterial);\r\n            xCylinder.rotation.z = Math.PI / 2;\r\n            xCylinder.position.x = xOffset + (arrowLength - arrowHeadLength) / 2;\r\n            xCylinder.name = \"translate-x\";\r\n            this.gizmoGroup.add(xCylinder);\r\n    \r\n            const xConeGeometry = new window.THREE.ConeGeometry(arrowHeadWidth, arrowHeadLength, 8);\r\n            const xConeMaterial = new window.THREE.MeshBasicMaterial({ color: 0xff0000 });\r\n            const xCone = new window.THREE.Mesh(xConeGeometry, xConeMaterial);\r\n            xCone.rotation.z = 3 * Math.PI / 2;\r\n            xCone.position.x = xOffset + arrowLength - arrowHeadLength / 2;\r\n            xCone.name = \"translate-x\";\r\n            this.gizmoGroup.add(xCone);\r\n    \r\n            // Y-axis (green)\r\n            const yCylinderGeometry = new window.THREE.CylinderGeometry(0.5, 0.5, arrowLength - arrowHeadLength, 8);\r\n            const yCylinderMaterial = new window.THREE.MeshBasicMaterial({ color: 0x00ff00 });\r\n            const yCylinder = new window.THREE.Mesh(yCylinderGeometry, yCylinderMaterial);\r\n            yCylinder.position.y = yOffset + (arrowLength - arrowHeadLength) / 2;\r\n            yCylinder.name = \"translate-y\";\r\n            this.gizmoGroup.add(yCylinder);\r\n    \r\n            const yConeGeometry = new window.THREE.ConeGeometry(arrowHeadWidth, arrowHeadLength, 8);\r\n            const yConeMaterial = new window.THREE.MeshBasicMaterial({ color: 0x00ff00 });\r\n            const yCone = new window.THREE.Mesh(yConeGeometry, yConeMaterial);\r\n            yCone.position.y = yOffset + arrowLength - arrowHeadLength / 2;\r\n            yCone.name = \"translate-y\";\r\n            this.gizmoGroup.add(yCone);\r\n    \r\n            // Z-axis (blue)\r\n            const zCylinderGeometry = new window.THREE.CylinderGeometry(0.5, 0.5, arrowLength - arrowHeadLength, 8);\r\n            const zCylinderMaterial = new window.THREE.MeshBasicMaterial({ color: 0x0000ff });\r\n            const zCylinder = new window.THREE.Mesh(zCylinderGeometry, zCylinderMaterial);\r\n            zCylinder.rotation.x = Math.PI / 2;\r\n            zCylinder.position.z = zOffset + (arrowLength - arrowHeadLength) / 2;\r\n            zCylinder.name = \"translate-z\";\r\n            this.gizmoGroup.add(zCylinder);\r\n    \r\n            const zConeGeometry = new window.THREE.ConeGeometry(arrowHeadWidth, arrowHeadLength, 8);\r\n            const zConeMaterial = new window.THREE.MeshBasicMaterial({ color: 0x0000ff });\r\n            const zCone = new window.THREE.Mesh(zConeGeometry, zConeMaterial);\r\n            zCone.rotation.x = Math.PI / 2;\r\n            zCone.position.z = zOffset + arrowLength - arrowHeadLength / 2;\r\n            zCone.name = \"translate-z\";\r\n            this.gizmoGroup.add(zCone);\r\n        } else if (this.graphicsEditor.state.gizmoMode === \"rotate\") {\r\n            const ringRadius = 4;\r\n            const ringTube = 0.5;\r\n    \r\n            // X-axis (red)\r\n            const xRingGeometry = new window.THREE.TorusGeometry(ringRadius, ringTube, 16, 100);\r\n            const xRingMaterial = new window.THREE.MeshBasicMaterial({ color: 0xff0000 });\r\n            const xRing = new window.THREE.Mesh(xRingGeometry, xRingMaterial);\r\n            xRing.rotation.y = Math.PI / 2;\r\n            xRing.position.x = xOffset;\r\n            xRing.name = \"rotate-x\";\r\n            this.gizmoGroup.add(xRing);\r\n    \r\n            // Y-axis (green)\r\n            const yRingGeometry = new window.THREE.TorusGeometry(ringRadius, ringTube, 16, 100);\r\n            const yRingMaterial = new window.THREE.MeshBasicMaterial({ color: 0x00ff00 });\r\n            const yRing = new window.THREE.Mesh(yRingGeometry, yRingMaterial);\r\n            yRing.rotation.x = Math.PI / 2;\r\n            yRing.position.y = yOffset;\r\n            yRing.name = \"rotate-y\";\r\n            this.gizmoGroup.add(yRing);\r\n    \r\n            // Z-axis (blue)\r\n            const zRingGeometry = new window.THREE.TorusGeometry(ringRadius, ringTube, 16, 100);\r\n            const zRingMaterial = new window.THREE.MeshBasicMaterial({ color: 0x0000ff });\r\n            const zRing = new window.THREE.Mesh(zRingGeometry, zRingMaterial);\r\n            zRing.position.z = zOffset;\r\n            zRing.name = \"rotate-z\";\r\n            this.gizmoGroup.add(zRing);\r\n        } else if (this.graphicsEditor.state.gizmoMode === \"scale\") {\r\n            const boxSize = 2;\r\n    \r\n            // X-axis (red)\r\n            const xBoxGeometry = new window.THREE.BoxGeometry(boxSize, boxSize, boxSize);\r\n            const xBoxMaterial = new window.THREE.MeshBasicMaterial({ color: 0xff0000 });\r\n            const xBox = new window.THREE.Mesh(xBoxGeometry, xBoxMaterial);\r\n            xBox.position.set(xOffset, 0, 0);\r\n            xBox.name = \"scale-x\";\r\n            this.gizmoGroup.add(xBox);\r\n    \r\n            // Y-axis (green)\r\n            const yBoxGeometry = new window.THREE.BoxGeometry(boxSize, boxSize, boxSize);\r\n            const yBoxMaterial = new window.THREE.MeshBasicMaterial({ color: 0x00ff00 });\r\n            const yBox = new window.THREE.Mesh(yBoxGeometry, yBoxMaterial);\r\n            yBox.position.set(0, yOffset, 0);\r\n            yBox.name = \"scale-y\";\r\n            this.gizmoGroup.add(yBox);\r\n    \r\n            // Z-axis (blue)\r\n            const zBoxGeometry = new window.THREE.BoxGeometry(boxSize, boxSize, boxSize);\r\n            const zBoxMaterial = new window.THREE.MeshBasicMaterial({ color: 0x0000ff });\r\n            const zBox = new window.THREE.Mesh(zBoxGeometry, zBoxMaterial);\r\n            zBox.position.set(0, 0, zOffset);\r\n            zBox.name = \"scale-z\";\r\n            this.gizmoGroup.add(zBox);\r\n        }\r\n    }   \r\n\r\n    setGizmoMode(mode) {\r\n        this.graphicsEditor.state.gizmoMode = mode;\r\n        this.createGizmo();\r\n    }\r\n\r\n    updateGizmoPosition() {\r\n        if (!this.currentTransformTarget || !this.gizmoGroup) return;\r\n                \r\n        let center = new window.THREE.Vector3();\r\n        let xOffset = 1, yOffset = 1, zOffset = 1;\r\n    \r\n        if (this.currentTransformTarget.children.length > 0) {\r\n            const boundingBox = new window.THREE.Box3().setFromObject(this.currentTransformTarget);\r\n            const size = new window.THREE.Vector3();\r\n            if (!boundingBox.isEmpty() && isFinite(boundingBox.min.x)) {\r\n                boundingBox.getSize(size);\r\n                boundingBox.getCenter(center);\r\n                xOffset = size.x / 2 + 1;\r\n                yOffset = size.y / 2 + 1;\r\n                zOffset = size.z / 2 + 1;\r\n            } else {\r\n                this.currentTransformTarget.getWorldPosition(center);\r\n                console.warn(\"Invalid bounding box; using group position.\");\r\n            }\r\n        } else {\r\n            const boundingBox = new window.THREE.Box3().setFromObject(this.currentTransformTarget);\r\n            const size = new window.THREE.Vector3();\r\n            if (!boundingBox.isEmpty() && isFinite(boundingBox.min.x)) {\r\n                boundingBox.getSize(size);\r\n                boundingBox.getCenter(center);\r\n                xOffset = size.x / 2 + 1;\r\n                yOffset = size.y / 2 + 1;\r\n                zOffset = size.z / 2 + 1;\r\n            } else {\r\n                this.currentTransformTarget.getWorldPosition(center);\r\n                console.warn(\"Invalid bounding box; using group position.\");\r\n            }\r\n        }\r\n    \r\n        this.gizmoGroup.position.copy(center);\r\n    \r\n        this.gizmoGroup.children.forEach(child => {\r\n            const name = child.name;\r\n            if (!name) return;\r\n    \r\n            child.position.set(0, 0, 0);\r\n    \r\n            if (name.startsWith(\"translate-\")) {\r\n                const arrowLength = 5;\r\n                const arrowHeadLength = 2;\r\n                if (name === \"translate-x\") {\r\n                    child.position.x = xOffset + (child.geometry.type === \"CylinderGeometry\" ? (arrowLength - arrowHeadLength) / 2 : arrowLength - arrowHeadLength / 2);\r\n                } else if (name === \"translate-y\") {\r\n                    child.position.y = yOffset + (child.geometry.type === \"CylinderGeometry\" ? (arrowLength - arrowHeadLength) / 2 : arrowLength - arrowHeadLength / 2);\r\n                } else if (name === \"translate-z\") {\r\n                    child.position.z = zOffset + (child.geometry.type === \"CylinderGeometry\" ? (arrowLength - arrowHeadLength) / 2 : arrowLength - arrowHeadLength / 2);\r\n                }\r\n            } else if (name.startsWith(\"rotate-\")) {\r\n                if (name === \"rotate-x\") child.position.x = xOffset;\r\n                else if (name === \"rotate-y\") child.position.y = yOffset;\r\n                else if (name === \"rotate-z\") child.position.z = zOffset;\r\n            } else if (name.startsWith(\"scale-\")) {\r\n                if (name === \"scale-x\") child.position.x = xOffset;\r\n                else if (name === \"scale-y\") child.position.y = yOffset;\r\n                else if (name === \"scale-z\") child.position.z = zOffset;\r\n            }\r\n        });\r\n    \r\n        // Ensure gizmoGroup is in scene (not rootGroup, as it’s a UI overlay)\r\n        if (!this.graphicsEditor.sceneRenderer.scene.children.includes(this.gizmoGroup)) {\r\n            this.graphicsEditor.sceneRenderer.scene.add(this.gizmoGroup);\r\n            console.warn(\"Gizmo was removed from scene; re-added.\");\r\n        }\r\n    }\r\n\r\n          \r\n    onMouseDown(event) {\r\n        if (!this.gizmoGroup) {\r\n            return;\r\n        }\r\n    \r\n        const canvas = this.graphicsEditor.sceneRenderer.renderer.domElement;\r\n        const rect = canvas.getBoundingClientRect();\r\n        this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;\r\n        this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;\r\n    \r\n        this.raycaster.setFromCamera(this.mouse, this.graphicsEditor.sceneRenderer.camera);\r\n        const intersects = this.raycaster.intersectObjects(this.gizmoGroup.children, true);\r\n    \r\n        if (intersects.length > 0) {\r\n            const object = intersects[0].object;\r\n            this.selectedAxis = object.name.split('-')[1];\r\n            this.isDragging = true;\r\n            if (this.graphicsEditor.sceneRenderer.controls) {\r\n                this.graphicsEditor.sceneRenderer.controls.enabled = false;\r\n            }\r\n    \r\n            this.lastMouse.copy(this.mouse);\r\n        } else {\r\n            console.log(\"No intersection with gizmo\");\r\n        }\r\n    }\r\n\r\n    onMouseUp() {\r\n        this.isDragging = false;\r\n        this.selectedAxis = null;\r\n\r\n        if (this.graphicsEditor.sceneRenderer.controls) {\r\n            this.graphicsEditor.sceneRenderer.controls.enabled = true;\r\n        }\r\n    }\r\n    onDrag(event) {\r\n        if (!this.isDragging || !this.selectedAxis || !this.currentTransformTarget) return;\r\n        \r\n        const canvas = this.graphicsEditor.sceneRenderer.renderer.domElement;\r\n        const rect = canvas.getBoundingClientRect();\r\n        this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;\r\n        this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;\r\n        const deltaMouse = this.mouse.clone().sub(this.lastMouse);\r\n        \r\n        const camera = this.graphicsEditor.sceneRenderer.camera;\r\n        const cameraPosition = camera.position.clone();\r\n        const objectPosition = this.currentTransformTarget.position.clone();\r\n        \r\n        const cameraRight = new window.THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);\r\n        const cameraUp = new window.THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion);\r\n        const cameraForward = new window.THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);\r\n        const cameraToObject = objectPosition.clone().sub(cameraPosition);\r\n        \r\n        if (this.graphicsEditor.state.gizmoMode === \"translate\") {\r\n            const moveSpeed = 100;\r\n            \r\n            if (this.selectedAxis === \"x\") {\r\n                const worldX = new window.THREE.Vector3(1, 0, 0);\r\n                const dotProduct = worldX.dot(cameraRight);\r\n                const moveFactor = Math.sign(dotProduct) * deltaMouse.x * moveSpeed;\r\n                this.currentTransformTarget.position.x += moveFactor;\r\n            } else if (this.selectedAxis === \"y\") {\r\n                const worldY = new window.THREE.Vector3(0, 1, 0);\r\n                const dotProduct = worldY.dot(cameraUp);\r\n                const moveFactor = Math.sign(dotProduct) * deltaMouse.y * moveSpeed;\r\n                this.currentTransformTarget.position.y += moveFactor;\r\n            } else if (this.selectedAxis === \"z\") {\r\n                const worldZ = new window.THREE.Vector3(0, 0, 1);\r\n                const cameraRightXZ = new window.THREE.Vector3(cameraRight.x, 0, cameraRight.z).normalize();\r\n                const dotProduct = worldZ.dot(cameraRightXZ);\r\n                const moveFactor = Math.sign(dotProduct) * deltaMouse.x * moveSpeed;\r\n                this.currentTransformTarget.position.z += moveFactor;\r\n            }\r\n        } else if (this.graphicsEditor.state.gizmoMode === \"rotate\") {\r\n            const rotateSpeed = 2 * Math.PI;\r\n            \r\n            if (this.selectedAxis === \"x\") {\r\n                const worldX = new window.THREE.Vector3(1, 0, 0);\r\n                const dotProduct = worldX.dot(cameraRight);\r\n                const rotateFactor = -Math.sign(dotProduct) * deltaMouse.x * rotateSpeed;\r\n                this.currentTransformTarget.rotation.x += rotateFactor;\r\n            } else if (this.selectedAxis === \"y\") {\r\n                const worldY = new window.THREE.Vector3(0, 1, 0);\r\n                const dotProduct = worldY.dot(cameraUp);\r\n                const rotateFactor = Math.sign(dotProduct) * deltaMouse.x * rotateSpeed;\r\n                this.currentTransformTarget.rotation.y += rotateFactor;\r\n            } else if (this.selectedAxis === \"z\") {\r\n                const worldZ = new window.THREE.Vector3(0, 0, 1);\r\n                const dotProduct = cameraToObject.normalize().dot(worldZ);\r\n                const rotateFactor = Math.sign(dotProduct) * deltaMouse.x * rotateSpeed;\r\n                this.currentTransformTarget.rotation.z += rotateFactor;\r\n            }\r\n        } else if (this.graphicsEditor.state.gizmoMode === \"scale\") {\r\n            const scaleSpeed = 2;\r\n            let scaleFactor = 0;\r\n            \r\n            if (this.selectedAxis === \"x\") {\r\n                const worldX = new window.THREE.Vector3(1, 0, 0);\r\n                const dotProduct = worldX.dot(cameraRight);\r\n                scaleFactor = Math.sign(dotProduct) * deltaMouse.x * scaleSpeed;\r\n            } else if (this.selectedAxis === \"y\") {\r\n                const worldY = new window.THREE.Vector3(0, 1, 0);\r\n                const dotProduct = worldY.dot(cameraUp);\r\n                scaleFactor = Math.sign(dotProduct) * deltaMouse.y * scaleSpeed;\r\n            } else if (this.selectedAxis === \"z\") {\r\n                const worldZ = new window.THREE.Vector3(0, 0, 1);\r\n                const cameraRightXZ = new window.THREE.Vector3(cameraRight.x, 0, cameraRight.z).normalize();\r\n                const dotProduct = worldZ.dot(cameraRightXZ);\r\n                scaleFactor = Math.sign(dotProduct) * deltaMouse.x * scaleSpeed;\r\n            }\r\n            \r\n            if (this.selectedAxis === \"x\") {\r\n                this.currentTransformTarget.scale.x += scaleFactor;\r\n                if (this.currentTransformTarget.scale.x < 0.1) this.currentTransformTarget.scale.x = 0.1;\r\n            } else if (this.selectedAxis === \"y\") {\r\n                this.currentTransformTarget.scale.y += scaleFactor;\r\n                if (this.currentTransformTarget.scale.y < 0.1) this.currentTransformTarget.scale.y = 0.1;\r\n            } else if (this.selectedAxis === \"z\") {\r\n                this.currentTransformTarget.scale.z += scaleFactor;\r\n                if (this.currentTransformTarget.scale.z < 0.1) this.currentTransformTarget.scale.z = 0.1;\r\n            }\r\n        }\r\n        this.updateGizmoPosition();\r\n        this.lastMouse.copy(this.mouse);\r\n        this.updateInspectorValues();\r\n        this.applyCurrentTransform(); \r\n    }\r\n\r\n    updateInspectorValues() {\r\n        if (!this.currentTransformTarget) return;\r\n        \r\n        // Update all relevant input fields\r\n        const updateInput = (property, value) => {\r\n            const input = document.querySelector(`[data-property=\"${property}\"]`);\r\n            if (input) input.value = value;\r\n        };\r\n        \r\n        // Position\r\n        updateInput('x', this.currentTransformTarget.position.x);\r\n        updateInput('y', this.currentTransformTarget.position.y);\r\n        updateInput('z', this.currentTransformTarget.position.z);\r\n        \r\n        // Rotation (convert to degrees)\r\n        updateInput('rotationX', this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.x));\r\n        updateInput('rotationY', this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.y));\r\n        updateInput('rotationZ', this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.z));\r\n        \r\n        // Scale\r\n        updateInput('scaleX', this.currentTransformTarget.scale.x);\r\n        updateInput('scaleY', this.currentTransformTarget.scale.y);\r\n        updateInput('scaleZ', this.currentTransformTarget.scale.z);\r\n    }\r\n \r\n    applyCurrentTransform() {\r\n        if (!this.currentTransformTarget) return;\r\n    \r\n        // For groups\r\n        if (this.currentTransformTarget.userData?.isGroup) {\r\n            const groupId = this.currentTransformTarget.name;\r\n            const groupData = this.graphicsEditor.groupManager.getGroupData(groupId);\r\n            \r\n            // Directly update group transform without full refresh\r\n            groupData.position = {\r\n                x: this.currentTransformTarget.position.x,\r\n                y: this.currentTransformTarget.position.y,\r\n                z: this.currentTransformTarget.position.z\r\n            };\r\n            groupData.rotation = {\r\n                x: this.currentTransformTarget.rotation.x,\r\n                y: this.currentTransformTarget.rotation.y,\r\n                z: this.currentTransformTarget.rotation.z\r\n            };\r\n            groupData.scale = {\r\n                x: this.currentTransformTarget.scale.x,\r\n                y: this.currentTransformTarget.scale.y,\r\n                z: this.currentTransformTarget.scale.z\r\n            };\r\n        }\r\n        // For individual shapes\r\n        else if (this.graphicsEditor.state.selectedShapeIndex >= 0) {\r\n            const shape = this.graphicsEditor.shapeManager.getShapeData(this.graphicsEditor.state.selectedShapeIndex);\r\n            if (shape) {\r\n                shape.x = this.currentTransformTarget.position.x;\r\n                shape.y = this.currentTransformTarget.position.y;\r\n                shape.z = this.currentTransformTarget.position.z;\r\n                \r\n                shape.rotationX = this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.x);\r\n                shape.rotationY = this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.y);\r\n                shape.rotationZ = this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.z);\r\n                \r\n                shape.scaleX = this.currentTransformTarget.scale.x;\r\n                shape.scaleY = this.currentTransformTarget.scale.y;\r\n                shape.scaleZ = this.currentTransformTarget.scale.z;\r\n            }\r\n        }\r\n        this.graphicsEditor.renderShapes(false);\r\n        // Optional: Auto-save or trigger update\r\n    }\r\n\r\n\r\n    transformSelectedObject(targetObject) {\r\n        if(!targetObject){\r\n            targetObject = this.graphicsEditor.getSelectedObject();\r\n        }\r\n        console.log('transform', targetObject);\r\n        // Determine the target object - prioritize the passed target, then selected group, then rootGroup\r\n        let target;\r\n        if (targetObject) {\r\n            target = targetObject;\r\n        } else {\r\n            // Try to get the currently selected group\r\n            const currentGroup = this.graphicsEditor.state.currentGroup;\r\n            if (currentGroup) {\r\n                // Find the group in the scene\r\n                this.graphicsEditor.rootGroup.traverse(obj => {\r\n                    if (obj.isGroup && obj.name === currentGroup && obj.userData.isGroup) {\r\n                        target = obj;\r\n                    }\r\n                });\r\n            }\r\n            \r\n            // Fall back to rootGroup if no selected group found\r\n            if (!target) {\r\n                target = this.graphicsEditor.rootGroup;\r\n            }\r\n        }\r\n    \r\n        // If we still don't have a target, return\r\n        if (!target) return;\r\n    \r\n        this.currentTransformTarget = target;\r\n    \r\n        // If target is a group, ensure it's in rootGroup and populated\r\n        if (this.currentTransformTarget.userData?.isGroup) {\r\n            const groupId = this.currentTransformTarget.userData.groupId;\r\n            const group = this.graphicsEditor.groupManager.getGroupObject(groupId);\r\n            if (group) {\r\n                // Ensure group is in rootGroup\r\n                if (this.currentTransformTarget.parent !== this.graphicsEditor.rootGroup) {\r\n                    if (this.currentTransformTarget.parent) {\r\n                        this.currentTransformTarget.parent.remove(this.currentTransformTarget);\r\n                    }\r\n                    this.graphicsEditor.rootGroup.add(this.currentTransformTarget);\r\n                }    \r\n            }\r\n        }\r\n    \r\n        this.originalPosition.copy(this.currentTransformTarget.position);\r\n        this.originalRotation.copy(this.currentTransformTarget.rotation);\r\n        this.originalScale.copy(this.currentTransformTarget.scale);\r\n        \r\n        // Inject transform controls into inspector instead of creating separate UI\r\n        this.injectTransformControlsToInspector();\r\n        this.updateGizmoPosition();\r\n    }\r\n      \r\n    injectTransformControlsToInspector() {\r\n        const inspector = document.getElementById('inspector');\r\n        \r\n        // Create transform controls section\r\n        const transformSection = document.createElement('div');\r\n        transformSection.className = 'transform-controls-section';\r\n        transformSection.innerHTML = `\r\n            <h3>Transform ${this.currentTransformTarget.name || 'Current Frame'}</h3>\r\n            <div class=\"transform-buttons\">\r\n                <button id=\"translate-btn\" class=\"${this.gizmoMode === 'translate' ? 'active' : ''}\">Translate</button>\r\n                <button id=\"rotate-btn\" class=\"${this.gizmoMode === 'rotate' ? 'active' : ''}\">Rotate</button>\r\n                <button id=\"scale-btn\" class=\"${this.gizmoMode === 'scale' ? 'active' : ''}\">Scale</button>\r\n            </div>\r\n        `;\r\n        // Insert at the top of the inspector\r\n        if (inspector.firstChild) {\r\n            inspector.insertBefore(transformSection, inspector.firstChild);\r\n        } else {\r\n            inspector.appendChild(transformSection);\r\n        }      \r\n        // Add event listeners for transform mode buttons\r\n        document.getElementById('translate-btn').addEventListener('click', () => {\r\n            this.setGizmoMode('translate');\r\n            this.updateModeButtonsUI();\r\n        });\r\n        \r\n        document.getElementById('rotate-btn').addEventListener('click', () => {\r\n            this.setGizmoMode('rotate');\r\n            this.updateModeButtonsUI();\r\n        });\r\n        \r\n        document.getElementById('scale-btn').addEventListener('click', () => {\r\n            this.setGizmoMode('scale');\r\n            this.updateModeButtonsUI();\r\n        });\r\n        \r\n        this.updateInspectorValues();\r\n        this.setGizmoMode('translate');\r\n        this.updateModeButtonsUI();\r\n    }\r\n    \r\n    updateModeButtonsUI() {\r\n        const translateBtn = document.getElementById('translate-btn');\r\n        const rotateBtn = document.getElementById('rotate-btn');\r\n        const scaleBtn = document.getElementById('scale-btn');\r\n        \r\n        translateBtn.className = this.gizmoMode === 'translate' ? 'active' : '';\r\n        rotateBtn.className = this.gizmoMode === 'rotate' ? 'active' : '';\r\n        scaleBtn.className = this.gizmoMode === 'scale' ? 'active' : '';\r\n    }\r\n    \r\n}"
       },
-      "GE_GroupManager": {
-        "title": "GE_GroupManager",
-        "fileName": "GE_GroupManager",
-        "script": "class GE_GroupManager {\r\n    constructor(gameEditor, graphicsEditor) {\r\n        this.gameEditor = gameEditor;\r\n        this.graphicsEditor = graphicsEditor;\r\n        this.DEFAULT_GROUP = {\r\n            shapes: [],\r\n            position: { x: 0, y: 0, z: 0 },\r\n            rotation: { x: 0, y: 0, z: 0 },\r\n            scale: { x: 1.0, y: 1.0, z: 1.0 }\r\n        };\r\n    }\r\n\r\n    init() {\r\n        document.getElementById('create-group').addEventListener('click', this.createGroup.bind(this));\r\n        document.getElementById('delete-group').addEventListener('click', this.deleteGroup.bind(this));\r\n        \r\n       \r\n        // Update the group list initially\r\n        this.updateGroupList();\r\n        \r\n        // Initialize drag-and-drop\r\n        this.initDragAndDrop();\r\n    }\r\n\r\n    // Initialize drag and drop functionality\r\n    initDragAndDrop() {\r\n        // Make group items drop targets\r\n        const groupList = document.getElementById('group-list');\r\n        groupList.addEventListener('dragover', this.handleDragOver.bind(this));\r\n        groupList.addEventListener('drop', this.handleDrop.bind(this));\r\n    }\r\n    \r\n    handleDragOver(e) {\r\n        e.preventDefault(); // Allow drop\r\n        e.dataTransfer.dropEffect = 'move';\r\n        \r\n        // Highlight the group being dragged over\r\n        const groupItem = this.findGroupItemFromEvent(e);\r\n        if (groupItem) {\r\n            // Remove highlight from all groups\r\n            document.querySelectorAll('.group-item').forEach(item => {\r\n                item.classList.remove('drag-over');\r\n            });\r\n            \r\n            // Add highlight to target group\r\n            groupItem.classList.add('drag-over');\r\n        }\r\n    }\r\n    \r\n    handleDrop(e) {\r\n        e.preventDefault();\r\n        \r\n        // Remove all drag-over highlights\r\n        document.querySelectorAll('.group-item').forEach(item => {\r\n            item.classList.remove('drag-over');\r\n        });\r\n        \r\n        // Find the target group\r\n        const groupItem = this.findGroupItemFromEvent(e);\r\n        if (!groupItem) return;\r\n        \r\n        const targetGroup = groupItem.dataset.group;\r\n        \r\n        // Get the shape data from dataTransfer\r\n        const data = e.dataTransfer.getData('text/plain');\r\n        if (!data) return;\r\n        \r\n        try {\r\n            const dragData = JSON.parse(data);\r\n            const { shapeIndex, sourceGroup } = dragData;\r\n            \r\n            // Don't move if source and target are the same\r\n            if (sourceGroup === targetGroup) return;\r\n            \r\n            // Move the shape to the target group\r\n            this.moveToGroup(parseInt(shapeIndex), sourceGroup, targetGroup);\r\n        } catch (err) {\r\n            console.error('Error processing drop:', err);\r\n        }\r\n    }\r\n    \r\n    findGroupItemFromEvent(e) {\r\n        let target = e.target;\r\n        // Traverse up to find the group-item\r\n        while (target && !target.classList.contains('group-item')) {\r\n            target = target.parentElement;\r\n            if (!target || target === document.body) return null;\r\n        }\r\n        return target;\r\n    }\r\n\r\n    // Create a new group at the frame level\r\n    createGroup() {\r\n        if(!this.graphicsEditor.state.editingModel) {            \r\n            return;\r\n        }\r\n        const groupName = prompt(\"Enter group name:\", \"group_\" + Date.now());\r\n\r\n        const currentFrame = this.graphicsEditor.state.currentFrame;\r\n        \r\n        // Ensure we have current frame data\r\n        if (!this.graphicsEditor.getCurrentFrame()) {\r\n            this.graphicsEditor.getCurrentAnimation()[currentFrame] = {};\r\n        }\r\n        \r\n        // Switch selection to the new group\r\n        this.graphicsEditor.state.currentGroup = groupName;\r\n        // Initialize group if it doesn't exist\r\n        if (!this.graphicsEditor.getCurrentGroup()) {\r\n            // Using JSON parse/stringify for deep copying\r\n            this.graphicsEditor.getCurrentFrame()[groupName] = JSON.parse(JSON.stringify(this.DEFAULT_GROUP));\r\n        }\r\n        \r\n        \r\n        // Refresh UI\r\n        this.graphicsEditor.uiManager.updateList();\r\n        this.graphicsEditor.refreshShapes(true);\r\n    }\r\n\r\n    // Move an object from one group to another\r\n    moveToGroup(shapeIndex, fromGroupName, toGroupName) {\r\n        if(!this.graphicsEditor.state.editingModel) {            \r\n            return;\r\n        }\r\n        const currentFrameData = this.graphicsEditor.getCurrentFrame();\r\n        \r\n        // Find the shape in the source group\r\n        const sourceGroup = currentFrameData[fromGroupName];\r\n        if (!sourceGroup) {\r\n            console.warn(`Source group ${fromGroupName} not found`);\r\n            return;\r\n        }\r\n        \r\n        // Find the shape\r\n        const shapeToMove = sourceGroup.shapes[shapeIndex];\r\n        if (!shapeToMove) {\r\n            console.warn(`Shape at index ${shapeIndex} not found in ${fromGroupName}`);\r\n            return;\r\n        }\r\n        \r\n        // Remove from source group\r\n        sourceGroup.shapes.splice(shapeIndex, 1);\r\n        \r\n        // Ensure target group exists\r\n        if (!currentFrameData[toGroupName]) {\r\n            currentFrameData[toGroupName] = this.DEFAULT_GROUP;\r\n        }\r\n        \r\n        // Add to target group\r\n        currentFrameData[toGroupName].shapes.push(shapeToMove);\r\n        \r\n        // Clear selection\r\n        this.graphicsEditor.state.selectedShapeIndex = -1;\r\n        \r\n        // Update UI\r\n        this.graphicsEditor.refreshShapes(true);\r\n    }\r\n\r\n    getGroupData(groupName){\r\n        let groupData = this.graphicsEditor.getCurrentFrame()[groupName];\r\n        if(!groupData){\r\n            return this.graphicsEditor.state.renderData.model[groupName];\r\n        }\r\n        return groupData;\r\n    }\r\n    // Select a group to work with\r\n    selectGroup(groupName) {\r\n        if (!groupName) return;\r\n        \r\n        // Update the selected group name\r\n        this.graphicsEditor.state.currentGroup = groupName;\r\n        this.graphicsEditor.state.selectedShapeIndex = -1;\r\n        let groupData = this.graphicsEditor.getMergedGroup(groupName);\r\n        this.graphicsEditor.uiManager.updateList();\r\n        this.graphicsEditor.shapeManager.highlightSelectedShape();\r\n        if(groupData){\r\n            // Update the UI to show shapes in this group\r\n            this.graphicsEditor.uiManager.createGroupInspector(groupData);\r\n            this.graphicsEditor.gizmoManager.transformSelectedObject(this.getGroupObject(groupName));\r\n            \r\n        }\r\n        // Update the selected class on group items\r\n        this.updateSelectedGroupClass(groupName);\r\n    }\r\n    updateSelectedGroupClass(groupName) {\r\n        // Remove selected class from all group items\r\n        const groupItems = document.querySelectorAll('.group-item');\r\n        groupItems.forEach(item => {\r\n            item.classList.remove('selected');\r\n        });\r\n        \r\n        // Add selected class to the newly selected group\r\n        const selectedGroupItem = Array.from(groupItems).find(\r\n            item => item.dataset.group === groupName\r\n        );\r\n        \r\n        if (selectedGroupItem) {\r\n            selectedGroupItem.classList.add('selected');\r\n        }\r\n    }\r\n    // Remove a group and place its contents back in the shapes group\r\n    deleteGroup() {\r\n        if(!this.graphicsEditor.state.editingModel) {            \r\n            return;\r\n        }\r\n        const currentFrameData = this.graphicsEditor.getCurrentFrame();\r\n        const currentGroup = this.graphicsEditor.getCurrentGroup();\r\n        // Get shapes from the selected group\r\n        const groupShapes = currentGroup.shapes;\r\n        if (groupShapes.length > 0) {\r\n            alert('Group must be empty to delete.');\r\n            return;\r\n        }\r\n                        \r\n        // Remove the group\r\n        delete currentFrameData[this.graphicsEditor.state.currentGroup];\r\n        \r\n        // Reset selection to shapes group\r\n        this.graphicsEditor.state.currentGroup = Object.keys(currentFrameData)[0];\r\n        this.graphicsEditor.state.selectedShapeIndex = -1;\r\n        \r\n        // Update UI\r\n        this.updateGroupList();\r\n        this.graphicsEditor.refreshShapes(true);\r\n    }\r\n    getGroupObject(groupName) {\r\n        let foundGroup = null;\r\n        this.graphicsEditor.rootGroup.traverse(obj => {\r\n            if (obj.isGroup && obj.name === groupName && obj.userData.isGroup) {\r\n                foundGroup = obj;\r\n            }\r\n        });\r\n        return foundGroup;\r\n    }\r\n\r\n\r\n    applyGroupTransform(groupName, position, rotation, scale) {\r\n        // Get the current frame data\r\n        const frameData = this.graphicsEditor.getCurrentFrame();\r\n        \r\n        // Ensure the group exists in the frame data\r\n        if (!frameData[groupName]) {\r\n            console.warn(`Group ${groupName} not found in frame data`);\r\n            return;\r\n        }\r\n \r\n        // Save transformations to the group data\r\n        frameData[groupName].position = {\r\n            x: position.x,\r\n            y: position.y,\r\n            z: position.z\r\n        };\r\n        frameData[groupName].rotation = {\r\n            x: rotation.x,\r\n            y: rotation.y,\r\n            z: rotation.z\r\n        };\r\n        frameData[groupName].scale = {\r\n            x: scale.x,\r\n            y: scale.y,\r\n            z: scale.z\r\n        };\r\n    \r\n        // Refresh the scene to see changes\r\n        this.graphicsEditor.refreshShapes(true);\r\n    }\r\n    // Update the group list in the UI\r\n    updateGroupList() {\r\n        const list = document.getElementById('group-list');\r\n        if (!list) {\r\n            console.warn(\"Group list element not found\");\r\n            return;\r\n        }\r\n        \r\n        list.innerHTML = '';\r\n        \r\n        for (const group of Object.keys(this.graphicsEditor.state.renderData.model)) {\r\n            const groupItem = document.createElement('div');\r\n            groupItem.classList.add('group-item');\r\n            if (group === this.graphicsEditor.state.currentGroup) {\r\n                groupItem.classList.add('selected');\r\n            }\r\n            \r\n            groupItem.textContent = group;\r\n            groupItem.addEventListener('click', () => this.selectGroup(group));\r\n            \r\n            // Make it a valid drop target for drag and drop\r\n            groupItem.dataset.group = group;\r\n            \r\n            list.appendChild(groupItem);\r\n        }\r\n    }\r\n}"
-      },
       "GE_RotationUtils": {
         "title": "GE_RotationUtils",
         "fileName": "GE_RotationUtils",
         "script": "// RotationUtils.js\r\nclass GE_RotationUtils {\r\n    /**\r\n     * Convert degrees to radians\r\n     * @param {number} degrees - Angle in degrees\r\n     * @return {number} Angle in radians\r\n     */\r\n    static degToRad(degrees) {\r\n        return degrees * Math.PI / 180;\r\n    }\r\n    \r\n    /**\r\n     * Convert radians to degrees\r\n     * @param {number} radians - Angle in radians\r\n     * @return {number} Angle in degrees (rounded)\r\n     */\r\n    static radToDeg(radians) {\r\n        return Math.round(radians * 180 / Math.PI);\r\n    }\r\n    \r\n    /**\r\n     * Apply rotation to a position vector around a center point\r\n     * @param {Object} position - Position with x, y, z properties\r\n     * @param {Object} center - Center point with x, y, z properties\r\n     * @param {Object} rotation - Rotation with x, y, z properties in radians\r\n     * @return {Object} New position after rotation\r\n     */\r\n    static rotatePosition(position, center, rotation) {\r\n        const pos = new window.THREE.Vector3(\r\n            position.x || 0,\r\n            position.y || 0,\r\n            position.z || 0\r\n        );\r\n        \r\n        const centerVec = new window.THREE.Vector3(\r\n            center.x || 0,\r\n            center.y || 0,\r\n            center.z || 0\r\n        );\r\n        \r\n        // Create rotation matrix\r\n        const rotMatrix = new window.THREE.Matrix4();\r\n        rotMatrix.makeRotationFromEuler(new window.THREE.Euler(\r\n            rotation.x || 0,\r\n            rotation.y || 0,\r\n            rotation.z || 0\r\n        ));\r\n        \r\n        // Apply rotation\r\n        pos.sub(centerVec);\r\n        pos.applyMatrix4(rotMatrix);\r\n        pos.add(centerVec);\r\n        \r\n        return { x: pos.x, y: pos.y, z: pos.z };\r\n    }\r\n    \r\n    /**\r\n     * Combine two rotations (in Euler angles)\r\n     * @param {Object} rotation1 - First rotation with x, y, z in degrees\r\n     * @param {Object} rotation2 - Second rotation with x, y, z in degrees\r\n     * @return {Object} Combined rotation in degrees\r\n     */\r\n    static combineRotations(rotation1, rotation2) {\r\n        // Convert to radians\r\n        const rot1 = {\r\n            x: this.degToRad(rotation1.x || 0),\r\n            y: this.degToRad(rotation1.y || 0),\r\n            z: this.degToRad(rotation1.z || 0)\r\n        };\r\n        \r\n        const rot2 = {\r\n            x: this.degToRad(rotation2.x || 0),\r\n            y: this.degToRad(rotation2.y || 0),\r\n            z: this.degToRad(rotation2.z || 0)\r\n        };\r\n        \r\n        // Convert to quaternions and multiply\r\n        const quat1 = new window.THREE.Quaternion().setFromEuler(\r\n            new window.THREE.Euler(rot1.x, rot1.y, rot1.z)\r\n        );\r\n        \r\n        const quat2 = new window.THREE.Quaternion().setFromEuler(\r\n            new window.THREE.Euler(rot2.x, rot2.y, rot2.z)\r\n        );\r\n        \r\n        quat1.multiply(quat2);\r\n        \r\n        // Convert back to euler angles\r\n        const euler = new window.THREE.Euler().setFromQuaternion(quat1);\r\n        \r\n        // Return in degrees\r\n        return {\r\n            x: this.radToDeg(euler.x),\r\n            y: this.radToDeg(euler.y),\r\n            z: this.radToDeg(euler.z)\r\n        };\r\n    }\r\n}"
+      },
+      "GE_GroupManager": {
+        "title": "GE_GroupManager",
+        "fileName": "GE_GroupManager",
+        "script": "class GE_GroupManager {\r\n    constructor(gameEditor, graphicsEditor) {\r\n        this.gameEditor = gameEditor;\r\n        this.graphicsEditor = graphicsEditor;\r\n        this.DEFAULT_GROUP = {\r\n            shapes: [],\r\n            position: { x: 0, y: 0, z: 0 },\r\n            rotation: { x: 0, y: 0, z: 0 },\r\n            scale: { x: 1.0, y: 1.0, z: 1.0 }\r\n        };\r\n    }\r\n\r\n    init() {\r\n        document.getElementById('create-group').addEventListener('click', this.createGroup.bind(this));\r\n        document.getElementById('delete-group').addEventListener('click', this.deleteGroup.bind(this));\r\n        \r\n       \r\n        // Update the group list initially\r\n        this.updateGroupList();\r\n        \r\n        // Initialize drag-and-drop\r\n        this.initDragAndDrop();\r\n    }\r\n\r\n    // Initialize drag and drop functionality\r\n    initDragAndDrop() {\r\n        // Make group items drop targets\r\n        const groupList = document.getElementById('group-list');\r\n        groupList.addEventListener('dragover', this.handleDragOver.bind(this));\r\n        groupList.addEventListener('drop', this.handleDrop.bind(this));\r\n    }\r\n    \r\n    handleDragOver(e) {\r\n        e.preventDefault(); // Allow drop\r\n        e.dataTransfer.dropEffect = 'move';\r\n        \r\n        // Highlight the group being dragged over\r\n        const groupItem = this.findGroupItemFromEvent(e);\r\n        if (groupItem) {\r\n            // Remove highlight from all groups\r\n            document.querySelectorAll('.group-item').forEach(item => {\r\n                item.classList.remove('drag-over');\r\n            });\r\n            \r\n            // Add highlight to target group\r\n            groupItem.classList.add('drag-over');\r\n        }\r\n    }\r\n    \r\n    handleDrop(e) {\r\n        e.preventDefault();\r\n        \r\n        // Remove all drag-over highlights\r\n        document.querySelectorAll('.group-item').forEach(item => {\r\n            item.classList.remove('drag-over');\r\n        });\r\n        \r\n        // Find the target group\r\n        const groupItem = this.findGroupItemFromEvent(e);\r\n        if (!groupItem) return;\r\n        \r\n        const targetGroup = groupItem.dataset.group;\r\n        \r\n        // Get the shape data from dataTransfer\r\n        const data = e.dataTransfer.getData('text/plain');\r\n        if (!data) return;\r\n        \r\n        try {\r\n            const dragData = JSON.parse(data);\r\n            const { shapeIndex, sourceGroup } = dragData;\r\n            \r\n            // Don't move if source and target are the same\r\n            if (sourceGroup === targetGroup) return;\r\n            \r\n            // Move the shape to the target group\r\n            this.moveToGroup(parseInt(shapeIndex), sourceGroup, targetGroup);\r\n        } catch (err) {\r\n            console.error('Error processing drop:', err);\r\n        }\r\n    }\r\n    \r\n    findGroupItemFromEvent(e) {\r\n        let target = e.target;\r\n        // Traverse up to find the group-item\r\n        while (target && !target.classList.contains('group-item')) {\r\n            target = target.parentElement;\r\n            if (!target || target === document.body) return null;\r\n        }\r\n        return target;\r\n    }\r\n\r\n    // Create a new group at the frame level\r\n    createGroup() {\r\n        if(!this.graphicsEditor.state.editingModel) {            \r\n            return;\r\n        }\r\n        const groupName = prompt(\"Enter group name:\", \"group_\" + Date.now());\r\n\r\n        const currentFrame = this.graphicsEditor.state.currentFrame;\r\n        \r\n        // Ensure we have current frame data\r\n        if (!this.graphicsEditor.getCurrentFrame()) {\r\n            this.graphicsEditor.getCurrentAnimation()[currentFrame] = {};\r\n        }\r\n        \r\n        // Switch selection to the new group\r\n        this.graphicsEditor.state.currentGroup = groupName;\r\n        // Initialize group if it doesn't exist\r\n        if (!this.graphicsEditor.getCurrentGroup()) {\r\n            // Using JSON parse/stringify for deep copying\r\n            this.graphicsEditor.getCurrentFrame()[groupName] = JSON.parse(JSON.stringify(this.DEFAULT_GROUP));\r\n        }\r\n        \r\n        \r\n        // Refresh UI\r\n        this.graphicsEditor.uiManager.updateList();\r\n        this.graphicsEditor.refreshShapes(true);\r\n    }\r\n\r\n    // Move an object from one group to another\r\n    moveToGroup(shapeIndex, fromGroupName, toGroupName) {\r\n        if(!this.graphicsEditor.state.editingModel) {            \r\n            return;\r\n        }\r\n        const currentFrameData = this.graphicsEditor.getCurrentFrame();\r\n        \r\n        // Find the shape in the source group\r\n        const sourceGroup = currentFrameData[fromGroupName];\r\n        if (!sourceGroup) {\r\n            console.warn(`Source group ${fromGroupName} not found`);\r\n            return;\r\n        }\r\n        \r\n        // Find the shape\r\n        const shapeToMove = sourceGroup.shapes[shapeIndex];\r\n        if (!shapeToMove) {\r\n            console.warn(`Shape at index ${shapeIndex} not found in ${fromGroupName}`);\r\n            return;\r\n        }\r\n        \r\n        // Remove from source group\r\n        sourceGroup.shapes.splice(shapeIndex, 1);\r\n        \r\n        // Ensure target group exists\r\n        if (!currentFrameData[toGroupName]) {\r\n            currentFrameData[toGroupName] = this.DEFAULT_GROUP;\r\n        }\r\n        \r\n        // Add to target group\r\n        currentFrameData[toGroupName].shapes.push(shapeToMove);\r\n        \r\n        // Clear selection\r\n        this.graphicsEditor.state.selectedShapeIndex = -1;\r\n        \r\n        // Update UI\r\n        this.graphicsEditor.refreshShapes(true);\r\n    }\r\n\r\n    getGroupData(groupName){\r\n        let groupData = this.graphicsEditor.getCurrentFrame()[groupName];\r\n        if(!groupData){\r\n            return this.graphicsEditor.state.renderData.model[groupName];\r\n        }\r\n        return groupData;\r\n    }\r\n    // Select a group to work with\r\n    selectGroup(groupName) {\r\n        if (!groupName) return;\r\n        \r\n        // Update the selected group name\r\n        this.graphicsEditor.state.currentGroup = groupName;\r\n        this.graphicsEditor.state.selectedShapeIndex = -1;\r\n        let groupData = this.graphicsEditor.getMergedGroup(groupName);\r\n        this.graphicsEditor.uiManager.updateList();\r\n        this.graphicsEditor.shapeManager.highlightSelectedShape();\r\n        if(groupData){\r\n            // Update the UI to show shapes in this group\r\n            this.graphicsEditor.uiManager.createGroupInspector(groupData);\r\n            this.graphicsEditor.gizmoManager.transformSelectedObject(this.getGroupObject(groupName));\r\n            \r\n        }\r\n        // Update the selected class on group items\r\n        this.updateSelectedGroupClass(groupName);\r\n    }\r\n    updateSelectedGroupClass(groupName) {\r\n        // Remove selected class from all group items\r\n        const groupItems = document.querySelectorAll('.group-item');\r\n        groupItems.forEach(item => {\r\n            item.classList.remove('selected');\r\n        });\r\n        \r\n        // Add selected class to the newly selected group\r\n        const selectedGroupItem = Array.from(groupItems).find(\r\n            item => item.dataset.group === groupName\r\n        );\r\n        \r\n        if (selectedGroupItem) {\r\n            selectedGroupItem.classList.add('selected');\r\n        }\r\n    }\r\n    // Remove a group and place its contents back in the shapes group\r\n    deleteGroup() {\r\n        if(!this.graphicsEditor.state.editingModel) {            \r\n            return;\r\n        }\r\n        const currentFrameData = this.graphicsEditor.getCurrentFrame();\r\n        const currentGroup = this.graphicsEditor.getCurrentGroup();\r\n        // Get shapes from the selected group\r\n        const groupShapes = currentGroup.shapes;\r\n        if (groupShapes.length > 0) {\r\n            alert('Group must be empty to delete.');\r\n            return;\r\n        }\r\n                        \r\n        // Remove the group\r\n        delete currentFrameData[this.graphicsEditor.state.currentGroup];\r\n        \r\n        // Reset selection to shapes group\r\n        this.graphicsEditor.state.currentGroup = Object.keys(currentFrameData)[0];\r\n        this.graphicsEditor.state.selectedShapeIndex = -1;\r\n        \r\n        // Update UI\r\n        this.updateGroupList();\r\n        this.graphicsEditor.refreshShapes(true);\r\n    }\r\n    getGroupObject(groupName) {\r\n        let foundGroup = null;\r\n        this.graphicsEditor.rootGroup.traverse(obj => {\r\n            if (obj.isGroup && obj.name === groupName && obj.userData.isGroup) {\r\n                foundGroup = obj;\r\n            }\r\n        });\r\n        return foundGroup;\r\n    }\r\n\r\n\r\n    applyGroupTransform(groupName, position, rotation, scale) {\r\n        // Get the current frame data\r\n        const frameData = this.graphicsEditor.getCurrentFrame();\r\n        \r\n        // Ensure the group exists in the frame data\r\n        if (!frameData[groupName]) {\r\n            console.warn(`Group ${groupName} not found in frame data`);\r\n            return;\r\n        }\r\n \r\n        // Save transformations to the group data\r\n        frameData[groupName].position = {\r\n            x: position.x,\r\n            y: position.y,\r\n            z: position.z\r\n        };\r\n        frameData[groupName].rotation = {\r\n            x: rotation.x,\r\n            y: rotation.y,\r\n            z: rotation.z\r\n        };\r\n        frameData[groupName].scale = {\r\n            x: scale.x,\r\n            y: scale.y,\r\n            z: scale.z\r\n        };\r\n    \r\n        // Refresh the scene to see changes\r\n        this.graphicsEditor.refreshShapes(true);\r\n    }\r\n    // Update the group list in the UI\r\n    updateGroupList() {\r\n        const list = document.getElementById('group-list');\r\n        if (!list) {\r\n            console.warn(\"Group list element not found\");\r\n            return;\r\n        }\r\n        \r\n        list.innerHTML = '';\r\n        \r\n        for (const group of Object.keys(this.graphicsEditor.state.renderData.model)) {\r\n            const groupItem = document.createElement('div');\r\n            groupItem.classList.add('group-item');\r\n            if (group === this.graphicsEditor.state.currentGroup) {\r\n                groupItem.classList.add('selected');\r\n            }\r\n            \r\n            groupItem.textContent = group;\r\n            groupItem.addEventListener('click', () => this.selectGroup(group));\r\n            \r\n            // Make it a valid drop target for drag and drop\r\n            groupItem.dataset.group = group;\r\n            \r\n            list.appendChild(groupItem);\r\n        }\r\n    }\r\n}"
       },
       "GE_SceneRenderer": {
         "title": "GE_SceneRenderer",
@@ -17675,11 +17675,6 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "GE_ShapeManager",
         "script": "class GE_ShapeManager {\r\n    constructor(gameEditor, graphicsEditor) {\r\n        this.gameEditor = gameEditor;\r\n        this.graphicsEditor = graphicsEditor;\r\n        this.originalMaterials = new Map();\r\n        \r\n    }    \r\n\r\n    init() {   \r\n        this.initEventListeners();\r\n\r\n    }\r\n    initEventListeners() {\r\n        // Button event listeners\r\n        const buttonMappings = {\r\n            'add-shape': this.addSelectedShape.bind(this),\r\n            'delete-shape': this.deleteSelectedShape.bind(this)\r\n        };\r\n        Object.entries(buttonMappings).forEach(([id, handler]) => {\r\n            const button = document.getElementById(id);\r\n            if (button) button.addEventListener('click', handler);\r\n        });\r\n        \r\n        document.getElementById('move-cancel').addEventListener('click', () => {            \r\n            const inspector = document.getElementById('inspector');\r\n            inspector.innerHTML = ``;\r\n        });\r\n    }\r\n    getShapeData(shapeId){\r\n        let currentGroup = this.graphicsEditor.getCurrentGroup();\r\n        if(!currentGroup){\r\n            currentGroup = { shapes: [] };\r\n            let currentAnimation = this.graphicsEditor.getCurrentAnimation();\r\n            let currentFrame = currentAnimation[this.graphicsEditor.state.currentFrame];\r\n            if(!currentFrame){\r\n                currentFrame = {};\r\n            }\r\n            currentFrame[this.graphicsEditor.state.currentGroup] = currentGroup;\r\n            currentAnimation[this.graphicsEditor.state.currentFrame] = currentFrame;\r\n        }\r\n        currentGroup.shapes = currentGroup.shapes || [];\r\n        if(currentGroup.shapes.length == 0){\r\n            let shapeData = JSON.parse(JSON.stringify(this.graphicsEditor.state.renderData.model[this.graphicsEditor.state.currentGroup])).shapes[shapeId];\r\n            shapeData.id = shapeId;\r\n            currentGroup.shapes = [shapeData];\r\n            return shapeData;\r\n        }\r\n        let shapeData = (currentGroup.shapes).find(s => s.id == shapeId);\r\n        if(this.graphicsEditor.state.editingModel){\r\n            shapeData = currentGroup.shapes[shapeId];\r\n        }\r\n        return shapeData;\r\n    }\r\n    selectShape(index) {\r\n        if (this.graphicsEditor.animationManager.isPreviewingAnimation) {\r\n            this.graphicsEditor.setPreviewAnimationState(false);\r\n        }\r\n        \r\n        // Toggle selection if clicking the same shape\r\n        this.graphicsEditor.state.selectedShapeIndex = (this.graphicsEditor.state.selectedShapeIndex === index) ? -1 : index;\r\n\r\n        // Update shape list and highlighting\r\n        this.graphicsEditor.uiManager.updateList();\r\n        // Show inspector for selected shape\r\n        const shape = this.graphicsEditor.getMergedShape();\r\n        if (shape) {\r\n            this.highlightSelectedShape();\r\n            this.graphicsEditor.createInspector(shape);\r\n            this.graphicsEditor.gizmoManager.transformSelectedObject();\r\n        } else {\r\n            this.destroyOutlines();\r\n            this.graphicsEditor.gizmoManager.destroyGizmo();\r\n            this.graphicsEditor.groupManager.selectGroup(this.graphicsEditor.state.currentGroup);\r\n        }\r\n    }\r\n    destroyOutlines() {\r\n        // Remove existing outlines\r\n        this.graphicsEditor.sceneRenderer.scene.children.forEach(obj => {\r\n            if (obj.userData.isOutline) {\r\n                this.graphicsEditor.sceneRenderer.scene.remove(obj);\r\n                if (obj.geometry) obj.geometry.dispose();\r\n                if (obj.material) obj.material.dispose();\r\n            }\r\n        });\r\n    \r\n        // Reset any highlighted materials\r\n        this.originalMaterials.forEach((material, object) => {\r\n            object.material = material;\r\n        });\r\n        this.originalMaterials.clear();\r\n    }\r\n    highlightSelectedShape() {\r\n        this.destroyOutlines();\r\n\r\n    \r\n        // If no shape is selected or invalid selection, return\r\n        if (this.graphicsEditor.state.selectedShapeIndex < 0) {\r\n            return;\r\n        }\r\n    \r\n        // Get the selected group name from state\r\n        const currentGroup = this.graphicsEditor.state.currentGroup;\r\n        if (!currentGroup) {\r\n            console.warn(\"No group selected\");\r\n            return;\r\n        }\r\n    \r\n        // Find the THREE.Group with matching name under rootGroup\r\n        let selectedGroup = null;\r\n        this.graphicsEditor.rootGroup.traverse(obj => {\r\n            if (obj.isGroup && obj.name === currentGroup) {\r\n                selectedGroup = obj;\r\n            }\r\n        });\r\n    \r\n        if (!selectedGroup) {\r\n            console.warn(`No group found with name ${currentGroup}`);\r\n            return;\r\n        }\r\n    \r\n        const currentFrameData = this.graphicsEditor.getCurrentFrame();\r\n    \r\n        if (!currentFrameData) {\r\n            console.warn(\"No frame data found\");\r\n            return;\r\n        }\r\n    \r\n        const groupShapes = currentFrameData[currentGroup];\r\n    \r\n        if (!groupShapes || this.graphicsEditor.state.selectedShapeIndex >= groupShapes.length) {\r\n            console.warn(`Invalid shape index ${this.graphicsEditor.state.selectedShapeIndex} for group ${currentGroup}`);\r\n            return;\r\n        }\r\n    \r\n        // Find all meshes belonging to the selected shape within the group\r\n        const selectedMeshes = [];\r\n        selectedGroup.traverse(obj => {\r\n            if (obj.isMesh && (\r\n                // Direct shape object that matches the index\r\n                (obj.userData.isShape &&\r\n                 obj.userData.index === this.graphicsEditor.state.selectedShapeIndex) ||\r\n                // Parent is a shape object that matches the index\r\n                (obj.parent &&\r\n                 obj.parent.userData.isShape &&\r\n                 obj.parent.userData.index === this.graphicsEditor.state.selectedShapeIndex) ||\r\n                // GLTF child of selected shape that matches the index\r\n                (obj.userData.isGLTFChild &&\r\n                 obj.parent &&\r\n                 obj.parent.userData.index === this.graphicsEditor.state.selectedShapeIndex)\r\n            )) {\r\n                selectedMeshes.push(obj);\r\n            }\r\n        });\r\n    \r\n        // Handle highlighting for all relevant meshes\r\n        selectedMeshes.forEach(mesh => {\r\n            // Apply emissive highlight to original mesh\r\n            this.originalMaterials.set(mesh, mesh.material);\r\n            const highlightMaterial = mesh.material.clone();\r\n            highlightMaterial.emissive = new window.THREE.Color(0x555555);\r\n            highlightMaterial.emissiveIntensity = 0.5;\r\n            mesh.material = highlightMaterial;\r\n    \r\n            // Create the outline geometry\r\n            const outlineGeometry = mesh.geometry.clone();\r\n            const outlineMaterial = new window.THREE.MeshBasicMaterial({\r\n                color: 0xffff00,\r\n                side: window.THREE.BackSide\r\n            });\r\n    \r\n            // Create the outline mesh\r\n            const outline = new window.THREE.Mesh(outlineGeometry, outlineMaterial);\r\n            outline.userData.isOutline = true;\r\n            \r\n            // Create a new group to hold the outline\r\n            let outlineGroup = new window.THREE.Group();\r\n            outlineGroup.userData.isOutline = true;\r\n            \r\n            // Add the outline to the group\r\n            outlineGroup.add(outline);\r\n            \r\n            // Find all parent groups up to rootGroup and copy their transformations\r\n            let currentParent = mesh.parent;\r\n            let transformChain = [];\r\n            \r\n            while (currentParent && currentParent !== this.graphicsEditor.rootGroup) {\r\n                transformChain.unshift({\r\n                    position: currentParent.position.clone(),\r\n                    rotation: currentParent.rotation.clone(),\r\n                    scale: currentParent.scale.clone(),\r\n                    quaternion: currentParent.quaternion.clone()\r\n                });\r\n                currentParent = currentParent.parent;\r\n            }\r\n            \r\n            // Apply all parent transformations to our outline group\r\n            transformChain.forEach(transform => {\r\n                // Create a temporary group to apply each parent's transform\r\n                const tempGroup = new window.THREE.Group();\r\n                tempGroup.position.copy(transform.position);\r\n                tempGroup.rotation.copy(transform.rotation);\r\n                tempGroup.scale.copy(transform.scale);\r\n                \r\n                // Add our current group to this temp group\r\n                tempGroup.add(outlineGroup);\r\n                \r\n                // Move outlineGroup up one level\r\n                outlineGroup = tempGroup;\r\n                outlineGroup.userData.isOutline = true;\r\n            });\r\n            \r\n            // Add mesh's local transform\r\n            outline.position.copy(mesh.position);\r\n            outline.rotation.copy(mesh.rotation);\r\n            outline.scale.copy(mesh.scale);\r\n            \r\n            // Scale the outline slightly larger (in local space)\r\n            outline.scale.multiplyScalar(1.05);\r\n            \r\n            // Add the complete outline group to the scene\r\n            this.graphicsEditor.sceneRenderer.scene.add(outlineGroup);\r\n        });\r\n    }\r\n    addNewShape() {\r\n        if(!this.graphicsEditor.state.editingModel) {            \r\n            return;\r\n        }\r\n        const newShape = {\r\n            type: 'sphere',\r\n            size: 2,\r\n            color: '#ff0000',\r\n            x: 0,\r\n            y: 0,\r\n            z: 0,\r\n            rotationX: 0,\r\n            rotationY: 0,\r\n            rotationZ: 0\r\n        };\r\n        this.graphicsEditor.getCurrentGroup().shapes.push(newShape);\r\n        this.graphicsEditor.state.selectedShapeIndex = this.graphicsEditor.getCurrentGroup().shapes.length - 1;\r\n        this.graphicsEditor.refreshShapes(true); \r\n    }\r\n\r\n    addSelectedShape() {\r\n        if(!this.graphicsEditor.state.editingModel) {            \r\n            return;\r\n        }\r\n        if (this.graphicsEditor.state.selectedShapeIndex >= 0) {\r\n            const originalShape = this.graphicsEditor.state.editingModel ? \r\n                                    this.graphicsEditor.getCurrentGroup().shapes[this.graphicsEditor.state.selectedShapeIndex] : \r\n                                    this.graphicsEditor.getCurrentGroup().shapes.find(s => s.id == this.graphicsEditor.state.selectedShapeIndex);\r\n            const newShape = JSON.parse(JSON.stringify(originalShape));\r\n            this.graphicsEditor.getCurrentGroup().shapes.push(newShape);\r\n            this.graphicsEditor.state.selectedShapeIndex = this.graphicsEditor.getCurrentGroup().shapes.length - 1;\r\n            this.graphicsEditor.refreshShapes(true);\r\n        } else {\r\n            this.addNewShape();\r\n        }\r\n    }\r\n\r\n    deleteSelectedShape() {\r\n        if(!this.graphicsEditor.state.editingModel) {            \r\n            return;\r\n        }\r\n        if (this.graphicsEditor.state.selectedShapeIndex >= 0) {\r\n            this.graphicsEditor.getCurrentGroup().shapes.splice(this.graphicsEditor.state.selectedShapeIndex, 1);\r\n            if (this.graphicsEditor.getCurrentGroup().shapes.length > 0) {\r\n                this.graphicsEditor.state.selectedShapeIndex = Math.min(this.graphicsEditor.state.selectedShapeIndex, this.graphicsEditor.getCurrentGroup().shapes.length - 1);\r\n            } else {\r\n                this.graphicsEditor.state.selectedShapeIndex = -1;\r\n            }\r\n            this.graphicsEditor.refreshShapes(true);\r\n        }\r\n    }\r\n\r\n}"
       },
-      "GE_UIManager": {
-        "title": "GE_UIManager",
-        "fileName": "GE_UIManager",
-        "script": "class GE_UIManager {\r\n    constructor(gameEditor, graphicsEditor) {\r\n        this.gameEditor = gameEditor;\r\n        this.graphicsEditor = graphicsEditor;\r\n        this.mouse = new window.THREE.Vector2();\r\n        this.raycaster = new window.THREE.Raycaster();\r\n        this.isDragging = false;\r\n        this.clickStartTime = 0;\r\n    }    \r\n     \r\n\r\n    init() {   \r\n        this.initEventListeners();\r\n    }\r\n    \r\n    \r\n    \r\n    initEventListeners() {\r\n        // Button event listeners\r\n        const buttonMappings = {\r\n            'generate-isometric': this.showIsometricModal.bind(this),\r\n        };\r\n        Object.entries(buttonMappings).forEach(([id, handler]) => {\r\n            const button = document.getElementById(id);\r\n            if (button) button.addEventListener('click', handler);\r\n        });\r\n\r\n        // Canvas interaction\r\n        this.graphicsEditor.canvas.addEventListener('mousedown', this.handleMouseDown.bind(this));\r\n        this.graphicsEditor.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));\r\n        this.graphicsEditor.canvas.addEventListener('mouseup', this.handleMouseUp.bind(this));\r\n\r\n        // Additional event listeners\r\n\r\n        \r\n        // Move modal listeners\r\n\r\n        // Isometric modal listeners\r\n        document.getElementById('iso-cancel').addEventListener('click', () => {\r\n            document.getElementById('modal-generateIsoSprites').classList.remove('show');\r\n        });\r\n    }\r\n    handleMouseDown(event) {\r\n        this.isDragging = false;\r\n        this.clickStartTime = Date.now();\r\n    }\r\n\r\n    handleMouseMove() {\r\n        if (Date.now() - this.clickStartTime > 100) {\r\n            this.isDragging = true;\r\n        }\r\n    }\r\n\r\n    handleMouseUp(event) {\r\n        if (this.isDragging) return;\r\n    \r\n        const rect = this.graphicsEditor.canvas.getBoundingClientRect();\r\n        this.mouse.x = ((event.clientX - rect.left) / this.graphicsEditor.canvas.clientWidth) * 2 - 1;\r\n        this.mouse.y = -((event.clientY - rect.top) / this.graphicsEditor.canvas.clientHeight) * 2 + 1;\r\n    \r\n        this.raycaster.setFromCamera(this.mouse, this.graphicsEditor.sceneRenderer.camera);\r\n    \r\n        // Instead of looking only at scene.children, search through all descendant meshes\r\n        const meshes = [];\r\n        this.graphicsEditor.rootGroup.traverse(obj => {\r\n            if (obj.isMesh && obj.userData.isShape) {\r\n                meshes.push(obj);\r\n            }\r\n        });\r\n    \r\n        const intersects = this.raycaster.intersectObjects(meshes, true);\r\n    \r\n        if (intersects.length > 0) {\r\n            // Find the parent mesh with the isShape flag if we've hit a child mesh\r\n            let hitObject = intersects[0].object;\r\n            while (hitObject && !hitObject.userData.isShape) {\r\n                hitObject = hitObject.parent;\r\n            }\r\n            \r\n            if (hitObject && hitObject.userData.index !== undefined) {\r\n                this.graphicsEditor.selectShape(hitObject.userData.index);\r\n            }\r\n        }\r\n    }\r\n    \r\n\r\n    showIsometricModal() {\r\n        document.getElementById('modal-generateIsoSprites').classList.add('show');\r\n    }\r\n    displayIsometricSprites(sprites) {\r\n        const modal = document.createElement('div');\r\n        modal.style.cssText = `\r\n            position: fixed; top: 0; left: 0; width: 100%; height: 100%; \r\n            background-color: rgba(0, 0, 0, 0.7); z-index: 1000; \r\n            display: flex; align-items: center; justify-content: center;\r\n        `;\r\n        const content = document.createElement('div');\r\n        content.style.cssText = `\r\n            background: #333; padding: 20px; border-radius: 8px; \r\n            max-width: 80%; max-height: 80%; overflow: auto;\r\n        `;\r\n    \r\n        const angleLabels = ['NE', 'N', 'NW', 'W', 'SW', 'S', 'SE', 'E']; // Labels for 8 angles\r\n    \r\n        for (const animType in sprites) {\r\n            const animSection = document.createElement('div');\r\n            const title = document.createElement('h3');\r\n            title.textContent = `${animType} Animation`;\r\n            title.style.color = '#e0e0e0';\r\n            animSection.appendChild(title);\r\n    \r\n            // Create a container for all angles\r\n            const anglesContainer = document.createElement('div');\r\n            anglesContainer.style.cssText = `margin: 10px 0;`;\r\n    \r\n            // For each angle (0-7)\r\n            for (let angle = 0; angle < 8; angle++) {\r\n                const angleSection = document.createElement('div');\r\n    \r\n                const grid = document.createElement('div');\r\n                grid.style.cssText = `\r\n                    display: grid; \r\n                    grid-template-columns: repeat(${Math.min(sprites[animType].length, 4)}, 1fr); \r\n                    gap: 5px; \r\n                    margin-bottom: 15px;\r\n                `;\r\n    \r\n                // Add all frames for this specific angle\r\n                sprites[animType].forEach(frame => {\r\n                    const img = document.createElement('img');\r\n                    img.src = frame[angle]; // Get the specific angle's sprite\r\n                    img.style.maxWidth = '100%';\r\n                    grid.appendChild(img);\r\n                });\r\n    \r\n                angleSection.appendChild(grid);\r\n                anglesContainer.appendChild(angleSection);\r\n            }\r\n    \r\n            animSection.appendChild(anglesContainer);\r\n            content.appendChild(animSection);\r\n        }\r\n    \r\n        const closeButton = document.createElement('button');\r\n        closeButton.textContent = 'Close';\r\n        closeButton.style.cssText = `\r\n            margin-top: 20px; padding: 8px 16px; background-color: #4CAF50; \r\n            color: #fff; border: none; border-radius: 6px; cursor: pointer;\r\n        `;\r\n        closeButton.addEventListener('click', () => document.body.removeChild(modal));\r\n        content.appendChild(closeButton);\r\n        modal.appendChild(content);\r\n        document.body.appendChild(modal);\r\n    }\r\n    \r\n    createGroupInspector(group) {\r\n        console.log('create group inspector', group);\r\n        const inspector = document.getElementById('inspector');\r\n        inspector.innerHTML = \"\";\r\n        inspector.className = 'inspector';\r\n\r\n        \r\n        this.addFormRow(inspector, 'X Scale', 'number', 'scaleX', group.scale.x || 1, { min: 0.1, step: 0.1 });\r\n        this.addFormRow(inspector, 'Y Scale', 'number', 'scaleY', group.scale.y || 1, { min: 0.1, step: 0.1 });\r\n        this.addFormRow(inspector, 'Z Scale', 'number', 'scaleZ', group.scale.z || 1, { min: 0.1, step: 0.1 });\r\n        // Position inputs\r\n        this.addFormRow(inspector, 'X Position', 'number', 'x', group.position.x || 0, { step: 0.1 });\r\n        this.addFormRow(inspector, 'Y Position', 'number', 'y', group.position.y || 0, { step: 0.1 });\r\n        this.addFormRow(inspector, 'Z Position', 'number', 'z', group.position.z || 0, { step: 0.1 });\r\n        \r\n        // Rotation inputs\r\n        this.addFormRow(inspector, 'X Rotation', 'number', 'rotationX', group.rotation.x || 0, { step: 5 });\r\n        this.addFormRow(inspector, 'Y Rotation', 'number', 'rotationY', group.rotation.y || 0, { step: 5 });\r\n        this.addFormRow(inspector, 'Z Rotation', 'number', 'rotationZ', group.rotation.z || 0, { step: 5 });\r\n        \r\n    }\r\n\r\n    createInspector(shape) {\r\n        console.log('create shape inspector', shape);\r\n        const inspector = document.getElementById('inspector');\r\n        inspector.innerHTML = \"\";\r\n        inspector.className = 'inspector';\r\n\r\n        this.addFormRow(inspector, 'Name', 'text', 'name', shape.name || \"\");\r\n        \r\n        // Type selector\r\n        this.addFormRow(inspector, 'Type', 'select', 'type', shape.type, {\r\n            options: ['cube', 'sphere', 'box', 'cylinder', 'cone', 'torus', 'tetrahedron', 'gltf'],\r\n            change: (e) => {\r\n                let currentShape = this.graphicsEditor.getFrameShape();\r\n                let newValue = e.target.value;\r\n                if (newValue != 'gltf') {\r\n                    delete currentShape.url\r\n                }                 \r\n                currentShape.type = newValue;\r\n                this.graphicsEditor.refreshShapes(false);\r\n            }\r\n        });\r\n        \r\n        if (shape.type === 'gltf') {            \r\n            let input = this.addFormRow(inspector, 'Model', 'file', 'url', shape.url, { 'change' :  async (e) => {\r\n                e.preventDefault();\r\n\r\n                // Get the file from the input element\r\n                const file = e.target.files[0]; // Access the file object\r\n                if (!file) {\r\n                    console.error('No file selected');\r\n                    return;\r\n                }\r\n                // // Create FormData and append the file\r\n                 const formData = new FormData();\r\n                 formData.append('gltfFile', file); // 'gltfFile' matches the multer.single('gltfFile') on the server\r\n\r\n                try {\r\n                     const response = await fetch('/upload-model', {\r\n                         method: 'POST',\r\n                         body: formData // Send the FormData with the file\r\n                     });\r\n\r\n                     const result = await response.json();\r\n                     shape.url = result.filePath; \r\n                     this.graphicsEditor.getFrameShape().url = result.filePath;\r\n                     this.graphicsEditor.refreshShapes(false);\r\n                } catch (error) {\r\n                     console.error('Error uploading file:', error);\r\n                }\r\n            }});\r\n            input.setAttribute(\"accept\",\".gltf\");\r\n        }\r\n        // Color picker\r\n        this.addFormRow(inspector, 'Color', 'color', 'color', shape.color);\r\n        this.addFormRow(inspector, 'Texture', 'texture', 'texture', shape.texture);\r\n        \r\n        this.addFormRow(inspector, 'X Scale', 'number', 'scaleX', shape.scaleX || 1, { min: 0.1, step: 0.1 });\r\n        this.addFormRow(inspector, 'Y Scale', 'number', 'scaleY', shape.scaleY || 1, { min: 0.1, step: 0.1 });\r\n        this.addFormRow(inspector, 'Z Scale', 'number', 'scaleZ', shape.scaleZ || 1, { min: 0.1, step: 0.1 });\r\n        // Position inputs\r\n        this.addFormRow(inspector, 'X Position', 'number', 'x', shape.x || 0, { step: 0.1 });\r\n        this.addFormRow(inspector, 'Y Position', 'number', 'y', shape.y || 0, { step: 0.1 });\r\n        this.addFormRow(inspector, 'Z Position', 'number', 'z', shape.z || 0, { step: 0.1 });\r\n        \r\n        // Rotation inputs\r\n        this.addFormRow(inspector, 'X Rotation', 'number', 'rotationX', shape.rotationX || 0, { step: 5 });\r\n        this.addFormRow(inspector, 'Y Rotation', 'number', 'rotationY', shape.rotationY || 0, { step: 5 });\r\n        this.addFormRow(inspector, 'Z Rotation', 'number', 'rotationZ', shape.rotationZ || 0, { step: 5 });\r\n        \r\n        // Size inputs\r\n        if (['cube', 'sphere', 'tetrahedron', 'torus'].includes(shape.type)) {\r\n            this.addFormRow(inspector, 'Size', 'number', 'size', shape.size || 2, { min: 0.1, step: 0.1 });\r\n        }\r\n        \r\n        if (shape.type === 'box') {\r\n            this.addFormRow(inspector, 'Width', 'number', 'width', shape.width || 2, { min: 0.1, step: 0.1 });\r\n            this.addFormRow(inspector, 'Height', 'number', 'height', shape.height || 2, { min: 0.1, step: 0.1 });\r\n            this.addFormRow(inspector, 'Depth', 'number', 'depth', shape.depth || 2, { min: 0.1, step: 0.1 });\r\n        }\r\n        \r\n        if (['cylinder', 'cone'].includes(shape.type)) {\r\n            this.addFormRow(inspector, 'Size', 'number', 'size', shape.size || 2, { min: 0.1, step: 0.1 });\r\n            this.addFormRow(inspector, 'Height', 'number', 'height', shape.height || 3, { min: 0.1, step: 0.1 });\r\n        }\r\n        \r\n        if (shape.type === 'torus') {\r\n            this.addFormRow(inspector, 'Tube Size', 'number', 'tubeSize', shape.tubeSize || shape.size / 6, { min: 0.1, step: 0.1 });\r\n        }\r\n    }\r\n\r\n\r\n    addFormRow(container, label, type, property, value, options = {}) {\r\n        const row = document.createElement('div');\r\n        row.className = 'form-row';\r\n        \r\n        const labelElement = document.createElement('label');\r\n        labelElement.textContent = label;\r\n        row.appendChild(labelElement);\r\n        \r\n        let input;\r\n        \r\n        if (type === 'select') {\r\n            input = document.createElement('select');\r\n            input.setAttribute('data-property', property);\r\n            (options.options || []).forEach(optionValue => {\r\n                const option = document.createElement('option');\r\n                option.value = optionValue;\r\n                option.textContent = optionValue;\r\n                if (value === optionValue) {\r\n                    option.selected = true;\r\n                }\r\n                input.appendChild(option);\r\n            });\r\n        } else if(type === \"color\") {\r\n            input = this.gameEditor.createColorInputGroup(value, 'data-property', property, row, (val, colorName) => {\r\n                if(colorName){\r\n                    this.graphicsEditor.getFrameShape()[property] = { paletteColor: colorName };\r\n                } else {\r\n                    this.graphicsEditor.getFrameShape()[property] = val;\r\n                }\r\n                this.graphicsEditor.refreshShapes(false);\r\n            });            \r\n        } else if(type === \"texture\") {\r\n            input = this.gameEditor.createTextureInputGroup(value, 'data-property', property, row, (val) => {\r\n                if(val){\r\n                    this.graphicsEditor.getFrameShape()[property] = val;\r\n                }\r\n                this.graphicsEditor.refreshShapes(false);\r\n            });            \r\n        } else if(type === \"file\") {\r\n            let inputContainer = document.createElement('div');\r\n            inputContainer.style = \"flex: 1; display: flex; flex-direction: column; font-size: .75em;\";\r\n            input = document.createElement('input');\r\n            input.style = \"width: calc(100% - 18px);\"\r\n            input.type = type;\r\n            input.setAttribute('data-property', property);\r\n            inputContainer.appendChild(input);\r\n            if( value ) {\r\n                let urlName = document.createElement('span');\r\n                urlName.innerText = value;            \r\n                inputContainer.appendChild(urlName);\r\n            }\r\n            row.appendChild(inputContainer);\r\n            container.appendChild(row);\r\n            input.addEventListener('change', options.change );\r\n            return input;\r\n        } else {\r\n            input = document.createElement('input');\r\n            input.type = type;\r\n            input.value = value;\r\n            input.setAttribute('data-property', property);\r\n            \r\n            if (type === 'number') {\r\n                input.min = options.min !== undefined ? options.min : -64;\r\n                input.max = options.max !== undefined ? options.max : 64;\r\n                input.step = options.step || 1;\r\n            }\r\n        }\r\n        \r\n        input.addEventListener('change', options.change || ((e) => {\r\n            let newValue = e.target.value;\r\n            if (type === 'number') {\r\n                newValue = parseFloat(newValue);\r\n                console.log('change', this.graphicsEditor.shapeManager.currentTransformTarget);\r\n                // If we're editing a transform property, also update the transform target\r\n                if (this.graphicsEditor.shapeManager.currentTransformTarget && ['x', 'y', 'z', 'rotationX', 'rotationY', 'rotationZ', 'scaleX', 'scaleY', 'scaleZ'].includes(property)) {\r\n                    if (property === 'x') this.graphicsEditor.shapeManager.currentTransformTarget.position.x = newValue;\r\n                    if (property === 'y') this.graphicsEditor.shapeManager.currentTransformTarget.position.y = newValue;\r\n                    if (property === 'z') this.graphicsEditor.shapeManager.currentTransformTarget.position.z = newValue;\r\n                    \r\n                    if (property === 'rotationX') this.graphicsEditor.shapeManager.currentTransformTarget.rotation.x = this.graphicsEditor.rotationUtils.degToRad(newValue);\r\n                    if (property === 'rotationY') this.graphicsEditor.shapeManager.currentTransformTarget.rotation.y = this.graphicsEditor.rotationUtils.degToRad(newValue);\r\n                    if (property === 'rotationZ') this.graphicsEditor.shapeManager.currentTransformTarget.rotation.z = this.graphicsEditor.rotationUtils.degToRad(newValue);\r\n                    \r\n                    if (property === 'scaleX') this.graphicsEditor.shapeManager.currentTransformTarget.scale.x = newValue;\r\n                    if (property === 'scaleY') this.graphicsEditor.shapeManager.currentTransformTarget.scale.y = newValue;\r\n                    if (property === 'scaleZ') this.graphicsEditor.shapeManager.currentTransformTarget.scale.z = newValue;\r\n                    \r\n                    // Update gizmo position after directly changing values\r\n                }\r\n            } else if(type === 'file') {\r\n                return;\r\n            }\r\n            \r\n            this.updatePropertyValue(property, newValue);\r\n            this.graphicsEditor.refreshShapes(false);\r\n        }));\r\n        \r\n        row.appendChild(input);\r\n        container.appendChild(row);\r\n        return input;\r\n    }\r\n    updatePropertyValue(property, value) {\r\n        const shapeData = this.graphicsEditor.getFrameShape();\r\n        if (shapeData) {\r\n            shapeData[property] = value;\r\n            return;\r\n        }\r\n        let groupData = this.graphicsEditor.getCurrentGroup();\r\n        if(!groupData){\r\n            groupData = {};\r\n            let currentFrame = this.graphicsEditor.getCurrentFrame();\r\n            if(currentFrame) {\r\n                currentFrame[this.graphicsEditor.state.currentGroup] = groupData;\r\n            }\r\n        }\r\n        \r\n        // Handle transform properties\r\n        if (property.startsWith('scale')) {\r\n            if(!groupData.scale) groupData.scale = {};\r\n            const axis = property.charAt(property.length - 1).toLowerCase();\r\n            groupData.scale[axis] = value;\r\n        } else if (property.startsWith('rotation')) {\r\n            if(!groupData.rotation) groupData.rotation = {};\r\n            const axis = property.charAt(property.length - 1).toLowerCase();\r\n            groupData.rotation[axis] = value;\r\n        } else if (['x', 'y', 'z'].includes(property)) {\r\n            if(!groupData.position) groupData.position = {};\r\n            groupData.position[property] = value;\r\n        }\r\n    }\r\n\r\n  \r\n\r\n    updateList() {\r\n        const frameList = document.getElementById('frame-list');\r\n        frameList.innerHTML = '';\r\n        const groupList = document.getElementById('group-list');\r\n        groupList.innerHTML = '';\r\n        const shapeList = document.getElementById('shape-list');\r\n        shapeList.innerHTML = '';\r\n        this.updateFrameList();\r\n        this.graphicsEditor.groupManager.updateGroupList();\r\n        this.updateShapeList();\r\n    }\r\n\r\n    updateFrameList() {\r\n        const list = document.getElementById('frame-list');\r\n        // Animation selector\r\n        const animSelector = document.createElement('select');\r\n        animSelector.style.marginBottom = '10px';\r\n\r\n        const option = document.createElement('option');\r\n        option.value = '__model__';\r\n        option.textContent = 'model';\r\n        if (this.graphicsEditor.state.editingModel) option.selected = true;\r\n        animSelector.appendChild(option);\r\n\r\n\r\n        Object.keys(this.graphicsEditor.state.renderData.animations).forEach(anim => {\r\n            const option = document.createElement('option');\r\n            option.value = anim;\r\n            option.textContent = anim;\r\n            if (anim === this.graphicsEditor.state.currentAnimation) option.selected = true;\r\n            animSelector.appendChild(option);\r\n        });\r\n        animSelector.addEventListener('change', (e) => {\r\n            this.graphicsEditor.setPreviewAnimationState(false);\r\n            if(e.target.value == '__model__'){\r\n                this.graphicsEditor.state.editingModel = true;\r\n                this.graphicsEditor.state.currentAnimation = \"\";                \r\n            } else {\r\n                this.graphicsEditor.state.editingModel = false;\r\n                this.graphicsEditor.state.currentAnimation = animSelector.value;                \r\n            }\r\n            this.graphicsEditor.state.currentFrame = 0;\r\n            this.graphicsEditor.refreshShapes(false);\r\n            requestAnimationFrame(() => {\r\n                this.graphicsEditor.state.selectedShapeIndex = -1;\r\n                this.graphicsEditor.shapeManager.selectShape(0);\r\n            })\r\n        });\r\n        list.appendChild(animSelector);\r\n        if(this.graphicsEditor.state.editingModel) return;\r\n        // Frame list\r\n        const frameList = document.createElement('div');\r\n        frameList.style.marginBottom = '10px';\r\n        this.graphicsEditor.getCurrentAnimation().forEach((frame, index) => {\r\n            const frameItem = document.createElement('div');\r\n            frameItem.textContent = `Frame ${index + 1}`;\r\n            frameItem.style.padding = '5px';\r\n            frameItem.style.cursor = 'pointer';\r\n            if (index === this.graphicsEditor.state.currentFrame) frameItem.style.backgroundColor = '#555';\r\n            frameItem.addEventListener('click', () => {\r\n                this.graphicsEditor.setPreviewAnimationState(false);\r\n                this.graphicsEditor.state.currentFrame = index;  \r\n                this.graphicsEditor.refreshShapes(false);\r\n                requestAnimationFrame(() => {  \r\n                    this.graphicsEditor.state.selectedShapeIndex = -1;\r\n                    this.graphicsEditor.shapeManager.selectShape(0);\r\n                })\r\n            });\r\n            frameList.appendChild(frameItem);\r\n        });\r\n        list.appendChild(frameList);\r\n    }\r\n\r\n\r\n    updateShapeList() {\r\n        const list = document.getElementById('shape-list');\r\n        if (!list) return;\r\n        \r\n\r\n        // Get shapes from the currently selected group\r\n        const currentGroup = this.graphicsEditor.state.currentGroup;\r\n        const selectedGroup = this.graphicsEditor.getMergedGroup(currentGroup);\r\n        const shapes = selectedGroup && selectedGroup.shapes ? selectedGroup.shapes : selectedGroup || [];\r\n       \r\n        // Create shape list items\r\n        for (let i = 0; i < shapes.length; i++) {\r\n            const shape = shapes[i];\r\n            if (!shape) continue;\r\n           \r\n            const shapeItem = document.createElement('div');\r\n            shapeItem.classList.add('shape-item');\r\n           \r\n            // Mark as selected if this shape is the selected one and we're in the right group\r\n            if (i === this.graphicsEditor.state.selectedShapeIndex) {\r\n                shapeItem.classList.add('selected');\r\n            }\r\n           \r\n            shapeItem.textContent = `${shape.name} - ${shape.type || 'Shape'}`;\r\n            shapeItem.addEventListener('click', (e) => {               \r\n                this.graphicsEditor.shapeManager.selectShape(parseInt(e.target.dataset.index));\r\n            });\r\n           \r\n            // Make the shape draggable\r\n            shapeItem.draggable = true;\r\n            shapeItem.dataset.index = i;\r\n            shapeItem.dataset.group = currentGroup;\r\n            \r\n            // Add dragstart event to set the drag data\r\n            shapeItem.addEventListener('dragstart', (e) => {\r\n                // Store only the selected shape's index and source group\r\n                const data = {\r\n                    shapeIndex: i,\r\n                    sourceGroup: currentGroup\r\n                };\r\n                \r\n                // Set the drag data\r\n                e.dataTransfer.setData('text/plain', JSON.stringify(data));\r\n                \r\n                // Add a visual indicator\r\n                shapeItem.classList.add('dragging');\r\n                \r\n                // Set drag effect\r\n                e.dataTransfer.effectAllowed = 'move';\r\n            });\r\n            \r\n            // Add dragend event to clean up\r\n            shapeItem.addEventListener('dragend', () => {\r\n                shapeItem.classList.remove('dragging');\r\n            });\r\n           \r\n            list.appendChild(shapeItem);\r\n        }\r\n        \r\n        // Set up the shape list container as a drop target\r\n        list.addEventListener('dragover', (e) => {\r\n            // Only respond if we're dragging over the shape list itself, not an individual shape\r\n            if (e.target === list) {\r\n                e.preventDefault();\r\n                e.dataTransfer.dropEffect = 'move';\r\n                list.classList.add('drag-over');\r\n            }\r\n        });\r\n        \r\n        list.addEventListener('dragleave', (e) => {\r\n            // Only respond if we're leaving the shape list\r\n            if (e.target === list) {\r\n                list.classList.remove('drag-over');\r\n            }\r\n        });\r\n        \r\n        list.addEventListener('drop', (e) => {\r\n            e.preventDefault();\r\n            list.classList.remove('drag-over');\r\n            \r\n            const data = e.dataTransfer.getData('text/plain');\r\n            if (!data) return;\r\n            \r\n            try {\r\n                const dragData = JSON.parse(data);\r\n                const { shapeIndex, sourceGroup } = dragData;\r\n                \r\n                // Only process if this is a different group\r\n                if (sourceGroup && sourceGroup !== currentGroup) {\r\n                    this.graphicsEditor.groupManager.moveToGroup(\r\n                        parseInt(shapeIndex),\r\n                        sourceGroup,\r\n                        currentGroup\r\n                    );\r\n                }\r\n            } catch (err) {\r\n                console.error('Error processing drop in shape list:', err);\r\n            }\r\n        });\r\n    }\r\n\r\n}"
-      },
       "GraphicsEditor": {
         "fileName": "GraphicsEditor",
         "title": "GraphicsEditor",
@@ -17688,6 +17683,11 @@ const DEFAULT_PROJECT_CONFIG = {
       "ImageManager": {
         "fileName": "ImageManager",
         "script": "\r\nclass ImageManager {\r\n    constructor(app, {imageSize, palette, textures}, {ShapeFactory}) {\r\n        this.app = app;\r\n        this.images = {};\r\n        this.imageSize = imageSize || 128;\r\n        // Create a single reusable renderer\r\n        this.renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });\r\n        this.renderer.setSize(this.imageSize, this.imageSize);\r\n        this.renderer.shadowMap.enabled = true;\r\n        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;\r\n        \r\n        this.renderTarget = new THREE.WebGLRenderTarget(this.imageSize, this.imageSize);\r\n        this.renderTarget.texture.flipY = true;\r\n        \r\n        // Create reusable scene\r\n        this.scene = new THREE.Scene();\r\n        \r\n        // Create reusable cameras for different views\r\n        const cameraDistance = 64;\r\n        const frustumSize = cameraDistance + 16;\r\n        const aspect = 1;\r\n\r\n        this.shapeFactory = new ShapeFactory(palette, textures);\r\n        // Create 8 cameras for isometric views at 45-degree intervals\r\n        this.cameras = [];\r\n        for (let i = 0; i < 8; i++) {\r\n            this.cameras.push(new THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000));\r\n        }\r\n        \r\n        // Position cameras in a circle around the y-axis at isometric angle\r\n        // Standard isometric angle is about 35.264 degrees (arctan(1/sqrt(2)))\r\n        const isoAngle = Math.atan(1 / Math.sqrt(2));\r\n        const horizDistance = cameraDistance * Math.cos(isoAngle);\r\n        const vertDistance = cameraDistance * Math.sin(isoAngle);\r\n        \r\n        for (let i = 0; i < 8; i++) {\r\n            const angle = (i * Math.PI / 4); // 45-degree increments\r\n            const x = horizDistance * Math.sin(angle);\r\n            const z = horizDistance * Math.cos(angle);\r\n            \r\n            this.cameras[i].position.set(x, vertDistance, z);\r\n            this.cameras[i].lookAt(0, 0, 0);\r\n        }\r\n        \r\n        // Create reusable lights\r\n        this.ambientLight = new THREE.AmbientLight(0xffaaff, .25);\r\n        \r\n        // Create a light group that will rotate with each camera view\r\n        this.lightGroup = new THREE.Group();\r\n        \r\n        // Main directional light\r\n        this.directionalLight = new THREE.DirectionalLight(0xffffaa, .7);\r\n        this.directionalLight.position.set(75, 96, 75);\r\n        this.directionalLight.castShadow = true;\r\n        this.directionalLight.shadow.mapSize.width = 1024;\r\n        this.directionalLight.shadow.mapSize.height = 1024;\r\n        this.directionalLight.shadow.camera.near = 0.5;\r\n        this.directionalLight.shadow.camera.far = 500;\r\n        this.directionalLight.shadow.bias = -0.0005;\r\n        this.directionalLight.shadow.normalBias = 0.02;\r\n        this.directionalLight.shadow.radius = 1;\r\n        this.lightGroup.add(this.directionalLight);\r\n        \r\n        // Fill light\r\n        this.fillLight = new THREE.DirectionalLight(0xffaaff, .5);\r\n        this.fillLight.position.set(-20, 30, -20);\r\n        this.lightGroup.add(this.fillLight);\r\n        \r\n        // Create ground plane\r\n        const groundGeometry = new THREE.PlaneGeometry(200, 200);\r\n        const groundMaterial = new THREE.ShadowMaterial({ opacity: 0.3 });\r\n        this.ground = new THREE.Mesh(groundGeometry, groundMaterial);\r\n        this.ground.rotation.x = -Math.PI / 2;\r\n        this.ground.position.y = 0;\r\n        this.ground.receiveShadow = true;\r\n    }\r\n\r\n    clear() {\r\n        images = {};\r\n    }\r\n\r\n    dispose() {\r\n        // Proper cleanup when the manager is no longer needed\r\n        if (this.renderer) {\r\n            this.renderer.dispose();\r\n            this.renderer = null;\r\n        }\r\n        if (this.renderTarget) {\r\n            this.renderTarget.dispose();\r\n            this.renderTarget = null;\r\n        }\r\n        if (this.ground && this.ground.geometry) {\r\n            this.ground.geometry.dispose();\r\n            this.ground.material.dispose();\r\n        }\r\n        // Dispose of other reusable resources\r\n        this.cameras = [];\r\n        this.scene = null;\r\n        this.lightGroup = null;\r\n        this.ambientLight = null;\r\n    }\r\n\r\n    async loadImages(prefix, config, checkCache = true, cacheResult = true) {\r\n\r\n        if (!prefix || !config || typeof config !== 'object') {\r\n            throw new Error('Invalid prefix or config provided to loadImages');\r\n        }\r\n        if( checkCache ) {\r\n            const cachedImages = await this.checkCache(prefix);\r\n            if (cachedImages) {\r\n                this.images = { ...this.images, ...cachedImages };\r\n                return;\r\n            }\r\n        }\r\n    \r\n        for (const [type, cfg] of Object.entries(config)) {\r\n            if (cfg.render && cfg.render.animations) {\r\n                this.images[`${prefix}_${type}`] = await this.createAnimatedPlaceholder(cfg);\r\n            } else if (cfg.tileMap && cfg.tileMap.terrainTypes) {\r\n                this.images[`${prefix}_${type}`] = await this.createTerrainImages(cfg);\r\n            }\r\n        }\r\n        if(cacheResult) {\r\n            await this.cacheImages(prefix);\r\n        }\r\n    }\r\n    \r\n    async checkCache(prefix) {\r\n        try {\r\n            const response = await fetch(`cache/${prefix}.json`);\r\n            if (response.ok) {\r\n                const cacheData = await response.json();\r\n                // Convert base64 cached images back to canvases\r\n                return await this.convertBase64ToCanvases(cacheData.images);\r\n            }\r\n            return null;\r\n        } catch (error) {\r\n            return null;\r\n        }\r\n    }\r\n\r\n    async convertBase64ToCanvases(cachedImages) {\r\n        const convertedImages = {};\r\n        \r\n        for (const [key, value] of Object.entries(cachedImages)) {\r\n            if (Array.isArray(value)) {\r\n                // Handle terrain tiles\r\n                convertedImages[key] = await Promise.all(value.map(async (terrain) => {\r\n                    const sprites = await Promise.all(terrain.sprites.map(async (base64) => {\r\n                        const canvas = document.createElement('canvas');\r\n                        canvas.width = canvas.height = 24; // Match tileWidth from createTerrainImages\r\n                        const ctx = canvas.getContext('2d');\r\n                        const img = new Image();\r\n                        \r\n                        await new Promise((resolve, reject) => {\r\n                            img.onload = () => {\r\n                                ctx.drawImage(img, 0, 0);\r\n                                resolve();\r\n                            };\r\n                            img.onerror = reject;\r\n                            img.src = base64;\r\n                        });\r\n                        \r\n                        return canvas;\r\n                    }));\r\n                    \r\n                    return {\r\n                        type: terrain.type,\r\n                        sprites\r\n                    };\r\n                }));\r\n            } else if (typeof value === 'object') {\r\n                // Handle animations\r\n                const animations = {};\r\n                for (const [animType, frames] of Object.entries(value)) {\r\n                    animations[animType] = await Promise.all(frames.map(async (frameSet) => {\r\n                        return Promise.all(frameSet.map(async (base64) => {\r\n                            const canvas = document.createElement('canvas');\r\n                            canvas.width = canvas.height = this.imageSize;\r\n                            const ctx = canvas.getContext('2d');\r\n                            const img = new Image();\r\n                            \r\n                            await new Promise((resolve, reject) => {\r\n                                img.onload = () => {\r\n                                    ctx.drawImage(img, 0, 0);\r\n                                    resolve();\r\n                                };\r\n                                img.onerror = reject;\r\n                                img.src = base64;\r\n                            });\r\n                            \r\n                            return canvas;\r\n                        }));\r\n                    }));\r\n                }\r\n                convertedImages[key] = animations;\r\n            }\r\n        }\r\n        \r\n        return convertedImages;\r\n    }\r\n    async cacheImages(prefix) {\r\n        const base64Images = {};\r\n        \r\n        for (const [key, value] of Object.entries(this.images)) {\r\n            if (key.startsWith(prefix)) {\r\n                if (Array.isArray(value) && value[0]?.type && value[0]?.sprites) {\r\n                    // Handle terrain tiles\r\n                    base64Images[key] = value.map(terrain => ({\r\n                        type: terrain.type,\r\n                        sprites: terrain.sprites.map(canvas => canvas.toDataURL('image/png'))\r\n                    }));\r\n                } else if (typeof value === 'object' && value !== null) {\r\n                    // Handle animations\r\n                    const animationData = {};\r\n                    for (const [animType, frames] of Object.entries(value)) {\r\n                        animationData[animType] = frames.map(frameSet => \r\n                            frameSet.map(canvas => canvas.toDataURL('image/png'))\r\n                        );\r\n                    }\r\n                    base64Images[key] = animationData;\r\n                }\r\n            }\r\n        }\r\n\r\n        try {\r\n            await fetch('/api/cache', {\r\n                method: 'POST',\r\n                headers: {\r\n                    'Content-Type': 'application/json',\r\n                },\r\n                body: JSON.stringify({\r\n                    prefix,\r\n                    images: base64Images\r\n                })\r\n            });\r\n        } catch (error) {\r\n            console.error('Error caching images:', error);\r\n        }\r\n    }\r\n    // In the ImageManager class\r\n    async createTerrainImages(config) {\r\n        let terrainTiles = [];\r\n        const tileWidth = 24;\r\n\r\n        // Create a map of terrain type to its image data first\r\n        const terrainMap = {};\r\n        \r\n        await Promise.all(config.tileMap.terrainTypes.map(async (terrainType, terrainIndex) => {\r\n            const pixelData = terrainType.image;\r\n            if (pixelData && pixelData.length > 0) {\r\n                let sprites = new Array(8);\r\n                \r\n                await Promise.all(pixelData.map(async (imagePixelData, spriteIdx) => {\r\n                    const img = new Image();\r\n                    const canvas = document.createElement('canvas');\r\n                    canvas.width = canvas.height = tileWidth;\r\n                    const ctx = canvas.getContext('2d');\r\n\r\n                    if (!imagePixelData.startsWith('data:image/')) {\r\n                        imagePixelData = 'data:image/png;base64,' + imagePixelData;\r\n                    }\r\n                    img.src = imagePixelData;\r\n\r\n                    await new Promise((resolve, reject) => {\r\n                        img.onload = () => {\r\n                            ctx.drawImage(img, 0, 0);\r\n                            sprites[spriteIdx] = canvas;\r\n                            resolve();\r\n                        };\r\n                        img.onerror = () => {\r\n                            console.error(`Failed to load image for ${terrainType.type} at index ${spriteIdx}`);\r\n                            sprites[spriteIdx] = canvas; // Store empty canvas on error\r\n                            resolve(); // Don't reject, just move on\r\n                        };\r\n                    });\r\n                }));\r\n\r\n                // Store by index and type for more reliable lookup\r\n                terrainTiles[terrainIndex] = { \r\n                    type: terrainType.type,\r\n                    sprites: sprites \r\n                };\r\n            } else {\r\n                // Create a solid color placeholder for types without images\r\n                const sprites = new Array(8).fill().map(() => {\r\n                    const canvas = document.createElement('canvas');\r\n                    canvas.width = canvas.height = tileWidth;\r\n                    const ctx = canvas.getContext('2d');\r\n                    ctx.fillStyle = terrainType.color || '#cccccc';\r\n                    ctx.fillRect(0, 0, tileWidth, tileWidth);\r\n                    return canvas;\r\n                });\r\n                \r\n                terrainTiles[terrainIndex] = {\r\n                    type: terrainType.type,\r\n                    sprites: sprites\r\n                };\r\n            }\r\n        }));\r\n\r\n        // Make sure there are no gaps in the array\r\n        return terrainTiles.filter(Boolean);\r\n    }\r\n    async createAnimatedPlaceholder(config) {\r\n        const animations = {};\r\n        \r\n        if(config.shadows === false) {\r\n            this.ground.receiveShadow = false;\r\n        } else {\r\n            this.ground.receiveShadow = true;\r\n        }\r\n        for (const [animType, frames] of Object.entries(config.render.animations)) {\r\n            animations[animType] = [];\r\n            let i = 0;\r\n            for (const frame of frames) {\r\n                const frameImages = await this.captureObjectImagesFromJSON(config.render.model, frame);\r\n                const canvases = frameImages.map(img => {\r\n                    const canvas = document.createElement('canvas');\r\n                    canvas.width = canvas.height = this.imageSize;\r\n                    const ctx = canvas.getContext('2d');\r\n                    ctx.drawImage(img, 0, 0);\r\n                    return canvas;\r\n                });                \r\n                animations[animType].push(canvases); // Array of 8 canvases per frame\r\n            }\r\n        }\r\n        return animations; // { \"idle\": [[canvas0, canvas1, canvas2, canvas3, ...], ...], \"walk\": [...] }\r\n    }\r\n\r\n    getImages(prefix, type) {\r\n        return this.images[`${prefix}_${type}`]; // Returns animation object\r\n    }\r\n    async captureObjectImagesFromJSON(model, frameData) {\r\n        const size = this.imageSize;\r\n        // Clear the scene\r\n        while (this.scene.children.length > 0) {\r\n            const object = this.scene.children[0];\r\n            this.scene.remove(object);\r\n        }\r\n        \r\n        // Add reusable elements to scene\r\n        this.scene.add(this.ground);\r\n        this.scene.add(this.ambientLight);\r\n        this.scene.add(this.lightGroup);\r\n        \r\n        // Create objects from the JSON data\r\n        const objectGroup = await this.createObjectsFromJSON(model, frameData, this.scene);\r\n\r\n        \r\n        const images = [];\r\n        \r\n        // For each camera view, rotate the light group to match camera orientation\r\n        for (let i = 0; i < this.cameras.length; i++) {\r\n            const camera = this.cameras[i];\r\n            \r\n            // Reset light group rotation\r\n            this.lightGroup.rotation.set(0, 0, 0);\r\n            \r\n            // Rotate light group to match camera position\r\n            // Calculate angle based on camera index (8 positions at 45-degree intervals)\r\n            // Rotate 45 degrees CLOCKWISE (subtract π/4 instead of adding)\r\n            const angle = (i * Math.PI / 4); \r\n            this.lightGroup.rotation.y = angle;\r\n            \r\n            // Before rendering with each camera, update shadow camera frustum\r\n            const d = 100;\r\n            this.directionalLight.shadow.camera.left = -d;\r\n            this.directionalLight.shadow.camera.right = d;\r\n            this.directionalLight.shadow.camera.top = d;\r\n            this.directionalLight.shadow.camera.bottom = -d;\r\n            // After rotating lightGroup in the camera loop\r\n            this.directionalLight.shadow.camera.updateProjectionMatrix();\r\n            this.directionalLight.shadow.camera.updateMatrixWorld();\r\n            this.directionalLight.target.position.set(0, 0, 0);\r\n            this.directionalLight.target.updateMatrixWorld();\r\n            // Render and capture the image\r\n            this.renderer.setRenderTarget(this.renderTarget);\r\n            this.renderer.render(this.scene, camera);\r\n            const buffer = new Uint8Array(size * size * 4);\r\n            this.renderer.readRenderTargetPixels(this.renderTarget, 0, 0, size, size, buffer);\r\n            \r\n            // Flip the buffer (y-axis)\r\n            const flippedBuffer = new Uint8Array(size * size * 4);\r\n            for (let y = 0; y < size; y++) {\r\n                const srcRowStart = y * size * 4;\r\n                const destRowStart = (size - 1 - y) * size * 4;\r\n                flippedBuffer.set(buffer.subarray(srcRowStart, srcRowStart + size * 4), destRowStart);\r\n            }\r\n            \r\n            const imageData = new ImageData(new Uint8ClampedArray(flippedBuffer), size, size);\r\n            const imageBitmap = await createImageBitmap(imageData);\r\n            images.push(imageBitmap);\r\n        }\r\n        if( this.renderer) this.renderer.setRenderTarget(null);\r\n        \r\n        // Cleanup object geometries and materials\r\n        this.shapeFactory.disposeObject(objectGroup);\r\n        \r\n        // Remove object group from scene\r\n        if( this.scene ) this.scene.remove(objectGroup);\r\n        \r\n        return images;\r\n    }\r\n\r\n    /**\r\n     * Creates 3D objects from shape data.\r\n     * @param {Object} frameData - The JSON object containing frame definitions.\r\n     * @returns {THREE.Group} - A group containing all 3D objects.\r\n     */\r\n  \r\n    async createObjectsFromJSON(model, frameData, scene) {\r\n        const rootGroup = new THREE.Group();\r\n        \r\n        for(const groupName in model) {\r\n            const group = await this.shapeFactory.createMergedGroupFromJSON(model, frameData, groupName);\r\n            if(group){\r\n                group.traverse((child) => {\r\n                    if (child.isMesh) {\r\n                        child.castShadow = true; // or set this selectively for objects that should cast shadows\r\n                        child.receiveShadow = true; // for objects that should receive shadows\r\n                    }\r\n                });\r\n                rootGroup.add(group);\r\n            }\r\n        }\r\n\r\n        scene.add(rootGroup);\r\n    \r\n        return rootGroup;\r\n    }\r\n   \r\n}\r\n"
+      },
+      "GE_UIManager": {
+        "title": "GE_UIManager",
+        "fileName": "GE_UIManager",
+        "script": "class GE_UIManager {\r\n    constructor(gameEditor, graphicsEditor) {\r\n        this.gameEditor = gameEditor;\r\n        this.graphicsEditor = graphicsEditor;\r\n        this.mouse = new window.THREE.Vector2();\r\n        this.raycaster = new window.THREE.Raycaster();\r\n        this.isDragging = false;\r\n        this.clickStartTime = 0;\r\n    }    \r\n     \r\n\r\n    init() {   \r\n        this.initEventListeners();\r\n    }\r\n    \r\n    \r\n    \r\n    initEventListeners() {\r\n        // Button event listeners\r\n        const buttonMappings = {\r\n            'generate-isometric': this.showIsometricModal.bind(this),\r\n        };\r\n        Object.entries(buttonMappings).forEach(([id, handler]) => {\r\n            const button = document.getElementById(id);\r\n            if (button) button.addEventListener('click', handler);\r\n        });\r\n\r\n        // Canvas interaction\r\n        this.graphicsEditor.canvas.addEventListener('mousedown', this.handleMouseDown.bind(this));\r\n        this.graphicsEditor.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));\r\n        this.graphicsEditor.canvas.addEventListener('mouseup', this.handleMouseUp.bind(this));\r\n\r\n        // Additional event listeners\r\n\r\n        \r\n        // Move modal listeners\r\n\r\n        // Isometric modal listeners\r\n        document.getElementById('iso-cancel').addEventListener('click', () => {\r\n            document.getElementById('modal-generateIsoSprites').classList.remove('show');\r\n        });\r\n    }\r\n    handleMouseDown(event) {\r\n        this.isDragging = false;\r\n        this.clickStartTime = Date.now();\r\n    }\r\n\r\n    handleMouseMove() {\r\n        if (Date.now() - this.clickStartTime > 100) {\r\n            this.isDragging = true;\r\n        }\r\n    }\r\n\r\n    handleMouseUp(event) {\r\n        if (this.isDragging) return;\r\n    \r\n        const rect = this.graphicsEditor.canvas.getBoundingClientRect();\r\n        this.mouse.x = ((event.clientX - rect.left) / this.graphicsEditor.canvas.clientWidth) * 2 - 1;\r\n        this.mouse.y = -((event.clientY - rect.top) / this.graphicsEditor.canvas.clientHeight) * 2 + 1;\r\n    \r\n        this.raycaster.setFromCamera(this.mouse, this.graphicsEditor.sceneRenderer.camera);\r\n    \r\n        // Instead of looking only at scene.children, search through all descendant meshes\r\n        const meshes = [];\r\n        this.graphicsEditor.rootGroup.traverse(obj => {\r\n            if (obj.isMesh && obj.userData.isShape) {\r\n                meshes.push(obj);\r\n            }\r\n        });\r\n    \r\n        const intersects = this.raycaster.intersectObjects(meshes, true);\r\n    \r\n        if (intersects.length > 0) {\r\n            // Find the parent mesh with the isShape flag if we've hit a child mesh\r\n            let hitObject = intersects[0].object;\r\n            while (hitObject && !hitObject.userData.isShape) {\r\n                hitObject = hitObject.parent;\r\n            }\r\n            \r\n            if (hitObject && hitObject.userData.index !== undefined) {\r\n                this.graphicsEditor.selectShape(hitObject.userData.index);\r\n            }\r\n        }\r\n    }\r\n    \r\n\r\n    showIsometricModal() {\r\n        document.getElementById('modal-generateIsoSprites').classList.add('show');\r\n    }\r\n    displayIsometricSprites(sprites) {\r\n        const modal = document.createElement('div');\r\n        modal.style.cssText = `\r\n            position: fixed; top: 0; left: 0; width: 100%; height: 100%; \r\n            background-color: rgba(0, 0, 0, 0.7); z-index: 1000; \r\n            display: flex; align-items: center; justify-content: center;\r\n        `;\r\n        const content = document.createElement('div');\r\n        content.style.cssText = `\r\n            background: #333; padding: 20px; border-radius: 8px; \r\n            max-width: 80%; max-height: 80%; overflow: auto;\r\n        `;\r\n    \r\n        const angleLabels = ['NE', 'N', 'NW', 'W', 'SW', 'S', 'SE', 'E']; // Labels for 8 angles\r\n    \r\n        for (const animType in sprites) {\r\n            const animSection = document.createElement('div');\r\n            const title = document.createElement('h3');\r\n            title.textContent = `${animType} Animation`;\r\n            title.style.color = '#e0e0e0';\r\n            animSection.appendChild(title);\r\n    \r\n            // Create a container for all angles\r\n            const anglesContainer = document.createElement('div');\r\n            anglesContainer.style.cssText = `margin: 10px 0;`;\r\n    \r\n            // For each angle (0-7)\r\n            for (let angle = 0; angle < 8; angle++) {\r\n                const angleSection = document.createElement('div');\r\n    \r\n                const grid = document.createElement('div');\r\n                grid.style.cssText = `\r\n                    display: grid; \r\n                    grid-template-columns: repeat(${Math.min(sprites[animType].length, 4)}, 1fr); \r\n                    gap: 5px; \r\n                    margin-bottom: 15px;\r\n                `;\r\n    \r\n                // Add all frames for this specific angle\r\n                sprites[animType].forEach(frame => {\r\n                    const img = document.createElement('img');\r\n                    img.src = frame[angle]; // Get the specific angle's sprite\r\n                    img.style.maxWidth = '100%';\r\n                    grid.appendChild(img);\r\n                });\r\n    \r\n                angleSection.appendChild(grid);\r\n                anglesContainer.appendChild(angleSection);\r\n            }\r\n    \r\n            animSection.appendChild(anglesContainer);\r\n            content.appendChild(animSection);\r\n        }\r\n    \r\n        const closeButton = document.createElement('button');\r\n        closeButton.textContent = 'Close';\r\n        closeButton.style.cssText = `\r\n            margin-top: 20px; padding: 8px 16px; background-color: #4CAF50; \r\n            color: #fff; border: none; border-radius: 6px; cursor: pointer;\r\n        `;\r\n        closeButton.addEventListener('click', () => document.body.removeChild(modal));\r\n        content.appendChild(closeButton);\r\n        modal.appendChild(content);\r\n        document.body.appendChild(modal);\r\n    }\r\n    \r\n    createGroupInspector(group) {\r\n        console.log('create group inspector', group);\r\n        const inspector = document.getElementById('inspector');\r\n        inspector.innerHTML = \"\";\r\n        inspector.className = 'inspector';\r\n\r\n        \r\n        this.addFormRow(inspector, 'X Scale', 'number', 'scaleX', group.scale?.x || 1, { min: 0.1, step: 0.1 });\r\n        this.addFormRow(inspector, 'Y Scale', 'number', 'scaleY', group.scale?.y || 1, { min: 0.1, step: 0.1 });\r\n        this.addFormRow(inspector, 'Z Scale', 'number', 'scaleZ', group.scale?.z || 1, { min: 0.1, step: 0.1 });\r\n        // Position inputs\r\n        this.addFormRow(inspector, 'X Position', 'number', 'x', group.position?.x || 0, { step: 0.1 });\r\n        this.addFormRow(inspector, 'Y Position', 'number', 'y', group.position?.y || 0, { step: 0.1 });\r\n        this.addFormRow(inspector, 'Z Position', 'number', 'z', group.position?.z || 0, { step: 0.1 });\r\n        \r\n        // Rotation inputs\r\n        this.addFormRow(inspector, 'X Rotation', 'number', 'rotationX', group.rotation?.x || 0, { step: 5 });\r\n        this.addFormRow(inspector, 'Y Rotation', 'number', 'rotationY', group.rotation?.y || 0, { step: 5 });\r\n        this.addFormRow(inspector, 'Z Rotation', 'number', 'rotationZ', group.rotation?.z || 0, { step: 5 });\r\n        \r\n    }\r\n\r\n    createInspector(shape) {\r\n        console.log('create shape inspector', shape);\r\n        const inspector = document.getElementById('inspector');\r\n        inspector.innerHTML = \"\";\r\n        inspector.className = 'inspector';\r\n\r\n        this.addFormRow(inspector, 'Name', 'text', 'name', shape.name || \"\");\r\n        \r\n        // Type selector\r\n        this.addFormRow(inspector, 'Type', 'select', 'type', shape.type, {\r\n            options: ['cube', 'sphere', 'box', 'cylinder', 'cone', 'torus', 'tetrahedron', 'gltf'],\r\n            change: (e) => {\r\n                let currentShape = this.graphicsEditor.getFrameShape();\r\n                let newValue = e.target.value;\r\n                if (newValue != 'gltf') {\r\n                    delete currentShape.url\r\n                }                 \r\n                currentShape.type = newValue;\r\n                this.graphicsEditor.refreshShapes(false);\r\n            }\r\n        });\r\n        \r\n        if (shape.type === 'gltf') {            \r\n            let input = this.addFormRow(inspector, 'Model', 'file', 'url', shape.url, { 'change' :  async (e) => {\r\n                e.preventDefault();\r\n\r\n                // Get the file from the input element\r\n                const file = e.target.files[0]; // Access the file object\r\n                if (!file) {\r\n                    console.error('No file selected');\r\n                    return;\r\n                }\r\n                // // Create FormData and append the file\r\n                 const formData = new FormData();\r\n                 formData.append('gltfFile', file); // 'gltfFile' matches the multer.single('gltfFile') on the server\r\n\r\n                try {\r\n                     const response = await fetch('/upload-model', {\r\n                         method: 'POST',\r\n                         body: formData // Send the FormData with the file\r\n                     });\r\n\r\n                     const result = await response.json();\r\n                     shape.url = result.filePath; \r\n                     this.graphicsEditor.getFrameShape().url = result.filePath;\r\n                     this.graphicsEditor.refreshShapes(false);\r\n                } catch (error) {\r\n                     console.error('Error uploading file:', error);\r\n                }\r\n            }});\r\n            input.setAttribute(\"accept\",\".gltf\");\r\n        }\r\n        // Color picker\r\n        this.addFormRow(inspector, 'Color', 'color', 'color', shape.color);\r\n        this.addFormRow(inspector, 'Texture', 'texture', 'texture', shape.texture);\r\n        \r\n        this.addFormRow(inspector, 'X Scale', 'number', 'scaleX', shape.scaleX || 1, { min: 0.1, step: 0.1 });\r\n        this.addFormRow(inspector, 'Y Scale', 'number', 'scaleY', shape.scaleY || 1, { min: 0.1, step: 0.1 });\r\n        this.addFormRow(inspector, 'Z Scale', 'number', 'scaleZ', shape.scaleZ || 1, { min: 0.1, step: 0.1 });\r\n        // Position inputs\r\n        this.addFormRow(inspector, 'X Position', 'number', 'x', shape.x || 0, { step: 0.1 });\r\n        this.addFormRow(inspector, 'Y Position', 'number', 'y', shape.y || 0, { step: 0.1 });\r\n        this.addFormRow(inspector, 'Z Position', 'number', 'z', shape.z || 0, { step: 0.1 });\r\n        \r\n        // Rotation inputs\r\n        this.addFormRow(inspector, 'X Rotation', 'number', 'rotationX', shape.rotationX || 0, { step: 5 });\r\n        this.addFormRow(inspector, 'Y Rotation', 'number', 'rotationY', shape.rotationY || 0, { step: 5 });\r\n        this.addFormRow(inspector, 'Z Rotation', 'number', 'rotationZ', shape.rotationZ || 0, { step: 5 });\r\n        \r\n        // Size inputs\r\n        if (['cube', 'sphere', 'tetrahedron', 'torus'].includes(shape.type)) {\r\n            this.addFormRow(inspector, 'Size', 'number', 'size', shape.size || 2, { min: 0.1, step: 0.1 });\r\n        }\r\n        \r\n        if (shape.type === 'box') {\r\n            this.addFormRow(inspector, 'Width', 'number', 'width', shape.width || 2, { min: 0.1, step: 0.1 });\r\n            this.addFormRow(inspector, 'Height', 'number', 'height', shape.height || 2, { min: 0.1, step: 0.1 });\r\n            this.addFormRow(inspector, 'Depth', 'number', 'depth', shape.depth || 2, { min: 0.1, step: 0.1 });\r\n        }\r\n        \r\n        if (['cylinder', 'cone'].includes(shape.type)) {\r\n            this.addFormRow(inspector, 'Size', 'number', 'size', shape.size || 2, { min: 0.1, step: 0.1 });\r\n            this.addFormRow(inspector, 'Height', 'number', 'height', shape.height || 3, { min: 0.1, step: 0.1 });\r\n        }\r\n        \r\n        if (shape.type === 'torus') {\r\n            this.addFormRow(inspector, 'Tube Size', 'number', 'tubeSize', shape.tubeSize || shape.size / 6, { min: 0.1, step: 0.1 });\r\n        }\r\n    }\r\n\r\n\r\n    addFormRow(container, label, type, property, value, options = {}) {\r\n        const row = document.createElement('div');\r\n        row.className = 'form-row';\r\n        \r\n        const labelElement = document.createElement('label');\r\n        labelElement.textContent = label;\r\n        row.appendChild(labelElement);\r\n        \r\n        let input;\r\n        \r\n        if (type === 'select') {\r\n            input = document.createElement('select');\r\n            input.setAttribute('data-property', property);\r\n            (options.options || []).forEach(optionValue => {\r\n                const option = document.createElement('option');\r\n                option.value = optionValue;\r\n                option.textContent = optionValue;\r\n                if (value === optionValue) {\r\n                    option.selected = true;\r\n                }\r\n                input.appendChild(option);\r\n            });\r\n        } else if(type === \"color\") {\r\n            input = this.gameEditor.createColorInputGroup(value, 'data-property', property, row, (val, colorName) => {\r\n                if(colorName){\r\n                    this.graphicsEditor.getFrameShape()[property] = { paletteColor: colorName };\r\n                } else {\r\n                    this.graphicsEditor.getFrameShape()[property] = val;\r\n                }\r\n                this.graphicsEditor.refreshShapes(false);\r\n            });            \r\n        } else if(type === \"texture\") {\r\n            input = this.gameEditor.createTextureInputGroup(value, 'data-property', property, row, (val) => {\r\n                if(val){\r\n                    this.graphicsEditor.getFrameShape()[property] = val;\r\n                }\r\n                this.graphicsEditor.refreshShapes(false);\r\n            });            \r\n        } else if(type === \"file\") {\r\n            let inputContainer = document.createElement('div');\r\n            inputContainer.style = \"flex: 1; display: flex; flex-direction: column; font-size: .75em;\";\r\n            input = document.createElement('input');\r\n            input.style = \"width: calc(100% - 18px);\"\r\n            input.type = type;\r\n            input.setAttribute('data-property', property);\r\n            inputContainer.appendChild(input);\r\n            if( value ) {\r\n                let urlName = document.createElement('span');\r\n                urlName.innerText = value;            \r\n                inputContainer.appendChild(urlName);\r\n            }\r\n            row.appendChild(inputContainer);\r\n            container.appendChild(row);\r\n            input.addEventListener('change', options.change );\r\n            return input;\r\n        } else {\r\n            input = document.createElement('input');\r\n            input.type = type;\r\n            input.value = value;\r\n            input.setAttribute('data-property', property);\r\n            \r\n            if (type === 'number') {\r\n                input.min = options.min !== undefined ? options.min : -64;\r\n                input.max = options.max !== undefined ? options.max : 64;\r\n                input.step = options.step || 1;\r\n            }\r\n        }\r\n        \r\n        input.addEventListener('change', options.change || ((e) => {\r\n            let newValue = e.target.value;\r\n            if (type === 'number') {\r\n                newValue = parseFloat(newValue);\r\n                console.log('change', this.graphicsEditor.shapeManager.currentTransformTarget);\r\n                // If we're editing a transform property, also update the transform target\r\n                if (this.graphicsEditor.shapeManager.currentTransformTarget && ['x', 'y', 'z', 'rotationX', 'rotationY', 'rotationZ', 'scaleX', 'scaleY', 'scaleZ'].includes(property)) {\r\n                    if (property === 'x') this.graphicsEditor.shapeManager.currentTransformTarget.position.x = newValue;\r\n                    if (property === 'y') this.graphicsEditor.shapeManager.currentTransformTarget.position.y = newValue;\r\n                    if (property === 'z') this.graphicsEditor.shapeManager.currentTransformTarget.position.z = newValue;\r\n                    \r\n                    if (property === 'rotationX') this.graphicsEditor.shapeManager.currentTransformTarget.rotation.x = this.graphicsEditor.rotationUtils.degToRad(newValue);\r\n                    if (property === 'rotationY') this.graphicsEditor.shapeManager.currentTransformTarget.rotation.y = this.graphicsEditor.rotationUtils.degToRad(newValue);\r\n                    if (property === 'rotationZ') this.graphicsEditor.shapeManager.currentTransformTarget.rotation.z = this.graphicsEditor.rotationUtils.degToRad(newValue);\r\n                    \r\n                    if (property === 'scaleX') this.graphicsEditor.shapeManager.currentTransformTarget.scale.x = newValue;\r\n                    if (property === 'scaleY') this.graphicsEditor.shapeManager.currentTransformTarget.scale.y = newValue;\r\n                    if (property === 'scaleZ') this.graphicsEditor.shapeManager.currentTransformTarget.scale.z = newValue;\r\n                    \r\n                    // Update gizmo position after directly changing values\r\n                }\r\n            } else if(type === 'file') {\r\n                return;\r\n            }\r\n            \r\n            this.updatePropertyValue(property, newValue);\r\n            this.graphicsEditor.refreshShapes(false);\r\n        }));\r\n        \r\n        row.appendChild(input);\r\n        container.appendChild(row);\r\n        return input;\r\n    }\r\n    updatePropertyValue(property, value) {\r\n        const shapeData = this.graphicsEditor.getFrameShape();\r\n        if (shapeData) {\r\n            shapeData[property] = value;\r\n            return;\r\n        }\r\n        let groupData = this.graphicsEditor.getCurrentGroup();\r\n        if(!groupData){\r\n            groupData = {};\r\n            let currentFrame = this.graphicsEditor.getCurrentFrame();\r\n            if(currentFrame) {\r\n                currentFrame[this.graphicsEditor.state.currentGroup] = groupData;\r\n            }\r\n        }\r\n        \r\n        // Handle transform properties\r\n        if (property.startsWith('scale')) {\r\n            if(!groupData.scale) groupData.scale = {};\r\n            const axis = property.charAt(property.length - 1).toLowerCase();\r\n            groupData.scale[axis] = value;\r\n        } else if (property.startsWith('rotation')) {\r\n            if(!groupData.rotation) groupData.rotation = {};\r\n            const axis = property.charAt(property.length - 1).toLowerCase();\r\n            groupData.rotation[axis] = value;\r\n        } else if (['x', 'y', 'z'].includes(property)) {\r\n            if(!groupData.position) groupData.position = {};\r\n            groupData.position[property] = value;\r\n        }\r\n    }\r\n\r\n  \r\n\r\n    updateList() {\r\n        const frameList = document.getElementById('frame-list');\r\n        frameList.innerHTML = '';\r\n        const groupList = document.getElementById('group-list');\r\n        groupList.innerHTML = '';\r\n        const shapeList = document.getElementById('shape-list');\r\n        shapeList.innerHTML = '';\r\n        this.updateFrameList();\r\n        this.graphicsEditor.groupManager.updateGroupList();\r\n        this.updateShapeList();\r\n    }\r\n\r\n    updateFrameList() {\r\n        const list = document.getElementById('frame-list');\r\n        // Animation selector\r\n        const animSelector = document.createElement('select');\r\n        animSelector.style.marginBottom = '10px';\r\n\r\n        const option = document.createElement('option');\r\n        option.value = '__model__';\r\n        option.textContent = 'model';\r\n        if (this.graphicsEditor.state.editingModel) option.selected = true;\r\n        animSelector.appendChild(option);\r\n\r\n\r\n        Object.keys(this.graphicsEditor.state.renderData.animations).forEach(anim => {\r\n            const option = document.createElement('option');\r\n            option.value = anim;\r\n            option.textContent = anim;\r\n            if (anim === this.graphicsEditor.state.currentAnimation) option.selected = true;\r\n            animSelector.appendChild(option);\r\n        });\r\n        animSelector.addEventListener('change', (e) => {\r\n            this.graphicsEditor.setPreviewAnimationState(false);\r\n            if(e.target.value == '__model__'){\r\n                this.graphicsEditor.state.editingModel = true;\r\n                this.graphicsEditor.state.currentAnimation = \"\";                \r\n            } else {\r\n                this.graphicsEditor.state.editingModel = false;\r\n                this.graphicsEditor.state.currentAnimation = animSelector.value;                \r\n            }\r\n            this.graphicsEditor.state.currentFrame = 0;\r\n            this.graphicsEditor.refreshShapes(false);\r\n            requestAnimationFrame(() => {\r\n                this.graphicsEditor.state.selectedShapeIndex = -1;\r\n                this.graphicsEditor.shapeManager.selectShape(0);\r\n            })\r\n        });\r\n        list.appendChild(animSelector);\r\n        if(this.graphicsEditor.state.editingModel) return;\r\n        // Frame list\r\n        const frameList = document.createElement('div');\r\n        frameList.style.marginBottom = '10px';\r\n        this.graphicsEditor.getCurrentAnimation().forEach((frame, index) => {\r\n            const frameItem = document.createElement('div');\r\n            frameItem.textContent = `Frame ${index + 1}`;\r\n            frameItem.style.padding = '5px';\r\n            frameItem.style.cursor = 'pointer';\r\n            if (index === this.graphicsEditor.state.currentFrame) frameItem.style.backgroundColor = '#555';\r\n            frameItem.addEventListener('click', () => {\r\n                this.graphicsEditor.setPreviewAnimationState(false);\r\n                this.graphicsEditor.state.currentFrame = index;  \r\n                this.graphicsEditor.refreshShapes(false);\r\n                requestAnimationFrame(() => {  \r\n                    this.graphicsEditor.state.selectedShapeIndex = -1;\r\n                    this.graphicsEditor.shapeManager.selectShape(0);\r\n                })\r\n            });\r\n            frameList.appendChild(frameItem);\r\n        });\r\n        list.appendChild(frameList);\r\n    }\r\n\r\n\r\n    updateShapeList() {\r\n        const list = document.getElementById('shape-list');\r\n        if (!list) return;\r\n        \r\n\r\n        // Get shapes from the currently selected group\r\n        const currentGroup = this.graphicsEditor.state.currentGroup;\r\n        const selectedGroup = this.graphicsEditor.getMergedGroup(currentGroup);\r\n        const shapes = selectedGroup && selectedGroup.shapes ? selectedGroup.shapes : selectedGroup || [];\r\n       \r\n        // Create shape list items\r\n        for (let i = 0; i < shapes.length; i++) {\r\n            const shape = shapes[i];\r\n            if (!shape) continue;\r\n           \r\n            const shapeItem = document.createElement('div');\r\n            shapeItem.classList.add('shape-item');\r\n           \r\n            // Mark as selected if this shape is the selected one and we're in the right group\r\n            if (i === this.graphicsEditor.state.selectedShapeIndex) {\r\n                shapeItem.classList.add('selected');\r\n            }\r\n           \r\n            shapeItem.textContent = `${shape.name} - ${shape.type || 'Shape'}`;\r\n            shapeItem.addEventListener('click', (e) => {               \r\n                this.graphicsEditor.shapeManager.selectShape(parseInt(e.target.dataset.index));\r\n            });\r\n           \r\n            // Make the shape draggable\r\n            shapeItem.draggable = true;\r\n            shapeItem.dataset.index = i;\r\n            shapeItem.dataset.group = currentGroup;\r\n            \r\n            // Add dragstart event to set the drag data\r\n            shapeItem.addEventListener('dragstart', (e) => {\r\n                // Store only the selected shape's index and source group\r\n                const data = {\r\n                    shapeIndex: i,\r\n                    sourceGroup: currentGroup\r\n                };\r\n                \r\n                // Set the drag data\r\n                e.dataTransfer.setData('text/plain', JSON.stringify(data));\r\n                \r\n                // Add a visual indicator\r\n                shapeItem.classList.add('dragging');\r\n                \r\n                // Set drag effect\r\n                e.dataTransfer.effectAllowed = 'move';\r\n            });\r\n            \r\n            // Add dragend event to clean up\r\n            shapeItem.addEventListener('dragend', () => {\r\n                shapeItem.classList.remove('dragging');\r\n            });\r\n           \r\n            list.appendChild(shapeItem);\r\n        }\r\n        \r\n        // Set up the shape list container as a drop target\r\n        list.addEventListener('dragover', (e) => {\r\n            // Only respond if we're dragging over the shape list itself, not an individual shape\r\n            if (e.target === list) {\r\n                e.preventDefault();\r\n                e.dataTransfer.dropEffect = 'move';\r\n                list.classList.add('drag-over');\r\n            }\r\n        });\r\n        \r\n        list.addEventListener('dragleave', (e) => {\r\n            // Only respond if we're leaving the shape list\r\n            if (e.target === list) {\r\n                list.classList.remove('drag-over');\r\n            }\r\n        });\r\n        \r\n        list.addEventListener('drop', (e) => {\r\n            e.preventDefault();\r\n            list.classList.remove('drag-over');\r\n            \r\n            const data = e.dataTransfer.getData('text/plain');\r\n            if (!data) return;\r\n            \r\n            try {\r\n                const dragData = JSON.parse(data);\r\n                const { shapeIndex, sourceGroup } = dragData;\r\n                \r\n                // Only process if this is a different group\r\n                if (sourceGroup && sourceGroup !== currentGroup) {\r\n                    this.graphicsEditor.groupManager.moveToGroup(\r\n                        parseInt(shapeIndex),\r\n                        sourceGroup,\r\n                        currentGroup\r\n                    );\r\n                }\r\n            } catch (err) {\r\n                console.error('Error processing drop in shape list:', err);\r\n            }\r\n        });\r\n    }\r\n\r\n}"
       },
       "ModelManager": {
         "title": "ModelManager",
@@ -17719,13 +17719,13 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "TextureEditor",
         "script": "class TextureEditor {\n    constructor(gameEditor) {\n        this.gameEditor = gameEditor;\n        this.canvas = null;\n        this.ctx = null;\n        this.currentColor = '#000000FF'; // Added alpha component (FF = fully opaque)\n        this.brushSize = 1;\n        this.isDrawing = false;\n        this.history = [];\n        this.historyIndex = -1;\n        this.colorPalette = [];\n        if (this.gameEditor.getCollections().palettes && this.gameEditor.getCollections().configs.game.palette) {\n            const palette = this.gameEditor.getCollections().palettes[this.gameEditor.getCollections().configs.game.palette];\n\n            if (palette) {\n                for(let key in palette) {\n                    if(key.toLowerCase().endsWith('color')){\n                        this.colorPalette.push(palette[key]);\n                    }\n                }\n            }\n        }\n        this.activeTool = 'brush'; // Default active tool\n        \n        // Transparency checker pattern properties\n        this.transparencyCheckerSize = 10;\n        this.transparencyCheckerColors = ['#DDDDDD', '#FFFFFF'];\n        \n        // Zoom related properties\n        this.zoomLevel = 1;\n        this.maxZoomLevel = 16;\n        this.minZoomLevel = 0.25;\n        this.imageWidth = 0;\n        this.imageHeight = 0;\n        \n        this.setupUI();\n        this.setupEventListeners();\n    }\n\n    setupUI() {\n        const container = document.getElementById('texture-editor-container');\n        if (!container) return;\n        \n        // Setup color palette\n        const paletteEl = container.querySelector('#color-palette');\n        this.colorPalette.forEach(color => {\n            const colorBtn = document.createElement('div');\n            colorBtn.className = 'color-btn';\n            colorBtn.style.backgroundColor = this.hexToRgbaString(color);\n            colorBtn.dataset.color = color;\n            paletteEl.appendChild(colorBtn);\n        });\n\n        // Initialize canvas\n        this.canvas = document.getElementById('texture-canvas');\n        this.ctx = this.canvas.getContext('2d', { willReadFrequently: true });\n        \n        // Set initial UI state\n        document.getElementById('noTextureMessage').style.display = 'block';\n        this.canvas.style.display = 'none';\n                \n        // Add zoom controls to the UI\n        this.addZoomControls(container);\n        // Create a container for the canvas if it doesn't exist\n        let canvasContainer = this.canvas.parentElement;\n\n        if (canvasContainer) {\n            \n            // Add transparency checker pattern background to container\n            this.setupTransparencyChecker(canvasContainer);\n\n        }\n    }\n    \n    addZoomControls(container) {\n        // Create zoom controls container\n        const zoomControlsContainer = document.createElement('div');\n        zoomControlsContainer.className = 'zoom-controls';\n        zoomControlsContainer.style.display = 'flex';\n        zoomControlsContainer.style.alignItems = 'center';\n        zoomControlsContainer.style.marginTop = '10px';\n        \n        // Zoom out button\n        const zoomOutBtn = document.createElement('button');\n        zoomOutBtn.id = 'zoom-out-btn';\n        zoomOutBtn.innerText = '-';\n        zoomOutBtn.className = 'zoom-btn';\n        \n        // Zoom display\n        const zoomDisplay = document.createElement('span');\n        zoomDisplay.id = 'zoom-display';\n        zoomDisplay.innerText = '100%';\n        zoomDisplay.style.margin = '0 10px';\n        \n        // Zoom in button\n        const zoomInBtn = document.createElement('button');\n        zoomInBtn.id = 'zoom-in-btn';\n        zoomInBtn.innerText = '+';\n        zoomInBtn.className = 'zoom-btn';\n        \n        // Reset zoom button\n        const resetZoomBtn = document.createElement('button');\n        resetZoomBtn.id = 'reset-zoom-btn';\n        resetZoomBtn.innerText = 'Reset Zoom';\n        resetZoomBtn.className = 'zoom-btn';\n        resetZoomBtn.style.marginLeft = '10px';\n        \n        // Dimensions display\n        const dimensionsDisplay = document.createElement('span');\n        dimensionsDisplay.id = 'dimensions-display';\n        dimensionsDisplay.innerText = 'Dimensions: 0 x 0';\n        dimensionsDisplay.style.marginLeft = '15px';\n        \n        // Add all controls to container\n        zoomControlsContainer.appendChild(zoomOutBtn);\n        zoomControlsContainer.appendChild(zoomDisplay);\n        zoomControlsContainer.appendChild(zoomInBtn);\n        zoomControlsContainer.appendChild(resetZoomBtn);\n        zoomControlsContainer.appendChild(dimensionsDisplay);\n        \n        // Add container to the editor UI\n        container.appendChild(zoomControlsContainer);\n    }\n\n    setupEventListeners() {\n        const container = document.getElementById('texture-editor-container');\n        if (!container) return;\n\n        // Global events\n        document.body.addEventListener('editTexture', (event) => {\n            this.updateUIFromSettings(event.detail.data);\n        });\n\n        // Tool selection\n        container.querySelectorAll('.tool-btn').forEach(btn => {\n            btn.addEventListener('click', (e) => {\n                container.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));\n                e.target.classList.add('active');\n                this.setActiveTool(e.target.id);\n            });\n        });\n\n        // Brush size\n        const brushSizeInput = container.querySelector('#brush-size');\n        const brushSizeDisplay = container.querySelector('#brush-size-display');\n        brushSizeInput.addEventListener('input', (e) => {\n            this.brushSize = parseInt(e.target.value);\n            brushSizeDisplay.textContent = `${this.brushSize}px`;\n        });\n\n        // Color palette\n        container.querySelectorAll('.color-btn').forEach(btn => {\n            btn.addEventListener('click', (e) => {\n                container.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));\n                e.target.classList.add('active');\n                this.currentColor = e.target.dataset.color;\n                // Update both color and transparency inputs\n                const colorValue = this.currentColor.substring(0, 7);\n                const alphaValue = parseInt(this.currentColor.substring(7, 9), 16) || 255;\n                \n                container.querySelector('#custom-color-picker').value = colorValue;\n                const transparencySlider = container.querySelector('#transparency-slider');\n                if (transparencySlider) {\n                    transparencySlider.value = alphaValue;\n                    document.getElementById('transparency-display').textContent = \n                        `${Math.round((alphaValue / 255) * 100)}%`;\n                }\n            });\n        });\n\n        // Custom color picker\n        const customColorPicker = container.querySelector('#custom-color-picker');\n        customColorPicker.addEventListener('input', (e) => {\n            // Preserve alpha when changing color\n            const alpha = this.currentColor.substring(7, 9) || 'FF';\n            this.currentColor = e.target.value + alpha;\n            container.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));\n        });\n        \n        // Transparency slider\n        const transparencySlider = container.querySelector('#transparency-slider');\n        transparencySlider.addEventListener('input', (e) => {\n            const alphaValue = parseInt(e.target.value);\n            const alphaHex = alphaValue.toString(16).padStart(2, '0').toUpperCase();\n            \n            // Update alpha in the current color\n            this.currentColor = this.currentColor.substring(0, 7) + alphaHex;\n            \n            // Update display\n            document.getElementById('transparency-display').textContent = \n                `${Math.round((alphaValue / 255) * 100)}%`;\n        });\n\n        // Canvas drawing events\n        this.canvas.addEventListener('mousedown', (e) => {\n            if (e.button === 0) { // Left click                \n                this.startDrawing(e);\n            }\n        });\n        \n        this.canvas.addEventListener('mousemove', (e) => {\n            if (this.isDrawing) {\n                this.draw(e);\n            }\n        });\n        \n        this.canvas.addEventListener('mouseup', (e) => {\n            if (e.button === 0) { // Left click\n                if (this.isDrawing) {\n                    this.stopDrawing();\n                }\n            } \n        });\n        \n        this.canvas.addEventListener('mouseleave', () => {\n            this.stopDrawing();\n        });\n        \n        // Zoom with mouse wheel\n        this.canvas.addEventListener('wheel', (e) => {\n            e.preventDefault();\n            \n            // Calculate zoom point relative to canvas\n            const rect = this.canvas.getBoundingClientRect();\n            const mouseX = e.clientX - rect.left;\n            const mouseY = e.clientY - rect.top;\n            \n            // Calculate zoom direction\n            const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;\n            \n            // Calculate new zoom level\n            let newZoom = this.zoomLevel * zoomFactor;\n            \n            // Constrain zoom level\n            newZoom = Math.max(this.minZoomLevel, Math.min(this.maxZoomLevel, newZoom));\n            \n            // Calculate zoom point in image coordinates\n            const imageX = mouseX / this.zoomLevel;\n            const imageY = mouseY / this.zoomLevel;\n            \n            // Update zoom level\n            this.zoomLevel = newZoom;            \n            \n            // Update display\n            this.updateZoomDisplay();\n            this.renderCanvas();\n        });\n        \n        // Zoom control buttons\n        container.querySelector('#zoom-in-btn').addEventListener('click', () => {\n            this.zoom(1.25);\n        });\n        \n        container.querySelector('#zoom-out-btn').addEventListener('click', () => {\n            this.zoom(0.8);\n        });\n        \n        container.querySelector('#reset-zoom-btn').addEventListener('click', () => {\n            this.resetZoom();\n        });\n\n        // Action buttons\n        container.querySelector('#new-btn').addEventListener('click', () => this.newImage());\n        container.querySelector('#undo-btn').addEventListener('click', () => this.undo());\n        container.querySelector('#redo-btn').addEventListener('click', () => this.redo());\n        container.querySelector('#clear-btn').addEventListener('click', () => this.clear());\n        container.querySelector('.export-btn').addEventListener('click', () => {\n            this.saveTexture(this.getCurrentTexture());\n        });\n\n        // File upload\n        container.querySelector('input[type=\"file\"]').addEventListener('change', (e) => {\n            this.handleImageUpload(e);\n        });\n    }\n\n    zoom(factor) {\n        // Calculate new zoom level\n        let newZoom = this.zoomLevel * factor;\n        \n        // Constrain zoom level\n        newZoom = Math.max(this.minZoomLevel, Math.min(this.maxZoomLevel, newZoom));\n        \n        // Calculate center point of the viewport\n        const viewportWidth = this.canvas.clientWidth;\n        const viewportHeight = this.canvas.clientHeight;\n        const centerX = viewportWidth / 2;\n        const centerY = viewportHeight / 2;\n        \n        // Calculate zoom point in image coordinates\n        const imageX = centerX / this.zoomLevel;\n        const imageY = centerY / this.zoomLevel;\n        \n        // Update zoom level\n        this.zoomLevel = newZoom;\n        \n        // Update display\n        this.updateZoomDisplay();\n        this.renderCanvas();\n        // Update canvas display size\n        this.updateCanvasDisplaySize();\n    }\n    \n    updateCanvasDisplaySize() {\n\n        \n        // Set the canvas display size based on zoom\n        const displayWidth = Math.ceil(this.imageWidth * this.zoomLevel);\n        const displayHeight = Math.ceil(this.imageHeight * this.zoomLevel);\n        \n        this.canvas.style.width = `${displayWidth}px`;\n        this.canvas.style.height = `${displayHeight}px`;\n        this.transparencyChecker.style.width = `${displayWidth}px`;\n        this.transparencyChecker.style.height = `${displayHeight}px`;\n        \n        // Update the cursor based on the active tool\n        this.canvas.style.cursor = this.getToolCursor();\n    }\n    \n    setupTransparencyChecker(container) {\n        const displayWidth = Math.ceil(this.imageWidth * this.zoomLevel);\n        const displayHeight = Math.ceil(this.imageHeight * this.zoomLevel);\n        // Create and add transparency checker background\n        this.transparencyChecker = document.createElement('div');\n        this.transparencyChecker.className = 'transparency-checker';\n        this.transparencyChecker.style.position = 'absolute';\n        this.transparencyChecker.style.top = '0';\n        this.transparencyChecker.style.left = '0';\n        this.transparencyChecker.style.bottom = '0';\n        this.transparencyChecker.style.right = '0';        \n        this.transparencyChecker.style.margin = 'auto';\n        this.transparencyChecker.style.width = `${displayWidth}px`;\n        this.transparencyChecker.style.height = `${displayHeight}px`;\n        this.transparencyChecker.style.backgroundImage = 'linear-gradient(45deg, #ffffff10 25%, transparent 25%), linear-gradient(-45deg, #ffffff10 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ffffff10 75%), linear-gradient(-45deg, transparent 75%, #ffffff10 75%)';\n        this.transparencyChecker.style.backgroundSize = '10px 10px';\n        this.transparencyChecker.style.backgroundPosition = '0 0, 0 10px, 10px -10px, -10px 0px';\n        this.transparencyChecker.style.pointerEvents = 'none'; // Make it non-interactive\n        this.transparencyChecker.style.zIndex = '-1';\n        \n        container.appendChild(this.transparencyChecker);\n    }\n    \n    resetZoom() {\n        // Reset zoom level\n        this.zoomLevel = 1;\n        \n        // Update display\n        this.updateZoomDisplay();\n        this.renderCanvas();\n    }\n    \n    updateZoomDisplay() {\n        const zoomDisplay = document.getElementById('zoom-display');\n        if (zoomDisplay) {\n            zoomDisplay.innerText = `${Math.round(this.zoomLevel * 100)}%`;\n        }\n    }\n    \n    getToolCursor() {\n        switch (this.activeTool) {\n            case 'brush': return 'crosshair';\n            case 'eraser': return 'cell';\n            case 'fill': return 'pointer';\n            case 'eyedropper': return 'copy';\n            default: return 'crosshair';\n        }\n    }\n\n    setActiveTool(toolId) {\n        switch (toolId) {\n            case 'brush-tool':\n                this.activeTool = 'brush';\n                this.canvas.style.cursor = 'crosshair';\n                break;\n            case 'eraser-tool':\n                this.activeTool = 'eraser';\n                this.canvas.style.cursor = 'cell';\n                break;\n            case 'fill-tool':\n                this.activeTool = 'fill';\n                this.canvas.style.cursor = 'pointer';\n                break;\n            case 'eyedropper-tool':\n                this.activeTool = 'eyedropper';\n                this.canvas.style.cursor = 'copy';\n                break;\n            default:\n                this.activeTool = 'brush';\n                this.canvas.style.cursor = 'crosshair';\n        }\n    }\n\n    updateUIFromSettings(imageSrc) {\n        if (!imageSrc) {\n            document.getElementById('noTextureMessage').style.display = 'block';\n            this.canvas.style.display = 'none';\n            return;\n        }\n\n        // Load image onto canvas\n        const img = new Image();\n        img.onload = () => {\n            // Set canvas dimensions to match image dimensions\n            this.imageWidth = img.width;\n            this.imageHeight = img.height;\n            \n            // Update canvas size to match image size\n            this.canvas.width = this.imageWidth;\n            this.canvas.height = this.imageHeight;\n            \n            // Update dimensions display\n            this.updateDimensionsDisplay();\n            \n            // Show canvas and hide message\n            document.getElementById('noTextureMessage').style.display = 'none';\n            this.canvas.style.display = 'block';\n            \n            // Draw image on canvas with proper alpha support\n            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);\n            this.ctx.drawImage(img, 0, 0, this.imageWidth, this.imageHeight);\n            \n            // Reset zoom\n            this.resetZoom();\n            \n            // Save initial state to history\n            this.saveToHistory();\n            \n            // Apply initial render\n            this.renderCanvas();\n        };\n        img.src = imageSrc;\n    }\n    \n    updateDimensionsDisplay() {\n        const dimensionsDisplay = document.getElementById('dimensions-display');\n        if (dimensionsDisplay) {\n            dimensionsDisplay.innerText = `Dimensions: ${this.imageWidth} x ${this.imageHeight}`;\n        }\n    }\n    \n    renderCanvas() {\n        // Store the current state\n        const currentState = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);\n        \n        // Clear the canvas\n        this.ctx.setTransform(1, 0, 0, 1, 0, 0);\n        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);\n        \n        // Set up the transformation for zoom\n        this.ctx.setTransform(\n            this.zoomLevel, 0, \n            0, this.zoomLevel, \n            this.zoomLevel, \n            this.zoomLevel\n        );\n        \n        // Draw the image data\n        this.ctx.putImageData(currentState, 0, 0);\n        \n        // Reset the transformation for UI elements\n        this.ctx.setTransform(1, 0, 0, 1, 0, 0);\n    }\n\n    startDrawing(e) {\n        this.isDrawing = true;\n        \n        // Save state before drawing\n        this.saveToHistory();\n        \n        const pos = this.getCanvasCoordinates(e);\n        \n        switch (this.activeTool) {\n            case 'brush':\n                this.drawPixel(pos.x, pos.y);\n                break;\n            case 'eraser':\n                this.erasePixel(pos.x, pos.y);\n                break;\n            case 'fill':\n                this.fillArea(pos.x, pos.y);\n                break;\n            case 'eyedropper':\n                this.pickColor(pos.x, pos.y);\n                break;\n        }\n    }\n\n    draw(e) {\n        if (!this.isDrawing) return;\n        \n        const pos = this.getCanvasCoordinates(e);\n        \n        switch (this.activeTool) {\n            case 'brush':\n                this.drawPixel(pos.x, pos.y);\n                break;\n            case 'eraser':\n                this.erasePixel(pos.x, pos.y);\n                break;\n        }\n    }\n\n    stopDrawing() {\n        this.isDrawing = false;\n    }\n\n    getCanvasCoordinates(e) {\n        const rect = this.canvas.getBoundingClientRect();\n        \n        // Calculate the mouse position relative to the canvas\n        const mouseX = e.clientX - rect.left;\n        const mouseY = e.clientY - rect.top;\n        \n        // Convert to image coordinates considering zoom\n        const x = Math.floor(mouseX / this.zoomLevel);\n        const y = Math.floor(mouseY / this.zoomLevel);\n        \n        return { x, y };\n    }\n\n    drawPixel(x, y) {\n        // Save current transform\n        this.ctx.save();\n        \n        // Reset transform for accurate drawing\n        this.ctx.setTransform(1, 0, 0, 1, 0, 0);\n        \n        // Use RGBA for colors with transparency\n        this.ctx.fillStyle = this.hexToRgbaString(this.currentColor);\n        \n        if (this.brushSize === 1) {\n            this.ctx.fillRect(x, y, 1, 1);\n        } else {\n            const offset = Math.floor(this.brushSize / 2);\n            for (let i = -offset; i < this.brushSize - offset; i++) {\n                for (let j = -offset; j < this.brushSize - offset; j++) {\n                    const posX = x + i;\n                    const posY = y + j;\n                    if (posX >= 0 && posX < this.canvas.width && posY >= 0 && posY < this.canvas.height) {\n                        this.ctx.fillRect(posX, posY, 1, 1);\n                    }\n                }\n            }\n        }\n        \n        // Restore transform\n        this.ctx.restore();\n        \n        // Reapply zoom\n        this.renderCanvas();\n    }\n    erasePixel(x, y) {\n        // Save current transform\n        this.ctx.save();\n        \n        // Reset transform for accurate erasing\n        this.ctx.setTransform(1, 0, 0, 1, 0, 0);\n        \n        // Get current image data\n        const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);\n        const data = imageData.data;\n        \n        // Apply eraser to pixels\n        if (this.brushSize === 1) {\n            const index = (y * this.canvas.width + x) * 4;\n            // Set all channels (RGB and Alpha) to 0 for full transparency\n            data[index] = 0;     // R\n            data[index + 1] = 0; // G\n            data[index + 2] = 0; // B\n            data[index + 3] = 0; // A\n        } else {\n            const offset = Math.floor(this.brushSize / 2);\n            for (let i = -offset; i < this.brushSize - offset; i++) {\n                for (let j = -offset; j < this.brushSize - offset; j++) {\n                    const posX = x + i;\n                    const posY = y + j;\n                    if (posX >= 0 && posX < this.canvas.width && posY >= 0 && posY < this.canvas.height) {\n                        const index = (posY * this.canvas.width + posX) * 4;\n                        // Set all channels to 0\n                        data[index] = 0;     // R\n                        data[index + 1] = 0; // G\n                        data[index + 2] = 0; // B\n                        data[index + 3] = 0; // A\n                    }\n                }\n            }\n        }\n        \n        // Put the modified image data back\n        this.ctx.putImageData(imageData, 0, 0);\n        \n        // Restore transform\n        this.ctx.restore();\n        \n        // Reapply zoom\n        this.renderCanvas();\n    }\n\n    fillArea(x, y) {\n        if (x < 0 || x >= this.imageWidth || y < 0 || y >= this.imageHeight) {\n            return; // Out of bounds\n        }\n        \n        // Save current transform\n        this.ctx.save();\n        \n        // Reset transform for accurate fill\n        this.ctx.setTransform(1, 0, 0, 1, 0, 0);\n        \n        // Get the pixel color at the clicked position\n        const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);\n        const data = imageData.data;\n        \n        // Get the index of the clicked pixel\n        const index = (y * this.canvas.width + x) * 4;\n        const targetR = data[index];\n        const targetG = data[index + 1];\n        const targetB = data[index + 2];\n        const targetA = data[index + 3];\n        \n        // Don't fill if clicking on the same color\n        const fillColor = this.hexToRgba(this.currentColor);\n        if (targetR === fillColor.r && targetG === fillColor.g && targetB === fillColor.b && targetA === fillColor.a) {\n            this.ctx.restore();\n            return;\n        }\n        \n        // Flood fill algorithm\n        const stack = [{x, y}];\n        const visited = new Set();\n        \n        while (stack.length > 0) {\n            const pixel = stack.pop();\n            const px = pixel.x;\n            const py = pixel.y;\n            \n            // Skip if outside canvas or already visited\n            if (px < 0 || px >= this.canvas.width || py < 0 || py >= this.canvas.height ||\n                visited.has(`${px},${py}`)) {\n                continue;\n            }\n            \n            // Get current pixel index\n            const currentIndex = (py * this.canvas.width + px) * 4;\n            \n            // Check if the pixel has the target color\n            if (data[currentIndex] === targetR && \n                data[currentIndex + 1] === targetG && \n                data[currentIndex + 2] === targetB && \n                data[currentIndex + 3] === targetA) {\n                \n                // Set the new color\n                data[currentIndex] = fillColor.r;\n                data[currentIndex + 1] = fillColor.g;\n                data[currentIndex + 2] = fillColor.b;\n                data[currentIndex + 3] = fillColor.a;\n                \n                // Mark as visited\n                visited.add(`${px},${py}`);\n                \n                // Add neighbors to stack\n                stack.push({x: px + 1, y: py});\n                stack.push({x: px - 1, y: py});\n                stack.push({x: px, y: py + 1});\n                stack.push({x: px, y: py - 1});\n            }\n        }\n        \n        // Update the canvas with the new image data\n        this.ctx.putImageData(imageData, 0, 0);\n        \n        // Restore transform\n        this.ctx.restore();\n        \n        // Reapply zoom\n        this.renderCanvas();\n    }\n\n    pickColor(x, y) {\n        if (x < 0 || x >= this.imageWidth || y < 0 || y >= this.imageHeight) {\n            return; // Out of bounds\n        }\n        \n        // Save current transform\n        this.ctx.save();\n        \n        // Reset transform for accurate color picking\n        this.ctx.setTransform(1, 0, 0, 1, 0, 0);\n        \n        const pixel = this.ctx.getImageData(x, y, 1, 1).data;\n        \n        // Create hex color including alpha\n        const hexColor = `#${pixel[0].toString(16).padStart(2, '0')}${pixel[1].toString(16).padStart(2, '0')}${pixel[2].toString(16).padStart(2, '0')}${pixel[3].toString(16).padStart(2, '0')}`;\n        \n        this.currentColor = hexColor;\n        \n        // Update UI to show selected color\n        const customColorPicker = document.querySelector('#custom-color-picker');\n        if (customColorPicker) {\n            customColorPicker.value = hexColor.substring(0, 7);\n        }\n        \n        // Update transparency slider\n        const transparencySlider = document.querySelector('#transparency-slider');\n        if (transparencySlider) {\n            transparencySlider.value = pixel[3];\n            document.getElementById('transparency-display').textContent = \n                `${Math.round((pixel[3] / 255) * 100)}%`;\n        }\n        \n        // Deselect any color in the palette\n        document.querySelectorAll('.color-btn').forEach(btn => {\n            btn.classList.remove('active');\n            if (btn.dataset.color === hexColor) {\n                btn.classList.add('active');\n            }\n        });\n        \n        // Restore transform\n        this.ctx.restore();\n    }\n\n    hexToRgba(hex) {\n        const r = parseInt(hex.slice(1, 3), 16);\n        const g = parseInt(hex.slice(3, 5), 16);\n        const b = parseInt(hex.slice(5, 7), 16);\n        const a = parseInt(hex.slice(7, 9) || 'FF', 16);\n        return { r, g, b, a };\n    }\n    \n    hexToRgbaString(hex) {\n        const { r, g, b, a } = this.hexToRgba(hex);\n        return `rgba(${r}, ${g}, ${b}, ${a / 255})`;\n    }\n\n    saveToHistory() {\n        // Trim history if we're not at the end\n        if (this.historyIndex < this.history.length - 1) {\n            this.history = this.history.slice(0, this.historyIndex + 1);\n        }\n        \n        // Save current state - we need to reset transform to get the actual image data\n        this.ctx.save();\n        this.ctx.setTransform(1, 0, 0, 1, 0, 0);\n        const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);\n        this.ctx.restore();\n        \n        // Save to history\n        this.history.push(imageData);\n        this.historyIndex = this.history.length - 1;\n        \n        // Update undo/redo buttons\n        this.updateUndoRedoButtons();\n    }\n\n    updateUndoRedoButtons() {\n        const undoBtn = document.getElementById('undo-btn');\n        const redoBtn = document.getElementById('redo-btn');\n        \n        if (undoBtn) {\n            undoBtn.disabled = this.historyIndex <= 0;\n        }\n        \n        if (redoBtn) {\n            redoBtn.disabled = this.historyIndex >= this.history.length - 1;\n        }\n    }\n\n    newImage() {\n        // Prompt user for dimensions\n        const width = prompt('Enter width for new texture (1-2048):', '64');\n        const height = prompt('Enter height for new texture (1-2048):', '64');\n    \n        // Validate input\n        const newWidth = parseInt(width);\n        const newHeight = parseInt(height);\n    \n        if (isNaN(newWidth) || isNaN(newHeight) || newWidth < 1 || newWidth > 2048 || newHeight < 1 || newHeight > 2048) {\n            alert('Invalid dimensions. Please enter values between 1 and 2048.');\n            return;\n        }\n    \n        // Save current state before creating a new texture\n        this.saveToHistory();\n    \n        // Set canvas dimensions\n        this.imageWidth = newWidth;\n        this.imageHeight = newHeight;\n        this.canvas.width = this.imageWidth;\n        this.canvas.height = this.imageHeight;\n    \n        // Clear canvas with full transparency\n        this.ctx.setTransform(1, 0, 0, 1, 0, 0);\n        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);\n    \n        // Update dimensions display\n        this.updateDimensionsDisplay();\n    \n        // Show canvas and hide no texture message\n        document.getElementById('noTextureMessage').style.display = 'none';\n        this.canvas.style.display = 'block';\n    \n        // Reset zoom\n        this.resetZoom();\n    \n        // Save initial state to history\n        this.saveToHistory();\n    \n        // Render canvas with zoom\n        this.renderCanvas();\n    }\n\n    undo() {\n        if (this.historyIndex > 0) {\n            this.historyIndex--;\n            \n            // Reset transform to apply image data\n            this.ctx.setTransform(1, 0, 0, 1, 0, 0);\n            this.ctx.putImageData(this.history[this.historyIndex], 0, 0);\n            \n            // Update buttons and rerender\n            this.updateUndoRedoButtons();\n            this.renderCanvas();\n        }\n    }\n\n    redo() {\n        if (this.historyIndex < this.history.length - 1) {\n            this.historyIndex++;\n            \n            // Reset transform to apply image data\n            this.ctx.setTransform(1, 0, 0, 1, 0, 0);\n            this.ctx.putImageData(this.history[this.historyIndex], 0, 0);\n            \n            // Update buttons and rerender\n            this.updateUndoRedoButtons();\n            this.renderCanvas();\n        }\n    }\n\n    clear() {\n        // Save state before clearing\n        this.saveToHistory();\n        \n        // Clear canvas with full transparency\n        this.ctx.setTransform(1, 0, 0, 1, 0, 0);\n        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);\n        \n        // Reapply zoom\n        this.renderCanvas();\n    }\n\n    getCurrentTexture() {\n        // Save current state\n        this.ctx.save();\n        \n        // Reset transform to get the actual image data\n        this.ctx.setTransform(1, 0, 0, 1, 0, 0);\n        \n        // Make sure to use PNG format to preserve transparency\n        const dataURL = this.canvas.toDataURL('image/png');\n        \n        // Restore transform\n        this.ctx.restore();\n        \n        return dataURL;\n    }\n\n    saveTexture(data) {\n        document.body.dispatchEvent(new CustomEvent('saveTexture', {\n            detail: { data: data, propertyName: 'image' },\n        }));\n    }\n\n    handleImageUpload(event) {\n        const file = event.target.files[0];\n        if (!file) return;\n        \n        const reader = new FileReader();\n        reader.onload = (e) => {\n            const img = new Image();\n            img.onload = () => {\n                // Set canvas dimensions to match image dimensions\n                this.imageWidth = img.width;\n                this.imageHeight = img.height;\n                this.canvas.width = this.imageWidth;\n                this.canvas.height = this.imageHeight;\n                \n                // Update dimensions display\n                this.updateDimensionsDisplay();\n                \n                // Clear canvas\n                this.ctx.setTransform(1, 0, 0, 1, 0, 0);\n                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);\n                \n                // Draw image on canvas - this will preserve transparency\n                this.ctx.drawImage(img, 0, 0, this.imageWidth, this.imageHeight);\n                \n                // Show canvas\n                document.getElementById('noTextureMessage').style.display = 'none';\n                this.canvas.style.display = 'block';\n                \n                // Reset zoom\n                this.resetZoom();\n                \n                // Save state to history\n                this.saveToHistory();\n                \n                // Render canvas with zoom\n                this.renderCanvas();\n            };\n            img.src = e.target.result;\n        };\n        reader.readAsDataURL(file);\n    }\n}\n"
       },
-      "TileMap": {
-        "fileName": "TileMap",
-        "script": "\r\n  \r\n  \r\nclass TileMap {\r\n\r\n  constructor(app, config, { CanvasUtility }) {\r\n   \tthis.app = app;\r\n    this.config = config;\r\n    this.engineClasses = {\r\n \t\t\t\"CanvasUtility\": CanvasUtility\r\n    } \r\n  }\r\n\tinit(canvas, tileSize, layerSpriteSheets, isometric) {\r\n\t\tthis.isometric = isometric;\r\n\t\tthis.canvas = canvas;\r\n\t\tthis.tileSize = tileSize;\r\n\t\tthis.numColumns = 0;\r\n\t\tthis.layerSpriteSheets = layerSpriteSheets;\r\n\t\tthis.tileMap = [];\r\n\t\tthis.layerTextures = [];\r\n\t\tthis.canvasUtility = new (this.engineClasses.CanvasUtility)();\r\n\t\tthis.TileAnalysis = class {\r\n\t\t\tconstructor() {\r\n\t\t\t  this.heightIndex = 0;\r\n\t\t\t  this.neighborLowerCount = 0;\r\n\t\t\t  this.cornerLowerCount = 0;\r\n\t\t\t  this.topLess = false;\r\n\t\t\t  this.leftLess = false;\r\n\t\t\t  this.rightLess = false;\r\n\t\t\t  this.botLess = false;\r\n\t\t\t  this.cornerTopLeftLess = false;\r\n\t\t\t  this.cornerTopRightLess = false;\r\n\t\t\t  this.cornerBottomLeftLess = false;\r\n\t\t\t  this.cornerBottomRightLess = false;\r\n\t\t\t}\r\n\t\t};\r\n\r\n\t\tthis.TileTransforms = {\r\n\t\t\tNone: 0,\r\n\t\t\tClockWise90: 1,\r\n\t\t\tCounterClockWise90: 2,\r\n\t\t\tRotate180: 3,\r\n\t\t\tFlipHorizontal: 4,\r\n\t\t\tFlipVertical: 5,\r\n\t\t};\r\n\t\t\r\n\t\tthis.TileAtom = {\r\n\t\t\tFull: 0,\r\n\t\t\tOneCorner: 1,\r\n\t\t\tTwoCorner: 2,\r\n\t\t\tThreeCorner: 3,\r\n\t\t\tFullVariation: 4,\r\n\t\t\tOneCornerBot: 5,\r\n\t\t\tTwoCornerBot: 6,\r\n\t\t\tThreeCornerBot: 7\r\n\t\t};\r\n\t\t\r\n\t\tthis.TileMolecule = {\r\n\t\t\tFull: 0,\r\n\t\t\tCorner: 1,\r\n\t\t\tEdge: 2,\r\n\t\t\tTunnel: 3,\r\n\t\t\tTwoSides: 4,\r\n\t\t\tPenninsula: 5,\r\n\t\t\tIsland: 6,\r\n\t\t};\r\n\t\t\r\n\t\tthis.TileCliffMolecules = {\r\n\t\t\tFull: 0,\r\n\t\t\tCornerTL: 1,\r\n\t\t\tCornerTR: 2,\r\n\t\t\tCornerBL: 3,\r\n\t\t\tCornerBR: 4,\r\n\t\t\tEdgeT: 5,\r\n\t\t\tEdgeL: 6,\r\n\t\t\tEdgeR: 7,\r\n\t\t\tEdgeB: 8,\r\n\t\t\tTunnelH: 9,\r\n\t\t\tTunnelV: 10,\r\n\t\t\tTwoSidesTL: 11,\r\n\t\t\tTwoSidesTR: 12,\r\n\t\t\tTwoSidesBL: 13,\r\n\t\t\tTwoSidesBR: 14,    \r\n\t\t\tPenninsulaT: 15,\r\n\t\t\tPenninsulaL: 16,\r\n\t\t\tPenninsulaR: 17,\r\n\t\t\tPenninsulaB: 18,\r\n\t\t\tIsland: 19,\r\n\t\t};\r\n\t}\r\n\r\n    draw(map){\r\n\t\tthis.tileMap = map;\r\n\t\tthis.numColumns = this.tileMap.length;\r\n\t\t// Load all textures\r\n\r\n\t\tif(this.layerTextures.length == 0) {\r\n\t\r\n\t\t\tthis.layerSpriteSheets.forEach((layerSprites, index) => {      \r\n\t\t\t\tconst moleculeData = this.buildBaseMolecules(layerSprites.sprites);\r\n\t\t\t\tthis.layerTextures[index] = moleculeData;\r\n\t\t\t});\r\n\t\t}\r\n\r\n\t\tlet analyzedMap = this.analyzeMap(this.tileMap);\r\n\t\tthis.drawMap(analyzedMap);\r\n        if(this.isometric){\r\n            this.drawIsometric();\r\n        }\r\n\r\n    }\r\n\r\n    drawIsometric() {\r\n        let ctx = this.canvas.getContext('2d');\r\n        // Save the original state\r\n        ctx.save();\r\n        \r\n        // Create an off-screen canvas to hold original drawing\r\n        const offscreen = document.createElement('canvas');\r\n        offscreen.width = this.canvas.width;\r\n        offscreen.height = this.canvas.height;\r\n        const offCtx = offscreen.getContext('2d');\r\n        offCtx.drawImage(this.canvas, 0, 0);\r\n        \r\n        // Clear the main canvas\r\n        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);\r\n        \r\n        // Move to center for rotation\r\n        ctx.translate(this.canvas.width / 2, this.canvas.height / 2);\r\n        \r\n        // Apply isometric transformation\r\n        const scale = .56;    // Adjust overall size\r\n        const isoAngle = Math.atan(1 / 2); // ≈ 26.565° (classic isometric angle)\r\n        const cosA = Math.cos(isoAngle);   // ≈ 0.8944\r\n        const sinA = Math.sin(isoAngle);   // ≈ 0.4472\r\n        \r\n        ctx.transform(\r\n            cosA * scale,    // scaleX\r\n            sinA * scale,    // skewY\r\n            -cosA * scale,   // skewX\r\n            sinA * scale,    // scaleY\r\n            0,               // translateX\r\n            0                // translateY\r\n        );\r\n        \r\n        // Draw the transformed image centered\r\n        ctx.drawImage(offscreen, -this.canvas.width / 2, -this.canvas.height / 2);\r\n        \r\n        // Restore original state\r\n        ctx.restore();\r\n    }\r\n\r\n    drawTexture(texture, x, y) {\r\n\t\tctx.drawImage(texture, x, y, this.tileSize / 2, this.tileSize / 2); // Assuming each atom is 256x256\r\n    }\r\n\r\n    // Function to generate a molecule texture for various molecule ty\r\n\tbuildBaseMolecules(sprites) {\r\n\t\t// Define texture objects\r\n\t\tconst fullTexture = document.createElement(\"canvas\");\r\n\r\n\t\tconst oneCornerTexture = document.createElement(\"canvas\");\r\n\t\tconst twoCornerTexture = document.createElement(\"canvas\");\r\n\t\tconst threeCornerTexture = document.createElement(\"canvas\");\r\n\r\n\t\tconst oneCornerBotTexture = document.createElement(\"canvas\");\r\n\t\tconst twoCornerBotTexture = document.createElement(\"canvas\");\r\n\t\tconst threeCornerBotTexture = document.createElement(\"canvas\");\r\n\r\n\t\tfullTexture.setAttribute('willReadFrequently', true); \r\n\r\n\t\toneCornerTexture.setAttribute('willReadFrequently', true); \r\n\t\ttwoCornerTexture.setAttribute('willReadFrequently', true); \r\n\t\tthreeCornerTexture.setAttribute('willReadFrequently', true); \r\n\r\n\t\toneCornerBotTexture.setAttribute('willReadFrequently', true); \r\n\t\ttwoCornerBotTexture.setAttribute('willReadFrequently', true); \r\n\t\tthreeCornerBotTexture.setAttribute('willReadFrequently', true); \r\n\r\n\t\t// Set the texture sizes\r\n\t\tconst spriteResolution = this.tileSize / 2;\r\n\t\tconst finalTileBaseResolution = spriteResolution * 2;\r\n\r\n\t\tfullTexture.width = spriteResolution;\r\n\t\tfullTexture.height = spriteResolution;\r\n\r\n\t\toneCornerTexture.width = spriteResolution;\r\n\t\toneCornerTexture.height = spriteResolution;\r\n\r\n\t\ttwoCornerTexture.width = spriteResolution;\r\n\t\ttwoCornerTexture.height = spriteResolution;\r\n\r\n\t\tthreeCornerTexture.width = spriteResolution;\r\n\t\tthreeCornerTexture.height = spriteResolution;\t\r\n\r\n\t\toneCornerBotTexture.width = spriteResolution;\r\n\t\toneCornerBotTexture.height = spriteResolution;\t\r\n\r\n\t\ttwoCornerBotTexture.width = spriteResolution;\r\n\t\ttwoCornerBotTexture.height = spriteResolution;\t\r\n\r\n\t\tthreeCornerBotTexture.width = spriteResolution;\r\n\t\tthreeCornerBotTexture.height = spriteResolution;\t\r\n\t\t\r\n\t\t// Get sprite textures\r\n\t\tconst fullSprite = sprites[this.TileAtom.Full];\r\n\r\n\t\tconst oneCornerSprite = sprites[this.TileAtom.OneCorner];\r\n\t\tconst twoCornerSprite = sprites[this.TileAtom.TwoCorner];\r\n\t\tconst threeCornerSprite = sprites[this.TileAtom.ThreeCorner];\r\n\r\n\t\tconst oneCornerBotSprite = sprites[this.TileAtom.OneCornerBot];\r\n\t\tconst twoCornerBotSprite = sprites[this.TileAtom.TwoCornerBot];\r\n\t\tconst threeCornerBotSprite = sprites[this.TileAtom.ThreeCornerBot];\r\n\r\n\t\t// Create CanvasRenderingContext2D objects for each texture\r\n\t\tconst fullCtx = fullTexture.getContext(\"2d\");\r\n\r\n\t\tconst oneCornerCtx = oneCornerTexture.getContext(\"2d\", { willReadFrequently: true });\r\n\t\tconst twoCornerCtx = twoCornerTexture.getContext(\"2d\", { willReadFrequently: true });\r\n\t\tconst threeCornerCtx = threeCornerTexture.getContext(\"2d\", { willReadFrequently: true });\r\n\r\n\t\tconst oneCornerBotCtx = oneCornerBotTexture.getContext(\"2d\", { willReadFrequently: true });\r\n\t\tconst twoCornerBotCtx = twoCornerBotTexture.getContext(\"2d\", { willReadFrequently: true });\r\n\t\tconst threeCornerBotCtx = threeCornerBotTexture.getContext(\"2d\", { willReadFrequently: true });\r\n\t\t\r\n\t\t// Copy pixels from sprites to texture canvases\r\n\t\tfullCtx.drawImage(fullSprite,0,0);\r\n\r\n\t\toneCornerCtx.drawImage(oneCornerSprite,0,0);\r\n\t\ttwoCornerCtx.drawImage(twoCornerSprite,0,0);\r\n\t\tthreeCornerCtx.drawImage(threeCornerSprite,0,0);\r\n\r\n\t\toneCornerBotCtx.drawImage(oneCornerBotSprite,0,0);\r\n\t\ttwoCornerBotCtx.drawImage(twoCornerBotSprite,0,0);\r\n\t\tthreeCornerBotCtx.drawImage(threeCornerBotSprite,0,0);\r\n\r\n\t\t// Get pixel data from the canvases\r\n\t\tconst fullImageData = fullCtx.getImageData(0, 0, spriteResolution, spriteResolution);\r\n\t\tconst oneCornerTopRightImageData = oneCornerCtx.getImageData(0, 0, spriteResolution, spriteResolution);\r\n\t\tconst oneCornerTopLeftImageData = this.flipTextureHorizontal(oneCornerCtx.getImageData(0, 0, spriteResolution, spriteResolution));\t\r\n\r\n\t\tconst oneCornerBotRightImageData = oneCornerBotCtx.getImageData(0, 0, spriteResolution, spriteResolution);\r\n\t\tconst oneCornerBotLeftImageData = this.flipTextureHorizontal(oneCornerBotCtx.getImageData(0, 0, spriteResolution, spriteResolution));\t\r\n\t\t\r\n\t\tconst twoCornerTopImageData = twoCornerCtx.getImageData(0, 0, spriteResolution, spriteResolution);\r\n\t\tconst twoCornerLeftImageData = this.rotateTexture(twoCornerCtx.getImageData(0, 0, spriteResolution, spriteResolution), -Math.PI / 2);\r\n\t\tconst twoCornerRightImageData = this.rotateTexture(twoCornerCtx.getImageData(0, 0, spriteResolution, spriteResolution), Math.PI / 2);\r\n\t\tconst twoCornerBottomImageData = twoCornerBotCtx.getImageData(0, 0, spriteResolution, spriteResolution);\r\n\t\t\r\n\t\tconst threeCornerTopRightImageData = threeCornerCtx.getImageData(0, 0, spriteResolution, spriteResolution);\r\n\t\tconst threeCornerTopLeftImageData = this.flipTextureHorizontal(threeCornerCtx.getImageData(0, 0, spriteResolution, spriteResolution));\t\t\r\n\t\tconst threeCornerBottomRightImageData = threeCornerBotCtx.getImageData(0, 0, spriteResolution, spriteResolution);\r\n\t\tconst threeCornerBottomLeftImageData = this.flipTextureHorizontal(threeCornerBotCtx.getImageData(0, 0, spriteResolution, spriteResolution));\r\n\t\t\t\t\r\n\t\t\t\r\n\t\t// Define molecule objects\r\n\t\tconst moleculeCanvas = document.createElement(\"canvas\");\r\n\r\n\t\tmoleculeCanvas.width = finalTileBaseResolution;\r\n\t\tmoleculeCanvas.height = finalTileBaseResolution;\r\n\t\t\r\n\t\tconst moleculeCtx = moleculeCanvas.getContext('2d', { willReadFrequently: true });\r\n\r\n\t\tconst cornerCanvas = document.createElement(\"canvas\");\r\n\r\n\t\tcornerCanvas.width = finalTileBaseResolution / 2;\r\n\t\tcornerCanvas.height = finalTileBaseResolution / 2;\r\n\t\t\r\n\t\tconst cornerCtx = cornerCanvas.getContext('2d', { willReadFrequently: true });\r\n\r\n\t\tvar imageDataList = [\r\n\t\t\t//FULL\r\n\t\t\tthis.createMolecule(moleculeCtx, fullImageData, fullImageData, fullImageData, fullImageData),\r\n\r\n\t\t\t//CORNERS\r\n\t\t\toneCornerTopLeftImageData, \r\n\t\t\toneCornerTopRightImageData,\r\n\t\t\toneCornerBotLeftImageData,\r\n\t\t\toneCornerBotRightImageData,\r\n\t\t\t//EDGES\r\n\t\t\tthis.createMolecule(moleculeCtx, twoCornerTopImageData, twoCornerTopImageData, fullImageData, fullImageData),\r\n\t\t\tthis.createMolecule(moleculeCtx, twoCornerLeftImageData, fullImageData, twoCornerLeftImageData, fullImageData),\r\n\t\t\tthis.createMolecule(moleculeCtx, fullImageData, twoCornerRightImageData, fullImageData, twoCornerRightImageData),\r\n\t\t\tthis.createMolecule(moleculeCtx, fullImageData, fullImageData, twoCornerBottomImageData, twoCornerBottomImageData),\r\n\r\n\t\t\t//TUNNELS\r\n\t\t\tthis.createMolecule(moleculeCtx, twoCornerTopImageData, twoCornerTopImageData, twoCornerBottomImageData, twoCornerBottomImageData),\r\n\t\t\tthis.createMolecule(moleculeCtx, twoCornerLeftImageData, twoCornerRightImageData, twoCornerLeftImageData, twoCornerRightImageData),\r\n\r\n\t\t\t//TWO SIDES\r\n\t\t\tthis.createMolecule(moleculeCtx, threeCornerTopLeftImageData, twoCornerTopImageData, twoCornerLeftImageData, fullImageData),\r\n\t\t\tthis.createMolecule(moleculeCtx, twoCornerTopImageData, threeCornerTopRightImageData, fullImageData, twoCornerRightImageData),\r\n\t\t\tthis.createMolecule(moleculeCtx, twoCornerLeftImageData, fullImageData, threeCornerBottomLeftImageData, twoCornerBottomImageData),\r\n\t\t\tthis.createMolecule(moleculeCtx, fullImageData, twoCornerRightImageData, twoCornerBottomImageData, threeCornerBottomRightImageData),\r\n\r\n\t\t\t//PENNINSULAS\t\t\r\n\t\t\tthis.createMolecule(moleculeCtx, threeCornerTopLeftImageData, threeCornerTopRightImageData, twoCornerLeftImageData, twoCornerRightImageData),\r\n\t\t\tthis.createMolecule(moleculeCtx, threeCornerTopLeftImageData, twoCornerTopImageData, threeCornerBottomLeftImageData, twoCornerBottomImageData),\r\n\t\t\tthis.createMolecule(moleculeCtx, twoCornerTopImageData, threeCornerTopRightImageData, twoCornerBottomImageData, threeCornerBottomRightImageData),\r\n\t\t\tthis.createMolecule(moleculeCtx, twoCornerLeftImageData, twoCornerRightImageData, threeCornerBottomLeftImageData, threeCornerBottomRightImageData),\r\n\r\n\t\t\t//ISLAND\r\n\t\t\tthis.createMolecule(moleculeCtx, threeCornerTopLeftImageData, threeCornerTopRightImageData, threeCornerBottomLeftImageData, threeCornerBottomRightImageData),\r\n\t\t];\r\n\r\n\t\treturn imageDataList;\r\n\t}\r\n\r\n\tcreateMolecule(context, TLImageData, TRImageData, BLImageData, BRImageData) {\r\n\t\tlet size = context.canvas.width;\r\n\t\tlet spriteResolution = size / 2;\r\n\t\tcontext.fillStyle = 'black';\r\n\t\tcontext.fillRect(0, 0, size, size);\r\n\t\tcontext.putImageData(TLImageData, 0, 0);\r\n\t\tcontext.putImageData(TRImageData, spriteResolution, 0);\r\n\t\tcontext.putImageData(BLImageData, 0, spriteResolution);\r\n\t\tcontext.putImageData(BRImageData, spriteResolution, spriteResolution);\r\n\t\treturn context.getImageData(0, 0, size, size);\r\n\t}\r\n\r\n\textractSpritesFromSheet(spriteSheet, columns, rows) {\r\n\t\tlet sprites = [];\r\n\t\tlet spriteWidth = spriteSheet.width / columns;\r\n\t\tlet spriteHeight = spriteSheet.height / rows;\r\n\t\r\n\t\tfor (let y = 0; y < rows; y++) {\r\n\t\t\tfor (let x = 0; x < columns; x++) {\r\n\t\t\t\tlet canvas = document.createElement('canvas');\r\n\t\t\t\tcanvas.width = spriteWidth;\r\n\t\t\t\tcanvas.height = spriteHeight;\r\n\t\t\t\tlet context = canvas.getContext('2d');\r\n\t\t\t\tcontext.drawImage(spriteSheet, x * spriteWidth, y * spriteHeight, spriteWidth, spriteHeight, 0, 0, spriteWidth, spriteHeight);\r\n\t\t\t\tsprites.push(canvas);\r\n\t\t\t}\r\n\t\t}\r\n\t\r\n\t\treturn sprites;\r\n\t}\r\n\t\r\n\tgetSpriteRotations(imageDataList) {\r\n\t\tlet rotationDict = {};\r\n\r\n\t\tlet requiredTransforms = {};\r\n\r\n\t\trequiredTransforms[this.TileMolecule.Full] = [];\r\n\t\trequiredTransforms[this.TileMolecule.Corner] = [this.TileTransforms.FlipHorizontal, this.TileTransforms.FlipVertical, this.TileTransforms.Rotate180];\r\n\t\trequiredTransforms[this.TileMolecule.Edge] = [this.TileTransforms.ClockWise90, this.TileTransforms.CounterClockWise90, this.TileTransforms.Rotate180];\r\n\t\trequiredTransforms[this.TileMolecule.Tunnel] = [this.TileTransforms.CounterClockWise90];\r\n\t\trequiredTransforms[this.TileMolecule.TwoSides] = [this.TileTransforms.FlipHorizontal, this.TileTransforms.FlipVertical, this.TileTransforms.Rotate180];\r\n\t\trequiredTransforms[this.TileMolecule.Penninsula] = [this.TileTransforms.FlipVertical, this.TileTransforms.ClockWise90, this.TileTransforms.CounterClockWise90];\r\n\t\trequiredTransforms[this.TileMolecule.Island] = [];\r\n\r\n\t\tObject.keys(imageDataList).forEach(moleculeType => {\r\n\t\t\tlet rotations = {};\r\n\t\t\tlet colors = imageDataList[moleculeType];\r\n\t\t\trotations[this.TileTransforms.None] = colors;\r\n\r\n\t\t\tif (requiredTransforms[moleculeType].includes(this.TileTransforms.ClockWise90)) {\r\n\t\t\t\trotations[this.TileTransforms.ClockWise90] = this.rotateTexture(colors, Math.PI / 2);\r\n\t\t\t}\r\n\t\t\tif (requiredTransforms[moleculeType].includes(this.TileTransforms.CounterClockWise90)) {\r\n\t\t\t\trotations[this.TileTransforms.CounterClockWise90] = this.rotateTexture(colors, -Math.PI / 2);\r\n\t\t\t}\r\n\t\t\tif (requiredTransforms[moleculeType].includes(this.TileTransforms.Rotate180)) {\r\n\t\t\t\trotations[this.TileTransforms.Rotate180] = this.rotateTexture(colors, Math.PI);\r\n\t\t\t}\r\n\t\t\tif (requiredTransforms[moleculeType].includes(this.TileTransforms.FlipHorizontal)) {\r\n\t\t\t\trotations[this.TileTransforms.FlipHorizontal] = this.flipTextureHorizontal(colors);\r\n\t\t\t}\r\n\t\t\tif (requiredTransforms[moleculeType].includes(this.TileTransforms.FlipVertical)) {\r\n\t\t\t\trotations[this.TileTransforms.FlipVertical] = this.flipTextureVertical(colors);\r\n\t\t\t}\r\n\r\n\t\t\trotationDict[moleculeType] = rotations;\r\n\t\t});\r\n\r\n\t\treturn rotationDict;\r\n\t}\r\n\r\n\trotateTexture(imageData, angle) {\r\n\t\treturn this.canvasUtility.rotateTexture(imageData, angle);\r\n\t}\r\n\r\n\tflipTextureVertical(imageData) {\r\n\t\treturn this.canvasUtility.flipTextureVertical(imageData);\r\n\t}\r\n\r\n\tflipTextureHorizontal(imageData) {\r\n\t\treturn this.canvasUtility.flipTextureHorizontal(imageData);\r\n\t}\r\n\r\n\tanalyzeTile(x, y) {\r\n\t\tlet tileAnalysis = new this.TileAnalysis();\r\n\t\tlet row = y;\r\n\t\tlet col = x;\r\n\r\n\t\tif (row < 0 || row >= this.numColumns || col < 0 || col >= this.numColumns) {\r\n\t\t\treturn tileAnalysis; // Out of bounds\r\n\t\t}\r\n\r\n\t\ttileAnalysis.heightIndex = this.tileMap[row][col];\r\n\r\n\t\t// Helper function to check if a location is within bounds\r\n\t\tfunction isWithinBounds(r, c, n) {\r\n\t\t\treturn r >= 0 && r < n && c >= 0 && c < n;\r\n\t\t}\r\n\r\n\t\t// Helper function to check and update tile analysis\r\n\t\tvar checkAndUpdate = ((r, c, n, direction, propertyLess) => {\r\n\t\t\tif (isWithinBounds(r, c, n) ) {\r\n\t\t\t\ttileAnalysis[direction] = this.tileMap[r][c];\r\n\t\t\t\tif( this.tileMap[r][c] < tileAnalysis.heightIndex) {\r\n\t\t\t\t\ttileAnalysis[propertyLess] = true;\r\n\t\t\t\t\tif(['topLess', 'leftLess', 'rightLess', 'botLess'].indexOf(propertyLess) >= 0 ) {\r\n\t\t\t\t\t\ttileAnalysis.neighborLowerCount++;\r\n\t\t\t\t\t} else if(['cornerTopLeftLess', 'cornerTopRightLess', 'cornerBottomLeftLess', 'cornerBottomRightLess'].indexOf(propertyLess) >= 0) {\r\n\t\t\t\t\t\ttileAnalysis.cornerLowerCount++;\r\n\t\t\t\t\t}\r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t});\r\n\r\n\t\tcheckAndUpdate(row - 1, col, this.numColumns, 'topHeight', 'topLess');\r\n\t\tcheckAndUpdate(row, col - 1, this.numColumns, 'leftHeight', 'leftLess');\r\n\t\tcheckAndUpdate(row, col + 1, this.numColumns, 'rightHeight', 'rightLess');\r\n\t\tcheckAndUpdate(row + 1, col, this.numColumns, 'botHeight', 'botLess');\r\n\t\tcheckAndUpdate(row - 1, col - 1, this.numColumns, 'topLeftHeight', 'cornerTopLeftLess');\r\n\t\tcheckAndUpdate(row - 1, col + 1, this.numColumns, 'topRightHeight', 'cornerTopRightLess');\r\n\t\tcheckAndUpdate(row + 1, col - 1, this.numColumns, 'botLeftHeight', 'cornerBottomLeftLess');\r\n\t\tcheckAndUpdate(row + 1, col + 1, this.numColumns, 'botRightHeight', 'cornerBottomRightLess');\r\n\r\n\t\treturn tileAnalysis;\r\n\t}\r\n\r\n\t// Function to generate a random integer between min and max (inclusive)\r\n\tgetRandomInt(min, max) {\r\n\t\treturn Math.floor(Math.random() * (max - min + 1)) + min;\r\n\t}\r\n\r\n\t// Function to generate a random 10x10 map\r\n\tgenerateRandomMap(rows, columns) {\r\n\t\tlet map = [];\r\n\t\tfor (let i = 0; i < rows; i++) {\r\n\t\t\tlet row = [];\r\n\t\t\tfor (let j = 0; j < columns; j++) {\r\n\t\t\t\trow.push(getRandomInt(0, layers.length - 1)); // Random height between 0 and 10\r\n\t\t\t}\r\n\t\t\tmap.push(row);\r\n\t\t}\r\n\t\treturn map;\r\n\t}\r\n\r\n\tanalyzeMap() {\r\n\t\tlet analyzedTiles = [];\r\n\r\n\t\tfor (let i = 0; i < this.numColumns; i++) {\r\n\t\t\tfor (let j = 0; j < this.numColumns; j++) {\r\n\t\t\t\tanalyzedTiles.push(this.analyzeTile(j, i));\r\n\t\t\t}\r\n\t\t}\r\n\r\n\t\treturn analyzedTiles;\r\n\t}\r\n\r\n\tgetTransformedTexture(transformationDict, tileAnalysis, molecule){\r\n\t\tswitch(tileAnalysis.neighborLowerCount){\t\t\t\t\r\n\t\t\tcase 1:\r\n\t\t\t\tif(tileAnalysis.leftLess){                    \r\n\t\t\t\t\treturn transformationDict[molecule][this.TileTransforms.CounterClockWise90];\r\n\t\t\t\t} else if(tileAnalysis.rightLess){\r\n                    return transformationDict[molecule][this.TileTransforms.ClockWise90];\r\n\t\t\t\t} else if(tileAnalysis.botLess){\t\t\r\n\t\t\t\t\treturn transformationDict[molecule][this.TileTransforms.Rotate180];\r\n\t\t\t\t}\r\n\t\t\t\tbreak;\r\n\t\t\tcase 2:\r\n\t\t\t\tif(tileAnalysis.topLess && tileAnalysis.leftLess){\r\n\t\t\t\t\treturn transformationDict[molecule][this.TileTransforms.FlipHorizontal];\r\n\t\t\t\t} else if(tileAnalysis.botLess && tileAnalysis.leftLess){\t\t\r\n\t\t\t\t\treturn transformationDict[molecule][this.TileTransforms.Rotate180];\r\n\t\t\t\t} else if(tileAnalysis.botLess && tileAnalysis.rightLess){\t\t\r\n\t\t\t\t\treturn transformationDict[molecule][this.TileTransforms.FlipVertical];\r\n\t\t\t\t} else if(tileAnalysis.leftLess && tileAnalysis.rightLess){\r\n\t\t\t\t\treturn transformationDict[molecule][this.TileTransforms.CounterClockWise90];\r\n\t\t\t\t}\r\n\t\t\t\tbreak;\r\n\t\t\tcase 3:\r\n\t\t\t\tif(!tileAnalysis.topLess){\r\n\t\t\t\t\treturn transformationDict[molecule][this.TileTransforms.FlipVertical];\r\n\t\t\t\t} else if(!tileAnalysis.leftLess){\t\t\r\n\t\t\t\t\treturn transformationDict[molecule][this.TileTransforms.ClockWise90];\r\n\t\t\t\t} else if(!tileAnalysis.rightLess){\t\t\r\n\t\t\t\t\treturn transformationDict[molecule][this.TileTransforms.CounterClockWise90];\r\n\t\t\t\t}\r\n\t\t\t\tbreak;\r\n\t\t\tcase 4:\r\n\t\t\t\tbreak;\r\n\t\t\tdefault:\r\n\t\t\t\tbreak;\r\n\t\t}\t\t\r\n        return transformationDict[molecule][this.TileTransforms.None];\r\n\t}\r\n\r\n\tgetMoleculeByTileAnalysis(tileAnalysis){\r\n\t\tvar molecule = this.TileCliffMolecules.Full;\t\t\t\t\t\t\t\t\r\n\t\tswitch(tileAnalysis.neighborLowerCount){\r\n\t\t\tcase 0: \r\n\t\t\t\tmolecule = this.TileCliffMolecules.Full;\r\n\t\t\t\tbreak;\r\n\t\t\tcase 1:\r\n\t\t\t\tif(tileAnalysis.topLess) {\r\n\t\t\t\t\tmolecule = this.TileCliffMolecules.EdgeT;\r\n\t\t\t\t} else if(tileAnalysis.leftLess) {\r\n\t\t\t\t\tmolecule = this.TileCliffMolecules.EdgeL;\r\n\t\t\t\t} else if(tileAnalysis.rightLess) {\r\n\t\t\t\t\tmolecule = this.TileCliffMolecules.EdgeR;\r\n\t\t\t\t} else if(tileAnalysis.botLess) {\r\n\t\t\t\t\tmolecule = this.TileCliffMolecules.EdgeB;\r\n\t\t\t\t}\r\n\t\t\t\tbreak;\r\n\t\t\tcase 2:\r\n\t\t\t\tif(tileAnalysis.topLess && tileAnalysis.botLess){\r\n\t\t\t\t\tmolecule = this.TileCliffMolecules.TunnelH;\r\n\t\t\t\t} else if(tileAnalysis.leftLess && tileAnalysis.rightLess){\r\n\t\t\t\t\tmolecule = this.TileCliffMolecules.TunnelV;\r\n\t\t\t\t} else if(tileAnalysis.topLess && tileAnalysis.leftLess){\r\n\t\t\t\t\tmolecule = this.TileCliffMolecules.TwoSidesTL;\r\n\t\t\t\t} else if(tileAnalysis.topLess && tileAnalysis.rightLess){\r\n\t\t\t\t\tmolecule = this.TileCliffMolecules.TwoSidesTR;\r\n\t\t\t\t} else if(tileAnalysis.botLess && tileAnalysis.leftLess){\r\n\t\t\t\t\tmolecule = this.TileCliffMolecules.TwoSidesBL;\r\n\t\t\t\t} else if(tileAnalysis.botLess && tileAnalysis.rightLess){\r\n\t\t\t\t\tmolecule = this.TileCliffMolecules.TwoSidesBR;\r\n\t\t\t\t} \r\n\t\t\t\tbreak;\r\n\t\t\tcase 3:\r\n\t\t\t\tif( !tileAnalysis.topLess ) {\r\n\t\t\t\t\tmolecule = this.TileCliffMolecules.PenninsulaB;\r\n\t\t\t\t} else if( !tileAnalysis.leftLess ) {\r\n\t\t\t\t\tmolecule = this.TileCliffMolecules.PenninsulaR;\r\n\t\t\t\t} else if( !tileAnalysis.rightLess ) {\r\n\t\t\t\t\tmolecule = this.TileCliffMolecules.PenninsulaL;\r\n\t\t\t\t} else if( !tileAnalysis.botLess ) {\r\n\t\t\t\t\tmolecule = this.TileCliffMolecules.PenninsulaT;\r\n\t\t\t\t}\r\n\t\t\t\tbreak;\t\t\t\t\t\t\t\t\r\n\t\t\tcase 4:\r\n\t\t\t\tmolecule = this.TileCliffMolecules.Island;\r\n\t\t\t\tbreak;\r\n\t\t}\r\n\t\treturn molecule;\r\n\t}\r\n\r\n\tcolorImageData(imageData, tileAnalysis) {\r\n\t\t\r\n\t\tconst data = new Uint8ClampedArray(imageData.data);\r\n\t\tvar directions = ['topHeight', 'leftHeight', 'rightHeight', 'botHeight', 'topLeftHeight', 'topRightHeight', 'botLeftHeight', 'botRightHeight'];\r\n\t\tlet heightCounts = {};\r\n\t\tdirections.forEach((direction) => {\r\n\t\t\tlet height = tileAnalysis[direction];\r\n\t\t\tif (height !== tileAnalysis.heightIndex) {\r\n\t\t\t\tif (!heightCounts[height]) {\r\n\t\t\t\t\theightCounts[height] = 0;\r\n\t\t\t\t}\r\n\t\t\t\theightCounts[height]++;\r\n\t\t\t}\r\n\t\t});\r\n\t\t\r\n\t\tlet lowerNeighborHeight = Math.max(0, tileAnalysis.heightIndex - 1);\r\n\t\tlet maxCount = 0;\r\n\t\tObject.keys(heightCounts).forEach((height) => {\r\n\t\t\tif (heightCounts[height] > maxCount && height < tileAnalysis.heightIndex) {\r\n\t\t\t\tlowerNeighborHeight = parseInt(height);\r\n\t\t\t\tmaxCount = heightCounts[height];\r\n\t\t\t}\r\n\t\t});\r\n\t\tconst numPixels = this.tileSize * this.tileSize;\r\n\t\tif(lowerNeighborHeight < 0){\r\n\t\t\tconst blackData = new Uint8ClampedArray(numPixels * 4); // 4 values per pixel (RGBA)\r\n\t\t\tblackData.fill(0); // Fill with black (0, 0, 0, 255)\r\n\t\t\treturn new ImageData(blackData, this.tileSize, this.tileSize);\r\n\t\t}\r\n\t\tlet baseColors = this.layerTextures[tileAnalysis.heightIndex][this.TileMolecule.Full].data;\r\n\t\tlet neighborColors = this.layerTextures[lowerNeighborHeight][this.TileMolecule.Full].data;\r\n\r\n\t\t// Iterate over each pixel\r\n\t\tfor (let i = 0; i < numPixels; i++) {\r\n\t\t\tconst dataIndex = i * 4;\r\n\t\t\tlet pColor = { r: data[dataIndex], g: data[dataIndex + 1], b: data[dataIndex + 2], a: data[dataIndex + 3] };\r\n\t\t\tlet bColor = { r: baseColors[dataIndex], g: baseColors[dataIndex + 1], b: baseColors[dataIndex + 2], a: baseColors[dataIndex + 3] };\r\n\t\t\tlet tColor = { r: neighborColors[dataIndex], g: neighborColors[dataIndex + 1], b: neighborColors[dataIndex + 2], a: neighborColors[dataIndex + 3] };\r\n\t\r\n\t\t\tif (this.layerTextures.length > tileAnalysis.heightIndex) {\r\n\t\t\t\tif (baseColors.length > i) {\r\n\t\t\t\t\tbColor = { r: baseColors[dataIndex], g: baseColors[dataIndex + 1], b: baseColors[dataIndex + 2], a: baseColors[dataIndex + 3] };\r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t\tif (lowerNeighborHeight >= 0) {\r\n\t\t\t\tif (neighborColors.length > i) {\r\n\t\t\t\t\ttColor = { r: neighborColors[dataIndex], g: neighborColors[dataIndex + 1], b: neighborColors[dataIndex + 2], a: neighborColors[dataIndex + 3] };\r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t\tlet fColor = pColor;\r\n\t\t\tif (this.isEqualColor(fColor, { r: 0, g: 0, b: 0, a: 0 })) fColor = pColor;\r\n\t\t\tif (this.isEqualColor(fColor, { r: 0, g: 0, b: 0, a: 255 })) fColor = bColor;\r\n\r\n\t\t\tdata.set([fColor.r, fColor.g, fColor.b, fColor.a], dataIndex);\r\n\t\t}\r\n\t\treturn new ImageData(data, this.tileSize, this.tileSize);\r\n\t}\r\n\r\n\tisEqualColor(color1, color2) {\r\n\t\treturn color1.r === color2.r && color1.g === color2.g && color1.b === color2.b && color1.a === color2.a;\r\n\t}\r\n\r\n\taddCornerGraphics(imageData, tileAnalysis) {\r\n\t\tlet cornerSize = this.tileSize / 2;\r\n\t\tlet cornerTexture;\r\n\t\tlet heightIndex = tileAnalysis.heightIndex;\r\n\t\r\n\t\tif (tileAnalysis.cornerLowerCount > 0) {\r\n\t\t\tif (tileAnalysis.cornerTopLeftLess && (!tileAnalysis.topLess && !tileAnalysis.leftLess)) {\t\t\t\t\r\n\t\t\t\tcornerTexture = this.layerTextures[heightIndex][this.TileCliffMolecules.CornerTL];\r\n\t\t\t\timageData = this.colorCornerTextureRoutine(imageData, 0, 0, cornerTexture, tileAnalysis);\t\t\t\r\n\t\t\t}\r\n\t\t\t// Assuming tileAnalysis, textureDict, and other variables are already defined\r\n\t\t\tif (tileAnalysis.cornerTopRightLess && (!tileAnalysis.topLess && !tileAnalysis.rightLess)) {\t\t\t\t\r\n\t\t\t\tcornerTexture = this.layerTextures[heightIndex][this.TileCliffMolecules.CornerTR];\r\n\t\t\t\timageData = this.colorCornerTextureRoutine(imageData, cornerSize, 0, cornerTexture, tileAnalysis);\t\t\t\r\n\t\t\t}\r\n\r\n\t\t\tif (tileAnalysis.cornerBottomLeftLess && (!tileAnalysis.botLess && !tileAnalysis.leftLess)) {\t\t\t\t\r\n\t\t\t\tcornerTexture = this.layerTextures[heightIndex][this.TileCliffMolecules.CornerBL];\r\n\t\t\t\timageData = this.colorCornerTextureRoutine(imageData, 0, cornerSize, cornerTexture, tileAnalysis);\t\t\t\r\n\t\t\t}\r\n\r\n\t\t\tif (tileAnalysis.cornerBottomRightLess && (!tileAnalysis.botLess && !tileAnalysis.rightLess)) {\t\t\t\r\n\t\t\t\tcornerTexture = this.layerTextures[heightIndex][this.TileCliffMolecules.CornerBR];\r\n\t\t\t\timageData = this.colorCornerTextureRoutine(imageData, cornerSize, cornerSize, cornerTexture, tileAnalysis);\t\t\t\r\n\t\t\t}\r\n\t\t}\r\n\t\treturn imageData;\r\n\t}\r\n\t\r\n\tcolorCornerTextureRoutine(outputImageData, x, y, cornerImageData, tileAnalysis) {\r\n\t\tlet cornerSize = this.tileSize / 2;\t\r\n\t\tlet baseHeightIndex = tileAnalysis.heightIndex;\r\n\t\tlet baseColors = this.layerTextures[baseHeightIndex][this.TileMolecule.Full];\r\n\t\tconst data = new Uint8ClampedArray(outputImageData.data);\r\n\t\tfor (let j = 0; j < cornerSize; j++) {\r\n\t\t\tfor (let i = 0; i < cornerSize; i++) {\r\n\t\t\t\t// Calculate the correct position in the output image data\r\n\t\t\t\tlet outputIndex = ((y + j) * this.tileSize + (x + i)) * 4;\r\n\t\r\n\t\t\t\tlet baseColor = this.getColorFromImageData(baseColors, outputIndex);\r\n\t\t\r\n\t\t\t\tlet sourceOriginX = i;\r\n\t\t\t\tlet sourceOriginY = j * cornerSize;\r\n\t\t\t\tlet sourcePixel = (sourceOriginY + sourceOriginX) * 4;\r\n\t\t\t\tlet pColor = this.getColorFromImageData(cornerImageData, sourcePixel);\r\n\t\t\t\tlet fColor = pColor;\r\n\t\t\t\tif (this.isEqualColor(fColor, { r: 0, g: 0, b: 0, a: 255 })) {\r\n\t\t\t\t\tfColor = baseColor;\t\t\t\t\r\n\t\t\t\t}\r\n\t\r\n\t\t\t\tdata[outputIndex] = fColor.r;\r\n\t\t\t\tdata[outputIndex + 1] = fColor.g;\r\n\t\t\t\tdata[outputIndex + 2] = fColor.b;\r\n\t\t\t\tdata[outputIndex + 3] = fColor.a;\r\n\t\t\t}\r\n\t\t}\r\n\r\n\t\treturn new ImageData(data, this.tileSize, this.tileSize);\r\n\t}\r\n\t\r\n\tgetColorFromImageData(imageData, index) {\r\n\t\treturn {\r\n\t\t\tr: imageData.data[index],\r\n\t\t\tg: imageData.data[index + 1],\r\n\t\t\tb: imageData.data[index + 2],\r\n\t\t\ta: imageData.data[index + 3]\r\n\t\t};\r\n\t}\t\r\n\t\r\n\taddVariationImage(imageData, tileAnalysis) {\r\n\t\tconst img = this.layerSpriteSheets[tileAnalysis.heightIndex];\r\n\t\r\n\t\tif (img && Math.random() < .25) {\r\n\t\t\tthis.canvasUtility.setSize(imageData.width, imageData.height);\r\n\t\t\t\r\n\t\t\t\r\n\t\t\t// Paint the existing imageData onto the canvas\r\n\t\t\tthis.canvasUtility.paintTexture(imageData);\r\n\t\r\n\t\t\t// Assuming img is a loaded Image object and you want to draw it at (0,0)\r\n\t\t\t// Draw the img over the imageData\r\n\t\t\tthis.canvasUtility.ctx.drawImage(img, (imageData.width / 2) - img.width / 2,  (imageData.width / 2) - img.width / 2);\r\n\t\r\n\t\t\t// Get the updated imageData from the canvas\r\n\t\t\treturn this.canvasUtility.ctx.getImageData(0, 0, imageData.width, imageData.height);\r\n\t\t} else {\r\n\t\t\t// If img is not available, return the original imageData\r\n\t\t\treturn imageData;\r\n\t\t}\r\n\t}\r\n\t\r\n\tdrawMap(analyzedMap) {\r\n\t\tconst ctx = this.canvas.getContext('2d');\r\n\t\tconst layerCanvases = {};\r\n\t\r\n\t\tfor (let layerIndex = 0; layerIndex < this.layerTextures.length; layerIndex++) {\r\n\t\t\tconst offscreenCanvas = document.createElement('canvas');\r\n\t\t\toffscreenCanvas.width = this.canvas.width;\r\n\t\t\toffscreenCanvas.height = this.canvas.height;\r\n\t\t\tlayerCanvases[layerIndex] = offscreenCanvas;\r\n\t\t\tconst offscreenCtx = offscreenCanvas.getContext('2d');\r\n\t\r\n\t\t\tanalyzedMap.forEach((tileAnalysis, index) => {\r\n\t\t\t\tconst x = (index % this.numColumns) * this.tileSize;\r\n\t\t\t\tconst y = Math.floor(index / this.numColumns) * this.tileSize;\r\n\t\r\n\t\t\t\tlet imageData;\r\n\t\t\t\tlet _tileAnalysis = {...tileAnalysis };\r\n\t\t\t\tif (_tileAnalysis.heightIndex > layerIndex) {\r\n\t\t\t\t\t// Use base image data for higher layers\r\n\t\t\t\t\t_tileAnalysis.heightIndex = layerIndex;\r\n\t\t\t\t\tif(_tileAnalysis.topLess && _tileAnalysis.topHeight >= _tileAnalysis.heightIndex) {\r\n\t\t\t\t\t\t_tileAnalysis.topLess = false;\r\n\t\t\t\t\t\t_tileAnalysis.neighborLowerCount--;\r\n\t\t\t\t\t}\r\n\t\t\t\t\tif(_tileAnalysis.leftLess && _tileAnalysis.leftHeight >= _tileAnalysis.heightIndex) {\r\n\t\t\t\t\t\t_tileAnalysis.leftLess = false;\r\n\t\t\t\t\t\t_tileAnalysis.neighborLowerCount--;\r\n\t\t\t\t\t}\r\n\t\t\t\t\tif(_tileAnalysis.rightLess && _tileAnalysis.rightHeight >= _tileAnalysis.heightIndex){\r\n\t\t\t\t\t\t_tileAnalysis.rightLess = false;\r\n\t\t\t\t\t\t_tileAnalysis.neighborLowerCount--;\r\n\t\t\t\t\t}\r\n\t\t\t\t\tif(_tileAnalysis.botLess && _tileAnalysis.botHeight >= _tileAnalysis.heightIndex) {\r\n\t\t\t\t\t\t_tileAnalysis.botLess = false;\r\n\t\t\t\t\t\t_tileAnalysis.neighborLowerCount--;\r\n\t\t\t\t\t}\r\n\t\t\t\t\tif(_tileAnalysis.cornerTopLeftLess && _tileAnalysis.topLeftHeight >= _tileAnalysis.heightIndex) {\r\n\t\t\t\t\t\t_tileAnalysis.cornerTopLeftLess = false;\r\n\t\t\t\t\t\t_tileAnalysis.cornerLowerCount--;\r\n\t\t\t\t\t}\r\n\t\t\t\t\tif(_tileAnalysis.cornerTopRightLess && _tileAnalysis.topRightHeight >= _tileAnalysis.heightIndex) {\r\n\t\t\t\t\t\t_tileAnalysis.cornerTopRightLess = false;\r\n\t\t\t\t\t\t_tileAnalysis.cornerLowerCount--;\r\n\t\t\t\t\t}\r\n\t\t\t\t\tif(_tileAnalysis.cornerBottomLeftLess && _tileAnalysis.botLeftHeight >= _tileAnalysis.heightIndex) {\r\n\t\t\t\t\t\t_tileAnalysis.cornerBottomLeftLess = false;\r\n\t\t\t\t\t\t_tileAnalysis.cornerLowerCount--;\r\n\t\t\t\t\t}\r\n\t\t\t\t\tif(_tileAnalysis.cornerBottomRightLess && _tileAnalysis.botRightHeight >= _tileAnalysis.heightIndex) {\r\n\t\t\t\t\t\t_tileAnalysis.cornerBottomRightLess = false;\r\n\t\t\t\t\t\t_tileAnalysis.cornerLowerCount--;\r\n\t\t\t\t\t}\r\n\t\t\t\t\t\r\n\t\t\t\t} \r\n\t\t\t\tif (_tileAnalysis.heightIndex < layerIndex) {\r\n\t\t\t\t\t// Use base image data for higher layers\r\n\t\t\t\t\tlet numPixels = this.tileSize * this.tileSize;\r\n\t\t\t\t\tconst transparentData = new Uint8ClampedArray(numPixels * 4); // 4 values per pixel (RGBA)\r\n\t\t\t\t\t\r\n\t\t\t\t\tfor (let i = 0; i < numPixels * 4; i += 4) {\r\n\t\t\t\t\t\ttransparentData[i] = 0;     // Red (not important for transparency)\r\n\t\t\t\t\t\ttransparentData[i + 1] = 0; // Green (not important for transparency)\r\n\t\t\t\t\t\ttransparentData[i + 2] = 0; // Blue (not important for transparency)\r\n\t\t\t\t\t\ttransparentData[i + 3] = 0; // Alpha (0 for full transparency)\r\n\t\t\t\t\t}\r\n\t\t\t\t\t\r\n\t\t\t\t\timageData = new ImageData(transparentData, this.tileSize, this.tileSize);\r\n\t\t\t\t\t\r\n\t\t\t\t } else {\r\n\t\t\t\t\timageData = new ImageData(new Uint8ClampedArray(4), 1, 1);\r\n\t\t\t\t\tif( _tileAnalysis.heightIndex >= 0 ) {\r\n\t\t\t\t\t\tlet molecule = this.getMoleculeByTileAnalysis(_tileAnalysis);\t\t\t\t\t\t\r\n\t\t\t\t\t\timageData = this.layerTextures[_tileAnalysis.heightIndex][molecule];//this.getTransformedTexture(this.layerTextures[_tileAnalysis.heightIndex], _tileAnalysis, molecule);\t\t\t\r\n\t\t\t\t\t\timageData = this.colorImageData(imageData, _tileAnalysis);\r\n\t\t\t\t\t\t//imageData = this.addVariationImage(imageData, _tileAnalysis);\r\n\t\t\t\t\t\timageData = this.addCornerGraphics(imageData, _tileAnalysis);\r\n\t\t\t\t\t} else {\r\n\t\t\t\t\t\tlet numPixels = this.tileSize * this.tileSize;\r\n\t\t\t\t\t\tconst blackData = new Uint8ClampedArray(numPixels * 4); // 4 values per pixel (RGBA)\r\n\t\t\t\t\t\tblackData.fill(0); // Fill with black (0, 0, 0, 255)\r\n\t\t\t\t\t\timageData = new ImageData(blackData, this.tileSize, this.tileSize);\r\n\t\t\t\t\t}\r\n\t\t\t\t}\r\n\t\r\n\t\t\t\toffscreenCtx.putImageData(imageData, x, y);\r\n\t\t\t});\r\n\t\t}\r\n\t\r\n\t\t// Drawing each layer canvas onto the main canvas\r\n\t\tObject.keys(layerCanvases).forEach(layerIndex => {\r\n\t\t\t//if( layerIndex == 0 || layerIndex == 1 || layerIndex == 2) {\r\n\t\t\tctx.drawImage(layerCanvases[layerIndex], 0, 0);\r\n\t\t//}\r\n\t\t});\r\n\t}\r\n  }"
-      },
       "ZipExporter": {
         "fileName": "ZipExporter",
         "script": "class ZipExporter {\r\n    constructor(gameEditor) {\r\n        this.gameEditor = gameEditor;\r\n        this.elements = {};\r\n        if(window.location.hostname != \"localhost\") {\r\n            this.init();\r\n        }\r\n    }\r\n\r\n    init(aiConfig) {\r\n        this.setupHooks();\r\n        const modal = document.getElementById('modal-ZipExporterPanel');\r\n        this.config = aiConfig;\r\n        this.elements = { modal: modal };\r\n        this.setupEventListeners();\r\n    }\r\n\r\n    setCurrentObjectValues(data) {\r\n        const { selectedType, selectedObject } = this.gameEditor.model.getCurrentObjectContext();\r\n        this.gameEditor.getCollections()[selectedType][selectedObject] = data;\r\n    }\r\n\r\n    setupEventListeners() {\r\n        // Placeholder for future listeners\r\n    }\r\n\r\n    setupHooks() {\r\n        document.body.addEventListener('renderEditor', () => {\r\n      \r\n            // Export Current Object Button\r\n            if (this.elements.exportCurrentObjectBtn) this.elements.exportCurrentObjectBtn.remove();\r\n            this.elements.exportCurrentObjectBtn = document.createElement('button');\r\n            this.elements.exportCurrentObjectBtn.innerHTML = \"Export Object\";\r\n            this.elements.exportCurrentObjectBtn.id = 'save-object-btn';\r\n            this.gameEditor.elements.editor.querySelector(\".actions>div\")?.appendChild(this.elements.exportCurrentObjectBtn);\r\n            this.elements.exportCurrentObjectBtn.addEventListener('click', () => {\r\n                this.exportCurrentObject();\r\n            });\r\n\r\n            // Import Current Object Button\r\n            if (this.elements.importCurrentObjectBtn) this.elements.importCurrentObjectBtn.remove();\r\n            this.elements.importCurrentObjectBtn = document.createElement('button');\r\n            this.elements.importCurrentObjectBtn.innerHTML = \"Import Object\";\r\n            this.elements.importCurrentObjectBtn.id = 'import-object-btn';\r\n            this.gameEditor.elements.editor.querySelector(\".actions>div\")?.appendChild(this.elements.importCurrentObjectBtn);\r\n            this.elements.importCurrentObjectBtn.addEventListener('click', () => {\r\n                this.triggerImportJson();\r\n            });\r\n        });\r\n\r\n        document.body.addEventListener('selectObject', () => {\r\n            const { selectedType } = this.gameEditor.model.getCurrentObjectContext();\r\n            const category = this.gameEditor.model.getCategoryByType(selectedType);\r\n\r\n            requestAnimationFrame(() => {\r\n                // Export Project Button\r\n                if (this.elements.exportProjectBtn) this.elements.exportProjectBtn.remove();\r\n                this.elements.exportProjectBtn = document.createElement('button');\r\n                this.elements.exportProjectBtn.innerHTML = \"Export Project\";\r\n                this.elements.exportProjectBtn.id = 'export-project-btn';\r\n                this.gameEditor.elements.sidebar.querySelector(\".sidebar-actions>.primary\")?.after(this.elements.exportProjectBtn);\r\n                this.elements.exportProjectBtn.addEventListener('click', () => {\r\n                    this.exportFullProject();\r\n                });\r\n                // Import Project Button\r\n                if (this.elements.importProjectBtn) this.elements.importProjectBtn.remove();\r\n                this.elements.importProjectBtn = document.createElement('button');\r\n                this.elements.importProjectBtn.innerHTML = \"Import Project\";\r\n                this.elements.importProjectBtn.id = 'import-project-btn';\r\n                this.gameEditor.elements.sidebar.querySelector(\".sidebar-actions>.primary\")?.after(this.elements.importProjectBtn);\r\n                this.elements.importProjectBtn.addEventListener('click', () => {\r\n                    this.triggerImportProject();\r\n                });\r\n                // Export All in Category Button\r\n                if (this.elements.exportAllBtn) this.elements.exportAllBtn.remove();\r\n                this.elements.exportAllBtn = document.createElement('button');\r\n                this.elements.exportAllBtn.innerHTML = `Export All ${category}`;\r\n                this.elements.exportAllBtn.id = 'export-all-btn';\r\n                this.gameEditor.elements.sidebar.querySelector(\".sidebar-actions>.primary\")?.after(this.elements.exportAllBtn);\r\n                this.elements.exportAllBtn.addEventListener('click', () => {\r\n                    this.exportCategory(category);\r\n                });\r\n            });\r\n        });\r\n    }\r\n\r\n    // Export a JSON file\r\n    exportJSON(fileName, jsonObj) {\r\n        const blob = new Blob([JSON.stringify(jsonObj, null, 2)], { type: 'application/json' });\r\n        const url = window.URL.createObjectURL(blob);\r\n        const link = document.createElement('a');\r\n        link.href = url;\r\n        link.download = `${fileName}.json`;\r\n        document.body.appendChild(link);\r\n        link.click();\r\n        document.body.removeChild(link);\r\n        window.URL.revokeObjectURL(url);\r\n    }\r\n\r\n    // Export current object as JSON\r\n    exportCurrentObject() {\r\n        const selectedObject = this.gameEditor.model.getCurrentObject();   \r\n        this.exportJSON(selectedObject, this.gameEditor.getCurrentObject());\r\n    }\r\n\r\n    // Export a category as a zip\r\n    exportCategory(category) {\r\n        const scripts = this.gameEditor.model.getCollectionsByCategory(category);\r\n        this.exportZip(category, scripts);\r\n    }\r\n\r\n    // Export the entire project as a zip\r\n    exportFullProject() {\r\n        const allCollections = {};\r\n        const defs = this.gameEditor.model.getCollectionDefs();\r\n\r\n        defs.forEach(def => {\r\n            const category = def.category;\r\n            const collectionKey = def.id;\r\n            const collectionData = this.gameEditor.model.getCollections()[collectionKey];\r\n            if (collectionData) {\r\n                if (!allCollections[category]) {\r\n                    allCollections[category] = {};\r\n                }\r\n                allCollections[category][collectionKey] = collectionData;\r\n            }\r\n        });\r\n\r\n        this.exportZip(this.gameEditor.model.getCurrentProject(), allCollections);\r\n    }\r\n\r\n    // Generic zip export method\r\n    exportZip(fileName, projectData) {\r\n        const zip = new JSZip();\r\n\r\n        Object.keys(projectData).forEach(category => {\r\n            const collections = projectData[category];\r\n            Object.keys(collections).forEach(collection => {\r\n                const objects = collections[collection];\r\n                const folder = zip.folder(`${category}/${collection}`);\r\n\r\n                Object.keys(objects).forEach(objKey => {\r\n                    const objData = objects[objKey];\r\n                    const scriptContent = objData.script || '';\r\n                    if (scriptContent) {\r\n                        folder.file(`${objKey}.js`, scriptContent);\r\n                    } else {\r\n                        folder.file(`${objKey}.json`, JSON.stringify(objData, null, 2));\r\n                    }\r\n                });\r\n            });\r\n        });\r\n\r\n        zip.generateAsync({ type: 'blob' }).then(blob => {\r\n            const url = window.URL.createObjectURL(blob);\r\n            const link = document.createElement('a');\r\n            link.href = url;\r\n            link.download = `${fileName}.zip`;\r\n            document.body.appendChild(link);\r\n            link.click();\r\n            document.body.removeChild(link);\r\n            window.URL.revokeObjectURL(url);\r\n        }).catch(error => {\r\n            console.error('Error generating zip file:', error);\r\n        });\r\n    }\r\n\r\n    // Trigger JSON import\r\n    triggerImportJson() {\r\n        const input = document.createElement('input');\r\n        input.type = 'file';\r\n        input.accept = '.json';\r\n        input.style.display = 'none';\r\n        input.addEventListener('change', (e) => this.importJson(e));\r\n        document.body.appendChild(input);\r\n        input.click();\r\n        document.body.removeChild(input);\r\n    }\r\n    triggerImportProject() {\r\n        const input = document.createElement('input');\r\n        input.type = 'file';\r\n        input.accept = '.zip';\r\n        input.style.display = 'none';\r\n        input.addEventListener('change', (e) => this.importProject(e));\r\n        document.body.appendChild(input);\r\n        input.click();\r\n        document.body.removeChild(input);\r\n    }\r\n    // Import a single JSON file\r\n    async importJson(event) {\r\n        const file = event.target.files[0];\r\n        if (!file) return;\r\n\r\n        try {\r\n            const reader = new FileReader();\r\n            reader.onload = (e) => {\r\n                const jsonContent = JSON.parse(e.target.result);\r\n                this.setCurrentObjectValues(jsonContent);\r\n                const myCustomEvent = new CustomEvent('updateCurrentObject', { cancelable: true });\r\n                document.body.dispatchEvent(myCustomEvent);\r\n            };\r\n            reader.onerror = (error) => {\r\n                console.error('Error reading JSON file:', error);\r\n            };\r\n            reader.readAsText(file);\r\n        } catch (error) {\r\n            console.error('Error importing JSON:', error);\r\n        }\r\n    }\r\n  \r\n  \t// Import a project zip file\r\n    async importProject(event) {\r\n        const file = event.target.files[0];\r\n        if (!file) return;\r\n\r\n        try {\r\n            const jsZip = new JSZip();\r\n            const zipContent = await jsZip.loadAsync(file);\r\n\r\n            const projectData = {};\r\n\r\n            // Process all files in the zip\r\n            const fileProcessingPromises = [];\r\n\r\n            zipContent.forEach((relativePath, zipEntry) => {\r\n                if (!zipEntry.dir) {\r\n                    const promise = zipEntry.async('string').then(content => {\r\n                        // Parse path: category/collection/objectKey.ext\r\n                        const pathParts = relativePath.split('/');\r\n                        if (pathParts.length >= 3) {\r\n                            const category = pathParts[0];\r\n                            const collection = pathParts[1];\r\n                            const fileName = pathParts[2];\r\n                            const objectKey = fileName.substring(0, fileName.lastIndexOf('.'));\r\n                            const fileExt = fileName.substring(fileName.lastIndexOf('.') + 1);\r\n\r\n                            // Initialize the data structure if needed\r\n                            if (!projectData[category]) projectData[category] = {};\r\n                            if (!projectData[category][collection]) projectData[category][collection] = {};\r\n\r\n                            // Parse content based on file extension\r\n                            if (fileExt === 'js') {\r\n                                projectData[category][collection][objectKey] = { script: content };\r\n                            } else if (fileExt === 'json') {\r\n                                projectData[category][collection][objectKey] = JSON.parse(content);\r\n                            }\r\n                        }\r\n                    });\r\n                    fileProcessingPromises.push(promise);\r\n                }\r\n            });\r\n\r\n            // Wait for all files to be processed\r\n            await Promise.all(fileProcessingPromises);\r\n\r\n            // Update game editor state with imported data\r\n            const defs = this.gameEditor.model.getCollectionDefs();\r\n            defs.forEach(def => {\r\n                const category = def.category;\r\n                const collectionKey = def.id;\r\n\r\n                if (projectData[category] && projectData[category][collectionKey]) {\r\n                    if (!this.gameEditor.model.state.project.objectTypes[collectionKey]) {\r\n                        this.gameEditor.model.state.project.objectTypes[collectionKey] = {};\r\n                    }\r\n\r\n                    // Merge imported objects with existing\r\n                    Object.keys(projectData[category][collectionKey]).forEach(objKey => {\r\n                        this.gameEditor.model.state.project.objectTypes[collectionKey][objKey] = \r\n                            projectData[category][collectionKey][objKey];\r\n                    });\r\n                }\r\n            });\r\n\r\n            // Trigger UI update\r\n            const updateEvent = new CustomEvent('projectUpdated', { cancelable: true });\r\n            document.body.dispatchEvent(updateEvent);\r\n\r\n            alert('Project imported successfully');\r\n        } catch (error) {\r\n            console.error('Error importing project:', error);\r\n            alert('Error importing project. See console for details.');\r\n        }\r\n    }\r\n}"
+      },
+      "TileMap": {
+        "fileName": "TileMap",
+        "script": "\r\n  \r\n  \r\nclass TileMap {\r\n\r\n  constructor(app, config, { CanvasUtility }) {\r\n   \tthis.app = app;\r\n    this.config = config;\r\n    this.engineClasses = {\r\n \t\t\t\"CanvasUtility\": CanvasUtility\r\n    } \r\n  }\r\n\tinit(canvas, tileSize, layerSpriteSheets, isometric) {\r\n\t\tthis.isometric = isometric;\r\n\t\tthis.canvas = canvas;\r\n\t\tthis.tileSize = tileSize;\r\n\t\tthis.numColumns = 0;\r\n\t\tthis.layerSpriteSheets = layerSpriteSheets;\r\n\t\tthis.tileMap = [];\r\n\t\tthis.layerTextures = [];\r\n\t\tthis.canvasUtility = new (this.engineClasses.CanvasUtility)();\r\n\t\tthis.TileAnalysis = class {\r\n\t\t\tconstructor() {\r\n\t\t\t  this.heightIndex = 0;\r\n\t\t\t  this.neighborLowerCount = 0;\r\n\t\t\t  this.cornerLowerCount = 0;\r\n\t\t\t  this.topLess = false;\r\n\t\t\t  this.leftLess = false;\r\n\t\t\t  this.rightLess = false;\r\n\t\t\t  this.botLess = false;\r\n\t\t\t  this.cornerTopLeftLess = false;\r\n\t\t\t  this.cornerTopRightLess = false;\r\n\t\t\t  this.cornerBottomLeftLess = false;\r\n\t\t\t  this.cornerBottomRightLess = false;\r\n\t\t\t}\r\n\t\t};\r\n\r\n\t\tthis.TileTransforms = {\r\n\t\t\tNone: 0,\r\n\t\t\tClockWise90: 1,\r\n\t\t\tCounterClockWise90: 2,\r\n\t\t\tRotate180: 3,\r\n\t\t\tFlipHorizontal: 4,\r\n\t\t\tFlipVertical: 5,\r\n\t\t};\r\n\t\t\r\n\t\tthis.TileAtom = {\r\n\t\t\tFull: 0,\r\n\t\t\tOneCorner: 1,\r\n\t\t\tTwoCorner: 2,\r\n\t\t\tThreeCorner: 3,\r\n\t\t\tFullVariation: 4,\r\n\t\t\tOneCornerBot: 5,\r\n\t\t\tTwoCornerBot: 6,\r\n\t\t\tThreeCornerBot: 7\r\n\t\t};\r\n\t\t\r\n\t\tthis.TileMolecule = {\r\n\t\t\tFull: 0,\r\n\t\t\tCorner: 1,\r\n\t\t\tEdge: 2,\r\n\t\t\tTunnel: 3,\r\n\t\t\tTwoSides: 4,\r\n\t\t\tPenninsula: 5,\r\n\t\t\tIsland: 6,\r\n\t\t};\r\n\t\t\r\n\t\tthis.TileCliffMolecules = {\r\n\t\t\tFull: 0,\r\n\t\t\tCornerTL: 1,\r\n\t\t\tCornerTR: 2,\r\n\t\t\tCornerBL: 3,\r\n\t\t\tCornerBR: 4,\r\n\t\t\tEdgeT: 5,\r\n\t\t\tEdgeL: 6,\r\n\t\t\tEdgeR: 7,\r\n\t\t\tEdgeB: 8,\r\n\t\t\tTunnelH: 9,\r\n\t\t\tTunnelV: 10,\r\n\t\t\tTwoSidesTL: 11,\r\n\t\t\tTwoSidesTR: 12,\r\n\t\t\tTwoSidesBL: 13,\r\n\t\t\tTwoSidesBR: 14,    \r\n\t\t\tPenninsulaT: 15,\r\n\t\t\tPenninsulaL: 16,\r\n\t\t\tPenninsulaR: 17,\r\n\t\t\tPenninsulaB: 18,\r\n\t\t\tIsland: 19,\r\n\t\t};\r\n\t}\r\n\r\n    draw(map){\r\n\t\tthis.tileMap = map;\r\n\t\tthis.numColumns = this.tileMap.length;\r\n\t\t// Load all textures\r\n\r\n\t\tif(this.layerTextures.length == 0) {\r\n\t\r\n\t\t\tthis.layerSpriteSheets.forEach((layerSprites, index) => {      \r\n\t\t\t\tconst moleculeData = this.buildBaseMolecules(layerSprites.sprites);\r\n\t\t\t\tthis.layerTextures[index] = moleculeData;\r\n\t\t\t});\r\n\t\t}\r\n\r\n\t\tlet analyzedMap = this.analyzeMap(this.tileMap);\r\n\t\tthis.drawMap(analyzedMap);\r\n        if(this.isometric){\r\n            this.drawIsometric();\r\n        }\r\n\r\n    }\r\n\r\n    drawIsometric() {\r\n        let ctx = this.canvas.getContext('2d');\r\n        // Save the original state\r\n        ctx.save();\r\n        \r\n        // Create an off-screen canvas to hold original drawing\r\n        const offscreen = document.createElement('canvas');\r\n        offscreen.width = this.canvas.width;\r\n        offscreen.height = this.canvas.height;\r\n        const offCtx = offscreen.getContext('2d');\r\n        offCtx.drawImage(this.canvas, 0, 0);\r\n        \r\n        // Clear the main canvas\r\n        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);\r\n        \r\n        // Move to center for rotation\r\n        ctx.translate(this.canvas.width / 2, this.canvas.height / 2);\r\n        \r\n        // Apply isometric transformation\r\n        const scale = .56;    // Adjust overall size\r\n        const isoAngle = Math.atan(1 / 2); // ≈ 26.565° (classic isometric angle)\r\n        const cosA = Math.cos(isoAngle);   // ≈ 0.8944\r\n        const sinA = Math.sin(isoAngle);   // ≈ 0.4472\r\n        \r\n        ctx.transform(\r\n            cosA * scale,    // scaleX\r\n            sinA * scale,    // skewY\r\n            -cosA * scale,   // skewX\r\n            sinA * scale,    // scaleY\r\n            0,               // translateX\r\n            0                // translateY\r\n        );\r\n        \r\n        // Draw the transformed image centered\r\n        ctx.drawImage(offscreen, -this.canvas.width / 2, -this.canvas.height / 2);\r\n        \r\n        // Restore original state\r\n        ctx.restore();\r\n    }\r\n\r\n    drawTexture(texture, x, y) {\r\n\t\tctx.drawImage(texture, x, y, this.tileSize / 2, this.tileSize / 2); // Assuming each atom is 256x256\r\n    }\r\n\r\n    // Function to generate a molecule texture for various molecule ty\r\n\tbuildBaseMolecules(sprites) {\r\n\t\t// Define texture objects\r\n\t\tconst fullTexture = document.createElement(\"canvas\");\r\n\r\n\t\tconst oneCornerTexture = document.createElement(\"canvas\");\r\n\t\tconst twoCornerTexture = document.createElement(\"canvas\");\r\n\t\tconst threeCornerTexture = document.createElement(\"canvas\");\r\n\r\n\t\tconst oneCornerBotTexture = document.createElement(\"canvas\");\r\n\t\tconst twoCornerBotTexture = document.createElement(\"canvas\");\r\n\t\tconst threeCornerBotTexture = document.createElement(\"canvas\");\r\n\r\n\t\tfullTexture.setAttribute('willReadFrequently', true); \r\n\r\n\t\toneCornerTexture.setAttribute('willReadFrequently', true); \r\n\t\ttwoCornerTexture.setAttribute('willReadFrequently', true); \r\n\t\tthreeCornerTexture.setAttribute('willReadFrequently', true); \r\n\r\n\t\toneCornerBotTexture.setAttribute('willReadFrequently', true); \r\n\t\ttwoCornerBotTexture.setAttribute('willReadFrequently', true); \r\n\t\tthreeCornerBotTexture.setAttribute('willReadFrequently', true); \r\n\r\n\t\t// Set the texture sizes\r\n\t\tconst spriteResolution = this.tileSize / 2;\r\n\t\tconst finalTileBaseResolution = spriteResolution * 2;\r\n\r\n\t\tfullTexture.width = spriteResolution;\r\n\t\tfullTexture.height = spriteResolution;\r\n\r\n\t\toneCornerTexture.width = spriteResolution;\r\n\t\toneCornerTexture.height = spriteResolution;\r\n\r\n\t\ttwoCornerTexture.width = spriteResolution;\r\n\t\ttwoCornerTexture.height = spriteResolution;\r\n\r\n\t\tthreeCornerTexture.width = spriteResolution;\r\n\t\tthreeCornerTexture.height = spriteResolution;\t\r\n\r\n\t\toneCornerBotTexture.width = spriteResolution;\r\n\t\toneCornerBotTexture.height = spriteResolution;\t\r\n\r\n\t\ttwoCornerBotTexture.width = spriteResolution;\r\n\t\ttwoCornerBotTexture.height = spriteResolution;\t\r\n\r\n\t\tthreeCornerBotTexture.width = spriteResolution;\r\n\t\tthreeCornerBotTexture.height = spriteResolution;\t\r\n\t\t\r\n\t\t// Get sprite textures\r\n\t\tconst fullSprite = sprites[this.TileAtom.Full];\r\n\r\n\t\tconst oneCornerSprite = sprites[this.TileAtom.OneCorner];\r\n\t\tconst twoCornerSprite = sprites[this.TileAtom.TwoCorner];\r\n\t\tconst threeCornerSprite = sprites[this.TileAtom.ThreeCorner];\r\n\r\n\t\tconst oneCornerBotSprite = sprites[this.TileAtom.OneCornerBot];\r\n\t\tconst twoCornerBotSprite = sprites[this.TileAtom.TwoCornerBot];\r\n\t\tconst threeCornerBotSprite = sprites[this.TileAtom.ThreeCornerBot];\r\n\r\n\t\t// Create CanvasRenderingContext2D objects for each texture\r\n\t\tconst fullCtx = fullTexture.getContext(\"2d\");\r\n\r\n\t\tconst oneCornerCtx = oneCornerTexture.getContext(\"2d\", { willReadFrequently: true });\r\n\t\tconst twoCornerCtx = twoCornerTexture.getContext(\"2d\", { willReadFrequently: true });\r\n\t\tconst threeCornerCtx = threeCornerTexture.getContext(\"2d\", { willReadFrequently: true });\r\n\r\n\t\tconst oneCornerBotCtx = oneCornerBotTexture.getContext(\"2d\", { willReadFrequently: true });\r\n\t\tconst twoCornerBotCtx = twoCornerBotTexture.getContext(\"2d\", { willReadFrequently: true });\r\n\t\tconst threeCornerBotCtx = threeCornerBotTexture.getContext(\"2d\", { willReadFrequently: true });\r\n\t\t\r\n\t\t// Copy pixels from sprites to texture canvases\r\n\t\tfullCtx.drawImage(fullSprite,0,0);\r\n\r\n\t\toneCornerCtx.drawImage(oneCornerSprite,0,0);\r\n\t\ttwoCornerCtx.drawImage(twoCornerSprite,0,0);\r\n\t\tthreeCornerCtx.drawImage(threeCornerSprite,0,0);\r\n\r\n\t\toneCornerBotCtx.drawImage(oneCornerBotSprite,0,0);\r\n\t\ttwoCornerBotCtx.drawImage(twoCornerBotSprite,0,0);\r\n\t\tthreeCornerBotCtx.drawImage(threeCornerBotSprite,0,0);\r\n\r\n\t\t// Get pixel data from the canvases\r\n\t\tconst fullImageData = fullCtx.getImageData(0, 0, spriteResolution, spriteResolution);\r\n\t\tconst oneCornerTopRightImageData = oneCornerCtx.getImageData(0, 0, spriteResolution, spriteResolution);\r\n\t\tconst oneCornerTopLeftImageData = this.flipTextureHorizontal(oneCornerCtx.getImageData(0, 0, spriteResolution, spriteResolution));\t\r\n\r\n\t\tconst oneCornerBotRightImageData = oneCornerBotCtx.getImageData(0, 0, spriteResolution, spriteResolution);\r\n\t\tconst oneCornerBotLeftImageData = this.flipTextureHorizontal(oneCornerBotCtx.getImageData(0, 0, spriteResolution, spriteResolution));\t\r\n\t\t\r\n\t\tconst twoCornerTopImageData = twoCornerCtx.getImageData(0, 0, spriteResolution, spriteResolution);\r\n\t\tconst twoCornerLeftImageData = this.rotateTexture(twoCornerCtx.getImageData(0, 0, spriteResolution, spriteResolution), -Math.PI / 2);\r\n\t\tconst twoCornerRightImageData = this.rotateTexture(twoCornerCtx.getImageData(0, 0, spriteResolution, spriteResolution), Math.PI / 2);\r\n\t\tconst twoCornerBottomImageData = twoCornerBotCtx.getImageData(0, 0, spriteResolution, spriteResolution);\r\n\t\t\r\n\t\tconst threeCornerTopRightImageData = threeCornerCtx.getImageData(0, 0, spriteResolution, spriteResolution);\r\n\t\tconst threeCornerTopLeftImageData = this.flipTextureHorizontal(threeCornerCtx.getImageData(0, 0, spriteResolution, spriteResolution));\t\t\r\n\t\tconst threeCornerBottomRightImageData = threeCornerBotCtx.getImageData(0, 0, spriteResolution, spriteResolution);\r\n\t\tconst threeCornerBottomLeftImageData = this.flipTextureHorizontal(threeCornerBotCtx.getImageData(0, 0, spriteResolution, spriteResolution));\r\n\t\t\t\t\r\n\t\t\t\r\n\t\t// Define molecule objects\r\n\t\tconst moleculeCanvas = document.createElement(\"canvas\");\r\n\r\n\t\tmoleculeCanvas.width = finalTileBaseResolution;\r\n\t\tmoleculeCanvas.height = finalTileBaseResolution;\r\n\t\t\r\n\t\tconst moleculeCtx = moleculeCanvas.getContext('2d', { willReadFrequently: true });\r\n\r\n\t\tconst cornerCanvas = document.createElement(\"canvas\");\r\n\r\n\t\tcornerCanvas.width = finalTileBaseResolution / 2;\r\n\t\tcornerCanvas.height = finalTileBaseResolution / 2;\r\n\t\t\r\n\t\tconst cornerCtx = cornerCanvas.getContext('2d', { willReadFrequently: true });\r\n\r\n\t\tvar imageDataList = [\r\n\t\t\t//FULL\r\n\t\t\tthis.createMolecule(moleculeCtx, fullImageData, fullImageData, fullImageData, fullImageData),\r\n\r\n\t\t\t//CORNERS\r\n\t\t\toneCornerTopLeftImageData, \r\n\t\t\toneCornerTopRightImageData,\r\n\t\t\toneCornerBotLeftImageData,\r\n\t\t\toneCornerBotRightImageData,\r\n\t\t\t//EDGES\r\n\t\t\tthis.createMolecule(moleculeCtx, twoCornerTopImageData, twoCornerTopImageData, fullImageData, fullImageData),\r\n\t\t\tthis.createMolecule(moleculeCtx, twoCornerLeftImageData, fullImageData, twoCornerLeftImageData, fullImageData),\r\n\t\t\tthis.createMolecule(moleculeCtx, fullImageData, twoCornerRightImageData, fullImageData, twoCornerRightImageData),\r\n\t\t\tthis.createMolecule(moleculeCtx, fullImageData, fullImageData, twoCornerBottomImageData, twoCornerBottomImageData),\r\n\r\n\t\t\t//TUNNELS\r\n\t\t\tthis.createMolecule(moleculeCtx, twoCornerTopImageData, twoCornerTopImageData, twoCornerBottomImageData, twoCornerBottomImageData),\r\n\t\t\tthis.createMolecule(moleculeCtx, twoCornerLeftImageData, twoCornerRightImageData, twoCornerLeftImageData, twoCornerRightImageData),\r\n\r\n\t\t\t//TWO SIDES\r\n\t\t\tthis.createMolecule(moleculeCtx, threeCornerTopLeftImageData, twoCornerTopImageData, twoCornerLeftImageData, fullImageData),\r\n\t\t\tthis.createMolecule(moleculeCtx, twoCornerTopImageData, threeCornerTopRightImageData, fullImageData, twoCornerRightImageData),\r\n\t\t\tthis.createMolecule(moleculeCtx, twoCornerLeftImageData, fullImageData, threeCornerBottomLeftImageData, twoCornerBottomImageData),\r\n\t\t\tthis.createMolecule(moleculeCtx, fullImageData, twoCornerRightImageData, twoCornerBottomImageData, threeCornerBottomRightImageData),\r\n\r\n\t\t\t//PENNINSULAS\t\t\r\n\t\t\tthis.createMolecule(moleculeCtx, threeCornerTopLeftImageData, threeCornerTopRightImageData, twoCornerLeftImageData, twoCornerRightImageData),\r\n\t\t\tthis.createMolecule(moleculeCtx, threeCornerTopLeftImageData, twoCornerTopImageData, threeCornerBottomLeftImageData, twoCornerBottomImageData),\r\n\t\t\tthis.createMolecule(moleculeCtx, twoCornerTopImageData, threeCornerTopRightImageData, twoCornerBottomImageData, threeCornerBottomRightImageData),\r\n\t\t\tthis.createMolecule(moleculeCtx, twoCornerLeftImageData, twoCornerRightImageData, threeCornerBottomLeftImageData, threeCornerBottomRightImageData),\r\n\r\n\t\t\t//ISLAND\r\n\t\t\tthis.createMolecule(moleculeCtx, threeCornerTopLeftImageData, threeCornerTopRightImageData, threeCornerBottomLeftImageData, threeCornerBottomRightImageData),\r\n\t\t];\r\n\r\n\t\treturn imageDataList;\r\n\t}\r\n\r\n\tcreateMolecule(context, TLImageData, TRImageData, BLImageData, BRImageData) {\r\n\t\tlet size = context.canvas.width;\r\n\t\tlet spriteResolution = size / 2;\r\n\t\tcontext.fillStyle = 'black';\r\n\t\tcontext.fillRect(0, 0, size, size);\r\n\t\tcontext.putImageData(TLImageData, 0, 0);\r\n\t\tcontext.putImageData(TRImageData, spriteResolution, 0);\r\n\t\tcontext.putImageData(BLImageData, 0, spriteResolution);\r\n\t\tcontext.putImageData(BRImageData, spriteResolution, spriteResolution);\r\n\t\treturn context.getImageData(0, 0, size, size);\r\n\t}\r\n\r\n\textractSpritesFromSheet(spriteSheet, columns, rows) {\r\n\t\tlet sprites = [];\r\n\t\tlet spriteWidth = spriteSheet.width / columns;\r\n\t\tlet spriteHeight = spriteSheet.height / rows;\r\n\t\r\n\t\tfor (let y = 0; y < rows; y++) {\r\n\t\t\tfor (let x = 0; x < columns; x++) {\r\n\t\t\t\tlet canvas = document.createElement('canvas');\r\n\t\t\t\tcanvas.width = spriteWidth;\r\n\t\t\t\tcanvas.height = spriteHeight;\r\n\t\t\t\tlet context = canvas.getContext('2d');\r\n\t\t\t\tcontext.drawImage(spriteSheet, x * spriteWidth, y * spriteHeight, spriteWidth, spriteHeight, 0, 0, spriteWidth, spriteHeight);\r\n\t\t\t\tsprites.push(canvas);\r\n\t\t\t}\r\n\t\t}\r\n\t\r\n\t\treturn sprites;\r\n\t}\r\n\t\r\n\tgetSpriteRotations(imageDataList) {\r\n\t\tlet rotationDict = {};\r\n\r\n\t\tlet requiredTransforms = {};\r\n\r\n\t\trequiredTransforms[this.TileMolecule.Full] = [];\r\n\t\trequiredTransforms[this.TileMolecule.Corner] = [this.TileTransforms.FlipHorizontal, this.TileTransforms.FlipVertical, this.TileTransforms.Rotate180];\r\n\t\trequiredTransforms[this.TileMolecule.Edge] = [this.TileTransforms.ClockWise90, this.TileTransforms.CounterClockWise90, this.TileTransforms.Rotate180];\r\n\t\trequiredTransforms[this.TileMolecule.Tunnel] = [this.TileTransforms.CounterClockWise90];\r\n\t\trequiredTransforms[this.TileMolecule.TwoSides] = [this.TileTransforms.FlipHorizontal, this.TileTransforms.FlipVertical, this.TileTransforms.Rotate180];\r\n\t\trequiredTransforms[this.TileMolecule.Penninsula] = [this.TileTransforms.FlipVertical, this.TileTransforms.ClockWise90, this.TileTransforms.CounterClockWise90];\r\n\t\trequiredTransforms[this.TileMolecule.Island] = [];\r\n\r\n\t\tObject.keys(imageDataList).forEach(moleculeType => {\r\n\t\t\tlet rotations = {};\r\n\t\t\tlet colors = imageDataList[moleculeType];\r\n\t\t\trotations[this.TileTransforms.None] = colors;\r\n\r\n\t\t\tif (requiredTransforms[moleculeType].includes(this.TileTransforms.ClockWise90)) {\r\n\t\t\t\trotations[this.TileTransforms.ClockWise90] = this.rotateTexture(colors, Math.PI / 2);\r\n\t\t\t}\r\n\t\t\tif (requiredTransforms[moleculeType].includes(this.TileTransforms.CounterClockWise90)) {\r\n\t\t\t\trotations[this.TileTransforms.CounterClockWise90] = this.rotateTexture(colors, -Math.PI / 2);\r\n\t\t\t}\r\n\t\t\tif (requiredTransforms[moleculeType].includes(this.TileTransforms.Rotate180)) {\r\n\t\t\t\trotations[this.TileTransforms.Rotate180] = this.rotateTexture(colors, Math.PI);\r\n\t\t\t}\r\n\t\t\tif (requiredTransforms[moleculeType].includes(this.TileTransforms.FlipHorizontal)) {\r\n\t\t\t\trotations[this.TileTransforms.FlipHorizontal] = this.flipTextureHorizontal(colors);\r\n\t\t\t}\r\n\t\t\tif (requiredTransforms[moleculeType].includes(this.TileTransforms.FlipVertical)) {\r\n\t\t\t\trotations[this.TileTransforms.FlipVertical] = this.flipTextureVertical(colors);\r\n\t\t\t}\r\n\r\n\t\t\trotationDict[moleculeType] = rotations;\r\n\t\t});\r\n\r\n\t\treturn rotationDict;\r\n\t}\r\n\r\n\trotateTexture(imageData, angle) {\r\n\t\treturn this.canvasUtility.rotateTexture(imageData, angle);\r\n\t}\r\n\r\n\tflipTextureVertical(imageData) {\r\n\t\treturn this.canvasUtility.flipTextureVertical(imageData);\r\n\t}\r\n\r\n\tflipTextureHorizontal(imageData) {\r\n\t\treturn this.canvasUtility.flipTextureHorizontal(imageData);\r\n\t}\r\n\r\n\tanalyzeTile(x, y) {\r\n\t\tlet tileAnalysis = new this.TileAnalysis();\r\n\t\tlet row = y;\r\n\t\tlet col = x;\r\n\r\n\t\tif (row < 0 || row >= this.numColumns || col < 0 || col >= this.numColumns) {\r\n\t\t\treturn tileAnalysis; // Out of bounds\r\n\t\t}\r\n\r\n\t\ttileAnalysis.heightIndex = this.tileMap[row][col];\r\n\r\n\t\t// Helper function to check if a location is within bounds\r\n\t\tfunction isWithinBounds(r, c, n) {\r\n\t\t\treturn r >= 0 && r < n && c >= 0 && c < n;\r\n\t\t}\r\n\r\n\t\t// Helper function to check and update tile analysis\r\n\t\tvar checkAndUpdate = ((r, c, n, direction, propertyLess) => {\r\n\t\t\tif (isWithinBounds(r, c, n) ) {\r\n\t\t\t\ttileAnalysis[direction] = this.tileMap[r][c];\r\n\t\t\t\tif( this.tileMap[r][c] < tileAnalysis.heightIndex) {\r\n\t\t\t\t\ttileAnalysis[propertyLess] = true;\r\n\t\t\t\t\tif(['topLess', 'leftLess', 'rightLess', 'botLess'].indexOf(propertyLess) >= 0 ) {\r\n\t\t\t\t\t\ttileAnalysis.neighborLowerCount++;\r\n\t\t\t\t\t} else if(['cornerTopLeftLess', 'cornerTopRightLess', 'cornerBottomLeftLess', 'cornerBottomRightLess'].indexOf(propertyLess) >= 0) {\r\n\t\t\t\t\t\ttileAnalysis.cornerLowerCount++;\r\n\t\t\t\t\t}\r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t});\r\n\r\n\t\tcheckAndUpdate(row - 1, col, this.numColumns, 'topHeight', 'topLess');\r\n\t\tcheckAndUpdate(row, col - 1, this.numColumns, 'leftHeight', 'leftLess');\r\n\t\tcheckAndUpdate(row, col + 1, this.numColumns, 'rightHeight', 'rightLess');\r\n\t\tcheckAndUpdate(row + 1, col, this.numColumns, 'botHeight', 'botLess');\r\n\t\tcheckAndUpdate(row - 1, col - 1, this.numColumns, 'topLeftHeight', 'cornerTopLeftLess');\r\n\t\tcheckAndUpdate(row - 1, col + 1, this.numColumns, 'topRightHeight', 'cornerTopRightLess');\r\n\t\tcheckAndUpdate(row + 1, col - 1, this.numColumns, 'botLeftHeight', 'cornerBottomLeftLess');\r\n\t\tcheckAndUpdate(row + 1, col + 1, this.numColumns, 'botRightHeight', 'cornerBottomRightLess');\r\n\r\n\t\treturn tileAnalysis;\r\n\t}\r\n\r\n\t// Function to generate a random integer between min and max (inclusive)\r\n\tgetRandomInt(min, max) {\r\n\t\treturn Math.floor(Math.random() * (max - min + 1)) + min;\r\n\t}\r\n\r\n\t// Function to generate a random 10x10 map\r\n\tgenerateRandomMap(rows, columns) {\r\n\t\tlet map = [];\r\n\t\tfor (let i = 0; i < rows; i++) {\r\n\t\t\tlet row = [];\r\n\t\t\tfor (let j = 0; j < columns; j++) {\r\n\t\t\t\trow.push(getRandomInt(0, layers.length - 1)); // Random height between 0 and 10\r\n\t\t\t}\r\n\t\t\tmap.push(row);\r\n\t\t}\r\n\t\treturn map;\r\n\t}\r\n\r\n\tanalyzeMap() {\r\n\t\tlet analyzedTiles = [];\r\n\r\n\t\tfor (let i = 0; i < this.numColumns; i++) {\r\n\t\t\tfor (let j = 0; j < this.numColumns; j++) {\r\n\t\t\t\tanalyzedTiles.push(this.analyzeTile(j, i));\r\n\t\t\t}\r\n\t\t}\r\n\r\n\t\treturn analyzedTiles;\r\n\t}\r\n\r\n\tgetTransformedTexture(transformationDict, tileAnalysis, molecule){\r\n\t\tswitch(tileAnalysis.neighborLowerCount){\t\t\t\t\r\n\t\t\tcase 1:\r\n\t\t\t\tif(tileAnalysis.leftLess){                    \r\n\t\t\t\t\treturn transformationDict[molecule][this.TileTransforms.CounterClockWise90];\r\n\t\t\t\t} else if(tileAnalysis.rightLess){\r\n                    return transformationDict[molecule][this.TileTransforms.ClockWise90];\r\n\t\t\t\t} else if(tileAnalysis.botLess){\t\t\r\n\t\t\t\t\treturn transformationDict[molecule][this.TileTransforms.Rotate180];\r\n\t\t\t\t}\r\n\t\t\t\tbreak;\r\n\t\t\tcase 2:\r\n\t\t\t\tif(tileAnalysis.topLess && tileAnalysis.leftLess){\r\n\t\t\t\t\treturn transformationDict[molecule][this.TileTransforms.FlipHorizontal];\r\n\t\t\t\t} else if(tileAnalysis.botLess && tileAnalysis.leftLess){\t\t\r\n\t\t\t\t\treturn transformationDict[molecule][this.TileTransforms.Rotate180];\r\n\t\t\t\t} else if(tileAnalysis.botLess && tileAnalysis.rightLess){\t\t\r\n\t\t\t\t\treturn transformationDict[molecule][this.TileTransforms.FlipVertical];\r\n\t\t\t\t} else if(tileAnalysis.leftLess && tileAnalysis.rightLess){\r\n\t\t\t\t\treturn transformationDict[molecule][this.TileTransforms.CounterClockWise90];\r\n\t\t\t\t}\r\n\t\t\t\tbreak;\r\n\t\t\tcase 3:\r\n\t\t\t\tif(!tileAnalysis.topLess){\r\n\t\t\t\t\treturn transformationDict[molecule][this.TileTransforms.FlipVertical];\r\n\t\t\t\t} else if(!tileAnalysis.leftLess){\t\t\r\n\t\t\t\t\treturn transformationDict[molecule][this.TileTransforms.ClockWise90];\r\n\t\t\t\t} else if(!tileAnalysis.rightLess){\t\t\r\n\t\t\t\t\treturn transformationDict[molecule][this.TileTransforms.CounterClockWise90];\r\n\t\t\t\t}\r\n\t\t\t\tbreak;\r\n\t\t\tcase 4:\r\n\t\t\t\tbreak;\r\n\t\t\tdefault:\r\n\t\t\t\tbreak;\r\n\t\t}\t\t\r\n        return transformationDict[molecule][this.TileTransforms.None];\r\n\t}\r\n\r\n\tgetMoleculeByTileAnalysis(tileAnalysis){\r\n\t\tvar molecule = this.TileCliffMolecules.Full;\t\t\t\t\t\t\t\t\r\n\t\tswitch(tileAnalysis.neighborLowerCount){\r\n\t\t\tcase 0: \r\n\t\t\t\tmolecule = this.TileCliffMolecules.Full;\r\n\t\t\t\tbreak;\r\n\t\t\tcase 1:\r\n\t\t\t\tif(tileAnalysis.topLess) {\r\n\t\t\t\t\tmolecule = this.TileCliffMolecules.EdgeT;\r\n\t\t\t\t} else if(tileAnalysis.leftLess) {\r\n\t\t\t\t\tmolecule = this.TileCliffMolecules.EdgeL;\r\n\t\t\t\t} else if(tileAnalysis.rightLess) {\r\n\t\t\t\t\tmolecule = this.TileCliffMolecules.EdgeR;\r\n\t\t\t\t} else if(tileAnalysis.botLess) {\r\n\t\t\t\t\tmolecule = this.TileCliffMolecules.EdgeB;\r\n\t\t\t\t}\r\n\t\t\t\tbreak;\r\n\t\t\tcase 2:\r\n\t\t\t\tif(tileAnalysis.topLess && tileAnalysis.botLess){\r\n\t\t\t\t\tmolecule = this.TileCliffMolecules.TunnelH;\r\n\t\t\t\t} else if(tileAnalysis.leftLess && tileAnalysis.rightLess){\r\n\t\t\t\t\tmolecule = this.TileCliffMolecules.TunnelV;\r\n\t\t\t\t} else if(tileAnalysis.topLess && tileAnalysis.leftLess){\r\n\t\t\t\t\tmolecule = this.TileCliffMolecules.TwoSidesTL;\r\n\t\t\t\t} else if(tileAnalysis.topLess && tileAnalysis.rightLess){\r\n\t\t\t\t\tmolecule = this.TileCliffMolecules.TwoSidesTR;\r\n\t\t\t\t} else if(tileAnalysis.botLess && tileAnalysis.leftLess){\r\n\t\t\t\t\tmolecule = this.TileCliffMolecules.TwoSidesBL;\r\n\t\t\t\t} else if(tileAnalysis.botLess && tileAnalysis.rightLess){\r\n\t\t\t\t\tmolecule = this.TileCliffMolecules.TwoSidesBR;\r\n\t\t\t\t} \r\n\t\t\t\tbreak;\r\n\t\t\tcase 3:\r\n\t\t\t\tif( !tileAnalysis.topLess ) {\r\n\t\t\t\t\tmolecule = this.TileCliffMolecules.PenninsulaB;\r\n\t\t\t\t} else if( !tileAnalysis.leftLess ) {\r\n\t\t\t\t\tmolecule = this.TileCliffMolecules.PenninsulaR;\r\n\t\t\t\t} else if( !tileAnalysis.rightLess ) {\r\n\t\t\t\t\tmolecule = this.TileCliffMolecules.PenninsulaL;\r\n\t\t\t\t} else if( !tileAnalysis.botLess ) {\r\n\t\t\t\t\tmolecule = this.TileCliffMolecules.PenninsulaT;\r\n\t\t\t\t}\r\n\t\t\t\tbreak;\t\t\t\t\t\t\t\t\r\n\t\t\tcase 4:\r\n\t\t\t\tmolecule = this.TileCliffMolecules.Island;\r\n\t\t\t\tbreak;\r\n\t\t}\r\n\t\treturn molecule;\r\n\t}\r\n\r\n\tcolorImageData(imageData, tileAnalysis) {\r\n\t\t\r\n\t\tconst data = new Uint8ClampedArray(imageData.data);\r\n\t\tvar directions = ['topHeight', 'leftHeight', 'rightHeight', 'botHeight', 'topLeftHeight', 'topRightHeight', 'botLeftHeight', 'botRightHeight'];\r\n\t\tlet heightCounts = {};\r\n\t\tdirections.forEach((direction) => {\r\n\t\t\tlet height = tileAnalysis[direction];\r\n\t\t\tif (height !== tileAnalysis.heightIndex) {\r\n\t\t\t\tif (!heightCounts[height]) {\r\n\t\t\t\t\theightCounts[height] = 0;\r\n\t\t\t\t}\r\n\t\t\t\theightCounts[height]++;\r\n\t\t\t}\r\n\t\t});\r\n\t\t\r\n\t\tlet lowerNeighborHeight = Math.max(0, tileAnalysis.heightIndex - 1);\r\n\t\tlet maxCount = 0;\r\n\t\tObject.keys(heightCounts).forEach((height) => {\r\n\t\t\tif (heightCounts[height] > maxCount && height < tileAnalysis.heightIndex) {\r\n\t\t\t\tlowerNeighborHeight = parseInt(height);\r\n\t\t\t\tmaxCount = heightCounts[height];\r\n\t\t\t}\r\n\t\t});\r\n\t\tconst numPixels = this.tileSize * this.tileSize;\r\n\t\tif(lowerNeighborHeight < 0){\r\n\t\t\tconst blackData = new Uint8ClampedArray(numPixels * 4); // 4 values per pixel (RGBA)\r\n\t\t\tblackData.fill(0); // Fill with black (0, 0, 0, 255)\r\n\t\t\treturn new ImageData(blackData, this.tileSize, this.tileSize);\r\n\t\t}\r\n\t\tlet baseColors = this.layerTextures[tileAnalysis.heightIndex][this.TileMolecule.Full].data;\r\n\t\tlet neighborColors = this.layerTextures[lowerNeighborHeight][this.TileMolecule.Full].data;\r\n\r\n\t\t// Iterate over each pixel\r\n\t\tfor (let i = 0; i < numPixels; i++) {\r\n\t\t\tconst dataIndex = i * 4;\r\n\t\t\tlet pColor = { r: data[dataIndex], g: data[dataIndex + 1], b: data[dataIndex + 2], a: data[dataIndex + 3] };\r\n\t\t\tlet bColor = { r: baseColors[dataIndex], g: baseColors[dataIndex + 1], b: baseColors[dataIndex + 2], a: baseColors[dataIndex + 3] };\r\n\t\t\tlet tColor = { r: neighborColors[dataIndex], g: neighborColors[dataIndex + 1], b: neighborColors[dataIndex + 2], a: neighborColors[dataIndex + 3] };\r\n\t\r\n\t\t\tif (this.layerTextures.length > tileAnalysis.heightIndex) {\r\n\t\t\t\tif (baseColors.length > i) {\r\n\t\t\t\t\tbColor = { r: baseColors[dataIndex], g: baseColors[dataIndex + 1], b: baseColors[dataIndex + 2], a: baseColors[dataIndex + 3] };\r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t\tif (lowerNeighborHeight >= 0) {\r\n\t\t\t\tif (neighborColors.length > i) {\r\n\t\t\t\t\ttColor = { r: neighborColors[dataIndex], g: neighborColors[dataIndex + 1], b: neighborColors[dataIndex + 2], a: neighborColors[dataIndex + 3] };\r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t\tlet fColor = pColor;\r\n\t\t\tif (this.isEqualColor(fColor, { r: 0, g: 0, b: 0, a: 0 })) fColor = pColor;\r\n\t\t\tif (this.isEqualColor(fColor, { r: 0, g: 0, b: 0, a: 255 })) fColor = bColor;\r\n\r\n\t\t\tdata.set([fColor.r, fColor.g, fColor.b, fColor.a], dataIndex);\r\n\t\t}\r\n\t\treturn new ImageData(data, this.tileSize, this.tileSize);\r\n\t}\r\n\r\n\tisEqualColor(color1, color2) {\r\n\t\treturn color1.r === color2.r && color1.g === color2.g && color1.b === color2.b && color1.a === color2.a;\r\n\t}\r\n\r\n\taddCornerGraphics(imageData, tileAnalysis) {\r\n\t\tlet cornerSize = this.tileSize / 2;\r\n\t\tlet cornerTexture;\r\n\t\tlet heightIndex = tileAnalysis.heightIndex;\r\n\t\r\n\t\tif (tileAnalysis.cornerLowerCount > 0) {\r\n\t\t\tif (tileAnalysis.cornerTopLeftLess && (!tileAnalysis.topLess && !tileAnalysis.leftLess)) {\t\t\t\t\r\n\t\t\t\tcornerTexture = this.layerTextures[heightIndex][this.TileCliffMolecules.CornerTL];\r\n\t\t\t\timageData = this.colorCornerTextureRoutine(imageData, 0, 0, cornerTexture, tileAnalysis);\t\t\t\r\n\t\t\t}\r\n\t\t\t// Assuming tileAnalysis, textureDict, and other variables are already defined\r\n\t\t\tif (tileAnalysis.cornerTopRightLess && (!tileAnalysis.topLess && !tileAnalysis.rightLess)) {\t\t\t\t\r\n\t\t\t\tcornerTexture = this.layerTextures[heightIndex][this.TileCliffMolecules.CornerTR];\r\n\t\t\t\timageData = this.colorCornerTextureRoutine(imageData, cornerSize, 0, cornerTexture, tileAnalysis);\t\t\t\r\n\t\t\t}\r\n\r\n\t\t\tif (tileAnalysis.cornerBottomLeftLess && (!tileAnalysis.botLess && !tileAnalysis.leftLess)) {\t\t\t\t\r\n\t\t\t\tcornerTexture = this.layerTextures[heightIndex][this.TileCliffMolecules.CornerBL];\r\n\t\t\t\timageData = this.colorCornerTextureRoutine(imageData, 0, cornerSize, cornerTexture, tileAnalysis);\t\t\t\r\n\t\t\t}\r\n\r\n\t\t\tif (tileAnalysis.cornerBottomRightLess && (!tileAnalysis.botLess && !tileAnalysis.rightLess)) {\t\t\t\r\n\t\t\t\tcornerTexture = this.layerTextures[heightIndex][this.TileCliffMolecules.CornerBR];\r\n\t\t\t\timageData = this.colorCornerTextureRoutine(imageData, cornerSize, cornerSize, cornerTexture, tileAnalysis);\t\t\t\r\n\t\t\t}\r\n\t\t}\r\n\t\treturn imageData;\r\n\t}\r\n\t\r\n\tcolorCornerTextureRoutine(outputImageData, x, y, cornerImageData, tileAnalysis) {\r\n\t\tlet cornerSize = this.tileSize / 2;\t\r\n\t\tlet baseHeightIndex = tileAnalysis.heightIndex;\r\n\t\tlet baseColors = this.layerTextures[baseHeightIndex][this.TileMolecule.Full];\r\n\t\tconst data = new Uint8ClampedArray(outputImageData.data);\r\n\t\tfor (let j = 0; j < cornerSize; j++) {\r\n\t\t\tfor (let i = 0; i < cornerSize; i++) {\r\n\t\t\t\t// Calculate the correct position in the output image data\r\n\t\t\t\tlet outputIndex = ((y + j) * this.tileSize + (x + i)) * 4;\r\n\t\r\n\t\t\t\tlet baseColor = this.getColorFromImageData(baseColors, outputIndex);\r\n\t\t\r\n\t\t\t\tlet sourceOriginX = i;\r\n\t\t\t\tlet sourceOriginY = j * cornerSize;\r\n\t\t\t\tlet sourcePixel = (sourceOriginY + sourceOriginX) * 4;\r\n\t\t\t\tlet pColor = this.getColorFromImageData(cornerImageData, sourcePixel);\r\n\t\t\t\tlet fColor = pColor;\r\n\t\t\t\tif (this.isEqualColor(fColor, { r: 0, g: 0, b: 0, a: 255 })) {\r\n\t\t\t\t\tfColor = baseColor;\t\t\t\t\r\n\t\t\t\t}\r\n\t\r\n\t\t\t\tdata[outputIndex] = fColor.r;\r\n\t\t\t\tdata[outputIndex + 1] = fColor.g;\r\n\t\t\t\tdata[outputIndex + 2] = fColor.b;\r\n\t\t\t\tdata[outputIndex + 3] = fColor.a;\r\n\t\t\t}\r\n\t\t}\r\n\r\n\t\treturn new ImageData(data, this.tileSize, this.tileSize);\r\n\t}\r\n\t\r\n\tgetColorFromImageData(imageData, index) {\r\n\t\treturn {\r\n\t\t\tr: imageData.data[index],\r\n\t\t\tg: imageData.data[index + 1],\r\n\t\t\tb: imageData.data[index + 2],\r\n\t\t\ta: imageData.data[index + 3]\r\n\t\t};\r\n\t}\t\r\n\t\r\n\taddVariationImage(imageData, tileAnalysis) {\r\n\t\tconst img = this.layerSpriteSheets[tileAnalysis.heightIndex];\r\n\t\r\n\t\tif (img && Math.random() < .25) {\r\n\t\t\tthis.canvasUtility.setSize(imageData.width, imageData.height);\r\n\t\t\t\r\n\t\t\t\r\n\t\t\t// Paint the existing imageData onto the canvas\r\n\t\t\tthis.canvasUtility.paintTexture(imageData);\r\n\t\r\n\t\t\t// Assuming img is a loaded Image object and you want to draw it at (0,0)\r\n\t\t\t// Draw the img over the imageData\r\n\t\t\tthis.canvasUtility.ctx.drawImage(img, (imageData.width / 2) - img.width / 2,  (imageData.width / 2) - img.width / 2);\r\n\t\r\n\t\t\t// Get the updated imageData from the canvas\r\n\t\t\treturn this.canvasUtility.ctx.getImageData(0, 0, imageData.width, imageData.height);\r\n\t\t} else {\r\n\t\t\t// If img is not available, return the original imageData\r\n\t\t\treturn imageData;\r\n\t\t}\r\n\t}\r\n\t\r\n\tdrawMap(analyzedMap) {\r\n\t\tconst ctx = this.canvas.getContext('2d');\r\n\t\tconst layerCanvases = {};\r\n\t\r\n\t\tfor (let layerIndex = 0; layerIndex < this.layerTextures.length; layerIndex++) {\r\n\t\t\tconst offscreenCanvas = document.createElement('canvas');\r\n\t\t\toffscreenCanvas.width = this.canvas.width;\r\n\t\t\toffscreenCanvas.height = this.canvas.height;\r\n\t\t\tlayerCanvases[layerIndex] = offscreenCanvas;\r\n\t\t\tconst offscreenCtx = offscreenCanvas.getContext('2d');\r\n\t\r\n\t\t\tanalyzedMap.forEach((tileAnalysis, index) => {\r\n\t\t\t\tconst x = (index % this.numColumns) * this.tileSize;\r\n\t\t\t\tconst y = Math.floor(index / this.numColumns) * this.tileSize;\r\n\t\r\n\t\t\t\tlet imageData;\r\n\t\t\t\tlet _tileAnalysis = {...tileAnalysis };\r\n\t\t\t\tif (_tileAnalysis.heightIndex > layerIndex) {\r\n\t\t\t\t\t// Use base image data for higher layers\r\n\t\t\t\t\t_tileAnalysis.heightIndex = layerIndex;\r\n\t\t\t\t\tif(_tileAnalysis.topLess && _tileAnalysis.topHeight >= _tileAnalysis.heightIndex) {\r\n\t\t\t\t\t\t_tileAnalysis.topLess = false;\r\n\t\t\t\t\t\t_tileAnalysis.neighborLowerCount--;\r\n\t\t\t\t\t}\r\n\t\t\t\t\tif(_tileAnalysis.leftLess && _tileAnalysis.leftHeight >= _tileAnalysis.heightIndex) {\r\n\t\t\t\t\t\t_tileAnalysis.leftLess = false;\r\n\t\t\t\t\t\t_tileAnalysis.neighborLowerCount--;\r\n\t\t\t\t\t}\r\n\t\t\t\t\tif(_tileAnalysis.rightLess && _tileAnalysis.rightHeight >= _tileAnalysis.heightIndex){\r\n\t\t\t\t\t\t_tileAnalysis.rightLess = false;\r\n\t\t\t\t\t\t_tileAnalysis.neighborLowerCount--;\r\n\t\t\t\t\t}\r\n\t\t\t\t\tif(_tileAnalysis.botLess && _tileAnalysis.botHeight >= _tileAnalysis.heightIndex) {\r\n\t\t\t\t\t\t_tileAnalysis.botLess = false;\r\n\t\t\t\t\t\t_tileAnalysis.neighborLowerCount--;\r\n\t\t\t\t\t}\r\n\t\t\t\t\tif(_tileAnalysis.cornerTopLeftLess && _tileAnalysis.topLeftHeight >= _tileAnalysis.heightIndex) {\r\n\t\t\t\t\t\t_tileAnalysis.cornerTopLeftLess = false;\r\n\t\t\t\t\t\t_tileAnalysis.cornerLowerCount--;\r\n\t\t\t\t\t}\r\n\t\t\t\t\tif(_tileAnalysis.cornerTopRightLess && _tileAnalysis.topRightHeight >= _tileAnalysis.heightIndex) {\r\n\t\t\t\t\t\t_tileAnalysis.cornerTopRightLess = false;\r\n\t\t\t\t\t\t_tileAnalysis.cornerLowerCount--;\r\n\t\t\t\t\t}\r\n\t\t\t\t\tif(_tileAnalysis.cornerBottomLeftLess && _tileAnalysis.botLeftHeight >= _tileAnalysis.heightIndex) {\r\n\t\t\t\t\t\t_tileAnalysis.cornerBottomLeftLess = false;\r\n\t\t\t\t\t\t_tileAnalysis.cornerLowerCount--;\r\n\t\t\t\t\t}\r\n\t\t\t\t\tif(_tileAnalysis.cornerBottomRightLess && _tileAnalysis.botRightHeight >= _tileAnalysis.heightIndex) {\r\n\t\t\t\t\t\t_tileAnalysis.cornerBottomRightLess = false;\r\n\t\t\t\t\t\t_tileAnalysis.cornerLowerCount--;\r\n\t\t\t\t\t}\r\n\t\t\t\t\t\r\n\t\t\t\t} \r\n\t\t\t\tif (_tileAnalysis.heightIndex < layerIndex) {\r\n\t\t\t\t\t// Use base image data for higher layers\r\n\t\t\t\t\tlet numPixels = this.tileSize * this.tileSize;\r\n\t\t\t\t\tconst transparentData = new Uint8ClampedArray(numPixels * 4); // 4 values per pixel (RGBA)\r\n\t\t\t\t\t\r\n\t\t\t\t\tfor (let i = 0; i < numPixels * 4; i += 4) {\r\n\t\t\t\t\t\ttransparentData[i] = 0;     // Red (not important for transparency)\r\n\t\t\t\t\t\ttransparentData[i + 1] = 0; // Green (not important for transparency)\r\n\t\t\t\t\t\ttransparentData[i + 2] = 0; // Blue (not important for transparency)\r\n\t\t\t\t\t\ttransparentData[i + 3] = 0; // Alpha (0 for full transparency)\r\n\t\t\t\t\t}\r\n\t\t\t\t\t\r\n\t\t\t\t\timageData = new ImageData(transparentData, this.tileSize, this.tileSize);\r\n\t\t\t\t\t\r\n\t\t\t\t } else {\r\n\t\t\t\t\timageData = new ImageData(new Uint8ClampedArray(4), 1, 1);\r\n\t\t\t\t\tif( _tileAnalysis.heightIndex >= 0 ) {\r\n\t\t\t\t\t\tlet molecule = this.getMoleculeByTileAnalysis(_tileAnalysis);\t\t\t\t\t\t\r\n\t\t\t\t\t\timageData = this.layerTextures[_tileAnalysis.heightIndex][molecule];//this.getTransformedTexture(this.layerTextures[_tileAnalysis.heightIndex], _tileAnalysis, molecule);\t\t\t\r\n\t\t\t\t\t\timageData = this.colorImageData(imageData, _tileAnalysis);\r\n\t\t\t\t\t\t//imageData = this.addVariationImage(imageData, _tileAnalysis);\r\n\t\t\t\t\t\timageData = this.addCornerGraphics(imageData, _tileAnalysis);\r\n\t\t\t\t\t} else {\r\n\t\t\t\t\t\tlet numPixels = this.tileSize * this.tileSize;\r\n\t\t\t\t\t\tconst blackData = new Uint8ClampedArray(numPixels * 4); // 4 values per pixel (RGBA)\r\n\t\t\t\t\t\tblackData.fill(0); // Fill with black (0, 0, 0, 255)\r\n\t\t\t\t\t\timageData = new ImageData(blackData, this.tileSize, this.tileSize);\r\n\t\t\t\t\t}\r\n\t\t\t\t}\r\n\t\r\n\t\t\t\toffscreenCtx.putImageData(imageData, x, y);\r\n\t\t\t});\r\n\t\t}\r\n\t\r\n\t\t// Drawing each layer canvas onto the main canvas\r\n\t\tObject.keys(layerCanvases).forEach(layerIndex => {\r\n\t\t\t//if( layerIndex == 0 || layerIndex == 1 || layerIndex == 2) {\r\n\t\t\tctx.drawImage(layerCanvases[layerIndex], 0, 0);\r\n\t\t//}\r\n\t\t});\r\n\t}\r\n  }"
       }
     },
     "modals": {
@@ -17749,33 +17749,33 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "generateIsoSprites",
         "html": "\r\n                <h3 style=\"margin-bottom: 20px; color: #e0e0e0; font-size: 18px;\">Generate Isometric Sprites</h3>\r\n                <div class=\"form-row\">\r\n                    <label for=\"iso-frustum\">Frustum Size:</label>\r\n                    <input type=\"number\" id=\"iso-frustum\" value=\"48\" step=\"1\" min=\"1\">\r\n                </div>\r\n                <div class=\"form-row\">\r\n                    <label for=\"iso-distance\">Distance:</label>\r\n                    <input type=\"number\" id=\"iso-distance\" value=\"100\" step=\"1\" min=\"1\">\r\n                </div>\r\n                <div class=\"form-row\">\r\n                    <label for=\"iso-size\">Sprite Size:</label>\r\n                    <input type=\"number\" id=\"iso-size\" value=\"64\" step=\"1\" min=\"1\">\r\n                </div>\r\n                <div style=\"display: flex; gap: 10px; margin-top: 20px;\">\r\n                    <button id=\"iso-cancel\">Cancel</button>\r\n                    <button id=\"iso-generate\">Generate</button>\r\n                </div>\r\n"
       },
-      "rotateShapes": {
-        "title": "Rotate Shapes",
-        "fileName": "rotateShapes",
-        "html": "\r\n                <h3>Rotate All Shapes</h3>\r\n                <div class=\"form-row\">\r\n                    <label for=\"rotate-angle\">Angle (degrees):</label>\r\n                    <input type=\"number\" id=\"rotate-angle\" value=\"0\" step=\"1\">\r\n                </div>\r\n                <div class=\"form-row\">\r\n                    <label for=\"rotate-axis\">Axis:</label>\r\n                    <select id=\"rotate-axis\">\r\n                        <option value=\"x\">X</option>\r\n                        <option value=\"y\" selected>Y</option>\r\n                        <option value=\"z\">Z</option>\r\n                    </select>\r\n                </div>\r\n                <div style=\"display: flex; gap: 10px; margin-top: 20px;\">\r\n                    <button id=\"rotate-cancel\">Cancel</button>\r\n                    <button id=\"rotate-apply\">Apply</button>\r\n                </div>\r\n"
-      },
       "moveAllShapes": {
         "title": "Move All Shapes",
         "fileName": "moveAllShapes",
         "html": "\r\n<h3>Move All Shapes</h3>\r\n<div class=\"form-row\">\r\n    <label for=\"move-x\">X Offset:</label>\r\n    <input type=\"number\" id=\"move-x\" value=\"0\" step=\"0.5\">\r\n</div>\r\n<div class=\"form-row\">\r\n    <label for=\"move-y\">Y Offset:</label>\r\n    <input type=\"number\" id=\"move-y\" value=\"0\" step=\"0.5\">\r\n</div>\r\n<div class=\"form-row\">\r\n    <label for=\"move-z\">Z Offset:</label>\r\n    <input type=\"number\" id=\"move-z\" value=\"0\" step=\"0.5\">\r\n</div>\r\n<div style=\"display: flex; gap: 10px; margin-top: 20px;\">\r\n    <button id=\"move-cancel\">Cancel</button>\r\n    <button id=\"move-apply\">Apply</button>\r\n</div>\r\n"
+      },
+      "rotateShapes": {
+        "title": "Rotate Shapes",
+        "fileName": "rotateShapes",
+        "html": "\r\n                <h3>Rotate All Shapes</h3>\r\n                <div class=\"form-row\">\r\n                    <label for=\"rotate-angle\">Angle (degrees):</label>\r\n                    <input type=\"number\" id=\"rotate-angle\" value=\"0\" step=\"1\">\r\n                </div>\r\n                <div class=\"form-row\">\r\n                    <label for=\"rotate-axis\">Axis:</label>\r\n                    <select id=\"rotate-axis\">\r\n                        <option value=\"x\">X</option>\r\n                        <option value=\"y\" selected>Y</option>\r\n                        <option value=\"z\">Z</option>\r\n                    </select>\r\n                </div>\r\n                <div style=\"display: flex; gap: 10px; margin-top: 20px;\">\r\n                    <button id=\"rotate-cancel\">Cancel</button>\r\n                    <button id=\"rotate-apply\">Apply</button>\r\n                </div>\r\n"
       }
     },
     "renderers": {
-      "Explosion": {
-        "fileName": "Explosion",
-        "script": "class Explosion extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n   init( {radius}) {\r\n        this.maxRadius = radius * this.game.config.configs.game.gridSize / 2;\r\n        this.currentRadius = 0;\r\n        this.alpha = 1;\r\n    }\r\n\r\n    update() {\r\n        this.currentRadius += this.maxRadius * 0.1;\r\n        this.alpha -= 0.05;\r\n        if( this.alpha < 0 ) {\r\n            this.parent.destroy();\r\n        }\r\n    }\r\n\r\n    draw() {\r\n        const pixelX = this.parent.position.x;\r\n        const pixelY = this.parent.position.y;\r\n\r\n        // Convert pixel to isometric\r\n        const isoPos = this.game.translator.pixelToIso(pixelX, pixelY);\r\n        const isoRadiusX = this.currentRadius;         // X-axis range remains roughly the same in isometric space\r\n        const isoRadiusY = this.currentRadius * 0.5;   // Y-axis range is halved due to isometric compression\r\n\r\n        this.game.ctx.beginPath();\r\n        this.game.ctx.ellipse(\r\n                isoPos.x,           // Center x in isometric coords\r\n                isoPos.y,           // Center y in isometric coords\r\n                isoRadiusX,          // X radius (wider due to isometric projection)\r\n                isoRadiusY,          // Y radius (shorter due to flattening)\r\n                0,                  // Rotation (none needed for isometric)\r\n                0,                  // Start angle\r\n                2 * Math.PI         // End angle (full circle)\r\n            );\r\n        this.game.ctx.fillStyle = `rgba(255, 200, 0, ${this.alpha * 0.5})`;\r\n        this.game.ctx.fill();\r\n\r\n        this.game.ctx.beginPath();\r\n        this.game.ctx.ellipse(\r\n                isoPos.x,           // Center x in isometric coords\r\n                isoPos.y,           // Center y in isometric coords\r\n                isoRadiusX * .7,          // X radius (wider due to isometric projection)\r\n                isoRadiusY * .7,          // Y radius (shorter due to flattening)\r\n                0,                  // Rotation (none needed for isometric)\r\n                0,                  // Start angle\r\n                2 * Math.PI         // End angle (full circle)\r\n            );\r\n        this.game.ctx.fillStyle = `rgba(255, 100, 0, ${this.alpha})`;\r\n        this.game.ctx.fill();\r\n    \r\n    }\r\n}"
-      },
       "EnergyShield": {
         "fileName": "EnergyShield",
         "script": "class EnergyShield extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n init(){\r\n        // Get stats component for reference\r\n        let statsComp = this.parent.getComponent('stats');\r\n        \r\n        // Shield configuration with defaults\r\n        this.maxEnergyShield = statsComp.stats.energyShield || 0;\r\n        this.energyShield = this.maxEnergyShield || 0;\r\n        this.rechargeRate = statsComp.stats.rechargeRate || 10; // Shield points per second\r\n        this.rechargeDelay = statsComp.stats.rechargeDelay || 2000; // Milliseconds before recharge starts\r\n        this.lastDamageTime = 0; // Timestamp of last damage taken\r\n        \r\n        // Add relevant stats to the stats component\r\n        statsComp.addStat('maxEnergyShield', this.maxEnergyShield);\r\n        statsComp.addStat('shieldRechargeRate', this.rechargeRate);\r\n        statsComp.addStat('shieldRechargeDelay', this.rechargeDelay);\r\n        \r\n        // Visual settings\r\n        this.shieldColor = 'rgba(77, 166, 255, 0.6)'; // Light blue default\r\n        this.shieldEmptyColor = 'rgba(77, 166, 255, 0.2)';\r\n        this.barWidth = 30;\r\n        this.barHeight = 5;\r\n        this.barOffset = 8; // Distance above health bar\r\n    }\r\n    \r\n    /**\r\n     * Handle incoming damage\r\n     * @param {number} damage - Amount of incoming damage\r\n     * @returns {Object} - Damage breakdown\r\n     */\r\n    absorbDamage(damage) {\r\n        const result = {\r\n            absorbedByShield: 0,\r\n            remainingDamage: 0\r\n        };\r\n        \r\n        // Reset recharge timer when taking damage\r\n        this.lastDamageTime = this.game.currentTime;\r\n        \r\n        if (this.energyShield > 0) {\r\n            if (damage <= this.energyShield) {\r\n                // Shield absorbs all damage\r\n                result.absorbedByShield = damage;\r\n                this.energyShield -= damage;\r\n            } else {\r\n                // Shield is depleted, remaining damage goes through\r\n                result.absorbedByShield = this.energyShield;\r\n                result.remainingDamage = damage - this.energyShield;\r\n                this.energyShield = 0;\r\n            }\r\n        } else {\r\n            // No shield available\r\n            result.remainingDamage = damage;\r\n        }\r\n        \r\n        return result;\r\n    }\r\n    \r\n    /**\r\n     * Update shield state (recharging)\r\n     */\r\n    update() {\r\n        let statsComp = this.parent.getComponent('stats');\r\n        this.maxEnergyShield = statsComp.stats.energyShield || 0;\r\n        // Check if enough time has passed since last damage\r\n        const timeSinceLastDamage = this.game.currentTime - this.lastDamageTime;\r\n        \r\n        if (timeSinceLastDamage >= this.rechargeDelay && this.energyShield < this.maxEnergyShield) {\r\n            // Calculate recharge amount based on time elapsed and rate\r\n            const deltaTime = this.game.deltaTime || 16; // Fallback to 60fps if deltaTime not available\r\n            const rechargeAmount = (this.rechargeRate * deltaTime) / 1000; // Convert to per-frame amount\r\n            \r\n            // Apply recharge\r\n            this.energyShield = Math.min(this.maxEnergyShield, this.energyShield + rechargeAmount);\r\n        }\r\n    }\r\n    \r\n    /**\r\n     * Draw shield bar\r\n     */\r\n    draw() {\r\n        if (this.maxEnergyShield <= 0) return; // Don't draw if no shield capacity\r\n        \r\n        const shieldPercentage = this.energyShield / this.maxEnergyShield;        \r\n        \r\n        // Shield bar will be slightly above that\r\n        const barY = this.parent.drawPosition.y - this.game.config.configs.game.imageSize * .3 - this.barOffset;\r\n        \r\n        // Draw shield background/empty bar\r\n        this.game.ctx.fillStyle = this.shieldEmptyColor;\r\n        this.game.ctx.fillRect(this.parent.drawPosition.x - this.barWidth/2, barY, this.barWidth, this.barHeight);\r\n        \r\n        // Draw current shield level\r\n        if (shieldPercentage > 0) {\r\n            this.game.ctx.fillStyle = this.shieldColor;\r\n            this.game.ctx.fillRect(\r\n                this.parent.drawPosition.x - this.barWidth/2, \r\n                barY, \r\n                this.barWidth * shieldPercentage, \r\n                this.barHeight\r\n            );\r\n        }\r\n        \r\n        // Draw recharge indicator if currently recharging\r\n        const timeSinceLastDamage = this.game.currentTime - this.lastDamageTime;\r\n        if (timeSinceLastDamage < this.rechargeDelay && this.energyShield < this.maxEnergyShield) {\r\n            const rechargePercentage = timeSinceLastDamage / this.rechargeDelay;\r\n            \r\n            // Draw a small indicator below the shield bar\r\n            this.game.ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';\r\n            this.game.ctx.fillRect(\r\n                this.parent.drawPosition.x - this.barWidth/2, \r\n                barY + this.barHeight + 1, \r\n                this.barWidth * rechargePercentage, \r\n                2\r\n            );\r\n        }\r\n    }\r\n    \r\n    /**\r\n     * Get current shield value\r\n     * @returns {number} Current shield amount\r\n     */\r\n    getShieldValue() {\r\n        return this.energyShield;\r\n    }\r\n    \r\n    /**\r\n     * Reset shield to full\r\n     */\r\n    resetShield() {\r\n        this.energyShield = this.maxEnergyShield;\r\n    }\r\n    \r\n    /**\r\n     * Temporarily boost shield capacity\r\n     * @param {number} amount - Amount to boost by\r\n     * @param {number} duration - Duration in milliseconds\r\n     */\r\n    boostShield(amount, duration) {\r\n        const originalMax = this.maxEnergyShield;\r\n        this.maxEnergyShield += amount;\r\n        this.energyShield += amount;\r\n        \r\n        // Reset after duration\r\n        setTimeout(() => {\r\n            this.maxEnergyShield = originalMax;\r\n            this.energyShield = Math.min(this.energyShield, this.maxEnergyShield);\r\n        }, duration);\r\n    }\r\n}"
       },
-      "HitEffectRenderer": {
-        "fileName": "HitEffectRenderer",
-        "script": "class HitEffectRenderer extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n init( ) {\r\n        this.ctx = this.game.ctx;\r\n    }\r\n\r\n    draw() {\r\n        const particleComp = this.parent.getComponent(\"HitEffectParticle\");\r\n        if (!particleComp || !particleComp.particles.length) return;\r\n\r\n        const basePos = this.game.translator.pixelToIso(this.parent.position.x, this.parent.position.y);\r\n\r\n        for (let particle of particleComp.particles) {\r\n            this.ctx.fillStyle = `${particle.color}${particle.alpha})`;\r\n            this.ctx.beginPath();\r\n            const drawX = basePos.x + particle.x;\r\n            const drawY = basePos.y + particle.y;\r\n            this.ctx.arc(drawX, drawY, particle.size, 0, Math.PI * 2);\r\n            this.ctx.fill();\r\n        }\r\n    }\r\n}"
+      "Explosion": {
+        "fileName": "Explosion",
+        "script": "class Explosion extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n   init( {radius}) {\r\n        this.maxRadius = radius * this.game.config.configs.game.gridSize / 2;\r\n        this.currentRadius = 0;\r\n        this.alpha = 1;\r\n    }\r\n\r\n    update() {\r\n        this.currentRadius += this.maxRadius * 0.1;\r\n        this.alpha -= 0.05;\r\n        if( this.alpha < 0 ) {\r\n            this.parent.destroy();\r\n        }\r\n    }\r\n\r\n    draw() {\r\n        const pixelX = this.parent.position.x;\r\n        const pixelY = this.parent.position.y;\r\n\r\n        // Convert pixel to isometric\r\n        const isoPos = this.game.translator.pixelToIso(pixelX, pixelY);\r\n        const isoRadiusX = this.currentRadius;         // X-axis range remains roughly the same in isometric space\r\n        const isoRadiusY = this.currentRadius * 0.5;   // Y-axis range is halved due to isometric compression\r\n\r\n        this.game.ctx.beginPath();\r\n        this.game.ctx.ellipse(\r\n                isoPos.x,           // Center x in isometric coords\r\n                isoPos.y,           // Center y in isometric coords\r\n                isoRadiusX,          // X radius (wider due to isometric projection)\r\n                isoRadiusY,          // Y radius (shorter due to flattening)\r\n                0,                  // Rotation (none needed for isometric)\r\n                0,                  // Start angle\r\n                2 * Math.PI         // End angle (full circle)\r\n            );\r\n        this.game.ctx.fillStyle = `rgba(255, 200, 0, ${this.alpha * 0.5})`;\r\n        this.game.ctx.fill();\r\n\r\n        this.game.ctx.beginPath();\r\n        this.game.ctx.ellipse(\r\n                isoPos.x,           // Center x in isometric coords\r\n                isoPos.y,           // Center y in isometric coords\r\n                isoRadiusX * .7,          // X radius (wider due to isometric projection)\r\n                isoRadiusY * .7,          // Y radius (shorter due to flattening)\r\n                0,                  // Rotation (none needed for isometric)\r\n                0,                  // Start angle\r\n                2 * Math.PI         // End angle (full circle)\r\n            );\r\n        this.game.ctx.fillStyle = `rgba(255, 100, 0, ${this.alpha})`;\r\n        this.game.ctx.fill();\r\n    \r\n    }\r\n}"
       },
       "Health": {
         "fileName": "Health",
         "script": "class Health extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n  init(){\r\n        let statsComp = this.parent.getComponent('stats');\r\n        this.hp = statsComp.stats.hp;\r\n        \r\n        statsComp.addStat('maxHp', this.hp);\r\n    }\r\n    update() {        \r\n        if (this.hp <= 0){            \r\n            this.parent.destroy();\r\n        }\r\n    }\r\n\r\n    draw() {\r\n        let imageSize = this.game.config.configs.game.imageSize;\r\n        let statsComp = this.parent.getComponent('stats');\r\n        const healthPercentage = this.hp / statsComp.stats.maxHp;\r\n        const barWidth = 30;\r\n        this.game.ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';\r\n\r\n        const isoPos = this.game.translator.pixelToIso(this.parent.position.x, this.parent.position.y)\r\n\r\n        this.game.ctx.fillRect(isoPos.x - barWidth/2, isoPos.y - imageSize * .3, barWidth, 5);\r\n        if( healthPercentage >= 0 ) {\r\n            this.game.ctx.fillStyle = healthPercentage > 0.5 ? 'rgba(0, 255, 0, 0.5)' : healthPercentage > 0.25 ? 'rgba(255, 255, 0, 0.5)' : 'rgba(255, 0, 0, 0.5)';\r\n            this.game.ctx.fillRect(isoPos.x - barWidth/2, isoPos.y - imageSize * .3, barWidth * healthPercentage, 5);\r\n        }\r\n    }\r\n}"
+      },
+      "HitEffectRenderer": {
+        "fileName": "HitEffectRenderer",
+        "script": "class HitEffectRenderer extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n init( ) {\r\n        this.ctx = this.game.ctx;\r\n    }\r\n\r\n    draw() {\r\n        const particleComp = this.parent.getComponent(\"HitEffectParticle\");\r\n        if (!particleComp || !particleComp.particles.length) return;\r\n\r\n        const basePos = this.game.translator.pixelToIso(this.parent.position.x, this.parent.position.y);\r\n\r\n        for (let particle of particleComp.particles) {\r\n            this.ctx.fillStyle = `${particle.color}${particle.alpha})`;\r\n            this.ctx.beginPath();\r\n            const drawX = basePos.x + particle.x;\r\n            const drawY = basePos.y + particle.y;\r\n            this.ctx.arc(drawX, drawY, particle.size, 0, Math.PI * 2);\r\n            this.ctx.fill();\r\n        }\r\n    }\r\n}"
       },
       "LightningRenderer": {
         "fileName": "LightningRenderer",
@@ -17811,27 +17811,6 @@ const DEFAULT_PROJECT_CONFIG = {
         "defaultPrompt": "I am developing a tower defense game featuring a simple 3d art style.  Generate a new object based on the following context.    Please provide ONLY a valid JSON object with keys MATCHING EXACTLY to the context above. It absolutely MUST have an appropriate 'id' field. Ensure all existing key types are maintained. Do not wrap the json object with any other text.",
         "fileName": "ai"
       },
-      "codeMirror": {
-        "title": "Code Mirror",
-        "theme": "codeMirrorTheme",
-        "fileName": "codeMirror"
-      },
-      "editor": {
-        "title": "Editor Config",
-        "editorCategories": "",
-        "theme": "claude2",
-        "editorModules": [
-          "terrainModule",
-          "graphicsModule",
-          "scriptModule",
-          "aiPromptModule",
-          "audioModule",
-          "exportScriptModule",
-          "textureEditor"
-        ],
-        "path": "/",
-        "fileName": "editor"
-      },
       "game": {
         "gridSize": 48,
         "imageSize": 128,
@@ -17862,6 +17841,11 @@ const DEFAULT_PROJECT_CONFIG = {
         "is3D": true,
         "palette": "main"
       },
+      "codeMirror": {
+        "title": "Code Mirror",
+        "theme": "codeMirrorTheme",
+        "fileName": "codeMirror"
+      },
       "state": {
         "level": "level1",
         "enemies": [],
@@ -17889,6 +17873,22 @@ const DEFAULT_PROJECT_CONFIG = {
         "modifierSet": "global",
         "fileName": "state",
         "population": 0
+      },
+      "editor": {
+        "title": "Editor Config",
+        "editorCategories": "",
+        "theme": "claude2",
+        "editorModules": [
+          "terrainModule",
+          "graphicsModule",
+          "scriptModule",
+          "aiPromptModule",
+          "audioModule",
+          "exportScriptModule",
+          "textureEditor"
+        ],
+        "path": "/",
+        "fileName": "editor"
       }
     },
     "editorModules": {
@@ -17910,6 +17910,23 @@ const DEFAULT_PROJECT_CONFIG = {
           "Component",
           "audioEditor"
         ]
+      },
+      "exportScriptModule": {
+        "title": "Export Scripts Module",
+        "library": "ZipExporter"
+      },
+      "scriptModule": {
+        "title": "Script Editor",
+        "container": "script-editor-container",
+        "interface": "scriptEditor",
+        "inputElement": "textarea",
+        "inputDataType": "string",
+        "libraries": [
+          "scriptEditor"
+        ],
+        "propertyNames": "[\"script\", \"html\", \"css\"]",
+        "loadHook": "editScript",
+        "saveHook": "saveScript"
       },
       "graphicsModule": {
         "title": "Graphics Editor",
@@ -17935,23 +17952,6 @@ const DEFAULT_PROJECT_CONFIG = {
         "inputDataType": "json",
         "loadHook": "renderGraphicsObject",
         "saveHook": "saveGraphicsObject"
-      },
-      "exportScriptModule": {
-        "title": "Export Scripts Module",
-        "library": "ZipExporter"
-      },
-      "scriptModule": {
-        "title": "Script Editor",
-        "container": "script-editor-container",
-        "interface": "scriptEditor",
-        "inputElement": "textarea",
-        "inputDataType": "string",
-        "libraries": [
-          "scriptEditor"
-        ],
-        "propertyNames": "[\"script\", \"html\", \"css\"]",
-        "loadHook": "editScript",
-        "saveHook": "saveScript"
       },
       "terrainModule": {
         "title": "Terrain Editor",
@@ -18020,11 +18020,6 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "cyberpunk",
         "css": "/* Default Cyberpunk Theme */ @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Rajdhani:wght@300;400;500;600;700&display=swap');  body {     font-family: 'Orbitron', 'Rajdhani', sans-serif;     background-color: #0a0a16;     color: #00f0ff; }  .sidebar {     background-color: rgba(15, 15, 35, 0.7);     border: 1px solid #00f0ff;     box-shadow: 0 0 10px #00f0ff, inset 0 0 20px rgba(0, 240, 255, 0.2); }  .object-item {     background-color: rgba(0, 0, 35, 0.6);     border-left: 2px solid #fe01fe;     text-transform: uppercase;     letter-spacing: 1px; }  .object-item:hover {     background-color: rgba(254, 1, 254, 0.2);     transform: translateX(5px); }  .object-item.selected {     background-color: rgba(254, 1, 254, 0.3);     border-left: 4px solid #fe01fe;     box-shadow: 0 0 8px rgba(254, 1, 254, 0.5); }  .editor {     background-color: rgba(15, 15, 35, 0.7);     border: 1px solid #fe01fe;     box-shadow: 0 0 15px rgba(254, 1, 254, 0.3); }  #three-js-container {     border: 1px solid rgba(0, 240, 255, 0.5); }  .preview-canvas-container {     border: 1px solid #fe01fe;     box-shadow: 0 0 10px rgba(254, 1, 254, 0.3); }  .preview {     background-color: rgba(15, 15, 35, 0.7);     border: 1px solid #00f0ff;     box-shadow: 0 0 15px rgba(0, 240, 255, 0.3); }  #preview-canvas {     background-color: transparent;     border: 1px solid rgba(0, 240, 255, 0.5); }  .camera-controls {     background: rgba(0, 0, 20, 0.7);     border: 1px solid #00f0ff; }  .camera-controls button {     background-color: rgba(0, 240, 255, 0.2);     border: 1px solid #00f0ff;     color: #00f0ff; }  .camera-controls .color-picker {     border: 1px solid #00f0ff; }  .camera-controls .size-slider {     background: #101028;     border: 1px solid #00f0ff; }  label {     font-weight: bold;     text-transform: uppercase;     letter-spacing: 1px;     color: #fe01fe; }  input, textarea, select {     border: 1px solid #00f0ff;     background-color: rgba(0, 0, 35, 0.6);     color: #00f0ff;     box-shadow: 0 0 5px rgba(0, 240, 255, 0.3); }  input:focus, textarea:focus, select:focus {     outline: none;     border-color: #fe01fe;     box-shadow: 0 0 10px rgba(254, 1, 254, 0.5); }  button {     background-color: rgba(0, 240, 255, 0.2);     border: 1px solid #00f0ff;     color: #00f0ff;     text-transform: uppercase;     letter-spacing: 1px; }  button:after {     background: linear-gradient(to right, transparent, rgba(0, 240, 255, 0.2), transparent); }  button:hover {     background-color: rgba(0, 240, 255, 0.3);     box-shadow: 0 0 10px rgba(0, 240, 255, 0.5), 0 0 20px rgba(0, 240, 255, 0.2);     transform: translateY(-2px); }  button:hover:after {     transform: translateX(100%) rotate(30deg); }  button.primary {     background-color: rgba(254, 1, 254, 0.2);     border: 1px solid #fe01fe;     color: #fe01fe; }  button.primary:hover {     background-color: rgba(254, 1, 254, 0.3);     box-shadow: 0 0 10px rgba(254, 1, 254, 0.5), 0 0 20px rgba(254, 1, 254, 0.2); }  button.danger {     background-color: rgba(255, 0, 76, 0.2);     border: 1px solid #ff004c;     color: #ff004c; }  button.danger:hover {     background-color: rgba(255, 0, 76, 0.3);     box-shadow: 0 0 10px rgba(255, 0, 76, 0.5), 0 0 20px rgba(255, 0, 76, 0.2); }  button.active {     border: 1px solid #00ff9d;     box-shadow: 0 0 10px rgba(0, 255, 157, 0.5);     color: #00ff9d; }  .modal {     background-color: rgba(0, 0, 20, 0.85);     backdrop-filter: blur(5px); }  .modal-content {     background-color: rgba(15, 15, 35, 0.9);     border: 1px solid #00f0ff;     box-shadow: 0 0 30px rgba(0, 240, 255, 0.3), 0 0 60px rgba(0, 240, 255, 0.1); }  .property-list {     border: 1px solid #00f0ff;     background-color: rgba(0, 0, 35, 0.6); }  .tab-navigation {     border-bottom: 1px solid #00f0ff; }  .tab {     text-transform: uppercase;     letter-spacing: 1px; }  .tab:hover {     background-color: rgba(0, 240, 255, 0.1); }  .tab.active {     border-bottom: 3px solid #fe01fe;     box-shadow: 0 5px 10px -5px rgba(254, 1, 254, 0.5);     font-weight: bold; }  .instructions {     background-color: rgba(0, 0, 35, 0.6);     border-left: 4px solid #fe01fe;     box-shadow: 0 0 10px rgba(254, 1, 254, 0.2); }  #grid-display {     background-color: rgba(0, 0, 20, 0.7);     border: 1px solid #00f0ff;     box-shadow: 0 0 10px rgba(0, 240, 255, 0.3); }  .success-message {     color: #00ff9d;     text-transform: uppercase;     letter-spacing: 1px;     animation: fadeOut 2s forwards;     animation-delay: 1s; }  .warning {     background-color: rgba(255, 0, 76, 0.1);     border-left: 4px solid #ff004c;     box-shadow: 0 0 10px rgba(255, 0, 76, 0.2); }  .main-content-container {     background-color: #080815;     color: #00f0ff; }  .content-sidebar {     background: linear-gradient(180deg, rgba(20, 20, 50, 0.8), rgba(10, 10, 30, 0.8));     border-right: 1px solid #00f0ff;     box-shadow: 0 0 20px rgba(0, 240, 255, 0.2); }  #graphics-rightbar {     background: linear-gradient(180deg, rgba(20, 20, 50, 0.8), rgba(10, 10, 30, 0.8));     border-left: 1px solid #00f0ff;     box-shadow: 0 0 20px rgba(0, 240, 255, 0.2); }  .grid-background {     background: #05051a;     background-image: radial-gradient(rgba(0, 240, 255, 0.1) 1px, transparent 1px);     background-size: 20px 20px; }  .toolbar {     background: linear-gradient(90deg, rgba(20, 20, 50, 0.8), rgba(10, 10, 30, 0.8));     border-bottom: 1px solid #00f0ff; }  .btn {     border: 1px solid #00f0ff;     background-color: rgba(0, 240, 255, 0.1);     color: #00f0ff;     text-transform: uppercase; }  .btn:hover {     background-color: rgba(0, 240, 255, 0.2);     box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);     transform: translateY(-2px); }  .btn-primary {     background-color: rgba(254, 1, 254, 0.2);     border: 1px solid #fe01fe;     color: #fe01fe; }  .btn-primary:hover {     background-color: rgba(254, 1, 254, 0.3);     box-shadow: 0 0 10px rgba(254, 1, 254, 0.5); }  .btn-danger {     background-color: rgba(255, 0, 76, 0.2);     border: 1px solid #ff004c;     color: #ff004c; }  .btn-danger:hover {     background-color: rgba(255, 0, 76, 0.3);     box-shadow: 0 0 10px rgba(255, 0, 76, 0.5); }  .btn-secondary {     background-color: rgba(0, 240, 255, 0.15);     border: 1px solid #00f0ff; }  .btn-secondary:hover {     background-color: rgba(0, 240, 255, 0.25);     box-shadow: 0 0 10px rgba(0, 240, 255, 0.5); }  .btn-special {     background-color: rgba(0, 255, 157, 0.2);     border: 1px solid #00ff9d;     color: #00ff9d; }  .btn-special:hover {     background-color: rgba(0, 255, 157, 0.3);     box-shadow: 0 0 10px rgba(0, 255, 157, 0.5); }  #shape-list {     border-bottom: 1px solid rgba(0, 240, 255, 0.2); }  .shape-item {     background-color: rgba(0, 0, 35, 0.6);     border: 1px solid #00f0ff; }  .shape-item:hover {     background-color: rgba(0, 240, 255, 0.1);     transform: translateX(5px); }  .shape-item.active {     background-color: rgba(0, 255, 157, 0.1);     border-color: #00ff9d;     color: #00ff9d;     box-shadow: 0 0 10px rgba(0, 255, 157, 0.3); }  #inspector {     background: rgba(20, 20, 50, 0.8);     border-top: 1px solid #00f0ff; }  .form-row label {     color: #fe01fe; }  .form-row input, .form-row select {     border: 1px solid #00f0ff;     background-color: rgba(0, 0, 35, 0.6);     color: #00f0ff;     box-shadow: 0 0 5px rgba(0, 240, 255, 0.3); }  .scene-info {     background: rgba(0, 0, 20, 0.8);     color: #00f0ff;     box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);     border: 1px solid #00f0ff; }  .button-danger {     background-color: rgba(255, 0, 76, 0.2);     border: 1px solid #ff004c;     color: #ff004c; }  .button-danger:hover {     background-color: rgba(255, 0, 76, 0.3);     box-shadow: 0 0 10px rgba(255, 0, 76, 0.5); }  h2, h3 {     color: #fe01fe;     text-transform: uppercase;     letter-spacing: 3px;     margin-bottom: 15px;     padding-bottom: 5px;     border-bottom: 1px solid #00f0ff;     text-shadow: 0 0 5px rgba(254, 1, 254, 0.7); }  h2:hover, h3:hover {     text-shadow: -2px 0 #00f0ff, 2px 0 #ff004c; }  .container::before {     content: '';     position: fixed;     top: 0;     left: 0;     right: 0;     bottom: 0;     background:          linear-gradient(rgba(0, 240, 255, 0.07) 1px, transparent 1px),         linear-gradient(90deg, rgba(0, 240, 255, 0.07) 1px, transparent 1px);     background-size: 40px 40px;     background-position: center center;     z-index: -1;     perspective: 1000px;     transform-style: preserve-3d;     transform: rotateX(75deg) translateZ(-100px);     pointer-events: none; }  #json-content {     background-color: rgba(0, 0, 35, 0.8);     border: 1px solid #00f0ff;     color: #00ff9d;     font-family: 'Courier New', monospace;     padding: 15px;     box-shadow: 0 0 15px rgba(0, 240, 255, 0.2), inset 0 0 30px rgba(0, 0, 35, 0.5); }  .ref-value-item {     background-color: #405060; }  .remove-ref-btn {     background: none;     border: none;     color: #ff6b6b;     cursor: pointer; }  ::-webkit-scrollbar {     width: 8px;     height: 8px; }  ::-webkit-scrollbar-track {     background: rgba(0, 0, 35, 0.6); }  ::-webkit-scrollbar-thumb {     background: #00f0ff;     border-radius: 0; }  ::-webkit-scrollbar-thumb:hover {     background: #fe01fe; }  button:active::before {     content: '';     position: absolute;     top: 0;     left: 0;     width: 100%;     height: 100%;     background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.4), transparent);     animation: loading 1s infinite; }"
       },
-      "Neon Dune": {
-        "title": "Neon Dune",
-        "fileName": "Neon Dune",
-        "css": "body { background-color: #1a0f05; color: #ffffff; font-family: 'Arial', sans-serif; }\r\n\r\nh1, h2, h3 { color: #00ffbf; }\r\n\r\n.button-primary { background-color: #00ffbf; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; transition: all 0.3s ease; }\r\n.button-primary:hover { transform: scale(1.05); box-shadow: 0 0 15px #00ffbf; }\r\n\r\n.link { color: #00ffbf; text-decoration: none; }\r\n.link:hover { text-decoration: underline; }\r\n\r\n.card { background-color: #2d1e13; border-radius: 10px; padding: 20px; margin: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }\r\n\r\ninput, textarea { background-color: #2d1e13; color: #ffffff; border: 1px solid #00ffbf; padding: 8px; border-radius: 5px; }\r\n\r\nheader { background-color: #00ffbf; padding: 20px; text-align: center; box-shadow: 0 4px 6px rgba(0,255,191,0.3); }\r\n\r\nfooter { background-color: #2d1e13; color: #ffffff; padding: 20px; text-align: center; border-top: 1px solid #00ffbf; }\r\n"
-      },
       "medieval": {
         "title": "Medieval",
         "fileName": "medieval",
@@ -18035,20 +18030,25 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "professional",
         "css": "/* Professional Theme */ @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap');  body {     font-family: 'Inter', 'Roboto Mono', sans-serif;     background-color: #1a1a2e;     color: #e6e6fa;     line-height: 1.6; }  .sidebar {     background-color: rgba(34, 34, 54, 0.95);     border: 1px solid #4b5e87;     box-shadow: 0 4px 12px rgba(75, 94, 135, 0.2); }  .object-item {     background-color: rgba(34, 34, 54, 0.8);     border-left: 2px solid #8a4af0;     text-transform: uppercase;     letter-spacing: 0.5px;     transition: all 0.3s ease; }  .object-item:hover {     background-color: rgba(138, 74, 240, 0.15);     transform: translateX(3px); }  .object-item.selected {     background-color: rgba(138, 74, 240, 0.25);     border-left: 3px solid #8a4af0;     box-shadow: 0 0 6px rgba(138, 74, 240, 0.4); }  .editor {     background-color: rgba(34, 34, 54, 0.95);     border: 1px solid #4b5e87;     box-shadow: 0 4px 12px rgba(75, 94, 135, 0.15); }  #three-js-container {     border: 1px solid rgba(75, 94, 135, 0.6); }  .preview-canvas-container {     border: 1px solid #8a4af0;     box-shadow: 0 4px 12px rgba(138, 74, 240, 0.1); }  .preview {     background-color: rgba(34, 34, 54, 0.9);     border: 1px solid #4b5e87;     box-shadow: 0 4px 12px rgba(75, 94, 135, 0.15); }  #preview-canvas {     background-color: transparent;     border: 1px solid rgba(75, 94, 135, 0.5); }  .camera-controls {     background: rgba(26, 26, 46, 0.9);     border: 1px solid #4b5e87; }  .camera-controls button {     background-color: rgba(75, 94, 135, 0.3);     border: 1px solid #4b5e87;     color: #e6e6fa;     transition: all 0.3s ease; }  .camera-controls button:hover {     background-color: rgba(75, 94, 135, 0.5);     box-shadow: 0 2px 8px rgba(75, 94, 135, 0.3); }  .camera-controls .color-picker {     border: 1px solid #4b5e87; }  .camera-controls .size-slider {     background: #2a2a42;     border: 1px solid #4b5e87; }  label {     font-weight: 500;     text-transform: uppercase;     letter-spacing: 0.5px;     color: #8a4af0; }  input, textarea, select {     border: 1px solid #4b5e87;     background-color: rgba(34, 34, 54, 0.8);     color: #e6e6fa;     box-shadow: 0 2px 6px rgba(75, 94, 135, 0.1);     transition: all 0.3s ease; }  input:focus, textarea:focus, select:focus {     outline: none;     border-color: #8a4af0;     box-shadow: 0 0 8px rgba(138, 74, 240, 0.3); }  button {     background-color: rgba(75, 94, 135, 0.3);     border: 1px solid #4b5e87;     color: #e6e6fa;     text-transform: uppercase;     letter-spacing: 0.5px;     transition: all 0.3s ease; }  button:hover {     background-color: rgba(75, 94, 135, 0.5);     box-shadow: 0 2px 8px rgba(75, 94, 135, 0.3);     transform: translateY(-1px); }  button.primary {     background-color: rgba(138, 74, 240, 0.3);     border: 1px solid #8a4af0;     color: #e6e6fa; }  button.primary:hover {     background-color: rgba(138, 74, 240, 0.5);     box-shadow: 0 2px 8px rgba(138, 74, 240, 0.3); }  button.danger {     background-color: rgba(240, 74, 74, 0.3);     border: 1px solid #f04a4a;     color: #e6e6fa; }  button.danger:hover {     background-color: rgba(240, 74, 74, 0.5);     box-shadow: 0 2px 8px rgba(240, 74, 74, 0.3); }  button.active {     border: 1px solid #00cc99;     box-shadow: 0 0 8px rgba(0, 204, 153, 0.4);     color: #00cc99; }  .modal {     background-color: rgba(26, 26, 46, 0.9);     backdrop-filter: blur(3px); }  .modal-content {     background-color: rgba(34, 34, 54, 0.95);     border: 1px solid #4b5e87;     box-shadow: 0 8px 24px rgba(75, 94, 135, 0.2); }  .property-list {     border: 1px solid #4b5e87;     background-color: rgba(34, 34, 54, 0.8); }  .tab-navigation {     border-bottom: 1px solid #4b5e87; }  .tab {     text-transform: uppercase;     letter-spacing: 0.5px;     transition: all 0.3s ease; }  .tab:hover {     background-color: rgba(75, 94, 135, 0.2); }  .tab.active {     border-bottom: 2px solid #8a4af0;     box-shadow: 0 4px 8px -4px rgba(138, 74, 240, 0.4);     font-weight: 600; }  .instructions {     background-color: rgba(34, 34, 54, 0.8);     border-left: 3px solid #8a4af0;     box-shadow: 0 2px 6px rgba(138, 74, 240, 0.1); }  #grid-display {     background-color: rgba(26, 26, 46, 0.9);     border: 1px solid #4b5e87;     box-shadow: 0 4px 12px rgba(75, 94, 135, 0.15); }  .success-message {     color: #00cc99;     text-transform: uppercase;     letter-spacing: 0.5px;     animation: fadeOut 2s forwards;     animation-delay: 1s; }  .warning {     background-color: rgba(240, 74, 74, 0.15);     border-left: 3px solid #f04a4a;     box-shadow: 0 2px 6px rgba(240, 74, 74, 0.1); }  .main-content-container {     background-color: #1f1f38;     color: #e6e6fa; }  .content-sidebar {     background: linear-gradient(180deg, rgba(34, 34, 54, 0.95), rgba(26, 26, 46, 0.95));     border-right: 1px solid #4b5e87;     box-shadow: 0 4px 12px rgba(75, 94, 135, 0.15); }  #graphics-rightbar {     background: linear-gradient(180deg, rgba(34, 34, 54, 0.95), rgba(26, 26, 46, 0.95));     border-left: 1px solid #4b5e87;     box-shadow: 0 4px 12px rgba(75, 94, 135, 0.15); }  .grid-background {     background: #1a1a2e;     background-image: radial-gradient(rgba(75, 94, 135, 0.15) 1px, transparent 1px);     background-size: 30px 30px; }  .toolbar {     background: linear-gradient(90deg, rgba(34, 34, 54, 0.95), rgba(26, 26, 46, 0.95));     border-bottom: 1px solid #4b5e87; }  .btn {     border: 1px solid #4b5e87;     background-color: rgba(75, 94, 135, 0.3);     color: #e6e6fa;     text-transform: uppercase;     transition: all 0.3s ease; }  .btn:hover {     background-color: rgba(75, 94, 135, 0.5);     box-shadow: 0 2px 8px rgba(75, 94, 135, 0.3);     transform: translateY(-1px); }  .btn-primary {     background-color: rgba(138, 74, 240, 0.3);     border: 1px solid #8a4af0;     color: #e6e6fa; }  .btn-primary:hover {     background-color: rgba(138, 74, 240, 0.5);     box-shadow: 0 2px 8px rgba(138, 74, 240, 0.3); }  .btn-danger {     background-color: rgba(240, 74, 74, 0.3);     border: 1px solid #f04a4a;     color: #e6e6fa; }  .btn-danger:hover {     background-color: rgba(240, 74, 74, 0.5);     box-shadow: 0 2px 8px rgba(240, 74, 74, 0.3); }  .btn-secondary {     background-color: rgba(75, 94, 135, 0.25);     border: 1px solid #4b5e87; }  .btn-secondary:hover {     background-color: rgba(75, 94, 135, 0.4);     box-shadow: 0 2px 8px rgba(75, 94, 135, 0.3); }  .btn-special {     background-color: rgba(0, 204, 153, 0.3);     border: 1px solid #00cc99;     color: #e6e6fa; }  .btn-special:hover {     background-color: rgba(0, 204, 153, 0.5);     box-shadow: 0 2px 8px rgba(0, 204, 153, 0.3); }  #shape-list {     border-bottom: 1px solid rgba(75, 94, 135, 0.3); }  .shape-item {     background-color: rgba(34, 34, 54, 0.8);     border: 1px solid #4b5e87;     transition: all 0.3s ease; }  .shape-item:hover {     background-color: rgba(75, 94, 135, 0.2);     transform: translateX(3px); }  .shape-item.active {     background-color: rgba(0, 204, 153, 0.15);     border-color: #00cc99;     color: #00cc99;     box-shadow: 0 0 8px rgba(0, 204, 153, 0.3); }  #inspector {     background: rgba(34, 34, 54, 0.95);     border-top: 1px solid #4b5e87; }  .form-row label {     color: #8a4af0; }  .form-row input, .form-row select {     border: 1px solid #4b5e87;     background-color: rgba(34, 34, 54, 0.8);     color: #e6e6fa;     box-shadow: 0 2px 6px rgba(75, 94, 135, 0.1); }  .scene-info {     background: rgba(26, 26, 46, 0.9);     color: #e6e6fa;     box-shadow: 0 4px 12px rgba(75, 94, 135, 0.15);     border: 1px solid #4b5e87; }  .button-danger {     background-color: rgba(240, 74, 74, 0.3);     border: 1px solid #f04a4a;     color: #e6e6fa; }  .button-danger:hover {     background-color: rgba(240, 74, 74, 0.5);     box-shadow: 0 2px 8px rgba(240, 74, 74, 0.3); }  h2, h3 {     color: #8a4af0;     text-transform: uppercase;     letter-spacing: 1px;     margin-bottom: 12px;     padding-bottom: 4px;     border-bottom: 1px solid #4b5e87;     text-shadow: 0 0 4px rgba(138, 74, 240, 0.3); }  ::-webkit-scrollbar {     width: 6px;     height: 6px; }  ::-webkit-scrollbar-track {     background: rgba(34, 34, 54, 0.8); }  ::-webkit-scrollbar-thumb {     background: #4b5e87;     border-radius: 3px; }  ::-webkit-scrollbar-thumb:hover {     background: #8a4af0; }"
       },
+      "Neon Dune": {
+        "title": "Neon Dune",
+        "fileName": "Neon Dune",
+        "css": "body { background-color: #1a0f05; color: #ffffff; font-family: 'Arial', sans-serif; }\r\n\r\nh1, h2, h3 { color: #00ffbf; }\r\n\r\n.button-primary { background-color: #00ffbf; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; transition: all 0.3s ease; }\r\n.button-primary:hover { transform: scale(1.05); box-shadow: 0 0 15px #00ffbf; }\r\n\r\n.link { color: #00ffbf; text-decoration: none; }\r\n.link:hover { text-decoration: underline; }\r\n\r\n.card { background-color: #2d1e13; border-radius: 10px; padding: 20px; margin: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }\r\n\r\ninput, textarea { background-color: #2d1e13; color: #ffffff; border: 1px solid #00ffbf; padding: 8px; border-radius: 5px; }\r\n\r\nheader { background-color: #00ffbf; padding: 20px; text-align: center; box-shadow: 0 4px 6px rgba(0,255,191,0.3); }\r\n\r\nfooter { background-color: #2d1e13; color: #ffffff; padding: 20px; text-align: center; border-top: 1px solid #00ffbf; }\r\n"
+      },
       "professional2": {
         "title": "Professional Warm",
         "fileName": "professional2",
         "css": "/* Professional Cyberpunk Variation - Warm Edition */ @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap');  body {     font-family: 'Inter', 'Roboto Mono', sans-serif;     background-color: #2b1e1e; /* Deep reddish-brown */     color: #f4e1d2; /* Soft cream for text */     line-height: 1.6; }  .sidebar {     background-color: rgba(54, 36, 36, 0.95); /* Muted dark red */     border: 1px solid #7a4e4e; /* Subtle reddish-gray */     box-shadow: 0 4px 12px rgba(122, 78, 78, 0.2); }  .object-item {     background-color: rgba(54, 36, 36, 0.8);     border-left: 2px solid #d97706; /* Warm amber */     text-transform: uppercase;     letter-spacing: 0.5px;     transition: all 0.3s ease; }  .object-item:hover {     background-color: rgba(217, 119, 6, 0.15);     transform: translateX(3px); }  .object-item.selected {     background-color: rgba(217, 119, 6, 0.25);     border-left: 3px solid #d97706;     box-shadow: 0 0 6px rgba(217, 119, 6, 0.4); }  .editor {     background-color: rgba(54, 36, 36, 0.95);     border: 1px solid #7a4e4e;     box-shadow: 0 4px 12px rgba(122, 78, 78, 0.15); }  #three-js-container {     border: 1px solid rgba(122, 78, 78, 0.6); }  .preview-canvas-container {     border: 1px solid #d97706;     box-shadow: 0 4px 12px rgba(217, 119, 6, 0.1); }  .preview {     background-color: rgba(54, 36, 36, 0.9);     border: 1px solid #7a4e4e;     box-shadow: 0 4px 12px rgba(122, 78, 78, 0.15); }  #preview-canvas {     background-color: transparent;     border: 1px solid rgba(122, 78, 78, 0.5); }  .camera-controls {     background: rgba(46, 28, 28, 0.9); /* Darker reddish tint */     border: 1px solid #7a4e4e; }  .camera-controls button {     background-color: rgba(122, 78, 78, 0.3);     border: 1px solid #7a4e4e;     color: #f4e1d2;     transition: all 0.3s ease; }  .camera-controls button:hover {     background-color: rgba(122, 78, 78, 0.5);     box-shadow: 0 2px 8px rgba(122, 78, 78, 0.3); }  .camera-controls .color-picker {     border: 1px solid #7a4e4e; }  .camera-controls .size-slider {     background: #3a2424;     border: 1px solid #7a4e4e; }  label {     font-weight: 500;     text-transform: uppercase;     letter-spacing: 0.5px;     color: #d97706; /* Amber for labels */ }  input, textarea, select {     border: 1px solid #7a4e4e;     background-color: rgba(54, 36, 36, 0.8);     color: #f4e1d2;     box-shadow: 0 2px 6px rgba(122, 78, 78, 0.1);     transition: all 0.3s ease; }  input:focus, textarea:focus, select:focus {     outline: none;     border-color: #d97706;     box-shadow: 0 0 8px rgba(217, 119, 6, 0.3); }  button {     background-color: rgba(122, 78, 78, 0.3);     border: 1px solid #7a4e4e;     color: #f4e1d2;     text-transform: uppercase;     letter-spacing: 0.5px;     transition: all 0.3s ease; }  button:hover {     background-color: rgba(122, 78, 78, 0.5);     box-shadow: 0 2px 8px rgba(122, 78, 78, 0.3);     transform: translateY(-1px); }  button.primary {     background-color: rgba(217, 119, 6, 0.3);     border: 1px solid #d97706;     color: #f4e1d2; }  button.primary:hover {     background-color: rgba(217, 119, 6, 0.5);     box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3); }  button.danger {     background-color: rgba(220, 38, 38, 0.3); /* Softer red */     border: 1px solid #dc2626;     color: #f4e1d2; }  button.danger:hover {     background-color: rgba(220, 38, 38, 0.5);     box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3); }  button.active {     border: 1px solid #10b981; /* Emerald green for active state */     box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);     color: #10b981; }  .modal {     background-color: rgba(46, 28, 28, 0.9);     backdrop-filter: blur(3px); }  .modal-content {     background-color: rgba(54, 36, 36, 0.95);     border: 1px solid #7a4e4e;     box-shadow: 0 8px 24px rgba(122, 78, 78, 0.2); }  .property-list {     border: 1px solid #7a4e4e;     background-color: rgba(54, 36, 36, 0.8); }  .tab-navigation {     border-bottom: 1px solid #7a4e4e; }  .tab {     text-transform: uppercase;     letter-spacing: 0.5px;     transition: all 0.3s ease; }  .tab:hover {     background-color: rgba(122, 78, 78, 0.2); }  .tab.active {     border-bottom: 2px solid #d97706;     box-shadow: 0 4px 8px -4px rgba(217, 119, 6, 0.4);     font-weight: 600; }  .instructions {     background-color: rgba(54, 36, 36, 0.8);     border-left: 3px solid #d97706;     box-shadow: 0 2px 6px rgba(217, 119, 6, 0.1); }  #grid-display {     background-color: rgba(46, 28, 28, 0.9);     border: 1px solid #7a4e4e;     box-shadow: 0 4px 12px rgba(122, 78, 78, 0.15); }  .success-message {     color: #10b981; /* Emerald green for success */     text-transform: uppercase;     letter-spacing: 0.5px;     animation: fadeOut 2s forwards;     animation-delay: 1s; }  .warning {     background-color: rgba(220, 38, 38, 0.15);     border-left: 3px solid #dc2626;     box-shadow: 0 2px 6px rgba(220, 38, 38, 0.1); }  .main-content-container {     background-color: #332121; /* Slightly lighter reddish-brown */     color: #f4e1d2; }  .content-sidebar {     background: linear-gradient(180deg, rgba(54, 36, 36, 0.95), rgba(46, 28, 28, 0.95));     border-right: 1px solid #7a4e4e;     box-shadow: 0 4px 12px rgba(122, 78, 78, 0.15); }  #graphics-rightbar {     background: linear-gradient(180deg, rgba(54, 36, 36, 0.95), rgba(46, 28, 28, 0.95));     border-left: 1px solid #7a4e4e;     box-shadow: 0 4px 12px rgba(122, 78, 78, 0.15); }  .grid-background {     background: #2b1e1e;     background-image: radial-gradient(rgba(122, 78, 78, 0.15) 1px, transparent 1px);     background-size:30px 30px; }  .toolbar {     background: linear-gradient(90deg, rgba(54, 36, 36, 0.95), rgba(46, 28, 28, 0.95));     border-bottom: 1px solid #7a4e4e; }  .btn {     border: 1px solid #7a4e4e;     background-color: rgba(122, 78, 78, 0.3);     color: #f4e1d2;     text-transform: uppercase;     transition: all 0.3s ease; }  .btn:hover {     background-color: rgba(122, 78, 78, 0.5);     box-shadow: 0 2px 8px rgba(122, 78, 78, 0.3);     transform: translateY(-1px); }  .btn-primary {     background-color: rgba(217, 119, 6, 0.3);     border: 1px solid #d97706;     color: #f4e1d2; }  .btn-primary:hover {     background-color: rgba(217, 119, 6, 0.5);     box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3); }  .btn-danger {     background-color: rgba(220, 38, 38, 0.3);     border: 1px solid #dc2626;     color: #f4e1d2; }  .btn-danger:hover {     background-color: rgba(220, 38, 38, 0.5);     box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3); }  .btn-secondary {     background-color: rgba(122, 78, 78, 0.25);     border: 1px solid #7a4e4e; }  .btn-secondary:hover {     background-color: rgba(122, 78, 78, 0.4);     box-shadow: 0 2px 8px rgba(122, 78, 78, 0.3); }  .btn-special {     background-color: rgba(16, 185, 129, 0.3);     border: 1px solid #10b981;     color: #f4e1d2; }  .btn-special:hover {     background-color: rgba(16, 185, 129, 0.5);     box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3); }  #shape-list {     border-bottom: 1px solid rgba(122, 78, 78, 0.3); }  .shape-item {     background-color: rgba(54, 36, 36, 0.8);     border: 1px solid #7a4e4e;     transition: all 0.3s ease; }  .shape-item:hover {     background-color: rgba(122, 78, 78, 0.2);     transform: translateX(3px); }  .shape-item.active {     background-color: rgba(16, 185, 129, 0.15);     border-color: #10b981;     color: #10b981;     box-shadow: 0 0 8px rgba(16, 185, 129, 0.3); }  #inspector {     background: rgba(54, 36, 36, 0.95);     border-top: 1px solid #7a4e4e; }  .form-row label {     color: #d97706; }  .form-row input, .form-row select {     border: 1px solid #7a4e4e;     background-color: rgba(54, 36, 36, 0.8);     color: #f4e1d2;     box-shadow: 0 2px 6px rgba(122, 78, 78, 0.1); }  .scene-info {     background: rgba(46, 28, 28, 0.9prisma);     color: #f4e1d2;     box-shadow: 0 4px 12px rgba(122, 78, 78, 0.15);     border: 1px solid #7a4e4e; }  .button-danger {     background-color: rgba(220, 38, 38, 0.3);     border: 1px solid #dc2626;     color: #f4e1d2; }  .button-danger:hover {     background-color: rgba(220, 38, 38, 0.5);     box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3); }  h2, h3 {     color: #d97706;     text-transform: uppercase;     letter-spacing: 1px;     margin-bottom: 12px;     padding-bottom: 4px;     border-bottom: 1px solid #7a4e4e;     text-shadow: 0 0 4px rgba(217, 119, 6, 0.3); }  ::-webkit-scrollbar {     width: 6px;     height: 6px; }  ::-webkit-scrollbar-track {     background: rgba(54, 36, 36, 0.8); }  ::-webkit-scrollbar-thumb {     background: #7a4e4e;     border-radius: 3px; }  ::-webkit-scrollbar-thumb:hover {     background: #d97706; }"
       },
-      "professional3": {
-        "title": "Claude",
-        "fileName": "professional3",
-        "css": "/* Eclipse Theme - A premium dark UI experience */ @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');  :root {   --bg-primary: #0f111a;   --bg-secondary: #141725;   --bg-tertiary: #1a1d2d;   --accent-primary: #7c4dff;   --accent-secondary: #00bcd4;   --accent-tertiary: #ff4081;   --text-primary: #eceff1;   --text-secondary: #b0bec5;   --border-light: rgba(99, 114, 166, 0.25);   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);   --gradient-bg: linear-gradient(135deg, rgba(20, 23, 37, 0.95), rgba(15, 17, 26, 0.95));   --gradient-accent: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); }  body {   font-family: 'Space Grotesk', sans-serif;   background-color: var(--bg-primary);   color: var(--text-primary);   line-height: 1.6;   transition: background-color 0.3s ease;   background-image:      radial-gradient(circle at 15% 15%, rgba(124, 77, 255, 0.08) 0%, transparent 25%),     radial-gradient(circle at 85% 85%, rgba(0, 188, 212, 0.08) 0%, transparent 25%); }  /* Modern sidebar with glassmorphism effect */ .sidebar {   background: var(--gradient-bg);   border-right: 1px solid var(--border-light);   box-shadow: var(--shadow-md);   backdrop-filter: blur(10px);   -webkit-backdrop-filter: blur(10px); }  .object-item {   background-color: transparent;   border-left: 2px solid transparent;   text-transform: uppercase;   letter-spacing: 0.5px;   color: var(--text-secondary);   font-weight: 500;   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);   margin-bottom: 4px;   border-radius: 0 4px 4px 0; }  .object-item:hover {   background-color: rgba(124, 77, 255, 0.1);   border-left: 2px solid var(--accent-primary);   color: var(--text-primary);   transform: translateX(2px); }  .object-item.selected {   background: linear-gradient(90deg, rgba(124, 77, 255, 0.15), rgba(124, 77, 255, 0.05));   border-left: 3px solid var(--accent-primary);   color: var(--accent-primary);   box-shadow: 0 0 12px rgba(124, 77, 255, 0.2);   font-weight: 600; }  /* Editor area with polished look */ .editor {   background-color: var(--bg-secondary);   border: 1px solid var(--border-light);   box-shadow: var(--shadow-md);   border-radius: 6px;   overflow: hidden; }  #three-js-container {   border: 1px solid var(--border-light);   border-radius: 6px;   box-shadow: inset 0 0 16px rgba(0, 0, 0, 0.2);   background: rgba(15, 17, 26, 0.5); }  .preview-canvas-container {   border: 1px solid var(--accent-primary);   box-shadow: 0 0 16px rgba(124, 77, 255, 0.15);   border-radius: 6px;   overflow: hidden; }  .preview {   background-color: var(--bg-secondary);   border: 1px solid var(--border-light);   box-shadow: var(--shadow-md);   border-radius: 6px; }  #preview-canvas {   background-color: transparent;   border: 1px solid var(--border-light);   border-radius: 4px; }  /* Enhanced camera controls with dynamic hover effects */ .camera-controls {   background: var(--bg-tertiary);   border: 1px solid var(--border-light);   border-radius: 6px;   padding: 12px;   box-shadow: var(--shadow-sm); }  .camera-controls button {   background-color: rgba(99, 114, 166, 0.15);   border: 1px solid var(--border-light);   color: var(--text-primary);   border-radius: 4px;   padding: 8px 12px;   font-weight: 500;   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }  .camera-controls button:hover {   background-color: rgba(124, 77, 255, 0.15);   border-color: var(--accent-primary);   box-shadow: 0 0 12px rgba(124, 77, 255, 0.2);   transform: translateY(-2px) scale(1.02); }  .camera-controls button:active {   transform: translateY(1px); }  .camera-controls .color-picker {   border: 1px solid var(--border-light);   border-radius: 4px;   overflow: hidden;   box-shadow: var(--shadow-sm); }  .camera-controls .size-slider {   background: var(--bg-secondary);   border: 1px solid var(--border-light);   border-radius: 4px;   height: 6px;   box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.2); }  .camera-controls .size-slider::-webkit-slider-thumb {   background: var(--accent-primary);   box-shadow: 0 0 8px rgba(124, 77, 255, 0.4);   border-radius: 50%;   cursor: pointer;   transition: all 0.2s ease; }  .camera-controls .size-slider::-webkit-slider-thumb:hover {   transform: scale(1.2); }  /* Form elements with attractive focus states */ label {   font-weight: 500;   text-transform: uppercase;   letter-spacing: 0.5px;   color: var(--accent-primary);   margin-bottom: 6px;   display: block;   font-size: 0.85rem; }  input, textarea, select {   border: 1px solid var(--border-light);   background-color: rgba(15, 17, 26, 0.6);   color: var(--text-primary);   border-radius: 4px;   padding: 10px 12px;   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);   transition: all 0.3s ease;   font-family: 'JetBrains Mono', monospace; }  input:focus, textarea:focus, select:focus {   outline: none;   border-color: var(--accent-primary);   box-shadow: 0 0 0 3px rgba(124, 77, 255, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.1);   background-color: rgba(20, 23, 37, 0.8); }  /* Modern button styles with micro-interactions */ button {   background-color: var(--bg-tertiary);   border: 1px solid var(--border-light);   color: var(--text-primary);   text-transform: uppercase;   letter-spacing: 0.5px;   font-weight: 500;   padding: 10px 16px;   border-radius: 4px;   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);   position: relative;   overflow: hidden; }  button:hover {   background-color: rgba(99, 114, 166, 0.2);   border-color: var(--border-light);   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);   transform: translateY(-2px); }  button:active {   transform: translateY(1px); }  button::after {   content: '';   position: absolute;   top: 50%;   left: 50%;   width: 100%;   height: 100%;   background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 50%);   transform: scale(0);   opacity: 0;   transition: transform 0.5s, opacity 0.3s;   pointer-events: none; }  button:active::after {   transform: scale(2);   opacity: 1;   transition: 0s; }  button.primary {   background: linear-gradient(135deg, rgba(124, 77, 255, 0.2), rgba(0, 188, 212, 0.2));   border: 1px solid var(--accent-primary);   color: var(--text-primary);   position: relative;   z-index: 1; }  button.primary:hover {   background: linear-gradient(135deg, rgba(124, 77, 255, 0.3), rgba(0, 188, 212, 0.3));   box-shadow: 0 4px 16px rgba(124, 77, 255, 0.3); }  button.primary::before {   content: '';   position: absolute;   top: 0;   left: 0;   right: 0;   bottom: 0;   background: var(--gradient-accent);   opacity: 0;   z-index: -1;   transition: opacity 0.3s ease;   border-radius: 3px; }  button.primary:hover::before {   opacity: 0.1; }  button.danger {   background-color: rgba(244, 67, 54, 0.15);   border: 1px solid #f44336;   color: #f44336; }  button.danger:hover {   background-color: rgba(244, 67, 54, 0.25);   box-shadow: 0 4px 16px rgba(244, 67, 54, 0.2); }  button.active {   border: 1px solid var(--accent-secondary);   box-shadow: 0 0 12px rgba(0, 188, 212, 0.3);   color: var(--accent-secondary);   background-color: rgba(0, 188, 212, 0.15); }  /* Modal with glassmorphism effect */ .modal {   background-color: rgba(15, 17, 26, 0.7);   backdrop-filter: blur(8px);   -webkit-backdrop-filter: blur(8px); }  .modal-content {   background-color: var(--bg-secondary);   border: 1px solid var(--border-light);   box-shadow: var(--shadow-lg);   border-radius: 8px;   overflow: hidden;   animation: modalAppear 0.3s ease; }  @keyframes modalAppear {   from {     opacity: 0;     transform: scale(0.95) translateY(-10px);   }   to {     opacity: 1;     transform: scale(1) translateY(0);   } }  .property-list {   border: 1px solid var(--border-light);   background-color: var(--bg-tertiary);   border-radius: 6px;   overflow: hidden; }  /* Tab navigation with smooth transitions */ .tab-navigation {   border-bottom: 1px solid var(--border-light);   display: flex;   gap: 4px;   padding: 0 6px; }  .tab {   text-transform: uppercase;   letter-spacing: 0.5px;   font-weight: 500;   padding: 10px 16px;   color: var(--text-secondary);   position: relative;   transition: all 0.3s ease;   border-radius: 4px 4px 0 0; }  .tab:hover {   background-color: rgba(99, 114, 166, 0.1);   color: var(--text-primary); }  .tab.active {   color: var(--accent-primary);   font-weight: 600;   background-color: rgba(124, 77, 255, 0.05); }  .tab.active::after {   content: '';   position: absolute;   bottom: -1px;   left: 0;   right: 0;   height: 2px;   background: var(--gradient-accent);   box-shadow: 0 0 8px rgba(124, 77, 255, 0.5); }  /* Stylized instructions and warnings */ .instructions {   background-color: rgba(124, 77, 255, 0.05);   border-left: 3px solid var(--accent-primary);   border-radius: 0 4px 4px 0;   padding: 12px 16px;   margin: 16px 0;   box-shadow: var(--shadow-sm);   position: relative; }  .instructions::before {   content: 'i';   position: absolute;   left: -12px;   top: 10px;   width: 20px;   height: 20px;   background: var(--accent-primary);   border-radius: 50%;   display: flex;   align-items: center;   justify-content: center;   font-weight: bold;   font-style: italic;   color: white;   font-size: 14px; }  #grid-display {   background-color: var(--bg-secondary);   border: 1px solid var(--border-light);   box-shadow: var(--shadow-md);   border-radius: 6px;   overflow: hidden; }  .success-message {   color: #4caf50;   text-transform: uppercase;   letter-spacing: 0.5px;   font-weight: 500;   animation: fadeOut 2s forwards;   animation-delay: 1.5s;   padding: 8px 12px;   background-color: rgba(76, 175, 80, 0.1);   border-radius: 4px;   display: inline-block; }  @keyframes fadeOut {   from { opacity: 1; }   to { opacity: 0; } }  .warning {   background-color: rgba(244, 67, 54, 0.1);   border-left: 3px solid #f44336;   border-radius: 0 4px 4px 0;   padding: 12px 16px;   margin: 16px 0;   box-shadow: var(--shadow-sm);   position: relative; }  .warning::before {   content: '!';   position: absolute;   left: -12px;   top: 10px;   width: 20px;   height: 20px;   background: #f44336;   border-radius: 50%;   display: flex;   align-items: center;   justify-content: center;   font-weight: bold;   color: white;   font-size: 14px; }  /* Content containers with subtle gradients */ .main-content-container {   background-color: var(--bg-primary);   color: var(--text-primary); }  .content-sidebar {   background: var(--gradient-bg);   border-right: 1px solid var(--border-light);   box-shadow: var(--shadow-md);   backdrop-filter: blur(10px);   -webkit-backdrop-filter: blur(10px); }  #graphics-rightbar {   background: var(--gradient-bg);   border-left: 1px solid var(--border-light);   box-shadow: var(--shadow-md);   backdrop-filter: blur(10px);   -webkit-backdrop-filter: blur(10px); }  /* Subtle grid background */ .grid-background {   background: var(--bg-primary);   background-image:      linear-gradient(rgba(99, 114, 166, 0.05) 1px, transparent 1px),     linear-gradient(90deg, rgba(99, 114, 166, 0.05) 1px, transparent 1px);   background-size: 20px 20px; }  /* Toolbar with subtle glassmorphism */ .toolbar {   background: var(--gradient-bg);   border-bottom: 1px solid var(--border-light);   box-shadow: var(--shadow-sm);   backdrop-filter: blur(10px);   -webkit-backdrop-filter: blur(10px);   padding: 8px 16px;   display: flex;   align-items: center;   gap: 8px; }  /* Button variations with consistent styling */ .btn {   border: 1px solid var(--border-light);   background-color: rgba(99, 114, 166, 0.1);   color: var(--text-primary);   text-transform: uppercase;   letter-spacing: 0.5px;   font-weight: 500;   padding: 8px 14px;   border-radius: 4px;   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);   position: relative;   overflow: hidden;   font-size: 0.85rem; }  .btn:hover {   background-color: rgba(99, 114, 166, 0.2);   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);   transform: translateY(-2px); }  .btn:active {   transform: translateY(1px); }  .btn-primary {   background: linear-gradient(135deg, rgba(124, 77, 255, 0.2), rgba(0, 188, 212, 0.2));   border: 1px solid var(--accent-primary);   color: var(--text-primary);   position: relative;   z-index: 1; }  .btn-primary:hover {   background: linear-gradient(135deg, rgba(124, 77, 255, 0.3), rgba(0, 188, 212, 0.3));   box-shadow: 0 4px 16px rgba(124, 77, 255, 0.2); }  .btn-primary::before {   content: '';   position: absolute;   top: 0;   left: 0;   right: 0;   bottom: 0;   background: var(--gradient-accent);   opacity: 0;   z-index: -1;   transition: opacity 0.3s ease;   border-radius: 3px; }  .btn-primary:hover::before {   opacity: 0.1; }  .btn-danger {   background-color: rgba(244, 67, 54, 0.15);   border: 1px solid #f44336;   color: #f44336; }  .btn-danger:hover {   background-color: rgba(244, 67, 54, 0.25);   box-shadow: 0 4px 16px rgba(244, 67, 54, 0.2); }  .btn-secondary {   background-color: rgba(99, 114, 166, 0.1);   border: 1px solid var(--border-light); }  .btn-secondary:hover {   background-color: rgba(99, 114, 166, 0.2);   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); }  .btn-special {   background-color: rgba(0, 188, 212, 0.15);   border: 1px solid var(--accent-secondary);   color: var(--accent-secondary); }  .btn-special:hover {   background-color: rgba(0, 188, 212, 0.25);   box-shadow: 0 4px 16px rgba(0, 188, 212, 0.2); }  /* Shape list with improved visual hierarchy */ #shape-list {   border-bottom: 1px solid var(--border-light);   padding-bottom: 16px;   margin-bottom: 16px; }  .shape-item {   background-color: var(--bg-tertiary);   border: 1px solid var(--border-light);   border-radius: 4px;   padding: 10px 14px;   margin-bottom: 6px;   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);   display: flex;   align-items: center;   gap: 8px; }  .shape-item:hover {   background-color: rgba(99, 114, 166, 0.15);   transform: translateX(3px);   border-color: var(--border-light); }  .shape-item.active {   background-color: rgba(0, 188, 212, 0.1);   border-color: var(--accent-secondary);   color: var(--accent-secondary);   box-shadow: 0 0 12px rgba(0, 188, 212, 0.15);   font-weight: 500; }  /* Inspector panel with clean design */ #inspector {   background: var(--bg-secondary);   border-top: 1px solid var(--border-light);   padding: 16px; }  .form-row {   margin-bottom: 12px; }  .form-row label {   color: var(--accent-primary);   margin-bottom: 6px; }  .form-row input, .form-row select {   width: 100%;   border: 1px solid var(--border-light);   background-color: rgba(15, 17, 26, 0.6);   color: var(--text-primary);   padding: 10px 12px;   border-radius: 4px; }  /* Scene info with modern styling */ .scene-info {   background: var(--bg-tertiary);   color: var(--text-primary);   border: 1px solid var(--border-light);   border-radius: 6px;   padding: 12px 16px;   margin-bottom: 16px;   box-shadow: var(--shadow-sm); }  .button-danger {   background-color: rgba(244, 67, 54, 0.15);   border: 1px solid #f44336;   color: #f44336;   padding: 10px 16px;   border-radius: 4px;   font-weight: 500;   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }  .button-danger:hover {   background-color: rgba(244, 67, 54, 0.25);   box-shadow: 0 4px 16px rgba(244, 67, 54, 0.2);   transform: translateY(-2px); }  /* Typography improvements */ h2, h3 {   color: var(--accent-primary);   text-transform: uppercase;   letter-spacing: 1px;   margin-bottom: 16px;   padding-bottom: 8px;   border-bottom: 1px solid var(--border-light);   font-weight: 600;   text-shadow: 0 0 20px rgba(124, 77, 255, 0.3);   position: relative; }  h2::after, h3::after {   content: '';   position: absolute;   bottom: -1px;   left: 0;   width: 50px;   height: 2px;   background: var(--gradient-accent);   box-shadow: 0 0 8px rgba(124, 77, 255, 0.5); }  /* Sleek scrollbars */ ::-webkit-scrollbar {   width: 6px;   height: 6px; }  ::-webkit-scrollbar-track {   background: var(--bg-tertiary);   border-radius: 3px; }  ::-webkit-scrollbar-thumb {   background: rgba(124, 77, 255, 0.3);   border-radius: 3px;   border: 1px solid var(--bg-tertiary); }  ::-webkit-scrollbar-thumb:hover {   background: var(--accent-primary); }  /* Animations and transitions */ @keyframes pulse {   0% { box-shadow: 0 0 0 0 rgba(124, 77, 255, 0.4); }   70% { box-shadow: 0 0 0 10px rgba(124, 77, 255, 0); }   100% { box-shadow: 0 0 0 0 rgba(124, 77, 255, 0); } }  .pulse-animation {   animation: pulse 2s infinite; }  /* Tooltips */ [data-tooltip] {   position: relative; }  [data-tooltip]::after {   content: attr(data-tooltip);   position: absolute;   bottom: 125%;   left: 50%;   transform: translateX(-50%);   padding: 6px 10px;   background: var(--bg-tertiary);   color: var(--text-primary);   border-radius: 4px;   font-size: 0.75rem;   white-space: nowrap;   opacity: 0;   visibility: hidden;   transition: all 0.3s ease;   z-index: 100;   box-shadow: var(--shadow-md);   border: 1px solid var(--border-light); }  [data-tooltip]:hover::after {   opacity: 1;   visibility: visible; }"
-      },
       "scifi2": {
         "title": "SciFi2.0",
         "fileName": "scifi2",
         "css": "@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap'); :root {     --primary-bg: #0a0a1a;     --secondary-bg: #121228;     --accent-color: #00ffff;     --text-color: #e0e7ff;     --border-color: #2a2a4a;     --highlight-color: #ff00ff;     --hover-color: rgba(0, 255, 255, 0.2); }  body {     background-color: var(--primary-bg);     color: var(--text-color);     font-family: 'Orbitron', 'Arial', sans-serif;     line-height: 1.6; }  .container {     background-color: var(--secondary-bg);     border: 2px solid var(--border-color);     box-shadow: 0 0 20px rgba(0, 255, 255, 0.1); }  /* Sidebar Styling */ .sidebar {     background-color: #0f0f2a;     border-right: 1px solid var(--border-color); }  .object-item, .object-type-item {     background-color: var(--secondary-bg);     border: 1px solid var(--border-color);     color: var(--text-color);     transition: all 0.3s ease; }  .object-item:hover, .object-type-item:hover {     background-color: var(--hover-color);     border-color: var(--accent-color); }  .object-item.selected, .object-type-item.selected {     background-color: var(--accent-color);     color: var(--primary-bg); }  /* Button Styling */ button {     background-color: var(--secondary-bg);     color: var(--accent-color);     border: 2px solid var(--accent-color);     transition: all 0.3s ease;     position: relative;     overflow: hidden; }  button:before {     content: '';     position: absolute;     top: 0;     left: -100%;     width: 100%;     height: 100%;     background: linear-gradient(120deg, transparent, var(--highlight-color), transparent);     transition: all 0.5s ease; }  button:hover:before {     left: 100%; }  button:hover {     background-color: var(--accent-color);     color: var(--primary-bg); }  .primary {     background-color: var(--accent-color);     color: var(--primary-bg); }  .danger {     border-color: #ff4444;     color: #ff4444; }  /* Input Styling */ input, textarea, select {     background-color: var(--secondary-bg);     color: var(--text-color);     border: 1px solid var(--border-color);     transition: border-color 0.3s ease; }  input:focus, textarea:focus, select:focus {     border-color: var(--accent-color);     outline: none;     box-shadow: 0 0 10px rgba(0, 255, 255, 0.2); }  /* Modal Styling */ .modal {     background-color: rgba(10, 10, 26, 0.9); }  .modal-content {     background-color: var(--secondary-bg);     border: 2px solid var(--border-color);     box-shadow: 0 0 30px rgba(0, 255, 255, 0.1); }  /* Graphics Editor Enhancements */ #canvas-container {     background:          linear-gradient(45deg, rgba(0,255,255,0.05) 25%, transparent 25%) 0 0,         linear-gradient(-45deg, rgba(0,255,255,0.05) 25%, transparent 25%) 0 0,         linear-gradient(45deg, transparent 75%, rgba(0,255,255,0.05) 75%) 0 0,         linear-gradient(-45deg, transparent 75%, rgba(0,255,255,0.05) 75%) 0 0;     background-size: 20px 20px;     background-color: var(--primary-bg); }  .scene-info {     background-color: rgba(18, 18, 40, 0.8);     border: 1px solid var(--border-color);     color: var(--accent-color); }  /* Toolbar Styling */ .toolbar .btn {     background-color: var(--secondary-bg);     border-color: var(--border-color);     color: var(--accent-color); }  .toolbar .btn:hover {     background-color: var(--accent-color);     color: var(--primary-bg); }  /* Tab and Category Styling */ .tab, .category-header {     color: var(--text-color);     transition: color 0.3s ease; }  .tab:hover, .category-header:hover {     color: var(--accent-color); }  .tab.active {     border-bottom-color: var(--accent-color); }  /* Scrollbar (for browsers that support) */ ::-webkit-scrollbar {     width: 10px; }  ::-webkit-scrollbar-track {     background: var(--secondary-bg); }  ::-webkit-scrollbar-thumb {     background: var(--accent-color);     border-radius: 5px; }  ::-webkit-scrollbar-thumb:hover {     background: var(--highlight-color); }  /* Subtle Sci-Fi Animations */ @keyframes pulse-border {     0%, 100% { box-shadow: 0 0 10px rgba(0, 255, 255, 0.3); }     50% { box-shadow: 0 0 20px rgba(0, 255, 255, 0.6); } }  @keyframes grid-pulse {     0%, 100% { opacity: 0.1; }     50% { opacity: 0.3; } }  /* Additional Futuristic Effects */ body::before {     content: '';     position: fixed;     top: 0;     left: 0;     width: 100%;     height: 100%;     pointer-events: none;     background:          repeating-linear-gradient(             0deg,             rgba(0, 0, 0, 0.15),             rgba(0, 0, 0, 0.15) 1px,             transparent 1px,             transparent 2px         );     opacity: 0.3;     z-index: 9999; }"
+      },
+      "professional3": {
+        "title": "Claude",
+        "fileName": "professional3",
+        "css": "/* Eclipse Theme - A premium dark UI experience */ @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');  :root {   --bg-primary: #0f111a;   --bg-secondary: #141725;   --bg-tertiary: #1a1d2d;   --accent-primary: #7c4dff;   --accent-secondary: #00bcd4;   --accent-tertiary: #ff4081;   --text-primary: #eceff1;   --text-secondary: #b0bec5;   --border-light: rgba(99, 114, 166, 0.25);   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);   --gradient-bg: linear-gradient(135deg, rgba(20, 23, 37, 0.95), rgba(15, 17, 26, 0.95));   --gradient-accent: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); }  body {   font-family: 'Space Grotesk', sans-serif;   background-color: var(--bg-primary);   color: var(--text-primary);   line-height: 1.6;   transition: background-color 0.3s ease;   background-image:      radial-gradient(circle at 15% 15%, rgba(124, 77, 255, 0.08) 0%, transparent 25%),     radial-gradient(circle at 85% 85%, rgba(0, 188, 212, 0.08) 0%, transparent 25%); }  /* Modern sidebar with glassmorphism effect */ .sidebar {   background: var(--gradient-bg);   border-right: 1px solid var(--border-light);   box-shadow: var(--shadow-md);   backdrop-filter: blur(10px);   -webkit-backdrop-filter: blur(10px); }  .object-item {   background-color: transparent;   border-left: 2px solid transparent;   text-transform: uppercase;   letter-spacing: 0.5px;   color: var(--text-secondary);   font-weight: 500;   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);   margin-bottom: 4px;   border-radius: 0 4px 4px 0; }  .object-item:hover {   background-color: rgba(124, 77, 255, 0.1);   border-left: 2px solid var(--accent-primary);   color: var(--text-primary);   transform: translateX(2px); }  .object-item.selected {   background: linear-gradient(90deg, rgba(124, 77, 255, 0.15), rgba(124, 77, 255, 0.05));   border-left: 3px solid var(--accent-primary);   color: var(--accent-primary);   box-shadow: 0 0 12px rgba(124, 77, 255, 0.2);   font-weight: 600; }  /* Editor area with polished look */ .editor {   background-color: var(--bg-secondary);   border: 1px solid var(--border-light);   box-shadow: var(--shadow-md);   border-radius: 6px;   overflow: hidden; }  #three-js-container {   border: 1px solid var(--border-light);   border-radius: 6px;   box-shadow: inset 0 0 16px rgba(0, 0, 0, 0.2);   background: rgba(15, 17, 26, 0.5); }  .preview-canvas-container {   border: 1px solid var(--accent-primary);   box-shadow: 0 0 16px rgba(124, 77, 255, 0.15);   border-radius: 6px;   overflow: hidden; }  .preview {   background-color: var(--bg-secondary);   border: 1px solid var(--border-light);   box-shadow: var(--shadow-md);   border-radius: 6px; }  #preview-canvas {   background-color: transparent;   border: 1px solid var(--border-light);   border-radius: 4px; }  /* Enhanced camera controls with dynamic hover effects */ .camera-controls {   background: var(--bg-tertiary);   border: 1px solid var(--border-light);   border-radius: 6px;   padding: 12px;   box-shadow: var(--shadow-sm); }  .camera-controls button {   background-color: rgba(99, 114, 166, 0.15);   border: 1px solid var(--border-light);   color: var(--text-primary);   border-radius: 4px;   padding: 8px 12px;   font-weight: 500;   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }  .camera-controls button:hover {   background-color: rgba(124, 77, 255, 0.15);   border-color: var(--accent-primary);   box-shadow: 0 0 12px rgba(124, 77, 255, 0.2);   transform: translateY(-2px) scale(1.02); }  .camera-controls button:active {   transform: translateY(1px); }  .camera-controls .color-picker {   border: 1px solid var(--border-light);   border-radius: 4px;   overflow: hidden;   box-shadow: var(--shadow-sm); }  .camera-controls .size-slider {   background: var(--bg-secondary);   border: 1px solid var(--border-light);   border-radius: 4px;   height: 6px;   box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.2); }  .camera-controls .size-slider::-webkit-slider-thumb {   background: var(--accent-primary);   box-shadow: 0 0 8px rgba(124, 77, 255, 0.4);   border-radius: 50%;   cursor: pointer;   transition: all 0.2s ease; }  .camera-controls .size-slider::-webkit-slider-thumb:hover {   transform: scale(1.2); }  /* Form elements with attractive focus states */ label {   font-weight: 500;   text-transform: uppercase;   letter-spacing: 0.5px;   color: var(--accent-primary);   margin-bottom: 6px;   display: block;   font-size: 0.85rem; }  input, textarea, select {   border: 1px solid var(--border-light);   background-color: rgba(15, 17, 26, 0.6);   color: var(--text-primary);   border-radius: 4px;   padding: 10px 12px;   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);   transition: all 0.3s ease;   font-family: 'JetBrains Mono', monospace; }  input:focus, textarea:focus, select:focus {   outline: none;   border-color: var(--accent-primary);   box-shadow: 0 0 0 3px rgba(124, 77, 255, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.1);   background-color: rgba(20, 23, 37, 0.8); }  /* Modern button styles with micro-interactions */ button {   background-color: var(--bg-tertiary);   border: 1px solid var(--border-light);   color: var(--text-primary);   text-transform: uppercase;   letter-spacing: 0.5px;   font-weight: 500;   padding: 10px 16px;   border-radius: 4px;   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);   position: relative;   overflow: hidden; }  button:hover {   background-color: rgba(99, 114, 166, 0.2);   border-color: var(--border-light);   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);   transform: translateY(-2px); }  button:active {   transform: translateY(1px); }  button::after {   content: '';   position: absolute;   top: 50%;   left: 50%;   width: 100%;   height: 100%;   background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 50%);   transform: scale(0);   opacity: 0;   transition: transform 0.5s, opacity 0.3s;   pointer-events: none; }  button:active::after {   transform: scale(2);   opacity: 1;   transition: 0s; }  button.primary {   background: linear-gradient(135deg, rgba(124, 77, 255, 0.2), rgba(0, 188, 212, 0.2));   border: 1px solid var(--accent-primary);   color: var(--text-primary);   position: relative;   z-index: 1; }  button.primary:hover {   background: linear-gradient(135deg, rgba(124, 77, 255, 0.3), rgba(0, 188, 212, 0.3));   box-shadow: 0 4px 16px rgba(124, 77, 255, 0.3); }  button.primary::before {   content: '';   position: absolute;   top: 0;   left: 0;   right: 0;   bottom: 0;   background: var(--gradient-accent);   opacity: 0;   z-index: -1;   transition: opacity 0.3s ease;   border-radius: 3px; }  button.primary:hover::before {   opacity: 0.1; }  button.danger {   background-color: rgba(244, 67, 54, 0.15);   border: 1px solid #f44336;   color: #f44336; }  button.danger:hover {   background-color: rgba(244, 67, 54, 0.25);   box-shadow: 0 4px 16px rgba(244, 67, 54, 0.2); }  button.active {   border: 1px solid var(--accent-secondary);   box-shadow: 0 0 12px rgba(0, 188, 212, 0.3);   color: var(--accent-secondary);   background-color: rgba(0, 188, 212, 0.15); }  /* Modal with glassmorphism effect */ .modal {   background-color: rgba(15, 17, 26, 0.7);   backdrop-filter: blur(8px);   -webkit-backdrop-filter: blur(8px); }  .modal-content {   background-color: var(--bg-secondary);   border: 1px solid var(--border-light);   box-shadow: var(--shadow-lg);   border-radius: 8px;   overflow: hidden;   animation: modalAppear 0.3s ease; }  @keyframes modalAppear {   from {     opacity: 0;     transform: scale(0.95) translateY(-10px);   }   to {     opacity: 1;     transform: scale(1) translateY(0);   } }  .property-list {   border: 1px solid var(--border-light);   background-color: var(--bg-tertiary);   border-radius: 6px;   overflow: hidden; }  /* Tab navigation with smooth transitions */ .tab-navigation {   border-bottom: 1px solid var(--border-light);   display: flex;   gap: 4px;   padding: 0 6px; }  .tab {   text-transform: uppercase;   letter-spacing: 0.5px;   font-weight: 500;   padding: 10px 16px;   color: var(--text-secondary);   position: relative;   transition: all 0.3s ease;   border-radius: 4px 4px 0 0; }  .tab:hover {   background-color: rgba(99, 114, 166, 0.1);   color: var(--text-primary); }  .tab.active {   color: var(--accent-primary);   font-weight: 600;   background-color: rgba(124, 77, 255, 0.05); }  .tab.active::after {   content: '';   position: absolute;   bottom: -1px;   left: 0;   right: 0;   height: 2px;   background: var(--gradient-accent);   box-shadow: 0 0 8px rgba(124, 77, 255, 0.5); }  /* Stylized instructions and warnings */ .instructions {   background-color: rgba(124, 77, 255, 0.05);   border-left: 3px solid var(--accent-primary);   border-radius: 0 4px 4px 0;   padding: 12px 16px;   margin: 16px 0;   box-shadow: var(--shadow-sm);   position: relative; }  .instructions::before {   content: 'i';   position: absolute;   left: -12px;   top: 10px;   width: 20px;   height: 20px;   background: var(--accent-primary);   border-radius: 50%;   display: flex;   align-items: center;   justify-content: center;   font-weight: bold;   font-style: italic;   color: white;   font-size: 14px; }  #grid-display {   background-color: var(--bg-secondary);   border: 1px solid var(--border-light);   box-shadow: var(--shadow-md);   border-radius: 6px;   overflow: hidden; }  .success-message {   color: #4caf50;   text-transform: uppercase;   letter-spacing: 0.5px;   font-weight: 500;   animation: fadeOut 2s forwards;   animation-delay: 1.5s;   padding: 8px 12px;   background-color: rgba(76, 175, 80, 0.1);   border-radius: 4px;   display: inline-block; }  @keyframes fadeOut {   from { opacity: 1; }   to { opacity: 0; } }  .warning {   background-color: rgba(244, 67, 54, 0.1);   border-left: 3px solid #f44336;   border-radius: 0 4px 4px 0;   padding: 12px 16px;   margin: 16px 0;   box-shadow: var(--shadow-sm);   position: relative; }  .warning::before {   content: '!';   position: absolute;   left: -12px;   top: 10px;   width: 20px;   height: 20px;   background: #f44336;   border-radius: 50%;   display: flex;   align-items: center;   justify-content: center;   font-weight: bold;   color: white;   font-size: 14px; }  /* Content containers with subtle gradients */ .main-content-container {   background-color: var(--bg-primary);   color: var(--text-primary); }  .content-sidebar {   background: var(--gradient-bg);   border-right: 1px solid var(--border-light);   box-shadow: var(--shadow-md);   backdrop-filter: blur(10px);   -webkit-backdrop-filter: blur(10px); }  #graphics-rightbar {   background: var(--gradient-bg);   border-left: 1px solid var(--border-light);   box-shadow: var(--shadow-md);   backdrop-filter: blur(10px);   -webkit-backdrop-filter: blur(10px); }  /* Subtle grid background */ .grid-background {   background: var(--bg-primary);   background-image:      linear-gradient(rgba(99, 114, 166, 0.05) 1px, transparent 1px),     linear-gradient(90deg, rgba(99, 114, 166, 0.05) 1px, transparent 1px);   background-size: 20px 20px; }  /* Toolbar with subtle glassmorphism */ .toolbar {   background: var(--gradient-bg);   border-bottom: 1px solid var(--border-light);   box-shadow: var(--shadow-sm);   backdrop-filter: blur(10px);   -webkit-backdrop-filter: blur(10px);   padding: 8px 16px;   display: flex;   align-items: center;   gap: 8px; }  /* Button variations with consistent styling */ .btn {   border: 1px solid var(--border-light);   background-color: rgba(99, 114, 166, 0.1);   color: var(--text-primary);   text-transform: uppercase;   letter-spacing: 0.5px;   font-weight: 500;   padding: 8px 14px;   border-radius: 4px;   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);   position: relative;   overflow: hidden;   font-size: 0.85rem; }  .btn:hover {   background-color: rgba(99, 114, 166, 0.2);   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);   transform: translateY(-2px); }  .btn:active {   transform: translateY(1px); }  .btn-primary {   background: linear-gradient(135deg, rgba(124, 77, 255, 0.2), rgba(0, 188, 212, 0.2));   border: 1px solid var(--accent-primary);   color: var(--text-primary);   position: relative;   z-index: 1; }  .btn-primary:hover {   background: linear-gradient(135deg, rgba(124, 77, 255, 0.3), rgba(0, 188, 212, 0.3));   box-shadow: 0 4px 16px rgba(124, 77, 255, 0.2); }  .btn-primary::before {   content: '';   position: absolute;   top: 0;   left: 0;   right: 0;   bottom: 0;   background: var(--gradient-accent);   opacity: 0;   z-index: -1;   transition: opacity 0.3s ease;   border-radius: 3px; }  .btn-primary:hover::before {   opacity: 0.1; }  .btn-danger {   background-color: rgba(244, 67, 54, 0.15);   border: 1px solid #f44336;   color: #f44336; }  .btn-danger:hover {   background-color: rgba(244, 67, 54, 0.25);   box-shadow: 0 4px 16px rgba(244, 67, 54, 0.2); }  .btn-secondary {   background-color: rgba(99, 114, 166, 0.1);   border: 1px solid var(--border-light); }  .btn-secondary:hover {   background-color: rgba(99, 114, 166, 0.2);   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); }  .btn-special {   background-color: rgba(0, 188, 212, 0.15);   border: 1px solid var(--accent-secondary);   color: var(--accent-secondary); }  .btn-special:hover {   background-color: rgba(0, 188, 212, 0.25);   box-shadow: 0 4px 16px rgba(0, 188, 212, 0.2); }  /* Shape list with improved visual hierarchy */ #shape-list {   border-bottom: 1px solid var(--border-light);   padding-bottom: 16px;   margin-bottom: 16px; }  .shape-item {   background-color: var(--bg-tertiary);   border: 1px solid var(--border-light);   border-radius: 4px;   padding: 10px 14px;   margin-bottom: 6px;   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);   display: flex;   align-items: center;   gap: 8px; }  .shape-item:hover {   background-color: rgba(99, 114, 166, 0.15);   transform: translateX(3px);   border-color: var(--border-light); }  .shape-item.active {   background-color: rgba(0, 188, 212, 0.1);   border-color: var(--accent-secondary);   color: var(--accent-secondary);   box-shadow: 0 0 12px rgba(0, 188, 212, 0.15);   font-weight: 500; }  /* Inspector panel with clean design */ #inspector {   background: var(--bg-secondary);   border-top: 1px solid var(--border-light);   padding: 16px; }  .form-row {   margin-bottom: 12px; }  .form-row label {   color: var(--accent-primary);   margin-bottom: 6px; }  .form-row input, .form-row select {   width: 100%;   border: 1px solid var(--border-light);   background-color: rgba(15, 17, 26, 0.6);   color: var(--text-primary);   padding: 10px 12px;   border-radius: 4px; }  /* Scene info with modern styling */ .scene-info {   background: var(--bg-tertiary);   color: var(--text-primary);   border: 1px solid var(--border-light);   border-radius: 6px;   padding: 12px 16px;   margin-bottom: 16px;   box-shadow: var(--shadow-sm); }  .button-danger {   background-color: rgba(244, 67, 54, 0.15);   border: 1px solid #f44336;   color: #f44336;   padding: 10px 16px;   border-radius: 4px;   font-weight: 500;   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }  .button-danger:hover {   background-color: rgba(244, 67, 54, 0.25);   box-shadow: 0 4px 16px rgba(244, 67, 54, 0.2);   transform: translateY(-2px); }  /* Typography improvements */ h2, h3 {   color: var(--accent-primary);   text-transform: uppercase;   letter-spacing: 1px;   margin-bottom: 16px;   padding-bottom: 8px;   border-bottom: 1px solid var(--border-light);   font-weight: 600;   text-shadow: 0 0 20px rgba(124, 77, 255, 0.3);   position: relative; }  h2::after, h3::after {   content: '';   position: absolute;   bottom: -1px;   left: 0;   width: 50px;   height: 2px;   background: var(--gradient-accent);   box-shadow: 0 0 8px rgba(124, 77, 255, 0.5); }  /* Sleek scrollbars */ ::-webkit-scrollbar {   width: 6px;   height: 6px; }  ::-webkit-scrollbar-track {   background: var(--bg-tertiary);   border-radius: 3px; }  ::-webkit-scrollbar-thumb {   background: rgba(124, 77, 255, 0.3);   border-radius: 3px;   border: 1px solid var(--bg-tertiary); }  ::-webkit-scrollbar-thumb:hover {   background: var(--accent-primary); }  /* Animations and transitions */ @keyframes pulse {   0% { box-shadow: 0 0 0 0 rgba(124, 77, 255, 0.4); }   70% { box-shadow: 0 0 0 10px rgba(124, 77, 255, 0); }   100% { box-shadow: 0 0 0 0 rgba(124, 77, 255, 0); } }  .pulse-animation {   animation: pulse 2s infinite; }  /* Tooltips */ [data-tooltip] {   position: relative; }  [data-tooltip]::after {   content: attr(data-tooltip);   position: absolute;   bottom: 125%;   left: 50%;   transform: translateX(-50%);   padding: 6px 10px;   background: var(--bg-tertiary);   color: var(--text-primary);   border-radius: 4px;   font-size: 0.75rem;   white-space: nowrap;   opacity: 0;   visibility: hidden;   transition: all 0.3s ease;   z-index: 100;   box-shadow: var(--shadow-md);   border: 1px solid var(--border-light); }  [data-tooltip]:hover::after {   opacity: 1;   visibility: visible; }"
       },
       "videogame": {
         "title": "Video Game",
@@ -18062,1232 +18062,6 @@ const DEFAULT_PROJECT_CONFIG = {
       }
     },
     "levels": {
-      "level2": {
-        "title": "Level 2",
-        "wavesets": [
-          "swarm",
-          "swarm",
-          "swarm"
-        ],
-        "tileMap": {
-          "size": 32,
-          "terrainTypes": [
-            {
-              "type": "water",
-              "color": "#2d85c6",
-              "image": [
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC"
-              ],
-              "buildable": false
-            },
-            {
-              "type": "rock",
-              "color": "#9e9e9e",
-              "image": [
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2OcN2/efwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEAIf9RHEX0vjVAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2OcN2/efwYqgqSkJEZk4xipbQHIcGRLaGIBsiU0swBmCU0tAFkyagHBBD4aRKNBRDAECCoYTUWjQUQwBAgqGE1FAx9EAECFSQ0HGbi8AAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2NkoDFgpLH5DMPAgnnz5v2nZTAxjlpAKHhHg4hQCDGMBtFoEBEMAYIKRlPRaBARDAGCCmieigCFBDkNArgMlAAAAABJRU5ErkJggg==",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASElEQVRIS2NkoDFgpLH5DMPAgnnz5v2nRjAlJSVhDQ1GalkAciQ2S6hqATZLRi3ASB/o8TAaRKNBRHohMpqKCIbZaBCNwCACAOcCUBnjhUZTAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2OcN2/efwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEAIf9RHEX0vjVAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2OcN2/efwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDB0E5FSUlJjDTzAchwUPjRxAKY4TSxANlwkAUAUEhJDYCk3yoAAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAQElEQVRIS2OcN2/efwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFAB7VMRQSdQqICRQv0EtQ99CwDb3jkNHe23xQAAAABJRU5ErkJggg==",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2OcN2/efwYqgqSkJEZk4xhHLUAP3dEgIpjeRoNoNIgIhgBBBaOpaDSICIYAXgXoKQikmGo1GjbDwRZQ5mbCukctIBhGAC4oUBlpvrH3AAAAAElFTkSuQmCC"
-              ],
-              "buildable": false
-            },
-            {
-              "type": "grass",
-              "color": "#4a7c59",
-              "image": [
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS2P0qon8z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCoYTUUjIIgAnCQy6fQdcSIAAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATklEQVRIS2P0qon8z0AlsK1lOSO6UYxDygKQ69F9QVUfwIIH2RKaWIDsE5pZAPPNqAUEc9BoEI0GEcEQIKhgNBWNBhHBECCoYDQVEQwiAA75PFN7PN69AAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2NkoDFgpLH5DKMWEAxhRq+ayP8EVVGgYNQCgoE3GkSjQUQwBAgqGE1Fo0FEMAQIKhhNRQSDCAB4BShTjqMEpwAAAABJRU5ErkJggg==",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2NkoDFgpLH5DKMWEAxhRq+ayP8EVRFQsK1lOc6gpooFIPtxWUI1C3BZMmoBSvRji4fRIBoNItIKkdFURDC8RoNocAYRADzPTBkQkiUcAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS2P0qon8z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCoYTUUjIIgAnCQy6fQdcSIAAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2P0qon8z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCqgWSra1rKcEWQ7TSyAGU4TC5ANp7oF6IbTxQIARN88U7u38m0AAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2P0qon8z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCpgJKiCQgWjFhAMQJoHEQCyWyhTURksDgAAAABJRU5ErkJggg==",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2P0qon8z0AlsK1lOSO6UYyjFiAHyWgQEUxro0E0GkQEQ4CggtFUNMyDCFsEg7xMlQoHl+FgCwgGLIUKRi0gGIA0DyIAQT9MGVwsaTUAAAAASUVORK5CYII="
-              ],
-              "buildable": true
-            },
-            {
-              "type": "forest",
-              "color": "#1c6438",
-              "image": [
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS2OUSbH4z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCoYTUUjIIgA71YpQQB/w8QAAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATklEQVRIS2OUSbH4z0Al8GTOCUZ0oxiHlAUg16P7gqo+gAUPsiU0sQDZJzSzAOabUQsI5qDRIBoNIoIhQFDBaCoaDSKCIUBQwWgqIhhEAIHMNK76+kj9AAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2NkoDFgpLH5DKMWEAxhRpkUi/8EVVGgYNQCgoE3GkSjQUQwBAgqGE1Fo0FEMAQIKhhNRQSDCACNcyCuKmmRrQAAAABJRU5ErkJggg==",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2NkoDFgpLH5DKMWEAxhRpkUi/8EVRFQ8GTOCZxBTRULQPbjsoRqFuCyZNQClOjHFg+jQTQaRKQVIqOpiGB4jQbR4AwiAPx6TBmX9XIXAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS2OUSbH4z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCoYTUUjIIgA71YpQQB/w8QAAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2OUSbH4z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCqgWSp6MucEI8h2mlgAM5wmFiAbTnUL0A2niwUAO0c0rkd3ClIAAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2OUSbH4z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCpgJKiCQgWjFhAMQJoHEQBLXiCu2Bx7HwAAAABJRU5ErkJggg==",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2OUSbH4z0Al8GTOCUZ0oxhHLUAOktEgIpjWRoNoNIgIhgBBBaOpaJgHEbYIBnmZKhUOLsPBFhAMWAoVjFpAMABpHkQAAPlMGX+pQM0AAAAASUVORK5CYII="
-              ],
-              "buildable": true
-            },
-            {
-              "type": "path",
-              "color": "#f5d69a",
-              "image": [
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8em3WfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEADJ7UXnV1RQ5AAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATklEQVRIS2P8em3WfwYqAW6tNEZ0oxiHlAUg16P7gqo+gAUPsiU0sQDZJzSzAOabUQsI5qDRIBoNIoIhQFDBaCoaDSKCIUBQwWgqIhhEAJvSVIWbYGLaAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2NkoDFgpLH5DKMWEAxhxq/XZv0nqIoCBaMWEAy80SAaDSKCIUBQwWgqGg0igiFAUMFoKiIYRAACV0CFxNTeCQAAAABJRU5ErkJggg==",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2NkoDFgpLH5DKMWEAxhxq/XZv0nqIqAAm6tNJxBTRULQPbjsoRqFuCyZNQClOjHFg+jQTQaRKQVIqOpiGB4jQbR4AwiAFzITBnELKoVAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8em3WfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEADJ7UXnV1RQ5AAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2P8em3WfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFABzVIRt1YaI8h2mlgAM5wmFiAbTnUL0A2niwUAqyRUhRUUb34AAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2P8em3WfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFABI0EVFCoYtYBgANI8iAAWGUCFGtCTSgAAAABJRU5ErkJggg==",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2P8em3WfwYqAW6tNEZ0oxhHLUAOktEgIpjWRoNoNIgIhgBBBaOpaJgHEbYIBnmZKhUOLsPBFhAMWAoVjFpAMABpHkQAYThMGX3v4DMAAAAASUVORK5CYII="
-              ],
-              "buildable": false
-            },
-            {
-              "type": "lava",
-              "color": "#cc6315",
-              "image": [
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2M8kyz6n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABABafNmFbBL82AAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2M8kyz6n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABABafNmFbBL82AAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2M8kyz6n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABABafNmFbBL82AAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2M8kyz6n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABABafNmFbBL82AAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2M8kyz6n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABABafNmFbBL82AAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2M8kyz6n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABABafNmFbBL82AAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2M8kyz6n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABABafNmFbBL82AAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2M8kyz6n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABABafNmFbBL82AAAAAElFTkSuQmCC"
-              ],
-              "buildable": false
-            },
-            {
-              "type": "end",
-              "color": "#ff9999",
-              "image": [
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC"
-              ],
-              "buildable": false
-            },
-            {
-              "type": "start",
-              "color": "#ffff80",
-              "image": [
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII=",
-                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII="
-              ],
-              "buildable": false
-            }
-          ],
-          "terrainMap": [
-            [
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              7,
-              2,
-              2,
-              2,
-              2,
-              4,
-              4,
-              4,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              4,
-              4,
-              4,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              4,
-              4,
-              4,
-              2,
-              4,
-              4,
-              4,
-              2,
-              4,
-              4,
-              4,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              4,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              4,
-              4,
-              2,
-              2,
-              4,
-              4,
-              2,
-              4,
-              4,
-              4,
-              2,
-              4,
-              4,
-              4,
-              2,
-              4,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              4,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              4,
-              4,
-              4,
-              2,
-              4,
-              4,
-              4,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              4,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              4,
-              2,
-              2,
-              2,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              4,
-              4,
-              4,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              0,
-              3,
-              2,
-              4,
-              2,
-              2,
-              4,
-              2,
-              3,
-              2,
-              2,
-              1,
-              1,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              3,
-              2,
-              2,
-              4,
-              2,
-              2,
-              4,
-              2,
-              3,
-              2,
-              2,
-              1,
-              1,
-              2,
-              2,
-              4,
-              4,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              4,
-              2,
-              2,
-              4,
-              4,
-              4,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              0,
-              0,
-              0,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              4,
-              2,
-              2,
-              0,
-              0,
-              0,
-              2,
-              4,
-              2,
-              3,
-              3,
-              2,
-              2,
-              4,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              0,
-              0,
-              0,
-              2,
-              4,
-              2,
-              3,
-              2,
-              2,
-              2,
-              2,
-              4,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              4,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              6,
-              2,
-              4,
-              2,
-              4,
-              4,
-              4,
-              4,
-              2,
-              2,
-              2,
-              2,
-              4,
-              4,
-              4,
-              4,
-              4,
-              7
-            ],
-            [
-              2,
-              4,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              3,
-              3,
-              2,
-              4,
-              4,
-              4,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              3,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              5,
-              5,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              5,
-              5,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              5,
-              5,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              0,
-              4,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              2,
-              2,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              0,
-              4,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              4,
-              4,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              4,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              4,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              4,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              4,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2
-            ],
-            [
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              7,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2,
-              2
-            ]
-          ],
-          "terrainBGColor": "#467554",
-          "environmentObjects": []
-        },
-        "world": "shire"
-      },
       "level1": {
         "title": "Level 1",
         "wavesets": [
@@ -20932,6 +19706,1232 @@ const DEFAULT_PROJECT_CONFIG = {
         "world": "shire",
         "grassShader": "grass",
         "waterShader": "water"
+      },
+      "level2": {
+        "title": "Level 2",
+        "wavesets": [
+          "swarm",
+          "swarm",
+          "swarm"
+        ],
+        "tileMap": {
+          "size": 32,
+          "terrainTypes": [
+            {
+              "type": "water",
+              "color": "#2d85c6",
+              "image": [
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2PUbT32n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABAAWoO0FhcUvnAAAAAElFTkSuQmCC"
+              ],
+              "buildable": false
+            },
+            {
+              "type": "rock",
+              "color": "#9e9e9e",
+              "image": [
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2OcN2/efwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEAIf9RHEX0vjVAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2OcN2/efwYqgqSkJEZk4xipbQHIcGRLaGIBsiU0swBmCU0tAFkyagHBBD4aRKNBRDAECCoYTUWjQUQwBAgqGE1FAx9EAECFSQ0HGbi8AAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2NkoDFgpLH5DMPAgnnz5v2nZTAxjlpAKHhHg4hQCDGMBtFoEBEMAYIKRlPRaBARDAGCCmieigCFBDkNArgMlAAAAABJRU5ErkJggg==",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASElEQVRIS2NkoDFgpLH5DMPAgnnz5v2nRjAlJSVhDQ1GalkAciQ2S6hqATZLRi3ASB/o8TAaRKNBRHohMpqKCIbZaBCNwCACAOcCUBnjhUZTAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2OcN2/efwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEAIf9RHEX0vjVAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2OcN2/efwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDB0E5FSUlJjDTzAchwUPjRxAKY4TSxANlwkAUAUEhJDYCk3yoAAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAQElEQVRIS2OcN2/efwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFAB7VMRQSdQqICRQv0EtQ99CwDb3jkNHe23xQAAAABJRU5ErkJggg==",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2OcN2/efwYqgqSkJEZk4xhHLUAP3dEgIpjeRoNoNIgIhgBBBaOpaDSICIYAXgXoKQikmGo1GjbDwRZQ5mbCukctIBhGAC4oUBlpvrH3AAAAAElFTkSuQmCC"
+              ],
+              "buildable": false
+            },
+            {
+              "type": "grass",
+              "color": "#4a7c59",
+              "image": [
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS2P0qon8z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCoYTUUjIIgAnCQy6fQdcSIAAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATklEQVRIS2P0qon8z0AlsK1lOSO6UYxDygKQ69F9QVUfwIIH2RKaWIDsE5pZAPPNqAUEc9BoEI0GEcEQIKhgNBWNBhHBECCoYDQVEQwiAA75PFN7PN69AAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2NkoDFgpLH5DKMWEAxhRq+ayP8EVVGgYNQCgoE3GkSjQUQwBAgqGE1Fo0FEMAQIKhhNRQSDCAB4BShTjqMEpwAAAABJRU5ErkJggg==",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2NkoDFgpLH5DKMWEAxhRq+ayP8EVRFQsK1lOc6gpooFIPtxWUI1C3BZMmoBSvRji4fRIBoNItIKkdFURDC8RoNocAYRADzPTBkQkiUcAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS2P0qon8z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCoYTUUjIIgAnCQy6fQdcSIAAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2P0qon8z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCqgWSra1rKcEWQ7TSyAGU4TC5ANp7oF6IbTxQIARN88U7u38m0AAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2P0qon8z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCpgJKiCQgWjFhAMQJoHEQCyWyhTURksDgAAAABJRU5ErkJggg==",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2P0qon8z0AlsK1lOSO6UYyjFiAHyWgQEUxro0E0GkQEQ4CggtFUNMyDCFsEg7xMlQoHl+FgCwgGLIUKRi0gGIA0DyIAQT9MGVwsaTUAAAAASUVORK5CYII="
+              ],
+              "buildable": true
+            },
+            {
+              "type": "forest",
+              "color": "#1c6438",
+              "image": [
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS2OUSbH4z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCoYTUUjIIgA71YpQQB/w8QAAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATklEQVRIS2OUSbH4z0Al8GTOCUZ0oxiHlAUg16P7gqo+gAUPsiU0sQDZJzSzAOabUQsI5qDRIBoNIoIhQFDBaCoaDSKCIUBQwWgqIhhEAIHMNK76+kj9AAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2NkoDFgpLH5DKMWEAxhRpkUi/8EVVGgYNQCgoE3GkSjQUQwBAgqGE1Fo0FEMAQIKhhNRQSDCACNcyCuKmmRrQAAAABJRU5ErkJggg==",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2NkoDFgpLH5DKMWEAxhRpkUi/8EVRFQ8GTOCZxBTRULQPbjsoRqFuCyZNQClOjHFg+jQTQaRKQVIqOpiGB4jQbR4AwiAPx6TBmX9XIXAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS2OUSbH4z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCoYTUUjIIgA71YpQQB/w8QAAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2OUSbH4z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCqgWSp6MucEI8h2mlgAM5wmFiAbTnUL0A2niwUAO0c0rkd3ClIAAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2OUSbH4z0BDwDhqAaHQHQ0iQiHEMBpEo0FEMAQIKhhNRaNBRDAECCpgJKiCQgWjFhAMQJoHEQBLXiCu2Bx7HwAAAABJRU5ErkJggg==",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2OUSbH4z0Al8GTOCUZ0oxhHLUAOktEgIpjWRoNoNIgIhgBBBaOpaJgHEbYIBnmZKhUOLsPBFhAMWAoVjFpAMABpHkQAAPlMGX+pQM0AAAAASUVORK5CYII="
+              ],
+              "buildable": true
+            },
+            {
+              "type": "path",
+              "color": "#f5d69a",
+              "image": [
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8em3WfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEADJ7UXnV1RQ5AAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAATklEQVRIS2P8em3WfwYqAW6tNEZ0oxiHlAUg16P7gqo+gAUPsiU0sQDZJzSzAOabUQsI5qDRIBoNIoIhQFDBaCoaDSKCIUBQwWgqIhhEAJvSVIWbYGLaAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2NkoDFgpLH5DKMWEAxhxq/XZv0nqIoCBaMWEAy80SAaDSKCIUBQwWgqGg0igiFAUMFoKiIYRAACV0CFxNTeCQAAAABJRU5ErkJggg==",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAS0lEQVRIS2NkoDFgpLH5DKMWEAxhxq/XZv0nqIqAAm6tNJxBTRULQPbjsoRqFuCyZNQClOjHFg+jQTQaRKQVIqOpiGB4jQbR4AwiAFzITBnELKoVAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8em3WfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEADJ7UXnV1RQ5AAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2P8em3WfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFABzVIRt1YaI8h2mlgAM5wmFiAbTnUL0A2niwUAqyRUhRUUb34AAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAPUlEQVRIS2P8em3WfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFABI0EVFCoYtYBgANI8iAAWGUCFGtCTSgAAAABJRU5ErkJggg==",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAASklEQVRIS2P8em3WfwYqAW6tNEZ0oxhHLUAOktEgIpjWRoNoNIgIhgBBBaOpaJgHEbYIBnmZKhUOLsPBFhAMWAoVjFpAMABpHkQAYThMGX3v4DMAAAAASUVORK5CYII="
+              ],
+              "buildable": false
+            },
+            {
+              "type": "lava",
+              "color": "#cc6315",
+              "image": [
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2M8kyz6n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABABafNmFbBL82AAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2M8kyz6n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABABafNmFbBL82AAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2M8kyz6n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABABafNmFbBL82AAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2M8kyz6n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABABafNmFbBL82AAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2M8kyz6n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABABafNmFbBL82AAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2M8kyz6n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABABafNmFbBL82AAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2M8kyz6n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABABafNmFbBL82AAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2M8kyz6n4GGgHHUAkKhOxpEhEKIYTSIRoOIYAgQVDCaikaDiGAIEFQwmopGQBABABafNmFbBL82AAAAAElFTkSuQmCC"
+              ],
+              "buildable": false
+            },
+            {
+              "type": "end",
+              "color": "#ff9999",
+              "image": [
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANklEQVRIS2P8P3PmfwYaAsZRCwiF7mgQEQohhtEgGg0igiFAUMFoKhoNIoIhQFDBaCoaAUEEACT6TJlEjUJmAAAAAElFTkSuQmCC"
+              ],
+              "buildable": false
+            },
+            {
+              "type": "start",
+              "color": "#ffff80",
+              "image": [
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII=",
+                "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAANUlEQVRIS+3SsQ0AAAgCQd3czXGEr6x8ahKSC51M6jDtAOlKREIlkUQogAVfJBEKYMEXPSBaS5xT0QJZxg4AAAAASUVORK5CYII="
+              ],
+              "buildable": false
+            }
+          ],
+          "terrainMap": [
+            [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              7,
+              2,
+              2,
+              2,
+              2,
+              4,
+              4,
+              4,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              4,
+              4,
+              4,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              4,
+              4,
+              4,
+              2,
+              4,
+              4,
+              4,
+              2,
+              4,
+              4,
+              4,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              4,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              4,
+              4,
+              2,
+              2,
+              4,
+              4,
+              2,
+              4,
+              4,
+              4,
+              2,
+              4,
+              4,
+              4,
+              2,
+              4,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              4,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              4,
+              4,
+              4,
+              2,
+              4,
+              4,
+              4,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              4,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              4,
+              2,
+              2,
+              2,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              4,
+              4,
+              4,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              0,
+              3,
+              2,
+              4,
+              2,
+              2,
+              4,
+              2,
+              3,
+              2,
+              2,
+              1,
+              1,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              3,
+              2,
+              2,
+              4,
+              2,
+              2,
+              4,
+              2,
+              3,
+              2,
+              2,
+              1,
+              1,
+              2,
+              2,
+              4,
+              4,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              4,
+              2,
+              2,
+              4,
+              4,
+              4,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              0,
+              0,
+              0,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              4,
+              2,
+              2,
+              0,
+              0,
+              0,
+              2,
+              4,
+              2,
+              3,
+              3,
+              2,
+              2,
+              4,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              0,
+              0,
+              0,
+              2,
+              4,
+              2,
+              3,
+              2,
+              2,
+              2,
+              2,
+              4,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              4,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              6,
+              2,
+              4,
+              2,
+              4,
+              4,
+              4,
+              4,
+              2,
+              2,
+              2,
+              2,
+              4,
+              4,
+              4,
+              4,
+              4,
+              7
+            ],
+            [
+              2,
+              4,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              3,
+              3,
+              2,
+              4,
+              4,
+              4,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              3,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              5,
+              5,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              5,
+              5,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              5,
+              5,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              0,
+              4,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              2,
+              2,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              0,
+              4,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              4,
+              4,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              4,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              4,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              4,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              7,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ]
+          ],
+          "terrainBGColor": "#467554",
+          "environmentObjects": []
+        },
+        "world": "shire"
       }
     }
   },
@@ -20972,13 +20972,6 @@ const DEFAULT_PROJECT_CONFIG = {
       "isCore": true
     },
     {
-      "id": "editorModules",
-      "name": "Editor Modules",
-      "singular": "Editor Module",
-      "category": "Settings",
-      "isCore": true
-    },
-    {
       "id": "towers",
       "name": "Towers",
       "singular": "Tower",
@@ -20995,13 +20988,6 @@ const DEFAULT_PROJECT_CONFIG = {
       "name": "Projectiles",
       "singular": "Projectile",
       "category": "Graphics"
-    },
-    {
-      "id": "worldObjects",
-      "name": "World Objects",
-      "singular": "worldObject",
-      "category": "Graphics",
-      "isCore": true
     },
     {
       "id": "upgrades",
@@ -21048,12 +21034,6 @@ const DEFAULT_PROJECT_CONFIG = {
       "isCore": true
     },
     {
-      "id": "modifierSets",
-      "name": "Modifier Sets",
-      "singular": "Modifier Set",
-      "category": "Data"
-    },
-    {
       "id": "sounds",
       "name": "Sounds",
       "singular": "Sound",
@@ -21080,36 +21060,6 @@ const DEFAULT_PROJECT_CONFIG = {
       "category": "Scripts"
     },
     {
-      "id": "inputElementTypes",
-      "name": "Input Elements",
-      "singular": "Input Element",
-      "category": "Settings"
-    },
-    {
-      "id": "inputDataTypes",
-      "name": "Input Data Types",
-      "singular": "Input Data Type",
-      "category": "Settings"
-    },
-    {
-      "id": "attackSounds",
-      "name": "Attack Sounds",
-      "singular": "attackSound",
-      "category": "Audio"
-    },
-    {
-      "id": "hitSounds",
-      "name": "Hit Sounds",
-      "singular": "hitSound",
-      "category": "Audio"
-    },
-    {
-      "id": "gameEvents",
-      "name": "Game Events",
-      "singular": "gameEvent",
-      "category": "Data"
-    },
-    {
       "id": "palettes",
       "name": "Palettes",
       "singular": "Palette",
@@ -21131,12 +21081,6 @@ const DEFAULT_PROJECT_CONFIG = {
       "id": "fogs",
       "name": "Fogs",
       "singular": "Fog",
-      "category": "Environment"
-    },
-    {
-      "id": "heightMaps",
-      "name": "Height Maps",
-      "singular": "Heightmap",
       "category": "Environment"
     },
     {
