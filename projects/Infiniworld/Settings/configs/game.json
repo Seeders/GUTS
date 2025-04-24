@@ -1,11 +1,12 @@
 {
   "gridSize": 48,
   "imageSize": 128,
-  "title": "Default Project",
+  "title": "Infiniworld",
   "isIsometric": false,
   "libraries": [
     "threejs",
     "ShapeFactory",
+    "SimplexNoise",
     "ImageManager",
     "SpatialGrid",
     "CoordinateTranslator",
@@ -17,7 +18,9 @@
     "GameState",
     "ModelManager",
     "three.OrbitControls",
-    "GLTFLoader"
+    "GLTFLoader",
+    "Three_PointerLockControls",
+    "InstancePool"
   ],
   "fileName": "game",
   "interface": "main",

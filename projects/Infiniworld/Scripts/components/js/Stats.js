@@ -15,8 +15,8 @@ class Stats extends engine.Component {
     }
     update() {
         this.stats = {...this.defaultStats};
-        this.applyEffects();
-        this.applyUpgrades();
+        //this.applyEffects();
+        //this.applyUpgrades();
     }
     addStat(statName, statValue) {
         this.stats[statName] = statValue;

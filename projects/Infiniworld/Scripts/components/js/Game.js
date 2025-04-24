@@ -8,53 +8,53 @@ class Game extends engine.Component {
         
     init() {
         this.initEffectsAndUpgrades();
-        this.gridSize = this.game.config.configs.game.gridSize;
-        let endPath = this.game.state.paths[0][this.game.state.paths[0].length - 1];
-        let endY = endPath.y;
-        let endX = endPath.x;
-        this.keep = this.game.spawn(endX * this.gridSize + this.gridSize / 2, 
-                                endY * this.gridSize + this.gridSize / 2, "tower",
-                                { spawnType: 'keep', objectType: 'towers', setDirection: 1});
-        this.keep.placed = true;
+        this.gridSize = this.game.config.configs.game.gridSize;       
 
     }
-
     update() {
-        this.keep.position.z = this.getTerrainHeight(this.keep.gridPosition);
-        if(this.game.config.configs.game.is3D){
-            this.getComponent("MapRenderer")?.render(this.game.state.tileMapData, this.game.state.paths);
-        } else {
-            this.getComponent("MapRenderer")?.renderBG(this.game.state.tileMapData, this.game.state.paths);
-        }
-        
         if (!this.game.state.isPaused) {
             this.currentTime = Date.now();
-
+    
             // Only update if a reasonable amount of time has passed
             const timeSinceLastUpdate = this.currentTime - this.lastTime;
-
+    
             // Skip update if more than 1 second has passed (tab was inactive)
             if (timeSinceLastUpdate > 1000) {
                 this.lastTime = this.currentTime; // Reset timer without updating
                 return;
             }
-
+    
             this.game.deltaTime = Math.min(1/30, timeSinceLastUpdate / 1000); // Cap at 1/30th of a second        
             this.lastTime = this.currentTime;
-
+    
+            // FPS Counter
+            if (!this.fps) {
+                this.fps = {
+                    frameCount: 0,
+                    lastFpsUpdate: this.currentTime,
+                    fpsValue: 0
+                };
+            }
+            this.fps.frameCount++;
+            if (this.currentTime - this.fps.lastFpsUpdate >= 1000) {
+                this.fps.fpsValue = Math.round((this.fps.frameCount * 1000) / (this.currentTime - this.fps.lastFpsUpdate));
+                this.fps.frameCount = 0;
+                this.fps.lastFpsUpdate = this.currentTime;
+            }
+    
             // Sort entities by y position for proper drawing order
             this.game.state.entities.sort((a, b) => {
-                return (a.position.y * this.game.state.tileMap.length + a.position.x) - (b.position.y * this.game.state.tileMap.length + b.position.x)
+                return (a.position.y * this.game.state.tileMap.length + a.position.x) - (b.position.y * this.game.state.tileMap.length + b.position.x);
             });
-
-            this.game.state.stats = {...this.game.state.defaultStats};//reset stats to recalculate upgrades from base stats.
+    
+            this.game.state.stats = {...this.game.state.defaultStats}; // Reset stats to recalculate upgrades from base stats.
             // Single loop through entities for update, draw and postUpdate
             const entitiesToKeep = [];
-            for(let i = 0; i < this.game.state.entities.length; i++) {
+            for (let i = 0; i < this.game.state.entities.length; i++) {
                 let e = this.game.state.entities[i];
                 let result = e.update();    
                 
-                if(result) {
+                if (result) {
                     entitiesToKeep.push(e);
                     e.draw();
                     e.postUpdate();
@@ -68,11 +68,8 @@ class Game extends engine.Component {
             // Add any new entities
             this.game.entitiesToAdd.forEach((entity) => this.game.state.addEntity(entity));
             this.game.entitiesToAdd = [];
-        }     
-        if(!this.game.config.configs.game.is3D){
-            this.getComponent("MapRenderer")?.renderFG(this.game.state.tileMapData, this.game.state.paths);
-        }   
-        
+    
+        }
     }
 
     getTerrainHeight(gridPosition) {

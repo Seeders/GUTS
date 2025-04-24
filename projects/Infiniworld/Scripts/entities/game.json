@@ -2,10 +2,8 @@
   "title": "Game",
   "components": [
     "MapManager",
-    "WaveManager",
-    "UpgradeManager",
     "AudioManager",
-    "ThreeJsWorld",
+    "InfiniWorld",
     "Game"
   ],
   "renderers": [

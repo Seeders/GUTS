@@ -70,8 +70,8 @@ class ModelRenderer extends engine.Component {
         if (this.parent && this.parent.position) {
             this.modelGroup.position.set(
                 this.parent.position.x,
-                this.parent.position.z,
-                this.parent.position.y
+                this.parent.position.y,
+                this.parent.position.z
             );
             
             // Handle rotation based on movement direction
@@ -85,16 +85,12 @@ class ModelRenderer extends engine.Component {
         // Calculate direction based on movement
         if (this.parent && this.parent.lastPosition) {
             const dx = this.parent.position.x - this.parent.lastPosition.x;
-            const dy = this.parent.position.y - this.parent.lastPosition.y;
-            
+            const dy = this.parent.position.z - this.parent.lastPosition.z;
+            this.modelGroup.quaternion.copy(this.parent.quaternion);
+
             // Only update direction if there's significant movement
             if (Math.abs(dx) > 0.001 || Math.abs(dy) > 0.001) {
-                // Calculate angle in radians
-                let angle = Math.atan2(dy, dx);
-            
-                // Rotate model to face movement direction
-                this.modelGroup.rotation.y = -angle + Math.PI / 2;
-                
+    
                 // Set walking animation when moving
                 if (this.animationData['walk']) {
                     this.setAnimation('walk');

@@ -2,7 +2,8 @@ class Entity {
     constructor(game, x, y, type) {
         this.game = game;
         this.moduleManager = game.moduleManager;
-        this.position = { x: x, y: y, z: 0};
+        this.position = new THREE.Vector3(x, y, 0);
+        this.quaternion = new THREE.Vector3();
         this.components = [];
         this.renderers = [];
         this.destroyed = false;        

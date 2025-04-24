@@ -8,7 +8,145 @@
   "render": {
     "animations": {
       "idle": [
-        {}
+        {
+          "hull": {
+            "shapes": [
+              {
+                "type": "sphere",
+                "width": 15,
+                "height": 8,
+                "depth": 30,
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "color": {
+                  "paletteColor": "greyMColor"
+                },
+                "name": "upper-hull",
+                "size": 10,
+                "scaleZ": 7,
+                "rotationX": 0,
+                "rotationY": 0,
+                "rotationZ": 0,
+                "scaleX": 1,
+                "scaleY": 1,
+                "id": 0
+              }
+            ]
+          },
+          "cockpit": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "blueMColor"
+                },
+                "id": 0
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 1
+              }
+            ]
+          },
+          "left wing": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "greyMColor"
+                },
+                "id": 0
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 1
+              }
+            ]
+          },
+          "right wing": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "greyMColor"
+                },
+                "id": 0
+              },
+              {
+                "color": {
+                  "paletteColor": "greyLColor"
+                },
+                "id": 1
+              }
+            ]
+          },
+          "thrusters": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "blueMColor"
+                },
+                "id": 0
+              },
+              {
+                "color": {
+                  "paletteColor": "greyMColor"
+                },
+                "id": 1
+              }
+            ]
+          },
+          "turret": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 0
+              },
+              {
+                "color": {
+                  "paletteColor": "greyMColor"
+                },
+                "id": 1
+              }
+            ]
+          },
+          "right turret": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 0
+              },
+              {
+                "color": {
+                  "paletteColor": "greyMColor"
+                },
+                "id": 1
+              }
+            ]
+          },
+          "right thruster": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "blueMColor"
+                },
+                "id": 0
+              },
+              {
+                "color": {
+                  "paletteColor": "greyMColor"
+                },
+                "id": 1
+              }
+            ]
+          }
+        }
       ],
       "move": [
         {
@@ -46,17 +184,48 @@
               }
             ]
           },
-          "cockpit": {
+          "hull": {
             "shapes": [
               {
+                "type": "sphere",
+                "width": 15,
+                "height": 8,
+                "depth": 30,
+                "x": 0,
+                "y": 0,
+                "z": 0,
                 "color": {
-                  "paletteColor": "greyLColor"
+                  "paletteColor": "greyMColor"
                 },
+                "name": "upper-hull",
+                "size": 10,
+                "scaleZ": 7,
+                "rotationX": 0,
+                "rotationY": 0,
+                "rotationZ": 0,
+                "scaleX": 1,
+                "scaleY": 1,
                 "id": 0
               }
             ]
           },
-          "hull": {
+          "cockpit": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "blueMColor"
+                },
+                "id": 0
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 1
+              }
+            ]
+          },
+          "turret": {
             "shapes": [
               {
                 "color": {
@@ -72,263 +241,44 @@
               }
             ]
           },
-          "turret": {
+          "right turret": {
             "shapes": [
               {
                 "color": {
                   "paletteColor": "greyDColor"
                 },
                 "id": 0
-              }
-            ]
-          }
-        },
-        {
-          "cockpit": {
-            "position": {
-              "x": 0,
-              "y": 5,
-              "z": 20
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0.1,
-              "z": 0
-            }
-          },
-          "left wing": {
-            "position": {
-              "x": 10,
-              "y": 3,
-              "z": 10
-            },
-            "rotation": {
-              "x": 0.2,
-              "y": 0.6,
-              "z": 0
-            },
-            "shapes": [
-              {
-                "rotationX": 0.2,
-                "rotationY": 0.6,
-                "id": 1
-              }
-            ]
-          },
-          "right wing": {
-            "position": {
-              "x": -10,
-              "y": 3,
-              "z": 10
-            },
-            "rotation": {
-              "x": 0.2,
-              "y": -0.6,
-              "z": 0
-            },
-            "shapes": [
-              {
-                "rotationX": 0.2,
-                "rotationY": -0.6,
-                "id": 1
-              }
-            ]
-          },
-          "thrusters": {
-            "position": {
-              "x": 0,
-              "y": 2,
-              "z": -20
-            },
-            "rotation": {
-              "x": 0.1,
-              "y": 0,
-              "z": 0
-            },
-            "shapes": [
-              {
-                "color": {
-                  "paletteColor": "blueMColor"
-                },
-                "id": 2
               },
               {
                 "color": {
-                  "paletteColor": "blueMColor"
+                  "paletteColor": "greyMColor"
                 },
-                "id": 3
-              }
-            ]
-          },
-          "hull": {
-            "rotation": {
-              "x": 0.05,
-              "y": 0.05,
-              "z": 0
-            }
-          },
-          "turret": {
-            "rotation": {
-              "x": 0,
-              "y": 0.2,
-              "z": 0
-            }
-          }
-        },
-        {
-          "left wing": {
-            "shapes": [
-              {
-                "rotationX": 0.1,
-                "rotationY": 0.5,
                 "id": 1
               }
             ]
           },
-          "right wing": {
-            "shapes": [
-              {
-                "rotationX": 0.1,
-                "rotationY": -0.5,
-                "id": 1
-              }
-            ]
-          },
-          "thrusters": {
+          "right thruster": {
             "shapes": [
               {
                 "color": {
-                  "paletteColor": "blueLColor"
+                  "paletteColor": "blueMColor"
                 },
-                "id": 2
+                "id": 0
               },
               {
                 "color": {
-                  "paletteColor": "blueLColor"
+                  "paletteColor": "greyMColor"
                 },
-                "id": 3
-              }
-            ]
-          }
-        },
-        {
-          "cockpit": {
-            "position": {
-              "x": 0,
-              "y": 4.5,
-              "z": 20
-            },
-            "rotation": {
-              "x": 0,
-              "y": -0.1,
-              "z": 0
-            }
-          },
-          "left wing": {
-            "position": {
-              "x": 10,
-              "y": 2.5,
-              "z": 10
-            },
-            "rotation": {
-              "x": 0.1,
-              "y": 0.5,
-              "z": 0
-            },
-            "shapes": [
-              {
-                "rotationX": 0.1,
-                "rotationY": 0.5,
                 "id": 1
               }
             ]
-          },
-          "right wing": {
-            "position": {
-              "x": -10,
-              "y": 2.5,
-              "z": 10
-            },
-            "rotation": {
-              "x": 0.1,
-              "y": -0.5,
-              "z": 0
-            },
-            "shapes": [
-              {
-                "rotationX": 0.1,
-                "rotationY": -0.5,
-                "id": 1
-              }
-            ]
-          },
-          "thrusters": {
-            "position": {
-              "x": 0,
-              "y": 2.5,
-              "z": -20
-            },
-            "rotation": {
-              "x": 0.05,
-              "y": 0,
-              "z": 0
-            },
-            "shapes": [
-              {
-                "color": {
-                  "paletteColor": "blueMColor"
-                },
-                "id": 2
-              },
-              {
-                "color": {
-                  "paletteColor": "blueMColor"
-                },
-                "id": 3
-              }
-            ]
-          },
-          "hull": {
-            "rotation": {
-              "x": 0.05,
-              "y": -0.05,
-              "z": 0
-            }
-          },
-          "turret": {
-            "rotation": {
-              "x": 0,
-              "y": -0.2,
-              "z": 0
-            }
           }
         }
       ]
     },
     "model": {
       "hull": {
-        "shapes": [
-          {
-            "type": "sphere",
-            "width": 15,
-            "height": 8,
-            "depth": 30,
-            "x": 0,
-            "y": 0,
-            "z": 0,
-            "color": {
-              "paletteColor": "greyMColor"
-            },
-            "name": "upper-hull",
-            "size": 10,
-            "scaleZ": 7,
-            "rotationX": 0,
-            "rotationY": 0,
-            "rotationZ": 0,
-            "scaleX": 1,
-            "scaleY": 1
-          }
-        ],
+        "shapes": [],
         "position": {
           "x": 0,
           "y": 5,
@@ -489,7 +439,7 @@
             "type": "cone",
             "size": 3,
             "height": 5,
-            "x": -5,
+            "x": -6,
             "y": 3.5,
             "z": -35,
             "color": {
@@ -505,7 +455,7 @@
             "type": "cylinder",
             "size": 3,
             "height": 5,
-            "x": -5,
+            "x": -6,
             "y": 3.5,
             "z": -30,
             "color": {
@@ -516,9 +466,9 @@
           }
         ],
         "position": {
-          "x": 0.5,
+          "x": 0,
           "y": 4,
-          "z": 7
+          "z": 32
         },
         "rotation": {
           "x": 0,
@@ -623,7 +573,7 @@
             "type": "cone",
             "size": 3,
             "height": 5,
-            "x": 5,
+            "x": 6,
             "y": 3.5,
             "z": -35,
             "color": {
@@ -642,7 +592,7 @@
             "type": "cylinder",
             "size": 3,
             "height": 5,
-            "x": 5,
+            "x": 6,
             "y": 3.5,
             "z": -30,
             "color": {
@@ -655,7 +605,7 @@
         "position": {
           "x": -0.5,
           "y": 4,
-          "z": 7
+          "z": 32
         },
         "rotation": {
           "x": 0,
