@@ -101,7 +101,7 @@ class Attacker extends engine.Component {
         } else if( this.stats.projectileCount > 0 ) {
           this.game.spawn(this.parent.position.x, this.parent.position.y, 'multiShotProjectile', { objectType: "projectiles", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });
         } else {
-          let projectile = this.game.spawn(this.parent.position.x, this.parent.position.y, 'projectile', { objectType: "projectiles", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });
+          this.game.spawn(this.parent.position.x, this.parent.position.y, 'projectile', { objectType: "projectiles", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });
         }
     }
 }

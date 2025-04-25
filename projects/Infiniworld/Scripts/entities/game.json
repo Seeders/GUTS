@@ -4,6 +4,7 @@
     "MapManager",
     "AudioManager",
     "InfiniWorld",
+    "Physics",
     "Game"
   ],
   "renderers": [

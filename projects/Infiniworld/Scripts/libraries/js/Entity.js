@@ -2,8 +2,9 @@ class Entity {
     constructor(game, x, y, type) {
         this.game = game;
         this.moduleManager = game.moduleManager;
-        this.position = new THREE.Vector3(x, y, 0);
-        this.quaternion = new THREE.Vector3();
+        this.position = new THREE.Vector3(x, 0, y);
+        this.quaternion = new THREE.Quaternion();
+        this.velocity = new THREE.Vector3();
         this.components = [];
         this.renderers = [];
         this.destroyed = false;        
@@ -14,14 +15,29 @@ class Entity {
         this.lastPosition = {...this.position};
         this.lastGridPosition = {...this.gridPosition};
         this.lastDrawPosition = {...this.drawPosition};
+        this.collisionRadius = 5;   
+        this.entityHeight = 10;     
         if(this.game.gameEntity){
             this.setGridPosition();
-            this.position.z = this.getCurrentTerrainHeight();
-        }
+            this.position.y = this.getCurrentTerrainHeight();
+        }        
     }
-
+    getAABB(position = this.position) {
+        return {
+            min: {
+                x: position.x - this.collisionRadius,
+                y: position.y,
+                z: position.z - this.collisionRadius
+            },
+            max: {
+                x: position.x + this.collisionRadius,
+                y: position.y + this.entityHeight,
+                z: position.z + this.collisionRadius
+            }
+        };
+    }
     getCurrentTerrainHeight(){
-        return this.game.gameEntity.getComponent('game').getTerrainHeight(this.gridPosition);
+        return this.game.gameEntity.getComponent('game').getTerrainHeight(this.position);
     }
 
     getComponent(name) {
@@ -91,6 +107,16 @@ class Entity {
             this.renderers[r].draw();  
         }
 
+    }
+    OnCollision(collidedWith){
+        for(let c in this.components) {
+            this.components[c].OnCollision(collidedWith);                           
+        }                
+    }
+    OnStaticCollision(){
+        for(let c in this.components) {
+            this.components[c].OnStaticCollision();                           
+        }                
     }
     destroy() {
         this.destroyed = true;

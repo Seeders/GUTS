@@ -51,7 +51,7 @@ class InfiniWorld extends engine.Component {
       this.objectCache = new Map();
   
       // Initialize SimplexNoise and biomes for getTerrainHeight
-      this.noise = new (this.game.libraryClasses.SimplexNoise)(12345); // Fixed seed for consistency
+      this.noise = new (this.game.libraryClasses.SimplexNoise)(); // Fixed seed for consistency
       this.biomes = {
         plains: {
           groundColor: { r: 0.502, g: 0.753, b: 0.439 }, // Matches worker
@@ -582,78 +582,11 @@ class InfiniWorld extends engine.Component {
   
     getWorkerCode() {
       return `
-        class SimplexNoise {
-          constructor(seed = 12345) {
-            this.perm = new Uint8Array(256);
-            this.seed = seed;
-            this.initPermutation();
-          }
-  
-          initPermutation() {
-            for (let i = 0; i < 256; i++) {
-              this.perm[i] = i;
-            }
-            let rand = this.seededRandom();
-            for (let i = 255; i > 0; i--) {
-              const j = Math.floor(rand() * (i + 1));
-              [this.perm[i], this.perm[j]] = [this.perm[j], this.perm[i]];
-            }
-          }
-  
-          seededRandom() {
-            let x = Math.sin(this.seed++) * 10000;
-            return () => {
-              x = Math.sin(x + this.seed++) * 10000;
-              return x - Math.floor(x);
-            };
-          }
-  
-          noise2D(x, y) {
-            const s = (x + y) * 0.366025403784; // F = (sqrt(3) - 1) / 2
-            const i = Math.floor(x + s);
-            const j = Math.floor(y + s);
-  
-            const t = (i + j) * 0.211324865405; // G = (3 - sqrt(3)) / 6
-            const X0 = i - t;
-            const Y0 = j - t;
-            const x0 = x - X0;
-            const y0 = y - Y0;
-  
-            const i1 = x0 > y0 ? 1 : 0;
-            const j1 = x0 > y0 ? 0 : 1;
-  
-            const x1 = x0 - i1 + 0.211324865405;
-            const y1 = y0 - j1 + 0.211324865405;
-            const x2 = x0 - 1 + 0.42264973081;
-            const y2 = y0 - 1 + 0.42264973081;
-  
-            const gi0 = this.perm[(i + this.perm[j & 255]) & 255] % 4;
-            const gi1 = this.perm[(i + i1 + this.perm[(j + j1) & 255]) & 255] % 4;
-            const gi2 = this.perm[(i + 1 + this.perm[(j + 1) & 255]) & 255] % 4;
-  
-            const n0 = this.contribution(x0, y0, gi0);
-            const n1 = this.contribution(x1, y1, gi1);
-            const n2 = this.contribution(x2, y2, gi2);
-  
-            return (n0 + n1 + n2) * 70; // Scale to approximate [-1, 1]
-          }
-  
-          contribution(x, y, gi) {
-            const t = 0.5 - x * x - y * y;
-            if (t < 0) return 0;
-  
-            const gradients = [
-              [1, 1], [-1, 1], [1, -1], [-1, -1]
-            ];
-            const grad = gradients[gi];
-            const t2 = t * t;
-            return t2 * t2 * (grad[0] * x + grad[1] * y);
-          }
-        }
+        ${this.game.config.libraries["SimplexNoise"].script}
   
         class WorkerUtils {
           constructor() {
-            this.noise = new SimplexNoise(12345);
+            this.noise = new SimplexNoise();
             this.biomes = ${JSON.stringify(this.biomes)};
             this.chunkSize = ${this.chunkSize};
             this.chunkResolution = ${this.chunkResolution};

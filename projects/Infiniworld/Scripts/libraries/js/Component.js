@@ -11,4 +11,7 @@ class Component {
     update() {}
     postUpdate() {}
     destroy() {}
+    
+    OnCollision(collidedWith){}
+    OnStaticCollision(){}
 }

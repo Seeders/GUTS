@@ -78,10 +78,10 @@
       "shapes": {
         "shapes": [
           {
-            "type": "cube",
-            "size": 6,
+            "type": "sphere",
+            "size": 2,
             "x": 0,
-            "y": 24,
+            "y": 0,
             "z": 0,
             "rotationX": 90,
             "color": "#ee6060",
@@ -106,8 +106,8 @@
       }
     }
   },
-  "speed": 50,
+  "speed": 200,
   "title": "Plasma Bolt",
-  "attackSound": "plasma",
-  "hitSound": "plasma"
+  "attackSound": "pickup",
+  "hitSound": "placeTower"
 }

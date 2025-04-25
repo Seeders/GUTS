@@ -1,6 +1,5 @@
 class PlayerController extends engine.Component {
     init({
-        infiniWorld,
         walkSpeed = 50,
         runSpeed = 100,
         jumpForce = 200,
@@ -9,12 +8,11 @@ class PlayerController extends engine.Component {
         characterHeight = 1.8,
         cameraHeight = 20,
         stepHeight = 0.3,
-        cameraSmoothing = 0.2,
-        collisionRadius = 5
+        cameraSmoothing = 0.2
     }) {
-        this.infiniWorld = infiniWorld;
-        this.scene = infiniWorld.scene;
-        this.camera = infiniWorld.camera;
+        this.infiniWorld = this.game.gameEntity.getComponent("InfiniWorld");
+        this.scene = this.infiniWorld.scene;
+        this.camera = this.game.camera;
         
         // Movement parameters
         this.walkSpeed = walkSpeed;
@@ -28,7 +26,6 @@ class PlayerController extends engine.Component {
         this.characterHeight = characterHeight;
         this.cameraHeight = cameraHeight;
         this.stepHeight = stepHeight;
-        this.collisionRadius = collisionRadius;
         
         // Initialize character position and rotation
         this.parent.quaternion = new THREE.Quaternion();
@@ -235,7 +232,7 @@ class PlayerController extends engine.Component {
                 this.parent.position.clone().add(new THREE.Vector3(0, this.cameraHeight, 0)),
                 forwardDir.clone().negate().normalize(),
                 0,
-                offsetDistance + this.collisionRadius
+                offsetDistance + this.parent.collisionRadius
             );
             
             // Smoothly move camera to target position
@@ -306,7 +303,7 @@ class PlayerController extends engine.Component {
         
         // Cast ray forward at step height to detect steps
         const origin = this.parent.position.clone().add(new THREE.Vector3(0, this.stepHeight, 0));
-        const maxStepDistance = this.collisionRadius + 0.1;
+        const maxStepDistance = this.parent.collisionRadius + 0.1;
         
         if (this.debug.showRaycasts) {
             const arrowHelper = new THREE.ArrowHelper(
@@ -322,7 +319,7 @@ class PlayerController extends engine.Component {
         }
         
         // Check terrain height slightly ahead in movement direction
-        const stepCheckDistance = this.collisionRadius + 0.2;
+        const stepCheckDistance = this.parent.collisionRadius + 0.2;
         const checkPoint = this.parent.position.clone().add(
             moveDir.clone().multiplyScalar(stepCheckDistance)
         );
@@ -555,17 +552,17 @@ class PlayerController extends engine.Component {
         return pushOut;
     }
 
-    getAABB(position = this.position) {
+    getAABB(position = this.parent.position) {
         return {
             min: {
-                x: position.x - this.collisionRadius,
+                x: position.x - this.parent.collisionRadius,
                 y: position.y,
-                z: position.z - this.collisionRadius
+                z: position.z - this.parent.collisionRadius
             },
             max: {
-                x: position.x + this.collisionRadius,
+                x: position.x + this.parent.collisionRadius,
                 y: position.y + this.characterHeight,
-                z: position.z + this.collisionRadius
+                z: position.z + this.parent.collisionRadius
             }
         };
     }

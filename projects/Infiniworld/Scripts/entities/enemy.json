@@ -2,11 +2,9 @@
   "title": "Enemy",
   "components": [
     "Stats",
-    "EssenceBounty",
-    "FollowPath",
-    "SpacialGridEntity",
     "ArrayTracker",
-    "Animator"
+    "Animator",
+    "Collider"
   ],
   "renderers": [
     "ModelRenderer",

@@ -1,6 +1,5 @@
 class AircraftController extends engine.Component {
     init({
-        infiniWorld,
         maxThrust = 4000,
         acceleration = 700,
         strafeAcceleration = 15,
@@ -13,9 +12,9 @@ class AircraftController extends engine.Component {
         maxSpeed = 4000,
         cameraSmoothing = 0.3 // Increased for smoother camera
     }) {
-        this.infiniWorld = infiniWorld;
-        this.scene = infiniWorld.scene;
-        this.camera = infiniWorld.camera;
+        this.infiniWorld = this.game.gameEntity.getComponent("InfiniWorld");
+        this.scene = this.infiniWorld.scene;
+        this.camera = this.game.camera;
         this.maxThrust = maxThrust;
         this.acceleration = acceleration;
         this.strafeAcceleration = strafeAcceleration;

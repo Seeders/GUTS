@@ -3,7 +3,8 @@
   "components": [
     "Stats",
     "PlayerController",
-    "Animator"
+    "Animator",
+    "PlayerAttacker"
   ],
   "renderers": [
     "ModelRenderer",

@@ -38,7 +38,7 @@ class GameLoader extends engine.Component {
         this.game.audioManager = this.game.gameEntity.getComponent('AudioManager');  
         
         this.player = this.game.spawn(0, 0, "player",
-            { spawnType: 'viking', objectType: 'enemies', setDirection: 1, infiniWorld: this.game.gameEntity.getComponent("InfiniWorld"), camera: this.game.camera });
+            { spawnType: 'viking', objectType: 'enemies', setDirection: 1 });
         this.player.position.y += 50;
         this.player.placed = true;
         this.game.player = this.player;

@@ -8,6 +8,7 @@ class Stats extends engine.Component {
   init( {objectType, spawnType} ) {        
         
         let stats = this.game.config[objectType][spawnType];
+        console.log(stats);
         this.type = spawnType;
         this.stats = {...stats};
         this.defaultStats = {...this.stats};
@@ -24,21 +25,5 @@ class Stats extends engine.Component {
     }
     addEffect(effectConfig, effectFn, effectAmt) {        
         this.activeEffects[effectConfig.id] = this.parent.addComponent("effect", { config: effectConfig, applyFn: effectFn, amount: effectAmt });
-    }
-    applyEffects() {
-        let effectArr = [];
-        for(let effectId in this.activeEffects) {
-            if(this.activeEffects[effectId] && this.activeEffects[effectId].lifeTime > 0){
-                effectArr.push(this.activeEffects[effectId]);
-            } else {
-                this.activeEffects[effectId] = undefined;
-            }
-        }        
-        
-        engine.getFunction("calculateStats")(this.stats, effectArr);
-    }
-    
-    applyUpgrades() {
-        engine.getFunction("calculateStats")(this.stats, this.game.state.activeUpgrades[this.type]);        
-    }
+    }  
 }

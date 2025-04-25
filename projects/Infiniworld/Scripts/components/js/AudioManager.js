@@ -9,7 +9,7 @@ class AudioManager extends engine.Component {
     }
 
     bindInitialization() {
-        const initHandler = () => {
+        const initHandler = () => {            
             if (!this.isInitialized) {
                 this.initialize();
             }
@@ -253,9 +253,11 @@ class AudioManager extends engine.Component {
     playSynthSound(soundId, soundConfig, options = {}) {
         if (!this.isInitialized) {
             this.initialize();
-            return this.playSynthSound(soundId, soundConfig, options);
+            return;
+        }        
+        if (this.audioContext.state === 'suspended') {
+            return;
         }
-        
         const category = options.category || 'sfx';
         const pool = this.soundPools[category];
         
