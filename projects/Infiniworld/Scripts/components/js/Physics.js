@@ -307,11 +307,61 @@ class Physics extends engine.Component {
                 };
             }
 
-            function resolveTerrainCollision(entity, terrainHeight, deltaTime) {
-                const aabbHeight = entity.aabb.min.y;
+            function resolveTerrainCollision(entity, terrainHeight, deltaTime, terrainGenerator, x, z) {
+                // Check if entity is colliding with terrain
                 if (entity.position.y <= terrainHeight) {
-                    entity.position.y = terrainHeight;
-                    entity.velocity.y = 0;
+                    // Calculate terrain normal at collision point
+                    const sampleDistance = 0.5; // Distance to sample for normal calculation
+                    const heightAtPoint = terrainHeight;
+                    const heightAtPointPlusX = terrainGenerator.getTerrainHeight(x + sampleDistance, z);
+                    const heightAtPointPlusZ = terrainGenerator.getTerrainHeight(x, z + sampleDistance);
+                    
+                    // Calculate terrain normal using cross product of terrain tangent vectors
+                    const tangentX = { x: sampleDistance, y: heightAtPointPlusX - heightAtPoint, z: 0 };
+                    const tangentZ = { x: 0, y: heightAtPointPlusZ - heightAtPoint, z: sampleDistance };
+                    
+                    // Calculate normal (perpendicular to both tangents)
+                    const normal = {
+                        x: -tangentX.y * tangentZ.z + tangentX.z * tangentZ.y,
+                        y: tangentX.x * tangentZ.z - tangentX.z * tangentZ.x,
+                        z: -tangentX.x * tangentZ.y + tangentX.y * tangentZ.x
+                    };
+                    
+                    // Normalize the normal vector
+                    const normalLength = Math.sqrt(normal.x * normal.x + normal.y * normal.y + normal.z * normal.z);
+                    normal.x /= normalLength;
+                    normal.y /= normalLength;
+                    normal.z /= normalLength;
+                    
+                    // Calculate reflection vector: r = v - 2(v·n)n
+                    const dotProduct = entity.velocity.x * normal.x + 
+                                    entity.velocity.y * normal.y + 
+                                    entity.velocity.z * normal.z;
+                    
+                    // Apply restitution and reflection
+                    const restitution = entity.restitution || 0.3;
+                    
+                    // Calculate new velocity after reflection
+                    entity.velocity.x = entity.velocity.x - 2 * dotProduct * normal.x * restitution;
+                    entity.velocity.y = entity.velocity.y - 2 * dotProduct * normal.y * restitution;
+                    entity.velocity.z = entity.velocity.z - 2 * dotProduct * normal.z * restitution;
+                    
+                    // Apply friction based on slope
+                    const friction = 0.8; // Adjust as needed
+                    const slopeCoefficient = 1 - Math.abs(normal.y); // Higher when slope is steeper
+                    
+                    // Apply more friction on steeper slopes
+                    const frictionFactor = friction * (1 + slopeCoefficient);
+                    entity.velocity.x *= (1 - frictionFactor * deltaTime);
+                    entity.velocity.z *= (1 - frictionFactor * deltaTime);
+                    
+                    // Move the entity to just above the terrain to prevent sinking
+                    // Calculate the offset along the normal vector to position the entity
+                    const offsetDistance = 0.01; // Small offset to prevent stuck in terrain
+                    entity.position.x += normal.x * offsetDistance;
+                    entity.position.y = terrainHeight + offsetDistance;
+                    entity.position.z += normal.z * offsetDistance;
+                    
                     entity.grounded = true;
                 } else {
                     entity.grounded = false;
@@ -438,8 +488,10 @@ class Physics extends engine.Component {
                 entities.forEach(entity => {
                     // Handle terrain collision using the terrain generator
                     if (terrainGenerator) {
-                        const terrainHeight = terrainGenerator.getTerrainHeight(entity.position.x, entity.position.z);
-                        resolveTerrainCollision(entity, terrainHeight, deltaTime);
+                        const x = entity.position.x;
+                        const z = entity.position.z;
+                        const terrainHeight = terrainGenerator.getTerrainHeight(x, z);
+                        resolveTerrainCollision(entity, terrainHeight, deltaTime, terrainGenerator, x, z);
                     }
 
                     // Handle static object collisions

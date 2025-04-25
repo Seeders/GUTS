@@ -2,7 +2,7 @@ class Collider extends engine.Component {
     init({}) {
         this.stats = this.getComponent('stats').stats;  
         this.type = 'sphere'; // 'sphere' or 'box'
-        this.size = { radius: 5 }; // For box: dimensions, for sphere: radius
+        this.size = { radius: 2 }; // For box: dimensions, for sphere: radius
         this.offset = new THREE.Vector3(0, 0, 0); // Center offset
         this.mass = 1; // Override entity mass
         this.restitution = 1; // Override restitution

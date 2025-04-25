@@ -23,7 +23,11 @@ class ModelRenderer extends engine.Component {
         }
         
         // Create the initial model instance
-        this.modelGroup = this.game.skeletonUtils.clone(this.model);  
+        if(spawnType == "knightWalk"){
+            this.modelGroup = this.model;
+        } else {
+            this.modelGroup = this.game.skeletonUtils.clone(this.model);  
+        }
         // Add the model group to the scene
         this.game.scene.add(this.modelGroup);
 

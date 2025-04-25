@@ -81,7 +81,7 @@
             "type": "sphere",
             "size": 2,
             "x": 0,
-            "y": 0,
+            "y": 1,
             "z": 0,
             "rotationX": 90,
             "color": "#ee6060",
