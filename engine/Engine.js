@@ -166,10 +166,16 @@ class Engine {
                 const data = await response.json();            
                 gameData = data.config;
             }
+            
+            if(currentProject == "iw"){            
+                gameData = INFINIWORLD_CONFIG;
+            }
         } else if(location.hostname !== "") {
             gameData = JSON.parse(localStorage.getItem(currentProject)); 
+            if(currentProject == "iw"){            
+                gameData = INFINIWORLD_CONFIG;
+            }
         }
-
         return gameData.objectTypes;
     }
 

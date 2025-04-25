@@ -33,7 +33,8 @@ class EditorModel {
 
         // Define default projects that come pre-installed
         this.defaultProjects = {
-            "default_project": DEFAULT_PROJECT_CONFIG
+            "default_project": DEFAULT_PROJECT_CONFIG,
+            "iw": INFINIWORLD_CONFIG
         };
     }
 
