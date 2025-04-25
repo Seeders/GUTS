@@ -5,6 +5,7 @@
   "isIsometric": false,
   "libraries": [
     "threejs",
+    "Three_SkeletonUtils",
     "ShapeFactory",
     "SimplexNoise",
     "ImageManager",

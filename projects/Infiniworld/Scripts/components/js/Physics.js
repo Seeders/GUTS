@@ -82,7 +82,7 @@ class Physics extends engine.Component {
             entities: this.physicsDataBuffer,
             collisionData: this.collisionDataBuffer,
             deltaTime: this.deltaTime,
-            gravity: -98.6,
+            gravity: -9.86,
             biomeConfig: biomeConfig
         });
     }
@@ -349,7 +349,7 @@ class Physics extends engine.Component {
 
                 // Apply gravity and update positions
                 entities.forEach(entity => {
-                    entity.velocity.y += gravity * deltaTime;
+                    entity.velocity.y += gravity * 10 * deltaTime;
                     entity.position.x += entity.velocity.x * deltaTime;
                     entity.position.y += entity.velocity.y * deltaTime;
                     entity.position.z += entity.velocity.z * deltaTime;

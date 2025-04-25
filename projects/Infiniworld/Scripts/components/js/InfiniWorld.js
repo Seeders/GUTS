@@ -28,15 +28,17 @@ class InfiniWorld extends engine.Component {
       this.ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
       this.scene.add(this.ambientLight);
       this.directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-      this.directionalLight.position.set(500, 500, 500);
       this.directionalLight.castShadow = true;
-      this.directionalLight.shadow.mapSize.set(1024, 1024);
-      this.directionalLight.shadow.camera.near = 0.5;
-      this.directionalLight.shadow.camera.far = 2000;
-      this.directionalLight.shadow.camera.left = -1000;
-      this.directionalLight.shadow.camera.right = 1000;
-      this.directionalLight.shadow.camera.top = 1000;
-      this.directionalLight.shadow.camera.bottom = -1000;
+      this.directionalLight.shadow.mapSize.set(2048, 2048); // Increase resolution for sharper shadows
+      this.directionalLight.shadow.camera.near = 0.1; // Closer near plane for precision
+      this.directionalLight.shadow.camera.far = 4000; // Increase far plane to cover tall terrain
+      this.directionalLight.shadow.camera.left = -2500; // Expand bounds
+      this.directionalLight.shadow.camera.right = 2500;
+      this.directionalLight.shadow.camera.top = 2500;
+      this.directionalLight.shadow.camera.bottom = -2500;
+      this.directionalLight.shadow.bias = -0.003; // Add bias to reduce shadow acne
+      this.directionalLight.shadow.normalBias = 0.5; // Reduce artifacts on slopes
+      this.directionalLight.position.set(this.camera.position.x + 500, 500, this.camera.position.z + 500);
       this.scene.add(this.directionalLight);
   
       // Fog setup
@@ -228,26 +230,26 @@ class InfiniWorld extends engine.Component {
         geometry.setIndex(indices);
         geometry.computeVertexNormals();
     
-        // Flip normals
-        const normals = geometry.attributes.normal.array;
-        for (let i = 0; i < normals.length; i += 3) {
-          normals[i + 1] *= -1;
-        }
-        geometry.attributes.normal.needsUpdate = true;
+        // // Flip normals
+        // const normals = geometry.attributes.normal.array;
+        // for (let i = 0; i < normals.length; i += 3) {
+        //   normals[i + 1] *= -1;
+        // }
+        // geometry.attributes.normal.needsUpdate = true;
     
         const material = new THREE.MeshStandardMaterial({
           vertexColors: true,
           roughness: 0.8,
           metalness: 0.0,
-          side: THREE.FrontSide
+          side: THREE.DoubleSide
         });
         const mesh = new THREE.Mesh(geometry, material);
         mesh.position.set(cx * this.chunkSize, 0, cz * this.chunkSize);
         mesh.castShadow = true;
         mesh.receiveShadow = true;
+        mesh.material.needsUpdate = true; // Force material update
         this.scene.add(mesh);
-        chunkData.terrainMesh = mesh;
-    
+        chunkData.terrainMesh = mesh;    
         // Initialize collision data
         chunkData.collisionAABBs = new Map(); // Map type to AABBs
     
@@ -266,6 +268,7 @@ class InfiniWorld extends engine.Component {
             this.processModelType(type, model, data, chunkData);
           }
         });
+        this.renderer.shadowMap.needsUpdate = true; // Force shadow map update
     
         chunkData.isGenerating = false;
         this.pendingChunks.delete(chunkKey);
@@ -324,12 +327,39 @@ class InfiniWorld extends engine.Component {
     update() {
       if (!this.game.config.configs.game.is3D) return;
       this.timer += this.game.deltaTime || 0;
-      this.updateChunks(); // Non-blocking, no await
-  
+      this.updateChunks();
+    
+      const cameraPos = this.camera.position;
+    
+      // Update directional light position smoothly every frame
+      this.directionalLight.position.set(cameraPos.x + 500, 500, cameraPos.z + 500);
+      this.directionalLight.target.position.set(cameraPos.x, 0, cameraPos.z);
+      this.directionalLight.target.updateMatrixWorld();
+    
+      // Update shadow camera smoothly every frame
+      const shadowCamera = this.directionalLight.shadow.camera;
+      const shadowRadius = 2500; // Adjust as needed for your scene
+      shadowCamera.left = -shadowRadius;
+      shadowCamera.right = shadowRadius;
+      shadowCamera.top = shadowRadius;
+      shadowCamera.bottom = -shadowRadius;
+      shadowCamera.near = 0.1;
+      shadowCamera.far = 4000;
+    
+      // Center shadow camera on the player's position
+      const terrainHeight = this.getTerrainHeight(cameraPos.x, cameraPos.z);
+      shadowCamera.position.set(cameraPos.x, terrainHeight + 500, cameraPos.z);
+      shadowCamera.lookAt(cameraPos.x, terrainHeight, cameraPos.z);
+      shadowCamera.updateProjectionMatrix();
+      shadowCamera.updateMatrixWorld();
+    
+      // Only force shadow map update when terrain changes (e.g., new chunks)
+      // This is already handled in handleWorkerMessage with this.renderer.shadowMap.needsUpdate = true
+    
       for (const key in this.uniforms) {
         this.uniforms[key].time = { value: this.timer };
       }
-  
+    
       this.renderer.render(this.scene, this.camera);
     }
   
@@ -382,6 +412,7 @@ class InfiniWorld extends engine.Component {
           instancedMesh.userData.relativeMatrix = relativeMatrix;
           instancedMesh.castShadow = true;
           instancedMesh.receiveShadow = true;
+          instancedMesh.material.needsUpdate = true; // Force material update
           this.scene.add(instancedMesh);
           return { mesh: instancedMesh, instances: [] };
         });
@@ -413,6 +444,7 @@ class InfiniWorld extends engine.Component {
         // Update instance matrices
         instanceGroups.forEach(group => {
           group.mesh.instanceMatrix.needsUpdate = true;
+          this.renderer.shadowMap.needsUpdate = true; // Force shadow map update
         });
     
         // Store instance groups in chunk data

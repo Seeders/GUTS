@@ -93,6 +93,8 @@ class GE_SceneRenderer {
         this.graphicsEditor.state.currentGroup = firstGroup;
         this.handleResize();
         this.graphicsEditor.refreshShapes(false);
+        this.clock = new window.THREE.Clock();
+        this.clock.start(); 
         requestAnimationFrame(() => {
             this.graphicsEditor.state.selectedShapeIndex = -1;
             this.graphicsEditor.shapeManager.selectShape(shapes.length > 0 ? 0 : -1);
@@ -103,9 +105,22 @@ class GE_SceneRenderer {
     animate() {
         requestAnimationFrame(this.animate.bind(this));
         this.controls.update();
+        
+        // Calculate delta once per frame
+        const delta = this.clock ? this.clock.getDelta() : 0;
+        
+        // Update all mixers with the same delta
+        this.scene.traverse(object => {
+            if (object.userData.mixer) {
+                object.userData.mixer.update(delta);
+            }
+            if (object.isSkinnedMesh) {
+                object.skeleton.update();
+            }
+        });
+    
         this.renderer.render(this.scene, this.camera);
     }
-
     async createObjectsFromJSON(frameData, scene) {
         for(const groupName in frameData) {
             const group = await this.graphicsEditor.shapeFactory.createGroupFromJSON(groupName, frameData[groupName]);

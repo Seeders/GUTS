@@ -69,8 +69,8 @@ class Projectile extends engine.Component {
       };
       
       if(this.parent.grounded){
-        this.OnStaticCollision();
-        this.parent.destroy();
+        //this.OnStaticCollision();
+        //this.parent.destroy();
       }
       // Add impact check logic here if needed
       // Check for enemy collisions, etc.
@@ -83,7 +83,7 @@ class Projectile extends engine.Component {
     this.parent.destroy();
   }
   OnStaticCollision(){
-    if(this.stats.hitSound){
+    if(this.stats.hitSound && this.parent.velocity.length() > 50){
       this.game.audioManager.playSound('sounds', this.stats.hitSound);
     }
   }

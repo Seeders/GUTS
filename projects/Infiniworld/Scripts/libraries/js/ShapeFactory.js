@@ -1,9 +1,12 @@
 class ShapeFactory {
-    constructor(palette, textures) {
+    constructor(palette, textures, libraryClasses, skeletonUtils) {
         this.gltfCache = new Map();
         this.gltfLoader = new THREE.GLTFLoader();
         this.palette = palette;
         this.textures = textures;
+        if(skeletonUtils){
+            this.skeleUtils = skeletonUtils;
+        }
     }
     async createMergedGroupFromJSON(model, frameData, groupName) {
         let mergedGroup = this.getMergedGroup(model, frameData, groupName);
@@ -40,7 +43,7 @@ class ShapeFactory {
     }
 
     async handleGLTFShape(shape, index, group) {
-        const applyTransformations = (model) => {
+        const applyTransformations = (model, gltf) => {
             model.position.set(shape.x || 0, shape.y || 0, shape.z || 0);
             model.scale.set(
                 shape.scaleX || 1,
@@ -52,9 +55,20 @@ class ShapeFactory {
                 (shape.rotationY || 0) * Math.PI / 180,
                 (shape.rotationZ || 0) * Math.PI / 180
             );
-            
+    
             model.traverse(child => {
                 if (child.isMesh) {
+                    // Override material with skinning enabled
+                    let map = child.material.map;
+                    child.material = new THREE.MeshStandardMaterial({
+                        color: 0xffffff,
+                        metalness: 0,
+                        roughness: 0.05,
+                        map: map,
+                        skinning: true
+                    });
+                    child.material.needsUpdate = true;
+    
                     child.userData = {
                         isShape: true,
                         index: index,
@@ -62,40 +76,56 @@ class ShapeFactory {
                     };
                 }
             });
-            
+    
             model.userData = {
                 isShape: true,
                 index: index,
                 isGLTFRoot: true,
-                castShadow: true
+                castShadow: true,
+                animations: gltf.animations
             };
-            
+    
             group.add(model);
+    
+            if (gltf.animations && gltf.animations.length > 0) {
+ 
+    
+                const mixer = new THREE.AnimationMixer(model);
+                const action = mixer.clipAction(gltf.animations[0]);
+                action.play();
+    
+                model.userData.mixer = mixer;
+            } else {
+                console.log('No animations found in GLTF file');
+            }
         };
-
-        const cached = this.gltfCache.get(shape.url);
-        if (cached) {
-            applyTransformations(cached.scene.clone());
-        } else if (shape.url && location.hostname !== "") {
-            // Wrap gltfLoader.load in a Promise to properly await it
-            await new Promise((resolve, reject) => {
-                this.gltfLoader.load(
-                    shape.url,
-                    (gltf) => {
-                        this.gltfCache.set(shape.url, gltf);
-                        applyTransformations(gltf.scene.clone());
-                        resolve();
-                    },
-                    undefined, // onProgress callback (optional)
-                    (error) => {
-                        console.error(`Failed to load GLTF model at ${shape.url}:`, error);
-                        reject(error);
-                    }
-                );
-            });
+    
+        if (shape.url) {
+            const cached = this.gltfCache.get(shape.url);
+            if (cached) {
+                
+                const clonedScene = this.skeleUtils.clone(cached.scene);
+                applyTransformations(clonedScene, cached);
+            } else if (shape.url && location.hostname !== "") {
+                await new Promise((resolve, reject) => {
+                    this.gltfLoader.load(
+                        shape.url,
+                        (gltf) => {
+                            const clonedScene = this.skeleUtils.clone(gltf.scene);
+                            this.gltfCache.set(shape.url, gltf);
+                            applyTransformations(clonedScene, gltf);
+                            resolve();
+                        },
+                        undefined,
+                        (error) => {
+                            console.error(`Failed to load GLTF model at ${shape.url}:`, error);
+                            reject(error);
+                        }
+                    );
+                });
+            }
         } else {
-            shape.type = "sphere";
-            return await this.handlePrimitiveShape(shape, index, group);
+            return null;
         }
     }
 

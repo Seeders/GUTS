@@ -12,17 +12,18 @@ class ModelRenderer extends engine.Component {
         // Load animation and model data
         this.animationData = this.game.config[objectType]?.[spawnType]?.render?.animations;
         this.modelData = this.game.config[objectType]?.[spawnType]?.render?.model;
-
+        this.clock = new THREE.Clock();
+        this.clock.start(); 
         // Get the model
         this.model = this.game.modelManager.getModel(objectType, spawnType);
-        
+
         if (!this.model || !this.animationData || !this.modelData) {
             console.error(`No model or data found for ${objectType}_${spawnType}`);
             return;
         }
         
         // Create the initial model instance
-        this.modelGroup = this.model.clone();  
+        this.modelGroup = this.game.skeletonUtils.clone(this.model);  
         // Add the model group to the scene
         this.game.scene.add(this.modelGroup);
 
@@ -60,6 +61,17 @@ class ModelRenderer extends engine.Component {
         if(!this.game.config.configs.game.is3D) {
             return;
         }
+        const delta = this.clock ? this.clock.getDelta() : 0;
+        
+        // Update all mixers with the same delta
+        this.modelGroup.traverse(object => {
+            if (object.userData.mixer) {
+                object.userData.mixer.update(delta);
+            }
+            if (object.isSkinnedMesh) {
+                object.skeleton.update();
+            }
+        });
         // Update animation frames
         this.frameTime += this.game.deltaTime;
         if (this.frameTime >= this.frameDuration) {

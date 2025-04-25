@@ -20,7 +20,7 @@ class GameLoader extends engine.Component {
             this.game.state.stats = this.config.modifierSets[this.game.state.modifierSet];
             this.game.state.defaultStats = { ...this.game.state.stats };
         }   
-
+        this.game.skeletonUtils = new (this.game.libraryClasses.Three_SkeletonUtils)();
 
         this.setupCanvas(this.config.configs.game.canvasWidth, this.config.configs.game.canvasHeight);
         await this.loadAssets();
@@ -36,9 +36,10 @@ class GameLoader extends engine.Component {
         this.game.gameEntity = this.game.createEntityFromConfig(0, 0, 'game', { gameConfig: this.config.configs.game, canvas: this.canvas, canvasBuffer: this.canvasBuffer, terrainCanvasBuffer: this.terrainCanvasBuffer, worldObjects: this.config.worldObjects, imageManager: this.game.imageManager, levelName: this.game.state.level, level: this.config.levels[this.game.state.level], palette: this.game.palette });
         this.game.imageManager.dispose();    
         this.game.audioManager = this.game.gameEntity.getComponent('AudioManager');  
-        
+
         this.player = this.game.spawn(0, 0, "player",
-            { spawnType: 'viking', objectType: 'enemies', setDirection: 1 });
+            { spawnType: 'knightWalk', objectType: 'enemies', setDirection: 1 });
+        console.log('spawned knight');
         this.player.position.y += 50;
         this.player.placed = true;
         this.game.player = this.player;
@@ -77,10 +78,12 @@ class GameLoader extends engine.Component {
         for(let objectType in this.config) {
             await this.game.imageManager.loadImages(objectType, this.config[objectType]);
         }  
-        this.game.modelManager = new (this.game.libraryClasses.ModelManager)(this,{ShapeFactory: this.game.libraryClasses.ShapeFactory, palette: this.game.palette, textures: this.game.config.textures});    
+        this.game.modelManager = new (this.game.libraryClasses.ModelManager)(this,{Three_SkeletonUtils: this.game.skeletonUtils, ShapeFactory: this.game.libraryClasses.ShapeFactory, palette: this.game.palette, textures: this.game.config.textures});    
         for(let objectType in this.config) {
+            
             await this.game.modelManager.loadModels(objectType, this.config[objectType]);
         }  
  
+        console.log("loaded all Models");
     }
 }

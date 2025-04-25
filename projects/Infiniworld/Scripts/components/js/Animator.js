@@ -9,6 +9,7 @@ class Animator extends engine.Component {
     init({ objectType, spawnType}) {
 
         this.animations = this.game.imageManager.getImages(objectType, spawnType); // { "idle": [...], "walk": [...] }
+        if(!this.animations) this.animations = {};
         this.currentAnimation = "idle";
         if(this.animations.walk) this.currentAnimation = "walk";
         this.currentFrame = 0;
@@ -23,14 +24,14 @@ class Animator extends engine.Component {
         this.frameTimer += this.game.deltaTime;
         let currentSpeedPercent = this.parent.getComponent("stats")?.stats.speed / this.baseSpeed || 1;
 
-        if (this.frameTimer >= this.frameDuration / currentSpeedPercent) {
+        if (this.frameTimer >= this.frameDuration / currentSpeedPercent && this.animations[this.currentAnimation]) {
             this.frameTimer = 0;
             const animFrames = this.animations[this.currentAnimation];
             this.currentFrame = (this.currentFrame + 1) % animFrames.length;
         }
         // Sync direction with Renderer (if separate)
         const renderer = this.parent.getComponent("Renderer");
-        if (renderer) {
+        if (renderer && this.animations[this.currentAnimation] && this.animations[this.currentAnimation][this.currentFrame]) {
             renderer.images = this.animations[this.currentAnimation][this.currentFrame];
         }
     }
