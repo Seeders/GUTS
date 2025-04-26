@@ -38,7 +38,7 @@ class GameLoader extends engine.Component {
         this.game.audioManager = this.game.gameEntity.getComponent('AudioManager');  
 
         this.player = this.game.spawn(0, 0, "player",
-            { spawnType: 'knightWalk', objectType: 'enemies', setDirection: 1 });
+            { spawnType: 'knight', objectType: 'enemies', setDirection: 1 });
         console.log('spawned knight');
         this.player.position.y += 50;
         this.player.placed = true;

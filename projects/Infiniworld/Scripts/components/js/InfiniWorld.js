@@ -27,18 +27,20 @@ class InfiniWorld extends engine.Component {
       // Lighting setup
       this.ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
       this.scene.add(this.ambientLight);
+      let shadowCameraSize = 500;
+      let directionLightDistance = 250;
       this.directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
       this.directionalLight.castShadow = true;
       this.directionalLight.shadow.mapSize.set(2048, 2048); // Increase resolution for sharper shadows
-      this.directionalLight.shadow.camera.near = 0.1; // Closer near plane for precision
-      this.directionalLight.shadow.camera.far = 4000; // Increase far plane to cover tall terrain
-      this.directionalLight.shadow.camera.left = -2500; // Expand bounds
-      this.directionalLight.shadow.camera.right = 2500;
-      this.directionalLight.shadow.camera.top = 2500;
-      this.directionalLight.shadow.camera.bottom = -2500;
-      this.directionalLight.shadow.bias = -0.003; // Add bias to reduce shadow acne
-      this.directionalLight.shadow.normalBias = 0.5; // Reduce artifacts on slopes
-      this.directionalLight.position.set(this.camera.position.x + 500, 500, this.camera.position.z + 500);
+      this.directionalLight.shadow.camera.near = 0.01; // Closer near plane for precision
+      this.directionalLight.shadow.camera.far = 2000; // Increase far plane to cover tall terrain
+      this.directionalLight.shadow.camera.left = -shadowCameraSize; // Expand bounds
+      this.directionalLight.shadow.camera.right = shadowCameraSize;
+      this.directionalLight.shadow.camera.top = shadowCameraSize;
+      this.directionalLight.shadow.camera.bottom = -shadowCameraSize;
+      this.directionalLight.shadow.bias = -0.00001; // Add bias to reduce shadow acne
+      this.directionalLight.shadow.normalBias = 0.75; // Reduce artifacts on slopes
+      this.directionalLight.position.set(this.camera.position.x + directionLightDistance, directionLightDistance, this.camera.position.z + directionLightDistance);
       this.scene.add(this.directionalLight);
   
       // Fog setup
@@ -217,46 +219,40 @@ class InfiniWorld extends engine.Component {
     }
   
     handleWorkerMessage(e) {
-      const { cx, cz, positions, indices, colors, vegetation } = e.data;
+      const { cx, cz, positions, indices, colors, normals, vegetation } = e.data;
       const chunkKey = `${cx},${cz}`;
       const chunkData = this.pendingChunks.get(chunkKey);
       if (!chunkData) return;
     
       try {
-        // Existing geometry and terrain mesh creation...
+        // Attempt to weld vertices with neighboring chunks
+        this.weldChunkVertices(cx, cz, positions, normals);
+        
         const geometry = new THREE.BufferGeometry();
         geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
         geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+        geometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
         geometry.setIndex(indices);
-        geometry.computeVertexNormals();
-    
-        // // Flip normals
-        // const normals = geometry.attributes.normal.array;
-        // for (let i = 0; i < normals.length; i += 3) {
-        //   normals[i + 1] *= -1;
-        // }
-        // geometry.attributes.normal.needsUpdate = true;
     
         const material = new THREE.MeshStandardMaterial({
           vertexColors: true,
           roughness: 0.8,
           metalness: 0.0,
-          side: THREE.DoubleSide
+          side: THREE.FrontSide
         });
+        
         const mesh = new THREE.Mesh(geometry, material);
         mesh.position.set(cx * this.chunkSize, 0, cz * this.chunkSize);
         mesh.castShadow = true;
         mesh.receiveShadow = true;
-        mesh.material.needsUpdate = true; // Force material update
+        mesh.material.needsUpdate = true;
         this.scene.add(mesh);
-        chunkData.terrainMesh = mesh;    
-        // Initialize collision data
-        chunkData.collisionAABBs = new Map(); // Map type to AABBs
+        chunkData.terrainMesh = mesh;
     
-        // Process vegetation and collision data
+        // Process vegetation data (unchanged)
+        chunkData.collisionAABBs = new Map();
         vegetation.forEach(({ type, data }) => {
           if (type.endsWith('_collision')) {
-            // Store collision AABBs
             const objectType = type.replace('_collision', '');
             chunkData.collisionAABBs.set(objectType, data);
           } else {
@@ -268,7 +264,8 @@ class InfiniWorld extends engine.Component {
             this.processModelType(type, model, data, chunkData);
           }
         });
-        this.renderer.shadowMap.needsUpdate = true; // Force shadow map update
+        
+        this.renderer.shadowMap.needsUpdate = true;
     
         chunkData.isGenerating = false;
         this.pendingChunks.delete(chunkKey);
@@ -277,6 +274,164 @@ class InfiniWorld extends engine.Component {
         this.chunks.delete(chunkKey);
         this.pendingChunks.delete(chunkKey);
       }
+    }
+    
+    weldChunkVertices(cx, cz, positions, normals) {
+      const res = this.chunkResolution;
+      const neighborChunks = [
+        { key: `${cx-1},${cz}`, edge: 'right', dir: 'left' },   // Left neighbor
+        { key: `${cx+1},${cz}`, edge: 'left', dir: 'right' },   // Right neighbor
+        { key: `${cx},${cz-1}`, edge: 'top', dir: 'bottom' },   // Bottom neighbor
+        { key: `${cx},${cz+1}`, edge: 'bottom', dir: 'top' }    // Top neighbor
+      ];
+      
+      // Process each potential neighbor
+      neighborChunks.forEach(({ key, edge, dir }) => {
+        const neighbor = this.chunks.get(key);
+        if (!neighbor || !neighbor.terrainMesh) return;
+    
+        const neighborGeom = neighbor.terrainMesh.geometry;
+        const neighborPos = neighborGeom.attributes.position;
+        const neighborNorm = neighborGeom.attributes.normal;
+        
+        // Function to get vertex index
+        const getVertexIndex = (x, z) => (z * (res + 1) + x);
+        
+        // Weld vertices along the shared edge
+        if (dir === 'left') {
+          // Current chunk's left edge to neighbor's right edge
+          for (let z = 0; z <= res; z++) {
+            const thisIdx = getVertexIndex(0, z);
+            const neighborIdx = getVertexIndex(res, z);
+            
+            // Get world position from neighbor
+            const nx = neighborPos.array[neighborIdx * 3] + neighbor.terrainMesh.position.x;
+            const ny = neighborPos.array[neighborIdx * 3 + 1] + neighbor.terrainMesh.position.y;
+            const nz = neighborPos.array[neighborIdx * 3 + 2] + neighbor.terrainMesh.position.z;
+            
+            // Convert to local position for this chunk
+            positions[thisIdx * 3] = nx - cx * this.chunkSize;
+            positions[thisIdx * 3 + 1] = ny;
+            positions[thisIdx * 3 + 2] = nz - cz * this.chunkSize;
+            
+            // Average the normals
+            for (let i = 0; i < 3; i++) {
+              normals[thisIdx * 3 + i] = (normals[thisIdx * 3 + i] + neighborNorm.array[neighborIdx * 3 + i]) / 2;
+            }
+            
+            // Normalize the normal
+            const nx1 = normals[thisIdx * 3];
+            const ny1 = normals[thisIdx * 3 + 1];
+            const nz1 = normals[thisIdx * 3 + 2];
+            const len = Math.sqrt(nx1*nx1 + ny1*ny1 + nz1*nz1);
+            if (len > 0.00001) {
+              normals[thisIdx * 3] = nx1 / len;
+              normals[thisIdx * 3 + 1] = ny1 / len;
+              normals[thisIdx * 3 + 2] = nz1 / len;
+            }
+          }
+        } else if (dir === 'right') {
+          // Current chunk's right edge to neighbor's left edge
+          for (let z = 0; z <= res; z++) {
+            const thisIdx = getVertexIndex(res, z);
+            const neighborIdx = getVertexIndex(0, z);
+            
+            // Get world position from neighbor
+            const nx = neighborPos.array[neighborIdx * 3] + neighbor.terrainMesh.position.x;
+            const ny = neighborPos.array[neighborIdx * 3 + 1] + neighbor.terrainMesh.position.y;
+            const nz = neighborPos.array[neighborIdx * 3 + 2] + neighbor.terrainMesh.position.z;
+            
+            // Convert to local position for this chunk
+            positions[thisIdx * 3] = nx - cx * this.chunkSize;
+            positions[thisIdx * 3 + 1] = ny;
+            positions[thisIdx * 3 + 2] = nz - cz * this.chunkSize;
+            
+            // Average the normals
+            for (let i = 0; i < 3; i++) {
+              normals[thisIdx * 3 + i] = (normals[thisIdx * 3 + i] + neighborNorm.array[neighborIdx * 3 + i]) / 2;
+            }
+            
+            // Normalize the normal
+            const nx1 = normals[thisIdx * 3];
+            const ny1 = normals[thisIdx * 3 + 1];
+            const nz1 = normals[thisIdx * 3 + 2];
+            const len = Math.sqrt(nx1*nx1 + ny1*ny1 + nz1*nz1);
+            if (len > 0.00001) {
+              normals[thisIdx * 3] = nx1 / len;
+              normals[thisIdx * 3 + 1] = ny1 / len;
+              normals[thisIdx * 3 + 2] = nz1 / len;
+            }
+          }
+        } else if (dir === 'bottom') {
+          // Current chunk's bottom edge to neighbor's top edge
+          for (let x = 0; x <= res; x++) {
+            const thisIdx = getVertexIndex(x, 0);
+            const neighborIdx = getVertexIndex(x, res);
+            
+            // Get world position from neighbor
+            const nx = neighborPos.array[neighborIdx * 3] + neighbor.terrainMesh.position.x;
+            const ny = neighborPos.array[neighborIdx * 3 + 1] + neighbor.terrainMesh.position.y;
+            const nz = neighborPos.array[neighborIdx * 3 + 2] + neighbor.terrainMesh.position.z;
+            
+            // Convert to local position for this chunk
+            positions[thisIdx * 3] = nx - cx * this.chunkSize;
+            positions[thisIdx * 3 + 1] = ny;
+            positions[thisIdx * 3 + 2] = nz - cz * this.chunkSize;
+            
+            // Average the normals
+            for (let i = 0; i < 3; i++) {
+              normals[thisIdx * 3 + i] = (normals[thisIdx * 3 + i] + neighborNorm.array[neighborIdx * 3 + i]) / 2;
+            }
+            
+            // Normalize the normal
+            const nx1 = normals[thisIdx * 3];
+            const ny1 = normals[thisIdx * 3 + 1];
+            const nz1 = normals[thisIdx * 3 + 2];
+            const len = Math.sqrt(nx1*nx1 + ny1*ny1 + nz1*nz1);
+            if (len > 0.00001) {
+              normals[thisIdx * 3] = nx1 / len;
+              normals[thisIdx * 3 + 1] = ny1 / len;
+              normals[thisIdx * 3 + 2] = nz1 / len;
+            }
+          }
+        } else if (dir === 'top') {
+          // Current chunk's top edge to neighbor's bottom edge
+          for (let x = 0; x <= res; x++) {
+            const thisIdx = getVertexIndex(x, res);
+            const neighborIdx = getVertexIndex(x, 0);
+            
+            // Get world position from neighbor
+            const nx = neighborPos.array[neighborIdx * 3] + neighbor.terrainMesh.position.x;
+            const ny = neighborPos.array[neighborIdx * 3 + 1] + neighbor.terrainMesh.position.y;
+            const nz = neighborPos.array[neighborIdx * 3 + 2] + neighbor.terrainMesh.position.z;
+            
+            // Convert to local position for this chunk
+            positions[thisIdx * 3] = nx - cx * this.chunkSize;
+            positions[thisIdx * 3 + 1] = ny;
+            positions[thisIdx * 3 + 2] = nz - cz * this.chunkSize;
+            
+            // Average the normals
+            for (let i = 0; i < 3; i++) {
+              normals[thisIdx * 3 + i] = (normals[thisIdx * 3 + i] + neighborNorm.array[neighborIdx * 3 + i]) / 2;
+            }
+            
+            // Normalize the normal
+            const nx1 = normals[thisIdx * 3];
+            const ny1 = normals[thisIdx * 3 + 1];
+            const nz1 = normals[thisIdx * 3 + 2];
+            const len = Math.sqrt(nx1*nx1 + ny1*ny1 + nz1*nz1);
+            if (len > 0.00001) {
+              normals[thisIdx * 3] = nx1 / len;
+              normals[thisIdx * 3 + 1] = ny1 / len;
+              normals[thisIdx * 3 + 2] = nz1 / len;
+            }
+          }
+        }
+        
+        // Update the neighbor's geometry to match the welds
+        neighborGeom.attributes.position.needsUpdate = true;
+        neighborGeom.attributes.normal.needsUpdate = true;
+      });
     }
   
     checkTreeCollisions(playerAABB) {
@@ -338,13 +493,6 @@ class InfiniWorld extends engine.Component {
     
       // Update shadow camera smoothly every frame
       const shadowCamera = this.directionalLight.shadow.camera;
-      const shadowRadius = 2500; // Adjust as needed for your scene
-      shadowCamera.left = -shadowRadius;
-      shadowCamera.right = shadowRadius;
-      shadowCamera.top = shadowRadius;
-      shadowCamera.bottom = -shadowRadius;
-      shadowCamera.near = 0.1;
-      shadowCamera.far = 4000;
     
       // Center shadow camera on the player's position
       const terrainHeight = this.getTerrainHeight(cameraPos.x, cameraPos.z);
@@ -488,14 +636,13 @@ class InfiniWorld extends engine.Component {
       const biomeNoise = this.noise.noise2D(wx * 0.00001, wz * 0.00001);
       const biomeValue = (biomeNoise + 1) / 2;
       const weights = {};
-  
       const thresholds = [
         { biome: 'plains', range: [0.0, 0.4] },
         { biome: 'forest', range: [0.2, 0.6] },
         { biome: 'mountain', range: [0.5, 0.8] },
         { biome: 'desert', range: [0.7, 1.0] }
       ];
-  
+    
       thresholds.forEach(({ biome, range }) => {
         const [min, max] = range;
         let weight = 0;
@@ -503,13 +650,13 @@ class InfiniWorld extends engine.Component {
           weight = 1 - Math.abs(biomeValue - (min + max) / 2) / ((max - min) / 2);
           weight = Math.max(0, weight);
         }
-        weights[biome] = weight;
+        weights[biome] = Math.round(weight * 1000) / 1000; // Round weights for consistency
       });
-  
+    
       const totalWeight = Object.values(weights).reduce((sum, w) => sum + w, 0);
       if (totalWeight > 0) {
         for (const biome in weights) {
-          weights[biome] /= totalWeight;
+          weights[biome] = Math.round((weights[biome] / totalWeight) * 1000) / 1000;
         }
       } else {
         weights.plains = 1;
@@ -696,41 +843,179 @@ class InfiniWorld extends engine.Component {
 
           generateChunk(cx, cz, chunkSize, chunkResolution) {
             const geometryData = {
-              positions: [],
-              colors: [],
-              normals: [],
-              biomeMap: []
-            };
+                positions: [],
+                colors: [],
+                normals: [],
+                biomeMap: []
+              };
 
-            const size = chunkSize / chunkResolution;
-            for (let z = 0; z <= chunkResolution; z++) {
-              for (let x = 0; x <= chunkResolution; x++) {
-                const vx = x * size - chunkSize / 2;
-                const vz = z * size - chunkSize / 2;
-                const wx = cx * chunkSize + vx;
-                const wz = cz * chunkSize + vz;
-                const height = this.getHeight(wx, wz);
-                geometryData.positions.push(vx, height, vz);
-                geometryData.biomeMap.push({
-                  weights: this.getBiomeWeights(wx, wz),
-                  position: { x: wx, y: height, z: wz },
-                  slope: this.calculateSlope(wx, wz)
-                });
+              const size = chunkSize / chunkResolution;
+              // Generate positions
+              for (let z = 0; z <= chunkResolution; z++) {
+                for (let x = 0; x <= chunkResolution; x++) {
+                  const vx = x * size - chunkSize / 2;
+                  const vz = z * size - chunkSize / 2;
+                  const wx = cx * chunkSize + vx;
+                  const wz = cz * chunkSize + vz;
+                  const height = this.getHeight(wx, wz);
+                  geometryData.positions.push(vx, height, vz);
+                  geometryData.biomeMap.push({
+                    weights: this.getBiomeWeights(wx, wz),
+                    position: { x: wx, y: height, z: wz },
+                    slope: this.calculateSlope(wx, wz)
+                  });
+                }
               }
-            }
 
-            const indices = [];
-            for (let z = 0; z < chunkResolution; z++) {
-              for (let x = 0; x < chunkResolution; x++) {
-                const a = x + (z * (chunkResolution + 1));
-                const b = a + 1;
-                const c = a + chunkResolution + 1;
-                const d = c + 1;
-                indices.push(a, c, b);
-                indices.push(b, c, d);
+              // Initialize normals and contribution counters
+              const normals = new Array(geometryData.positions.length).fill(0);
+              const contributions = new Array(geometryData.positions.length / 3).fill(0);
+              const indices = [];
+
+              for (let z = 0; z < chunkResolution; z++) {
+                for (let x = 0; x < chunkResolution; x++) {
+                  const a = x + (z * (chunkResolution + 1));
+                  const b = a + 1;
+                  const c = a + chunkResolution + 1;
+                  const d = c + 1;
+                  
+                  // Use counterclockwise winding order
+                  indices.push(a, c, b); // First triangle
+                  indices.push(c, d, b); // Second triangle
+
+                  // Compute vertices positions for normal calculation
+                  const v0 = [
+                    geometryData.positions[a * 3], 
+                    geometryData.positions[a * 3 + 1], 
+                    geometryData.positions[a * 3 + 2]
+                  ];
+                  const v1 = [
+                    geometryData.positions[b * 3], 
+                    geometryData.positions[b * 3 + 1], 
+                    geometryData.positions[b * 3 + 2]
+                  ];
+                  const v2 = [
+                    geometryData.positions[c * 3], 
+                    geometryData.positions[c * 3 + 1], 
+                    geometryData.positions[c * 3 + 2]
+                  ];
+                  const v3 = [
+                    geometryData.positions[d * 3], 
+                    geometryData.positions[d * 3 + 1], 
+                    geometryData.positions[d * 3 + 2]
+                  ];
+
+                  // First triangle (a, c, b)
+                  let edge1 = [v2[0] - v0[0], v2[1] - v0[1], v2[2] - v0[2]]; // c - a
+                  let edge2 = [v1[0] - v0[0], v1[1] - v0[1], v1[2] - v0[2]]; // b - a
+                  let normal1 = [
+                    edge1[1] * edge2[2] - edge1[2] * edge2[1],
+                    edge1[2] * edge2[0] - edge1[0] * edge2[2],
+                    edge1[0] * edge2[1] - edge1[1] * edge2[0]
+                  ];
+                  
+                  let mag1 = Math.sqrt(normal1[0] * normal1[0] + normal1[1] * normal1[1] + normal1[2] * normal1[2]);
+                  if (mag1 < 0.00001) {
+                    normal1 = [0, 1, 0]; // Default upward normal
+                  } else {
+                    normal1[0] /= mag1;
+                    normal1[1] /= mag1;
+                    normal1[2] /= mag1;
+                    if (normal1[1] < 0) {
+                      normal1[0] = -normal1[0];
+                      normal1[1] = -normal1[1];
+                      normal1[2] = -normal1[2];
+                    }
+                  }
+
+                  // Second triangle (c, d, b)
+                  let edge3 = [v3[0] - v2[0], v3[1] - v2[1], v3[2] - v2[2]]; // d - c
+                  let edge4 = [v1[0] - v2[0], v1[1] - v2[1], v1[2] - v2[2]]; // b - c
+                  let normal2 = [
+                    edge3[1] * edge4[2] - edge3[2] * edge4[1],
+                    edge3[2] * edge4[0] - edge3[0] * edge4[2],
+                    edge3[0] * edge4[1] - edge3[1] * edge4[0]
+                  ];
+                  
+                  let mag2 = Math.sqrt(normal2[0] * normal2[0] + normal2[1] * normal2[1] + normal2[2] * normal2[2]);
+                  if (mag2 < 0.00001) {
+                    normal2 = [0, 1, 0]; // Default upward normal
+                  } else {
+                    normal2[0] /= mag2;
+                    normal2[1] /= mag2;
+                    normal2[2] /= mag2;
+                    if (normal2[1] < 0) {
+                      normal2[0] = -normal2[0];
+                      normal2[1] = -normal2[1];
+                      normal2[2] = -normal2[2];
+                    }
+                  }
+
+                  // Accumulate normals at each vertex
+                  // First triangle (a, c, b)
+                  normals[a * 3] += normal1[0];
+                  normals[a * 3 + 1] += normal1[1];
+                  normals[a * 3 + 2] += normal1[2];
+                  contributions[a]++;
+                  
+                  normals[c * 3] += normal1[0];
+                  normals[c * 3 + 1] += normal1[1];
+                  normals[c * 3 + 2] += normal1[2];
+                  contributions[c]++;
+                  
+                  normals[b * 3] += normal1[0];
+                  normals[b * 3 + 1] += normal1[1];
+                  normals[b * 3 + 2] += normal1[2];
+                  contributions[b]++;
+                  
+                  // Second triangle (c, d, b)
+                  normals[c * 3] += normal2[0];
+                  normals[c * 3 + 1] += normal2[1];
+                  normals[c * 3 + 2] += normal2[2];
+                  
+                  normals[d * 3] += normal2[0];
+                  normals[d * 3 + 1] += normal2[1];
+                  normals[d * 3 + 2] += normal2[2];
+                  contributions[d]++;
+                  
+                  normals[b * 3] += normal2[0];
+                  normals[b * 3 + 1] += normal2[1];
+                  normals[b * 3 + 2] += normal2[2];
+                }
               }
-            }
 
+              // Normalize accumulated vertex normals
+              for (let i = 0; i < contributions.length; i++) {
+                if (contributions[i] > 0) {
+                  const idx = i * 3;
+                  const nx = normals[idx];
+                  const ny = normals[idx + 1];
+                  const nz = normals[idx + 2];
+                  
+                  const mag = Math.sqrt(nx * nx + ny * ny + nz * nz);
+                  
+                  if (mag > 0.00001) {
+                    normals[idx] = nx / mag;
+                    normals[idx + 1] = ny / mag;
+                    normals[idx + 2] = nz / mag;
+                  } else {
+                    // Default normal for degenerate cases
+                    normals[idx] = 0;
+                    normals[idx + 1] = 1;
+                    normals[idx + 2] = 0;
+                  }
+                } else {
+                  // Should never happen if mesh is properly constructed
+                  const idx = i * 3;
+                  normals[idx] = 0;
+                  normals[idx + 1] = 1;
+                  normals[idx + 2] = 0;
+                }
+              }
+
+              geometryData.normals = normals;
+
+            // Rest of the vegetation and color generation remains the same
             geometryData.biomeMap.forEach(({ weights }) => {
               let r = 0, g = 0, b = 0;
               for (const biomeName in weights) {
@@ -743,7 +1028,7 @@ class InfiniWorld extends engine.Component {
               geometryData.colors.push(r, g, b);
             });
 
-            // Vegetation generation
+            // Vegetation generation (unchanged)
             const vegetation = new Map();
             geometryData.biomeMap.forEach(({ weights, position, slope }) => {
               const objectTypes = new Map();
@@ -788,7 +1073,6 @@ class InfiniWorld extends engine.Component {
                   };
                   instances.push(instance);
 
-                  // Define AABB for collision
                   let aabb;
                   if (type === 'tree') {
                     const trunkRadius = 5.0 * instance.scale;
@@ -840,6 +1124,7 @@ class InfiniWorld extends engine.Component {
               positions: geometryData.positions,
               indices,
               colors: geometryData.colors,
+              normals: geometryData.normals, // Include normals in the result
               vegetation: Array.from(vegetation.entries()).map(([type, data]) => ({ type, data }))
             };
           }

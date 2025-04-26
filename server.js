@@ -76,15 +76,14 @@ app.post('/upload-model', upload.single('gltfFile'), async (req, res) => {
         if (!req.file) {
             return res.status(400).json({ error: 'No file uploaded.' });
         }
-        if (!req.file.originalname.endsWith('.gltf')) {
-            return res.status(400).json({ error: `Uploaded file "${req.file.originalname}" is not a .gltf file.` });
+        if (!req.file.originalname.endsWith('.gltf') && !req.file.originalname.endsWith('.glb')) {
+            return res.status(400).json({ error: `Uploaded file "${req.file.originalname}" is not a .gltf file or .glb file.` });
         }
 
         const gltfPath = req.file.path;
         const gltfContent = await fs.readFile(gltfPath, 'utf8');
-        const gltfData = JSON.parse(gltfContent);
 
-        const modelName = path.basename(req.file.originalname, '.gltf');
+        const modelName = req.file.originalname.endsWith('.gltf') ? path.basename(req.file.originalname, '.gltf') : path.basename(req.file.originalname, '.glb');
         const modelFolder = path.join(MODELS_DIR, modelName);
         const finalGltfPath = path.join(modelFolder, req.file.originalname);
 

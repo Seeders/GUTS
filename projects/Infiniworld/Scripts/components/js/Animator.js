@@ -11,7 +11,6 @@ class Animator extends engine.Component {
         this.animations = this.game.imageManager.getImages(objectType, spawnType); // { "idle": [...], "walk": [...] }
         if(!this.animations) this.animations = {};
         this.currentAnimation = "idle";
-        if(this.animations.walk) this.currentAnimation = "walk";
         this.currentFrame = 0;
         this.frameDuration = .166; // 10 frames per animation frame (~0.166s at 60 FPS)
         this.frameTimer = 0;

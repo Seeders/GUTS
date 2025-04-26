@@ -218,14 +218,14 @@ class GE_UIManager {
                      });
 
                      const result = await response.json();
-                     shape.url = result.filePath; 
+                     debugger;
                      this.graphicsEditor.getFrameShape().url = result.filePath;
                      this.graphicsEditor.refreshShapes(false);
                 } catch (error) {
                      console.error('Error uploading file:', error);
                 }
             }});
-            input.setAttribute("accept",".gltf");
+            input.setAttribute("accept",".gltf,.glb");
         }
         // Color picker
         this.addFormRow(inspector, 'Color', 'color', 'color', shape.color);

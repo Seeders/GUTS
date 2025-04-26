@@ -12,24 +12,27 @@ class ModelRenderer extends engine.Component {
         // Load animation and model data
         this.animationData = this.game.config[objectType]?.[spawnType]?.render?.animations;
         this.modelData = this.game.config[objectType]?.[spawnType]?.render?.model;
+        this.isGLTF = this.modelData[Object.keys(this.modelData)[0]].shapes[0].type == "gltf";
+console.log(this.isGLTF);
         this.clock = new THREE.Clock();
         this.clock.start(); 
         // Get the model
+     
         this.model = this.game.modelManager.getModel(objectType, spawnType);
-
-        if (!this.model || !this.animationData || !this.modelData) {
-            console.error(`No model or data found for ${objectType}_${spawnType}`);
-            return;
-        }
+        
         
         // Create the initial model instance
-        if(spawnType == "knightWalk"){
-            this.modelGroup = this.model;
+        if(this.isGLTF){
+            this.animations = {
+                'idle': this.game.modelManager.getAnimation(objectType, spawnType, 'idle'),                
+                'walk': this.game.modelManager.getAnimation(objectType, spawnType, 'walk')
+            };
+            this.modelGroup = this.animations.idle;
         } else {
-            this.modelGroup = this.game.skeletonUtils.clone(this.model);  
+            this.modelGroup = this.game.skeletonUtils.clone(this.model);              
         }
-        // Add the model group to the scene
         this.game.scene.add(this.modelGroup);
+        // Add the model group to the scene
 
         this.modelGroup.position.set(0, -10000, 0);
         
@@ -38,6 +41,7 @@ class ModelRenderer extends engine.Component {
     }
     
     setAnimation(animationName) {
+
         if (!this.animationData[animationName]) {
             console.warn(`Animation '${animationName}' not found, defaulting to 'idle'`);
             animationName = 'idle';
@@ -51,9 +55,13 @@ class ModelRenderer extends engine.Component {
                     return;
                 }
             }
-        }
-        
+        }    
         if (this.animationState !== animationName) {
+            if(this.isGLTF){
+                this.game.scene.remove(this.modelGroup);
+                this.modelGroup = this.animations[animationName];
+                this.game.scene.add(this.modelGroup);
+            }
             this.animationState = animationName;
             this.currentFrameIndex = 0;
             this.frameTime = 0;

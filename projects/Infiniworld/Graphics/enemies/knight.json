@@ -8,7 +8,58 @@
   "render": {
     "animations": {
       "idle": [
-        {}
+        {
+          "main": {
+            "shapes": [
+              {
+                "type": "gltf",
+                "width": 2,
+                "height": 0.2,
+                "depth": 1,
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "rotationX": 0,
+                "rotationY": 0,
+                "rotationZ": 0,
+                "scaleX": 1,
+                "scaleY": 1,
+                "scaleZ": 1,
+                "color": "#FFFFFF",
+                "texture": "carbonFiber",
+                "url": "samples/models/KnightIdle/KnightIdle.glb",
+                "id": 0
+              }
+            ]
+          }
+        }
+      ],
+      "walk": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "type": "gltf",
+                "width": 2,
+                "height": 0.2,
+                "depth": 1,
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "rotationX": 0,
+                "rotationY": 0,
+                "rotationZ": 0,
+                "scaleX": 1,
+                "scaleY": 1,
+                "scaleZ": 1,
+                "color": "#FFFFFF",
+                "texture": "carbonFiber",
+                "url": "samples/models/KnightWalk/KnightWalk.glb",
+                "id": 0
+              }
+            ]
+          }
+        }
       ]
     },
     "model": {
@@ -45,7 +96,7 @@
             "scaleZ": 1,
             "color": "#FFFFFF",
             "texture": "carbonFiber",
-            "url": "samples/models/knightT/knightT.gltf"
+            "url": "samples/models/KnightIdle/KnightIdle.glb"
           }
         ]
       }
