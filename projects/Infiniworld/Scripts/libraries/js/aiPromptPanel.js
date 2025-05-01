@@ -124,7 +124,7 @@ class AIPromptPanel {
         }
         if (updated) {
             this.gameEditor.renderObjectList();
-            this.gameEditor.saveToLocalStorage();
+            this.gameEditor.saveProject();
         }
 
         const headers = { 'Content-Type': 'application/json' };

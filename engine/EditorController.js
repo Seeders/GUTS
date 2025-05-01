@@ -351,6 +351,10 @@ class EditorController {
         return this.model.createType(typeId, typeName, typeSingular, typeCategory);
     }
 
+    removeSelectedType() {
+        return this.model.deleteType(this.getSelectedType());
+    }
+
     createColorInputGroup(value, attributeName, attributeValue, container, callback){
         return this.view.createColorInputGroup(value,  attributeName, attributeValue, container, callback);
     }
