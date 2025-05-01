@@ -33,8 +33,7 @@ class EditorModel {
 
         // Define default projects that come pre-installed
         this.defaultProjects = {
-            "default_project": DEFAULT_PROJECT_CONFIG,
-            "iw": INFINIWORLD_CONFIG
+            "default_project": DEFAULT_PROJECT_CONFIG
         };
     }
 
@@ -672,12 +671,4 @@ class EditorModel {
         }
     }
 
-    /**
-     * Saves current state to localStorage
-     * Also triggers any registered hooks
-     */
-    saveToLocalStorage() {
-        this.dispatchHook('saveToLocalStorage', this.getHookDetail({arguments}));
-        this.saveConfigFile();
-    }
 }

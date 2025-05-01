@@ -778,10 +778,52 @@ class EditorView {
         this.elements.newObjectModal.classList.add('show');
     }
     showAddTypeModal() {
-      this.controller.dispatchHook('showAddTypeModal', arguments);
-      const modal = document.getElementById('add-type-modal') || this.createAddTypeModal();
-      modal.classList.add('show');
-  }
+        this.controller.dispatchHook('showAddTypeModal', arguments);
+        const modal = document.getElementById('add-type-modal') || this.createAddTypeModal();
+        modal.classList.add('show');
+    }
+    showRemoveTypeModal() {
+        // Create the modal if it doesn't exist
+        if (!document.getElementById('remove-type-modal')) {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.id = 'remove-type-modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <h2>Remove Object Type</h2>
+                    <div class="warning" style="color: #f44; margin: 10px 0;">
+                        Warning: This will permanently delete all objects of this type!
+                    </div>
+                    <div class="actions">
+                        <button class="danger" id="confirm-remove-type-btn">Remove Type</button>
+                        <button id="close-remove-type-modal">Cancel</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            // Add event listeners
+            document.getElementById('confirm-remove-type-btn').addEventListener('click', () => this.removeSelectedType());
+            document.getElementById('close-remove-type-modal').addEventListener('click', () => {
+                document.getElementById('remove-type-modal').classList.remove('show');
+            });
+        }
+        
+        // Show the modal
+        document.getElementById('remove-type-modal').classList.add('show');
+    }
+
+    removeSelectedType() {
+        
+        this.controller.removeSelectedType();
+        // Close the modal and update UI
+        document.getElementById('remove-type-modal').classList.remove('show');
+        this.renderObjectList();
+        this.renderEditor();
+        this.renderObject();
+        this.updateSidebarButtons();
+        this.controller.saveProject();
+    }
     createAddTypeModal() {
         const modal = document.createElement('div');
         modal.className = 'modal';

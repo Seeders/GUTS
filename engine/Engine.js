@@ -51,9 +51,7 @@ class Engine {
 
     hideLoadingScreen() {      
         document.body.style = "";  
-        document.getElementById('loading-screen').style = 'display: none;';    
-        requestAnimationFrame(() => {
-            
+        requestAnimationFrame(() => {            
             this.applicationTarget.style = '';
         });
     }
@@ -145,7 +143,7 @@ class Engine {
 
     async loadCollections() {
         let currentProject = localStorage.getItem("currentProject");
-        let gameData = DEFAULT_PROJECT_CONFIG;
+        let gameData = {};
 
         if(location.hostname === "localhost"){
             const response = await fetch('/load-config', {
@@ -158,7 +156,7 @@ class Engine {
 
             if (!response.ok) {
                 if (response.status === 404) {                
-                    gameData = DEFAULT_PROJECT_CONFIG;
+                    gameData = {};
                 } else {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
@@ -166,15 +164,8 @@ class Engine {
                 const data = await response.json();            
                 gameData = data.config;
             }
-            
-            if(currentProject == "iw"){            
-                gameData = INFINIWORLD_CONFIG;
-            }
         } else if(location.hostname !== "") {
             gameData = JSON.parse(localStorage.getItem(currentProject)); 
-            if(currentProject == "iw"){            
-                gameData = INFINIWORLD_CONFIG;
-            }
         }
         return gameData.objectTypes;
     }
