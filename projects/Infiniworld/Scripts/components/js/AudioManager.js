@@ -568,10 +568,16 @@ class AudioManager extends engine.Component {
             sound.gainNode.gain.setTargetAtTime(
                 options.volume <= 0 ? 0.000001 : Math.max(0, Math.min(options.volume, 1)),
                 now,
-                0.02
+                0
+            );
+        } else {
+            sound.gainNode.gain.cancelScheduledValues(now);
+            sound.gainNode.gain.setTargetAtTime(
+                0.005,
+                now,
+                0
             );
         }
-        
         if (options.position && sound.pannerNode.positionX) {
             const pos = options.position;
             sound.pannerNode.positionX.setValueAtTime(pos.x || 0, now);

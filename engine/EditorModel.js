@@ -145,6 +145,17 @@ class EditorModel {
         if (!this.state.currentProject) return;
 
         const configText = JSON.stringify(this.state.project);
+        for(const key in this.state.project.objectTypes){
+            if(!this.state.project.objectTypeDefinitions.find((e) => e.id == key)){
+                console.log(`did not find ${key}`);
+                this.state.project.objectTypeDefinitions.push({                                    
+                    "id": key,
+                    "name": key.charAt(0).toUpperCase() + key.slice(1, key.length),
+                    "singular": key.slice(0, key.length - 1),
+                    "category": "Uncategorized"
+                })
+            }
+        }
         try {
             
             if(window.location.hostname != "localhost") {
