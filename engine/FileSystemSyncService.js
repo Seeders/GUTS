@@ -17,6 +17,8 @@ class FileSystemSyncService {
         this.pendingChanges = {};
         this.typeHasSpecialProperties = {}; // New: Tracks if a type has any special properties
 
+        this.currentCollections = {};
+
         if (window.location.hostname === 'localhost') {
             this.setupHooks();
         }
@@ -130,6 +132,13 @@ class FileSystemSyncService {
         return hasSpecial;
     }
 
+    async importProject(projectId) {
+        // Load project data from storage via the model    
+        await this.importProjectFromFilesystem(projectId);            
+        await this.importModulesFromFilesystem();
+        this.setCollectionDefs();
+    }
+
     async importProjectFromFilesystem(projectId) {
         if (!projectId) {
             console.log('No project ID available');
@@ -151,78 +160,7 @@ class FileSystemSyncService {
     
             if (!response.ok) throw new Error(`Failed to list files: ${response.status}`);
             const files = await response.json();
-    
-            if (files.length === 0) {
-                console.log('No files found, initializing project in filesystem');
-                this.saveProjectToFilesystem();
-                return;
-            }
-    
-            const fileGroups = {};
-    
-            files.forEach(file => {
-                const parts = file.name.split('/');
-                if (parts.length < 3) {
-                    console.warn(`Skipping malformed file path: ${file.name}`);
-                    return;
-                }
-    
-                let category, collectionId, objectId;
-                const propertyDirs = this.propertyConfig.map(config => config.ext);
-                let subdirIndex = -1;
-    
-                for (const dir of propertyDirs) {
-                    const idx = parts.indexOf(dir);
-                    if (idx !== -1) {
-                        subdirIndex = idx;
-                        break;
-                    }
-                }
-    
-                const dataIndex = parts.indexOf('data');
-                if (dataIndex !== -1 && (subdirIndex === -1 || dataIndex < subdirIndex)) {
-                    subdirIndex = dataIndex;
-                }
-    
-                if (subdirIndex >= 2) {
-                    category = parts[subdirIndex - 2];
-                    collectionId = parts[subdirIndex - 1];
-                    const fileName = parts[parts.length - 1];
-                    objectId = fileName.substring(0, fileName.lastIndexOf('.'));
-                } else {
-                    category = parts[parts.length - 3];
-                    collectionId = parts[parts.length - 2];
-                    const fileName = parts[parts.length - 1];
-                    objectId = fileName.substring(0, fileName.lastIndexOf('.'));
-                }
-    
-                if (!category || !collectionId || !objectId) {
-                    console.warn(`Could not parse file path: ${file.name}`);
-                    return;
-                }
-    
-                const key = `${category}/${collectionId}/${objectId}`;
-                if (!fileGroups[key]) fileGroups[key] = { category, collectionId, objectId, files: [] };
-                fileGroups[key].files.push(file);
-            });
-    
-            this.currentCollections = {};
-            const loadPromises = Object.values(fileGroups).map(group =>
-                this.loadFilesForObject(group.collectionId, group.objectId, group.files)
-            );
-    
-            await Promise.all(loadPromises);
-            let collectionDefs = this.gameEditor.model.getCollectionDefs();
-            for(let i = collectionDefs.length - 1; i >= 0; i--) {
-                const def = collectionDefs[i];
-                if(!this.currentCollections[def.id]){
-                    collectionDefs.splice(i, 1);
-                }
-            }
-            this.gameEditor.model.state.project = {
-                objectTypes: this.currentCollections,
-                objectTypeDefinitions: collectionDefs
-            }
+            await this.loadFiles(files, false);
             this.gameEditor.model.saveProject();
             console.log('All files successfully imported');
         } catch (error) {
@@ -231,7 +169,114 @@ class FileSystemSyncService {
         }
     }
 
-    async loadFilesForObject(collectionIdFromPath, objectId, files) {
+    async importModulesFromFilesystem() {
+
+    
+        try {
+            console.log('Importing modules from filesystem');
+    
+            const response = await fetch('/list-files', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    path: '',
+                    isModule: true,
+                    since: 0 // Fetch all files on import
+                })
+            });
+    
+            if (!response.ok) throw new Error(`Failed to import modules: ${response.status}`);
+            const files = await response.json();
+    
+            await this.loadFiles(files, true);
+            this.gameEditor.model.saveProject();
+            console.log('All modules successfully imported');
+
+            console.log(files);
+        } catch(e) {
+            console.warn(e);
+        }
+    }
+
+    async loadFiles(files, isModule) {
+        
+        if (files.length === 0) {
+            console.log('No files found, initializing project in filesystem');
+            this.saveProjectToFilesystem();
+            return;
+        }
+
+        const fileGroups = {};
+
+        files.forEach(file => {
+            const parts = file.name.split('/');
+            if (parts.length < 3) {
+                console.warn(`Skipping malformed file path: ${file.name}`);
+                return;
+            }
+
+            let category, collectionId, objectId;
+            const propertyDirs = this.propertyConfig.map(config => config.ext);
+            let subdirIndex = -1;
+
+            for (const dir of propertyDirs) {
+                const idx = parts.indexOf(dir);
+                if (idx !== -1) {
+                    subdirIndex = idx;
+                    break;
+                }
+            }
+
+            const dataIndex = parts.indexOf('data');
+            if (dataIndex !== -1 && (subdirIndex === -1 || dataIndex < subdirIndex)) {
+                subdirIndex = dataIndex;
+            }
+
+            if (subdirIndex >= 2) {
+                category = parts[subdirIndex - 2];
+                collectionId = parts[subdirIndex - 1];
+                const fileName = parts[parts.length - 1];
+                objectId = fileName.substring(0, fileName.lastIndexOf('.'));
+            } else {
+                category = parts[parts.length - 3];
+                collectionId = parts[parts.length - 2];
+                const fileName = parts[parts.length - 1];
+                objectId = fileName.substring(0, fileName.lastIndexOf('.'));
+            }
+
+            if (!category || !collectionId || !objectId) {
+                console.warn(`Could not parse file path: ${file.name}`);
+                return;
+            }
+
+            const key = `${category}/${collectionId}/${objectId}`;
+            if (!fileGroups[key]) fileGroups[key] = { category, collectionId, objectId, files: [] };
+            fileGroups[key].files.push(file);
+        });
+
+        const loadPromises = Object.values(fileGroups).map(group =>
+            this.loadFilesForObject(group.collectionId, group.objectId, group.files, isModule)
+        );
+
+        await Promise.all(loadPromises);
+      
+    }
+
+    setCollectionDefs(){
+        let collectionDefs = this.gameEditor.model.getCollectionDefs();
+        for(let i = collectionDefs.length - 1; i >= 0; i--) {
+            const def = collectionDefs[i];
+            if(!this.currentCollections[def.id]){
+                collectionDefs.splice(i, 1);
+            }
+        }
+        this.gameEditor.model.state.project = {
+            objectTypes: this.currentCollections,
+            objectTypeDefinitions: collectionDefs
+        }
+    }
+
+    async loadFilesForObject(collectionIdFromPath, objectId, files, isModule) {
       
         if (!this.currentCollections[collectionIdFromPath]) this.currentCollections[collectionIdFromPath] = {};
     
@@ -243,7 +288,7 @@ class FileSystemSyncService {
             const jsonResponse = await fetch('/read-file', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ path: jsonFile.name })
+                body: JSON.stringify({ path: jsonFile.name, isModule })
             });
             if (!jsonResponse.ok) throw new Error(`Failed to read JSON file: ${jsonFile.name}`);
             const content = await jsonResponse.text();

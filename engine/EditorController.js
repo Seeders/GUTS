@@ -50,7 +50,10 @@ class EditorController {
         await this.loadProject(initialProject);
 
         // Complete setup after project is loaded
-        this.finalizeSetup();
+        requestAnimationFrame(() => {
+            document.body.classList.remove('loading');
+        });
+
     }
 
     getCurrentVersion() {
@@ -123,9 +126,9 @@ class EditorController {
 
         await this.model.loadProject(name);
         if(window.location.hostname == "localhost") {
-            // Load project data from storage via the model    
-            await this.fs.importProjectFromFilesystem(name);            
+            await this.fs.importProject(name);
         }
+        debugger;
         const project = this.model.state.project;
         // Initialize module manager for handling dynamic modules
         this.moduleManager = new ModuleManager(
@@ -240,19 +243,6 @@ class EditorController {
             this.view.renderEditor();
         }
     }
-
-    /**
-     * Completes the setup process after project loading
-     * Removes loading state and sets up event listeners
-     */
-    finalizeSetup() {
-        // Remove loading indicator on next frame for smooth transition
-        requestAnimationFrame(() => {
-            document.body.classList.remove('loading');
-        });
-
-    }
-
     /**
      * Saves changes to the current object
      * @param {Object} data - Object data to save
