@@ -189,40 +189,6 @@ const DEFAULT_PROJECT_CONFIG = {
       }
     },
     "hitSounds": {
-      "plasma": {
-        "title": "Plasma",
-        "audio": {
-          "waveform": "noise",
-          "frequency": 73,
-          "duration": 0.1,
-          "envelope": {
-            "attack": 0.001,
-            "decay": 2,
-            "sustain": 0,
-            "release": 0.001
-          },
-          "pitchEnvelope": {
-            "start": 0.97,
-            "end": 1.01,
-            "time": 0.1
-          },
-          "effects": {
-            "filter": {
-              "type": "lowpass",
-              "frequency": 70,
-              "Q": 2
-            },
-            "distortion": 3,
-            "delay": {
-              "time": 0,
-              "feedback": 0
-            },
-            "reverb": 0,
-            "bitcrusher": 0.1,
-            "pan": 0
-          }
-        }
-      },
       "explosion": {
         "title": "Explosion",
         "audio": {
@@ -264,6 +230,40 @@ const DEFAULT_PROJECT_CONFIG = {
             "pan": 0
           }
         }
+      },
+      "plasma": {
+        "title": "Plasma",
+        "audio": {
+          "waveform": "noise",
+          "frequency": 73,
+          "duration": 0.1,
+          "envelope": {
+            "attack": 0.001,
+            "decay": 2,
+            "sustain": 0,
+            "release": 0.001
+          },
+          "pitchEnvelope": {
+            "start": 0.97,
+            "end": 1.01,
+            "time": 0.1
+          },
+          "effects": {
+            "filter": {
+              "type": "lowpass",
+              "frequency": 70,
+              "Q": 2
+            },
+            "distortion": 3,
+            "delay": {
+              "time": 0,
+              "feedback": 0
+            },
+            "reverb": 0,
+            "bitcrusher": 0.1,
+            "pan": 0
+          }
+        }
       }
     },
     "sounds": {
@@ -297,6 +297,48 @@ const DEFAULT_PROJECT_CONFIG = {
             },
             "reverb": 0,
             "bitcrusher": 0.1,
+            "pan": 0
+          }
+        }
+      },
+      "placeTower": {
+        "title": "Place Tower",
+        "audio": {
+          "waveform": "sine",
+          "frequency": 20,
+          "duration": 0.2,
+          "noise": {
+            "type": "pink",
+            "amount": 0.8,
+            "filter": {
+              "type": "lowpass",
+              "frequency": 400
+            }
+          },
+          "envelope": {
+            "attack": 0.01,
+            "decay": 0,
+            "sustain": 0.1,
+            "release": 0.001
+          },
+          "pitchEnvelope": {
+            "start": 4,
+            "end": 4,
+            "time": 0.2
+          },
+          "effects": {
+            "filter": {
+              "type": "lowpass",
+              "frequency": 500,
+              "Q": 1
+            },
+            "distortion": 0,
+            "delay": {
+              "time": 0.05,
+              "feedback": 0.2
+            },
+            "reverb": 0.3,
+            "bitcrusher": 0.4,
             "pan": 0
           }
         }
@@ -340,48 +382,6 @@ const DEFAULT_PROJECT_CONFIG = {
             },
             "reverb": 0.15,
             "bitcrusher": 0,
-            "pan": 0
-          }
-        }
-      },
-      "placeTower": {
-        "title": "Place Tower",
-        "audio": {
-          "waveform": "sine",
-          "frequency": 20,
-          "duration": 0.2,
-          "noise": {
-            "type": "pink",
-            "amount": 0.8,
-            "filter": {
-              "type": "lowpass",
-              "frequency": 400
-            }
-          },
-          "envelope": {
-            "attack": 0.01,
-            "decay": 0,
-            "sustain": 0.1,
-            "release": 0.001
-          },
-          "pitchEnvelope": {
-            "start": 4,
-            "end": 4,
-            "time": 0.2
-          },
-          "effects": {
-            "filter": {
-              "type": "lowpass",
-              "frequency": 500,
-              "Q": 1
-            },
-            "distortion": 0,
-            "delay": {
-              "time": 0.05,
-              "feedback": 0.2
-            },
-            "reverb": 0.3,
-            "bitcrusher": 0.4,
             "pan": 0
           }
         }
@@ -436,13 +436,13 @@ const DEFAULT_PROJECT_CONFIG = {
         "desc": "All towers deal 20% more damage",
         "damageMultiplier": 1.2
       },
-      "bloodRegeneration": {
-        "desc": "All healing effects are 25% more effective",
-        "healingMultiplier": 1.25
-      },
       "bloodHarvest": {
         "desc": "Gain 25% more Blood Shards from enemies",
         "value": 1.25
+      },
+      "bloodRegeneration": {
+        "desc": "All healing effects are 25% more effective",
+        "healingMultiplier": 1.25
       },
       "darkResilience": {
         "desc": "Towers take 20% less damage from enemy abilities",
@@ -1250,265 +1250,6 @@ const DEFAULT_PROJECT_CONFIG = {
         "armor": 100,
         "title": "Armored Beast"
       },
-      "banshee": {
-        "hp": 20,
-        "speed": 1.4,
-        "value": 8,
-        "essence": 14,
-        "screamDamage": 5,
-        "render": {
-          "animations": {
-            "idle": [
-              {}
-            ],
-            "walk": [
-              {},
-              {},
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 38,
-                      "id": 0
-                    },
-                    {
-                      "y": 20,
-                      "id": 1
-                    },
-                    {
-                      "y": 38,
-                      "id": 2
-                    },
-                    {
-                      "y": 38,
-                      "id": 3
-                    },
-                    {
-                      "y": 30,
-                      "id": 4
-                    },
-                    {
-                      "y": 30,
-                      "id": 5
-                    },
-                    {
-                      "y": 35,
-                      "id": 6
-                    },
-                    {
-                      "y": 35,
-                      "id": 7
-                    },
-                    {
-                      "y": 34,
-                      "id": 8
-                    },
-                    {
-                      "y": 20,
-                      "id": 9
-                    },
-                    {
-                      "y": 20,
-                      "id": 10
-                    },
-                    {
-                      "y": 20,
-                      "id": 11
-                    }
-                  ]
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 38,
-                      "id": 0
-                    },
-                    {
-                      "y": 20,
-                      "id": 1
-                    },
-                    {
-                      "y": 38,
-                      "id": 2
-                    },
-                    {
-                      "y": 38,
-                      "id": 3
-                    },
-                    {
-                      "y": 30,
-                      "id": 4
-                    },
-                    {
-                      "y": 30,
-                      "id": 5
-                    },
-                    {
-                      "y": 35,
-                      "id": 6
-                    },
-                    {
-                      "y": 35,
-                      "id": 7
-                    },
-                    {
-                      "y": 34,
-                      "id": 8
-                    },
-                    {
-                      "y": 20,
-                      "id": 9
-                    },
-                    {
-                      "y": 20,
-                      "id": 10
-                    },
-                    {
-                      "y": 20,
-                      "id": 11
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          "model": {
-            "shapes": {
-              "shapes": [
-                {
-                  "type": "sphere",
-                  "size": 12,
-                  "color": "#BCA9DF",
-                  "x": 0,
-                  "y": 36,
-                  "z": 2,
-                  "scaleX": 1
-                },
-                {
-                  "type": "cone",
-                  "size": 16,
-                  "height": 30,
-                  "color": "#9F8AC7",
-                  "x": 0,
-                  "y": 18,
-                  "z": 0,
-                  "rotationX": 180
-                },
-                {
-                  "type": "sphere",
-                  "size": 4,
-                  "color": "#FF3366",
-                  "x": 4,
-                  "y": 36,
-                  "z": 7
-                },
-                {
-                  "type": "sphere",
-                  "size": 4,
-                  "color": "#FF3366",
-                  "x": -4,
-                  "y": 36,
-                  "z": 7
-                },
-                {
-                  "type": "cylinder",
-                  "size": 3,
-                  "height": 16,
-                  "color": "#BCA9DF",
-                  "x": -8,
-                  "y": 28,
-                  "z": 10,
-                  "rotationX": 90,
-                  "rotationZ": 30
-                },
-                {
-                  "type": "cylinder",
-                  "size": 3,
-                  "height": 16,
-                  "color": "#BCA9DF",
-                  "x": 8,
-                  "y": 28,
-                  "z": 10,
-                  "rotationX": 90,
-                  "rotationZ": -30
-                },
-                {
-                  "type": "cylinder",
-                  "size": 2,
-                  "height": 12,
-                  "color": "#BCA9DF",
-                  "x": 3,
-                  "y": 33,
-                  "z": -10,
-                  "rotationX": -40
-                },
-                {
-                  "type": "cylinder",
-                  "size": 2,
-                  "height": 12,
-                  "color": "#BCA9DF",
-                  "x": -3,
-                  "y": 33,
-                  "z": -10,
-                  "rotationX": -40
-                },
-                {
-                  "type": "sphere",
-                  "size": 6,
-                  "color": "#000000",
-                  "x": 0,
-                  "y": 32,
-                  "z": 7.8,
-                  "rotationX": 45
-                },
-                {
-                  "type": "sphere",
-                  "size": 6,
-                  "color": "#BCA9DF",
-                  "x": 15,
-                  "y": 18,
-                  "z": 0
-                },
-                {
-                  "type": "sphere",
-                  "size": 6,
-                  "color": "#BCA9DF",
-                  "x": -15,
-                  "y": 18,
-                  "z": 0
-                },
-                {
-                  "type": "sphere",
-                  "size": 6,
-                  "color": "#BCA9DF",
-                  "x": 0,
-                  "y": 18,
-                  "z": -15
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            }
-          }
-        },
-        "evasion": 75,
-        "title": "banshee"
-      },
       "bloodBeast": {
         "hp": 50,
         "speed": 0.6,
@@ -1833,6 +1574,472 @@ const DEFAULT_PROJECT_CONFIG = {
         },
         "armor": 50,
         "title": "blood beast"
+      },
+      "banshee": {
+        "hp": 20,
+        "speed": 1.4,
+        "value": 8,
+        "essence": 14,
+        "screamDamage": 5,
+        "render": {
+          "animations": {
+            "idle": [
+              {}
+            ],
+            "walk": [
+              {},
+              {},
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 38,
+                      "id": 0
+                    },
+                    {
+                      "y": 20,
+                      "id": 1
+                    },
+                    {
+                      "y": 38,
+                      "id": 2
+                    },
+                    {
+                      "y": 38,
+                      "id": 3
+                    },
+                    {
+                      "y": 30,
+                      "id": 4
+                    },
+                    {
+                      "y": 30,
+                      "id": 5
+                    },
+                    {
+                      "y": 35,
+                      "id": 6
+                    },
+                    {
+                      "y": 35,
+                      "id": 7
+                    },
+                    {
+                      "y": 34,
+                      "id": 8
+                    },
+                    {
+                      "y": 20,
+                      "id": 9
+                    },
+                    {
+                      "y": 20,
+                      "id": 10
+                    },
+                    {
+                      "y": 20,
+                      "id": 11
+                    }
+                  ]
+                }
+              },
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 38,
+                      "id": 0
+                    },
+                    {
+                      "y": 20,
+                      "id": 1
+                    },
+                    {
+                      "y": 38,
+                      "id": 2
+                    },
+                    {
+                      "y": 38,
+                      "id": 3
+                    },
+                    {
+                      "y": 30,
+                      "id": 4
+                    },
+                    {
+                      "y": 30,
+                      "id": 5
+                    },
+                    {
+                      "y": 35,
+                      "id": 6
+                    },
+                    {
+                      "y": 35,
+                      "id": 7
+                    },
+                    {
+                      "y": 34,
+                      "id": 8
+                    },
+                    {
+                      "y": 20,
+                      "id": 9
+                    },
+                    {
+                      "y": 20,
+                      "id": 10
+                    },
+                    {
+                      "y": 20,
+                      "id": 11
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "sphere",
+                  "size": 12,
+                  "color": "#BCA9DF",
+                  "x": 0,
+                  "y": 36,
+                  "z": 2,
+                  "scaleX": 1
+                },
+                {
+                  "type": "cone",
+                  "size": 16,
+                  "height": 30,
+                  "color": "#9F8AC7",
+                  "x": 0,
+                  "y": 18,
+                  "z": 0,
+                  "rotationX": 180
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "color": "#FF3366",
+                  "x": 4,
+                  "y": 36,
+                  "z": 7
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "color": "#FF3366",
+                  "x": -4,
+                  "y": 36,
+                  "z": 7
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 16,
+                  "color": "#BCA9DF",
+                  "x": -8,
+                  "y": 28,
+                  "z": 10,
+                  "rotationX": 90,
+                  "rotationZ": 30
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 16,
+                  "color": "#BCA9DF",
+                  "x": 8,
+                  "y": 28,
+                  "z": 10,
+                  "rotationX": 90,
+                  "rotationZ": -30
+                },
+                {
+                  "type": "cylinder",
+                  "size": 2,
+                  "height": 12,
+                  "color": "#BCA9DF",
+                  "x": 3,
+                  "y": 33,
+                  "z": -10,
+                  "rotationX": -40
+                },
+                {
+                  "type": "cylinder",
+                  "size": 2,
+                  "height": 12,
+                  "color": "#BCA9DF",
+                  "x": -3,
+                  "y": 33,
+                  "z": -10,
+                  "rotationX": -40
+                },
+                {
+                  "type": "sphere",
+                  "size": 6,
+                  "color": "#000000",
+                  "x": 0,
+                  "y": 32,
+                  "z": 7.8,
+                  "rotationX": 45
+                },
+                {
+                  "type": "sphere",
+                  "size": 6,
+                  "color": "#BCA9DF",
+                  "x": 15,
+                  "y": 18,
+                  "z": 0
+                },
+                {
+                  "type": "sphere",
+                  "size": 6,
+                  "color": "#BCA9DF",
+                  "x": -15,
+                  "y": 18,
+                  "z": 0
+                },
+                {
+                  "type": "sphere",
+                  "size": 6,
+                  "color": "#BCA9DF",
+                  "x": 0,
+                  "y": 18,
+                  "z": -15
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
+          }
+        },
+        "evasion": 75,
+        "title": "banshee"
+      },
+      "ghost": {
+        "hp": 1,
+        "speed": 1.5,
+        "value": 10,
+        "essence": 15,
+        "render": {
+          "animations": {
+            "idle": [
+              {}
+            ],
+            "walk": [
+              {},
+              {},
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 32,
+                      "id": 0
+                    },
+                    {
+                      "y": 22,
+                      "id": 1
+                    },
+                    {
+                      "y": 12,
+                      "id": 2
+                    },
+                    {
+                      "y": 7,
+                      "id": 3
+                    },
+                    {
+                      "y": 7,
+                      "id": 4
+                    },
+                    {
+                      "y": 7,
+                      "id": 5
+                    },
+                    {
+                      "y": 32,
+                      "id": 6
+                    },
+                    {
+                      "y": 32,
+                      "id": 7
+                    },
+                    {
+                      "y": 29,
+                      "id": 8
+                    }
+                  ]
+                }
+              },
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 32,
+                      "id": 0
+                    },
+                    {
+                      "y": 22,
+                      "id": 1
+                    },
+                    {
+                      "y": 12,
+                      "id": 2
+                    },
+                    {
+                      "y": 7,
+                      "id": 3
+                    },
+                    {
+                      "y": 7,
+                      "id": 4
+                    },
+                    {
+                      "y": 7,
+                      "id": 5
+                    },
+                    {
+                      "y": 32,
+                      "id": 6
+                    },
+                    {
+                      "y": 32,
+                      "id": 7
+                    },
+                    {
+                      "y": 29,
+                      "id": 8
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "sphere",
+                  "size": 16,
+                  "color": "#C2E8F7",
+                  "x": 0,
+                  "y": 31,
+                  "z": 0,
+                  "scaleX": 1
+                },
+                {
+                  "type": "sphere",
+                  "size": 14,
+                  "color": "#D8F0F9",
+                  "x": 0,
+                  "y": 21,
+                  "z": 0
+                },
+                {
+                  "type": "sphere",
+                  "size": 12,
+                  "color": "#E5F6FC",
+                  "x": 0,
+                  "y": 11,
+                  "z": 0
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 14,
+                  "color": "#E5F6FC",
+                  "x": 6,
+                  "y": 6,
+                  "z": 0,
+                  "rotationX": 180
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 14,
+                  "color": "#E5F6FC",
+                  "x": -6,
+                  "y": 6,
+                  "z": 0,
+                  "rotationX": 180
+                },
+                {
+                  "type": "cone",
+                  "size": 8,
+                  "height": 14,
+                  "color": "#E5F6FC",
+                  "x": 0,
+                  "y": 6,
+                  "z": 0,
+                  "rotationX": 180
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "color": "#1A1A1A",
+                  "x": 4,
+                  "y": 31,
+                  "z": 7
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "color": "#1A1A1A",
+                  "x": -4,
+                  "y": 31,
+                  "z": 7
+                },
+                {
+                  "type": "sphere",
+                  "size": 8,
+                  "color": "#1A1A1A",
+                  "x": 0,
+                  "y": 28,
+                  "z": 4,
+                  "rotationX": 45,
+                  "rotationY": 0,
+                  "rotationZ": 0
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
+          }
+        },
+        "evasion": 75,
+        "energyShield": 30,
+        "title": "ghost"
       },
       "blueDragon": {
         "hp": 500,
@@ -2923,213 +3130,6 @@ const DEFAULT_PROJECT_CONFIG = {
         "coldResistance": 75,
         "electricResistance": 25,
         "title": "Blue Dragon"
-      },
-      "ghost": {
-        "hp": 1,
-        "speed": 1.5,
-        "value": 10,
-        "essence": 15,
-        "render": {
-          "animations": {
-            "idle": [
-              {}
-            ],
-            "walk": [
-              {},
-              {},
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 32,
-                      "id": 0
-                    },
-                    {
-                      "y": 22,
-                      "id": 1
-                    },
-                    {
-                      "y": 12,
-                      "id": 2
-                    },
-                    {
-                      "y": 7,
-                      "id": 3
-                    },
-                    {
-                      "y": 7,
-                      "id": 4
-                    },
-                    {
-                      "y": 7,
-                      "id": 5
-                    },
-                    {
-                      "y": 32,
-                      "id": 6
-                    },
-                    {
-                      "y": 32,
-                      "id": 7
-                    },
-                    {
-                      "y": 29,
-                      "id": 8
-                    }
-                  ]
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 32,
-                      "id": 0
-                    },
-                    {
-                      "y": 22,
-                      "id": 1
-                    },
-                    {
-                      "y": 12,
-                      "id": 2
-                    },
-                    {
-                      "y": 7,
-                      "id": 3
-                    },
-                    {
-                      "y": 7,
-                      "id": 4
-                    },
-                    {
-                      "y": 7,
-                      "id": 5
-                    },
-                    {
-                      "y": 32,
-                      "id": 6
-                    },
-                    {
-                      "y": 32,
-                      "id": 7
-                    },
-                    {
-                      "y": 29,
-                      "id": 8
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          "model": {
-            "shapes": {
-              "shapes": [
-                {
-                  "type": "sphere",
-                  "size": 16,
-                  "color": "#C2E8F7",
-                  "x": 0,
-                  "y": 31,
-                  "z": 0,
-                  "scaleX": 1
-                },
-                {
-                  "type": "sphere",
-                  "size": 14,
-                  "color": "#D8F0F9",
-                  "x": 0,
-                  "y": 21,
-                  "z": 0
-                },
-                {
-                  "type": "sphere",
-                  "size": 12,
-                  "color": "#E5F6FC",
-                  "x": 0,
-                  "y": 11,
-                  "z": 0
-                },
-                {
-                  "type": "cone",
-                  "size": 8,
-                  "height": 14,
-                  "color": "#E5F6FC",
-                  "x": 6,
-                  "y": 6,
-                  "z": 0,
-                  "rotationX": 180
-                },
-                {
-                  "type": "cone",
-                  "size": 8,
-                  "height": 14,
-                  "color": "#E5F6FC",
-                  "x": -6,
-                  "y": 6,
-                  "z": 0,
-                  "rotationX": 180
-                },
-                {
-                  "type": "cone",
-                  "size": 8,
-                  "height": 14,
-                  "color": "#E5F6FC",
-                  "x": 0,
-                  "y": 6,
-                  "z": 0,
-                  "rotationX": 180
-                },
-                {
-                  "type": "sphere",
-                  "size": 4,
-                  "color": "#1A1A1A",
-                  "x": 4,
-                  "y": 31,
-                  "z": 7
-                },
-                {
-                  "type": "sphere",
-                  "size": 4,
-                  "color": "#1A1A1A",
-                  "x": -4,
-                  "y": 31,
-                  "z": 7
-                },
-                {
-                  "type": "sphere",
-                  "size": 8,
-                  "color": "#1A1A1A",
-                  "x": 0,
-                  "y": 28,
-                  "z": 4,
-                  "rotationX": 45,
-                  "rotationY": 0,
-                  "rotationZ": 0
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            }
-          }
-        },
-        "evasion": 75,
-        "energyShield": 30,
-        "title": "ghost"
       },
       "greenDragon": {
         "hp": 500,
@@ -8058,286 +8058,6 @@ const DEFAULT_PROJECT_CONFIG = {
         },
         "title": "Pterodactyl"
       },
-      "skeleton": {
-        "hp": 20,
-        "speed": 1.2,
-        "value": 7,
-        "essence": 12,
-        "render": {
-          "animations": {
-            "idle": [
-              {}
-            ],
-            "walk": [
-              {},
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 40,
-                      "id": 0
-                    },
-                    {
-                      "rotationZ": 0,
-                      "rotationY": 10,
-                      "id": 1
-                    },
-                    {
-                      "y": 41,
-                      "id": 2
-                    },
-                    {
-                      "y": 41,
-                      "id": 3
-                    },
-                    {
-                      "y": 29,
-                      "rotationX": 90,
-                      "id": 4
-                    },
-                    {
-                      "y": 25,
-                      "rotationX": 120,
-                      "id": 5
-                    },
-                    {
-                      "y": 29,
-                      "id": 6
-                    },
-                    {
-                      "y": 20,
-                      "id": 7
-                    },
-                    {
-                      "z": -2,
-                      "rotationX": 15,
-                      "rotationY": 0,
-                      "id": 8
-                    },
-                    {
-                      "z": 2,
-                      "rotationX": -15,
-                      "id": 9
-                    },
-                    {
-                      "z": -4,
-                      "id": 10
-                    },
-                    {
-                      "z": 6,
-                      "id": 11
-                    }
-                  ]
-                }
-              },
-              {},
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 40,
-                      "id": 0
-                    },
-                    {
-                      "rotationY": -10,
-                      "id": 1
-                    },
-                    {
-                      "y": 41,
-                      "id": 2
-                    },
-                    {
-                      "y": 41,
-                      "id": 3
-                    },
-                    {
-                      "y": 25,
-                      "rotationX": 120,
-                      "id": 4
-                    },
-                    {
-                      "y": 29,
-                      "rotationX": 90,
-                      "id": 5
-                    },
-                    {
-                      "y": 20,
-                      "id": 6
-                    },
-                    {
-                      "y": 29,
-                      "id": 7
-                    },
-                    {
-                      "z": 2,
-                      "rotationX": -15,
-                      "id": 8
-                    },
-                    {
-                      "z": -2,
-                      "rotationX": 15,
-                      "id": 9
-                    },
-                    {
-                      "z": 6,
-                      "id": 10
-                    },
-                    {
-                      "z": -4,
-                      "id": 11
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          "model": {
-            "shapes": {
-              "shapes": [
-                {
-                  "type": "sphere",
-                  "size": 14,
-                  "color": "#E0DED8",
-                  "x": 0,
-                  "y": 41,
-                  "z": 0,
-                  "name": "head"
-                },
-                {
-                  "type": "box",
-                  "width": 16,
-                  "height": 20,
-                  "depth": 8,
-                  "color": "#CFCBC0",
-                  "x": 0,
-                  "y": 24,
-                  "z": 0,
-                  "name": "body",
-                  "scaleX": 1
-                },
-                {
-                  "type": "sphere",
-                  "size": 3,
-                  "color": "#000000",
-                  "x": 4,
-                  "y": 42,
-                  "z": 5,
-                  "name": "eye-left"
-                },
-                {
-                  "type": "sphere",
-                  "size": 3,
-                  "color": "#000000",
-                  "x": -4,
-                  "y": 42,
-                  "z": 5,
-                  "name": "eye-right"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 3,
-                  "height": 18,
-                  "color": "#E0DED8",
-                  "x": 8,
-                  "y": 27,
-                  "z": 10,
-                  "rotationX": 105,
-                  "rotationZ": 15,
-                  "name": "arm-left"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 3,
-                  "height": 18,
-                  "color": "#E0DED8",
-                  "x": -8,
-                  "y": 27,
-                  "z": 10,
-                  "rotationX": 105,
-                  "rotationZ": -15,
-                  "name": "arm-right"
-                },
-                {
-                  "type": "sphere",
-                  "size": 5,
-                  "color": "#E0DED8",
-                  "x": 6,
-                  "y": 25,
-                  "z": 20,
-                  "name": "hand-left"
-                },
-                {
-                  "type": "sphere",
-                  "size": 5,
-                  "color": "#E0DED8",
-                  "x": -6,
-                  "y": 25,
-                  "z": 20,
-                  "name": "hand-right"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 3,
-                  "height": 22,
-                  "color": "#E0DED8",
-                  "x": 5,
-                  "y": 14,
-                  "z": 0,
-                  "rotationZ": 0,
-                  "name": "leg-left",
-                  "rotationX": 0
-                },
-                {
-                  "type": "cylinder",
-                  "size": 3,
-                  "height": 22,
-                  "color": "#E0DED8",
-                  "x": -5,
-                  "y": 14,
-                  "z": 0,
-                  "rotationZ": 0,
-                  "name": "leg-right"
-                },
-                {
-                  "type": "sphere",
-                  "size": 5,
-                  "color": "#E0DED8",
-                  "x": 5,
-                  "y": 2,
-                  "z": 0,
-                  "name": "foot-left"
-                },
-                {
-                  "type": "sphere",
-                  "size": 5,
-                  "color": "#E0DED8",
-                  "x": -5,
-                  "y": 2,
-                  "z": 0,
-                  "name": "foot-right"
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            }
-          }
-        },
-        "electricResistance": 75,
-        "title": "skeleton"
-      },
       "redDragon": {
         "hp": 500,
         "speed": 0.5,
@@ -10234,6 +9954,286 @@ const DEFAULT_PROJECT_CONFIG = {
         "electricResistance": 25,
         "title": "Red Dragon"
       },
+      "skeleton": {
+        "hp": 20,
+        "speed": 1.2,
+        "value": 7,
+        "essence": 12,
+        "render": {
+          "animations": {
+            "idle": [
+              {}
+            ],
+            "walk": [
+              {},
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 40,
+                      "id": 0
+                    },
+                    {
+                      "rotationZ": 0,
+                      "rotationY": 10,
+                      "id": 1
+                    },
+                    {
+                      "y": 41,
+                      "id": 2
+                    },
+                    {
+                      "y": 41,
+                      "id": 3
+                    },
+                    {
+                      "y": 29,
+                      "rotationX": 90,
+                      "id": 4
+                    },
+                    {
+                      "y": 25,
+                      "rotationX": 120,
+                      "id": 5
+                    },
+                    {
+                      "y": 29,
+                      "id": 6
+                    },
+                    {
+                      "y": 20,
+                      "id": 7
+                    },
+                    {
+                      "z": -2,
+                      "rotationX": 15,
+                      "rotationY": 0,
+                      "id": 8
+                    },
+                    {
+                      "z": 2,
+                      "rotationX": -15,
+                      "id": 9
+                    },
+                    {
+                      "z": -4,
+                      "id": 10
+                    },
+                    {
+                      "z": 6,
+                      "id": 11
+                    }
+                  ]
+                }
+              },
+              {},
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 40,
+                      "id": 0
+                    },
+                    {
+                      "rotationY": -10,
+                      "id": 1
+                    },
+                    {
+                      "y": 41,
+                      "id": 2
+                    },
+                    {
+                      "y": 41,
+                      "id": 3
+                    },
+                    {
+                      "y": 25,
+                      "rotationX": 120,
+                      "id": 4
+                    },
+                    {
+                      "y": 29,
+                      "rotationX": 90,
+                      "id": 5
+                    },
+                    {
+                      "y": 20,
+                      "id": 6
+                    },
+                    {
+                      "y": 29,
+                      "id": 7
+                    },
+                    {
+                      "z": 2,
+                      "rotationX": -15,
+                      "id": 8
+                    },
+                    {
+                      "z": -2,
+                      "rotationX": 15,
+                      "id": 9
+                    },
+                    {
+                      "z": 6,
+                      "id": 10
+                    },
+                    {
+                      "z": -4,
+                      "id": 11
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "sphere",
+                  "size": 14,
+                  "color": "#E0DED8",
+                  "x": 0,
+                  "y": 41,
+                  "z": 0,
+                  "name": "head"
+                },
+                {
+                  "type": "box",
+                  "width": 16,
+                  "height": 20,
+                  "depth": 8,
+                  "color": "#CFCBC0",
+                  "x": 0,
+                  "y": 24,
+                  "z": 0,
+                  "name": "body",
+                  "scaleX": 1
+                },
+                {
+                  "type": "sphere",
+                  "size": 3,
+                  "color": "#000000",
+                  "x": 4,
+                  "y": 42,
+                  "z": 5,
+                  "name": "eye-left"
+                },
+                {
+                  "type": "sphere",
+                  "size": 3,
+                  "color": "#000000",
+                  "x": -4,
+                  "y": 42,
+                  "z": 5,
+                  "name": "eye-right"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 18,
+                  "color": "#E0DED8",
+                  "x": 8,
+                  "y": 27,
+                  "z": 10,
+                  "rotationX": 105,
+                  "rotationZ": 15,
+                  "name": "arm-left"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 18,
+                  "color": "#E0DED8",
+                  "x": -8,
+                  "y": 27,
+                  "z": 10,
+                  "rotationX": 105,
+                  "rotationZ": -15,
+                  "name": "arm-right"
+                },
+                {
+                  "type": "sphere",
+                  "size": 5,
+                  "color": "#E0DED8",
+                  "x": 6,
+                  "y": 25,
+                  "z": 20,
+                  "name": "hand-left"
+                },
+                {
+                  "type": "sphere",
+                  "size": 5,
+                  "color": "#E0DED8",
+                  "x": -6,
+                  "y": 25,
+                  "z": 20,
+                  "name": "hand-right"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 22,
+                  "color": "#E0DED8",
+                  "x": 5,
+                  "y": 14,
+                  "z": 0,
+                  "rotationZ": 0,
+                  "name": "leg-left",
+                  "rotationX": 0
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 22,
+                  "color": "#E0DED8",
+                  "x": -5,
+                  "y": 14,
+                  "z": 0,
+                  "rotationZ": 0,
+                  "name": "leg-right"
+                },
+                {
+                  "type": "sphere",
+                  "size": 5,
+                  "color": "#E0DED8",
+                  "x": 5,
+                  "y": 2,
+                  "z": 0,
+                  "name": "foot-left"
+                },
+                {
+                  "type": "sphere",
+                  "size": 5,
+                  "color": "#E0DED8",
+                  "x": -5,
+                  "y": 2,
+                  "z": 0,
+                  "name": "foot-right"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
+          }
+        },
+        "electricResistance": 75,
+        "title": "skeleton"
+      },
       "spike_ball": {
         "hp": 50,
         "speed": 0.5,
@@ -12033,6 +12033,500 @@ const DEFAULT_PROJECT_CONFIG = {
           }
         }
       },
+      "wraith": {
+        "hp": 1,
+        "speed": 1.8,
+        "value": 12,
+        "essence": 18,
+        "dodgeChance": 0.2,
+        "render": {
+          "animations": {
+            "idle": [
+              {}
+            ],
+            "walk": [
+              {},
+              {},
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 25,
+                      "id": 0
+                    },
+                    {
+                      "y": 25,
+                      "id": 1
+                    },
+                    {
+                      "y": 25,
+                      "id": 2
+                    },
+                    {
+                      "y": 23,
+                      "id": 3
+                    },
+                    {
+                      "y": 23,
+                      "id": 4
+                    }
+                  ]
+                }
+              },
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 25,
+                      "id": 0
+                    },
+                    {
+                      "y": 25,
+                      "id": 1
+                    },
+                    {
+                      "y": 25,
+                      "id": 2
+                    },
+                    {
+                      "y": 23,
+                      "id": 3
+                    },
+                    {
+                      "y": 23,
+                      "id": 4
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "sphere",
+                  "size": 16,
+                  "color": "#3A6A8A",
+                  "x": 0,
+                  "y": 24,
+                  "z": 0,
+                  "scaleX": 1
+                },
+                {
+                  "type": "sphere",
+                  "size": 8,
+                  "color": "#FFFFFF",
+                  "x": 0,
+                  "y": 24,
+                  "z": 6
+                },
+                {
+                  "type": "sphere",
+                  "size": 4,
+                  "color": "#000000",
+                  "x": 0,
+                  "y": 24,
+                  "z": 8.5
+                },
+                {
+                  "type": "cylinder",
+                  "size": 6,
+                  "height": 4,
+                  "color": "#2A5A7A",
+                  "x": -8,
+                  "y": 22,
+                  "z": 0,
+                  "rotationZ": 30
+                },
+                {
+                  "type": "cylinder",
+                  "size": 6,
+                  "height": 4,
+                  "color": "#2A5A7A",
+                  "x": 8,
+                  "y": 22,
+                  "z": 0,
+                  "rotationZ": -30
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
+          }
+        },
+        "energyShield": 50,
+        "title": "wraith"
+      },
+      "zombie": {
+        "hp": 30,
+        "speed": 0.8,
+        "value": 5,
+        "essence": 10,
+        "render": {
+          "animations": {
+            "idle": [
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "color": {
+                        "paletteColor": "greenDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenMColor"
+                      },
+                      "id": 6
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenMColor"
+                      },
+                      "id": 7
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenMColor"
+                      },
+                      "id": 8
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greenMColor"
+                      },
+                      "id": 9
+                    }
+                  ]
+                }
+              }
+            ],
+            "walk": [
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "color": "#FFFFFF",
+                      "id": 2
+                    },
+                    {
+                      "x": 12,
+                      "rotationZ": -20,
+                      "id": 6
+                    },
+                    {
+                      "x": -12,
+                      "rotationZ": 20,
+                      "id": 7
+                    },
+                    {
+                      "height": 20,
+                      "y": 10,
+                      "z": -2,
+                      "rotationX": 30,
+                      "id": 8
+                    },
+                    {
+                      "rotationX": -10,
+                      "id": 9
+                    }
+                  ]
+                }
+              },
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 33,
+                      "id": 0
+                    },
+                    {
+                      "y": 25,
+                      "id": 1
+                    },
+                    {
+                      "color": "#FFFFFF",
+                      "y": 46,
+                      "id": 2
+                    },
+                    {
+                      "y": 46,
+                      "id": 3
+                    },
+                    {
+                      "y": 46,
+                      "id": 4
+                    },
+                    {
+                      "y": 46,
+                      "id": 5
+                    },
+                    {
+                      "x": 10,
+                      "id": 6
+                    },
+                    {
+                      "x": -10,
+                      "id": 7
+                    },
+                    {
+                      "y": 10,
+                      "z": -2,
+                      "rotationX": 30,
+                      "id": 8
+                    },
+                    {
+                      "height": 20,
+                      "y": 10,
+                      "z": -2,
+                      "rotationX": 30,
+                      "id": 9
+                    }
+                  ]
+                }
+              },
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 33,
+                      "id": 0
+                    },
+                    {
+                      "color": "#FFFFFF",
+                      "y": 46,
+                      "id": 2
+                    },
+                    {
+                      "y": 46,
+                      "id": 3
+                    },
+                    {
+                      "y": 46,
+                      "id": 4
+                    },
+                    {
+                      "y": 46,
+                      "id": 5
+                    },
+                    {
+                      "rotationZ": 20,
+                      "id": 6
+                    },
+                    {
+                      "rotationZ": -20,
+                      "id": 7
+                    },
+                    {
+                      "y": 10,
+                      "z": -2,
+                      "rotationX": 30,
+                      "id": 8
+                    },
+                    {
+                      "height": 20,
+                      "y": 10,
+                      "z": -2,
+                      "rotationX": 30,
+                      "id": 9
+                    }
+                  ]
+                }
+              },
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "y": 25,
+                      "id": 1
+                    },
+                    {
+                      "color": "#FFFFFF",
+                      "id": 2
+                    },
+                    {
+                      "x": 10,
+                      "id": 6
+                    },
+                    {
+                      "x": -10,
+                      "id": 7
+                    },
+                    {
+                      "height": 20,
+                      "y": 10,
+                      "z": -2,
+                      "rotationX": 30,
+                      "id": 8
+                    },
+                    {
+                      "rotationX": 10,
+                      "id": 9
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "gltf",
+                  "size": 16,
+                  "color": "#60A060",
+                  "x": 0,
+                  "y": 32,
+                  "z": 0,
+                  "name": "head",
+                  "scaleX": 500,
+                  "scaleY": 500,
+                  "scaleZ": 500,
+                  "url": "samples/models/Avocado/Avocado.gltf"
+                },
+                {
+                  "type": "cylinder",
+                  "width": 20,
+                  "height": 24,
+                  "depth": 10,
+                  "color": {
+                    "paletteColor": "greenDColor"
+                  },
+                  "x": 0,
+                  "y": 24,
+                  "z": 0,
+                  "size": 16,
+                  "name": "body",
+                  "scaleX": 1
+                },
+                {
+                  "type": "sphere",
+                  "size": 5,
+                  "color": "#ffffff",
+                  "x": 4,
+                  "y": 45,
+                  "z": 7,
+                  "name": "eye-left",
+                  "scaleX": 1
+                },
+                {
+                  "type": "sphere",
+                  "size": 5,
+                  "color": "#FFFFFF",
+                  "x": -4,
+                  "y": 45,
+                  "z": 7,
+                  "name": "eye-right"
+                },
+                {
+                  "type": "sphere",
+                  "size": 2,
+                  "color": "#000000",
+                  "x": 4,
+                  "y": 45,
+                  "z": 9,
+                  "name": "pupil-left"
+                },
+                {
+                  "type": "sphere",
+                  "size": 2,
+                  "color": "#000000",
+                  "x": -4,
+                  "y": 45,
+                  "z": 9,
+                  "name": "pupil-right"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 4,
+                  "height": 20,
+                  "color": {
+                    "paletteColor": "greenMColor"
+                  },
+                  "x": 8,
+                  "y": 29,
+                  "z": 10,
+                  "rotationX": 90,
+                  "rotationZ": 0,
+                  "name": "arm-left"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 4,
+                  "height": 20,
+                  "color": {
+                    "paletteColor": "greenMColor"
+                  },
+                  "x": -8,
+                  "y": 29,
+                  "z": 10,
+                  "rotationX": 90,
+                  "rotationZ": 0,
+                  "name": "arm-right"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 4,
+                  "height": 24,
+                  "color": {
+                    "paletteColor": "greenMColor"
+                  },
+                  "x": 5,
+                  "y": 12,
+                  "z": 0,
+                  "rotationZ": 0,
+                  "name": "leg-left"
+                },
+                {
+                  "type": "cylinder",
+                  "size": 4,
+                  "height": 24,
+                  "color": {
+                    "paletteColor": "greenMColor"
+                  },
+                  "x": -5,
+                  "y": 12,
+                  "z": 0,
+                  "rotationZ": 0,
+                  "rotationX": 0,
+                  "name": "leg-right"
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
+          }
+        },
+        "title": "zombie"
+      },
       "viking": {
         "hp": 20,
         "value": 10,
@@ -12756,500 +13250,6 @@ const DEFAULT_PROJECT_CONFIG = {
         },
         "coldResistance": 75,
         "title": "Viking"
-      },
-      "wraith": {
-        "hp": 1,
-        "speed": 1.8,
-        "value": 12,
-        "essence": 18,
-        "dodgeChance": 0.2,
-        "render": {
-          "animations": {
-            "idle": [
-              {}
-            ],
-            "walk": [
-              {},
-              {},
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 25,
-                      "id": 0
-                    },
-                    {
-                      "y": 25,
-                      "id": 1
-                    },
-                    {
-                      "y": 25,
-                      "id": 2
-                    },
-                    {
-                      "y": 23,
-                      "id": 3
-                    },
-                    {
-                      "y": 23,
-                      "id": 4
-                    }
-                  ]
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 25,
-                      "id": 0
-                    },
-                    {
-                      "y": 25,
-                      "id": 1
-                    },
-                    {
-                      "y": 25,
-                      "id": 2
-                    },
-                    {
-                      "y": 23,
-                      "id": 3
-                    },
-                    {
-                      "y": 23,
-                      "id": 4
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          "model": {
-            "shapes": {
-              "shapes": [
-                {
-                  "type": "sphere",
-                  "size": 16,
-                  "color": "#3A6A8A",
-                  "x": 0,
-                  "y": 24,
-                  "z": 0,
-                  "scaleX": 1
-                },
-                {
-                  "type": "sphere",
-                  "size": 8,
-                  "color": "#FFFFFF",
-                  "x": 0,
-                  "y": 24,
-                  "z": 6
-                },
-                {
-                  "type": "sphere",
-                  "size": 4,
-                  "color": "#000000",
-                  "x": 0,
-                  "y": 24,
-                  "z": 8.5
-                },
-                {
-                  "type": "cylinder",
-                  "size": 6,
-                  "height": 4,
-                  "color": "#2A5A7A",
-                  "x": -8,
-                  "y": 22,
-                  "z": 0,
-                  "rotationZ": 30
-                },
-                {
-                  "type": "cylinder",
-                  "size": 6,
-                  "height": 4,
-                  "color": "#2A5A7A",
-                  "x": 8,
-                  "y": 22,
-                  "z": 0,
-                  "rotationZ": -30
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            }
-          }
-        },
-        "energyShield": 50,
-        "title": "wraith"
-      },
-      "zombie": {
-        "hp": 30,
-        "speed": 0.8,
-        "value": 5,
-        "essence": 10,
-        "render": {
-          "animations": {
-            "idle": [
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "color": {
-                        "paletteColor": "greenDColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "greenMColor"
-                      },
-                      "id": 6
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "greenMColor"
-                      },
-                      "id": 7
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "greenMColor"
-                      },
-                      "id": 8
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "greenMColor"
-                      },
-                      "id": 9
-                    }
-                  ]
-                }
-              }
-            ],
-            "walk": [
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "color": "#FFFFFF",
-                      "id": 2
-                    },
-                    {
-                      "x": 12,
-                      "rotationZ": -20,
-                      "id": 6
-                    },
-                    {
-                      "x": -12,
-                      "rotationZ": 20,
-                      "id": 7
-                    },
-                    {
-                      "height": 20,
-                      "y": 10,
-                      "z": -2,
-                      "rotationX": 30,
-                      "id": 8
-                    },
-                    {
-                      "rotationX": -10,
-                      "id": 9
-                    }
-                  ]
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 33,
-                      "id": 0
-                    },
-                    {
-                      "y": 25,
-                      "id": 1
-                    },
-                    {
-                      "color": "#FFFFFF",
-                      "y": 46,
-                      "id": 2
-                    },
-                    {
-                      "y": 46,
-                      "id": 3
-                    },
-                    {
-                      "y": 46,
-                      "id": 4
-                    },
-                    {
-                      "y": 46,
-                      "id": 5
-                    },
-                    {
-                      "x": 10,
-                      "id": 6
-                    },
-                    {
-                      "x": -10,
-                      "id": 7
-                    },
-                    {
-                      "y": 10,
-                      "z": -2,
-                      "rotationX": 30,
-                      "id": 8
-                    },
-                    {
-                      "height": 20,
-                      "y": 10,
-                      "z": -2,
-                      "rotationX": 30,
-                      "id": 9
-                    }
-                  ]
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 33,
-                      "id": 0
-                    },
-                    {
-                      "color": "#FFFFFF",
-                      "y": 46,
-                      "id": 2
-                    },
-                    {
-                      "y": 46,
-                      "id": 3
-                    },
-                    {
-                      "y": 46,
-                      "id": 4
-                    },
-                    {
-                      "y": 46,
-                      "id": 5
-                    },
-                    {
-                      "rotationZ": 20,
-                      "id": 6
-                    },
-                    {
-                      "rotationZ": -20,
-                      "id": 7
-                    },
-                    {
-                      "y": 10,
-                      "z": -2,
-                      "rotationX": 30,
-                      "id": 8
-                    },
-                    {
-                      "height": 20,
-                      "y": 10,
-                      "z": -2,
-                      "rotationX": 30,
-                      "id": 9
-                    }
-                  ]
-                }
-              },
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "y": 25,
-                      "id": 1
-                    },
-                    {
-                      "color": "#FFFFFF",
-                      "id": 2
-                    },
-                    {
-                      "x": 10,
-                      "id": 6
-                    },
-                    {
-                      "x": -10,
-                      "id": 7
-                    },
-                    {
-                      "height": 20,
-                      "y": 10,
-                      "z": -2,
-                      "rotationX": 30,
-                      "id": 8
-                    },
-                    {
-                      "rotationX": 10,
-                      "id": 9
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          "model": {
-            "shapes": {
-              "shapes": [
-                {
-                  "type": "gltf",
-                  "size": 16,
-                  "color": "#60A060",
-                  "x": 0,
-                  "y": 32,
-                  "z": 0,
-                  "name": "head",
-                  "scaleX": 500,
-                  "scaleY": 500,
-                  "scaleZ": 500,
-                  "url": "samples/models/Avocado/Avocado.gltf"
-                },
-                {
-                  "type": "cylinder",
-                  "width": 20,
-                  "height": 24,
-                  "depth": 10,
-                  "color": {
-                    "paletteColor": "greenDColor"
-                  },
-                  "x": 0,
-                  "y": 24,
-                  "z": 0,
-                  "size": 16,
-                  "name": "body",
-                  "scaleX": 1
-                },
-                {
-                  "type": "sphere",
-                  "size": 5,
-                  "color": "#ffffff",
-                  "x": 4,
-                  "y": 45,
-                  "z": 7,
-                  "name": "eye-left",
-                  "scaleX": 1
-                },
-                {
-                  "type": "sphere",
-                  "size": 5,
-                  "color": "#FFFFFF",
-                  "x": -4,
-                  "y": 45,
-                  "z": 7,
-                  "name": "eye-right"
-                },
-                {
-                  "type": "sphere",
-                  "size": 2,
-                  "color": "#000000",
-                  "x": 4,
-                  "y": 45,
-                  "z": 9,
-                  "name": "pupil-left"
-                },
-                {
-                  "type": "sphere",
-                  "size": 2,
-                  "color": "#000000",
-                  "x": -4,
-                  "y": 45,
-                  "z": 9,
-                  "name": "pupil-right"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 4,
-                  "height": 20,
-                  "color": {
-                    "paletteColor": "greenMColor"
-                  },
-                  "x": 8,
-                  "y": 29,
-                  "z": 10,
-                  "rotationX": 90,
-                  "rotationZ": 0,
-                  "name": "arm-left"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 4,
-                  "height": 20,
-                  "color": {
-                    "paletteColor": "greenMColor"
-                  },
-                  "x": -8,
-                  "y": 29,
-                  "z": 10,
-                  "rotationX": 90,
-                  "rotationZ": 0,
-                  "name": "arm-right"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 4,
-                  "height": 24,
-                  "color": {
-                    "paletteColor": "greenMColor"
-                  },
-                  "x": 5,
-                  "y": 12,
-                  "z": 0,
-                  "rotationZ": 0,
-                  "name": "leg-left"
-                },
-                {
-                  "type": "cylinder",
-                  "size": 4,
-                  "height": 24,
-                  "color": {
-                    "paletteColor": "greenMColor"
-                  },
-                  "x": -5,
-                  "y": 12,
-                  "z": 0,
-                  "rotationZ": 0,
-                  "rotationX": 0,
-                  "name": "leg-right"
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            }
-          }
-        },
-        "title": "zombie"
       }
     },
     "particles": {
@@ -14683,6 +14683,292 @@ const DEFAULT_PROJECT_CONFIG = {
           }
         }
       },
+      "drone": {
+        "title": "Drone",
+        "info": "Raise the dead.",
+        "drawOffsetY": -12,
+        "population": 1,
+        "range": 2,
+        "damage": 5,
+        "attackSpeed": 1,
+        "projectile": "neutronFragment",
+        "critMultiplier": 1,
+        "lifeSpan": 5,
+        "render": {
+          "animations": {
+            "idle": [
+              {
+                "shapes": {
+                  "shapes": [
+                    {
+                      "type": "torus",
+                      "size": 9,
+                      "tubeSize": 1.5,
+                      "x": 0,
+                      "y": 33.85714285714286,
+                      "z": 0,
+                      "rotationX": 90,
+                      "color": {
+                        "paletteColor": "blueDColor"
+                      },
+                      "id": 0
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueDColor"
+                      },
+                      "id": 1
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueLColor"
+                      },
+                      "id": 2
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 3
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 4
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 5
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 6
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 7
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "greyDColor"
+                      },
+                      "id": 8
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueDColor"
+                      },
+                      "id": 9
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueDColor"
+                      },
+                      "id": 10
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueDColor"
+                      },
+                      "id": 11
+                    },
+                    {
+                      "color": {
+                        "paletteColor": "blueDColor"
+                      },
+                      "id": 12
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "model": {
+            "shapes": {
+              "shapes": [
+                {
+                  "type": "torus",
+                  "size": 9,
+                  "tubeSize": 1.5,
+                  "x": 0,
+                  "y": 33.85714285714286,
+                  "z": 0,
+                  "rotationX": 90,
+                  "color": {
+                    "paletteColor": "blueDColor"
+                  }
+                },
+                {
+                  "type": "torus",
+                  "size": 9,
+                  "tubeSize": 1.5,
+                  "x": 0,
+                  "y": 33.85714285714286,
+                  "z": 0,
+                  "rotationY": 90,
+                  "color": {
+                    "paletteColor": "blueDColor"
+                  }
+                },
+                {
+                  "type": "sphere",
+                  "size": 2.25,
+                  "x": 0,
+                  "y": 39.85714285714286,
+                  "z": 0,
+                  "color": {
+                    "paletteColor": "blueLColor"
+                  }
+                },
+                {
+                  "type": "cylinder",
+                  "size": 10,
+                  "height": 0.75,
+                  "x": 0,
+                  "y": 34,
+                  "z": 0,
+                  "rotationX": 90,
+                  "rotationY": 0,
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  }
+                },
+                {
+                  "type": "cylinder",
+                  "size": 11,
+                  "height": 0.75,
+                  "x": 0,
+                  "y": 34,
+                  "z": 0,
+                  "rotationX": 0,
+                  "rotationY": 90,
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  },
+                  "rotationZ": 0,
+                  "scaleX": 1,
+                  "scaleY": 1,
+                  "scaleZ": 1
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 0.75,
+                  "x": 10.5,
+                  "y": 32.35714285714286,
+                  "z": 10.5,
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  }
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 0.75,
+                  "x": -10.5,
+                  "y": 32.35714285714286,
+                  "z": 10.5,
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  }
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 0.75,
+                  "x": 10.5,
+                  "y": 32.35714285714286,
+                  "z": -10.5,
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  }
+                },
+                {
+                  "type": "cylinder",
+                  "size": 3,
+                  "height": 0.75,
+                  "x": -10.5,
+                  "y": 32.35714285714286,
+                  "z": -10.5,
+                  "color": {
+                    "paletteColor": "greyDColor"
+                  }
+                },
+                {
+                  "type": "torus",
+                  "size": 4.5,
+                  "tubeSize": 0.75,
+                  "x": 10.5,
+                  "y": 33.10714285714286,
+                  "z": 10.5,
+                  "rotationX": 90,
+                  "color": {
+                    "paletteColor": "blueDColor"
+                  }
+                },
+                {
+                  "type": "torus",
+                  "size": 4.5,
+                  "tubeSize": 0.75,
+                  "x": -10.5,
+                  "y": 33.10714285714286,
+                  "z": 10.5,
+                  "rotationX": 90,
+                  "color": {
+                    "paletteColor": "blueDColor"
+                  }
+                },
+                {
+                  "type": "torus",
+                  "size": 4.5,
+                  "tubeSize": 0.75,
+                  "x": 10.5,
+                  "y": 33.10714285714286,
+                  "z": -10.5,
+                  "rotationX": 90,
+                  "color": {
+                    "paletteColor": "blueDColor"
+                  }
+                },
+                {
+                  "type": "torus",
+                  "size": 4.5,
+                  "tubeSize": 0.75,
+                  "x": -10.5,
+                  "y": 33.10714285714286,
+                  "z": -10.5,
+                  "rotationX": 90,
+                  "color": {
+                    "paletteColor": "blueDColor"
+                  }
+                }
+              ],
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            }
+          }
+        }
+      },
       "fabricator": {
         "title": "Fabricator",
         "info": "Can be upgraded to summon drones from defeated enemies.",
@@ -15028,292 +15314,6 @@ const DEFAULT_PROJECT_CONFIG = {
                   "y": 48,
                   "z": -6,
                   "color": "#FFFFFF"
-                }
-              ],
-              "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              }
-            }
-          }
-        }
-      },
-      "drone": {
-        "title": "Drone",
-        "info": "Raise the dead.",
-        "drawOffsetY": -12,
-        "population": 1,
-        "range": 2,
-        "damage": 5,
-        "attackSpeed": 1,
-        "projectile": "neutronFragment",
-        "critMultiplier": 1,
-        "lifeSpan": 5,
-        "render": {
-          "animations": {
-            "idle": [
-              {
-                "shapes": {
-                  "shapes": [
-                    {
-                      "type": "torus",
-                      "size": 9,
-                      "tubeSize": 1.5,
-                      "x": 0,
-                      "y": 33.85714285714286,
-                      "z": 0,
-                      "rotationX": 90,
-                      "color": {
-                        "paletteColor": "blueDColor"
-                      },
-                      "id": 0
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "blueDColor"
-                      },
-                      "id": 1
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "blueLColor"
-                      },
-                      "id": 2
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "greyDColor"
-                      },
-                      "id": 3
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "greyDColor"
-                      },
-                      "id": 4
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "greyDColor"
-                      },
-                      "id": 5
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "greyDColor"
-                      },
-                      "id": 6
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "greyDColor"
-                      },
-                      "id": 7
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "greyDColor"
-                      },
-                      "id": 8
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "blueDColor"
-                      },
-                      "id": 9
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "blueDColor"
-                      },
-                      "id": 10
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "blueDColor"
-                      },
-                      "id": 11
-                    },
-                    {
-                      "color": {
-                        "paletteColor": "blueDColor"
-                      },
-                      "id": 12
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          "model": {
-            "shapes": {
-              "shapes": [
-                {
-                  "type": "torus",
-                  "size": 9,
-                  "tubeSize": 1.5,
-                  "x": 0,
-                  "y": 33.85714285714286,
-                  "z": 0,
-                  "rotationX": 90,
-                  "color": {
-                    "paletteColor": "blueDColor"
-                  }
-                },
-                {
-                  "type": "torus",
-                  "size": 9,
-                  "tubeSize": 1.5,
-                  "x": 0,
-                  "y": 33.85714285714286,
-                  "z": 0,
-                  "rotationY": 90,
-                  "color": {
-                    "paletteColor": "blueDColor"
-                  }
-                },
-                {
-                  "type": "sphere",
-                  "size": 2.25,
-                  "x": 0,
-                  "y": 39.85714285714286,
-                  "z": 0,
-                  "color": {
-                    "paletteColor": "blueLColor"
-                  }
-                },
-                {
-                  "type": "cylinder",
-                  "size": 10,
-                  "height": 0.75,
-                  "x": 0,
-                  "y": 34,
-                  "z": 0,
-                  "rotationX": 90,
-                  "rotationY": 0,
-                  "color": {
-                    "paletteColor": "greyDColor"
-                  }
-                },
-                {
-                  "type": "cylinder",
-                  "size": 11,
-                  "height": 0.75,
-                  "x": 0,
-                  "y": 34,
-                  "z": 0,
-                  "rotationX": 0,
-                  "rotationY": 90,
-                  "color": {
-                    "paletteColor": "greyDColor"
-                  },
-                  "rotationZ": 0,
-                  "scaleX": 1,
-                  "scaleY": 1,
-                  "scaleZ": 1
-                },
-                {
-                  "type": "cylinder",
-                  "size": 3,
-                  "height": 0.75,
-                  "x": 10.5,
-                  "y": 32.35714285714286,
-                  "z": 10.5,
-                  "color": {
-                    "paletteColor": "greyDColor"
-                  }
-                },
-                {
-                  "type": "cylinder",
-                  "size": 3,
-                  "height": 0.75,
-                  "x": -10.5,
-                  "y": 32.35714285714286,
-                  "z": 10.5,
-                  "color": {
-                    "paletteColor": "greyDColor"
-                  }
-                },
-                {
-                  "type": "cylinder",
-                  "size": 3,
-                  "height": 0.75,
-                  "x": 10.5,
-                  "y": 32.35714285714286,
-                  "z": -10.5,
-                  "color": {
-                    "paletteColor": "greyDColor"
-                  }
-                },
-                {
-                  "type": "cylinder",
-                  "size": 3,
-                  "height": 0.75,
-                  "x": -10.5,
-                  "y": 32.35714285714286,
-                  "z": -10.5,
-                  "color": {
-                    "paletteColor": "greyDColor"
-                  }
-                },
-                {
-                  "type": "torus",
-                  "size": 4.5,
-                  "tubeSize": 0.75,
-                  "x": 10.5,
-                  "y": 33.10714285714286,
-                  "z": 10.5,
-                  "rotationX": 90,
-                  "color": {
-                    "paletteColor": "blueDColor"
-                  }
-                },
-                {
-                  "type": "torus",
-                  "size": 4.5,
-                  "tubeSize": 0.75,
-                  "x": -10.5,
-                  "y": 33.10714285714286,
-                  "z": 10.5,
-                  "rotationX": 90,
-                  "color": {
-                    "paletteColor": "blueDColor"
-                  }
-                },
-                {
-                  "type": "torus",
-                  "size": 4.5,
-                  "tubeSize": 0.75,
-                  "x": 10.5,
-                  "y": 33.10714285714286,
-                  "z": -10.5,
-                  "rotationX": 90,
-                  "color": {
-                    "paletteColor": "blueDColor"
-                  }
-                },
-                {
-                  "type": "torus",
-                  "size": 4.5,
-                  "tubeSize": 0.75,
-                  "x": -10.5,
-                  "y": 33.10714285714286,
-                  "z": -10.5,
-                  "rotationX": 90,
-                  "color": {
-                    "paletteColor": "blueDColor"
-                  }
                 }
               ],
               "position": {
@@ -17188,13 +17188,13 @@ const DEFAULT_PROJECT_CONFIG = {
         "title": "End",
         "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAAAYCAYAAAAF6fiUAAAAlklEQVRoQ+3UIQ6AMBBEUeo5D56T4zlPPQTblNTt7zYfTTIwL7PlOvZnS/Scdy2JPnf4qSUbwPdHKyGkBFgJIS3AKgipAYYHdqIX/s6mAIFIPQQBAgF6Z1MAAYIbgOPaM+QCgkEECC68jRNAALgBON4FCAA3AMe7AAHgBuB4FyAA3AAc7wIEgBuA412AAHADcLwLmAzgBfVWYBnOEmyVAAAAAElFTkSuQmCC"
       },
-      "grass": {
-        "title": "Grass",
-        "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAAAYCAYAAAAF6fiUAAAAl0lEQVRoQ+3UsQ2AMBAEQVwhOYVQBIWQu0IQqWXk7NdvLTHSwY3uy3Htz5bouc9aEn3u8FNLNoDvj1ZCSAmwEkJagFUQUgMMD+xEL/ydTQECkXoIAgQC9M6mAAIENwDHtWfIBQSDCBBceBsngABwA3C8CxAAbgCOdwECwA3A8S5AALgBON4FCAA3AMe7AAHgBuB4FzAZwAsfF2AZYnfKcAAAAABJRU5ErkJggg=="
-      },
       "forest": {
         "title": "Forest",
         "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAAAYCAYAAAAF6fiUAAAAl0lEQVRoQ+3UsQ2AMBAEQVwOEX1QMH0QuRwQqWXk7NdvLTHSwY3uy3Huz5boua9aEn3u8FNLNoDvj1ZCSAmwEkJagFUQUgMMD+xEL/ydTQECkXoIAgQC9M6mAAIENwDHtWfIBQSDCBBceBsngABwA3C8CxAAbgCOdwECwA3A8S5AALgBON4FCAA3AMe7AAHgBuB4FzAZwAs/vWAZcNxDRQAAAABJRU5ErkJggg=="
+      },
+      "grass": {
+        "title": "Grass",
+        "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAAAYCAYAAAAF6fiUAAAAl0lEQVRoQ+3UsQ2AMBAEQVwhOYVQBIWQu0IQqWXk7NdvLTHSwY3uy3Htz5bouc9aEn3u8FNLNoDvj1ZCSAmwEkJagFUQUgMMD+xEL/ydTQECkXoIAgQC9M6mAAIENwDHtWfIBQSDCBBceBsngABwA3C8CxAAbgCOdwECwA3A8S5AALgBON4FCAA3AMe7AAHgBuB4FzAZwAsfF2AZYnfKcAAAAABJRU5ErkJggg=="
       },
       "lava": {
         "title": "Lava",
@@ -17226,26 +17226,30 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "Animator",
         "script": "class Animator extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n        \r\n    }\r\n    \r\n    \r\n    init({ objectType, spawnType}) {\r\n\r\n        this.animations = this.game.imageManager.getImages(objectType, spawnType); // { \"idle\": [...], \"walk\": [...] }\r\n        this.currentAnimation = \"idle\";\r\n        if(this.animations.walk) this.currentAnimation = \"walk\";\r\n        this.currentFrame = 0;\r\n        this.frameDuration = .166; // 10 frames per animation frame (~0.166s at 60 FPS)\r\n        this.frameTimer = 0;\r\n\r\n        this.baseSpeed = this.parent.getComponent(\"stats\")?.stats.speed || 1;\r\n    }\r\n\r\n    update() {\r\n        \r\n        this.frameTimer += this.game.deltaTime;\r\n        let currentSpeedPercent = this.parent.getComponent(\"stats\")?.stats.speed / this.baseSpeed || 1;\r\n\r\n        if (this.frameTimer >= this.frameDuration / currentSpeedPercent) {\r\n            this.frameTimer = 0;\r\n            const animFrames = this.animations[this.currentAnimation];\r\n            this.currentFrame = (this.currentFrame + 1) % animFrames.length;\r\n        }\r\n        // Sync direction with Renderer (if separate)\r\n        const renderer = this.parent.getComponent(\"Renderer\");\r\n        if (renderer) {\r\n            renderer.images = this.animations[this.currentAnimation][this.currentFrame];\r\n        }\r\n    }\r\n\r\n    setAnimation(animationType) {\r\n        if (this.animations[animationType] && this.currentAnimation !== animationType) {\r\n            this.currentAnimation = animationType;\r\n            this.currentFrame = 0;\r\n            this.frameTimer = 0;\r\n        }\r\n    }\r\n    \r\n}"
       },
-      "Attacker": {
-        "fileName": "Attacker",
-        "script": "class Attacker extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n init() {        \r\n        this.stats = this.getComponent('stats').stats;    \r\n        this.level = 1;\r\n        this.target = null;\r\n        this.projectiles = [];  \r\n        this.cooldown = 0;\r\n    }\r\n\r\n    update() {\r\n        if (this.cooldown > 0) this.cooldown -= this.game.deltaTime;\r\n\r\n        // Validate current target\r\n        if (this.target) {\r\n            const distance = Math.hypot(\r\n                this.target.position.x - this.parent.position.x,\r\n                this.target.position.y - this.parent.position.y\r\n            );\r\n            if (distance > this.stats.range || this.target.getComponent('health').hp <= 0) {\r\n                this.target = null;\r\n            }\r\n        }\r\n\r\n        // Find target if none\r\n        if (!this.target) {\r\n            this.findTarget();\r\n        }\r\n\r\n        // Attack if ready and has target\r\n        if (this.cooldown <= 0 && this.target) {\r\n            this.attack();\r\n        }\r\n\r\n        if (this.cooldown <= 0 && this.stats.mineAmt > 0) {\r\n            this.gather();\r\n        }\r\n        return true;\r\n    }\r\n    \r\n    findTarget() {\r\n        this.target = null;\r\n        let furthestEnemy = null;\r\n        let furthestDistance = -1;\r\n        const nearbyEntities = this.game.spatialGrid.getNearbyEntities(\r\n            this.parent.gridPosition.x, \r\n            this.parent.gridPosition.y, \r\n            this.stats.range,\r\n            \"enemy\"\r\n        );\r\n        for (let enemy of nearbyEntities) {\r\n            let enemyHP = enemy.getComponent(\"health\").hp;\r\n            let followPath = enemy.getComponent('followPath');\r\n            if (enemyHP <= 0) continue;          \r\n\r\n            let distanceToEnd = this.game.state.paths[followPath.pathIndex].length - followPath.indexInPath;\r\n            if (distanceToEnd > furthestDistance) {\r\n                furthestDistance = followPath.indexInPath;\r\n                furthestEnemy = enemy;\r\n            }  \r\n        }\r\n        \r\n        this.target = furthestEnemy;\r\n    }\r\n\r\n    gather() {\r\n        this.game.state.bloodShards += this.stats.mineAmt;\r\n        this.cooldown = this.stats.attackSpeed;\r\n    }\r\n\r\n    attack() {\r\n        if (!this.target) return; \r\n        this.launchProjectile();\r\n        this.cooldown = this.stats.attackSpeed;\r\n    }\r\n    \r\n    launchProjectile() {\r\n        this.stats = this.getComponent('stats').stats;    \r\n        let projectileType = this.stats.projectile;\r\n        let projectileDef = this.game.config.projectiles[projectileType];\r\n        \r\n\r\n        let projStats = { ...projectileDef };\r\n        delete projStats.render;\r\n        projStats.baseDamage = this.stats.damage || 1; \r\n        projStats.speed = this.stats.speed || 5;     \r\n        projStats.piercing = this.stats.piercing || 0;\r\n        projStats.splashRadius = this.stats.splashRadius || 0;\r\n        projStats.critChance = this.stats.critChance || 0.05;\r\n        projStats.critMultiplier = this.stats.critMultiplier || 2;\r\n    \r\n       \tif(projectileDef.customRenderer == \"lightning\") {\r\n         \tthis.game.spawn(this.parent.position.x, this.parent.position.y, 'lightningProjectile', { objectType: \"projectiles\", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });\r\n        } else if(projectileDef.isBallistic) {\r\n         \tthis.game.spawn(this.parent.position.x, this.parent.position.y, 'ballisticProjectile', { objectType: \"projectiles\", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });\r\n        } else if( this.stats.projectileCount > 0 ) {\r\n          this.game.spawn(this.parent.position.x, this.parent.position.y, 'multiShotProjectile', { objectType: \"projectiles\", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });\r\n        } else {\r\n          let projectile = this.game.spawn(this.parent.position.x, this.parent.position.y, 'projectile', { objectType: \"projectiles\", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });\r\n        }\r\n    }\r\n}"
-      },
       "ArrayTracker": {
         "fileName": "ArrayTracker",
         "script": "class ArrayTracker extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init( {objectType}) {\r\n        this.arr = objectType;\r\n        if(!this.game.state[this.arr]){\r\n            this.game.state[this.arr] = [];\r\n        }\r\n        this.game.state[this.arr].push(this.parent);\r\n    }\r\n\r\n    destroy(){\r\n        let index = this.game.state[this.arr].indexOf(this.parent);\r\n        this.game.state[this.arr].splice(index, 1);        \r\n    }\r\n}"
+      },
+      "Attacker": {
+        "fileName": "Attacker",
+        "script": "class Attacker extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n init() {        \r\n        this.stats = this.getComponent('stats').stats;    \r\n        this.level = 1;\r\n        this.target = null;\r\n        this.projectiles = [];  \r\n        this.cooldown = 0;\r\n    }\r\n\r\n    update() {\r\n        if (this.cooldown > 0) this.cooldown -= this.game.deltaTime;\r\n\r\n        // Validate current target\r\n        if (this.target) {\r\n            const distance = Math.hypot(\r\n                this.target.position.x - this.parent.position.x,\r\n                this.target.position.y - this.parent.position.y\r\n            );\r\n            if (distance > this.stats.range || this.target.getComponent('health').hp <= 0) {\r\n                this.target = null;\r\n            }\r\n        }\r\n\r\n        // Find target if none\r\n        if (!this.target) {\r\n            this.findTarget();\r\n        }\r\n\r\n        // Attack if ready and has target\r\n        if (this.cooldown <= 0 && this.target) {\r\n            this.attack();\r\n        }\r\n\r\n        if (this.cooldown <= 0 && this.stats.mineAmt > 0) {\r\n            this.gather();\r\n        }\r\n        return true;\r\n    }\r\n    \r\n    findTarget() {\r\n        this.target = null;\r\n        let furthestEnemy = null;\r\n        let furthestDistance = -1;\r\n        const nearbyEntities = this.game.spatialGrid.getNearbyEntities(\r\n            this.parent.gridPosition.x, \r\n            this.parent.gridPosition.y, \r\n            this.stats.range,\r\n            \"enemy\"\r\n        );\r\n        for (let enemy of nearbyEntities) {\r\n            let enemyHP = enemy.getComponent(\"health\").hp;\r\n            let followPath = enemy.getComponent('followPath');\r\n            if (enemyHP <= 0) continue;          \r\n\r\n            let distanceToEnd = this.game.state.paths[followPath.pathIndex].length - followPath.indexInPath;\r\n            if (distanceToEnd > furthestDistance) {\r\n                furthestDistance = followPath.indexInPath;\r\n                furthestEnemy = enemy;\r\n            }  \r\n        }\r\n        \r\n        this.target = furthestEnemy;\r\n    }\r\n\r\n    gather() {\r\n        this.game.state.bloodShards += this.stats.mineAmt;\r\n        this.cooldown = this.stats.attackSpeed;\r\n    }\r\n\r\n    attack() {\r\n        if (!this.target) return; \r\n        this.launchProjectile();\r\n        this.cooldown = this.stats.attackSpeed;\r\n    }\r\n    \r\n    launchProjectile() {\r\n        this.stats = this.getComponent('stats').stats;    \r\n        let projectileType = this.stats.projectile;\r\n        let projectileDef = this.game.config.projectiles[projectileType];\r\n        \r\n\r\n        let projStats = { ...projectileDef };\r\n        delete projStats.render;\r\n        projStats.baseDamage = this.stats.damage || 1; \r\n        projStats.speed = this.stats.speed || 5;     \r\n        projStats.piercing = this.stats.piercing || 0;\r\n        projStats.splashRadius = this.stats.splashRadius || 0;\r\n        projStats.critChance = this.stats.critChance || 0.05;\r\n        projStats.critMultiplier = this.stats.critMultiplier || 2;\r\n    \r\n       \tif(projectileDef.customRenderer == \"lightning\") {\r\n         \tthis.game.spawn(this.parent.position.x, this.parent.position.y, 'lightningProjectile', { objectType: \"projectiles\", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });\r\n        } else if(projectileDef.isBallistic) {\r\n         \tthis.game.spawn(this.parent.position.x, this.parent.position.y, 'ballisticProjectile', { objectType: \"projectiles\", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });\r\n        } else if( this.stats.projectileCount > 0 ) {\r\n          this.game.spawn(this.parent.position.x, this.parent.position.y, 'multiShotProjectile', { objectType: \"projectiles\", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });\r\n        } else {\r\n          let projectile = this.game.spawn(this.parent.position.x, this.parent.position.y, 'projectile', { objectType: \"projectiles\", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });\r\n        }\r\n    }\r\n}"
       },
       "AudioManager": {
         "title": "AudioManager",
         "fileName": "AudioManager",
         "script": "class AudioManager extends engine.Component {\n    constructor(game, parent, params) {\n        super(game, parent, params);\n    }\n\n    init() {\n        this.isInitialized = false;\n        this.bindInitialization();\n    }\n\n    bindInitialization() {\n        const initHandler = () => {\n            if (!this.isInitialized) {\n                this.initialize();\n            }\n        };\n        \n        document.addEventListener('click', initHandler, { once: true });\n        document.addEventListener('keydown', initHandler, { once: true });\n    }\n\n    async initialize() {\n        class SoundPool {\n            constructor(audioContext, destination, poolSize = 8) {\n                this.audioContext = audioContext;\n                this.destination = destination;\n                this.poolSize = poolSize;\n                this.sources = [];\n                this.initializePool();\n            }\n\n            initializePool() {\n                for (let i = 0; i < this.poolSize; i++) {\n                    this.sources.push(this.createSource());\n                }\n            }\n\n            createSource() {\n                const source = {\n                    active: false,\n                    id: null,\n                    envelopeGain: this.audioContext.createGain(),\n                    gainNode: this.audioContext.createGain(),\n                    filter: this.audioContext.createBiquadFilter(),\n                    distortion: this.audioContext.createWaveShaper(),\n                    compressor: this.audioContext.createDynamicsCompressor(),\n                    pannerNode: this.audioContext.createStereoPanner(),\n                    delay: this.audioContext.createDelay(5.0),\n                    delayGain: this.audioContext.createGain(),\n                    convolver: this.audioContext.createConvolver(),\n                    reverbGain: this.audioContext.createGain(),\n                    noiseFilter: this.audioContext.createBiquadFilter(),\n                    noiseGain: this.audioContext.createGain(),\n                    destination: this.destination\n                };\n\n                source.filter.type = 'lowpass';\n                source.filter.frequency.setValueAtTime(20000, this.audioContext.currentTime);\n                source.filter.Q.setValueAtTime(0.5, this.audioContext.currentTime);\n\n                source.noiseFilter.type = 'lowpass';\n                source.noiseFilter.frequency.setValueAtTime(2000, this.audioContext.currentTime);\n                source.noiseFilter.Q.setValueAtTime(1, this.audioContext.currentTime);\n                \n                source.noiseGain.gain.setValueAtTime(0, this.audioContext.currentTime);\n\n                source.distortion.curve = null;\n                source.distortion.oversample = '4x';\n\n                source.compressor.threshold.setValueAtTime(-24, this.audioContext.currentTime);\n                source.compressor.knee.setValueAtTime(30, this.audioContext.currentTime);\n                source.compressor.ratio.setValueAtTime(12, this.audioContext.currentTime);\n                source.compressor.attack.setValueAtTime(0.003, this.audioContext.currentTime);\n                source.compressor.release.setValueAtTime(0.25, this.audioContext.currentTime);\n\n                source.pannerNode.pan.setValueAtTime(0, this.audioContext.currentTime);\n\n                source.delay.delayTime.setValueAtTime(0.3, this.audioContext.currentTime);\n                source.delayGain.gain.setValueAtTime(0, this.audioContext.currentTime);\n\n                source.reverbGain.gain.setValueAtTime(0, this.audioContext.currentTime);\n\n                const chain = [\n                    source.envelopeGain,\n                    source.gainNode,\n                    source.filter,\n                    source.distortion,\n                    source.compressor,\n                    source.pannerNode\n                ];\n\n                for (let i = 0; i < chain.length - 1; i++) {\n                    chain[i].connect(chain[i + 1]);\n                }\n\n                // Route delay and reverb after filter\n                source.filter.connect(source.delay);\n                source.delay.connect(source.delayGain);\n                source.delayGain.connect(source.delay);\n                source.delayGain.connect(source.pannerNode);\n\n                source.filter.connect(source.convolver);\n                source.convolver.connect(source.reverbGain);\n                source.reverbGain.connect(source.pannerNode);\n\n                source.pannerNode.connect(source.destination);\n\n                return source;\n            }\n\n            getSource() {\n                let source = this.sources.find(src => !src.active && (!src.lastUsed || this.audioContext.currentTime - src.lastUsed > 1));\n                if (!source && this.sources.length < this.poolSize * 2) {\n                    source = this.createSource();\n                    this.sources.push(source);\n                }\n                if (source) {\n                    source.active = true;\n                    source.gainNode.gain.setValueAtTime(1, this.audioContext.currentTime);\n                    source.envelopeGain.gain.setValueAtTime(0, this.audioContext.currentTime);\n                    source.delayGain.gain.setValueAtTime(0, this.audioContext.currentTime);\n                    source.reverbGain.gain.setValueAtTime(0, this.audioContext.currentTime);\n                    source.noiseGain.gain.setValueAtTime(0, this.audioContext.currentTime);\n                }\n                return source;\n            }\n\n            releaseSource(source) {\n                if (source) {\n                    source.active = false;\n                    source.id = null;\n                    const now = this.audioContext.currentTime;\n            \n                    // Reset all nodes\n                    source.filter.frequency.cancelScheduledValues(now);\n                    source.filter.frequency.setValueAtTime(20000, now);\n                    source.distortion.curve = null;\n                    source.pannerNode.pan.setValueAtTime(0, now);\n                    source.envelopeGain.gain.setValueAtTime(0, now);\n                    source.gainNode.gain.setValueAtTime(1, now);\n                    source.delayGain.gain.setValueAtTime(0, now);\n                    source.reverbGain.gain.setValueAtTime(0, now);\n                    source.noiseGain.gain.setValueAtTime(0, now);\n            \n                    // Disconnect and clear sources if they exist\n                    if (source.source) {\n                        try {\n                            source.source.stop(now);\n                            source.source.disconnect();\n                        } catch (e) {\n                            console.warn('Error stopping source:', e);\n                        }\n                        source.source = null;\n                    }\n                    \n                    if (source.noiseSource) {\n                        try {\n                            source.noiseSource.stop(now);\n                            source.noiseSource.disconnect();\n                        } catch (e) {\n                            console.warn('Error stopping noise source:', e);\n                        }\n                        source.noiseSource = null;\n                    }\n            \n                    source.lastUsed = now;\n                }\n            }\n\n            destroy() {\n                this.sources.forEach(source => {\n                    source.envelopeGain.disconnect();\n                    source.gainNode.disconnect();\n                    source.filter.disconnect();\n                    source.distortion.disconnect();\n                    source.compressor.disconnect();\n                    source.pannerNode.disconnect();\n                    source.delay.disconnect();\n                    source.delayGain.disconnect();\n                    source.convolver.disconnect();\n                    source.reverbGain.disconnect();\n                    source.noiseFilter.disconnect();\n                    source.noiseGain.disconnect();\n                });\n                this.sources = [];\n            }\n        }\n        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();\n        this.masterBus = this.createAudioBus('master');\n        this.musicBus = this.createAudioBus('music');\n        this.sfxBus = this.createAudioBus('sfx');\n        this.uiBus = this.createAudioBus('ui');\n        this.musicBus.connect(this.masterBus);\n        this.sfxBus.connect(this.masterBus);\n        this.uiBus.connect(this.masterBus);\n        this.masterBus.connect(this.audioContext.destination);\n        this.soundPools = {\n            sfx: new SoundPool(this.audioContext, this.sfxBus.input, 6),\n            music: new SoundPool(this.audioContext, this.musicBus.input, 2),\n            ui: new SoundPool(this.audioContext, this.uiBus.input, 3)\n        };\n        this.buffers = {};\n        this.activeSounds = new Set();\n        if (this.audioContext.state === 'suspended') {\n            await this.audioContext.resume();\n        }\n        this.isInitialized = true;\n    }\n\n    createAudioBus(name) {\n        const bus = {\n            name,\n            input: this.audioContext.createGain(),\n            compressor: this.audioContext.createDynamicsCompressor(),\n            output: this.audioContext.createGain()\n        };\n        \n        bus.input.connect(bus.compressor);\n        bus.compressor.connect(bus.output);\n        \n        bus.connect = (destination) => {\n            bus.output.connect(destination.input || destination);\n        };\n        \n        bus.setVolume = (value) => {\n            const now = this.audioContext.currentTime;\n            bus.output.gain.cancelScheduledValues(now);\n            bus.output.gain.setTargetAtTime(\n                value <= 0 ? 0.000001 : value,\n                now,\n                0.02\n            );\n        };\n        \n        return bus;\n    }\n\n    getSynthSound(soundCollectionName, soundName) {\n        if (this.game.config[soundCollectionName]?.[soundName]) {\n            return this.game.config[soundCollectionName][soundName].audio;\n        }\n        console.warn('sound not found', soundCollectionName, soundName);\n        return null;\n    }\n\n    playSound(soundCollectionName, soundName) {\n        let data = this.getSynthSound(soundCollectionName, soundName);\n        if (data) {\n            this.playSynthSound(`${soundCollectionName}_${soundName}`, data);\n        }\n    }\n\n    playSynthSound(soundId, soundConfig, options = {}) {\n        if (!this.isInitialized) {\n            this.initialize();\n            return this.playSynthSound(soundId, soundConfig, options);\n        }\n        \n        const category = options.category || 'sfx';\n        const pool = this.soundPools[category];\n        \n        if (!pool) {\n            console.warn(`No sound pool for category ${category}`);\n            return null;\n        }\n        \n        let instanceCount = 0;\n        this.activeSounds.forEach(sound => {\n            if (sound.id === soundId) instanceCount++;\n        });\n        \n        if (instanceCount >= (options.maxInstances || 3)) {\n            console.warn(`Max instances reached for sound ${soundId}`);\n            return null;\n        }\n        \n        const sound = pool.getSource();\n        if (!sound) {\n            console.warn(`No available source for sound ${soundId}`);\n            return null;\n        }\n        \n        sound.id = soundId;\n        sound.category = category;\n        \n        // Create main oscillator\n        const oscillator = this.createSynthSource(soundConfig);\n        sound.source = oscillator;\n        oscillator.connect(sound.envelopeGain);\n        \n        // Add noise generator if configured\n        if (soundConfig.noise && soundConfig.noise.amount > 0) {\n            this.applyNoiseToSound(sound, soundConfig.noise);\n        }\n        \n        this.createEnvelopeFromConfig(soundConfig.envelope, sound.envelopeGain, soundConfig.duration);\n        \n        if (soundConfig.effects) {\n            this.applySynthEffects(sound, soundConfig.effects, soundConfig);\n        } \n        \n        this.configureSoundInstance(sound, options);\n        \n        const now = this.audioContext.currentTime;\n        oscillator.start(now);\n        \n        // Start noise generator if it exists\n        if (sound.noiseSource) {\n            sound.noiseSource.start(now);\n        }\n        \n        const duration = soundConfig.duration || 1;\n        const release = (soundConfig.envelope?.release) || 0.3;\n        let totalDuration = duration + release;\n        \n        if (soundConfig.effects?.delay?.time) {\n            const delayTail = soundConfig.effects.delay.time * 3;\n            if (totalDuration < delayTail) {\n                totalDuration = delayTail;\n            }\n        }\n        \n        oscillator.stop(now + totalDuration + 0.02);\n        if (sound.noiseSource) {\n            sound.noiseSource.stop(now + totalDuration + 0.02);\n        }\n        \n        this.activeSounds.add(sound);\n        \n        oscillator.onended = () => {\n            setTimeout(() => {\n                sound.active = false;\n                this.activeSounds.delete(sound);\n                pool.releaseSource(sound);\n            }, (soundConfig.effects?.delay?.time || 0) * 1000 * 3);\n        };\n        \n        return sound;\n    }\n\n    createSynthSource(config) {\n        // Default to oscillator unless waveform is 'noise'\n        const oscillator = config.waveform === 'noise'\n            ? this.createNoiseSource('white') \n            : this.audioContext.createOscillator();\n    \n        if (config.waveform !== 'noise') {\n            oscillator.type = config.waveform || 'sine';\n            const baseFreq = config.frequency || 440;\n            const now = this.audioContext.currentTime;\n    \n            // Initialize frequency\n            oscillator.frequency.cancelScheduledValues(now);\n            oscillator.frequency.setValueAtTime(baseFreq, now);\n    \n            // Apply pitch envelope if defined\n            if (config.pitchEnvelope) {\n                const startMultiplier = config.pitchEnvelope.start ?? 1;\n                const endMultiplier = config.pitchEnvelope.end ?? 1;\n                const envelopeTime = config.pitchEnvelope.time ?? config.duration ?? 1;\n    \n                if (startMultiplier !== 1 || endMultiplier !== 1) {\n                    const startFreq = baseFreq * startMultiplier;\n                    const endFreq = baseFreq * endMultiplier;\n    \n                    oscillator.frequency.setValueAtTime(startFreq, now);\n                    oscillator.frequency.exponentialRampToValueAtTime(\n                        Math.max(endFreq, 0.01),\n                        now + envelopeTime\n                    );\n                }\n            }\n        }\n    \n        return oscillator;\n    }\n\n    applyNoiseToSound(sound, noiseConfig) {\n        if (!noiseConfig || noiseConfig.amount <= 0) return;\n\n        const noiseType = noiseConfig.type || 'white';\n        const noiseAmount = Math.min(1, Math.max(0, noiseConfig.amount));\n        \n        // Create the noise source\n        sound.noiseSource = this.createNoiseSource(noiseType);\n        \n        // Configure noise filter if specified\n        if (noiseConfig.filter && noiseConfig.filter.type !== 'none') {\n            sound.noiseFilter.type = noiseConfig.filter.type || 'lowpass';\n            sound.noiseFilter.frequency.setValueAtTime(\n                noiseConfig.filter.frequency || 2000, \n                this.audioContext.currentTime\n            );\n        }\n        \n        // Set noise gain based on the amount\n        sound.noiseGain.gain.setValueAtTime(noiseAmount, this.audioContext.currentTime);\n        \n        // Connect noise through the filter and envelope\n        sound.noiseSource.connect(sound.noiseFilter);\n        sound.noiseFilter.connect(sound.noiseGain);\n        sound.noiseGain.connect(sound.envelopeGain);\n    }\n\n    createNoiseSource(noiseType = 'white') {\n        const bufferSize = this.audioContext.sampleRate * 2;\n        const noiseBuffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);\n        const output = noiseBuffer.getChannelData(0);\n        \n        // Generate different types of noise\n        switch (noiseType) {\n            case 'pink':\n                this.generatePinkNoise(output);\n                break;\n            case 'brown':\n                this.generateBrownNoise(output);\n                break;\n            case 'white':\n            default:\n                this.generateWhiteNoise(output);\n                break;\n        }\n        \n        const source = this.audioContext.createBufferSource();\n        source.buffer = noiseBuffer;\n        source.loop = true;\n        \n        return source;\n    }\n\n    generateWhiteNoise(output) {\n        for (let i = 0; i < output.length; i++) {\n            output[i] = Math.random() * 2 - 1;\n        }\n    }\n\n    generatePinkNoise(output) {\n        // Pink noise algorithm (approximation using Paul Kellet's method)\n        let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;\n        \n        for (let i = 0; i < output.length; i++) {\n            const white = Math.random() * 2 - 1;\n            \n            // Filter white noise to create pink noise\n            b0 = 0.99886 * b0 + white * 0.0555179;\n            b1 = 0.99332 * b1 + white * 0.0750759;\n            b2 = 0.96900 * b2 + white * 0.1538520;\n            b3 = 0.86650 * b3 + white * 0.3104856;\n            b4 = 0.55000 * b4 + white * 0.5329522;\n            b5 = -0.7616 * b5 - white * 0.0168980;\n            \n            output[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.11;\n            b6 = white * 0.115926;\n        }\n    }\n\n    generateBrownNoise(output) {\n        // Brown noise algorithm (random walk)\n        let lastValue = 0;\n        \n        for (let i = 0; i < output.length; i++) {\n            // Small random change from previous value\n            const white = Math.random() * 2 - 1;\n            lastValue = (lastValue + (0.02 * white)) / 1.02;\n            \n            // Keep within range\n            output[i] = lastValue * 3.5; // Amplify to make it audible\n        }\n        \n        // Normalize to prevent clipping\n        const max = Math.max(...Array.from(output).map(Math.abs));\n        if (max > 0) {\n            for (let i = 0; i < output.length; i++) {\n                output[i] /= max;\n            }\n        }\n    }\n\n    createEnvelopeFromConfig(envelope, gainNode, duration = 1) {\n        if (!envelope) {\n            console.warn('No envelope provided, using default');\n            envelope = { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.3 };\n        }\n        \n        const now = this.audioContext.currentTime;\n        \n        const attack = Math.max(0.01, envelope.attack || 0.01);\n        const decay = Math.max(0, envelope.decay || 0.1);\n        const sustain = Math.max(0, Math.min(1, envelope.sustain || 0.7));\n        const release = Math.max(0.02, envelope.release || 0.3);\n        \n        gainNode.gain.cancelScheduledValues(now);\n        gainNode.gain.setValueAtTime(0, now);\n        gainNode.gain.linearRampToValueAtTime(1, now + attack);\n        gainNode.gain.linearRampToValueAtTime(sustain, now + attack + decay);\n        gainNode.gain.setValueAtTime(sustain, now + duration);\n        gainNode.gain.setTargetAtTime(0.0001, now + duration, release / 3);\n        gainNode.gain.setValueAtTime(0, now + duration + release); // Absolute zero\n    }\n\n    applySynthEffects(sound, effectsConfig, soundConfig) {\n        const now = this.audioContext.currentTime;\n        \n        // Filter\n        if (effectsConfig.filter) {\n            sound.filter.type = effectsConfig.filter.type || 'lowpass';\n            sound.filter.frequency.setValueAtTime(effectsConfig.filter.frequency || 20000, now);\n            sound.filter.Q.setValueAtTime(effectsConfig.filter.Q || 0.5, now);\n            \n            // Apply pitch envelope to filter for noise waveforms\n            if (sound.source.buffer && soundConfig.pitchEnvelope && (soundConfig.pitchEnvelope.start !== 1 || soundConfig.pitchEnvelope.end !== 1)) {\n                const baseFreq = soundConfig.frequency || 100;\n                const startFreq = baseFreq * (soundConfig.pitchEnvelope.start + 1);\n                const endFreq = baseFreq * soundConfig.pitchEnvelope.end;\n                const duration = soundConfig.pitchEnvelope.time || soundConfig.duration || 1;\n                \n                sound.filter.frequency.cancelScheduledValues(now);\n                sound.filter.frequency.setValueAtTime(startFreq, now);\n                sound.filter.frequency.exponentialRampToValueAtTime(\n                    Math.max(endFreq, 0.01),\n                    now + duration\n                );\n                sound.filter.frequency.exponentialRampToValueAtTime(\n                    Math.max(endFreq * 0.5, 0.01),\n                    now + soundConfig.duration + (soundConfig.envelope?.release || 0.3)\n                );\n            }\n        }\n        \n        // Distortion\n        if (effectsConfig.distortion && effectsConfig.distortion > 0) {\n            sound.distortion.curve = this.makeDistortionCurve(effectsConfig.distortion);\n        } else {\n            sound.distortion.curve = null;\n        }\n        \n        // Delay\n        if (effectsConfig.delay && effectsConfig.delay.feedback > 0) {\n            sound.delay.delayTime.setValueAtTime(effectsConfig.delay.time || 0.3, now);\n            sound.delayGain.gain.setValueAtTime(Math.min(effectsConfig.delay.feedback || 0, 0.8), now);\n            sound.delayGain.gain.setTargetAtTime(0, now + soundConfig.duration + (soundConfig.envelope?.release || 0.3), 0.1);\n        } else {\n            sound.delayGain.gain.setValueAtTime(0, now);\n        }\n        \n        // Reverb\n        if (effectsConfig.reverb && effectsConfig.reverb > 0) {\n            this.generateImpulseResponse(sound.convolver);\n            sound.reverbGain.gain.setValueAtTime(Math.min(effectsConfig.reverb, 1), now);\n            sound.reverbGain.gain.setTargetAtTime(0, now + soundConfig.duration + (soundConfig.envelope?.release || 0.3), 0.2);\n        } else {\n            sound.reverbGain.gain.setValueAtTime(0, now);\n        }\n        \n        // Panning\n        if (effectsConfig.pan !== undefined) {\n            sound.pannerNode.pan.setValueAtTime(Math.max(-1, Math.min(1, effectsConfig.pan)), now);\n        }\n    }\n\n    configureSoundInstance(sound, options) {\n        const now = this.audioContext.currentTime;\n        \n        if (options.volume !== undefined) {\n            sound.gainNode.gain.cancelScheduledValues(now);\n            sound.gainNode.gain.setTargetAtTime(\n                options.volume <= 0 ? 0.000001 : Math.max(0, Math.min(options.volume, 1)),\n                now,\n                0.02\n            );\n        }\n        \n        if (options.position && sound.pannerNode.positionX) {\n            const pos = options.position;\n            sound.pannerNode.positionX.setValueAtTime(pos.x || 0, now);\n            sound.pannerNode.positionY.setValueAtTime(pos.y || 0, now);\n            sound.pannerNode.positionZ.setValueAtTime(pos.z || 0, now);\n        }\n        \n        if (options.pitch && sound.source && sound.source.playbackRate) {\n            sound.source.playbackRate.setValueAtTime(options.pitch, now);\n        }\n    }\n\n    generateImpulseResponse(convolver) {\n        const length = this.audioContext.sampleRate * 1.5; // Shorter impulse\n        const impulse = this.audioContext.createBuffer(2, length, this.audioContext.sampleRate);\n        \n        for (let channel = 0; channel < 2; channel++) {\n            const impulseData = impulse.getChannelData(channel);\n            for (let i = 0; i < length; i++) {\n                const decay = Math.pow(1 - i / length, 2);\n                impulseData[i] = (Math.random() * 2 - 1) * decay;\n            }\n        }\n        \n        convolver.buffer = impulse;\n    }\n\n    makeDistortionCurve(amount) {\n        const k = Math.max(amount, 0) * 10;\n        const n_samples = 44100;\n        const curve = new Float32Array(n_samples);\n        const deg = Math.PI / 180;\n        for (let i = 0; i < n_samples; i++) {\n            const x = (i * 2) / n_samples - 1;\n            curve[i] = (3 + k) * x * 20 * deg / (Math.PI + k * Math.abs(x));\n        }\n        return curve;\n    }\n\n    stopSound(sound) {\n        if (!sound) return;\n        \n        const now = this.audioContext.currentTime;\n        \n        if (sound.gainNode) {\n            sound.gainNode.gain.cancelScheduledValues(now);\n            sound.gainNode.gain.setValueAtTime(sound.gainNode.gain.value || 0, now);\n            sound.gainNode.gain.linearRampToValueAtTime(0, now + 0.05);\n        }\n        \n        if (sound.source) {\n            try {\n                sound.source.stop(now + 0.06);\n            } catch (e) {\n                console.warn('Error stopping source:', e);\n            }\n        }\n        \n        if (sound.noiseSource) {\n            try {\n                sound.noiseSource.stop(now + 0.06);\n            } catch (e) {\n                console.warn('Error stopping noise source:', e);\n            }\n        }\n        \n        sound.active = false;\n        this.activeSounds.delete(sound);\n    }\n\n    stopAllSounds() {\n        this.activeSounds.forEach(sound => {\n            this.stopSound(sound);\n        });\n        this.activeSounds.clear();\n    }\n}"
       },
-      "Effect": {
-        "fileName": "Effect",
-        "script": "class Effect extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init( {config, applyFn, amount }) {\r\n        this.id = config.id;\r\n        this.title = config.title;\r\n        this.desc = config.desc;\r\n        this.lifeTime = config.lifeTime;\r\n        this.applyFn = applyFn;\r\n        this.amount = amount;    \r\n    }\r\n\r\n    update() {\r\n        this.lifeTime--;\r\n        if( this.lifeTime <= 0) this.parent.removeComponent(this);\r\n        return true;        \r\n    }\r\n\r\n    apply(s, add, mul) {\r\n        this.applyFn(s, add, mul, this.amount);\r\n    }\r\n}"
+      "BallisticProjectile": {
+        "fileName": "BallisticProjectile",
+        "script": "class BallisticProjectile extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\ninit({ spawnType, owner, target, stats }) {\r\n    this.type = spawnType;\r\n    this.def = this.game.config.projectiles[this.type];\r\n    this.owner = owner;\r\n    this.target = target;\r\n    this.stats = stats;\r\n    this.piercedEnemies = [];\r\n    this.ownerStats = this.owner.getComponent(\"stats\").stats;\r\n    this.distanceTraveled = 0;\r\n    this.distanceToSpawnParticle = 1;\r\n    \r\n    // Ballistic trajectory variables\r\n    this.startPosition = { ...this.parent.position, z: 10 }; // Start 10 units above ground\r\n    this.targetPosition = { ...this.target.position, z: 0 };\r\n    this.time = 0;\r\n    \r\n    this.totalDist = Math.sqrt(\r\n        (this.targetPosition.x - this.startPosition.x) ** 2 + \r\n        (this.targetPosition.y - this.startPosition.y) ** 2\r\n    );\r\n    this.maxHeight = this.totalDist / Math.PI;\r\n    \r\n    // Initialize position with Z component\r\n    this.parent.position.z = this.startPosition.z;\r\n    this.positionZ = this.startPosition.z;\r\n    \r\n    // Animation state variables\r\n    this.lastZPosition = this.positionZ;\r\n\r\n    \r\n    this.peakThreshold = this.maxHeight * 0.1; // 10% threshold for idle at peak\r\n    this.currentAnimState = 'ascend';\r\n    if(this.stats.attackSound){\r\n        this.game.audioManager.playSound('attackSounds', this.stats.attackSound);\r\n    }\r\n}\r\n\r\nsetAnimation(anim) {\r\n\r\n    if(this.game.config.configs.game.is3D) {\r\n        this.modelRenderer = this.parent.getComponent('modelRenderer');\r\n        this.modelRenderer?.setAnimation(anim);\r\n    } else {\r\n        this.animator = this.parent.getComponent('animator');\r\n        this.animator?.setAnimation(anim);\r\n    }\r\n}\r\n\r\nupdate() {\r\n    this.parent.position.z = this.positionZ;\r\n    \r\n    // Save previous z position to detect direction change\r\n    this.lastZPosition = this.positionZ;\r\n\r\n    // Calculate progress (0 to 1)\r\n    this.time += this.game.deltaTime;\r\n    const dx = this.targetPosition.x - this.parent.position.x;\r\n    const dy = this.targetPosition.y - this.parent.position.y;\r\n    const distSq = dx * dx + dy * dy;\r\n    let dist = Math.sqrt(distSq);\r\n    const speed = this.stats.speed;\r\n    this.parent.position.x += (dx / dist) * speed / (Math.PI);\r\n    this.parent.position.y += (dy / dist) * speed / (Math.PI);\r\n\r\n\r\n    const currentDist = Math.sqrt(\r\n        (this.parent.position.x - this.startPosition.x) ** 2 + \r\n        (this.parent.position.y - this.startPosition.y) ** 2\r\n    );\r\n    const xyprogressToTarget = Math.min(1, currentDist / this.totalDist);\r\n\r\n    // Parabolic trajectory calculation (2:1 isometric adjusted)\r\n    this.parent.position.z = this.maxHeight * (1 - Math.pow(2 * xyprogressToTarget - 1, 2));\r\n\r\n    this.positionZ = this.parent.position.z;\r\n    \r\n    // Calculate distance from peak height to determine if we're near the top\r\n    const distanceFromPeak = Math.abs(this.positionZ - this.maxHeight);\r\n    \r\n    // Check if animation state needs to change based on z movement and proximity to peak\r\n    if( xyprogressToTarget < .075 ) {\r\n        if (this.currentAnimState !== 'launch') {\r\n            this.setAnimation('launch');\r\n            this.currentAnimState = 'launch';\r\n        }\r\n    // } else if( xyprogressToTarget > .95 ) {\r\n    //     if (this.currentAnimState !== 'land') {\r\n    //         this.animator.setAnimation('land');\r\n    //         this.currentAnimState = 'land';\r\n    //     }\r\n    } else if (distanceFromPeak <= this.peakThreshold) {\r\n        // We're near the peak of the trajectory\r\n        if (this.currentAnimState !== 'idle') {\r\n            this.setAnimation('idle');\r\n            this.currentAnimState = 'idle';\r\n        }\r\n    } else if (this.positionZ < this.lastZPosition) {\r\n        // We're descending and not near the peak\r\n        if (this.currentAnimState !== 'descend') {\r\n            this.setAnimation('descend');\r\n            this.currentAnimState = 'descend';\r\n        }\r\n    } else if (this.positionZ > this.lastZPosition) {\r\n        // We're ascending and not near the peak\r\n        if (this.currentAnimState !== 'ascend') {\r\n            this.setAnimation('ascend');\r\n            this.currentAnimState = 'ascend';\r\n        }\r\n    }\r\n    \r\n    // Check if we've hit the ground (Z <= 0)\r\n    if (this.parent.position.z <= 0) {\r\n        this.parent.position.z = 0; // Snap to ground\r\n\r\n        // Hit detection - same as before but at current position\r\n        const targetDistSq = (this.parent.position.x - this.target.position.x) ** 2 + \r\n                            (this.parent.position.y - this.target.position.y) ** 2;\r\n\r\n\r\n\r\n            // We missed the target but hit the ground - maybe still do splash damage\r\n        if (this.stats.splashRadius > 0) {\r\n            this.processSplashDamage();\r\n        }\r\n        this.parent.destroy();\r\n        if(this.stats.hitSound){\r\n            this.game.audioManager.playSound('hitSounds', this.stats.hitSound);\r\n        }\r\n\r\n        return;\r\n    }\r\n    \r\n    // Update distance traveled for particles\r\n    const tDx = this.parent.lastPosition.x - this.parent.position.x;\r\n    const tDy = this.parent.lastPosition.y - this.parent.position.y;\r\n    const tDist = Math.sqrt(tDx * tDx + tDy * tDy);\r\n    this.distanceTraveled += tDist;\r\n    \r\n    if (this.def.particle && this.distanceTraveled > this.distanceToSpawnParticle) {\r\n\r\n        let particle = this.game.spawn(this.parent.lastPosition.x + Math.random() * 4 - 2, this.parent.lastPosition.y + Math.random() * 4 - 2, \"particle\", { objectType: \"particles\", spawnType: this.def.particle });\r\n        particle.position.z = this.parent.position.z + Math.random() * 4 - 2;\r\n        this.distanceTraveled = 0;\r\n        this.distanceToSpawnParticle += Math.random() * 2;\r\n    }\r\n}\r\n\r\n\r\nprocessSplashDamage() {\r\n    const nearbyEnemies = this.game.spatialGrid.getNearbyEntities(\r\n        this.parent.gridPosition.x, \r\n        this.parent.gridPosition.y, \r\n        this.stats.splashRadius,\r\n        \"enemy\"\r\n    );\r\n    let explosion = this.game.spawn(this.parent.position.x, this.parent.position.y, \"explosion\", { radius: this.stats.splashRadius });\r\n    for (const enemy of nearbyEnemies) {\r\n        if (enemy.isDead) continue;\r\n        \r\n        const dx = enemy.position.x - this.parent.position.x;\r\n        const dy = enemy.position.y - this.parent.position.y;\r\n        const distSq = dx * dx + dy * dy;\r\n        \r\n        let gridSize = this.game.config.configs.game.gridSize;\r\n        const splashRadiusSq = this.stats.splashRadius * this.stats.splashRadius * gridSize * gridSize;\r\n        \r\n        if (distSq <= splashRadiusSq) {\r\n            let enemyHealth = enemy.getComponent(\"health\");\r\n            let enemyEnergyShield = enemy.getComponent(\"energyshield\");\r\n            let enemyStats = enemy.getComponent(\"stats\");\r\n            let enemyStatClone = { ...enemyStats.stats };\r\n            enemyStatClone.energyShield = enemyEnergyShield.energyShield;\r\n            \r\n            let damageResult = engine.getFunction(\"calculateDamage\")(this.stats, enemyStatClone);\r\n            if (!damageResult.wasEvaded) {\r\n                enemyHealth.hp -= damageResult.damageDealt;\r\n                enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);\r\n                this.game.spawn(enemy.position.x, enemy.position.y, \"hitEffect\", { damageType: this.stats.damageType , lifeSpan: .3});\r\n                if (this.ownerStats.slowAmount) {\r\n                    enemyStats.addEffect(this.game.config.effects.slow, this.game.effects.slow, this.ownerStats.slowAmount);\r\n                }\r\n            }\r\n        }\r\n    }\r\n}\r\n}"
       },
       "Buildable": {
         "fileName": "Buildable",
         "script": "class Buildable extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n  init() {        \r\n        this.placed = false;\r\n    }\r\n}"
+      },
+      "Effect": {
+        "fileName": "Effect",
+        "script": "class Effect extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init( {config, applyFn, amount }) {\r\n        this.id = config.id;\r\n        this.title = config.title;\r\n        this.desc = config.desc;\r\n        this.lifeTime = config.lifeTime;\r\n        this.applyFn = applyFn;\r\n        this.amount = amount;    \r\n    }\r\n\r\n    update() {\r\n        this.lifeTime--;\r\n        if( this.lifeTime <= 0) this.parent.removeComponent(this);\r\n        return true;        \r\n    }\r\n\r\n    apply(s, add, mul) {\r\n        this.applyFn(s, add, mul, this.amount);\r\n    }\r\n}"
       },
       "ChainProjectile": {
         "fileName": "ChainProjectile",
@@ -17258,10 +17262,6 @@ const DEFAULT_PROJECT_CONFIG = {
       "FollowPath": {
         "fileName": "FollowPath",
         "script": "class FollowPath extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    init({ pathIndex = 0 }) {\r\n        this.gridSize = this.game.config.configs.game.gridSize;\r\n        this.pathIndex = pathIndex;\r\n        this.indexInPath = 0;\r\n        // Store grid coordinates\r\n        this.x = this.game.state.paths[this.pathIndex][this.indexInPath].x;\r\n        this.y = this.game.state.paths[this.pathIndex][this.indexInPath].y;\r\n        // Convert to pixel position\r\n        this.parent.position = { \r\n            x: this.x * this.gridSize + this.gridSize / 2, \r\n            y: this.y * this.gridSize + this.gridSize / 2 \r\n        };\r\n        this.progress = 0; // Progress between grid points (0 to 1)\r\n        \r\n        // Convert pixel-based speed to grid-based speed\r\n        this.stats = this.getComponent('stats').stats;\r\n        this.gridSpeed = this.stats.speed / this.gridSize;\r\n    }\r\n\r\n    update() {\r\n        this.stats = this.getComponent('stats').stats;\r\n        this.gridSize = this.game.config.configs.game.gridSize;\r\n\r\n        if (this.indexInPath < this.game.state.paths[this.pathIndex].length - 1) {\r\n            const target = this.game.state.paths[this.pathIndex][this.indexInPath + 1];\r\n            \r\n            // Use converted grid-based speed\r\n            this.progress += this.gridSpeed * this.game.deltaTime * 100;\r\n            \r\n            if (this.progress >= 1) {\r\n                this.indexInPath++;\r\n                this.progress = 0;\r\n                this.x = target.x;\r\n                this.y = target.y;\r\n            } else {\r\n                // Interpolate between current and target grid positions\r\n                this.x = this.game.state.paths[this.pathIndex][this.indexInPath].x * (1 - this.progress) + \r\n                        target.x * this.progress;\r\n                this.y = this.game.state.paths[this.pathIndex][this.indexInPath].y * (1 - this.progress) + \r\n                        target.y * this.progress;\r\n            }\r\n            \r\n            // Convert grid coordinates to pixel coordinates\r\n            this.parent.position.x = this.x * this.gridSize + this.gridSize / 2;\r\n            this.parent.position.y = this.y * this.gridSize + this.gridSize / 2;\r\n            this.parent.position.z = this.game.gameEntity.getComponent('game').getTerrainHeight(this.parent.gridPosition);\r\n        } else {\r\n            this.game.state.bloodCoreHP -= this.stats.value;\r\n            this.parent.destroy();\r\n            return false;\r\n        }\r\n    }\r\n}"
-      },
-      "BallisticProjectile": {
-        "fileName": "BallisticProjectile",
-        "script": "class BallisticProjectile extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\ninit({ spawnType, owner, target, stats }) {\r\n    this.type = spawnType;\r\n    this.def = this.game.config.projectiles[this.type];\r\n    this.owner = owner;\r\n    this.target = target;\r\n    this.stats = stats;\r\n    this.piercedEnemies = [];\r\n    this.ownerStats = this.owner.getComponent(\"stats\").stats;\r\n    this.distanceTraveled = 0;\r\n    this.distanceToSpawnParticle = 1;\r\n    \r\n    // Ballistic trajectory variables\r\n    this.startPosition = { ...this.parent.position, z: 10 }; // Start 10 units above ground\r\n    this.targetPosition = { ...this.target.position, z: 0 };\r\n    this.time = 0;\r\n    \r\n    this.totalDist = Math.sqrt(\r\n        (this.targetPosition.x - this.startPosition.x) ** 2 + \r\n        (this.targetPosition.y - this.startPosition.y) ** 2\r\n    );\r\n    this.maxHeight = this.totalDist / Math.PI;\r\n    \r\n    // Initialize position with Z component\r\n    this.parent.position.z = this.startPosition.z;\r\n    this.positionZ = this.startPosition.z;\r\n    \r\n    // Animation state variables\r\n    this.lastZPosition = this.positionZ;\r\n\r\n    \r\n    this.peakThreshold = this.maxHeight * 0.1; // 10% threshold for idle at peak\r\n    this.currentAnimState = 'ascend';\r\n    if(this.stats.attackSound){\r\n        this.game.audioManager.playSound('attackSounds', this.stats.attackSound);\r\n    }\r\n}\r\n\r\nsetAnimation(anim) {\r\n\r\n    if(this.game.config.configs.game.is3D) {\r\n        this.modelRenderer = this.parent.getComponent('modelRenderer');\r\n        this.modelRenderer?.setAnimation(anim);\r\n    } else {\r\n        this.animator = this.parent.getComponent('animator');\r\n        this.animator?.setAnimation(anim);\r\n    }\r\n}\r\n\r\nupdate() {\r\n    this.parent.position.z = this.positionZ;\r\n    \r\n    // Save previous z position to detect direction change\r\n    this.lastZPosition = this.positionZ;\r\n\r\n    // Calculate progress (0 to 1)\r\n    this.time += this.game.deltaTime;\r\n    const dx = this.targetPosition.x - this.parent.position.x;\r\n    const dy = this.targetPosition.y - this.parent.position.y;\r\n    const distSq = dx * dx + dy * dy;\r\n    let dist = Math.sqrt(distSq);\r\n    const speed = this.stats.speed;\r\n    this.parent.position.x += (dx / dist) * speed / (Math.PI);\r\n    this.parent.position.y += (dy / dist) * speed / (Math.PI);\r\n\r\n\r\n    const currentDist = Math.sqrt(\r\n        (this.parent.position.x - this.startPosition.x) ** 2 + \r\n        (this.parent.position.y - this.startPosition.y) ** 2\r\n    );\r\n    const xyprogressToTarget = Math.min(1, currentDist / this.totalDist);\r\n\r\n    // Parabolic trajectory calculation (2:1 isometric adjusted)\r\n    this.parent.position.z = this.maxHeight * (1 - Math.pow(2 * xyprogressToTarget - 1, 2));\r\n\r\n    this.positionZ = this.parent.position.z;\r\n    \r\n    // Calculate distance from peak height to determine if we're near the top\r\n    const distanceFromPeak = Math.abs(this.positionZ - this.maxHeight);\r\n    \r\n    // Check if animation state needs to change based on z movement and proximity to peak\r\n    if( xyprogressToTarget < .075 ) {\r\n        if (this.currentAnimState !== 'launch') {\r\n            this.setAnimation('launch');\r\n            this.currentAnimState = 'launch';\r\n        }\r\n    // } else if( xyprogressToTarget > .95 ) {\r\n    //     if (this.currentAnimState !== 'land') {\r\n    //         this.animator.setAnimation('land');\r\n    //         this.currentAnimState = 'land';\r\n    //     }\r\n    } else if (distanceFromPeak <= this.peakThreshold) {\r\n        // We're near the peak of the trajectory\r\n        if (this.currentAnimState !== 'idle') {\r\n            this.setAnimation('idle');\r\n            this.currentAnimState = 'idle';\r\n        }\r\n    } else if (this.positionZ < this.lastZPosition) {\r\n        // We're descending and not near the peak\r\n        if (this.currentAnimState !== 'descend') {\r\n            this.setAnimation('descend');\r\n            this.currentAnimState = 'descend';\r\n        }\r\n    } else if (this.positionZ > this.lastZPosition) {\r\n        // We're ascending and not near the peak\r\n        if (this.currentAnimState !== 'ascend') {\r\n            this.setAnimation('ascend');\r\n            this.currentAnimState = 'ascend';\r\n        }\r\n    }\r\n    \r\n    // Check if we've hit the ground (Z <= 0)\r\n    if (this.parent.position.z <= 0) {\r\n        this.parent.position.z = 0; // Snap to ground\r\n\r\n        // Hit detection - same as before but at current position\r\n        const targetDistSq = (this.parent.position.x - this.target.position.x) ** 2 + \r\n                            (this.parent.position.y - this.target.position.y) ** 2;\r\n\r\n\r\n\r\n            // We missed the target but hit the ground - maybe still do splash damage\r\n        if (this.stats.splashRadius > 0) {\r\n            this.processSplashDamage();\r\n        }\r\n        this.parent.destroy();\r\n        if(this.stats.hitSound){\r\n            this.game.audioManager.playSound('hitSounds', this.stats.hitSound);\r\n        }\r\n\r\n        return;\r\n    }\r\n    \r\n    // Update distance traveled for particles\r\n    const tDx = this.parent.lastPosition.x - this.parent.position.x;\r\n    const tDy = this.parent.lastPosition.y - this.parent.position.y;\r\n    const tDist = Math.sqrt(tDx * tDx + tDy * tDy);\r\n    this.distanceTraveled += tDist;\r\n    \r\n    if (this.def.particle && this.distanceTraveled > this.distanceToSpawnParticle) {\r\n\r\n        let particle = this.game.spawn(this.parent.lastPosition.x + Math.random() * 4 - 2, this.parent.lastPosition.y + Math.random() * 4 - 2, \"particle\", { objectType: \"particles\", spawnType: this.def.particle });\r\n        particle.position.z = this.parent.position.z + Math.random() * 4 - 2;\r\n        this.distanceTraveled = 0;\r\n        this.distanceToSpawnParticle += Math.random() * 2;\r\n    }\r\n}\r\n\r\n\r\nprocessSplashDamage() {\r\n    const nearbyEnemies = this.game.spatialGrid.getNearbyEntities(\r\n        this.parent.gridPosition.x, \r\n        this.parent.gridPosition.y, \r\n        this.stats.splashRadius,\r\n        \"enemy\"\r\n    );\r\n    let explosion = this.game.spawn(this.parent.position.x, this.parent.position.y, \"explosion\", { radius: this.stats.splashRadius });\r\n    for (const enemy of nearbyEnemies) {\r\n        if (enemy.isDead) continue;\r\n        \r\n        const dx = enemy.position.x - this.parent.position.x;\r\n        const dy = enemy.position.y - this.parent.position.y;\r\n        const distSq = dx * dx + dy * dy;\r\n        \r\n        let gridSize = this.game.config.configs.game.gridSize;\r\n        const splashRadiusSq = this.stats.splashRadius * this.stats.splashRadius * gridSize * gridSize;\r\n        \r\n        if (distSq <= splashRadiusSq) {\r\n            let enemyHealth = enemy.getComponent(\"health\");\r\n            let enemyEnergyShield = enemy.getComponent(\"energyshield\");\r\n            let enemyStats = enemy.getComponent(\"stats\");\r\n            let enemyStatClone = { ...enemyStats.stats };\r\n            enemyStatClone.energyShield = enemyEnergyShield.energyShield;\r\n            \r\n            let damageResult = engine.getFunction(\"calculateDamage\")(this.stats, enemyStatClone);\r\n            if (!damageResult.wasEvaded) {\r\n                enemyHealth.hp -= damageResult.damageDealt;\r\n                enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);\r\n                this.game.spawn(enemy.position.x, enemy.position.y, \"hitEffect\", { damageType: this.stats.damageType , lifeSpan: .3});\r\n                if (this.ownerStats.slowAmount) {\r\n                    enemyStats.addEffect(this.game.config.effects.slow, this.game.effects.slow, this.ownerStats.slowAmount);\r\n                }\r\n            }\r\n        }\r\n    }\r\n}\r\n}"
       },
       "Game": {
         "fileName": "Game",
@@ -17276,25 +17276,25 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "HitEffectParticle",
         "script": "class HitEffectParticle extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n  init( {damageType}) {\r\n        this.damageType = damageType || \"default\";\r\n        this.particles = [];\r\n        \r\n        // Spawn particles based on damage type\r\n        const particleCount = 5;\r\n        for (let i = 0; i < particleCount; i++) {\r\n            this.particles.push({\r\n                x: 0, // Relative to parent\r\n                y: 0,\r\n                vx: (Math.random() - 0.5) * 4, // Velocity (-2 to 2)\r\n                vy: (Math.random() - 0.5) * 4,\r\n                size: Math.random() * 3 + 1, // 1-4 pixels\r\n                alpha: 1, // Fades from 1 to 0\r\n                color: this.getColor()\r\n            });\r\n        }\r\n    }\r\n\r\n    getColor() {\r\n        switch (this.damageType) {\r\n            case \"electric\": return \"rgba(0, 255, 255, \"; // Cyan for electric\r\n            case \"fire\": return \"rgba(255, 165, 0, \"; // Orange for fire\r\n            case \"ice\": return \"rgba(128, 128, 255, \"; // Blue for ice\r\n            case \"plasma\": return \"rgba(255, 0, 255, \"; // Purple for plasma\r\n            default: return \"rgba(255, 255, 255, \"; // White fallback\r\n        }\r\n    }\r\n\r\n    update() {\r\n        const lifespanComp = this.parent.getComponent(\"LifeSpan\");\r\n        if (!lifespanComp) return; // Safety check\r\n\r\n        const fadeFactor = lifespanComp.lifeSpan / 30; // Normalize to initial lifespan (30 frames)\r\n        for (let particle of this.particles) {\r\n            particle.x += particle.vx * this.game.state.timeScale;\r\n            particle.y += particle.vy * this.game.state.timeScale;\r\n            particle.alpha = fadeFactor; // Fade based on remaining lifespan\r\n            particle.size *= 0.98; // Slight shrink per frame\r\n        }\r\n    }\r\n}"
       },
-      "LifeSpan": {
-        "fileName": "LifeSpan",
-        "script": "class LifeSpan extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init( {lifeSpan}) {\r\n        this.lifeSpan = lifeSpan || this.getComponent('stats').stats.lifeSpan;\r\n    }\r\n    update() {        \r\n        if( this.lifeSpan > 0 ) {\r\n            this.lifeSpan -= this.game.deltaTime;\r\n        } else {\r\n            this.parent.destroy();\r\n        }\r\n    }\r\n}"
-      },
       "Leveler": {
         "fileName": "Leveler",
         "script": "class Leveler extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n init( {level = 1}) {\r\n        this.level = level;\r\n    }\r\n}"
+      },
+      "LifeSpan": {
+        "fileName": "LifeSpan",
+        "script": "class LifeSpan extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init( {lifeSpan}) {\r\n        this.lifeSpan = lifeSpan || this.getComponent('stats').stats.lifeSpan;\r\n    }\r\n    update() {        \r\n        if( this.lifeSpan > 0 ) {\r\n            this.lifeSpan -= this.game.deltaTime;\r\n        } else {\r\n            this.parent.destroy();\r\n        }\r\n    }\r\n}"
       },
       "MapManager": {
         "fileName": "MapManager",
         "script": "class MapManager extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\ninit({level}) {\r\n  this.nodeClass = class Node {\r\n    constructor(x, y, tileType, parent = null) {\r\n        this.x = x;\r\n        this.y = y;\r\n        this.tileType = tileType;\r\n        this.parent = parent;\r\n        \r\n        this.g = 0; // Cost from start to current node\r\n        this.h = 0; // Heuristic (estimated cost from current to goal)\r\n        this.f = 0; // Total cost (g + h)\r\n    }\r\n\r\n    equals(other) {\r\n        return this.x === other.x && this.y === other.y;\r\n    }\r\n\r\n    // Unique key for node based on coordinates\r\n    key() {\r\n        return `${this.x},${this.y}`;\r\n    }\r\n};\r\n  this.tileMap = level.tileMap;\r\n   \r\n   const {tileMap, paths} = this.generateMap();\r\n   this.game.state.tileMap = tileMap;\r\n   this.game.state.paths = paths;\r\n}\r\n\r\n    generateMap() {\r\n        // Extract values from the data object\r\n        const { size, terrainTypes, terrainMap } = this.tileMap;\r\n        \r\n        let paths = [];\r\n        let starts = [];\r\n        let endPoint = {x: 0, y: 0};\r\n\r\n        // Find START and END tile types by their IDs\r\n        const startTypeId = terrainTypes.findIndex(t => t.type === \"start\");\r\n        const endTypeId = terrainTypes.findIndex(t => t.type === \"end\");\r\n        // Create the tile map using the provided terrainMap\r\n        const tileMap = terrainMap.map((row, y) => \r\n            row.map((terrainId, x) => {\r\n                // Find the terrain object to get color information\r\n                const terrain = terrainTypes[terrainId]; \r\n                // Check for start/end points using IDs\r\n                if(terrainId === startTypeId) {\r\n                    starts.push({x: x, y: y});\r\n                } else if(terrainId === endTypeId) {\r\n                    endPoint = {x: x, y: y};\r\n                }\r\n                \r\n                return { \r\n                    type: terrain ? terrain.type : 'unknown',\r\n                    typeId: terrainId,\r\n                    color: terrain ? terrain.color : '#8bc34a', // Default to grass color if not found\r\n                    buildable: terrain ? terrain.buildable : false\r\n                };\r\n            })\r\n        );        \r\n        \r\n        starts.forEach((startPoint) => {\r\n            paths.push(this.findPath(startPoint, endPoint, terrainMap));\r\n        });\r\n\r\n        return { tileMap, paths };\r\n    }\r\n\r\n    findPath(startPoint, endPoint, tileMap) {\r\n        return this.aStar(startPoint, endPoint, tileMap);\r\n    }\r\n    \r\n    /**\r\n     * A* pathfinding algorithm\r\n     * @param {Object} start - Starting position {x, y}\r\n     * @param {Object} end - Ending position {x, y}\r\n     * @param {Array} tileMap - 2D array representing the map\r\n     * @returns {Array} - Array of positions forming the path, or empty array if no path found\r\n     */\r\n    aStar(start, end, tileMap) {\r\n       \r\n        const rows = tileMap.length;\r\n        const cols = tileMap[0].length;\r\n        \r\n        // Validate inputs\r\n        if (start.x < 0 || start.x >= cols || start.y < 0 || start.y >= rows) {\r\n            throw new Error('Start position is outside the map bounds');\r\n        }\r\n        if (end.x < 0 || end.x >= cols || end.y < 0 || end.y >= rows) {\r\n            throw new Error('End position is outside the map bounds');\r\n        }\r\n        \r\n        // Create start and end nodes\r\n        const startNode = new this.nodeClass(start.x, start.y, tileMap[start.y][start.x]);\r\n        const endNode = new this.nodeClass(end.x, end.y, tileMap[end.y][end.x]);\r\n        \r\n        // Initialize open and closed lists\r\n        const openList = [];\r\n        const closedList = new Set();\r\n        const openSet = new Set(); // For faster lookups\r\n        \r\n        // Add start node to open list\r\n        openList.push(startNode);\r\n        openSet.add(startNode.key());\r\n        \r\n        // Define movement directions (4-directional: up, right, down, left)\r\n        const directions = [\r\n            {x: 0, y: -1}, // Up\r\n            {x: 1, y: 0},  // Right\r\n            {x: 0, y: 1},  // Down\r\n            {x: -1, y: 0}  // Left\r\n            \r\n            // {x: 1, y: 1}, // Up\r\n            // {x: 1, y: -1},  // Right\r\n            // {x: -1, y: 1},  // Down\r\n            // {x: -1, y: -1}  // Left\r\n        ];\r\n        \r\n        // Main loop\r\n        while (openList.length > 0) {\r\n            // Sort by f value and take the lowest\r\n            openList.sort((a, b) => a.f - b.f);\r\n            const currentNode = openList.shift();\r\n            openSet.delete(currentNode.key());\r\n            \r\n            // Add current node to closed list\r\n            closedList.add(currentNode.key());\r\n            \r\n            // Check if we've reached the end\r\n            if (currentNode.equals(endNode)) {\r\n                // Reconstruct the path\r\n                return this.reconstructPath(currentNode);\r\n            }\r\n            \r\n            // Generate neighbors\r\n            for (const dir of directions) {\r\n                const neighborX = currentNode.x + dir.x;\r\n                const neighborY = currentNode.y + dir.y;\r\n                \r\n                // Check if neighbor is inside the map\r\n                if (neighborX < 0 || neighborX >= cols || neighborY < 0 || neighborY >= rows) {\r\n                    continue;\r\n                }\r\n                \r\n                const tileType = tileMap[neighborY][neighborX];\r\n                const neighbor = new this.nodeClass(neighborX, neighborY, tileType, currentNode);\r\n                const neighborKey = neighbor.key();\r\n                \r\n                // Skip if neighbor is in closed list\r\n                if (closedList.has(neighborKey)) {\r\n                    continue;\r\n                }\r\n                \r\n                // Calculate g score for this neighbor\r\n                // Path tiles will have a much lower cost than other tile types\r\n                let movementCost = this.calculateMovementCost(tileType);\r\n                const tentativeG = currentNode.g + movementCost;\r\n                \r\n                // Check if this is a better path to neighbor\r\n                if (!openSet.has(neighborKey) || tentativeG < neighbor.g) {\r\n                    // Update neighbor values\r\n                    neighbor.g = tentativeG;\r\n                    neighbor.h = this.calculateHeuristic(neighbor, endNode);\r\n                    neighbor.f = neighbor.g + neighbor.h;\r\n                    \r\n                    // Add neighbor to open list if not there already\r\n                    if (!openSet.has(neighborKey)) {\r\n                        openList.push(neighbor);\r\n                        openSet.add(neighborKey);\r\n                    }\r\n                }\r\n            }\r\n        }\r\n        \r\n        // No path found\r\n        return [];\r\n    }\r\n    \r\n    /**\r\n     * Calculate movement cost based on tile type\r\n     * Path tiles are heavily favored\r\n     * @param {number} tileTypeId - ID of the tile type\r\n     * @returns {number} - Movement cost\r\n     */\r\n    calculateMovementCost(tileTypeId) {\r\n        // Find path and end type IDs\r\n        const { terrainTypes } = this.tileMap;\r\n        const pathTypeId = terrainTypes.findIndex(t => t.type === \"path\");\r\n        const endTypeId = terrainTypes.findIndex(t => t.type === \"end\");\r\n        \r\n        // Heavily favor \"path\" and \"end\" type tiles\r\n        if (tileTypeId === pathTypeId || tileTypeId === endTypeId) {\r\n            return 1;\r\n        } else {\r\n            // Make non-path tiles much less desirable\r\n            return 100000;\r\n        }\r\n    }\r\n    \r\n    /**\r\n     * Calculate heuristic (Manhattan distance)\r\n     * @param {Node} nodeA \r\n     * @param {Node} nodeB \r\n     * @returns {number} - Heuristic value\r\n     */\r\n    calculateHeuristic(nodeA, nodeB) {\r\n        return Math.abs(nodeA.x - nodeB.x) + Math.abs(nodeA.y - nodeB.y);\r\n    }\r\n    \r\n    /**\r\n     * Reconstruct the path from the end node to the start\r\n     * @param {Node} endNode - The end node\r\n     * @returns {Array} - Array of positions {x, y} from start to end\r\n     */\r\n    reconstructPath(endNode) {\r\n        const path = [];\r\n        let currentNode = endNode;\r\n        \r\n        while (currentNode !== null) {\r\n            path.unshift({\r\n                x: currentNode.x,\r\n                y: currentNode.y,\r\n                tileType: currentNode.tileType\r\n            });\r\n            currentNode = currentNode.parent;\r\n        }\r\n        \r\n        return path;\r\n    }\r\n}"
       },
-      "PlanckBody": {
-        "fileName": "PlanckBody",
-        "script": "class PlanckBody extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\ninit({box2DBodySize = 1, density = 1, friction= 0, layer = 0x0001, collidesWith = 0x0001}) {\r\n  \r\n   const { Box } = planck;\r\n  this.body = this.game.planckWorld.createBody({\r\n    type: \"dynamic\",\r\n    position: {x: this.parent.position.x, y: this.parent.position.y}\r\n  });\r\n  this.body.createFixture({\r\n      shape: new Box(1.0, 1.0),\r\n      density: density,\r\n      friction: friction,\r\n  });\r\n  this.speedScale = 10;\r\n}\r\n\r\nupdate() {\r\n  if (!this.body) return;\r\n  const bodyPos = this.body.getTransform().p;\r\n\r\n  // Update game object position\r\n  this.parent.position.x = bodyPos.x;\r\n  this.parent.position.y = bodyPos.y;\r\n\r\n}\r\n\r\nsetVelocity(vel) {\r\n\tthis.body.setLinearVelocity({ x: vel.x*this.speedScale, y: vel.y * this.speedScale });\r\n}\r\ngetVelocity() {\r\n  let vel = this.body.getLinearVelocity();\r\n  return { x: vel.x / this.speedScale, y: vel.y / this.speedScale };\r\n}\r\npostUpdate() {\r\n  //this.body.applyForce({ x: 10, y: 0}, { x: this.parent.position.x, y: this.parent.position.y});\r\n}\r\n}"
-      },
       "MultishotProjectile": {
         "fileName": "MultishotProjectile",
         "script": "class MultishotProjectile extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\ninit({ spawnType, stats, target, owner }) {\r\n  this.type = spawnType;\r\n  this.stats = stats;\r\n  this.target = target;\r\n  const ownerStats = owner.getComponent('stats').stats;\r\n  const spreadCount = ownerStats.projectileCount || 3; // Total projectiles (e.g., 3: center + 2 sides)\r\n    const spreadAngleDegrees = ownerStats.projectileAngle || 45; // Default to 45 degrees\r\n  const spreadAngle = spreadAngleDegrees * (Math.PI / 180); // Convert degrees to radians\r\n\r\n \r\n  // Calculate the base direction to the target\r\n  const dx = target.position.x - this.parent.position.x;\r\n  const dy = target.position.y - this.parent.position.y;\r\n  const baseAngle = Math.atan2(dy, dx); // Angle from parent to target in radians\r\n  const distance = Math.sqrt(dx * dx + dy * dy);\r\n\r\n  // Total spread angle (e.g., for 3 projectiles: -spreadAngle, 0, +spreadAngle)\r\n  const totalSpread = spreadAngle * (spreadCount - 1); // Max angle covered by all projectiles\r\n\r\n  // Spawn projectiles in a symmetrical fan\r\n  for (let i = 0; i < spreadCount; i++) {\r\n    // Calculate the angle offset from the center\r\n    const offsetIndex = i - Math.floor(spreadCount / 2); // Center at 0 (e.g., -1, 0, 1 for 3)\r\n    const currentAngle = baseAngle + (offsetIndex * spreadAngle);\r\n\r\n    // Calculate the new target position based on the angle\r\n    const deltaX = Math.cos(currentAngle) * distance;\r\n    const deltaY = Math.sin(currentAngle) * distance;\r\n\r\n    this.game.spawn(\r\n      this.parent.position.x,\r\n      this.parent.position.y,\r\n      \"projectile\",\r\n      {\r\n        spawnType: ownerStats.projectile,\r\n        objectType: \"projectiles\",\r\n        owner: owner,\r\n        stats: stats,\r\n        target: target,\r\n        targetPosition: {\r\n          x: this.parent.position.x + deltaX, // Start from parent, extend to new position\r\n          y: this.parent.position.y + deltaY\r\n        }\r\n      }\r\n    );\r\n  }\r\n\r\n  this.parent.destroy();\r\n}\r\n}"
+      },
+      "PlanckBody": {
+        "fileName": "PlanckBody",
+        "script": "class PlanckBody extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\ninit({box2DBodySize = 1, density = 1, friction= 0, layer = 0x0001, collidesWith = 0x0001}) {\r\n  \r\n   const { Box } = planck;\r\n  this.body = this.game.planckWorld.createBody({\r\n    type: \"dynamic\",\r\n    position: {x: this.parent.position.x, y: this.parent.position.y}\r\n  });\r\n  this.body.createFixture({\r\n      shape: new Box(1.0, 1.0),\r\n      density: density,\r\n      friction: friction,\r\n  });\r\n  this.speedScale = 10;\r\n}\r\n\r\nupdate() {\r\n  if (!this.body) return;\r\n  const bodyPos = this.body.getTransform().p;\r\n\r\n  // Update game object position\r\n  this.parent.position.x = bodyPos.x;\r\n  this.parent.position.y = bodyPos.y;\r\n\r\n}\r\n\r\nsetVelocity(vel) {\r\n\tthis.body.setLinearVelocity({ x: vel.x*this.speedScale, y: vel.y * this.speedScale });\r\n}\r\ngetVelocity() {\r\n  let vel = this.body.getLinearVelocity();\r\n  return { x: vel.x / this.speedScale, y: vel.y / this.speedScale };\r\n}\r\npostUpdate() {\r\n  //this.body.applyForce({ x: 10, y: 0}, { x: this.parent.position.x, y: this.parent.position.y});\r\n}\r\n}"
       },
       "PlanckProjectile": {
         "fileName": "PlanckProjectile",
@@ -17366,13 +17366,6 @@ const DEFAULT_PROJECT_CONFIG = {
           "Renderer"
         ]
       },
-      "explosion": {
-        "title": "Explosion",
-        "components": [],
-        "renderers": [
-          "Explosion"
-        ]
-      },
       "game": {
         "title": "Game",
         "components": [
@@ -17386,6 +17379,13 @@ const DEFAULT_PROJECT_CONFIG = {
         "renderers": [
           "MapRenderer",
           "UiManager"
+        ]
+      },
+      "explosion": {
+        "title": "Explosion",
+        "components": [],
+        "renderers": [
+          "Explosion"
         ]
       },
       "GameLoader": {
@@ -17406,6 +17406,14 @@ const DEFAULT_PROJECT_CONFIG = {
           "LightningRenderer"
         ]
       },
+      "multiShotProjectile": {
+        "title": "Multi-Shot Projectile",
+        "components": [
+          "Stats",
+          "MultishotProjectile"
+        ],
+        "renderers": []
+      },
       "hitEffect": {
         "title": "Hit Effect",
         "components": [
@@ -17415,14 +17423,6 @@ const DEFAULT_PROJECT_CONFIG = {
         "renderers": [
           "HitEffectRenderer"
         ]
-      },
-      "multiShotProjectile": {
-        "title": "Multi-Shot Projectile",
-        "components": [
-          "Stats",
-          "MultishotProjectile"
-        ],
-        "renderers": []
       },
       "particle": {
         "title": "Particle",
@@ -17461,6 +17461,23 @@ const DEFAULT_PROJECT_CONFIG = {
           "Renderer"
         ]
       },
+      "tower": {
+        "title": "Tower",
+        "components": [
+          "Stats",
+          "ArrayTracker",
+          "Leveler",
+          "Buildable",
+          "PopulationBurden",
+          "Attacker",
+          "Animator"
+        ],
+        "renderers": [
+          "ModelRenderer",
+          "RangeIndicator",
+          "Renderer"
+        ]
+      },
       "staticObject": {
         "title": "Static Object",
         "components": [
@@ -17479,23 +17496,6 @@ const DEFAULT_PROJECT_CONFIG = {
           "ArrayTracker",
           "Attacker",
           "LifeSpan",
-          "Animator"
-        ],
-        "renderers": [
-          "ModelRenderer",
-          "RangeIndicator",
-          "Renderer"
-        ]
-      },
-      "tower": {
-        "title": "Tower",
-        "components": [
-          "Stats",
-          "ArrayTracker",
-          "Leveler",
-          "Buildable",
-          "PopulationBurden",
-          "Attacker",
           "Animator"
         ],
         "renderers": [
@@ -17523,6 +17523,12 @@ const DEFAULT_PROJECT_CONFIG = {
         ],
         "fileName": "aiPromptPanel"
       },
+      "audioEditor": {
+        "title": "Audio Editor",
+        "fileName": "audioEditor",
+        "css": "#audio-editor-container {\r\n    padding: 20px;\r\n    margin: 0 auto;\r\n    border-radius: 8px;\r\n    flex-direction: column;\r\n}\r\n\r\n#audio-editor-container .main-flex-container {\r\n    display: flex;\r\n    flex-wrap: wrap;\r\n    gap: 20px;\r\n}\r\n\r\n#audio-editor-container #status-container {\r\n    width: 100%;\r\n    padding: 10px;\r\n    text-align: center;\r\n}\r\n\r\n#audio-editor-container #status-message {\r\n    color: #333;\r\n    font-weight: bold;\r\n}\r\n\r\n#audio-editor-container .parameters-container {\r\n    flex: 1;\r\n    min-width: 300px;\r\n    padding: 15px;\r\n    margin: 10px 0;\r\n    border-radius: 8px;\r\n    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);\r\n}\r\n\r\n#audio-editor-container .control-buttons {\r\n    margin-bottom: 10px;\r\n    display: flex;\r\n    gap: 10px;\r\n    flex-wrap: wrap;\r\n}\r\n\r\n#audio-editor-container .parameter-group {\r\n    display: grid;\r\n    gap: 10px;\r\n    margin-top: 15px;\r\n}\r\n\r\n#audio-editor-container .parameter-group label {\r\n    display: flex;\r\n    align-items: center;\r\n    gap: 10px;\r\n    font-size: 0.9em;\r\n}\r\n\r\n#audio-editor-container .value-display {\r\n    min-width: 60px;\r\n    text-align: right;\r\n    font-family: monospace;\r\n}\r\n\r\n#audio-editor-container input[type=\"range\"] {\r\n    flex-grow: 1;\r\n}\r\n\r\n\r\n@media (max-width: 600px) {\r\n    #audio-editor-container .parameters-container {\r\n        min-width: 100%;\r\n    }\r\n    \r\n    #audio-editor-container .control-buttons {\r\n        flex-direction: column;\r\n    }\r\n    \r\n    #audio-editor-container .parameter-group label {\r\n        flex-direction: column;\r\n        align-items: flex-start;\r\n    }\r\n}",
+        "html": "<div id=\"audio-editor-container\">       \r\n     <div id=\"status-container\">\r\n        <span id=\"status-message\">Ready</span>\r\n    </div>\r\n\r\n    <div class=\"main-flex-container\">\r\n        <!-- Status Message Area -->\r\n\r\n        <!-- Basic Parameters -->\r\n        <div class=\"parameters-container\">\r\n            <!-- Playback Controls -->\r\n            <div class=\"control-buttons\">\r\n                <button id=\"playBtn\" class=\"primary-button\">Play</button>\r\n                <button id=\"exportBtn\">Save</button>\r\n                <button id=\"randomSoundBtn\">🎲 Randomize Sound</button>\r\n            </div>\r\n            <h3>Basic Parameters</h3>\r\n            <div class=\"parameter-group\">\r\n                <label>\r\n                    Waveform:\r\n                    <select id=\"waveform\">\r\n                        <option value=\"sine\">Sine</option>\r\n                        <option value=\"square\">Square</option>\r\n                        <option value=\"sawtooth\">Sawtooth</option>\r\n                        <option value=\"triangle\">Triangle</option>\r\n                        <option value=\"noise\">Noise</option>\r\n                    </select>\r\n                </label>\r\n                <label>\r\n                    Frequency:\r\n                    <input type=\"range\" id=\"frequency\" min=\"20\" max=\"2000\" value=\"440\" step=\"1\">\r\n                    <span class=\"value-display\">440 Hz</span>\r\n                </label>\r\n                <label>\r\n                    Duration:\r\n                    <input type=\"range\" id=\"duration\" min=\"0.1\" max=\"5\" value=\"1\" step=\"0.1\">\r\n                    <span class=\"value-display\">1.00 s</span>\r\n                </label>\r\n                <label>\r\n                    Volume:\r\n                    <input type=\"range\" id=\"volume\" min=\"0\" max=\"1\" value=\"0.7\" step=\"0.01\">\r\n                    <span class=\"value-display\">70%</span>\r\n                </label>\r\n            </div>\r\n        </div>\r\n        <div class=\"parameters-container\">\r\n            <h3>Noise Generator</h3>\r\n            <div class=\"parameter-group\">\r\n                <label >\r\n                    Noise Type:\r\n                    <select id=\"noiseType\">\r\n                        <option value=\"white\">White</option>\r\n                        <option value=\"pink\">Pink</option>\r\n                        <option value=\"brown\">Brown</option>\r\n                    </select>\r\n                </label>\r\n                <label>\r\n                    Noise Amount:\r\n                    <input type=\"range\" id=\"noiseAmount\" min=\"0\" max=\"1\" value=\"0\" step=\"0.01\">\r\n                    <span class=\"value-display\">0%</span>\r\n                </label>\r\n                <label >\r\n                    Noise Filter:\r\n                    <select id=\"noiseFilterType\">\r\n                        <option value=\"none\">None</option>\r\n                        <option value=\"lowpass\">Low Pass</option>\r\n                        <option value=\"highpass\">High Pass</option>\r\n                        <option value=\"bandpass\">Band Pass</option>\r\n                    </select>\r\n                </label>\r\n                <label>\r\n                    Noise Filter Freq:\r\n                    <input type=\"range\" id=\"noiseFilterFreq\" min=\"20\" max=\"20000\" value=\"2000\" step=\"1\">\r\n                    <span class=\"value-display\">2000 Hz</span>\r\n                </label>\r\n            </div>\r\n            <!-- ADSR Envelope -->\r\n            <div class=\"parameters-container\">\r\n                <h3>Envelope (ADSR)</h3>\r\n                <div class=\"parameter-group\">\r\n                    <label>\r\n                        Attack:\r\n                        <input type=\"range\" id=\"attack\" min=\"0.001\" max=\"2\" value=\"0.01\" step=\"0.001\">\r\n                        <span class=\"value-display\">0.010 s</span>\r\n                    </label>\r\n                    <label>\r\n                        Decay:\r\n                        <input type=\"range\" id=\"decay\" min=\"0\" max=\"2\" value=\"0.1\" step=\"0.001\">\r\n                        <span class=\"value-display\">0.10 s</span>\r\n                    </label>\r\n                    <label>\r\n                        Sustain:\r\n                        <input type=\"range\" id=\"sustain\" min=\"0\" max=\"1\" value=\"0.7\" step=\"0.01\">\r\n                        <span class=\"value-display\">70%</span>\r\n                    </label>\r\n                    <label>\r\n                        Release:\r\n                        <input type=\"range\" id=\"release\" min=\"0.001\" max=\"5\" value=\"0.3\" step=\"0.001\">\r\n                        <span class=\"value-display\">0.30 s</span>\r\n                    </label>\r\n                </div>\r\n            </div>\r\n        </div>\r\n\r\n        <!-- Pitch Envelope -->\r\n        <div class=\"parameters-container\">\r\n            <h3>Pitch Envelope</h3>\r\n            <div class=\"parameter-group\">\r\n                <label>\r\n                    Start:\r\n                    <input type=\"range\" id=\"pitchEnvStart\" min=\"0.1\" max=\"4\" value=\"1\" step=\"0.01\">\r\n                    <span class=\"value-display\">1.00x</span>\r\n                </label>\r\n                <label>\r\n                    End:\r\n                    <input type=\"range\" id=\"pitchEnvEnd\" min=\"0.1\" max=\"4\" value=\"1\" step=\"0.01\">\r\n                    <span class=\"value-display\">1.00x</span>\r\n                </label>\r\n            </div>\r\n        </div>\r\n\r\n        <!-- Effects -->\r\n        <div class=\"parameters-container\">\r\n            <h3>Effects</h3>\r\n            <div class=\"parameter-group\">\r\n                <label>\r\n                    Filter Type:\r\n                    <select id=\"filterType\">\r\n                        <option value=\"lowpass\">Low Pass</option>\r\n                        <option value=\"highpass\">High Pass</option>\r\n                        <option value=\"bandpass\">Band Pass</option>\r\n                        <option value=\"notch\">Notch</option>\r\n                    </select>\r\n                </label>\r\n                <label>\r\n                    Filter Frequency:\r\n                    <input type=\"range\" id=\"filterFreq\" min=\"20\" max=\"20000\" value=\"1000\" step=\"1\">\r\n                    <span class=\"value-display\">1000 Hz</span>\r\n                </label>\r\n                <label>\r\n                    Filter Q:\r\n                    <input type=\"range\" id=\"filterQ\" min=\"0.1\" max=\"20\" value=\"1\" step=\"0.1\">\r\n                    <span class=\"value-display\">Q: 1.0</span>\r\n                </label>\r\n                <label>\r\n                    Distortion:\r\n                    <input type=\"range\" id=\"distortion\" min=\"0\" max=\"100\" value=\"0\" step=\"1\">\r\n                    <span class=\"value-display\">0%</span>\r\n                </label>\r\n                <label>\r\n                    Delay Time:\r\n                    <input type=\"range\" id=\"delayTime\" min=\"0\" max=\"2\" value=\"0.3\" step=\"0.01\">\r\n                    <span class=\"value-display\">0.30 s</span>\r\n                </label>\r\n                <label>\r\n                    Delay Feedback:\r\n                    <input type=\"range\" id=\"delayFeedback\" min=\"0\" max=\"0.9\" value=\"0\" step=\"0.01\">\r\n                    <span class=\"value-display\">0%</span>\r\n                </label>\r\n                <label>\r\n                    Reverb:\r\n                    <input type=\"range\" id=\"reverbAmount\" min=\"0\" max=\"1\" value=\"0\" step=\"0.01\">\r\n                    <span class=\"value-display\">0%</span>\r\n                </label>\r\n                <label>\r\n                    Bitcrusher:\r\n                    <input type=\"range\" id=\"bitcrusher\" min=\"0\" max=\"1\" value=\"0\" step=\"0.01\">\r\n                    <span class=\"value-display\">0%</span>\r\n                </label>\r\n                <label>\r\n                    Panning:\r\n                    <input type=\"range\" id=\"panning\" min=\"-1\" max=\"1\" value=\"0\" step=\"0.01\">\r\n                    <span class=\"value-display\">Center</span>\r\n                </label>\r\n            </div>\r\n        </div>\r\n    </div>\r\n</div>\r\n"
+      },
       "graphicsEditor": {
         "title": "Graphics Editor",
         "modals": [
@@ -17534,18 +17540,18 @@ const DEFAULT_PROJECT_CONFIG = {
         "css": "\r\n#graphics-editor-container #grid-display {\r\n    position: absolute;\r\n    top: 10px;\r\n    left: 10px;\r\n    padding: 5px 10px;\r\n    border-radius: 0;\r\n    font-family: 'Courier New', monospace;\r\n}\r\n#graphics-editor-container .btn {\r\n    padding: 0;\r\n}\r\n\r\n#graphics-editor-container .btn-add {\r\n  background-color: rgba(16, 185, 129, 0.3);\r\n  border: 1px solid #10b981;\r\n  color: #f4e1d2;\r\n}\r\n#graphics-editor-container .btn-add:hover {\r\n  background-color: rgba(16, 185, 129, 0.5);\r\n  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);\r\n}\r\n#graphics-editor-container #graphics-rightbar {\r\n    width: 360px;\r\n    display: flex;\r\n    flex-direction: column;\r\n}\r\n\r\n#graphics-editor-container #canvas-container {\r\n    flex: 1;\r\n    position: relative;\r\n}\r\n\r\n#graphics-editor-container #graphics-editor-canvas {\r\n    width: 100%;\r\n    height: 100%;\r\n    cursor: grab;\r\n    outline: none;\r\n}\r\n\r\n#graphics-editor-container .toolbar {\r\n    display: flex;\r\n    flex-direction: column;\r\n    padding: 10px 5px;\r\n    gap: 5px;  \r\n    align-items: normal;\r\n}\r\n#graphics-editor-container .toolbar > div {\r\n    display: flex;\r\n    gap: 7px;\r\n    justify-content: space-between;\r\n}\r\n#graphics-editor-container .toolbar > div > div {\r\n    display: flex;\r\n    gap: 5px;\r\n}\r\n\r\n#graphics-editor-container #shape-list {\r\n    flex: 1;\r\n    overflow-y: auto;\r\n    padding: 15px;\r\n}\r\n\r\n#graphics-editor-container .shape-item {\r\n    padding: 12px;\r\n    margin-bottom: 8px;\r\n    border-radius: 0;\r\n    cursor: pointer;\r\n    transition: all 0.2s ease;\r\n}\r\n\r\n#graphics-editor-container #inspector {\r\n    padding: 15px;\r\n}\r\n\r\n#graphics-editor-container .scene-info {\r\n    padding: 10px 15px;\r\n    position: absolute;\r\n    bottom: 15px;\r\n    left: 15px;\r\n    border-radius: 0;\r\n    font-size: 13px;\r\n}\r\n#graphics-editor-container #move-modal button, #rotate-modal button, #isometric-modal button {\r\n    width: 48%;\r\n}\r\n\r\n\r\n#graphics-editor-container .ref-container {\r\n    display: flex;\r\n    gap: 10px;\r\n}\r\n\r\n#graphics-editor-container .ref-select {\r\n    flex: 1;\r\n    min-width: 150px;\r\n}\r\n\r\n#graphics-editor-container .ref-values {\r\n    display: flex;\r\n    flex-wrap: wrap;\r\n    gap: 5px;\r\n    margin-bottom: 5px;\r\n}\r\n\r\n#graphics-editor-container .ref-value-item {\r\n    border-radius: 4px;\r\n    padding: 3px 6px;\r\n    display: flex;\r\n    align-items: center;\r\n    gap: 5px;\r\n}\r\n\r\n#graphics-editor-container .remove-ref-btn {\r\n    padding: 0 3px;\r\n    font-size: 14px;\r\n}\r\n\r\n#graphics-editor-container #rotate-group-modal .modal-content {\r\n    width: 400px;\r\n    padding: 20px;\r\n}\r\n\r\n#graphics-editor-container #rotate-group-modal .form-row {\r\n    display: flex;\r\n    align-items: center;\r\n    margin-bottom: 15px;\r\n}\r\n\r\n#graphics-editor-container #rotate-group-modal label {\r\n    width: 100px;\r\n    display: inline-block;\r\n}\r\n\r\n#graphics-editor-container #rotate-group-modal input[type=\"range\"] {\r\n    flex-grow: 1;\r\n    margin: 0 10px;\r\n}\r\n\r\n#graphics-editor-container #rotate-group-modal .button-row {\r\n    display: flex;\r\n    justify-content: flex-end;\r\n    margin-top: 20px;\r\n}\r\n\r\n#graphics-editor-container #rotate-group-modal button {\r\n    margin-left: 10px;\r\n    padding: 6px 12px;\r\n    cursor: pointer;\r\n}\r\n\r\n/* Base styling for shape list */\r\n#graphics-editor-container #shape-list {\r\n    padding: 10px;\r\n    user-select: none; /* Prevent text selection during drag */\r\n  }\r\n  \r\n  /* Common styles for items */\r\n  #graphics-editor-container  .shape-item, .group-item {\r\n    padding: 8px;\r\n    margin: 5px 0;\r\n    border-radius: 4px;\r\n    cursor: grab;\r\n    border: 1px solid transparent;\r\n    transition: border-color 0.2s;\r\n  }\r\n  \r\n  /* Shapes styling */\r\n  #graphics-editor-container  .shape-item {\r\n    border-left: 1px solid #555;\r\n  }\r\n  \r\n  #graphics-editor-container  .shape-item:active {\r\n    cursor: grabbing;\r\n  }\r\n  \r\n  /* Group styling */\r\n  #graphics-editor-container  .group-item {\r\n    border-left: 4px solid #007bff; /* Visual distinction for groups */\r\n    font-weight: 500;\r\n  }\r\n  \r\n  /* Selected states - use border instead of background */\r\n  #graphics-editor-container  .shape-item.selected, \r\n  #graphics-editor-container  .group-item.selected {\r\n    border-color: #4080ff;\r\n  }\r\n  \r\n  /* Drag-over states */\r\n  #graphics-editor-container .group-item.drag-over,\r\n  #graphics-editor-container  #shape-list.drag-over {\r\n    border-color: #40a040;\r\n    box-shadow: 0 0 3px rgba(0, 100, 0, 0.5);\r\n  }\r\n  \r\n  /* Animation for when dragging */\r\n  #graphics-editor-container .shape-item.dragging {\r\n    opacity: 0.7;\r\n  }\r\n  \r\n  /* Group shapes container */\r\n  #graphics-editor-container .group-shapes {\r\n    margin-left: 15px;\r\n    padding: 5px;\r\n    border-left: 2px dashed #666;\r\n  }\r\n  \r\n  /* Ungrouped shapes section */\r\n  #graphics-editor-container #shape-list .ungrouped-shapes {\r\n    margin-top: 10px;\r\n    padding: 10px;\r\n    border: 1px dashed #666;\r\n  }\r\n\r\n  #graphics-editor-container .transform-buttons {\r\n    display: flex;\r\n    gap: 10px;\r\n    margin-bottom: 10px;\r\n}\r\n\r\n#graphics-editor-container .transform-buttons button {\r\n    flex: 1;\r\n    padding: 8px;\r\n    background: #444;\r\n    border: 1px solid #666;\r\n    color: white;\r\n    cursor: pointer;\r\n}\r\n\r\n#graphics-editor-container .transform-buttons button.active {\r\n    background: #0066cc;\r\n    border-color: #0088ff;\r\n}",
         "html": "<div id=\"graphics-editor-container\" class=\"main-content-container\">\r\n   <div id=\"graphics-sidebar\" class=\"content-sidebar\">\r\n      <div id=\"toolbar\" class=\"toolbar\">\r\n         <div>    \r\n            <div>\r\n               <button id=\"add-animation\" class=\"btn btn-add\" title=\"Add Animation\">+A</button>                        \r\n               <button id=\"delete-animation\" class=\"btn btn-danger\" title=\"Delete Animation\">-A</button>                        \r\n            </div>                   \r\n            <div>\r\n               <button id=\"add-frame\" class=\"btn btn-add\" title=\"Add Frame\">+F</button>                        \r\n               <button id=\"delete-frame\" class=\"btn btn-danger\" title=\"Delete Frame\">-F</button>                        \r\n            </div>\r\n            <div>\r\n               <button id=\"create-group\" class=\"btn btn-add\" title=\"Create Group\">+G</button>\r\n               <button id=\"delete-group\" class=\"btn btn-danger\" title=\"Delete Group\">-G</button>\r\n            </div>\r\n            <div>                    \r\n               <button id=\"add-shape\" class=\"btn btn-add\" title=\"Add Shape\">+S</button>                        \r\n               <button id=\"delete-shape\" class=\"btn btn-danger\" title=\"Delete Shape\">-S</button>           \r\n            </div>\r\n         </div>  \r\n         <div>\r\n            <div>\r\n               <button id=\"preview-animation\" class=\"btn btn-primary\" title=\"Preview Animation\">▶</button> \r\n               <button id=\"generate-isometric\" class=\"btn btn-primary\" title=\"Generate Isometric Sprites\">Iso</button>                    \r\n            </div>\r\n         </div>\r\n      </div>\r\n      <div id=\"frame-list\"></div>\r\n      <div id=\"group-list\"></div>\r\n      <div id=\"shape-list\"></div>\r\n   </div>\r\n   <div id=\"canvas-container\" class=\"grid-background\">\r\n      <canvas id=\"graphics-editor-canvas\"></canvas>\r\n      <div class=\"scene-info\">\r\n         <div>Shapes: <span id=\"shape-count\">0</span></div>\r\n         <div>Selected: <span id=\"selected-shape\">None</span></div>\r\n         <div><small>Controls: Left-click to select, Drag to rotate, Right-drag to pan, Scroll to zoom</small></div>\r\n      </div>\r\n   </div>\r\n   <div id=\"graphics-rightbar\">\r\n      <div id=\"inspector\"></div>\r\n      <div id=\"json-editor\" style=\"display: none\">                        \r\n        <textarea id=\"json-content\" placeholder=\"Edit JSON here...\"></textarea>                    \r\n\t\t\t</div>\r\n   </div>\r\n</div>\r\n"
       },
-      "audioEditor": {
-        "title": "Audio Editor",
-        "fileName": "audioEditor",
-        "css": "#audio-editor-container {\r\n    padding: 20px;\r\n    margin: 0 auto;\r\n    border-radius: 8px;\r\n    flex-direction: column;\r\n}\r\n\r\n#audio-editor-container .main-flex-container {\r\n    display: flex;\r\n    flex-wrap: wrap;\r\n    gap: 20px;\r\n}\r\n\r\n#audio-editor-container #status-container {\r\n    width: 100%;\r\n    padding: 10px;\r\n    text-align: center;\r\n}\r\n\r\n#audio-editor-container #status-message {\r\n    color: #333;\r\n    font-weight: bold;\r\n}\r\n\r\n#audio-editor-container .parameters-container {\r\n    flex: 1;\r\n    min-width: 300px;\r\n    padding: 15px;\r\n    margin: 10px 0;\r\n    border-radius: 8px;\r\n    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);\r\n}\r\n\r\n#audio-editor-container .control-buttons {\r\n    margin-bottom: 10px;\r\n    display: flex;\r\n    gap: 10px;\r\n    flex-wrap: wrap;\r\n}\r\n\r\n#audio-editor-container .parameter-group {\r\n    display: grid;\r\n    gap: 10px;\r\n    margin-top: 15px;\r\n}\r\n\r\n#audio-editor-container .parameter-group label {\r\n    display: flex;\r\n    align-items: center;\r\n    gap: 10px;\r\n    font-size: 0.9em;\r\n}\r\n\r\n#audio-editor-container .value-display {\r\n    min-width: 60px;\r\n    text-align: right;\r\n    font-family: monospace;\r\n}\r\n\r\n#audio-editor-container input[type=\"range\"] {\r\n    flex-grow: 1;\r\n}\r\n\r\n\r\n@media (max-width: 600px) {\r\n    #audio-editor-container .parameters-container {\r\n        min-width: 100%;\r\n    }\r\n    \r\n    #audio-editor-container .control-buttons {\r\n        flex-direction: column;\r\n    }\r\n    \r\n    #audio-editor-container .parameter-group label {\r\n        flex-direction: column;\r\n        align-items: flex-start;\r\n    }\r\n}",
-        "html": "<div id=\"audio-editor-container\">       \r\n     <div id=\"status-container\">\r\n        <span id=\"status-message\">Ready</span>\r\n    </div>\r\n\r\n    <div class=\"main-flex-container\">\r\n        <!-- Status Message Area -->\r\n\r\n        <!-- Basic Parameters -->\r\n        <div class=\"parameters-container\">\r\n            <!-- Playback Controls -->\r\n            <div class=\"control-buttons\">\r\n                <button id=\"playBtn\" class=\"primary-button\">Play</button>\r\n                <button id=\"exportBtn\">Save</button>\r\n                <button id=\"randomSoundBtn\">🎲 Randomize Sound</button>\r\n            </div>\r\n            <h3>Basic Parameters</h3>\r\n            <div class=\"parameter-group\">\r\n                <label>\r\n                    Waveform:\r\n                    <select id=\"waveform\">\r\n                        <option value=\"sine\">Sine</option>\r\n                        <option value=\"square\">Square</option>\r\n                        <option value=\"sawtooth\">Sawtooth</option>\r\n                        <option value=\"triangle\">Triangle</option>\r\n                        <option value=\"noise\">Noise</option>\r\n                    </select>\r\n                </label>\r\n                <label>\r\n                    Frequency:\r\n                    <input type=\"range\" id=\"frequency\" min=\"20\" max=\"2000\" value=\"440\" step=\"1\">\r\n                    <span class=\"value-display\">440 Hz</span>\r\n                </label>\r\n                <label>\r\n                    Duration:\r\n                    <input type=\"range\" id=\"duration\" min=\"0.1\" max=\"5\" value=\"1\" step=\"0.1\">\r\n                    <span class=\"value-display\">1.00 s</span>\r\n                </label>\r\n                <label>\r\n                    Volume:\r\n                    <input type=\"range\" id=\"volume\" min=\"0\" max=\"1\" value=\"0.7\" step=\"0.01\">\r\n                    <span class=\"value-display\">70%</span>\r\n                </label>\r\n            </div>\r\n        </div>\r\n        <div class=\"parameters-container\">\r\n            <h3>Noise Generator</h3>\r\n            <div class=\"parameter-group\">\r\n                <label >\r\n                    Noise Type:\r\n                    <select id=\"noiseType\">\r\n                        <option value=\"white\">White</option>\r\n                        <option value=\"pink\">Pink</option>\r\n                        <option value=\"brown\">Brown</option>\r\n                    </select>\r\n                </label>\r\n                <label>\r\n                    Noise Amount:\r\n                    <input type=\"range\" id=\"noiseAmount\" min=\"0\" max=\"1\" value=\"0\" step=\"0.01\">\r\n                    <span class=\"value-display\">0%</span>\r\n                </label>\r\n                <label >\r\n                    Noise Filter:\r\n                    <select id=\"noiseFilterType\">\r\n                        <option value=\"none\">None</option>\r\n                        <option value=\"lowpass\">Low Pass</option>\r\n                        <option value=\"highpass\">High Pass</option>\r\n                        <option value=\"bandpass\">Band Pass</option>\r\n                    </select>\r\n                </label>\r\n                <label>\r\n                    Noise Filter Freq:\r\n                    <input type=\"range\" id=\"noiseFilterFreq\" min=\"20\" max=\"20000\" value=\"2000\" step=\"1\">\r\n                    <span class=\"value-display\">2000 Hz</span>\r\n                </label>\r\n            </div>\r\n            <!-- ADSR Envelope -->\r\n            <div class=\"parameters-container\">\r\n                <h3>Envelope (ADSR)</h3>\r\n                <div class=\"parameter-group\">\r\n                    <label>\r\n                        Attack:\r\n                        <input type=\"range\" id=\"attack\" min=\"0.001\" max=\"2\" value=\"0.01\" step=\"0.001\">\r\n                        <span class=\"value-display\">0.010 s</span>\r\n                    </label>\r\n                    <label>\r\n                        Decay:\r\n                        <input type=\"range\" id=\"decay\" min=\"0\" max=\"2\" value=\"0.1\" step=\"0.001\">\r\n                        <span class=\"value-display\">0.10 s</span>\r\n                    </label>\r\n                    <label>\r\n                        Sustain:\r\n                        <input type=\"range\" id=\"sustain\" min=\"0\" max=\"1\" value=\"0.7\" step=\"0.01\">\r\n                        <span class=\"value-display\">70%</span>\r\n                    </label>\r\n                    <label>\r\n                        Release:\r\n                        <input type=\"range\" id=\"release\" min=\"0.001\" max=\"5\" value=\"0.3\" step=\"0.001\">\r\n                        <span class=\"value-display\">0.30 s</span>\r\n                    </label>\r\n                </div>\r\n            </div>\r\n        </div>\r\n\r\n        <!-- Pitch Envelope -->\r\n        <div class=\"parameters-container\">\r\n            <h3>Pitch Envelope</h3>\r\n            <div class=\"parameter-group\">\r\n                <label>\r\n                    Start:\r\n                    <input type=\"range\" id=\"pitchEnvStart\" min=\"0.1\" max=\"4\" value=\"1\" step=\"0.01\">\r\n                    <span class=\"value-display\">1.00x</span>\r\n                </label>\r\n                <label>\r\n                    End:\r\n                    <input type=\"range\" id=\"pitchEnvEnd\" min=\"0.1\" max=\"4\" value=\"1\" step=\"0.01\">\r\n                    <span class=\"value-display\">1.00x</span>\r\n                </label>\r\n            </div>\r\n        </div>\r\n\r\n        <!-- Effects -->\r\n        <div class=\"parameters-container\">\r\n            <h3>Effects</h3>\r\n            <div class=\"parameter-group\">\r\n                <label>\r\n                    Filter Type:\r\n                    <select id=\"filterType\">\r\n                        <option value=\"lowpass\">Low Pass</option>\r\n                        <option value=\"highpass\">High Pass</option>\r\n                        <option value=\"bandpass\">Band Pass</option>\r\n                        <option value=\"notch\">Notch</option>\r\n                    </select>\r\n                </label>\r\n                <label>\r\n                    Filter Frequency:\r\n                    <input type=\"range\" id=\"filterFreq\" min=\"20\" max=\"20000\" value=\"1000\" step=\"1\">\r\n                    <span class=\"value-display\">1000 Hz</span>\r\n                </label>\r\n                <label>\r\n                    Filter Q:\r\n                    <input type=\"range\" id=\"filterQ\" min=\"0.1\" max=\"20\" value=\"1\" step=\"0.1\">\r\n                    <span class=\"value-display\">Q: 1.0</span>\r\n                </label>\r\n                <label>\r\n                    Distortion:\r\n                    <input type=\"range\" id=\"distortion\" min=\"0\" max=\"100\" value=\"0\" step=\"1\">\r\n                    <span class=\"value-display\">0%</span>\r\n                </label>\r\n                <label>\r\n                    Delay Time:\r\n                    <input type=\"range\" id=\"delayTime\" min=\"0\" max=\"2\" value=\"0.3\" step=\"0.01\">\r\n                    <span class=\"value-display\">0.30 s</span>\r\n                </label>\r\n                <label>\r\n                    Delay Feedback:\r\n                    <input type=\"range\" id=\"delayFeedback\" min=\"0\" max=\"0.9\" value=\"0\" step=\"0.01\">\r\n                    <span class=\"value-display\">0%</span>\r\n                </label>\r\n                <label>\r\n                    Reverb:\r\n                    <input type=\"range\" id=\"reverbAmount\" min=\"0\" max=\"1\" value=\"0\" step=\"0.01\">\r\n                    <span class=\"value-display\">0%</span>\r\n                </label>\r\n                <label>\r\n                    Bitcrusher:\r\n                    <input type=\"range\" id=\"bitcrusher\" min=\"0\" max=\"1\" value=\"0\" step=\"0.01\">\r\n                    <span class=\"value-display\">0%</span>\r\n                </label>\r\n                <label>\r\n                    Panning:\r\n                    <input type=\"range\" id=\"panning\" min=\"-1\" max=\"1\" value=\"0\" step=\"0.01\">\r\n                    <span class=\"value-display\">Center</span>\r\n                </label>\r\n            </div>\r\n        </div>\r\n    </div>\r\n</div>\r\n"
-      },
       "main": {
         "title": "Main Interface",
         "modals": [],
         "fileName": "main",
         "css": ":root {\r\n\t/* Solid hex colors */\r\n\t--primary-dark: #0f2418;\r\n\t/* Deep forest green */\r\n\t--primary-bg: #1a3526;\r\n\t/* Dark moss green */\r\n\t--secondary-bg: #224031;\r\n\t/* Muted pine green */\r\n\t--accent-color: #4a7c59;\r\n\t/* Fresh green (main accent) - matches grass */\r\n\t--bright-accent: #5a9e6f;\r\n\t/* Lighter, vibrant green */\r\n\t--highlight-color: #6abe54;\r\n\t/* Soft green highlight - matches necroOrb */\r\n\t--shadow-color: #3a443c;\r\n\t/* Darker green for shadows */\r\n\t--text-color: #f7f7f0;\r\n\t/* Off-white for readability - matches our palette */\r\n\t--gold-color: #e3d163;\r\n\t/* Warm gold - matches goldMine inner */\r\n\t--essence-color: #7047a3;\r\n\t/* Purple for essence - matches necromancer color */\r\n\t--health-color: #4a7c59;\r\n\t/* Forest green - matches grass */\r\n\t/* Opacity variables for use with solid colors */\r\n\t--semi-transparent: 0.6;\r\n\t--high-transparent: 0.8;\r\n\t--very-high-transparent: 0.95;\r\n\t--low-transparent: 0.3;\r\n\t--overlay-transparent: 0.75;\r\n\t--hover-transparent: 0.9;\r\n\t--full-transparent: 0.98;\r\n\t--near-full-transparent: 0.99;\r\n}\r\n\r\n* {\r\n\tmargin: 0;\r\n\tpadding: 0;\r\n\tbox-sizing: border-box;\r\n}\r\n\r\nbody {\r\n\tmargin: 0;\r\n\tpadding: 0;\r\n\tbackground-color: var(--primary-dark);\r\n\tbackground-image: radial-gradient(circle at center, var(--primary-bg) 0%, var(--primary-dark) 100%);\r\n\tcolor: var(--text-color);\r\n\tfont-family: 'Crimson Pro', serif;\r\n\toverflow: hidden;\r\n\tline-height: 1.6;\r\n}\r\n\r\n#gameContainer {\r\n    position: relative;\r\n    width: 100vw;\r\n    height: 100vh;\r\n}\r\n\r\ncanvas { \r\n    background-color: var(--secondary-bg);\r\n    transition: transform 0.3s ease;\r\n    width: 100vw;\r\n    height: 100vh;\r\n    position: absolute;\r\n    left: 0;\r\n    top: 0;\r\n    right: 0;\r\n    bottom: 0;\r\n    margin: 0;\r\n    z-index: 0;\r\n}\r\n\r\n/* ========== Tower Menu Container ========== */\r\n#towerMenu {\r\n    position: absolute;\r\n    bottom: 30px;\r\n    border-radius: 14px;\r\n    padding: .5em;\r\n    max-width: 90%;\r\n    width: 820px;\r\n    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);\r\n    border: 1px solid var(--accent-color);\r\n\tbackground-color: var(--primary-dark);\r\n    display: grid;\r\n    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));\r\n    gap: 5px;\r\n    z-index: 100;\r\n\tleft: 0;\r\n\tright: 0;\r\n\tmargin: 0 auto;\r\n\toverflow-x: auto;\r\n\toverflow-y: hidden;\r\n\tpadding: 10px;\r\n\tscrollbar-width: thin;\r\n\tscrollbar-color: var(--accent-color) transparent;\r\n}\r\n\r\n/* ========== Tower Options ========== */\r\n.tower-option {\r\n\tbackground-color: var(--secondary-bg);\r\n\tborder-radius: 8px;\r\n\tborder: 1px solid var(--accent-color);\r\n\tcolor: var(--text-color);\r\n\tcursor: pointer;\r\n\tpadding: .1em .5em;\r\n}\r\n.tower-option:hover {\r\n\tbackground-color: var(--primary-bg);\r\n\ttransition: background-color 0.3s ease;\r\n}\t\r\n\r\n#statsContainer {\r\n\twidth: 800px;\r\n\tmax-width: 90%;\r\n\tpadding: 12px;\r\n\tbackground: var(--primary-dark);\r\n\tborder-radius: 10px;\r\n\tborder: 1px solid var(--accent-color);\r\n\tborder-opacity: var(--low-transparent);\r\n\t/* Note: This won't work directly; see below */\r\n\tbackdrop-filter: blur(5px);\r\n\tposition: absolute;\r\n\tz-index: 1;\r\n\tmargin: 1em auto;\r\n\tleft: 0;\r\n\tright: 0;\r\n}\r\n\r\n#stats {\r\n\tdisplay: flex;\r\n\tjustify-content: space-around;\r\n\tgap: 20px;\r\n\tflex-wrap: wrap;\r\n}\r\n\r\n.stat {\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tgap: 8px;\r\n\tfont-size: 1.1rem;\r\n}\r\n\r\n.stat-icon {\r\n\twidth: 24px;\r\n\theight: 24px;\r\n\tborder-radius: 50%;\r\n\tbox-shadow: 0 0 8px #000;\r\n\tdisplay: flex;\r\n\tjustify-content: center;\r\n\talign-items: center;\r\n}\r\n\r\n#upgradeMenu {\r\n\tposition: absolute;\r\n\ttop: 50%;\r\n\tleft: 50%;\r\n\ttransform: translate(-50%, -50%);\r\n\tbackground: linear-gradient(to bottom, var(--secondary-bg), var(--primary-dark));\r\n\topacity: var(--very-high-transparent);\r\n\tcolor: var(--text-color);\r\n\tpadding: 25px;\r\n\tborder-radius: 12px;\r\n\tborder: 2px solid var(--accent-color);\r\n\tdisplay: none;\r\n\tz-index: 10;\r\n\twidth: 450px;\r\n\tbox-shadow: 0 0 40px var(--shadow-color);\r\n\tbackdrop-filter: blur(10px);\r\n}\r\n\r\n#upgradeMenu h2 {\r\n\ttext-align: center;\r\n\tcolor: var(--highlight-color);\r\n\tmargin-top: 0;\r\n\tborder-bottom: 1px solid var(--accent-color);\r\n\tpadding-bottom: 15px;\r\n\tfont-family: 'Cinzel', serif;\r\n\tletter-spacing: 1px;\r\n\tfont-weight: 700;\r\n}\r\n\r\n.upgrade-option {\r\n\tmargin: 18px 0;\r\n\tpadding: 18px;\r\n\tbackground: linear-gradient(to right, var(--secondary-bg), var(--primary-bg));\r\n\topacity: var(--high-transparent);\r\n\tcursor: pointer;\r\n\tborder-radius: 8px;\r\n\ttransition: all 0.3s;\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tborder: 1px solid var(--accent-color);\r\n\tborder-opacity: var(--low-transparent);\r\n\t/* Note: This won't work directly; see below */\r\n\tbox-shadow: 0 4px 8px #000;\r\n}\r\n\r\n.upgrade-option:hover {\r\n\tbackground: linear-gradient(to right, var(--accent-color), var(--bright-accent));\r\n\topacity: var(--hover-transparent);\r\n\ttransform: translateX(8px);\r\n\tbox-shadow: 0 6px 12px #000;\r\n}\r\n\r\n.upgrade-icon {\r\n\twidth: 48px;\r\n\theight: 48px;\r\n\tmargin-right: 18px;\r\n\tbackground: linear-gradient(135deg, var(--accent-color), var(--secondary-bg));\r\n\tborder-radius: 8px;\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tjustify-content: center;\r\n\tfont-size: 22px;\r\n\tbox-shadow: 0 3px 6px #000;\r\n}\r\n\r\n.upgrade-desc {\r\n\tflex-grow: 1;\r\n}\r\n\r\n.upgrade-title {\r\n\tfont-weight: bold;\r\n\tmargin-bottom: 6px;\r\n\tcolor: var(--highlight-color);\r\n\tfont-size: 1.2rem;\r\n\tfont-family: 'Cinzel', serif;\r\n}\r\n\r\n#overlay {\r\n\tposition: absolute;\r\n\ttop: 0;\r\n\tleft: 0;\r\n\twidth: 100%;\r\n\theight: 100%;\r\n\tbackground: #000;\r\n\topacity: var(--overlay-transparent);\r\n\tdisplay: none;\r\n\tz-index: 5;\r\n\tbackdrop-filter: blur(3px);\r\n}\r\n\r\n#waveInfo {\r\n\tposition: absolute;\r\n\ttop: 15px;\r\n\tleft: 50%;\r\n\ttransform: translateX(-50%);\r\n\tbackground: linear-gradient(to right, var(--secondary-bg), var(--primary-bg));\r\n\topacity: var(--high-transparent);\r\n\tpadding: 8px 20px;\r\n\tborder-radius: 20px;\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tgap: 15px;\r\n\tbox-shadow: 0 4px 12px #000;\r\n\tborder: 1px solid var(--accent-color);\r\n\tborder-opacity: var(--low-transparent);\r\n\t/* Note: This won't work directly; see below */\r\n\tbackdrop-filter: blur(5px);\r\n}\r\n\r\n#waveDisplay {\r\n\tfont-weight: bold;\r\n\tcolor: var(--highlight-color);\r\n}\r\n\r\n.progress-bar {\r\n\twidth: 220px;\r\n\theight: 12px;\r\n\tbackground: var(--primary-dark);\r\n\tborder-radius: 6px;\r\n\toverflow: hidden;\r\n\tbox-shadow: inset 0 1px 3px #000;\r\n\tborder: 1px solid var(--accent-color);\r\n\tborder-opacity: var(--low-transparent);\r\n\t/* Note: This won't work directly; see below */\r\n}\r\n\r\n.progress-fill {\r\n\theight: 100%;\r\n\tbackground: linear-gradient(to right, var(--accent-color), var(--highlight-color));\r\n\twidth: 0%;\r\n\tbox-shadow: 0 0 8px var(--shadow-color);\r\n\ttransition: width 0.3s ease;\r\n}\r\n\r\n#startGameBtn {\r\n\tpadding: 12px 35px;\r\n\tbackground: linear-gradient(to bottom, var(--bright-accent), var(--accent-color));\r\n\tcolor: white;\r\n\tborder: none;\r\n\tborder-radius: 30px;\r\n\tcursor: pointer;\r\n\tfont-family: 'Cinzel', serif;\r\n\tfont-weight: 500;\r\n\tfont-size: 1.2rem;\r\n\ttransition: all 0.3s;\r\n\tbox-shadow: 0 6px 12px #000;\r\n\ttext-shadow: 0 1px 2px #000;\r\n\tposition: absolute;\r\n\ttop: 50%;\r\n\tleft: 50%;\r\n\ttransform: translate(-50%, -50%);\r\n\tz-index: 20;\r\n}\r\n\r\n#startGameBtn:hover {\r\n\tbackground: linear-gradient(to bottom, var(--highlight-color), var(--bright-accent));\r\n\ttransform: translate(-50%, -50%) scale(1.05);\r\n\tbox-shadow: 0 8px 16px #000;\r\n}\r\n\r\n#startGameBtn:active {\r\n\ttransform: translate(-50%, -50%) scale(1);\r\n\tbox-shadow: 0 4px 8px #000;\r\n}\r\n\r\n#tooltip {\r\n\tposition: absolute;\r\n\tbackground: linear-gradient(to bottom, var(--primary-dark), var(--primary-dark));\r\n\topacity: var(--very-high-transparent);\r\n\tcolor: var(--text-color);\r\n\tpadding: 12px 15px;\r\n\tborder-radius: 8px;\r\n\tdisplay: none;\r\n\tz-index: 100;\r\n\tborder: 1px solid var(--accent-color);\r\n\tpointer-events: none;\r\n\tmax-width: 280px;\r\n\tbox-shadow: 0 0 20px var(--shadow-color);\r\n\tfont-size: 0.95rem;\r\n\tbackdrop-filter: blur(5px);\r\n}\r\n\r\n#gameOverMenu,\r\n#victoryMenu {\r\n\tposition: absolute;\r\n\ttop: 50%;\r\n\tleft: 50%;\r\n\ttransform: translate(-50%, -50%);\r\n\tbackground: linear-gradient(to bottom, var(--secondary-bg), var(--primary-dark));\r\n\topacity: var(--full-transparent);\r\n\tcolor: white;\r\n\tpadding: 40px;\r\n\ttext-align: center;\r\n\tborder-radius: 15px;\r\n\tborder: 3px solid var(--accent-color);\r\n\tz-index: 20;\r\n\tdisplay: none;\r\n\tbox-shadow: 0 0 60px var(--shadow-color);\r\n\tbackdrop-filter: blur(10px);\r\n\tmin-width: 350px;\r\n}\r\n\r\n#gameOverMenu h2,\r\n#victoryMenu h2 {\r\n\tcolor: var(--highlight-color);\r\n\tfont-size: 32px;\r\n\tmargin-bottom: 20px;\r\n\tfont-family: 'Cinzel', serif;\r\n\ttext-shadow: 0 2px 4px #000;\r\n}\r\n\r\n#gameOverMenu p,\r\n#victoryMenu p {\r\n\tfont-size: 18px;\r\n\tmargin-bottom: 25px;\r\n\tline-height: 1.6;\r\n}\r\n\r\n.menu-button {\r\n\tmargin-top: 25px;\r\n\tpadding: 12px 25px;\r\n\tbackground: linear-gradient(to bottom, var(--bright-accent), var(--accent-color));\r\n\tborder: none;\r\n\tcolor: white;\r\n\tcursor: pointer;\r\n\tborder-radius: 8px;\r\n\ttransition: all 0.3s;\r\n\tfont-family: 'Cinzel', serif;\r\n\tfont-size: 16px;\r\n\tletter-spacing: 1px;\r\n\tbox-shadow: 0 4px 8px #000;\r\n\ttext-shadow: 0 1px 2px #000;\r\n}\r\n\r\n.menu-button:hover {\r\n\tbackground: linear-gradient(to bottom, var(--highlight-color), var(--bright-accent));\r\n\ttransform: scale(1.05) translateY(-3px);\r\n\tbox-shadow: 0 6px 15px #000;\r\n}\r\n\r\n.menu-button:active {\r\n\ttransform: scale(1) translateY(0);\r\n\tbox-shadow: 0 3px 6px #000;\r\n}\r\n\r\n/* Stat icons with custom styling */\r\n#shardsDisplay {\r\n\tcolor: var(--gold-color);\r\n\tfont-weight: 600;\r\n}\r\n\r\n#essenceDisplay,\r\n#essenceNeededDisplay {\r\n\tcolor: var(--essence-color);\r\n\tfont-weight: 600;\r\n}\r\n\r\n#populationDisplay,\r\n#maxPopulationDisplay {\r\n\tcolor: var(--essence-color);\r\n\tfont-weight: 600;\r\n}\r\n\r\n#hpDisplay {\r\n\tcolor: var(--health-color);\r\n\tfont-weight: 600;\r\n}\r\n\r\n#waveDisplay {\r\n\tdisplay: inline-block;\r\n}\r\n\r\n\r\n/* Mobile-first adjustments (applies below 768px) */\r\n@media screen and (max-width: 768px) {\r\n    /* Base layout adjustments */\r\n    #gameContainer {\r\n        overflow: hidden;\r\n    }\r\n    #towerMenu {\r\n        position: fixed;\r\n\t\tbottom: 0;\r\n        left: 0;\r\n        right: 0;\r\n        width: 95vw;\r\n\t\tmax-height: 20vh;\r\n\t\toverflow-y:auto;\r\n        max-width: unset;\r\n        margin: 0 auto;\r\n        grid-template-columns: repeat(2, 1fr);\r\n    }\r\n\r\n    .tower-option {\r\n        min-width: unset;\r\n        font-size: 0.95rem;\r\n    }\r\n\r\n    /* Add a close button for mobile */\r\n    #menuCloseButton {\r\n        display: block;\r\n        position: absolute;\r\n        top: 8px;\r\n        right: 8px;\r\n        background: var(--accent-color);\r\n        border: none;\r\n        color: var(--text-color);\r\n        width: 32px;\r\n        height: 32px;\r\n        border-radius: 50%;\r\n        cursor: pointer;\r\n        z-index: 100;\r\n    }\r\n\r\n    /* Adjust stats container position */\r\n    #statsContainer {\r\n        top: 10px;\r\n        width: 95%;\r\n        padding: 8px;\r\n    }\r\n    #stats {\r\n        gap: 8px;\r\n    }\r\n\r\n    .stat {\r\n        font-size: 0.9rem;\r\n        gap: 4px;\r\n    }\r\n\r\n    /* Upgrade menu adjustments */\r\n    #upgradeMenu {\r\n        width: 90%;\r\n        padding: 15px;\r\n    }\r\n\r\n    .upgrade-option {\r\n        margin: 12px 0;\r\n        padding: 12px;\r\n        flex-direction: column;\r\n        align-items: flex-start;\r\n    }\r\n\r\n    .upgrade-icon {\r\n        width: 36px;\r\n        height: 36px;\r\n        margin-right: 12px;\r\n        font-size: 18px;\r\n    }\r\n\r\n    .upgrade-title {\r\n        font-size: 1rem;\r\n    }\r\n\r\n    /* Wave info adjustments */\r\n    #waveInfo {\r\n        top: 80px;\r\n        width: 90%;\r\n        padding: 6px 15px;\r\n    }\r\n\r\n    .progress-bar {\r\n        width: 150px;\r\n    }\r\n\r\n    /* Game over/victory menus */\r\n    #gameOverMenu, #victoryMenu {\r\n        width: 90%;\r\n        padding: 20px;\r\n    }\r\n\r\n    #gameOverMenu h2, #victoryMenu h2 {\r\n        font-size: 1.5rem;\r\n    }\r\n\r\n    /* Tooltip adjustments */\r\n    #tooltip {\r\n        max-width: 200px;\r\n        font-size: 0.85rem;\r\n        padding: 8px 10px;\r\n    }\r\n\r\n    /* Button sizes */\r\n    #startGameBtn {\r\n        padding: 10px 25px;\r\n        font-size: 1rem;\r\n    }\r\n\r\n    .menu-button {\r\n        padding: 10px 20px;\r\n        font-size: 0.9rem;\r\n    }\r\n}\r\n\r\n/* Additional adjustments for very small screens */\r\n@media screen and (max-width: 480px) {\r\n\r\n\r\n    #stats {\r\n        justify-content: center;\r\n    }\r\n\r\n    .stat {\r\n        font-size: 0.8rem;\r\n    }\r\n\r\n    .progress-bar {\r\n        width: 120px;\r\n        height: 10px;\r\n    }\r\n\r\n    #waveDisplay {\r\n        font-size: 0.9rem;\r\n    }\r\n\r\n    .upgrade-option {\r\n        padding: 10px;\r\n        margin: 8px 0;\r\n    }\r\n\r\n    .upgrade-title {\r\n        font-size: 0.9rem;\r\n    }\r\n}\r\n\r\n/* Orientation-specific adjustments */\r\n@media screen and (max-height: 500px) and (orientation: landscape) {\r\n\r\n    #statsContainer {\r\n        top: 5px;\r\n        padding: 5px;\r\n    }\r\n\r\n  \r\n}\r\n@media screen and (max-width: 480px) {\r\n\r\n\r\n    #menuCloseButton {\r\n        top: 4px;\r\n        right: 4px;\r\n        width: 28px;\r\n        height: 28px;\r\n    }\r\n}",
         "html": "<div id=\"gameContainer\">\r\n    <div id=\"waveInfo\">\r\n        <span>Wave: <span id=\"waveDisplay\">1</span></span>             \r\n        <div class=\"progress-bar\">\r\n            <div class=\"progress-fill\" id=\"waveProgress\"></div>\r\n        </div>\r\n    </div>\r\n    <div id=\"statsContainer\">\r\n        <div id=\"stats\">\r\n            <div class=\"stat\">\r\n                <div class=\"stat-icon\" style=\"background-color: var(--gold-color);\"></div>\r\n                <span>Gold: <span id=\"shardsDisplay\">50</span></span>                 \r\n            </div>\r\n            <div class=\"stat\">\r\n                <div class=\"stat-icon\" style=\"background-color: var(--essence-color);\"></div>\r\n                <span>Essence: <span id=\"essenceDisplay\">0</span>/<span id=\"essenceNeededDisplay\">100</span></span>                 \r\n            </div>\r\n            <div class=\"stat\">\r\n                <div class=\"stat-icon\" style=\"background-color: var(--essence-color);\"></div>\r\n                <span>Population: <span id=\"populationDisplay\">0</span>/<span id=\"maxPopulationDisplay\">5</span></span>                 \r\n            </div>\r\n            <div class=\"stat\">\r\n                <div class=\"stat-icon\" style=\"background-color: var(--health-color);\"></div>\r\n                <span>Core: <span id=\"hpDisplay\">100</span></span>                 \r\n            </div>\r\n        </div>\r\n    </div>\r\n    <canvas id=\"gameCanvas\" width=\"1536\" height=\"768\"></canvas>\r\n    <div id=\"towerMenu\">\r\n        <div class=\"tower-option\" data-type=\"sentry\">Photon Sentry (25)</div>\r\n        <div class=\"tower-option\" data-type=\"fusionCore\">Fusion Core (50)</div>\r\n        <div class=\"tower-option\" data-type=\"barracks\">Barracks (100)</div>\r\n        <div class=\"tower-option\" data-type=\"fabricator\">Fabricator (200)</div>\r\n        <div class=\"tower-option\" data-type=\"teslaCoil\">Tesla Coil (70)</div>\r\n        <div class=\"tower-option\" data-type=\"missileLauncher\">Missile Launcher (90)</div>\r\n        <div class=\"tower-option\" data-type=\"chrono\">Chrono Defibrilator (100)</div>\r\n        <div class=\"tower-option\" data-type=\"guardTower\">Guard Tower (70)</div>\r\n    </div>\r\n    <button id=\"startGameBtn\">Start Game</button>    \r\n</div>\r\n<div id=\"overlay\"></div>\r\n<div id=\"upgradeMenu\">\r\n    <h2>Level Up! Choose an Upgrade:</h2>\r\n    <div id=\"upgradeOptions\"></div>\r\n</div>\r\n<div id=\"tooltip\" style=\"display: none;\"></div>\r\n<div id=\"gameOverMenu\">\r\n    <h2>Home Destroyed!</h2>\r\n    <p>You survived <span id=\"gameOverWave\">0</span> waves</p>\r\n    <button class=\"menu-button\">Try Again</button>     \r\n</div>\r\n<div id=\"victoryMenu\">\r\n    <h2>Victory!</h2>\r\n    <p>You've successfully defended your Home through all waves!</p>\r\n    <button class=\"menu-button\">Play Again</button>     \r\n</div>"
+      },
+      "scriptEditor": {
+        "title": "Script Editor",
+        "fileName": "scriptEditor",
+        "css": "\r\n#script-editor-container .grid-background {\r\n    width: calc(100% - 450px);\r\n}\r\n/* Override global scrollbar suppression for CodeMirror */\r\n#script-editor-container .CodeMirror {\r\n    overflow-y: auto !important; /* Enable vertical scrolling */\r\n    -ms-overflow-style: auto !important; /* IE and Edge */\r\n    scrollbar-width: auto !important; /* Firefox */\r\n}\r\n\r\n/* Container and layout */\r\n#script-editor-container {\r\n    position: relative;\r\n    height: auto; /* Allow dynamic resizing */\r\n}\r\n\r\n#script-editor-container .grid-background {\r\n    width: calc(100% - 360px); /* Adjust for sidebar width */\r\n    flex: 1;\r\n    position: relative;\r\n    overflow: hidden; /* Contain children */\r\n}\r\n\r\n#script-editor-container .grid-background > div {\r\n    position: relative;\r\n    height: 100%;\r\n}\r\n#script-editor-sidebar {\r\n    width: 360px;\r\n    padding: 10px;\r\n}",
+        "html": "            <div id=\"script-editor-container\" class=\"main-content-container\">\r\n                <div id=\"script-editor-sidebar\" class=\"content-sidebar\">                    \r\n                    <h3>Script Editor</h3>\r\n                    <button id=\"save-script-btn\">Save Script</button>\r\n                </div>\r\n                <div class=\"grid-background\">\r\n                    <div>\r\n                        <textarea id=\"script-editor\" class=\"script-editor\" placeholder=\"Enter your script here...\"></textarea>                    \r\n                        <div class=\"handle\"></div>\r\n                    </div>\r\n                </div>\r\n            </div>\r\n"
       },
       "terrainEditor": {
         "title": "Terrain Editor",
@@ -17556,12 +17562,6 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "terrainEditor",
         "css": "#level-editor-container :root {\r\n\t--primary: #6366f1;\r\n\t--primary-dark: #4f46e5;\r\n\t--secondary: #10b981;\r\n\t--dark: #1e293b;\r\n\t--darker: #0f172a;\r\n\t--light: #e2e8f0;\r\n\t--accent: #8b5cf6;\r\n\t--danger: #ef4444;\r\n\t--text: #f8fafc;\r\n\t--text-muted: #94a3b8;\r\n\t--border-radius: 8px;\r\n\t--shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);\r\n  }\r\n\r\n  #level-editor-container * {\r\n\tmargin: 0;\r\n\tpadding: 0;\r\n\tbox-sizing: border-box;\r\n\tfont-family: 'Inter', system-ui, -apple-system, sans-serif;\r\n  }\r\n\r\n  #level-editor-container {\r\n\tbackground-color: var(--darker);\r\n\tcolor: var(--text);\r\n  }\r\n\r\n  #level-editor-container button {\r\n\tcursor: pointer;\r\n\tborder: none;\r\n\tborder-radius: var(--border-radius);\r\n\tpadding: 8px 12px;\r\n\tfont-weight: 500;\r\n\ttransition: all 0.2s ease;\r\n  }\r\n\r\n  #level-editor-container button:hover {\r\n\topacity: 0.9;\r\n\ttransform: translateY(-1px);\r\n  }\r\n\r\n  #level-editor-container button:active {\r\n\ttransform: translateY(0);\r\n  }\r\n\r\n  #level-editor-container input {\r\n\tbackground-color: var(--dark);\r\n\tborder: 1px solid #334155;\r\n\tcolor: var(--text);\r\n\tborder-radius: var(--border-radius);\r\n\tpadding: 8px 12px;\r\n\toutline: none;\r\n  }\r\n\r\n  #level-editor-container input:focus {\r\n\tborder-color: var(--primary);\r\n\tbox-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);\r\n  }\r\n\r\n  #level-editor-container input[type=\"number\"] {\r\n\twidth: 80px;\r\n  }\r\n\r\n  #level-editor-container input[type=\"color\"] {\r\n\twidth: 40px;\r\n\theight: 40px;\r\n\tpadding: 2px;\r\n\tcursor: pointer;\r\n  }\r\n\r\n  #level-editor-container {\r\n\tdisplay: flex;\r\n\tgap: 24px;\r\n\theight: 90vh;\r\n\toverflow: hidden;\r\n\tbackground-color: var(--darker);\r\n\tcolor: var(--text);\r\n\tposition: relative;\r\n  }\r\n\r\n  #level-editor-container .content-sidebar {\r\n\tdisplay: flex;\r\n\tflex-direction: column;\r\n\twidth: 320px;\r\n\tbackground-color: var(--dark);\r\n\tborder-radius: var(--border-radius);\r\n\tbox-shadow: var(--shadow);\r\n\toverflow: hidden;\r\n  }\r\n\r\n  #level-editor-container .toolbar {\r\n\tdisplay: flex;\r\n\tpadding: 16px;\r\n\tbackground-color: rgba(255, 255, 255, 0.03);\r\n\tborder-bottom: 1px solid rgba(255, 255, 255, 0.1);\r\n  }\r\n\r\n  #level-editor-container .toolbar button {\r\n\tbackground-color: transparent;\r\n\tcolor: var(--text-muted);\r\n\tfont-weight: 600;\r\n\tpadding: 8px 16px;\r\n\tborder-radius: var(--border-radius);\r\n  }\r\n\r\n  #level-editor-container .toolbar button.active {\r\n\tbackground-color: var(--primary);\r\n\tcolor: white;\r\n  }\r\n\r\n  #level-editor-container .tools {\r\n\tpadding: 20px;\r\n\tflex-grow: 1;\r\n\toverflow-y: auto;\r\n  }\r\n\r\n  #level-editor-container .form-row {\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tjustify-content: space-between;\r\n\tmargin-bottom: 16px;\r\n  }\r\n\r\n  #level-editor-container .form-row label {\r\n\tcolor: var(--text-muted);\r\n\tfont-size: 14px;\r\n\tflex: 1;\r\n  }\r\n\r\n  #level-editor-container h3 {\r\n\tcolor: var(--light);\r\n\tfont-size: 18px;\r\n\tmargin-bottom: 24px;\r\n\tfont-weight: 600;\r\n\tborder-bottom: 1px solid rgba(255, 255, 255, 0.1);\r\n\tpadding-bottom: 12px;\r\n  }\r\n\r\n  #level-editor-container h4 {\r\n\tcolor: var(--text-muted);\r\n\tfont-size: 16px;\r\n\tmargin: 24px 0 16px;\r\n\tfont-weight: 600;\r\n  }\r\n\r\n  #level-editor-container .grid-container {\r\n\tflex-grow: 1;\r\n\tposition: relative;\r\n\tbackground-color: var(--dark);\r\n\tborder-radius: var(--border-radius);\r\n\toverflow: hidden;\r\n\tbox-shadow: var(--shadow);\r\n  }\r\n\r\n  #level-editor-container .grid-background {\r\n\tbackground-image: \r\n\t  linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),\r\n\t  linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);\r\n\tbackground-size: 20px 20px;\r\n  }\r\n\r\n  #level-editor-container #grid {\r\n\tdisplay: block;\r\n\timage-rendering: pixelated;\r\n  }\r\n\r\n  #level-editor-container .translation-controls {\r\n\tposition: absolute;\r\n\tright: 20px;\r\n\tbottom: 20px;\r\n\tdisplay: grid;\r\n\tgrid-template-columns: repeat(3, 40px);\r\n\tgrid-template-rows: repeat(3, 40px);\r\n\tgap: 4px;\r\n\tz-index: 10;\r\n  }\r\n\r\n  #level-editor-container .translation-controls button {\r\n\twidth: 40px;\r\n\theight: 40px;\r\n\tbackground-color: rgba(15, 23, 42, 0.8);\r\n\tcolor: var(--light);\r\n\tborder: 1px solid rgba(255, 255, 255, 0.1);\r\n\tfont-size: 18px;\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tjustify-content: center;\r\n  }\r\n\r\n  #level-editor-container #translate-up {\r\n\tgrid-column: 2;\r\n\tgrid-row: 1;\r\n  }\r\n\r\n  #level-editor-container #translate-left {\r\n\tgrid-column: 1;\r\n\tgrid-row: 2;\r\n  }\r\n\r\n  #level-editor-container #translate-right {\r\n\tgrid-column: 3;\r\n\tgrid-row: 2;\r\n  }\r\n\r\n  #level-editor-container #translate-down {\r\n\tgrid-column: 2;\r\n\tgrid-row: 3;\r\n  }\r\n\r\n  /* Terrain item styling */\r\n  #level-editor-container .terrain-types-container {\r\n\tdisplay: flex;\r\n\tflex-direction: column;\r\n\tgap: 12px;\r\n\tmargin-top: 16px;\r\n  }\r\n\r\n  #level-editor-container .terrain-item {\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tgap: 12px;\r\n\tpadding: 12px;\r\n\tborder-radius: var(--border-radius);\r\n\tbackground-color: rgba(255, 255, 255, 0.03);\r\n\tborder: 1px solid rgba(255, 255, 255, 0.1);\r\n\tcursor: move;\r\n\tuser-select: none;\r\n\ttransition: all 0.2s ease;\r\n  }\r\n\r\n  #level-editor-container .terrain-item:hover {\r\n\tbackground-color: rgba(255, 255, 255, 0.05);\r\n\ttransform: translateY(-2px);\r\n  }\r\n\r\n  #level-editor-container .color-option {\r\n\twidth: 36px;\r\n\theight: 36px;\r\n\tborder-radius: var(--border-radius);\r\n\tcursor: pointer;\r\n\tborder: 2px solid transparent;\r\n\tflex-shrink: 0;\r\n  }\r\n\r\n  #level-editor-container .color-option.active {\r\n\tborder-color: var(--primary);\r\n\tbox-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);\r\n  }\r\n\r\n  #level-editor-container  .terrain-label {\r\n\tflex-grow: 1;\r\n\tfont-weight: 500;\r\n  }\r\n\r\n  #level-editor-container .terrain-buttons {\r\n\tdisplay: flex;\r\n\tgap: 8px;\r\n  }\r\n\r\n  #level-editor-container .terrain-buttons button {\r\n\twidth: 30px;\r\n\theight: 30px;\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tjustify-content: center;\r\n\tpadding: 0;\r\n\tbackground-color: transparent;\r\n\tcolor: var(--text-muted);\r\n\tborder: 1px solid rgba(255, 255, 255, 0.1);\r\n  }\r\n\r\n  #level-editor-container  .terrain-buttons button:hover {\r\n\tbackground-color: rgba(255, 255, 255, 0.05);\r\n\tcolor: var(--text);\r\n  }\r\n\r\n  #level-editor-container .status-bar {\r\n\tposition: absolute;\r\n\tbottom: 0;\r\n\tleft: 0;\r\n\tright: 0;\r\n\theight: 28px;\r\n\tbackground-color: rgba(15, 23, 42, 0.9);\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tpadding: 0 16px;\r\n\tfont-size: 13px;\r\n\tcolor: var(--text-muted);\r\n\tborder-top: 1px solid rgba(255, 255, 255, 0.1);\r\n  }\r\n\r\n  /* Add a terrainsPanel container */\r\n  #level-editor-container  #terrainsPanel {\r\n\tmargin-top: 24px;\r\n\tborder-top: 1px solid rgba(255, 255, 255, 0.1);\r\n\tpadding-top: 16px;\r\n  }\r\n\r\n\r\n\r\n  /* Environment Panel Styles */\r\n  #level-editor-container #environmentPanel {\r\n\toverflow-y: auto;\r\n\tmax-height: calc(100vh - 200px);\r\n  }\r\n  \r\n  #level-editor-container .environment-objects-container {\r\n\tdisplay: flex;\r\n\tflex-direction: column;\r\n\tgap: 10px;\r\n  }\r\n  \r\n  #level-editor-container .environment-objects-container h3 {\r\n\tmargin-top: 0;\r\n\tmargin-bottom: 12px;\r\n\tcolor: #e5e7eb;\r\n\tfont-size: 16px;\r\n\tborder-bottom: 1px solid #374151;\r\n\tpadding-bottom: 8px;\r\n  }\r\n  \r\n  #level-editor-container .environment-type {\r\n\tbackground-color: #1f2937;\r\n\tborder-radius: 6px;\r\n\toverflow: hidden;\r\n\tmargin-bottom: 8px;\r\n\tbox-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);\r\n\ttransition: box-shadow 0.2s ease;\r\n  }\r\n  \r\n  #level-editor-container .environment-type:hover {\r\n\tbox-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);\r\n  }\r\n  \r\n  #level-editor-container .environment-type-header {\r\n\tpadding: 10px 12px;\r\n\tfont-weight: 500;\r\n\tcursor: pointer;\r\n\tdisplay: flex;\r\n\tjustify-content: space-between;\r\n\talign-items: center;\r\n\tbackground-color: #2d3748;\r\n\tcolor: #e5e7eb;\r\n\tposition: relative;\r\n\ttext-transform: capitalize;\r\n  }\r\n  \r\n  #level-editor-container .environment-type-header::after {\r\n\tcontent: '▼';\r\n\tfont-size: 10px;\r\n\ttransition: transform 0.2s ease;\r\n  }\r\n  \r\n  #level-editor-container .environment-type-header.open::after {\r\n\ttransform: rotate(180deg);\r\n  }\r\n  \r\n  #level-editor-container .environment-items {\r\n\tpadding: 10px;\r\n\tdisplay: flex;\r\n\tflex-wrap: wrap;\r\n\tgap: 3px;\r\n\tbackground-color: #1f2937;\r\n  }\r\n  \r\n  #level-editor-container .environment-item {\r\n\twidth: 128px;\r\n\theight: 128px;\r\n\tborder: 2px solid #4b5563;\r\n\tborder-radius: 4px;\r\n\tcursor: pointer;\r\n\tpadding: 2px;\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tjustify-content: center;\r\n\tbackground-color: #374151;\r\n\ttransition: all 0.2s ease;\r\n\tposition: relative;\r\n  }\r\n  \r\n  #level-editor-container .environment-item:hover {\r\n\tborder-color: #9ca3af;\r\n\ttransform: translateY(-2px);\r\n  }\r\n  \r\n  #level-editor-container .environment-item.active {\r\n\tborder-color: #3b82f6;\r\n\tbox-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);\r\n  }\r\n  \r\n  #level-editor-container .environment-item canvas {\r\n\tmax-width: 100%;\r\n\tmax-height: 100%;\r\n\tobject-fit: contain;\r\n  }\r\n  \r\n  /* Tooltip for environment items */\r\n  #level-editor-container .environment-item::before {\r\n\tcontent: attr(data-name);\r\n\tposition: absolute;\r\n\tbottom: calc(100% + 5px);\r\n\tleft: 50%;\r\n\ttransform: translateX(-50%);\r\n\tbackground-color: #111827;\r\n\tcolor: white;\r\n\ttext-align: center;\r\n\tborder-radius: 4px;\r\n\tpadding: 4px 8px;\r\n\tfont-size: 12px;\r\n\twhite-space: nowrap;\r\n\tvisibility: hidden;\r\n\topacity: 0;\r\n\ttransition: all 0.2s ease;\r\n\tz-index: 10;\r\n\tpointer-events: none;\r\n\tbox-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);\r\n  }\r\n  \r\n  #level-editor-container .environment-item:hover::before {\r\n\tvisibility: visible;\r\n\topacity: 1;\r\n  }\r\n  \r\n  /* Indicator for placement mode */\r\n  #level-editor-container .placement-mode-indicator {\r\n\tposition: absolute;\r\n\ttop: 10px;\r\n\tleft: 50%;\r\n\ttransform: translateX(-50%);\r\n\tbackground-color: rgba(17, 24, 39, 0.8);\r\n\tcolor: white;\r\n\tpadding: 5px 10px;\r\n\tborder-radius: 4px;\r\n\tfont-size: 14px;\r\n\tpointer-events: none;\r\n\ttransition: opacity 0.3s ease;\r\n\tbox-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);\r\n\tz-index: 100;\r\n  }\r\n  \r\n  /* Improved toolbar buttons */\r\n  #level-editor-container .toolbar .btn {\r\n\tpadding: 8px 16px;\r\n\tborder: none;\r\n\tbackground-color: #374151;\r\n\tcolor: #e5e7eb;\r\n\tcursor: pointer;\r\n\tborder-radius: 4px;\r\n\tfont-weight: 500;\r\n\ttransition: all 0.2s ease;\r\n  }\r\n  \r\n  #level-editor-container .toolbar .btn:hover {\r\n\tbackground-color: #4b5563;\r\n  }\r\n  \r\n  #level-editor-container .toolbar .btn.active {\r\n\tbackground-color: #3b82f6;\r\n\tcolor: white;\r\n  }\r\n  \r\n  /* Better spacing for the tools panels */\r\n  #level-editor-container .tools > div {\r\n\tmargin-bottom: 20px;\r\n  }\r\n  \r\n  /* Environment object count badge */\r\n  #level-editor-container .environment-type-header .object-count-container {\r\n\tflex: 1;\r\n\tmargin-left: 8px;\r\n  }\r\n  #level-editor-container .environment-type-header .object-count {\r\n\tbackground-color: #4b5563;\r\n\tcolor: white;\r\n\tpadding: 2px 6px;\r\n\tborder-radius: 10px;\r\n\tfont-size: 12px;\r\n  }\r\n  \r\n  /* Empty state for environment types */\r\n  #level-editor-container .environment-items.empty {\r\n\tpadding: 20px;\r\n\ttext-align: center;\r\n\tcolor: #9ca3af;\r\n\tfont-style: italic;\r\n  }\r\n  \r\n  /* Styles for delete mode */\r\n  #level-editor-container .delete-mode-active .grid-container {\r\n\tcursor: url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"red\" stroke-width=\"2\"><path d=\"M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2\"/><path d=\"M10 11v6M14 11v6\"/></svg>'), auto;\r\n  }\r\n  \r\n  /* Object control panel */\r\n  #level-editor-container .object-controls {\r\n\tdisplay: flex;\r\n\tjustify-content: space-between;\r\n\tpadding: 10px;\r\n\tbackground-color: #1f2937;\r\n\tborder-radius: 6px;\r\n\tmargin-bottom: 10px;\r\n\tgap: 8px;\r\n  }\r\n  \r\n  #level-editor-container .object-controls button {\r\n\tbackground-color: #374151;\r\n\tcolor: #e5e7eb;\r\n\tborder: none;\r\n\tpadding: 6px 12px;\r\n\tborder-radius: 4px;\r\n\tcursor: pointer;\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tgap: 5px;\r\n\ttransition: background-color 0.2s;\r\n  }\r\n  \r\n  #level-editor-container .object-controls button:hover {\r\n\tbackground-color: #4b5563;\r\n  }\r\n  \r\n  #level-editor-container .object-controls button.delete-mode {\r\n\tbackground-color: #ef4444;\r\n\tcolor: white;\r\n  }\r\n  \r\n  #level-editor-container .object-controls button.delete-mode:hover {\r\n\tbackground-color: #dc2626;\r\n  }\r\n  \r\n  \r\n #object-preview-canvas {\r\n\ttransition: transform 0.05s ease-out;\r\n\twill-change: transform;\r\n\timage-rendering: pixelated;\r\n\tposition: absolute;\r\n\tpointer-events: none; \r\n\tz-index: 9999;\r\n\topacity: 0.7; \r\n}\r\n  /* Responsive adjustments */\r\n  @media (max-width: 768px) {\r\n\t#level-editor-container .environment-items {\r\n\t  justify-content: center;\r\n\t}\r\n\t\r\n\t#level-editor-container .environment-item {\r\n\t  width: 56px;\r\n\t  height: 56px;\r\n\t}\r\n  }",
         "html": "<div id=\"level-editor-container\" class=\"main-content-container\">\r\n   <div class=\"content-sidebar\">\r\n     <div class=\"toolbar\">\r\n       <button id=\"terrainsBtn\" class=\"btn active\">Tiles</button>\r\n       <button id=\"environmentBtn\" class=\"btn\">Env</button>\r\n     </div>\r\n     <div class=\"tools\">\r\n       <div>\r\n         <h3>Map Settings</h3>\r\n         <div class=\"form-row\">\r\n           <label for=\"terrainMapSize\">Map Size:</label>\r\n           <input type=\"number\" id=\"terrainMapSize\" value=\"48\" step=\"1\" min=\"1\">\r\n         </div>\r\n         <div class=\"form-row\">\r\n            <label for=\"extensionTerrainType\">Surrounding Terrain Type:</label>\r\n            <select id=\"extensionTerrainType\" class=\"extensionTerrainType\"></select>\r\n          </div>\r\n       </div>\r\n       <div id=\"environmentPanel\" style=\"display:none\">\r\n\r\n       </div>\r\n       <div id=\"terrainsPanel\">\r\n         <div class=\"terrain-types-container\">\r\n           <div class=\"terrain-item\">\r\n             <div class=\"color-option active\" style=\"background-color: #10b981;\"></div>\r\n             <div class=\"terrain-label\">Grass</div>\r\n             <div class=\"terrain-buttons\">\r\n               <button title=\"Edit\">✏️</button>\r\n               <button title=\"Delete\">🗑️</button>\r\n             </div>\r\n           </div>\r\n           <div class=\"terrain-item\">\r\n             <div class=\"color-option\" style=\"background-color: #3b82f6;\"></div>\r\n             <div class=\"terrain-label\">Water</div>\r\n             <div class=\"terrain-buttons\">\r\n               <button title=\"Edit\">✏️</button>\r\n               <button title=\"Delete\">🗑️</button>\r\n             </div>\r\n           </div>\r\n           <div class=\"terrain-item\">\r\n             <div class=\"color-option\" style=\"background-color: #a3a3a3;\"></div>\r\n             <div class=\"terrain-label\">Stone</div>\r\n             <div class=\"terrain-buttons\">\r\n               <button title=\"Edit\">✏️</button>\r\n               <button title=\"Delete\">🗑️</button>\r\n             </div>\r\n           </div>\r\n         </div>\r\n       </div>\r\n     </div>\r\n   </div>\r\n   \r\n   <div class=\"grid-container grid-background\">\r\n     <canvas id=\"grid\"></canvas>\r\n     \r\n     <div class=\"translation-controls\">\r\n       <button id=\"translate-up\"><span>↑</span></button>\r\n       <button id=\"translate-left\"><span>←</span></button>\r\n       <button id=\"translate-right\"><span>→</span></button>\r\n       <button id=\"translate-down\"><span>↓</span></button>\r\n     </div>\r\n     \r\n     <div class=\"status-bar\">\r\n       Cursor: x: 0, y: 0 | Zoom: 100% | Selected: Grass\r\n     </div>\r\n   </div>\r\n </div>"
-      },
-      "scriptEditor": {
-        "title": "Script Editor",
-        "fileName": "scriptEditor",
-        "css": "\r\n#script-editor-container .grid-background {\r\n    width: calc(100% - 450px);\r\n}\r\n/* Override global scrollbar suppression for CodeMirror */\r\n#script-editor-container .CodeMirror {\r\n    overflow-y: auto !important; /* Enable vertical scrolling */\r\n    -ms-overflow-style: auto !important; /* IE and Edge */\r\n    scrollbar-width: auto !important; /* Firefox */\r\n}\r\n\r\n/* Container and layout */\r\n#script-editor-container {\r\n    position: relative;\r\n    height: auto; /* Allow dynamic resizing */\r\n}\r\n\r\n#script-editor-container .grid-background {\r\n    width: calc(100% - 360px); /* Adjust for sidebar width */\r\n    flex: 1;\r\n    position: relative;\r\n    overflow: hidden; /* Contain children */\r\n}\r\n\r\n#script-editor-container .grid-background > div {\r\n    position: relative;\r\n    height: 100%;\r\n}\r\n#script-editor-sidebar {\r\n    width: 360px;\r\n    padding: 10px;\r\n}",
-        "html": "            <div id=\"script-editor-container\" class=\"main-content-container\">\r\n                <div id=\"script-editor-sidebar\" class=\"content-sidebar\">                    \r\n                    <h3>Script Editor</h3>\r\n                    <button id=\"save-script-btn\">Save Script</button>\r\n                </div>\r\n                <div class=\"grid-background\">\r\n                    <div>\r\n                        <textarea id=\"script-editor\" class=\"script-editor\" placeholder=\"Enter your script here...\"></textarea>                    \r\n                        <div class=\"handle\"></div>\r\n                    </div>\r\n                </div>\r\n            </div>\r\n"
       },
       "TextureEditor": {
         "title": "Texture Editor",
@@ -17594,12 +17594,6 @@ const DEFAULT_PROJECT_CONFIG = {
         "href-disabled": "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
         "fileName": "jszip.min.js"
       },
-      "three.OrbitControls": {
-        "title": "THREE.OrbitControls",
-        "href": "https://cdn.jsdelivr.net/npm/three-orbitcontrols@2.110.3/OrbitControls.min.js",
-        "isModule": true,
-        "fileName": "three.OrbitControls"
-      },
       "threejs": {
         "title": "THREE",
         "href": "https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js",
@@ -17608,17 +17602,23 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "threejs",
         "isModule": true
       },
+      "three.OrbitControls": {
+        "title": "THREE.OrbitControls",
+        "href": "https://cdn.jsdelivr.net/npm/three-orbitcontrols@2.110.3/OrbitControls.min.js",
+        "isModule": true,
+        "fileName": "three.OrbitControls"
+      },
       "aiPromptPanel": {
         "fileName": "aiPromptPanel",
-        "script": "class AIPromptPanel {\r\n    constructor(gameEditor) {\r\n        this.gameEditor = gameEditor;\r\n      console.log(this.gameEditor);\r\n        const aiConfig = this.gameEditor.getCollections().configs.ai;\r\n        this.elements = {\r\n            launchBtn: null,\r\n            aiPromptModal: null,\r\n            promptTextarea: null,\r\n            sendBtn: null,\r\n            closeBtn: null,\r\n            previewArea: null,\r\n            applyBtn: null\r\n        };\r\n        this.init(aiConfig);\r\n    }\r\n\r\n    init(aiConfig) {\r\n       this.setupHooks();\r\n        // Create the AI Prompt Modal\r\n        const modal = document.getElementById('modal-aiPromptPanel');\r\n\r\n        this.config = aiConfig;\r\n        // Cache elements\r\n        this.elements = {\r\n            aiPromptModal: modal,\r\n            promptTextarea: modal.querySelector('#ai-prompt-textarea'),\r\n            prePromptTextarea: modal.querySelector('#ai-pre-prompt-textarea'),\r\n            sendBtn: modal.querySelector('#send-ai-prompt-btn'),\r\n            closeBtn: modal.querySelector('#close-ai-prompt-modal'),\r\n            previewArea: modal.querySelector('#ai-response-preview'),\r\n            applyBtn: modal.querySelector('#apply-ai-response-btn')\r\n        };\r\n\r\n        // Setup event listeners\r\n        this.setupEventListeners();\r\n    }\r\n\r\n    setupEventListeners() {\r\n        this.elements.sendBtn.addEventListener('click', () => this.sendPromptToAI());\r\n        this.elements.closeBtn.addEventListener('click', () => {\r\n            this.elements.aiPromptModal.classList.remove('show');\r\n        });\r\n        this.elements.applyBtn.addEventListener('click', () => {\r\n            this.applyAIResponse();\r\n        });\r\n    }\r\n\r\n    setupHooks() {\r\n        \r\n        document.body.addEventListener('renderEditor', () => {\r\n            if(this.elements.launchBtn) this.elements.launchBtn.remove();\r\n            this.elements.launchBtn = document.createElement('button');\r\n            this.elements.launchBtn.innerHTML = \"AI Prompt\";\r\n            this.elements.launchBtn.id = 'ai-prompt-modal';\r\n            this.gameEditor.elements.editor.querySelector(\".actions>div\")?.appendChild(this.elements.launchBtn);\r\n            this.elements.launchBtn.addEventListener('click', () => {\r\n                this.showModal();\r\n            });\r\n        });\r\n    }\r\n\r\n    generateContextPrompt(object) {\r\n        const type = this.gameEditor.model.getSingularType(this.gameEditor.model.state.selectedType);\r\n\t\tlet defaultPrompt = this.config.defaultPrompt.trim().replace(/\\$\\{type\\}/g, type);\r\n        let outputObj = {...object};\r\n        const { selectedObject } = this.gameEditor.model.state;\r\n        outputObj.id = selectedObject;\r\n        \r\n        return `${defaultPrompt}\\n\\nContext Object: \\n\\n${JSON.stringify(outputObj, null, 2)}`;\r\n\t\t\r\n    }\r\n\r\n    async sendPromptToAI() {\r\n        const prompt = `${this.elements.prePromptTextarea.value} \\n\\n ${this.elements.promptTextarea.value}`;\r\n\r\n        try {\r\n            this.elements.previewArea.value = \"Generating ...\"; // Use .value for textarea\r\n\r\n            const { aiEndPoint, aiModel, apiKey, headers, requestBody } = this.prepareAIConfig(prompt);\r\n            console.log('Request config:', { aiEndPoint, aiModel, apiKey, headers, requestBody });\r\n\r\n            const response = await fetch(aiEndPoint, {\r\n                method: 'POST',\r\n                headers,\r\n                body: JSON.stringify(requestBody)\r\n            });\r\n\r\n            if (!response.ok) {\r\n                throw new Error(`AI generation failed: ${response.statusText}`);\r\n            }\r\n\r\n            const responseData = await response.json();\r\n            console.log('Raw API response:', responseData);\r\n\r\n            const aiOutput = this.extractAIOutput(responseData);\r\n            const cleanedOutput = this.cleanOutput(aiOutput);\r\n            console.log('Cleaned output:', cleanedOutput);\r\n\r\n            const parsedResponse = this.parseJSONResponse(cleanedOutput);\r\n            this.elements.previewArea.value = JSON.stringify(parsedResponse, null, 2); // Use .value\r\n            this.elements.applyBtn.style.display = 'block';\r\n        } catch (error) {\r\n            console.error('AI Generation Error:', error);\r\n            this.elements.previewArea.value = `Error: ${error.message}`; // Use .value\r\n            this.elements.applyBtn.style.display = 'none';\r\n        }\r\n    }\r\n\r\n    prepareAIConfig(prompt) {\r\n        let updated = false;\r\n\r\n        let aiEndPoint = this.config.aiEndPoint || \"http://127.0.0.1:11434/api/generate\";\r\n        let aiModel = this.config.aiModel || \"deepseek-r1:32b\";\r\n        const apiKey = this.config.aiApiKey || \"\";\r\n\r\n        if (!this.config.aiEndPoint) {\r\n            this.config.aiEndPoint = aiEndPoint;\r\n            updated = true;\r\n        }\r\n        if (!this.config.aiModel) {\r\n            this.config.aiModel = aiModel;\r\n            updated = true;\r\n        }\r\n        if (updated) {\r\n            this.gameEditor.renderObjectList();\r\n            this.gameEditor.saveToLocalStorage();\r\n        }\r\n\r\n        const headers = { 'Content-Type': 'application/json' };\r\n        let requestBody = { \r\n            prompt, \r\n            model: aiModel, \r\n            jsonOnly: true, \r\n            stream: false \r\n        };\r\n\r\n        if (apiKey) {\r\n            headers.Authorization = `Bearer ${apiKey}`;\r\n            requestBody = {\r\n                model: aiModel,\r\n                messages: [\r\n                    { role: 'system', content: 'You are a helpful assistant that generates valid JSON objects based on user prompts.' },\r\n                    { role: 'user', content: prompt }\r\n                ],\r\n                temperature: 0.7,\r\n                max_tokens: 500\r\n            };\r\n        }\r\n\r\n        return { aiEndPoint, aiModel, apiKey, headers, requestBody };\r\n    }\r\n\r\n    extractAIOutput(responseData) {\r\n        return responseData.response || responseData.result || responseData;\r\n    }\r\n\r\n cleanOutput(aiOutput) {\r\n        const outputString = typeof aiOutput === 'string' ? aiOutput : JSON.stringify(aiOutput);\r\n        return outputString\r\n            .replace(/```json\\s*/g, '') // Remove ```json and optional whitespace/newlines\r\n            .replace(/```\\s*/g, '')     // Remove ``` and optional whitespace/newlines\r\n            .replace(/<think\\s*>[\\s\\S]*?<\\/think\\s*>/gi, '') // Remove <think> tags\r\n            .replace(/<think[\\s\\S]*?\\/>/gi, '') // Remove self-closing <think> tags\r\n            .trim(); // Remove leading/trailing whitespace\r\n    }\r\n\r\n    parseJSONResponse(cleanedOutput) {\r\n        try {\r\n            return JSON.parse(cleanedOutput);\r\n        } catch (parseError) {\r\n            throw new Error('Invalid JSON response from AI:\\n' + cleanedOutput);\r\n        }\r\n    }\r\n\r\n    applyAIResponse() {\r\n        try {\r\n            const responseText = this.elements.previewArea.value; // Use .value for textarea\r\n            const parsedResponse = JSON.parse(responseText);\r\n\r\n            if (!parsedResponse.id) {\r\n                alert(\"Must include id in new object.\");\r\n                return;\r\n            }\r\n\r\n            const { selectedType } = this.gameEditor.model.state;\r\n            this.gameEditor.model.getCollections()[selectedType][parsedResponse.id] = parsedResponse;\r\n\r\n            this.gameEditor.renderObjectList();\r\n            this.gameEditor.selectObject(parsedResponse.id); // Use new id instead of old selectedObject\r\n\r\n            this.elements.aiPromptModal.classList.remove('show');\r\n        } catch (error) {\r\n            console.error('Error applying AI response:', error);\r\n            alert('Failed to apply AI response. Please check the JSON format.');\r\n        }\r\n    }\r\n\r\n    showModal() {\r\n        const currentObject = this.gameEditor.getCurrentObject();\r\n        this.elements.prePromptTextarea.value = this.generateContextPrompt(currentObject); // Use .value\r\n        this.elements.previewArea.value = ''; // Use .value\r\n        this.elements.applyBtn.style.display = 'none';\r\n        this.elements.aiPromptModal.classList.add('show');\r\n    }\r\n}\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n"
-      },
-      "audioEditor": {
-        "fileName": "audioEditor",
-        "script": "class AudioEditor {\r\n    constructor(gameEditor) {\r\n        this.gameEditor = gameEditor;\r\n        let configObj = { state: {}, config: this.gameEditor.getCollections() };\r\n        this.audioManager = new (this.gameEditor.scriptContext.getComponent(\"AudioManager\"))(configObj, null, {} );\r\n        this.audioManager.init();\r\n        this.volume = 1;\r\n        this.setupEventListeners();\r\n        this.updateNoiseUI(); \r\n    }\r\n\r\n    setupEventListeners() {\r\n        const updateStatus = (message, type = 'default') => {\r\n            const status = document.getElementById('status-message');\r\n            if (status) {\r\n                status.textContent = message;\r\n                status.className = type === 'success' ? 'success' : type === 'error' ? 'error' : '';\r\n            }\r\n        };\r\n\r\n        const updateSliderDisplay = (sliderId, formatFn) => {\r\n            const slider = document.getElementById(sliderId);\r\n            if (slider) {\r\n                const updateDisplayValue = () => {\r\n                    const display = slider.nextElementSibling;\r\n                    if (display && display.classList.contains('value-display')) {\r\n                        display.textContent = formatFn(parseFloat(slider.value));\r\n                    }\r\n                };\r\n                \r\n                slider.addEventListener('input', updateDisplayValue);\r\n                updateDisplayValue();\r\n            }\r\n        };\r\n\r\n        document.body.addEventListener('editAudio', (event) => {\r\n            try {\r\n                const settings = event.detail.data;\r\n                this.updateUIFromSettings(settings);                \r\n                updateStatus('Audio settings imported', 'success');\r\n            } catch (err) {\r\n                updateStatus('Error importing audio settings: ' + err.message, 'error');\r\n            }\r\n        });\r\n\r\n        const playBtn = document.getElementById('playBtn');\r\n        \r\n        playBtn?.addEventListener('click', () => {\r\n            this.playCurrentSound();\r\n        });\r\n\r\n        document.getElementById('exportBtn')?.addEventListener('click', () => {\r\n            const settings = this.getUISettings();\r\n            this.saveAudio(settings);\r\n            updateStatus('Audio settings exported', 'success');\r\n        });\r\n\r\n        this.setupUIControls(updateSliderDisplay);\r\n\r\n\r\n\r\n    }\r\n    setVolume(value) {\r\n        this.volume = value;\r\n    }\r\n    setupUIControls(updateSliderDisplay) {\r\n        updateSliderDisplay('volume', (val) => `${Math.round(val * 100)}%`);\r\n        document.getElementById('volume')?.addEventListener('input', (e) => {\r\n            const volume = parseFloat(e.target.value);\r\n            this.setVolume(volume, e);\r\n        });\r\n\r\n        updateSliderDisplay('frequency', (val) => `${val} Hz`);\r\n        updateSliderDisplay('duration', (val) => `${val.toFixed(2)} s`);\r\n        \r\n        updateSliderDisplay('attack', (val) => `${val.toFixed(3)} s`);\r\n        updateSliderDisplay('decay', (val) => `${val.toFixed(2)} s`);\r\n        updateSliderDisplay('sustain', (val) => `${Math.round(val * 100)}%`);\r\n        updateSliderDisplay('release', (val) => `${val.toFixed(2)} s`);\r\n        \r\n        updateSliderDisplay('pitchEnvStart', (val) => `${val.toFixed(2)}x`);\r\n        updateSliderDisplay('pitchEnvEnd', (val) => `${val.toFixed(2)}x`);\r\n        \r\n\r\n        updateSliderDisplay('filterFreq', (val) => `${val} Hz`);\r\n\r\n        \r\n        updateSliderDisplay('filterQ', (val) => `Q: ${val.toFixed(1)}`);\r\n        \r\n        updateSliderDisplay('distortion', (val) => `${Math.round(val)}%`);\r\n\r\n        \r\n        updateSliderDisplay('delayTime', (val) => `${val.toFixed(2)} s`);\r\n \r\n        \r\n        updateSliderDisplay('delayFeedback', (val) => `${Math.round(val * 100)}%`);\r\n\r\n        \r\n        updateSliderDisplay('reverbAmount', (val) => `${Math.round(val * 100)}%`);\r\n   \r\n        \r\n        updateSliderDisplay('bitcrusher', (val) => `${Math.round(val * 100)}%`);\r\n\r\n        \r\n        updateSliderDisplay('panning', (val) => {\r\n            if (val === 0) return \"Center\";\r\n            return val < 0 ? `${Math.abs(Math.round(val * 100))}% Left` : `${Math.round(val * 100)}% Right`;\r\n        });\r\n\r\n    }\r\n\r\n    getUISettings() {\r\n        return {\r\n            waveform: document.getElementById('waveform')?.value || 'sine',\r\n            frequency: parseFloat(document.getElementById('frequency')?.value || 440),\r\n            duration: parseFloat(document.getElementById('duration')?.value || 1),\r\n            noise: {\r\n                type: document.getElementById('noiseType')?.value || 'white',\r\n                amount: parseFloat(document.getElementById('noiseAmount')?.value || 0),\r\n                filter: {\r\n                    type: document.getElementById('noiseFilterType')?.value || 'none',\r\n                    frequency: parseFloat(document.getElementById('noiseFilterFreq')?.value || 2000)\r\n                }\r\n            },\r\n            envelope: {\r\n                attack: parseFloat(document.getElementById('attack')?.value || 0.01),\r\n                decay: parseFloat(document.getElementById('decay')?.value || 0.1),\r\n                sustain: parseFloat(document.getElementById('sustain')?.value || 0.7),\r\n                release: parseFloat(document.getElementById('release')?.value || 0.3),\r\n            },\r\n            pitchEnvelope: {\r\n                start: parseFloat(document.getElementById('pitchEnvStart')?.value || 1),\r\n                end: parseFloat(document.getElementById('pitchEnvEnd')?.value || 1),\r\n                time: parseFloat(document.getElementById('duration')?.value || 1)\r\n            },\r\n            effects: {\r\n                filter: {\r\n                    type: document.getElementById('filterType')?.value || 'lowpass',\r\n                    frequency: parseFloat(document.getElementById('filterFreq')?.value || 1000),\r\n                    Q: parseFloat(document.getElementById('filterQ')?.value || 1)\r\n                },\r\n                distortion: parseFloat(document.getElementById('distortion')?.value || 0),\r\n                delay: {\r\n                    time: parseFloat(document.getElementById('delayTime')?.value || 0.3),\r\n                    feedback: parseFloat(document.getElementById('delayFeedback')?.value || 0)\r\n                },\r\n                reverb: parseFloat(document.getElementById('reverbAmount')?.value || 0),\r\n                bitcrusher: parseFloat(document.getElementById('bitcrusher')?.value || 0),\r\n                pan: parseFloat(document.getElementById('panning')?.value || 0)\r\n            }\r\n        };\r\n    }\r\n\r\n    updateUIFromSettings(settings) {\r\n        if (!settings) return;\r\n        \r\n        this.setElementValue('waveform', settings.waveform);\r\n        this.setElementValue('frequency', settings.frequency);\r\n        this.setElementValue('duration', settings.duration);\r\n        \r\n        if (settings.envelope) {\r\n            this.setElementValue('attack', settings.envelope.attack);\r\n            this.setElementValue('decay', settings.envelope.decay);\r\n            this.setElementValue('sustain', settings.envelope.sustain);\r\n            this.setElementValue('release', settings.envelope.release);\r\n        }\r\n        \r\n        if (settings.pitchEnvelope) {\r\n            this.setElementValue('pitchEnvStart', settings.pitchEnvelope.start);\r\n            this.setElementValue('pitchEnvEnd', settings.pitchEnvelope.end);\r\n        }\r\n        \r\n        if (settings.effects) {\r\n            if (settings.effects.filter) {\r\n                this.setElementValue('filterType', settings.effects.filter.type);\r\n                this.setElementValue('filterFreq', settings.effects.filter.frequency);\r\n                this.setElementValue('filterQ', settings.effects.filter.Q);\r\n                \r\n            }\r\n            \r\n            this.setElementValue('distortion', settings.effects.distortion);\r\n            \r\n            if (settings.effects.delay) {\r\n                this.setElementValue('delayTime', settings.effects.delay.time);\r\n                this.setElementValue('delayFeedback', settings.effects.delay.feedback);\r\n            }\r\n            \r\n            this.setElementValue('reverbAmount', settings.effects.reverb);\r\n            \r\n            this.setElementValue('bitcrusher', settings.effects.bitcrusher);\r\n\r\n            this.setElementValue('panning', settings.effects.pan);\r\n        }\r\n        if (settings.noise) {\r\n            this.setElementValue('noiseType', settings.noise.type);\r\n            this.setElementValue('noiseAmount', settings.noise.amount);\r\n            \r\n            if (settings.noise.filter) {\r\n                this.setElementValue('noiseFilterType', settings.noise.filter.type);\r\n                this.setElementValue('noiseFilterFreq', settings.noise.filter.frequency);\r\n            }\r\n        }\r\n        document.querySelectorAll('input[type=\"range\"]').forEach(el => {\r\n            el.dispatchEvent(new Event('input'));\r\n        });\r\n        document.getElementById('randomSoundBtn')?.addEventListener('click', () => {\r\n            this.generateRandomSound();\r\n            this.playCurrentSound();\r\n        });\r\n    }\r\n    generateRandomSound() {\r\n        // Waveform options (including noise)\r\n        const waveforms = ['sine', 'square', 'sawtooth', 'triangle', 'noise'];\r\n        \r\n        // Noise types\r\n        const noiseTypes = ['white', 'pink', 'brown'];\r\n        \r\n        // Filter types\r\n        const filterTypes = ['lowpass', 'highpass', 'bandpass', 'none'];\r\n        \r\n        // Random helpers\r\n        const random = (min, max) => Math.random() * (max - min) + min;\r\n        const randomInt = (min, max) => Math.floor(random(min, max + 1));\r\n        const randomItem = (arr) => arr[randomInt(0, arr.length - 1)];\r\n        \r\n        // Generate random settings\r\n        const settings = {\r\n            waveform: randomItem(waveforms),\r\n            frequency: random(50, 2000),\r\n            duration: random(0.1, 3),\r\n            noise: {\r\n                type: randomItem(noiseTypes),\r\n                amount: random(0, 0), // Keep below 1.0 to avoid overpowering\r\n                filter: {\r\n                    type: randomItem(filterTypes),\r\n                    frequency: random(100, 10000),\r\n                    Q: random(0.5, 5)\r\n                }\r\n            },\r\n            envelope: {\r\n                attack: random(0.001, 0.5),\r\n                decay: random(0.01, 1),\r\n                sustain: random(0, 1),\r\n                release: random(0.01, 2)\r\n            },\r\n            pitchEnvelope: {\r\n                start: random(0.5, 2),\r\n                end: random(0.5, 2),\r\n                time: random(0.1, 2)\r\n            },\r\n            effects: {\r\n                filter: {\r\n                    type: randomItem(filterTypes),\r\n                    frequency: random(50, 10000),\r\n                    Q: random(0.5, 5)\r\n                },\r\n                distortion: random(0, 0.8),\r\n                delay: {\r\n                    time: random(0, 1),\r\n                    feedback: random(0, 0.7) // Avoid infinite feedback\r\n                },\r\n                reverb: random(0, 0.7),\r\n                bitcrusher: random(0, 0.5),\r\n                pan: random(-1, 1)\r\n            }\r\n        };\r\n\r\n        // Special case: If waveform is noise, disable oscillator frequency\r\n        if (settings.waveform === 'noise') {\r\n            settings.noise.amount = 1.0; // Full noise when selected\r\n            settings.frequency = 440; // Dummy value (unused)\r\n        }\r\n\r\n        // Ensure noise filter isn't \"none\" if noise is active\r\n        if (settings.noise.amount > 0 && settings.noise.filter.type === 'none') {\r\n            settings.noise.filter.type = randomItem(filterTypes.filter(t => t !== 'none'));\r\n        }\r\n\r\n        // Update UI with the new random sound\r\n        this.updateUIFromSettings(settings);\r\n        return settings;\r\n    }\r\n\r\n    updateNoiseUI() {\r\n    \r\n        // Setup the slider display update\r\n        this.setupNoiseControls();\r\n    }\r\n    \r\n    setupNoiseControls() {\r\n        const updateSliderDisplay = (sliderId, formatFn) => {\r\n            const slider = document.getElementById(sliderId);\r\n            if (slider) {\r\n                const updateDisplayValue = () => {\r\n                    const display = slider.nextElementSibling;\r\n                    if (display && display.classList.contains('value-display')) {\r\n                        display.textContent = formatFn(parseFloat(slider.value));\r\n                    }\r\n                };\r\n                \r\n                slider.addEventListener('input', updateDisplayValue);\r\n                updateDisplayValue();\r\n            }\r\n        };\r\n    \r\n        updateSliderDisplay('noiseAmount', (val) => `${Math.round(val * 100)}%`);\r\n        updateSliderDisplay('noiseFilterFreq', (val) => `${val} Hz`);\r\n    }\r\n\r\n    setElementValue(id, value) {\r\n        const element = document.getElementById(id);\r\n        if (element) element.value = value;\r\n    }\r\n\r\n\r\n    saveAudio(settingsObj) {\r\n        document.body.dispatchEvent(new CustomEvent('saveAudio', {   \r\n            detail: { data: settingsObj, propertyName: 'audio' },\r\n        }));\r\n    }\r\n\r\n    playCurrentSound() {\r\n        const settings = this.getUISettings();\r\n        this.audioManager.playSynthSound('audioEditorSound', settings);\r\n    }\r\n    \r\n}\r\n\r\n// setupKeyboard() {\r\n//     const keyboard = document.getElementById('keyboard');\r\n//     if (!keyboard) return;\r\n    \r\n//     keyboard.innerHTML = '';\r\n    \r\n//     const keyboardLayout = [\r\n//         { note: 'C4', key: 'a', frequency: 261.63, type: 'white' },\r\n//         { note: 'C#4', key: 'w', frequency: 277.18, type: 'black' },\r\n//         { note: 'D4', key: 's', frequency: 293.66, type: 'white' },\r\n//         { note: 'D#4', key: 'e', frequency: 311.13, type: 'black' },\r\n//         { note: 'E4', key: 'd', frequency: 329.63, type: 'white' },\r\n//         { note: 'F4', key: 'f', frequency: 349.23, type: 'white' },\r\n//         { note: 'F#4', key: 't', frequency: 369.99, type: 'black' },\r\n//         { note: 'G4', key: 'g', frequency: 392.00, type: 'white' },\r\n//         { note: 'G#4', key: 'y', frequency: 415.30, type: 'black' },\r\n//         { note: 'A4', key: 'h', frequency: 440.00, type: 'white' },\r\n//         { note: 'A#4', key: 'u', frequency: 466.16, type: 'black' },\r\n//         { note: 'B4', key: 'j', frequency: 493.88, type: 'white' },\r\n//         { note: 'C5', key: 'k', frequency: 523.25, type: 'white' }\r\n//     ];\r\n    \r\n//     keyboardLayout.forEach(note => {\r\n//         const key = document.createElement('div');\r\n//         key.className = `key ${note.type}`;\r\n//         key.dataset.note = note.note;\r\n//         key.dataset.frequency = note.frequency;\r\n//         key.innerHTML = `<span>${note.note}</span><span class=\"key-label\">${note.key}</span>`;\r\n        \r\n//         key.addEventListener('mousedown', () => {\r\n//             key.classList.add('active');\r\n//             this.playNote(note.frequency);\r\n//         });\r\n//         key.addEventListener('mouseup', () => {\r\n//             key.classList.remove('active');\r\n//             this.stopNote(note.frequency);\r\n//         });\r\n//         key.addEventListener('mouseleave', () => {\r\n//             if (key.classList.contains('active')) {\r\n//                 key.classList.remove('active');\r\n//                 this.stopNote(note.frequency);\r\n//             }\r\n//         });\r\n        \r\n//         keyboard.appendChild(key);\r\n//     });\r\n    \r\n//     const keyToNote = {};\r\n//     keyboardLayout.forEach(note => {\r\n//         keyToNote[note.key] = note.frequency;\r\n//     });\r\n    \r\n//     window.addEventListener('keydown', (e) => {\r\n//         if (e.repeat) return;\r\n//         const key = e.key.toLowerCase();\r\n//         if (keyToNote[key]) {\r\n//             this.playNote(keyToNote[key]);\r\n//             const keyElement = Array.from(keyboard.children).find(\r\n//                 k => k.dataset.frequency == keyToNote[key]\r\n//             );\r\n//             if (keyElement) keyElement.classList.add('active');\r\n//         }\r\n//     });\r\n    \r\n//     window.addEventListener('keyup', (e) => {\r\n//         const key = e.key.toLowerCase();\r\n//         if (keyToNote[key]) {\r\n//             this.stopNote(keyToNote[key]);\r\n//             const keyElement = Array.from(keyboard.children).find(\r\n//                 k => k.dataset.frequency == keyToNote[key]\r\n//             );\r\n//             if (keyElement) keyElement.classList.remove('active');\r\n//         }\r\n//     });\r\n// }\r\n\r\n// stopNote(frequency) {\r\n//     if (!this.activeNotes.has(frequency)) return;\r\n    \r\n//     const note = this.activeNotes.get(frequency);\r\n//     const now = this.audioContext.currentTime;\r\n//     const settings = this.getUISettings();\r\n//     const release = settings.envelope.release;\r\n    \r\n//     note.envelopeGain.gain.cancelScheduledValues(now);\r\n//     note.envelopeGain.gain.setValueAtTime(note.envelopeGain.gain.value, now);\r\n//     note.envelopeGain.gain.linearRampToValueAtTime(0, now + release);\r\n    \r\n//     note.oscillator.stop(now + release + 0.1);\r\n    \r\n//     setTimeout(() => {\r\n//         this.activeNotes.delete(frequency);\r\n//     }, (release + 0.2) * 1000);\r\n// }\r\n// playNote(frequency) {\r\n//     if (this.activeNotes.has(frequency)) {\r\n//         this.stopNote(frequency);\r\n//     }\r\n    \r\n//     const settings = this.getUISettings();\r\n//     settings.frequency = frequency;\r\n    \r\n//     const now = this.audioContext.currentTime;\r\n//     const oscillator = this.createOscillator(settings);\r\n//     oscillator.connect(this.filter);\r\n//     oscillator.start(now);\r\n    \r\n//     this.activeNotes.set(frequency, {\r\n//         oscillator,\r\n//         envelopeGain: this.masterGainNode,\r\n//         startTime: now\r\n//     });\r\n    \r\n//     this.connectVisualizer(oscillator);\r\n// }\r\n// Audio Visualizer class\r\nclass AudioVisualizer {\r\n    constructor(canvas, audioContext) {\r\n        this.canvas = canvas;\r\n        this.ctx = canvas.getContext('2d');\r\n        this.audioContext = audioContext;\r\n        this.analyzer = audioContext.createAnalyser();\r\n        this.analyzer.fftSize = 2048;\r\n        this.bufferLength = this.analyzer.frequencyBinCount;\r\n        this.dataArray = new Uint8Array(this.bufferLength);\r\n        this.analyzer.connect(audioContext.destination);\r\n        \r\n      \r\n        \r\n        // Start visualization loop\r\n        this.visualize();\r\n    }\r\n    \r\n    connectSource(source) {\r\n        source.connect(this.analyzer);\r\n    }\r\n    \r\n    drawWaveform(audioBuffer) {\r\n        const data = audioBuffer.getChannelData(0);\r\n        const step = Math.ceil(data.length / this.canvas.width);\r\n        const amp = this.canvas.height / 2;\r\n        \r\n        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);\r\n        this.ctx.beginPath();\r\n        this.ctx.moveTo(0, amp);\r\n        \r\n        for (let i = 0; i < this.canvas.width; i++) {\r\n            const idx = Math.floor(i * step);\r\n            const y = amp + data[idx] * amp;\r\n            this.ctx.lineTo(i, y);\r\n        }\r\n        \r\n        this.ctx.strokeStyle = '#2196F3';\r\n        this.ctx.stroke();\r\n    }\r\n    \r\n    visualize() {\r\n        requestAnimationFrame(() => this.visualize());\r\n        \r\n        this.analyzer.getByteTimeDomainData(this.dataArray);\r\n        \r\n        this.ctx.fillStyle = 'rgb(200, 200, 200)';\r\n        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);\r\n        \r\n        this.ctx.lineWidth = 2;\r\n        this.ctx.strokeStyle = 'rgb(0, 0, 0)';\r\n        this.ctx.beginPath();\r\n        \r\n        const sliceWidth = this.canvas.width * 1.0 / this.bufferLength;\r\n        let x = 0;\r\n        \r\n        for (let i = 0; i < this.bufferLength; i++) {\r\n            const v = this.dataArray[i] / 128.0;\r\n            const y = v * this.canvas.height / 2;\r\n            \r\n            if (i === 0) {\r\n                this.ctx.moveTo(x, y);\r\n            } else {\r\n                this.ctx.lineTo(x, y);\r\n            }\r\n            \r\n            x += sliceWidth;\r\n        }\r\n        \r\n        this.ctx.lineTo(this.canvas.width, this.canvas.height / 2);\r\n        this.ctx.stroke();\r\n    }\r\n    \r\n}"
+        "script": "class AIPromptPanel {\r\n    constructor(gameEditor) {\r\n        this.gameEditor = gameEditor;\r\n      console.log(this.gameEditor);\r\n        const aiConfig = this.gameEditor.getCollections().configs.ai;\r\n        this.elements = {\r\n            launchBtn: null,\r\n            aiPromptModal: null,\r\n            promptTextarea: null,\r\n            sendBtn: null,\r\n            closeBtn: null,\r\n            previewArea: null,\r\n            applyBtn: null\r\n        };\r\n        this.init(aiConfig);\r\n    }\r\n\r\n    init(aiConfig) {\r\n       this.setupHooks();\r\n        // Create the AI Prompt Modal\r\n        const modal = document.getElementById('modal-aiPromptPanel');\r\n\r\n        this.config = aiConfig;\r\n        // Cache elements\r\n        this.elements = {\r\n            aiPromptModal: modal,\r\n            promptTextarea: modal.querySelector('#ai-prompt-textarea'),\r\n            prePromptTextarea: modal.querySelector('#ai-pre-prompt-textarea'),\r\n            sendBtn: modal.querySelector('#send-ai-prompt-btn'),\r\n            closeBtn: modal.querySelector('#close-ai-prompt-modal'),\r\n            previewArea: modal.querySelector('#ai-response-preview'),\r\n            applyBtn: modal.querySelector('#apply-ai-response-btn')\r\n        };\r\n\r\n        // Setup event listeners\r\n        this.setupEventListeners();\r\n    }\r\n\r\n    setupEventListeners() {\r\n        this.elements.sendBtn.addEventListener('click', () => this.sendPromptToAI());\r\n        this.elements.closeBtn.addEventListener('click', () => {\r\n            this.elements.aiPromptModal.classList.remove('show');\r\n        });\r\n        this.elements.applyBtn.addEventListener('click', () => {\r\n            this.applyAIResponse();\r\n        });\r\n    }\r\n\r\n    setupHooks() {\r\n        \r\n        document.body.addEventListener('renderEditor', () => {\r\n            if(this.elements.launchBtn) this.elements.launchBtn.remove();\r\n            this.elements.launchBtn = document.createElement('button');\r\n            this.elements.launchBtn.innerHTML = \"AI Prompt\";\r\n            this.elements.launchBtn.id = 'ai-prompt-modal';\r\n            this.gameEditor.elements.editor.querySelector(\".actions>div\")?.appendChild(this.elements.launchBtn);\r\n            this.elements.launchBtn.addEventListener('click', () => {\r\n                this.showModal();\r\n            });\r\n        });\r\n    }\r\n\r\n    generateContextPrompt(object) {\r\n        const type = this.gameEditor.model.getSingularType(this.gameEditor.model.state.selectedType);\r\n\t\tlet defaultPrompt = this.config.defaultPrompt.trim().replace(/\\$\\{type\\}/g, type);\r\n        let outputObj = {...object};\r\n        const { selectedObject } = this.gameEditor.model.state;\r\n        outputObj.id = selectedObject;\r\n        \r\n        return `${defaultPrompt}\\n\\nContext Object: \\n\\n${JSON.stringify(outputObj, null, 2)}`;\r\n\t\t\r\n    }\r\n\r\n    async sendPromptToAI() {\r\n        const prompt = `${this.elements.prePromptTextarea.value} \\n\\n ${this.elements.promptTextarea.value}`;\r\n\r\n        try {\r\n            this.elements.previewArea.value = \"Generating ...\"; // Use .value for textarea\r\n\r\n            const { aiEndPoint, aiModel, apiKey, headers, requestBody } = this.prepareAIConfig(prompt);\r\n            console.log('Request config:', { aiEndPoint, aiModel, apiKey, headers, requestBody });\r\n\r\n            const response = await fetch(aiEndPoint, {\r\n                method: 'POST',\r\n                headers,\r\n                body: JSON.stringify(requestBody)\r\n            });\r\n\r\n            if (!response.ok) {\r\n                throw new Error(`AI generation failed: ${response.statusText}`);\r\n            }\r\n\r\n            const responseData = await response.json();\r\n            console.log('Raw API response:', responseData);\r\n\r\n            const aiOutput = this.extractAIOutput(responseData);\r\n            const cleanedOutput = this.cleanOutput(aiOutput);\r\n            console.log('Cleaned output:', cleanedOutput);\r\n\r\n            const parsedResponse = this.parseJSONResponse(cleanedOutput);\r\n            this.elements.previewArea.value = JSON.stringify(parsedResponse, null, 2); // Use .value\r\n            this.elements.applyBtn.style.display = 'block';\r\n        } catch (error) {\r\n            console.error('AI Generation Error:', error);\r\n            this.elements.previewArea.value = `Error: ${error.message}`; // Use .value\r\n            this.elements.applyBtn.style.display = 'none';\r\n        }\r\n    }\r\n\r\n    prepareAIConfig(prompt) {\r\n        let updated = false;\r\n\r\n        let aiEndPoint = this.config.aiEndPoint || \"http://127.0.0.1:11434/api/generate\";\r\n        let aiModel = this.config.aiModel || \"deepseek-r1:32b\";\r\n        const apiKey = this.config.aiApiKey || \"\";\r\n\r\n        if (!this.config.aiEndPoint) {\r\n            this.config.aiEndPoint = aiEndPoint;\r\n            updated = true;\r\n        }\r\n        if (!this.config.aiModel) {\r\n            this.config.aiModel = aiModel;\r\n            updated = true;\r\n        }\r\n        if (updated) {\r\n            this.gameEditor.renderObjectList();\r\n            this.gameEditor.saveToProject();\r\n        }\r\n\r\n        const headers = { 'Content-Type': 'application/json' };\r\n        let requestBody = { \r\n            prompt, \r\n            model: aiModel, \r\n            jsonOnly: true, \r\n            stream: false \r\n        };\r\n\r\n        if (apiKey) {\r\n            headers.Authorization = `Bearer ${apiKey}`;\r\n            requestBody = {\r\n                model: aiModel,\r\n                messages: [\r\n                    { role: 'system', content: 'You are a helpful assistant that generates valid JSON objects based on user prompts.' },\r\n                    { role: 'user', content: prompt }\r\n                ],\r\n                temperature: 0.7,\r\n                max_tokens: 500\r\n            };\r\n        }\r\n\r\n        return { aiEndPoint, aiModel, apiKey, headers, requestBody };\r\n    }\r\n\r\n    extractAIOutput(responseData) {\r\n        return responseData.response || responseData.result || responseData;\r\n    }\r\n\r\n cleanOutput(aiOutput) {\r\n        const outputString = typeof aiOutput === 'string' ? aiOutput : JSON.stringify(aiOutput);\r\n        return outputString\r\n            .replace(/```json\\s*/g, '') // Remove ```json and optional whitespace/newlines\r\n            .replace(/```\\s*/g, '')     // Remove ``` and optional whitespace/newlines\r\n            .replace(/<think\\s*>[\\s\\S]*?<\\/think\\s*>/gi, '') // Remove <think> tags\r\n            .replace(/<think[\\s\\S]*?\\/>/gi, '') // Remove self-closing <think> tags\r\n            .trim(); // Remove leading/trailing whitespace\r\n    }\r\n\r\n    parseJSONResponse(cleanedOutput) {\r\n        try {\r\n            return JSON.parse(cleanedOutput);\r\n        } catch (parseError) {\r\n            throw new Error('Invalid JSON response from AI:\\n' + cleanedOutput);\r\n        }\r\n    }\r\n\r\n    applyAIResponse() {\r\n        try {\r\n            const responseText = this.elements.previewArea.value; // Use .value for textarea\r\n            const parsedResponse = JSON.parse(responseText);\r\n\r\n            if (!parsedResponse.id) {\r\n                alert(\"Must include id in new object.\");\r\n                return;\r\n            }\r\n\r\n            const { selectedType } = this.gameEditor.model.state;\r\n            this.gameEditor.model.getCollections()[selectedType][parsedResponse.id] = parsedResponse;\r\n\r\n            this.gameEditor.renderObjectList();\r\n            this.gameEditor.selectObject(parsedResponse.id); // Use new id instead of old selectedObject\r\n\r\n            this.elements.aiPromptModal.classList.remove('show');\r\n        } catch (error) {\r\n            console.error('Error applying AI response:', error);\r\n            alert('Failed to apply AI response. Please check the JSON format.');\r\n        }\r\n    }\r\n\r\n    showModal() {\r\n        const currentObject = this.gameEditor.getCurrentObject();\r\n        this.elements.prePromptTextarea.value = this.generateContextPrompt(currentObject); // Use .value\r\n        this.elements.previewArea.value = ''; // Use .value\r\n        this.elements.applyBtn.style.display = 'none';\r\n        this.elements.aiPromptModal.classList.add('show');\r\n    }\r\n}\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n"
       },
       "CanvasUtility": {
         "fileName": "CanvasUtility",
         "script": "class CanvasUtility {\r\n    constructor() {\r\n        this.canvas = document.createElement('canvas');\r\n        this.ctx = this.canvas.getContext('2d', { willReadFrequently: true });\r\n\t\tthis.ctx.globalCompositeOperation = 'destination-over';// Set the composite operation to preserve transparency\r\n        \r\n\t\tthis.tempCanvas = document.createElement('canvas');\r\n        this.tempCtx = this.tempCanvas.getContext('2d', { willReadFrequently: true });\r\n\t\tthis.tempCtx.globalCompositeOperation = 'destination-over';// Set the composite operation to preserve transparency\r\n    }\r\n\r\n    setSize(width, height) {\r\n        this.canvas.width = width;\r\n        this.canvas.height = height;\r\n    }\r\n    paintTexture(imageData) {\r\n        this.setSize(imageData.width, imageData.height);\r\n        this.ctx.putImageData(imageData, 0, 0);\r\n        return this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);\r\n    }\r\n\trotateTexture(imageData, angle) {\r\n        // Set the canvas size to accommodate the rotated image\r\n        // Note: If the rotation results in a change in width/height, adjust these values accordingly\r\n        this.setSize(imageData.width, imageData.height);\r\n\r\n        // Draw the original imageData to the canvas\r\n        this.ctx.putImageData(imageData, 0, 0);\r\n\r\n        // Apply the rotation\r\n        this.ctx.translate(this.canvas.width / 2, this.canvas.height / 2);\r\n        this.ctx.rotate(angle);\r\n        this.ctx.translate(-this.canvas.width / 2, -this.canvas.height / 2);\r\n\r\n        // Create a temporary canvas to hold the current state\r\n        this.tempCanvas.width = this.canvas.width;\r\n        this.tempCanvas.height = this.canvas.height;\r\n        this.tempCtx.drawImage(this.canvas, 0, 0);\r\n\r\n        // Clear the main canvas and draw the rotated image\r\n        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);\r\n        this.ctx.drawImage(this.tempCanvas, 0, 0);\r\n\r\n        // Capture the rotated image data\r\n        let rotatedData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);\r\n \r\n\r\n        return rotatedData;\r\n    }\r\n\tflipTextureVertical(imageData) {\r\n        this.setSize(imageData.width, imageData.height);\r\n\r\n        // Draw the original image data to the canvas\r\n        this.ctx.putImageData(imageData, 0, 0);\r\n\r\n        // Use an off-screen canvas to perform the flip\r\n        this.tempCanvas.width = imageData.width;\r\n        this.tempCanvas.height = imageData.height;\r\n  \r\n        // Apply the flip on the off-screen canvas\r\n        this.tempCtx.translate(0, this.tempCanvas.height);\r\n\t\tthis.tempCtx.scale(1, -1);\r\n\t\tthis.tempCtx.drawImage(this.canvas, 0, 0);\r\n\r\n        // Extract the flipped image data\r\n        return this.tempCtx.getImageData(0, 0, this.tempCanvas.width, this.tempCanvas.height);\r\n    }\r\n\r\n    flipTextureHorizontal(imageData) {\r\n        this.setSize(imageData.width, imageData.height);\r\n\r\n        // Draw the original image data to the canvas\r\n        this.ctx.putImageData(imageData, 0, 0);\r\n\r\n        // Use an off-screen canvas to perform the flip\r\n        this.tempCanvas.width = imageData.width;\r\n        this.tempCanvas.height = imageData.height;\r\n        // Apply the flip on the off-screen canvas\r\n\t\tthis.tempCtx.translate(this.tempCanvas.width, 0);\r\n\t\tthis.tempCtx.scale(-1, 1);\r\n\t\tthis.tempCtx.drawImage(this.canvas, 0, 0);\r\n\r\n        // Extract the flipped image data\r\n        return this.tempCtx.getImageData(0, 0, this.tempCanvas.width, this.tempCanvas.height);\r\n    }\r\n\tdrawImage(image) {\r\n        this.setSize(image.width, image.height);\r\n        this.ctx.drawImage(image, 0, 0);\r\n        return this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);\r\n    }\r\n\r\n\trotateImage(image, angle) {\r\n\t\tthis.setSize(image.width, image.height);\r\n\t\t// Set up the rotation\r\n\t\tthis.ctx.translate(this.canvas.width / 2, this.canvas.height / 2);\r\n\t\tthis.ctx.rotate(angle);\r\n\t\tthis.ctx.translate(-this.canvas.width / 2, -this.canvas.height / 2);\r\n\t\tthis.ctx.fillStyle = 'rgba(0, 0, 0, 0)'; // Fully transparent\r\n\t\tthis.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);\r\n\t\r\n\t\t// Draw the image\r\n\t\tthis.ctx.drawImage(image, 0, 0);\r\n\t\treturn this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);\r\n\t}\r\n\r\n    flipImageVertical(image) {\r\n        this.setSize(image.width, image.height);\r\n        this.ctx.translate(0, this.canvas.height);\r\n        this.ctx.scale(1, -1);\r\n        this.ctx.drawImage(image, 0, 0);\r\n        return this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);\r\n    }\r\n\r\n    flipCanvasVertical() {\r\n        this.ctx.translate(0, this.canvas.height);\r\n        this.ctx.scale(1, -1);\r\n        return this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);\r\n    }\r\n\r\n    flipImageHorizontal(image) {\r\n        this.setSize(image.width, image.height);\r\n        this.ctx.translate(this.canvas.width, 0);\r\n        this.ctx.scale(-1, 1);\r\n        this.ctx.drawImage(image, 0, 0);\r\n        return this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);\r\n    }\r\n}"
+      },
+      "audioEditor": {
+        "fileName": "audioEditor",
+        "script": "class AudioEditor {\r\n    constructor(gameEditor) {\r\n        this.gameEditor = gameEditor;\r\n        let configObj = { state: {}, config: this.gameEditor.getCollections() };\r\n        this.audioManager = new (this.gameEditor.scriptContext.getComponent(\"AudioManager\"))(configObj, null, {} );\r\n        this.audioManager.init();\r\n        this.volume = 1;\r\n        this.setupEventListeners();\r\n        this.updateNoiseUI(); \r\n    }\r\n\r\n    setupEventListeners() {\r\n        const updateStatus = (message, type = 'default') => {\r\n            const status = document.getElementById('status-message');\r\n            if (status) {\r\n                status.textContent = message;\r\n                status.className = type === 'success' ? 'success' : type === 'error' ? 'error' : '';\r\n            }\r\n        };\r\n\r\n        const updateSliderDisplay = (sliderId, formatFn) => {\r\n            const slider = document.getElementById(sliderId);\r\n            if (slider) {\r\n                const updateDisplayValue = () => {\r\n                    const display = slider.nextElementSibling;\r\n                    if (display && display.classList.contains('value-display')) {\r\n                        display.textContent = formatFn(parseFloat(slider.value));\r\n                    }\r\n                };\r\n                \r\n                slider.addEventListener('input', updateDisplayValue);\r\n                updateDisplayValue();\r\n            }\r\n        };\r\n\r\n        document.body.addEventListener('editAudio', (event) => {\r\n            try {\r\n                const settings = event.detail.data;\r\n                this.updateUIFromSettings(settings);                \r\n                updateStatus('Audio settings imported', 'success');\r\n            } catch (err) {\r\n                updateStatus('Error importing audio settings: ' + err.message, 'error');\r\n            }\r\n        });\r\n\r\n        const playBtn = document.getElementById('playBtn');\r\n        \r\n        playBtn?.addEventListener('click', () => {\r\n            this.playCurrentSound();\r\n        });\r\n\r\n        document.getElementById('exportBtn')?.addEventListener('click', () => {\r\n            const settings = this.getUISettings();\r\n            this.saveAudio(settings);\r\n            updateStatus('Audio settings exported', 'success');\r\n        });\r\n\r\n        this.setupUIControls(updateSliderDisplay);\r\n\r\n\r\n\r\n    }\r\n    setVolume(value) {\r\n        this.volume = value;\r\n    }\r\n    setupUIControls(updateSliderDisplay) {\r\n        updateSliderDisplay('volume', (val) => `${Math.round(val * 100)}%`);\r\n        document.getElementById('volume')?.addEventListener('input', (e) => {\r\n            const volume = parseFloat(e.target.value);\r\n            this.setVolume(volume, e);\r\n        });\r\n\r\n        updateSliderDisplay('frequency', (val) => `${val} Hz`);\r\n        updateSliderDisplay('duration', (val) => `${val.toFixed(2)} s`);\r\n        \r\n        updateSliderDisplay('attack', (val) => `${val.toFixed(3)} s`);\r\n        updateSliderDisplay('decay', (val) => `${val.toFixed(2)} s`);\r\n        updateSliderDisplay('sustain', (val) => `${Math.round(val * 100)}%`);\r\n        updateSliderDisplay('release', (val) => `${val.toFixed(2)} s`);\r\n        \r\n        updateSliderDisplay('pitchEnvStart', (val) => `${val.toFixed(2)}x`);\r\n        updateSliderDisplay('pitchEnvEnd', (val) => `${val.toFixed(2)}x`);\r\n        \r\n\r\n        updateSliderDisplay('filterFreq', (val) => `${val} Hz`);\r\n\r\n        \r\n        updateSliderDisplay('filterQ', (val) => `Q: ${val.toFixed(1)}`);\r\n        \r\n        updateSliderDisplay('distortion', (val) => `${Math.round(val)}%`);\r\n\r\n        \r\n        updateSliderDisplay('delayTime', (val) => `${val.toFixed(2)} s`);\r\n \r\n        \r\n        updateSliderDisplay('delayFeedback', (val) => `${Math.round(val * 100)}%`);\r\n\r\n        \r\n        updateSliderDisplay('reverbAmount', (val) => `${Math.round(val * 100)}%`);\r\n   \r\n        \r\n        updateSliderDisplay('bitcrusher', (val) => `${Math.round(val * 100)}%`);\r\n\r\n        \r\n        updateSliderDisplay('panning', (val) => {\r\n            if (val === 0) return \"Center\";\r\n            return val < 0 ? `${Math.abs(Math.round(val * 100))}% Left` : `${Math.round(val * 100)}% Right`;\r\n        });\r\n\r\n    }\r\n\r\n    getUISettings() {\r\n        return {\r\n            waveform: document.getElementById('waveform')?.value || 'sine',\r\n            frequency: parseFloat(document.getElementById('frequency')?.value || 440),\r\n            duration: parseFloat(document.getElementById('duration')?.value || 1),\r\n            noise: {\r\n                type: document.getElementById('noiseType')?.value || 'white',\r\n                amount: parseFloat(document.getElementById('noiseAmount')?.value || 0),\r\n                filter: {\r\n                    type: document.getElementById('noiseFilterType')?.value || 'none',\r\n                    frequency: parseFloat(document.getElementById('noiseFilterFreq')?.value || 2000)\r\n                }\r\n            },\r\n            envelope: {\r\n                attack: parseFloat(document.getElementById('attack')?.value || 0.01),\r\n                decay: parseFloat(document.getElementById('decay')?.value || 0.1),\r\n                sustain: parseFloat(document.getElementById('sustain')?.value || 0.7),\r\n                release: parseFloat(document.getElementById('release')?.value || 0.3),\r\n            },\r\n            pitchEnvelope: {\r\n                start: parseFloat(document.getElementById('pitchEnvStart')?.value || 1),\r\n                end: parseFloat(document.getElementById('pitchEnvEnd')?.value || 1),\r\n                time: parseFloat(document.getElementById('duration')?.value || 1)\r\n            },\r\n            effects: {\r\n                filter: {\r\n                    type: document.getElementById('filterType')?.value || 'lowpass',\r\n                    frequency: parseFloat(document.getElementById('filterFreq')?.value || 1000),\r\n                    Q: parseFloat(document.getElementById('filterQ')?.value || 1)\r\n                },\r\n                distortion: parseFloat(document.getElementById('distortion')?.value || 0),\r\n                delay: {\r\n                    time: parseFloat(document.getElementById('delayTime')?.value || 0.3),\r\n                    feedback: parseFloat(document.getElementById('delayFeedback')?.value || 0)\r\n                },\r\n                reverb: parseFloat(document.getElementById('reverbAmount')?.value || 0),\r\n                bitcrusher: parseFloat(document.getElementById('bitcrusher')?.value || 0),\r\n                pan: parseFloat(document.getElementById('panning')?.value || 0)\r\n            }\r\n        };\r\n    }\r\n\r\n    updateUIFromSettings(settings) {\r\n        if (!settings) return;\r\n        \r\n        this.setElementValue('waveform', settings.waveform);\r\n        this.setElementValue('frequency', settings.frequency);\r\n        this.setElementValue('duration', settings.duration);\r\n        \r\n        if (settings.envelope) {\r\n            this.setElementValue('attack', settings.envelope.attack);\r\n            this.setElementValue('decay', settings.envelope.decay);\r\n            this.setElementValue('sustain', settings.envelope.sustain);\r\n            this.setElementValue('release', settings.envelope.release);\r\n        }\r\n        \r\n        if (settings.pitchEnvelope) {\r\n            this.setElementValue('pitchEnvStart', settings.pitchEnvelope.start);\r\n            this.setElementValue('pitchEnvEnd', settings.pitchEnvelope.end);\r\n        }\r\n        \r\n        if (settings.effects) {\r\n            if (settings.effects.filter) {\r\n                this.setElementValue('filterType', settings.effects.filter.type);\r\n                this.setElementValue('filterFreq', settings.effects.filter.frequency);\r\n                this.setElementValue('filterQ', settings.effects.filter.Q);\r\n                \r\n            }\r\n            \r\n            this.setElementValue('distortion', settings.effects.distortion);\r\n            \r\n            if (settings.effects.delay) {\r\n                this.setElementValue('delayTime', settings.effects.delay.time);\r\n                this.setElementValue('delayFeedback', settings.effects.delay.feedback);\r\n            }\r\n            \r\n            this.setElementValue('reverbAmount', settings.effects.reverb);\r\n            \r\n            this.setElementValue('bitcrusher', settings.effects.bitcrusher);\r\n\r\n            this.setElementValue('panning', settings.effects.pan);\r\n        }\r\n        if (settings.noise) {\r\n            this.setElementValue('noiseType', settings.noise.type);\r\n            this.setElementValue('noiseAmount', settings.noise.amount);\r\n            \r\n            if (settings.noise.filter) {\r\n                this.setElementValue('noiseFilterType', settings.noise.filter.type);\r\n                this.setElementValue('noiseFilterFreq', settings.noise.filter.frequency);\r\n            }\r\n        }\r\n        document.querySelectorAll('input[type=\"range\"]').forEach(el => {\r\n            el.dispatchEvent(new Event('input'));\r\n        });\r\n        document.getElementById('randomSoundBtn')?.addEventListener('click', () => {\r\n            this.generateRandomSound();\r\n            this.playCurrentSound();\r\n        });\r\n    }\r\n    generateRandomSound() {\r\n        // Waveform options (including noise)\r\n        const waveforms = ['sine', 'square', 'sawtooth', 'triangle', 'noise'];\r\n        \r\n        // Noise types\r\n        const noiseTypes = ['white', 'pink', 'brown'];\r\n        \r\n        // Filter types\r\n        const filterTypes = ['lowpass', 'highpass', 'bandpass', 'none'];\r\n        \r\n        // Random helpers\r\n        const random = (min, max) => Math.random() * (max - min) + min;\r\n        const randomInt = (min, max) => Math.floor(random(min, max + 1));\r\n        const randomItem = (arr) => arr[randomInt(0, arr.length - 1)];\r\n        \r\n        // Generate random settings\r\n        const settings = {\r\n            waveform: randomItem(waveforms),\r\n            frequency: random(50, 2000),\r\n            duration: random(0.1, 3),\r\n            noise: {\r\n                type: randomItem(noiseTypes),\r\n                amount: random(0, 0), // Keep below 1.0 to avoid overpowering\r\n                filter: {\r\n                    type: randomItem(filterTypes),\r\n                    frequency: random(100, 10000),\r\n                    Q: random(0.5, 5)\r\n                }\r\n            },\r\n            envelope: {\r\n                attack: random(0.001, 0.5),\r\n                decay: random(0.01, 1),\r\n                sustain: random(0, 1),\r\n                release: random(0.01, 2)\r\n            },\r\n            pitchEnvelope: {\r\n                start: random(0.5, 2),\r\n                end: random(0.5, 2),\r\n                time: random(0.1, 2)\r\n            },\r\n            effects: {\r\n                filter: {\r\n                    type: randomItem(filterTypes),\r\n                    frequency: random(50, 10000),\r\n                    Q: random(0.5, 5)\r\n                },\r\n                distortion: random(0, 0.8),\r\n                delay: {\r\n                    time: random(0, 1),\r\n                    feedback: random(0, 0.7) // Avoid infinite feedback\r\n                },\r\n                reverb: random(0, 0.7),\r\n                bitcrusher: random(0, 0.5),\r\n                pan: random(-1, 1)\r\n            }\r\n        };\r\n\r\n        // Special case: If waveform is noise, disable oscillator frequency\r\n        if (settings.waveform === 'noise') {\r\n            settings.noise.amount = 1.0; // Full noise when selected\r\n            settings.frequency = 440; // Dummy value (unused)\r\n        }\r\n\r\n        // Ensure noise filter isn't \"none\" if noise is active\r\n        if (settings.noise.amount > 0 && settings.noise.filter.type === 'none') {\r\n            settings.noise.filter.type = randomItem(filterTypes.filter(t => t !== 'none'));\r\n        }\r\n\r\n        // Update UI with the new random sound\r\n        this.updateUIFromSettings(settings);\r\n        return settings;\r\n    }\r\n\r\n    updateNoiseUI() {\r\n    \r\n        // Setup the slider display update\r\n        this.setupNoiseControls();\r\n    }\r\n    \r\n    setupNoiseControls() {\r\n        const updateSliderDisplay = (sliderId, formatFn) => {\r\n            const slider = document.getElementById(sliderId);\r\n            if (slider) {\r\n                const updateDisplayValue = () => {\r\n                    const display = slider.nextElementSibling;\r\n                    if (display && display.classList.contains('value-display')) {\r\n                        display.textContent = formatFn(parseFloat(slider.value));\r\n                    }\r\n                };\r\n                \r\n                slider.addEventListener('input', updateDisplayValue);\r\n                updateDisplayValue();\r\n            }\r\n        };\r\n    \r\n        updateSliderDisplay('noiseAmount', (val) => `${Math.round(val * 100)}%`);\r\n        updateSliderDisplay('noiseFilterFreq', (val) => `${val} Hz`);\r\n    }\r\n\r\n    setElementValue(id, value) {\r\n        const element = document.getElementById(id);\r\n        if (element) element.value = value;\r\n    }\r\n\r\n\r\n    saveAudio(settingsObj) {\r\n        document.body.dispatchEvent(new CustomEvent('saveAudio', {   \r\n            detail: { data: settingsObj, propertyName: 'audio' },\r\n        }));\r\n    }\r\n\r\n    playCurrentSound() {\r\n        const settings = this.getUISettings();\r\n        this.audioManager.playSynthSound('audioEditorSound', settings);\r\n    }\r\n    \r\n}\r\n\r\n// setupKeyboard() {\r\n//     const keyboard = document.getElementById('keyboard');\r\n//     if (!keyboard) return;\r\n    \r\n//     keyboard.innerHTML = '';\r\n    \r\n//     const keyboardLayout = [\r\n//         { note: 'C4', key: 'a', frequency: 261.63, type: 'white' },\r\n//         { note: 'C#4', key: 'w', frequency: 277.18, type: 'black' },\r\n//         { note: 'D4', key: 's', frequency: 293.66, type: 'white' },\r\n//         { note: 'D#4', key: 'e', frequency: 311.13, type: 'black' },\r\n//         { note: 'E4', key: 'd', frequency: 329.63, type: 'white' },\r\n//         { note: 'F4', key: 'f', frequency: 349.23, type: 'white' },\r\n//         { note: 'F#4', key: 't', frequency: 369.99, type: 'black' },\r\n//         { note: 'G4', key: 'g', frequency: 392.00, type: 'white' },\r\n//         { note: 'G#4', key: 'y', frequency: 415.30, type: 'black' },\r\n//         { note: 'A4', key: 'h', frequency: 440.00, type: 'white' },\r\n//         { note: 'A#4', key: 'u', frequency: 466.16, type: 'black' },\r\n//         { note: 'B4', key: 'j', frequency: 493.88, type: 'white' },\r\n//         { note: 'C5', key: 'k', frequency: 523.25, type: 'white' }\r\n//     ];\r\n    \r\n//     keyboardLayout.forEach(note => {\r\n//         const key = document.createElement('div');\r\n//         key.className = `key ${note.type}`;\r\n//         key.dataset.note = note.note;\r\n//         key.dataset.frequency = note.frequency;\r\n//         key.innerHTML = `<span>${note.note}</span><span class=\"key-label\">${note.key}</span>`;\r\n        \r\n//         key.addEventListener('mousedown', () => {\r\n//             key.classList.add('active');\r\n//             this.playNote(note.frequency);\r\n//         });\r\n//         key.addEventListener('mouseup', () => {\r\n//             key.classList.remove('active');\r\n//             this.stopNote(note.frequency);\r\n//         });\r\n//         key.addEventListener('mouseleave', () => {\r\n//             if (key.classList.contains('active')) {\r\n//                 key.classList.remove('active');\r\n//                 this.stopNote(note.frequency);\r\n//             }\r\n//         });\r\n        \r\n//         keyboard.appendChild(key);\r\n//     });\r\n    \r\n//     const keyToNote = {};\r\n//     keyboardLayout.forEach(note => {\r\n//         keyToNote[note.key] = note.frequency;\r\n//     });\r\n    \r\n//     window.addEventListener('keydown', (e) => {\r\n//         if (e.repeat) return;\r\n//         const key = e.key.toLowerCase();\r\n//         if (keyToNote[key]) {\r\n//             this.playNote(keyToNote[key]);\r\n//             const keyElement = Array.from(keyboard.children).find(\r\n//                 k => k.dataset.frequency == keyToNote[key]\r\n//             );\r\n//             if (keyElement) keyElement.classList.add('active');\r\n//         }\r\n//     });\r\n    \r\n//     window.addEventListener('keyup', (e) => {\r\n//         const key = e.key.toLowerCase();\r\n//         if (keyToNote[key]) {\r\n//             this.stopNote(keyToNote[key]);\r\n//             const keyElement = Array.from(keyboard.children).find(\r\n//                 k => k.dataset.frequency == keyToNote[key]\r\n//             );\r\n//             if (keyElement) keyElement.classList.remove('active');\r\n//         }\r\n//     });\r\n// }\r\n\r\n// stopNote(frequency) {\r\n//     if (!this.activeNotes.has(frequency)) return;\r\n    \r\n//     const note = this.activeNotes.get(frequency);\r\n//     const now = this.audioContext.currentTime;\r\n//     const settings = this.getUISettings();\r\n//     const release = settings.envelope.release;\r\n    \r\n//     note.envelopeGain.gain.cancelScheduledValues(now);\r\n//     note.envelopeGain.gain.setValueAtTime(note.envelopeGain.gain.value, now);\r\n//     note.envelopeGain.gain.linearRampToValueAtTime(0, now + release);\r\n    \r\n//     note.oscillator.stop(now + release + 0.1);\r\n    \r\n//     setTimeout(() => {\r\n//         this.activeNotes.delete(frequency);\r\n//     }, (release + 0.2) * 1000);\r\n// }\r\n// playNote(frequency) {\r\n//     if (this.activeNotes.has(frequency)) {\r\n//         this.stopNote(frequency);\r\n//     }\r\n    \r\n//     const settings = this.getUISettings();\r\n//     settings.frequency = frequency;\r\n    \r\n//     const now = this.audioContext.currentTime;\r\n//     const oscillator = this.createOscillator(settings);\r\n//     oscillator.connect(this.filter);\r\n//     oscillator.start(now);\r\n    \r\n//     this.activeNotes.set(frequency, {\r\n//         oscillator,\r\n//         envelopeGain: this.masterGainNode,\r\n//         startTime: now\r\n//     });\r\n    \r\n//     this.connectVisualizer(oscillator);\r\n// }\r\n// Audio Visualizer class\r\nclass AudioVisualizer {\r\n    constructor(canvas, audioContext) {\r\n        this.canvas = canvas;\r\n        this.ctx = canvas.getContext('2d');\r\n        this.audioContext = audioContext;\r\n        this.analyzer = audioContext.createAnalyser();\r\n        this.analyzer.fftSize = 2048;\r\n        this.bufferLength = this.analyzer.frequencyBinCount;\r\n        this.dataArray = new Uint8Array(this.bufferLength);\r\n        this.analyzer.connect(audioContext.destination);\r\n        \r\n      \r\n        \r\n        // Start visualization loop\r\n        this.visualize();\r\n    }\r\n    \r\n    connectSource(source) {\r\n        source.connect(this.analyzer);\r\n    }\r\n    \r\n    drawWaveform(audioBuffer) {\r\n        const data = audioBuffer.getChannelData(0);\r\n        const step = Math.ceil(data.length / this.canvas.width);\r\n        const amp = this.canvas.height / 2;\r\n        \r\n        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);\r\n        this.ctx.beginPath();\r\n        this.ctx.moveTo(0, amp);\r\n        \r\n        for (let i = 0; i < this.canvas.width; i++) {\r\n            const idx = Math.floor(i * step);\r\n            const y = amp + data[idx] * amp;\r\n            this.ctx.lineTo(i, y);\r\n        }\r\n        \r\n        this.ctx.strokeStyle = '#2196F3';\r\n        this.ctx.stroke();\r\n    }\r\n    \r\n    visualize() {\r\n        requestAnimationFrame(() => this.visualize());\r\n        \r\n        this.analyzer.getByteTimeDomainData(this.dataArray);\r\n        \r\n        this.ctx.fillStyle = 'rgb(200, 200, 200)';\r\n        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);\r\n        \r\n        this.ctx.lineWidth = 2;\r\n        this.ctx.strokeStyle = 'rgb(0, 0, 0)';\r\n        this.ctx.beginPath();\r\n        \r\n        const sliceWidth = this.canvas.width * 1.0 / this.bufferLength;\r\n        let x = 0;\r\n        \r\n        for (let i = 0; i < this.bufferLength; i++) {\r\n            const v = this.dataArray[i] / 128.0;\r\n            const y = v * this.canvas.height / 2;\r\n            \r\n            if (i === 0) {\r\n                this.ctx.moveTo(x, y);\r\n            } else {\r\n                this.ctx.lineTo(x, y);\r\n            }\r\n            \r\n            x += sliceWidth;\r\n        }\r\n        \r\n        this.ctx.lineTo(this.canvas.width, this.canvas.height / 2);\r\n        this.ctx.stroke();\r\n    }\r\n    \r\n}"
       },
       "Component": {
         "fileName": "Component",
@@ -17632,13 +17632,13 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "Entity",
         "script": "class Entity {\r\n    constructor(game, x, y, type) {\r\n        this.game = game;\r\n        this.moduleManager = game.moduleManager;\r\n        this.position = { x: x, y: y, z: 0};\r\n        this.components = [];\r\n        this.renderers = [];\r\n        this.destroyed = false;        \r\n        this.id = ++game.entityId;\r\n        this.type = type;\r\n        this.gridPosition = { x: 0, y: 0};\r\n        this.drawPosition = { x: 0, y: 0};\r\n        this.lastPosition = {...this.position};\r\n        this.lastGridPosition = {...this.gridPosition};\r\n        this.lastDrawPosition = {...this.drawPosition};\r\n        if(this.game.gameEntity){\r\n            this.setGridPosition();\r\n            this.position.z = this.getCurrentTerrainHeight();\r\n        }\r\n    }\r\n\r\n    getCurrentTerrainHeight(){\r\n        return this.game.gameEntity.getComponent('game').getTerrainHeight(this.gridPosition);\r\n    }\r\n\r\n    getComponent(name) {\r\n        return this.components[name.toLowerCase()] || this.components[`${name.toLowerCase()}`];\r\n    }\r\n    addRenderer(RendererClassName, params) {\r\n        const RendererClass = this.moduleManager.getCompiledScript(RendererClassName, 'renderers');\r\n        const renderer = new RendererClass(this.game, this, params);\r\n        this.renderers[RendererClass.name.toLowerCase()] = renderer;\r\n        this.components[RendererClass.name.toLowerCase()] = renderer;\r\n        return renderer;\r\n    }\r\n    addComponent(ComponentClassName, params) {        \r\n        const ComponentClass = this.moduleManager.getCompiledScript(ComponentClassName, 'components');\r\n        const component = new ComponentClass(this.game, this, params);\r\n        this.components[ComponentClass.name.toLowerCase()] = component;\r\n        return component;\r\n    }\r\n    removeComponent(component) {\r\n        let index = this.components.indexOf(component);\r\n        if( index >= 0 ) {\r\n            this.components.splice(index, 1);\r\n        }\r\n    }\r\n    setGridPosition() {\r\n        if(this.game.translator){\r\n            let gridPosition = this.game.translator.pixelToGrid( this.position.x, this.position.y ); \r\n            this.gridPosition = this.game.translator.snapToGrid(gridPosition.x, gridPosition.y);   \r\n            return;\r\n        }\r\n        this.gridPosition = { x: 0, y: 0 };\r\n    }\r\n    updateLastPositions() {\r\n        this.lastPosition = {...this.position};\r\n        this.lastGridPosition = {...this.gridPosition};\r\n        this.lastDrawPosition = {...this.drawPosition};         \r\n    }\r\n    \r\n    getCurrentTile() {                     \r\n        if(this.game.state.tileMap.length > this.gridPosition.y && this.gridPosition.y > 0 && this.game.state.tileMap[Math.floor(this.gridPosition.y)] && this.game.state.tileMap[Math.floor(this.gridPosition.y)].length > this.gridPosition.x && this.gridPosition.x > 0){\r\n            return this.game.state.tileMap[Math.floor(this.gridPosition.y)][Math.floor(this.gridPosition.x)];\r\n        }\r\n        return { typeId: 0};\r\n    }\r\n    update() {    \r\n        this.setGridPosition();\r\n        for(let c in this.components) {\r\n            this.components[c].update();   \r\n            this.setGridPosition();\r\n            if(this.destroyed) break;\r\n        }                \r\n        return !this.destroyed;\r\n    }\r\n    postUpdate() {\r\n        for(let c in this.components) {\r\n            this.components[c].postUpdate();   \r\n            if(this.destroyed) break;\r\n        }     \r\n        this.updateLastPositions(); \r\n        return !this.destroyed;\r\n    }\r\n    draw() {\r\n        const isoPos = this.game.translator.pixelToIso(this.position.x, this.position.y);    \r\n        this.drawPosition = { x: isoPos.x, y: isoPos.y };\r\n\r\n        for(let r in this.renderers) {\r\n            this.renderers[r].draw();  \r\n        }\r\n\r\n    }\r\n    destroy() {\r\n        this.destroyed = true;\r\n        for(let c in this.components) {\r\n            this.components[c].destroy();   \r\n        }   \r\n        for(let r in this.renderers) {\r\n            this.renderers[r].destroy();   \r\n        }   \r\n    }\r\n}"
       },
-      "GameState": {
-        "fileName": "GameState",
-        "script": "class GameState {\r\n    constructor(gameConfig = {}) {\r\n        let state = gameConfig.configs.state;\r\n     \r\n        // Clear all existing properties\r\n        for (let prop in this) {\r\n            if (Object.prototype.hasOwnProperty.call(this, prop)) {\r\n                delete this[prop];\r\n            }\r\n        }\r\n\r\n        // Set only the properties from params\r\n        for (let key in state) {\r\n            if (Object.prototype.hasOwnProperty.call(state, key)) {\r\n                this[key] = state[key];\r\n            }\r\n        }\r\n        this.entities = [];\r\n        // If stats is present, create defaultStats as a copy\r\n  \r\n    }\r\n\r\n    addEntity(entity) {\r\n        this.entities.push(entity);\r\n    }\r\n    removeEntity(entity) {\r\n    \r\n        let index = this.entities.indexOf(entity);\r\n        if( index >= 0 ) {\r\n            this.entities.splice(index, 1);\r\n        }\r\n    }\r\n}"
-      },
       "ExportScripts": {
         "fileName": "ExportScripts",
         "script": "class ExportScripts {\r\n  constructor(app) {\r\n     this.app = app;\r\n  }\r\n  export(project) {\r\n      // Initialize JSZip\r\n      const zip = new (this.app.libraryClasses.JSZip)();\r\n\r\n      // Iterate over each script type (e.g., \"renderers\", \"components\")\r\n      Object.keys(project).forEach(scriptType => {\r\n          const scripts = project[scriptType];\r\n\r\n          // Create a folder for the script type\r\n          const folder = zip.folder(`scripts/${scriptType}`);\r\n\r\n          // Iterate over each script key (e.g., \"renderer\", \"component\")\r\n          Object.keys(scripts).forEach(scriptKey => {\r\n              const scriptData = scripts[scriptKey];\r\n              const scriptContent = scriptData.script || ''; // Fallback to empty string if no script\r\n\r\n              // Add the script file to the folder\r\n              folder.file(`${scriptKey}.js`, scriptContent);\r\n          });\r\n      });\r\n\r\n      // Generate the zip file and trigger download\r\n      zip.generateAsync({ type: 'blob' }).then(blob => {\r\n          // Create a temporary URL for the blob\r\n          const url = window.URL.createObjectURL(blob);\r\n\r\n          // Create a temporary link element to trigger download\r\n          const link = document.createElement('a');\r\n          link.href = url;\r\n          link.download = 'scripts.zip'; // Name of the downloaded file\r\n          document.body.appendChild(link);\r\n          link.click();\r\n\r\n          // Clean up\r\n          document.body.removeChild(link);\r\n          window.URL.revokeObjectURL(url);\r\n      }).catch(error => {\r\n          console.error('Error generating zip file:', error);\r\n      });\r\n  }\r\n}"
+      },
+      "GameState": {
+        "fileName": "GameState",
+        "script": "class GameState {\r\n    constructor(gameConfig = {}) {\r\n        let state = gameConfig.configs.state;\r\n     \r\n        // Clear all existing properties\r\n        for (let prop in this) {\r\n            if (Object.prototype.hasOwnProperty.call(this, prop)) {\r\n                delete this[prop];\r\n            }\r\n        }\r\n\r\n        // Set only the properties from params\r\n        for (let key in state) {\r\n            if (Object.prototype.hasOwnProperty.call(state, key)) {\r\n                this[key] = state[key];\r\n            }\r\n        }\r\n        this.entities = [];\r\n        // If stats is present, create defaultStats as a copy\r\n  \r\n    }\r\n\r\n    addEntity(entity) {\r\n        this.entities.push(entity);\r\n    }\r\n    removeEntity(entity) {\r\n    \r\n        let index = this.entities.indexOf(entity);\r\n        if( index >= 0 ) {\r\n            this.entities.splice(index, 1);\r\n        }\r\n    }\r\n}"
       },
       "GE_AnimationManager": {
         "title": "GE_AnimationManager",
@@ -17660,30 +17660,34 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "GE_RotationUtils",
         "script": "// RotationUtils.js\r\nclass GE_RotationUtils {\r\n    /**\r\n     * Convert degrees to radians\r\n     * @param {number} degrees - Angle in degrees\r\n     * @return {number} Angle in radians\r\n     */\r\n    static degToRad(degrees) {\r\n        return degrees * Math.PI / 180;\r\n    }\r\n    \r\n    /**\r\n     * Convert radians to degrees\r\n     * @param {number} radians - Angle in radians\r\n     * @return {number} Angle in degrees (rounded)\r\n     */\r\n    static radToDeg(radians) {\r\n        return Math.round(radians * 180 / Math.PI);\r\n    }\r\n    \r\n    /**\r\n     * Apply rotation to a position vector around a center point\r\n     * @param {Object} position - Position with x, y, z properties\r\n     * @param {Object} center - Center point with x, y, z properties\r\n     * @param {Object} rotation - Rotation with x, y, z properties in radians\r\n     * @return {Object} New position after rotation\r\n     */\r\n    static rotatePosition(position, center, rotation) {\r\n        const pos = new window.THREE.Vector3(\r\n            position.x || 0,\r\n            position.y || 0,\r\n            position.z || 0\r\n        );\r\n        \r\n        const centerVec = new window.THREE.Vector3(\r\n            center.x || 0,\r\n            center.y || 0,\r\n            center.z || 0\r\n        );\r\n        \r\n        // Create rotation matrix\r\n        const rotMatrix = new window.THREE.Matrix4();\r\n        rotMatrix.makeRotationFromEuler(new window.THREE.Euler(\r\n            rotation.x || 0,\r\n            rotation.y || 0,\r\n            rotation.z || 0\r\n        ));\r\n        \r\n        // Apply rotation\r\n        pos.sub(centerVec);\r\n        pos.applyMatrix4(rotMatrix);\r\n        pos.add(centerVec);\r\n        \r\n        return { x: pos.x, y: pos.y, z: pos.z };\r\n    }\r\n    \r\n    /**\r\n     * Combine two rotations (in Euler angles)\r\n     * @param {Object} rotation1 - First rotation with x, y, z in degrees\r\n     * @param {Object} rotation2 - Second rotation with x, y, z in degrees\r\n     * @return {Object} Combined rotation in degrees\r\n     */\r\n    static combineRotations(rotation1, rotation2) {\r\n        // Convert to radians\r\n        const rot1 = {\r\n            x: this.degToRad(rotation1.x || 0),\r\n            y: this.degToRad(rotation1.y || 0),\r\n            z: this.degToRad(rotation1.z || 0)\r\n        };\r\n        \r\n        const rot2 = {\r\n            x: this.degToRad(rotation2.x || 0),\r\n            y: this.degToRad(rotation2.y || 0),\r\n            z: this.degToRad(rotation2.z || 0)\r\n        };\r\n        \r\n        // Convert to quaternions and multiply\r\n        const quat1 = new window.THREE.Quaternion().setFromEuler(\r\n            new window.THREE.Euler(rot1.x, rot1.y, rot1.z)\r\n        );\r\n        \r\n        const quat2 = new window.THREE.Quaternion().setFromEuler(\r\n            new window.THREE.Euler(rot2.x, rot2.y, rot2.z)\r\n        );\r\n        \r\n        quat1.multiply(quat2);\r\n        \r\n        // Convert back to euler angles\r\n        const euler = new window.THREE.Euler().setFromQuaternion(quat1);\r\n        \r\n        // Return in degrees\r\n        return {\r\n            x: this.radToDeg(euler.x),\r\n            y: this.radToDeg(euler.y),\r\n            z: this.radToDeg(euler.z)\r\n        };\r\n    }\r\n}"
       },
-      "GE_GroupManager": {
-        "title": "GE_GroupManager",
-        "fileName": "GE_GroupManager",
-        "script": "class GE_GroupManager {\r\n    constructor(gameEditor, graphicsEditor) {\r\n        this.gameEditor = gameEditor;\r\n        this.graphicsEditor = graphicsEditor;\r\n        this.DEFAULT_GROUP = {\r\n            shapes: [],\r\n            position: { x: 0, y: 0, z: 0 },\r\n            rotation: { x: 0, y: 0, z: 0 },\r\n            scale: { x: 1.0, y: 1.0, z: 1.0 }\r\n        };\r\n    }\r\n\r\n    init() {\r\n        document.getElementById('create-group').addEventListener('click', this.createGroup.bind(this));\r\n        document.getElementById('delete-group').addEventListener('click', this.deleteGroup.bind(this));\r\n        \r\n       \r\n        // Update the group list initially\r\n        this.updateGroupList();\r\n        \r\n        // Initialize drag-and-drop\r\n        this.initDragAndDrop();\r\n    }\r\n\r\n    // Initialize drag and drop functionality\r\n    initDragAndDrop() {\r\n        // Make group items drop targets\r\n        const groupList = document.getElementById('group-list');\r\n        groupList.addEventListener('dragover', this.handleDragOver.bind(this));\r\n        groupList.addEventListener('drop', this.handleDrop.bind(this));\r\n    }\r\n    \r\n    handleDragOver(e) {\r\n        e.preventDefault(); // Allow drop\r\n        e.dataTransfer.dropEffect = 'move';\r\n        \r\n        // Highlight the group being dragged over\r\n        const groupItem = this.findGroupItemFromEvent(e);\r\n        if (groupItem) {\r\n            // Remove highlight from all groups\r\n            document.querySelectorAll('.group-item').forEach(item => {\r\n                item.classList.remove('drag-over');\r\n            });\r\n            \r\n            // Add highlight to target group\r\n            groupItem.classList.add('drag-over');\r\n        }\r\n    }\r\n    \r\n    handleDrop(e) {\r\n        e.preventDefault();\r\n        \r\n        // Remove all drag-over highlights\r\n        document.querySelectorAll('.group-item').forEach(item => {\r\n            item.classList.remove('drag-over');\r\n        });\r\n        \r\n        // Find the target group\r\n        const groupItem = this.findGroupItemFromEvent(e);\r\n        if (!groupItem) return;\r\n        \r\n        const targetGroup = groupItem.dataset.group;\r\n        \r\n        // Get the shape data from dataTransfer\r\n        const data = e.dataTransfer.getData('text/plain');\r\n        if (!data) return;\r\n        \r\n        try {\r\n            const dragData = JSON.parse(data);\r\n            const { shapeIndex, sourceGroup } = dragData;\r\n            \r\n            // Don't move if source and target are the same\r\n            if (sourceGroup === targetGroup) return;\r\n            \r\n            // Move the shape to the target group\r\n            this.moveToGroup(parseInt(shapeIndex), sourceGroup, targetGroup);\r\n        } catch (err) {\r\n            console.error('Error processing drop:', err);\r\n        }\r\n    }\r\n    \r\n    findGroupItemFromEvent(e) {\r\n        let target = e.target;\r\n        // Traverse up to find the group-item\r\n        while (target && !target.classList.contains('group-item')) {\r\n            target = target.parentElement;\r\n            if (!target || target === document.body) return null;\r\n        }\r\n        return target;\r\n    }\r\n\r\n    // Create a new group at the frame level\r\n    createGroup() {\r\n        if(!this.graphicsEditor.state.editingModel) {            \r\n            return;\r\n        }\r\n        const groupName = prompt(\"Enter group name:\", \"group_\" + Date.now());\r\n\r\n        const currentFrame = this.graphicsEditor.state.currentFrame;\r\n        \r\n        // Ensure we have current frame data\r\n        if (!this.graphicsEditor.getCurrentFrame()) {\r\n            this.graphicsEditor.getCurrentAnimation()[currentFrame] = {};\r\n        }\r\n        \r\n        // Switch selection to the new group\r\n        this.graphicsEditor.state.currentGroup = groupName;\r\n        // Initialize group if it doesn't exist\r\n        if (!this.graphicsEditor.getCurrentGroup()) {\r\n            // Using JSON parse/stringify for deep copying\r\n            this.graphicsEditor.getCurrentFrame()[groupName] = JSON.parse(JSON.stringify(this.DEFAULT_GROUP));\r\n        }\r\n        \r\n        \r\n        // Refresh UI\r\n        this.graphicsEditor.uiManager.updateList();\r\n        this.graphicsEditor.refreshShapes(true);\r\n    }\r\n\r\n    // Move an object from one group to another\r\n    moveToGroup(shapeIndex, fromGroupName, toGroupName) {\r\n        if(!this.graphicsEditor.state.editingModel) {            \r\n            return;\r\n        }\r\n        const currentFrameData = this.graphicsEditor.getCurrentFrame();\r\n        \r\n        // Find the shape in the source group\r\n        const sourceGroup = currentFrameData[fromGroupName];\r\n        if (!sourceGroup) {\r\n            console.warn(`Source group ${fromGroupName} not found`);\r\n            return;\r\n        }\r\n        \r\n        // Find the shape\r\n        const shapeToMove = sourceGroup.shapes[shapeIndex];\r\n        if (!shapeToMove) {\r\n            console.warn(`Shape at index ${shapeIndex} not found in ${fromGroupName}`);\r\n            return;\r\n        }\r\n        \r\n        // Remove from source group\r\n        sourceGroup.shapes.splice(shapeIndex, 1);\r\n        \r\n        // Ensure target group exists\r\n        if (!currentFrameData[toGroupName]) {\r\n            currentFrameData[toGroupName] = this.DEFAULT_GROUP;\r\n        }\r\n        \r\n        // Add to target group\r\n        currentFrameData[toGroupName].shapes.push(shapeToMove);\r\n        \r\n        // Clear selection\r\n        this.graphicsEditor.state.selectedShapeIndex = -1;\r\n        \r\n        // Update UI\r\n        this.graphicsEditor.refreshShapes(true);\r\n    }\r\n\r\n    getGroupData(groupName){\r\n        let groupData = this.graphicsEditor.getCurrentFrame()[groupName];\r\n        if(!groupData){\r\n            return this.graphicsEditor.state.renderData.model[groupName];\r\n        }\r\n        return groupData;\r\n    }\r\n    // Select a group to work with\r\n    selectGroup(groupName) {\r\n        if (!groupName) return;\r\n        \r\n        // Update the selected group name\r\n        this.graphicsEditor.state.currentGroup = groupName;\r\n        this.graphicsEditor.state.selectedShapeIndex = -1;\r\n        let groupData = this.graphicsEditor.getMergedGroup(groupName);\r\n        this.graphicsEditor.uiManager.updateList();\r\n        this.graphicsEditor.shapeManager.highlightSelectedShape();\r\n        if(groupData){\r\n            // Update the UI to show shapes in this group\r\n            this.graphicsEditor.uiManager.createGroupInspector(groupData);\r\n            this.graphicsEditor.gizmoManager.transformSelectedObject(this.getGroupObject(groupName));\r\n            \r\n        }\r\n        // Update the selected class on group items\r\n        this.updateSelectedGroupClass(groupName);\r\n    }\r\n    updateSelectedGroupClass(groupName) {\r\n        // Remove selected class from all group items\r\n        const groupItems = document.querySelectorAll('.group-item');\r\n        groupItems.forEach(item => {\r\n            item.classList.remove('selected');\r\n        });\r\n        \r\n        // Add selected class to the newly selected group\r\n        const selectedGroupItem = Array.from(groupItems).find(\r\n            item => item.dataset.group === groupName\r\n        );\r\n        \r\n        if (selectedGroupItem) {\r\n            selectedGroupItem.classList.add('selected');\r\n        }\r\n    }\r\n    // Remove a group and place its contents back in the shapes group\r\n    deleteGroup() {\r\n        if(!this.graphicsEditor.state.editingModel) {            \r\n            return;\r\n        }\r\n        const currentFrameData = this.graphicsEditor.getCurrentFrame();\r\n        const currentGroup = this.graphicsEditor.getCurrentGroup();\r\n        // Get shapes from the selected group\r\n        const groupShapes = currentGroup.shapes;\r\n        if (groupShapes.length > 0) {\r\n            alert('Group must be empty to delete.');\r\n            return;\r\n        }\r\n                        \r\n        // Remove the group\r\n        delete currentFrameData[this.graphicsEditor.state.currentGroup];\r\n        \r\n        // Reset selection to shapes group\r\n        this.graphicsEditor.state.currentGroup = Object.keys(currentFrameData)[0];\r\n        this.graphicsEditor.state.selectedShapeIndex = -1;\r\n        \r\n        // Update UI\r\n        this.updateGroupList();\r\n        this.graphicsEditor.refreshShapes(true);\r\n    }\r\n    getGroupObject(groupName) {\r\n        let foundGroup = null;\r\n        this.graphicsEditor.rootGroup.traverse(obj => {\r\n            if (obj.isGroup && obj.name === groupName && obj.userData.isGroup) {\r\n                foundGroup = obj;\r\n            }\r\n        });\r\n        return foundGroup;\r\n    }\r\n\r\n\r\n    applyGroupTransform(groupName, position, rotation, scale) {\r\n        // Get the current frame data\r\n        const frameData = this.graphicsEditor.getCurrentFrame();\r\n        \r\n        // Ensure the group exists in the frame data\r\n        if (!frameData[groupName]) {\r\n            console.warn(`Group ${groupName} not found in frame data`);\r\n            return;\r\n        }\r\n \r\n        // Save transformations to the group data\r\n        frameData[groupName].position = {\r\n            x: position.x,\r\n            y: position.y,\r\n            z: position.z\r\n        };\r\n        frameData[groupName].rotation = {\r\n            x: rotation.x,\r\n            y: rotation.y,\r\n            z: rotation.z\r\n        };\r\n        frameData[groupName].scale = {\r\n            x: scale.x,\r\n            y: scale.y,\r\n            z: scale.z\r\n        };\r\n    \r\n        // Refresh the scene to see changes\r\n        this.graphicsEditor.refreshShapes(true);\r\n    }\r\n    // Update the group list in the UI\r\n    updateGroupList() {\r\n        const list = document.getElementById('group-list');\r\n        if (!list) {\r\n            console.warn(\"Group list element not found\");\r\n            return;\r\n        }\r\n        \r\n        list.innerHTML = '';\r\n        \r\n        for (const group of Object.keys(this.graphicsEditor.state.renderData.model)) {\r\n            const groupItem = document.createElement('div');\r\n            groupItem.classList.add('group-item');\r\n            if (group === this.graphicsEditor.state.currentGroup) {\r\n                groupItem.classList.add('selected');\r\n            }\r\n            \r\n            groupItem.textContent = group;\r\n            groupItem.addEventListener('click', () => this.selectGroup(group));\r\n            \r\n            // Make it a valid drop target for drag and drop\r\n            groupItem.dataset.group = group;\r\n            \r\n            list.appendChild(groupItem);\r\n        }\r\n    }\r\n}"
-      },
       "GE_SceneRenderer": {
         "title": "GE_SceneRenderer",
         "fileName": "GE_SceneRenderer",
         "script": "class GE_SceneRenderer {\r\n    constructor(gameEditor, graphicsEditor) {\r\n        this.gameEditor = gameEditor;\r\n        this.graphicsEditor = graphicsEditor;\r\n        this.scene = null;\r\n        this.camera = null;\r\n        this.renderer = null;\r\n        this.controls = null;\r\n    }    \r\n\r\n    init() {        \r\n        this.initThreeJS();\r\n        this.initEventListeners();\r\n    }\r\n    initEventListeners() {\r\n        document.body.addEventListener('renderGraphicsObject', this.handleRenderObject.bind(this));\r\n        document.body.addEventListener('resizedEditor', () => { \r\n            console.log('resized');\r\n            this.graphicsEditor.canvas.width = this.gameEditor.getCollections().configs.game.canvasWidth;\r\n            this.graphicsEditor.canvas.height = this.gameEditor.getCollections().configs.game.canvasHeight;\r\n            this.graphicsEditor.canvas.setAttribute('style','');\r\n            this.handleResize();  \r\n            this.graphicsEditor.refreshShapes(false); \r\n        });\r\n        document.getElementById('iso-generate').addEventListener('click', this.generateIsometricSprites.bind(this));\r\n    }\r\n    initThreeJS() {\r\n        // Scene setup\r\n        this.scene = new window.THREE.Scene();\r\n        \r\n        // Add the root group to the scene\r\n        this.scene.add(this.graphicsEditor.rootGroup);\r\n\r\n        // Camera setup\r\n        this.camera = new window.THREE.PerspectiveCamera(\r\n            75, \r\n            this.graphicsEditor.canvas.clientWidth / this.graphicsEditor.canvas.clientHeight, \r\n            0.1, \r\n            1000\r\n        );\r\n        this.camera.position.set(100, 100, 100);\r\n        this.camera.lookAt(0, 0, 0);\r\n\r\n        // Renderer setup\r\n        this.renderer = new window.THREE.WebGLRenderer({ \r\n            canvas: this.graphicsEditor.canvas, \r\n            antialias: false, \r\n            alpha: true \r\n        });\r\n        this.renderer.setSize(this.graphicsEditor.canvas.clientWidth, this.graphicsEditor.canvas.clientHeight);\r\n\r\n        // Add helpers\r\n        const gridHelper = new window.THREE.GridHelper(100, 100);\r\n        this.scene.add(gridHelper);\r\n\r\n        const axesHelper = new window.THREE.AxesHelper(5);\r\n        this.scene.add(axesHelper);\r\n\r\n        // Orbit controls\r\n        this.controls = new window.THREE.OrbitControls(this.camera, this.renderer.domElement);\r\n        this.controls.enableDamping = true;\r\n        this.controls.dampingFactor = 0.25;\r\n\r\n        // Resize handling\r\n        window.addEventListener('resize', this.handleResize.bind(this));\r\n    }\r\n    \r\n    handleResize() {\r\n        this.camera.aspect = this.graphicsEditor.canvas.clientWidth / this.graphicsEditor.canvas.clientHeight;\r\n        this.camera.updateProjectionMatrix();\r\n        this.renderer.setSize(this.graphicsEditor.canvas.clientWidth, this.graphicsEditor.canvas.clientHeight);\r\n    }\r\n    \r\n    handleRenderObject(event) {\r\n        this.graphicsEditor.canvas.width = this.gameEditor.getCollections().configs.game.canvasWidth;\r\n        this.graphicsEditor.canvas.height = this.gameEditor.getCollections().configs.game.canvasHeight;\r\n        this.graphicsEditor.canvas.setAttribute('style','');\r\n        this.graphicsEditor.setPreviewAnimationState(false);\r\n        this.graphicsEditor.state.renderData = event.detail.data;\r\n        document.getElementById('json-content').value = JSON.stringify(this.graphicsEditor.state.renderData, null, 2);\r\n        \r\n        // Safely get first animation name\r\n        let model = this.graphicsEditor.state.renderData.model;        \r\n        if(!model) {\r\n            this.graphicsEditor.state.renderData.model = JSON.parse(JSON.stringify(this.graphicsEditor.state.renderData.animations['idle'][0])); // Deep copy\r\n            model = this.graphicsEditor.state.renderData.model;\r\n        }\r\n        this.graphicsEditor.state.currentAnimation = \"\";\r\n        this.graphicsEditor.state.editingModel = true;\r\n        // Safely get first frame's shapes\r\n        const firstGroup = Object.keys(model)[0];\r\n        const shapes = model[firstGroup].shapes || [];\r\n        this.graphicsEditor.state.currentGroup = firstGroup;\r\n        this.handleResize();\r\n        this.graphicsEditor.refreshShapes(false);\r\n        requestAnimationFrame(() => {\r\n            this.graphicsEditor.state.selectedShapeIndex = -1;\r\n            this.graphicsEditor.shapeManager.selectShape(shapes.length > 0 ? 0 : -1);\r\n        });\r\n    }\r\n\r\n\r\n    animate() {\r\n        requestAnimationFrame(this.animate.bind(this));\r\n        this.controls.update();\r\n        this.renderer.render(this.scene, this.camera);\r\n    }\r\n\r\n    async createObjectsFromJSON(frameData, scene) {\r\n        for(const groupName in frameData) {\r\n            const group = await this.graphicsEditor.shapeFactory.createGroupFromJSON(groupName, frameData[groupName]);\r\n            scene.add(group);\r\n        }\r\n    }\r\n\r\n    \r\n    async generateIsometricSprites() {\r\n        const frustumSize = parseFloat(document.getElementById('iso-frustum').value) || 48;\r\n        const cameraDistance = parseFloat(document.getElementById('iso-distance').value) || 100;\r\n        const size = parseFloat(document.getElementById('iso-size').value) || 64;\r\n        const aspect = 1;\r\n        const tempRenderer = new window.THREE.WebGLRenderer({ antialias: false, alpha: true });\r\n        tempRenderer.setSize(size, size);\r\n        document.getElementById('modal-generateIsoSprites').classList.remove('show');\r\n    \r\n        const renderTarget = new window.THREE.WebGLRenderTarget(size, size);\r\n        const cameras = [\r\n            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),\r\n            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),\r\n            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),\r\n            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),\r\n            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),\r\n            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),\r\n            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),\r\n            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000)\r\n        ];\r\n    \r\n        // Position cameras at 8 angles (45° increments)\r\n        cameras[0].position.set(cameraDistance, cameraDistance, cameraDistance);           // NE up\r\n        cameras[1].position.set(0, cameraDistance, cameraDistance);                       // N up\r\n        cameras[2].position.set(-cameraDistance, cameraDistance, cameraDistance);         // NW up\r\n        cameras[3].position.set(-cameraDistance, cameraDistance, 0);                      // W up\r\n        cameras[4].position.set(-cameraDistance, cameraDistance, -cameraDistance);        // SW up\r\n        cameras[5].position.set(0, cameraDistance, -cameraDistance);                      // S up\r\n        cameras[6].position.set(cameraDistance, cameraDistance, -cameraDistance);         // SE up\r\n        cameras[7].position.set(cameraDistance, cameraDistance, 0);                       // E up\r\n        \r\n        cameras.forEach(camera => camera.lookAt(0, 0, 0));\r\n    \r\n        const sprites = {};     \r\n       \r\n        for (const animType in this.graphicsEditor.state.renderData.animations) {\r\n            sprites[animType] = [];\r\n            for (let frameIndex = 0; frameIndex < this.graphicsEditor.state.renderData.animations[animType].length; frameIndex++) {\r\n                const frame = this.graphicsEditor.state.renderData.animations[animType][frameIndex];\r\n                const scene = new window.THREE.Scene();\r\n                \r\n                // Add lights\r\n                const ambientLight = new window.THREE.AmbientLight(0xffffff, 0.8);\r\n                scene.add(ambientLight);\r\n                const directionalLight = new window.THREE.DirectionalLight(0xffffff, 1.0);\r\n                directionalLight.position.set(5, 10, 7.5);\r\n                scene.add(directionalLight);\r\n\r\n                await this.createObjectsFromJSON(frame, scene);\r\n    \r\n                const frameSprites = [];\r\n                for (const camera of cameras) {\r\n                    tempRenderer.setRenderTarget(renderTarget);\r\n                    tempRenderer.render(scene, camera);\r\n                    const buffer = new Uint8Array(size * size * 4);\r\n                    tempRenderer.readRenderTargetPixels(renderTarget, 0, 0, size, size, buffer);\r\n                    const flippedBuffer = new Uint8Array(size * size * 4);\r\n                    for (let y = 0; y < size; y++) {\r\n                        const srcRowStart = y * size * 4;\r\n                        const destRowStart = (size - 1 - y) * size * 4;\r\n                        flippedBuffer.set(buffer.subarray(srcRowStart, srcRowStart + size * 4), destRowStart);\r\n                    }\r\n                    const canvas = document.createElement('canvas');\r\n                    canvas.width = size;\r\n                    canvas.height = size;\r\n                    const ctx = canvas.getContext('2d');\r\n                    const imageData = ctx.createImageData(size, size);\r\n                    imageData.data.set(flippedBuffer);\r\n                    ctx.putImageData(imageData, 0, 0);\r\n                    frameSprites.push(canvas.toDataURL());\r\n                }\r\n                sprites[animType].push(frameSprites);\r\n            }\r\n        }\r\n        tempRenderer.setRenderTarget(null);\r\n        tempRenderer.dispose();\r\n        renderTarget.dispose();\r\n        this.graphicsEditor.displayIsometricSprites(sprites);\r\n    }\r\n}"
+      },
+      "GE_GroupManager": {
+        "title": "GE_GroupManager",
+        "fileName": "GE_GroupManager",
+        "script": "class GE_GroupManager {\r\n    constructor(gameEditor, graphicsEditor) {\r\n        this.gameEditor = gameEditor;\r\n        this.graphicsEditor = graphicsEditor;\r\n        this.DEFAULT_GROUP = {\r\n            shapes: [],\r\n            position: { x: 0, y: 0, z: 0 },\r\n            rotation: { x: 0, y: 0, z: 0 },\r\n            scale: { x: 1.0, y: 1.0, z: 1.0 }\r\n        };\r\n    }\r\n\r\n    init() {\r\n        document.getElementById('create-group').addEventListener('click', this.createGroup.bind(this));\r\n        document.getElementById('delete-group').addEventListener('click', this.deleteGroup.bind(this));\r\n        \r\n       \r\n        // Update the group list initially\r\n        this.updateGroupList();\r\n        \r\n        // Initialize drag-and-drop\r\n        this.initDragAndDrop();\r\n    }\r\n\r\n    // Initialize drag and drop functionality\r\n    initDragAndDrop() {\r\n        // Make group items drop targets\r\n        const groupList = document.getElementById('group-list');\r\n        groupList.addEventListener('dragover', this.handleDragOver.bind(this));\r\n        groupList.addEventListener('drop', this.handleDrop.bind(this));\r\n    }\r\n    \r\n    handleDragOver(e) {\r\n        e.preventDefault(); // Allow drop\r\n        e.dataTransfer.dropEffect = 'move';\r\n        \r\n        // Highlight the group being dragged over\r\n        const groupItem = this.findGroupItemFromEvent(e);\r\n        if (groupItem) {\r\n            // Remove highlight from all groups\r\n            document.querySelectorAll('.group-item').forEach(item => {\r\n                item.classList.remove('drag-over');\r\n            });\r\n            \r\n            // Add highlight to target group\r\n            groupItem.classList.add('drag-over');\r\n        }\r\n    }\r\n    \r\n    handleDrop(e) {\r\n        e.preventDefault();\r\n        \r\n        // Remove all drag-over highlights\r\n        document.querySelectorAll('.group-item').forEach(item => {\r\n            item.classList.remove('drag-over');\r\n        });\r\n        \r\n        // Find the target group\r\n        const groupItem = this.findGroupItemFromEvent(e);\r\n        if (!groupItem) return;\r\n        \r\n        const targetGroup = groupItem.dataset.group;\r\n        \r\n        // Get the shape data from dataTransfer\r\n        const data = e.dataTransfer.getData('text/plain');\r\n        if (!data) return;\r\n        \r\n        try {\r\n            const dragData = JSON.parse(data);\r\n            const { shapeIndex, sourceGroup } = dragData;\r\n            \r\n            // Don't move if source and target are the same\r\n            if (sourceGroup === targetGroup) return;\r\n            \r\n            // Move the shape to the target group\r\n            this.moveToGroup(parseInt(shapeIndex), sourceGroup, targetGroup);\r\n        } catch (err) {\r\n            console.error('Error processing drop:', err);\r\n        }\r\n    }\r\n    \r\n    findGroupItemFromEvent(e) {\r\n        let target = e.target;\r\n        // Traverse up to find the group-item\r\n        while (target && !target.classList.contains('group-item')) {\r\n            target = target.parentElement;\r\n            if (!target || target === document.body) return null;\r\n        }\r\n        return target;\r\n    }\r\n\r\n    // Create a new group at the frame level\r\n    createGroup() {\r\n        if(!this.graphicsEditor.state.editingModel) {            \r\n            return;\r\n        }\r\n        const groupName = prompt(\"Enter group name:\", \"group_\" + Date.now());\r\n\r\n        const currentFrame = this.graphicsEditor.state.currentFrame;\r\n        \r\n        // Ensure we have current frame data\r\n        if (!this.graphicsEditor.getCurrentFrame()) {\r\n            this.graphicsEditor.getCurrentAnimation()[currentFrame] = {};\r\n        }\r\n        \r\n        // Switch selection to the new group\r\n        this.graphicsEditor.state.currentGroup = groupName;\r\n        // Initialize group if it doesn't exist\r\n        if (!this.graphicsEditor.getCurrentGroup()) {\r\n            // Using JSON parse/stringify for deep copying\r\n            this.graphicsEditor.getCurrentFrame()[groupName] = JSON.parse(JSON.stringify(this.DEFAULT_GROUP));\r\n        }\r\n        \r\n        \r\n        // Refresh UI\r\n        this.graphicsEditor.uiManager.updateList();\r\n        this.graphicsEditor.refreshShapes(true);\r\n    }\r\n\r\n    // Move an object from one group to another\r\n    moveToGroup(shapeIndex, fromGroupName, toGroupName) {\r\n        if(!this.graphicsEditor.state.editingModel) {            \r\n            return;\r\n        }\r\n        const currentFrameData = this.graphicsEditor.getCurrentFrame();\r\n        \r\n        // Find the shape in the source group\r\n        const sourceGroup = currentFrameData[fromGroupName];\r\n        if (!sourceGroup) {\r\n            console.warn(`Source group ${fromGroupName} not found`);\r\n            return;\r\n        }\r\n        \r\n        // Find the shape\r\n        const shapeToMove = sourceGroup.shapes[shapeIndex];\r\n        if (!shapeToMove) {\r\n            console.warn(`Shape at index ${shapeIndex} not found in ${fromGroupName}`);\r\n            return;\r\n        }\r\n        \r\n        // Remove from source group\r\n        sourceGroup.shapes.splice(shapeIndex, 1);\r\n        \r\n        // Ensure target group exists\r\n        if (!currentFrameData[toGroupName]) {\r\n            currentFrameData[toGroupName] = this.DEFAULT_GROUP;\r\n        }\r\n        \r\n        // Add to target group\r\n        currentFrameData[toGroupName].shapes.push(shapeToMove);\r\n        \r\n        // Clear selection\r\n        this.graphicsEditor.state.selectedShapeIndex = -1;\r\n        \r\n        // Update UI\r\n        this.graphicsEditor.refreshShapes(true);\r\n    }\r\n\r\n    getGroupData(groupName){\r\n        let groupData = this.graphicsEditor.getCurrentFrame()[groupName];\r\n        if(!groupData){\r\n            return this.graphicsEditor.state.renderData.model[groupName];\r\n        }\r\n        return groupData;\r\n    }\r\n    // Select a group to work with\r\n    selectGroup(groupName) {\r\n        if (!groupName) return;\r\n        \r\n        // Update the selected group name\r\n        this.graphicsEditor.state.currentGroup = groupName;\r\n        this.graphicsEditor.state.selectedShapeIndex = -1;\r\n        let groupData = this.graphicsEditor.getMergedGroup(groupName);\r\n        this.graphicsEditor.uiManager.updateList();\r\n        this.graphicsEditor.shapeManager.highlightSelectedShape();\r\n        if(groupData){\r\n            // Update the UI to show shapes in this group\r\n            this.graphicsEditor.uiManager.createGroupInspector(groupData);\r\n            this.graphicsEditor.gizmoManager.transformSelectedObject(this.getGroupObject(groupName));\r\n            \r\n        }\r\n        // Update the selected class on group items\r\n        this.updateSelectedGroupClass(groupName);\r\n    }\r\n    updateSelectedGroupClass(groupName) {\r\n        // Remove selected class from all group items\r\n        const groupItems = document.querySelectorAll('.group-item');\r\n        groupItems.forEach(item => {\r\n            item.classList.remove('selected');\r\n        });\r\n        \r\n        // Add selected class to the newly selected group\r\n        const selectedGroupItem = Array.from(groupItems).find(\r\n            item => item.dataset.group === groupName\r\n        );\r\n        \r\n        if (selectedGroupItem) {\r\n            selectedGroupItem.classList.add('selected');\r\n        }\r\n    }\r\n    // Remove a group and place its contents back in the shapes group\r\n    deleteGroup() {\r\n        if(!this.graphicsEditor.state.editingModel) {            \r\n            return;\r\n        }\r\n        const currentFrameData = this.graphicsEditor.getCurrentFrame();\r\n        const currentGroup = this.graphicsEditor.getCurrentGroup();\r\n        // Get shapes from the selected group\r\n        const groupShapes = currentGroup.shapes;\r\n        if (groupShapes.length > 0) {\r\n            alert('Group must be empty to delete.');\r\n            return;\r\n        }\r\n                        \r\n        // Remove the group\r\n        delete currentFrameData[this.graphicsEditor.state.currentGroup];\r\n        \r\n        // Reset selection to shapes group\r\n        this.graphicsEditor.state.currentGroup = Object.keys(currentFrameData)[0];\r\n        this.graphicsEditor.state.selectedShapeIndex = -1;\r\n        \r\n        // Update UI\r\n        this.updateGroupList();\r\n        this.graphicsEditor.refreshShapes(true);\r\n    }\r\n    getGroupObject(groupName) {\r\n        let foundGroup = null;\r\n        this.graphicsEditor.rootGroup.traverse(obj => {\r\n            if (obj.isGroup && obj.name === groupName && obj.userData.isGroup) {\r\n                foundGroup = obj;\r\n            }\r\n        });\r\n        return foundGroup;\r\n    }\r\n\r\n\r\n    applyGroupTransform(groupName, position, rotation, scale) {\r\n        // Get the current frame data\r\n        const frameData = this.graphicsEditor.getCurrentFrame();\r\n        \r\n        // Ensure the group exists in the frame data\r\n        if (!frameData[groupName]) {\r\n            console.warn(`Group ${groupName} not found in frame data`);\r\n            return;\r\n        }\r\n \r\n        // Save transformations to the group data\r\n        frameData[groupName].position = {\r\n            x: position.x,\r\n            y: position.y,\r\n            z: position.z\r\n        };\r\n        frameData[groupName].rotation = {\r\n            x: rotation.x,\r\n            y: rotation.y,\r\n            z: rotation.z\r\n        };\r\n        frameData[groupName].scale = {\r\n            x: scale.x,\r\n            y: scale.y,\r\n            z: scale.z\r\n        };\r\n    \r\n        // Refresh the scene to see changes\r\n        this.graphicsEditor.refreshShapes(true);\r\n    }\r\n    // Update the group list in the UI\r\n    updateGroupList() {\r\n        const list = document.getElementById('group-list');\r\n        if (!list) {\r\n            console.warn(\"Group list element not found\");\r\n            return;\r\n        }\r\n        \r\n        list.innerHTML = '';\r\n        \r\n        for (const group of Object.keys(this.graphicsEditor.state.renderData.model)) {\r\n            const groupItem = document.createElement('div');\r\n            groupItem.classList.add('group-item');\r\n            if (group === this.graphicsEditor.state.currentGroup) {\r\n                groupItem.classList.add('selected');\r\n            }\r\n            \r\n            groupItem.textContent = group;\r\n            groupItem.addEventListener('click', () => this.selectGroup(group));\r\n            \r\n            // Make it a valid drop target for drag and drop\r\n            groupItem.dataset.group = group;\r\n            \r\n            list.appendChild(groupItem);\r\n        }\r\n    }\r\n}"
       },
       "GE_ShapeManager": {
         "title": "GE_ShapeManager",
         "fileName": "GE_ShapeManager",
         "script": "class GE_ShapeManager {\r\n    constructor(gameEditor, graphicsEditor) {\r\n        this.gameEditor = gameEditor;\r\n        this.graphicsEditor = graphicsEditor;\r\n        this.originalMaterials = new Map();\r\n        \r\n    }    \r\n\r\n    init() {   \r\n        this.initEventListeners();\r\n\r\n    }\r\n    initEventListeners() {\r\n        // Button event listeners\r\n        const buttonMappings = {\r\n            'add-shape': this.addSelectedShape.bind(this),\r\n            'delete-shape': this.deleteSelectedShape.bind(this)\r\n        };\r\n        Object.entries(buttonMappings).forEach(([id, handler]) => {\r\n            const button = document.getElementById(id);\r\n            if (button) button.addEventListener('click', handler);\r\n        });\r\n        \r\n        document.getElementById('move-cancel').addEventListener('click', () => {            \r\n            const inspector = document.getElementById('inspector');\r\n            inspector.innerHTML = ``;\r\n        });\r\n    }\r\n    getShapeData(shapeId){\r\n        let currentGroup = this.graphicsEditor.getCurrentGroup();\r\n        if(!currentGroup){\r\n            currentGroup = { shapes: [] };\r\n            let currentAnimation = this.graphicsEditor.getCurrentAnimation();\r\n            let currentFrame = currentAnimation[this.graphicsEditor.state.currentFrame];\r\n            if(!currentFrame){\r\n                currentFrame = {};\r\n            }\r\n            currentFrame[this.graphicsEditor.state.currentGroup] = currentGroup;\r\n            currentAnimation[this.graphicsEditor.state.currentFrame] = currentFrame;\r\n        }\r\n        currentGroup.shapes = currentGroup.shapes || [];\r\n        if(currentGroup.shapes.length == 0){\r\n            let shapeData = JSON.parse(JSON.stringify(this.graphicsEditor.state.renderData.model[this.graphicsEditor.state.currentGroup])).shapes[shapeId];\r\n            shapeData.id = shapeId;\r\n            currentGroup.shapes = [shapeData];\r\n            return shapeData;\r\n        }\r\n        let shapeData = (currentGroup.shapes).find(s => s.id == shapeId);\r\n        if(this.graphicsEditor.state.editingModel){\r\n            shapeData = currentGroup.shapes[shapeId];\r\n        }\r\n        return shapeData;\r\n    }\r\n    selectShape(index) {\r\n        if (this.graphicsEditor.animationManager.isPreviewingAnimation) {\r\n            this.graphicsEditor.setPreviewAnimationState(false);\r\n        }\r\n        \r\n        // Toggle selection if clicking the same shape\r\n        this.graphicsEditor.state.selectedShapeIndex = (this.graphicsEditor.state.selectedShapeIndex === index) ? -1 : index;\r\n\r\n        // Update shape list and highlighting\r\n        this.graphicsEditor.uiManager.updateList();\r\n        // Show inspector for selected shape\r\n        const shape = this.graphicsEditor.getMergedShape();\r\n        if (shape) {\r\n            this.highlightSelectedShape();\r\n            this.graphicsEditor.createInspector(shape);\r\n            this.graphicsEditor.gizmoManager.transformSelectedObject();\r\n        } else {\r\n            this.destroyOutlines();\r\n            this.graphicsEditor.gizmoManager.destroyGizmo();\r\n            this.graphicsEditor.groupManager.selectGroup(this.graphicsEditor.state.currentGroup);\r\n        }\r\n    }\r\n    destroyOutlines() {\r\n        // Remove existing outlines\r\n        this.graphicsEditor.sceneRenderer.scene.children.forEach(obj => {\r\n            if (obj.userData.isOutline) {\r\n                this.graphicsEditor.sceneRenderer.scene.remove(obj);\r\n                if (obj.geometry) obj.geometry.dispose();\r\n                if (obj.material) obj.material.dispose();\r\n            }\r\n        });\r\n    \r\n        // Reset any highlighted materials\r\n        this.originalMaterials.forEach((material, object) => {\r\n            object.material = material;\r\n        });\r\n        this.originalMaterials.clear();\r\n    }\r\n    highlightSelectedShape() {\r\n        this.destroyOutlines();\r\n\r\n    \r\n        // If no shape is selected or invalid selection, return\r\n        if (this.graphicsEditor.state.selectedShapeIndex < 0) {\r\n            return;\r\n        }\r\n    \r\n        // Get the selected group name from state\r\n        const currentGroup = this.graphicsEditor.state.currentGroup;\r\n        if (!currentGroup) {\r\n            console.warn(\"No group selected\");\r\n            return;\r\n        }\r\n    \r\n        // Find the THREE.Group with matching name under rootGroup\r\n        let selectedGroup = null;\r\n        this.graphicsEditor.rootGroup.traverse(obj => {\r\n            if (obj.isGroup && obj.name === currentGroup) {\r\n                selectedGroup = obj;\r\n            }\r\n        });\r\n    \r\n        if (!selectedGroup) {\r\n            console.warn(`No group found with name ${currentGroup}`);\r\n            return;\r\n        }\r\n    \r\n        const currentFrameData = this.graphicsEditor.getCurrentFrame();\r\n    \r\n        if (!currentFrameData) {\r\n            console.warn(\"No frame data found\");\r\n            return;\r\n        }\r\n    \r\n        const groupShapes = currentFrameData[currentGroup];\r\n    \r\n        if (!groupShapes || this.graphicsEditor.state.selectedShapeIndex >= groupShapes.length) {\r\n            console.warn(`Invalid shape index ${this.graphicsEditor.state.selectedShapeIndex} for group ${currentGroup}`);\r\n            return;\r\n        }\r\n    \r\n        // Find all meshes belonging to the selected shape within the group\r\n        const selectedMeshes = [];\r\n        selectedGroup.traverse(obj => {\r\n            if (obj.isMesh && (\r\n                // Direct shape object that matches the index\r\n                (obj.userData.isShape &&\r\n                 obj.userData.index === this.graphicsEditor.state.selectedShapeIndex) ||\r\n                // Parent is a shape object that matches the index\r\n                (obj.parent &&\r\n                 obj.parent.userData.isShape &&\r\n                 obj.parent.userData.index === this.graphicsEditor.state.selectedShapeIndex) ||\r\n                // GLTF child of selected shape that matches the index\r\n                (obj.userData.isGLTFChild &&\r\n                 obj.parent &&\r\n                 obj.parent.userData.index === this.graphicsEditor.state.selectedShapeIndex)\r\n            )) {\r\n                selectedMeshes.push(obj);\r\n            }\r\n        });\r\n    \r\n        // Handle highlighting for all relevant meshes\r\n        selectedMeshes.forEach(mesh => {\r\n            // Apply emissive highlight to original mesh\r\n            this.originalMaterials.set(mesh, mesh.material);\r\n            const highlightMaterial = mesh.material.clone();\r\n            highlightMaterial.emissive = new window.THREE.Color(0x555555);\r\n            highlightMaterial.emissiveIntensity = 0.5;\r\n            mesh.material = highlightMaterial;\r\n    \r\n            // Create the outline geometry\r\n            const outlineGeometry = mesh.geometry.clone();\r\n            const outlineMaterial = new window.THREE.MeshBasicMaterial({\r\n                color: 0xffff00,\r\n                side: window.THREE.BackSide\r\n            });\r\n    \r\n            // Create the outline mesh\r\n            const outline = new window.THREE.Mesh(outlineGeometry, outlineMaterial);\r\n            outline.userData.isOutline = true;\r\n            \r\n            // Create a new group to hold the outline\r\n            let outlineGroup = new window.THREE.Group();\r\n            outlineGroup.userData.isOutline = true;\r\n            \r\n            // Add the outline to the group\r\n            outlineGroup.add(outline);\r\n            \r\n            // Find all parent groups up to rootGroup and copy their transformations\r\n            let currentParent = mesh.parent;\r\n            let transformChain = [];\r\n            \r\n            while (currentParent && currentParent !== this.graphicsEditor.rootGroup) {\r\n                transformChain.unshift({\r\n                    position: currentParent.position.clone(),\r\n                    rotation: currentParent.rotation.clone(),\r\n                    scale: currentParent.scale.clone(),\r\n                    quaternion: currentParent.quaternion.clone()\r\n                });\r\n                currentParent = currentParent.parent;\r\n            }\r\n            \r\n            // Apply all parent transformations to our outline group\r\n            transformChain.forEach(transform => {\r\n                // Create a temporary group to apply each parent's transform\r\n                const tempGroup = new window.THREE.Group();\r\n                tempGroup.position.copy(transform.position);\r\n                tempGroup.rotation.copy(transform.rotation);\r\n                tempGroup.scale.copy(transform.scale);\r\n                \r\n                // Add our current group to this temp group\r\n                tempGroup.add(outlineGroup);\r\n                \r\n                // Move outlineGroup up one level\r\n                outlineGroup = tempGroup;\r\n                outlineGroup.userData.isOutline = true;\r\n            });\r\n            \r\n            // Add mesh's local transform\r\n            outline.position.copy(mesh.position);\r\n            outline.rotation.copy(mesh.rotation);\r\n            outline.scale.copy(mesh.scale);\r\n            \r\n            // Scale the outline slightly larger (in local space)\r\n            outline.scale.multiplyScalar(1.05);\r\n            \r\n            // Add the complete outline group to the scene\r\n            this.graphicsEditor.sceneRenderer.scene.add(outlineGroup);\r\n        });\r\n    }\r\n    addNewShape() {\r\n        if(!this.graphicsEditor.state.editingModel) {            \r\n            return;\r\n        }\r\n        const newShape = {\r\n            type: 'sphere',\r\n            size: 2,\r\n            color: '#ff0000',\r\n            x: 0,\r\n            y: 0,\r\n            z: 0,\r\n            rotationX: 0,\r\n            rotationY: 0,\r\n            rotationZ: 0\r\n        };\r\n        this.graphicsEditor.getCurrentGroup().shapes.push(newShape);\r\n        this.graphicsEditor.state.selectedShapeIndex = this.graphicsEditor.getCurrentGroup().shapes.length - 1;\r\n        this.graphicsEditor.refreshShapes(true); \r\n    }\r\n\r\n    addSelectedShape() {\r\n        if(!this.graphicsEditor.state.editingModel) {            \r\n            return;\r\n        }\r\n        if (this.graphicsEditor.state.selectedShapeIndex >= 0) {\r\n            const originalShape = this.graphicsEditor.state.editingModel ? \r\n                                    this.graphicsEditor.getCurrentGroup().shapes[this.graphicsEditor.state.selectedShapeIndex] : \r\n                                    this.graphicsEditor.getCurrentGroup().shapes.find(s => s.id == this.graphicsEditor.state.selectedShapeIndex);\r\n            const newShape = JSON.parse(JSON.stringify(originalShape));\r\n            this.graphicsEditor.getCurrentGroup().shapes.push(newShape);\r\n            this.graphicsEditor.state.selectedShapeIndex = this.graphicsEditor.getCurrentGroup().shapes.length - 1;\r\n            this.graphicsEditor.refreshShapes(true);\r\n        } else {\r\n            this.addNewShape();\r\n        }\r\n    }\r\n\r\n    deleteSelectedShape() {\r\n        if(!this.graphicsEditor.state.editingModel) {            \r\n            return;\r\n        }\r\n        if (this.graphicsEditor.state.selectedShapeIndex >= 0) {\r\n            this.graphicsEditor.getCurrentGroup().shapes.splice(this.graphicsEditor.state.selectedShapeIndex, 1);\r\n            if (this.graphicsEditor.getCurrentGroup().shapes.length > 0) {\r\n                this.graphicsEditor.state.selectedShapeIndex = Math.min(this.graphicsEditor.state.selectedShapeIndex, this.graphicsEditor.getCurrentGroup().shapes.length - 1);\r\n            } else {\r\n                this.graphicsEditor.state.selectedShapeIndex = -1;\r\n            }\r\n            this.graphicsEditor.refreshShapes(true);\r\n        }\r\n    }\r\n\r\n}"
       },
+      "GraphicsEditor": {
+        "fileName": "GraphicsEditor",
+        "title": "GraphicsEditor",
+        "script": "/**\n * @class GraphicsEditor\n * @description Manages 3D graphics editing functionality including shapes, animations, and UI\n */\nclass GraphicsEditor {\n    /**\n     * @param {Object} gameEditor - Main game editor instance\n     * @param {Object} config - Editor configuration\n     * @param {Object} managers - Required manager instances\n     * @param {Function} managers.ShapeFactory - Factory for creating shapes\n     * @param {Function} managers.GE_SceneRenderer - Handles scene rendering\n     * @param {Function} managers.GE_ShapeManager - Manages shape operations\n     * @param {Function} managers.GE_AnimationManager - Handles animations\n     * @param {Function} managers.GE_RotationUtils - Rotation utility functions\n     * @param {Function} managers.GE_UIManager - Manages UI interactions\n     * @param {Function} managers.GE_GroupManager - Handles shape grouping\n     * @param {Function} managers.GE_GizmoManager - Manages transformation gizmos\n     */\n    constructor(gameEditor, config, {ShapeFactory, GE_SceneRenderer, GE_ShapeManager, GE_AnimationManager, GE_RotationUtils, GE_UIManager, GE_GroupManager, GE_GizmoManager}) {\n        this.gameEditor = gameEditor;\n        this.config = config;\n        this.shapeFactory = new ShapeFactory(this.gameEditor.getPalette(), this.gameEditor.getCollections().textures);\n        this.canvas = document.getElementById('graphics-editor-canvas');\n        // Initialize sub-modules\n        this.sceneRenderer = new GE_SceneRenderer(gameEditor, this);\n        this.shapeManager = new GE_ShapeManager(gameEditor, this);\n        this.uiManager = new GE_UIManager(gameEditor, this);\n        this.animationManager = new GE_AnimationManager(gameEditor, this);\n        this.groupManager = new GE_GroupManager(gameEditor, this);\n        this.gizmoManager = new GE_GizmoManager(gameEditor, this);\n        this.rotationUtils = GE_RotationUtils;\n        // State management (simplified)\n        this.state = {\n            editingModel: true,\n            selectedShapeIndex: -1,\n            currentAnimation: \"\",\n            selectedGroup: \"main\",\n            currentFrame: 0,\n            renderData: { model: {}, animations: { idle: [{ main: { shapes: [], position: {x: 0, y: 0, z: 0}, rotation: {x:0,y:0,z:0}, scale: {x:1, y:1, z:1}} }] } }\n        };\n        \n        this.rootGroup = new window.THREE.Group(); // Main container for all shapes\n        this.rootGroup.name = \"rootGroup\";\n        this.init();\n    }\n    /**\n     * Initializes all manager components\n     * @private\n     */\n    init() {\n        this.sceneRenderer.init();\n        this.uiManager.init();\n        this.shapeManager.init();\n        this.animationManager.init();\n        this.groupManager.init();\n        this.gizmoManager.init();\n        this.sceneRenderer.animate();    \n    }\n\n    /**\n     * Displays isometric sprite previews\n     * @param {Array<Object>} sprites - Array of sprite data\n     */\n    displayIsometricSprites(sprites){\n        this.uiManager.displayIsometricSprites(sprites);\n    }\n\n    /**\n     * Renders all shapes in the scene\n     * @param {boolean} [fireSave=true] - Whether to trigger a save after rendering\n     * @returns {Promise<void>}\n     */\n    async renderShapes(fireSave = true) {\n        await this.clearScene();\n        await this.setupLights();\n        \n        if (!this.validateCurrentFrame()) {\n            return;\n        }\n        \n        await this.renderGroups();\n        await this.updateUI(fireSave);\n        await this.updateSelection();\n    }\n\n    /**\n     * Clears all objects from the scene\n     * @private\n     * @returns {Promise<void>}\n     */    \n    async clearScene() {\n        while (this.rootGroup.children.length > 0) {\n            const obj = this.rootGroup.children[0];\n            this.shapeFactory.disposeObject(obj);\n            this.shapeManager.originalMaterials.delete(obj);\n            this.rootGroup.remove(obj);\n        }\n    }\n\n    /**\n     * Sets up scene lighting\n     * @private\n     * @returns {Promise<void>}\n     */    \n    async setupLights() {\n        if (this.sceneRenderer.scene.getObjectByName('ambient-light')) {\n            return;\n        }\n    \n        const ambientLight = new window.THREE.AmbientLight(0xffffff, 0.6);\n        ambientLight.name = 'ambient-light';\n        this.sceneRenderer.scene.add(ambientLight);\n    \n        const directionalLight = new window.THREE.DirectionalLight(0xffffff, 0.8);\n        directionalLight.position.set(5, 10, 7.5);\n        directionalLight.name = 'dir-light';\n        this.sceneRenderer.scene.add(directionalLight);\n    }    \n\n    /**\n     * Validates the current animation frame\n     * @private\n     * @returns {boolean} - Whether the current frame is valid\n     */\n    validateCurrentFrame() {\n        if (!this.state.editingModel && !this.getCurrentFrame()) {\n            console.warn(\n                \"Animation or frame doesn't exist:\", \n                this.state.currentAnimation, \n                this.state.currentFrame\n            );\n            return false;\n        }\n        return true;\n    }\n    \n    /**\n     * Renders all shapes in the scene\n     * @param {boolean} [fireSave=true] - Whether to trigger a save after rendering\n     * @returns {Promise<void>}\n     */\n    async renderGroups() {\n        const model = this.state.renderData.model;\n        for (const groupName in model) {     \n            const mergedGroup = this.getMergedGroup(groupName);\n            if (mergedGroup) {\n                let threeGroup = await this.shapeFactory.createGroupFromJSON(groupName, mergedGroup); \n                threeGroup.name = groupName;\n                this.rootGroup.add(threeGroup);\n            }\n        }\n    }\n\n    /**\n     * Renders all shapes in the scene\n     * @param {boolean} [fireSave=true] - Whether to trigger a save after rendering\n     * @returns {Promise<void>}\n     */\n    async updateUI(fireSave) {\n        this.updateShapeCount();\n        await this.handleSave(fireSave);\n    }\n\n    /**\n     * Updates the shape count display in the UI\n     * @private\n     */\n    updateShapeCount() {\n        const model = this.state.renderData.model;\n        const totalShapes = Object.values(model).reduce((total, group) => {\n            return total + (Array.isArray(group.shapes) ? group.shapes.length : 0);\n        }, 0);\n        document.getElementById('shape-count').textContent = totalShapes;\n    }\n    \n    /**\n     * Handles saving the current state\n     * @param {boolean} fireSave - Whether to trigger a save event\n     * @returns {Promise<void>}\n     */\n    async handleSave(fireSave) {\n        if (fireSave) {\n            const saveEvent = new CustomEvent('saveGraphicsObject', {\n                detail: { \n                    data: this.state.renderData, \n                    propertyName: 'render' \n                },\n                bubbles: true,\n                cancelable: true\n            });\n            document.body.dispatchEvent(saveEvent);\n        } else {\n            const valueElement = this.gameEditor.elements.editor\n                .querySelector('#render-value');\n            if (valueElement) {\n                let renderDataCopy = JSON.parse(JSON.stringify(this.state.renderData));\n                Object.keys(renderDataCopy.animations).forEach(animationName => {\n                    const animation = renderDataCopy.animations[animationName];\n                    animation.forEach(frame => {\n                        Object.keys(frame).forEach(groupName => {\n                            const group = frame[groupName];\n                            if (group && group.shapes) {\n                                // Filter shapes with more than just ID\n                                group.shapes = group.shapes.filter(shape => \n                                    Object.keys(shape).length > 1\n                                );\n                                \n                                // Remove empty shapes array\n                                if (group.shapes.length === 0) {\n                                    delete group.shapes;\n                                }\n                \n                                // Remove empty group\n                                if (Object.keys(group).length === 0) {\n                                    delete frame[groupName];\n                                }\n                            }\n                        });               \n                    });\n                });\n                valueElement.value = JSON.stringify(renderDataCopy);\n            }\n        }\n    }\n\n    /**\n     * Updates the selection highlight and gizmo positions\n     * @returns {Promise<void>}\n     */\n    async updateSelection() {\n        this.shapeManager.highlightSelectedShape();\n        this.gizmoManager.updateGizmoPosition();\n    }\n\n    /**\n     * Gets the current animation data\n     * @returns {Object|null} Current animation or null if none exists\n     */\n    getCurrentAnimation() {\n     \n        return this.state.renderData.animations[this.state.currentAnimation] || null;\n    }\n\n    /**\n     * Gets the current frame data\n     * @returns {Object|null} Current frame data or model data if in editing mode\n     */\n    getCurrentFrame() {\n        if(this.state.editingModel){\n            return this.state.renderData.model;\n        } else {\n            let currentAnimation = this.getCurrentAnimation();\n            return currentAnimation ? currentAnimation[this.state.currentFrame] : null;\n        }\n    }\n\n    /**\n     * Gets the current group data\n     * @returns {Object|null} Current group data or null if none exists\n     */\n    getCurrentGroup() {\n        let currentFrame = this.getCurrentFrame();\n        return currentFrame ? currentFrame[this.state.currentGroup] : null;\n    }\n\n    /**\n     * Refreshes the shape list and renders the scene\n     * @param {boolean} param - Whether to trigger a save after refresh\n     */\n    refreshShapes(param) {\n        this.uiManager.updateList();\n        this.renderShapes(param);\n    }\n\n    /**\n     * Creates an inspector panel for the given shape\n     * @param {Object} shape - Shape to create inspector for\n     */\n    createInspector(shape) {\n        this.uiManager.createInspector(shape);\n    }\n\n    /**\n     * Sets the animation preview state\n     * @param {Object} state - New animation state\n     * @returns {Promise<void>}\n     */\n    setPreviewAnimationState(state) {\n        return this.animationManager.setPreviewAnimationState(state);\n    }\n\n    /**\n     * Selects a shape by index\n     * @param {number} index - Index of shape to select\n     * @returns {Promise<void>}\n     */\n    selectShape(index) {\n        return this.shapeManager.selectShape(index);\n    }\n\n    /**\n     * Gets a merged group by name\n     * @param {string} groupName - Name of group to get\n     * @returns {Object|null} Merged group data or null\n     */\n    getMergedGroup(groupName){\n        let model = this.state.renderData.model;\n        const modelGroup = model[groupName];\n        if(this.state.editingModel){\n            return modelGroup;\n        }\n        return this.shapeFactory.getMergedGroup(model, this.getCurrentAnimation()[this.state.currentFrame], groupName );\n    }\n\n    /**\n     * Gets the current frame's shape data\n     * @returns {Object|null} Shape data or null if not found\n     */\n    getFrameShape() {\n        // If we're in model editing mode, return merged shape\n        if (this.state.editingModel) {\n            return this.getMergedShape();\n        }\n    \n        // Return null if no shape is selected\n        if (this.state.selectedShapeIndex < 0) {\n            return null;\n        }\n    \n        // Get or create group data\n        let groupData = this.getCurrentGroup() || \n            JSON.parse(JSON.stringify(this.state.renderData.model[this.state.currentGroup]));\n    \n        if (!groupData?.shapes) {\n            return null;\n        }\n    \n        // Find existing shape or create new one\n        let shape = groupData.shapes.find(s => s.id === this.state.selectedShapeIndex);\n        if (shape) {\n            return shape;\n        }\n    \n        // Create new shape if not found\n        return this.createBlankFrameShape();\n    }\n\n    /**\n     * Creates a new blank frame shape\n     * @private\n     * @returns {Object|null} New shape or null if frame doesn't exist\n     */\n    createBlankFrameShape() {\n        const shape = { id: this.state.selectedShapeIndex };\n        const currentFrame = this.getCurrentFrame();\n        \n        if (!currentFrame) {\n            return null;\n        }\n    \n        // Add shape to current group or create new group\n        if (!currentFrame[this.state.currentGroup]) {\n            currentFrame[this.state.currentGroup] = { shapes: [] };\n        }\n        \n        currentFrame[this.state.currentGroup].shapes.push(shape);\n        return shape;\n    }\n    /**\n     * Gets the currently selected shape merged with its group\n     * @returns {Object|null} - Merged shape or null if not found\n     */\n    getMergedShape() {\n        if (this.state.selectedShapeIndex < 0) {\n            return null;\n        }\n    \n        const selectedGroup = this.getMergedGroup(this.state.currentGroup);\n        const shapes = selectedGroup?.shapes || [];\n        const shape = shapes[this.state.selectedShapeIndex];\n    \n        if (!shape) {\n            return null;\n        }\n    \n        if (this.state.editingModel) {\n            return shape;\n        }\n    \n        return this.mergeShapeWithCurrentGroup(shape);\n    }\n    /**\n     * Merges a shape with its current group\n     * @param {Object} shape - Shape to merge\n     * @returns {Object} - Merged shape\n     */\n    mergeShapeWithCurrentGroup(shape) {\n        // Set shape ID\n        shape.id = this.state.selectedShapeIndex;\n    \n        // Get or create current group data\n        const currentGroupData = this.getCurrentGroup() || { shapes: [] };\n        if (!Array.isArray(currentGroupData.shapes)) {\n            currentGroupData.shapes = [];\n        }\n    \n        // Update shape in current group\n        this.updateShapeInGroup(shape, currentGroupData);\n    \n        // Update animation data\n        this.updateAnimationData(currentGroupData);\n    \n        return shape;\n    }\n    /**\n     * Updates a shape within its group\n     * @param {Object} shape - Shape to update\n     * @param {Object} groupData - Group containing the shape\n     */\n    updateShapeInGroup(shape, groupData) {\n        const shapeIndex = groupData.shapes.findIndex(s => s.id === shape.id);\n        \n        if (shapeIndex >= 0) {\n            groupData.shapes[shapeIndex] = shape; // Replace existing\n        } else {\n            groupData.shapes.push(shape); // Add new\n        }\n    }\n    \n    /**\n     * Updates animation data for the current group\n     * @param {Object} groupData - Group data to update\n     */\n    updateAnimationData(groupData) {\n        const path = [\n            this.state.currentAnimation,\n            this.state.currentFrame,\n            this.state.currentGroup\n        ];\n    \n        // Update nested property safely\n        let current = this.state.renderData.animations;\n        path.forEach((key, index) => {\n            if (index === path.length - 1) {\n                current[key] = groupData;\n            } else {\n                current = current[key];\n            }\n        });\n    }\n    /**\n     * Gets the currently selected object from the scene\n     * @returns {THREE.Object3D} - Selected object or root group\n     */\n    getSelectedObject() {\n        const currentGroup = this.state.currentGroup;\n        \n        if (!currentGroup) {\n            return this.rootGroup;\n        }\n    \n        const foundGroup = this.findGroupByName(currentGroup);\n        if (!foundGroup) {\n            return this.rootGroup;\n        }\n    \n        const foundShape = this.findShapeInGroup(foundGroup);\n        return foundShape || foundGroup || this.rootGroup;\n    }\n        /**\n     * Finds a group by name in the scene\n     * @param {string} groupName - Name of the group to find\n     * @returns {THREE.Group|null} - Found group or null\n     */\n    findGroupByName(groupName) {\n        let found = null;\n        this.rootGroup.traverse(obj => {\n            if (obj.isGroup && obj.name === groupName && obj.userData.isGroup) {\n                found = obj;\n            }\n        });\n        return found;\n    }\n        /**\n     * Finds a shape within a group\n     * @param {THREE.Group} group - Group to search in\n     * @returns {THREE.Object3D|null} - Found shape or null\n     */\n    findShapeInGroup(group) {\n        let found = null;\n        group.traverse(obj => {\n            if (obj.userData.isShape && obj.userData.index === this.state.selectedShapeIndex) {\n                found = obj;\n            }\n        });\n        return found;\n    }\n}\n"
+      },
       "GE_UIManager": {
         "title": "GE_UIManager",
         "fileName": "GE_UIManager",
         "script": "class GE_UIManager {\r\n    constructor(gameEditor, graphicsEditor) {\r\n        this.gameEditor = gameEditor;\r\n        this.graphicsEditor = graphicsEditor;\r\n        this.mouse = new window.THREE.Vector2();\r\n        this.raycaster = new window.THREE.Raycaster();\r\n        this.isDragging = false;\r\n        this.clickStartTime = 0;\r\n    }    \r\n     \r\n\r\n    init() {   \r\n        this.initEventListeners();\r\n    }\r\n    \r\n    \r\n    \r\n    initEventListeners() {\r\n        // Button event listeners\r\n        const buttonMappings = {\r\n            'generate-isometric': this.showIsometricModal.bind(this),\r\n        };\r\n        Object.entries(buttonMappings).forEach(([id, handler]) => {\r\n            const button = document.getElementById(id);\r\n            if (button) button.addEventListener('click', handler);\r\n        });\r\n\r\n        // Canvas interaction\r\n        this.graphicsEditor.canvas.addEventListener('mousedown', this.handleMouseDown.bind(this));\r\n        this.graphicsEditor.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));\r\n        this.graphicsEditor.canvas.addEventListener('mouseup', this.handleMouseUp.bind(this));\r\n\r\n        // Additional event listeners\r\n\r\n        \r\n        // Move modal listeners\r\n\r\n        // Isometric modal listeners\r\n        document.getElementById('iso-cancel').addEventListener('click', () => {\r\n            document.getElementById('modal-generateIsoSprites').classList.remove('show');\r\n        });\r\n    }\r\n    handleMouseDown(event) {\r\n        this.isDragging = false;\r\n        this.clickStartTime = Date.now();\r\n    }\r\n\r\n    handleMouseMove() {\r\n        if (Date.now() - this.clickStartTime > 100) {\r\n            this.isDragging = true;\r\n        }\r\n    }\r\n\r\n    handleMouseUp(event) {\r\n        if (this.isDragging) return;\r\n    \r\n        const rect = this.graphicsEditor.canvas.getBoundingClientRect();\r\n        this.mouse.x = ((event.clientX - rect.left) / this.graphicsEditor.canvas.clientWidth) * 2 - 1;\r\n        this.mouse.y = -((event.clientY - rect.top) / this.graphicsEditor.canvas.clientHeight) * 2 + 1;\r\n    \r\n        this.raycaster.setFromCamera(this.mouse, this.graphicsEditor.sceneRenderer.camera);\r\n    \r\n        // Instead of looking only at scene.children, search through all descendant meshes\r\n        const meshes = [];\r\n        this.graphicsEditor.rootGroup.traverse(obj => {\r\n            if (obj.isMesh && obj.userData.isShape) {\r\n                meshes.push(obj);\r\n            }\r\n        });\r\n    \r\n        const intersects = this.raycaster.intersectObjects(meshes, true);\r\n    \r\n        if (intersects.length > 0) {\r\n            // Find the parent mesh with the isShape flag if we've hit a child mesh\r\n            let hitObject = intersects[0].object;\r\n            while (hitObject && !hitObject.userData.isShape) {\r\n                hitObject = hitObject.parent;\r\n            }\r\n            \r\n            if (hitObject && hitObject.userData.index !== undefined) {\r\n                this.graphicsEditor.selectShape(hitObject.userData.index);\r\n            }\r\n        }\r\n    }\r\n    \r\n\r\n    showIsometricModal() {\r\n        document.getElementById('modal-generateIsoSprites').classList.add('show');\r\n    }\r\n    displayIsometricSprites(sprites) {\r\n        const modal = document.createElement('div');\r\n        modal.style.cssText = `\r\n            position: fixed; top: 0; left: 0; width: 100%; height: 100%; \r\n            background-color: rgba(0, 0, 0, 0.7); z-index: 1000; \r\n            display: flex; align-items: center; justify-content: center;\r\n        `;\r\n        const content = document.createElement('div');\r\n        content.style.cssText = `\r\n            background: #333; padding: 20px; border-radius: 8px; \r\n            max-width: 80%; max-height: 80%; overflow: auto;\r\n        `;\r\n    \r\n        const angleLabels = ['NE', 'N', 'NW', 'W', 'SW', 'S', 'SE', 'E']; // Labels for 8 angles\r\n    \r\n        for (const animType in sprites) {\r\n            const animSection = document.createElement('div');\r\n            const title = document.createElement('h3');\r\n            title.textContent = `${animType} Animation`;\r\n            title.style.color = '#e0e0e0';\r\n            animSection.appendChild(title);\r\n    \r\n            // Create a container for all angles\r\n            const anglesContainer = document.createElement('div');\r\n            anglesContainer.style.cssText = `margin: 10px 0;`;\r\n    \r\n            // For each angle (0-7)\r\n            for (let angle = 0; angle < 8; angle++) {\r\n                const angleSection = document.createElement('div');\r\n    \r\n                const grid = document.createElement('div');\r\n                grid.style.cssText = `\r\n                    display: grid; \r\n                    grid-template-columns: repeat(${Math.min(sprites[animType].length, 4)}, 1fr); \r\n                    gap: 5px; \r\n                    margin-bottom: 15px;\r\n                `;\r\n    \r\n                // Add all frames for this specific angle\r\n                sprites[animType].forEach(frame => {\r\n                    const img = document.createElement('img');\r\n                    img.src = frame[angle]; // Get the specific angle's sprite\r\n                    img.style.maxWidth = '100%';\r\n                    grid.appendChild(img);\r\n                });\r\n    \r\n                angleSection.appendChild(grid);\r\n                anglesContainer.appendChild(angleSection);\r\n            }\r\n    \r\n            animSection.appendChild(anglesContainer);\r\n            content.appendChild(animSection);\r\n        }\r\n    \r\n        const closeButton = document.createElement('button');\r\n        closeButton.textContent = 'Close';\r\n        closeButton.style.cssText = `\r\n            margin-top: 20px; padding: 8px 16px; background-color: #4CAF50; \r\n            color: #fff; border: none; border-radius: 6px; cursor: pointer;\r\n        `;\r\n        closeButton.addEventListener('click', () => document.body.removeChild(modal));\r\n        content.appendChild(closeButton);\r\n        modal.appendChild(content);\r\n        document.body.appendChild(modal);\r\n    }\r\n    \r\n    createGroupInspector(group) {\r\n        console.log('create group inspector', group);\r\n        const inspector = document.getElementById('inspector');\r\n        inspector.innerHTML = \"\";\r\n        inspector.className = 'inspector';\r\n\r\n        \r\n        this.addFormRow(inspector, 'X Scale', 'number', 'scaleX', group.scale?.x || 1, { min: 0.1, step: 0.1 });\r\n        this.addFormRow(inspector, 'Y Scale', 'number', 'scaleY', group.scale?.y || 1, { min: 0.1, step: 0.1 });\r\n        this.addFormRow(inspector, 'Z Scale', 'number', 'scaleZ', group.scale?.z || 1, { min: 0.1, step: 0.1 });\r\n        // Position inputs\r\n        this.addFormRow(inspector, 'X Position', 'number', 'x', group.position?.x || 0, { step: 0.1 });\r\n        this.addFormRow(inspector, 'Y Position', 'number', 'y', group.position?.y || 0, { step: 0.1 });\r\n        this.addFormRow(inspector, 'Z Position', 'number', 'z', group.position?.z || 0, { step: 0.1 });\r\n        \r\n        // Rotation inputs\r\n        this.addFormRow(inspector, 'X Rotation', 'number', 'rotationX', group.rotation?.x || 0, { step: 5 });\r\n        this.addFormRow(inspector, 'Y Rotation', 'number', 'rotationY', group.rotation?.y || 0, { step: 5 });\r\n        this.addFormRow(inspector, 'Z Rotation', 'number', 'rotationZ', group.rotation?.z || 0, { step: 5 });\r\n        \r\n    }\r\n\r\n    createInspector(shape) {\r\n        console.log('create shape inspector', shape);\r\n        const inspector = document.getElementById('inspector');\r\n        inspector.innerHTML = \"\";\r\n        inspector.className = 'inspector';\r\n\r\n        this.addFormRow(inspector, 'Name', 'text', 'name', shape.name || \"\");\r\n        \r\n        // Type selector\r\n        this.addFormRow(inspector, 'Type', 'select', 'type', shape.type, {\r\n            options: ['cube', 'sphere', 'box', 'cylinder', 'cone', 'torus', 'tetrahedron', 'gltf'],\r\n            change: (e) => {\r\n                let currentShape = this.graphicsEditor.getFrameShape();\r\n                let newValue = e.target.value;\r\n                if (newValue != 'gltf') {\r\n                    delete currentShape.url\r\n                }                 \r\n                currentShape.type = newValue;\r\n                this.graphicsEditor.refreshShapes(false);\r\n            }\r\n        });\r\n        \r\n        if (shape.type === 'gltf') {            \r\n            let input = this.addFormRow(inspector, 'Model', 'file', 'url', shape.url, { 'change' :  async (e) => {\r\n                e.preventDefault();\r\n\r\n                // Get the file from the input element\r\n                const file = e.target.files[0]; // Access the file object\r\n                if (!file) {\r\n                    console.error('No file selected');\r\n                    return;\r\n                }\r\n                // // Create FormData and append the file\r\n                 const formData = new FormData();\r\n                 formData.append('gltfFile', file); // 'gltfFile' matches the multer.single('gltfFile') on the server\r\n\r\n                try {\r\n                     const response = await fetch('/upload-model', {\r\n                         method: 'POST',\r\n                         body: formData // Send the FormData with the file\r\n                     });\r\n\r\n                     const result = await response.json();\r\n                     shape.url = result.filePath; \r\n                     this.graphicsEditor.getFrameShape().url = result.filePath;\r\n                     this.graphicsEditor.refreshShapes(false);\r\n                } catch (error) {\r\n                     console.error('Error uploading file:', error);\r\n                }\r\n            }});\r\n            input.setAttribute(\"accept\",\".gltf\");\r\n        }\r\n        // Color picker\r\n        this.addFormRow(inspector, 'Color', 'color', 'color', shape.color);\r\n        this.addFormRow(inspector, 'Texture', 'texture', 'texture', shape.texture);\r\n        \r\n        this.addFormRow(inspector, 'X Scale', 'number', 'scaleX', shape.scaleX || 1, { min: 0.1, step: 0.1 });\r\n        this.addFormRow(inspector, 'Y Scale', 'number', 'scaleY', shape.scaleY || 1, { min: 0.1, step: 0.1 });\r\n        this.addFormRow(inspector, 'Z Scale', 'number', 'scaleZ', shape.scaleZ || 1, { min: 0.1, step: 0.1 });\r\n        // Position inputs\r\n        this.addFormRow(inspector, 'X Position', 'number', 'x', shape.x || 0, { step: 0.1 });\r\n        this.addFormRow(inspector, 'Y Position', 'number', 'y', shape.y || 0, { step: 0.1 });\r\n        this.addFormRow(inspector, 'Z Position', 'number', 'z', shape.z || 0, { step: 0.1 });\r\n        \r\n        // Rotation inputs\r\n        this.addFormRow(inspector, 'X Rotation', 'number', 'rotationX', shape.rotationX || 0, { step: 5 });\r\n        this.addFormRow(inspector, 'Y Rotation', 'number', 'rotationY', shape.rotationY || 0, { step: 5 });\r\n        this.addFormRow(inspector, 'Z Rotation', 'number', 'rotationZ', shape.rotationZ || 0, { step: 5 });\r\n        \r\n        // Size inputs\r\n        if (['cube', 'sphere', 'tetrahedron', 'torus'].includes(shape.type)) {\r\n            this.addFormRow(inspector, 'Size', 'number', 'size', shape.size || 2, { min: 0.1, step: 0.1 });\r\n        }\r\n        \r\n        if (shape.type === 'box') {\r\n            this.addFormRow(inspector, 'Width', 'number', 'width', shape.width || 2, { min: 0.1, step: 0.1 });\r\n            this.addFormRow(inspector, 'Height', 'number', 'height', shape.height || 2, { min: 0.1, step: 0.1 });\r\n            this.addFormRow(inspector, 'Depth', 'number', 'depth', shape.depth || 2, { min: 0.1, step: 0.1 });\r\n        }\r\n        \r\n        if (['cylinder', 'cone'].includes(shape.type)) {\r\n            this.addFormRow(inspector, 'Size', 'number', 'size', shape.size || 2, { min: 0.1, step: 0.1 });\r\n            this.addFormRow(inspector, 'Height', 'number', 'height', shape.height || 3, { min: 0.1, step: 0.1 });\r\n        }\r\n        \r\n        if (shape.type === 'torus') {\r\n            this.addFormRow(inspector, 'Tube Size', 'number', 'tubeSize', shape.tubeSize || shape.size / 6, { min: 0.1, step: 0.1 });\r\n        }\r\n    }\r\n\r\n\r\n    addFormRow(container, label, type, property, value, options = {}) {\r\n        const row = document.createElement('div');\r\n        row.className = 'form-row';\r\n        \r\n        const labelElement = document.createElement('label');\r\n        labelElement.textContent = label;\r\n        row.appendChild(labelElement);\r\n        \r\n        let input;\r\n        \r\n        if (type === 'select') {\r\n            input = document.createElement('select');\r\n            input.setAttribute('data-property', property);\r\n            (options.options || []).forEach(optionValue => {\r\n                const option = document.createElement('option');\r\n                option.value = optionValue;\r\n                option.textContent = optionValue;\r\n                if (value === optionValue) {\r\n                    option.selected = true;\r\n                }\r\n                input.appendChild(option);\r\n            });\r\n        } else if(type === \"color\") {\r\n            input = this.gameEditor.createColorInputGroup(value, 'data-property', property, row, (val, colorName) => {\r\n                if(colorName){\r\n                    this.graphicsEditor.getFrameShape()[property] = { paletteColor: colorName };\r\n                } else {\r\n                    this.graphicsEditor.getFrameShape()[property] = val;\r\n                }\r\n                this.graphicsEditor.refreshShapes(false);\r\n            });            \r\n        } else if(type === \"texture\") {\r\n            input = this.gameEditor.createTextureInputGroup(value, 'data-property', property, row, (val) => {\r\n                if(val){\r\n                    this.graphicsEditor.getFrameShape()[property] = val;\r\n                }\r\n                this.graphicsEditor.refreshShapes(false);\r\n            });            \r\n        } else if(type === \"file\") {\r\n            let inputContainer = document.createElement('div');\r\n            inputContainer.style = \"flex: 1; display: flex; flex-direction: column; font-size: .75em;\";\r\n            input = document.createElement('input');\r\n            input.style = \"width: calc(100% - 18px);\"\r\n            input.type = type;\r\n            input.setAttribute('data-property', property);\r\n            inputContainer.appendChild(input);\r\n            if( value ) {\r\n                let urlName = document.createElement('span');\r\n                urlName.innerText = value;            \r\n                inputContainer.appendChild(urlName);\r\n            }\r\n            row.appendChild(inputContainer);\r\n            container.appendChild(row);\r\n            input.addEventListener('change', options.change );\r\n            return input;\r\n        } else {\r\n            input = document.createElement('input');\r\n            input.type = type;\r\n            input.value = value;\r\n            input.setAttribute('data-property', property);\r\n            \r\n            if (type === 'number') {\r\n                input.min = options.min !== undefined ? options.min : -64;\r\n                input.max = options.max !== undefined ? options.max : 64;\r\n                input.step = options.step || 1;\r\n            }\r\n        }\r\n        \r\n        input.addEventListener('change', options.change || ((e) => {\r\n            let newValue = e.target.value;\r\n            if (type === 'number') {\r\n                newValue = parseFloat(newValue);\r\n                console.log('change', this.graphicsEditor.shapeManager.currentTransformTarget);\r\n                // If we're editing a transform property, also update the transform target\r\n                if (this.graphicsEditor.shapeManager.currentTransformTarget && ['x', 'y', 'z', 'rotationX', 'rotationY', 'rotationZ', 'scaleX', 'scaleY', 'scaleZ'].includes(property)) {\r\n                    if (property === 'x') this.graphicsEditor.shapeManager.currentTransformTarget.position.x = newValue;\r\n                    if (property === 'y') this.graphicsEditor.shapeManager.currentTransformTarget.position.y = newValue;\r\n                    if (property === 'z') this.graphicsEditor.shapeManager.currentTransformTarget.position.z = newValue;\r\n                    \r\n                    if (property === 'rotationX') this.graphicsEditor.shapeManager.currentTransformTarget.rotation.x = this.graphicsEditor.rotationUtils.degToRad(newValue);\r\n                    if (property === 'rotationY') this.graphicsEditor.shapeManager.currentTransformTarget.rotation.y = this.graphicsEditor.rotationUtils.degToRad(newValue);\r\n                    if (property === 'rotationZ') this.graphicsEditor.shapeManager.currentTransformTarget.rotation.z = this.graphicsEditor.rotationUtils.degToRad(newValue);\r\n                    \r\n                    if (property === 'scaleX') this.graphicsEditor.shapeManager.currentTransformTarget.scale.x = newValue;\r\n                    if (property === 'scaleY') this.graphicsEditor.shapeManager.currentTransformTarget.scale.y = newValue;\r\n                    if (property === 'scaleZ') this.graphicsEditor.shapeManager.currentTransformTarget.scale.z = newValue;\r\n                    \r\n                    // Update gizmo position after directly changing values\r\n                }\r\n            } else if(type === 'file') {\r\n                return;\r\n            }\r\n            \r\n            this.updatePropertyValue(property, newValue);\r\n            this.graphicsEditor.refreshShapes(false);\r\n        }));\r\n        \r\n        row.appendChild(input);\r\n        container.appendChild(row);\r\n        return input;\r\n    }\r\n    updatePropertyValue(property, value) {\r\n        const shapeData = this.graphicsEditor.getFrameShape();\r\n        if (shapeData) {\r\n            shapeData[property] = value;\r\n            return;\r\n        }\r\n        let groupData = this.graphicsEditor.getCurrentGroup();\r\n        if(!groupData){\r\n            groupData = {};\r\n            let currentFrame = this.graphicsEditor.getCurrentFrame();\r\n            if(currentFrame) {\r\n                currentFrame[this.graphicsEditor.state.currentGroup] = groupData;\r\n            }\r\n        }\r\n        \r\n        // Handle transform properties\r\n        if (property.startsWith('scale')) {\r\n            if(!groupData.scale) groupData.scale = {};\r\n            const axis = property.charAt(property.length - 1).toLowerCase();\r\n            groupData.scale[axis] = value;\r\n        } else if (property.startsWith('rotation')) {\r\n            if(!groupData.rotation) groupData.rotation = {};\r\n            const axis = property.charAt(property.length - 1).toLowerCase();\r\n            groupData.rotation[axis] = value;\r\n        } else if (['x', 'y', 'z'].includes(property)) {\r\n            if(!groupData.position) groupData.position = {};\r\n            groupData.position[property] = value;\r\n        }\r\n    }\r\n\r\n  \r\n\r\n    updateList() {\r\n        const frameList = document.getElementById('frame-list');\r\n        frameList.innerHTML = '';\r\n        const groupList = document.getElementById('group-list');\r\n        groupList.innerHTML = '';\r\n        const shapeList = document.getElementById('shape-list');\r\n        shapeList.innerHTML = '';\r\n        this.updateFrameList();\r\n        this.graphicsEditor.groupManager.updateGroupList();\r\n        this.updateShapeList();\r\n    }\r\n\r\n    updateFrameList() {\r\n        const list = document.getElementById('frame-list');\r\n        // Animation selector\r\n        const animSelector = document.createElement('select');\r\n        animSelector.style.marginBottom = '10px';\r\n\r\n        const option = document.createElement('option');\r\n        option.value = '__model__';\r\n        option.textContent = 'model';\r\n        if (this.graphicsEditor.state.editingModel) option.selected = true;\r\n        animSelector.appendChild(option);\r\n\r\n\r\n        Object.keys(this.graphicsEditor.state.renderData.animations).forEach(anim => {\r\n            const option = document.createElement('option');\r\n            option.value = anim;\r\n            option.textContent = anim;\r\n            if (anim === this.graphicsEditor.state.currentAnimation) option.selected = true;\r\n            animSelector.appendChild(option);\r\n        });\r\n        animSelector.addEventListener('change', (e) => {\r\n            this.graphicsEditor.setPreviewAnimationState(false);\r\n            if(e.target.value == '__model__'){\r\n                this.graphicsEditor.state.editingModel = true;\r\n                this.graphicsEditor.state.currentAnimation = \"\";                \r\n            } else {\r\n                this.graphicsEditor.state.editingModel = false;\r\n                this.graphicsEditor.state.currentAnimation = animSelector.value;                \r\n            }\r\n            this.graphicsEditor.state.currentFrame = 0;\r\n            this.graphicsEditor.refreshShapes(false);\r\n            requestAnimationFrame(() => {\r\n                this.graphicsEditor.state.selectedShapeIndex = -1;\r\n                this.graphicsEditor.shapeManager.selectShape(0);\r\n            })\r\n        });\r\n        list.appendChild(animSelector);\r\n        if(this.graphicsEditor.state.editingModel) return;\r\n        // Frame list\r\n        const frameList = document.createElement('div');\r\n        frameList.style.marginBottom = '10px';\r\n        this.graphicsEditor.getCurrentAnimation().forEach((frame, index) => {\r\n            const frameItem = document.createElement('div');\r\n            frameItem.textContent = `Frame ${index + 1}`;\r\n            frameItem.style.padding = '5px';\r\n            frameItem.style.cursor = 'pointer';\r\n            if (index === this.graphicsEditor.state.currentFrame) frameItem.style.backgroundColor = '#555';\r\n            frameItem.addEventListener('click', () => {\r\n                this.graphicsEditor.setPreviewAnimationState(false);\r\n                this.graphicsEditor.state.currentFrame = index;  \r\n                this.graphicsEditor.refreshShapes(false);\r\n                requestAnimationFrame(() => {  \r\n                    this.graphicsEditor.state.selectedShapeIndex = -1;\r\n                    this.graphicsEditor.shapeManager.selectShape(0);\r\n                })\r\n            });\r\n            frameList.appendChild(frameItem);\r\n        });\r\n        list.appendChild(frameList);\r\n    }\r\n\r\n\r\n    updateShapeList() {\r\n        const list = document.getElementById('shape-list');\r\n        if (!list) return;\r\n        \r\n\r\n        // Get shapes from the currently selected group\r\n        const currentGroup = this.graphicsEditor.state.currentGroup;\r\n        const selectedGroup = this.graphicsEditor.getMergedGroup(currentGroup);\r\n        const shapes = selectedGroup && selectedGroup.shapes ? selectedGroup.shapes : selectedGroup || [];\r\n       \r\n        // Create shape list items\r\n        for (let i = 0; i < shapes.length; i++) {\r\n            const shape = shapes[i];\r\n            if (!shape) continue;\r\n           \r\n            const shapeItem = document.createElement('div');\r\n            shapeItem.classList.add('shape-item');\r\n           \r\n            // Mark as selected if this shape is the selected one and we're in the right group\r\n            if (i === this.graphicsEditor.state.selectedShapeIndex) {\r\n                shapeItem.classList.add('selected');\r\n            }\r\n           \r\n            shapeItem.textContent = `${shape.name} - ${shape.type || 'Shape'}`;\r\n            shapeItem.addEventListener('click', (e) => {               \r\n                this.graphicsEditor.shapeManager.selectShape(parseInt(e.target.dataset.index));\r\n            });\r\n           \r\n            // Make the shape draggable\r\n            shapeItem.draggable = true;\r\n            shapeItem.dataset.index = i;\r\n            shapeItem.dataset.group = currentGroup;\r\n            \r\n            // Add dragstart event to set the drag data\r\n            shapeItem.addEventListener('dragstart', (e) => {\r\n                // Store only the selected shape's index and source group\r\n                const data = {\r\n                    shapeIndex: i,\r\n                    sourceGroup: currentGroup\r\n                };\r\n                \r\n                // Set the drag data\r\n                e.dataTransfer.setData('text/plain', JSON.stringify(data));\r\n                \r\n                // Add a visual indicator\r\n                shapeItem.classList.add('dragging');\r\n                \r\n                // Set drag effect\r\n                e.dataTransfer.effectAllowed = 'move';\r\n            });\r\n            \r\n            // Add dragend event to clean up\r\n            shapeItem.addEventListener('dragend', () => {\r\n                shapeItem.classList.remove('dragging');\r\n            });\r\n           \r\n            list.appendChild(shapeItem);\r\n        }\r\n        \r\n        // Set up the shape list container as a drop target\r\n        list.addEventListener('dragover', (e) => {\r\n            // Only respond if we're dragging over the shape list itself, not an individual shape\r\n            if (e.target === list) {\r\n                e.preventDefault();\r\n                e.dataTransfer.dropEffect = 'move';\r\n                list.classList.add('drag-over');\r\n            }\r\n        });\r\n        \r\n        list.addEventListener('dragleave', (e) => {\r\n            // Only respond if we're leaving the shape list\r\n            if (e.target === list) {\r\n                list.classList.remove('drag-over');\r\n            }\r\n        });\r\n        \r\n        list.addEventListener('drop', (e) => {\r\n            e.preventDefault();\r\n            list.classList.remove('drag-over');\r\n            \r\n            const data = e.dataTransfer.getData('text/plain');\r\n            if (!data) return;\r\n            \r\n            try {\r\n                const dragData = JSON.parse(data);\r\n                const { shapeIndex, sourceGroup } = dragData;\r\n                \r\n                // Only process if this is a different group\r\n                if (sourceGroup && sourceGroup !== currentGroup) {\r\n                    this.graphicsEditor.groupManager.moveToGroup(\r\n                        parseInt(shapeIndex),\r\n                        sourceGroup,\r\n                        currentGroup\r\n                    );\r\n                }\r\n            } catch (err) {\r\n                console.error('Error processing drop in shape list:', err);\r\n            }\r\n        });\r\n    }\r\n\r\n}"
       },
-      "GraphicsEditor": {
-        "fileName": "GraphicsEditor",
-        "title": "GraphicsEditor",
-        "script": "/**\n * @class GraphicsEditor\n * @description Manages 3D graphics editing functionality including shapes, animations, and UI\n */\nclass GraphicsEditor {\n    /**\n     * @param {Object} gameEditor - Main game editor instance\n     * @param {Object} config - Editor configuration\n     * @param {Object} managers - Required manager instances\n     * @param {Function} managers.ShapeFactory - Factory for creating shapes\n     * @param {Function} managers.GE_SceneRenderer - Handles scene rendering\n     * @param {Function} managers.GE_ShapeManager - Manages shape operations\n     * @param {Function} managers.GE_AnimationManager - Handles animations\n     * @param {Function} managers.GE_RotationUtils - Rotation utility functions\n     * @param {Function} managers.GE_UIManager - Manages UI interactions\n     * @param {Function} managers.GE_GroupManager - Handles shape grouping\n     * @param {Function} managers.GE_GizmoManager - Manages transformation gizmos\n     */\n    constructor(gameEditor, config, {ShapeFactory, GE_SceneRenderer, GE_ShapeManager, GE_AnimationManager, GE_RotationUtils, GE_UIManager, GE_GroupManager, GE_GizmoManager}) {\n        this.gameEditor = gameEditor;\n        this.config = config;\n        this.shapeFactory = new ShapeFactory(this.gameEditor.getPalette(), this.gameEditor.getCollections().textures);\n        this.canvas = document.getElementById('graphics-editor-canvas');\n        // Initialize sub-modules\n        this.sceneRenderer = new GE_SceneRenderer(gameEditor, this);\n        this.shapeManager = new GE_ShapeManager(gameEditor, this);\n        this.uiManager = new GE_UIManager(gameEditor, this);\n        this.animationManager = new GE_AnimationManager(gameEditor, this);\n        this.groupManager = new GE_GroupManager(gameEditor, this);\n        this.gizmoManager = new GE_GizmoManager(gameEditor, this);\n        this.rotationUtils = GE_RotationUtils;\n        // State management (simplified)\n        this.state = {\n            editingModel: true,\n            selectedShapeIndex: -1,\n            currentAnimation: \"\",\n            selectedGroup: \"main\",\n            currentFrame: 0,\n            renderData: { model: {}, animations: { idle: [{ main: { shapes: [], position: {x: 0, y: 0, z: 0}, rotation: {x:0,y:0,z:0}, scale: {x:1, y:1, z:1}} }] } }\n        };\n        \n        this.rootGroup = new window.THREE.Group(); // Main container for all shapes\n        this.rootGroup.name = \"rootGroup\";\n        this.init();\n    }\n    /**\n     * Initializes all manager components\n     * @private\n     */\n    init() {\n        this.sceneRenderer.init();\n        this.uiManager.init();\n        this.shapeManager.init();\n        this.animationManager.init();\n        this.groupManager.init();\n        this.gizmoManager.init();\n        this.sceneRenderer.animate();    \n    }\n\n    /**\n     * Displays isometric sprite previews\n     * @param {Array<Object>} sprites - Array of sprite data\n     */\n    displayIsometricSprites(sprites){\n        this.uiManager.displayIsometricSprites(sprites);\n    }\n\n    /**\n     * Renders all shapes in the scene\n     * @param {boolean} [fireSave=true] - Whether to trigger a save after rendering\n     * @returns {Promise<void>}\n     */\n    async renderShapes(fireSave = true) {\n        await this.clearScene();\n        await this.setupLights();\n        \n        if (!this.validateCurrentFrame()) {\n            return;\n        }\n        \n        await this.renderGroups();\n        await this.updateUI(fireSave);\n        await this.updateSelection();\n    }\n\n    /**\n     * Clears all objects from the scene\n     * @private\n     * @returns {Promise<void>}\n     */    \n    async clearScene() {\n        while (this.rootGroup.children.length > 0) {\n            const obj = this.rootGroup.children[0];\n            this.shapeFactory.disposeObject(obj);\n            this.shapeManager.originalMaterials.delete(obj);\n            this.rootGroup.remove(obj);\n        }\n    }\n\n    /**\n     * Sets up scene lighting\n     * @private\n     * @returns {Promise<void>}\n     */    \n    async setupLights() {\n        if (this.sceneRenderer.scene.getObjectByName('ambient-light')) {\n            return;\n        }\n    \n        const ambientLight = new window.THREE.AmbientLight(0xffffff, 0.6);\n        ambientLight.name = 'ambient-light';\n        this.sceneRenderer.scene.add(ambientLight);\n    \n        const directionalLight = new window.THREE.DirectionalLight(0xffffff, 0.8);\n        directionalLight.position.set(5, 10, 7.5);\n        directionalLight.name = 'dir-light';\n        this.sceneRenderer.scene.add(directionalLight);\n    }    \n\n    /**\n     * Validates the current animation frame\n     * @private\n     * @returns {boolean} - Whether the current frame is valid\n     */\n    validateCurrentFrame() {\n        if (!this.state.editingModel && !this.getCurrentFrame()) {\n            console.warn(\n                \"Animation or frame doesn't exist:\", \n                this.state.currentAnimation, \n                this.state.currentFrame\n            );\n            return false;\n        }\n        return true;\n    }\n    \n    /**\n     * Renders all shapes in the scene\n     * @param {boolean} [fireSave=true] - Whether to trigger a save after rendering\n     * @returns {Promise<void>}\n     */\n    async renderGroups() {\n        const model = this.state.renderData.model;\n        for (const groupName in model) {     \n            const mergedGroup = this.getMergedGroup(groupName);\n            if (mergedGroup) {\n                let threeGroup = await this.shapeFactory.createGroupFromJSON(groupName, mergedGroup); \n                threeGroup.name = groupName;\n                this.rootGroup.add(threeGroup);\n            }\n        }\n    }\n\n    /**\n     * Renders all shapes in the scene\n     * @param {boolean} [fireSave=true] - Whether to trigger a save after rendering\n     * @returns {Promise<void>}\n     */\n    async updateUI(fireSave) {\n        this.updateShapeCount();\n        await this.handleSave(fireSave);\n    }\n\n    /**\n     * Updates the shape count display in the UI\n     * @private\n     */\n    updateShapeCount() {\n        const model = this.state.renderData.model;\n        const totalShapes = Object.values(model).reduce((total, group) => {\n            return total + (Array.isArray(group.shapes) ? group.shapes.length : 0);\n        }, 0);\n        document.getElementById('shape-count').textContent = totalShapes;\n    }\n    \n    /**\n     * Handles saving the current state\n     * @param {boolean} fireSave - Whether to trigger a save event\n     * @returns {Promise<void>}\n     */\n    async handleSave(fireSave) {\n        if (fireSave) {\n            const saveEvent = new CustomEvent('saveGraphicsObject', {\n                detail: { \n                    data: this.state.renderData, \n                    propertyName: 'render' \n                },\n                bubbles: true,\n                cancelable: true\n            });\n            document.body.dispatchEvent(saveEvent);\n        } else {\n            const valueElement = this.gameEditor.elements.editor\n                .querySelector('#render-value');\n            if (valueElement) {\n                let renderDataCopy = JSON.parse(JSON.stringify(this.state.renderData));\n                Object.keys(renderDataCopy.animations).forEach(animationName => {\n                    const animation = renderDataCopy.animations[animationName];\n                    animation.forEach(frame => {\n                        Object.keys(frame).forEach(groupName => {\n                            const group = frame[groupName];\n                            if (group && group.shapes) {\n                                // Filter shapes with more than just ID\n                                group.shapes = group.shapes.filter(shape => \n                                    Object.keys(shape).length > 1\n                                );\n                                \n                                // Remove empty shapes array\n                                if (group.shapes.length === 0) {\n                                    delete group.shapes;\n                                }\n                \n                                // Remove empty group\n                                if (Object.keys(group).length === 0) {\n                                    delete frame[groupName];\n                                }\n                            }\n                        });               \n                    });\n                });\n                valueElement.value = JSON.stringify(renderDataCopy);\n            }\n        }\n    }\n\n    /**\n     * Updates the selection highlight and gizmo positions\n     * @returns {Promise<void>}\n     */\n    async updateSelection() {\n        this.shapeManager.highlightSelectedShape();\n        this.gizmoManager.updateGizmoPosition();\n    }\n\n    /**\n     * Gets the current animation data\n     * @returns {Object|null} Current animation or null if none exists\n     */\n    getCurrentAnimation() {\n     \n        return this.state.renderData.animations[this.state.currentAnimation] || null;\n    }\n\n    /**\n     * Gets the current frame data\n     * @returns {Object|null} Current frame data or model data if in editing mode\n     */\n    getCurrentFrame() {\n        if(this.state.editingModel){\n            return this.state.renderData.model;\n        } else {\n            let currentAnimation = this.getCurrentAnimation();\n            return currentAnimation ? currentAnimation[this.state.currentFrame] : null;\n        }\n    }\n\n    /**\n     * Gets the current group data\n     * @returns {Object|null} Current group data or null if none exists\n     */\n    getCurrentGroup() {\n        let currentFrame = this.getCurrentFrame();\n        return currentFrame ? currentFrame[this.state.currentGroup] : null;\n    }\n\n    /**\n     * Refreshes the shape list and renders the scene\n     * @param {boolean} param - Whether to trigger a save after refresh\n     */\n    refreshShapes(param) {\n        this.uiManager.updateList();\n        this.renderShapes(param);\n    }\n\n    /**\n     * Creates an inspector panel for the given shape\n     * @param {Object} shape - Shape to create inspector for\n     */\n    createInspector(shape) {\n        this.uiManager.createInspector(shape);\n    }\n\n    /**\n     * Sets the animation preview state\n     * @param {Object} state - New animation state\n     * @returns {Promise<void>}\n     */\n    setPreviewAnimationState(state) {\n        return this.animationManager.setPreviewAnimationState(state);\n    }\n\n    /**\n     * Selects a shape by index\n     * @param {number} index - Index of shape to select\n     * @returns {Promise<void>}\n     */\n    selectShape(index) {\n        return this.shapeManager.selectShape(index);\n    }\n\n    /**\n     * Gets a merged group by name\n     * @param {string} groupName - Name of group to get\n     * @returns {Object|null} Merged group data or null\n     */\n    getMergedGroup(groupName){\n        let model = this.state.renderData.model;\n        const modelGroup = model[groupName];\n        if(this.state.editingModel){\n            return modelGroup;\n        }\n        return this.shapeFactory.getMergedGroup(model, this.getCurrentAnimation()[this.state.currentFrame], groupName );\n    }\n\n    /**\n     * Gets the current frame's shape data\n     * @returns {Object|null} Shape data or null if not found\n     */\n    getFrameShape() {\n        // If we're in model editing mode, return merged shape\n        if (this.state.editingModel) {\n            return this.getMergedShape();\n        }\n    \n        // Return null if no shape is selected\n        if (this.state.selectedShapeIndex < 0) {\n            return null;\n        }\n    \n        // Get or create group data\n        let groupData = this.getCurrentGroup() || \n            JSON.parse(JSON.stringify(this.state.renderData.model[this.state.currentGroup]));\n    \n        if (!groupData?.shapes) {\n            return null;\n        }\n    \n        // Find existing shape or create new one\n        let shape = groupData.shapes.find(s => s.id === this.state.selectedShapeIndex);\n        if (shape) {\n            return shape;\n        }\n    \n        // Create new shape if not found\n        return this.createBlankFrameShape();\n    }\n\n    /**\n     * Creates a new blank frame shape\n     * @private\n     * @returns {Object|null} New shape or null if frame doesn't exist\n     */\n    createBlankFrameShape() {\n        const shape = { id: this.state.selectedShapeIndex };\n        const currentFrame = this.getCurrentFrame();\n        \n        if (!currentFrame) {\n            return null;\n        }\n    \n        // Add shape to current group or create new group\n        if (!currentFrame[this.state.currentGroup]) {\n            currentFrame[this.state.currentGroup] = { shapes: [] };\n        }\n        \n        currentFrame[this.state.currentGroup].shapes.push(shape);\n        return shape;\n    }\n    /**\n     * Gets the currently selected shape merged with its group\n     * @returns {Object|null} - Merged shape or null if not found\n     */\n    getMergedShape() {\n        if (this.state.selectedShapeIndex < 0) {\n            return null;\n        }\n    \n        const selectedGroup = this.getMergedGroup(this.state.currentGroup);\n        const shapes = selectedGroup?.shapes || [];\n        const shape = shapes[this.state.selectedShapeIndex];\n    \n        if (!shape) {\n            return null;\n        }\n    \n        if (this.state.editingModel) {\n            return shape;\n        }\n    \n        return this.mergeShapeWithCurrentGroup(shape);\n    }\n    /**\n     * Merges a shape with its current group\n     * @param {Object} shape - Shape to merge\n     * @returns {Object} - Merged shape\n     */\n    mergeShapeWithCurrentGroup(shape) {\n        // Set shape ID\n        shape.id = this.state.selectedShapeIndex;\n    \n        // Get or create current group data\n        const currentGroupData = this.getCurrentGroup() || { shapes: [] };\n        if (!Array.isArray(currentGroupData.shapes)) {\n            currentGroupData.shapes = [];\n        }\n    \n        // Update shape in current group\n        this.updateShapeInGroup(shape, currentGroupData);\n    \n        // Update animation data\n        this.updateAnimationData(currentGroupData);\n    \n        return shape;\n    }\n    /**\n     * Updates a shape within its group\n     * @param {Object} shape - Shape to update\n     * @param {Object} groupData - Group containing the shape\n     */\n    updateShapeInGroup(shape, groupData) {\n        const shapeIndex = groupData.shapes.findIndex(s => s.id === shape.id);\n        \n        if (shapeIndex >= 0) {\n            groupData.shapes[shapeIndex] = shape; // Replace existing\n        } else {\n            groupData.shapes.push(shape); // Add new\n        }\n    }\n    \n    /**\n     * Updates animation data for the current group\n     * @param {Object} groupData - Group data to update\n     */\n    updateAnimationData(groupData) {\n        const path = [\n            this.state.currentAnimation,\n            this.state.currentFrame,\n            this.state.currentGroup\n        ];\n    \n        // Update nested property safely\n        let current = this.state.renderData.animations;\n        path.forEach((key, index) => {\n            if (index === path.length - 1) {\n                current[key] = groupData;\n            } else {\n                current = current[key];\n            }\n        });\n    }\n    /**\n     * Gets the currently selected object from the scene\n     * @returns {THREE.Object3D} - Selected object or root group\n     */\n    getSelectedObject() {\n        const currentGroup = this.state.currentGroup;\n        \n        if (!currentGroup) {\n            return this.rootGroup;\n        }\n    \n        const foundGroup = this.findGroupByName(currentGroup);\n        if (!foundGroup) {\n            return this.rootGroup;\n        }\n    \n        const foundShape = this.findShapeInGroup(foundGroup);\n        return foundShape || foundGroup || this.rootGroup;\n    }\n        /**\n     * Finds a group by name in the scene\n     * @param {string} groupName - Name of the group to find\n     * @returns {THREE.Group|null} - Found group or null\n     */\n    findGroupByName(groupName) {\n        let found = null;\n        this.rootGroup.traverse(obj => {\n            if (obj.isGroup && obj.name === groupName && obj.userData.isGroup) {\n                found = obj;\n            }\n        });\n        return found;\n    }\n        /**\n     * Finds a shape within a group\n     * @param {THREE.Group} group - Group to search in\n     * @returns {THREE.Object3D|null} - Found shape or null\n     */\n    findShapeInGroup(group) {\n        let found = null;\n        group.traverse(obj => {\n            if (obj.userData.isShape && obj.userData.index === this.state.selectedShapeIndex) {\n                found = obj;\n            }\n        });\n        return found;\n    }\n}\n"
+      "ImageManager": {
+        "fileName": "ImageManager",
+        "script": "\r\nclass ImageManager {\r\n    constructor(app, {imageSize, palette, textures}, {ShapeFactory}) {\r\n        this.app = app;\r\n        this.images = {};\r\n        this.imageSize = imageSize || 128;\r\n        // Create a single reusable renderer\r\n        this.renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });\r\n        this.renderer.setSize(this.imageSize, this.imageSize);\r\n        this.renderer.shadowMap.enabled = true;\r\n        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;\r\n        \r\n        this.renderTarget = new THREE.WebGLRenderTarget(this.imageSize, this.imageSize);\r\n        this.renderTarget.texture.flipY = true;\r\n        \r\n        // Create reusable scene\r\n        this.scene = new THREE.Scene();\r\n        \r\n        // Create reusable cameras for different views\r\n        const cameraDistance = 64;\r\n        const frustumSize = cameraDistance + 16;\r\n        const aspect = 1;\r\n\r\n        this.shapeFactory = new ShapeFactory(palette, textures);\r\n        // Create 8 cameras for isometric views at 45-degree intervals\r\n        this.cameras = [];\r\n        for (let i = 0; i < 8; i++) {\r\n            this.cameras.push(new THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000));\r\n        }\r\n        \r\n        // Position cameras in a circle around the y-axis at isometric angle\r\n        // Standard isometric angle is about 35.264 degrees (arctan(1/sqrt(2)))\r\n        const isoAngle = Math.atan(1 / Math.sqrt(2));\r\n        const horizDistance = cameraDistance * Math.cos(isoAngle);\r\n        const vertDistance = cameraDistance * Math.sin(isoAngle);\r\n        \r\n        for (let i = 0; i < 8; i++) {\r\n            const angle = (i * Math.PI / 4); // 45-degree increments\r\n            const x = horizDistance * Math.sin(angle);\r\n            const z = horizDistance * Math.cos(angle);\r\n            \r\n            this.cameras[i].position.set(x, vertDistance, z);\r\n            this.cameras[i].lookAt(0, 0, 0);\r\n        }\r\n        \r\n        // Create reusable lights\r\n        this.ambientLight = new THREE.AmbientLight(0xffaaff, .25);\r\n        \r\n        // Create a light group that will rotate with each camera view\r\n        this.lightGroup = new THREE.Group();\r\n        \r\n        // Main directional light\r\n        this.directionalLight = new THREE.DirectionalLight(0xffffaa, .7);\r\n        this.directionalLight.position.set(75, 96, 75);\r\n        this.directionalLight.castShadow = true;\r\n        this.directionalLight.shadow.mapSize.width = 1024;\r\n        this.directionalLight.shadow.mapSize.height = 1024;\r\n        this.directionalLight.shadow.camera.near = 0.5;\r\n        this.directionalLight.shadow.camera.far = 500;\r\n        this.directionalLight.shadow.bias = -0.0005;\r\n        this.directionalLight.shadow.normalBias = 0.02;\r\n        this.directionalLight.shadow.radius = 1;\r\n        this.lightGroup.add(this.directionalLight);\r\n        \r\n        // Fill light\r\n        this.fillLight = new THREE.DirectionalLight(0xffaaff, .5);\r\n        this.fillLight.position.set(-20, 30, -20);\r\n        this.lightGroup.add(this.fillLight);\r\n        \r\n        // Create ground plane\r\n        const groundGeometry = new THREE.PlaneGeometry(200, 200);\r\n        const groundMaterial = new THREE.ShadowMaterial({ opacity: 0.3 });\r\n        this.ground = new THREE.Mesh(groundGeometry, groundMaterial);\r\n        this.ground.rotation.x = -Math.PI / 2;\r\n        this.ground.position.y = 0;\r\n        this.ground.receiveShadow = true;\r\n    }\r\n\r\n    clear() {\r\n        images = {};\r\n    }\r\n\r\n    dispose() {\r\n        // Proper cleanup when the manager is no longer needed\r\n        if (this.renderer) {\r\n            this.renderer.dispose();\r\n            this.renderer = null;\r\n        }\r\n        if (this.renderTarget) {\r\n            this.renderTarget.dispose();\r\n            this.renderTarget = null;\r\n        }\r\n        if (this.ground && this.ground.geometry) {\r\n            this.ground.geometry.dispose();\r\n            this.ground.material.dispose();\r\n        }\r\n        // Dispose of other reusable resources\r\n        this.cameras = [];\r\n        this.scene = null;\r\n        this.lightGroup = null;\r\n        this.ambientLight = null;\r\n    }\r\n\r\n    async loadImages(prefix, config, checkCache = true, cacheResult = true) {\r\n\r\n        if (!prefix || !config || typeof config !== 'object') {\r\n            throw new Error('Invalid prefix or config provided to loadImages');\r\n        }\r\n        if( checkCache ) {\r\n            const cachedImages = await this.checkCache(prefix);\r\n            if (cachedImages) {\r\n                this.images = { ...this.images, ...cachedImages };\r\n                return;\r\n            }\r\n        }\r\n    \r\n        for (const [type, cfg] of Object.entries(config)) {\r\n            if (cfg.render && cfg.render.animations) {\r\n                this.images[`${prefix}_${type}`] = await this.createAnimatedPlaceholder(cfg);\r\n            } else if (cfg.tileMap && cfg.tileMap.terrainTypes) {\r\n                this.images[`${prefix}_${type}`] = await this.createTerrainImages(cfg);\r\n            }\r\n        }\r\n        if(cacheResult) {\r\n            await this.cacheImages(prefix);\r\n        }\r\n    }\r\n    \r\n    async checkCache(prefix) {\r\n        try {\r\n            const response = await fetch(`cache/${prefix}.json`);\r\n            if (response.ok) {\r\n                const cacheData = await response.json();\r\n                // Convert base64 cached images back to canvases\r\n                return await this.convertBase64ToCanvases(cacheData.images);\r\n            }\r\n            return null;\r\n        } catch (error) {\r\n            return null;\r\n        }\r\n    }\r\n\r\n    async convertBase64ToCanvases(cachedImages) {\r\n        const convertedImages = {};\r\n        \r\n        for (const [key, value] of Object.entries(cachedImages)) {\r\n            if (Array.isArray(value)) {\r\n                // Handle terrain tiles\r\n                convertedImages[key] = await Promise.all(value.map(async (terrain) => {\r\n                    const sprites = await Promise.all(terrain.sprites.map(async (base64) => {\r\n                        const canvas = document.createElement('canvas');\r\n                        canvas.width = canvas.height = 24; // Match tileWidth from createTerrainImages\r\n                        const ctx = canvas.getContext('2d');\r\n                        const img = new Image();\r\n                        \r\n                        await new Promise((resolve, reject) => {\r\n                            img.onload = () => {\r\n                                ctx.drawImage(img, 0, 0);\r\n                                resolve();\r\n                            };\r\n                            img.onerror = reject;\r\n                            img.src = base64;\r\n                        });\r\n                        \r\n                        return canvas;\r\n                    }));\r\n                    \r\n                    return {\r\n                        type: terrain.type,\r\n                        sprites\r\n                    };\r\n                }));\r\n            } else if (typeof value === 'object') {\r\n                // Handle animations\r\n                const animations = {};\r\n                for (const [animType, frames] of Object.entries(value)) {\r\n                    animations[animType] = await Promise.all(frames.map(async (frameSet) => {\r\n                        return Promise.all(frameSet.map(async (base64) => {\r\n                            const canvas = document.createElement('canvas');\r\n                            canvas.width = canvas.height = this.imageSize;\r\n                            const ctx = canvas.getContext('2d');\r\n                            const img = new Image();\r\n                            \r\n                            await new Promise((resolve, reject) => {\r\n                                img.onload = () => {\r\n                                    ctx.drawImage(img, 0, 0);\r\n                                    resolve();\r\n                                };\r\n                                img.onerror = reject;\r\n                                img.src = base64;\r\n                            });\r\n                            \r\n                            return canvas;\r\n                        }));\r\n                    }));\r\n                }\r\n                convertedImages[key] = animations;\r\n            }\r\n        }\r\n        \r\n        return convertedImages;\r\n    }\r\n    async cacheImages(prefix) {\r\n        const base64Images = {};\r\n        \r\n        for (const [key, value] of Object.entries(this.images)) {\r\n            if (key.startsWith(prefix)) {\r\n                if (Array.isArray(value) && value[0]?.type && value[0]?.sprites) {\r\n                    // Handle terrain tiles\r\n                    base64Images[key] = value.map(terrain => ({\r\n                        type: terrain.type,\r\n                        sprites: terrain.sprites.map(canvas => canvas.toDataURL('image/png'))\r\n                    }));\r\n                } else if (typeof value === 'object' && value !== null) {\r\n                    // Handle animations\r\n                    const animationData = {};\r\n                    for (const [animType, frames] of Object.entries(value)) {\r\n                        animationData[animType] = frames.map(frameSet => \r\n                            frameSet.map(canvas => canvas.toDataURL('image/png'))\r\n                        );\r\n                    }\r\n                    base64Images[key] = animationData;\r\n                }\r\n            }\r\n        }\r\n\r\n        try {\r\n            await fetch('/api/cache', {\r\n                method: 'POST',\r\n                headers: {\r\n                    'Content-Type': 'application/json',\r\n                },\r\n                body: JSON.stringify({\r\n                    prefix,\r\n                    images: base64Images\r\n                })\r\n            });\r\n        } catch (error) {\r\n            console.error('Error caching images:', error);\r\n        }\r\n    }\r\n    // In the ImageManager class\r\n    async createTerrainImages(config) {\r\n        let terrainTiles = [];\r\n        const tileWidth = 24;\r\n\r\n        // Create a map of terrain type to its image data first\r\n        const terrainMap = {};\r\n        \r\n        await Promise.all(config.tileMap.terrainTypes.map(async (terrainType, terrainIndex) => {\r\n            const pixelData = terrainType.image;\r\n            if (pixelData && pixelData.length > 0) {\r\n                let sprites = new Array(8);\r\n                \r\n                await Promise.all(pixelData.map(async (imagePixelData, spriteIdx) => {\r\n                    const img = new Image();\r\n                    const canvas = document.createElement('canvas');\r\n                    canvas.width = canvas.height = tileWidth;\r\n                    const ctx = canvas.getContext('2d');\r\n\r\n                    if (!imagePixelData.startsWith('data:image/')) {\r\n                        imagePixelData = 'data:image/png;base64,' + imagePixelData;\r\n                    }\r\n                    img.src = imagePixelData;\r\n\r\n                    await new Promise((resolve, reject) => {\r\n                        img.onload = () => {\r\n                            ctx.drawImage(img, 0, 0);\r\n                            sprites[spriteIdx] = canvas;\r\n                            resolve();\r\n                        };\r\n                        img.onerror = () => {\r\n                            console.error(`Failed to load image for ${terrainType.type} at index ${spriteIdx}`);\r\n                            sprites[spriteIdx] = canvas; // Store empty canvas on error\r\n                            resolve(); // Don't reject, just move on\r\n                        };\r\n                    });\r\n                }));\r\n\r\n                // Store by index and type for more reliable lookup\r\n                terrainTiles[terrainIndex] = { \r\n                    type: terrainType.type,\r\n                    sprites: sprites \r\n                };\r\n            } else {\r\n                // Create a solid color placeholder for types without images\r\n                const sprites = new Array(8).fill().map(() => {\r\n                    const canvas = document.createElement('canvas');\r\n                    canvas.width = canvas.height = tileWidth;\r\n                    const ctx = canvas.getContext('2d');\r\n                    ctx.fillStyle = terrainType.color || '#cccccc';\r\n                    ctx.fillRect(0, 0, tileWidth, tileWidth);\r\n                    return canvas;\r\n                });\r\n                \r\n                terrainTiles[terrainIndex] = {\r\n                    type: terrainType.type,\r\n                    sprites: sprites\r\n                };\r\n            }\r\n        }));\r\n\r\n        // Make sure there are no gaps in the array\r\n        return terrainTiles.filter(Boolean);\r\n    }\r\n    async createAnimatedPlaceholder(config) {\r\n        const animations = {};\r\n        \r\n        if(config.shadows === false) {\r\n            this.ground.receiveShadow = false;\r\n        } else {\r\n            this.ground.receiveShadow = true;\r\n        }\r\n        for (const [animType, frames] of Object.entries(config.render.animations)) {\r\n            animations[animType] = [];\r\n            let i = 0;\r\n            for (const frame of frames) {\r\n                const frameImages = await this.captureObjectImagesFromJSON(config.render.model, frame);\r\n                const canvases = frameImages.map(img => {\r\n                    const canvas = document.createElement('canvas');\r\n                    canvas.width = canvas.height = this.imageSize;\r\n                    const ctx = canvas.getContext('2d');\r\n                    ctx.drawImage(img, 0, 0);\r\n                    return canvas;\r\n                });                \r\n                animations[animType].push(canvases); // Array of 8 canvases per frame\r\n            }\r\n        }\r\n        return animations; // { \"idle\": [[canvas0, canvas1, canvas2, canvas3, ...], ...], \"walk\": [...] }\r\n    }\r\n\r\n    getImages(prefix, type) {\r\n        return this.images[`${prefix}_${type}`]; // Returns animation object\r\n    }\r\n    async captureObjectImagesFromJSON(model, frameData) {\r\n        const size = this.imageSize;\r\n        // Clear the scene\r\n        while (this.scene.children.length > 0) {\r\n            const object = this.scene.children[0];\r\n            this.scene.remove(object);\r\n        }\r\n        \r\n        // Add reusable elements to scene\r\n        this.scene.add(this.ground);\r\n        this.scene.add(this.ambientLight);\r\n        this.scene.add(this.lightGroup);\r\n        \r\n        // Create objects from the JSON data\r\n        const objectGroup = await this.createObjectsFromJSON(model, frameData, this.scene);\r\n\r\n        \r\n        const images = [];\r\n        \r\n        // For each camera view, rotate the light group to match camera orientation\r\n        for (let i = 0; i < this.cameras.length; i++) {\r\n            const camera = this.cameras[i];\r\n            \r\n            // Reset light group rotation\r\n            this.lightGroup.rotation.set(0, 0, 0);\r\n            \r\n            // Rotate light group to match camera position\r\n            // Calculate angle based on camera index (8 positions at 45-degree intervals)\r\n            // Rotate 45 degrees CLOCKWISE (subtract π/4 instead of adding)\r\n            const angle = (i * Math.PI / 4); \r\n            this.lightGroup.rotation.y = angle;\r\n            \r\n            // Before rendering with each camera, update shadow camera frustum\r\n            const d = 100;\r\n            this.directionalLight.shadow.camera.left = -d;\r\n            this.directionalLight.shadow.camera.right = d;\r\n            this.directionalLight.shadow.camera.top = d;\r\n            this.directionalLight.shadow.camera.bottom = -d;\r\n            // After rotating lightGroup in the camera loop\r\n            this.directionalLight.shadow.camera.updateProjectionMatrix();\r\n            this.directionalLight.shadow.camera.updateMatrixWorld();\r\n            this.directionalLight.target.position.set(0, 0, 0);\r\n            this.directionalLight.target.updateMatrixWorld();\r\n            // Render and capture the image\r\n            this.renderer.setRenderTarget(this.renderTarget);\r\n            this.renderer.render(this.scene, camera);\r\n            const buffer = new Uint8Array(size * size * 4);\r\n            this.renderer.readRenderTargetPixels(this.renderTarget, 0, 0, size, size, buffer);\r\n            \r\n            // Flip the buffer (y-axis)\r\n            const flippedBuffer = new Uint8Array(size * size * 4);\r\n            for (let y = 0; y < size; y++) {\r\n                const srcRowStart = y * size * 4;\r\n                const destRowStart = (size - 1 - y) * size * 4;\r\n                flippedBuffer.set(buffer.subarray(srcRowStart, srcRowStart + size * 4), destRowStart);\r\n            }\r\n            \r\n            const imageData = new ImageData(new Uint8ClampedArray(flippedBuffer), size, size);\r\n            const imageBitmap = await createImageBitmap(imageData);\r\n            images.push(imageBitmap);\r\n        }\r\n        if( this.renderer) this.renderer.setRenderTarget(null);\r\n        \r\n        // Cleanup object geometries and materials\r\n        this.shapeFactory.disposeObject(objectGroup);\r\n        \r\n        // Remove object group from scene\r\n        if( this.scene ) this.scene.remove(objectGroup);\r\n        \r\n        return images;\r\n    }\r\n\r\n    /**\r\n     * Creates 3D objects from shape data.\r\n     * @param {Object} frameData - The JSON object containing frame definitions.\r\n     * @returns {THREE.Group} - A group containing all 3D objects.\r\n     */\r\n  \r\n    async createObjectsFromJSON(model, frameData, scene) {\r\n        const rootGroup = new THREE.Group();\r\n        \r\n        for(const groupName in model) {\r\n            const group = await this.shapeFactory.createMergedGroupFromJSON(model, frameData, groupName);\r\n            if(group){\r\n                group.traverse((child) => {\r\n                    if (child.isMesh) {\r\n                        child.castShadow = true; // or set this selectively for objects that should cast shadows\r\n                        child.receiveShadow = true; // for objects that should receive shadows\r\n                    }\r\n                });\r\n                rootGroup.add(group);\r\n            }\r\n        }\r\n\r\n        scene.add(rootGroup);\r\n    \r\n        return rootGroup;\r\n    }\r\n   \r\n}\r\n"
       },
       "ModelManager": {
         "title": "ModelManager",
@@ -17694,21 +17698,17 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "scriptEditor",
         "script": "class ScriptEditor {\r\n    constructor(gameEditor, config) {\r\n      \r\n        this.gameEditor = gameEditor;\r\n        this.config = config;\r\n        let theme = \"\";\r\n        if( this.gameEditor.getCollections().configs.codeMirror ) {\r\n            theme = this.gameEditor.getCollections().themes[this.gameEditor.getCollections().configs.codeMirror.theme].css;\r\n            if( theme ) { \r\n              let styleTag = document.createElement('style');\r\n              styleTag.innerHTML = theme;\r\n              styleTag.setAttribute('id', 'codeMirrorTheme');\r\n              document.head.append(styleTag);\r\n            }\r\n        }\r\n        this.container = document.getElementById('script-editor-container'); \r\n        this.MIN_HEIGHT = 200;\r\n        this.isDragging = false;\r\n        this.start_y = 0;\r\n        this.start_h = 0;\r\n        this.DEFAULT_HEIGHT = () => document.body.clientHeight - 200;\r\n\t\t\t\tthis.savePropertyName = \"script\";\r\n        if (!this.container) {\r\n            console.error(\"ScriptEditor container not found\");\r\n            return;\r\n        }\r\n\r\n        const textArea = this.container.querySelector('#script-editor');\r\n        if (!textArea) {\r\n            console.error(\"Textarea #script-editor not found\");\r\n            return;\r\n        }\r\n\r\n        this.scriptEditor = CodeMirror.fromTextArea(textArea, {\r\n            mode: 'javascript',\r\n            lineNumbers: true,\r\n            tabSize: 2,\r\n            indentWithTabs: false,\r\n            extraKeys: { 'Ctrl-Space': 'autocomplete' },\r\n            hintOptions: { completeSingle: false }\r\n        });\r\n\r\n        this.scriptEditor.setSize(null, this.DEFAULT_HEIGHT());\r\n\r\n        this.setupEventListeners();\r\n        \r\n        \r\n    }\r\n   \r\n    setupEventListeners() {\r\n     \r\n        document.body.addEventListener('editScript', (event) => {\r\n            this.scriptValue = event.detail.data;\r\n            this.savePropertyName = event.detail.propertyName;\r\n            this.scriptEditor.setValue(this.scriptValue);\r\n            this.scriptEditor.setSize(null, this.DEFAULT_HEIGHT());\r\n            this.scriptEditor.refresh();\r\n            setTimeout(() => {\r\n                this.scriptEditor.refresh();\r\n            }, 100);\r\n        });\r\n        \r\n        const saveBtn = this.container.querySelector('#save-script-btn');\r\n        if (saveBtn) {\r\n            saveBtn.addEventListener('click', () => this.saveScript());\r\n        } else {\r\n            console.warn(\"Save button not found\");\r\n        }\r\n    }\r\n\r\n    saveScript() {\r\n\r\n        if (!this.gameEditor.getCurrentObject()) {\r\n            console.warn(\"No selected object to save script to\");\r\n            return;\r\n        }\r\n        const scriptText = this.scriptEditor.getValue();\r\n   \r\n        const myCustomEvent = new CustomEvent('saveScript', {\r\n            detail: { data: scriptText, propertyName: this.savePropertyName }, \r\n            bubbles: true, \r\n            cancelable: true \r\n        });\r\n\r\n      \r\n        document.body.dispatchEvent(myCustomEvent);\r\n    }\r\n\r\n    destroy() {\r\n        if (this.container && this.container.parentNode) {\r\n            this.container.parentNode.removeChild(this.container);\r\n        }\r\n    }\r\n}\r\n"
       },
-      "SpatialGrid": {
-        "fileName": "SpatialGrid",
-        "script": " \r\n    class SpatialGrid {\r\n        constructor(worldSize, cellSize) {\r\n            this.cellSize = cellSize;\r\n            this.cols = worldSize;\r\n            this.rows = worldSize;\r\n            this.grid = new Array(this.cols * this.rows).fill().map(() => []);\r\n            \r\n            // Track which cell each entity is in\r\n            this.entityCells = new Map(); // Map of entity -> cell index\r\n        }\r\n        \r\n        getIndex(x, y) {\r\n            return y * this.cols + x;\r\n        }\r\n\r\n        insert(entity) {\r\n            const newIndex = this.getIndex(entity.gridPosition.x, entity.gridPosition.y);\r\n            const oldIndex = this.entityCells.get(entity);\r\n            \r\n            // If entity moved to a new cell\r\n            if (oldIndex !== newIndex) {\r\n                // Remove from old cell if it exists\r\n                if (oldIndex !== undefined) {\r\n                    const oldCell = this.grid[oldIndex];\r\n                    const entityIndex = oldCell.indexOf(entity);\r\n                    if (entityIndex !== -1) {\r\n                        oldCell.splice(entityIndex, 1);\r\n                    }\r\n                }\r\n                \r\n                // Add to new cell\r\n                if (newIndex >= 0 && newIndex < this.grid.length) {\r\n                    this.grid[newIndex].push(entity);\r\n                    this.entityCells.set(entity, newIndex);\r\n                }\r\n            }\r\n        }\r\n        \r\n        remove(entity) {\r\n            const index = this.entityCells.get(entity);\r\n            if (index !== undefined) {\r\n                const cell = this.grid[index];\r\n                const entityIndex = cell.indexOf(entity);\r\n                if (entityIndex !== -1) {\r\n                    cell.splice(entityIndex, 1);\r\n                }\r\n                this.entityCells.delete(entity);\r\n            }\r\n        }\r\n        getNearbyEntities(x, y, radius, type=\"\") {\r\n            const nearby = [];\r\n            // Get cells that could contain entities within radius\r\n            const startX = Math.max(0, Math.floor((x - radius)));\r\n            const endX = Math.min(this.cols - 1, Math.floor((x + radius)));\r\n            const startY = Math.max(0, Math.floor((y - radius)));\r\n            const endY = Math.min(this.rows - 1, Math.floor((y + radius)));\r\n       \r\n            // Collect potential candidates from relevant cells\r\n            for (let row = startY; row <= endY; row++) {\r\n                for (let col = startX; col <= endX; col++) {\r\n                    const index = row * this.cols + col;\r\n                    if (index >= 0 && index < this.grid.length) {\r\n                        for (let entity of this.grid[index]) {\r\n                            const dx = (entity.gridPosition.x) - (x + .5);\r\n                            const dy = (entity.gridPosition.y) - (y + .5);\r\n                            const distSquared = dx * dx + dy * dy;\r\n                            \r\n                            if (distSquared <= radius * radius) {\r\n                                if(type) {\r\n                                    if( entity.type == type ) {\r\n                                        nearby.push(entity);\r\n                                    }\r\n                                } else {\r\n                                    nearby.push(entity);\r\n                                }\r\n                            }                            \r\n                        }\r\n                    }\r\n                }\r\n            }\r\n            \r\n            return nearby;\r\n        }\r\n        clear() {\r\n            this.grid = this.grid.map(() => []);\r\n            this.entityCells.clear();\r\n        }\r\n        \r\n        // Optional: Only clear but maintain all entity positions\r\n        // Useful for when reusing the same grid across updates\r\n        resetKeepingEntities() {\r\n            const allEntities = [];\r\n            this.entityCells.forEach((_, entity) => {\r\n                allEntities.push(entity);\r\n            });\r\n            \r\n            this.clear();\r\n            \r\n            allEntities.forEach(entity => {\r\n                this.insert(entity);\r\n            });\r\n        }\r\n    }\r\n"
-      },
       "ShapeFactory": {
         "fileName": "ShapeFactory",
         "script": "class ShapeFactory {\n    constructor(palette, textures) {\n        this.gltfCache = new Map();\n        this.gltfLoader = new THREE.GLTFLoader();\n        this.palette = palette;\n        this.textures = textures;\n    }\n    async createMergedGroupFromJSON(model, frameData, groupName) {\n        let mergedGroup = this.getMergedGroup(model, frameData, groupName);\n        if( mergedGroup){\n            return await this.createGroupFromJSON(groupName, mergedGroup);\n        } else {\n            return null;\n        }\n    }\n    async createGroupFromJSON(groupName, groupData) {\n        const group = new THREE.Group();\n        group.name = groupName;\n        group.userData = { isGroup: true };\n        // Use Promise.all with map instead of forEach to properly await all shapes\n        await Promise.all(groupData.shapes.map(async (shape, index) => {\n            if (shape.type === 'gltf') {\n                await this.handleGLTFShape(shape, index, group);\n            } else {\n                await this.handlePrimitiveShape(shape, index, group);\n            }\n        }));\n        group.position.x = groupData.position.x;\n        group.position.y = groupData.position.y;\n        group.position.z = groupData.position.z;\n        \n        group.rotation.x = groupData.rotation.x;\n        group.rotation.y = groupData.rotation.y;\n        group.rotation.z = groupData.rotation.z;\n\n        group.scale.x = groupData.scale.x;\n        group.scale.y = groupData.scale.y;\n        group.scale.z = groupData.scale.z;\n        return group;\n    }\n\n    async handleGLTFShape(shape, index, group) {\n        const applyTransformations = (model) => {\n            model.position.set(shape.x || 0, shape.y || 0, shape.z || 0);\n            model.scale.set(\n                shape.scaleX || 1,\n                shape.scaleY || 1,\n                shape.scaleZ || 1\n            );\n            model.rotation.set(\n                (shape.rotationX || 0) * Math.PI / 180,\n                (shape.rotationY || 0) * Math.PI / 180,\n                (shape.rotationZ || 0) * Math.PI / 180\n            );\n            \n            model.traverse(child => {\n                if (child.isMesh) {\n                    child.userData = {\n                        isShape: true,\n                        index: index,\n                        isGLTFChild: true\n                    };\n                }\n            });\n            \n            model.userData = {\n                isShape: true,\n                index: index,\n                isGLTFRoot: true,\n                castShadow: true\n            };\n            \n            group.add(model);\n        };\n\n        const cached = this.gltfCache.get(shape.url);\n        if (cached) {\n            applyTransformations(cached.scene.clone());\n        } else if (shape.url && location.hostname !== \"\") {\n            // Wrap gltfLoader.load in a Promise to properly await it\n            await new Promise((resolve, reject) => {\n                this.gltfLoader.load(\n                    shape.url,\n                    (gltf) => {\n                        this.gltfCache.set(shape.url, gltf);\n                        applyTransformations(gltf.scene.clone());\n                        resolve();\n                    },\n                    undefined, // onProgress callback (optional)\n                    (error) => {\n                        console.error(`Failed to load GLTF model at ${shape.url}:`, error);\n                        reject(error);\n                    }\n                );\n            });\n        } else {\n            shape.type = \"sphere\";\n            return await this.handlePrimitiveShape(shape, index, group);\n        }\n    }\n\n    async handlePrimitiveShape(shape, index, group) {\n        let geometry, material;\n\n        let colorToUse = shape.color;\n        if(shape.color.paletteColor){\n            colorToUse = \"#ffffff\";\n            if(this.palette && this.palette[shape.color.paletteColor]){\n                colorToUse = this.palette[shape.color.paletteColor];\n            }\n        }\n        if(shape.texture){\n            // If a texture is specified, use it instead of the color\n            // If a texture is specified, use it instead of the color\n            const textureLoader = new THREE.TextureLoader();\n                \n            const textureData = this.textures[shape.texture];\n            \n            if( textureData ) {\n                const texture = await new Promise((resolve, reject) => {\n                    textureLoader.load(\n                        textureData.image,\n                        (loadedTexture) => {\n                            loadedTexture.wrapS = THREE.RepeatWrapping; // Use ClampToEdge instead of RepeatWrapping\n                            loadedTexture.wrapT = THREE.RepeatWrapping; // Use RepeatWrapping for vertical repeat\n                            loadedTexture.magFilter = THREE.NearestFilter;\n                            loadedTexture.minFilter = THREE.NearestFilter;\n                            loadedTexture.generateMipmaps = false;\n                            loadedTexture.anisotropy = 1;\n                            loadedTexture.needsUpdate = true;\n\n                            const meshWidth = shape.width || 1; // Mesh width in world units\n                            const meshHeight = shape.height || 1; // Mesh height in world units\n            \n                            const textureWidth = loadedTexture.image.width;\n                            const textureHeight = loadedTexture.image.height;\n                            const pixelsPerUnit = 2;\n                            const repeatX = Math.ceil((meshWidth * pixelsPerUnit) / textureWidth);\n                            const repeatY = Math.ceil((meshHeight * pixelsPerUnit) / textureHeight);\n                            loadedTexture.repeat.set(repeatX, repeatY);\n \n                            resolve(loadedTexture);\n                        },\n                        undefined,\n                        (error) => reject(error)\n                    );\n                });\n                material = new THREE.MeshStandardMaterial({ map: texture });\n            } else {                \n                material = new THREE.MeshStandardMaterial({ color: colorToUse });\n            }\n        } else {            \n            // Create material with specified color\n            material = new THREE.MeshStandardMaterial({ color: colorToUse });\n        }\n\n        switch (shape.type) {\n            case 'sphere':\n                geometry = new THREE.SphereGeometry(shape.size / 2, 32, 32);\n                break;\n            case 'cube':\n                geometry = new THREE.BoxGeometry(shape.size, shape.size, shape.size);\n                break;\n            case 'box':\n                geometry = new THREE.BoxGeometry(shape.width, shape.height, shape.depth || shape.width);\n                break;\n            case 'cylinder':\n                geometry = new THREE.CylinderGeometry(shape.size / 2, shape.size / 2, shape.height, 32);\n                break;\n            case 'cone':\n                geometry = new THREE.ConeGeometry(shape.size / 2, shape.height, 32);\n                break;\n            case 'torus':\n                geometry = new THREE.TorusGeometry(shape.size / 2, shape.tubeSize || shape.size / 6, 16, 100);\n                break;\n            case 'tetrahedron':\n                geometry = new THREE.TetrahedronGeometry(shape.size / 2);\n                break;\n            default:\n                return;\n        }\n\n        const mesh = new THREE.Mesh(geometry, material);\n        mesh.userData = { isShape: true, castShadow: true, index: index };\n        \n        // Position and rotation\n        mesh.position.set(shape.x || 0, shape.y || 0, shape.z || 0);\n        mesh.rotation.set(\n            (shape.rotationX || 0) * Math.PI / 180,\n            (shape.rotationY || 0) * Math.PI / 180,\n            (shape.rotationZ || 0) * Math.PI / 180\n        );\n        mesh.scale.set(\n            shape.scaleX || 1,\n            shape.scaleY || 1,\n            shape.scaleZ || 1\n        );\n        group.add(mesh);\n    }\n\n    disposeObject(object) {\n        object.traverse(child => {\n            if (child.geometry) child.geometry.dispose();\n            if (child.material) {\n                if (Array.isArray(child.material)) {\n                    child.material.forEach(m => m.dispose());\n                } else {\n                    child.material.dispose();\n                }\n            }\n        });\n    }\n\n    getMergedGroup(model, frameData, groupName) {\n        const modelGroup = model[groupName];\n        if (!modelGroup) {\n            delete frameData?.[groupName];\n            return null;\n        }\n    \n        frameData = frameData || {};\n        let frameGroup = this.initializeFrameGroup(frameData, modelGroup, groupName);\n        \n        this.cleanupMatchingTransforms(modelGroup, frameGroup);\n        const mergedShapes = this.mergeShapes(modelGroup, frameGroup);\n        \n        this.cleanupEmptyShapes(frameGroup);\n        \n        const mergedGroup = {\n            ...modelGroup,\n            ...frameGroup,\n            shapes: mergedShapes\n        };\n    \n        if (modelGroup.shapes.length === 0) {\n            frameGroup.shapes = [];\n        }\n    \n        const returnVal = JSON.parse(JSON.stringify(mergedGroup));\n        this.cleanupFrameData(frameData, frameGroup, groupName);\n        \n        return returnVal;\n    }\n    \n    initializeFrameGroup(frameData, modelGroup, groupName) {\n        if (!frameData[groupName]) {\n            frameData[groupName] = JSON.parse(JSON.stringify(modelGroup));\n            const frameGroup = frameData[groupName];\n            frameGroup.shapes.forEach((shape, index) => {\n                shape.id = index;\n            });\n            return frameGroup;\n        }\n        return frameData[groupName];\n    }\n    \n    cleanupMatchingTransforms(modelGroup, frameGroup) {\n        const properties = ['position', 'rotation', 'scale'];\n        properties.forEach(prop => {\n            if (JSON.stringify(modelGroup[prop]) === JSON.stringify(frameGroup[prop])) {\n                delete frameGroup[prop];\n            }\n        });\n    }\n    \n    mergeShapes(modelGroup, frameGroup) {\n        return modelGroup.shapes.map((modelShape, i) => {\n            if (!frameGroup.shapes) {\n                return JSON.parse(JSON.stringify(modelShape));\n            }\n    \n            let frameShape = frameGroup.shapes.find(shape => shape.id === i) || { id: i };\n            if (!frameGroup.shapes.includes(frameShape)) {\n                frameGroup.shapes.push(frameShape);\n            }\n    \n            const mergedShape = this.mergeShapeProperties(modelShape, frameShape);\n            this.cleanupMatchingShapeTransforms(modelShape, frameShape);\n            \n            return JSON.parse(JSON.stringify(mergedShape));\n        });\n    }\n    \n    mergeShapeProperties(modelShape, frameShape) {\n        const mergedShape = {};\n        \n        for (const key in modelShape) {\n            if (key === 'id') continue;\n            \n            if (frameShape && frameShape[key] !== undefined && modelShape[key] === frameShape[key]) {\n                delete frameShape[key];\n                mergedShape[key] = modelShape[key];\n            } else if (!frameShape || frameShape[key] === undefined) {\n                mergedShape[key] = modelShape[key];\n            } else {\n                mergedShape[key] = frameShape[key];\n            }\n        }\n    \n        return { ...mergedShape, ...frameShape };\n    }\n    \n    cleanupMatchingShapeTransforms(modelShape, frameShape) {\n        const transforms = [\n            { prop: 'scale', defaultVal: 1, axes: ['X', 'Y', 'Z'] },\n            { prop: 'rotation', defaultVal: 0, axes: ['X', 'Y', 'Z'] }\n        ];\n    \n        transforms.forEach(({ prop, defaultVal, axes }) => {\n            axes.forEach(axis => {\n                const propName = `${prop}${axis}`;\n                if (frameShape[propName] === modelShape[propName] || \n                   (frameShape[propName] === defaultVal && modelShape[propName] === undefined)) {\n                    delete frameShape[propName];\n                }\n            });\n        });\n    }\n    \n    cleanupEmptyShapes(frameGroup) {\n        if (frameGroup.shapes) {\n            frameGroup.shapes = frameGroup.shapes.filter(shape => \n                Object.keys(shape).length > 0\n            );\n            \n            if (frameGroup.shapes.length === 0) {\n                delete frameGroup.shapes;\n            }\n        }\n    }\n    \n    cleanupFrameData(frameData, frameGroup, groupName) {\n        if (Object.keys(frameGroup).length === 0) {\n            delete frameData[groupName];\n        }\n    }\n\n}"
       },
+      "SpatialGrid": {
+        "fileName": "SpatialGrid",
+        "script": " \r\n    class SpatialGrid {\r\n        constructor(worldSize, cellSize) {\r\n            this.cellSize = cellSize;\r\n            this.cols = worldSize;\r\n            this.rows = worldSize;\r\n            this.grid = new Array(this.cols * this.rows).fill().map(() => []);\r\n            \r\n            // Track which cell each entity is in\r\n            this.entityCells = new Map(); // Map of entity -> cell index\r\n        }\r\n        \r\n        getIndex(x, y) {\r\n            return y * this.cols + x;\r\n        }\r\n\r\n        insert(entity) {\r\n            const newIndex = this.getIndex(entity.gridPosition.x, entity.gridPosition.y);\r\n            const oldIndex = this.entityCells.get(entity);\r\n            \r\n            // If entity moved to a new cell\r\n            if (oldIndex !== newIndex) {\r\n                // Remove from old cell if it exists\r\n                if (oldIndex !== undefined) {\r\n                    const oldCell = this.grid[oldIndex];\r\n                    const entityIndex = oldCell.indexOf(entity);\r\n                    if (entityIndex !== -1) {\r\n                        oldCell.splice(entityIndex, 1);\r\n                    }\r\n                }\r\n                \r\n                // Add to new cell\r\n                if (newIndex >= 0 && newIndex < this.grid.length) {\r\n                    this.grid[newIndex].push(entity);\r\n                    this.entityCells.set(entity, newIndex);\r\n                }\r\n            }\r\n        }\r\n        \r\n        remove(entity) {\r\n            const index = this.entityCells.get(entity);\r\n            if (index !== undefined) {\r\n                const cell = this.grid[index];\r\n                const entityIndex = cell.indexOf(entity);\r\n                if (entityIndex !== -1) {\r\n                    cell.splice(entityIndex, 1);\r\n                }\r\n                this.entityCells.delete(entity);\r\n            }\r\n        }\r\n        getNearbyEntities(x, y, radius, type=\"\") {\r\n            const nearby = [];\r\n            // Get cells that could contain entities within radius\r\n            const startX = Math.max(0, Math.floor((x - radius)));\r\n            const endX = Math.min(this.cols - 1, Math.floor((x + radius)));\r\n            const startY = Math.max(0, Math.floor((y - radius)));\r\n            const endY = Math.min(this.rows - 1, Math.floor((y + radius)));\r\n       \r\n            // Collect potential candidates from relevant cells\r\n            for (let row = startY; row <= endY; row++) {\r\n                for (let col = startX; col <= endX; col++) {\r\n                    const index = row * this.cols + col;\r\n                    if (index >= 0 && index < this.grid.length) {\r\n                        for (let entity of this.grid[index]) {\r\n                            const dx = (entity.gridPosition.x) - (x + .5);\r\n                            const dy = (entity.gridPosition.y) - (y + .5);\r\n                            const distSquared = dx * dx + dy * dy;\r\n                            \r\n                            if (distSquared <= radius * radius) {\r\n                                if(type) {\r\n                                    if( entity.type == type ) {\r\n                                        nearby.push(entity);\r\n                                    }\r\n                                } else {\r\n                                    nearby.push(entity);\r\n                                }\r\n                            }                            \r\n                        }\r\n                    }\r\n                }\r\n            }\r\n            \r\n            return nearby;\r\n        }\r\n        clear() {\r\n            this.grid = this.grid.map(() => []);\r\n            this.entityCells.clear();\r\n        }\r\n        \r\n        // Optional: Only clear but maintain all entity positions\r\n        // Useful for when reusing the same grid across updates\r\n        resetKeepingEntities() {\r\n            const allEntities = [];\r\n            this.entityCells.forEach((_, entity) => {\r\n                allEntities.push(entity);\r\n            });\r\n            \r\n            this.clear();\r\n            \r\n            allEntities.forEach(entity => {\r\n                this.insert(entity);\r\n            });\r\n        }\r\n    }\r\n"
+      },
       "TerrainImageProcessor": {
         "fileName": "TerrainImageProcessor",
         "script": "class TerrainImageProcessor {\r\n  //Utility function to convert terrain tile spritesheets to and from base64 encoding\r\n    constructor(app, options = {}) {\r\n        this.app = app;\r\n        // Configurable tile dimensions with defaults\r\n        this.tileWidth = options.tileWidth || 24;\r\n        this.tileHeight = options.tileHeight || 24;\r\n        this.tilesX = options.tilesX || 4;\r\n        this.tilesY = options.tilesY || 1;\r\n\r\n        // Bind methods to ensure correct context\r\n        this.convertCanvasToBase64Tiles = this.convertCanvasToBase64Tiles.bind(this);\r\n        this.displayStoredBase64Tiles = this.displayStoredBase64Tiles.bind(this);\r\n\r\n        // Element references\r\n        this.output = null;\r\n        this.displayImage = null;\r\n    }\r\n\r\n    // Initialize the processor with DOM elements\r\n    initialize(outputElement, displayImageElement) {\r\n        this.output = outputElement;\r\n        this.displayImage = displayImageElement;\r\n\r\n        // Optional: Add custom event listener\r\n        document.body.addEventListener('editTerrainImage', this.displayStoredBase64Tiles);\r\n    }\r\n\r\n    processImage(imageUrl) {\r\n        const img = new Image();\r\n        img.onload = () => {\r\n            // Create a temporary canvas to process the image\r\n            const canvas = document.createElement('canvas');\r\n            canvas.width = this.tileWidth * this.tilesX;\r\n            canvas.height = this.tileHeight * this.tilesY;\r\n\r\n            const ctx = canvas.getContext('2d');\r\n            \r\n            // Set transparent background\r\n            ctx.globalCompositeOperation = 'source-over';\r\n            ctx.clearRect(0, 0, canvas.width, canvas.height);\r\n            \r\n            // Draw the uploaded image, scaling to fit the canvas\r\n            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);\r\n\r\n            // Convert to base64 tiles with vertical flips\r\n            const base64Tiles = this.convertCanvasToBase64Tiles(canvas);\r\n            \r\n            // Save base64 tiles to output\r\n            this.output.value = JSON.stringify(base64Tiles);\r\n\r\n            // Display the original uploaded image\r\n            this.displayImage.src = imageUrl;\r\n        };\r\n        img.src = imageUrl;\r\n    }\r\n\r\n\r\n\r\n    // Convert canvas to array of base64 tiles with vertical flips\r\n    convertCanvasToBase64Tiles(canvas, format = 'png', quality = 1.0) {\r\n        const base64Tiles = [];\r\n\r\n        // First, process the first row of tiles normally\r\n        for (let x = 0; x < this.tilesX; x++) {\r\n            const tileCanvas = document.createElement('canvas');\r\n            tileCanvas.width = this.tileWidth;\r\n            tileCanvas.height = this.tileHeight;\r\n            const tileCtx = tileCanvas.getContext('2d');\r\n\r\n            // Calculate the source position on the main canvas\r\n            const srcX = x * this.tileWidth;\r\n            const srcY = 0;\r\n\r\n            // Get the image data for this tile\r\n            const imageData = canvas.getContext('2d').getImageData(\r\n                srcX, srcY, this.tileWidth, this.tileHeight\r\n            );\r\n\r\n            // Put the image data on the tile canvas\r\n            tileCtx.putImageData(imageData, 0, 0);\r\n\r\n            // Convert the tile canvas to a data URL\r\n            const dataUrl = tileCanvas.toDataURL(`image/${format}`, quality);\r\n\r\n            // Extract the Base64 string (remove the prefix)\r\n            const base64String = dataUrl.split(',')[1];\r\n\r\n            // Add to the array\r\n            base64Tiles.push(base64String);\r\n        }\r\n\r\n        // Now create vertically flipped versions of the first row\r\n        for (let x = 0; x < this.tilesX; x++) {\r\n            const tileCanvas = document.createElement('canvas');\r\n            tileCanvas.width = this.tileWidth;\r\n            tileCanvas.height = this.tileHeight;\r\n            const tileCtx = tileCanvas.getContext('2d');\r\n\r\n            // Calculate the source position on the main canvas\r\n            const srcX = x * this.tileWidth;\r\n            const srcY = 0;\r\n\r\n            // Get the image data for this tile\r\n            const imageData = canvas.getContext('2d').getImageData(\r\n                srcX, srcY, this.tileWidth, this.tileHeight\r\n            );\r\n\r\n            // Create a new ImageData for the flipped tile\r\n            const flippedImageData = new ImageData(this.tileWidth, this.tileHeight);\r\n            for (let y = 0; y < this.tileHeight; y++) {\r\n                for (let x = 0; x < this.tileWidth; x++) {\r\n                    const srcIndex = (y * this.tileWidth + x) * 4;\r\n                    const destIndex = ((this.tileHeight - 1 - y) * this.tileWidth + x) * 4;\r\n                    \r\n                    flippedImageData.data[destIndex] = imageData.data[srcIndex];     // R\r\n                    flippedImageData.data[destIndex + 1] = imageData.data[srcIndex + 1]; // G\r\n                    flippedImageData.data[destIndex + 2] = imageData.data[srcIndex + 2]; // B\r\n                    flippedImageData.data[destIndex + 3] = imageData.data[srcIndex + 3]; // A\r\n                }\r\n            }\r\n\r\n            // Put the flipped image data on the tile canvas\r\n            tileCtx.putImageData(flippedImageData, 0, 0);\r\n\r\n            // Convert the tile canvas to a data URL\r\n            const dataUrl = tileCanvas.toDataURL(`image/${format}`, quality);\r\n\r\n            // Extract the Base64 string (remove the prefix)\r\n            const base64String = dataUrl.split(',')[1];\r\n\r\n            // Add to the array\r\n            base64Tiles.push(base64String);\r\n        }\r\n\r\n        return base64Tiles;\r\n    }\r\n\r\n    // Display stored base64 tiles\r\n    displayStoredBase64Tiles() {\r\n        // Check if there are stored base64 tiles\r\n        if (!this.output.value) return;\r\n\r\n        try {\r\n            // Parse the stored base64 tiles\r\n            const base64Tiles = JSON.parse(this.output.value);\r\n\r\n            // Validate the number of tiles\r\n            if (!Array.isArray(base64Tiles) || base64Tiles.length !== 8) {\r\n                console.error('Invalid base64 tiles array');\r\n                return;\r\n            }\r\n\r\n            const img = new Image();\r\n            const canvas = document.createElement('canvas');\r\n            canvas.width = this.tileWidth * this.tilesX;\r\n            canvas.height = this.tileHeight * this.tilesY;\r\n            const ctx = canvas.getContext('2d');\r\n\r\n            let loadedImages = 0;\r\n            const tileImages = new Array(8).fill(null);\r\n\r\n            base64Tiles.forEach((base64String, index) => {\r\n                const tileImg = new Image();\r\n                tileImg.onload = () => {\r\n                    tileImages[index] = tileImg;\r\n                    loadedImages++;\r\n\r\n                    // Once all images are loaded, draw them\r\n                    if (loadedImages === base64Tiles.length) {\r\n                        // Draw first row of tiles\r\n                        for (let x = 0; x < this.tilesX; x++) {\r\n                            ctx.drawImage(tileImages[x], x * this.tileWidth, 0);\r\n                        }\r\n\r\n                        // Set the final image\r\n                        this.displayImage.src = canvas.toDataURL('image/png');\r\n                    }\r\n                };\r\n\r\n                // Ensure the base64 string has the correct data URL prefix\r\n                if (!base64String.startsWith('data:image/')) {\r\n                    base64String = 'data:image/png;base64,' + base64String;\r\n                }\r\n                tileImg.src = base64String;\r\n            });\r\n        } catch (error) {\r\n            console.error('Error parsing stored base64 tiles:', error);\r\n        }\r\n    }\r\n\r\n    // Method to clean up event listeners if needed\r\n    destroy() {\r\n        document.body.removeEventListener('editTerrainImage', this.displayStoredBase64Tiles);\r\n    }\r\n}"
-      },
-      "ImageManager": {
-        "fileName": "ImageManager",
-        "script": "\r\nclass ImageManager {\r\n    constructor(app, {imageSize, palette, textures}, {ShapeFactory}) {\r\n        this.app = app;\r\n        this.images = {};\r\n        this.imageSize = imageSize || 128;\r\n        // Create a single reusable renderer\r\n        this.renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });\r\n        this.renderer.setSize(this.imageSize, this.imageSize);\r\n        this.renderer.shadowMap.enabled = true;\r\n        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;\r\n        \r\n        this.renderTarget = new THREE.WebGLRenderTarget(this.imageSize, this.imageSize);\r\n        this.renderTarget.texture.flipY = true;\r\n        \r\n        // Create reusable scene\r\n        this.scene = new THREE.Scene();\r\n        \r\n        // Create reusable cameras for different views\r\n        const cameraDistance = 64;\r\n        const frustumSize = cameraDistance + 16;\r\n        const aspect = 1;\r\n\r\n        this.shapeFactory = new ShapeFactory(palette, textures);\r\n        // Create 8 cameras for isometric views at 45-degree intervals\r\n        this.cameras = [];\r\n        for (let i = 0; i < 8; i++) {\r\n            this.cameras.push(new THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000));\r\n        }\r\n        \r\n        // Position cameras in a circle around the y-axis at isometric angle\r\n        // Standard isometric angle is about 35.264 degrees (arctan(1/sqrt(2)))\r\n        const isoAngle = Math.atan(1 / Math.sqrt(2));\r\n        const horizDistance = cameraDistance * Math.cos(isoAngle);\r\n        const vertDistance = cameraDistance * Math.sin(isoAngle);\r\n        \r\n        for (let i = 0; i < 8; i++) {\r\n            const angle = (i * Math.PI / 4); // 45-degree increments\r\n            const x = horizDistance * Math.sin(angle);\r\n            const z = horizDistance * Math.cos(angle);\r\n            \r\n            this.cameras[i].position.set(x, vertDistance, z);\r\n            this.cameras[i].lookAt(0, 0, 0);\r\n        }\r\n        \r\n        // Create reusable lights\r\n        this.ambientLight = new THREE.AmbientLight(0xffaaff, .25);\r\n        \r\n        // Create a light group that will rotate with each camera view\r\n        this.lightGroup = new THREE.Group();\r\n        \r\n        // Main directional light\r\n        this.directionalLight = new THREE.DirectionalLight(0xffffaa, .7);\r\n        this.directionalLight.position.set(75, 96, 75);\r\n        this.directionalLight.castShadow = true;\r\n        this.directionalLight.shadow.mapSize.width = 1024;\r\n        this.directionalLight.shadow.mapSize.height = 1024;\r\n        this.directionalLight.shadow.camera.near = 0.5;\r\n        this.directionalLight.shadow.camera.far = 500;\r\n        this.directionalLight.shadow.bias = -0.0005;\r\n        this.directionalLight.shadow.normalBias = 0.02;\r\n        this.directionalLight.shadow.radius = 1;\r\n        this.lightGroup.add(this.directionalLight);\r\n        \r\n        // Fill light\r\n        this.fillLight = new THREE.DirectionalLight(0xffaaff, .5);\r\n        this.fillLight.position.set(-20, 30, -20);\r\n        this.lightGroup.add(this.fillLight);\r\n        \r\n        // Create ground plane\r\n        const groundGeometry = new THREE.PlaneGeometry(200, 200);\r\n        const groundMaterial = new THREE.ShadowMaterial({ opacity: 0.3 });\r\n        this.ground = new THREE.Mesh(groundGeometry, groundMaterial);\r\n        this.ground.rotation.x = -Math.PI / 2;\r\n        this.ground.position.y = 0;\r\n        this.ground.receiveShadow = true;\r\n    }\r\n\r\n    clear() {\r\n        images = {};\r\n    }\r\n\r\n    dispose() {\r\n        // Proper cleanup when the manager is no longer needed\r\n        if (this.renderer) {\r\n            this.renderer.dispose();\r\n            this.renderer = null;\r\n        }\r\n        if (this.renderTarget) {\r\n            this.renderTarget.dispose();\r\n            this.renderTarget = null;\r\n        }\r\n        if (this.ground && this.ground.geometry) {\r\n            this.ground.geometry.dispose();\r\n            this.ground.material.dispose();\r\n        }\r\n        // Dispose of other reusable resources\r\n        this.cameras = [];\r\n        this.scene = null;\r\n        this.lightGroup = null;\r\n        this.ambientLight = null;\r\n    }\r\n\r\n    async loadImages(prefix, config, checkCache = true, cacheResult = true) {\r\n\r\n        if (!prefix || !config || typeof config !== 'object') {\r\n            throw new Error('Invalid prefix or config provided to loadImages');\r\n        }\r\n        if( checkCache ) {\r\n            const cachedImages = await this.checkCache(prefix);\r\n            if (cachedImages) {\r\n                this.images = { ...this.images, ...cachedImages };\r\n                return;\r\n            }\r\n        }\r\n    \r\n        for (const [type, cfg] of Object.entries(config)) {\r\n            if (cfg.render && cfg.render.animations) {\r\n                this.images[`${prefix}_${type}`] = await this.createAnimatedPlaceholder(cfg);\r\n            } else if (cfg.tileMap && cfg.tileMap.terrainTypes) {\r\n                this.images[`${prefix}_${type}`] = await this.createTerrainImages(cfg);\r\n            }\r\n        }\r\n        if(cacheResult) {\r\n            await this.cacheImages(prefix);\r\n        }\r\n    }\r\n    \r\n    async checkCache(prefix) {\r\n        try {\r\n            const response = await fetch(`cache/${prefix}.json`);\r\n            if (response.ok) {\r\n                const cacheData = await response.json();\r\n                // Convert base64 cached images back to canvases\r\n                return await this.convertBase64ToCanvases(cacheData.images);\r\n            }\r\n            return null;\r\n        } catch (error) {\r\n            return null;\r\n        }\r\n    }\r\n\r\n    async convertBase64ToCanvases(cachedImages) {\r\n        const convertedImages = {};\r\n        \r\n        for (const [key, value] of Object.entries(cachedImages)) {\r\n            if (Array.isArray(value)) {\r\n                // Handle terrain tiles\r\n                convertedImages[key] = await Promise.all(value.map(async (terrain) => {\r\n                    const sprites = await Promise.all(terrain.sprites.map(async (base64) => {\r\n                        const canvas = document.createElement('canvas');\r\n                        canvas.width = canvas.height = 24; // Match tileWidth from createTerrainImages\r\n                        const ctx = canvas.getContext('2d');\r\n                        const img = new Image();\r\n                        \r\n                        await new Promise((resolve, reject) => {\r\n                            img.onload = () => {\r\n                                ctx.drawImage(img, 0, 0);\r\n                                resolve();\r\n                            };\r\n                            img.onerror = reject;\r\n                            img.src = base64;\r\n                        });\r\n                        \r\n                        return canvas;\r\n                    }));\r\n                    \r\n                    return {\r\n                        type: terrain.type,\r\n                        sprites\r\n                    };\r\n                }));\r\n            } else if (typeof value === 'object') {\r\n                // Handle animations\r\n                const animations = {};\r\n                for (const [animType, frames] of Object.entries(value)) {\r\n                    animations[animType] = await Promise.all(frames.map(async (frameSet) => {\r\n                        return Promise.all(frameSet.map(async (base64) => {\r\n                            const canvas = document.createElement('canvas');\r\n                            canvas.width = canvas.height = this.imageSize;\r\n                            const ctx = canvas.getContext('2d');\r\n                            const img = new Image();\r\n                            \r\n                            await new Promise((resolve, reject) => {\r\n                                img.onload = () => {\r\n                                    ctx.drawImage(img, 0, 0);\r\n                                    resolve();\r\n                                };\r\n                                img.onerror = reject;\r\n                                img.src = base64;\r\n                            });\r\n                            \r\n                            return canvas;\r\n                        }));\r\n                    }));\r\n                }\r\n                convertedImages[key] = animations;\r\n            }\r\n        }\r\n        \r\n        return convertedImages;\r\n    }\r\n    async cacheImages(prefix) {\r\n        const base64Images = {};\r\n        \r\n        for (const [key, value] of Object.entries(this.images)) {\r\n            if (key.startsWith(prefix)) {\r\n                if (Array.isArray(value) && value[0]?.type && value[0]?.sprites) {\r\n                    // Handle terrain tiles\r\n                    base64Images[key] = value.map(terrain => ({\r\n                        type: terrain.type,\r\n                        sprites: terrain.sprites.map(canvas => canvas.toDataURL('image/png'))\r\n                    }));\r\n                } else if (typeof value === 'object' && value !== null) {\r\n                    // Handle animations\r\n                    const animationData = {};\r\n                    for (const [animType, frames] of Object.entries(value)) {\r\n                        animationData[animType] = frames.map(frameSet => \r\n                            frameSet.map(canvas => canvas.toDataURL('image/png'))\r\n                        );\r\n                    }\r\n                    base64Images[key] = animationData;\r\n                }\r\n            }\r\n        }\r\n\r\n        try {\r\n            await fetch('/api/cache', {\r\n                method: 'POST',\r\n                headers: {\r\n                    'Content-Type': 'application/json',\r\n                },\r\n                body: JSON.stringify({\r\n                    prefix,\r\n                    images: base64Images\r\n                })\r\n            });\r\n        } catch (error) {\r\n            console.error('Error caching images:', error);\r\n        }\r\n    }\r\n    // In the ImageManager class\r\n    async createTerrainImages(config) {\r\n        let terrainTiles = [];\r\n        const tileWidth = 24;\r\n\r\n        // Create a map of terrain type to its image data first\r\n        const terrainMap = {};\r\n        \r\n        await Promise.all(config.tileMap.terrainTypes.map(async (terrainType, terrainIndex) => {\r\n            const pixelData = terrainType.image;\r\n            if (pixelData && pixelData.length > 0) {\r\n                let sprites = new Array(8);\r\n                \r\n                await Promise.all(pixelData.map(async (imagePixelData, spriteIdx) => {\r\n                    const img = new Image();\r\n                    const canvas = document.createElement('canvas');\r\n                    canvas.width = canvas.height = tileWidth;\r\n                    const ctx = canvas.getContext('2d');\r\n\r\n                    if (!imagePixelData.startsWith('data:image/')) {\r\n                        imagePixelData = 'data:image/png;base64,' + imagePixelData;\r\n                    }\r\n                    img.src = imagePixelData;\r\n\r\n                    await new Promise((resolve, reject) => {\r\n                        img.onload = () => {\r\n                            ctx.drawImage(img, 0, 0);\r\n                            sprites[spriteIdx] = canvas;\r\n                            resolve();\r\n                        };\r\n                        img.onerror = () => {\r\n                            console.error(`Failed to load image for ${terrainType.type} at index ${spriteIdx}`);\r\n                            sprites[spriteIdx] = canvas; // Store empty canvas on error\r\n                            resolve(); // Don't reject, just move on\r\n                        };\r\n                    });\r\n                }));\r\n\r\n                // Store by index and type for more reliable lookup\r\n                terrainTiles[terrainIndex] = { \r\n                    type: terrainType.type,\r\n                    sprites: sprites \r\n                };\r\n            } else {\r\n                // Create a solid color placeholder for types without images\r\n                const sprites = new Array(8).fill().map(() => {\r\n                    const canvas = document.createElement('canvas');\r\n                    canvas.width = canvas.height = tileWidth;\r\n                    const ctx = canvas.getContext('2d');\r\n                    ctx.fillStyle = terrainType.color || '#cccccc';\r\n                    ctx.fillRect(0, 0, tileWidth, tileWidth);\r\n                    return canvas;\r\n                });\r\n                \r\n                terrainTiles[terrainIndex] = {\r\n                    type: terrainType.type,\r\n                    sprites: sprites\r\n                };\r\n            }\r\n        }));\r\n\r\n        // Make sure there are no gaps in the array\r\n        return terrainTiles.filter(Boolean);\r\n    }\r\n    async createAnimatedPlaceholder(config) {\r\n        const animations = {};\r\n        \r\n        if(config.shadows === false) {\r\n            this.ground.receiveShadow = false;\r\n        } else {\r\n            this.ground.receiveShadow = true;\r\n        }\r\n        for (const [animType, frames] of Object.entries(config.render.animations)) {\r\n            animations[animType] = [];\r\n            let i = 0;\r\n            for (const frame of frames) {\r\n                const frameImages = await this.captureObjectImagesFromJSON(config.render.model, frame);\r\n                const canvases = frameImages.map(img => {\r\n                    const canvas = document.createElement('canvas');\r\n                    canvas.width = canvas.height = this.imageSize;\r\n                    const ctx = canvas.getContext('2d');\r\n                    ctx.drawImage(img, 0, 0);\r\n                    return canvas;\r\n                });                \r\n                animations[animType].push(canvases); // Array of 8 canvases per frame\r\n            }\r\n        }\r\n        return animations; // { \"idle\": [[canvas0, canvas1, canvas2, canvas3, ...], ...], \"walk\": [...] }\r\n    }\r\n\r\n    getImages(prefix, type) {\r\n        return this.images[`${prefix}_${type}`]; // Returns animation object\r\n    }\r\n    async captureObjectImagesFromJSON(model, frameData) {\r\n        const size = this.imageSize;\r\n        // Clear the scene\r\n        while (this.scene.children.length > 0) {\r\n            const object = this.scene.children[0];\r\n            this.scene.remove(object);\r\n        }\r\n        \r\n        // Add reusable elements to scene\r\n        this.scene.add(this.ground);\r\n        this.scene.add(this.ambientLight);\r\n        this.scene.add(this.lightGroup);\r\n        \r\n        // Create objects from the JSON data\r\n        const objectGroup = await this.createObjectsFromJSON(model, frameData, this.scene);\r\n\r\n        \r\n        const images = [];\r\n        \r\n        // For each camera view, rotate the light group to match camera orientation\r\n        for (let i = 0; i < this.cameras.length; i++) {\r\n            const camera = this.cameras[i];\r\n            \r\n            // Reset light group rotation\r\n            this.lightGroup.rotation.set(0, 0, 0);\r\n            \r\n            // Rotate light group to match camera position\r\n            // Calculate angle based on camera index (8 positions at 45-degree intervals)\r\n            // Rotate 45 degrees CLOCKWISE (subtract π/4 instead of adding)\r\n            const angle = (i * Math.PI / 4); \r\n            this.lightGroup.rotation.y = angle;\r\n            \r\n            // Before rendering with each camera, update shadow camera frustum\r\n            const d = 100;\r\n            this.directionalLight.shadow.camera.left = -d;\r\n            this.directionalLight.shadow.camera.right = d;\r\n            this.directionalLight.shadow.camera.top = d;\r\n            this.directionalLight.shadow.camera.bottom = -d;\r\n            // After rotating lightGroup in the camera loop\r\n            this.directionalLight.shadow.camera.updateProjectionMatrix();\r\n            this.directionalLight.shadow.camera.updateMatrixWorld();\r\n            this.directionalLight.target.position.set(0, 0, 0);\r\n            this.directionalLight.target.updateMatrixWorld();\r\n            // Render and capture the image\r\n            this.renderer.setRenderTarget(this.renderTarget);\r\n            this.renderer.render(this.scene, camera);\r\n            const buffer = new Uint8Array(size * size * 4);\r\n            this.renderer.readRenderTargetPixels(this.renderTarget, 0, 0, size, size, buffer);\r\n            \r\n            // Flip the buffer (y-axis)\r\n            const flippedBuffer = new Uint8Array(size * size * 4);\r\n            for (let y = 0; y < size; y++) {\r\n                const srcRowStart = y * size * 4;\r\n                const destRowStart = (size - 1 - y) * size * 4;\r\n                flippedBuffer.set(buffer.subarray(srcRowStart, srcRowStart + size * 4), destRowStart);\r\n            }\r\n            \r\n            const imageData = new ImageData(new Uint8ClampedArray(flippedBuffer), size, size);\r\n            const imageBitmap = await createImageBitmap(imageData);\r\n            images.push(imageBitmap);\r\n        }\r\n        if( this.renderer) this.renderer.setRenderTarget(null);\r\n        \r\n        // Cleanup object geometries and materials\r\n        this.shapeFactory.disposeObject(objectGroup);\r\n        \r\n        // Remove object group from scene\r\n        if( this.scene ) this.scene.remove(objectGroup);\r\n        \r\n        return images;\r\n    }\r\n\r\n    /**\r\n     * Creates 3D objects from shape data.\r\n     * @param {Object} frameData - The JSON object containing frame definitions.\r\n     * @returns {THREE.Group} - A group containing all 3D objects.\r\n     */\r\n  \r\n    async createObjectsFromJSON(model, frameData, scene) {\r\n        const rootGroup = new THREE.Group();\r\n        \r\n        for(const groupName in model) {\r\n            const group = await this.shapeFactory.createMergedGroupFromJSON(model, frameData, groupName);\r\n            if(group){\r\n                group.traverse((child) => {\r\n                    if (child.isMesh) {\r\n                        child.castShadow = true; // or set this selectively for objects that should cast shadows\r\n                        child.receiveShadow = true; // for objects that should receive shadows\r\n                    }\r\n                });\r\n                rootGroup.add(group);\r\n            }\r\n        }\r\n\r\n        scene.add(rootGroup);\r\n    \r\n        return rootGroup;\r\n    }\r\n   \r\n}\r\n"
       },
       "terrainMapEditor": {
         "fileName": "terrainMapEditor",
@@ -17729,15 +17729,15 @@ const DEFAULT_PROJECT_CONFIG = {
       }
     },
     "modals": {
-      "addTerrainType": {
-        "title": "Add Terrain Type",
-        "fileName": "addTerrainType",
-        "html": "\r\n<h4 id=\"formTitle\">Add Terrain Type</h4>\r\n<input type=\"hidden\" id=\"editingType\" value=\"\">\r\n<div class=\"form-group\">\r\n    <label for=\"terrainType\">Type:</label>\r\n    <input type=\"text\" id=\"terrainType\" placeholder=\"grass, water, etc.\">\r\n</div>\r\n<div class=\"form-group\">\r\n    <label for=\"terrainColor\">Color:</label>\r\n    <input type=\"text\" id=\"terrainColorText\">\r\n    <input type=\"color\" id=\"terrainColor\">\r\n</div>\r\n<div class=\"form-group\">\r\n    <label for=\"terrainImage\">Sprite Sheet:</label>\r\n    <input type=\"textarea\" id=\"terrainImage\">\r\n</div>\r\n<div class=\"form-group\">\r\n    <label for=\"terrainTexture\">Texture:</label>\r\n    <select id=\"terrainTexture\"></select>\r\n</div>\r\n<div class=\"form-group\">\r\n    <img id=\"terrain-image-display\" alt=\"Terrain Image\">\r\n</div>\r\n<div class=\"form-group\">\r\n    <label for=\"terrainBuildable\">Buildable:</label>\r\n    <input type=\"checkbox\" id=\"terrainBuildable\">\r\n</div>\r\n<div class=\"form-actions\">\r\n    <button id=\"saveTerrainBtn\" class=\"primary\">Save</button>\r\n    <button id=\"cancelTerrainBtn\">Cancel</button>\r\n</div>\r\n<input type=\"hidden\" id=\"editingId\">\r\n"
-      },
       "aiPromptPanel": {
         "title": "AI Prompt Panel",
         "fileName": "aiPromptPanel",
         "html": "<h2>AI Object Generator</h2>\r\n                <div class=\"form-group\">\r\n                    <label for=\"ai-prompt-textarea\">Prompt:</label>\r\n                    <textarea id=\"ai-prompt-textarea\" rows=\"6\" placeholder=\"Enter your AI generation prompt\"></textarea>\r\n                    <textarea id=\"ai-pre-prompt-textarea\" rows=\"6\" placeholder=\"context\"></textarea>\r\n                </div>\r\n                <div class=\"actions\">\r\n                    <button id=\"send-ai-prompt-btn\" class=\"primary\">Send to AI</button>\r\n                    <button id=\"close-ai-prompt-modal\">Cancel</button>\r\n                </div>\r\n                <div class=\"preview-section\">\r\n                    <h3>AI Response Preview</h3>\r\n                    <textarea id=\"ai-response-preview\" rows=\"6\"></textarea>\r\n                    <div class=\"preview-actions\">\r\n                        <button id=\"apply-ai-response-btn\" class=\"primary\" style=\"display:none;\">Apply Response</button>\r\n                    </div>\r\n                </div>"
+      },
+      "addTerrainType": {
+        "title": "Add Terrain Type",
+        "fileName": "addTerrainType",
+        "html": "\r\n<h4 id=\"formTitle\">Add Terrain Type</h4>\r\n<input type=\"hidden\" id=\"editingType\" value=\"\">\r\n<div class=\"form-group\">\r\n    <label for=\"terrainType\">Type:</label>\r\n    <input type=\"text\" id=\"terrainType\" placeholder=\"grass, water, etc.\">\r\n</div>\r\n<div class=\"form-group\">\r\n    <label for=\"terrainColor\">Color:</label>\r\n    <input type=\"text\" id=\"terrainColorText\">\r\n    <input type=\"color\" id=\"terrainColor\">\r\n</div>\r\n<div class=\"form-group\">\r\n    <label for=\"terrainImage\">Sprite Sheet:</label>\r\n    <input type=\"textarea\" id=\"terrainImage\">\r\n</div>\r\n<div class=\"form-group\">\r\n    <label for=\"terrainTexture\">Texture:</label>\r\n    <select id=\"terrainTexture\"></select>\r\n</div>\r\n<div class=\"form-group\">\r\n    <img id=\"terrain-image-display\" alt=\"Terrain Image\">\r\n</div>\r\n<div class=\"form-group\">\r\n    <label for=\"terrainBuildable\">Buildable:</label>\r\n    <input type=\"checkbox\" id=\"terrainBuildable\">\r\n</div>\r\n<div class=\"form-actions\">\r\n    <button id=\"saveTerrainBtn\" class=\"primary\">Save</button>\r\n    <button id=\"cancelTerrainBtn\">Cancel</button>\r\n</div>\r\n<input type=\"hidden\" id=\"editingId\">\r\n"
       },
       "generateIsometric": {
         "title": "Generate Isometric Sprites",
@@ -17785,14 +17785,14 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "MapRenderer",
         "script": "class MapRenderer extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init({canvasBuffer, terrainCanvasBuffer, worldObjects, imageManager, levelName, gameConfig, level, isEditor, palette}) {   \r\n\r\n        this.config = gameConfig;\r\n        this.imageManager = imageManager;\r\n        this.worldObjects = worldObjects;\r\n        this.selectedTowerType = null;\r\n        this.hoverCell = { x: -1, y: -1 };\r\n        this.showRange = false;\r\n        this.isMapCached = false; // Flag to track if map needs redrawing\r\n        this.currentLevel = levelName;\r\n        this.level = level;\r\n        this.tileMap = level.tileMap;\r\n        this.palette = palette;\r\n\r\n        // Create off-screen canvas for caching\r\n        if(!this.config.is3D || isEditor) {\r\n            this.ctx = canvasBuffer.getContext('2d');\r\n            this.mapCacheCanvas = document.createElement('canvas');\r\n            this.mapCacheCanvas.width = this.config.canvasWidth;\r\n            this.mapCacheCanvas.height = this.config.canvasHeight;\r\n            this.mapCacheCtx = this.mapCacheCanvas.getContext('2d');\r\n\r\n            \r\n            this.envCacheCanvasBG = document.createElement('canvas');\r\n            this.envCacheCanvasBG.width = this.config.canvasWidth;\r\n            this.envCacheCanvasBG.height = this.config.canvasHeight / 2;\r\n            this.envCacheCtxBG = this.envCacheCanvasBG.getContext('2d');\r\n\r\n            this.envCacheCanvasFG = document.createElement('canvas');\r\n            this.envCacheCanvasFG.width = this.config.canvasWidth;\r\n            this.envCacheCanvasFG.height = this.config.canvasHeight / 2;\r\n            this.envCacheCtxFG = this.envCacheCanvasFG.getContext('2d');\r\n        }\r\n        this.terrainCanvas = terrainCanvasBuffer;\r\n        this.terrainCanvas.width = this.tileMap.size * this.config.gridSize;\r\n        this.terrainCanvas.height = this.tileMap.size * this.config.gridSize;\r\n        this.terrainCtx = this.terrainCanvas.getContext('2d');\r\n        \r\n        this.terrainTileMapper = this.game.terrainTileMapper;\r\n        this.game.mapRenderer = this;\r\n        this.isometric = this.game.config.configs.game.isIsometric;\r\n    }\r\n\r\n    draw(){}\r\n    render(tileMapData) {\r\n        if(!this.isMapCached){\r\n            this.terrainCtx.clearRect(0, 0, this.terrainCanvas.width, this.terrainCanvas.height);\r\n                \r\n            // Draw the map onto the cache canvas\r\n            this.drawTileMap(tileMapData);\r\n            this.renderEnvironment();\r\n            \r\n            //this.drawPaths(this.terrainCacheCtx, paths);\r\n        }\r\n        // Mark cache as valid\r\n        this.isMapCached = true;\r\n    }\r\n    renderEnvironment() {\r\n        if (this.tileMap.environmentObjects.length === 0) return;\r\n    \r\n        // Group environment objects by type\r\n        const objectsByType = {};\r\n        this.tileMap.environmentObjects.forEach(obj => {\r\n            if (!objectsByType[obj.type]) {\r\n                objectsByType[obj.type] = [];\r\n            }\r\n            objectsByType[obj.type].push(obj);\r\n        });\r\n    \r\n        // Process each type separately\r\n        Object.entries(objectsByType).forEach(([type, objects]) => {\r\n            // Load the model for this type\r\n            const referenceModel = this.game.modelManager.getModel(\"worldObjects\", type);\r\n            if (!referenceModel) return;\r\n    \r\n            // Find all meshes and store their complete transform data\r\n            const meshData = [];\r\n            referenceModel.updateMatrixWorld(true); // Ensure world matrices are up to date\r\n    \r\n            referenceModel.traverse(node => {\r\n                if (node.isMesh) {\r\n                    const parent = node.parent;\r\n                    const parentWorldMatrix = parent.matrixWorld.clone();\r\n                    const localMatrix = node.matrix.clone();\r\n    \r\n                    // Get transform relative to model root\r\n                    const relativeMatrix = new THREE.Matrix4();\r\n                    relativeMatrix.copy(parentWorldMatrix);\r\n                    relativeMatrix.multiply(localMatrix);\r\n    \r\n                    meshData.push({\r\n                        mesh: node,\r\n                        relativeMatrix: relativeMatrix\r\n                    });\r\n                }\r\n            });\r\n            if (meshData.length === 0) return;\r\n    \r\n            // Create instanced meshes for this type\r\n            const instancedMeshes = meshData.map(({ mesh, relativeMatrix }) => {\r\n                const instancedMesh = new THREE.InstancedMesh(\r\n                    mesh.geometry,\r\n                    mesh.material,\r\n                    objects.length // Number of instances for this type\r\n                );\r\n                instancedMesh.userData.relativeMatrix = relativeMatrix;\r\n                instancedMesh.castShadow = true;\r\n                instancedMesh.receiveShadow = true;\r\n                return instancedMesh;\r\n            });\r\n    \r\n            // Set positions for all instances of this type\r\n            const matrix = new THREE.Matrix4();\r\n            const dummy = new THREE.Object3D();\r\n    \r\n            objects.forEach((obj, index) => {\r\n                // Get pixel color at object position\r\n                let hexColor = this.tileMap.terrainTypes[this.tileMap.extensionTerrainType].color.slice(1);\r\n                let numColor = parseInt(hexColor, 16); // Convert hex string to number, e.g., 0xaa3311\r\n\r\n                let r = (numColor >> 16) & 0xff; // Red channel\r\n                let g = (numColor >> 8) & 0xff;  // Green channel   \r\n                let b = numColor & 0xff;         // Blue channel\r\n                if (g > r && g > b) {\r\n                    dummy.position.set(\r\n                        obj.x, \r\n                        this.game.config.heightMaps[this.game.config.worlds[this.level.world].heightMap].heightStep * this.tileMap.extensionTerrainType, \r\n                        obj.y\r\n                    );\r\n                    dummy.rotation.y = Math.random() * Math.PI * 2;\r\n                    const scale = 0.8 + Math.random() * 0.4;\r\n                    dummy.scale.set(scale, scale, scale);\r\n                    dummy.updateMatrix();\r\n            \r\n                    // Apply transforms while preserving mesh relationships\r\n                    instancedMeshes.forEach(instancedMesh => {\r\n                        matrix.copy(dummy.matrix);\r\n                        matrix.multiply(instancedMesh.userData.relativeMatrix);\r\n                        instancedMesh.setMatrixAt(index, matrix);\r\n                    });\r\n                }\r\n            });\r\n    \r\n            // Add instanced meshes to the scene\r\n            instancedMeshes.forEach(instancedMesh => {\r\n                instancedMesh.instanceMatrix.needsUpdate = true;\r\n                this.game.scene.add(instancedMesh);\r\n            });\r\n        });\r\n    }\r\n    renderBG(tileMapData, paths) {\r\n        this.clearMap(tileMapData);\r\n        // Generate cache if not already done\r\n        if (!this.isMapCached) {\r\n            this.cacheMap(tileMapData, paths, this.isometric);            \r\n        }        \r\n  \r\n        // Draw cached map image to main canvas\r\n      \r\n       this.ctx.drawImage( this.terrainCanvas, ( this.config.canvasWidth - this.terrainCanvas.width) / 2, ( this.config.canvasHeight - this.terrainCanvas.height) / 2 );\r\n\r\n       //this.ctx.drawImage(this.terrainCanvas, 0, 0);\r\n        //this.ctx.drawImage(this.mapCacheCanvas, 0,  -this.config.canvasHeight / 2);\r\n        this.ctx.drawImage(this.envCacheCanvasBG, 0, 0);\r\n    }\r\n    renderFG() {  \r\n        this.ctx.drawImage(this.envCacheCanvasFG, 0, this.config.canvasHeight / 2);\r\n    }    \r\n    setLevel(level) {\r\n        this.currentLevel = level;\r\n        this.terrainImages = this.imageManager.getImages(\"levels\", level);\r\n\r\n    }\r\n\r\n    drawTileMap(tileMapData) {\r\n        this.terrainTileMapper.draw(tileMapData.terrainMap);\r\n    }\r\n    clearMap(tileMapData) {\r\n        this.ctx.clearRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);\r\n        this.ctx.fillStyle = tileMapData.terrainTypes[tileMapData.extensionTerrainType].color;       \r\n        this.ctx.fillRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);\r\n    }\r\n    // Call this when map data changes or on initialization\r\n    cacheMap(tileMapData, paths, isometric) {\r\n        this.terrainCtx.clearRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);\r\n                   \r\n        // Clear the cache canvas\r\n        this.mapCacheCtx.clearRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);\r\n        \r\n        // Draw the map onto the cache canvas\r\n        this.drawTileMap(tileMapData, isometric);\r\n        this.drawPaths(this.mapCacheCtx, paths);\r\n        this.drawEnvironment(tileMapData.terrainMap.length, tileMapData.terrainMap.length * tileMapData.terrainMap.length);\r\n        \r\n        // Mark cache as valid\r\n        this.isMapCached = true;\r\n    }\r\n\r\n    drawMap(tileMap) {\r\n\r\n        this.mapCacheCtx.fillStyle = '#4a7c59';\r\n        this.mapCacheCtx.fillRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);\r\n        const tileWidth = this.config.gridSize;\r\n        const tileHeight = this.config.gridSize * 0.5;\r\n        \r\n        for (let y = 0; y < tileMap.length; y++) {\r\n            for (let x = 0; x < tileMap[y].length; x++) {\r\n                const tile = tileMap[y][x];\r\n                \r\n                // Use translator to get iso coordinates\r\n                const isoCoords = this.game.translator.gridToIso(x, y);\r\n                const isoX = isoCoords.x;\r\n                const isoY = isoCoords.y;\r\n                \r\n                this.mapCacheCtx.fillStyle = tile.color;\r\n                this.mapCacheCtx.beginPath();\r\n                this.mapCacheCtx.moveTo(isoX, isoY);\r\n                this.mapCacheCtx.lineTo(isoX + tileWidth / 2, isoY + tileHeight / 2);\r\n                this.mapCacheCtx.lineTo(isoX, isoY + tileHeight);\r\n                this.mapCacheCtx.lineTo(isoX - tileWidth / 2, isoY + tileHeight / 2);\r\n                this.mapCacheCtx.closePath();\r\n                this.mapCacheCtx.fill();\r\n                this.mapCacheCtx.strokeStyle = 'rgba(0, 0, 0, 0.1)';\r\n                this.mapCacheCtx.stroke();\r\n            }\r\n        }\r\n        \r\n       \r\n        this.drawEnvironment(tileMap.length);\r\n    }\r\n\r\n    drawPaths(ctx, paths) {\r\n        const tileHeight = this.config.gridSize * 0.5;\r\n        ctx.strokeStyle = '#ffd166';\r\n        ctx.lineWidth = 2;\r\n        ctx.beginPath();\r\n        \r\n        paths.forEach(path => {\r\n            // First point in path\r\n            const firstIsoCoords = this.game.translator.gridToIso(path[0].x, path[0].y);\r\n            const firstIsoX = firstIsoCoords.x;\r\n            const firstIsoY = firstIsoCoords.y + tileHeight / 2; // Add half tile height for center of tile\r\n            \r\n            ctx.moveTo(firstIsoX, firstIsoY);\r\n            \r\n            // Remaining points in path\r\n            path.forEach(location => {\r\n                const isoCoords = this.game.translator.gridToIso(location.x, location.y);\r\n                const isoX = isoCoords.x;\r\n                const isoY = isoCoords.y + tileHeight / 2; // Add half tile height for center of tile\r\n                \r\n                ctx.lineTo(isoX, isoY);\r\n            });\r\n        });\r\n        \r\n        ctx.stroke();\r\n    }\r\n\r\n    drawEnvironment(boardSize, amountToDraw) {\r\n\r\n        let itemAmt = amountToDraw;\r\n        let environmentTypes = [];\r\n        for(let envType in this.worldObjects){\r\n            environmentTypes.push(envType);\r\n        }\r\n        this.envCacheCtxBG.clearRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);\r\n        this.envCacheCtxFG.clearRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);\r\n        \r\n        let items = [];\r\n        \r\n        // Check if we have stored environment objects\r\n        if (this.tileMap.environmentObjects && this.tileMap.environmentObjects.length > 0) {\r\n            // Use the stored objects\r\n            this.tileMap.environmentObjects.forEach(obj => {\r\n                const images = this.imageManager.getImages(\"environment\", obj.type);\r\n                if (images && images.idle && images.idle[0] && images.idle[0][obj.imageIndex]) {\r\n                    items.push({\r\n                        img: images.idle[0][obj.imageIndex],\r\n                        x: obj.x,\r\n                        y: obj.y\r\n                    });\r\n                }\r\n            });\r\n        } else {       \r\n            // for(let i = 0; i < itemAmt; i++) {\r\n            //     // Define the game board boundaries\r\n            //     const boardMinX = 0;\r\n            //     const boardMaxX = boardSize * this.config.gridSize;\r\n            //     const boardMinY = 0;\r\n            //     const boardMaxY = boardSize * this.config.gridSize;\r\n                \r\n            //     // Generate a random position that's outside the board but within a reasonable distance\r\n            //     let x, y;\r\n                \r\n            //     // Expand the area where we can place objects\r\n            //     const expandAmount = boardSize * this.config.gridSize; // Adjust this value as needed\r\n                \r\n            //     // Randomly choose whether to place on x-axis or y-axis outside the board\r\n            //     if (Math.random() < 0.5) {\r\n            //         // Place on the left or right of the board\r\n            //         x = Math.random() < 0.5 ?\r\n            //             boardMinX - Math.random() * expandAmount : // Left side\r\n            //             boardMaxX + Math.random() * expandAmount;  // Right side\r\n                    \r\n            //         // Allow y to be anywhere, including outside the board\r\n            //         y = boardMinY - expandAmount + Math.random() * (boardMaxY - boardMinY + 2 * expandAmount);\r\n            //     } else {\r\n            //         // Place on the top or bottom of the board\r\n            //         y = Math.random() < 0.5 ?\r\n            //             boardMinY - Math.random() * expandAmount : // Top side\r\n            //             boardMaxY + Math.random() * expandAmount;  // Bottom side\r\n                    \r\n            //         // Allow x to be anywhere, including outside the board\r\n            //         x = boardMinX - expandAmount + Math.random() * (boardMaxX - boardMinX + 2 * expandAmount);\r\n            //     }\r\n                \r\n            //     // Double-check that the position is actually outside the board\r\n            //     if (x < boardMinX || x > boardMaxX || y < boardMinY || y > boardMaxY) {\r\n            //         const type = environmentTypes[Math.floor(Math.random() * environmentTypes.length)];\r\n            //         const images = this.imageManager.getImages(\"environment\", type);\r\n            //         if(images){\r\n            //             items.push( { img: images.idle[0][parseInt(Math.random()*images.idle[0].length)], x: x, y: y});\r\n            //         }\r\n            //     } else {\r\n            //         i--; // Position inside board, try again\r\n            //     }\r\n            // }\r\n        }\r\n\r\n        items.sort((a, b) => {\r\n            return (a.y * boardSize + a.x) - (b.y * boardSize + b.x)\r\n        });\r\n\r\n        items.forEach((item) => {            \r\n            // Convert pixel to isometric\r\n            const isoPos = this.game.translator.pixelToIso(item.x, item.y);\r\n            const image = item.img;\r\n            const imgWidth = image.width;\r\n            const imgHeight = image.height;\r\n            \r\n            const drawX = isoPos.x;\r\n            const drawY = isoPos.y;\r\n            if( drawY < this.config.canvasHeight / 2 ) {\r\n                this.envCacheCtxBG.drawImage(image, drawX - imgWidth / 2, drawY - imgHeight / 2);\r\n            } else if(drawY - this.config.canvasHeight / 2 - imgHeight / 2 > 0) {//prevent trees in FG from getting chopped off at the top if they are too close to the middle of the frame.\r\n  \r\n                this.envCacheCtxFG.drawImage(image, drawX - imgWidth / 2, drawY - this.config.canvasHeight / 2 - imgHeight / 2);\r\n            }\r\n        });\r\n    }\r\n\r\n}"
       },
-      "RangeIndicator": {
-        "fileName": "RangeIndicator",
-        "script": "class RangeIndicator extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init() {\r\n        this.ctx = this.game.ctx;\r\n        this.translator = this.game.translator; // Access translator for tileWidth\r\n    }\r\n\r\n    draw() {\r\n        let statsComp = this.getComponent('stats');\r\n        if (!statsComp || !statsComp.stats || !statsComp.stats.range) {\r\n            return;\r\n        }\r\n        this.drawRangeIndicator(statsComp.stats.range);\r\n    }\r\n\r\n    drawRangeIndicator(range) {    \r\n        const drawRage = range;        \r\n        const pixelX = this.parent.position.x;\r\n        const pixelY = this.parent.position.y;\r\n        let gridPos = this.translator.pixelToGrid(pixelX, pixelY);\r\n        gridPos = this.translator.snapToGrid(gridPos.x, gridPos.y);\r\n        const isoPos = this.translator.pixelToIso(pixelX, pixelY);\r\n    \r\n        let isoRangeX = drawRage * this.game.config.configs.game.gridSize;  // Matches gridToIso X scaling\r\n        let isoRangeY = drawRage * this.game.config.configs.game.gridSize * (this.game.state.isometric ? 0.5 : 1); // Matches gridToIso Y scaling\r\n    \r\n        if( this.game.state.isometric ) {\r\n            isoRangeX *= .56;\r\n            isoRangeY *= .56;\r\n        }\r\n\r\n        if (gridPos.x === this.game.state.mousePosition.gridX && gridPos.y === this.game.state.mousePosition.gridY) {\r\n            this.ctx.save();\r\n            this.ctx.beginPath();\r\n            this.ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)';\r\n            this.ctx.lineWidth = 2;\r\n    \r\n            this.ctx.ellipse(\r\n                isoPos.x,\r\n                isoPos.y,\r\n                isoRangeX,\r\n                isoRangeY,\r\n                0,\r\n                0,\r\n                2 * Math.PI\r\n            );\r\n    \r\n            this.ctx.stroke();\r\n            this.ctx.closePath();\r\n            this.ctx.restore();\r\n        }    \r\n      \r\n    }\r\n}"
-      },
       "ModelRenderer": {
         "title": "Model Renderer",
         "fileName": "ModelRenderer",
         "script": "class ModelRenderer extends engine.Component {\n    init({ objectType, spawnType, frameDuration }) {\n        if(!this.game.config.configs.game.is3D) {\n            return;\n        }\n        this.animationState = 'idle';\n        this.currentFrameIndex = 0;\n        this.frameTime = 0;\n        this.frameDuration = frameDuration || 0.17;\n        this.lastDirection = -1;\n        \n        // Load animation and model data\n        this.animationData = this.game.config[objectType]?.[spawnType]?.render?.animations;\n        this.modelData = this.game.config[objectType]?.[spawnType]?.render?.model;\n\n        // Get the model\n        this.model = this.game.modelManager.getModel(objectType, spawnType);\n        \n        if (!this.model || !this.animationData || !this.modelData) {\n            console.error(`No model or data found for ${objectType}_${spawnType}`);\n            return;\n        }\n        \n        // Create the initial model instance\n        this.modelGroup = this.model.clone();  \n        // Add the model group to the scene\n        this.game.scene.add(this.modelGroup);\n\n        this.modelGroup.position.set(0, -10000, 0);\n        \n        // Set initial animation\n        this.setAnimation('idle');\n    }\n    \n    setAnimation(animationName) {\n        if (!this.animationData[animationName]) {\n            console.warn(`Animation '${animationName}' not found, defaulting to 'idle'`);\n            animationName = 'idle';\n            \n            if (!this.animationData[animationName]) {\n                const availableAnims = Object.keys(this.animationData);\n                animationName = availableAnims.length > 0 ? availableAnims[0] : null;\n                \n                if (!animationName) {\n                    console.error('No animations available for this model');\n                    return;\n                }\n            }\n        }\n        \n        if (this.animationState !== animationName) {\n            this.animationState = animationName;\n            this.currentFrameIndex = 0;\n            this.frameTime = 0;\n            this.updateModelFrame();\n        }\n    }\n    \n    draw() {\n        if(!this.game.config.configs.game.is3D) {\n            return;\n        }\n        // Update animation frames\n        this.frameTime += this.game.deltaTime;\n        if (this.frameTime >= this.frameDuration) {\n            this.frameTime -= this.frameDuration;\n            this.advanceFrame();\n        }\n        // Update position of model to match entity position\n        if (this.parent && this.parent.position) {\n            this.modelGroup.position.set(\n                this.parent.position.x,\n                this.parent.position.z,\n                this.parent.position.y\n            );\n            \n            // Handle rotation based on movement direction\n            this.updateDirection();\n        }\n        \n   \n    }\n    \n    updateDirection() {\n        // Calculate direction based on movement\n        if (this.parent && this.parent.lastPosition) {\n            const dx = this.parent.position.x - this.parent.lastPosition.x;\n            const dy = this.parent.position.y - this.parent.lastPosition.y;\n            \n            // Only update direction if there's significant movement\n            if (Math.abs(dx) > 0.001 || Math.abs(dy) > 0.001) {\n                // Calculate angle in radians\n                let angle = Math.atan2(dy, dx);\n            \n                // Rotate model to face movement direction\n                this.modelGroup.rotation.y = -angle + Math.PI / 2;\n                \n                // Set walking animation when moving\n                if (this.animationData['walk']) {\n                    this.setAnimation('walk');\n                    return;\n                }\n            } else {\n                // Entity is stationary, use idle animation\n                this.setAnimation('idle');\n            }\n        }\n    }\n    \n    advanceFrame() {\n        const frames = this.animationData[this.animationState];\n        if (!frames || frames.length === 0) return;\n        \n        this.currentFrameIndex = (this.currentFrameIndex + 1) % frames.length;\n        this.updateModelFrame();\n    }\n    \n    updateModelFrame() {\n        // Get current animation and frame\n        const frames = this.animationData[this.animationState];\n        if (!frames?.length) return;\n        \n        const frameData = frames[this.currentFrameIndex] || {};\n        \n        // Traverse the modelGroup to apply transformations\n        this.modelGroup.traverse((obj) => {\n          // Handle group-level transformations (apply to group objects)\n            if (!obj.isMesh && obj.name && this.modelData[obj.name]) {\n                const groupName = obj.name;\n                const groupData = frameData[groupName];\n                const modelGroupData = this.modelData[groupName];\n                this.updateObjectTransforms(obj, groupData, modelGroupData);\n            }\n            \n            // Handle shape-level transformations (apply to meshes)\n            if (obj.isMesh && obj.userData?.index >= 0 && obj.parent?.name) {\n                const groupName = obj.parent.name;\n                const index = obj.userData.index;\n                const groupData = frameData[groupName];\n                const modelGroupData = this.modelData[groupName];\n                // Find shape in animationData by id (id: 1 maps to index 0)\n                let shape;\n                if (groupData?.shapes) {\n                    shape = groupData.shapes.find(s => s.id === index);\n                }\n                const modelShape = modelGroupData?.shapes?.[index];\n                \n                if (shape || modelShape) {\n                    this.updateShapeTransforms(obj, shape, modelShape);\n                }\n            }\n        });\n    }\n    \n    updateObjectTransforms(obj, groupData, modelGroupData) {\n        if (!modelGroupData) return;\n        \n        // Position\n        const pos = groupData?.position || modelGroupData.position || { x: 0, y: 0, z: 0 };\n        obj.position.set(\n            pos.x ?? modelGroupData.position?.x ?? 0,\n            pos.y ?? modelGroupData.position?.y ?? 0,\n            pos.z ?? modelGroupData.position?.z ?? 0\n        );\n        \n        // Rotation\n        const rot = groupData?.rotation || modelGroupData.rotation || { x: 0, y: 0, z: 0 };\n        obj.rotation.set(\n            rot.x ?? modelGroupData.rotation?.x ?? 0,\n            rot.y ?? modelGroupData.rotation?.y ?? 0,\n            rot.z ?? modelGroupData.rotation?.z ?? 0\n        );\n        \n        // Scale\n        const scale = groupData?.scale || modelGroupData.scale || { x: 1, y: 1, z: 1 };\n        obj.scale.set(\n            scale.x ?? modelGroupData.scale?.x ?? 1,\n            scale.y ?? modelGroupData.scale?.y ?? 1,\n            scale.z ?? modelGroupData.scale?.z ?? 1\n        );\n    }\n    updateShapeTransforms(obj, shape, modelShape) {\n        if (!modelShape) return;\n\n        // Position (local to group)\n        obj.position.set(\n            shape?.x ?? modelShape.x ?? 0,\n            shape?.y ?? modelShape.y ?? 0,\n            shape?.z ?? modelShape.z ?? 0\n        );\n        \n        // Rotation (local to group, convert degrees to radians)\n        obj.rotation.set(\n            ((shape?.rotationX ?? modelShape.rotationX) || 0) * Math.PI / 180,\n            ((shape?.rotationY ?? modelShape.rotationY) || 0) * Math.PI / 180,\n            ((shape?.rotationZ ?? modelShape.rotationZ) || 0) * Math.PI / 180\n        );\n        \n        // Scale (local to group)\n        obj.scale.set(\n            shape?.scaleX ?? modelShape.scaleX ?? 1,\n            shape?.scaleY ?? modelShape.scaleY ?? 1,\n            shape?.scaleZ ?? modelShape.scaleZ ?? 1\n        );\n\n    }\n    destroy() {\n        if(this.modelGroup){\n            // Remove model from scene\n            if (this.modelGroup && this.game.scene) {\n                this.game.scene.remove(this.modelGroup);\n            }\n            \n            // Clear all children\n            while (this.modelGroup.children.length > 0) {\n                const child = this.modelGroup.children[0];\n                this.modelGroup.remove(child);\n            }\n            \n            this.modelGroup = null;\n        }\n    }\n}"
+      },
+      "RangeIndicator": {
+        "fileName": "RangeIndicator",
+        "script": "class RangeIndicator extends engine.Component {\r\n    \r\n    constructor(game, parent, params) {\r\n        super(game, parent, params);\r\n    }\r\n    \r\n    \r\n    init() {\r\n        this.ctx = this.game.ctx;\r\n        this.translator = this.game.translator; // Access translator for tileWidth\r\n    }\r\n\r\n    draw() {\r\n        let statsComp = this.getComponent('stats');\r\n        if (!statsComp || !statsComp.stats || !statsComp.stats.range) {\r\n            return;\r\n        }\r\n        this.drawRangeIndicator(statsComp.stats.range);\r\n    }\r\n\r\n    drawRangeIndicator(range) {    \r\n        const drawRage = range;        \r\n        const pixelX = this.parent.position.x;\r\n        const pixelY = this.parent.position.y;\r\n        let gridPos = this.translator.pixelToGrid(pixelX, pixelY);\r\n        gridPos = this.translator.snapToGrid(gridPos.x, gridPos.y);\r\n        const isoPos = this.translator.pixelToIso(pixelX, pixelY);\r\n    \r\n        let isoRangeX = drawRage * this.game.config.configs.game.gridSize;  // Matches gridToIso X scaling\r\n        let isoRangeY = drawRage * this.game.config.configs.game.gridSize * (this.game.state.isometric ? 0.5 : 1); // Matches gridToIso Y scaling\r\n    \r\n        if( this.game.state.isometric ) {\r\n            isoRangeX *= .56;\r\n            isoRangeY *= .56;\r\n        }\r\n\r\n        if (gridPos.x === this.game.state.mousePosition.gridX && gridPos.y === this.game.state.mousePosition.gridY) {\r\n            this.ctx.save();\r\n            this.ctx.beginPath();\r\n            this.ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)';\r\n            this.ctx.lineWidth = 2;\r\n    \r\n            this.ctx.ellipse(\r\n                isoPos.x,\r\n                isoPos.y,\r\n                isoRangeX,\r\n                isoRangeY,\r\n                0,\r\n                0,\r\n                2 * Math.PI\r\n            );\r\n    \r\n            this.ctx.stroke();\r\n            this.ctx.closePath();\r\n            this.ctx.restore();\r\n        }    \r\n      \r\n    }\r\n}"
       },
       "Renderer": {
         "fileName": "Renderer",
@@ -17815,6 +17815,22 @@ const DEFAULT_PROJECT_CONFIG = {
         "title": "Code Mirror",
         "theme": "codeMirrorTheme",
         "fileName": "codeMirror"
+      },
+      "editor": {
+        "title": "Editor Config",
+        "editorCategories": "",
+        "theme": "claude2",
+        "editorModules": [
+          "terrainModule",
+          "graphicsModule",
+          "scriptModule",
+          "aiPromptModule",
+          "audioModule",
+          "exportScriptModule",
+          "textureEditor"
+        ],
+        "path": "/",
+        "fileName": "editor"
       },
       "game": {
         "gridSize": 48,
@@ -17845,22 +17861,6 @@ const DEFAULT_PROJECT_CONFIG = {
         "canvasHeight": 1000,
         "is3D": true,
         "palette": "main"
-      },
-      "editor": {
-        "title": "Editor Config",
-        "editorCategories": "",
-        "theme": "claude2",
-        "editorModules": [
-          "terrainModule",
-          "graphicsModule",
-          "scriptModule",
-          "aiPromptModule",
-          "audioModule",
-          "exportScriptModule",
-          "textureEditor"
-        ],
-        "path": "/",
-        "fileName": "editor"
       },
       "state": {
         "level": "level1",
@@ -18010,25 +18010,20 @@ const DEFAULT_PROJECT_CONFIG = {
         "fileName": "claude2",
         "css": "/* Professional Theme - Clean UI */ @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');  :root {   --bg-primary: #16192e;   --bg-secondary: #1d2035;   --bg-tertiary: #252a43;   --accent-primary: #4d7cff;   --accent-muted: rgba(77, 124, 255, 0.15);   --text-primary: #e9edf5;   --text-secondary: #a9b1c3;   --border-color: rgba(108, 123, 163, 0.25);   --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.2);   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.25); }  body {   font-family: 'Inter', sans-serif;   background-color: var(--bg-primary);   color: var(--text-primary);   line-height: 1.6; }  /* Sidebar styling */ .sidebar {   background-color: var(--bg-secondary);   border-right: 1px solid var(--border-color);   box-shadow: var(--shadow-sm); }  .object-item {   background-color: transparent;   border-left: 2px solid transparent;   text-transform: none;   letter-spacing: 0.2px;   color: var(--text-secondary);   font-weight: 400;   transition: all 0.2s ease;   padding: 10px 14px;   margin-bottom: 2px; }  .object-item:hover {   background-color: var(--bg-tertiary);   border-left: 2px solid var(--accent-primary);   color: var(--text-primary); }  .object-item.selected {   background-color: var(--accent-muted);   border-left: 2px solid var(--accent-primary);   color: var(--text-primary);   font-weight: 500; }  /* Editor area */ .editor {   background-color: var(--bg-secondary);   border: 1px solid var(--border-color);   box-shadow: var(--shadow-sm);   border-radius: 4px; }  #three-js-container {   border: 1px solid var(--border-color);   border-radius: 4px;   background: var(--bg-primary); }  .preview-canvas-container {   border: 1px solid var(--border-color);   box-shadow: var(--shadow-sm);   border-radius: 4px; }  .preview {   background-color: var(--bg-secondary);   border: 1px solid var(--border-color);   box-shadow: var(--shadow-sm);   border-radius: 4px; }  #preview-canvas {   background-color: transparent;   border: 1px solid var(--border-color);   border-radius: 2px; }  /* Camera controls */ .camera-controls {   background: var(--bg-tertiary);   border: 1px solid var(--border-color);   border-radius: 4px;   padding: 12px; }  .camera-controls button {   background-color: var(--bg-secondary);   border: 1px solid var(--border-color);   color: var(--text-primary);   border-radius: 3px;   padding: 8px 12px;   transition: all 0.2s ease; }  .camera-controls button:hover {   background-color: var(--accent-muted);   border-color: var(--accent-primary); }  .camera-controls .color-picker {   border: 1px solid var(--border-color);   border-radius: 3px; }  .camera-controls .size-slider {   background: var(--bg-secondary);   border: 1px solid var(--border-color);   border-radius: 3px;   height: 5px; }  .camera-controls .size-slider::-webkit-slider-thumb {   background: var(--accent-primary);   border-radius: 50%;   cursor: pointer; }  /* Form elements */ label {   font-weight: 500;   color: var(--text-primary);   margin-bottom: 6px;   display: block;   font-size: 0.875rem; }  input, textarea, select {   border: 1px solid var(--border-color);   background-color: var(--bg-secondary);   color: var(--text-primary);   border-radius: 3px;   width: calc(100% - 24px);  padding: 8px 12px;   transition: all 0.2s ease;   font-family: 'IBM Plex Mono', monospace; }  input:focus, textarea:focus, select:focus {   outline: none;   border-color: var(--accent-primary);   box-shadow: 0 0 0 2px var(--accent-muted); }  /* Button styles */ button {   background-color: var(--bg-tertiary);   border: 1px solid var(--border-color);   color: var(--text-primary);   font-weight: 500;   padding: 8px 14px;   border-radius: 3px;   transition: all 0.2s ease; }  button:hover {   background-color: var(--accent-muted);   border-color: var(--accent-primary); }  button.primary {   background-color: var(--accent-primary);   border: 1px solid var(--accent-primary);   color: white; }  button.primary:hover {   background-color: #3a6ae6;   border-color: #3a6ae6;   box-shadow: var(--shadow-sm); }  button.danger {   background-color: rgba(235, 68, 68, 0.15);   border: 1px solid #eb4444;   color: #eb4444; }  button.danger:hover {   background-color: rgba(235, 68, 68, 0.25);   box-shadow: var(--shadow-sm); }  button.active {   background-color: rgba(52, 199, 154, 0.15);   border: 1px solid #34c79a;   color: #34c79a; }  /* Modal styling */ .modal {   background-color: rgba(22, 25, 46, 0.8); }  .modal-content {   background-color: var(--bg-secondary);   border: 1px solid var(--border-color);   box-shadow: var(--shadow-md);   border-radius: 4px; }  .property-list {   border: 1px solid var(--border-color);   background-color: var(--bg-tertiary);   border-radius: 4px; }  /* Tab navigation */ .tab-navigation {   border-bottom: 1px solid var(--border-color);   display: flex;   padding: 0 4px; }  .tab {   padding: 10px 16px;   color: var(--text-secondary);   transition: all 0.2s ease; }  .tab:hover {   background-color: var(--bg-tertiary);   color: var(--text-primary); }  .tab.active {   color: var(--accent-primary);   font-weight: 500;   border-bottom: 2px solid var(--accent-primary); }  /* Info and warning boxes */ .instructions {   background-color: var(--bg-tertiary);   border-left: 3px solid var(--accent-primary);   border-radius: 0 4px 4px 0;   padding: 12px 16px;   margin: 16px 0; }  #grid-display {   background-color: var(--bg-secondary);   border: 1px solid var(--border-color);   box-shadow: var(--shadow-sm);   border-radius: 4px; }  .success-message {   color: #34c79a;   font-weight: 500;   animation: fadeOut 2s forwards;   animation-delay: 1.5s;   padding: 8px 12px; }  @keyframes fadeOut {   from { opacity: 1; }   to { opacity: 0; } }  .warning {   background-color: rgba(235, 68, 68, 0.1);   border-left: 3px solid #eb4444;   border-radius: 0 4px 4px 0;   padding: 12px 16px;   margin: 16px 0; }  /* Main containers */ .main-content-container {   background-color: var(--bg-primary);   color: var(--text-primary); }  .content-sidebar {   background: var(--bg-secondary);   border-right: 1px solid var(--border-color);   box-shadow: var(--shadow-sm); }  #graphics-rightbar {   background: var(--bg-secondary);   border-left: 1px solid var(--border-color);   box-shadow: var(--shadow-sm); }  /* Subtle grid background */ .grid-background {   background: var(--bg-primary);   background-image:      linear-gradient(rgba(108, 123, 163, 0.05) 1px, transparent 1px),     linear-gradient(90deg, rgba(108, 123, 163, 0.05) 1px, transparent 1px);   background-size: 20px 20px; }  /* Toolbar */ .toolbar {   background: var(--bg-secondary);   border-bottom: 1px solid var(--border-color);   box-shadow: var(--shadow-sm);   padding: 8px 16px;   display: flex;   align-items: center;   gap: 8px; }  /* Button variations */ .btn {   border: 1px solid var(--border-color);   background-color: var(--bg-tertiary);   color: var(--text-primary);   font-weight: 500;   padding: 8px 14px;   border-radius: 3px;   transition: all 0.2s ease;   font-size: 0.875rem; }  .btn:hover {   background-color: var(--accent-muted);   border-color: var(--accent-primary); }  .btn-primary {   background-color: var(--accent-primary);   border: 1px solid var(--accent-primary);   color: white; }  .btn-primary:hover {   background-color: #3a6ae6;   border-color: #3a6ae6; }  .btn-danger {   background-color: rgba(235, 68, 68, 0.15);   border: 1px solid #eb4444;   color: #eb4444; }  .btn-danger:hover {   background-color: rgba(235, 68, 68, 0.25); }  .btn-secondary {   background-color: var(--bg-tertiary);   border: 1px solid var(--border-color); }  .btn-secondary:hover {   background-color: var(--accent-muted);   border-color: var(--accent-primary); }  .btn-special {   background-color: rgba(52, 199, 154, 0.15);   border: 1px solid #34c79a;   color: #34c79a; }  .btn-special:hover {   background-color: rgba(52, 199, 154, 0.25); }  /* Shape list */ #shape-list {   border-bottom: 1px solid var(--border-color);   padding-bottom: 16px;   margin-bottom: 16px; }  .shape-item {   background-color: var(--bg-tertiary);   border: 1px solid var(--border-color);   border-radius: 3px;   padding: 10px 14px;   margin-bottom: 6px;   transition: all 0.2s ease;   display: flex;   align-items: center;   gap: 8px; }  .shape-item:hover {   background-color: var(--accent-muted);   border-color: var(--accent-primary); }  .shape-item.active {   background-color: rgba(52, 199, 154, 0.1);   border-color: #34c79a;   color: #34c79a;   font-weight: 500; }  /* Inspector panel */ #inspector {   background: var(--bg-secondary);   border-top: 1px solid var(--border-color);   padding: 16px; }  .form-row {   margin-bottom: 12px; }  .form-row label {   color: var(--text-primary);   margin-bottom: 6px; }  .form-row input, .form-row select {   width: 100%;   border: 1px solid var(--border-color);   background-color: var(--bg-secondary);   color: var(--text-primary);   padding: 8px 12px;   border-radius: 3px; }  /* Scene info */ .scene-info {   background: var(--bg-tertiary);   color: var(--text-primary);   border: 1px solid var(--border-color);   border-radius: 4px;   padding: 12px 16px;   margin-bottom: 16px; }  .button-danger {   background-color: rgba(235, 68, 68, 0.15);   border: 1px solid #eb4444;   color: #eb4444;   padding: 8px 14px;   border-radius: 3px;   font-weight: 500;   transition: all 0.2s ease; }  .button-danger:hover {   background-color: rgba(235, 68, 68, 0.25); }  /* Typography */ h2, h3 {   color: var(--text-primary);   margin-bottom: 16px;   padding-bottom: 8px;   border-bottom: 1px solid var(--border-color);   font-weight: 600; }  /* Scrollbars */ ::-webkit-scrollbar {   width: 6px;   height: 6px; }  ::-webkit-scrollbar-track {   background: var(--bg-tertiary);   border-radius: 3px; }  ::-webkit-scrollbar-thumb {   background: rgba(108, 123, 163, 0.5);   border-radius: 3px; }  ::-webkit-scrollbar-thumb:hover {   background: rgba(108, 123, 163, 0.7); }"
       },
-      "cyberpunk": {
-        "title": "Cyber Punk",
-        "fileName": "cyberpunk",
-        "css": "/* Default Cyberpunk Theme */ @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Rajdhani:wght@300;400;500;600;700&display=swap');  body {     font-family: 'Orbitron', 'Rajdhani', sans-serif;     background-color: #0a0a16;     color: #00f0ff; }  .sidebar {     background-color: rgba(15, 15, 35, 0.7);     border: 1px solid #00f0ff;     box-shadow: 0 0 10px #00f0ff, inset 0 0 20px rgba(0, 240, 255, 0.2); }  .object-item {     background-color: rgba(0, 0, 35, 0.6);     border-left: 2px solid #fe01fe;     text-transform: uppercase;     letter-spacing: 1px; }  .object-item:hover {     background-color: rgba(254, 1, 254, 0.2);     transform: translateX(5px); }  .object-item.selected {     background-color: rgba(254, 1, 254, 0.3);     border-left: 4px solid #fe01fe;     box-shadow: 0 0 8px rgba(254, 1, 254, 0.5); }  .editor {     background-color: rgba(15, 15, 35, 0.7);     border: 1px solid #fe01fe;     box-shadow: 0 0 15px rgba(254, 1, 254, 0.3); }  #three-js-container {     border: 1px solid rgba(0, 240, 255, 0.5); }  .preview-canvas-container {     border: 1px solid #fe01fe;     box-shadow: 0 0 10px rgba(254, 1, 254, 0.3); }  .preview {     background-color: rgba(15, 15, 35, 0.7);     border: 1px solid #00f0ff;     box-shadow: 0 0 15px rgba(0, 240, 255, 0.3); }  #preview-canvas {     background-color: transparent;     border: 1px solid rgba(0, 240, 255, 0.5); }  .camera-controls {     background: rgba(0, 0, 20, 0.7);     border: 1px solid #00f0ff; }  .camera-controls button {     background-color: rgba(0, 240, 255, 0.2);     border: 1px solid #00f0ff;     color: #00f0ff; }  .camera-controls .color-picker {     border: 1px solid #00f0ff; }  .camera-controls .size-slider {     background: #101028;     border: 1px solid #00f0ff; }  label {     font-weight: bold;     text-transform: uppercase;     letter-spacing: 1px;     color: #fe01fe; }  input, textarea, select {     border: 1px solid #00f0ff;     background-color: rgba(0, 0, 35, 0.6);     color: #00f0ff;     box-shadow: 0 0 5px rgba(0, 240, 255, 0.3); }  input:focus, textarea:focus, select:focus {     outline: none;     border-color: #fe01fe;     box-shadow: 0 0 10px rgba(254, 1, 254, 0.5); }  button {     background-color: rgba(0, 240, 255, 0.2);     border: 1px solid #00f0ff;     color: #00f0ff;     text-transform: uppercase;     letter-spacing: 1px; }  button:after {     background: linear-gradient(to right, transparent, rgba(0, 240, 255, 0.2), transparent); }  button:hover {     background-color: rgba(0, 240, 255, 0.3);     box-shadow: 0 0 10px rgba(0, 240, 255, 0.5), 0 0 20px rgba(0, 240, 255, 0.2);     transform: translateY(-2px); }  button:hover:after {     transform: translateX(100%) rotate(30deg); }  button.primary {     background-color: rgba(254, 1, 254, 0.2);     border: 1px solid #fe01fe;     color: #fe01fe; }  button.primary:hover {     background-color: rgba(254, 1, 254, 0.3);     box-shadow: 0 0 10px rgba(254, 1, 254, 0.5), 0 0 20px rgba(254, 1, 254, 0.2); }  button.danger {     background-color: rgba(255, 0, 76, 0.2);     border: 1px solid #ff004c;     color: #ff004c; }  button.danger:hover {     background-color: rgba(255, 0, 76, 0.3);     box-shadow: 0 0 10px rgba(255, 0, 76, 0.5), 0 0 20px rgba(255, 0, 76, 0.2); }  button.active {     border: 1px solid #00ff9d;     box-shadow: 0 0 10px rgba(0, 255, 157, 0.5);     color: #00ff9d; }  .modal {     background-color: rgba(0, 0, 20, 0.85);     backdrop-filter: blur(5px); }  .modal-content {     background-color: rgba(15, 15, 35, 0.9);     border: 1px solid #00f0ff;     box-shadow: 0 0 30px rgba(0, 240, 255, 0.3), 0 0 60px rgba(0, 240, 255, 0.1); }  .property-list {     border: 1px solid #00f0ff;     background-color: rgba(0, 0, 35, 0.6); }  .tab-navigation {     border-bottom: 1px solid #00f0ff; }  .tab {     text-transform: uppercase;     letter-spacing: 1px; }  .tab:hover {     background-color: rgba(0, 240, 255, 0.1); }  .tab.active {     border-bottom: 3px solid #fe01fe;     box-shadow: 0 5px 10px -5px rgba(254, 1, 254, 0.5);     font-weight: bold; }  .instructions {     background-color: rgba(0, 0, 35, 0.6);     border-left: 4px solid #fe01fe;     box-shadow: 0 0 10px rgba(254, 1, 254, 0.2); }  #grid-display {     background-color: rgba(0, 0, 20, 0.7);     border: 1px solid #00f0ff;     box-shadow: 0 0 10px rgba(0, 240, 255, 0.3); }  .success-message {     color: #00ff9d;     text-transform: uppercase;     letter-spacing: 1px;     animation: fadeOut 2s forwards;     animation-delay: 1s; }  .warning {     background-color: rgba(255, 0, 76, 0.1);     border-left: 4px solid #ff004c;     box-shadow: 0 0 10px rgba(255, 0, 76, 0.2); }  .main-content-container {     background-color: #080815;     color: #00f0ff; }  .content-sidebar {     background: linear-gradient(180deg, rgba(20, 20, 50, 0.8), rgba(10, 10, 30, 0.8));     border-right: 1px solid #00f0ff;     box-shadow: 0 0 20px rgba(0, 240, 255, 0.2); }  #graphics-rightbar {     background: linear-gradient(180deg, rgba(20, 20, 50, 0.8), rgba(10, 10, 30, 0.8));     border-left: 1px solid #00f0ff;     box-shadow: 0 0 20px rgba(0, 240, 255, 0.2); }  .grid-background {     background: #05051a;     background-image: radial-gradient(rgba(0, 240, 255, 0.1) 1px, transparent 1px);     background-size: 20px 20px; }  .toolbar {     background: linear-gradient(90deg, rgba(20, 20, 50, 0.8), rgba(10, 10, 30, 0.8));     border-bottom: 1px solid #00f0ff; }  .btn {     border: 1px solid #00f0ff;     background-color: rgba(0, 240, 255, 0.1);     color: #00f0ff;     text-transform: uppercase; }  .btn:hover {     background-color: rgba(0, 240, 255, 0.2);     box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);     transform: translateY(-2px); }  .btn-primary {     background-color: rgba(254, 1, 254, 0.2);     border: 1px solid #fe01fe;     color: #fe01fe; }  .btn-primary:hover {     background-color: rgba(254, 1, 254, 0.3);     box-shadow: 0 0 10px rgba(254, 1, 254, 0.5); }  .btn-danger {     background-color: rgba(255, 0, 76, 0.2);     border: 1px solid #ff004c;     color: #ff004c; }  .btn-danger:hover {     background-color: rgba(255, 0, 76, 0.3);     box-shadow: 0 0 10px rgba(255, 0, 76, 0.5); }  .btn-secondary {     background-color: rgba(0, 240, 255, 0.15);     border: 1px solid #00f0ff; }  .btn-secondary:hover {     background-color: rgba(0, 240, 255, 0.25);     box-shadow: 0 0 10px rgba(0, 240, 255, 0.5); }  .btn-special {     background-color: rgba(0, 255, 157, 0.2);     border: 1px solid #00ff9d;     color: #00ff9d; }  .btn-special:hover {     background-color: rgba(0, 255, 157, 0.3);     box-shadow: 0 0 10px rgba(0, 255, 157, 0.5); }  #shape-list {     border-bottom: 1px solid rgba(0, 240, 255, 0.2); }  .shape-item {     background-color: rgba(0, 0, 35, 0.6);     border: 1px solid #00f0ff; }  .shape-item:hover {     background-color: rgba(0, 240, 255, 0.1);     transform: translateX(5px); }  .shape-item.active {     background-color: rgba(0, 255, 157, 0.1);     border-color: #00ff9d;     color: #00ff9d;     box-shadow: 0 0 10px rgba(0, 255, 157, 0.3); }  #inspector {     background: rgba(20, 20, 50, 0.8);     border-top: 1px solid #00f0ff; }  .form-row label {     color: #fe01fe; }  .form-row input, .form-row select {     border: 1px solid #00f0ff;     background-color: rgba(0, 0, 35, 0.6);     color: #00f0ff;     box-shadow: 0 0 5px rgba(0, 240, 255, 0.3); }  .scene-info {     background: rgba(0, 0, 20, 0.8);     color: #00f0ff;     box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);     border: 1px solid #00f0ff; }  .button-danger {     background-color: rgba(255, 0, 76, 0.2);     border: 1px solid #ff004c;     color: #ff004c; }  .button-danger:hover {     background-color: rgba(255, 0, 76, 0.3);     box-shadow: 0 0 10px rgba(255, 0, 76, 0.5); }  h2, h3 {     color: #fe01fe;     text-transform: uppercase;     letter-spacing: 3px;     margin-bottom: 15px;     padding-bottom: 5px;     border-bottom: 1px solid #00f0ff;     text-shadow: 0 0 5px rgba(254, 1, 254, 0.7); }  h2:hover, h3:hover {     text-shadow: -2px 0 #00f0ff, 2px 0 #ff004c; }  .container::before {     content: '';     position: fixed;     top: 0;     left: 0;     right: 0;     bottom: 0;     background:          linear-gradient(rgba(0, 240, 255, 0.07) 1px, transparent 1px),         linear-gradient(90deg, rgba(0, 240, 255, 0.07) 1px, transparent 1px);     background-size: 40px 40px;     background-position: center center;     z-index: -1;     perspective: 1000px;     transform-style: preserve-3d;     transform: rotateX(75deg) translateZ(-100px);     pointer-events: none; }  #json-content {     background-color: rgba(0, 0, 35, 0.8);     border: 1px solid #00f0ff;     color: #00ff9d;     font-family: 'Courier New', monospace;     padding: 15px;     box-shadow: 0 0 15px rgba(0, 240, 255, 0.2), inset 0 0 30px rgba(0, 0, 35, 0.5); }  .ref-value-item {     background-color: #405060; }  .remove-ref-btn {     background: none;     border: none;     color: #ff6b6b;     cursor: pointer; }  ::-webkit-scrollbar {     width: 8px;     height: 8px; }  ::-webkit-scrollbar-track {     background: rgba(0, 0, 35, 0.6); }  ::-webkit-scrollbar-thumb {     background: #00f0ff;     border-radius: 0; }  ::-webkit-scrollbar-thumb:hover {     background: #fe01fe; }  button:active::before {     content: '';     position: absolute;     top: 0;     left: 0;     width: 100%;     height: 100%;     background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.4), transparent);     animation: loading 1s infinite; }"
-      },
       "codeMirrorTheme": {
         "title": "Code - Ez On Eyes",
         "fileName": "codeMirrorTheme",
         "css": ".CodeMirror {    background: #1e1e1e;    color: #d4d4d4;    font-size: 14px; } .CodeMirror-gutters {    background: #252525;  border-right: 1px solid #444; } .CodeMirror-linenumber {    color: #888; }.CodeMirror-cursor {    border-left: 1px solid #d4d4d4; } .CodeMirror-selected {    background: #3a3a3a; }.CodeMirror-focused .CodeMirror-selected {    background: #404040; /* Slightly lighter when focused */}.CodeMirror-activeline-background {    background: #2a2a2a; /* Subtle active line highlight */}.CodeMirror-matchingbracket {    color: #b5cea8; /* Muted green for matching brackets */}.CodeMirror-nonmatchingbracket {    color: #d16969; /* Soft red for non-matching */}/* Override default theme's syntax highlighting */.cm-s-default .cm-header { color: #dcdcaa; } /* Soft yellow (overrides #00f blue) */.cm-s-default .cm-quote { color: #b5cea8; } /* Muted green (overrides #090) */.cm-negative { color: #d16969; } /* Soft red */.cm-positive { color: #6a9955; } /* Muted green */.cm-header, .cm-strong { font-weight: 700; }.cm-em { font-style: italic; }.cm-s-default .cm-link { color: #d7ba7d; text-decoration: underline; } /* Muted yellow (overrides #00c blue) */.cm-strikethrough { text-decoration: line-through; }.cm-s-default .cm-keyword { color: #ce9178; } /* Soft orange (overrides #708 purple) */.cm-s-default .cm-atom { color: #d4d4d4; } /* Light gray (overrides #219 blue) */.cm-s-default .cm-number { color: #b5cea8; } /* Muted green (overrides #164) */.cm-s-default .cm-def { color: #dcdcaa; } /* Soft yellow (overrides #00f blue) */.cm-s-default .cm-variable-2 { color: #d4d4d4; } /* Light gray (overrides #05a blue) */.cm-s-default .cm-variable-3, .cm-s-default .cm-type { color: #dcdcaa; } /* Soft yellow (overrides #085 blue) */.cm-s-default .cm-comment { color: #6a9955; } /* Muted green (overrides #a50) */.cm-s-default .cm-string { color: #ce9178; } /* Soft orange (overrides #a11) */.cm-s-default .cm-string-2 { color: #d7ba7d; } /* Muted yellow (overrides #f50) */.cm-s-default .cm-meta { color: #d4d4d4; } /* Light gray (overrides #555) */.cm-s-default .cm-qualifier { color: #d4d4d4; } /* Light gray (overrides #555) */.cm-s-default .cm-builtin { color: #dcdcaa; } /* Soft yellow (overrides #30a) */.cm-s-default .cm-bracket { color: #d4d4d4; } /* Light gray (overrides #997) */.cm-s-default .cm-tag { color: #dcdcaa; } /* Soft yellow (overrides #170) */.cm-s-default .cm-attribute { color: #d4d4d4; } /* Light gray (overrides #00c blue) */.cm-s-default .cm-hr { color: #888; } /* Muted gray (overrides #999) */.cm-s-default .cm-link { color: #d7ba7d; } /* Muted yellow (overrides #00c blue) */.cm-s-default .cm-error { color: #d16969; } /* Soft red (overrides red) */.cm-invalidchar { color: #d16969; } /* Soft red *//* Search highlight */.cm-searching {    background-color: rgba(255, 255, 0, 0.2); /* Subtle yellow */}"
       },
+      "cyberpunk": {
+        "title": "Cyber Punk",
+        "fileName": "cyberpunk",
+        "css": "/* Default Cyberpunk Theme */ @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Rajdhani:wght@300;400;500;600;700&display=swap');  body {     font-family: 'Orbitron', 'Rajdhani', sans-serif;     background-color: #0a0a16;     color: #00f0ff; }  .sidebar {     background-color: rgba(15, 15, 35, 0.7);     border: 1px solid #00f0ff;     box-shadow: 0 0 10px #00f0ff, inset 0 0 20px rgba(0, 240, 255, 0.2); }  .object-item {     background-color: rgba(0, 0, 35, 0.6);     border-left: 2px solid #fe01fe;     text-transform: uppercase;     letter-spacing: 1px; }  .object-item:hover {     background-color: rgba(254, 1, 254, 0.2);     transform: translateX(5px); }  .object-item.selected {     background-color: rgba(254, 1, 254, 0.3);     border-left: 4px solid #fe01fe;     box-shadow: 0 0 8px rgba(254, 1, 254, 0.5); }  .editor {     background-color: rgba(15, 15, 35, 0.7);     border: 1px solid #fe01fe;     box-shadow: 0 0 15px rgba(254, 1, 254, 0.3); }  #three-js-container {     border: 1px solid rgba(0, 240, 255, 0.5); }  .preview-canvas-container {     border: 1px solid #fe01fe;     box-shadow: 0 0 10px rgba(254, 1, 254, 0.3); }  .preview {     background-color: rgba(15, 15, 35, 0.7);     border: 1px solid #00f0ff;     box-shadow: 0 0 15px rgba(0, 240, 255, 0.3); }  #preview-canvas {     background-color: transparent;     border: 1px solid rgba(0, 240, 255, 0.5); }  .camera-controls {     background: rgba(0, 0, 20, 0.7);     border: 1px solid #00f0ff; }  .camera-controls button {     background-color: rgba(0, 240, 255, 0.2);     border: 1px solid #00f0ff;     color: #00f0ff; }  .camera-controls .color-picker {     border: 1px solid #00f0ff; }  .camera-controls .size-slider {     background: #101028;     border: 1px solid #00f0ff; }  label {     font-weight: bold;     text-transform: uppercase;     letter-spacing: 1px;     color: #fe01fe; }  input, textarea, select {     border: 1px solid #00f0ff;     background-color: rgba(0, 0, 35, 0.6);     color: #00f0ff;     box-shadow: 0 0 5px rgba(0, 240, 255, 0.3); }  input:focus, textarea:focus, select:focus {     outline: none;     border-color: #fe01fe;     box-shadow: 0 0 10px rgba(254, 1, 254, 0.5); }  button {     background-color: rgba(0, 240, 255, 0.2);     border: 1px solid #00f0ff;     color: #00f0ff;     text-transform: uppercase;     letter-spacing: 1px; }  button:after {     background: linear-gradient(to right, transparent, rgba(0, 240, 255, 0.2), transparent); }  button:hover {     background-color: rgba(0, 240, 255, 0.3);     box-shadow: 0 0 10px rgba(0, 240, 255, 0.5), 0 0 20px rgba(0, 240, 255, 0.2);     transform: translateY(-2px); }  button:hover:after {     transform: translateX(100%) rotate(30deg); }  button.primary {     background-color: rgba(254, 1, 254, 0.2);     border: 1px solid #fe01fe;     color: #fe01fe; }  button.primary:hover {     background-color: rgba(254, 1, 254, 0.3);     box-shadow: 0 0 10px rgba(254, 1, 254, 0.5), 0 0 20px rgba(254, 1, 254, 0.2); }  button.danger {     background-color: rgba(255, 0, 76, 0.2);     border: 1px solid #ff004c;     color: #ff004c; }  button.danger:hover {     background-color: rgba(255, 0, 76, 0.3);     box-shadow: 0 0 10px rgba(255, 0, 76, 0.5), 0 0 20px rgba(255, 0, 76, 0.2); }  button.active {     border: 1px solid #00ff9d;     box-shadow: 0 0 10px rgba(0, 255, 157, 0.5);     color: #00ff9d; }  .modal {     background-color: rgba(0, 0, 20, 0.85);     backdrop-filter: blur(5px); }  .modal-content {     background-color: rgba(15, 15, 35, 0.9);     border: 1px solid #00f0ff;     box-shadow: 0 0 30px rgba(0, 240, 255, 0.3), 0 0 60px rgba(0, 240, 255, 0.1); }  .property-list {     border: 1px solid #00f0ff;     background-color: rgba(0, 0, 35, 0.6); }  .tab-navigation {     border-bottom: 1px solid #00f0ff; }  .tab {     text-transform: uppercase;     letter-spacing: 1px; }  .tab:hover {     background-color: rgba(0, 240, 255, 0.1); }  .tab.active {     border-bottom: 3px solid #fe01fe;     box-shadow: 0 5px 10px -5px rgba(254, 1, 254, 0.5);     font-weight: bold; }  .instructions {     background-color: rgba(0, 0, 35, 0.6);     border-left: 4px solid #fe01fe;     box-shadow: 0 0 10px rgba(254, 1, 254, 0.2); }  #grid-display {     background-color: rgba(0, 0, 20, 0.7);     border: 1px solid #00f0ff;     box-shadow: 0 0 10px rgba(0, 240, 255, 0.3); }  .success-message {     color: #00ff9d;     text-transform: uppercase;     letter-spacing: 1px;     animation: fadeOut 2s forwards;     animation-delay: 1s; }  .warning {     background-color: rgba(255, 0, 76, 0.1);     border-left: 4px solid #ff004c;     box-shadow: 0 0 10px rgba(255, 0, 76, 0.2); }  .main-content-container {     background-color: #080815;     color: #00f0ff; }  .content-sidebar {     background: linear-gradient(180deg, rgba(20, 20, 50, 0.8), rgba(10, 10, 30, 0.8));     border-right: 1px solid #00f0ff;     box-shadow: 0 0 20px rgba(0, 240, 255, 0.2); }  #graphics-rightbar {     background: linear-gradient(180deg, rgba(20, 20, 50, 0.8), rgba(10, 10, 30, 0.8));     border-left: 1px solid #00f0ff;     box-shadow: 0 0 20px rgba(0, 240, 255, 0.2); }  .grid-background {     background: #05051a;     background-image: radial-gradient(rgba(0, 240, 255, 0.1) 1px, transparent 1px);     background-size: 20px 20px; }  .toolbar {     background: linear-gradient(90deg, rgba(20, 20, 50, 0.8), rgba(10, 10, 30, 0.8));     border-bottom: 1px solid #00f0ff; }  .btn {     border: 1px solid #00f0ff;     background-color: rgba(0, 240, 255, 0.1);     color: #00f0ff;     text-transform: uppercase; }  .btn:hover {     background-color: rgba(0, 240, 255, 0.2);     box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);     transform: translateY(-2px); }  .btn-primary {     background-color: rgba(254, 1, 254, 0.2);     border: 1px solid #fe01fe;     color: #fe01fe; }  .btn-primary:hover {     background-color: rgba(254, 1, 254, 0.3);     box-shadow: 0 0 10px rgba(254, 1, 254, 0.5); }  .btn-danger {     background-color: rgba(255, 0, 76, 0.2);     border: 1px solid #ff004c;     color: #ff004c; }  .btn-danger:hover {     background-color: rgba(255, 0, 76, 0.3);     box-shadow: 0 0 10px rgba(255, 0, 76, 0.5); }  .btn-secondary {     background-color: rgba(0, 240, 255, 0.15);     border: 1px solid #00f0ff; }  .btn-secondary:hover {     background-color: rgba(0, 240, 255, 0.25);     box-shadow: 0 0 10px rgba(0, 240, 255, 0.5); }  .btn-special {     background-color: rgba(0, 255, 157, 0.2);     border: 1px solid #00ff9d;     color: #00ff9d; }  .btn-special:hover {     background-color: rgba(0, 255, 157, 0.3);     box-shadow: 0 0 10px rgba(0, 255, 157, 0.5); }  #shape-list {     border-bottom: 1px solid rgba(0, 240, 255, 0.2); }  .shape-item {     background-color: rgba(0, 0, 35, 0.6);     border: 1px solid #00f0ff; }  .shape-item:hover {     background-color: rgba(0, 240, 255, 0.1);     transform: translateX(5px); }  .shape-item.active {     background-color: rgba(0, 255, 157, 0.1);     border-color: #00ff9d;     color: #00ff9d;     box-shadow: 0 0 10px rgba(0, 255, 157, 0.3); }  #inspector {     background: rgba(20, 20, 50, 0.8);     border-top: 1px solid #00f0ff; }  .form-row label {     color: #fe01fe; }  .form-row input, .form-row select {     border: 1px solid #00f0ff;     background-color: rgba(0, 0, 35, 0.6);     color: #00f0ff;     box-shadow: 0 0 5px rgba(0, 240, 255, 0.3); }  .scene-info {     background: rgba(0, 0, 20, 0.8);     color: #00f0ff;     box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);     border: 1px solid #00f0ff; }  .button-danger {     background-color: rgba(255, 0, 76, 0.2);     border: 1px solid #ff004c;     color: #ff004c; }  .button-danger:hover {     background-color: rgba(255, 0, 76, 0.3);     box-shadow: 0 0 10px rgba(255, 0, 76, 0.5); }  h2, h3 {     color: #fe01fe;     text-transform: uppercase;     letter-spacing: 3px;     margin-bottom: 15px;     padding-bottom: 5px;     border-bottom: 1px solid #00f0ff;     text-shadow: 0 0 5px rgba(254, 1, 254, 0.7); }  h2:hover, h3:hover {     text-shadow: -2px 0 #00f0ff, 2px 0 #ff004c; }  .container::before {     content: '';     position: fixed;     top: 0;     left: 0;     right: 0;     bottom: 0;     background:          linear-gradient(rgba(0, 240, 255, 0.07) 1px, transparent 1px),         linear-gradient(90deg, rgba(0, 240, 255, 0.07) 1px, transparent 1px);     background-size: 40px 40px;     background-position: center center;     z-index: -1;     perspective: 1000px;     transform-style: preserve-3d;     transform: rotateX(75deg) translateZ(-100px);     pointer-events: none; }  #json-content {     background-color: rgba(0, 0, 35, 0.8);     border: 1px solid #00f0ff;     color: #00ff9d;     font-family: 'Courier New', monospace;     padding: 15px;     box-shadow: 0 0 15px rgba(0, 240, 255, 0.2), inset 0 0 30px rgba(0, 0, 35, 0.5); }  .ref-value-item {     background-color: #405060; }  .remove-ref-btn {     background: none;     border: none;     color: #ff6b6b;     cursor: pointer; }  ::-webkit-scrollbar {     width: 8px;     height: 8px; }  ::-webkit-scrollbar-track {     background: rgba(0, 0, 35, 0.6); }  ::-webkit-scrollbar-thumb {     background: #00f0ff;     border-radius: 0; }  ::-webkit-scrollbar-thumb:hover {     background: #fe01fe; }  button:active::before {     content: '';     position: absolute;     top: 0;     left: 0;     width: 100%;     height: 100%;     background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.4), transparent);     animation: loading 1s infinite; }"
+      },
       "medieval": {
         "title": "Medieval",
         "fileName": "medieval",
         "css": "/* Medieval Theme */ @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=IM+Fell+English&display=swap');  body {     font-family: 'Cinzel', 'IM Fell English', serif;     background-color: #2b1e12; /* Dark brown, earthy tone */     color: #d4b98a; /* Parchment-like beige */ }  .sidebar {     background-color: rgba(50, 40, 30, 0.8); /* Dark wood */     border: 1px solid #8a5c2e; /* Bronze */     box-shadow: 0 0 10px rgba(138, 92, 46, 0.5), inset 0 0 20px rgba(50, 40, 30, 0.3); }  .object-item {     background-color: rgba(60, 50, 40, 0.6); /* Aged wood */     border-left: 2px solid #b8860b; /* Gold accent */     text-transform: uppercase;     letter-spacing: 1px; }  .object-item:hover {     background-color: rgba(184, 134, 11, 0.2); /* Golden hover */     transform: translateX(5px); }  .object-item.selected {     background-color: rgba(184, 134, 11, 0.3);     border-left: 4px solid #b8860b;     box-shadow: 0 0 8px rgba(184, 134, 11, 0.5); }  .editor {     background-color: rgba(50, 40, 30, 0.7);     border: 1px solid #b8860b;     box-shadow: 0 0 15px rgba(184, 134, 11, 0.3); }  #three-js-container {     border: 1px solid rgba(138, 92, 46, 0.5); /* Bronze edge */ }  .preview-canvas-container {     border: 1px solid #b8860b;     box-shadow: 0 0 10px rgba(184, 134, 11, 0.3); }  .preview {     background-color: rgba(50, 40, 30, 0.7);     border: 1px solid #8a5c2e;     box-shadow: 0 0 15px rgba(138, 92, 46, 0.3); }  #preview-canvas {     background-color: transparent;     border: 1px solid rgba(138, 92, 46, 0.5); }  .camera-controls {     background: rgba(40, 30, 20, 0.7); /* Dark stone */     border: 1px solid #8a5c2e; }  .camera-controls button {     background-color: rgba(138, 92, 46, 0.2);     border: 1px solid #8a5c2e;     color: #d4b98a; }  .camera-controls .color-picker {     border: 1px solid #8a5c2e; }  .camera-controls .size-slider {     background: #3c2f1e; /* Darker wood */     border: 1px solid #8a5c2e; }  label {     font-weight: bold;     text-transform: uppercase;     letter-spacing: 1px;     color: #b8860b; /* Gold text */ }  input, textarea, select {     border: 1px solid #8a5c2e;     background-color: rgba(60, 50, 40, 0.6);     color: #d4b98a;     box-shadow: 0 0 5px rgba(138, 92, 46, 0.3); }  input:focus, textarea:focus, select:focus {     outline: none;     border-color: #b8860b;     box-shadow: 0 0 10px rgba(184, 134, 11, 0.5); }  button {     background-color: rgba(138, 92, 46, 0.2);     border: 1px solid #8a5c2e;     color: #d4b98a;     text-transform: uppercase;     letter-spacing: 1px; }  button:hover {     background-color: rgba(138, 92, 46, 0.3);     box-shadow: 0 0 10px rgba(138, 92, 46, 0.5), 0 0 20px rgba(138, 92, 46, 0.2);     transform: translateY(-2px); }  button.primary {     background-color: rgba(184, 134, 11, 0.2);     border: 1px solid #b8860b;     color: #b8860b; }  button.primary:hover {     background-color: rgba(184, 134, 11, 0.3);     box-shadow: 0 0 10px rgba(184, 134, 11, 0.5), 0 0 20px rgba(184, 134, 11, 0.2); }  button.danger {     background-color: rgba(139, 0, 0, 0.2); /* Crimson */     border: 1px solid #8b0000;     color: #ff4040; }  button.danger:hover {     background-color: rgba(139, 0, 0, 0.3);     box-shadow: 0 0 10px rgba(139, 0, 0, 0.5), 0 0 20px rgba(139, 0, 0, 0.2); }  button.active {     border: 1px solid #228b22; /* Forest green */     box-shadow: 0 0 10px rgba(34, 139, 34, 0.5);     color: #228b22; }  .modal {     background-color: rgba(40, 30, 20, 0.85); /* Stone texture */     backdrop-filter: blur(5px); }  .modal-content {     background-color: rgba(50, 40, 30, 0.9);     border: 1px solid #8a5c2e;     box-shadow: 0 0 30px rgba(138, 92, 46, 0.3), 0 0 60px rgba(138, 92, 46, 0.1); }  .property-list {     border: 1px solid #8a5c2e;     background-color: rgba(60, 50, 40, 0.6); }  .tab-navigation {     border-bottom: 1px solid #8a5c2e; }  .tab {     text-transform: uppercase;     letter-spacing: 1px; }  .tab:hover {     background-color: rgba(138, 92, 46, 0.1); }  .tab.active {     border-bottom: 3px solid #b8860b;     box-shadow: 0 5px 10px -5px rgba(184, 134, 11, 0.5);     font-weight: bold; }  .instructions {     background-color: rgba(60, 50, 40, 0.6);     border-left: 4px solid #b8860b;     box-shadow: 0 0 10px rgba(184, 134, 11, 0.2); }  #grid-display {     background-color: rgba(40, 30, 20, 0.7);     border: 1px solid #8a5c2e;     box-shadow: 0 0 10px rgba(138, 92, 46, 0.3); }  .success-message {     color: #228b22; /* Forest green */     text-transform: uppercase;     letter-spacing: 1px;     animation: fadeOut 2s forwards;     animation-delay: 1s; }  .warning {     background-color: rgba(139, 0, 0, 0.1);     border-left: 4px solid #8b0000;     box-shadow: 0 0 10px rgba(139, 0, 0, 0.2); }  .main-content-container {     background-color: #251a10; /* Darker brown */     color: #d4b98a; }  .content-sidebar {     background: linear-gradient(180deg, rgba(60, 50, 40, 0.8), rgba(40, 30, 20, 0.8));     border-right: 1px solid #8a5c2e;     box-shadow: 0 0 20px rgba(138, 92, 46, 0.2); }  #graphics-rightbar {     background: linear-gradient(180deg, rgba(60, 50, 40, 0.8), rgba(40, 30, 20, 0.8));     border-left: 1px solid #8a5c2e;     box-shadow: 0 0 20px rgba(138, 92, 46, 0.2); }  .grid-background {     background: #1e150d;     background-image: radial-gradient(rgba(138, 92, 46, 0.1) 1px, transparent 1px);     background-size: 20px 20px; }  .toolbar {     background: linear-gradient(90deg, rgba(60, 50, 40, 0.8), rgba(40, 30, 20, 0.8));     border-bottom: 1px solid #8a5c2e; }  .btn {     border: 1px solid #8a5c2e;     background-color: rgba(138, 92, 46, 0.1);     color: #d4b98a;     text-transform: uppercase; }  .btn:hover {     background-color: rgba(138, 92, 46, 0.2);     box-shadow: 0 0 10px rgba(138, 92, 46, 0.5);     transform: translateY(-2px); }  .btn-primary {     background-color: rgba(184, 134, 11, 0.2);     border: 1px solid #b8860b;     color: #b8860b; }  .btn-primary:hover {     background-color: rgba(184, 134, 11, 0.3);     box-shadow: 0 0 10px rgba(184, 134, 11, 0.5); }  .btn-danger {     background-color: rgba(139, 0, 0, 0.2);     border: 1px solid #8b0000;     color: #ff4040; }  .btn-danger:hover {     background-color: rgba(139, 0, 0, 0.3);     box-shadow: 0 0 10px rgba(139, 0, 0, 0.5); }  .btn-secondary {     background-color: rgba(138, 92, 46, 0.15);     border: 1px solid #8a5c2e; }  .btn-secondary:hover {     background-color: rgba(138, 92, 46, 0.25);     box-shadow: 0 0 10px rgba(138, 92, 46, 0.5); }  .btn-special {     background-color: rgba(34, 139, 34, 0.2); /* Forest green */     border: 1px solid #228b22;     color: #228b22; }  .btn-special:hover {     background-color: rgba(34, 139, 34, 0.3);     box-shadow: 0 0 10px rgba(34, 139, 34, 0.5); }  #shape-list {     border-bottom: 1px solid rgba(138, 92, 46, 0.2); }  .shape-item {     background-color: rgba(60, 50, 40, 0.6);     border: 1px solid #8a5c2e; }  .shape-item:hover {     background-color: rgba(138, 92, 46, 0.1);     transform: translateX(5px); }  .shape-item.active {     background-color: rgba(34, 139, 34, 0.1);     border-color: #228b22;     color: #228b22;     box-shadow: 0 0 10px rgba(34, 139, 34, 0.3); }  #inspector {     background: rgba(60, 50, 40, 0.8);     border-top: 1px solid #8a5c2e; }  .form-row label {     color: #b8860b; }  .form-row input, .form-row select {     border: 1px solid #8a5c2e;     background-color: rgba(60, 50, 40, 0.6);     color: #d4b98a;     box-shadow: 0 0 5px rgba(138, 92, 46, 0.3); }  .scene-info {     background: rgba(40, 30, 20, 0.8);     color: #d4b98a;     box-shadow: 0 0 15px rgba(138, 92, 46, 0.3);     border: 1px solid #8a5c2e; }  .button-danger {     background-color: rgba(139, 0, 0, 0.2);     border: 1px solid #8b0000;     color: #ff4040; }  .button-danger:hover {     background-color: rgba(139, 0, 0, 0.3);     box-shadow: 0 0 10px rgba(139, 0, 0, 0.5); }  h2, h3 {     color: #b8860b;     text-transform: uppercase;     letter-spacing: 3px;     margin-bottom: 15px;     padding-bottom: 5px;     border-bottom: 1px solid #8a5c2e;     text-shadow: 0 0 5px rgba(184, 134, 11, 0.7); }   .container::before {     content: '';     position: fixed;     top: 0;     left: 0;     right: 0;     bottom: 0;     background:          linear-gradient(rgba(138, 92, 46, 0.07) 1px, transparent 1px),         linear-gradient(90deg, rgba(138, 92, 46, 0.07) 1px, transparent 1px);     background-size: 40px 40px;     background-position: center center;     z-index: -1;     perspective: 1000px;     transform-style: preserve-3d;     transform: rotateX(75deg) translateZ(-100px);     pointer-events: none; }  #json-content {     background-color: rgba(60, 50, 40, 0.8);     border: 1px solid #8a5c2e;     color: #228b22; /* Green ink */     font-family: 'IM Fell English', serif;     padding: 15px;     box-shadow: 0 0 15px rgba(138, 92, 46, 0.2), inset 0 0 30px rgba(60, 50, 40, 0.5); }  .ref-value-item {     background-color: #4a3a2a; /* Darker wood */ }  .remove-ref-btn {     background: none;     border: none;     color: #ff4040;     cursor: pointer; }  ::-webkit-scrollbar {     width: 8px;     height: 8px; }  ::-webkit-scrollbar-track {     background: rgba(60, 50, 40, 0.6); }  ::-webkit-scrollbar-thumb {     background: #8a5c2e;     border-radius: 0; }  ::-webkit-scrollbar-thumb:hover {     background: #b8860b; }  /* Category Styling for Medieval Theme */ .type-selector {     background-color: rgba(50, 40, 30, 0.7); /* Dark wood */     border: 1px solid #8a5c2e; /* Bronze */     box-shadow: inset 0 0 10px rgba(138, 92, 46, 0.3); }  .category-header {     background-color: rgba(60, 50, 40, 0.8); /* Aged wood */     border: 1px solid #8a5c2e;     color: #d4b98a; /* Parchment beige */     text-transform: uppercase;     letter-spacing: 1px;     font-weight: bold; }  .category-header:hover {     background-color: rgba(138, 92, 46, 0.2); /* Bronze hover */     box-shadow: 0 0 10px rgba(138, 92, 46, 0.5); }  .category-types {     background-color: rgba(40, 30, 20, 0.6); /* Dark stone */ }  .object-type-item {     background-color: rgba(60, 50, 40, 0.6); /* Aged wood */     border-left: 2px solid #b8860b; /* Gold accent */     color: #d4b98a;     text-transform: uppercase;     letter-spacing: 1px; }  .object-type-item:hover {     background-color: rgba(184, 134, 11, 0.2); /* Golden hover */     transform: translateX(5px); }  .object-type-item.selected {     background-color: rgba(184, 134, 11, 0.3);     border-left: 4px solid #b8860b;     box-shadow: 0 0 8px rgba(184, 134, 11, 0.5); }  .object-list {     background-color: rgba(50, 40, 30, 0.5); /* Slightly lighter wood */ }"
-      },
-      "professional2": {
-        "title": "Professional Warm",
-        "fileName": "professional2",
-        "css": "/* Professional Cyberpunk Variation - Warm Edition */ @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap');  body {     font-family: 'Inter', 'Roboto Mono', sans-serif;     background-color: #2b1e1e; /* Deep reddish-brown */     color: #f4e1d2; /* Soft cream for text */     line-height: 1.6; }  .sidebar {     background-color: rgba(54, 36, 36, 0.95); /* Muted dark red */     border: 1px solid #7a4e4e; /* Subtle reddish-gray */     box-shadow: 0 4px 12px rgba(122, 78, 78, 0.2); }  .object-item {     background-color: rgba(54, 36, 36, 0.8);     border-left: 2px solid #d97706; /* Warm amber */     text-transform: uppercase;     letter-spacing: 0.5px;     transition: all 0.3s ease; }  .object-item:hover {     background-color: rgba(217, 119, 6, 0.15);     transform: translateX(3px); }  .object-item.selected {     background-color: rgba(217, 119, 6, 0.25);     border-left: 3px solid #d97706;     box-shadow: 0 0 6px rgba(217, 119, 6, 0.4); }  .editor {     background-color: rgba(54, 36, 36, 0.95);     border: 1px solid #7a4e4e;     box-shadow: 0 4px 12px rgba(122, 78, 78, 0.15); }  #three-js-container {     border: 1px solid rgba(122, 78, 78, 0.6); }  .preview-canvas-container {     border: 1px solid #d97706;     box-shadow: 0 4px 12px rgba(217, 119, 6, 0.1); }  .preview {     background-color: rgba(54, 36, 36, 0.9);     border: 1px solid #7a4e4e;     box-shadow: 0 4px 12px rgba(122, 78, 78, 0.15); }  #preview-canvas {     background-color: transparent;     border: 1px solid rgba(122, 78, 78, 0.5); }  .camera-controls {     background: rgba(46, 28, 28, 0.9); /* Darker reddish tint */     border: 1px solid #7a4e4e; }  .camera-controls button {     background-color: rgba(122, 78, 78, 0.3);     border: 1px solid #7a4e4e;     color: #f4e1d2;     transition: all 0.3s ease; }  .camera-controls button:hover {     background-color: rgba(122, 78, 78, 0.5);     box-shadow: 0 2px 8px rgba(122, 78, 78, 0.3); }  .camera-controls .color-picker {     border: 1px solid #7a4e4e; }  .camera-controls .size-slider {     background: #3a2424;     border: 1px solid #7a4e4e; }  label {     font-weight: 500;     text-transform: uppercase;     letter-spacing: 0.5px;     color: #d97706; /* Amber for labels */ }  input, textarea, select {     border: 1px solid #7a4e4e;     background-color: rgba(54, 36, 36, 0.8);     color: #f4e1d2;     box-shadow: 0 2px 6px rgba(122, 78, 78, 0.1);     transition: all 0.3s ease; }  input:focus, textarea:focus, select:focus {     outline: none;     border-color: #d97706;     box-shadow: 0 0 8px rgba(217, 119, 6, 0.3); }  button {     background-color: rgba(122, 78, 78, 0.3);     border: 1px solid #7a4e4e;     color: #f4e1d2;     text-transform: uppercase;     letter-spacing: 0.5px;     transition: all 0.3s ease; }  button:hover {     background-color: rgba(122, 78, 78, 0.5);     box-shadow: 0 2px 8px rgba(122, 78, 78, 0.3);     transform: translateY(-1px); }  button.primary {     background-color: rgba(217, 119, 6, 0.3);     border: 1px solid #d97706;     color: #f4e1d2; }  button.primary:hover {     background-color: rgba(217, 119, 6, 0.5);     box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3); }  button.danger {     background-color: rgba(220, 38, 38, 0.3); /* Softer red */     border: 1px solid #dc2626;     color: #f4e1d2; }  button.danger:hover {     background-color: rgba(220, 38, 38, 0.5);     box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3); }  button.active {     border: 1px solid #10b981; /* Emerald green for active state */     box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);     color: #10b981; }  .modal {     background-color: rgba(46, 28, 28, 0.9);     backdrop-filter: blur(3px); }  .modal-content {     background-color: rgba(54, 36, 36, 0.95);     border: 1px solid #7a4e4e;     box-shadow: 0 8px 24px rgba(122, 78, 78, 0.2); }  .property-list {     border: 1px solid #7a4e4e;     background-color: rgba(54, 36, 36, 0.8); }  .tab-navigation {     border-bottom: 1px solid #7a4e4e; }  .tab {     text-transform: uppercase;     letter-spacing: 0.5px;     transition: all 0.3s ease; }  .tab:hover {     background-color: rgba(122, 78, 78, 0.2); }  .tab.active {     border-bottom: 2px solid #d97706;     box-shadow: 0 4px 8px -4px rgba(217, 119, 6, 0.4);     font-weight: 600; }  .instructions {     background-color: rgba(54, 36, 36, 0.8);     border-left: 3px solid #d97706;     box-shadow: 0 2px 6px rgba(217, 119, 6, 0.1); }  #grid-display {     background-color: rgba(46, 28, 28, 0.9);     border: 1px solid #7a4e4e;     box-shadow: 0 4px 12px rgba(122, 78, 78, 0.15); }  .success-message {     color: #10b981; /* Emerald green for success */     text-transform: uppercase;     letter-spacing: 0.5px;     animation: fadeOut 2s forwards;     animation-delay: 1s; }  .warning {     background-color: rgba(220, 38, 38, 0.15);     border-left: 3px solid #dc2626;     box-shadow: 0 2px 6px rgba(220, 38, 38, 0.1); }  .main-content-container {     background-color: #332121; /* Slightly lighter reddish-brown */     color: #f4e1d2; }  .content-sidebar {     background: linear-gradient(180deg, rgba(54, 36, 36, 0.95), rgba(46, 28, 28, 0.95));     border-right: 1px solid #7a4e4e;     box-shadow: 0 4px 12px rgba(122, 78, 78, 0.15); }  #graphics-rightbar {     background: linear-gradient(180deg, rgba(54, 36, 36, 0.95), rgba(46, 28, 28, 0.95));     border-left: 1px solid #7a4e4e;     box-shadow: 0 4px 12px rgba(122, 78, 78, 0.15); }  .grid-background {     background: #2b1e1e;     background-image: radial-gradient(rgba(122, 78, 78, 0.15) 1px, transparent 1px);     background-size:30px 30px; }  .toolbar {     background: linear-gradient(90deg, rgba(54, 36, 36, 0.95), rgba(46, 28, 28, 0.95));     border-bottom: 1px solid #7a4e4e; }  .btn {     border: 1px solid #7a4e4e;     background-color: rgba(122, 78, 78, 0.3);     color: #f4e1d2;     text-transform: uppercase;     transition: all 0.3s ease; }  .btn:hover {     background-color: rgba(122, 78, 78, 0.5);     box-shadow: 0 2px 8px rgba(122, 78, 78, 0.3);     transform: translateY(-1px); }  .btn-primary {     background-color: rgba(217, 119, 6, 0.3);     border: 1px solid #d97706;     color: #f4e1d2; }  .btn-primary:hover {     background-color: rgba(217, 119, 6, 0.5);     box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3); }  .btn-danger {     background-color: rgba(220, 38, 38, 0.3);     border: 1px solid #dc2626;     color: #f4e1d2; }  .btn-danger:hover {     background-color: rgba(220, 38, 38, 0.5);     box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3); }  .btn-secondary {     background-color: rgba(122, 78, 78, 0.25);     border: 1px solid #7a4e4e; }  .btn-secondary:hover {     background-color: rgba(122, 78, 78, 0.4);     box-shadow: 0 2px 8px rgba(122, 78, 78, 0.3); }  .btn-special {     background-color: rgba(16, 185, 129, 0.3);     border: 1px solid #10b981;     color: #f4e1d2; }  .btn-special:hover {     background-color: rgba(16, 185, 129, 0.5);     box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3); }  #shape-list {     border-bottom: 1px solid rgba(122, 78, 78, 0.3); }  .shape-item {     background-color: rgba(54, 36, 36, 0.8);     border: 1px solid #7a4e4e;     transition: all 0.3s ease; }  .shape-item:hover {     background-color: rgba(122, 78, 78, 0.2);     transform: translateX(3px); }  .shape-item.active {     background-color: rgba(16, 185, 129, 0.15);     border-color: #10b981;     color: #10b981;     box-shadow: 0 0 8px rgba(16, 185, 129, 0.3); }  #inspector {     background: rgba(54, 36, 36, 0.95);     border-top: 1px solid #7a4e4e; }  .form-row label {     color: #d97706; }  .form-row input, .form-row select {     border: 1px solid #7a4e4e;     background-color: rgba(54, 36, 36, 0.8);     color: #f4e1d2;     box-shadow: 0 2px 6px rgba(122, 78, 78, 0.1); }  .scene-info {     background: rgba(46, 28, 28, 0.9prisma);     color: #f4e1d2;     box-shadow: 0 4px 12px rgba(122, 78, 78, 0.15);     border: 1px solid #7a4e4e; }  .button-danger {     background-color: rgba(220, 38, 38, 0.3);     border: 1px solid #dc2626;     color: #f4e1d2; }  .button-danger:hover {     background-color: rgba(220, 38, 38, 0.5);     box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3); }  h2, h3 {     color: #d97706;     text-transform: uppercase;     letter-spacing: 1px;     margin-bottom: 12px;     padding-bottom: 4px;     border-bottom: 1px solid #7a4e4e;     text-shadow: 0 0 4px rgba(217, 119, 6, 0.3); }  ::-webkit-scrollbar {     width: 6px;     height: 6px; }  ::-webkit-scrollbar-track {     background: rgba(54, 36, 36, 0.8); }  ::-webkit-scrollbar-thumb {     background: #7a4e4e;     border-radius: 3px; }  ::-webkit-scrollbar-thumb:hover {     background: #d97706; }"
       },
       "Neon Dune": {
         "title": "Neon Dune",
@@ -18039,6 +18034,11 @@ const DEFAULT_PROJECT_CONFIG = {
         "title": "Professional",
         "fileName": "professional",
         "css": "/* Professional Theme */ @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap');  body {     font-family: 'Inter', 'Roboto Mono', sans-serif;     background-color: #1a1a2e;     color: #e6e6fa;     line-height: 1.6; }  .sidebar {     background-color: rgba(34, 34, 54, 0.95);     border: 1px solid #4b5e87;     box-shadow: 0 4px 12px rgba(75, 94, 135, 0.2); }  .object-item {     background-color: rgba(34, 34, 54, 0.8);     border-left: 2px solid #8a4af0;     text-transform: uppercase;     letter-spacing: 0.5px;     transition: all 0.3s ease; }  .object-item:hover {     background-color: rgba(138, 74, 240, 0.15);     transform: translateX(3px); }  .object-item.selected {     background-color: rgba(138, 74, 240, 0.25);     border-left: 3px solid #8a4af0;     box-shadow: 0 0 6px rgba(138, 74, 240, 0.4); }  .editor {     background-color: rgba(34, 34, 54, 0.95);     border: 1px solid #4b5e87;     box-shadow: 0 4px 12px rgba(75, 94, 135, 0.15); }  #three-js-container {     border: 1px solid rgba(75, 94, 135, 0.6); }  .preview-canvas-container {     border: 1px solid #8a4af0;     box-shadow: 0 4px 12px rgba(138, 74, 240, 0.1); }  .preview {     background-color: rgba(34, 34, 54, 0.9);     border: 1px solid #4b5e87;     box-shadow: 0 4px 12px rgba(75, 94, 135, 0.15); }  #preview-canvas {     background-color: transparent;     border: 1px solid rgba(75, 94, 135, 0.5); }  .camera-controls {     background: rgba(26, 26, 46, 0.9);     border: 1px solid #4b5e87; }  .camera-controls button {     background-color: rgba(75, 94, 135, 0.3);     border: 1px solid #4b5e87;     color: #e6e6fa;     transition: all 0.3s ease; }  .camera-controls button:hover {     background-color: rgba(75, 94, 135, 0.5);     box-shadow: 0 2px 8px rgba(75, 94, 135, 0.3); }  .camera-controls .color-picker {     border: 1px solid #4b5e87; }  .camera-controls .size-slider {     background: #2a2a42;     border: 1px solid #4b5e87; }  label {     font-weight: 500;     text-transform: uppercase;     letter-spacing: 0.5px;     color: #8a4af0; }  input, textarea, select {     border: 1px solid #4b5e87;     background-color: rgba(34, 34, 54, 0.8);     color: #e6e6fa;     box-shadow: 0 2px 6px rgba(75, 94, 135, 0.1);     transition: all 0.3s ease; }  input:focus, textarea:focus, select:focus {     outline: none;     border-color: #8a4af0;     box-shadow: 0 0 8px rgba(138, 74, 240, 0.3); }  button {     background-color: rgba(75, 94, 135, 0.3);     border: 1px solid #4b5e87;     color: #e6e6fa;     text-transform: uppercase;     letter-spacing: 0.5px;     transition: all 0.3s ease; }  button:hover {     background-color: rgba(75, 94, 135, 0.5);     box-shadow: 0 2px 8px rgba(75, 94, 135, 0.3);     transform: translateY(-1px); }  button.primary {     background-color: rgba(138, 74, 240, 0.3);     border: 1px solid #8a4af0;     color: #e6e6fa; }  button.primary:hover {     background-color: rgba(138, 74, 240, 0.5);     box-shadow: 0 2px 8px rgba(138, 74, 240, 0.3); }  button.danger {     background-color: rgba(240, 74, 74, 0.3);     border: 1px solid #f04a4a;     color: #e6e6fa; }  button.danger:hover {     background-color: rgba(240, 74, 74, 0.5);     box-shadow: 0 2px 8px rgba(240, 74, 74, 0.3); }  button.active {     border: 1px solid #00cc99;     box-shadow: 0 0 8px rgba(0, 204, 153, 0.4);     color: #00cc99; }  .modal {     background-color: rgba(26, 26, 46, 0.9);     backdrop-filter: blur(3px); }  .modal-content {     background-color: rgba(34, 34, 54, 0.95);     border: 1px solid #4b5e87;     box-shadow: 0 8px 24px rgba(75, 94, 135, 0.2); }  .property-list {     border: 1px solid #4b5e87;     background-color: rgba(34, 34, 54, 0.8); }  .tab-navigation {     border-bottom: 1px solid #4b5e87; }  .tab {     text-transform: uppercase;     letter-spacing: 0.5px;     transition: all 0.3s ease; }  .tab:hover {     background-color: rgba(75, 94, 135, 0.2); }  .tab.active {     border-bottom: 2px solid #8a4af0;     box-shadow: 0 4px 8px -4px rgba(138, 74, 240, 0.4);     font-weight: 600; }  .instructions {     background-color: rgba(34, 34, 54, 0.8);     border-left: 3px solid #8a4af0;     box-shadow: 0 2px 6px rgba(138, 74, 240, 0.1); }  #grid-display {     background-color: rgba(26, 26, 46, 0.9);     border: 1px solid #4b5e87;     box-shadow: 0 4px 12px rgba(75, 94, 135, 0.15); }  .success-message {     color: #00cc99;     text-transform: uppercase;     letter-spacing: 0.5px;     animation: fadeOut 2s forwards;     animation-delay: 1s; }  .warning {     background-color: rgba(240, 74, 74, 0.15);     border-left: 3px solid #f04a4a;     box-shadow: 0 2px 6px rgba(240, 74, 74, 0.1); }  .main-content-container {     background-color: #1f1f38;     color: #e6e6fa; }  .content-sidebar {     background: linear-gradient(180deg, rgba(34, 34, 54, 0.95), rgba(26, 26, 46, 0.95));     border-right: 1px solid #4b5e87;     box-shadow: 0 4px 12px rgba(75, 94, 135, 0.15); }  #graphics-rightbar {     background: linear-gradient(180deg, rgba(34, 34, 54, 0.95), rgba(26, 26, 46, 0.95));     border-left: 1px solid #4b5e87;     box-shadow: 0 4px 12px rgba(75, 94, 135, 0.15); }  .grid-background {     background: #1a1a2e;     background-image: radial-gradient(rgba(75, 94, 135, 0.15) 1px, transparent 1px);     background-size: 30px 30px; }  .toolbar {     background: linear-gradient(90deg, rgba(34, 34, 54, 0.95), rgba(26, 26, 46, 0.95));     border-bottom: 1px solid #4b5e87; }  .btn {     border: 1px solid #4b5e87;     background-color: rgba(75, 94, 135, 0.3);     color: #e6e6fa;     text-transform: uppercase;     transition: all 0.3s ease; }  .btn:hover {     background-color: rgba(75, 94, 135, 0.5);     box-shadow: 0 2px 8px rgba(75, 94, 135, 0.3);     transform: translateY(-1px); }  .btn-primary {     background-color: rgba(138, 74, 240, 0.3);     border: 1px solid #8a4af0;     color: #e6e6fa; }  .btn-primary:hover {     background-color: rgba(138, 74, 240, 0.5);     box-shadow: 0 2px 8px rgba(138, 74, 240, 0.3); }  .btn-danger {     background-color: rgba(240, 74, 74, 0.3);     border: 1px solid #f04a4a;     color: #e6e6fa; }  .btn-danger:hover {     background-color: rgba(240, 74, 74, 0.5);     box-shadow: 0 2px 8px rgba(240, 74, 74, 0.3); }  .btn-secondary {     background-color: rgba(75, 94, 135, 0.25);     border: 1px solid #4b5e87; }  .btn-secondary:hover {     background-color: rgba(75, 94, 135, 0.4);     box-shadow: 0 2px 8px rgba(75, 94, 135, 0.3); }  .btn-special {     background-color: rgba(0, 204, 153, 0.3);     border: 1px solid #00cc99;     color: #e6e6fa; }  .btn-special:hover {     background-color: rgba(0, 204, 153, 0.5);     box-shadow: 0 2px 8px rgba(0, 204, 153, 0.3); }  #shape-list {     border-bottom: 1px solid rgba(75, 94, 135, 0.3); }  .shape-item {     background-color: rgba(34, 34, 54, 0.8);     border: 1px solid #4b5e87;     transition: all 0.3s ease; }  .shape-item:hover {     background-color: rgba(75, 94, 135, 0.2);     transform: translateX(3px); }  .shape-item.active {     background-color: rgba(0, 204, 153, 0.15);     border-color: #00cc99;     color: #00cc99;     box-shadow: 0 0 8px rgba(0, 204, 153, 0.3); }  #inspector {     background: rgba(34, 34, 54, 0.95);     border-top: 1px solid #4b5e87; }  .form-row label {     color: #8a4af0; }  .form-row input, .form-row select {     border: 1px solid #4b5e87;     background-color: rgba(34, 34, 54, 0.8);     color: #e6e6fa;     box-shadow: 0 2px 6px rgba(75, 94, 135, 0.1); }  .scene-info {     background: rgba(26, 26, 46, 0.9);     color: #e6e6fa;     box-shadow: 0 4px 12px rgba(75, 94, 135, 0.15);     border: 1px solid #4b5e87; }  .button-danger {     background-color: rgba(240, 74, 74, 0.3);     border: 1px solid #f04a4a;     color: #e6e6fa; }  .button-danger:hover {     background-color: rgba(240, 74, 74, 0.5);     box-shadow: 0 2px 8px rgba(240, 74, 74, 0.3); }  h2, h3 {     color: #8a4af0;     text-transform: uppercase;     letter-spacing: 1px;     margin-bottom: 12px;     padding-bottom: 4px;     border-bottom: 1px solid #4b5e87;     text-shadow: 0 0 4px rgba(138, 74, 240, 0.3); }  ::-webkit-scrollbar {     width: 6px;     height: 6px; }  ::-webkit-scrollbar-track {     background: rgba(34, 34, 54, 0.8); }  ::-webkit-scrollbar-thumb {     background: #4b5e87;     border-radius: 3px; }  ::-webkit-scrollbar-thumb:hover {     background: #8a4af0; }"
+      },
+      "professional2": {
+        "title": "Professional Warm",
+        "fileName": "professional2",
+        "css": "/* Professional Cyberpunk Variation - Warm Edition */ @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap');  body {     font-family: 'Inter', 'Roboto Mono', sans-serif;     background-color: #2b1e1e; /* Deep reddish-brown */     color: #f4e1d2; /* Soft cream for text */     line-height: 1.6; }  .sidebar {     background-color: rgba(54, 36, 36, 0.95); /* Muted dark red */     border: 1px solid #7a4e4e; /* Subtle reddish-gray */     box-shadow: 0 4px 12px rgba(122, 78, 78, 0.2); }  .object-item {     background-color: rgba(54, 36, 36, 0.8);     border-left: 2px solid #d97706; /* Warm amber */     text-transform: uppercase;     letter-spacing: 0.5px;     transition: all 0.3s ease; }  .object-item:hover {     background-color: rgba(217, 119, 6, 0.15);     transform: translateX(3px); }  .object-item.selected {     background-color: rgba(217, 119, 6, 0.25);     border-left: 3px solid #d97706;     box-shadow: 0 0 6px rgba(217, 119, 6, 0.4); }  .editor {     background-color: rgba(54, 36, 36, 0.95);     border: 1px solid #7a4e4e;     box-shadow: 0 4px 12px rgba(122, 78, 78, 0.15); }  #three-js-container {     border: 1px solid rgba(122, 78, 78, 0.6); }  .preview-canvas-container {     border: 1px solid #d97706;     box-shadow: 0 4px 12px rgba(217, 119, 6, 0.1); }  .preview {     background-color: rgba(54, 36, 36, 0.9);     border: 1px solid #7a4e4e;     box-shadow: 0 4px 12px rgba(122, 78, 78, 0.15); }  #preview-canvas {     background-color: transparent;     border: 1px solid rgba(122, 78, 78, 0.5); }  .camera-controls {     background: rgba(46, 28, 28, 0.9); /* Darker reddish tint */     border: 1px solid #7a4e4e; }  .camera-controls button {     background-color: rgba(122, 78, 78, 0.3);     border: 1px solid #7a4e4e;     color: #f4e1d2;     transition: all 0.3s ease; }  .camera-controls button:hover {     background-color: rgba(122, 78, 78, 0.5);     box-shadow: 0 2px 8px rgba(122, 78, 78, 0.3); }  .camera-controls .color-picker {     border: 1px solid #7a4e4e; }  .camera-controls .size-slider {     background: #3a2424;     border: 1px solid #7a4e4e; }  label {     font-weight: 500;     text-transform: uppercase;     letter-spacing: 0.5px;     color: #d97706; /* Amber for labels */ }  input, textarea, select {     border: 1px solid #7a4e4e;     background-color: rgba(54, 36, 36, 0.8);     color: #f4e1d2;     box-shadow: 0 2px 6px rgba(122, 78, 78, 0.1);     transition: all 0.3s ease; }  input:focus, textarea:focus, select:focus {     outline: none;     border-color: #d97706;     box-shadow: 0 0 8px rgba(217, 119, 6, 0.3); }  button {     background-color: rgba(122, 78, 78, 0.3);     border: 1px solid #7a4e4e;     color: #f4e1d2;     text-transform: uppercase;     letter-spacing: 0.5px;     transition: all 0.3s ease; }  button:hover {     background-color: rgba(122, 78, 78, 0.5);     box-shadow: 0 2px 8px rgba(122, 78, 78, 0.3);     transform: translateY(-1px); }  button.primary {     background-color: rgba(217, 119, 6, 0.3);     border: 1px solid #d97706;     color: #f4e1d2; }  button.primary:hover {     background-color: rgba(217, 119, 6, 0.5);     box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3); }  button.danger {     background-color: rgba(220, 38, 38, 0.3); /* Softer red */     border: 1px solid #dc2626;     color: #f4e1d2; }  button.danger:hover {     background-color: rgba(220, 38, 38, 0.5);     box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3); }  button.active {     border: 1px solid #10b981; /* Emerald green for active state */     box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);     color: #10b981; }  .modal {     background-color: rgba(46, 28, 28, 0.9);     backdrop-filter: blur(3px); }  .modal-content {     background-color: rgba(54, 36, 36, 0.95);     border: 1px solid #7a4e4e;     box-shadow: 0 8px 24px rgba(122, 78, 78, 0.2); }  .property-list {     border: 1px solid #7a4e4e;     background-color: rgba(54, 36, 36, 0.8); }  .tab-navigation {     border-bottom: 1px solid #7a4e4e; }  .tab {     text-transform: uppercase;     letter-spacing: 0.5px;     transition: all 0.3s ease; }  .tab:hover {     background-color: rgba(122, 78, 78, 0.2); }  .tab.active {     border-bottom: 2px solid #d97706;     box-shadow: 0 4px 8px -4px rgba(217, 119, 6, 0.4);     font-weight: 600; }  .instructions {     background-color: rgba(54, 36, 36, 0.8);     border-left: 3px solid #d97706;     box-shadow: 0 2px 6px rgba(217, 119, 6, 0.1); }  #grid-display {     background-color: rgba(46, 28, 28, 0.9);     border: 1px solid #7a4e4e;     box-shadow: 0 4px 12px rgba(122, 78, 78, 0.15); }  .success-message {     color: #10b981; /* Emerald green for success */     text-transform: uppercase;     letter-spacing: 0.5px;     animation: fadeOut 2s forwards;     animation-delay: 1s; }  .warning {     background-color: rgba(220, 38, 38, 0.15);     border-left: 3px solid #dc2626;     box-shadow: 0 2px 6px rgba(220, 38, 38, 0.1); }  .main-content-container {     background-color: #332121; /* Slightly lighter reddish-brown */     color: #f4e1d2; }  .content-sidebar {     background: linear-gradient(180deg, rgba(54, 36, 36, 0.95), rgba(46, 28, 28, 0.95));     border-right: 1px solid #7a4e4e;     box-shadow: 0 4px 12px rgba(122, 78, 78, 0.15); }  #graphics-rightbar {     background: linear-gradient(180deg, rgba(54, 36, 36, 0.95), rgba(46, 28, 28, 0.95));     border-left: 1px solid #7a4e4e;     box-shadow: 0 4px 12px rgba(122, 78, 78, 0.15); }  .grid-background {     background: #2b1e1e;     background-image: radial-gradient(rgba(122, 78, 78, 0.15) 1px, transparent 1px);     background-size:30px 30px; }  .toolbar {     background: linear-gradient(90deg, rgba(54, 36, 36, 0.95), rgba(46, 28, 28, 0.95));     border-bottom: 1px solid #7a4e4e; }  .btn {     border: 1px solid #7a4e4e;     background-color: rgba(122, 78, 78, 0.3);     color: #f4e1d2;     text-transform: uppercase;     transition: all 0.3s ease; }  .btn:hover {     background-color: rgba(122, 78, 78, 0.5);     box-shadow: 0 2px 8px rgba(122, 78, 78, 0.3);     transform: translateY(-1px); }  .btn-primary {     background-color: rgba(217, 119, 6, 0.3);     border: 1px solid #d97706;     color: #f4e1d2; }  .btn-primary:hover {     background-color: rgba(217, 119, 6, 0.5);     box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3); }  .btn-danger {     background-color: rgba(220, 38, 38, 0.3);     border: 1px solid #dc2626;     color: #f4e1d2; }  .btn-danger:hover {     background-color: rgba(220, 38, 38, 0.5);     box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3); }  .btn-secondary {     background-color: rgba(122, 78, 78, 0.25);     border: 1px solid #7a4e4e; }  .btn-secondary:hover {     background-color: rgba(122, 78, 78, 0.4);     box-shadow: 0 2px 8px rgba(122, 78, 78, 0.3); }  .btn-special {     background-color: rgba(16, 185, 129, 0.3);     border: 1px solid #10b981;     color: #f4e1d2; }  .btn-special:hover {     background-color: rgba(16, 185, 129, 0.5);     box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3); }  #shape-list {     border-bottom: 1px solid rgba(122, 78, 78, 0.3); }  .shape-item {     background-color: rgba(54, 36, 36, 0.8);     border: 1px solid #7a4e4e;     transition: all 0.3s ease; }  .shape-item:hover {     background-color: rgba(122, 78, 78, 0.2);     transform: translateX(3px); }  .shape-item.active {     background-color: rgba(16, 185, 129, 0.15);     border-color: #10b981;     color: #10b981;     box-shadow: 0 0 8px rgba(16, 185, 129, 0.3); }  #inspector {     background: rgba(54, 36, 36, 0.95);     border-top: 1px solid #7a4e4e; }  .form-row label {     color: #d97706; }  .form-row input, .form-row select {     border: 1px solid #7a4e4e;     background-color: rgba(54, 36, 36, 0.8);     color: #f4e1d2;     box-shadow: 0 2px 6px rgba(122, 78, 78, 0.1); }  .scene-info {     background: rgba(46, 28, 28, 0.9prisma);     color: #f4e1d2;     box-shadow: 0 4px 12px rgba(122, 78, 78, 0.15);     border: 1px solid #7a4e4e; }  .button-danger {     background-color: rgba(220, 38, 38, 0.3);     border: 1px solid #dc2626;     color: #f4e1d2; }  .button-danger:hover {     background-color: rgba(220, 38, 38, 0.5);     box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3); }  h2, h3 {     color: #d97706;     text-transform: uppercase;     letter-spacing: 1px;     margin-bottom: 12px;     padding-bottom: 4px;     border-bottom: 1px solid #7a4e4e;     text-shadow: 0 0 4px rgba(217, 119, 6, 0.3); }  ::-webkit-scrollbar {     width: 6px;     height: 6px; }  ::-webkit-scrollbar-track {     background: rgba(54, 36, 36, 0.8); }  ::-webkit-scrollbar-thumb {     background: #7a4e4e;     border-radius: 3px; }  ::-webkit-scrollbar-thumb:hover {     background: #d97706; }"
       },
       "professional3": {
         "title": "Claude",

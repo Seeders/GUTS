@@ -1,0 +1,233 @@
+
+#graphics-editor-container #grid-display {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    padding: 5px 10px;
+    border-radius: 0;
+    font-family: 'Courier New', monospace;
+}
+#graphics-editor-container .btn {
+    padding: 0;
+}
+
+#graphics-editor-container .btn-add {
+  background-color: rgba(16, 185, 129, 0.3);
+  border: 1px solid #10b981;
+  color: #f4e1d2;
+}
+#graphics-editor-container .btn-add:hover {
+  background-color: rgba(16, 185, 129, 0.5);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+#graphics-editor-container #graphics-rightbar {
+    width: 360px;
+    display: flex;
+    flex-direction: column;
+}
+
+#graphics-editor-container #canvas-container {
+    flex: 1;
+    position: relative;
+}
+
+#graphics-editor-container #graphics-editor-canvas {
+    width: 100%;
+    height: 100%;
+    cursor: grab;
+    outline: none;
+}
+
+#graphics-editor-container .toolbar {
+    display: flex;
+    flex-direction: column;
+    padding: 10px 5px;
+    gap: 5px;  
+    align-items: normal;
+}
+#graphics-editor-container .toolbar > div {
+    display: flex;
+    gap: 7px;
+    justify-content: space-between;
+}
+#graphics-editor-container .toolbar > div > div {
+    display: flex;
+    gap: 5px;
+}
+
+#graphics-editor-container #shape-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+}
+
+#graphics-editor-container .shape-item {
+    padding: 12px;
+    margin-bottom: 8px;
+    border-radius: 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#graphics-editor-container #inspector {
+    padding: 15px;
+}
+
+#graphics-editor-container .scene-info {
+    padding: 10px 15px;
+    position: absolute;
+    bottom: 15px;
+    left: 15px;
+    border-radius: 0;
+    font-size: 13px;
+}
+#graphics-editor-container #move-modal button, #rotate-modal button, #isometric-modal button {
+    width: 48%;
+}
+
+
+#graphics-editor-container .ref-container {
+    display: flex;
+    gap: 10px;
+}
+
+#graphics-editor-container .ref-select {
+    flex: 1;
+    min-width: 150px;
+}
+
+#graphics-editor-container .ref-values {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 5px;
+}
+
+#graphics-editor-container .ref-value-item {
+    border-radius: 4px;
+    padding: 3px 6px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+#graphics-editor-container .remove-ref-btn {
+    padding: 0 3px;
+    font-size: 14px;
+}
+
+#graphics-editor-container #rotate-group-modal .modal-content {
+    width: 400px;
+    padding: 20px;
+}
+
+#graphics-editor-container #rotate-group-modal .form-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+#graphics-editor-container #rotate-group-modal label {
+    width: 100px;
+    display: inline-block;
+}
+
+#graphics-editor-container #rotate-group-modal input[type="range"] {
+    flex-grow: 1;
+    margin: 0 10px;
+}
+
+#graphics-editor-container #rotate-group-modal .button-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+#graphics-editor-container #rotate-group-modal button {
+    margin-left: 10px;
+    padding: 6px 12px;
+    cursor: pointer;
+}
+
+/* Base styling for shape list */
+#graphics-editor-container #shape-list {
+    padding: 10px;
+    user-select: none; /* Prevent text selection during drag */
+  }
+  
+  /* Common styles for items */
+  #graphics-editor-container  .shape-item, .group-item {
+    padding: 8px;
+    margin: 5px 0;
+    border-radius: 4px;
+    cursor: grab;
+    border: 1px solid transparent;
+    transition: border-color 0.2s;
+  }
+  
+  /* Shapes styling */
+  #graphics-editor-container  .shape-item {
+    border-left: 1px solid #555;
+  }
+  
+  #graphics-editor-container  .shape-item:active {
+    cursor: grabbing;
+  }
+  
+  /* Group styling */
+  #graphics-editor-container  .group-item {
+    border-left: 4px solid #007bff; /* Visual distinction for groups */
+    font-weight: 500;
+  }
+  
+  /* Selected states - use border instead of background */
+  #graphics-editor-container  .shape-item.selected, 
+  #graphics-editor-container  .group-item.selected {
+    border-color: #4080ff;
+  }
+  
+  /* Drag-over states */
+  #graphics-editor-container .group-item.drag-over,
+  #graphics-editor-container  #shape-list.drag-over {
+    border-color: #40a040;
+    box-shadow: 0 0 3px rgba(0, 100, 0, 0.5);
+  }
+  
+  /* Animation for when dragging */
+  #graphics-editor-container .shape-item.dragging {
+    opacity: 0.7;
+  }
+  
+  /* Group shapes container */
+  #graphics-editor-container .group-shapes {
+    margin-left: 15px;
+    padding: 5px;
+    border-left: 2px dashed #666;
+  }
+  
+  /* Ungrouped shapes section */
+  #graphics-editor-container #shape-list .ungrouped-shapes {
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px dashed #666;
+  }
+
+  #graphics-editor-container .transform-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+#graphics-editor-container .transform-buttons button {
+    flex: 1;
+    padding: 8px;
+    background: #444;
+    border: 1px solid #666;
+    color: white;
+    cursor: pointer;
+}
+
+#graphics-editor-container .transform-buttons button.active {
+    background: #0066cc;
+    border-color: #0088ff;
+}

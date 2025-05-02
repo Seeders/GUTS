@@ -11,6 +11,7 @@ const bodyParser = require('body-parser');
 // Base directory for all file operations
 const BASE_DIR = path.join(__dirname, '/');
 const PROJS_DIR = path.join(BASE_DIR, 'projects');
+const MODULES_DIR = path.join(BASE_DIR, 'editor_modules');
 const MODELS_DIR = path.join(BASE_DIR, 'samples/models');
 const CONFIG_DIR = path.join(BASE_DIR, 'config');
 const upload = multer({ dest: path.join(BASE_DIR, 'uploads') });
@@ -126,9 +127,12 @@ app.post('/save-file', async (req, res) => {
 });
 
 app.post('/read-file', async (req, res) => {
-    let { path: filePath } = req.body;
-    filePath = path.join(PROJS_DIR, filePath);
-    console.log('Reading file from:', filePath);
+    let { path: filePath, isModule: isModule } = req.body;
+    if(!isModule){
+        filePath = path.join(PROJS_DIR, filePath);
+    } else {
+        filePath = path.join(MODULES_DIR, filePath);
+    }
     try {
         if (!fsSync.existsSync(filePath)) {
             return res.status(404).send({ success: false, error: 'File not found' });
@@ -167,8 +171,12 @@ async function getAllFiles(dirPath, baseDir) {
 }
 
 app.post('/list-files', async (req, res) => {
-    let { path: dirPath, since } = req.body;
-    dirPath = path.join(PROJS_DIR, dirPath);
+    let { path: dirPath, since, isModule: isModule } = req.body;
+    if(!isModule){
+        dirPath = path.join(PROJS_DIR, dirPath);
+    } else {
+        dirPath = path.join(MODULES_DIR, dirPath);
+    }
     const sinceTimestamp = since || 0;
     console.log('Listing files in:', dirPath);
 
@@ -181,6 +189,28 @@ app.post('/list-files', async (req, res) => {
         setupWatcher(dirPath);
 
         const fileDetails = await getAllFiles(dirPath, PROJS_DIR);
+        const filteredFiles = fileDetails.filter(file => file.modified > sinceTimestamp);
+        res.json(filteredFiles);
+    } catch (error) {
+        console.error('Error listing files:', error);
+        res.status(500).send({ success: false, error: error.message });
+    }
+});
+app.post('/list-modules', async (req, res) => {
+    let { path: dirPath, since } = req.body;
+    dirPath = path.join(MODULES_DIR, dirPath);
+    const sinceTimestamp = since || 0;
+    console.log('Listing modules in:', dirPath);
+
+    try {
+        if (!fsSync.existsSync(dirPath)) {
+            console.log('Directory does not exist yet:', dirPath);
+            return res.json([]);
+        }
+
+        setupWatcher(dirPath);
+
+        const fileDetails = await getAllFiles(dirPath, MODULES_DIR);
         console.log('All files found:', JSON.stringify(fileDetails));
         const filteredFiles = fileDetails.filter(file => file.modified > sinceTimestamp);
         console.log('Filtered files (modified > since):', JSON.stringify(filteredFiles));
@@ -190,7 +220,6 @@ app.post('/list-files', async (req, res) => {
         res.status(500).send({ success: false, error: error.message });
     }
 });
-
 // File watcher setup
 function setupWatcher(dirPath) {
     if (watchers.has(dirPath)) {
@@ -211,7 +240,6 @@ function setupWatcher(dirPath) {
     watcher
         .on('add', filePath => {
             if (SUPPORTED_EXTENSIONS.some(ext => filePath.endsWith(ext))) {
-                console.log(`File added: ${filePath}`);
                 fileTimestamps.set(filePath, Date.now());
             }
         })
