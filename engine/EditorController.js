@@ -128,7 +128,6 @@ class EditorController {
         if(window.location.hostname == "localhost") {
             await this.fs.importProject(name);
         }
-        debugger;
         const project = this.model.state.project;
         // Initialize module manager for handling dynamic modules
         this.moduleManager = new ModuleManager(
