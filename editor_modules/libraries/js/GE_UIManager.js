@@ -218,7 +218,6 @@ class GE_UIManager {
                      });
 
                      const result = await response.json();
-                     debugger;
                      this.graphicsEditor.getFrameShape().url = result.filePath;
                      this.graphicsEditor.refreshShapes(false);
                 } catch (error) {
