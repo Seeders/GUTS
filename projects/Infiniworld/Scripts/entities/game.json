@@ -1,7 +1,6 @@
 {
   "title": "Game",
   "components": [
-    "MapManager",
     "AudioManager",
     "InfiniWorld",
     "Physics",

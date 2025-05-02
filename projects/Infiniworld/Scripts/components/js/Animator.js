@@ -7,8 +7,6 @@ class Animator extends engine.Component {
     
     
     init({ objectType, spawnType}) {
-
-        this.animations = this.game.imageManager.getImages(objectType, spawnType); // { "idle": [...], "walk": [...] }
         if(!this.animations) this.animations = {};
         this.currentAnimation = "idle";
         this.currentFrame = 0;

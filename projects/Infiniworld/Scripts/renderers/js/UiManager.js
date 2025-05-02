@@ -286,19 +286,7 @@ class UiManager extends engine.Component {
 
 
     draw() {
-        this.shardsDisplay.textContent = Math.floor(this.game.state.bloodShards);
-        this.essenceDisplay.textContent = Math.floor(this.game.state.essence);
-        this.essenceNeededDisplay.textContent = Math.floor(this.game.state.essenceToNextLevel);
-        this.hpDisplay.textContent = Math.floor(this.game.state.bloodCoreHP);
-        this.populationDisplay.textContent = Math.floor(this.game.state.stats.population);
-        this.maxPopulationDisplay.textContent = Math.floor(this.game.state.stats.maxPopulation);  
-        if (this.game.state.enemies.length === 0 && this.game.state.enemiesSpawned >= this.game.state.numEnemiesInWave && !this.game.state.victory) {
-            const countdown = Math.ceil((this.game.state.waveDelay - this.game.state.waveTimer) / 60);
-            this.ctx.fillStyle = 'white';
-            this.ctx.font = '20px Arial';
-            this.ctx.textAlign = 'center';
-            this.ctx.fillText(`Next Wave in ${countdown}...`, this.canvas.width / 2, 50);
-        }  
+        this.hpDisplay.textContent = Math.floor(this.game.state.bloodCoreHP); 
         if(!this.game.config.configs.game.is3D) {
             this.renderCanvas();
         }

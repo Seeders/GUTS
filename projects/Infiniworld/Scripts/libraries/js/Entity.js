@@ -100,8 +100,6 @@ class Entity {
         return !this.destroyed;
     }
     draw() {
-        const isoPos = this.game.translator.pixelToIso(this.position.x, this.position.y);    
-        this.drawPosition = { x: isoPos.x, y: isoPos.y };
 
         for(let r in this.renderers) {
             this.renderers[r].draw();  
