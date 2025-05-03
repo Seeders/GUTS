@@ -1,0 +1,56 @@
+<div id="scene-editor-container" class="main-content-container">
+   <div id="scene-sidebar" class="sidebar">
+      <div class="sidebar-header">Hierarchy</div>
+      <div id="scene-hierarchy" class="hierarchy">
+        <!-- Entities will be populated here -->
+      </div>
+      <div class="toolbar">
+        <button class="btn add-entity-btn" id="addEntityBtn">+ Add Entity</button>
+      </div>
+   </div>
+      
+   <div class="main-content">
+      <div id="scene-view" class="scene-view">      
+         <div id="scene-canvas-container" class="grid-background">
+            <canvas id="scene-editor-canvas"></canvas>
+         </div>
+      </div>
+   </div>
+ 
+   <div id="scene-inspector" class="inspector">
+      <div class="sidebar-header">Inspector</div>
+      <div class="no-selection" id="scene-noSelection">
+        No entity selected
+      </div>
+      <div id="scene-entityInspector" style="display: none;">        
+        <!-- Components will be added here dynamically -->
+        <div id="scene-components">
+          <!-- Example component (will be created dynamically) -->
+        </div>
+        
+        <div class="toolbar">
+          <button class="btn add-component-btn" id="addComponentBtn">+ Add Component</button>
+        </div>
+      </div>
+   </div>
+   
+</div>
+
+ <!-- <div id="entityDropdown" class="dropdown-content">
+   <a data-type="cube">Cube</a>
+   <a data-type="sphere">Sphere</a>
+   <a data-type="cylinder">Cylinder</a>
+   <a data-type="plane">Plane</a>
+   <a data-type="light">Light</a>
+   <a data-type="camera">Camera</a>
+   <a data-type="empty">Empty Object</a>
+ </div>
+
+ <div id="componentDropdown" class="dropdown-content">
+   <a data-type="meshRenderer">Mesh Renderer</a>
+   <a data-type="light">Light</a>
+   <a data-type="collider">Collider</a>
+   <a data-type="rigidbody">Rigidbody</a>
+   <a data-type="audio">Audio</a>
+   <a data-type="script">Script</a>
+ </div> -->

@@ -1,28 +1,17 @@
 class Entity {
     constructor(game, x, y, type) {
         this.game = game;
-        this.moduleManager = game.moduleManager;
-        this.position = new THREE.Vector3(x, 0, y);
-        this.quaternion = new THREE.Quaternion();
-        this.velocity = new THREE.Vector3();
+        this.moduleManager = game.moduleManager;        
         this.components = [];
         this.renderers = [];
         this.destroyed = false;        
         this.id = ++game.entityId;
         this.type = type;
-        this.gridPosition = { x: 0, y: 0};
-        this.drawPosition = { x: 0, y: 0};
-        this.lastPosition = {...this.position};
-        this.lastGridPosition = {...this.gridPosition};
-        this.lastDrawPosition = {...this.drawPosition};
         this.collisionRadius = 5;   
-        this.entityHeight = 10;     
-        if(this.game.gameEntity){
-            this.setGridPosition();
-            this.position.y = this.getCurrentTerrainHeight();
-        }        
+        this.entityHeight = 10;    
+        this.addComponent("transform", { x: x, y: 0, z: y });
     }
-    getAABB(position = this.position) {
+    getAABB(position = this.transform.position) {
         return {
             min: {
                 x: position.x - this.collisionRadius,
@@ -37,7 +26,7 @@ class Entity {
         };
     }
     getCurrentTerrainHeight(){
-        return this.game.gameEntity.getComponent('game').getTerrainHeight(this.position);
+        return this.game.gameEntity.getComponent('game').getTerrainHeight(this.transform.position);
     }
 
     getComponent(name) {
@@ -62,31 +51,9 @@ class Entity {
             this.components.splice(index, 1);
         }
     }
-    setGridPosition() {
-        if(this.game.translator){
-            let gridPosition = this.game.translator.pixelToGrid( this.position.x, this.position.y ); 
-            this.gridPosition = this.game.translator.snapToGrid(gridPosition.x, gridPosition.y);   
-            return;
-        }
-        this.gridPosition = { x: 0, y: 0 };
-    }
-    updateLastPositions() {
-        this.lastPosition = {...this.position};
-        this.lastGridPosition = {...this.gridPosition};
-        this.lastDrawPosition = {...this.drawPosition};         
-    }
-    
-    getCurrentTile() {                     
-        if(this.game.state.tileMap.length > this.gridPosition.y && this.gridPosition.y > 0 && this.game.state.tileMap[Math.floor(this.gridPosition.y)] && this.game.state.tileMap[Math.floor(this.gridPosition.y)].length > this.gridPosition.x && this.gridPosition.x > 0){
-            return this.game.state.tileMap[Math.floor(this.gridPosition.y)][Math.floor(this.gridPosition.x)];
-        }
-        return { typeId: 0};
-    }
     update() {    
-        this.setGridPosition();
         for(let c in this.components) {
-            this.components[c].update();   
-            this.setGridPosition();
+            this.components[c].update(); 
             if(this.destroyed) break;
         }                
         return !this.destroyed;
@@ -96,7 +63,6 @@ class Entity {
             this.components[c].postUpdate();   
             if(this.destroyed) break;
         }     
-        this.updateLastPositions(); 
         return !this.destroyed;
     }
     draw() {
