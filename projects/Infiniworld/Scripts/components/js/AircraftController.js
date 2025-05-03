@@ -26,7 +26,7 @@ class AircraftController extends engine.Component {
         this.dampingFactor = dampingFactor;
         this.maxSpeed = maxSpeed;
         this.cameraSmoothing = cameraSmoothing;
-        this.parent.quaternion = new THREE.Quaternion();
+        this.parent.transform.quaternion = new THREE.Quaternion();
 
         // Initialize PointerLockControls
         this.controls = new (this.game.libraryClasses.Three_PointerLockControls)(this.camera, this.infiniWorld.renderer.domElement);
@@ -73,8 +73,8 @@ class AircraftController extends engine.Component {
         this.cameraLookAhead = 5;
         this.lastCameraPosition = new THREE.Vector3();
         this.lastCameraLookAt = new THREE.Vector3();
-        this.smoothedAircraftPosition = new THREE.Vector3().copy(this.parent.position);
-        this.smoothedAircraftQuaternion = new THREE.Quaternion().copy(this.parent.quaternion);
+        this.smoothedAircraftPosition = new THREE.Vector3().copy(this.parent.transform.position);
+        this.smoothedAircraftQuaternion = new THREE.Quaternion().copy(this.parent.transform.quaternion);
 
         // Bind event handlers
         this.onKeyDown = this.onKeyDown.bind(this);
@@ -106,8 +106,8 @@ class AircraftController extends engine.Component {
         }
 
         if (event.code === 'KeyR') {
-            this.parent.quaternion.set(0, 0, 0, 1);
-            this.smoothedAircraftQuaternion.copy(this.parent.quaternion);
+            this.parent.transform.quaternion.set(0, 0, 0, 1);
+            this.smoothedAircraftQuaternion.copy(this.parent.transform.quaternion);
         }
     }
 
@@ -134,9 +134,9 @@ class AircraftController extends engine.Component {
     }
 
     updateAxes() {
-        this.forward.set(0, 0, 1).applyQuaternion(this.parent.quaternion).normalize();
-        this.up.set(0, 1, 0).applyQuaternion(this.parent.quaternion).normalize();
-        this.right.set(1, 0, 0).applyQuaternion(this.parent.quaternion).normalize();
+        this.forward.set(0, 0, 1).applyQuaternion(this.parent.transform.quaternion).normalize();
+        this.up.set(0, 1, 0).applyQuaternion(this.parent.transform.quaternion).normalize();
+        this.right.set(1, 0, 0).applyQuaternion(this.parent.transform.quaternion).normalize();
     }
 
     updateCameraPosition() {
@@ -144,8 +144,8 @@ class AircraftController extends engine.Component {
         const smoothingAlpha = this.cameraSmoothing * dt * 60; // Linear interpolation
     
         // Smooth aircraft position and quaternion
-        this.smoothedAircraftPosition.lerp(this.parent.position, smoothingAlpha);
-        this.smoothedAircraftQuaternion.slerp(this.parent.quaternion, smoothingAlpha);
+        this.smoothedAircraftPosition.lerp(this.parent.transform.position, smoothingAlpha);
+        this.smoothedAircraftQuaternion.slerp(this.parent.transform.quaternion, smoothingAlpha);
     
         // Calculate forward vector from smoothed quaternion
         const smoothedForward = new THREE.Vector3(0, 0, 1).applyQuaternion(this.smoothedAircraftQuaternion);
@@ -216,22 +216,22 @@ class AircraftController extends engine.Component {
         // Apply rotations
         if (this.rollInput !== 0) {
             const rollQuat = new THREE.Quaternion().setFromAxisAngle(this.forward, this.rollInput);
-            this.parent.quaternion.premultiply(rollQuat);
+            this.parent.transform.quaternion.premultiply(rollQuat);
         }
 
         if (this.pitchInput !== 0) {
             // Apply pitch without scaling to ensure consistent rate
             const pitchQuat = new THREE.Quaternion().setFromAxisAngle(this.right, this.pitchInput * dt);
-            this.parent.quaternion.premultiply(pitchQuat);
+            this.parent.transform.quaternion.premultiply(pitchQuat);
         }
 
         if (this.yawInput !== 0) {
             const yawQuat = new THREE.Quaternion().setFromAxisAngle(this.worldUp, this.yawInput * dt);
-            this.parent.quaternion.premultiply(yawQuat);
+            this.parent.transform.quaternion.premultiply(yawQuat);
         }
 
         // Normalize quaternion
-        this.parent.quaternion.normalize();
+        this.parent.transform.quaternion.normalize();
 
         // Update velocity
         this.velocity.copy(this.forward).multiplyScalar(currentSpeed);
@@ -243,7 +243,7 @@ class AircraftController extends engine.Component {
         }
 
         // Update position
-        this.parent.position.add(this.velocity.clone().multiplyScalar(dt));
+        this.parent.transform.position.add(this.velocity.clone().multiplyScalar(dt));
 
         // Update camera
         this.updateCameraPosition();

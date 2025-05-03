@@ -26,14 +26,28 @@ class GameLoader extends engine.Component {
       
         // Use ModuleManager's script environment
     
-        this.game.gameEntity = this.game.createEntityFromConfig(0, 0, 'game', { gameConfig: this.config.configs.game, canvas: this.canvas, canvasBuffer: this.canvasBuffer, terrainCanvasBuffer: this.terrainCanvasBuffer, worldObjects: this.config.worldObjects, levelName: this.game.state.level, level: this.config.levels[this.game.state.level], palette: this.game.palette });
+        this.game.gameEntity = this.game.createEntityFromConfig(0, 0, 'game', 
+            { 
+                gameConfig: this.config.configs.game, 
+                canvas: this.canvas, 
+                canvasBuffer: this.canvasBuffer, 
+                terrainCanvasBuffer: this.terrainCanvasBuffer, 
+                levelName: this.game.state.level, 
+                level: this.config.levels[this.game.state.level], 
+                palette: this.game.palette 
+            }
+        );
  
         this.game.audioManager = this.game.gameEntity.getComponent('AudioManager');  
 
-        this.player = this.game.spawn(0, 0, "player",
-            { spawnType: 'knight', objectType: 'enemies', setDirection: 1 });
-        console.log('spawned knight');
-        this.player.position.y += 50;
+        this.player = this.game.spawn(0, 0, "player", 
+            { 
+                spawnType: 'knight', 
+                objectType: 'enemies', 
+                setDirection: 1 
+            }
+        );
+        this.player.transform.position.y += 50;
         this.player.placed = true;
         this.game.player = this.player;
     }

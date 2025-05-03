@@ -20,8 +20,8 @@ class RangeIndicator extends engine.Component {
 
     drawRangeIndicator(range) {    
         const drawRage = range;        
-        const pixelX = this.parent.position.x;
-        const pixelY = this.parent.position.y;
+        const pixelX = this.parent.transform.position.x;
+        const pixelY = this.parent.transform.position.y;
         let gridPos = this.translator.pixelToGrid(pixelX, pixelY);
         gridPos = this.translator.snapToGrid(gridPos.x, gridPos.y);
         const isoPos = this.translator.pixelToIso(pixelX, pixelY);

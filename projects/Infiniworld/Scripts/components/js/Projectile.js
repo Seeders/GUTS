@@ -22,7 +22,7 @@ class Projectile extends engine.Component {
           this.game.audioManager.playSound('sounds', this.stats.attackSound);
       }
       
-      this.parent.position.y += 10;
+      this.parent.transform.position.y += 10;
       // Add physics properties
       this.parent.velocity = new THREE.Vector3(
           direction.x * this.stats.speed,
@@ -44,15 +44,15 @@ class Projectile extends engine.Component {
       
       // Particle spawning logic
       if (this.parent.lastPosition) {
-          const tDx = this.parent.lastPosition.x - this.parent.position.x;
-          const tDy = this.parent.lastPosition.y - this.parent.position.y;
-          const tDz = this.parent.lastPosition.z - this.parent.position.z;
+          const tDx = this.parent.transform.lastPosition.x - this.parent.transform.position.x;
+          const tDy = this.parent.transform.lastPosition.y - this.parent.transform.position.y;
+          const tDz = this.parent.transform.lastPosition.z - this.parent.transform.position.z;
           const tDistSq = tDx * tDx + tDy * tDy + tDz * tDz;
           const tDist = Math.sqrt(tDistSq);
           this.distanceTraveled += tDist;
           
           if (this.def.particle && this.distanceTraveled > this.distanceToSpawnParticle) {
-              this.game.spawn(this.parent.position.x, this.parent.position.y, this.parent.position.z, "particle", { 
+              this.game.spawn(this.parent.transform.position.x, this.parent.transform.position.y, this.parent.transform.position.z, "particle", { 
                   objectType: "particles", 
                   spawnType: this.def.particle
               });
@@ -62,10 +62,10 @@ class Projectile extends engine.Component {
       }
       
       // Store current position for next frame
-      this.parent.lastPosition = {
-          x: this.parent.position.x,
-          y: this.parent.position.y,
-          z: this.parent.position.z
+      this.parent.transform.lastPosition = {
+          x: this.parent.transform.position.x,
+          y: this.parent.transform.position.y,
+          z: this.parent.transform.position.z
       };
       
       if(this.parent.grounded){
@@ -95,7 +95,7 @@ class Projectile extends engine.Component {
       
       // Optional: Spawn impact effect
       if (this.def.impactParticle) {
-          this.game.spawn(this.parent.position.x, this.parent.position.y, this.parent.position.z, "particle", {
+          this.game.spawn(this.parent.transform.position.x, this.parent.transform.position.y, this.parent.transform.position.z, "particle", {
               objectType: "particles", 
               spawnType: this.def.impactParticle
           });

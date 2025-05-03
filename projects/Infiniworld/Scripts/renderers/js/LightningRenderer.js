@@ -19,7 +19,7 @@ class LightningRenderer extends engine.Component {
         this.ctx.lineWidth = 2;
         let stats = this.parent.getComponent('stats').stats;
         // Start from Tesla Coil (parent position)
-        let startPos = this.game.translator.pixelToIso(this.parent.position.x, this.parent.position.y);
+        let startPos = this.game.translator.pixelToIso(this.parent.transform.position.x, this.parent.transform.position.y);
         startPos.y -= this.startOffsetY;//dont shoot off the ground
         for (let i = 0; i < projectile.chainTargets.length; i++) {
             const target = projectile.chainTargets[i];

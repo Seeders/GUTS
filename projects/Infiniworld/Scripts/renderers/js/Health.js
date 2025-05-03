@@ -1,16 +1,12 @@
 class Health extends engine.Component {
-    
-    constructor(game, parent, params) {
-        super(game, parent, params);
-    }
-    
-    
+       
   init(){
         let statsComp = this.parent.getComponent('stats');
         this.hp = statsComp.stats.hp;
         
         statsComp.addStat('maxHp', this.hp);
     }
+
     update() {        
         if (this.hp <= 0){            
             this.parent.destroy();
@@ -24,7 +20,7 @@ class Health extends engine.Component {
         const barWidth = 30;
         this.game.ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
 
-        // const isoPos = this.game.translator.pixelToIso(this.parent.position.x, this.parent.position.y)
+        // const isoPos = this.game.translator.pixelToIso(this.parent.transform.position.x, this.parent.transform.position.y)
 
         // this.game.ctx.fillRect(isoPos.x - barWidth/2, isoPos.y - imageSize * .3, barWidth, 5);
         // if( healthPercentage >= 0 ) {

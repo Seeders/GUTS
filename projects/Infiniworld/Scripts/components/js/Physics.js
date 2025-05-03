@@ -14,12 +14,12 @@ class Physics extends engine.Component {
     }
 
     registerEntity(entity) {
-        if (!entity.id || !entity.position) return;
+        if (!entity.id || !entity.transform.position) return;
         const collider = entity.getComponent('collider');
-        const aabb = collider ? collider.getAABB(entity.position) : entity.getAABB();
+        const aabb = collider ? collider.getAABB(entity.transform.position) : entity.getAABB();
         this.entities.set(entity.id, {
             entity,
-            position: { ...entity.position },
+            position: { ...entity.transform.position },
             velocity: { ...entity.velocity },
             aabb,
             collider: collider ? {
@@ -53,7 +53,7 @@ class Physics extends engine.Component {
 
         this.physicsDataBuffer.push({
             id: entity.id,
-            position: { ...entity.position },
+            position: { ...entity.transform.position },
             velocity: { ...entity.velocity },
             aabb: { ...data.aabb },
             collider: data.collider,
@@ -92,9 +92,9 @@ class Physics extends engine.Component {
         entities.forEach((updated) => {
             const data = this.entities.get(updated.id);
             if (!data) return;
-            data.entity.position.x = updated.position.x;
-            data.entity.position.y = updated.position.y;
-            data.entity.position.z = updated.position.z;
+            data.entity.transform.position.x = updated.position.x;
+            data.entity.transform.position.y = updated.position.y;
+            data.entity.transform.position.z = updated.position.z;
             data.entity.velocity.x = updated.velocity.x;
             data.entity.velocity.y = updated.velocity.y;
             data.entity.velocity.z = updated.velocity.z;            

@@ -12,7 +12,7 @@ class FollowPath extends engine.Component {
         this.x = this.game.state.paths[this.pathIndex][this.indexInPath].x;
         this.y = this.game.state.paths[this.pathIndex][this.indexInPath].y;
         // Convert to pixel position
-        this.parent.position = { 
+        this.parent.transform.position = { 
             x: this.x * this.gridSize + this.gridSize / 2, 
             y: this.y * this.gridSize + this.gridSize / 2 
         };
@@ -47,9 +47,9 @@ class FollowPath extends engine.Component {
             }
             
             // Convert grid coordinates to pixel coordinates
-            this.parent.position.x = this.x * this.gridSize + this.gridSize / 2;
-            this.parent.position.y = this.y * this.gridSize + this.gridSize / 2;
-            this.parent.position.z = this.game.gameEntity.getComponent('game').getTerrainHeight(this.parent.gridPosition);
+            this.parent.transform.position.x = this.x * this.gridSize + this.gridSize / 2;
+            this.parent.transform.position.y = this.y * this.gridSize + this.gridSize / 2;
+            this.parent.transform.position.z = this.game.gameEntity.getComponent('game').getTerrainHeight(this.parent.gridPosition);
         } else {
             this.game.state.bloodCoreHP -= this.stats.value;
             this.parent.destroy();

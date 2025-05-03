@@ -32,8 +32,8 @@ class Renderer extends engine.Component {
             return;
         }
         if( this.setDirection < 0 ) {
-            const dx = this.parent.position.x - this.parent.lastPosition.x; // Change in x
-            const dy = this.parent.position.y - this.parent.lastPosition.y; // Change in y
+            const dx = this.parent.transform.position.x - this.parent.lastPosition.x; // Change in x
+            const dy = this.parent.transform.position.y - this.parent.lastPosition.y; // Change in y
             
             // Only update direction if there's movement
             if (Math.abs(dx) > 0.001 || Math.abs(dy) > 0.001) {
@@ -70,10 +70,10 @@ class Renderer extends engine.Component {
                 const imgWidth = image.width;
                 const imgHeight = image.height;
                 
-                const drawX = this.parent.drawPosition.x - imgWidth / 2;
-                let drawY = this.parent.drawPosition.y - imgHeight / 2;
-                if( this.parent.position.z ) {
-                   drawY -= this.parent.position.z;                   
+                const drawX = this.parent.transform.drawPosition.x - imgWidth / 2;
+                let drawY = this.parent.transform.drawPosition.y - imgHeight / 2;
+                if( this.parent.transform.position.z ) {
+                   drawY -= this.parent.transform.position.z;                   
                 }
                 this.game.ctx.drawImage(image, drawX, drawY);
             }

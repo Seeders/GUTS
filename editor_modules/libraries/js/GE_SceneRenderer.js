@@ -50,10 +50,10 @@ class GE_SceneRenderer {
         this.renderer.setSize(this.graphicsEditor.canvas.clientWidth, this.graphicsEditor.canvas.clientHeight);
 
         // Add helpers
-        const gridHelper = new window.THREE.GridHelper(100, 100);
+        const gridHelper = new window.THREE.GridHelper(100, 10);
         this.scene.add(gridHelper);
 
-        const axesHelper = new window.THREE.AxesHelper(5);
+        const axesHelper = new window.THREE.AxesHelper(10);
         this.scene.add(axesHelper);
 
         // Orbit controls
@@ -121,13 +121,13 @@ class GE_SceneRenderer {
     
         this.renderer.render(this.scene, this.camera);
     }
+    
     async createObjectsFromJSON(frameData, scene) {
         for(const groupName in frameData) {
             const group = await this.graphicsEditor.shapeFactory.createGroupFromJSON(groupName, frameData[groupName]);
             scene.add(group);
         }
     }
-
     
     async generateIsometricSprites() {
         const frustumSize = parseFloat(document.getElementById('iso-frustum').value) || 48;

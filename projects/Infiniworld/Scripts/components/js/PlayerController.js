@@ -28,8 +28,7 @@ class PlayerController extends engine.Component {
         this.stepHeight = stepHeight;
         
         // Initialize character position and rotation
-        this.parent.quaternion = new THREE.Quaternion();
-        this.parent.position.y = 50; // Start above ground level to let gravity place the character
+        this.parent.transform.position.y = 50; // Start above ground level to let gravity place the character
         
         this.controls = { isLocked: false };
 
@@ -122,9 +121,9 @@ class PlayerController extends engine.Component {
             // When switching to third person, position the camera smoothly
             if (!this.isFirstPerson) {
                 const offset = new THREE.Vector3(0, this.thirdPersonHeight, this.thirdPersonDistance)
-                    .applyQuaternion(this.parent.quaternion);
-                this.cameraTargetPosition.copy(this.parent.position).add(offset);
-                this.cameraLookAt.copy(this.parent.position);
+                    .applyQuaternion(this.parent.transform.quaternion);
+                this.cameraTargetPosition.copy(this.parent.transform.position).add(offset);
+                this.cameraLookAt.copy(this.parent.transform.position);
             }
         }
         
@@ -167,8 +166,8 @@ class PlayerController extends engine.Component {
             this.cameraPitch = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, this.cameraPitch));
             
             // Set parent rotation from yaw (character rotates horizontally with camera)
-            this.parent.quaternion.setFromEuler(new THREE.Euler(0, this.cameraYaw, 0));
-            
+            this.parent.transform.quaternion.setFromEuler(new THREE.Euler(0, this.cameraYaw, 0));
+
             // Don't update camera immediately - let updateCameraPosition handle it
         }
     }
@@ -200,7 +199,7 @@ class PlayerController extends engine.Component {
         
         if (this.isFirstPerson) {
             // Position camera at character's eye level
-            const eyePosition = this.parent.position.clone().add(new THREE.Vector3(0, this.cameraHeight - 10, 0));
+            const eyePosition = this.parent.transform.position.clone().add(new THREE.Vector3(0, this.cameraHeight - 10, 0));
             
             // Apply forward offset along character's forward direction
             const forwardDir = new THREE.Vector3(0, 0, 1).applyQuaternion(combinedQuat); // Character's forward
@@ -222,14 +221,14 @@ class PlayerController extends engine.Component {
             // Calculate camera position behind the character
             const offsetDistance = this.thirdPersonDistance;
             const offsetHeight = this.thirdPersonHeight;
-            const targetPosition = this.parent.position.clone()
+            const targetPosition = this.parent.transform.position.clone()
                 .add(new THREE.Vector3(0, offsetHeight, 0))
                 .sub(forwardDir.clone().multiplyScalar(offsetDistance));
                 
             // Check for obstacles between character and camera
             const raycaster = new THREE.Raycaster();
             raycaster.set(
-                this.parent.position.clone().add(new THREE.Vector3(0, this.cameraHeight, 0)),
+                this.parent.transform.position.clone().add(new THREE.Vector3(0, this.cameraHeight, 0)),
                 forwardDir.clone().negate().normalize(),
                 0,
                 offsetDistance + this.parent.collisionRadius
@@ -239,7 +238,7 @@ class PlayerController extends engine.Component {
             this.camera.position.lerp(targetPosition, smoothingAlpha);
             
             // Look at character's head position
-            const lookAtPos = this.parent.position.clone().add(new THREE.Vector3(0, this.cameraHeight, 0));
+            const lookAtPos = this.parent.transform.position.clone().add(new THREE.Vector3(0, this.cameraHeight, 0));
             this.cameraLookAt.lerp(lookAtPos, smoothingAlpha);
             this.camera.lookAt(this.cameraLookAt);
         }
@@ -247,7 +246,7 @@ class PlayerController extends engine.Component {
     
     checkGrounded() {
         // Use raycasting to detect ground beneath the character
-        const origin = this.parent.position.clone().add(new THREE.Vector3(0, this.characterHeight * 0.5, 0));
+        const origin = this.parent.transform.position.clone().add(new THREE.Vector3(0, this.characterHeight * 0.5, 0));
         const direction = new THREE.Vector3(0, -1, 0);
         const maxDistance = this.characterHeight * 0.5 + 0.1; // Slightly more than half height
         
@@ -266,11 +265,11 @@ class PlayerController extends engine.Component {
         }
         
         // Get height from terrain
-        const worldX = this.parent.position.x;
-        const worldZ = this.parent.position.z;
+        const worldX = this.parent.transform.position.x;
+        const worldZ = this.parent.transform.position.z;
         const groundHeight = this.infiniWorld.getTerrainHeight(worldX, worldZ);
         
-        const characterBottom = this.parent.position.y;
+        const characterBottom = this.parent.transform.position.y;
         const distanceToGround = characterBottom - groundHeight;
         
         // Check if we're on or near the ground
@@ -278,7 +277,7 @@ class PlayerController extends engine.Component {
             this.isGrounded = true;
             this.isJumping = false;
             // Snap to ground
-            this.parent.position.y = groundHeight;
+            this.parent.transform.position.y = groundHeight;
             return true;
         } else if (distanceToGround < maxDistance) {
             // Close to ground but not exactly on it
@@ -302,7 +301,7 @@ class PlayerController extends engine.Component {
         moveDir.normalize();
         
         // Cast ray forward at step height to detect steps
-        const origin = this.parent.position.clone().add(new THREE.Vector3(0, this.stepHeight, 0));
+        const origin = this.parent.transform.position.clone().add(new THREE.Vector3(0, this.stepHeight, 0));
         const maxStepDistance = this.parent.collisionRadius + 0.1;
         
         if (this.debug.showRaycasts) {
@@ -320,16 +319,16 @@ class PlayerController extends engine.Component {
         
         // Check terrain height slightly ahead in movement direction
         const stepCheckDistance = this.parent.collisionRadius + 0.2;
-        const checkPoint = this.parent.position.clone().add(
+        const checkPoint = this.parent.transform.position.clone().add(
             moveDir.clone().multiplyScalar(stepCheckDistance)
         );
         
         const forwardHeight = this.infiniWorld.getTerrainHeight(checkPoint.x, checkPoint.z);
-        const heightDifference = forwardHeight - this.parent.position.y;
+        const heightDifference = forwardHeight - this.parent.transform.position.y;
         
         // If there's a small step up ahead, climb it
         if (heightDifference > 0 && heightDifference <= this.stepHeight) {
-            this.parent.position.y = forwardHeight;
+            this.parent.transform.position.y = forwardHeight;
         }
     }
     
@@ -424,9 +423,9 @@ class PlayerController extends engine.Component {
         
         // Check terrain collision and adjust height
         if (!this.isGrounded) {
-            const terrainHeight = this.infiniWorld.getTerrainHeight(this.parent.position.x, this.parent.position.z);
-            if (this.parent.position.y < terrainHeight) {
-                this.parent.position.y = terrainHeight;
+            const terrainHeight = this.infiniWorld.getTerrainHeight(this.parent.transform.position.x, this.parent.transform.position.z);
+            if (this.parent.transform.position.y < terrainHeight) {
+                this.parent.transform.position.y = terrainHeight;
                 this.isGrounded = true;
                 this.isJumping = false;
                 this.velocity.y = 0;
@@ -448,7 +447,7 @@ class PlayerController extends engine.Component {
     }
 
     applyMovementWithCollisions(movement, dt) {
-        const currentPosition = this.parent.position.clone();
+        const currentPosition = this.parent.transform.position.clone();
         let remainingMovement = movement.clone();
         const maxSteps = 3; // Limit steps to prevent infinite loops
         let stepCount = 0;
@@ -458,7 +457,7 @@ class PlayerController extends engine.Component {
             
             // Calculate new position for this step
             const stepMovement = remainingMovement.clone().multiplyScalar(1 / (maxSteps - stepCount + 1));
-            const newPosition = this.parent.position.clone().add(stepMovement);
+            const newPosition = this.parent.transform.position.clone().add(stepMovement);
             const playerAABB = this.getAABB(newPosition);
     
             // Check for tree collisions
@@ -466,7 +465,7 @@ class PlayerController extends engine.Component {
     
             if (collisions.length === 0) {
                 // No collisions, apply this step's movement
-                this.parent.position.copy(newPosition);
+                this.parent.transform.position.copy(newPosition);
                 remainingMovement.sub(stepMovement);
                 continue;
             }
@@ -475,23 +474,23 @@ class PlayerController extends engine.Component {
             let resolved = false;
     
             // Try moving in X direction
-            const tryX = this.parent.position.clone().add(new THREE.Vector3(stepMovement.x, stepMovement.y, 0));
+            const tryX = this.parent.transform.position.clone().add(new THREE.Vector3(stepMovement.x, stepMovement.y, 0));
             const tryXAABB = this.getAABB(tryX);
             const xCollisions = this.infiniWorld.checkTreeCollisions(tryXAABB);
     
             if (xCollisions.length === 0) {
-                this.parent.position.copy(tryX);
+                this.parent.transform.position.copy(tryX);
                 this.velocity.z = 0; // Stop Z movement
                 remainingMovement.z = 0;
                 resolved = true;
             } else {
                 // Try moving in Z direction
-                const tryZ = this.parent.position.clone().add(new THREE.Vector3(0, stepMovement.y, stepMovement.z));
+                const tryZ = this.parent.transform.position.clone().add(new THREE.Vector3(0, stepMovement.y, stepMovement.z));
                 const tryZAABB = this.getAABB(tryZ);
                 const zCollisions = this.infiniWorld.checkTreeCollisions(tryZAABB);
     
                 if (zCollisions.length === 0) {
-                    this.parent.position.copy(tryZ);
+                    this.parent.transform.position.copy(tryZ);
                     this.velocity.x = 0; // Stop X movement
                     remainingMovement.x = 0;
                     resolved = true;
@@ -506,25 +505,25 @@ class PlayerController extends engine.Component {
                 remainingMovement.z = 0;
     
                 // Allow vertical movement (e.g., gravity or jumping)
-                this.parent.position.y += stepMovement.y;
+                this.parent.transform.position.y += stepMovement.y;
                 remainingMovement.y = 0;
             }
     
             // Push out if still colliding
-            const finalAABB = this.getAABB(this.parent.position);
+            const finalAABB = this.getAABB(this.parent.transform.position);
             const finalCollisions = this.infiniWorld.checkTreeCollisions(finalAABB);
             if (finalCollisions.length > 0) {
                 // Calculate push-out vector (simplified example)
                 for (const treeAABB of finalCollisions) {
                     const pushOut = this.calculatePushOut(finalAABB, treeAABB);
-                    this.parent.position.add(pushOut);
+                    this.parent.transform.position.add(pushOut);
                     this.velocity.set(0, this.velocity.y, 0); // Stop horizontal velocity
                 }
             }
         }
     
         // Return true if any movement was applied
-        return !this.parent.position.equals(currentPosition);
+        return !this.parent.transform.position.equals(currentPosition);
     }
     
     // Helper function to calculate push-out vector
@@ -552,7 +551,7 @@ class PlayerController extends engine.Component {
         return pushOut;
     }
 
-    getAABB(position = this.parent.position) {
+    getAABB(position = this.parent.transform.position) {
         return {
             min: {
                 x: position.x - this.parent.collisionRadius,

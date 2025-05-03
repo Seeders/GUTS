@@ -13,7 +13,6 @@ class ModelRenderer extends engine.Component {
         this.animationData = this.game.config[objectType]?.[spawnType]?.render?.animations;
         this.modelData = this.game.config[objectType]?.[spawnType]?.render?.model;
         this.isGLTF = this.modelData[Object.keys(this.modelData)[0]].shapes[0].type == "gltf";
-console.log(this.isGLTF);
         this.clock = new THREE.Clock();
         this.clock.start(); 
         // Get the model
@@ -91,11 +90,11 @@ console.log(this.isGLTF);
             this.advanceFrame();
         }
         // Update position of model to match entity position
-        if (this.parent && this.parent.position) {
+        if (this.parent && this.parent.transform.position) {
             this.modelGroup.position.set(
-                this.parent.position.x,
-                this.parent.position.y,
-                this.parent.position.z
+                this.parent.transform.position.x,
+                this.parent.transform.position.y,
+                this.parent.transform.position.z
             );
             
             // Handle rotation based on movement direction
@@ -107,10 +106,10 @@ console.log(this.isGLTF);
     
     updateDirection() {
         // Calculate direction based on movement
-        if (this.parent && this.parent.lastPosition) {
-            const dx = this.parent.position.x - this.parent.lastPosition.x;
-            const dy = this.parent.position.z - this.parent.lastPosition.z;
-            this.modelGroup.quaternion.copy(this.parent.quaternion);
+        if (this.parent && this.parent.transform.lastPosition) {
+            const dx = this.parent.transform.position.x - this.parent.transform.lastPosition.x;
+            const dy = this.parent.transform.position.z - this.parent.transform.lastPosition.z;
+            this.modelGroup.quaternion.copy(this.parent.transform.quaternion);
 
             // Only update direction if there's significant movement
             if (Math.abs(dx) > 0.001 || Math.abs(dy) > 0.001) {

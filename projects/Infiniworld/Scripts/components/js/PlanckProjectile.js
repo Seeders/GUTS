@@ -26,8 +26,8 @@ init({ spawnType, owner, target, targetPosition, stats }) {
   
   // Calculate direction and set velocity
   const currentPosition = {
-    x: this.parent.position.x,
-    y: this.parent.position.y
+    x: this.parent.transform.position.x,
+    y: this.parent.transform.position.y
   };
   
   const targetPos = this.targetPosition ? this.targetPosition : this.target.position;
@@ -148,7 +148,7 @@ handleEnemyCollision(enemy) {
   // Splash damage if applicable
   if (this.stats.splashRadius > 0) {
     this.applySplashDamage(enemy);
-    this.game.spawn(this.parent.position.x, this.parent.position.y, "explosion", {
+    this.game.spawn(this.parent.transform.position.x, this.parent.transform.position.y, "explosion", {
       radius: this.stats.splashRadius
     });
   }
@@ -169,8 +169,8 @@ handleEnemyCollision(enemy) {
       
       // Recalculate velocity toward the new target
       const currentPosition = {
-        x: this.parent.position.x,
-        y: this.parent.position.y
+        x: this.parent.transform.position.x,
+        y: this.parent.transform.position.y
       };
       
       const dx = newTarget.position.x - currentPosition.x;
@@ -214,8 +214,8 @@ applySplashDamage(centerEnemy) {
     let enemyStatClone = { ...enemyStats.stats };
     enemyStatClone.energyShield = enemyEnergyShield.energyShield;
 
-    const dx = enemy.position.x - this.parent.position.x;
-    const dy = enemy.position.y - this.parent.position.y;
+    const dx = enemy.position.x - this.parent.transform.position.x;
+    const dy = enemy.position.y - this.parent.transform.position.y;
     const distSq = dx * dx + dy * dy;
 
     if (distSq <= splashRadiusSq) {
@@ -256,8 +256,8 @@ update() {
       
       // Recalculate velocity toward the last known position
       const currentPosition = {
-        x: this.parent.position.x,
-        y: this.parent.position.y
+        x: this.parent.transform.position.x,
+        y: this.parent.transform.position.y
       };
       
       const dx = this.targetPosition.x - currentPosition.x;
@@ -303,8 +303,8 @@ findNewTarget(nearbyEnemies) {
   const rangeSq = this.ownerStats.range * this.ownerStats.range * gridSize * gridSize;
   for (let enemy of nearbyEnemies) {
     if (!enemy.destroyed && !this.piercedEnemies.includes(enemy)) {
-      const dx = enemy.position.x - this.parent.position.x;
-      const dy = enemy.position.y - this.parent.position.y;
+      const dx = enemy.position.x - this.parent.transform.position.x;
+      const dy = enemy.position.y - this.parent.transform.position.y;
       const distSq = dx * dx + dy * dy;
       if (distSq < rangeSq) {
         return enemy;

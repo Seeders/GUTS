@@ -1,0 +1,18 @@
+{
+  "title": "Scene Editor",
+  "container": "scene-editor-container",
+  "libraries": [
+    "threejs",
+    "three.OrbitControls",
+    "Three_SkeletonUtils",
+    "GLTFLoader",
+    "ShapeFactory",  
+    "SceneEditor"
+  ],
+  "propertyName": "sceneData",
+  "interface": "sceneEditor",
+  "inputElement": "textarea",
+  "inputDataType": "json",
+  "loadHook": "renderSceneObject",
+  "saveHook": "saveSceneObject"
+}

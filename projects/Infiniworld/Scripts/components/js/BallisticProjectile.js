@@ -17,7 +17,7 @@ init({ spawnType, owner, target, stats }) {
     this.distanceToSpawnParticle = 1;
     
     // Ballistic trajectory variables
-    this.startPosition = { ...this.parent.position, z: 10 }; // Start 10 units above ground
+    this.startPosition = { ...this.parent.transform.position, z: 10 }; // Start 10 units above ground
     this.targetPosition = { ...this.target.position, z: 0 };
     this.time = 0;
     
@@ -28,7 +28,7 @@ init({ spawnType, owner, target, stats }) {
     this.maxHeight = this.totalDist / Math.PI;
     
     // Initialize position with Z component
-    this.parent.position.z = this.startPosition.z;
+    this.parent.transform.position.z = this.startPosition.z;
     this.positionZ = this.startPosition.z;
     
     // Animation state variables
@@ -54,32 +54,32 @@ setAnimation(anim) {
 }
 
 update() {
-    this.parent.position.z = this.positionZ;
+    this.parent.transform.position.z = this.positionZ;
     
     // Save previous z position to detect direction change
     this.lastZPosition = this.positionZ;
 
     // Calculate progress (0 to 1)
     this.time += this.game.deltaTime;
-    const dx = this.targetPosition.x - this.parent.position.x;
-    const dy = this.targetPosition.y - this.parent.position.y;
+    const dx = this.targetPosition.x - this.parent.transform.position.x;
+    const dy = this.targetPosition.y - this.parent.transform.position.y;
     const distSq = dx * dx + dy * dy;
     let dist = Math.sqrt(distSq);
     const speed = this.stats.speed;
-    this.parent.position.x += (dx / dist) * speed / (Math.PI);
-    this.parent.position.y += (dy / dist) * speed / (Math.PI);
+    this.parent.transform.position.x += (dx / dist) * speed / (Math.PI);
+    this.parent.transform.position.y += (dy / dist) * speed / (Math.PI);
 
 
     const currentDist = Math.sqrt(
-        (this.parent.position.x - this.startPosition.x) ** 2 + 
-        (this.parent.position.y - this.startPosition.y) ** 2
+        (this.parent.transform.position.x - this.startPosition.x) ** 2 + 
+        (this.parent.transform.position.y - this.startPosition.y) ** 2
     );
     const xyprogressToTarget = Math.min(1, currentDist / this.totalDist);
 
     // Parabolic trajectory calculation (2:1 isometric adjusted)
-    this.parent.position.z = this.maxHeight * (1 - Math.pow(2 * xyprogressToTarget - 1, 2));
+    this.parent.transform.position.z = this.maxHeight * (1 - Math.pow(2 * xyprogressToTarget - 1, 2));
 
-    this.positionZ = this.parent.position.z;
+    this.positionZ = this.parent.transform.position.z;
     
     // Calculate distance from peak height to determine if we're near the top
     const distanceFromPeak = Math.abs(this.positionZ - this.maxHeight);
@@ -116,12 +116,12 @@ update() {
     }
     
     // Check if we've hit the ground (Z <= 0)
-    if (this.parent.position.z <= 0) {
-        this.parent.position.z = 0; // Snap to ground
+    if (this.parent.transform.position.z <= 0) {
+        this.parent.transform.position.z = 0; // Snap to ground
 
         // Hit detection - same as before but at current position
-        const targetDistSq = (this.parent.position.x - this.target.position.x) ** 2 + 
-                            (this.parent.position.y - this.target.position.y) ** 2;
+        const targetDistSq = (this.parent.transform.position.x - this.target.position.x) ** 2 + 
+                            (this.parent.transform.position.y - this.target.position.y) ** 2;
 
 
 
@@ -138,15 +138,15 @@ update() {
     }
     
     // Update distance traveled for particles
-    const tDx = this.parent.lastPosition.x - this.parent.position.x;
-    const tDy = this.parent.lastPosition.y - this.parent.position.y;
+    const tDx = this.parent.lastPosition.x - this.parent.transform.position.x;
+    const tDy = this.parent.lastPosition.y - this.parent.transform.position.y;
     const tDist = Math.sqrt(tDx * tDx + tDy * tDy);
     this.distanceTraveled += tDist;
     
     if (this.def.particle && this.distanceTraveled > this.distanceToSpawnParticle) {
 
         let particle = this.game.spawn(this.parent.lastPosition.x + Math.random() * 4 - 2, this.parent.lastPosition.y + Math.random() * 4 - 2, "particle", { objectType: "particles", spawnType: this.def.particle });
-        particle.position.z = this.parent.position.z + Math.random() * 4 - 2;
+        particle.position.z = this.parent.transform.position.z + Math.random() * 4 - 2;
         this.distanceTraveled = 0;
         this.distanceToSpawnParticle += Math.random() * 2;
     }
@@ -160,12 +160,12 @@ processSplashDamage() {
         this.stats.splashRadius,
         "enemy"
     );
-    let explosion = this.game.spawn(this.parent.position.x, this.parent.position.y, "explosion", { radius: this.stats.splashRadius });
+    let explosion = this.game.spawn(this.parent.transform.position.x, this.parent.transform.position.y, "explosion", { radius: this.stats.splashRadius });
     for (const enemy of nearbyEnemies) {
         if (enemy.isDead) continue;
         
-        const dx = enemy.position.x - this.parent.position.x;
-        const dy = enemy.position.y - this.parent.position.y;
+        const dx = enemy.position.x - this.parent.transform.position.x;
+        const dy = enemy.position.y - this.parent.transform.position.y;
         const distSq = dx * dx + dy * dy;
         
         let gridSize = this.game.config.configs.game.gridSize;

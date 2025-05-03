@@ -1,10 +1,5 @@
 class Animator extends engine.Component {
     
-    constructor(game, parent, params) {
-        super(game, parent, params);
-        
-    }
-    
     
     init({ objectType, spawnType}) {
         if(!this.animations) this.animations = {};

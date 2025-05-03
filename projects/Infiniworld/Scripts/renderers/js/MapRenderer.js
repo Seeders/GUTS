@@ -5,11 +5,10 @@ class MapRenderer extends engine.Component {
     }
     
     
-    init({canvasBuffer, terrainCanvasBuffer, worldObjects, imageManager, levelName, gameConfig, level, isEditor, palette}) {   
+    init({canvasBuffer, terrainCanvasBuffer, imageManager, levelName, gameConfig, level, isEditor, palette}) {   
 
         this.config = gameConfig;
         this.imageManager = imageManager;
-        this.worldObjects = worldObjects;
         this.selectedTowerType = null;
         this.hoverCell = { x: -1, y: -1 };
         this.showRange = false;
@@ -268,10 +267,7 @@ class MapRenderer extends engine.Component {
     drawEnvironment(boardSize, amountToDraw) {
 
         let itemAmt = amountToDraw;
-        let environmentTypes = [];
-        for(let envType in this.worldObjects){
-            environmentTypes.push(envType);
-        }
+
         this.envCacheCtxBG.clearRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);
         this.envCacheCtxFG.clearRect(0, 0, this.config.canvasWidth, this.config.canvasHeight);
         
@@ -290,51 +286,7 @@ class MapRenderer extends engine.Component {
                     });
                 }
             });
-        } else {       
-            // for(let i = 0; i < itemAmt; i++) {
-            //     // Define the game board boundaries
-            //     const boardMinX = 0;
-            //     const boardMaxX = boardSize * this.config.gridSize;
-            //     const boardMinY = 0;
-            //     const boardMaxY = boardSize * this.config.gridSize;
-                
-            //     // Generate a random position that's outside the board but within a reasonable distance
-            //     let x, y;
-                
-            //     // Expand the area where we can place objects
-            //     const expandAmount = boardSize * this.config.gridSize; // Adjust this value as needed
-                
-            //     // Randomly choose whether to place on x-axis or y-axis outside the board
-            //     if (Math.random() < 0.5) {
-            //         // Place on the left or right of the board
-            //         x = Math.random() < 0.5 ?
-            //             boardMinX - Math.random() * expandAmount : // Left side
-            //             boardMaxX + Math.random() * expandAmount;  // Right side
-                    
-            //         // Allow y to be anywhere, including outside the board
-            //         y = boardMinY - expandAmount + Math.random() * (boardMaxY - boardMinY + 2 * expandAmount);
-            //     } else {
-            //         // Place on the top or bottom of the board
-            //         y = Math.random() < 0.5 ?
-            //             boardMinY - Math.random() * expandAmount : // Top side
-            //             boardMaxY + Math.random() * expandAmount;  // Bottom side
-                    
-            //         // Allow x to be anywhere, including outside the board
-            //         x = boardMinX - expandAmount + Math.random() * (boardMaxX - boardMinX + 2 * expandAmount);
-            //     }
-                
-            //     // Double-check that the position is actually outside the board
-            //     if (x < boardMinX || x > boardMaxX || y < boardMinY || y > boardMaxY) {
-            //         const type = environmentTypes[Math.floor(Math.random() * environmentTypes.length)];
-            //         const images = this.imageManager.getImages("environment", type);
-            //         if(images){
-            //             items.push( { img: images.idle[0][parseInt(Math.random()*images.idle[0].length)], x: x, y: y});
-            //         }
-            //     } else {
-            //         i--; // Position inside board, try again
-            //     }
-            // }
-        }
+        } 
 
         items.sort((a, b) => {
             return (a.y * boardSize + a.x) - (b.y * boardSize + b.x)

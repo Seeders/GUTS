@@ -19,8 +19,8 @@ class Attacker extends engine.Component {
         // Validate current target
         if (this.target) {
             const distance = Math.hypot(
-                this.target.position.x - this.parent.position.x,
-                this.target.position.y - this.parent.position.y
+                this.target.position.x - this.parent.transform.position.x,
+                this.target.position.y - this.parent.transform.position.y
             );
             if (distance > this.stats.range || this.target.getComponent('health').hp <= 0) {
                 this.target = null;
@@ -95,13 +95,13 @@ class Attacker extends engine.Component {
         projStats.critMultiplier = this.stats.critMultiplier || 2;
     
        	if(projectileDef.customRenderer == "lightning") {
-         	this.game.spawn(this.parent.position.x, this.parent.position.y, 'lightningProjectile', { objectType: "projectiles", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });
+         	this.game.spawn(this.parent.transform.position.x, this.parent.transform.position.y, 'lightningProjectile', { objectType: "projectiles", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });
         } else if(projectileDef.isBallistic) {
-         	this.game.spawn(this.parent.position.x, this.parent.position.y, 'ballisticProjectile', { objectType: "projectiles", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });
+         	this.game.spawn(this.parent.transform.position.x, this.parent.transform.position.y, 'ballisticProjectile', { objectType: "projectiles", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });
         } else if( this.stats.projectileCount > 0 ) {
-          this.game.spawn(this.parent.position.x, this.parent.position.y, 'multiShotProjectile', { objectType: "projectiles", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });
+          this.game.spawn(this.parent.transform.position.x, this.parent.transform.position.y, 'multiShotProjectile', { objectType: "projectiles", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });
         } else {
-          this.game.spawn(this.parent.position.x, this.parent.position.y, 'projectile', { objectType: "projectiles", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });
+          this.game.spawn(this.parent.transform.position.x, this.parent.transform.position.y, 'projectile', { objectType: "projectiles", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });
         }
     }
 }

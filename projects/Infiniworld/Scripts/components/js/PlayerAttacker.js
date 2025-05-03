@@ -40,7 +40,7 @@ class PlayerAttacker extends engine.Component {
         direction.normalize();
 
         // Spawn position: slightly offset from player
-        const spawnPos = this.parent.position.clone().add(direction.clone().multiplyScalar(5));
+        const spawnPos = this.parent.transform.position.clone().add(direction.clone().multiplyScalar(5));
 
         // Spawn projectile entity
         const projectile = this.game.spawn(

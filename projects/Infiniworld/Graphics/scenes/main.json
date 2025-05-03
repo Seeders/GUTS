@@ -1,0 +1,48 @@
+{
+  "title": "Main",
+  "entities": [
+    "game",
+    "player"
+  ],
+  "sceneData": [
+    {
+      "id": 2,
+      "name": "player",
+      "type": "player",
+      "parent": null,
+      "children": [],
+      "components": [
+        {
+          "type": "transform",
+          "properties": {
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "type": "renderer",
+          "properties": {
+            "url": "samples/models/KnightIdle/KnightIdle.glb",
+            "material": "standard",
+            "color": "#FFFFFF",
+            "receiveShadow": true,
+            "castShadow": true
+          }
+        }
+      ]
+    }
+  ]
+}

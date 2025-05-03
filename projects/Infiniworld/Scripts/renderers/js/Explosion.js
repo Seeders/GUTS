@@ -20,8 +20,8 @@ class Explosion extends engine.Component {
     }
 
     draw() {
-        const pixelX = this.parent.position.x;
-        const pixelY = this.parent.position.y;
+        const pixelX = this.parent.transform.position.x;
+        const pixelY = this.parent.transform.position.y;
 
         // Convert pixel to isometric
         const isoPos = this.game.translator.pixelToIso(pixelX, pixelY);

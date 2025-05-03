@@ -396,8 +396,6 @@ class GE_UIManager {
         }
     }
 
-  
-
     updateList() {
         const frameList = document.getElementById('frame-list');
         frameList.innerHTML = '';
