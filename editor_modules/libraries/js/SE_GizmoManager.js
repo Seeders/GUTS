@@ -342,8 +342,8 @@ class SE_GizmoManager {
             this.controls.enabled = true;
             
             // Update entity data in the SceneEditor
-            if (this.targetObject && this.sceneEditor.selectedEntity) {
-                const entity = this.sceneEditor.selectedEntity;
+            if (this.targetObject && this.sceneEditor.state.selectedEntity) {
+                const entity = this.sceneEditor.state.selectedEntity;
                 const transformComponent = entity.components.find(c => c.type === 'transform');
                 
                 if (transformComponent) {
