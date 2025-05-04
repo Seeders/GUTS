@@ -6,7 +6,7 @@
   ],
   "sceneData": [
     {
-      "id": 5,
+      "id": 3,
       "type": "game",
       "parent": null,
       "children": [],
@@ -41,7 +41,7 @@
       ]
     },
     {
-      "id": 6,
+      "id": 4,
       "type": "player",
       "parent": null,
       "children": [],

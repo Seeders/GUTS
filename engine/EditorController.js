@@ -441,7 +441,7 @@ class EditorController {
         }
 
         try {
-            return new ComponentClass(this, null, params, this.scriptContext);
+            return new ComponentClass(this, null, {...params, isEditor: true}, this.scriptContext);
         } catch (error) {
             console.error(`Error instantiating component ${typeName}:`, error);
             return null;

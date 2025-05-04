@@ -3,6 +3,7 @@ class InfiniWorld extends engine.Component {
       containerSelector = '#gameContainer',
       width = window.innerWidth,
       height = window.innerHeight,
+      isEditor,
       level,
       clock = new THREE.Clock()   
     }) {
@@ -20,7 +21,7 @@ class InfiniWorld extends engine.Component {
       this.clock = clock;
       this.onWindowResizeHandler = this.onWindowResize.bind(this);
       this.renderer = this.game.renderer || new THREE.WebGLRenderer({ antialias: true, canvas: this.canvas, alpha: true });
-      if(width && height){
+      if(!isEditor){
         this.renderer.setSize(width, height);
       }
       this.renderer.shadowMap.enabled = true;

@@ -45,7 +45,8 @@
             "rotationY": 0,
             "rotationZ": 0,
             "height": 20,
-            "scaleX": 1
+            "scaleX": 1,
+            "texture": ""
           },
           {
             "type": "cone",
@@ -59,7 +60,8 @@
             "rotationX": 0,
             "rotationY": 0,
             "rotationZ": 0,
-            "height": 60
+            "height": 60,
+            "texture": ""
           },
           {
             "type": "cone",
@@ -73,7 +75,8 @@
             "rotationX": 0,
             "rotationY": 0,
             "rotationZ": 0,
-            "height": 40
+            "height": 40,
+            "texture": ""
           },
           {
             "type": "cone",
@@ -87,7 +90,8 @@
             "rotationX": 0,
             "rotationY": 0,
             "rotationZ": 0,
-            "height": 15
+            "height": 15,
+            "texture": ""
           }
         ],
         "position": {
