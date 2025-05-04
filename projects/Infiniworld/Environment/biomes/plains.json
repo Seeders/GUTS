@@ -1,0 +1,10 @@
+{
+  "title": "Plains",
+  "groundColor": "#a3d39c",
+  "elevationNoiseSetting": "plainsElevation",
+  "detailNoiseSetting": "plainsDetail",
+  "worldObjectSpawns": [
+    "plainsRocks",
+    "plainsTrees"
+  ]
+}

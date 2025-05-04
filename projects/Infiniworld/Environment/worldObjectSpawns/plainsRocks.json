@@ -1,0 +1,6 @@
+{
+  "title": "Plains Rock",
+  "worldObject": "rock",
+  "density": 0.01,
+  "maxSlope": 0.3
+}

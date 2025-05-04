@@ -3,12 +3,17 @@
   "lighting": "sunnyDayLighting",
   "shadow": "sunnyDayShadows",
   "fog": "sunnyDayFog",
-  "heightMap": "fiveStep",
   "camera": "main",
-  "extensionSize": 768,
   "worldObjects": [
     "tree",
     "rock"
   ],
-  "backgroundColor": "#b3e5fc"
+  "backgroundColor": "#b3e5fc",
+  "heightMap": "fiveStep",
+  "biomes": [
+    "plains",
+    "desert",
+    "mountain",
+    "forest"
+  ]
 }

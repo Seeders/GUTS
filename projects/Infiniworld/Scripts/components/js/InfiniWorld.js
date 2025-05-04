@@ -3,100 +3,109 @@ class InfiniWorld extends engine.Component {
       containerSelector = '#gameContainer',
       width = window.innerWidth,
       height = window.innerHeight,
-      useControls = false
+      level,
+      clock = new THREE.Clock()   
     }) {
-      if (!this.game.config.configs.game.is3D) return;
-  
-      // Initialize core properties
-      this.clock = new THREE.Clock();
-      this.onWindowResizeHandler = this.onWindowResize.bind(this);
       this.container = document.querySelector(containerSelector) || document.body;
-      this.renderer = new THREE.WebGLRenderer({ antialias: true, canvas: this.game.canvas, alpha: true });
-      this.renderer.setSize(width, height);
+      this.gameConfig = this.game.getCollections().configs.game;      
+      this.level = this.game.getCollections().levels[level];
+      this.world = this.game.getCollections().worlds[this.level.world];
+      this.rootGroup = new window.THREE.Group(); // Main container for all shapes
+      this.rootGroup.name = "infiniWorldGroup";      
+      this.canvas = this.game.canvas;
+      if(!this.canvas) {
+        this.canvas = this.container.querySelector("canvas");
+      }
+      // Initialize core properties
+      this.clock = clock;
+      this.onWindowResizeHandler = this.onWindowResize.bind(this);
+      this.renderer = this.game.renderer || new THREE.WebGLRenderer({ antialias: true, canvas: this.canvas, alpha: true });
+      if(width && height){
+        this.renderer.setSize(width, height);
+      }
       this.renderer.shadowMap.enabled = true;
       this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-      this.scene = new THREE.Scene();
-      this.scene.background = new THREE.Color(0x87ceeb);
+    
+      this.scene = this.game.scene || new window.THREE.Scene();
+      this.scene.add(this.rootGroup);
       this.uniforms = {};
   
       // Camera setup
-      this.camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 10000);
-      this.camera.position.set(0, 50, 100);
-      this.camera.lookAt(0, 0, 0);
-  
-      // Lighting setup
-      this.ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-      this.scene.add(this.ambientLight);
-      let shadowCameraSize = 500;
-      let directionLightDistance = 250;
-      this.directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-      this.directionalLight.castShadow = true;
-      this.directionalLight.shadow.mapSize.set(2048, 2048); // Increase resolution for sharper shadows
-      this.directionalLight.shadow.camera.near = 0.01; // Closer near plane for precision
-      this.directionalLight.shadow.camera.far = 2000; // Increase far plane to cover tall terrain
-      this.directionalLight.shadow.camera.left = -shadowCameraSize; // Expand bounds
-      this.directionalLight.shadow.camera.right = shadowCameraSize;
-      this.directionalLight.shadow.camera.top = shadowCameraSize;
-      this.directionalLight.shadow.camera.bottom = -shadowCameraSize;
-      this.directionalLight.shadow.bias = -0.00001; // Add bias to reduce shadow acne
-      this.directionalLight.shadow.normalBias = 0.75; // Reduce artifacts on slopes
-      this.directionalLight.position.set(this.camera.position.x + directionLightDistance, directionLightDistance, this.camera.position.z + directionLightDistance);
-      this.scene.add(this.directionalLight);
-  
-      // Fog setup
-      this.scene.fog = new THREE.FogExp2(0x87ceeb, 0.0002);
-  
+      this.camera = this.game.camera || new THREE.PerspectiveCamera(75, width / height, 0.1, 10000);
+     
       // Terrain configuration
-      this.chunkSize = 512;
-      this.chunkResolution = 32;
-      this.renderDistance = 8;
+      this.heightMap = this.game.getCollections().heightMaps[this.world.heightMap];
+      this.chunkSize = this.heightMap.chunkSize;
+      this.chunkResolution = this.heightMap.chunkResolution;
+      this.renderDistance = this.heightMap.renderDistance;
+      this.heightScale = this.heightMap.heightScale;
+
+      // Lighting setup
+      this.lighting = this.game.getCollections().lightings[this.world.lighting];  
+      this.shadow = this.game.getCollections().shadows[this.world.shadow];  
+      this.fog = this.game.getCollections().fogs[this.world.fog];       
+      
+      
+      const skyColor = parseInt(this.lighting.skyColor.replace('#', ''), 16);
+      this.scene.background = new THREE.Color(skyColor);
+
+      const ambientColor = parseInt(this.lighting.ambientColor.replace('#', ''), 16);
+      this.ambientLight = new THREE.AmbientLight(ambientColor, this.lighting.ambientIntensity);
+      this.rootGroup.add(this.ambientLight);
+    
+       
+      const directionalColor = parseInt(this.lighting.directionalColor.replace('#', ''), 16);
+      this.directionalLight = new THREE.DirectionalLight(directionalColor, this.lighting.directionalIntensity);
+      this.directionalLight.castShadow = true;
+      this.directionalLight.shadow.mapSize.set(this.shadow.mapSize, this.shadow.mapSize); // Increase resolution for sharper shadows
+      this.directionalLight.shadow.camera.near = 0.01; // Closer near plane for precision
+      this.directionalLight.shadow.camera.far = this.shadow.mapSize; // Increase far plane to cover tall terrain
+      this.directionalLight.shadow.camera.left = -this.shadow.radius; // Expand bounds
+      this.directionalLight.shadow.camera.right = this.shadow.radius;
+      this.directionalLight.shadow.camera.top = this.shadow.radius;
+      this.directionalLight.shadow.camera.bottom = -this.shadow.radius;
+      this.directionalLight.shadow.bias = this.shadow.bias; // Add bias to reduce shadow acne
+      this.directionalLight.shadow.normalBias = this.shadow.normalBias; // Reduce artifacts on slopes
+      this.directionalLight.position.set(this.camera.position.x + this.chunkSize / 2, this.chunkSize / 2, this.camera.position.z + this.chunkSize / 2);
+      this.rootGroup.add(this.directionalLight);
+    
+      // Fog setup
+      const fogColor = parseInt(this.fog.color.replace('#', ''), 16);
+      this.fog = new THREE.FogExp2(fogColor, this.fog.density);
+      this.scene.fog = this.fog;
+      
+  
       this.chunks = new Map();
-      this.heightScale = 10;
       this.objectCache = new Map();
   
       // Initialize SimplexNoise and biomes for getTerrainHeight
-      this.noise = new (this.game.libraryClasses.SimplexNoise)(); // Fixed seed for consistency
-      this.biomes = {
-        plains: {
-          groundColor: { r: 0.502, g: 0.753, b: 0.439 }, // Matches worker
-          noiseSettings: {
-            elevation: { scale: 0.0002, octaves: 4, persistence: 0.5, lacunarity: 2.0, heightScale: 10 },
-            detail: { scale: 0.001, octaves: 2, persistence: 0.8, lacunarity: 1.5, heightScale: 2 }
-          },
-          objects: [
-            { type: 'tree', density: 0.02, maxSlope: 0.8 },
-            { type: 'rock', density: 0.01, maxSlope: 0.3 }
-          ]
-        },
-        forest: {
-          groundColor: { r: 0.251, g: 0.502, b: 0.251 }, // Matches worker
-          noiseSettings: {
-            elevation: { scale: 0.0003, octaves: 5, persistence: 0.6, lacunarity: 2.2, heightScale: 15 },
-            detail: { scale: 0.001, octaves: 3, persistence: 0.7, lacunarity: 1.8, heightScale: 3 }
-          },
-          objects: [
-            { type: 'tree', density: 0.05, maxSlope: 0.8 },
-            { type: 'rock', density: 0.05, maxSlope: 0.2 }
-          ]
-        },
-        mountain: {
-          groundColor: { r: 0.565, g: 0.565, b: 0.565 }, // Matches worker
-          noiseSettings: {
-            elevation: { scale: 0.00005, octaves: 6, persistence: 0.7, lacunarity: 2.5, heightScale: 200 },
-            detail: { scale: 0.002, octaves: 4, persistence: 0.6, lacunarity: 2.0, heightScale: 5 },
-            ridge: { scale: 0.001, power: 2.5, heightScale: 20 }
-          },
-          objects: [{ type: 'rock', density: 0.3, maxSlope: 0.6 }]
-        },
-        desert: {
-          groundColor: { r: 0.878, g: 0.753, b: 0.439 }, // Matches worker
-          noiseSettings: {
-            elevation: { scale: 0.0001, octaves: 3, persistence: 0.4, lacunarity: 1.8, heightScale: 5 },
-            detail: { scale: 0.001, octaves: 2, persistence: 0.5, lacunarity: 1.3, heightScale: 1 }
-          },
-          objects: [{ type: 'rock', density: 0.1, maxSlope: 0.25 }]
-        }
-      };
+      this.noise = new (this.game.moduleManager.libraryClasses.SimplexNoise)(); // Fixed seed for consistency
+      let biomes = {};
+      this.world.biomes.forEach((biomeName) => {
+          let biomeObjData = this.game.getCollections().biomes[biomeName];
+          let elevationNoiseData = this.game.getCollections().noiseSettings[biomeObjData.elevationNoiseSetting];
+          let detailNoiseData = this.game.getCollections().noiseSettings[biomeObjData.detailNoiseSetting];
+
+          let worldObjectSpawns = [];
+          biomeObjData.worldObjectSpawns.forEach((worldObjectSpawn) => {
+            worldObjectSpawns.push(this.game.getCollections().worldObjectSpawns[worldObjectSpawn]);
+          })
+            
+          biomes[biomeName] = {
+            groundColor: this.hexToRGBNormalized(biomeObjData.groundColor),
+            noiseSettings: {
+              elevation: elevationNoiseData,
+              detail: detailNoiseData
+            },
+            worldObjects: worldObjectSpawns
+          }
+
+          if(biomeName == "mountain"){     
+            let ridgeNoiseData = this.game.getCollections().noiseSettings[biomeObjData.ridgeNoiseSetting];
+            biomes[biomeName].noiseSettings.ridge = ridgeNoiseData;
+          }
+      });
+      this.biomes = biomes;
   
       // Initialize Web Worker from Blob
       const workerCode = this.getWorkerCode();
@@ -108,11 +117,28 @@ class InfiniWorld extends engine.Component {
       // Initialize terrain
       this.setupInitialChunks();
   
-      window.addEventListener('resize', this.onWindowResizeHandler);
+     // window.addEventListener('resize', this.onWindowResizeHandler);
       this.game.scene = this.scene;
       this.game.camera = this.camera;
       this.game.renderer = this.renderer;
       this.timer = 0;
+    }
+
+    hexToRGBNormalized(hexColor) {
+      // Remove the # if present
+      const hex = hexColor.replace('#', '');
+      
+      // Convert hex to RGB (0-255)
+      const r = parseInt(hex.slice(0, 2), 16);
+      const g = parseInt(hex.slice(2, 4), 16);
+      const b = parseInt(hex.slice(4, 6), 16);
+      
+      // Normalize to 0-1
+      return {
+          r: Number((r / 255).toFixed(3)),
+          g: Number((g / 255).toFixed(3)),
+          b: Number((b / 255).toFixed(3))
+      };
     }
   
     async setupInitialChunks() {
@@ -155,8 +181,8 @@ class InfiniWorld extends engine.Component {
   
       const key = `${type}-${geometry.uuid}`;
       if (!this.objectPools.has(key)) {
-        const pool = new (this.game.libraryClasses.InstancePool)(geometry, material, 1000);
-        this.scene.add(pool.mesh);
+        const pool = new (this.game.moduleManager.libraryClasses.InstancePool)(geometry, material, 1000);
+        this.rootGroup.add(pool.mesh);
         this.objectPools.set(key, pool);
       }
       return this.objectPools.get(key);
@@ -195,14 +221,14 @@ class InfiniWorld extends engine.Component {
       for (const [chunkKey, chunkData] of this.chunks) {
         if (!newChunks.has(chunkKey) && !chunkData.isGenerating) {
           if (chunkData.terrainMesh) {
-            this.scene.remove(chunkData.terrainMesh);
+            this.rootGroup.remove(chunkData.terrainMesh);
             chunkData.terrainMesh.geometry.dispose();
             chunkData.terrainMesh.material.dispose();
           }
           chunkData.objectMeshes.forEach((groups, type) => {
             groups.forEach(group => {
               if (group.mesh) {
-                this.scene.remove(group.mesh);
+                this.rootGroup.remove(group.mesh);
                 group.mesh.geometry.dispose();
                 if (Array.isArray(group.mesh.material)) {
                   group.mesh.material.forEach(mat => mat.dispose());
@@ -246,22 +272,22 @@ class InfiniWorld extends engine.Component {
         mesh.castShadow = true;
         mesh.receiveShadow = true;
         mesh.material.needsUpdate = true;
-        this.scene.add(mesh);
+        this.rootGroup.add(mesh);
         chunkData.terrainMesh = mesh;
     
         // Process vegetation data (unchanged)
         chunkData.collisionAABBs = new Map();
-        vegetation.forEach(({ type, data }) => {
-          if (type.endsWith('_collision')) {
-            const objectType = type.replace('_collision', '');
+        vegetation.forEach(({ worldObject, data }) => {
+          if (worldObject.endsWith('_collision')) {
+            const objectType = worldObject.replace('_collision', '');
             chunkData.collisionAABBs.set(objectType, data);
           } else {
-            const model = this.game.modelManager.getModel('worldObjects', type);
+            const model = this.game.modelManager.getModel('worldObjects', worldObject);
             if (!model) {
-              console.warn(`Model not found: ${type}`);
+              console.warn(`Model not found: ${worldObject}`);
               return;
             }
-            this.processModelType(type, model, data, chunkData);
+            this.processModelType(worldObject, model, data, chunkData);
           }
         });
         
@@ -480,8 +506,9 @@ class InfiniWorld extends engine.Component {
 
 
     update() {
-      if (!this.game.config.configs.game.is3D) return;
+      if (!this.game.getCollections().configs.game.is3D) return;
       this.timer += this.game.deltaTime || 0;
+
       this.updateChunks();
     
       const cameraPos = this.camera.position;
@@ -512,13 +539,17 @@ class InfiniWorld extends engine.Component {
     }
   
     onWindowResize() {
-      const width = this.container.clientWidth || window.innerWidth;
-      const height = this.container.clientHeight || window.innerHeight;
-      this.camera.aspect = width / height;
-      this.camera.updateProjectionMatrix();
-      this.renderer.setSize(width, height);
-      this.game.canvas.style.width = `${width}px`;
-      this.game.canvas.style.height = `${height}px`;
+   
+      if(this.canvas){
+
+        const width = this.container.clientWidth || window.innerWidth;
+        const height = this.container.clientHeight || window.innerHeight;
+        this.camera.aspect = width / height;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(width, height);
+        this.canvas.style.width = `${width}px`;
+        this.canvas.style.height = `${height}px`;
+      }
     }
   
     processModelType(type, model, instances, chunkData) {
@@ -561,7 +592,7 @@ class InfiniWorld extends engine.Component {
           instancedMesh.castShadow = true;
           instancedMesh.receiveShadow = true;
           instancedMesh.material.needsUpdate = true; // Force material update
-          this.scene.add(instancedMesh);
+          this.rootGroup.add(instancedMesh);
           return { mesh: instancedMesh, instances: [] };
         });
     
@@ -677,7 +708,7 @@ class InfiniWorld extends engine.Component {
       return value * settings.heightScale;
     }
   
-    onDestroy() {
+    destroy() {
       window.removeEventListener('resize', this.onWindowResizeHandler);
   
       // Cleanup all chunks
@@ -751,17 +782,12 @@ class InfiniWorld extends engine.Component {
       }
       this.pendingChunks.clear();
       this.chunks.clear();
-      this.renderer.dispose();
-      this.renderer.forceContextLoss();
-  
-      this.game.scene = null;
-      this.game.camera = null;
-      this.game.renderer = null;
+      this.scene.remove(this.rootGroup);
     }
   
     getWorkerCode() {
       return `
-        ${this.game.config.libraries["SimplexNoise"].script}
+        ${this.game.getCollections().libraries["SimplexNoise"].script}
   
         class WorkerUtils {
           constructor() {
@@ -1034,11 +1060,11 @@ class InfiniWorld extends engine.Component {
               const objectTypes = new Map();
               for (const biomeName in weights) {
                 const biome = this.biomes[biomeName];
-                biome.objects.forEach(objDef => {
-                  if (!objectTypes.has(objDef.type)) {
-                    objectTypes.set(objDef.type, []);
+                biome.worldObjects.forEach(objDef => {
+                  if (!objectTypes.has(objDef.worldObject)) {
+                    objectTypes.set(objDef.worldObject, []);
                   }
-                  objectTypes.get(objDef.type).push({
+                  objectTypes.get(objDef.worldObject).push({
                     density: objDef.density,
                     maxSlope: objDef.maxSlope,
                     weight: weights[biomeName]
@@ -1046,7 +1072,7 @@ class InfiniWorld extends engine.Component {
                 });
               }
 
-              objectTypes.forEach((defs, type) => {
+              objectTypes.forEach((defs, worldObject) => {
                 let blendedDensity = 0;
                 let blendedMaxSlope = 0;
                 let totalWeight = 0;
@@ -1062,8 +1088,8 @@ class InfiniWorld extends engine.Component {
                 blendedDensity /= totalWeight;
                 blendedMaxSlope /= totalWeight;
 
-                const instances = vegetation.get(type) || [];
-                const collisionData = vegetation.get(type + '_collision') || [];
+                const instances = vegetation.get(worldObject) || [];
+                const collisionData = vegetation.get(worldObject + '_collision') || [];
 
                 if (Math.random() < blendedDensity && slope <= blendedMaxSlope) {
                   const instance = {
@@ -1074,7 +1100,7 @@ class InfiniWorld extends engine.Component {
                   instances.push(instance);
 
                   let aabb;
-                  if (type === 'tree') {
+                  if (worldObject === 'tree') {
                     const trunkRadius = 5.0 * instance.scale;
                     const trunkHeight = 20.0 * instance.scale;
                     aabb = {
@@ -1089,7 +1115,7 @@ class InfiniWorld extends engine.Component {
                         z: position.z + trunkRadius
                       }
                     };
-                  } else if (type === 'rock') {
+                  } else if (worldObject === 'rock') {
                     const rockRadius = 1.0 * instance.scale;
                     const rockHeight = 1.0 * instance.scale;
                     aabb = {
@@ -1111,9 +1137,9 @@ class InfiniWorld extends engine.Component {
                   }
                 }
 
-                vegetation.set(type, instances);
+                vegetation.set(worldObject, instances);
                 if (collisionData.length > 0) {
-                  vegetation.set(type + '_collision', collisionData);
+                  vegetation.set(worldObject + '_collision', collisionData);
                 }
               });
             });
@@ -1125,7 +1151,7 @@ class InfiniWorld extends engine.Component {
               indices,
               colors: geometryData.colors,
               normals: geometryData.normals, // Include normals in the result
-              vegetation: Array.from(vegetation.entries()).map(([type, data]) => ({ type, data }))
+              vegetation: Array.from(vegetation.entries()).map(([worldObject, data]) => ({ worldObject, data }))
             };
           }
         }

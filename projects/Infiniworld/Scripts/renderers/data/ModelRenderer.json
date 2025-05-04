@@ -1,4 +1,5 @@
 {
   "title": "Model Renderer",
-  "fileName": "ModelRenderer"
+  "fileName": "ModelRenderer",
+  "parameters": "[\"objectType\",\"spawnType\"]"
 }

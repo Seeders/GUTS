@@ -6,15 +6,14 @@
   ],
   "sceneData": [
     {
-      "id": 2,
-      "name": "player",
-      "type": "player",
+      "id": 5,
+      "type": "game",
       "parent": null,
       "children": [],
       "components": [
         {
           "type": "transform",
-          "properties": {
+          "parameters": {
             "position": {
               "x": 0,
               "y": 0,
@@ -33,13 +32,45 @@
           }
         },
         {
-          "type": "renderer",
-          "properties": {
-            "url": "samples/models/KnightIdle/KnightIdle.glb",
-            "material": "standard",
-            "color": "#FFFFFF",
-            "receiveShadow": true,
-            "castShadow": true
+          "type": "InfiniWorld",
+          "parameters": {
+            "level": "level1",
+            "palette": "main"
+          }
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "player",
+      "parent": null,
+      "children": [],
+      "components": [
+        {
+          "type": "transform",
+          "parameters": {
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "type": "ModelRenderer",
+          "parameters": {
+            "objectType": "enemies",
+            "spawnType": "knight"
           }
         }
       ]

@@ -1,0 +1,6 @@
+{
+  "title": "Forest Rock",
+  "worldObject": "rock",
+  "density": 0.05,
+  "maxSlope": 0.2
+}

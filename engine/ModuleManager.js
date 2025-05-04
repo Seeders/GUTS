@@ -171,7 +171,7 @@ class ModuleManager {
         });
     };
 
-    // Set up UI elements (this part remains unchanged)
+    // Set up UI elements
     Object.entries(modules).forEach(([moduleId, module]) => {
         let ui = collections.interfaces[module.interface];
         if (ui) {
@@ -217,7 +217,7 @@ class ModuleManager {
                     await importLibrary(library, moduleConfig);
                 }
             } else {
-                // No library needed, instantiate directly (if applicable)
+                // No library needed, instantiate directly
                 await importLibrary(moduleId, moduleConfig);
             }
         }

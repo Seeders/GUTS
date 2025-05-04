@@ -23,33 +23,33 @@ class GameLoader extends engine.Component {
         this.setupCanvas(this.config.configs.game.canvasWidth, this.config.configs.game.canvasHeight);
         await this.loadAssets();
 
-      
-        // Use ModuleManager's script environment
-    
-        this.game.gameEntity = this.game.createEntityFromConfig(0, 0, 'game', 
-            { 
-                gameConfig: this.config.configs.game, 
-                canvas: this.canvas, 
-                canvasBuffer: this.canvasBuffer, 
-                terrainCanvasBuffer: this.terrainCanvasBuffer, 
-                levelName: this.game.state.level, 
-                level: this.config.levels[this.game.state.level], 
-                palette: this.game.palette 
+        const scene = this.config.scenes["main"];
+        const sceneEntities = scene.sceneData;
+        sceneEntities.forEach((sceneEntity) => {
+            
+            let position = {x: 0, z: 0};
+            let params = {};
+            sceneEntity.components.forEach((entityComp) => {
+                if(entityComp.type == "transform"){
+                    position = entityComp.parameters.position;
+                }
+                params = {...params, ...entityComp.parameters };
+            });
+            if(sceneEntity.type == "game"){  
+                this.game.gameEntity = this.game.createEntityFromConfig(position.x, position.z, sceneEntity.type, params);
+            } else {
+                let spawned = this.game.spawn(position.x, position.z, sceneEntity.type, params);
+                if(sceneEntity.type == "player"){
+                    this.player = spawned;
+                    this.player.transform.position.y += 50;
+                    this.game.player = this.player;
+                    this.player.placed = true;
+                }
             }
-        );
+        });
  
         this.game.audioManager = this.game.gameEntity.getComponent('AudioManager');  
 
-        this.player = this.game.spawn(0, 0, "player", 
-            { 
-                spawnType: 'knight', 
-                objectType: 'enemies', 
-                setDirection: 1 
-            }
-        );
-        this.player.transform.position.y += 50;
-        this.player.placed = true;
-        this.game.player = this.player;
     }
 
     getProject() {
@@ -78,7 +78,7 @@ class GameLoader extends engine.Component {
         this.game.terrainCanvasBuffer = this.terrainCanvasBuffer;
     }
     async loadAssets() {     
-        this.game.modelManager = new (this.game.libraryClasses.ModelManager)(this,{Three_SkeletonUtils: this.game.skeletonUtils, ShapeFactory: this.game.libraryClasses.ShapeFactory, palette: this.game.palette, textures: this.game.config.textures});    
+        this.game.modelManager = new (this.game.libraryClasses.ModelManager)(this, {}, {Three_SkeletonUtils: this.game.skeletonUtils, ShapeFactory: this.game.libraryClasses.ShapeFactory, palette: this.game.palette, textures: this.game.config.textures});    
         for(let objectType in this.config) {
             
             await this.game.modelManager.loadModels(objectType, this.config[objectType]);

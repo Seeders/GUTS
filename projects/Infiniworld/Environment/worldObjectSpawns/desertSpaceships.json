@@ -1,0 +1,6 @@
+{
+  "title": "Desert Spaceship",
+  "worldObject": "spaceShip",
+  "density": 0.01,
+  "maxSlope": 1
+}

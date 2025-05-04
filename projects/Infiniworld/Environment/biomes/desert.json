@@ -1,0 +1,9 @@
+{
+  "title": "Desert",
+  "groundColor": "#d9b38c",
+  "elevationNoiseSetting": "desertElevation",
+  "detailNoiseSetting": "desertDetail",
+  "worldObjectSpawns": [
+    "desertRocks"
+  ]
+}

@@ -1,5 +1,0 @@
-{
-  "title": "Spawn Type",
-  "inputDataType": "string",
-  "description": "What type of object will this spawn?  Graphics -> Enemies -> Knight, the Knight is the spawn type of the enemy object type."
-}

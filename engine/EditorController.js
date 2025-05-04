@@ -35,7 +35,8 @@ class EditorController {
         // Initialize the view after the model is ready
         // View handles all UI rendering and updates
         this.view = new EditorView(this);
-        this.fs = new FileSystemSyncService(this);
+        this.fs = new FileSystemSyncService(this); 
+        this.componentClasses = {};
     }
 
     /**
@@ -139,7 +140,6 @@ class EditorController {
         
         try {
             const editorConfig = project.objectTypes.configs?.editor;
-            
            
             
             // Then load property editor modules based on editor configuration
@@ -169,7 +169,7 @@ class EditorController {
                 
                 // Setup script execution environment for modules
                 this.scriptContext = await this.moduleManager.setupScriptEnvironment(this);
-                
+                await this.preCompileComponentScripts();
                 // Instantiate property modules with controller context
                 this.editorModuleInstances = this.moduleManager.instantiateCollection(
                     this, 
@@ -192,6 +192,10 @@ class EditorController {
             this.elements.deleteProjectBtn.classList.remove("hidden");
         } else {
             this.elements.deleteProjectBtn.classList.add("hidden");
+        }
+        this.modelManager = new (this.moduleManager.libraryClasses.ModelManager)(this,{}, {Three_SkeletonUtils: new (this.moduleManager.libraryClasses.Three_SkeletonUtils)(), ShapeFactory: this.moduleManager.libraryClasses.ShapeFactory, palette: this.getPalette(), textures: this.getCollections().textures});    
+        for(let objectType in this.getCollections()) {            
+            await this.modelManager.loadModels(objectType, this.getCollections()[objectType]);
         }
         // Update UI components to reflect loaded project
         this.view.renderObjectList();
@@ -368,6 +372,80 @@ class EditorController {
         const paletteName = this.getCollections().configs.game.palette || "main";
         const palettes = this.getCollections().palettes;
         return palettes && palettes[paletteName] ? palettes[paletteName] : null;
+    }
+
+       /**
+     * Precompiles all component scripts from the components collection
+     * Makes them available for instantiation in the editor
+     */
+    async preCompileComponentScripts() {
+        const collections = this.model.getCollections();
+        if (!collections.components) return;
+
+         // Compile each component
+        for (const componentType in collections.components) {
+            const componentDef = collections.components[componentType];
+            if (componentDef.script) {
+                try {
+                    const ComponentClass = this.moduleManager.compileScript(componentDef.script, componentType);
+                    if (ComponentClass) {
+                        this.componentClasses[componentType] = ComponentClass;
+                    }
+                } catch (error) {
+                    console.error(`Error compiling component script for ${componentType}:`, error);
+                }
+            }
+        }
+
+        // Also compile renderers if they exist
+        if (collections.renderers) {
+            for (const rendererType in collections.renderers) {
+                const rendererDef = collections.renderers[rendererType];
+                if (rendererDef.script) {
+                    try {
+                        const RendererClass = this.moduleManager.compileScript(rendererDef.script, rendererType);
+                        if (RendererClass) {
+                            this.componentClasses[rendererType] = RendererClass;
+                        }
+                    } catch (error) {
+                        console.error(`Error compiling renderer script for ${rendererType}:`, error);
+                    }
+                }
+            }
+        }
+
+        return this.componentClasses;
+    }
+    
+    /**
+     * Gets a compiled component class by type name
+     * @param {string} typeName - Component type name
+     * @returns {Function|null} - Compiled component class or null if not found
+     */
+    getComponentClass(typeName) {
+        return this.scriptContext.getComponent(typeName) || null;
+    }
+
+    /**
+     * Instantiates a component by type name with the given entity and params
+     * @param {string} typeName - Component type name
+     * @param {Object} entity - Entity to attach component to
+     * @param {Object} params - Parameters for component initialization
+     * @returns {Object|null} - Instantiated component or null if failed
+     */
+    instantiateComponent(typeName, params = {}) {
+        const ComponentClass = this.getComponentClass(typeName);
+        if (!ComponentClass) {
+            console.error(`Component class ${typeName} not found`);
+            return null;
+        }
+
+        try {
+            return new ComponentClass(this, null, params, this.scriptContext);
+        } catch (error) {
+            console.error(`Error instantiating component ${typeName}:`, error);
+            return null;
+        }
     }
 }
 

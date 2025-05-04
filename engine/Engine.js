@@ -26,7 +26,8 @@ class Engine {
         let projectConfig = this.config.configs.game;
         if (projectConfig.libraries) {
             // Use ModuleManager to load modules
-            this.libraryClasses = await this.moduleManager.loadModules({ "game": projectConfig });
+            this.moduleManager.libraryClasses = await this.moduleManager.loadModules({ "game": projectConfig });
+            this.libraryClasses = this.moduleManager.libraryClasses;
         }
         //components, renderers, and functions
         this.setupScriptEnvironment();

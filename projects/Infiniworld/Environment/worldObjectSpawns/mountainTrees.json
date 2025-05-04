@@ -1,0 +1,6 @@
+{
+  "title": "Mountain Trees",
+  "worldObject": "tree",
+  "density": 0.001,
+  "maxSlope": 0.8
+}

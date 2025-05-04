@@ -7,7 +7,6 @@
     "Game"
   ],
   "renderers": [
-    "MapRenderer",
     "UiManager"
   ]
 }

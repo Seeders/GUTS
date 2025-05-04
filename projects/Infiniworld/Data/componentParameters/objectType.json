@@ -1,5 +1,0 @@
-{
-  "title": "Object Type",
-  "inputDataType": "string",
-  "description": "What type of object?  With Graphics -> Enemies -> Knight, \"enemy\" is the object type."
-}

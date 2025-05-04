@@ -6,8 +6,8 @@ class UiManager extends engine.Component {
     
     
     init({ canvas, canvasBuffer, terrainCanvasBuffer }) {
-        this.canvas = canvas;
-        this.canvasBuffer = canvasBuffer;
+        this.canvas = canvas || this.game.canvas;
+        this.canvasBuffer = canvasBuffer || this.game.canvasBuffer;
         if(this.game.config.configs.game.is3D) {
             this.finalCtx = this.canvas.getContext("webgl2");
             this.ctx = this.canvasBuffer.getContext("webgl2");
@@ -15,36 +15,18 @@ class UiManager extends engine.Component {
             this.finalCtx = this.canvas.getContext("2d");
             this.ctx = this.canvasBuffer.getContext("2d");
         }
-        this.terrainCanvasBuffer = terrainCanvasBuffer;
+        this.terrainCanvasBuffer = terrainCanvasBuffer || this.game.terrainCanvasBuffer;
         this.projectConfig = this.game.config.configs.game;
         this.gridSize = this.projectConfig.gridSize;
         this.isometric = this.projectConfig.isIsometric || false;
-        this.upgradeMenu = document.getElementById('upgradeMenu');
-        this.upgradeOptionsDiv = document.getElementById('upgradeOptions');
-        this.overlay = document.getElementById('overlay');
+       this.overlay = document.getElementById('overlay');
         this.tooltip = document.getElementById('tooltip');
         this.gameOverMenu = document.getElementById('gameOverMenu');
         this.victoryMenu = document.getElementById('victoryMenu');
 
-        // Stats displays
-        this.shardsDisplay = document.getElementById('shardsDisplay');
-        this.essenceDisplay = document.getElementById('essenceDisplay');
-        this.essenceNeededDisplay = document.getElementById('essenceNeededDisplay');
-        this.populationDisplay = document.getElementById('populationDisplay');
-        this.maxPopulationDisplay = document.getElementById('maxPopulationDisplay');
-        this.hpDisplay = document.getElementById('hpDisplay');
-        this.waveDisplay = document.getElementById('waveDisplay');
-        this.waveProgress = document.getElementById('waveProgress');
-        this.gameOverWave = document.getElementById('gameOverWave');
-        this.towerMenu = document.getElementById('towerMenu');
-        let towerMenuOptions = '';
-        for(let type in this.game.config.towers) {
-            if(this.game.config.towers[type].cost > 0){
-                towerMenuOptions += `<button class="tower-option" data-type="${type}">${this.game.config.towers[type].title} (${this.game.config.towers[type].cost})</button>`;
-            }
-        }
-        this.towerMenu.innerHTML = towerMenuOptions;
-        this.setupTowerPlacement();
+       this.hpDisplay = document.getElementById('hpDisplay');
+       this.gameOverWave = document.getElementById('gameOverWave');
+  
         this.setupEventListeners();
         this.game.uiManager = this;
        
@@ -124,7 +106,7 @@ class UiManager extends engine.Component {
         }
     }
 
-  setupEventListeners() {
+    setupEventListeners() {
         document.getElementById('startGameBtn').removeAttribute('style');
         document.getElementById('startGameBtn').addEventListener('click', (e) => {    
             this.game.state.isPaused = false;
@@ -139,85 +121,12 @@ class UiManager extends engine.Component {
         });
         this.canvas.addEventListener('mousemove', (e) => {
             this.setMousePosition(e.clientX, e.clientY);
-
-            if (!this.game.state.selectedTowerType && !this.game.state.towers.length) return;
-
-            if (this.game.state.selectedTowerType && this.game.state.previewTower) {
-                this.game.state.previewTower.position.x = this.game.state.mousePosition.gridX * this.gridSize + this.gridSize / 2;
-                this.game.state.previewTower.position.y = this.game.state.mousePosition.gridY * this.gridSize + this.gridSize / 2;
-                this.game.state.previewTower.position.z = this.game.state.previewTower.getCurrentTerrainHeight();
-                const isValidPosition = this.checkValidTowerPosition(this.game.state.mousePosition.gridX, this.game.state.mousePosition.gridY);
-                this.canvas.style.cursor = isValidPosition ? 'pointer' : 'not-allowed';
-            }
-
-            let hoveredTower = null;
-            for (const tower of this.game.state.towers) {
-                const dist = Math.hypot(tower.gridPosition.x - this.game.state.mousePosition.gridX, tower.gridPosition.y + this.game.translator.tileHeight / 2 - this.game.state.mousePosition.gridY);
-                if (dist < 20) {
-                    hoveredTower = tower;
-                    break;
-                }
-            }
-
-            if (hoveredTower && hoveredTower.stats) {
-                let info = `${hoveredTower.type} (Level ${hoveredTower.level})\n`;
-                info += `Damage: ${Math.round(hoveredTower.stats.damage * this.game.state.stats.damageMultiplier * 10) / 10}\n`;
-                info += `Attack Speed: ${Math.round(1000 / hoveredTower.stats.attackSpeed)} per sec\n`;
-                info += `Range: ${hoveredTower.stats.range}\n`;
-                info += `Crit Chance: ${Math.round(hoveredTower.stats.critChance * 100)}%\n`;
-                if (hoveredTower.stats.leech > 0) {
-                    info += `Life Leech: ${Math.round(hoveredTower.stats.leech * 100 * this.game.state.stats.healingMultiplier) / 100} HP per hit\n`;
-                }
-                if (hoveredTower.stats.piercing > 0) {
-                    info += `Piercing: ${hoveredTower.stats.piercing} enemies\n`;
-                }
-                if (hoveredTower.stats.summonChance > 0) {
-                    info += `Summon Chance: ${Math.round(hoveredTower.stats.summonChance * 100)}%\n`;
-                }
-
-                this.showTooltip(e.clientX, e.clientY, info);
-                hoveredTower.showRange = true;
-            } else {
-                this.hideTooltip();
-                this.game.state.towers.forEach(t => t.showRange = false);
-            }
         });
 
         this.canvas.addEventListener('mouseout', () => {
             this.hideTooltip();
         });
-        
-        this.canvas.addEventListener('click', (e) => {
-            if (!this.game.state.selectedTowerType) return;
-            
-
-            if (this.checkValidTowerPosition(this.game.state.mousePosition.gridX, this.game.state.mousePosition.gridY)) {
-                // Create the tower
-                let cost = this.game.config.towers[this.game.state.selectedTowerType].cost;
-                let populationCost = this.game.config.towers[this.game.state.selectedTowerType].population || 0;
                 
-                const finalCost = Math.floor(cost * this.game.state.stats.towerCostMod);
-                
-                if (this.game.state.bloodShards >= finalCost && this.game.state.stats.population + populationCost <= this.game.state.stats.maxPopulation) {
-          
-                    const tower = this.game.spawn(this.game.state.mousePosition.gridX * this.gridSize + this.gridSize / 2, 
-                                                 this.game.state.mousePosition.gridY * this.gridSize + this.gridSize / 2, "tower", { objectType: "towers", spawnType: this.game.state.selectedTowerType, setDirection: 1});
-                    tower.placed = true;
-                    this.game.state.tileMap[this.game.state.mousePosition.gridY][this.game.state.mousePosition.gridX].buildable = false;
-                    this.game.state.tileMap[this.game.state.mousePosition.gridY][this.game.state.mousePosition.gridX].tower = tower;
-                    this.game.state.bloodShards -= finalCost;
-                    this.game.state.previewTower.destroy();
-                    this.game.state.previewTower = null;
-                    const gameEventData = this.game.config.gameEvents['placeTower'];
-                    const audioData = this.game.config.sounds[gameEventData.sound].audio;
-                    this.game.audioManager.playSynthSound('placeTower', audioData);
-                    // Clear selection
-                    this.game.state.selectedTowerType = null;
-                    this.canvas.style.cursor = 'default';
-                }
-            }
-        });
-        
         // Cancel tower placement with right click
         this.canvas.addEventListener('contextmenu', (e) => {
             e.preventDefault();
@@ -226,62 +135,13 @@ class UiManager extends engine.Component {
                 this.canvas.style.cursor = 'default';
             }
         });
-}
-
-  setupTowerPlacement() {
-
-        
-        const towerButtons = document.querySelectorAll('.tower-option');
-        towerButtons.forEach(button => {
-            button.addEventListener('click', () => {
-
-                if(this.game.state.isPaused) return;
-                
-                const type = button.getAttribute('data-type');
-                let cost = this.game.config.towers[type].cost;
-                const finalCost = Math.floor(cost * this.game.state.stats.towerCostMod);
-                
-                let populationCost = this.game.config.towers[type].population || 0;
-                if (this.game.state.bloodShards >= finalCost && this.game.state.stats.population + populationCost <= this.game.state.stats.maxPopulation) {
-                    this.game.state.selectedTowerType = type;
-                    if(this.game.state.previewTower) {
-                        this.game.state.previewTower.destroy();
-                    }
-                    this.game.state.previewTower = this.game.spawn(-100, -100, 'previewTower', { objectType: "towers", spawnType: this.game.state.selectedTowerType});
-                }
-            });
-            
-            // Show tooltip with info
-            button.addEventListener('mouseover', (e) => {
-                const type = button.getAttribute('data-type');
-                let info = this.game.config.towers[type].info;
-                
-                this.showTooltip(e.clientX, e.clientY, info);
-            });
-            
-            button.addEventListener('mouseout', () => {
-                this.hideTooltip();
-            });
-        });
-        
-        
     }
 
-    checkValidTowerPosition(posX, posY) {
-        if(posX >= 0 && posY >= 0 && this.game.state.tileMap.length > posY && this.game.state.tileMap[posY].length > posX){
-            return this.game.state.tileMap[posY][posX].buildable;            
-        }
-        return false;
-    }
 
     reset() {
         this.gameOverMenu.style.display = 'none';
         this.victoryMenu.style.display = 'none';
         this.overlay.style.display = 'none';
-        this.waveDisplay.textContent = '1';
-        this.waveProgress.style.width = '0%';        
-
-
     }
 
 
@@ -290,10 +150,6 @@ class UiManager extends engine.Component {
         if(!this.game.config.configs.game.is3D) {
             this.renderCanvas();
         }
-}
-
-    updateWaveDisplay(waveNumber) {
-        this.waveDisplay.textContent = waveNumber;
     }
 
 

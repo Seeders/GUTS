@@ -1,0 +1,8 @@
+{
+  "title": "Mountain Detail",
+  "scale": 0.002,
+  "octaves": 4,
+  "persistence": 0.6,
+  "lacunarity": 2,
+  "heightScale": 5
+}
