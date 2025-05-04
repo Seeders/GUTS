@@ -50,7 +50,7 @@ class ModelManager {
                         const anim = animations[animationName][0];
                         const animMainGroup = anim[Object.keys(anim)[0]];
 
-                        let mergedModel = {...cfg.render.model};
+                        let mergedModel = JSON.parse(JSON.stringify(cfg.render.model));
                         if(animMainGroup){
                             mergedModel[modelGroupName].shapes[0].url = animMainGroup.shapes[0].url;
                         }

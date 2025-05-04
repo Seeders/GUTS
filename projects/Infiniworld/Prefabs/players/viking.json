@@ -742,5 +742,6 @@
   "fireResistance": 75,
   "coldResistance": 25,
   "electricResistance": 25,
-  "projectile": "plasmaBolt"
+  "projectile": "plasmaBolt",
+  "entity": "player"
 }

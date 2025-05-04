@@ -1,5 +1,5 @@
 {
   "fileName": "InfiniWorld",
-  "parameters": "[\"level\", \"palette\"]",
+  "parameters": "[\"world\", \"palette\"]",
   "isTerrain": true
 }

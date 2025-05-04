@@ -1,15 +1,34 @@
-<div id="scene-editor-container" class="main-content-container">
+<div id="scene-editor-container" class="editor">
    <div id="scene-sidebar" class="sidebar">
-      <div class="sidebar-header">Hierarchy</div>
+      <h2 class="sidebar-header">Hierarchy</h2>
       <div id="scene-hierarchy" class="hierarchy">
         <!-- Entities will be populated here -->
       </div>
       <div class="toolbar">
-        <button class="btn add-entity-btn" id="addEntityBtn">+ Add Entity</button>
+        <div>
+          <button class="btn danger remove-prefab-btn" id="scene-removePrefabBtn">Remove Selected Prefab</button>
+        </div>
+        <div>
+          <select id="scene-addPrefabSelect"></select>
+        </div>
+        <div>
+          <button class="btn add-prefab-btn" id="scene-addPrefabBtn">+ Add Prefab</button>
+        </div>
       </div>
    </div>
       
    <div class="main-content">
+      <div class="gizmo-toolbar">
+        <button id="scene-translate-tool" class="gizmo-btn active" title="Translate (G)">
+            <span>Move</span>
+        </button>
+        <button id="scene-rotate-tool" class="gizmo-btn" title="Rotate (R)">
+            <span>Rotate</span>
+        </button>
+        <button id="scene-scale-tool" class="gizmo-btn" title="Scale (S)">
+            <span>Scale</span>
+        </button>
+      </div>
       <div id="scene-view" class="scene-view">      
          <div id="scene-canvas-container" class="grid-background">
             <canvas id="scene-editor-canvas"></canvas>
@@ -18,7 +37,7 @@
    </div>
  
    <div id="scene-inspector" class="inspector">
-      <div class="sidebar-header">Inspector</div>
+      <h2 class="sidebar-header">Inspector</h2>
       <div class="no-selection" id="scene-noSelection">
         No entity selected
       </div>
@@ -34,23 +53,3 @@
       </div>
    </div>
    
-</div>
-
- <!-- <div id="entityDropdown" class="dropdown-content">
-   <a data-type="cube">Cube</a>
-   <a data-type="sphere">Sphere</a>
-   <a data-type="cylinder">Cylinder</a>
-   <a data-type="plane">Plane</a>
-   <a data-type="light">Light</a>
-   <a data-type="camera">Camera</a>
-   <a data-type="empty">Empty Object</a>
- </div>
-
- <div id="componentDropdown" class="dropdown-content">
-   <a data-type="meshRenderer">Mesh Renderer</a>
-   <a data-type="light">Light</a>
-   <a data-type="collider">Collider</a>
-   <a data-type="rigidbody">Rigidbody</a>
-   <a data-type="audio">Audio</a>
-   <a data-type="script">Script</a>
- </div> -->

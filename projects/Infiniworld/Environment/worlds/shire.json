@@ -15,5 +15,7 @@
     "desert",
     "mountain",
     "forest"
-  ]
+  ],
+  "grassShader": "grass",
+  "waterShader": "water"
 }

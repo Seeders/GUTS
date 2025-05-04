@@ -8,7 +8,8 @@
     "GLTFLoader",
     "ShapeFactory",  
     "SimplexNoise",
-    "ModelManager",
+    "ModelManager", 
+    "SE_GizmoManager",
     "SceneEditor"
   ],
   "propertyName": "sceneData",

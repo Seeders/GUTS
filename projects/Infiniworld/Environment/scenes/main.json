@@ -1,12 +1,8 @@
 {
   "title": "Main",
-  "entities": [
-    "game",
-    "player"
-  ],
   "sceneData": [
     {
-      "id": 3,
+      "id": 1,
       "type": "game",
       "parent": null,
       "children": [],
@@ -34,14 +30,14 @@
         {
           "type": "InfiniWorld",
           "parameters": {
-            "level": "level1",
+            "world": "shire",
             "palette": "main"
           }
         }
       ]
     },
     {
-      "id": 4,
+      "id": 2,
       "type": "player",
       "parent": null,
       "children": [],
@@ -69,8 +65,43 @@
         {
           "type": "ModelRenderer",
           "parameters": {
-            "objectType": "enemies",
+            "objectType": "players",
             "spawnType": "knight"
+          }
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "playerAircraft",
+      "parent": null,
+      "children": [],
+      "components": [
+        {
+          "type": "transform",
+          "parameters": {
+            "position": {
+              "x": 0,
+              "y": 80,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 20.35819646380309,
+              "z": -2.7657697139405997
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "type": "ModelRenderer",
+          "parameters": {
+            "objectType": "players",
+            "spawnType": "spaceShip"
           }
         }
       ]

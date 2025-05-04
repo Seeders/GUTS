@@ -4,13 +4,12 @@ class InfiniWorld extends engine.Component {
       width = window.innerWidth,
       height = window.innerHeight,
       isEditor,
-      level,
+      world,
       clock = new THREE.Clock()   
     }) {
       this.container = document.querySelector(containerSelector) || document.body;
       this.gameConfig = this.game.getCollections().configs.game;      
-      this.level = this.game.getCollections().levels[level];
-      this.world = this.game.getCollections().worlds[this.level.world];
+      this.world = this.game.getCollections().worlds[world];
       this.rootGroup = new window.THREE.Group(); // Main container for all shapes
       this.rootGroup.name = "infiniWorldGroup";      
       this.canvas = this.game.canvas;

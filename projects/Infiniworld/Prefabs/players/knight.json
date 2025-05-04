@@ -1,6 +1,6 @@
 {
   "title": "Knight",
-  "hp": 500,
+  "hp": 501,
   "speed": 0.5,
   "essence": 50,
   "value": 50,
@@ -105,5 +105,6 @@
   "fireResistance": 75,
   "coldResistance": 25,
   "electricResistance": 25,
-  "projectile": "plasmaBolt"
+  "projectile": "plasmaBolt",
+  "entity": "player"
 }

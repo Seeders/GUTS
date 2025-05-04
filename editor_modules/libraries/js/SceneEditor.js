@@ -1,5 +1,5 @@
 class SceneEditor {
-    constructor(gameEditor, config, {ShapeFactory}) {
+    constructor(gameEditor, config, {ShapeFactory, SE_GizmoManager}) {
         this.gameEditor = gameEditor;
         this.config = config;
         this.scene = null;
@@ -10,9 +10,8 @@ class SceneEditor {
         this.canvas = document.getElementById('scene-editor-canvas');
         
         this.state = {
-            sceneData: {},
-            selectedEntityIndex: -1,
-            entities: []
+            sceneData: [],
+            selectedEntityIndex: -1
         };
         this.elements = {
             hierarchy: document.getElementById('scene-hierarchy'),
@@ -20,12 +19,17 @@ class SceneEditor {
             noSelection: document.getElementById('scene-noSelection'),
             entityInspector: document.getElementById('scene-entityInspector'),
             components: document.getElementById('scene-components'),
+            addPrefabSelect: document.getElementById('scene-addPrefabSelect'),
+            addPrefabBtn: document.getElementById('scene-addPrefabBtn'),
+            removePrefabBtn: document.getElementById('scene-removePrefabBtn'),
         } 
         let skeleUtils = new (this.gameEditor.editorModuleClasses['Three_SkeletonUtils'])();
         this.shapeFactory = new ShapeFactory(this.gameEditor.getPalette(), this.gameEditor.getCollections().textures, null, skeleUtils);
         this.nextEntityId = 1;
 
         this.initThreeJS(this.canvas);
+        this.gizmoManager = new SE_GizmoManager();
+        this.gizmoManager.init(this);
         this.initEventListeners();
         this.animate();
         this.addSampleEntities();
@@ -39,6 +43,49 @@ class SceneEditor {
             this.canvas.setAttribute('style','');
             this.handleResize();  
             this.refreshScene(false); 
+        });
+        this.elements.addPrefabBtn.addEventListener('click', (e) => {
+            let parts = this.elements.addPrefabSelect.value.split(".");
+            const objType = parts[0];
+            const spawnType = parts[1];
+            const objData = this.gameEditor.getCollections()[objType][spawnType];
+            if(objData.entity){
+                this.createEntity(objData.entity, { "objectType": objType, "spawnType": spawnType, ...objData });
+            }
+        });
+        const collectionDefs = this.gameEditor.getCollectionDefs();
+        let prefabTypes = [];
+        for(let collectionDef of collectionDefs) {
+            if(collectionDef.category.toLowerCase() == "prefabs") {
+                prefabTypes.push(collectionDef.id);
+            }
+        }
+        const collections = this.gameEditor.getCollections();
+        for(let prefabTypeName of prefabTypes){
+            let objectTypes = collections[prefabTypeName];
+            for(let spawnTypeName in objectTypes){
+                let spawnData = objectTypes[spawnTypeName];
+                let option = document.createElement('option');
+                option.innerText = spawnData.title;
+                option.value = `${prefabTypeName}.${spawnTypeName}`;
+                this.elements.addPrefabSelect.append(option);
+            }
+        }
+
+        // Add click event listeners
+        document.getElementById('scene-translate-tool').addEventListener('click', () => {
+            this.setGizmoMode('translate');
+            this.updateGizmoToolbarUI('scene-translate-tool');
+        });
+        
+        document.getElementById('scene-rotate-tool').addEventListener('click', () => {
+            this.setGizmoMode('rotate');
+            this.updateGizmoToolbarUI('scene-rotate-tool');
+        });
+        
+        document.getElementById('scene-scale-tool').addEventListener('click', () => {
+            this.setGizmoMode('scale');
+            this.updateGizmoToolbarUI('scene-scale-tool');
         });
     }
 
@@ -102,6 +149,7 @@ class SceneEditor {
             this.state.selectedEntityIndex = -1;
         });
     }
+
     animate() {
         requestAnimationFrame(this.animate.bind(this));
         this.controls.update();
@@ -118,9 +166,13 @@ class SceneEditor {
                 object.skeleton.update();
             }
         });
-    
+        
+        if (this.gizmoManager && this.gizmoManager.targetObject) {
+            this.gizmoManager.updateGizmoTransform();
+        }
         this.renderer.render(this.scene, this.camera);
     }
+
     handleResize() {
         this.camera.aspect = this.canvas.clientWidth / this.canvas.clientHeight;
         this.camera.updateProjectionMatrix();
@@ -150,68 +202,33 @@ class SceneEditor {
     }
 
     async addSampleEntities() {
-        await this.createEntityFromConfig('game', 
-            { 
-                palette: this.gameEditor.getCollections().configs.game.palette,
-                level: this.gameEditor.getCollections().configs.state.level
+        for(let entity of this.state.sceneData){
+            let params = {};
+            for(let component of entity.components){
+                params = {...params, ...component.parameters}
             }
-        );
- 
-        // Add a child to the cube entity
-        await this.createEntityFromConfig("player", 
-            {                   
-                position: {
-                    x: 0, y: 0, z: 0
-                },
-                spawnType: 'knight', 
-                objectType: 'enemies'
+            
+        
+            if(params.objectType && params.spawnType){
+                const objData = this.gameEditor.getCollections()[params.objectType][params.spawnType];                
+                if(objData.render && objData.render.model){
+                    await this.renderModel(entity.type, params, objData.render.model);                
+                }
             }
-        );
-        this.handleSave(false);
+            this.createEntity(entity.type, params);
+        }        
     }
 
     async createEntityFromConfig(type, params) {
         const entity = this.createEntity(type, params);  
-        const entityObjData = this.gameEditor.getCollections().entities[type];
-        const components = [...entityObjData.renderers, ...entityObjData.components]
-        components.forEach((componentName) => {
-            let componentDef = this.gameEditor.getCollections().components[componentName];
-            if(!componentDef) {
-                componentDef = this.gameEditor.getCollections().renderers[componentName];
-            }
-            if(!componentDef) return;
-            if(componentDef.parameters) {
-                let component = {
-                    type: componentName,
-                    parameters: {}
-                };
-                let compParams = JSON.parse(componentDef.parameters);
-                compParams.forEach((parameterName) => {    
-                    if(params[parameterName]) {        
-                        component.parameters[parameterName] = params[parameterName];
-                    }
-                });
-                entity.components.push(component);
-            }
-            if(componentDef.isTerrain){
-                this.terrainComponent = this.gameEditor.instantiateComponent(componentName, params);
-            }
-        });
-        
-        if(params.objectType && params.spawnType){
-            const objData = this.gameEditor.getCollections()[params.objectType][params.spawnType];
-            if(objData.render && objData.render.model){
-                await this.renderModel(type, params, objData.render.model);                
-            }
-        }
+
         return entity;
     }
-
 
     async renderModel(name, params, model) {     
         const modelGroup = new window.THREE.Group(); // Main container for all shapes
         modelGroup.name = name;   
-        for (const groupName in model) {     
+        for (const groupName in model) {            
             const mergedGroup = model[groupName];
             if (mergedGroup) {
                 let groupGroup = await this.shapeFactory.createGroupFromJSON(groupName, mergedGroup); 
@@ -236,6 +253,7 @@ class SceneEditor {
             modelGroup.rotation.z = params.rotation.z;
         }
     }
+
     async clearScene() {
         this.terrainComponent?.destroy();
         this.terrainComponent = null;
@@ -246,6 +264,7 @@ class SceneEditor {
         }
         this.state.entities = [];
     }
+
     createEntity(type, params) {
         const id = this.nextEntityId++;
         const entity = {
@@ -253,11 +272,21 @@ class SceneEditor {
             type,
             parent: null,
             children: [],
-            components: []
+            components: this.getEntityComponents(type, params)
         };
 
+
+        this.state.entities.push(entity);
+        this.handleSave(false);
+        this.renderHierarchy();
+        
+        return entity;
+    }
+
+    getEntityComponents(type, params){
+        let components = [];
         // Add transform component by default
-        entity.components.push({
+        components.push({
             type: 'transform',
             parameters: {
                 position: params.position ? params.position : { x: 0, y: 0, z: 0 },
@@ -265,12 +294,34 @@ class SceneEditor {
                 scale: params.scale ? params.scale : { x: 1, y: 1, z: 1 }
             }
         });
- 
-
-        this.state.entities.push(entity);
-        this.renderHierarchy();
-        
-        return entity;
+        const entityObjData = this.gameEditor.getCollections().entities[type];
+        const combined = [...entityObjData.renderers, ...entityObjData.components]
+        combined.forEach((componentName) => {
+            let componentDef = this.gameEditor.getCollections().components[componentName];
+            if(!componentDef) {
+                componentDef = this.gameEditor.getCollections().renderers[componentName];
+            }
+            if(!componentDef) return;
+            if(componentDef.parameters) {
+                let component = {
+                    type: componentName,
+                    parameters: {}
+                };
+                let compParams = JSON.parse(componentDef.parameters);
+                compParams.forEach((parameterName) => {    
+                    if(params[parameterName]) {        
+                        component.parameters[parameterName] = params[parameterName];
+                    } else {
+                        component.parameters[parameterName] = "";
+                    }
+                });
+                components.push(component);
+            }
+            if(componentDef.isTerrain){
+                this.terrainComponent = this.gameEditor.instantiateComponent(componentName, params);
+            }
+        });
+        return components;
     }
 
     addComponent(entity, componentType) {
@@ -386,16 +437,7 @@ class SceneEditor {
         
         if (this.selectedEntity === entity) {
             itemEl.classList.add('selected');
-        }
-        
-        // Add indentation for child entities
-        itemEl.style.paddingLeft = (8 + level * 20) + 'px';
-        
-        // Create entity icon
-        const iconEl = document.createElement('div');
-        iconEl.className = 'entity-icon';
-        itemEl.appendChild(iconEl);
-        
+        }    
         // Create entity name
         const nameEl = document.createElement('span');
         nameEl.textContent = entity.type;
@@ -432,6 +474,17 @@ class SceneEditor {
         
         // Show inspector with entity data
         this.renderInspector();
+
+        if (entity) {
+            const entityObject = this.findEntityObject(entity);
+            if (entityObject) {
+                this.gizmoManager.attach(entityObject);
+            } else {
+                this.gizmoManager.detach();
+            }
+        } else {
+            this.gizmoManager.detach();
+        }
     }
 
     renderInspector() {
@@ -448,13 +501,33 @@ class SceneEditor {
         // Update transform values
         const entity = this.selectedEntity;
 
-        // Clear and re-render components
-        this.elements.components.innerHTML = '';
-        
-        // Skip the transform component as it's already shown
-        entity.components.forEach(component => {        
-            this.renderComponent(component);
-        });
+
+        if (entity) {
+            // Clear and re-render components
+            this.elements.components.innerHTML = '';
+            
+            // Skip the transform component as it's already shown
+            entity.components.forEach(component => {        
+                this.renderComponent(component);
+            });
+            const entityObject = this.findEntityObject(entity);
+            if (entityObject) {
+                // Sync transform values from entity to 3D object
+                const transformComponent = entity.components.find(c => c.type === 'transform');
+                if (transformComponent) {
+                    const position = transformComponent.parameters.position;
+                    const rotation = transformComponent.parameters.rotation;
+                    const scale = transformComponent.parameters.scale;
+                    
+                    entityObject.position.set(position.x, position.y, position.z);
+                    entityObject.rotation.set(rotation.x, rotation.y, rotation.z);
+                    entityObject.scale.set(scale.x, scale.y, scale.z);
+                    
+                    // Update gizmo position
+                    this.gizmoManager.updateGizmoTransform();
+                }
+            }
+        }
     }
 
     renderComponent(component) {
@@ -462,13 +535,9 @@ class SceneEditor {
         componentEl.className = 'component-section';
         
         // Component header
-        const headerEl = document.createElement('div');
-        headerEl.className = 'component-header';
-        
-        // Component title
-        const titleEl = document.createElement('span');
-        titleEl.textContent = this.formatComponentName(component.type);
-        headerEl.appendChild(titleEl);
+        const headerEl = document.createElement('h3');
+        headerEl.className = 'component-header';        
+        headerEl.textContent = this.formatComponentName(component.type);
         
         // Remove component button
         const removeBtn = document.createElement('button');
@@ -549,7 +618,12 @@ class SceneEditor {
                 inputEl.type = 'text';
                 inputEl.value = value;
             }
-            
+            inputEl.dataset.key = key;
+            inputEl.addEventListener('change', (e)=> {
+                console.log(e.target.dataset.key, e.target.value);
+                component.parameters[e.target.dataset.key] = e.target.value;
+                this.handleSave(false);
+            });
             propEl.appendChild(inputEl);
             componentEl.appendChild(propEl);
         });
@@ -580,5 +654,35 @@ class SceneEditor {
             return modelGroup;
         }
         return this.shapeFactory.getMergedGroup(model, this.getCurrentAnimation()[this.state.currentFrame], groupName );
+    }
+
+    updateGizmoToolbarUI(activeButtonId) {
+        // Remove active class from all buttons
+        document.querySelectorAll('.gizmo-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        // Add active class to the clicked button
+        document.getElementById(activeButtonId).classList.add('active');
+    }
+    
+    setGizmoMode(mode) {
+        if (this.gizmoManager) {
+            this.gizmoManager.setMode(mode);
+        }
+    }
+    findEntityObject(entity) {
+        // Look for the object in the scene with the same name as the entity type
+        // This needs to be adjusted based on how your entities are mapped to 3D objects
+        const entityName = entity.type;
+        
+        let foundObject = null;
+        this.rootGroup.traverse((object) => {
+            if (object.name === entityName) {
+                foundObject = object;
+            }
+        });
+        
+        return foundObject;
     }
 }
