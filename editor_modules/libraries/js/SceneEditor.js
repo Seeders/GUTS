@@ -11,7 +11,9 @@ class SceneEditor {
         
         this.state = {
             sceneData: [],
-            selectedEntityIndex: -1
+            selectedEntityIndex: -1,
+            selectedEntity: null,
+            selectedEntityObject: null
         };
         this.elements = {
             hierarchy: document.getElementById('scene-hierarchy'),
@@ -26,13 +28,11 @@ class SceneEditor {
         let skeleUtils = new (this.gameEditor.editorModuleClasses['Three_SkeletonUtils'])();
         this.shapeFactory = new ShapeFactory(this.gameEditor.getPalette(), this.gameEditor.getCollections().textures, null, skeleUtils);
         this.nextEntityId = 1;
-
         this.initThreeJS(this.canvas);
         this.gizmoManager = new SE_GizmoManager();
         this.gizmoManager.init(this);
         this.initEventListeners();
         this.animate();
-        this.addSampleEntities();
     }
 
     initEventListeners() {
@@ -51,6 +51,32 @@ class SceneEditor {
             const objData = this.gameEditor.getCollections()[objType][spawnType];
             if(objData.entity){
                 this.createEntity(objData.entity, { "objectType": objType, "spawnType": spawnType, ...objData });
+            }
+        });
+        this.elements.removePrefabBtn.addEventListener('click', () => {
+            if (this.state.selectedEntity) {
+                // Remove from Three.js scene
+                const entityObject = this.state.selectedEntityObject || this.findEntityObject(this.state.selectedEntity);
+                if (entityObject) {
+                    this.shapeFactory.disposeObject(entityObject);
+                    this.rootGroup.remove(entityObject);
+                }
+    
+                // Remove from entities array
+                const index = this.state.sceneData.indexOf(this.state.selectedEntity);
+                if (index > -1) {
+                    this.state.sceneData.splice(index, 1);
+                }
+    
+                // Clear selection
+                this.state.selectedEntity = null;
+                this.state.selectedEntityObject = null;
+                this.gizmoManager.detach();
+    
+                // Update UI
+                this.handleSave(false);
+                this.renderHierarchy();
+                this.renderInspector();
             }
         });
         const collectionDefs = this.gameEditor.getCollectionDefs();
@@ -138,10 +164,9 @@ class SceneEditor {
     handleRenderSceneObject(event) {
         this.canvas.width = this.gameEditor.getCollections().configs.game.canvasWidth;
         this.canvas.height = this.gameEditor.getCollections().configs.game.canvasHeight;
-        this.canvas.setAttribute('style','');
-        this.state.sceneData = event.detail.data;        
+        this.canvas.setAttribute('style','');       
         this.clearScene();
-        this.addSampleEntities();
+        this.renderSceneData(event.detail.data);
         this.handleResize();
         this.clock = new window.THREE.Clock();
         this.clock.start(); 
@@ -184,7 +209,7 @@ class SceneEditor {
         if (fireSave) {
             const saveEvent = new CustomEvent('saveSceneObject', {
                 detail: { 
-                    data: this.state.entities, 
+                    data: this.state.sceneData, 
                     propertyName: 'sceneData' 
                 },
                 bubbles: true,
@@ -195,14 +220,14 @@ class SceneEditor {
             const valueElement = this.gameEditor.elements.editor
                 .querySelector('#sceneData-value');
             if (valueElement) {
-                let renderDataCopy = JSON.parse(JSON.stringify(this.state.entities));  
+                let renderDataCopy = JSON.parse(JSON.stringify(this.state.sceneData));  
                 valueElement.value = JSON.stringify(renderDataCopy, null, 2);
             }
         }
     }
 
-    async addSampleEntities() {
-        for(let entity of this.state.sceneData){
+    async renderSceneData(sceneData) {
+        for(let entity of sceneData){
             let params = {};
             for(let component of entity.components){
                 params = {...params, ...component.parameters}
@@ -261,8 +286,8 @@ class SceneEditor {
             const obj = this.rootGroup.children[0];
             this.shapeFactory.disposeObject(obj);
             this.rootGroup.remove(obj);
-        }
-        this.state.entities = [];
+        }        
+        this.state.sceneData = []; 
     }
 
     createEntity(type, params) {
@@ -276,7 +301,7 @@ class SceneEditor {
         };
 
 
-        this.state.entities.push(entity);
+        this.state.sceneData.push(entity);
         this.handleSave(false);
         this.renderHierarchy();
         
@@ -393,7 +418,7 @@ class SceneEditor {
         entity.components.push(component);
         
         // Re-render the inspector to show the new component
-        if (this.selectedEntity === entity) {
+        if (this.state.selectedEntity === entity) {
             this.selectEntity(entity);
         }
     }
@@ -412,7 +437,7 @@ class SceneEditor {
             entity.components.splice(index, 1);
             
             // Re-render the inspector
-            if (this.selectedEntity === entity) {
+            if (this.state.selectedEntity === entity) {
                 this.selectEntity(entity);
             }
         }
@@ -422,7 +447,7 @@ class SceneEditor {
         this.elements.hierarchy.innerHTML = '';
         
         // Get top-level entities (those without a parent)
-        const rootEntities = this.state.entities.filter(e => e.parent === null);
+        const rootEntities = this.state.sceneData.filter(e => e.parent === null);
         
         // Render each root entity and its children
         rootEntities.forEach(entity => {
@@ -435,7 +460,7 @@ class SceneEditor {
         itemEl.className = 'hierarchy-item';
         itemEl.dataset.entityId = entity.id;
         
-        if (this.selectedEntity === entity) {
+        if (this.state.selectedEntity === entity) {
             itemEl.classList.add('selected');
         }    
         // Create entity name
@@ -451,7 +476,7 @@ class SceneEditor {
         parentElement.appendChild(itemEl);
         
         // Find children of this entity
-        const children = this.state.entities.filter(e => e.parent === entity);
+        const children = this.state.sceneData.filter(e => e.parent === entity);
         children.forEach(child => {
             this.renderEntityInHierarchy(child, parentElement, level + 1);
         });
@@ -464,7 +489,7 @@ class SceneEditor {
             prevSelected.classList.remove('selected');
         }
         
-        this.selectedEntity = entity;
+        this.state.selectedEntity = entity;
         
         // Update hierarchy selection
         const entityEl = document.querySelector(`.hierarchy-item[data-entity-id="${entity.id}"]`);
@@ -476,10 +501,12 @@ class SceneEditor {
         this.renderInspector();
 
         if (entity) {
-            const entityObject = this.findEntityObject(entity);
+            const entityObject = this.findEntityObject(entity);            
             if (entityObject) {
+                this.state.selectedEntityObject = entityObject;
                 this.gizmoManager.attach(entityObject);
             } else {
+                this.state.selectedEntityObject = null;
                 this.gizmoManager.detach();
             }
         } else {
@@ -489,7 +516,7 @@ class SceneEditor {
 
     renderInspector() {
         // Show/hide the appropriate sections
-        if (!this.selectedEntity) {
+        if (!this.state.selectedEntity) {
             this.elements.noSelection.style.display = 'block';
             this.elements.entityInspector.style.display = 'none';
             return;
@@ -499,14 +526,13 @@ class SceneEditor {
         this.elements.entityInspector.style.display = 'block';
         
         // Update transform values
-        const entity = this.selectedEntity;
+        const entity = this.state.selectedEntity;
 
 
         if (entity) {
             // Clear and re-render components
             this.elements.components.innerHTML = '';
             
-            // Skip the transform component as it's already shown
             entity.components.forEach(component => {        
                 this.renderComponent(component);
             });
@@ -544,7 +570,7 @@ class SceneEditor {
         removeBtn.className = 'btn';
         removeBtn.textContent = 'X';
         removeBtn.addEventListener('click', () => {
-            this.removeComponent(this.selectedEntity, component.type);
+            this.removeComponent(this.state.selectedEntity, component.type);
         });
         headerEl.appendChild(removeBtn);
         
@@ -568,12 +594,14 @@ class SceneEditor {
                 inputEl = document.createElement('input');
                 inputEl.type = 'checkbox';
                 inputEl.checked = value;
+                inputEl.dataset.key = key;
             } else if (typeof value === 'number') {
                 // Number input
                 inputEl = document.createElement('input');
                 inputEl.type = 'number';
                 inputEl.value = value;
                 inputEl.step = key.includes('scale') ? '0.1' : '1';
+                inputEl.dataset.key = key;
             } else if (typeof value === 'object' && value !== null) {
                 // Vector3 input for position, rotation, scale, etc.
                 inputEl = document.createElement('div');
@@ -585,6 +613,8 @@ class SceneEditor {
                     axisInput.type = 'number';
                     axisInput.value = value[axis];
                     axisInput.step = '0.1';
+                    axisInput.dataset.axis = axis;
+                    axisInput.dataset.key = key;
                     inputEl.appendChild(axisInput);
                 }
                 });
@@ -598,6 +628,7 @@ class SceneEditor {
                     option.selected = value === type;
                     inputEl.appendChild(option);
                 });
+                inputEl.dataset.key = key;
             } else if (key === 'color') {
                 // Color input
                 inputEl = document.createElement('div');
@@ -612,16 +643,23 @@ class SceneEditor {
                 colorPreview.className = 'color-preview';
                 colorPreview.style.backgroundColor = value;
                 inputEl.appendChild(colorPreview);
+                colorInput.dataset.key = key;
             } else {
                 // Default text input
                 inputEl = document.createElement('input');
                 inputEl.type = 'text';
                 inputEl.value = value;
+                inputEl.dataset.key = key;
             }
-            inputEl.dataset.key = key;
             inputEl.addEventListener('change', (e)=> {
-                console.log(e.target.dataset.key, e.target.value);
-                component.parameters[e.target.dataset.key] = e.target.value;
+                if(e.target.dataset.axis) {                   
+                    console.log(e.target.dataset.key, e.target.dataset.axis, e.target.value);
+                    component.parameters[e.target.dataset.key][e.target.dataset.axis] = e.target.value;
+                    this.state.selectedEntityObject[e.target.dataset.key][e.target.dataset.axis] = e.target.value;
+                } else {
+                    console.log(e.target.dataset.key, e.target.value);
+                    component.parameters[e.target.dataset.key] = e.target.value;
+                }
                 this.handleSave(false);
             });
             propEl.appendChild(inputEl);
