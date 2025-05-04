@@ -5,22 +5,16 @@
 #scene-editor-container .sidebar {
     width: 250px;
     display: flex;
+    padding: 0 1em 0 0;
     flex-direction: column;
-    border-right: 1px solid #3e3e3e;
+    background-color: none;
+    border: none;
+    box-shadow: none;
 }
 
 #scene-editor-container .hierarchy {
     flex: 1;
     overflow-y: auto;
-    padding: 8px;
-    border-bottom: 1px solid #3e3e3e;
-}
-
-#scene-editor-container .sidebar-header {
-    padding: 8px;
-    background-color: #2d2d2d;
-    border-bottom: 1px solid #3e3e3e;
-    font-weight: bold;
 }
 
 #scene-editor-container .hierarchy-item {
@@ -49,7 +43,6 @@
     height: 16px;
     display: inline-block;
     margin-right: 5px;
-    background-color: #888;
     border-radius: 2px;
 }
 
@@ -61,28 +54,24 @@
 
 #scene-editor-container .toolbar {
     padding: 8px;
-    background-color: #2d2d2d;
-    border-bottom: 1px solid #3e3e3e;
     display: flex;
+    flex-direction: column;
     gap: 8px;
 }
 
 #scene-editor-container .scene-view {
     flex: 1;
-    background-color: #2a2a2a;
     position: relative;
 }
 
 #scene-editor-container .inspector {
     width: 300px;
     overflow-y: auto;
-    border-left: 1px solid #3e3e3e;
-    padding: 0;
+    padding: 0 0 0 1em;
 }
 
 #scene-editor-container .property {
     padding: 8px;
-    border-bottom: 1px solid #3e3e3e;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -94,9 +83,6 @@
 
 #scene-editor-container .property input, #scene-editor-container .property select {
     width: 120px;
-    background-color: #3e3e3e;
-    border: 1px solid #555;
-    color: #e0e0e0;
     padding: 4px;
     border-radius: 3px;
 }
@@ -107,26 +93,18 @@
 
 #scene-editor-container .component-header {
     padding: 8px;
-    background-color: #2d2d2d;
     font-weight: bold;
-    border-bottom: 1px solid #3e3e3e;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
 #scene-editor-container .btn {
-    background-color: #3e3e3e;
-    border: 1px solid #555;
-    color: #e0e0e0;
     padding: 4px 8px;
     border-radius: 3px;
     cursor: pointer;
 }
 
-#scene-editor-container .btn:hover {
-    background-color: #4e4e4e;
-}
 
 #scene-editor-container .add-entity-btn,#scene-editor-container .add-component-btn {
     display: flex;
@@ -136,7 +114,6 @@
 
 #scene-editor-container .no-selection {
     padding: 16px;
-    color: #888;
     text-align: center;
 }
 
@@ -155,24 +132,17 @@
 #scene-editor-container .dropdown-content {
     display: none;
     position: absolute;
-    background-color: #2d2d2d;
     min-width: 160px;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
     z-index: 1;
     border-radius: 3px;
-    border: 1px solid #3e3e3e;
 }
 
 #scene-editor-container .dropdown-content a {
-    color: #e0e0e0;
     padding: 8px 12px;
     text-decoration: none;
     display: block;
     cursor: pointer;
-}
-
-#scene-editor-container .dropdown-content a:hover {
-    background-color: #3e3e3e;
 }
 
 #scene-editor-container .show {
@@ -188,10 +158,38 @@
     width: 16px;
     height: 16px;
     display: inline-block;
-    border: 1px solid #555;
     border-radius: 2px;
     position: absolute;
     right: 8px;
     top: 50%;
     transform: translateY(-50%);
+}
+
+
+#scene-editor-container .gizmo-toolbar {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(40, 40, 40, 0.8);
+    padding: 8px;
+    border-radius: 4px;
+    display: flex;
+    gap: 5px;
+}
+
+#scene-editor-container .gizmo-btn {
+    padding: 6px 12px;
+    background: #444;
+    border: none;
+    border-radius: 3px;
+    color: white;
+    cursor: pointer;
+}
+
+#scene-editor-container .gizmo-btn:hover {
+    background: #555;
+}
+
+#scene-editor-container .gizmo-btn.active {
+    background: #0066cc;
 }
