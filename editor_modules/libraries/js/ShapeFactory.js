@@ -68,7 +68,8 @@ class ShapeFactory {
                         skinning: true
                     });
                     child.material.needsUpdate = true;
-    
+                    child.castShadow = true;
+                    child.receiveShadow = true;
                     child.userData = {
                         isShape: true,
                         index: index,

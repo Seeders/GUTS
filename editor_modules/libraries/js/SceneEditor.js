@@ -8,6 +8,7 @@ class SceneEditor {
         this.controls = null;
         this.clock = new window.THREE.Clock();
         this.canvas = document.getElementById('scene-editor-canvas');
+        
         this.state = {
             sceneData: {},
             selectedEntityIndex: -1,
@@ -23,6 +24,7 @@ class SceneEditor {
         let skeleUtils = new (this.gameEditor.editorModuleClasses['Three_SkeletonUtils'])();
         this.shapeFactory = new ShapeFactory(this.gameEditor.getPalette(), this.gameEditor.getCollections().textures, null, skeleUtils);
         this.nextEntityId = 1;
+
         this.initThreeJS(this.canvas);
         this.initEventListeners();
         this.animate();
@@ -41,8 +43,10 @@ class SceneEditor {
     }
 
     initThreeJS(canvas) {
+        this.gameEditor.canvas = canvas;
         // Scene setup
         this.scene = new window.THREE.Scene();
+        this.gameEditor.scene = this.scene;
         this.rootGroup = new window.THREE.Group(); // Main container for all shapes
         this.rootGroup.name = "rootGroup";
         this.scene.add(this.rootGroup);
@@ -51,8 +55,9 @@ class SceneEditor {
             75, 
             canvas.clientWidth / canvas.clientHeight, 
             0.1, 
-            1000
+            100000
         );
+        this.gameEditor.camera = this.camera;
         this.camera.position.set(100, 100, 100);
         this.camera.lookAt(0, 0, 0);
 
@@ -62,7 +67,10 @@ class SceneEditor {
             antialias: false, 
             alpha: true 
         });
+        this.gameEditor.renderer = this.renderer;
         this.renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+        this.renderer.shadowMap.enabled = true;
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
         // Add helpers
         const gridHelper = new window.THREE.GridHelper(1000, 100);
@@ -75,16 +83,6 @@ class SceneEditor {
         this.controls = new window.THREE.OrbitControls(this.camera, this.renderer.domElement);
         this.controls.enableDamping = true;
         this.controls.dampingFactor = 0.25;
-
-        //Light
-        const ambientLight = new window.THREE.AmbientLight(0xffffff, 0.6);
-        ambientLight.name = 'ambient-light';
-        this.scene.add(ambientLight);
-    
-        const directionalLight = new window.THREE.DirectionalLight(0xffffff, 0.8);
-        directionalLight.position.set(50, 100, 75);
-        directionalLight.name = 'dir-light';
-        this.scene.add(directionalLight);
 
         // Resize handling
         window.addEventListener('resize', this.handleResize.bind(this));
@@ -107,10 +105,10 @@ class SceneEditor {
     animate() {
         requestAnimationFrame(this.animate.bind(this));
         this.controls.update();
-        
+        this.terrainComponent?.update();
         // Calculate delta once per frame
         const delta = this.clock ? this.clock.getDelta() : 0;
-        
+        this.gameEditor.deltaTime = delta;
         // Update all mixers with the same delta
         this.scene.traverse(object => {
             if (object.userData.mixer) {
@@ -154,13 +152,8 @@ class SceneEditor {
     async addSampleEntities() {
         await this.createEntityFromConfig('game', 
             { 
-                gameConfig: this.gameEditor.getCollections().configs.game, 
-                canvas: this.canvas, 
-                canvasBuffer: document.createElement("canvas"), 
-                terrainCanvasBuffer: document.createElement("canvas"), 
-                levelName: this.gameEditor.getCollections().configs.state.level, 
-                level: this.gameEditor.getCollections().levels[this.gameEditor.getCollections().configs.state.level], 
-                palette: this.gameEditor.getPalette()
+                palette: this.gameEditor.getCollections().configs.game.palette,
+                level: this.gameEditor.getCollections().configs.state.level
             }
         );
  
@@ -179,29 +172,42 @@ class SceneEditor {
 
     async createEntityFromConfig(type, params) {
         const entity = this.createEntity(type, params);  
+        const entityObjData = this.gameEditor.getCollections().entities[type];
+        const components = [...entityObjData.renderers, ...entityObjData.components]
+        components.forEach((componentName) => {
+            let componentDef = this.gameEditor.getCollections().components[componentName];
+            if(!componentDef) {
+                componentDef = this.gameEditor.getCollections().renderers[componentName];
+            }
+            if(!componentDef) return;
+            if(componentDef.parameters) {
+                let component = {
+                    type: componentName,
+                    parameters: {}
+                };
+                let compParams = JSON.parse(componentDef.parameters);
+                compParams.forEach((parameterName) => {    
+                    if(params[parameterName]) {        
+                        component.parameters[parameterName] = params[parameterName];
+                    }
+                });
+                entity.components.push(component);
+            }
+            if(componentDef.isTerrain){
+                this.terrainComponent = this.gameEditor.instantiateComponent(componentName, params);
+            }
+        });
+        
         if(params.objectType && params.spawnType){
             const objData = this.gameEditor.getCollections()[params.objectType][params.spawnType];
-            if(objData.render){
-                const model = objData.render.model;
-                if(model){
-                    const modelShape = model[Object.keys(model)[0]].shapes[0];              
-                    // Add mesh renderer component for visible objects
-                    entity.components.push({
-                        type: 'renderer',
-                        properties: {
-                            url: modelShape.url ? modelShape.url : modelShape.type,
-                            material: 'standard',
-                            color: modelShape.color,
-                            receiveShadow: true,
-                            castShadow: true
-                        }
-                    });
-                    await this.renderModel(type, params, model);
-                }
+            if(objData.render && objData.render.model){
+                await this.renderModel(type, params, objData.render.model);                
             }
-        } 
+        }
         return entity;
     }
+
+
     async renderModel(name, params, model) {     
         const modelGroup = new window.THREE.Group(); // Main container for all shapes
         modelGroup.name = name;   
@@ -219,8 +225,20 @@ class SceneEditor {
             modelGroup.position.y = params.position.y;
             modelGroup.position.z = params.position.z;
         }
+        if(params.scale){
+            modelGroup.scale.x = params.scale.x;
+            modelGroup.scale.y = params.scale.y;
+            modelGroup.scale.z = params.scale.z;
+        }
+        if(params.rotation){
+            modelGroup.rotation.x = params.rotation.x;
+            modelGroup.rotation.y = params.rotation.y;
+            modelGroup.rotation.z = params.rotation.z;
+        }
     }
     async clearScene() {
+        this.terrainComponent?.destroy();
+        this.terrainComponent = null;
         while (this.rootGroup.children.length > 0) {
             const obj = this.rootGroup.children[0];
             this.shapeFactory.disposeObject(obj);
@@ -230,10 +248,8 @@ class SceneEditor {
     }
     createEntity(type, params) {
         const id = this.nextEntityId++;
-        const name = `${type}`;
         const entity = {
             id,
-            name,
             type,
             parent: null,
             children: [],
@@ -243,7 +259,7 @@ class SceneEditor {
         // Add transform component by default
         entity.components.push({
             type: 'transform',
-            properties: {
+            parameters: {
                 position: params.position ? params.position : { x: 0, y: 0, z: 0 },
                 rotation: params.rotation ? params.rotation : { x: 0, y: 0, z: 0 },
                 scale: params.scale ? params.scale : { x: 1, y: 1, z: 1 }
@@ -269,13 +285,13 @@ class SceneEditor {
         
         let component = {
             type: componentType,
-            properties: {}
+            parameters: {}
         };
         
-        // Initialize properties based on component type
+        // Initialize parameters based on component type
         switch (componentType) {
             case 'meshRenderer':
-                component.properties = {
+                component.parameters = {
                     geometry: entity.type || 'cube',
                     material: 'standard',
                     color: '#cccccc',
@@ -284,7 +300,7 @@ class SceneEditor {
                 };
                 break;
             case 'light':
-                component.properties = {
+                component.parameters = {
                     type: 'point',
                     color: '#ffffff',
                     intensity: 1.0,
@@ -292,14 +308,14 @@ class SceneEditor {
                 };
                 break;
             case 'collider':
-                component.properties = {
+                component.parameters = {
                     type: 'box',
                     isTrigger: false,
                     size: { x: 1, y: 1, z: 1 }
                 };
                 break;
             case 'rigidbody':
-                component.properties = {
+                component.parameters = {
                     mass: 1.0,
                     drag: 0.1,
                     useGravity: true,
@@ -307,7 +323,7 @@ class SceneEditor {
                 };
                 break;
             case 'audio':
-                component.properties = {
+                component.parameters = {
                     clip: 'none',
                     volume: 1.0,
                     pitch: 1.0,
@@ -316,7 +332,7 @@ class SceneEditor {
                 };
                 break;
             case 'script':
-                component.properties = {
+                component.parameters = {
                     script: 'NewScript.js',
                     enabled: true
                 };
@@ -382,7 +398,7 @@ class SceneEditor {
         
         // Create entity name
         const nameEl = document.createElement('span');
-        nameEl.textContent = entity.name;
+        nameEl.textContent = entity.type;
         itemEl.appendChild(nameEl);
         
         // Add click event
@@ -465,8 +481,8 @@ class SceneEditor {
         
         componentEl.appendChild(headerEl);
         
-        // Component properties
-        Object.entries(component.properties).forEach(([key, value]) => {
+        // Component parameters
+        Object.entries(component.parameters).forEach(([key, value]) => {
             const propEl = document.createElement('div');
             propEl.className = 'property';
             
