@@ -10,6 +10,7 @@ class ModuleManager {
     this.libraryClasses = {};
     this.moduleInstances = {};
     this.core.scriptContext = null;
+    this.importMap = {};
   }
 
   // Module registration and management
@@ -91,22 +92,20 @@ class ModuleManager {
       return this.libraryClasses.Component || class DummyComponent {};
     }
   }
-
-  // Module loading system
   async loadModules(modules) {
     if (!modules) return;
     window.loadingLibraries = {};
     window.require = (f) => { 
         window.module = {};
         window.exports = {};
-        return window[f] || window[this.registeredLibraries[f]]
+        return window[f] || window[this.registeredLibraries[f]];
     };
     const collections = this.core.getCollections();
     const pendingLibraries = new Set();
+    this.importMap = this.importMap || {}; // Ensure importMap is initialized
 
     // Function to instantiate a library once its script is loaded
     const instantiateModuleFromLibrary = (library, moduleConfig) => {
-
         let libraryClass = window.loadingLibraries[library];
         try {
             if (!libraryClass) {
@@ -131,7 +130,7 @@ class ModuleManager {
                 let scriptTag = document.createElement("script");
                 scriptTag.setAttribute('id', `${library}-script`);
                 let scriptUrl = "";
-                if(libraryDef.isModule) {
+                if (libraryDef.isModule) {
                     scriptTag.setAttribute("type", "module");
                 }
                 if (libraryDef.script) {
@@ -146,26 +145,24 @@ class ModuleManager {
                         resolve();
                     };
                 } else if (libraryDef.href) {
-                    if(libraryDef.requireName && libraryDef.isModule){
-                      import(libraryDef.href).then((module) => {
-                        if(libraryDef.windowContext){
-                          if(!window[libraryDef.windowContext]){
-                            window[libraryDef.windowContext] = {};
-                          }
-                          window[libraryDef.windowContext][libraryDef.requireName] = module[libraryDef.requireName];
-                          resolve();
-                        } else {
-                          window[libraryDef.requireName] = module;
-                          resolve();
-                        }
-                      });
+                    if (libraryDef.requireName && libraryDef.isModule) {
+                        import(libraryDef.href).then((module) => {
+                            if (libraryDef.windowContext) {
+                                if (!window[libraryDef.windowContext]) {
+                                    window[libraryDef.windowContext] = {};
+                                }
+                                window[libraryDef.windowContext][libraryDef.requireName] = module[libraryDef.requireName];
+                                resolve();
+                            } else {
+                                window[libraryDef.requireName] = module;
+                                resolve();
+                            }
+                        });
                     } 
                     scriptTag.src = libraryDef.href;
                     scriptTag.onload = () => {
-                   
                         resolve();
                     };
-                    
                 } else {
                     resolve();
                 }
@@ -184,6 +181,26 @@ class ModuleManager {
         });
     };
 
+    // Build the import map from module libraries
+    Object.entries(modules).forEach(([moduleId, moduleConfig]) => {
+        const libraries = moduleConfig.library ? [moduleConfig.library] : moduleConfig.libraries || [moduleId];
+        libraries.forEach((library) => {
+            let libraryDef = this.collections.libraries[library];
+            if (libraryDef && libraryDef.importName && libraryDef.href && libraryDef.isModule) {
+                this.importMap[libraryDef.importName] = libraryDef.href;
+            }
+        });
+    });
+
+    // Prepend the import map to the document head
+    if (Object.keys(this.importMap).length > 0 && !this.createdImportMap) {
+        this.createdImportMap = true;
+        let importMapScript = document.createElement('script');
+        importMapScript.setAttribute('type', 'importmap');
+        importMapScript.innerHTML = JSON.stringify({ imports: this.importMap }, null, 2);
+        document.head.prepend(importMapScript);
+    }
+
     // Set up UI elements
     Object.entries(modules).forEach(([moduleId, module]) => {
         let ui = collections.interfaces[module.interface];
@@ -191,8 +208,8 @@ class ModuleManager {
             let html = ui.html;
             let css = ui.css;
             let modals = ui.modals;
-            if( html ) {
-              this.mainContentContainer.innerHTML += html;
+            if (html) {
+                this.mainContentContainer.innerHTML += html;
             }
             if (css) {
                 let styleTag = document.createElement('style');
@@ -225,12 +242,10 @@ class ModuleManager {
             if (moduleConfig.library) {
                 await importLibrary(moduleConfig.library, moduleConfig);
             } else if (moduleConfig.libraries) {
-                // Load multiple libraries in order if specified
                 for (const library of moduleConfig.libraries) {
                     await importLibrary(library, moduleConfig);
                 }
             } else {
-                // No library needed, instantiate directly
                 await importLibrary(moduleId, moduleConfig);
             }
         }

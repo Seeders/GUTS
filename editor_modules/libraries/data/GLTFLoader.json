@@ -4,5 +4,6 @@
   "isModule": true,
   "windowContext": "THREE_",
   "requireName": "GLTFLoader",
+  "importName": "GLTFLoader",
   "fileName": "GLTFLoader"
 }
