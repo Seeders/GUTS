@@ -15,7 +15,7 @@
         }
 
         insert(entity) {
-            const newIndex = this.getIndex(entity.gridPosition.x, entity.gridPosition.y);
+            const newIndex = this.getIndex(entity.transform.gridPosition.x, entity.transform.gridPosition.y);
             const oldIndex = this.entityCells.get(entity);
             
             // If entity moved to a new cell
@@ -62,8 +62,8 @@
                     const index = row * this.cols + col;
                     if (index >= 0 && index < this.grid.length) {
                         for (let entity of this.grid[index]) {
-                            const dx = (entity.gridPosition.x) - (x + .5);
-                            const dy = (entity.gridPosition.y) - (y + .5);
+                            const dx = (entity.transform.gridPosition.x) - (x + .5);
+                            const dy = (entity.transform.gridPosition.y) - (y + .5);
                             const distSquared = dx * dx + dy * dy;
                             
                             if (distSquared <= radius * radius) {

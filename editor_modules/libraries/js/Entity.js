@@ -9,7 +9,7 @@ class Entity {
         this.type = type;
         this.collisionRadius = 5;   
         this.entityHeight = 10;    
-        this.addComponent("transform", { x: x, y: 0, z: y });
+        this.transform = this.addComponent("transform", { x: x, y: y, z: 0 });        
     }
     getAABB(position = this.transform.position) {
         return {
