@@ -21,8 +21,6 @@ class GameLoader extends engine.Component {
             this.game.state.defaultStats = { ...this.game.state.stats };
         }   
 
-        this.game.skeletonUtils = new (this.game.libraryClasses.Three_SkeletonUtils)();
-
         this.setupCanvas(this.config.configs.game.canvasWidth, this.config.configs.game.canvasHeight);
         await this.loadAssets();
 
@@ -72,7 +70,7 @@ class GameLoader extends engine.Component {
         for(let objectType in this.config) {
             await this.game.imageManager.loadImages(objectType, this.config[objectType]);
         }  
-        this.game.modelManager = new (this.game.libraryClasses.ModelManager)(this, {}, {Three_SkeletonUtils: this.game.skeletonUtils, ShapeFactory: this.game.libraryClasses.ShapeFactory, palette: this.game.palette, textures: this.game.config.textures});
+        this.game.modelManager = new (this.game.libraryClasses.ModelManager)(this, {}, { ShapeFactory: this.game.libraryClasses.ShapeFactory, palette: this.game.palette, textures: this.game.config.textures});
         
         for(let objectType in this.config) {
             await this.game.modelManager.loadModels(objectType, this.config[objectType]);

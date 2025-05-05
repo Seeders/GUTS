@@ -151,7 +151,7 @@ class ModuleManager {
                                 if (!window[libraryDef.windowContext]) {
                                     window[libraryDef.windowContext] = {};
                                 }
-                                window[libraryDef.windowContext][libraryDef.requireName] = module[libraryDef.requireName];
+                                window[libraryDef.windowContext][libraryDef.requireName] = module[libraryDef.requireName] || module;
                                 resolve();
                             } else {
                                 window[libraryDef.requireName] = module;

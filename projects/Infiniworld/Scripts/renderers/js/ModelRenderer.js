@@ -18,7 +18,7 @@ class ModelRenderer extends engine.Component {
         // Get the model
      
         this.model = this.game.modelManager.getModel(objectType, spawnType);
-        
+        this.skeletonUtils = THREE_.SkeletonUtils;
         
         // Create the initial model instance
         if(this.isGLTF){
@@ -28,7 +28,7 @@ class ModelRenderer extends engine.Component {
             };
             this.modelGroup = this.animations.idle;
         } else {
-            this.modelGroup = this.game.skeletonUtils.clone(this.model);              
+            this.modelGroup = this.skeletonUtils.clone(this.model);              
         }
         this.game.scene.add(this.modelGroup);
         // Add the model group to the scene

@@ -4,7 +4,7 @@
   "libraries": [
     "threejs",
     "three.OrbitControls",
-    "Three_SkeletonUtils",
+    "three.SkeletonUtils",
     "GLTFLoader",
     "ShapeFactory",
     "GE_AnimationManager",

@@ -1,12 +1,10 @@
 class ShapeFactory {
-    constructor(palette, textures, libraryClasses, skeletonUtils) {
+    constructor(palette, textures, libraryClasses) {
         this.gltfCache = new Map();
         this.gltfLoader = new THREE_.GLTFLoader();
         this.palette = palette;
         this.textures = textures;
-        if(skeletonUtils){
-            this.skeleUtils = skeletonUtils;
-        }
+        this.skeleUtils = THREE_.SkeletonUtils;        
     }
     async createMergedGroupFromJSON(model, frameData, groupName) {
         let mergedGroup = this.getMergedGroup(model, frameData, groupName);
