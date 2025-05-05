@@ -5,7 +5,7 @@
   "isIsometric": false,
   "libraries": [
     "threejs",
-    "Three_SkeletonUtils",
+    "three.SkeletonUtils",
     "ShapeFactory",
     "ImageManager",
     "SpatialGrid",

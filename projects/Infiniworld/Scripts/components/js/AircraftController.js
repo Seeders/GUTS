@@ -28,10 +28,9 @@ class AircraftController extends engine.Component {
         this.cameraSmoothing = cameraSmoothing;
         this.parent.transform.quaternion = new THREE.Quaternion();
 
-        // Initialize PointerLockControls
-        this.controls = new (this.game.libraryClasses.Three_PointerLockControls)(this.camera, this.infiniWorld.renderer.domElement);
+        this.controls = new THREE_.PointerLockControls(this.camera, this.infiniWorld.renderer.domElement);
         this.controls.pointerSpeed = 0;
-        this.scene.add(this.controls.getObject());
+        this.scene.add(this.controls.object);
 
         // Movement properties
         this.thrust = 0;
@@ -80,10 +79,12 @@ class AircraftController extends engine.Component {
         this.onKeyDown = this.onKeyDown.bind(this);
         this.onKeyUp = this.onKeyUp.bind(this);
         this.onMouseMove = this.onMouseMove.bind(this);
+        this.onMouseDown = this.onMouseDown.bind(this);
         this.onWheel = this.onWheel.bind(this);
         document.addEventListener('keydown', this.onKeyDown);
         document.addEventListener('keyup', this.onKeyUp);
         document.addEventListener('mousemove', this.onMouseMove);
+        document.addEventListener('mousedown', this.onMouseDown);
         document.addEventListener('wheel', this.onWheel);
 
         // Initialize camera
@@ -124,6 +125,12 @@ class AircraftController extends engine.Component {
         } else {
             this.mouseXInput = 0;
             this.mouseYInput = 0;
+        }
+    }
+    onMouseDown(event) {
+        if (!this.controls.isLocked && this.game.deltaTime > 0) {
+            this.controls.lock();
+            event.bubbles = true;
         }
     }
 

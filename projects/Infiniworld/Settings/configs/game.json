@@ -5,7 +5,8 @@
   "isIsometric": false,
   "libraries": [
     "threejs",
-    "Three_SkeletonUtils",
+    "three.SkeletonUtils",
+    "three.PointerLockControls",
     "ShapeFactory",
     "SimplexNoise",
     "ImageManager",
@@ -20,7 +21,6 @@
     "ModelManager",
     "three.OrbitControls",
     "GLTFLoader",
-    "Three_PointerLockControls",
     "InstancePool"
   ],
   "fileName": "game",
