@@ -19,8 +19,7 @@ class GraphicsEditor {
     constructor(gameEditor, config, {ShapeFactory, GE_SceneRenderer, GE_ShapeManager, GE_AnimationManager, GE_RotationUtils, GE_UIManager, GE_GroupManager, GE_GizmoManager}) {
         this.gameEditor = gameEditor;
         this.config = config;
-        let skeleUtils = new (this.gameEditor.editorModuleClasses['Three_SkeletonUtils'])();
-        this.shapeFactory = new ShapeFactory(this.gameEditor.getPalette(), this.gameEditor.getCollections().textures, null, skeleUtils);
+        this.shapeFactory = new ShapeFactory(this.gameEditor.getPalette(), this.gameEditor.getCollections().textures, null);
         this.canvas = document.getElementById('graphics-editor-canvas');
         // Initialize sub-modules
         this.sceneRenderer = new GE_SceneRenderer(gameEditor, this);

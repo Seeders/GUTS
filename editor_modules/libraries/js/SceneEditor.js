@@ -26,8 +26,7 @@ class SceneEditor {
             removePrefabBtn: document.getElementById('scene-removePrefabBtn'),
         } 
         this.componentsToUpdate = [];
-        let skeleUtils = new (this.gameEditor.editorModuleClasses['Three_SkeletonUtils'])();
-        this.shapeFactory = new ShapeFactory(this.gameEditor.getPalette(), this.gameEditor.getCollections().textures, null, skeleUtils);
+        this.shapeFactory = new ShapeFactory(this.gameEditor.getPalette(), this.gameEditor.getCollections().textures, null);
         this.nextEntityId = 1;
         this.initThreeJS(this.canvas);
         this.gizmoManager = new SE_GizmoManager();

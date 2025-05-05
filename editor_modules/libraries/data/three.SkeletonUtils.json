@@ -1,0 +1,9 @@
+{
+  "title": "THREE.SkeletonUtils",
+  "href": "https://cdn.jsdelivr.net/npm/three@0.176.0/examples/jsm/utils/SkeletonUtils.js",
+  "isModule": true,
+  "windowContext": "THREE_",
+  "requireName": "SkeletonUtils",
+  "importName": "SkeletonUtils",
+  "fileName": "three.SkeletonUtils"
+}
