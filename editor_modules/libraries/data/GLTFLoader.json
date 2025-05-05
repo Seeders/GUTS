@@ -1,6 +1,8 @@
 {
   "title": "GLTF Loader",
-  "href": "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js",
-  "className": "GLTFLoader",
+  "href": "https://cdn.jsdelivr.net/npm/three@0.176.0/examples/jsm/loaders/GLTFLoader.js",
+  "isModule": true,
+  "windowContext": "THREE_",
+  "requireName": "GLTFLoader",
   "fileName": "GLTFLoader"
 }

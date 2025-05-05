@@ -146,13 +146,26 @@ class ModuleManager {
                         resolve();
                     };
                 } else if (libraryDef.href) {
+                    if(libraryDef.requireName && libraryDef.isModule){
+                      import(libraryDef.href).then((module) => {
+                        if(libraryDef.windowContext){
+                          if(!window[libraryDef.windowContext]){
+                            window[libraryDef.windowContext] = {};
+                          }
+                          window[libraryDef.windowContext][libraryDef.requireName] = module[libraryDef.requireName];
+                          resolve();
+                        } else {
+                          window[libraryDef.requireName] = module;
+                          resolve();
+                        }
+                      });
+                    } 
                     scriptTag.src = libraryDef.href;
                     scriptTag.onload = () => {
-                        if(libraryDef.requireName) {
-                            this.registeredLibraries[libraryDef.requireName] = libraryDef.className;
-                        }
+                   
                         resolve();
                     };
+                    
                 } else {
                     resolve();
                 }
