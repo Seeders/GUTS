@@ -4,6 +4,7 @@
   "theme": "claude2",
   "editorModules": [
     "terrainModule",
+    "sceneModule",
     "graphicsModule",
     "scriptModule",
     "aiPromptModule",

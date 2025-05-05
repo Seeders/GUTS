@@ -6,6 +6,7 @@
     "three.OrbitControls",
     "GLTFLoader",
     "ShapeFactory",
+    "ModelManager",
     "GE_AnimationManager",
     "GE_EventManager",
     "GE_GizmoManager",
