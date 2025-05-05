@@ -46,16 +46,16 @@ class ModelManager {
                 const isGLTF = modelGroup.shapes.length > 0 && modelGroup.shapes[0].type == "gltf";
                 if( isGLTF ){
                     const animations = cfg.render.animations;
-                    Object.keys(animations).forEach(async (animationName) => {
+                    await Promise.all(Object.keys(animations).map(async (animationName) => {
                         const anim = animations[animationName][0];
                         const animMainGroup = anim[Object.keys(anim)[0]];
-
+    
                         let mergedModel = JSON.parse(JSON.stringify(cfg.render.model));
-                        if(animMainGroup){
+                        if (animMainGroup) {
                             mergedModel[modelGroupName].shapes[0].url = animMainGroup.shapes[0].url;
                         }
-                        this.models[`${prefix}_${type}_${animationName}`] = await this.createModel(mergedModel);                        
-                    });
+                        this.models[`${prefix}_${type}_${animationName}`] = await this.createModel(mergedModel);
+                    }));
                     this.models[`${prefix}_${type}`] = await this.createModel(cfg.render.model);
                 } else {
                     this.models[`${prefix}_${type}`] = await this.createModel(cfg.render.model);

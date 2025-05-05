@@ -25,6 +25,7 @@ class SceneEditor {
             addPrefabBtn: document.getElementById('scene-addPrefabBtn'),
             removePrefabBtn: document.getElementById('scene-removePrefabBtn'),
         } 
+        this.componentsToUpdate = [];
         let skeleUtils = new (this.gameEditor.editorModuleClasses['Three_SkeletonUtils'])();
         this.shapeFactory = new ShapeFactory(this.gameEditor.getPalette(), this.gameEditor.getCollections().textures, null, skeleUtils);
         this.nextEntityId = 1;
@@ -178,7 +179,7 @@ class SceneEditor {
     animate() {
         requestAnimationFrame(this.animate.bind(this));
         this.controls.update();
-        this.terrainComponent?.update();
+        this.componentsToUpdate.forEach((component) => component.update());
         // Calculate delta once per frame
         const delta = this.clock ? this.clock.getDelta() : 0;
         this.gameEditor.deltaTime = delta;
@@ -237,7 +238,7 @@ class SceneEditor {
             if(params.objectType && params.spawnType){
                 const objData = this.gameEditor.getCollections()[params.objectType][params.spawnType];                
                 if(objData.render && objData.render.model){
-                    await this.renderModel(entity.type, params, objData.render.model);                
+                    await this.addModelToScene(entity.type, params, objData.render.model);                
                 }
             }
             this.createEntity(entity.type, params);
@@ -250,7 +251,7 @@ class SceneEditor {
         return entity;
     }
 
-    async renderModel(name, params, model) {     
+    async addModelToScene(name, params, model) {     
         const modelGroup = new window.THREE.Group(); // Main container for all shapes
         modelGroup.name = name;   
         for (const groupName in model) {            
@@ -280,8 +281,8 @@ class SceneEditor {
     }
 
     async clearScene() {
-        this.terrainComponent?.destroy();
-        this.terrainComponent = null;
+        this.componentsToUpdate.forEach((component) => component.destroy());
+        this.componentsToUpdate = [];
         while (this.rootGroup.children.length > 0) {
             const obj = this.rootGroup.children[0];
             this.shapeFactory.disposeObject(obj);
@@ -342,8 +343,8 @@ class SceneEditor {
                 });
                 components.push(component);
             }
-            if(componentDef.isTerrain){
-                this.terrainComponent = this.gameEditor.instantiateComponent(componentName, params);
+            if(componentDef.updateInEditor){
+                this.componentsToUpdate.push(this.gameEditor.instantiateComponent(componentName, params));
             }
         });
         return components;
@@ -653,11 +654,9 @@ class SceneEditor {
             }
             inputEl.addEventListener('change', (e)=> {
                 if(e.target.dataset.axis) {                   
-                    console.log(e.target.dataset.key, e.target.dataset.axis, e.target.value);
-                    component.parameters[e.target.dataset.key][e.target.dataset.axis] = e.target.value;
-                    this.state.selectedEntityObject[e.target.dataset.key][e.target.dataset.axis] = e.target.value;
+                    component.parameters[e.target.dataset.key][e.target.dataset.axis] = Number(e.target.value);
+                    this.state.selectedEntityObject[e.target.dataset.key][e.target.dataset.axis] = Number(e.target.value);
                 } else {
-                    console.log(e.target.dataset.key, e.target.value);
                     component.parameters[e.target.dataset.key] = e.target.value;
                 }
                 this.handleSave(false);
