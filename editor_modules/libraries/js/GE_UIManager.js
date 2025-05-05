@@ -176,7 +176,6 @@ class GE_UIManager {
     }
 
     createInspector(shape) {
-        console.log('create shape inspector', shape);
         const inspector = document.getElementById('inspector');
         inspector.innerHTML = "";
         inspector.className = 'inspector';

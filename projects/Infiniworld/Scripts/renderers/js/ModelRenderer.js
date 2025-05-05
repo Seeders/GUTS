@@ -1,163 +1,183 @@
 class ModelRenderer extends engine.Component {
     init({ objectType, spawnType, frameDuration }) {
-        if(!this.game.config.configs.game.is3D) {
+        if (!this.game.config.configs.game.is3D) {
             return;
         }
+        this.objectType = objectType;
+        this.spawnType = spawnType;
         this.animationState = 'idle';
         this.currentFrameIndex = 0;
         this.frameTime = 0;
         this.frameDuration = frameDuration || 0.17;
         this.lastDirection = -1;
-        this.blendDuration = 0.5; // Duration for blending between animations (in seconds)
-        this.currentBlendTime = 0; // Current time in the blending process
-        this.previousAnimationState = null; // Store the previous animation state for blending
-        
+
         // Load animation and model data
         this.animationData = this.game.config[objectType]?.[spawnType]?.render?.animations;
         this.modelData = this.game.config[objectType]?.[spawnType]?.render?.model;
-        this.isGLTF = this.modelData[Object.keys(this.modelData)[0]].shapes[0].type == "gltf";
+        this.isGLTF = this.modelData[Object.keys(this.modelData)[0]].shapes[0].type === "gltf";
         this.clock = new THREE.Clock();
-        this.clock.start(); 
-        
+        this.clock.start();
+
         // Get the model
         this.model = this.game.modelManager.getModel(objectType, spawnType);
-        this.skeletonUtils = THREE_.SkeletonUtils; // Use updated THREE.SkeletonUtils if available
-        
-        // Animation mixer and clips for GLTF models
-        this.mixer = null;
-        this.animations = {};
-        this.activeActions = {}; // Track currently active animation actions
-        
-        // Create the initial model instance
-        if(this.isGLTF){
-            // Clone the model once for GLTF
-            this.modelGroup = this.skeletonUtils.clone(this.model);
-            
-            // Create animation mixer
-            this.mixer = new THREE.AnimationMixer(this.modelGroup);
-            
-            // Load all available animations for the model
-            Object.keys(this.animationData).forEach(animName => {
-                const clip = this.game.modelManager.getAnimation(objectType, spawnType, animName);
-                if (clip) {
-                    // Store the clip
-                    this.animations[animName] = clip;
-                    
-                    // Create an action for this animation
-                    const action = this.mixer.clipAction(clip);
-                    action.clampWhenFinished = true;
-                    action.weight = 0; // Initialize with weight 0 (not active)
-                    this.activeActions[animName] = action;
-                }
-            });
-        } else {
-            this.modelGroup = this.skeletonUtils.clone(this.model);              
-        }
+        this.skeletonUtils = THREE_.SkeletonUtils;
 
-        // Add the model group to the scene
+        // Clone the model once
+        this.modelGroup = !this.isGLTF ? this.skeletonUtils.clone(this.model) : this.model;
         this.game.scene.add(this.modelGroup);
         this.modelGroup.position.set(0, -10000, 0);
-        
+
+        // Initialize AnimationMixer and actions if GLTF
+        if (this.isGLTF) {
+            this.setupAnimationMixer();
+        }
+
         // Set initial animation
         this.setAnimation('idle');
     }
-    
+
+    setupAnimationMixer() {
+ 
+        // Find the mixer and animations from userData
+        let mixer, animations;
+        this.modelGroup.traverse(object => {
+            if (object.userData.mixer) {
+                mixer = object.userData.mixer;
+                animations = object.userData.animations;
+            }
+        });
+
+        if (!mixer || !animations) {
+            console.error('No AnimationMixer or animations found in modelGroup');
+            return;
+        }
+
+        this.mixer = mixer;
+        this.animationActions = {};
+
+        // Create AnimationActions for each animation
+        const animationNames = Object.keys(this.animationData);
+        animationNames.forEach(name => {
+            const animModel = this.game.modelManager.getAnimation(this.objectType, this.spawnType, name)
+            let animModelAnimations;
+            animModel.traverse(object => {
+                if (object.userData.mixer) {
+                    animModelAnimations = object.userData.animations;
+                }
+            });
+            const clip = animModelAnimations[0];
+            if (clip) {
+                const action = this.mixer.clipAction(clip);
+                action.setLoop(THREE.LoopRepeat);
+                action.enabled = true;
+                this.animationActions[name] = action;
+            }
+        });
+
+        // Store the current action
+        this.currentAction = null;
+    }
+
     setAnimation(animationName) {
         if (!this.animationData[animationName]) {
             console.warn(`Animation '${animationName}' not found, defaulting to 'idle'`);
             animationName = 'idle';
-            
+
             if (!this.animationData[animationName]) {
                 const availableAnims = Object.keys(this.animationData);
                 animationName = availableAnims.length > 0 ? availableAnims[0] : null;
-                
+
                 if (!animationName) {
                     console.error('No animations available for this model');
                     return;
                 }
             }
-        }    
-
-        // Don't do anything if we're already in this animation state
-        if (this.animationState === animationName) {
-            return;
         }
-        
-        // Store the previous animation state for blending
-        this.previousAnimationState = this.animationState;
-        this.animationState = animationName;
-        
-        if(this.isGLTF) {
-            // Reset blend timer
-            this.currentBlendTime = 0;
-            
-            // For GLTF models, use the animation mixer for blending
-            if (this.activeActions[this.previousAnimationState] && this.activeActions[animationName]) {
-                const prevAction = this.activeActions[this.previousAnimationState];
-                const nextAction = this.activeActions[animationName];
-                
-                // Enable both animations during the transition
-                nextAction.reset();
-                nextAction.play();
-                nextAction.crossFadeFrom(prevAction, this.blendDuration, true);
-            } else if (this.activeActions[animationName]) {
-                // Just start the new animation if there's no previous action
-                const action = this.activeActions[animationName];
-                action.reset();
-                action.play();
-                action.setEffectiveWeight(1);
+
+        if (this.animationState !== animationName) {
+            this.animationState = animationName;
+
+            if (this.isGLTF && this.mixer) {
+                const newAction = this.animationActions[animationName];
+                if (!newAction) {
+                    console.error(`No AnimationAction for ${animationName}`, this.animationActions);
+                    return;
+                }
+
+                // Crossfade to the new animation
+                this.crossfadeTo(newAction, 0.3); // 0.3 seconds blend duration
+            } else {
+                // For non-GLTF, advance frame-based animation
+                this.currentFrameIndex = 0;
+                this.frameTime = 0;
+                this.updateModelFrame();
             }
-        } else {
-            // For non-GLTF models, reset frame counters
-            this.currentFrameIndex = 0;
-            this.frameTime = 0;
-            this.updateModelFrame();
         }
     }
-    
+
+    crossfadeTo(newAction, duration) {
+        const previousAction = this.currentAction;
+
+        // Set the new action as current
+        this.currentAction = newAction;
+
+        if (previousAction && previousAction !== newAction) {
+            // Prepare previous action
+            previousAction.enabled = true;
+            previousAction.time = 0;
+            previousAction.setEffectiveTimeScale(1);
+            previousAction.setEffectiveWeight(1);
+
+            // Prepare new action
+            newAction.enabled = true;
+            newAction.time = 0;
+            newAction.setEffectiveTimeScale(1);
+            newAction.setEffectiveWeight(1);
+
+            // Play both actions
+            previousAction.play();
+            newAction.play();
+
+            // Crossfade
+            previousAction.crossFadeTo(newAction, duration, true);
+
+            // Stop previous action after fade
+            setTimeout(() => {
+                previousAction.stop();
+            }, duration * 1000);
+        } else {
+            // No previous action, just play the new one
+            newAction.play();
+        }
+    }
+
     draw() {
-        if(!this.game.config.configs.game.is3D) {
+        if (!this.game.config.configs.game.is3D) {
             return;
         }
-        
         const delta = this.clock ? this.clock.getDelta() : 0;
-        
-        // Handle animation blending for GLTF models
+
+        // Update AnimationMixer for GLTF models
         if (this.isGLTF && this.mixer) {
-            // Update the animation mixer
             this.mixer.update(delta);
-            
-            // Update blending if in transition
-            if (this.previousAnimationState && this.currentBlendTime < this.blendDuration) {
-                this.currentBlendTime += delta;
-                
-                // Calculate blend factor (0 to 1)
-                const blendFactor = Math.min(this.currentBlendTime / this.blendDuration, 1);
-                
-                // When blending is complete, finalize the transition
-                if (blendFactor >= 1) {
-                    this.previousAnimationState = null;
-                }
+        }
+
+        // Update skeleton for skinned meshes
+        this.modelGroup.traverse(object => {
+            if (object.isSkinnedMesh && object.skeleton) {
+                object.skeleton.update();
             }
-        } else {
-            // For custom animations, update as before
+        });
+
+        // Update frame-based animations for non-GLTF models
+        if (!this.isGLTF) {
             this.frameTime += this.game.deltaTime;
             if (this.frameTime >= this.frameDuration) {
                 this.frameTime -= this.frameDuration;
                 this.advanceFrame();
             }
-            
-            // Also update any skinned meshes
-            this.modelGroup.traverse(object => {
-                if (object.userData.mixer) {
-                    object.userData.mixer.update(delta);
-                }
-                if (object.isSkinnedMesh) {
-                    object.skeleton.update();
-                }
-            });
         }
-        
+
         // Update position of model to match entity position
         if (this.parent && this.parent.transform.position) {
             this.modelGroup.position.set(
@@ -165,26 +185,24 @@ class ModelRenderer extends engine.Component {
                 this.parent.transform.position.y,
                 this.parent.transform.position.z
             );
-            
+
             // Handle rotation based on movement direction
             this.updateDirection();
         }
     }
-    
+
     updateDirection() {
-        // Calculate direction based on movement
         if (this.parent && this.parent.transform.lastPosition) {
             const dx = this.parent.transform.position.x - this.parent.transform.lastPosition.x;
-            const dz = this.parent.transform.position.z - this.parent.transform.lastPosition.z;
+            const dy = this.parent.transform.position.z - this.parent.transform.lastPosition.z;
             this.modelGroup.quaternion.copy(this.parent.transform.quaternion);
 
             // Only update direction if there's significant movement
-            const isMoving = Math.abs(dx) > 0.001 || Math.abs(dz) > 0.001;
-            
-            // Set animation based on movement state
-            if (isMoving) {
+            if (Math.abs(dx) > 0.001 || Math.abs(dy) > 0.001) {
+                // Set walking animation when moving
                 if (this.animationData['walk']) {
                     this.setAnimation('walk');
+                    return;
                 }
             } else {
                 // Entity is stationary, use idle animation
@@ -192,22 +210,22 @@ class ModelRenderer extends engine.Component {
             }
         }
     }
-    
+
     advanceFrame() {
         const frames = this.animationData[this.animationState];
         if (!frames || frames.length === 0) return;
-        
+
         this.currentFrameIndex = (this.currentFrameIndex + 1) % frames.length;
         this.updateModelFrame();
     }
-    
+
     updateModelFrame() {
         // Get current animation and frame
         const frames = this.animationData[this.animationState];
         if (!frames?.length) return;
-        
+
         const frameData = frames[this.currentFrameIndex] || {};
-        
+
         // Traverse the modelGroup to apply transformations
         this.modelGroup.traverse((obj) => {
             // Handle group-level transformations (apply to group objects)
@@ -217,30 +235,29 @@ class ModelRenderer extends engine.Component {
                 const modelGroupData = this.modelData[groupName];
                 this.updateObjectTransforms(obj, groupData, modelGroupData);
             }
-            
+
             // Handle shape-level transformations (apply to meshes)
             if (obj.isMesh && obj.userData?.index >= 0 && obj.parent?.name) {
                 const groupName = obj.parent.name;
                 const index = obj.userData.index;
                 const groupData = frameData[groupName];
                 const modelGroupData = this.modelData[groupName];
-                // Find shape in animationData by id (id: 1 maps to index 0)
                 let shape;
                 if (groupData?.shapes) {
                     shape = groupData.shapes.find(s => s.id === index);
                 }
                 const modelShape = modelGroupData?.shapes?.[index];
-                
+
                 if (shape || modelShape) {
                     this.updateShapeTransforms(obj, shape, modelShape);
                 }
             }
         });
     }
-    
+
     updateObjectTransforms(obj, groupData, modelGroupData) {
         if (!modelGroupData) return;
-        
+
         // Position
         const pos = groupData?.position || modelGroupData.position || { x: 0, y: 0, z: 0 };
         obj.position.set(
@@ -248,7 +265,7 @@ class ModelRenderer extends engine.Component {
             pos.y ?? modelGroupData.position?.y ?? 0,
             pos.z ?? modelGroupData.position?.z ?? 0
         );
-        
+
         // Rotation
         const rot = groupData?.rotation || modelGroupData.rotation || { x: 0, y: 0, z: 0 };
         obj.rotation.set(
@@ -256,7 +273,7 @@ class ModelRenderer extends engine.Component {
             rot.y ?? modelGroupData.rotation?.y ?? 0,
             rot.z ?? modelGroupData.rotation?.z ?? 0
         );
-        
+
         // Scale
         const scale = groupData?.scale || modelGroupData.scale || { x: 1, y: 1, z: 1 };
         obj.scale.set(
@@ -275,14 +292,14 @@ class ModelRenderer extends engine.Component {
             shape?.y ?? modelShape.y ?? 0,
             shape?.z ?? modelShape.z ?? 0
         );
-        
+
         // Rotation (local to group, convert degrees to radians)
         obj.rotation.set(
             ((shape?.rotationX ?? modelShape.rotationX) || 0) * Math.PI / 180,
             ((shape?.rotationY ?? modelShape.rotationY) || 0) * Math.PI / 180,
             ((shape?.rotationZ ?? modelShape.rotationZ) || 0) * Math.PI / 180
         );
-        
+
         // Scale (local to group)
         obj.scale.set(
             shape?.scaleX ?? modelShape.scaleX ?? 1,
@@ -290,29 +307,40 @@ class ModelRenderer extends engine.Component {
             shape?.scaleZ ?? modelShape.scaleZ ?? 1
         );
     }
-    
+
     destroy() {
-        if(this.modelGroup){
-            // Stop all animations
+        if (this.modelGroup) {
+            // Stop and clean up all animation actions
             if (this.mixer) {
-                this.mixer.stopAllAction();
+                Object.values(this.animationActions).forEach(action => {
+                    action.stop();
+                });
+                this.mixer.uncacheRoot(this.modelGroup);
                 this.mixer = null;
             }
-            
-            // Clear all action references
-            this.activeActions = {};
-            
+
             // Remove model from scene
-            if (this.modelGroup && this.game.scene) {
+            if (this.game.scene) {
                 this.game.scene.remove(this.modelGroup);
             }
-            
-            // Clear all children
+
+            // Dispose of geometries and materials
+            this.modelGroup.traverse(child => {
+                if (child.geometry) child.geometry.dispose();
+                if (child.material) {
+                    if (Array.isArray(child.material)) {
+                        child.material.forEach(mat => mat.dispose());
+                    } else {
+                        child.material.dispose();
+                    }
+                }
+            });
+
+            // Clear children
             while (this.modelGroup.children.length > 0) {
-                const child = this.modelGroup.children[0];
-                this.modelGroup.remove(child);
+                this.modelGroup.remove(this.modelGroup.children[0]);
             }
-            
+
             this.modelGroup = null;
         }
     }
