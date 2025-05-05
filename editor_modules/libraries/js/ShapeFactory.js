@@ -42,6 +42,8 @@ class ShapeFactory {
 
     async handleGLTFShape(shape, index, group) {
         const applyTransformations = (model, gltf) => {
+            // Extract animations
+            const animations = gltf.animations;
             model.position.set(shape.x || 0, shape.y || 0, shape.z || 0);
             model.scale.set(
                 shape.scaleX || 1,
@@ -81,22 +83,38 @@ class ShapeFactory {
                 index: index,
                 isGLTFRoot: true,
                 castShadow: true,
-                animations: gltf.animations
+                animations: animations
             };
     
             group.add(model);
     
-            if (gltf.animations && gltf.animations.length > 0) {
+            if (animations && animations.length > 0) {
  
     
                 const mixer = new THREE.AnimationMixer(model);
-                const action = mixer.clipAction(gltf.animations[0]);
+                const action = mixer.clipAction(animations[0]);
+                console.log('clip', animations[0]);
                 action.play();
     
                 model.userData.mixer = mixer;
+                let skinnedMesh;
+                gltf.scene.traverse((child) => {
+                    if (child.isSkinnedMesh) {
+                        skinnedMesh = child;
+                    }
+                });
+    
+                if (!skinnedMesh) {
+                    console.error('No SkinnedMesh found in the glTF file');
+                    return;
+                }    
+                const skeleton = skinnedMesh.skeleton;
+                model.userData.skeleton = skeleton;                
             } else {
                 console.log('No animations found in GLTF file');
             }
+        
+
         };
     
         if (shape.url) {
