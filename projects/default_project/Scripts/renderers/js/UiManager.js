@@ -202,10 +202,11 @@ class UiManager extends engine.Component {
                     let position = new THREE.Vector3(
                         this.game.state.mousePosition.gridX * this.gridSize + this.gridSize / 2, 
                         this.game.state.mousePosition.gridY * this.gridSize + this.gridSize / 2,
-                        this.game.gameEntity.getComponent('game').getTerrainHeight(tower.transform.gridPosition)
+                        0
                     );
                     const tower = this.game.spawn("tower", { objectType: "towers", spawnType: this.game.state.selectedTowerType, setDirection: 1}, position);
                     tower.placed = true;
+                    tower.transform.position.z = this.game.gameEntity.getComponent('game').getTerrainHeight(tower.transform.gridPosition);
                     this.game.state.tileMap[this.game.state.mousePosition.gridY][this.game.state.mousePosition.gridX].buildable = false;
                     this.game.state.tileMap[this.game.state.mousePosition.gridY][this.game.state.mousePosition.gridX].tower = tower;
                     this.game.state.bloodShards -= finalCost;
