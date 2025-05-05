@@ -57,7 +57,7 @@ class GE_SceneRenderer {
         this.scene.add(axesHelper);
 
         // Orbit controls
-        this.controls = new window.THREE.OrbitControls(this.camera, this.renderer.domElement);
+        this.controls = new window.THREE_.OrbitControls(this.camera, this.renderer.domElement);
         this.controls.enableDamping = true;
         this.controls.dampingFactor = 0.25;
 

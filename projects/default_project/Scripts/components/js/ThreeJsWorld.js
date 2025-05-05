@@ -59,7 +59,7 @@ class ThreeJsWorld extends engine.Component {
         );
 
         if (useControls) {
-            this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+            this.controls = new THREE_.OrbitControls(this.camera, this.renderer.domElement);
             this.controls.target.set(
                 lookAt.x,
                 lookAt.y,

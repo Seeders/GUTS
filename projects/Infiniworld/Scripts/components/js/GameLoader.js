@@ -27,7 +27,7 @@ class GameLoader extends engine.Component {
         const sceneEntities = scene.sceneData;
         sceneEntities.forEach((sceneEntity) => {
             
-            let position = {x: 0, z: 0};
+            let position = new THREE.Vector3();
             let params = {};
             sceneEntity.components.forEach((entityComp) => {
                 if(entityComp.type == "transform"){
@@ -38,10 +38,9 @@ class GameLoader extends engine.Component {
             if(sceneEntity.type == "game"){  
                 this.game.gameEntity = this.game.createEntityFromConfig(sceneEntity.type, params, position);
             } else {
-                let spawned = this.game.spawn(sceneEntity.type, params,position);
+                let spawned = this.game.spawn(sceneEntity.type, params, new THREE.Vector3(position.x, position.y, position.z));
                 if(sceneEntity.type == "player"){
                     this.player = spawned;
-                    this.player.transform.position.y += 50;
                     this.game.player = this.player;
                     this.player.placed = true;
                 }

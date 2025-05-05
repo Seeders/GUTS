@@ -1,8 +1,7 @@
 {
   "title": "THREE",
-  "href": "https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js",
-  "className": "THREE",
-  "requireName": "three",
+  "href": "https://cdn.jsdelivr.net/npm/three@0.176.0/build/three.module.min.js",
+  "requireName": "THREE",
   "fileName": "threejs",
   "isModule": true
 }

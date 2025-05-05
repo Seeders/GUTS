@@ -5,6 +5,8 @@
   "inputElement": "textarea",
   "inputDataType": "string",
   "libraries": [
+    "Component",
+    "Entity",
     "scriptEditor"
   ],
   "propertyNames": "[\"script\", \"html\", \"css\"]",

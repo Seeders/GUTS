@@ -1,7 +1,7 @@
 class ShapeFactory {
     constructor(palette, textures, libraryClasses, skeletonUtils) {
         this.gltfCache = new Map();
-        this.gltfLoader = new THREE.GLTFLoader();
+        this.gltfLoader = new THREE_.GLTFLoader();
         this.palette = palette;
         this.textures = textures;
         if(skeletonUtils){

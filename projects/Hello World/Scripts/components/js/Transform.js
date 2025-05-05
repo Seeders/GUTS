@@ -7,8 +7,12 @@ class Transform extends engine.Component {
         this.drawPosition = new THREE.Vector2(x, y);
         this.scale = new THREE.Vector3(scaleX, scaleY, scaleZ);
         this.quaternion = new THREE.Quaternion();
-        this.quaternion.setFromAxisAngle( new THREE.Vector3( rotationX, rotationY, rotationZ ), Math.PI / 2 );        
-        this.parent.transform = this;     
+        this.quaternion.setFromAxisAngle( new THREE.Vector3( rotationX, rotationY, rotationZ ), Math.PI / 2 );
+        
+        this.parent.transform = this;
+        if(this.game.gameEntity){
+            this.position.y = this.parent.getCurrentTerrainHeight();
+        }     
     }
 
     update() {

@@ -3,13 +3,8 @@
   "editorCategories": "",
   "theme": "claude2",
   "editorModules": [
-    "terrainModule",
-    "graphicsModule",
     "scriptModule",
-    "aiPromptModule",
-    "audioModule",
-    "exportScriptModule",
-    "textureEditor"
+    "aiPromptModule"
   ],
   "path": "/",
   "fileName": "editor"
