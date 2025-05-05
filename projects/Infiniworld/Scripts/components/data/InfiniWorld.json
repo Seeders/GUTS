@@ -1,5 +1,5 @@
 {
   "fileName": "InfiniWorld",
   "parameters": "[\"world\", \"palette\"]",
-  "isTerrain": true
+  "updateInEditor": true
 }

@@ -13,7 +13,6 @@ class PlayerController extends engine.Component {
         this.infiniWorld = this.game.gameEntity.getComponent("InfiniWorld");
         this.scene = this.infiniWorld.scene;
         this.camera = this.game.camera;
-        
         // Movement parameters
         this.walkSpeed = walkSpeed;
         this.runSpeed = runSpeed;
@@ -29,7 +28,7 @@ class PlayerController extends engine.Component {
         
         // Initialize character position and rotation
         this.parent.transform.position.y = 50; // Start above ground level to let gravity place the character
-        
+
         this.controls = { isLocked: false };
 
         // Add these event listeners:

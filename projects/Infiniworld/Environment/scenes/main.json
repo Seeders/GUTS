@@ -46,9 +46,9 @@
           "type": "transform",
           "parameters": {
             "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
+              "x": -2000,
+              "y": 348.55920189085435,
+              "z": 3104.861448955849
             },
             "rotation": {
               "x": 0,
@@ -67,41 +67,6 @@
           "parameters": {
             "objectType": "players",
             "spawnType": "knight"
-          }
-        }
-      ]
-    },
-    {
-      "id": 3,
-      "type": "playerAircraft",
-      "parent": null,
-      "children": [],
-      "components": [
-        {
-          "type": "transform",
-          "parameters": {
-            "position": {
-              "x": 0,
-              "y": 80,
-              "z": 0
-            },
-            "rotation": {
-              "x": "0",
-              "y": "0",
-              "z": "0"
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
-          }
-        },
-        {
-          "type": "ModelRenderer",
-          "parameters": {
-            "objectType": "players",
-            "spawnType": "spaceShip"
           }
         }
       ]

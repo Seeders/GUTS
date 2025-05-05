@@ -119,14 +119,13 @@
 
 #scene-editor-container .vector3-input {
     display: flex;
-    width: 120px;
+    width: 200px;
     gap: 2px;
 }
 
 #scene-editor-container .vector3-input input {
-    width: 36px;
+    width: 64px;
     text-align: center;
-    padding: 4px 2px;
 }
 
 #scene-editor-container .dropdown-content {
