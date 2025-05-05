@@ -30,7 +30,7 @@ init({ spawnType, owner, target, targetPosition, stats }) {
     y: this.parent.transform.position.y
   };
   
-  const targetPos = this.targetPosition ? this.targetPosition : this.target.position;
+  const targetPos = this.targetPosition ? this.targetPosition : this.target.transform.position;
   const dx = targetPos.x - currentPosition.x;
   const dy = targetPos.y - currentPosition.y;
   const dist = Math.sqrt(dx * dx + dy * dy);
@@ -108,7 +108,7 @@ handleEnemyCollision(enemy) {
   if (!damageResult.wasEvaded) {
     enemyHealth.hp -= damageResult.damageDealt;
     enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);
-    this.game.spawn(enemy.position.x, enemy.position.y, "hitEffect", {
+    this.game.spawn(enemy.transform.position.x, enemy.transform.position.y, "hitEffect", {
       damageType: this.stats.damageType,
       lifeSpan: 0.3
     });
@@ -127,7 +127,7 @@ handleEnemyCollision(enemy) {
     enemyHealth.hp <= 0 &&
     Math.random() < this.ownerStats.summonChance - 1
   ) {
-    this.game.spawn(enemy.position.x, enemy.position.y, "summonedTower", {
+    this.game.spawn(enemy.transform.position.x, enemy.transform.position.y, "summonedTower", {
       objectType: "towers",
       spawnType: this.ownerStats.summonType,
       owner: this.owner
@@ -157,8 +157,8 @@ handleEnemyCollision(enemy) {
   if (this.stats.piercing > 0 && this.piercedEnemies.length < this.stats.piercing) {
     this.piercedEnemies.push(enemy);
     const nearbyEnemies = this.game.spatialGrid.getNearbyEntities(
-      this.parent.gridPosition.x,
-      this.parent.gridPosition.y,
+      this.parent.transform.gridPosition.x,
+      this.parent.transform.gridPosition.y,
       this.ownerStats.range,
       "enemy"
     );
@@ -195,8 +195,8 @@ handleEnemyCollision(enemy) {
 applySplashDamage(centerEnemy) {
   // Get nearby enemies within splash radius
   const nearbyEnemies = this.game.spatialGrid.getNearbyEntities(
-    this.parent.gridPosition.x,
-    this.parent.gridPosition.y,
+    this.parent.transform.gridPosition.x,
+    this.parent.transform.gridPosition.y,
     this.stats.splashRadius,
     "enemy"
   );
@@ -214,8 +214,8 @@ applySplashDamage(centerEnemy) {
     let enemyStatClone = { ...enemyStats.stats };
     enemyStatClone.energyShield = enemyEnergyShield.energyShield;
 
-    const dx = enemy.position.x - this.parent.transform.position.x;
-    const dy = enemy.position.y - this.parent.transform.position.y;
+    const dx = enemy.transform.position.x - this.parent.transform.position.x;
+    const dy = enemy.transform.position.y - this.parent.transform.position.y;
     const distSq = dx * dx + dy * dy;
 
     if (distSq <= splashRadiusSq) {
@@ -223,7 +223,7 @@ applySplashDamage(centerEnemy) {
       if (!damageResult.wasEvaded) {
         enemyHealth.hp -= damageResult.damageDealt;
         enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);
-        this.game.spawn(enemy.position.x, enemy.position.y, "hitEffect", {
+        this.game.spawn(enemy.transform.position.x, enemy.transform.position.y, "hitEffect", {
           damageType: this.stats.damageType,
           lifeSpan: 0.3
         });
@@ -240,7 +240,7 @@ applySplashDamage(centerEnemy) {
 }
 
 update() {
-  if(this.target) this.targetCurrentPosition = {...this.target.position };
+  if(this.target) this.targetCurrentPosition = {...this.target.transform.position };
   
   // Update lifespan and destroy if expired
   this.currentLifespan += this.game.deltaTime;
@@ -303,8 +303,8 @@ findNewTarget(nearbyEnemies) {
   const rangeSq = this.ownerStats.range * this.ownerStats.range * gridSize * gridSize;
   for (let enemy of nearbyEnemies) {
     if (!enemy.destroyed && !this.piercedEnemies.includes(enemy)) {
-      const dx = enemy.position.x - this.parent.transform.position.x;
-      const dy = enemy.position.y - this.parent.transform.position.y;
+      const dx = enemy.transform.position.x - this.parent.transform.position.x;
+      const dy = enemy.transform.position.y - this.parent.transform.position.y;
       const distSq = dx * dx + dy * dy;
       if (distSq < rangeSq) {
         return enemy;

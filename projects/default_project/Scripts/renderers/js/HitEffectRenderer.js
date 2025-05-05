@@ -13,7 +13,7 @@ class HitEffectRenderer extends engine.Component {
         const particleComp = this.parent.getComponent("HitEffectParticle");
         if (!particleComp || !particleComp.particles.length) return;
 
-        const basePos = this.game.translator.pixelToIso(this.parent.position.x, this.parent.position.y);
+        const basePos = this.game.translator.pixelToIso(this.parent.transform.position.x, this.parent.transform.position.y);
 
         for (let particle of particleComp.particles) {
             this.ctx.fillStyle = `${particle.color}${particle.alpha})`;

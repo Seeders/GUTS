@@ -19,8 +19,8 @@ class Attacker extends engine.Component {
         // Validate current target
         if (this.target) {
             const distance = Math.hypot(
-                this.target.position.x - this.parent.transform.position.x,
-                this.target.position.y - this.parent.transform.position.y
+                this.target.transform.position.x - this.parent.transform.position.x,
+                this.target.transform.position.y - this.parent.transform.position.y
             );
             if (distance > this.stats.range || this.target.getComponent('health').hp <= 0) {
                 this.target = null;
@@ -48,8 +48,8 @@ class Attacker extends engine.Component {
         let furthestEnemy = null;
         let furthestDistance = -1;
         const nearbyEntities = this.game.spatialGrid.getNearbyEntities(
-            this.parent.gridPosition.x, 
-            this.parent.gridPosition.y, 
+            this.parent.transform.gridPosition.x, 
+            this.parent.transform.gridPosition.y, 
             this.stats.range,
             "enemy"
         );

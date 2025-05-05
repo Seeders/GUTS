@@ -27,7 +27,7 @@ init({ spawnType, owner, target, targetPosition, stats }) {
 
 update() {
   let hitSoundPlayed = false;
-  if(this.target) this.targetCurrentPosition = {...this.target.position };
+  if(this.target) this.targetCurrentPosition = {...this.target.transform.position };
   // Update lifespan and destroy if expired
   this.currentLifespan += this.game.deltaTime; // Assuming deltaTime is in seconds
   if (this.currentLifespan >= this.maxLifespan) {
@@ -46,9 +46,9 @@ update() {
   }
 
   // Determine movement target
-  const targetPos = this.targetPosition ? this.targetPosition : this.target.position;
-  const dx = targetPos.x - this.parent.position.x;
-  const dy = targetPos.y - this.parent.position.y;
+  const targetPos = this.targetPosition ? this.targetPosition : this.target.transform.position;
+  const dx = targetPos.x - this.parent.transform.position.x;
+  const dy = targetPos.y - this.parent.transform.position.y;
   const distSq = dx * dx + dy * dy;
   const dist = Math.sqrt(distSq);
   const speed = this.stats.speed;
@@ -60,8 +60,8 @@ update() {
   if (this.targetPosition) {
     // Check nearby enemies for hit detection when using targetPosition
     const nearbyEnemies = this.game.spatialGrid.getNearbyEntities(
-      this.parent.gridPosition.x,
-      this.parent.gridPosition.y,
+      this.parent.transform.gridPosition.x,
+      this.parent.transform.gridPosition.y,
       this.stats.splashRadius || 15, // Use splashRadius or default to 15,
       "enemy"
     );
@@ -69,8 +69,8 @@ update() {
     for (const enemy of nearbyEnemies) {
       if (enemy.isDead || this.piercedEnemies.includes(enemy)) continue;
 
-      const dxEnemy = enemy.position.x - this.parent.position.x;
-      const dyEnemy = enemy.position.y - this.parent.position.y;
+      const dxEnemy = enemy.transform.position.x - this.parent.transform.position.x;
+      const dyEnemy = enemy.transform.position.y - this.parent.transform.position.y;
       const enemyDistSq = dxEnemy * dxEnemy + dyEnemy * dyEnemy;
 
       if (enemyDistSq <= hitRadiusSq) {
@@ -91,7 +91,7 @@ update() {
         if (!damageResult.wasEvaded) {
           enemyHealth.hp -= damageResult.damageDealt;
           enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);
-          this.game.spawn(enemy.position.x, enemy.position.y, "hitEffect", {
+          this.game.spawn(enemy.transform.position.x, enemy.transform.position.y, "hitEffect", {
             damageType: this.stats.damageType,
             lifeSpan: 0.3
           });
@@ -118,7 +118,7 @@ update() {
         // Splash damage if applicable
         if (this.stats.splashRadius > 0) {
           this.applySplashDamage(nearbyEnemies);
-          this.game.spawn(this.parent.position.x, this.parent.position.y, "explosion", {
+          this.game.spawn(this.parent.transform.position.x, this.parent.transform.position.y, "explosion", {
             radius: this.stats.splashRadius
           });
         }
@@ -147,7 +147,7 @@ update() {
       }
       targetHealth.hp -= damageResult.damageDealt;
       targetEnergyShield.absorbDamage(damageResult.damageAbsorbed);
-      this.game.spawn(this.target.position.x, this.target.position.y, "hitEffect", {
+      this.game.spawn(this.target.transform.position.x, this.target.transform.position.y, "hitEffect", {
         damageType: this.stats.damageType,
         lifeSpan: 0.3
       });
@@ -166,7 +166,7 @@ update() {
       targetHealth.hp <= 0 &&
       Math.random() < this.ownerStats.summonChance - 1
     ) {
-      this.game.spawn(this.target.position.x, this.target.position.y, "summonedTower", {
+      this.game.spawn(this.target.transform.position.x, this.target.transform.position.y, "summonedTower", {
         objectType: "towers",
         spawnType: this.ownerStats.summonType,
         owner: this.owner
@@ -189,8 +189,8 @@ update() {
       this.piercedEnemies.push(this.target);
       const newTarget = this.findNewTarget(
         this.game.spatialGrid.getNearbyEntities(
-          this.parent.gridPosition.x,
-          this.parent.gridPosition.y,
+          this.parent.transform.gridPosition.x,
+          this.parent.transform.gridPosition.y,
           this.ownerStats.range
         )
       );
@@ -205,8 +205,8 @@ update() {
   }
 
   // Move projectile
-  this.parent.position.x += (dx / dist) * speed;
-  this.parent.position.y += (dy / dist) * speed;
+  this.parent.transform.position.x += (dx / dist) * speed;
+  this.parent.transform.position.y += (dy / dist) * speed;
 
   // Continue moving past targetPosition by updating it if reached
   if (this.targetPosition && distSq < speed * speed) {
@@ -218,14 +218,14 @@ update() {
   }
 
   // Particle spawning logic (unchanged)
-  const tDx = this.parent.lastPosition.x - this.parent.position.x;
-  const tDy = this.parent.lastPosition.y - this.parent.position.y;
+  const tDx = this.parent.transform.lastPosition.x - this.parent.transform.position.x;
+  const tDy = this.parent.transform.lastPosition.y - this.parent.transform.position.y;
   const tDistSq = tDx * tDx + tDy * tDy;
   const tDist = Math.sqrt(tDistSq);
 
   this.distanceTraveled += tDist;
   if (this.def.particle && this.distanceTraveled > this.distanceToSpawnParticle) {
-    this.game.spawn(this.parent.position.x, this.parent.position.y, "particle", { objectType: "particles", spawnType: this.def.particle});
+    this.game.spawn(this.parent.transform.position.x, this.parent.transform.position.y, "particle", { objectType: "particles", spawnType: this.def.particle});
     this.distanceTraveled = 0;
     this.distanceToSpawnParticle += Math.random() * 3;
   }
@@ -237,8 +237,8 @@ findNewTarget(nearbyEnemies) {
   const rangeSq = this.ownerStats.range * this.ownerStats.range * gridSize * gridSize;
   for (let enemy of nearbyEnemies) {
     if (!enemy.destroyed && !this.piercedEnemies.includes(enemy)) {
-      const dx = enemy.position.x - this.parent.position.x;
-      const dy = enemy.position.y - this.parent.position.y;
+      const dx = enemy.transform.position.x - this.parent.transform.position.x;
+      const dy = enemy.transform.position.y - this.parent.transform.position.y;
       const distSq = dx * dx + dy * dy;
       if (distSq < rangeSq) {
         return enemy;
@@ -260,8 +260,8 @@ applySplashDamage(nearbyEnemies) {
     let enemyStatClone = { ...enemyStats.stats };
     enemyStatClone.energyShield = enemyEnergyShield.energyShield;
 
-    const dx = enemy.position.x - this.parent.position.x;
-    const dy = enemy.position.y - this.parent.position.y;
+    const dx = enemy.transform.position.x - this.parent.transform.position.x;
+    const dy = enemy.transform.position.y - this.parent.transform.position.y;
     const distSq = dx * dx + dy * dy;
 
     if (distSq <= splashRadiusSq) {
@@ -269,7 +269,7 @@ applySplashDamage(nearbyEnemies) {
       if (!damageResult.wasEvaded) {
         enemyHealth.hp -= damageResult.damageDealt;
         enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);
-        this.game.spawn(enemy.position.x, enemy.position.y, "hitEffect", {
+        this.game.spawn(enemy.transform.position.x, enemy.transform.position.y, "hitEffect", {
           damageType: this.stats.damageType,
           lifeSpan: 0.3
         });

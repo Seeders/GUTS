@@ -124,7 +124,7 @@ class UiManager extends engine.Component {
         }
     }
 
-  setupEventListeners() {
+    setupEventListeners() {
         document.getElementById('startGameBtn').removeAttribute('style');
         document.getElementById('startGameBtn').addEventListener('click', (e) => {    
             this.game.state.isPaused = false;
@@ -143,16 +143,16 @@ class UiManager extends engine.Component {
             if (!this.game.state.selectedTowerType && !this.game.state.towers.length) return;
 
             if (this.game.state.selectedTowerType && this.game.state.previewTower) {
-                this.game.state.previewTower.position.x = this.game.state.mousePosition.gridX * this.gridSize + this.gridSize / 2;
-                this.game.state.previewTower.position.y = this.game.state.mousePosition.gridY * this.gridSize + this.gridSize / 2;
-                this.game.state.previewTower.position.z = this.game.state.previewTower.getCurrentTerrainHeight();
+                this.game.state.previewTower.transform.position.x = this.game.state.mousePosition.gridX * this.gridSize + this.gridSize / 2;
+                this.game.state.previewTower.transform.position.y = this.game.state.mousePosition.gridY * this.gridSize + this.gridSize / 2;
+                this.game.state.previewTower.transform.position.z = this.game.gameEntity.getComponent('game').getTerrainHeight(this.game.state.previewTower.transform.gridPosition);
                 const isValidPosition = this.checkValidTowerPosition(this.game.state.mousePosition.gridX, this.game.state.mousePosition.gridY);
                 this.canvas.style.cursor = isValidPosition ? 'pointer' : 'not-allowed';
             }
 
             let hoveredTower = null;
             for (const tower of this.game.state.towers) {
-                const dist = Math.hypot(tower.gridPosition.x - this.game.state.mousePosition.gridX, tower.gridPosition.y + this.game.translator.tileHeight / 2 - this.game.state.mousePosition.gridY);
+                const dist = Math.hypot(tower.transform.gridPosition.x - this.game.state.mousePosition.gridX, tower.transform.gridPosition.y + this.game.translator.tileHeight / 2 - this.game.state.mousePosition.gridY);
                 if (dist < 20) {
                     hoveredTower = tower;
                     break;
@@ -203,6 +203,7 @@ class UiManager extends engine.Component {
                     const tower = this.game.spawn(this.game.state.mousePosition.gridX * this.gridSize + this.gridSize / 2, 
                                                  this.game.state.mousePosition.gridY * this.gridSize + this.gridSize / 2, "tower", { objectType: "towers", spawnType: this.game.state.selectedTowerType, setDirection: 1});
                     tower.placed = true;
+                    tower.transform.position.z = this.game.gameEntity.getComponent('game').getTerrainHeight(tower.transform.gridPosition);
                     this.game.state.tileMap[this.game.state.mousePosition.gridY][this.game.state.mousePosition.gridX].buildable = false;
                     this.game.state.tileMap[this.game.state.mousePosition.gridY][this.game.state.mousePosition.gridX].tower = tower;
                     this.game.state.bloodShards -= finalCost;
@@ -226,9 +227,9 @@ class UiManager extends engine.Component {
                 this.canvas.style.cursor = 'default';
             }
         });
-}
+    }
 
-  setupTowerPlacement() {
+    setupTowerPlacement() {
 
         
         const towerButtons = document.querySelectorAll('.tower-option');
@@ -302,7 +303,7 @@ class UiManager extends engine.Component {
         if(!this.game.config.configs.game.is3D) {
             this.renderCanvas();
         }
-}
+    }
 
     updateWaveDisplay(waveNumber) {
         this.waveDisplay.textContent = waveNumber;

@@ -67,11 +67,11 @@ class ModelRenderer extends engine.Component {
             this.advanceFrame();
         }
         // Update position of model to match entity position
-        if (this.parent && this.parent.position) {
+        if (this.parent && this.parent.transform.position) {
             this.modelGroup.position.set(
-                this.parent.position.x,
-                this.parent.position.z,
-                this.parent.position.y
+                this.parent.transform.position.x,
+                this.parent.transform.position.z,
+                this.parent.transform.position.y
             );
             
             // Handle rotation based on movement direction
@@ -83,9 +83,9 @@ class ModelRenderer extends engine.Component {
     
     updateDirection() {
         // Calculate direction based on movement
-        if (this.parent && this.parent.lastPosition) {
-            const dx = this.parent.position.x - this.parent.lastPosition.x;
-            const dy = this.parent.position.y - this.parent.lastPosition.y;
+        if (this.parent && this.parent.transform.lastPosition) {
+            const dx = this.parent.transform.position.x - this.parent.transform.lastPosition.x;
+            const dy = this.parent.transform.position.y - this.parent.transform.lastPosition.y;
             
             // Only update direction if there's significant movement
             if (Math.abs(dx) > 0.001 || Math.abs(dy) > 0.001) {

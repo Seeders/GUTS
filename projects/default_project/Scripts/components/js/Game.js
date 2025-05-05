@@ -20,7 +20,7 @@ class Game extends engine.Component {
     }
 
     update() {
-        this.keep.position.z = this.getTerrainHeight(this.keep.gridPosition);
+        this.keep.transform.position.z = this.getTerrainHeight(this.keep.transform.gridPosition);
         if(this.game.config.configs.game.is3D){
             this.getComponent("MapRenderer")?.render(this.game.state.tileMapData, this.game.state.paths);
         } else {
@@ -44,7 +44,7 @@ class Game extends engine.Component {
 
             // Sort entities by y position for proper drawing order
             this.game.state.entities.sort((a, b) => {
-                return (a.position.y * this.game.state.tileMap.length + a.position.x) - (b.position.y * this.game.state.tileMap.length + b.position.x)
+                return (a.transform.position.y * this.game.state.tileMap.length + a.transform.position.x) - (b.transform.position.y * this.game.state.tileMap.length + b.transform.position.x)
             });
 
             this.game.state.stats = {...this.game.state.defaultStats};//reset stats to recalculate upgrades from base stats.
@@ -81,7 +81,6 @@ class Game extends engine.Component {
             if (!tile) {
                 return 0;
             }
-            
             const terrainHeight = tile.typeId * this.game.heightMapConfig.heightStep;
             return terrainHeight;
         }

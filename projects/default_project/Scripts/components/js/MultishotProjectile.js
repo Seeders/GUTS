@@ -16,8 +16,8 @@ init({ spawnType, stats, target, owner }) {
 
  
   // Calculate the base direction to the target
-  const dx = target.position.x - this.parent.position.x;
-  const dy = target.position.y - this.parent.position.y;
+  const dx = target.transform.position.x - this.parent.transform.position.x;
+  const dy = target.transform.position.y - this.parent.transform.position.y;
   const baseAngle = Math.atan2(dy, dx); // Angle from parent to target in radians
   const distance = Math.sqrt(dx * dx + dy * dy);
 
@@ -35,8 +35,8 @@ init({ spawnType, stats, target, owner }) {
     const deltaY = Math.sin(currentAngle) * distance;
 
     this.game.spawn(
-      this.parent.position.x,
-      this.parent.position.y,
+      this.parent.transform.position.x,
+      this.parent.transform.position.y,
       "projectile",
       {
         spawnType: ownerStats.projectile,
@@ -45,8 +45,8 @@ init({ spawnType, stats, target, owner }) {
         stats: stats,
         target: target,
         targetPosition: {
-          x: this.parent.position.x + deltaX, // Start from parent, extend to new position
-          y: this.parent.position.y + deltaY
+          x: this.parent.transform.position.x + deltaX, // Start from parent, extend to new position
+          y: this.parent.transform.position.y + deltaY
         }
       }
     );

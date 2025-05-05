@@ -3,12 +3,11 @@ class UpgradeManager extends engine.Component {
     constructor(game, parent, params) {
         super(game, parent, params);
     }
-    
-    
 
- init() {
-this.game.state.activeUpgrades = {};
-}
+    init() {
+        this.game.state.activeUpgrades = {};
+        this.game.state.essenceToNextLevel = this.game.state.essenceToNextLevel || 100;
+    }
     update() {
        this.applyActiveUpgrades();
         // Level Up check

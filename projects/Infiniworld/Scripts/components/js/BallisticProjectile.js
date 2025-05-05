@@ -18,7 +18,7 @@ init({ spawnType, owner, target, stats }) {
     
     // Ballistic trajectory variables
     this.startPosition = { ...this.parent.transform.position, z: 10 }; // Start 10 units above ground
-    this.targetPosition = { ...this.target.position, z: 0 };
+    this.targetPosition = { ...this.target.transform.position, z: 0 };
     this.time = 0;
     
     this.totalDist = Math.sqrt(
@@ -120,8 +120,8 @@ update() {
         this.parent.transform.position.z = 0; // Snap to ground
 
         // Hit detection - same as before but at current position
-        const targetDistSq = (this.parent.transform.position.x - this.target.position.x) ** 2 + 
-                            (this.parent.transform.position.y - this.target.position.y) ** 2;
+        const targetDistSq = (this.parent.transform.position.x - this.target.transform.position.x) ** 2 + 
+                            (this.parent.transform.position.y - this.target.transform.position.y) ** 2;
 
 
 
@@ -155,8 +155,8 @@ update() {
 
 processSplashDamage() {
     const nearbyEnemies = this.game.spatialGrid.getNearbyEntities(
-        this.parent.gridPosition.x, 
-        this.parent.gridPosition.y, 
+        this.parent.transform.gridPosition.x, 
+        this.parent.transform.gridPosition.y, 
         this.stats.splashRadius,
         "enemy"
     );
@@ -164,8 +164,8 @@ processSplashDamage() {
     for (const enemy of nearbyEnemies) {
         if (enemy.isDead) continue;
         
-        const dx = enemy.position.x - this.parent.transform.position.x;
-        const dy = enemy.position.y - this.parent.transform.position.y;
+        const dx = enemy.transform.position.x - this.parent.transform.position.x;
+        const dy = enemy.transform.position.y - this.parent.transform.position.y;
         const distSq = dx * dx + dy * dy;
         
         let gridSize = this.game.config.configs.game.gridSize;
@@ -182,7 +182,7 @@ processSplashDamage() {
             if (!damageResult.wasEvaded) {
                 enemyHealth.hp -= damageResult.damageDealt;
                 enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);
-                this.game.spawn(enemy.position.x, enemy.position.y, "hitEffect", { damageType: this.stats.damageType , lifeSpan: .3});
+                this.game.spawn(enemy.transform.position.x, enemy.transform.position.y, "hitEffect", { damageType: this.stats.damageType , lifeSpan: .3});
                 if (this.ownerStats.slowAmount) {
                     enemyStats.addEffect(this.game.config.effects.slow, this.game.effects.slow, this.ownerStats.slowAmount);
                 }

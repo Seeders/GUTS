@@ -38,20 +38,20 @@ class ChainProjectile extends engine.Component {
         targetEnergyShield.absorbDamage(damageResult.damageAbsorbed);
         this.piercedEnemies.push(this.target);
         this.chainTargets.push(this.target);
-        this.game.spawn(this.target.position.x, this.target.position.y, "hitEffect", { damageType: this.stats.damageType, lifeSpan: 1});
+        this.game.spawn(this.target.transform.position.x, this.target.transform.position.y, "hitEffect", { damageType: this.stats.damageType, lifeSpan: 1});
         // Chain to nearby enemies
         if (this.stats.piercing > 0 && this.piercedEnemies.length <= this.stats.piercing) {
             const nearbyEnemies = this.game.spatialGrid.getNearbyEntities(
-                this.target.gridPosition.x, 
-                this.target.gridPosition.y, 
+                this.target.transform.gridPosition.x, 
+                this.target.transform.gridPosition.y, 
                 this.ownerStats.range,
                 "enemy"
             );
 
             for (let enemy of nearbyEnemies) {
                 if (enemy.destroyed || this.piercedEnemies.includes(enemy)) continue;
-                const dx = enemy.position.x - this.target.position.x;
-                const dy = enemy.position.y - this.target.position.y;
+                const dx = enemy.transform.position.x - this.target.transform.position.x;
+                const dy = enemy.transform.position.y - this.target.transform.position.y;
                 const distSq = dx * dx + dy * dy;
                 let gridSize = this.game.config.configs.game.gridSize;
                 if (distSq <= this.ownerStats.range * this.ownerStats.range * gridSize * gridSize) {
@@ -65,7 +65,7 @@ class ChainProjectile extends engine.Component {
                         enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);
                         this.piercedEnemies.push(enemy);
                         this.chainTargets.push(enemy);
-                        this.game.spawn(enemy.position.x, enemy.position.y, "hitEffect", { damageType: this.stats.damageType, lifeSpan: 1 });
+                        this.game.spawn(enemy.transform.position.x, enemy.transform.position.y, "hitEffect", { damageType: this.stats.damageType, lifeSpan: 1 });
                         if (this.piercedEnemies.length > this.stats.piercing) break;
                     } else {
                         break;
