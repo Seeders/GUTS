@@ -44,8 +44,6 @@ class PlayerAttacker extends engine.Component {
 
         // Spawn projectile entity
         const projectile = this.game.spawn(
-            spawnPos.x,
-            spawnPos.z,
             'projectile',
             {
                 objectType: 'projectiles',
@@ -53,7 +51,8 @@ class PlayerAttacker extends engine.Component {
                 direction: direction, // No specific target, uses direction
                 owner: this.parent,
                 stats: projStats
-            }
+            },
+            spawnPos
         );          
     }
 

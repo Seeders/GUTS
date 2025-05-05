@@ -47,7 +47,7 @@ class WaveManager extends engine.Component {
                     const startPointIndex = i;
                     
                     
-        					  this.game.spawn(0, 0, 'enemy', { objectType: "enemies", spawnType: enemyType, pathIndex: startPointIndex, friction: 1000, density: 1000});
+                    this.game.spawn('enemy', { objectType: "enemies", spawnType: enemyType, pathIndex: startPointIndex, friction: 1000, density: 1000}, new THREE.Vector3());
                     this.game.state.enemiesSpawned[i]++;
                     this.game.state.spawnTimers[i] = 0; // Reset this waveset's timer
                     

@@ -12,15 +12,18 @@ class Game extends engine.Component {
         let endPath = this.game.state.paths[0][this.game.state.paths[0].length - 1];
         let endY = endPath.y;
         let endX = endPath.x;
-        this.keep = this.game.spawn(endX * this.gridSize + this.gridSize / 2, 
-                                endY * this.gridSize + this.gridSize / 2, "tower",
-                                { spawnType: 'keep', objectType: 'towers', setDirection: 1});
+        let keepPosition = {
+            x: endX * this.gridSize + this.gridSize / 2,
+            y: endY * this.gridSize + this.gridSize / 2,
+            z: 0
+        }
+        this.keep = this.game.spawn("tower",{ spawnType: 'keep', objectType: 'towers', setDirection: 1}, keepPosition);
         this.keep.placed = true;
-
+        
+        this.keep.transform.position.z = this.getTerrainHeight(this.keep.transform.gridPosition);
     }
 
     update() {
-        this.keep.transform.position.z = this.getTerrainHeight(this.keep.transform.gridPosition);
         if(this.game.config.configs.game.is3D){
             this.getComponent("MapRenderer")?.render(this.game.state.tileMapData, this.game.state.paths);
         } else {

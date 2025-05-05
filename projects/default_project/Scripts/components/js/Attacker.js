@@ -95,13 +95,13 @@ class Attacker extends engine.Component {
         projStats.critMultiplier = this.stats.critMultiplier || 2;
     
        	if(projectileDef.customRenderer == "lightning") {
-         	this.game.spawn(this.parent.transform.position.x, this.parent.transform.position.y, 'lightningProjectile', { objectType: "projectiles", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });
+         	this.game.spawn('lightningProjectile', { objectType: "projectiles", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats }, this.parent.transform.position);
         } else if(projectileDef.isBallistic) {
-         	this.game.spawn(this.parent.transform.position.x, this.parent.transform.position.y, 'ballisticProjectile', { objectType: "projectiles", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });
+         	this.game.spawn('ballisticProjectile', { objectType: "projectiles", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats }, this.parent.transform.position);
         } else if( this.stats.projectileCount > 0 ) {
-          this.game.spawn(this.parent.transform.position.x, this.parent.transform.position.y, 'multiShotProjectile', { objectType: "projectiles", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });
+            this.game.spawn('multiShotProjectile', { objectType: "projectiles", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats }, this.parent.transform.position);
         } else {
-          let projectile = this.game.spawn(this.parent.transform.position.x, this.parent.transform.position.y, 'projectile', { objectType: "projectiles", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats });
+            this.game.spawn('projectile', { objectType: "projectiles", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats }, this.parent.transform.position);
         }
     }
 }

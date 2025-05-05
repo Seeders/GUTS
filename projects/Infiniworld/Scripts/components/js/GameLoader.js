@@ -36,9 +36,9 @@ class GameLoader extends engine.Component {
                 params = {...params, ...entityComp.parameters };
             });
             if(sceneEntity.type == "game"){  
-                this.game.gameEntity = this.game.createEntityFromConfig(position.x, position.z, sceneEntity.type, params);
+                this.game.gameEntity = this.game.createEntityFromConfig(sceneEntity.type, params, position);
             } else {
-                let spawned = this.game.spawn(position.x, position.z, sceneEntity.type, params);
+                let spawned = this.game.spawn(sceneEntity.type, params,position);
                 if(sceneEntity.type == "player"){
                     this.player = spawned;
                     this.player.transform.position.y += 50;

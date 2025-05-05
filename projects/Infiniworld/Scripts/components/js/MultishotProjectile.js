@@ -35,8 +35,6 @@ init({ spawnType, stats, target, owner }) {
     const deltaY = Math.sin(currentAngle) * distance;
 
     this.game.spawn(
-      this.parent.transform.position.x,
-      this.parent.transform.position.y,
       "projectile",
       {
         spawnType: ownerStats.projectile,
@@ -48,7 +46,8 @@ init({ spawnType, stats, target, owner }) {
           x: this.parent.transform.position.x + deltaX, // Start from parent, extend to new position
           y: this.parent.transform.position.y + deltaY
         }
-      }
+      },
+      this.parent.transform.position
     );
   }
 

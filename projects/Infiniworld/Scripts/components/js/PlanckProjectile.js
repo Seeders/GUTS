@@ -108,10 +108,10 @@ handleEnemyCollision(enemy) {
   if (!damageResult.wasEvaded) {
     enemyHealth.hp -= damageResult.damageDealt;
     enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);
-    this.game.spawn(enemy.transform.position.x, enemy.transform.position.y, "hitEffect", {
+    this.game.spawn("hitEffect", {
       damageType: this.stats.damageType,
       lifeSpan: 0.3
-    });
+    },enemy.transform.position);
     if (this.ownerStats.slowAmount) {
       enemyStats.addEffect(
         this.game.config.effects.slow,
@@ -127,11 +127,11 @@ handleEnemyCollision(enemy) {
     enemyHealth.hp <= 0 &&
     Math.random() < this.ownerStats.summonChance - 1
   ) {
-    this.game.spawn(enemy.transform.position.x, enemy.transform.position.y, "summonedTower", {
+    this.game.spawn( "summonedTower", {
       objectType: "towers",
       spawnType: this.ownerStats.summonType,
       owner: this.owner
-    });
+    },enemy.transform.position);
   }
   if (this.ownerStats.leech > 0) {
     const healing = this.stats.damage * this.ownerStats.leech * this.game.state.stats.healingMultiplier;
@@ -148,9 +148,9 @@ handleEnemyCollision(enemy) {
   // Splash damage if applicable
   if (this.stats.splashRadius > 0) {
     this.applySplashDamage(enemy);
-    this.game.spawn(this.parent.transform.position.x, this.parent.transform.position.y, "explosion", {
+    this.game.spawn("explosion", {
       radius: this.stats.splashRadius
-    });
+    },this.parent.transform.position);
   }
 
   // Piercing logic
@@ -223,10 +223,10 @@ applySplashDamage(centerEnemy) {
       if (!damageResult.wasEvaded) {
         enemyHealth.hp -= damageResult.damageDealt;
         enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);
-        this.game.spawn(enemy.transform.position.x, enemy.transform.position.y, "hitEffect", {
+        this.game.spawn( "hitEffect", {
           damageType: this.stats.damageType,
           lifeSpan: 0.3
-        });
+        },enemy.transform.position);
         if (this.ownerStats.slowAmount) {
           enemyStats.addEffect(
             this.game.config.effects.slow,
@@ -287,10 +287,10 @@ update() {
     this.distanceTraveled += speed * this.game.deltaTime;
     
     if (this.distanceTraveled > this.distanceToSpawnParticle) {
-      this.game.spawn(currentPos.x, currentPos.y, "particle", { 
+      this.game.spawn("particle", { 
         objectType: "particles", 
         spawnType: this.def.particle
-      });
+      },currentPos);
       this.distanceTraveled = 0;
       this.distanceToSpawnParticle = 24 + Math.random() * 3;
     }

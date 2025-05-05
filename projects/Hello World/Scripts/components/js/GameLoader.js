@@ -10,7 +10,7 @@ class GameLoader extends engine.Component {
         this.game.palette = this.config.palettes && this.config.configs.game.palette ? this.config.palettes[this.config.configs.game.palette] : null;
         
 
-        this.game.gameEntity = this.game.createEntityFromConfig(0, 0, 'game', { gameConfig: this.config.configs.game });
+        this.game.gameEntity = this.game.createEntityFromConfig('game', { gameConfig: this.config.configs.game }, {x: 0, y: 0, z: 0});
  
     }
 

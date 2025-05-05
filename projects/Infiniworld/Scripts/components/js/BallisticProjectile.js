@@ -144,9 +144,9 @@ update() {
     this.distanceTraveled += tDist;
     
     if (this.def.particle && this.distanceTraveled > this.distanceToSpawnParticle) {
+        let position = new THREE.Vector3(this.parent.lastPosition.x + Math.random() * 4 - 2, this.parent.lastPosition.y + Math.random() * 4 - 2, this.parent.transform.position.z + Math.random() * 4 - 2)
+        this.game.spawn("particle", { objectType: "particles", spawnType: this.def.particle }, position);
 
-        let particle = this.game.spawn(this.parent.lastPosition.x + Math.random() * 4 - 2, this.parent.lastPosition.y + Math.random() * 4 - 2, "particle", { objectType: "particles", spawnType: this.def.particle });
-        particle.position.z = this.parent.transform.position.z + Math.random() * 4 - 2;
         this.distanceTraveled = 0;
         this.distanceToSpawnParticle += Math.random() * 2;
     }
@@ -160,7 +160,7 @@ processSplashDamage() {
         this.stats.splashRadius,
         "enemy"
     );
-    let explosion = this.game.spawn(this.parent.transform.position.x, this.parent.transform.position.y, "explosion", { radius: this.stats.splashRadius });
+    this.game.spawn("explosion", { radius: this.stats.splashRadius },this.parent.transform.position);
     for (const enemy of nearbyEnemies) {
         if (enemy.isDead) continue;
         
@@ -182,7 +182,7 @@ processSplashDamage() {
             if (!damageResult.wasEvaded) {
                 enemyHealth.hp -= damageResult.damageDealt;
                 enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);
-                this.game.spawn(enemy.transform.position.x, enemy.transform.position.y, "hitEffect", { damageType: this.stats.damageType , lifeSpan: .3});
+                this.game.spawn("hitEffect", { damageType: this.stats.damageType , lifeSpan: .3},enemy.transform.position);
                 if (this.ownerStats.slowAmount) {
                     enemyStats.addEffect(this.game.config.effects.slow, this.game.effects.slow, this.ownerStats.slowAmount);
                 }

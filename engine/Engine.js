@@ -32,7 +32,7 @@ class Engine {
         //components, renderers, and functions
         this.setupScriptEnvironment();
         this.preCompileScripts();  
-        this.loader = this.createEntityFromConfig(0, 0, projectConfig.loaderEntity, {config: this.config}).getComponent(projectConfig.loaderComponent);        
+        this.loader = this.createEntityFromConfig(projectConfig.loaderEntity, {config: this.config}, {x:0, y:0, z:0 }).getComponent(projectConfig.loaderComponent);        
         await this.loader.load({config: this.config });
         this.projectEntity = this.loader.getProject();        
         // Use ModuleManager's script environment
@@ -98,8 +98,8 @@ class Engine {
         }
     }
 
-    spawn(x, y, type, params) {
-        return this.addEntity(this.createEntityFromConfig(x, y, type, params));
+    spawn(type, params, position) {
+        return this.addEntity(this.createEntityFromConfig(type, params, position));
     }
 
     addEntity(entity) {
@@ -107,9 +107,9 @@ class Engine {
         return entity;
     }
     
-    createEntityFromConfig(x, y, type, params) {
+    createEntityFromConfig(type, params, position) {
 
-        const entity = this.createEntity(x, y, type);
+        const entity = this.createEntity(type, position);
         const def = this.config.entities[type];
         
         if (def.components) {
@@ -137,8 +137,8 @@ class Engine {
         return entity;
     }
 
-    createEntity(x, y, type) {
-        const entity = new (this.libraryClasses.Entity)(this, x, y, type);
+    createEntity(type, position) {
+        const entity = new (this.libraryClasses.Entity)(this, type, position);
         return entity;
     }
 

@@ -38,7 +38,7 @@ class ChainProjectile extends engine.Component {
         targetEnergyShield.absorbDamage(damageResult.damageAbsorbed);
         this.piercedEnemies.push(this.target);
         this.chainTargets.push(this.target);
-        this.game.spawn(this.target.transform.position.x, this.target.transform.position.y, "hitEffect", { damageType: this.stats.damageType, lifeSpan: 1});
+        this.game.spawn("hitEffect", { damageType: this.stats.damageType, lifeSpan: 1}, this.target.transform.position);
         // Chain to nearby enemies
         if (this.stats.piercing > 0 && this.piercedEnemies.length <= this.stats.piercing) {
             const nearbyEnemies = this.game.spatialGrid.getNearbyEntities(
@@ -65,7 +65,7 @@ class ChainProjectile extends engine.Component {
                         enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);
                         this.piercedEnemies.push(enemy);
                         this.chainTargets.push(enemy);
-                        this.game.spawn(enemy.transform.position.x, enemy.transform.position.y, "hitEffect", { damageType: this.stats.damageType, lifeSpan: 1 });
+                        this.game.spawn("hitEffect", { damageType: this.stats.damageType, lifeSpan: 1 }, enemy.transform.position);
                         if (this.piercedEnemies.length > this.stats.piercing) break;
                     } else {
                         break;
