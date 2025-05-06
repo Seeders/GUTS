@@ -80,7 +80,7 @@ class Projectile extends engine.Component {
     if(this.stats.hitSound){
       this.game.audioManager.playSound('sounds', this.stats.hitSound);
     }
-    this.parent.destroy();
+   // this.parent.destroy();
   }
   OnStaticCollision(){
     if(this.stats.hitSound && this.parent.velocity.length() > 50){

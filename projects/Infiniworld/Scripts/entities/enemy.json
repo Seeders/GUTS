@@ -3,13 +3,11 @@
   "components": [
     "Stats",
     "ArrayTracker",
-    "Animator",
     "Collider"
   ],
   "renderers": [
     "ModelRenderer",
     "Health",
-    "EnergyShield",
-    "Renderer"
+    "EnergyShield"
   ]
 }

@@ -13,22 +13,23 @@ class Physics extends engine.Component {
         this.deltaTime = 0;
     }
 
-    registerEntity(entity) {
+    registerEntity(collider) {
+        let entity = collider.parent;
         if (!entity.id || !entity.transform.position) return;
-        const collider = entity.getComponent('collider');
-        const aabb = collider ? collider.getAABB(entity.transform.position) : entity.getAABB();
+
+        const aabb = collider.getAABB(entity.transform.position);
         this.entities.set(entity.id, {
-            entity,
+            entity: entity,
             position: { ...entity.transform.position },
             velocity: { ...entity.velocity },
             aabb,
-            collider: collider ? {
-                type: collider.type,
-                size: collider.size,
+            collider: {
+                type: collider.type || "sphere",
+                size: collider.size || 1,
                 offset: { ...collider.offset }
-            } : null,
-            mass: collider ? collider.mass : entity.mass,
-            restitution: collider ? collider.restitution : entity.restitution,
+            },
+            mass: collider.mass || 1,
+            restitution: collider.restitution || 1,
             grounded: false
         });
     }
@@ -92,9 +93,9 @@ class Physics extends engine.Component {
         entities.forEach((updated) => {
             const data = this.entities.get(updated.id);
             if (!data) return;
-            data.entity.transform.position.x = updated.position.x;
-            data.entity.transform.position.y = updated.position.y;
-            data.entity.transform.position.z = updated.position.z;
+            data.entity.transform.physicsPosition.x = updated.position.x;
+            data.entity.transform.physicsPosition.y = updated.position.y;
+            data.entity.transform.physicsPosition.z = updated.position.z;
             data.entity.velocity.x = updated.velocity.x;
             data.entity.velocity.y = updated.velocity.y;
             data.entity.velocity.z = updated.velocity.z;            
@@ -105,6 +106,7 @@ class Physics extends engine.Component {
             // Update AABB if position changed
             data.aabb = data.entity.getAABB(data.position);
             if(updated.collidedWithEntity){
+                console.log('collided', updated);
                 data.entity.OnCollision(this.entities.get(updated.collidedWith));   
             }
             if(updated.collidedWithStatic){
@@ -241,7 +243,6 @@ class Physics extends engine.Component {
                 const dz = p2.z - p1.z;
                 const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
                 const minDistance = r1 + r2;
-
                 if (distance < minDistance && distance > 0) {
                     const normal = { x: dx / distance, y: dy / distance, z: dz / distance };
                     const penetration = minDistance - distance;
@@ -309,9 +310,10 @@ class Physics extends engine.Component {
 
             function resolveTerrainCollision(entity, terrainHeight, deltaTime, terrainGenerator, x, z) {
                 // Check if entity is colliding with terrain
-                if (entity.position.y <= terrainHeight) {
+                const sampleDistance = entity.collider.size || 1; // Distance to sample for normal calculation
+                if (entity.position.y - sampleDistance <= terrainHeight) {
                     // Calculate terrain normal at collision point
-                    const sampleDistance = 0.5; // Distance to sample for normal calculation
+                    
                     const heightAtPoint = terrainHeight;
                     const heightAtPointPlusX = terrainGenerator.getTerrainHeight(x + sampleDistance, z);
                     const heightAtPointPlusZ = terrainGenerator.getTerrainHeight(x, z + sampleDistance);
@@ -359,7 +361,7 @@ class Physics extends engine.Component {
                     // Calculate the offset along the normal vector to position the entity
                     const offsetDistance = 0.01; // Small offset to prevent stuck in terrain
                     entity.position.x += normal.x * offsetDistance;
-                    entity.position.y = terrainHeight + offsetDistance;
+                    entity.position.y = terrainHeight + offsetDistance + sampleDistance;
                     entity.position.z += normal.z * offsetDistance;
                     
                     entity.grounded = true;
@@ -443,7 +445,7 @@ class Physics extends engine.Component {
                         }
 
                         if (collision) {
-                            collisionPairs.push({ e1, e2, ...collision });
+                           collisionPairs.push({ e1, e2, ...collision });
                         }
                     }
                 }

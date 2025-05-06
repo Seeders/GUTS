@@ -1,6 +1,6 @@
 {
   "level": "level1",
-  "enemies": "[]",
+  "enemies": [],
   "towers": "[]",
   "projectiles": [],
   "summons": "[]",

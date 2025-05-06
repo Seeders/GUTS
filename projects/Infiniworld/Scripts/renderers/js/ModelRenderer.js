@@ -10,7 +10,10 @@ class ModelRenderer extends engine.Component {
         this.frameTime = 0;
         this.frameDuration = frameDuration || 0.17;
         this.lastDirection = -1;
-
+        this.currentAnimationTime = 0;
+        
+        this.fadeTime = 0.3;
+        this.minAnimationTime = this.fadeTime * 2;
         // Load animation and model data
         this.animationData = this.game.config[objectType]?.[spawnType]?.render?.animations;
         this.modelData = this.game.config[objectType]?.[spawnType]?.render?.model;
@@ -94,18 +97,18 @@ class ModelRenderer extends engine.Component {
             }
         }
 
-        if (this.animationState !== animationName) {
+        if (this.animationState !== animationName && this.currentAnimationTime >= this.minAnimationTime) {
             this.animationState = animationName;
-
+            this.currentAnimationTime = 0;
+            console.log('playing animation', animationName);
             if (this.isGLTF && this.mixer) {
                 const newAction = this.animationActions[animationName];
                 if (!newAction) {
                     console.error(`No AnimationAction for ${animationName}`, this.animationActions);
                     return;
                 }
-
                 // Crossfade to the new animation
-                this.crossfadeTo(newAction, 0.3); // 0.3 seconds blend duration
+                this.crossfadeTo(newAction, this.fadeTime); // 0.3 seconds blend duration
             } else {
                 // For non-GLTF, advance frame-based animation
                 this.currentFrameIndex = 0;
@@ -155,11 +158,10 @@ class ModelRenderer extends engine.Component {
         if (!this.game.config.configs.game.is3D) {
             return;
         }
-        const delta = this.clock ? this.clock.getDelta() : 0;
-
+        this.currentAnimationTime += this.game.deltaTime;
         // Update AnimationMixer for GLTF models
         if (this.isGLTF && this.mixer) {
-            this.mixer.update(delta);
+            this.mixer.update(this.game.deltaTime);
         }
 
         // Update skeleton for skinned meshes
@@ -198,7 +200,7 @@ class ModelRenderer extends engine.Component {
             this.modelGroup.quaternion.copy(this.parent.transform.quaternion);
 
             // Only update direction if there's significant movement
-            if (Math.abs(dx) > 0.001 || Math.abs(dy) > 0.001) {
+            if (Math.abs(dx) > 0.01 || Math.abs(dy) > 0.01) {
                 // Set walking animation when moving
                 if (this.animationData['walk']) {
                     this.setAnimation('walk');

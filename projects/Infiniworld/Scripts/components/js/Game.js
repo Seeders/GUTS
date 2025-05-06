@@ -54,7 +54,7 @@ class Game extends engine.Component {
                     e.draw();
                     e.postUpdate();
                     // Collect physics data for this entity
-                    if (shouldUpdatePhysics) {
+                    if (shouldUpdatePhysics && e.getComponent('collider')) {
                         this.physics.collectPhysicsData(e, this.infiniWorld);
                     }
                 }

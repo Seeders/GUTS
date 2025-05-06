@@ -2,7 +2,7 @@
   "title": "Main",
   "sceneData": [
     {
-      "id": 1,
+      "id": 4,
       "type": "game",
       "parent": null,
       "children": [],
@@ -37,7 +37,7 @@
       ]
     },
     {
-      "id": 3,
+      "id": 5,
       "type": "player",
       "parent": null,
       "children": [],
@@ -67,6 +67,41 @@
           "parameters": {
             "objectType": "players",
             "spawnType": "knight"
+          }
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "enemy",
+      "parent": null,
+      "children": [],
+      "components": [
+        {
+          "type": "transform",
+          "parameters": {
+            "position": {
+              "x": 51.82427833083254,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "type": "ModelRenderer",
+          "parameters": {
+            "objectType": "enemies",
+            "spawnType": "enemy_knight"
           }
         }
       ]
