@@ -106,5 +106,8 @@
   "coldResistance": 25,
   "electricResistance": 25,
   "projectile": "plasmaBolt",
-  "entity": "player"
+  "entity": "player",
+  "colliderSize": 5,
+  "colliderType": "sphere",
+  "colliderOffset": "{ \"x\": 0, \"y\": 10, \"z\": 0 }"
 }

@@ -2,7 +2,7 @@
   "title": "Main",
   "sceneData": [
     {
-      "id": 4,
+      "id": 1,
       "type": "game",
       "parent": null,
       "children": [],
@@ -37,7 +37,7 @@
       ]
     },
     {
-      "id": 5,
+      "id": 2,
       "type": "player",
       "parent": null,
       "children": [],
@@ -72,7 +72,7 @@
       ]
     },
     {
-      "id": 6,
+      "id": 3,
       "type": "enemy",
       "parent": null,
       "children": [],

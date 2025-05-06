@@ -134,5 +134,7 @@
   "speed": 200,
   "title": "Plasma Bolt",
   "attackSound": "pickup",
-  "hitSound": "placeTower"
+  "hitSound": "placeTower",
+  "entity": "projectile",
+  "size": 2
 }

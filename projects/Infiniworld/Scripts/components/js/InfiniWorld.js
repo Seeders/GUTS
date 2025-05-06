@@ -90,9 +90,13 @@ class InfiniWorld extends engine.Component {
           biomeObjData.worldObjectSpawns.forEach((worldObjectSpawn) => {
             worldObjectSpawns.push(this.game.getCollections().worldObjectSpawns[worldObjectSpawn]);
           })
-            
+          let groundColor = new THREE.Color(biomeObjData.groundColor);
           biomes[biomeName] = {
-            groundColor: this.hexToRGBNormalized(biomeObjData.groundColor),
+            groundColor: {
+                r: groundColor.r,
+                g: groundColor.g,
+                b: groundColor.b
+            },
             noiseSettings: {
               elevation: elevationNoiseData,
               detail: detailNoiseData
@@ -106,6 +110,8 @@ class InfiniWorld extends engine.Component {
           }
       });
       this.biomes = biomes;
+      this.terrainGenerator = new (this.game.moduleManager.libraryClasses.TerrainGenerator)(); 
+      this.terrainGenerator.init(this.biomes, this.chunkSize, this.chunkResolution, this.noise);
   
       // Initialize Web Worker from Blob
       const workerCode = this.getWorkerCode();
@@ -121,26 +127,10 @@ class InfiniWorld extends engine.Component {
       this.game.scene = this.scene;
       this.game.camera = this.camera;
       this.game.renderer = this.renderer;
+      this.game.terrain = this;
       this.timer = 0;
     }
 
-    hexToRGBNormalized(hexColor) {
-      // Remove the # if present
-      const hex = hexColor.replace('#', '');
-      
-      // Convert hex to RGB (0-255)
-      const r = parseInt(hex.slice(0, 2), 16);
-      const g = parseInt(hex.slice(2, 4), 16);
-      const b = parseInt(hex.slice(4, 6), 16);
-      
-      // Normalize to 0-1
-      return {
-          r: Number((r / 255).toFixed(3)),
-          g: Number((g / 255).toFixed(3)),
-          b: Number((b / 255).toFixed(3))
-      };
-    }
-  
     async setupInitialChunks() {
       const cameraChunkX = Math.floor(this.camera.position.x / this.chunkSize);
       const cameraChunkZ = Math.floor(this.camera.position.z / this.chunkSize);
@@ -252,8 +242,7 @@ class InfiniWorld extends engine.Component {
     
       try {
         // Attempt to weld vertices with neighboring chunks
-        this.weldChunkVertices(cx, cz, positions, normals);
-        
+  
         const geometry = new THREE.BufferGeometry();
         geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
         geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
@@ -301,166 +290,8 @@ class InfiniWorld extends engine.Component {
         this.pendingChunks.delete(chunkKey);
       }
     }
-    
-    weldChunkVertices(cx, cz, positions, normals) {
-      const res = this.chunkResolution;
-      const neighborChunks = [
-        { key: `${cx-1},${cz}`, edge: 'right', dir: 'left' },   // Left neighbor
-        { key: `${cx+1},${cz}`, edge: 'left', dir: 'right' },   // Right neighbor
-        { key: `${cx},${cz-1}`, edge: 'top', dir: 'bottom' },   // Bottom neighbor
-        { key: `${cx},${cz+1}`, edge: 'bottom', dir: 'top' }    // Top neighbor
-      ];
       
-      // Process each potential neighbor
-      neighborChunks.forEach(({ key, edge, dir }) => {
-        const neighbor = this.chunks.get(key);
-        if (!neighbor || !neighbor.terrainMesh) return;
-    
-        const neighborGeom = neighbor.terrainMesh.geometry;
-        const neighborPos = neighborGeom.attributes.position;
-        const neighborNorm = neighborGeom.attributes.normal;
-        
-        // Function to get vertex index
-        const getVertexIndex = (x, z) => (z * (res + 1) + x);
-        
-        // Weld vertices along the shared edge
-        if (dir === 'left') {
-          // Current chunk's left edge to neighbor's right edge
-          for (let z = 0; z <= res; z++) {
-            const thisIdx = getVertexIndex(0, z);
-            const neighborIdx = getVertexIndex(res, z);
-            
-            // Get world position from neighbor
-            const nx = neighborPos.array[neighborIdx * 3] + neighbor.terrainMesh.position.x;
-            const ny = neighborPos.array[neighborIdx * 3 + 1] + neighbor.terrainMesh.position.y;
-            const nz = neighborPos.array[neighborIdx * 3 + 2] + neighbor.terrainMesh.position.z;
-            
-            // Convert to local position for this chunk
-            positions[thisIdx * 3] = nx - cx * this.chunkSize;
-            positions[thisIdx * 3 + 1] = ny;
-            positions[thisIdx * 3 + 2] = nz - cz * this.chunkSize;
-            
-            // Average the normals
-            for (let i = 0; i < 3; i++) {
-              normals[thisIdx * 3 + i] = (normals[thisIdx * 3 + i] + neighborNorm.array[neighborIdx * 3 + i]) / 2;
-            }
-            
-            // Normalize the normal
-            const nx1 = normals[thisIdx * 3];
-            const ny1 = normals[thisIdx * 3 + 1];
-            const nz1 = normals[thisIdx * 3 + 2];
-            const len = Math.sqrt(nx1*nx1 + ny1*ny1 + nz1*nz1);
-            if (len > 0.00001) {
-              normals[thisIdx * 3] = nx1 / len;
-              normals[thisIdx * 3 + 1] = ny1 / len;
-              normals[thisIdx * 3 + 2] = nz1 / len;
-            }
-          }
-        } else if (dir === 'right') {
-          // Current chunk's right edge to neighbor's left edge
-          for (let z = 0; z <= res; z++) {
-            const thisIdx = getVertexIndex(res, z);
-            const neighborIdx = getVertexIndex(0, z);
-            
-            // Get world position from neighbor
-            const nx = neighborPos.array[neighborIdx * 3] + neighbor.terrainMesh.position.x;
-            const ny = neighborPos.array[neighborIdx * 3 + 1] + neighbor.terrainMesh.position.y;
-            const nz = neighborPos.array[neighborIdx * 3 + 2] + neighbor.terrainMesh.position.z;
-            
-            // Convert to local position for this chunk
-            positions[thisIdx * 3] = nx - cx * this.chunkSize;
-            positions[thisIdx * 3 + 1] = ny;
-            positions[thisIdx * 3 + 2] = nz - cz * this.chunkSize;
-            
-            // Average the normals
-            for (let i = 0; i < 3; i++) {
-              normals[thisIdx * 3 + i] = (normals[thisIdx * 3 + i] + neighborNorm.array[neighborIdx * 3 + i]) / 2;
-            }
-            
-            // Normalize the normal
-            const nx1 = normals[thisIdx * 3];
-            const ny1 = normals[thisIdx * 3 + 1];
-            const nz1 = normals[thisIdx * 3 + 2];
-            const len = Math.sqrt(nx1*nx1 + ny1*ny1 + nz1*nz1);
-            if (len > 0.00001) {
-              normals[thisIdx * 3] = nx1 / len;
-              normals[thisIdx * 3 + 1] = ny1 / len;
-              normals[thisIdx * 3 + 2] = nz1 / len;
-            }
-          }
-        } else if (dir === 'bottom') {
-          // Current chunk's bottom edge to neighbor's top edge
-          for (let x = 0; x <= res; x++) {
-            const thisIdx = getVertexIndex(x, 0);
-            const neighborIdx = getVertexIndex(x, res);
-            
-            // Get world position from neighbor
-            const nx = neighborPos.array[neighborIdx * 3] + neighbor.terrainMesh.position.x;
-            const ny = neighborPos.array[neighborIdx * 3 + 1] + neighbor.terrainMesh.position.y;
-            const nz = neighborPos.array[neighborIdx * 3 + 2] + neighbor.terrainMesh.position.z;
-            
-            // Convert to local position for this chunk
-            positions[thisIdx * 3] = nx - cx * this.chunkSize;
-            positions[thisIdx * 3 + 1] = ny;
-            positions[thisIdx * 3 + 2] = nz - cz * this.chunkSize;
-            
-            // Average the normals
-            for (let i = 0; i < 3; i++) {
-              normals[thisIdx * 3 + i] = (normals[thisIdx * 3 + i] + neighborNorm.array[neighborIdx * 3 + i]) / 2;
-            }
-            
-            // Normalize the normal
-            const nx1 = normals[thisIdx * 3];
-            const ny1 = normals[thisIdx * 3 + 1];
-            const nz1 = normals[thisIdx * 3 + 2];
-            const len = Math.sqrt(nx1*nx1 + ny1*ny1 + nz1*nz1);
-            if (len > 0.00001) {
-              normals[thisIdx * 3] = nx1 / len;
-              normals[thisIdx * 3 + 1] = ny1 / len;
-              normals[thisIdx * 3 + 2] = nz1 / len;
-            }
-          }
-        } else if (dir === 'top') {
-          // Current chunk's top edge to neighbor's bottom edge
-          for (let x = 0; x <= res; x++) {
-            const thisIdx = getVertexIndex(x, res);
-            const neighborIdx = getVertexIndex(x, 0);
-            
-            // Get world position from neighbor
-            const nx = neighborPos.array[neighborIdx * 3] + neighbor.terrainMesh.position.x;
-            const ny = neighborPos.array[neighborIdx * 3 + 1] + neighbor.terrainMesh.position.y;
-            const nz = neighborPos.array[neighborIdx * 3 + 2] + neighbor.terrainMesh.position.z;
-            
-            // Convert to local position for this chunk
-            positions[thisIdx * 3] = nx - cx * this.chunkSize;
-            positions[thisIdx * 3 + 1] = ny;
-            positions[thisIdx * 3 + 2] = nz - cz * this.chunkSize;
-            
-            // Average the normals
-            for (let i = 0; i < 3; i++) {
-              normals[thisIdx * 3 + i] = (normals[thisIdx * 3 + i] + neighborNorm.array[neighborIdx * 3 + i]) / 2;
-            }
-            
-            // Normalize the normal
-            const nx1 = normals[thisIdx * 3];
-            const ny1 = normals[thisIdx * 3 + 1];
-            const nz1 = normals[thisIdx * 3 + 2];
-            const len = Math.sqrt(nx1*nx1 + ny1*ny1 + nz1*nz1);
-            if (len > 0.00001) {
-              normals[thisIdx * 3] = nx1 / len;
-              normals[thisIdx * 3 + 1] = ny1 / len;
-              normals[thisIdx * 3 + 2] = nz1 / len;
-            }
-          }
-        }
-        
-        // Update the neighbor's geometry to match the welds
-        neighborGeom.attributes.position.needsUpdate = true;
-        neighborGeom.attributes.normal.needsUpdate = true;
-      });
-    }
-  
-    checkTreeCollisions(playerAABB) {
+    checkTreeCollisions(colliderAABB) {
       const collisions = [];
       const cameraChunkX = Math.floor(this.camera.position.x / this.chunkSize);
       const cameraChunkZ = Math.floor(this.camera.position.z / this.chunkSize);
@@ -475,7 +306,7 @@ class InfiniWorld extends engine.Component {
           const treeAABBs = chunkData.collisionAABBs.get('tree');
           if(treeAABBs){
             treeAABBs.forEach(aabb => {
-              if (this.aabbIntersects(playerAABB, aabb)) {
+              if (this.aabbIntersects(colliderAABB, aabb)) {
                 collisions.push(aabb);
               }
             });
@@ -483,7 +314,7 @@ class InfiniWorld extends engine.Component {
           const rockAABBs = chunkData.collisionAABBs.get('rock');
           if(rockAABBs){
             rockAABBs.forEach(aabb => {
-              if (this.aabbIntersects(playerAABB, aabb)) {
+              if (this.aabbIntersects(colliderAABB, aabb)) {
                 collisions.push(aabb);
               }
             });
@@ -629,84 +460,9 @@ class InfiniWorld extends engine.Component {
         // Store instance groups in chunk data
         chunkData.objectMeshes.set(type, instanceGroups);
     }
-    
-  
     getTerrainHeight(x, z) {
-      const weights = this.getBiomeWeights(x, z);
-      let totalHeight = 0;
-  
-      for (const biomeName in weights) {
-        const weight = weights[biomeName];
-        if (weight === 0) continue;
-  
-        const biome = this.biomes[biomeName];
-        let height = 0;
-  
-        // Elevation noise
-        height += this.fractalNoise(x, z, biome.noiseSettings.elevation);
-  
-        // Detail noise
-        height += this.fractalNoise(x * 2, z * 2, biome.noiseSettings.detail);
-  
-        // Ridge noise for mountains only
-        if (biomeName === 'mountain' && biome.noiseSettings.ridge) {
-          const ridgeNoise = Math.abs(this.noise.noise2D(
-            x * biome.noiseSettings.ridge.scale,
-            z * biome.noiseSettings.ridge.scale
-          ));
-          height += Math.pow(ridgeNoise, biome.noiseSettings.ridge.power) * biome.noiseSettings.ridge.heightScale;
-        }
-  
-        totalHeight += height * weight;
-      }
-  
-      return totalHeight;
-    }
-  
-    getBiomeWeights(wx, wz) {
-      const biomeNoise = this.noise.noise2D(wx * 0.00001, wz * 0.00001);
-      const biomeValue = (biomeNoise + 1) / 2;
-      const weights = {};
-      const thresholds = [
-        { biome: 'plains', range: [0.0, 0.4] },
-        { biome: 'forest', range: [0.2, 0.6] },
-        { biome: 'mountain', range: [0.5, 0.8] },
-        { biome: 'desert', range: [0.7, 1.0] }
-      ];
-    
-      thresholds.forEach(({ biome, range }) => {
-        const [min, max] = range;
-        let weight = 0;
-        if (biomeValue >= min && biomeValue <= max) {
-          weight = 1 - Math.abs(biomeValue - (min + max) / 2) / ((max - min) / 2);
-          weight = Math.max(0, weight);
-        }
-        weights[biome] = Math.round(weight * 1000) / 1000; // Round weights for consistency
-      });
-    
-      const totalWeight = Object.values(weights).reduce((sum, w) => sum + w, 0);
-      if (totalWeight > 0) {
-        for (const biome in weights) {
-          weights[biome] = Math.round((weights[biome] / totalWeight) * 1000) / 1000;
-        }
-      } else {
-        weights.plains = 1;
-      }
-      return weights;
-    }
-  
-    fractalNoise(x, y, settings) {
-      let value = 0;
-      let amplitude = 1;
-      let frequency = 1;
-  
-      for (let i = 0; i < settings.octaves; i++) {
-        value += this.noise.noise2D(x * frequency * settings.scale, y * frequency * settings.scale) * amplitude;
-        amplitude *= settings.persistence;
-        frequency *= settings.lacunarity;
-      }
-      return value * settings.heightScale;
-    }
+      return this.terrainGenerator.getHeight(x, z);
+    } 
   
     destroy() {
       window.removeEventListener('resize', this.onWindowResizeHandler);
@@ -789,379 +545,14 @@ class InfiniWorld extends engine.Component {
       return `
         ${this.game.getCollections().libraries["SimplexNoise"].script}
   
-        class WorkerUtils {
-          constructor() {
-            this.noise = new SimplexNoise();
-            this.biomes = ${JSON.stringify(this.biomes)};
-            this.chunkSize = ${this.chunkSize};
-            this.chunkResolution = ${this.chunkResolution};
-          }
-
-          fractalNoise(x, y, settings) {
-            let value = 0;
-            let amplitude = 1;
-            let frequency = 1;
-            for (let i = 0; i < settings.octaves; i++) {
-              value += this.noise.noise2D(x * frequency * settings.scale, y * frequency * settings.scale) * amplitude;
-              amplitude *= settings.persistence;
-              frequency *= settings.lacunarity;
-            }
-            return value * settings.heightScale;
-          }
-
-          getBiomeWeights(wx, wz) {
-            const biomeNoise = this.noise.noise2D(wx * 0.00001, wz * 0.00001);
-            const biomeValue = (biomeNoise + 1) / 2;
-            const weights = {};
-            const thresholds = [
-              { biome: 'plains', range: [0.0, 0.4] },
-              { biome: 'forest', range: [0.2, 0.6] },
-              { biome: 'mountain', range: [0.5, 0.8] },
-              { biome: 'desert', range: [0.7, 1.0] }
-            ];
-
-            thresholds.forEach(({ biome, range }) => {
-              const [min, max] = range;
-              let weight = 0;
-              if (biomeValue >= min && biomeValue <= max) {
-                weight = 1 - Math.abs(biomeValue - (min + max) / 2) / ((max - min) / 2);
-                weight = Math.max(0, weight);
-              }
-              weights[biome] = weight;
-            });
-
-            const totalWeight = Object.values(weights).reduce((sum, w) => sum + w, 0);
-            if (totalWeight > 0) {
-              for (const biome in weights) {
-                weights[biome] /= totalWeight;
-              }
-            } else {
-              weights.plains = 1;
-            }
-            return weights;
-          }
-
-          getHeight(wx, wz) {
-            const weights = this.getBiomeWeights(wx, wz);
-            let totalHeight = 0;
-            for (const biomeName in weights) {
-              const weight = weights[biomeName];
-              if (weight === 0) continue;
-              const biome = this.biomes[biomeName];
-              let height = 0;
-              height += this.fractalNoise(wx, wz, biome.noiseSettings.elevation);
-              height += this.fractalNoise(wx * 2, wz * 2, biome.noiseSettings.detail);
-              if (biomeName === 'mountain' && biome.noiseSettings.ridge) {
-                const ridgeNoise = Math.abs(this.noise.noise2D(wx * biome.noiseSettings.ridge.scale, wz * biome.noiseSettings.ridge.scale));
-                height += Math.pow(ridgeNoise, biome.noiseSettings.ridge.power) * biome.noiseSettings.ridge.heightScale;
-              }
-              totalHeight += height * weight;
-            }
-            return totalHeight;
-          }
-
-          calculateSlope(wx, wz) {
-            const delta = 1.0;
-            const dx = this.getHeight(wx + delta, wz) - this.getHeight(wx - delta, wz);
-            const dz = this.getHeight(wx, wz + delta) - this.getHeight(wx, wz - delta);
-            return Math.sqrt(dx * dx + dz * dz) / (2 * delta);
-          }
-
-          generateChunk(cx, cz, chunkSize, chunkResolution) {
-            const geometryData = {
-                positions: [],
-                colors: [],
-                normals: [],
-                biomeMap: []
-              };
-
-              const size = chunkSize / chunkResolution;
-              // Generate positions
-              for (let z = 0; z <= chunkResolution; z++) {
-                for (let x = 0; x <= chunkResolution; x++) {
-                  const vx = x * size - chunkSize / 2;
-                  const vz = z * size - chunkSize / 2;
-                  const wx = cx * chunkSize + vx;
-                  const wz = cz * chunkSize + vz;
-                  const height = this.getHeight(wx, wz);
-                  geometryData.positions.push(vx, height, vz);
-                  geometryData.biomeMap.push({
-                    weights: this.getBiomeWeights(wx, wz),
-                    position: { x: wx, y: height, z: wz },
-                    slope: this.calculateSlope(wx, wz)
-                  });
-                }
-              }
-
-              // Initialize normals and contribution counters
-              const normals = new Array(geometryData.positions.length).fill(0);
-              const contributions = new Array(geometryData.positions.length / 3).fill(0);
-              const indices = [];
-
-              for (let z = 0; z < chunkResolution; z++) {
-                for (let x = 0; x < chunkResolution; x++) {
-                  const a = x + (z * (chunkResolution + 1));
-                  const b = a + 1;
-                  const c = a + chunkResolution + 1;
-                  const d = c + 1;
-                  
-                  // Use counterclockwise winding order
-                  indices.push(a, c, b); // First triangle
-                  indices.push(c, d, b); // Second triangle
-
-                  // Compute vertices positions for normal calculation
-                  const v0 = [
-                    geometryData.positions[a * 3], 
-                    geometryData.positions[a * 3 + 1], 
-                    geometryData.positions[a * 3 + 2]
-                  ];
-                  const v1 = [
-                    geometryData.positions[b * 3], 
-                    geometryData.positions[b * 3 + 1], 
-                    geometryData.positions[b * 3 + 2]
-                  ];
-                  const v2 = [
-                    geometryData.positions[c * 3], 
-                    geometryData.positions[c * 3 + 1], 
-                    geometryData.positions[c * 3 + 2]
-                  ];
-                  const v3 = [
-                    geometryData.positions[d * 3], 
-                    geometryData.positions[d * 3 + 1], 
-                    geometryData.positions[d * 3 + 2]
-                  ];
-
-                  // First triangle (a, c, b)
-                  let edge1 = [v2[0] - v0[0], v2[1] - v0[1], v2[2] - v0[2]]; // c - a
-                  let edge2 = [v1[0] - v0[0], v1[1] - v0[1], v1[2] - v0[2]]; // b - a
-                  let normal1 = [
-                    edge1[1] * edge2[2] - edge1[2] * edge2[1],
-                    edge1[2] * edge2[0] - edge1[0] * edge2[2],
-                    edge1[0] * edge2[1] - edge1[1] * edge2[0]
-                  ];
-                  
-                  let mag1 = Math.sqrt(normal1[0] * normal1[0] + normal1[1] * normal1[1] + normal1[2] * normal1[2]);
-                  if (mag1 < 0.00001) {
-                    normal1 = [0, 1, 0]; // Default upward normal
-                  } else {
-                    normal1[0] /= mag1;
-                    normal1[1] /= mag1;
-                    normal1[2] /= mag1;
-                    if (normal1[1] < 0) {
-                      normal1[0] = -normal1[0];
-                      normal1[1] = -normal1[1];
-                      normal1[2] = -normal1[2];
-                    }
-                  }
-
-                  // Second triangle (c, d, b)
-                  let edge3 = [v3[0] - v2[0], v3[1] - v2[1], v3[2] - v2[2]]; // d - c
-                  let edge4 = [v1[0] - v2[0], v1[1] - v2[1], v1[2] - v2[2]]; // b - c
-                  let normal2 = [
-                    edge3[1] * edge4[2] - edge3[2] * edge4[1],
-                    edge3[2] * edge4[0] - edge3[0] * edge4[2],
-                    edge3[0] * edge4[1] - edge3[1] * edge4[0]
-                  ];
-                  
-                  let mag2 = Math.sqrt(normal2[0] * normal2[0] + normal2[1] * normal2[1] + normal2[2] * normal2[2]);
-                  if (mag2 < 0.00001) {
-                    normal2 = [0, 1, 0]; // Default upward normal
-                  } else {
-                    normal2[0] /= mag2;
-                    normal2[1] /= mag2;
-                    normal2[2] /= mag2;
-                    if (normal2[1] < 0) {
-                      normal2[0] = -normal2[0];
-                      normal2[1] = -normal2[1];
-                      normal2[2] = -normal2[2];
-                    }
-                  }
-
-                  // Accumulate normals at each vertex
-                  // First triangle (a, c, b)
-                  normals[a * 3] += normal1[0];
-                  normals[a * 3 + 1] += normal1[1];
-                  normals[a * 3 + 2] += normal1[2];
-                  contributions[a]++;
-                  
-                  normals[c * 3] += normal1[0];
-                  normals[c * 3 + 1] += normal1[1];
-                  normals[c * 3 + 2] += normal1[2];
-                  contributions[c]++;
-                  
-                  normals[b * 3] += normal1[0];
-                  normals[b * 3 + 1] += normal1[1];
-                  normals[b * 3 + 2] += normal1[2];
-                  contributions[b]++;
-                  
-                  // Second triangle (c, d, b)
-                  normals[c * 3] += normal2[0];
-                  normals[c * 3 + 1] += normal2[1];
-                  normals[c * 3 + 2] += normal2[2];
-                  
-                  normals[d * 3] += normal2[0];
-                  normals[d * 3 + 1] += normal2[1];
-                  normals[d * 3 + 2] += normal2[2];
-                  contributions[d]++;
-                  
-                  normals[b * 3] += normal2[0];
-                  normals[b * 3 + 1] += normal2[1];
-                  normals[b * 3 + 2] += normal2[2];
-                }
-              }
-
-              // Normalize accumulated vertex normals
-              for (let i = 0; i < contributions.length; i++) {
-                if (contributions[i] > 0) {
-                  const idx = i * 3;
-                  const nx = normals[idx];
-                  const ny = normals[idx + 1];
-                  const nz = normals[idx + 2];
-                  
-                  const mag = Math.sqrt(nx * nx + ny * ny + nz * nz);
-                  
-                  if (mag > 0.00001) {
-                    normals[idx] = nx / mag;
-                    normals[idx + 1] = ny / mag;
-                    normals[idx + 2] = nz / mag;
-                  } else {
-                    // Default normal for degenerate cases
-                    normals[idx] = 0;
-                    normals[idx + 1] = 1;
-                    normals[idx + 2] = 0;
-                  }
-                } else {
-                  // Should never happen if mesh is properly constructed
-                  const idx = i * 3;
-                  normals[idx] = 0;
-                  normals[idx + 1] = 1;
-                  normals[idx + 2] = 0;
-                }
-              }
-
-              geometryData.normals = normals;
-
-            // Rest of the vegetation and color generation remains the same
-            geometryData.biomeMap.forEach(({ weights }) => {
-              let r = 0, g = 0, b = 0;
-              for (const biomeName in weights) {
-                const weight = weights[biomeName];
-                const { r: br, g: bg, b: bb } = this.biomes[biomeName].groundColor;
-                r += br * weight;
-                g += bg * weight;
-                b += bb * weight;
-              }
-              geometryData.colors.push(r, g, b);
-            });
-
-            // Vegetation generation (unchanged)
-            const vegetation = new Map();
-            geometryData.biomeMap.forEach(({ weights, position, slope }) => {
-              const objectTypes = new Map();
-              for (const biomeName in weights) {
-                const biome = this.biomes[biomeName];
-                biome.worldObjects.forEach(objDef => {
-                  if (!objectTypes.has(objDef.worldObject)) {
-                    objectTypes.set(objDef.worldObject, []);
-                  }
-                  objectTypes.get(objDef.worldObject).push({
-                    density: objDef.density,
-                    maxSlope: objDef.maxSlope,
-                    weight: weights[biomeName]
-                  });
-                });
-              }
-
-              objectTypes.forEach((defs, worldObject) => {
-                let blendedDensity = 0;
-                let blendedMaxSlope = 0;
-                let totalWeight = 0;
-
-                defs.forEach(def => {
-                  blendedDensity += def.density * def.weight;
-                  blendedMaxSlope += def.maxSlope * def.weight;
-                  totalWeight += def.weight;
-                });
-
-                if (totalWeight === 0) return;
-
-                blendedDensity /= totalWeight;
-                blendedMaxSlope /= totalWeight;
-
-                const instances = vegetation.get(worldObject) || [];
-                const collisionData = vegetation.get(worldObject + '_collision') || [];
-
-                if (Math.random() < blendedDensity && slope <= blendedMaxSlope) {
-                  const instance = {
-                    position: { x: position.x, y: position.y - 5, z: position.z },
-                    rotation: Math.random() * Math.PI * 2,
-                    scale: 0.8 + Math.random() * 0.4
-                  };
-                  instances.push(instance);
-
-                  let aabb;
-                  if (worldObject === 'tree') {
-                    const trunkRadius = 5.0 * instance.scale;
-                    const trunkHeight = 20.0 * instance.scale;
-                    aabb = {
-                      min: {
-                        x: position.x - trunkRadius,
-                        y: position.y,
-                        z: position.z - trunkRadius
-                      },
-                      max: {
-                        x: position.x + trunkRadius,
-                        y: position.y + trunkHeight,
-                        z: position.z + trunkRadius
-                      }
-                    };
-                  } else if (worldObject === 'rock') {
-                    const rockRadius = 1.0 * instance.scale;
-                    const rockHeight = 1.0 * instance.scale;
-                    aabb = {
-                      min: {
-                        x: position.x - rockRadius,
-                        y: position.y,
-                        z: position.z - rockRadius
-                      },
-                      max: {
-                        x: position.x + rockRadius,
-                        y: position.y + rockHeight,
-                        z: position.z + rockRadius
-                      }
-                    };
-                  }
-
-                  if (aabb) {
-                    collisionData.push(aabb);
-                  }
-                }
-
-                vegetation.set(worldObject, instances);
-                if (collisionData.length > 0) {
-                  vegetation.set(worldObject + '_collision', collisionData);
-                }
-              });
-            });
-
-            return {
-              cx,
-              cz,
-              positions: geometryData.positions,
-              indices,
-              colors: geometryData.colors,
-              normals: geometryData.normals, // Include normals in the result
-              vegetation: Array.from(vegetation.entries()).map(([worldObject, data]) => ({ worldObject, data }))
-            };
-          }
-        }
-
+        ${this.game.getCollections().libraries["TerrainGenerator"].script}
   
-        const utils = new WorkerUtils();
+        const terrainGenerator = new TerrainGenerator();
+        terrainGenerator.init(${JSON.stringify(this.biomes)}, ${this.chunkSize}, ${this.chunkResolution});
   
         self.onmessage = function(e) {
           const { cx, cz, chunkSize, chunkResolution } = e.data;
-          const result = utils.generateChunk(cx, cz, chunkSize, chunkResolution);
+          const result = terrainGenerator.generateChunk(cx, cz, chunkSize, chunkResolution);
           self.postMessage(result);
         };
       `;

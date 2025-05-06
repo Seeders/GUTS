@@ -6,10 +6,10 @@
     "three.OrbitControls",
     "three.SkeletonUtils",
     "GLTFLoader",
-    "ShapeFactory",  
+    "ShapeFactory",
     "SimplexNoise",
     "TerrainGenerator",
-    "ModelManager", 
+    "ModelManager",
     "SE_GizmoManager",
     "SceneEditor"
   ],

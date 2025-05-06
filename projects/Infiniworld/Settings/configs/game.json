@@ -9,6 +9,8 @@
     "three.PointerLockControls",
     "ShapeFactory",
     "SimplexNoise",
+    "TerrainGenerator",
+    "PhysicsEngine",
     "ImageManager",
     "SpatialGrid",
     "CoordinateTranslator",

@@ -1,16 +1,19 @@
 class Collider extends engine.Component {
-    init({ debug = true }) {
+    init({ debug = false }) {
+        this.id = this.parent.id;
         this.stats = this.getComponent('stats').stats;
-        this.type = 'sphere'; // 'sphere' or 'box'
-        this.size = 1; // For box: dimensions, for sphere: radius
-        this.offset = new THREE.Vector3(0, 0, 0); // Center offset
-        this.mass = 1; // Override entity mass
-        this.restitution = 0.1; // Override restitution
+        this.type = this.stats.colliderType || 'sphere'; // 'sphere' or 'box'
+        this.size = this.stats.colliderSize || 1; // For box: dimensions, for sphere: radius
+        if(typeof  this.stats.colliderOffset == "string")  this.stats.colliderOffset = JSON.parse( this.stats.colliderOffset);
+        this.offset = this.stats.colliderOffset ? new THREE.Vector3(this.stats.colliderOffset.x, this.stats.colliderOffset.y, this.stats.colliderOffset.z) : new THREE.Vector3(0, 0, 0); // Center offset
+
+        this.mass = this.stats.colliderMass || 1; // Override entity mass
+        this.restitution = this.stats.colliderRestitution || 0.25; // Override restitution
         this.debug = debug; // Enable debug mode
         this.debugMesh = null; // Store debug mesh
 
         // Register with physics system
-        this.game.gameEntity.getComponent("Physics").registerEntity(this);
+        this.game.gameEntity.getComponent("Physics").registerCollider(this);
 
         // Create debug visualization if debug mode is enabled
         if (this.debug) {
@@ -85,6 +88,7 @@ class Collider extends engine.Component {
         if (this.debug && this.debugMesh) {
             this.debugMesh.position.copy(this.parent.transform.physicsPosition).add(this.offset);
         }
+        this.game.gameEntity.getComponent("physics").collectPhysicsData(this);
     }
 
     destroy() {

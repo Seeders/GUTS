@@ -92,5 +92,9 @@
   "electricResistance": 25,
   "projectile": "plasmaBolt",
   "entity": "enemy",
-  "arr": "enemies"
+  "arr": "enemies",
+  "colliderSize": 5,
+  "colliderMass": 10,
+  "colliderType": "sphere",
+  "colliderOffset": "{ \"x\": 0, \"y\": 5, \"z\": 0 }"
 }
