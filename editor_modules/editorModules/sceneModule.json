@@ -8,6 +8,7 @@
     "GLTFLoader",
     "ShapeFactory",  
     "SimplexNoise",
+    "TerrainGenerator",
     "ModelManager", 
     "SE_GizmoManager",
     "SceneEditor"
