@@ -1,5 +1,5 @@
 class Collider extends engine.Component {
-    init({ debug = false }) {
+    init({ debug = true }) {
         this.id = this.parent.id;
         this.stats = this.getComponent('stats').stats;
         this.type = this.stats.colliderType || 'sphere'; // 'sphere' or 'box'

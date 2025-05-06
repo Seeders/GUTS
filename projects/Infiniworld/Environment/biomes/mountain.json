@@ -7,5 +7,6 @@
   "worldObjectSpawns": [
     "mountainRocks",
     "mountainTrees"
-  ]
+  ],
+  "range": "[0.5, 0.8]"
 }

@@ -6,5 +6,6 @@
   "worldObjectSpawns": [
     "forestRocks",
     "forestTrees"
-  ]
+  ],
+  "range": "[0.2,0.6]"
 }

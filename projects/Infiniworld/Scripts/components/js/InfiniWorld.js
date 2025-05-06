@@ -101,7 +101,8 @@ class InfiniWorld extends engine.Component {
               elevation: elevationNoiseData,
               detail: detailNoiseData
             },
-            worldObjects: worldObjectSpawns
+            worldObjects: worldObjectSpawns,
+            range: JSON.parse(biomeObjData.range)
           }
 
           if(biomeName == "mountain"){     
@@ -547,8 +548,9 @@ class InfiniWorld extends engine.Component {
   
         ${this.game.getCollections().libraries["TerrainGenerator"].script}
   
+        const noise = new SimplexNoise();
         const terrainGenerator = new TerrainGenerator();
-        terrainGenerator.init(${JSON.stringify(this.biomes)}, ${this.chunkSize}, ${this.chunkResolution});
+        terrainGenerator.init(${JSON.stringify(this.biomes)}, ${this.chunkSize}, ${this.chunkResolution}, noise);
   
         self.onmessage = function(e) {
           const { cx, cz, chunkSize, chunkResolution } = e.data;

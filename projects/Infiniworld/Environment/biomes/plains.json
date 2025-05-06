@@ -6,5 +6,6 @@
   "worldObjectSpawns": [
     "plainsRocks",
     "plainsTrees"
-  ]
+  ],
+  "range": "[0,0.4]"
 }

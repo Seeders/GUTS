@@ -71,12 +71,10 @@ class Physics extends engine.Component {
         if (this.physicsDataBuffer.length === 0) return;
 
         // Extract biome configuration to send to worker
-        const biomeConfig = {};
+        let biomeConfig = {};
         if (terrainComponent && terrainComponent.biomes) {
             // Deep copy the biome configuration
-            for (const biomeName in terrainComponent.biomes) {
-                biomeConfig[biomeName] = JSON.parse(JSON.stringify(terrainComponent.biomes[biomeName]));
-            }
+            biomeConfig = terrainComponent.biomes;
         }
 
         this.worker.postMessage({
@@ -133,6 +131,29 @@ class Physics extends engine.Component {
             ${this.game.config.libraries["TerrainGenerator"].script}
            
             ${this.game.config.libraries["PhysicsEngine"].script}
+
+            const noise = new SimplexNoise();
+            const physicsEngine = new PhysicsEngine();
+            const terrainGenerator = new TerrainGenerator();
+            
+            // Handle worker messages
+            self.onmessage = function(e) {
+                const { entities, collisionData, deltaTime, gravity, biomeConfig, chunkSize, chunkResolution } = e.data;
+                
+                terrainGenerator.init(
+                    biomeConfig, 
+                    chunkSize, 
+                    chunkResolution,
+                    noise
+                );
+                physicsEngine.init({gravity: gravity, getTerrainHeight: terrainGenerator.getHeight.bind(terrainGenerator)});
+                
+                // Update physics
+                const updatedEntities = physicsEngine.update(entities, collisionData, deltaTime);
+                
+                // Return updated entities
+                self.postMessage({ entities: updatedEntities });
+            };
 
         `;
     }
