@@ -1,0 +1,65 @@
+{
+  "title": "Fighter Jet",
+  "hp": 501,
+  "speed": 0.5,
+  "essence": 50,
+  "value": 50,
+  "boss": true,
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ],
+      "walk": [
+        {}
+      ]
+    },
+    "model": {
+      "main": {
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 5,
+          "y": 5,
+          "z": 5
+        },
+        "shapes": [
+          {
+            "type": "gltf",
+            "width": 2,
+            "height": 0.2,
+            "depth": 1,
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "rotationX": 0,
+            "rotationY": 0,
+            "rotationZ": 0,
+            "scaleX": 5,
+            "scaleY": 5,
+            "scaleZ": 5,
+            "color": "#FFFFFF",
+            "url": "samples/models/blue_wings/blue_wings.glb"
+          }
+        ]
+      }
+    }
+  },
+  "fireResistance": 75,
+  "coldResistance": 25,
+  "electricResistance": 25,
+  "projectile": "plasmaBolt",
+  "entity": "playerAircraft",
+  "colliderSize": 5,
+  "colliderType": "sphere",
+  "colliderOffset": "{ \"x\": 0, \"y\": 0, \"z\": 0 }",
+  "colliderGravity": false
+}

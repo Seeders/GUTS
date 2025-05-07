@@ -1,12 +1,12 @@
 class Collider extends engine.Component {
-    init({ debug = true }) {
+    init({ debug = false }) {
         this.id = this.parent.id;
         this.stats = this.getComponent('stats').stats;
         this.type = this.stats.colliderType || 'sphere'; // 'sphere' or 'box'
         this.size = this.stats.colliderSize || 1; // For box: dimensions, for sphere: radius
         if(typeof  this.stats.colliderOffset == "string")  this.stats.colliderOffset = JSON.parse( this.stats.colliderOffset);
         this.offset = this.stats.colliderOffset ? new THREE.Vector3(this.stats.colliderOffset.x, this.stats.colliderOffset.y, this.stats.colliderOffset.z) : new THREE.Vector3(0, 0, 0); // Center offset
-
+        this.gravity = this.stats.colliderGravity || true;
         this.mass = this.stats.colliderMass || 1; // Override entity mass
         this.restitution = this.stats.colliderRestitution || 0.25; // Override restitution
         this.debug = debug; // Enable debug mode
@@ -78,7 +78,7 @@ class Collider extends engine.Component {
         throw new Error(`Unsupported collider type: ${this.type}`);
     }
 
-    postUpdate() {
+    update() {
         this.parent.transform.position.lerp(
             this.parent.transform.physicsPosition,
             this.parent.transform.lerpFactor

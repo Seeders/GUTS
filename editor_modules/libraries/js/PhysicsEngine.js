@@ -45,7 +45,7 @@ class PhysicsEngine {
     _updateEntitiesPosition(entities, deltaTime) {
       entities.forEach(entity => {
         // Apply gravity
-        entity.velocity.y += this.gravity * 10 * deltaTime;
+        entity.velocity.y += (entity.gravity ? this.gravity : 0) * 10 * deltaTime;
         
         // Update position
         entity.position.x += entity.velocity.x * deltaTime;

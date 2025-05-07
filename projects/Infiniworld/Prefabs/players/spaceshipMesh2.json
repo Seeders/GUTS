@@ -1,0 +1,65 @@
+{
+  "title": "SpaceShipMesh2",
+  "hp": 501,
+  "speed": 0.5,
+  "essence": 50,
+  "value": 50,
+  "boss": true,
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ],
+      "walk": [
+        {}
+      ]
+    },
+    "model": {
+      "main": {
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 10,
+          "y": 10,
+          "z": 10
+        },
+        "shapes": [
+          {
+            "type": "gltf",
+            "width": 2,
+            "height": 0.2,
+            "depth": 1,
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "rotationX": 0,
+            "rotationY": 0,
+            "rotationZ": 0,
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1,
+            "color": "#FFFFFF",
+            "url": "samples/models/blue_spaceship/blue_spaceship.glb"
+          }
+        ]
+      }
+    }
+  },
+  "fireResistance": 75,
+  "coldResistance": 25,
+  "electricResistance": 25,
+  "projectile": "plasmaBolt",
+  "entity": "playerAircraft",
+  "colliderSize": 5,
+  "colliderType": "sphere",
+  "colliderOffset": "{ \"x\": 0, \"y\": 0, \"z\": 0 }",
+  "colliderGravity": false
+}

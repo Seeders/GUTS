@@ -18,7 +18,7 @@ class Physics extends engine.Component {
         let entity = collider.parent;
         if (!collider.id || !entity.transform.position) return;
 
-        const aabb = collider.getAABB(entity.transform.position);
+        const aabb = collider.getAABB(entity.transform.position);        
         this.colliders.set(collider.id, {
             entity: entity,
             position: { ...entity.transform.position },
@@ -30,6 +30,7 @@ class Physics extends engine.Component {
                 offset: collider.offset
             },
             mass: collider.mass || 1,
+            gravity: collider.gravity || true,
             restitution: collider.restitution || 1,
             grounded: false
         });
@@ -50,12 +51,13 @@ class Physics extends engine.Component {
     }
 
     collectPhysicsData(collider) {
+        const entity = collider.parent;
         const data = this.colliders.get(collider.id);
         if (!data) return;
         this.physicsDataBuffer.push({
             id: collider.id,
             position: data.position,
-            velocity: data.velocity,
+            velocity: entity.velocity,
             aabb: data.aabb,
             collider: data.collider,
             mass: data.mass,
@@ -110,6 +112,9 @@ class Physics extends engine.Component {
             }
             if(updated.collidedWithStatic){
                 data.entity.OnStaticCollision();
+            }
+            if(updated.grounded){
+                data.entity.OnGrounded();
             }
         });
     }

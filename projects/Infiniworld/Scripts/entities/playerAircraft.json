@@ -2,6 +2,7 @@
   "title": "Player Aircraft",
   "components": [
     "Stats",
+    "Collider",
     "Animator",
     "PlayerAttacker",
     "AircraftController"
