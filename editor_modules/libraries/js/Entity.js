@@ -83,6 +83,11 @@ class Entity {
             this.components[c].OnStaticCollision();                           
         }                
     }
+    OnGrounded(){
+        for(let c in this.components) {
+            this.components[c].OnGrounded();                           
+        }                
+    }
     destroy() {
         this.destroyed = true;
         for(let c in this.components) {

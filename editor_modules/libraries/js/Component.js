@@ -14,4 +14,5 @@ class Component {
     
     OnCollision(collidedWith){}
     OnStaticCollision(){}
+    OnGrounded(){}
 }
