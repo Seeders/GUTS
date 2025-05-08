@@ -9,7 +9,6 @@ class Entity {
         this.type = type;
         this.collisionRadius = 5;   
         this.entityHeight = 10;    
-        this.velocity = new THREE.Vector3();
         this.transform = this.addComponent("transform", { x: position.x, y: position.y, z: position.z });        
     }
     getAABB(position = this.transform.position) {

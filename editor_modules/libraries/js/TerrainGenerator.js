@@ -271,10 +271,10 @@ class TerrainGenerator {
         for (const biomeName in weights) {
           const biome = this.biomes[biomeName];
           biome.worldObjects.forEach(objDef => {
-            if (!objectTypes.has(objDef.worldObject)) {
-              objectTypes.set(objDef.worldObject, []);
+            if (!objectTypes.has(objDef.worldObjectPrefab)) {
+              objectTypes.set(objDef.worldObjectPrefab, []);
             }
-            objectTypes.get(objDef.worldObject).push({
+            objectTypes.get(objDef.worldObjectPrefab).push({
               density: objDef.density,
               maxSlope: objDef.maxSlope,
               weight: weights[biomeName]
@@ -282,7 +282,7 @@ class TerrainGenerator {
           });
         }
 
-        objectTypes.forEach((defs, worldObject) => {
+        objectTypes.forEach((defs, worldObjectPrefab) => {
           let blendedDensity = 0;
           let blendedMaxSlope = 0;
           let totalWeight = 0;
@@ -298,8 +298,8 @@ class TerrainGenerator {
           blendedDensity /= totalWeight;
           blendedMaxSlope /= totalWeight;
 
-          const instances = vegetation.get(worldObject) || [];
-          const collisionData = vegetation.get(worldObject + '_collision') || [];
+          const instances = vegetation.get(worldObjectPrefab) || [];
+          const collisionData = vegetation.get(worldObjectPrefab + '_collision') || [];
           if (this.getRandomFromPosition(position.x, position.y, 1) < blendedDensity && slope <= blendedMaxSlope) {
             const instance = {
               position: { x: position.x, y: position.y - 5, z: position.z },
@@ -309,7 +309,7 @@ class TerrainGenerator {
             instances.push(instance);
 
             let aabb;
-            if (worldObject === 'tree') {
+            if (worldObjectPrefab === 'tree') {
               const trunkRadius = 5.0 * instance.scale;
               const trunkHeight = 20.0 * instance.scale;
               aabb = {
@@ -324,7 +324,7 @@ class TerrainGenerator {
                   z: position.z + trunkRadius
                 }
               };
-            } else if (worldObject === 'rock') {
+            } else if (worldObjectPrefab === 'rock') {
               const rockRadius = 1.0 * instance.scale;
               const rockHeight = 1.0 * instance.scale;
               aabb = {
@@ -346,9 +346,9 @@ class TerrainGenerator {
             }
           }
 
-          vegetation.set(worldObject, instances);
+          vegetation.set(worldObjectPrefab, instances);
           if (collisionData.length > 0) {
-            vegetation.set(worldObject + '_collision', collisionData);
+            vegetation.set(worldObjectPrefab + '_collision', collisionData);
           }
         });
       });

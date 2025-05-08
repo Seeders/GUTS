@@ -16,7 +16,7 @@
   "propertyName": "sceneData",
   "interface": "sceneEditor",
   "inputElement": "textarea",
-  "inputDataType": "json",
+  "inputDataType": "array",
   "loadHook": "renderSceneObject",
   "saveHook": "saveSceneObject"
 }

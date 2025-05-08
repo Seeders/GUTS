@@ -48,9 +48,9 @@ class SceneEditor {
             let parts = this.elements.addPrefabSelect.value.split(".");
             const objType = parts[0];
             const spawnType = parts[1];
-            const objData = this.gameEditor.getCollections()[objType][spawnType];
-            if(objData.entity){
-                this.createEntity(objData.entity, { "objectType": objType, "spawnType": spawnType, ...objData });
+            const prefabData = this.gameEditor.getCollections()[objType][spawnType];
+            if(prefabData.entity){
+                this.createEntity(prefabData.entity, { "objectType": objType, "spawnType": spawnType, ...prefabData });
             }
         });
         this.elements.removePrefabBtn.addEventListener('click', () => {
@@ -167,6 +167,7 @@ class SceneEditor {
         this.canvas.setAttribute('style','');       
         this.clearScene();
         this.renderSceneData(event.detail.data);
+        console.log(event.detail.data);
         this.handleResize();
         this.clock = new window.THREE.Clock();
         this.clock.start(); 
@@ -228,18 +229,13 @@ class SceneEditor {
 
     async renderSceneData(sceneData) {
         for(let entity of sceneData){
-            let params = {};
-            for(let component of entity.components){
-                params = {...params, ...component.parameters}
+
+            const prefabData = this.gameEditor.getCollections()[entity.objectType][entity.spawnType];   
+            let params = { "objectType": entity.objectType, "spawnType": entity.spawnType, "transform": entity.components[0].parameters, ...prefabData };             
+            if(params.render && params.render.model){
+                await this.addModelToScene(entity.type, params);                
             }
             
-        
-            if(params.objectType && params.spawnType){
-                const objData = this.gameEditor.getCollections()[params.objectType][params.spawnType];                
-                if(objData.render && objData.render.model){
-                    await this.addModelToScene(entity.type, params, objData.render.model);                
-                }
-            }
             this.createEntity(entity.type, params);
         }        
     }
@@ -250,7 +246,8 @@ class SceneEditor {
         return entity;
     }
 
-    async addModelToScene(name, params, model) {     
+    async addModelToScene(name, params) {     
+        const model = params.render.model;
         const modelGroup = new window.THREE.Group(); // Main container for all shapes
         modelGroup.name = name;   
         for (const groupName in model) {            
@@ -262,20 +259,20 @@ class SceneEditor {
             }
         }
         this.rootGroup.add(modelGroup);
-        if(params.position){
-            modelGroup.position.x = params.position.x;
-            modelGroup.position.y = params.position.y;
-            modelGroup.position.z = params.position.z;
+        if(params.transform?.position){
+            modelGroup.position.x = params.transform.position.x;
+            modelGroup.position.y = params.transform.position.y;
+            modelGroup.position.z = params.transform.position.z;
         }
-        if(params.scale){
-            modelGroup.scale.x = params.scale.x;
-            modelGroup.scale.y = params.scale.y;
-            modelGroup.scale.z = params.scale.z;
+        if(params.transform?.scale){
+            modelGroup.scale.x = params.transform.scale.x;
+            modelGroup.scale.y = params.transform.scale.y;
+            modelGroup.scale.z = params.transform.scale.z;
         }
-        if(params.rotation){
-            modelGroup.rotation.x = params.rotation.x;
-            modelGroup.rotation.y = params.rotation.y;
-            modelGroup.rotation.z = params.rotation.z;
+        if(params.transform?.rotation){
+            modelGroup.rotation.x = params.transform.rotation.x;
+            modelGroup.rotation.y = params.transform.rotation.y;
+            modelGroup.rotation.z = params.transform.rotation.z;
         }
     }
 
@@ -290,14 +287,16 @@ class SceneEditor {
         this.state.sceneData = []; 
     }
 
-    createEntity(type, params) {
+    createEntity(type, prefabData) {
         const id = this.nextEntityId++;
         const entity = {
             id,
             type,
+            objectType: prefabData.objectType,
+            spawnType: prefabData.spawnType,
             parent: null,
             children: [],
-            components: this.getEntityComponents(type, params)
+            components: this.getEntityComponents(type, prefabData)
         };
 
 
@@ -308,44 +307,49 @@ class SceneEditor {
         return entity;
     }
 
-    getEntityComponents(type, params){
+    getEntityComponents(type, prefabData){
         let components = [];
         // Add transform component by default
         components.push({
             type: 'transform',
             parameters: {
-                position: params.position ? params.position : { x: 0, y: 0, z: 0 },
-                rotation: params.rotation ? params.rotation : { x: 0, y: 0, z: 0 },
-                scale: params.scale ? params.scale : { x: 1, y: 1, z: 1 }
+                position: prefabData.transform && prefabData.transform.position ? prefabData.transform.position : { x: 0, y: 0, z: 0 },
+                rotation: prefabData.transform && prefabData.transform.rotation ? prefabData.transform.rotation : { x: 0, y: 0, z: 0 },
+                scale: prefabData.transform && prefabData.transform.scale ? prefabData.transform.scale : { x: 1, y: 1, z: 1 }
             }
         });
         const entityObjData = this.gameEditor.getCollections().entities[type];
-        const combined = [...entityObjData.renderers, ...entityObjData.components]
+        const combined = [...entityObjData.renderers, ...entityObjData.components];
+
+         
         combined.forEach((componentName) => {
-            let componentDef = this.gameEditor.getCollections().components[componentName];
-            if(!componentDef) {
-                componentDef = this.gameEditor.getCollections().renderers[componentName];
-            }
-            if(!componentDef) return;
-            if(componentDef.parameters) {
+         
+            const componentDataKey = componentName.charAt(0).toLowerCase() + componentName.slice(1, componentName.length);
+            const compInstanceId = prefabData[componentDataKey];
+            if(compInstanceId){
+                let componentDef = this.gameEditor.getCollections().components[componentName];
+                if(!componentDef) {
+                    componentDef = this.gameEditor.getCollections().renderers[componentName];
+                }
+
                 let component = {
                     type: componentName,
                     parameters: {}
-                };
-                let compParams = JSON.parse(componentDef.parameters);
-                compParams.forEach((parameterName) => {    
-                    if(params[parameterName]) {        
-                        component.parameters[parameterName] = params[parameterName];
-                    } else {
-                        component.parameters[parameterName] = "";
-                    }
-                });
+                };       
+                const componentDataCollectionDef = this.gameEditor.getCollectionDefs().find(t => 
+                    componentName.toLowerCase().endsWith(t.singular.replace(/ /g,'').toLowerCase()));
+                
+                component.parameters[componentDataCollectionDef.singular.charAt(0).toLowerCase() + componentDataCollectionDef.singular.slice(1, componentDataCollectionDef.singular.length)] = compInstanceId;
                 components.push(component);
-            }
-            if(componentDef.updateInEditor){
-                this.componentsToUpdate.push(this.gameEditor.instantiateComponent(componentName, params));
+                
+                if(componentDef.updateInEditor){
+             
+
+                    this.componentsToUpdate.push(this.gameEditor.instantiateComponent(componentName, { ...prefabData, ...component.parameters}));
+                }
             }
         });
+ 
         return components;
     }
 

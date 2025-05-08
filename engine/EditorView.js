@@ -229,7 +229,9 @@ class EditorView {
 
         let processedValue = value;
         if (moduleDataType === 'json') {
-            processedValue = JSON.stringify(value);
+          processedValue = JSON.stringify(value);
+        } else if (moduleDataType === 'array') {
+          processedValue = JSON.stringify(value);
         }
         
         if (moduleInputElementType === 'textarea') {
@@ -387,27 +389,25 @@ class EditorView {
                 );
                 // Try to parse value types for non-reference fields
                 if (!isNaN(parseFloat(value)) && isFinite(value)) {
-                    value = parseFloat(value);
+                  value = parseFloat(value);
                 } else if (value.toLowerCase() === 'true') {
-                    value = true;
+                  value = true;
                 } else if (value.toLowerCase() === 'false') {
-                    value = false;
+                  value = false;
+                } else if (value.startsWith('[') && value.endsWith(']')) {
+                  value = JSON.parse(value || []);
                 }
                 let parsed = false;
                 const editorModules = this.controller.model.getCollections().editorModules;
                 
                 for (const [moduleKey, module] of Object.entries(editorModules)) {
                   if (module.propertyName === keyInput.value && module.inputDataType.toLowerCase() === 'json') {                    
-                    value = JSON.parse(value || '{}');
+                    value = JSON.parse(value || {});
                     parsed = true;
                     break;
                   }
                 }
                 
-                if (!parsed && matchingTypePlural) {
-                  value = JSON.parse(value || '[]');
-                }
-
                 completeObj[keyInput.value] = value;
             }
         });
@@ -438,32 +438,6 @@ class EditorView {
           this.controller.selectObject(this.controller.getSelectedObject());
         });
       });
-    }
-    // Helper method
-    parsePropertyValue(key, value) {
-        // Handle numeric values
-        if (!isNaN(parseFloat(value))) return parseFloat(value);
-        
-        // Handle booleans
-        if (value.toLowerCase() === 'true') return true;
-        if (value.toLowerCase() === 'false') return false;
-        
-        // Handle special object types
-        if (key === "render" || key === "tileMap") {
-            try { return JSON.parse(value); } 
-            catch (e) { console.error("Parse error", e); return value; }
-        }
-        
-        // Handle reference arrays
-        const isPluralType = this.controller.getCollectionDefs().some(
-            t => t.id.toLowerCase() === key.toLowerCase()
-        );
-        if (isPluralType) {
-            try { return JSON.parse(value || '[]'); }
-            catch (e) { return [value].filter(Boolean); }
-        }
-        
-        return value; // Default case
     }
 
     renderObject() {
