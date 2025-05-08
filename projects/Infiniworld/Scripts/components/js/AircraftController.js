@@ -131,15 +131,18 @@ class AircraftController extends engine.Component {
     OnGrounded() {
         if (this.hasCollided) return;
         this.hasCollided = true;
-        const restitution = .25;
+        const restitution = .5;
         this.thrust *= restitution;
         this.parent.transform.position.y += 5;
         
-        let reflection = this.infiniWorld.getReflectionAt(this.game.deltaTime, this.parent.transform.position, this.velocity, restitution);
+        let reflection = new THREE.Vector3().copy(this.infiniWorld.getReflectionAt(this.game.deltaTime, this.parent.transform.position, this.velocity, restitution));
         // Add energy loss on bounce (70% energy conservation)
-        reflection.divideScalar(this.game.deltaTime).multiplyScalar(restitution);
-        
+    
+        reflection.multiplyScalar(restitution);
+        reflection.y *= 2;
         if(reflection.y < 5) reflection.y = 5;
+
+        reflection.y = Math.min(reflection.y, 10);
         // Apply reflected velocity
         this.velocity.copy(reflection);
         this.parent.transform.velocity.copy(reflection);
@@ -296,7 +299,7 @@ class AircraftController extends engine.Component {
             const levelingQuat = new THREE.Quaternion().setFromUnitVectors(this.up, this.worldUp);
             this.parent.transform.quaternion.slerp(levelingQuat, stabilizationForce * dt * 5);
         
-            
+            if(this.parent.transform.position.y < this.parent.transform.groundHeight) this.parent.transform.position.y += 5;
             // Check if recovery time has elapsed
             if (this.collisionTimer >= this.collisionRecoveryTime) {
                 this.hasCollided = false;

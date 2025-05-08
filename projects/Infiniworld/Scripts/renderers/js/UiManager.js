@@ -146,10 +146,7 @@ class UiManager extends engine.Component {
 
 
     draw() {
-        this.hpDisplay.textContent = Math.floor(this.game.state.bloodCoreHP); 
-        if(!this.game.config.configs.game.is3D) {
-            this.renderCanvas();
-        }
+  
     }
 
 
