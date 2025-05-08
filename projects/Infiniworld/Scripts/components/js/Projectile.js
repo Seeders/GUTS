@@ -3,32 +3,37 @@ class Projectile extends engine.Component {
       super(game, parent, params);
   }
    
-  init({ spawnType, owner, direction, stats }) {
-      this.type = spawnType;
-      this.def = this.game.config.projectiles[this.type];
+  init({ spawnType, owner, direction }) {
+      this.projectilePrefabData = this.game.config.projectilePrefabs[spawnType];
+      this.projectileData = this.game.config.projectiles[this.projectilePrefabData.projectile];
       this.owner = owner;
-      this.stats = stats;
       this.piercedEnemies = [];
-      this.ownerStats = this.owner.getComponent("stats").stats;
+      if(this.owner){
+        this.ownerStats = this.owner.getComponent("stats").stats;
+      }
       this.distanceTraveled = 0;
       this.distanceToSpawnParticle = 24;
-      this.direction = direction;
+      this.direction = direction || new THREE.Vector3();
       
       // Add lifespan for projectile
-      this.maxLifespan = this.stats.lifespan || 30;  
+      this.maxLifespan = this.projectileData.lifespan || 30;  
       this.currentLifespan = 0;
       
-      if(this.stats.attackSound){
-          this.game.audioManager.playSound('sounds', this.stats.attackSound);
+      if(this.projectileData.attackSound){
+          this.game.audioManager.playSound('sounds', this.projectileData.attackSound);
       }
       
       this.parent.transform.position.y += 10;
       // Add physics properties
-      this.parent.velocity = new THREE.Vector3(
-          direction.x * this.stats.speed,
-          direction.y * this.stats.speed,
-          direction.z * this.stats.speed
+      this.parent.transform.velocity = new THREE.Vector3(
+          this.direction.x * this.projectileData.speed,
+          this.direction.y * this.projectileData.speed,
+          this.direction.z * this.projectileData.speed
       );    
+      if(this.owner){
+        console.log(this.owner.transform.velocity.clone().divideScalar(this.game.deltaTime));
+        this.parent.transform.velocity = this.parent.transform.velocity.add(this.owner.transform.velocity.clone().divideScalar(this.game.deltaTime));
+      }
 
   }
   
@@ -51,10 +56,10 @@ class Projectile extends engine.Component {
           const tDist = Math.sqrt(tDistSq);
           this.distanceTraveled += tDist;
           
-          if (this.def.particle && this.distanceTraveled > this.distanceToSpawnParticle) {
+          if (this.projectileData.particle && this.distanceTraveled > this.distanceToSpawnParticle) {
               this.game.spawn("particle", { 
-                  objectType: "particles", 
-                  spawnType: this.def.particle
+                  objectType: "particlePrefabs", 
+                  spawnType: this.projectileData.particlePrefab
               }, this.parent.transform.position);
               this.distanceTraveled = 0;
               this.distanceToSpawnParticle += Math.random() * 3;
@@ -77,14 +82,14 @@ class Projectile extends engine.Component {
   }
   
   OnCollision(collidedWith){
-    if(this.stats.hitSound){
-      this.game.audioManager.playSound('sounds', this.stats.hitSound);
+    if(this.projectileData.hitSound){
+      this.game.audioManager.playSound('sounds', this.projectileData.hitSound);
     }
    // this.parent.destroy();
   }
   OnStaticCollision(){
-    if(this.stats.hitSound && this.parent.velocity.length() > 50){
-      this.game.audioManager.playSound('sounds', this.stats.hitSound);
+    if(this.projectileData.hitSound && this.parent.transform.physicsVelocity.length() > 50){
+      this.game.audioManager.playSound('sounds', this.projectileData.hitSound);
     }
   }
   destroy() {
@@ -94,10 +99,10 @@ class Projectile extends engine.Component {
       }
       
       // Optional: Spawn impact effect
-      if (this.def.impactParticle) {
+      if (this.projectileData.impactParticle) {
           this.game.spawn("particle", {
-              objectType: "particles", 
-              spawnType: this.def.impactParticle
+              objectType: "particlePrefabs", 
+              spawnType: this.projectileData.impactParticlePrefab
           }, this.parent.transform.position);
       }
   }

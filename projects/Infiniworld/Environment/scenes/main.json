@@ -2,8 +2,10 @@
   "title": "Main",
   "sceneData": [
     {
-      "id": 8,
+      "id": 10,
       "type": "game",
+      "objectType": "gamePrefabs",
+      "spawnType": "infiniworldShire",
       "parent": null,
       "children": [],
       "components": [
@@ -30,15 +32,16 @@
         {
           "type": "InfiniWorld",
           "parameters": {
-            "world": "shire",
-            "palette": "main"
+            "world": "shire"
           }
         }
       ]
     },
     {
-      "id": 9,
+      "id": 11,
       "type": "enemy",
+      "objectType": "enemyPrefabs",
+      "spawnType": "monster",
       "parent": null,
       "children": [],
       "components": [
@@ -46,9 +49,9 @@
           "type": "transform",
           "parameters": {
             "position": {
-              "x": 51.82427833083254,
-              "y": 0,
-              "z": 0
+              "x": -109.35377771121118,
+              "y": 25.05158653299152,
+              "z": 68.45576672300048
             },
             "rotation": {
               "x": 0,
@@ -60,20 +63,15 @@
               "y": 1,
               "z": 1
             }
-          }
-        },
-        {
-          "type": "ModelRenderer",
-          "parameters": {
-            "objectType": "enemies",
-            "spawnType": "enemy_knight"
           }
         }
       ]
     },
     {
-      "id": 10,
-      "type": "playerAircraft",
+      "id": 12,
+      "type": "projectile",
+      "objectType": "projectilePrefabs",
+      "spawnType": "plasmaBolt",
       "parent": null,
       "children": [],
       "components": [
@@ -82,8 +80,8 @@
           "parameters": {
             "position": {
               "x": 0,
-              "y": 140.51205996459868,
-              "z": 0
+              "y": 61.34840685413556,
+              "z": 77.7161831037658
             },
             "rotation": {
               "x": 0,
@@ -98,10 +96,45 @@
           }
         },
         {
-          "type": "ModelRenderer",
+          "type": "Projectile",
           "parameters": {
-            "objectType": "players",
-            "spawnType": "fighterJet"
+            "projectile": "plasmaBolt"
+          }
+        },
+        {
+          "type": "Collider",
+          "parameters": {
+            "collider": "plasmaBolt"
+          }
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "type": "playerAircraft",
+      "objectType": "playerPrefabs",
+      "spawnType": "fighterJet",
+      "parent": null,
+      "children": [],
+      "components": [
+        {
+          "type": "transform",
+          "parameters": {
+            "position": {
+              "x": 0,
+              "y": 93.84020937464534,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
           }
         }
       ]

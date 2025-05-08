@@ -1,5 +1,5 @@
 {
-  "title": "Knight",
+  "title": "Monster",
   "hp": 501,
   "speed": 0.5,
   "essence": 50,
@@ -39,21 +39,6 @@
           "main": {
             "shapes": [
               {
-                "type": "gltf",
-                "width": 2,
-                "height": 0.2,
-                "depth": 1,
-                "x": 0,
-                "y": 0,
-                "z": 0,
-                "rotationX": 0,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "scaleX": 1,
-                "scaleY": 1,
-                "scaleZ": 1,
-                "color": "#FFFFFF",
-                "texture": "carbonFiber",
                 "url": "samples/models/KnightWalk/KnightWalk.glb",
                 "id": 0
               }
@@ -96,7 +81,7 @@
             "scaleZ": 1,
             "color": "#FFFFFF",
             "texture": "carbonFiber",
-            "url": "samples/models/KnightIdle/KnightIdle.glb"
+            "url": "samples/models/monster/monster.glb"
           }
         ]
       }
@@ -106,8 +91,10 @@
   "coldResistance": 25,
   "electricResistance": 25,
   "projectile": "plasmaBolt",
-  "entity": "player",
+  "entity": "enemy",
+  "arr": "enemies",
   "colliderSize": 5,
+  "colliderMass": 10,
   "colliderType": "sphere",
-  "colliderOffset": "{ \"x\": 0, \"y\": 10, \"z\": 0 }"
+  "colliderOffset": "{ \"x\": 0, \"y\": 5, \"z\": 0 }"
 }

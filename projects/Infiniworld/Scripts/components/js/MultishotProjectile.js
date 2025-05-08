@@ -38,7 +38,7 @@ init({ spawnType, stats, target, owner }) {
       "projectile",
       {
         spawnType: ownerStats.projectile,
-        objectType: "projectiles",
+        objectType: "projectilePrefabs",
         owner: owner,
         stats: stats,
         target: target,

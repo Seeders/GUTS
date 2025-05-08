@@ -1,14 +1,25 @@
 class Collider extends engine.Component {
-    init({ debug = false }) {
+    init({ debug = false, objectType, spawnType }) {
         this.id = this.parent.id;
-        this.stats = this.getComponent('stats').stats;
-        this.type = this.stats.colliderType || 'sphere'; // 'sphere' or 'box'
-        this.size = this.stats.colliderSize || 1; // For box: dimensions, for sphere: radius
-        if(typeof  this.stats.colliderOffset == "string")  this.stats.colliderOffset = JSON.parse( this.stats.colliderOffset);
-        this.offset = this.stats.colliderOffset ? new THREE.Vector3(this.stats.colliderOffset.x, this.stats.colliderOffset.y, this.stats.colliderOffset.z) : new THREE.Vector3(0, 0, 0); // Center offset
-        this.gravity = this.stats.colliderGravity || true;
-        this.mass = this.stats.colliderMass || 1; // Override entity mass
-        this.restitution = this.stats.colliderRestitution || 0.25; // Override restitution
+        this.prefabData = this.game.config[objectType][spawnType];
+        this.colliderData = this.game.config.colliders[this.prefabData.collider];
+        if(!this.colliderData){
+            this.colliderData = {
+                type: "sphere",
+                size: 1,
+                offset: new THREE.Vector3(),
+                gravity: true,
+                mass: 1,
+                restitution: 0.25
+            }
+        }
+        this.type = this.colliderData.type; 
+        this.size = this.colliderData.size; 
+        if(typeof  this.colliderData.offset == "string")  this.colliderData.offset = JSON.parse( this.colliderData.offset);
+        this.offset = this.colliderData.offset ? new THREE.Vector3(this.colliderData.offset.x, this.colliderData.offset.y, this.colliderData.offset.z) : new THREE.Vector3(0, 0, 0); // Center offset
+        this.gravity = this.colliderData.gravity;
+        this.mass = this.colliderData.mass; 
+        this.restitution = this.colliderData.restitution;
         this.debug = debug; // Enable debug mode
         this.debugMesh = null; // Store debug mesh
 

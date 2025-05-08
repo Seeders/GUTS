@@ -7,7 +7,7 @@ class PlanckProjectile extends engine.Component {
     
 init({ spawnType, owner, target, targetPosition, stats }) {
   this.type = spawnType;
-  this.def = this.game.config.projectiles[this.type];
+  this.def = this.game.config.projectilePrefabs[this.type];
   this.owner = owner;
   this.target = target;
   this.targetPosition = targetPosition;
@@ -128,7 +128,7 @@ handleEnemyCollision(enemy) {
     Math.random() < this.ownerStats.summonChance - 1
   ) {
     this.game.spawn( "summonedTower", {
-      objectType: "towers",
+      objectType: "towerPrefabs",
       spawnType: this.ownerStats.summonType,
       owner: this.owner
     },enemy.transform.position);
@@ -288,7 +288,7 @@ update() {
     
     if (this.distanceTraveled > this.distanceToSpawnParticle) {
       this.game.spawn("particle", { 
-        objectType: "particles", 
+        objectType: "particlePrefabs", 
         spawnType: this.def.particle
       },currentPos);
       this.distanceTraveled = 0;

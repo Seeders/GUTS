@@ -26,7 +26,10 @@ class GameLoader extends engine.Component {
         sceneEntities.forEach((sceneEntity) => {
             
             let position = new THREE.Vector3();
-            let params = {};
+            let params = {
+                "objectType": sceneEntity.objectType,
+                "spawnType": sceneEntity.spawnType,
+            };
             sceneEntity.components.forEach((entityComp) => {
                 if(entityComp.type == "transform"){
                     position = entityComp.parameters.position;
@@ -35,9 +38,10 @@ class GameLoader extends engine.Component {
             });
             if(sceneEntity.type == "game"){  
                 this.game.gameEntity = this.game.createEntityFromConfig(sceneEntity.type, params, position);
+                this.game.audioManager = this.game.gameEntity.getComponent('AudioManager');  
             } else {
                 let spawned = this.game.spawn(sceneEntity.type, params, new THREE.Vector3(position.x, position.y, position.z));
-                if(sceneEntity.type == "player"){
+                if(sceneEntity.type.startsWith("player")){
                     this.player = spawned;
                     this.game.player = this.player;
                     this.player.placed = true;
@@ -45,7 +49,6 @@ class GameLoader extends engine.Component {
             }
         });
  
-        this.game.audioManager = this.game.gameEntity.getComponent('AudioManager');  
 
     }
 

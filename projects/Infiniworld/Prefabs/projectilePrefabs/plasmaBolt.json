@@ -131,10 +131,8 @@
       }
     }
   },
-  "speed": 200,
   "title": "Plasma Bolt",
-  "attackSound": "pickup",
-  "hitSound": "placeTower",
   "entity": "projectile",
-  "size": 2
+  "collider": "plasmaBolt",
+  "projectile": "plasmaBolt"
 }

@@ -24,7 +24,7 @@ class PlayerAttacker extends engine.Component {
 
     launchProjectile() {
         const projectileType = this.stats.projectile;
-        let projectileDef = this.game.config.projectiles[projectileType];
+        let projectileDef = this.game.config.projectilePrefabs[projectileType];
         
 
         let projStats = { ...projectileDef };
@@ -46,7 +46,7 @@ class PlayerAttacker extends engine.Component {
         const projectile = this.game.spawn(
             'projectile',
             {
-                objectType: 'projectiles',
+                objectType: 'projectilePrefabs',
                 spawnType: projectileType,
                 direction: direction, // No specific target, uses direction
                 owner: this.parent,

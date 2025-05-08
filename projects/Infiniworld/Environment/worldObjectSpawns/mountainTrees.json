@@ -1,6 +1,6 @@
 {
   "title": "Mountain Trees",
-  "worldObject": "tree",
+  "worldObjectPrefab": "tree",
   "density": 0.001,
   "maxSlope": 0.8
 }

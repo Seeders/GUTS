@@ -45,8 +45,8 @@ class PhysicsEngine {
     _updateEntitiesPosition(entities, deltaTime) {
       entities.forEach(entity => {
         // Apply gravity
-        entity.velocity.y += (entity.gravity ? this.gravity : 0) * 10 * deltaTime;
-        
+        entity.velocity.y += (entity.collider.gravity ? this.gravity : 0) * 10 * deltaTime;
+
         // Update position
         entity.position.x += entity.velocity.x * deltaTime;
         entity.position.y += entity.velocity.y * deltaTime;
@@ -123,16 +123,16 @@ class PhysicsEngine {
     _resolveEntityCollisions(collisionPairs) {
       // Apply impulses for entity-entity collisions
       collisionPairs.forEach(({ e1, e2, impulse }) => {
-        if (e1.mass > 0) {
-          e1.velocity.x += impulse.x / e1.mass;
-          e1.velocity.y += impulse.y / e1.mass;
-          e1.velocity.z += impulse.z / e1.mass;
+        if (e1.collider.mass > 0) {
+          e1.velocity.x += impulse.x / e1.collider.mass;
+          e1.velocity.y += impulse.y / e1.collider.mass;
+          e1.velocity.z += impulse.z / e1.collider.mass;
         }
         
-        if (e2.mass > 0) {
-          e2.velocity.x -= impulse.x / e2.mass;
-          e2.velocity.y -= impulse.y / e2.mass;
-          e2.velocity.z -= impulse.z / e2.mass;
+        if (e2.collider.mass > 0) {
+          e2.velocity.x -= impulse.x / e2.collider.mass;
+          e2.velocity.y -= impulse.y / e2.collider.mass;
+          e2.velocity.z -= impulse.z / e2.collider.mass;
         }
         
         // Set collision flags
@@ -144,19 +144,19 @@ class PhysicsEngine {
   
       // Resolve penetrations (move entities apart)
       collisionPairs.forEach(({ e1, e2, normal, penetration }) => {
-        const totalMass = e1.mass + e2.mass;
+        const totalMass = e1.collider.mass + e2.collider.mass;
         if (totalMass === 0) return;
         
-        const move1 = e1.mass > 0 ? penetration * (e2.mass / totalMass) : 0;
-        const move2 = e2.mass > 0 ? penetration * (e1.mass / totalMass) : 0;
+        const move1 = e1.collider.mass > 0 ? penetration * (e2.collider.mass / totalMass) : 0;
+        const move2 = e2.collider.mass > 0 ? penetration * (e1.collider.mass / totalMass) : 0;
         
-        if (e1.mass > 0) {
+        if (e1.collider.mass > 0) {
           e1.position.x -= normal.x * move1;
           e1.position.y -= normal.y * move1;
           e1.position.z -= normal.z * move1;
         }
         
-        if (e2.mass > 0) {
+        if (e2.collider.mass > 0) {
           e2.position.x += normal.x * move2;
           e2.position.y += normal.y * move2;
           e2.position.z += normal.z * move2;
@@ -251,8 +251,8 @@ class PhysicsEngine {
   
         if (velocityAlongNormal > 0) return null; // Moving apart
   
-        const restitution = Math.min(e1.restitution, e2.restitution);
-        const impulseScalar = -(1 + restitution) * velocityAlongNormal / (1 / e1.mass + 1 / e2.mass);
+        const restitution = Math.min(e1.collider.restitution, e2.collider.restitution);
+        const impulseScalar = -(1 + restitution) * velocityAlongNormal / (1 / e1.collider.mass + 1 / e2.collider.mass);
         
         return {
           normal,
@@ -302,8 +302,8 @@ class PhysicsEngine {
   
       if (velocityAlongNormal > 0) return null; // Moving apart
   
-      const restitution = Math.min(e1.restitution, e2.restitution);
-      const impulseScalar = -(1 + restitution) * velocityAlongNormal / (1 / e1.mass + 1 / e2.mass);
+      const restitution = Math.min(e1.collider.restitution, e2.collider.restitution);
+      const impulseScalar = -(1 + restitution) * velocityAlongNormal / (1 / e1.collider.mass + 1 / e2.collider.mass);
       
       return {
         normal,
@@ -354,7 +354,7 @@ class PhysicsEngine {
           entity.velocity.z * normal.z;
         
         // Apply restitution and reflection
-        const restitution = entity.restitution || 0.3;
+        const restitution = entity.collider.restitution || 0.3;
         
         // Calculate new velocity after reflection
         entity.velocity.x = entity.velocity.x - 2 * dotProduct * normal.x * restitution;

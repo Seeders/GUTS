@@ -272,7 +272,7 @@ class InfiniWorld extends engine.Component {
             const objectType = worldObject.replace('_collision', '');
             chunkData.collisionAABBs.set(objectType, data);
           } else {
-            const model = this.game.modelManager.getModel('worldObjects', worldObject);
+            const model = this.game.modelManager.getModel('worldObjectPrefabs', worldObject);
             if (!model) {
               console.warn(`Model not found: ${worldObject}`);
               return;

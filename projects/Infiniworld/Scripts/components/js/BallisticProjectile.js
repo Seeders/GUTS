@@ -7,7 +7,7 @@ class BallisticProjectile extends engine.Component {
     
 init({ spawnType, owner, target, stats }) {
     this.type = spawnType;
-    this.def = this.game.config.projectiles[this.type];
+    this.def = this.game.config.projectilePrefabs[this.type];
     this.owner = owner;
     this.target = target;
     this.stats = stats;
@@ -145,7 +145,7 @@ update() {
     
     if (this.def.particle && this.distanceTraveled > this.distanceToSpawnParticle) {
         let position = new THREE.Vector3(this.parent.lastPosition.x + Math.random() * 4 - 2, this.parent.lastPosition.y + Math.random() * 4 - 2, this.parent.transform.position.z + Math.random() * 4 - 2)
-        this.game.spawn("particle", { objectType: "particles", spawnType: this.def.particle }, position);
+        this.game.spawn("particle", { objectType: "particlePrefabs", spawnType: this.def.particle }, position);
 
         this.distanceTraveled = 0;
         this.distanceToSpawnParticle += Math.random() * 2;

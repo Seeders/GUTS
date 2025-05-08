@@ -12,26 +12,26 @@ class Physics extends engine.Component {
         this.updateInterval = 1 / 60; // 60 Hz
         this.deltaTime = 0;
         this.game.physics = this;
+        this.shouldUpdate = false;
     }
 
     registerCollider(collider) {
         let entity = collider.parent;
         if (!collider.id || !entity.transform.position) return;
-
         const aabb = collider.getAABB(entity.transform.position);        
         this.colliders.set(collider.id, {
             entity: entity,
             position: { ...entity.transform.position },
-            velocity: { ...entity.velocity },
+            velocity: { ...entity.transform.velocity },
             aabb,
             collider: {
-                type: collider.type || "sphere",
-                size: collider.size || 1,
-                offset: collider.offset
+                type: collider.type,
+                size: collider.size,                
+                gravity: collider.gravity,
+                offset: collider.offset,
+                mass: collider.mass,
+                restitution: collider.restitution
             },
-            mass: collider.mass || 1,
-            gravity: collider.gravity || true,
-            restitution: collider.restitution || 1,
             grounded: false
         });
     }
@@ -42,26 +42,24 @@ class Physics extends engine.Component {
 
     startPhysicsUpdate(deltaTime) {
         const currentTime = Date.now() / 1000;
-        if (currentTime - this.lastUpdate < this.updateInterval) return false;
         this.lastUpdate = currentTime;
         this.deltaTime = deltaTime || 1 / 60;
         this.physicsDataBuffer = [];
         this.collisionDataBuffer = [];
-        return true;
+        this.shouldUpdate = true;
     }
 
     collectPhysicsData(collider) {
+        if(!this.shouldUpdate) return;
         const entity = collider.parent;
         const data = this.colliders.get(collider.id);
         if (!data) return;
         this.physicsDataBuffer.push({
             id: collider.id,
-            position: data.position,
-            velocity: entity.velocity,
+            position: entity.transform.physicsPosition.clone(),
+            velocity: entity.transform.velocity.clone(),
             aabb: data.aabb,
-            collider: data.collider,
-            mass: data.mass,
-            restitution: data.restitution
+            collider: data.collider
         });
 
         const entityAABB = data.aabb;
@@ -82,12 +80,13 @@ class Physics extends engine.Component {
         this.worker.postMessage({
             entities: this.physicsDataBuffer,
             collisionData: this.collisionDataBuffer,
-            deltaTime: this.deltaTime,
+            deltaTime: this.game.deltaTime,
             gravity: -9.86,
             biomeConfig: biomeConfig,
             chunkSize: terrainComponent.chunkSize,
             chunkResolution: terrainComponent.chunkResolution
         });
+        this.shouldUpdate = false;
     }
 
     handleWorkerMessage(e) {
@@ -98,9 +97,9 @@ class Physics extends engine.Component {
             data.entity.transform.physicsPosition.x = updated.position.x;
             data.entity.transform.physicsPosition.y = updated.position.y;
             data.entity.transform.physicsPosition.z = updated.position.z;
-            data.entity.velocity.x = updated.velocity.x;
-            data.entity.velocity.y = updated.velocity.y;
-            data.entity.velocity.z = updated.velocity.z;            
+            data.entity.transform.velocity.x = updated.velocity.x;
+            data.entity.transform.velocity.y = updated.velocity.y;
+            data.entity.transform.velocity.z = updated.velocity.z;            
             data.position = { ...updated.position };
             data.velocity = { ...updated.velocity };
             data.grounded = updated.grounded;

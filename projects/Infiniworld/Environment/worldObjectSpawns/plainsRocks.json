@@ -1,6 +1,6 @@
 {
   "title": "Plains Rock",
-  "worldObject": "rock",
+  "worldObjectPrefab": "rock",
   "density": 0.01,
   "maxSlope": 0.3
 }

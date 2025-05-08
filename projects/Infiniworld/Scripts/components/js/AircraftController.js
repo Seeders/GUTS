@@ -4,15 +4,18 @@ class AircraftController extends engine.Component {
         acceleration = 700,
         strafeAcceleration = 15,
         verticalAcceleration = 15,
-        pitchSpeed = 1.5, // Reduced for consistent control
-        yawSpeed = 1, // Reduced for consistency
+        pitchSpeed = 1.5,
+        yawSpeed = 1,
         rollSpeed = 2,
-        mouseSensitivity = 0.001, // Further lowered for precision
-        dampingFactor = 0.15, // Increased for smoother inputs
+        mouseSensitivity = 0.001,
+        dampingFactor = 0.15,
         maxSpeed = 4000,
-        cameraSmoothing = .4, // Increased for smoother camera
-        colliderSize = 5, // Size of aircraft collider
-        collisionRecoveryTime = 3 // Time in seconds before regaining control
+        cameraSmoothing = 0.4,
+        collisionRecoveryTime = 2,
+        // New parameters for stability
+        physicsUpdateRate = 60,      // Hz for physics updates
+        positionSmoothingFactor = 0.1, // Reduced from 0.5 for smoother transitions
+        velocityThreshold = 0.01     // Minimum velocity threshold to reduce jitter
     }) {
         this.infiniWorld = this.game.gameEntity.getComponent("InfiniWorld");
         this.scene = this.infiniWorld.scene;
@@ -29,6 +32,15 @@ class AircraftController extends engine.Component {
         this.maxSpeed = maxSpeed;
         this.cameraSmoothing = cameraSmoothing;
         this.parent.transform.quaternion = new THREE.Quaternion();
+        
+        // New stability parameters
+        this.physicsUpdateRate = physicsUpdateRate;
+        this.physicsUpdateInterval = 1 / physicsUpdateRate;
+        this.physicsAccumulator = 0;
+        this.positionSmoothingFactor = positionSmoothingFactor;
+        this.velocityThreshold = velocityThreshold;
+        this.previousPositions = []; // Store previous positions for smoothing
+        this.previousPositionMaxLength = 5; // Number of positions to average
 
         // Initialize physics properties
         this.physics = this.game.gameEntity.getComponent("Physics");
@@ -38,9 +50,14 @@ class AircraftController extends engine.Component {
         
         // Initialize transform properties needed for physics
         this.parent.transform.physicsPosition = new THREE.Vector3().copy(this.parent.transform.position);
-        this.parent.velocity = new THREE.Vector3();
         this.parent.grounded = false;
-        this.parent.transform.lerpFactor = 0.5; // Smoothing between visual and physics positions
+        this.parent.transform.lerpFactor = this.positionSmoothingFactor; // Reduced for smoother transitions
+        
+        // Store last stable position/rotation for recovery
+        this.lastStablePosition = new THREE.Vector3().copy(this.parent.transform.position);
+        this.lastStableQuaternion = new THREE.Quaternion().copy(this.parent.transform.quaternion);
+        this.lastStableUpdateTime = 0;
+        this.stableUpdateInterval = 0.5; // Save stable state every 0.5 seconds
 
         this.controls = new THREE_.PointerLockControls(this.camera, this.infiniWorld.renderer.domElement);
         this.controls.pointerSpeed = 0;
@@ -56,7 +73,8 @@ class AircraftController extends engine.Component {
         this.mouseXInput = 0;
         this.mouseYInput = 0;
         this.velocity = new THREE.Vector3();
-
+        this.targetVelocity = new THREE.Vector3(); // New target velocity for smoothing
+        this.collisionTimer = 0;
         // Local axes
         this.forward = new THREE.Vector3(0, 0, 1);
         this.up = new THREE.Vector3(0, 1, 0);
@@ -89,7 +107,7 @@ class AircraftController extends engine.Component {
         this.lastCameraLookAt = new THREE.Vector3();
         this.smoothedAircraftPosition = new THREE.Vector3().copy(this.parent.transform.position);
         this.smoothedAircraftQuaternion = new THREE.Quaternion().copy(this.parent.transform.quaternion);
-        this.collider = this.parent.getComponent('collider');
+     
         // Bind event handlers
         this.onKeyDown = this.onKeyDown.bind(this);
         this.onKeyUp = this.onKeyUp.bind(this);
@@ -104,45 +122,27 @@ class AircraftController extends engine.Component {
 
         // Initialize camera
         this.updateCameraPosition();
-    }
-
-    OnCollision(otherEntity) {
-        this.velocity.copy(this.parent.velocity);
-
-        console.log("Aircraft collision with entity:", otherEntity);
-    }
-
-    OnStaticCollision() {
-        if (this.hasCollided) return;
-        this.velocity.copy(this.parent.velocity);
-        this.hasCollided = true;
-        this.collisionTimer = 0;
         
-        console.log("Aircraft collision with static object");
+        // Debug mode for development
+        this.debugMode = false;
+        this.debugInfo = { jitterCount: 0, maxJitter: 0 };
     }
 
     OnGrounded() {
         if (this.hasCollided) return;
-        this.velocity.copy(this.parent.velocity);
         this.hasCollided = true;
-        this.collisionTimer = 0;
-        // Calculate collision response based on current velocity
-        const currentVelocity = this.velocity.clone();
-
-        // Reverse the velocity with some randomness for realistic bounce
-        this.collisionImpulse.copy(currentVelocity).multiplyScalar(0.8);
-        this.collisionImpulse.y = -this.collisionImpulse.y;
-        this.collider.gravity = true;
-        // Add some chaotic rotation on impact
-        this.parent.transform.quaternion.multiply(
-            new THREE.Quaternion().setFromEuler(
-                new THREE.Euler(
-                    Math.random() * Math.PI - Math.PI/2,
-                    Math.random() * Math.PI - Math.PI/2,
-                    Math.random() * Math.PI - Math.PI/2
-                )
-            )
-        );
+        this.velocity.y = -this.velocity.y;
+        this.parent.transform.velocity.y = -this.parent.transform.velocity.y;
+        // // Add some chaotic rotation on impact but less extreme
+        // this.parent.transform.quaternion.multiply(
+        //     new THREE.Quaternion().setFromEuler(
+        //         new THREE.Euler(
+        //             Math.random() * Math.PI/2 - Math.PI/4, // Reduced rotation range
+        //             Math.random() * Math.PI/2 - Math.PI/4,
+        //             Math.random() * Math.PI/2 - Math.PI/4
+        //         )
+        //     )
+        // );
         console.log("Aircraft collision with terrain object");
     }
 
@@ -168,8 +168,20 @@ class AircraftController extends engine.Component {
             this.hasCollided = false;
             this.collisionTimer = 0;
             this.velocity.set(0, 0, 0);
-            this.parent.velocity.set(0, 0, 0);
-            this.parent.transform.position.set(this.initialPosition);
+            this.targetVelocity.set(0, 0, 0);
+            this.parent.transform.velocity.set(0, 0, 0);
+            this.parent.transform.position.copy(this.initialPosition);
+            this.previousPositions = [];
+            
+            // Reset stable state
+            this.lastStablePosition.copy(this.initialPosition);
+            this.lastStableQuaternion.copy(this.parent.transform.quaternion);
+        }
+        
+        // Toggle debug mode with F1
+        if (event.code === 'F1') {
+            this.debugMode = !this.debugMode;
+            console.log("Debug mode:", this.debugMode);
         }
     }
 
@@ -181,8 +193,16 @@ class AircraftController extends engine.Component {
 
     onMouseMove(event) {
         if (this.controls.isLocked && !this.hasCollided) {
-            this.mouseXInput = -(event.movementX || 0) * this.mouseSensitivity;
-            this.mouseYInput = -(event.movementY || 0) * this.mouseSensitivity;
+            // Apply more aggressive smoothing to mouse input
+            const smoothingFactor = 0.6; // Higher smoothing for mouse movements
+            
+            // Get new input values
+            const newMouseXInput = -(event.movementX || 0) * this.mouseSensitivity;
+            const newMouseYInput = -(event.movementY || 0) * this.mouseSensitivity;
+            
+            // Apply smoothing between old and new values
+            this.mouseXInput = this.mouseXInput * smoothingFactor + newMouseXInput * (1 - smoothingFactor);
+            this.mouseYInput = this.mouseYInput * smoothingFactor + newMouseYInput * (1 - smoothingFactor);
         } else {
             this.mouseXInput = 0;
             this.mouseYInput = 0;
@@ -202,8 +222,9 @@ class AircraftController extends engine.Component {
         if (this.hasCollided) return;
         
         const delta = event.deltaY * 0.01;
-        this.thrust -= delta * this.acceleration * 0.5;
-        this.thrust = Math.max(0, Math.min(this.thrust, this.maxThrust));
+        // Apply smoother thrust changes
+        const thrustDelta = this.acceleration * 0.5 * delta;
+        this.thrust = Math.max(0, Math.min(this.thrust - thrustDelta, this.maxThrust));
     }
 
     updateAxes() {
@@ -214,7 +235,7 @@ class AircraftController extends engine.Component {
 
     updateCameraPosition() {
         const dt = this.game.deltaTime;
-        const smoothingAlpha = this.cameraSmoothing * dt * 60; // Linear interpolation
+        const smoothingAlpha = Math.min(1.0, this.cameraSmoothing * dt * 60); // Linear interpolation with cap
     
         // Smooth aircraft position and quaternion
         this.smoothedAircraftPosition.lerp(this.parent.transform.position, smoothingAlpha);
@@ -233,6 +254,7 @@ class AircraftController extends engine.Component {
                 .applyQuaternion(this.smoothedAircraftQuaternion);
             const targetPos = this.smoothedAircraftPosition.clone().add(offset);
     
+            // Add additional camera smoothing to reduce jitter
             this.camera.position.lerp(targetPos, smoothingAlpha);
             this.lastCameraPosition.copy(this.camera.position);
     
@@ -248,7 +270,10 @@ class AircraftController extends engine.Component {
                 lookTarget,
                 up // Use aircraft's up vector to preserve roll
             );
-            this.camera.quaternion.setFromRotationMatrix(lookAtMatrix);
+            
+            // Apply additional rotation smoothing
+            const newQuaternion = new THREE.Quaternion().setFromRotationMatrix(lookAtMatrix);
+            this.camera.quaternion.slerp(newQuaternion, smoothingAlpha);
     
             this.lastCameraLookAt.lerp(lookTarget, smoothingAlpha);
         } else {
@@ -262,50 +287,62 @@ class AircraftController extends engine.Component {
             this.collisionTimer += dt;
 
             const fadeRate = Math.max(0, 1 - (this.collisionTimer / this.collisionRecoveryTime));
-            const impulseForce = this.collisionImpulse.clone().multiplyScalar(fadeRate * dt);
-            
-            // Transfer impulse to physics velocity
-            this.parent.velocity.add(impulseForce);
-            
+        
             // Add gradual stabilization as recovery progresses
-            if (this.collisionTimer > this.collisionRecoveryTime * 0.5) {
                 // Start adding some auto-stabilization
-                const stabilizationForce = 0.1 * (1 - fadeRate);
-                
-                // Stabilize roll
-                const worldUp = new THREE.Vector3(0, 1, 0);
-                const currentUp = this.up.clone();
-                const correction = new THREE.Vector3().crossVectors(currentUp, worldUp).multiplyScalar(stabilizationForce);
-                
-                // Apply gentle correction forces
-                this.parent.velocity.add(correction);
-                
-                // Gradually level out
-                if (this.collisionTimer > this.collisionRecoveryTime * 0.8) {
-                    const levelingQuat = new THREE.Quaternion().setFromUnitVectors(this.up, worldUp);
-                    this.parent.transform.quaternion.slerp(levelingQuat, stabilizationForce * dt * 5);
-                }
-            }
+            const stabilizationForce = 0.3 * (1 - fadeRate);
+            
+            // Gradually level out
+
+            const levelingQuat = new THREE.Quaternion().setFromUnitVectors(this.up, this.worldUp);
+            this.parent.transform.quaternion.slerp(levelingQuat, stabilizationForce * dt * 5);
+        
             
             // Check if recovery time has elapsed
             if (this.collisionTimer >= this.collisionRecoveryTime) {
                 this.hasCollided = false;
                 this.collisionTimer = 0;
-                this.collider.gravity = false;
+                this.previousPositions = []; // Reset position history
                 console.log("Aircraft control restored after collision");
             }
         }
     }
 
     updatePhysics(dt) {
- 
-        // Update the physics velocity
-        this.parent.velocity.copy(this.velocity);
- 
+
+        // Apply velocity smoothing
+        this.targetVelocity.copy(this.velocity);
+        
+        // If velocity is very small, zero it out to prevent micro-jitters
+        if (this.targetVelocity.lengthSq() < this.velocityThreshold * this.velocityThreshold) {
+            this.targetVelocity.set(0, 0, 0);
+        }
+        
+        // Smooth velocity transition
+        this.parent.transform.velocity.copy(this.targetVelocity); // Smooth velocity transitions
+    
+        this.parent.transform.position.add(this.parent.transform.velocity.multiplyScalar(this.game.deltaTime)); 
+    }
+    
+    // New method to save stable state
+    updateStableState(dt) {
+        if (!this.hasCollided) {
+            this.lastStableUpdateTime += dt;
+            if (this.lastStableUpdateTime >= this.stableUpdateInterval) {
+                this.lastStableUpdateTime = 0;
+                this.lastStablePosition.copy(this.parent.transform.position);
+                this.lastStableQuaternion.copy(this.parent.transform.quaternion);
+            }
+        }
     }
     
     update() {
         const dt = this.game.deltaTime;
+        
+        const groundHeight = this.infiniWorld.getTerrainHeight(this.parent.transform.position.x, this.parent.transform.position.z);
+        if(this.parent.transform.position.y <= groundHeight) this.OnGrounded();
+        // Update stable state tracking
+        this.updateStableState(dt);
 
         // Update local axes
         this.updateAxes();
@@ -364,22 +401,31 @@ class AircraftController extends engine.Component {
                 const verticalVelocity = this.up.clone().multiplyScalar(this.verticalAcceleration * dt);
                 this.velocity.add(verticalVelocity);
             }
-            console.log(this.parent.velocity);
                 
-            // Update physics system with latest position and velocity
-            this.updatePhysics(dt);
             
         } else {
             // Handle collision state and recovery
             this.updateCollisionState(dt);
-        }
+        }       
 
+        // Update physics system with latest position and velocity
+        this.updatePhysics(dt);
         // Update camera position
         this.updateCameraPosition();
 
         // Reset mouse input
-        this.mouseXInput = 0;
-        this.mouseYInput = 0;
+        this.mouseXInput *= 0.8; // Gradual decay instead of immediate reset
+        this.mouseYInput *= 0.8;
+        
+        // Show debug info if enabled
+        if (this.debugMode) {
+            const speed = this.parent.transform.velocity.length().toFixed(2);
+            const physPos = this.parent.transform.physicsPosition;
+            const visualPos = this.parent.transform.position;
+            const posDiff = visualPos.distanceTo(physPos).toFixed(4);
+            
+            console.log(`Speed: ${speed}, Pos diff: ${posDiff}, Jitters: ${this.debugInfo.jitterCount}`);
+        }
     }
 
     onDestroy() {
@@ -392,10 +438,5 @@ class AircraftController extends engine.Component {
         this.scene.remove(this.parent);
         if (this.parent.geometry) this.parent.geometry.dispose();
         if (this.parent.material) this.parent.material.dispose();
-        
-        // Unregister collider
-        if (this.collider && this.physics) {
-            this.physics.unregisterCollider(this.collider.id);
-        }
     }
 }

@@ -1,5 +1,5 @@
 {
-  "title": "Fighter Jet",
+  "title": "SpaceShipMesh2",
   "hp": 501,
   "speed": 0.5,
   "essence": 50,
@@ -27,9 +27,9 @@
           "z": 0
         },
         "scale": {
-          "x": 5,
-          "y": 5,
-          "z": 5
+          "x": 10,
+          "y": 10,
+          "z": 10
         },
         "shapes": [
           {
@@ -43,11 +43,11 @@
             "rotationX": 0,
             "rotationY": 0,
             "rotationZ": 0,
-            "scaleX": 5,
-            "scaleY": 5,
-            "scaleZ": 5,
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1,
             "color": "#FFFFFF",
-            "url": "samples/models/blue_wings/blue_wings.glb"
+            "url": "samples/models/blue_spaceship/blue_spaceship.glb"
           }
         ]
       }
@@ -57,9 +57,5 @@
   "coldResistance": 25,
   "electricResistance": 25,
   "projectile": "plasmaBolt",
-  "entity": "playerAircraft",
-  "colliderSize": 5,
-  "colliderType": "sphere",
-  "colliderOffset": "{ \"x\": 0, \"y\": 0, \"z\": 0 }",
-  "colliderGravity": false
+  "entity": "playerAircraft"
 }
