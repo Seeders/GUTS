@@ -25,9 +25,6 @@ class Entity {
             }
         };
     }
-    getCurrentTerrainHeight(){
-        return this.game.gameEntity.getComponent('game').getTerrainHeight(this.transform.position);
-    }
 
     getComponent(name) {
         return this.components[name.toLowerCase()] || this.components[`${name.toLowerCase()}`];

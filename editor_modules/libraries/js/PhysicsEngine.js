@@ -14,6 +14,7 @@ class PhysicsEngine {
      */
     init(config = {}) {
       this.gravity = config.gravity || -9.8;
+      this.handleTerrainCollision = config.handleTerrainCollision;    
       this.getTerrainHeight = config.getTerrainHeight;    
     }
   
@@ -26,14 +27,14 @@ class PhysicsEngine {
      */
     update(entities, collisionData, deltaTime) {
       // Apply gravity and update positions
-      this._updateEntitiesPosition(entities, deltaTime);
+      this.updateEntitiesPosition(entities, deltaTime);
       
       // Handle entity-entity collisions
-      const collisionPairs = this._detectEntityCollisions(entities, deltaTime);
-      this._resolveEntityCollisions(collisionPairs);
+      const collisionPairs = this.detectEntityCollisions(entities, deltaTime);
+      this.resolveEntityCollisions(collisionPairs);
       
       // Handle terrain and static collisions
-      this._resolveTerrainAndStaticCollisions(entities, collisionData, deltaTime);
+      this.resolveTerrainAndStaticCollisions(entities, collisionData, deltaTime);
       
       return entities;
     }
@@ -42,7 +43,7 @@ class PhysicsEngine {
      * Update entity positions and AABBs
      * @private
      */
-    _updateEntitiesPosition(entities, deltaTime) {
+    updateEntitiesPosition(entities, deltaTime) {
       entities.forEach(entity => {
         // Apply gravity
         entity.velocity.y += (entity.collider.gravity ? this.gravity : 0) * 10 * deltaTime;
@@ -53,7 +54,7 @@ class PhysicsEngine {
         entity.position.z += entity.velocity.z * deltaTime;
   
         // Update AABB
-        this._updateEntityAABB(entity);
+        this.updateEntityAABB(entity);
       });
     }
   
@@ -61,7 +62,7 @@ class PhysicsEngine {
      * Update entity's Axis-Aligned Bounding Box
      * @private
      */
-    _updateEntityAABB(entity) {
+    updateEntityAABB(entity) {
       if (!entity.collider) return;
       
       const pos = {
@@ -90,7 +91,7 @@ class PhysicsEngine {
      * @private
      * @returns {Array} List of collision pairs
      */
-    _detectEntityCollisions(entities, deltaTime) {
+    detectEntityCollisions(entities, deltaTime) {
       const collisionPairs = [];
       
       for (let i = 0; i < entities.length; i++) {
@@ -102,9 +103,9 @@ class PhysicsEngine {
   
           let collision = null;
           if (e1.collider.type === 'sphere' && e2.collider.type === 'sphere') {
-            collision = this._sphereSphereCollision(e1, e2, deltaTime);
+            collision = this.sphereSphereCollision(e1, e2, deltaTime);
           } else {
-            collision = this._boxBoxCollision(e1, e2, deltaTime);
+            collision = this.boxBoxCollision(e1, e2, deltaTime);
           }
   
           if (collision) {
@@ -120,7 +121,7 @@ class PhysicsEngine {
      * Apply collision responses to entity pairs
      * @private
      */
-    _resolveEntityCollisions(collisionPairs) {
+    resolveEntityCollisions(collisionPairs) {
       // Apply impulses for entity-entity collisions
       collisionPairs.forEach(({ e1, e2, impulse }) => {
         if (e1.collider.mass > 0) {
@@ -168,25 +169,18 @@ class PhysicsEngine {
      * Handle terrain and static collisions for all entities
      * @private
      */
-    _resolveTerrainAndStaticCollisions(entities, collisionData, deltaTime) {
+    resolveTerrainAndStaticCollisions(entities, collisionData, deltaTime) {
       entities.forEach(entity => {
         // Handle terrain collision using the terrain generator
 
-        const x = entity.position.x;
-        const z = entity.position.z;
-        this._resolveTerrainCollision(
-            entity, 
-            deltaTime,             
-            x, 
-            z
-        );
+        this.resolveTerrainCollision(entity, deltaTime);
         
   
         // Handle static object collisions
         const entityCollisions = collisionData.find(c => c.entityId === entity.id);
         if (entityCollisions) {
           entityCollisions.collisions.forEach(aabb => {
-            this._resolveStaticCollision(entity, aabb, deltaTime);
+            this.resolveStaticCollision(entity, aabb, deltaTime);
           });
         }
       });
@@ -196,7 +190,7 @@ class PhysicsEngine {
      * Check if two AABBs intersect
      * @private
      */
-    _aabbIntersects(aabb1, aabb2) {
+    aabbIntersects(aabb1, aabb2) {
       return (
         aabb1.min.x <= aabb2.max.x &&
         aabb1.max.x >= aabb2.min.x &&
@@ -212,7 +206,7 @@ class PhysicsEngine {
      * @private
      * @returns {Object|null} Collision data or null if no collision
      */
-    _sphereSphereCollision(e1, e2, deltaTime) {
+    sphereSphereCollision(e1, e2, deltaTime) {
       const r1 = e1.collider.size;
       const r2 = e2.collider.size;
       const p1 = { 
@@ -273,11 +267,11 @@ class PhysicsEngine {
      * @private
      * @returns {Object|null} Collision data or null if no collision
      */
-    _boxBoxCollision(e1, e2, deltaTime) {
+    boxBoxCollision(e1, e2, deltaTime) {
       const aabb1 = e1.aabb;
       const aabb2 = e2.aabb;
       
-      if (!this._aabbIntersects(aabb1, aabb2)) return null;
+      if (!this.aabbIntersects(aabb1, aabb2)) return null;
   
       const overlaps = [
         { axis: 'x', overlap: Math.min(aabb1.max.x - aabb2.min.x, aabb2.max.x - aabb1.min.x) },
@@ -320,62 +314,19 @@ class PhysicsEngine {
      * Handle entity collision with terrain
      * @private
      */
-    _resolveTerrainCollision(entity, deltaTime, x, z) {
+    resolveTerrainCollision(entity, deltaTime) {
       // Check if entity is colliding with terrain
-      const heightAtPoint = this.getTerrainHeight(x, z);
+      const heightAtPoint = this.getTerrainHeight(entity.position);
       const sampleDistance = entity.collider.size || 1; // Distance to sample for normal calculation
       
       if (entity.position.y - sampleDistance <= heightAtPoint) {
-        // Calculate terrain normal at collision point
-        const heightAtPointPlusX = this.getTerrainHeight(x + sampleDistance, z);
-        const heightAtPointPlusZ = this.getTerrainHeight(x, z + sampleDistance);
-        
-        // Calculate terrain normal using cross product of terrain tangent vectors
-        const tangentX = { x: sampleDistance, y: heightAtPointPlusX - heightAtPoint, z: 0 };
-        const tangentZ = { x: 0, y: heightAtPointPlusZ - heightAtPoint, z: sampleDistance };
-        
-        // Calculate normal (perpendicular to both tangents)
-        const normal = {
-          x: -tangentX.y * tangentZ.z + tangentX.z * tangentZ.y,
-          y: tangentX.x * tangentZ.z - tangentX.z * tangentZ.x,
-          z: -tangentX.x * tangentZ.y + tangentX.y * tangentZ.x
-        };
-        
-        // Normalize the normal vector
-        const normalLength = Math.sqrt(normal.x * normal.x + normal.y * normal.y + normal.z * normal.z);
-        normal.x /= normalLength;
-        normal.y /= normalLength;
-        normal.z /= normalLength;
-        
-        // Calculate reflection vector: r = v - 2(v·n)n
-        const dotProduct = 
-          entity.velocity.x * normal.x + 
-          entity.velocity.y * normal.y + 
-          entity.velocity.z * normal.z;
-        
-        // Apply restitution and reflection
-        const restitution = entity.collider.restitution || 0.3;
-        
-        // Calculate new velocity after reflection
-        entity.velocity.x = entity.velocity.x - 2 * dotProduct * normal.x * restitution;
-        entity.velocity.y = entity.velocity.y - 2 * dotProduct * normal.y * restitution;
-        entity.velocity.z = entity.velocity.z - 2 * dotProduct * normal.z * restitution;
-        
-        // Apply friction based on slope
-        const friction = 0.8; // Adjust as needed
-        const slopeCoefficient = 1 - Math.abs(normal.y); // Higher when slope is steeper
-        
-        // Apply more friction on steeper slopes
-        const frictionFactor = friction * (1 + slopeCoefficient);
-        entity.velocity.x *= (1 - frictionFactor * deltaTime);
-        entity.velocity.z *= (1 - frictionFactor * deltaTime);
-        
+        entity.velocity = this.handleTerrainCollision(deltaTime, entity.position, entity.velocity, entity.collider.restitution);
         // Move the entity to just above the terrain to prevent sinking
         // Calculate the offset along the normal vector to position the entity
         const offsetDistance = 0.01; // Small offset to prevent stuck in terrain
-        entity.position.x += normal.x * offsetDistance;
+        entity.position.x += entity.velocity.x * offsetDistance;
         entity.position.y = heightAtPoint + offsetDistance + sampleDistance - entity.collider.offset.y;
-        entity.position.z += normal.z * offsetDistance;
+        entity.position.z += entity.velocity.z * offsetDistance;
         
         entity.grounded = true;
       } else {
@@ -387,10 +338,10 @@ class PhysicsEngine {
      * Handle entity collision with static objects
      * @private
      */
-    _resolveStaticCollision(entity, aabb, deltaTime) {
+    resolveStaticCollision(entity, aabb, deltaTime) {
       const playerAABB = entity.aabb;
       
-      if (!this._aabbIntersects(playerAABB, aabb)) return;
+      if (!this.aabbIntersects(playerAABB, aabb)) return;
   
       const overlaps = [
         { axis: 'x', overlap: Math.min(playerAABB.max.x - aabb.min.x, aabb.max.x - playerAABB.min.x) },
