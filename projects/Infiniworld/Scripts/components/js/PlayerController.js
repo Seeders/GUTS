@@ -264,9 +264,7 @@ class PlayerController extends engine.Component {
         }
         
         // Get height from terrain
-        const worldX = this.parent.transform.position.x;
-        const worldZ = this.parent.transform.position.z;
-        const groundHeight = this.infiniWorld.getTerrainHeight(worldX, worldZ);
+        const groundHeight = this.parent.transform.groundHeight;
         
         const characterBottom = this.parent.transform.position.y;
         const distanceToGround = characterBottom - groundHeight;
@@ -322,7 +320,7 @@ class PlayerController extends engine.Component {
             moveDir.clone().multiplyScalar(stepCheckDistance)
         );
         
-        const forwardHeight = this.infiniWorld.getTerrainHeight(checkPoint.x, checkPoint.z);
+        const forwardHeight = this.infiniWorld.getTerrainHeight(checkPoint);
         const heightDifference = forwardHeight - this.parent.transform.position.y;
         
         // If there's a small step up ahead, climb it
@@ -422,7 +420,7 @@ class PlayerController extends engine.Component {
         
         // Check terrain collision and adjust height
         if (!this.isGrounded) {
-            const terrainHeight = this.infiniWorld.getTerrainHeight(this.parent.transform.position.x, this.parent.transform.position.z);
+            const terrainHeight = this.parent.transform.groundHeight;
             if (this.parent.transform.position.y < terrainHeight) {
                 this.parent.transform.position.y = terrainHeight;
                 this.isGrounded = true;

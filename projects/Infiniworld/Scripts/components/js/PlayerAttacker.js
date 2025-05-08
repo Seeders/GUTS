@@ -24,6 +24,7 @@ class PlayerAttacker extends engine.Component {
 
     launchProjectile() {
         const projectileType = this.stats.projectile;
+        if(!projectileType) return;
         let projectileDef = this.game.config.projectilePrefabs[projectileType];
         
 

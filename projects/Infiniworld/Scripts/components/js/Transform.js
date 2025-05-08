@@ -13,10 +13,22 @@ class Transform extends engine.Component {
         this.quaternion.setFromAxisAngle( new THREE.Vector3( rotationX, rotationY, rotationZ ), Math.PI / 2 );        
         this.parent.transform = this;         
         this.lerpFactor = .4; // Adjust this value to control smoothing (0-1)
+        this.groundHeight = 0;
    
     }
 
     update() {
+        this.getGroundHeight();
+    }
+
+    getGroundHeight() {
+        if(!this.world && this.game?.gameEntity){
+            this.world = this.game.gameEntity.getComponent("InfiniWorld");
+            this.groundHeight = this.world.getTerrainHeight(this.position);
+        }
+        if(this.world){
+            this.groundHeight = this.world.getTerrainHeight(this.position);
+        }
     }
 
     postUpdate() {
@@ -25,9 +37,6 @@ class Transform extends engine.Component {
         this.lastPosition.x = this.position.x;
         this.lastPosition.y = this.position.y;
         this.lastPosition.z = this.position.z;
-
-    }
-    draw() {
 
     }
     

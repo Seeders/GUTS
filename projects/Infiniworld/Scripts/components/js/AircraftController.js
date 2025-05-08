@@ -131,19 +131,18 @@ class AircraftController extends engine.Component {
     OnGrounded() {
         if (this.hasCollided) return;
         this.hasCollided = true;
-        this.velocity.y = -this.velocity.y;
-        this.parent.transform.velocity.y = -this.parent.transform.velocity.y;
-        // // Add some chaotic rotation on impact but less extreme
-        // this.parent.transform.quaternion.multiply(
-        //     new THREE.Quaternion().setFromEuler(
-        //         new THREE.Euler(
-        //             Math.random() * Math.PI/2 - Math.PI/4, // Reduced rotation range
-        //             Math.random() * Math.PI/2 - Math.PI/4,
-        //             Math.random() * Math.PI/2 - Math.PI/4
-        //         )
-        //     )
-        // );
-        console.log("Aircraft collision with terrain object");
+        const restitution = .25;
+        this.thrust *= restitution;
+        this.parent.transform.position.y += 5;
+        
+        let reflection = this.infiniWorld.getReflectionAt(this.game.deltaTime, this.parent.transform.position, this.velocity, restitution);
+        // Add energy loss on bounce (70% energy conservation)
+        reflection.divideScalar(this.game.deltaTime).multiplyScalar(restitution);
+        
+        if(reflection.y < 5) reflection.y = 5;
+        // Apply reflected velocity
+        this.velocity.copy(reflection);
+        this.parent.transform.velocity.copy(reflection);
     }
 
     onKeyDown(event) {
@@ -339,7 +338,7 @@ class AircraftController extends engine.Component {
     update() {
         const dt = this.game.deltaTime;
         
-        const groundHeight = this.infiniWorld.getTerrainHeight(this.parent.transform.position.x, this.parent.transform.position.z);
+        const groundHeight = this.parent.transform.groundHeight;
         if(this.parent.transform.position.y <= groundHeight) this.OnGrounded();
         // Update stable state tracking
         this.updateStableState(dt);

@@ -18,7 +18,9 @@ class TerrainGenerator {
       return value * settings.heightScale;
     }
 
-    getBiomeWeights(wx, wz) {
+    getBiomeWeights(position) {
+      const wx = position.x;
+      const wz = position.z;
       const biomeNoise = this.noise.noise2D(wx * 0.00001, wz * 0.00001);
       const biomeValue = (biomeNoise + 1) / 2;
       const weights = {};
@@ -45,8 +47,10 @@ class TerrainGenerator {
       return weights;
     }
 
-    getHeight(wx, wz) {
-      const weights = this.getBiomeWeights(wx, wz);
+    getHeight(position) {
+      const wx = position.x;
+      const wz = position.z;
+      const weights = this.getBiomeWeights(position);
       let totalHeight = 0;
       for (const biomeName in weights) {
         const weight = weights[biomeName];
@@ -64,15 +68,77 @@ class TerrainGenerator {
       return totalHeight;
     }
 
-    calculateSlope(wx, wz) {
+    getNormalAt(position){
+      const heightAtPoint = this.getHeight(position);
+      const sampleDistance = 1; // Distance to sample for normal calculation
+      
+
+      // Calculate terrain normal at collision point
+      const heightAtPointPlusX = this.getHeight({x: position.x + sampleDistance, z: position.z});
+      const heightAtPointPlusZ = this.getHeight({x:position.x, z:position.z + sampleDistance});
+      
+      // Calculate terrain normal using cross product of terrain tangent vectors
+      const tangentX = { x: sampleDistance, y: heightAtPointPlusX - heightAtPoint, z: 0 };
+      const tangentZ = { x: 0, y: heightAtPointPlusZ - heightAtPoint, z: sampleDistance };
+      
+      // Calculate normal (perpendicular to both tangents)
+      const normal = {
+        x: -tangentX.y * tangentZ.z + tangentX.z * tangentZ.y,
+        y: tangentX.x * tangentZ.z - tangentX.z * tangentZ.x,
+        z: -tangentX.x * tangentZ.y + tangentX.y * tangentZ.x
+      };
+      
+      // Normalize the normal vector
+      const normalLength = Math.sqrt(normal.x * normal.x + normal.y * normal.y + normal.z * normal.z);
+      normal.x /= normalLength;
+      normal.y /= normalLength;
+      normal.z /= normalLength;
+      
+      return normal;
+    }
+
+    getReflectionAt(deltaTime, position, velocity, restitution) {
+      const normal = this.getNormalAt(position);
+      // Calculate reflection vector: r = v - 2(v·n)n
+      const dotProduct = 
+        velocity.x * normal.x + 
+        velocity.y * normal.y + 
+        velocity.z * normal.z;
+      
+      // Apply restitution and reflection
+      const r = restitution || 0.3;
+      
+      // Calculate new velocity after reflection
+      let reflection = {
+        x: velocity.x - 2 * dotProduct * normal.x * r,
+        y: velocity.y = velocity.y - 2 * dotProduct * normal.y * r,
+        z: velocity.z = velocity.z - 2 * dotProduct * normal.z * r
+      }
+      
+      // Apply friction based on slope
+      const friction = 0.8; // Adjust as needed
+      const slopeCoefficient = 1 - Math.abs(normal.y); // Higher when slope is steeper
+      
+      // Apply more friction on steeper slopes
+      const frictionFactor = friction * (1 + slopeCoefficient);
+      reflection.x *= (1 - frictionFactor * deltaTime);
+      reflection.z *= (1 - frictionFactor * deltaTime);
+      return reflection;
+    }
+
+    getSlope(position) {
+      const wx = position.x;
+      const wz = position.z;
       const delta = 1.0;
-      const dx = this.getHeight(wx + delta, wz) - this.getHeight(wx - delta, wz);
-      const dz = this.getHeight(wx, wz + delta) - this.getHeight(wx, wz - delta);
+      
+
+      const dx = this.getHeight({x: wx + delta, z: wz}) - this.getHeight({x: wx - delta, z: wz});
+      const dz = this.getHeight({x : wx, z: wz + delta}) - this.getHeight({ x: wx, z: wz - delta});
       return Math.sqrt(dx * dx + dz * dz) / (2 * delta);
     }
-    getRandomFromPosition(x, z, seed = 0) {
-      const a = 12345.6789 * (x + 1);
-      const b = 9876.54321 * (z + 1);
+    getRandomFromPosition(position, seed = 0) {      
+      const a = 12345.6789 * (position.x + 1);
+      const b = 9876.54321 * (position.z + 1);
       const c = 567.89 * seed;
       const val = Math.sin(a + b + c) * 43758.5453;
       return val - Math.floor(val);
@@ -93,12 +159,14 @@ class TerrainGenerator {
             const vz = z * size - chunkSize / 2;
             const wx = cx * chunkSize + vx;
             const wz = cz * chunkSize + vz;
-            const height = this.getHeight(wx, wz);
+            let position = { x: wx, z: wz };
+            const height = this.getHeight(position);
+            position.y = height;
             geometryData.positions.push(vx, height, vz);
             geometryData.biomeMap.push({
-              weights: this.getBiomeWeights(wx, wz),
-              position: { x: wx, y: height, z: wz },
-              slope: this.calculateSlope(wx, wz)
+              weights: this.getBiomeWeights(position),
+              position: position,
+              slope: this.getSlope(position)
             });
           }
         }
@@ -300,11 +368,11 @@ class TerrainGenerator {
 
           const instances = vegetation.get(worldObjectPrefab) || [];
           const collisionData = vegetation.get(worldObjectPrefab + '_collision') || [];
-          if (this.getRandomFromPosition(position.x, position.y, 1) < blendedDensity && slope <= blendedMaxSlope) {
+          if (this.getRandomFromPosition(position, 1) < blendedDensity && slope <= blendedMaxSlope) {
             const instance = {
               position: { x: position.x, y: position.y - 5, z: position.z },
-              rotation: this.getRandomFromPosition(position.x, position.y, 2) * Math.PI * 2,
-              scale: 0.8 + this.getRandomFromPosition(position.x, position.y, 3) * 0.4
+              rotation: this.getRandomFromPosition(position, 2) * Math.PI * 2,
+              scale: 0.8 + this.getRandomFromPosition(position, 3) * 0.4
             };
             instances.push(instance);
 

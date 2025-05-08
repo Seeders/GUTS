@@ -75,7 +75,7 @@ class Game extends engine.Component {
     }
     
     getTerrainHeight(position) {
-        return this.infiniWorld ? this.infiniWorld.getTerrainHeight(position.x, position.z) : 0;
+        return this.infiniWorld ? this.infiniWorld.getTerrainHeight(position) : 0;
     }
     
     postUpdate() {

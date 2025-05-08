@@ -78,7 +78,6 @@ class InfiniWorld extends engine.Component {
       this.chunks = new Map();
       this.objectCache = new Map();
   
-      // Initialize SimplexNoise and biomes for getTerrainHeight
       this.noise = new (this.game.moduleManager.libraryClasses.SimplexNoise)(); // Fixed seed for consistency
       let biomes = {};
       this.world.biomes.forEach((biomeName) => {
@@ -354,7 +353,7 @@ class InfiniWorld extends engine.Component {
       const shadowCamera = this.directionalLight.shadow.camera;
     
       // Center shadow camera on the player's position
-      const terrainHeight = this.getTerrainHeight(cameraPos.x, cameraPos.z);
+      const terrainHeight = this.getTerrainHeight(cameraPos);
       shadowCamera.position.set(cameraPos.x, terrainHeight + 500, cameraPos.z);
       shadowCamera.lookAt(cameraPos.x, terrainHeight, cameraPos.z);
       shadowCamera.updateProjectionMatrix();
@@ -461,8 +460,14 @@ class InfiniWorld extends engine.Component {
         // Store instance groups in chunk data
         chunkData.objectMeshes.set(type, instanceGroups);
     }
-    getTerrainHeight(x, z) {
-      return this.terrainGenerator.getHeight(x, z);
+    getTerrainHeight(position) {
+      return this.terrainGenerator.getHeight(position);
+    } 
+    getSlope(position) {
+      return this.terrainGenerator.getSlope(position);
+    } 
+    getReflectionAt(t, p, v, r) {
+      return this.terrainGenerator.getReflectionAt(t, p, v, r);
     } 
   
     destroy() {

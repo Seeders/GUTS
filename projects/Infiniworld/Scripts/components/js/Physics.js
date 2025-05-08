@@ -150,7 +150,7 @@ class Physics extends engine.Component {
                     chunkResolution,
                     noise
                 );
-                physicsEngine.init({gravity: gravity, getTerrainHeight: terrainGenerator.getHeight.bind(terrainGenerator)});
+                physicsEngine.init({gravity: gravity, handleTerrainCollision: terrainGenerator.getReflectionAt.bind(terrainGenerator), getTerrainHeight: terrainGenerator.getHeight.bind(terrainGenerator)});
                 
                 // Update physics
                 const updatedEntities = physicsEngine.update(entities, collisionData, deltaTime);
