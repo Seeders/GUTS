@@ -237,32 +237,28 @@ class AircraftController extends engine.Component {
 
     updateCameraPosition() {
         const dt = this.game.deltaTime;
-        const smoothingAlpha = Math.min(1.0, this.cameraSmoothing * dt * 60); // Linear interpolation with cap
+        const smoothingAlpha = 0.9; 
     
-        // Smooth aircraft position and quaternion
-        this.smoothedAircraftPosition.lerp(this.parent.transform.position, smoothingAlpha);
-        this.smoothedAircraftQuaternion.slerp(this.parent.transform.quaternion, smoothingAlpha);
     
         // Calculate forward vector from smoothed quaternion
-        const smoothedForward = new THREE.Vector3(0, 0, 1).applyQuaternion(this.smoothedAircraftQuaternion);
+        const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(this.parent.transform.quaternion);
     
         // Calculate look-at target
-        const lookTarget = this.smoothedAircraftPosition.clone().add(
-            smoothedForward.clone().multiplyScalar(this.cameraLookAhead)
+        const lookTarget = this.parent.transform.position.clone().add(
+            forward.clone().multiplyScalar(this.cameraLookAhead)
         );
     
         if (this.isThirdPerson) {
-            const offset = new THREE.Vector3(0, this.thirdPersonHeight, -this.thirdPersonDistance)
-                .applyQuaternion(this.smoothedAircraftQuaternion);
-            const targetPos = this.smoothedAircraftPosition.clone().add(offset);
+            const offsetDistance = Math.max(1, this.parent.transform.velocity.length() * .001);
+            const offset = new THREE.Vector3(0, this.thirdPersonHeight, -this.thirdPersonDistance).applyQuaternion(this.parent.transform.quaternion);
+            const targetPos = this.parent.transform.position.clone().add(offset.multiplyScalar(offsetDistance));
+              
     
             // Add additional camera smoothing to reduce jitter
-            this.camera.position.lerp(targetPos, smoothingAlpha);
-            this.lastCameraPosition.copy(this.camera.position);
+            this.camera.position.copy(targetPos);
     
             // Extract roll from smoothedAircraftQuaternion
-            const forward = smoothedForward.clone();
-            const up = new THREE.Vector3(0, 1, 0).applyQuaternion(this.smoothedAircraftQuaternion);
+            const up = new THREE.Vector3(0, 1, 0).applyQuaternion(this.parent.transform.quaternion);
             const right = new THREE.Vector3().crossVectors(forward, up).normalize();
             up.crossVectors(right, forward).normalize(); // Recompute up to ensure orthogonality
     
@@ -277,10 +273,9 @@ class AircraftController extends engine.Component {
             const newQuaternion = new THREE.Quaternion().setFromRotationMatrix(lookAtMatrix);
             this.camera.quaternion.slerp(newQuaternion, smoothingAlpha);
     
-            this.lastCameraLookAt.lerp(lookTarget, smoothingAlpha);
         } else {
-            this.camera.position.copy(this.smoothedAircraftPosition);
-            this.camera.quaternion.copy(this.smoothedAircraftQuaternion);
+            this.camera.position.copy(this.parent.transform.position);
+            this.camera.quaternion.copy(this.parent.transform.quaternion);
         }
     }
 
@@ -323,7 +318,7 @@ class AircraftController extends engine.Component {
         // Smooth velocity transition
         this.parent.transform.velocity.copy(this.targetVelocity); // Smooth velocity transitions
     
-        this.parent.transform.position.add(this.parent.transform.velocity.multiplyScalar(this.game.deltaTime)); 
+        this.parent.transform.position.add(this.targetVelocity.clone().multiplyScalar(this.game.deltaTime)); 
     }
     
     // New method to save stable state
