@@ -8,7 +8,7 @@
     "tree",
     "rock"
   ],
-  "backgroundColor": "#b3e5fc",
+  "backgroundColor": "#0288d1",
   "heightMap": "fiveStep",
   "biomes": [
     "plains",

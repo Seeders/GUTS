@@ -386,7 +386,7 @@ class InfiniWorld extends engine.Component {
             );
         }
 
-        // NEW: Fix corner vertices by finding diagonal neighbors
+        // Fix corner vertices by finding diagonal neighbors
         const cornerVertices = [
             {pos: 0, // Bottom left
              neighbors: [`${cx-1},${cz}`, `${cx},${cz-1}`, `${cx-1},${cz-1}`]},
