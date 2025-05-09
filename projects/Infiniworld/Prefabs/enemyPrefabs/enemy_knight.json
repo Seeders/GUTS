@@ -81,7 +81,9 @@
             "scaleZ": 1,
             "color": "#FFFFFF",
             "texture": "carbonFiber",
-            "url": "samples/models/KnightIdle/KnightIdle.glb"
+            "url": "samples/models/KnightIdle/KnightIdle.glb",
+            "roughness": "0.1",
+            "metalness": "0.8"
           }
         ]
       }

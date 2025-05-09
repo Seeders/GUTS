@@ -81,7 +81,9 @@
             "scaleZ": 1,
             "color": "#FFFFFF",
             "texture": "carbonFiber",
-            "url": "samples/models/monster/monster.glb"
+            "url": "samples/models/monster/monster.glb",
+            "metalness": "0",
+            "roughness": "1"
           }
         ]
       }

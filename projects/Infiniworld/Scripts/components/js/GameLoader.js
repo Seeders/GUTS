@@ -26,6 +26,8 @@ class GameLoader extends engine.Component {
         sceneEntities.forEach((sceneEntity) => {
             
             let position = new THREE.Vector3();
+            let scale = new THREE.Vector3(1, 1, 1);
+            let rotation = new THREE.Vector3();
             let params = {
                 "objectType": sceneEntity.objectType,
                 "spawnType": sceneEntity.spawnType,
@@ -33,6 +35,8 @@ class GameLoader extends engine.Component {
             sceneEntity.components.forEach((entityComp) => {
                 if(entityComp.type == "transform"){
                     position = entityComp.parameters.position;
+                    scale = entityComp.parameters.scale;
+                    rotation = entityComp.parameters.rotation;
                 }
                 params = {...params, ...entityComp.parameters };
             });
@@ -40,7 +44,16 @@ class GameLoader extends engine.Component {
                 this.game.gameEntity = this.game.createEntityFromConfig(sceneEntity.type, params, position);
                 this.game.audioManager = this.game.gameEntity.getComponent('AudioManager');  
             } else {
-                let spawned = this.game.spawn(sceneEntity.type, params, new THREE.Vector3(position.x, position.y, position.z));
+                let spawned = this.game.spawn(sceneEntity.type, params, new THREE.Vector3(position.x, position.y, position.z));              
+                spawned.transform.scale.copy(scale);
+                // Alternative quaternion approach
+                let euler = new THREE.Euler(
+                    rotation.x,
+                    rotation.y,
+                    rotation.z
+                );
+                spawned.transform.quaternion.setFromEuler(euler);
+                console.log(spawned.transform.quaternion, rotation, euler);
                 if(sceneEntity.type.startsWith("player")){
                     this.player = spawned;
                     this.game.player = this.player;

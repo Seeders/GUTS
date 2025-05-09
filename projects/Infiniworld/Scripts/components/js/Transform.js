@@ -14,9 +14,7 @@ class Transform extends engine.Component {
         this.parent.transform = this;         
         this.lerpFactor = .4; // Adjust this value to control smoothing (0-1)
         this.groundHeight = 0;
-   
     }
-
     update() {
         this.getGroundHeight();
     }

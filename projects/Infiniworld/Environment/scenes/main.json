@@ -2,7 +2,7 @@
   "title": "Main",
   "sceneData": [
     {
-      "id": 4,
+      "id": 12,
       "type": "game",
       "objectType": "gamePrefabs",
       "spawnType": "infiniworldShire",
@@ -38,10 +38,46 @@
       ]
     },
     {
-      "id": 5,
-      "type": "playerAircraft",
+      "id": 13,
+      "type": "enemy",
+      "objectType": "enemyPrefabs",
+      "spawnType": "waving_npc",
+      "parent": null,
+      "children": [],
+      "components": [
+        {
+          "type": "transform",
+          "parameters": {
+            "position": {
+              "x": -76.21048883638852,
+              "y": 29.45508128887155,
+              "z": 129.59387462050228
+            },
+            "rotation": {
+              "x": 0,
+              "y": 3,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "type": "Collider",
+          "parameters": {
+            "collider": "fighterCollider"
+          }
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "type": "player",
       "objectType": "playerPrefabs",
-      "spawnType": "fighterJet",
+      "spawnType": "waving_guy",
       "parent": null,
       "children": [],
       "components": [
@@ -50,7 +86,7 @@
           "parameters": {
             "position": {
               "x": 0,
-              "y": 84.5519860339216,
+              "y": 0,
               "z": 0
             },
             "rotation": {

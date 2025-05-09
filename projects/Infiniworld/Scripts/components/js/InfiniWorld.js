@@ -549,7 +549,7 @@ class InfiniWorld extends engine.Component {
         chunkData.terrainMesh = mesh;
 
         // Generate water mesh
-        const waterMesh = this.generateWaterMesh(cx, cz);
+        const waterMesh = this.generateWaterMesh(cx, cz, adjustedPositions);
         if (waterMesh) {
             // Position water mesh exactly to avoid gaps
             waterMesh.position.set(chunkWorldX, 0, chunkWorldZ);
@@ -842,7 +842,7 @@ class InfiniWorld extends engine.Component {
       this.chunks.clear();
       this.scene.remove(this.rootGroup);
     }
-    generateWaterMesh(cx, cz) {
+    generateWaterMesh(cx, cz, terrainPositions) {
       const chunkKey = `${cx},${cz}`;
   
       // Create a plane with higher resolution for visible waves
@@ -895,7 +895,27 @@ class InfiniWorld extends engine.Component {
       // Set additional uniforms
       this.uniforms[chunkKey].fogColor = { value: new THREE.Color(this.fogData.color) };
       this.uniforms[chunkKey].fogDensity = this.fogData.enabled ? { value: this.fogData.density } : { value: 0 };
-  
+      const data = new Float32Array(this.chunkResolution * this.chunkResolution);
+      for (let z = 0; z < this.chunkResolution; z++) {
+        for (let x = 0; x < this.chunkResolution; x++) {
+          const index = Math.floor((z * this.chunkResolution + x)*3);
+          data[Math.floor(index / 3)] = terrainPositions[index+1];
+        }
+      }
+      const heightmapTexture = new THREE.DataTexture(
+        data,
+        this.chunkResolution,
+        this.chunkResolution,
+        THREE.RedFormat,
+        THREE.FloatType
+      );
+      heightmapTexture.needsUpdate = true;
+
+      this.uniforms[chunkKey].terrainHeightmap = { value: heightmapTexture };
+      this.uniforms[chunkKey].terrainSize = { value: new THREE.Vector2(this.chunkResolution, this.chunkResolution) };
+      this.uniforms[chunkKey].terrainOffset = { value: new THREE.Vector2(cx, cz) };
+      this.uniforms[chunkKey].foamWidth = { value: 0.5 }; // Adjust for wider/narrower foam bands
+      this.uniforms[chunkKey].foamColor = { value: new THREE.Vector3(1.0, 1.0, 1.0) }; 
       // Create the shader material
       const material = new THREE.ShaderMaterial({
           uniforms: this.uniforms[chunkKey],
