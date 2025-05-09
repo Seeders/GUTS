@@ -62,8 +62,8 @@ class ShapeFactory {
                     let map = child.material.map;
                     child.material = new THREE.MeshStandardMaterial({
                         color: 0xffffff,
-                        metalness: 0,
-                        roughness: 0.05,
+                        metalness: shape.metalness || 0.5,
+                        roughness: shape.roughness || 0.5,
                         map: map,
                         skinning: true
                     });
