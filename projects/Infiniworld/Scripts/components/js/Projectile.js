@@ -32,7 +32,7 @@ class Projectile extends engine.Component {
       );    
       if(this.owner){
         console.log(this.owner.transform.velocity.clone().divideScalar(this.game.deltaTime));
-        this.parent.transform.velocity = this.parent.transform.velocity.add(this.owner.transform.velocity.clone().divideScalar(this.game.deltaTime));
+        this.parent.transform.velocity = this.parent.transform.velocity.add(this.owner.transform.velocity.clone());
       }
 
   }

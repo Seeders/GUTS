@@ -1,9 +1,0 @@
-{
-  "title": "Plasma Ball",
-  "size": 1,
-  "type": "sphere",
-  "offset": "{ \"x\": 0, \"y\": 0, \"z\": 0 }",
-  "mass": 1,
-  "gravity": true,
-  "restitution": 0.7
-}

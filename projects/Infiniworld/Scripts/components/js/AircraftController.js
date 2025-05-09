@@ -1,15 +1,14 @@
 class AircraftController extends engine.Component {
     init({
-        maxThrust = 4000,
-        acceleration = 700,
+        acceleration = 1000,
         strafeAcceleration = 15,
         verticalAcceleration = 15,
         pitchSpeed = 1.5,
         yawSpeed = 1,
-        rollSpeed = 2,
-        mouseSensitivity = 0.001,
+        rollSpeed = 1,
+        mouseSensitivity = 0.00005,
         dampingFactor = 0.15,
-        maxSpeed = 4000,
+        maxSpeed = 6000,
         cameraSmoothing = 0.4,
         collisionRecoveryTime = 2,
         // New parameters for stability
@@ -20,7 +19,6 @@ class AircraftController extends engine.Component {
         this.infiniWorld = this.game.gameEntity.getComponent("InfiniWorld");
         this.scene = this.infiniWorld.scene;
         this.camera = this.game.camera;
-        this.maxThrust = maxThrust;
         this.acceleration = acceleration;
         this.strafeAcceleration = strafeAcceleration;
         this.verticalAcceleration = verticalAcceleration;
@@ -203,8 +201,8 @@ class AircraftController extends engine.Component {
             const newMouseYInput = -(event.movementY || 0) * this.mouseSensitivity;
             
             // Apply smoothing between old and new values
-            this.mouseXInput = this.mouseXInput * smoothingFactor + newMouseXInput * (1 - smoothingFactor);
-            this.mouseYInput = this.mouseYInput * smoothingFactor + newMouseYInput * (1 - smoothingFactor);
+            this.mouseXInput = this.mouseXInput + newMouseXInput;
+            this.mouseYInput = this.mouseYInput + newMouseYInput;
         } else {
             this.mouseXInput = 0;
             this.mouseYInput = 0;
@@ -226,7 +224,7 @@ class AircraftController extends engine.Component {
         const delta = event.deltaY * 0.01;
         // Apply smoother thrust changes
         const thrustDelta = this.acceleration * 0.5 * delta;
-        this.thrust = Math.max(0, Math.min(this.thrust - thrustDelta, this.maxThrust));
+        this.thrust = Math.max(0, Math.min(this.thrust - thrustDelta, this.maxSpeed));
     }
 
     updateAxes() {
@@ -251,7 +249,9 @@ class AircraftController extends engine.Component {
         if (this.isThirdPerson) {
             const offsetDistance = Math.max(1, this.parent.transform.velocity.length() * .001);
             const offset = new THREE.Vector3(0, this.thirdPersonHeight, -this.thirdPersonDistance).applyQuaternion(this.parent.transform.quaternion);
-            const targetPos = this.parent.transform.position.clone().add(offset.multiplyScalar(offsetDistance));
+            offset.multiplyScalar(offsetDistance);
+            offset.y /= offsetDistance;
+            const targetPos = this.parent.transform.position.clone().add(offset);
               
     
             // Add additional camera smoothing to reduce jitter
@@ -365,7 +365,7 @@ class AircraftController extends engine.Component {
             } else if (this.keys.KeyS) {
                 this.thrust -= this.acceleration * 2 * dt;
             }
-            this.thrust = Math.max(0, Math.min(this.thrust, this.maxThrust));
+            this.thrust = Math.max(0, Math.min(this.thrust, this.maxSpeed));
 
             // Calculate speed
             const currentSpeed = Math.min(this.thrust, this.maxSpeed);

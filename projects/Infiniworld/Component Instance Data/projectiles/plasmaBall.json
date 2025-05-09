@@ -1,8 +1,0 @@
-{
-  "title": "Plasma Ball",
-  "speed": 200,
-  "hitSound": "placeTower",
-  "attackSound": "pickup",
-  "particlePrefab": "",
-  "impactParticlePrefab": ""
-}

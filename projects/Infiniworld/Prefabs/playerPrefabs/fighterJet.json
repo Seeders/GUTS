@@ -27,9 +27,9 @@
           "z": 0
         },
         "scale": {
-          "x": 5,
-          "y": 5,
-          "z": 5
+          "x": 1,
+          "y": 1,
+          "z": 1
         },
         "shapes": [
           {
@@ -56,5 +56,6 @@
   "fireResistance": 75,
   "coldResistance": 25,
   "electricResistance": 25,
-  "entity": "playerAircraft"
+  "entity": "playerAircraft",
+  "projectile": "plasmaBolt"
 }

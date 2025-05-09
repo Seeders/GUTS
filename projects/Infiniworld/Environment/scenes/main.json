@@ -2,7 +2,7 @@
   "title": "Main",
   "sceneData": [
     {
-      "id": 1,
+      "id": 4,
       "type": "game",
       "objectType": "gamePrefabs",
       "spawnType": "infiniworldShire",
@@ -38,7 +38,7 @@
       ]
     },
     {
-      "id": 4,
+      "id": 5,
       "type": "playerAircraft",
       "objectType": "playerPrefabs",
       "spawnType": "fighterJet",
@@ -50,7 +50,7 @@
           "parameters": {
             "position": {
               "x": 0,
-              "y": 93.84020937464534,
+              "y": 84.5519860339216,
               "z": 0
             },
             "rotation": {
