@@ -816,7 +816,7 @@ class InfiniWorld extends engine.Component {
             );
 
 
-            if(reflection.length() < 50 || slopeAmount > .5){          
+            if(dotProduct > -10 || slopeAmount > .5 ){          
              // r = normal.y;
               r = .99;
               // Scale by restitution (energy loss on bounce)
