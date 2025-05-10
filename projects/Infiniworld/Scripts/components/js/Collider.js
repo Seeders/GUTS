@@ -24,7 +24,7 @@ class Collider extends engine.Component {
         this.debugMesh = null; // Store debug mesh
 
         // Register with physics system
-        this.game.gameEntity.getComponent("Physics").registerCollider(this);
+        this.game.gameEntity.getComponent('Physics').registerCollider(this);
 
         // Create debug visualization if debug mode is enabled
         if (this.debug) {
@@ -90,16 +90,24 @@ class Collider extends engine.Component {
     }
 
     update() {
+
         this.parent.transform.position.lerp(
             this.parent.transform.physicsPosition,
             this.parent.transform.lerpFactor
         );
-
         // Update debug mesh position if it exists
         if (this.debug && this.debugMesh) {
             this.debugMesh.position.copy(this.parent.transform.physicsPosition).add(this.offset);
         }
-        this.game.gameEntity.getComponent("physics").collectPhysicsData(this);
+        let groundTestPos = this.parent.transform.physicsPosition.clone().add({x:0, y: this.size, z: 0});
+    
+        if(this.parent.transform.isGrounded(groundTestPos)){
+            this.parent.transform.velocity.copy(this.game.gameEntity.getComponent('InfiniWorld').getReflectionAt(this.parent.transform.physicsPosition, this.parent.transform.velocity, this.restitution));                        
+        }
+        if(this.parent.transform.groundHeight > this.parent.transform.position.y - this.size){
+            this.parent.transform.position.y = this.parent.transform.groundHeight + this.size;            
+        }
+        this.game.gameEntity.getComponent('Physics').collectPhysicsData(this);
     }
 
     destroy() {

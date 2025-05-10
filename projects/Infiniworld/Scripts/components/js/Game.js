@@ -9,7 +9,7 @@ class Game extends engine.Component {
     init() {
         this.physics = this.getComponent('Physics');
         this.gridSize = this.game.config.configs.game.gridSize;      
-        this.infiniWorld = this.getComponent('InfiniWorld');
+        this.world = this.getComponent('InfiniWorld');
     }
     
     update() {
@@ -62,7 +62,7 @@ class Game extends engine.Component {
             
           //  if (this.physicsAccumulator >= physicsStep) {
             //    if (shouldUpdatePhysics) {
-                    this.physics.sendToWorker(this.infiniWorld);
+                    this.physics.sendToWorker(this.world);
              //   }
              //   this.physicsAccumulator -= physicsStep;
            // }
@@ -75,7 +75,7 @@ class Game extends engine.Component {
     }
     
     getTerrainHeight(position) {
-        return this.infiniWorld ? this.infiniWorld.getTerrainHeight(position) : 0;
+        return this.world ? this.world.getTerrainHeight(position) : 0;
     }
     
     postUpdate() {

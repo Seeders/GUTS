@@ -8,6 +8,9 @@
   "render": {
     "animations": {
       "idle": [
+        {}
+      ],
+      "walk": [
         {
           "main": {
             "shapes": [
@@ -27,20 +30,96 @@
                 "scaleZ": 1,
                 "color": "#FFFFFF",
                 "texture": "carbonFiber",
-                "url": "samples/models/idle_guy/idle_guy.glb",
+                "url": "samples/models/walk_guy/walk_guy.glb",
+                "metalness": "0",
+                "roughness": "1",
                 "id": 0
               }
             ]
           }
         }
       ],
-      "walk": [
+      "throw": [
         {
           "main": {
             "shapes": [
               {
+                "type": "gltf",
+                "width": 2,
+                "height": 0.2,
+                "depth": 1,
                 "x": 0.15,
+                "y": 0,
+                "z": 0,
+                "rotationX": 0,
+                "rotationY": 0,
+                "rotationZ": 0,
+                "scaleX": 1,
+                "scaleY": 1,
+                "scaleZ": 1,
+                "color": "#FFFFFF",
+                "texture": "carbonFiber",
+                "url": "samples/models/spearthrow_guy/spearthrow_guy.glb",
+                "metalness": "0",
+                "roughness": "1",
+                "id": 0
+              }
+            ]
+          }
+        }
+      ],
+      "run": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "type": "gltf",
+                "width": 2,
+                "height": 0.2,
+                "depth": 1,
+                "x": 0.15,
+                "y": 0,
+                "z": 0,
+                "rotationX": 0,
+                "rotationY": 0,
+                "rotationZ": 0,
+                "scaleX": 1,
+                "scaleY": 1,
+                "scaleZ": 1,
+                "color": "#FFFFFF",
+                "texture": "carbonFiber",
                 "url": "samples/models/running_guy/running_guy.glb",
+                "metalness": "0",
+                "roughness": "1",
+                "id": 0
+              }
+            ]
+          }
+        }
+      ],
+      "leap": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "type": "gltf",
+                "width": 2,
+                "height": 0.2,
+                "depth": 1,
+                "x": 0.15,
+                "y": 0,
+                "z": 0,
+                "rotationX": 0,
+                "rotationY": 0,
+                "rotationZ": 0,
+                "scaleX": 1,
+                "scaleY": 1,
+                "scaleZ": 1,
+                "color": "#FFFFFF",
+                "texture": "carbonFiber",
+                "url": "samples/models/leaping_guy/leaping_guy.glb",
+                "metalness": "0",
+                "roughness": "1",
                 "id": 0
               }
             ]
@@ -93,5 +172,6 @@
   "fireResistance": 75,
   "coldResistance": 25,
   "electricResistance": 25,
-  "entity": "player"
+  "entity": "player",
+  "projectile": "plasmaBall"
 }

@@ -24,12 +24,15 @@ class ModelRenderer extends engine.Component {
         // Get the model
         this.model = this.game.modelManager.getModel(objectType, spawnType);
         this.skeletonUtils = THREE_.SkeletonUtils;
-
+        this.throwTimer = -1;
+        this.leapTimer = -1;
+        this.leapTime = 1;
+        this.throwTime = 2;
         // Clone the model once
         this.modelGroup = !this.isGLTF ? this.skeletonUtils.clone(this.model) : this.model;
         this.game.scene.add(this.modelGroup);
         this.modelGroup.position.set(0, -10000, 0);
-
+        this.isRunning = false;
         // Initialize AnimationMixer and actions if GLTF
         if (this.isGLTF) {
             this.setupAnimationMixer();
@@ -97,7 +100,11 @@ class ModelRenderer extends engine.Component {
             }
         }
 
-        if (this.animationState !== animationName && this.currentAnimationTime >= this.minAnimationTime) {
+        // Allow 'throw' and 'leap' animations to override minAnimationTime check
+        const isHighPriorityAnimation = animationName === 'throw' || animationName === 'leap';
+        
+        if (this.animationState !== animationName && 
+            (isHighPriorityAnimation || this.currentAnimationTime >= this.minAnimationTime)) {
             this.animationState = animationName;
             this.currentAnimationTime = 0;
             console.log('playing animation', animationName);
@@ -161,7 +168,17 @@ class ModelRenderer extends engine.Component {
         this.currentAnimationTime += this.game.deltaTime;
         // Update AnimationMixer for GLTF models
         if (this.isGLTF && this.mixer) {
-            this.mixer.update(this.game.deltaTime);
+            this.mixer.update(this.game.deltaTime);            
+        }
+
+        if(this.leapTimer >= 0) {
+            this.leapTimer += this.game.deltaTime;
+            if(this.leapTimer > this.leapTime) this.leapTimer = -1;
+        }
+
+        if(this.throwTimer >= 0) {
+            this.throwTimer += this.game.deltaTime;
+            if(this.throwTimer > this.throwTime) this.throwTimer = -1;
         }
 
         // Update skeleton for skinned meshes
@@ -193,7 +210,38 @@ class ModelRenderer extends engine.Component {
         }
     }
 
+    jump() {
+        this.setAnimation('leap');
+        this.leapTimer = 0;
+    }
+
+    throw() {
+        this.setAnimation('throw');
+        this.throwTimer = 0;
+        // Force animation state to 'throw' and prevent it from being overridden
+        this.animationState = 'throw';
+    }
+
     updateDirection() {
+        // Skip direction updates if throw or leap animations are in progress
+        if(this.throwTimer >= 0) {
+            // Ensure throw animation continues playing
+            if(this.animationState !== 'throw') {
+                this.animationState = 'throw';
+                this.setAnimation('throw');
+            }
+            return;
+        }
+        
+        if(this.leapTimer >= 0) {
+            // Ensure leap animation continues playing
+            if(this.animationState !== 'leap') {
+                this.animationState = 'leap';
+                this.setAnimation('leap');
+            }
+            return;
+        }
+        
         if (this.parent && this.parent.transform.lastPosition) {
             const dx = this.parent.transform.position.x - this.parent.transform.lastPosition.x;
             const dy = this.parent.transform.position.z - this.parent.transform.lastPosition.z;
@@ -202,8 +250,9 @@ class ModelRenderer extends engine.Component {
             // Only update direction if there's significant movement
             if (Math.abs(dx) > 0.01 || Math.abs(dy) > 0.01) {
                 // Set walking animation when moving
-                if (this.animationData['walk']) {
-                    this.setAnimation('walk');
+                let moveAnim = this.isRunning ? "run" : "walk";
+                if (this.animationData[moveAnim]) {
+                    this.setAnimation(moveAnim);
                     return;
                 }
             } else {

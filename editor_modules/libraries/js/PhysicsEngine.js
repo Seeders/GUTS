@@ -173,7 +173,7 @@ class PhysicsEngine {
       entities.forEach(entity => {
         // Handle terrain collision using the terrain generator
 
-        this.resolveTerrainCollision(entity, deltaTime);
+       // this.resolveTerrainCollision(entity, deltaTime);
         
   
         // Handle static object collisions

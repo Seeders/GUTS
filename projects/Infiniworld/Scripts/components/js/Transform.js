@@ -16,17 +16,23 @@ class Transform extends engine.Component {
         this.groundHeight = 0;
     }
     update() {
-        this.getGroundHeight();
+        this.groundHeight = this.getGroundHeight();
     }
 
-    getGroundHeight() {
+    getGroundHeight(position) {
+        const p = position ? position : this.position;
         if(!this.world && this.game?.gameEntity){
-            this.world = this.game.gameEntity.getComponent("InfiniWorld");
-            this.groundHeight = this.world.getTerrainHeight(this.position);
+            this.world = this.game.gameEntity.getComponent("InfiniWorld");            
         }
         if(this.world){
-            this.groundHeight = this.world.getTerrainHeight(this.position);
+            return this.world.getTerrainHeight(p);
         }
+        return 0;
+    }
+
+    isGrounded(position) {
+        const p = position ? position : this.position;
+        return p.y <= this.groundHeight;
     }
 
     postUpdate() {

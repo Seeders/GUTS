@@ -21,9 +21,7 @@ class Projectile extends engine.Component {
       
       if(this.projectileData.attackSound){
           this.game.audioManager.playSound('sounds', this.projectileData.attackSound);
-      }
-      
-      this.parent.transform.position.y += 10;
+      }      
       // Add physics properties
       this.parent.transform.velocity = new THREE.Vector3(
           this.direction.x * this.projectileData.speed,
@@ -31,7 +29,6 @@ class Projectile extends engine.Component {
           this.direction.z * this.projectileData.speed
       );    
       if(this.owner){
-        console.log(this.owner.transform.velocity.clone().divideScalar(this.game.deltaTime));
         this.parent.transform.velocity = this.parent.transform.velocity.add(this.owner.transform.velocity.clone());
       }
 

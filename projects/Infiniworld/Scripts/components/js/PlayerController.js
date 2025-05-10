@@ -2,7 +2,7 @@ class PlayerController extends engine.Component {
     init({
         walkSpeed = 50,
         runSpeed = 100,
-        jumpForce = 200,
+        jumpForce = 180,
         gravity = 980,
         mouseSensitivity = 0.02,
         characterHeight = 1.8,
@@ -10,8 +10,8 @@ class PlayerController extends engine.Component {
         stepHeight = 0.3,
         cameraSmoothing = 0.2
     }) {
-        this.infiniWorld = this.game.gameEntity.getComponent("InfiniWorld");
-        this.scene = this.infiniWorld.scene;
+        this.world = this.game.gameEntity.getComponent("InfiniWorld");
+        this.scene = this.world.scene;
         this.camera = this.game.camera;
         // Movement parameters
         this.walkSpeed = walkSpeed;
@@ -34,12 +34,12 @@ class PlayerController extends engine.Component {
         // Add these event listeners:
         document.addEventListener('click', () => {
             if (!this.controls.isLocked) {
-                this.infiniWorld.renderer.domElement.requestPointerLock();
+                this.world.renderer.domElement.requestPointerLock();
             }
         });
         
         document.addEventListener('pointerlockchange', () => {
-            this.controls.isLocked = document.pointerLockElement === this.infiniWorld.renderer.domElement;
+            this.controls.isLocked = document.pointerLockElement === this.world.renderer.domElement;
         });
         // Movement state
         this.velocity = new THREE.Vector3();
@@ -59,7 +59,7 @@ class PlayerController extends engine.Component {
         
         // Camera properties
         this.isFirstPerson = false;
-        this.thirdPersonDistance = 25;
+        this.thirdPersonDistance = 50;
         this.thirdPersonHeight = 25;
         this.cameraTargetPosition = new THREE.Vector3();
         this.cameraLookAt = new THREE.Vector3();
@@ -100,6 +100,8 @@ class PlayerController extends engine.Component {
             raycastHelpers: []
         };
         
+        this.jumpTimer = 0;
+        this.jumpDelay = 1/10;
         // Initialize camera
         this.updateCameraPosition();
     }
@@ -111,6 +113,7 @@ class PlayerController extends engine.Component {
             // Set jump request only when first pressed (not held)
             if (event.code === 'Space' && !event.repeat && this.isGrounded && this.canJump) {
                 this.jumpRequested = true;
+                this.parent.getComponent("modelRenderer").jump();
             }
         }
         
@@ -320,7 +323,7 @@ class PlayerController extends engine.Component {
             moveDir.clone().multiplyScalar(stepCheckDistance)
         );
         
-        const forwardHeight = this.infiniWorld.getTerrainHeight(checkPoint);
+        const forwardHeight = this.world.getTerrainHeight(checkPoint);
         const heightDifference = forwardHeight - this.parent.transform.position.y;
         
         // If there's a small step up ahead, climb it
@@ -351,16 +354,21 @@ class PlayerController extends engine.Component {
         // Check if running
         this.isRunning = this.keys.ShiftLeft;
         
+        this.parent.getComponent("modelRenderer").isRunning = this.isRunning;
+        
         // Calculate velocity from input
         const speed = this.isRunning ? this.runSpeed : this.walkSpeed;
-        
+        if(this.isGrounded && this.jumpRequested){
+            this.jumpTimer += this.game.deltaTime;
+        }
         // Handle jumping - only jump if explicitly requested and on ground
-        if (this.isGrounded && this.jumpRequested) {
+        if (this.isGrounded && this.jumpRequested && this.jumpTimer > this.jumpDelay) {
             this.velocity.y = this.jumpForce;
             this.isGrounded = false;
             this.isJumping = true;
             this.jumpRequested = false; // Reset jump request
             this.canJump = false; // Prevent repeated jumps until key is released
+            this.jumpTimer = 0;
         }
         
         if (this.isGrounded) {
@@ -390,7 +398,7 @@ class PlayerController extends engine.Component {
             }
         } else {
             // In air, apply gravity
-            this.velocity.y -= this.gravity * dt;
+            this.velocity.y -= this.gravity * dt * .5;
             
             // Reduced air control
             const airControl = 0.3;
@@ -458,7 +466,7 @@ class PlayerController extends engine.Component {
             const playerAABB = this.getAABB(newPosition);
     
             // Check for tree collisions
-            const collisions = this.infiniWorld.checkTreeCollisions(playerAABB);
+            const collisions = this.world.checkTreeCollisions(playerAABB);
     
             if (collisions.length === 0) {
                 // No collisions, apply this step's movement
@@ -473,7 +481,7 @@ class PlayerController extends engine.Component {
             // Try moving in X direction
             const tryX = this.parent.transform.position.clone().add(new THREE.Vector3(stepMovement.x, stepMovement.y, 0));
             const tryXAABB = this.getAABB(tryX);
-            const xCollisions = this.infiniWorld.checkTreeCollisions(tryXAABB);
+            const xCollisions = this.world.checkTreeCollisions(tryXAABB);
     
             if (xCollisions.length === 0) {
                 this.parent.transform.position.copy(tryX);
@@ -484,7 +492,7 @@ class PlayerController extends engine.Component {
                 // Try moving in Z direction
                 const tryZ = this.parent.transform.position.clone().add(new THREE.Vector3(0, stepMovement.y, stepMovement.z));
                 const tryZAABB = this.getAABB(tryZ);
-                const zCollisions = this.infiniWorld.checkTreeCollisions(tryZAABB);
+                const zCollisions = this.world.checkTreeCollisions(tryZAABB);
     
                 if (zCollisions.length === 0) {
                     this.parent.transform.position.copy(tryZ);
@@ -508,7 +516,7 @@ class PlayerController extends engine.Component {
     
             // Push out if still colliding
             const finalAABB = this.getAABB(this.parent.transform.position);
-            const finalCollisions = this.infiniWorld.checkTreeCollisions(finalAABB);
+            const finalCollisions = this.world.checkTreeCollisions(finalAABB);
             if (finalCollisions.length > 0) {
                 // Calculate push-out vector (simplified example)
                 for (const treeAABB of finalCollisions) {

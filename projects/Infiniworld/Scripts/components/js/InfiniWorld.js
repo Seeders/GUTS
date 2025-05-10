@@ -757,15 +757,122 @@ class InfiniWorld extends engine.Component {
         chunkData.objectMeshes.set(type, instanceGroups);
     }
     getTerrainHeight(position) {
+      // Create a raycaster
+      const raycaster = new THREE.Raycaster();
+      
+      // Set the ray origin high above the position
+      const rayOrigin = new THREE.Vector3(position.x, this.chunkSize * 2, position.z);
+      
+      // Set the ray direction downward
+      const rayDirection = new THREE.Vector3(0, -1, 0);
+      raycaster.set(rayOrigin, rayDirection);
+      
+      // Collect visible terrain chunks to test against
+      const chunks = [];
+      const cameraChunkX = Math.floor(position.x / this.chunkSize);
+      const cameraChunkZ = Math.floor(position.z / this.chunkSize);
+      
+      // Check nearby chunks (optimization: only check chunks in a certain radius)
+      for (let x = cameraChunkX - 1; x <= cameraChunkX + 1; x++) {
+        for (let z = cameraChunkZ - 1; z <= cameraChunkZ + 1; z++) {
+          const chunkKey = `${x},${z}`;
+          const chunkData = this.chunks.get(chunkKey);
+          if (chunkData && chunkData.terrainMesh) {
+            chunks.push(chunkData.terrainMesh);
+          }
+        }
+      }
+      
+      // Perform the raycast
+      const intersects = raycaster.intersectObjects(chunks, false);
+      
+      // If there's an intersection, return the y-coordinate
+      if (intersects.length > 0) {
+        return intersects[0].point.y;
+      }
+      
+      // Fallback to terrain generator if no intersection found
+      console.warn('No raycast intersection found, falling back to terrain generator');
       return this.terrainGenerator.getHeight(position);
+    }
+
+    getReflectionAt(position, velocity, restitution) {
+        const normal = this.getTerrainNormal(position);
+        const dotProduct = 
+            velocity.x * normal.x + 
+            velocity.y * normal.y + 
+            velocity.z * normal.z;
+        
+        // Only reflect if moving toward the surface
+        if (dotProduct < 0) {
+            let r = (restitution || 0.3);
+            const slopeAmount = 1 - normal.y;
+            // Calculate reflection vector correctly (r affects the entire reflection, not just normal component)
+            // v_reflect = v - 2(v·n)n then scaled by restitution
+            let reflection = new THREE.Vector3(
+                velocity.x - 2 * dotProduct * normal.x,
+                velocity.y - 2 * dotProduct * normal.y,
+                velocity.z - 2 * dotProduct * normal.z
+            );
+
+
+            if(reflection.length() < 50 || slopeAmount > .5){          
+             // r = normal.y;
+              r = .99;
+              // Scale by restitution (energy loss on bounce)
+            }
+            reflection.x *= r;
+            reflection.y *= r;
+            reflection.z *= r;
+            
+            return reflection;
+        } else {
+            // Not heading into surface, return original velocity
+            return { ...velocity };
+        }
     } 
-    getSlope(position) {
-      return this.terrainGenerator.getSlope(position);
-    } 
-    getReflectionAt(t, p, v, r) {
-      return this.terrainGenerator.getReflectionAt(t, p, v, r);
-    } 
-  
+    getTerrainNormal(position) {
+        // Create a raycaster
+        const raycaster = new THREE.Raycaster();
+        
+        // Set the ray origin high above the position
+        const rayOrigin = new THREE.Vector3(position.x, this.chunkSize * 2, position.z);
+        
+        // Set the ray direction downward
+        const rayDirection = new THREE.Vector3(0, -1, 0);
+        raycaster.set(rayOrigin, rayDirection);
+        
+        // Collect visible terrain chunks to test against
+        const chunks = [];
+        const cameraChunkX = Math.floor(position.x / this.chunkSize);
+        const cameraChunkZ = Math.floor(position.z / this.chunkSize);
+        
+        // Check nearby chunks
+        for (let x = cameraChunkX - 1; x <= cameraChunkX + 1; x++) {
+            for (let z = cameraChunkZ - 1; z <= cameraChunkZ + 1; z++) {
+                const chunkKey = `${x},${z}`;
+                const chunkData = this.chunks.get(chunkKey);
+                if (chunkData && chunkData.terrainMesh) {
+                    chunks.push(chunkData.terrainMesh);
+                }
+            }
+        }
+        
+        // Perform the raycast
+        const intersects = raycaster.intersectObjects(chunks, false);
+        
+        // If there's an intersection, return the face normal
+        if (intersects.length > 0) {
+            return {
+                x: intersects[0].face.normal.x,
+                y: intersects[0].face.normal.y,
+                z: intersects[0].face.normal.z
+            };
+        }
+        
+        // Fallback to upward normal if no intersection found
+        return { x: 0, y: 1, z: 0 };
+    }
     destroy() {
       window.removeEventListener('resize', this.onWindowResizeHandler);
   

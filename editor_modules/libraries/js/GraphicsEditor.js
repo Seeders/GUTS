@@ -228,7 +228,6 @@ class GraphicsEditor {
      * @returns {Promise<void>}
      */
     async updateSelection() {
-        this.shapeManager.highlightSelectedShape();
         this.gizmoManager.updateGizmoPosition();
     }
 

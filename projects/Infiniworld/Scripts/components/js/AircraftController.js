@@ -16,8 +16,8 @@ class AircraftController extends engine.Component {
         positionSmoothingFactor = 0.1, // Reduced from 0.5 for smoother transitions
         velocityThreshold = 0.01     // Minimum velocity threshold to reduce jitter
     }) {
-        this.infiniWorld = this.game.gameEntity.getComponent("InfiniWorld");
-        this.scene = this.infiniWorld.scene;
+        this.world = this.game.gameEntity.getComponent("InfiniWorld");
+        this.scene = this.world.scene;
         this.camera = this.game.camera;
         this.acceleration = acceleration;
         this.strafeAcceleration = strafeAcceleration;
@@ -57,7 +57,7 @@ class AircraftController extends engine.Component {
         this.lastStableUpdateTime = 0;
         this.stableUpdateInterval = 0.5; // Save stable state every 0.5 seconds
 
-        this.controls = new THREE_.PointerLockControls(this.camera, this.infiniWorld.renderer.domElement);
+        this.controls = new THREE_.PointerLockControls(this.camera, this.world.renderer.domElement);
         this.controls.pointerSpeed = 0;
         this.scene.add(this.controls.object);
 
@@ -133,7 +133,7 @@ class AircraftController extends engine.Component {
         this.thrust *= restitution;
         this.parent.transform.position.y += 5;
         
-        let reflection = new THREE.Vector3().copy(this.infiniWorld.getReflectionAt(this.game.deltaTime, this.parent.transform.position, this.velocity, restitution));
+        let reflection = new THREE.Vector3().copy(this.world.getReflectionAt(this.game.deltaTime, this.parent.transform.position, this.velocity, restitution));
         // Add energy loss on bounce (70% energy conservation)
     
         reflection.multiplyScalar(restitution);
