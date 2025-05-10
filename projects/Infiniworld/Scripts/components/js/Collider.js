@@ -1,5 +1,5 @@
 class Collider extends engine.Component {
-    init({ debug = false, objectType, spawnType }) {
+    init({ debug = true, objectType, spawnType }) {
         this.id = this.parent.id;
         this.prefabData = this.game.config[objectType][spawnType];
         this.colliderData = this.game.config.colliders[this.prefabData.collider];
@@ -105,7 +105,8 @@ class Collider extends engine.Component {
             this.parent.transform.velocity.copy(this.game.gameEntity.getComponent('InfiniWorld').getReflectionAt(this.parent.transform.physicsPosition, this.parent.transform.velocity, this.restitution));                        
         }
         if(this.parent.transform.groundHeight > this.parent.transform.position.y - this.size){
-            this.parent.transform.position.y = this.parent.transform.groundHeight + this.size;            
+            this.parent.transform.position.y = this.parent.transform.groundHeight + this.size - this.offset.y;            
+            this.debugMesh.position.y = this.parent.transform.position.y + this.offset.y;
         }
         this.game.gameEntity.getComponent('Physics').collectPhysicsData(this);
     }

@@ -61,7 +61,6 @@ class Physics extends engine.Component {
             aabb: data.aabb,
             collider: data.collider
         });
-
         const entityAABB = data.aabb;
         const collisions = this.game.gameEntity.getComponent('game').world.checkTreeCollisions(entityAABB);
         this.collisionDataBuffer.push({ colliderId: collider.id, collisions });
@@ -91,6 +90,8 @@ class Physics extends engine.Component {
 
     handleWorkerMessage(e) {
         const { entities } = e.data;
+        
+        console.log(entities);
         entities.forEach((updated) => {
             const data = this.colliders.get(updated.id);
             if (!data) return;
@@ -98,7 +99,7 @@ class Physics extends engine.Component {
             data.grounded = updated.position.y - data.size < groundHeight;
             data.entity.grounded = data.grounded;
             if(data.grounded){
-                updated.position.y = groundHeight + data.size;
+                updated.position.y = groundHeight + data.size - data.offset.y;
             }
             data.entity.transform.physicsPosition.x = updated.position.x;
             data.entity.transform.physicsPosition.y = updated.position.y;
@@ -111,6 +112,7 @@ class Physics extends engine.Component {
             // Update AABB if position changed
             data.aabb = data.entity.getAABB(data.position);
             if(updated.collidedWithEntity){
+                debugger;
                 data.entity.OnCollision(this.colliders.get(updated.collidedWith));   
             }
             if(updated.collidedWithStatic){

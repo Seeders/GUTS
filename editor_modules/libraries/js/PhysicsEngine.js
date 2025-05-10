@@ -99,7 +99,7 @@ class PhysicsEngine {
           const e1 = entities[i];
           const e2 = entities[j];
           
-          if (!e1.collider || !e2.collider) continue;
+        //  if (!e1.collider || !e2.collider) continue;
   
           let collision = null;
           if (e1.collider.type === 'sphere' && e2.collider.type === 'sphere') {
@@ -123,7 +123,13 @@ class PhysicsEngine {
      */
     resolveEntityCollisions(collisionPairs) {
       // Apply impulses for entity-entity collisions
-      collisionPairs.forEach(({ e1, e2, impulse }) => {
+      collisionPairs.forEach(({ e1, e2, impulse }) => {        
+        // Set collision flags
+        e1.collidedWithEntity = true;
+        e2.collidedWithEntity = true;
+        e1.collidedWith = e2.id;
+        e2.collidedWith = e1.id;
+
         if (e1.collider.mass > 0) {
           e1.velocity.x += impulse.x / e1.collider.mass;
           e1.velocity.y += impulse.y / e1.collider.mass;
@@ -135,12 +141,6 @@ class PhysicsEngine {
           e2.velocity.y -= impulse.y / e2.collider.mass;
           e2.velocity.z -= impulse.z / e2.collider.mass;
         }
-        
-        // Set collision flags
-        e1.collidedWithEntity = true;
-        e2.collidedWithEntity = true;
-        e1.collidedWith = e2.id;
-        e2.collidedWith = e1.id;
       });
   
       // Resolve penetrations (move entities apart)
@@ -201,14 +201,18 @@ class PhysicsEngine {
       );
     }
   
+
+    vector3Length(v){
+      return Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+    }
     /**
      * Handle sphere-sphere collision detection
      * @private
      * @returns {Object|null} Collision data or null if no collision
      */
     sphereSphereCollision(e1, e2, deltaTime) {
-      const r1 = e1.collider.size;
-      const r2 = e2.collider.size;
+      const r1 = e1.collider.size * (1 + deltaTime * this.vector3Length(e1.velocity));
+      const r2 = e2.collider.size * (1 + deltaTime * this.vector3Length(e2.velocity));
       const p1 = { 
         x: e1.position.x + e1.collider.offset.x, 
         y: e1.position.y + e1.collider.offset.y, 

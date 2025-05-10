@@ -2,7 +2,7 @@
   "title": "Main",
   "sceneData": [
     {
-      "id": 12,
+      "id": 17,
       "type": "game",
       "objectType": "gamePrefabs",
       "spawnType": "infiniworldShire",
@@ -38,7 +38,7 @@
       ]
     },
     {
-      "id": 13,
+      "id": 18,
       "type": "enemy",
       "objectType": "enemyPrefabs",
       "spawnType": "waving_npc",
@@ -74,7 +74,7 @@
       ]
     },
     {
-      "id": 15,
+      "id": 19,
       "type": "player",
       "objectType": "playerPrefabs",
       "spawnType": "waving_guy",
@@ -99,6 +99,42 @@
               "y": 1,
               "z": 1
             }
+          }
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "type": "enemy",
+      "objectType": "enemyPrefabs",
+      "spawnType": "monster",
+      "parent": null,
+      "children": [],
+      "components": [
+        {
+          "type": "transform",
+          "parameters": {
+            "position": {
+              "x": -43.5327299539353,
+              "y": -27.90653706911728,
+              "z": 120.71566069649644
+            },
+            "rotation": {
+              "x": 0,
+              "y": 2.7,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        },
+        {
+          "type": "Collider",
+          "parameters": {
+            "collider": "fighterCollider"
           }
         }
       ]
