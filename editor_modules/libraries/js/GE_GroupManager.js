@@ -172,7 +172,6 @@ class GE_GroupManager {
         this.graphicsEditor.state.selectedShapeIndex = -1;
         let groupData = this.graphicsEditor.getMergedGroup(groupName);
         this.graphicsEditor.uiManager.updateList();
-        this.graphicsEditor.shapeManager.highlightSelectedShape();
         if(groupData){
             // Update the UI to show shapes in this group
             this.graphicsEditor.uiManager.createGroupInspector(groupData);
