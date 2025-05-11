@@ -10,6 +10,12 @@ class Game extends engine.Component {
         this.physics = this.getComponent('Physics');
         this.gridSize = this.game.config.configs.game.gridSize;      
         this.world = this.getComponent('InfiniWorld');
+        this.fpsDiv = document.createElement('div');
+        this.fpsDiv.style.position = "absolute";
+        this.fpsDiv.style.top = '10px';
+        this.fpsDiv.style.left = '10px';
+        this.fpsDiv.style.zIndex = '10000';
+        document.body.append(this.fpsDiv);
     }
     
     update() {
@@ -36,6 +42,7 @@ class Game extends engine.Component {
                 this.fps.fpsValue = Math.round((this.fps.frameCount * 1000) / (this.currentTime - this.fps.lastFpsUpdate));
                 this.fps.frameCount = 0;
                 this.fps.lastFpsUpdate = this.currentTime;
+                this.fpsDiv.textContent = this.fps.fpsValue;
             }
             
             // Fixed physics update

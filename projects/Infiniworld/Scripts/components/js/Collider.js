@@ -1,5 +1,5 @@
 class Collider extends engine.Component {
-    init({ debug = true, objectType, spawnType }) {
+    init({ debug = false, objectType, spawnType }) {
         this.id = this.parent.id;
         this.prefabData = this.game.config[objectType][spawnType];
         this.colliderData = this.game.config.colliders[this.prefabData.collider];

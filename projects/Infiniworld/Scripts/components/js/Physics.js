@@ -104,18 +104,16 @@ class Physics extends engine.Component {
         }
         let v = new THREE.Vector3().copy(entity.transform.velocity);
         let reflected = false;
-        if(entity.transform.physicsPosition.y - data.collider.size + collider.offset.y <= entity.transform.groundHeight){     
-            if(v.length() < 20){
-                data.restitution = 0;
-                v.multiplyScalar(.9);
-            }       
-            v.copy(this.game.gameEntity.getComponent("game").world.getReflectionAt(entity.transform.position, v, data.restitution ));
-            entity.transform.physicsPosition.y = entity.transform.groundHeight + data.collider.size - collider.offset.y;
+        let grounded = true;
+        if(entity.transform.physicsPosition.y - data.collider.size + data.collider.offset.y + v.y*this.game.deltaTime <= entity.transform.groundHeight){                  
             reflected = true;
-        
-        } else {
-            data.restitution = collider.restitution;
+            
+            entity.transform.physicsPosition.y = entity.transform.groundHeight + data.collider.size - data.collider.offset.y + .00001;   
+          
+            v.copy(this.game.gameEntity.getComponent("game").world.getReflectionAt(entity.transform.position, v, data.collider.restitution ));
         }
+
+    
        
         this.physicsDataBuffer.push({
             id: collider.id,
@@ -125,7 +123,8 @@ class Physics extends engine.Component {
             groundHeight: entity.transform.groundHeight,
             aabb: data.aabb,
             collider: data.collider,
-            reflected: reflected
+            reflected: reflected,
+            grounded: grounded
         });
     }
 
@@ -147,9 +146,16 @@ class Physics extends engine.Component {
             const entity = data.entity;
 
             // Update grounded state based on terrain collision
-            data.grounded = updated.collidedWithTerrain && Math.abs(updated.velocity.y) < 0.1;
-            entity.grounded = data.grounded;
+            if(entity.transform.physicsPosition.y - data.collider.size + data.collider.offset.y <= entity.transform.groundHeight){                  
+                updated.position.y = entity.transform.groundHeight + data.collider.size - data.collider.offset.y + .00001;   
+            }
 
+            if(new THREE.Vector3(updated.velocity).length() < 10){
+                updated.velocity.x = 0;
+                updated.velocity.y = 0;
+                updated.velocity.z = 0;
+            }
+       
             entity.transform.physicsPosition.set(
                 updated.position.x,
                 updated.position.y,
