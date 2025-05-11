@@ -62,7 +62,7 @@ class Game extends engine.Component {
             
           //  if (this.physicsAccumulator >= physicsStep) {
             //    if (shouldUpdatePhysics) {
-                    this.physics.sendToWorker(this.world);
+            this.physics.sendToWorker(this.world);
              //   }
              //   this.physicsAccumulator -= physicsStep;
            // }

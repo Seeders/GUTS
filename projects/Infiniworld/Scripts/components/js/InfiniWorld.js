@@ -131,6 +131,7 @@ class InfiniWorld extends engine.Component {
       this.worker = new Worker(URL.createObjectURL(blob));
       this.worker.onmessage = this.handleWorkerMessage.bind(this);
       this.pendingChunks = new Map();
+      this.chunkGeometry = new Map();
   
       // Initialize terrain
       this.setupInitialChunks();
@@ -218,39 +219,39 @@ class InfiniWorld extends engine.Component {
           await this.generateChunk(x, z);
       }
   
-      // Remove old chunks
-      for (const [chunkKey, chunkData] of this.chunks) {
-          if (!newChunks.has(chunkKey) && !chunkData.isGenerating) {
-              if (chunkData.terrainMesh) {
-                  this.rootGroup.remove(chunkData.terrainMesh);
-                  chunkData.terrainMesh.geometry.dispose();
-                  chunkData.terrainMesh.material.dispose();
-              }
-              if (chunkData.waterMesh) {
-                  this.rootGroup.remove(chunkData.waterMesh);
-                  chunkData.waterMesh.geometry.dispose();
-                  chunkData.waterMesh.material.dispose();
-              }
-              chunkData.objectMeshes.forEach((groups, type) => {
-                  groups.forEach(group => {
-                      if (group.mesh) {
-                          this.rootGroup.remove(group.mesh);
-                          group.mesh.geometry.dispose();
-                          if (Array.isArray(group.mesh.material)) {
-                              group.mesh.material.forEach(mat => mat.dispose());
-                          } else {
-                              group.mesh.material.dispose();
-                          }
-                          group.mesh.dispose();
-                      }
-                  });
-              });
-              this.chunks.delete(chunkKey);
-              this.uniforms.delete(chunkKey);
-          }
-      }
+      // // Remove old chunks
+      // for (const [chunkKey, chunkData] of this.chunks) {
+      //     if (!newChunks.has(chunkKey) && !chunkData.isGenerating) {
+      //         if (chunkData.terrainMesh) {
+      //             this.rootGroup.remove(chunkData.terrainMesh);
+      //             chunkData.terrainMesh.geometry.dispose();
+      //             chunkData.terrainMesh.material.dispose();
+      //         }
+      //         if (chunkData.waterMesh) {
+      //             this.rootGroup.remove(chunkData.waterMesh);
+      //             chunkData.waterMesh.geometry.dispose();
+      //             chunkData.waterMesh.material.dispose();
+      //         }
+      //         chunkData.objectMeshes.forEach((groups, type) => {
+      //             groups.forEach(group => {
+      //                 if (group.mesh) {
+      //                     this.rootGroup.remove(group.mesh);
+      //                     group.mesh.geometry.dispose();
+      //                     if (Array.isArray(group.mesh.material)) {
+      //                         group.mesh.material.forEach(mat => mat.dispose());
+      //                     } else {
+      //                         group.mesh.material.dispose();
+      //                     }
+      //                     group.mesh.dispose();
+      //                 }
+      //             });
+      //         });
+      //         this.chunks.delete(chunkKey);
+      //         this.uniforms.delete(chunkKey);
+      //     }
+      // }
   }
-  handleWorkerMessage(e) {
+  handleWorkerMessage(e) {    
     const { cx, cz, positions, indices, colors, normals, vegetation } = e.data;
     const chunkKey = `${cx},${cz}`;
     const chunkData = this.pendingChunks.get(chunkKey);
@@ -545,9 +546,15 @@ class InfiniWorld extends engine.Component {
         mesh.castShadow = true;
         mesh.receiveShadow = true;
         mesh.material.needsUpdate = true;
+        mesh.userData.isTerrain = true;
         this.rootGroup.add(mesh);
         chunkData.terrainMesh = mesh;
-
+        chunkData.geometry = {
+          positions: [...geometry.attributes.position.array],
+          indices: [...geometry.index.array]
+        };
+        chunkData.position = new THREE.Vector3(chunkWorldX, 0, chunkWorldZ);
+    //    this.chunkGeometry.set(chunkKey, geometry);
         // Generate water mesh
         const waterMesh = this.generateWaterMesh(cx, cz, adjustedPositions);
         if (waterMesh) {
@@ -791,9 +798,7 @@ class InfiniWorld extends engine.Component {
         return intersects[0].point.y;
       }
       
-      // Fallback to terrain generator if no intersection found
-      console.warn('No raycast intersection found, falling back to terrain generator');
-      return this.terrainGenerator.getHeight(position);
+      return 0;//this.terrainGenerator.getHeight(position);
     }
 
     getReflectionAt(position, velocity, restitution) {

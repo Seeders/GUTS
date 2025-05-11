@@ -6,27 +6,34 @@ class Physics extends engine.Component {
         this.worker = new Worker(this.workerBlobURL);
         this.worker.onmessage = this.handleWorkerMessage.bind(this);
         this.colliders = new Map();
+        this.collidersToRemove = null;
         this.physicsDataBuffer = [];
-        this.collisionDataBuffer = [];
+        this.groundHeightBuffer = [];
         this.lastUpdate = 0;
         this.updateInterval = 1 / 60; // 60 Hz
         this.deltaTime = 0;
         this.game.physics = this;
         this.shouldUpdate = false;
+        this.debugPhysics = false;
     }
 
     registerCollider(collider) {
         let entity = collider.parent;
-        if (!collider.id || !entity.transform.position) return;
-        const aabb = collider.getAABB(entity.transform.position);        
+        if (!collider.id || !entity.transform.position) {
+            if (this.debugPhysics) console.warn("Failed to register collider: missing ID or position", collider);
+            return;
+        }
+
+        const aabb = collider.getAABB(entity.transform.position);
         this.colliders.set(collider.id, {
             entity: entity,
             position: { ...entity.transform.position },
+            quaternion: { ...entity.transform.quaternion },
             velocity: { ...entity.transform.velocity },
             aabb,
             collider: {
                 type: collider.type,
-                size: collider.size,                
+                size: collider.size,
                 gravity: collider.gravity,
                 offset: collider.offset,
                 mass: collider.mass,
@@ -34,10 +41,19 @@ class Physics extends engine.Component {
             },
             grounded: false
         });
+
+        if (this.debugPhysics) console.log("Registered collider:", collider.id, collider.type);
     }
 
     unregisterCollider(colliderId) {
-        this.colliders.delete(colliderId);
+        if (this.colliders.has(colliderId)) {
+            this.colliders.delete(colliderId);
+            if (!this.collidersToRemove) {
+                this.collidersToRemove = [];
+            }
+            this.collidersToRemove.push(colliderId);
+            if (this.debugPhysics) console.log("Unregistered collider:", colliderId);
+        }
     }
 
     startPhysicsUpdate(deltaTime) {
@@ -45,83 +61,150 @@ class Physics extends engine.Component {
         this.lastUpdate = currentTime;
         this.deltaTime = deltaTime || 1 / 60;
         this.physicsDataBuffer = [];
-        this.collisionDataBuffer = [];
         this.shouldUpdate = true;
     }
 
-    collectPhysicsData(collider) {
-        if(!this.shouldUpdate) return;
-        const entity = collider.parent;
-        const data = this.colliders.get(collider.id);
-        if (!data) return;
-        this.physicsDataBuffer.push({
-            id: collider.id,
-            position: entity.transform.physicsPosition.clone(),
-            velocity: entity.transform.velocity.clone(),
-            aabb: data.aabb,
-            collider: data.collider
-        });
-        const entityAABB = data.aabb;
-        const collisions = this.game.gameEntity.getComponent('game').world.checkTreeCollisions(entityAABB);
-        this.collisionDataBuffer.push({ colliderId: collider.id, collisions });
-    }
+    sendToWorker() {
+        if (this.physicsDataBuffer.length === 0 && !this.collidersToRemove) return;
 
-    sendToWorker(terrainComponent) {
-        if (this.physicsDataBuffer.length === 0) return;
-
-        // Extract biome configuration to send to worker
-        let biomeConfig = {};
-        if (terrainComponent && terrainComponent.biomes) {
-            // Deep copy the biome configuration
-            biomeConfig = terrainComponent.biomes;
-        }
+        const gravityValue = -9.8 * 2.5;
 
         this.worker.postMessage({
             entities: this.physicsDataBuffer,
-            collisionData: this.collisionDataBuffer,
-            deltaTime: this.game.deltaTime,
-            gravity: -9.86,
-            biomeConfig: biomeConfig,
-            chunkSize: terrainComponent.chunkSize,
-            chunkResolution: terrainComponent.chunkResolution
+            removeColliders: this.collidersToRemove || [],
+            deltaTime: this.deltaTime,
+            gravity: gravityValue
         });
+
+        if (this.debugPhysics) {
+            console.log("Physics update sent to worker:", {
+                entities: this.physicsDataBuffer.length,
+                removeColliders: (this.collidersToRemove || []).length
+            });
+        }
+
+        this.physicsDataBuffer = [];
+        this.collidersToRemove = null;
         this.shouldUpdate = false;
+    }
+
+    collectPhysicsData(collider) {
+        if (!this.shouldUpdate) return;
+
+        const entity = collider.parent;
+        const data = this.colliders.get(collider.id);
+
+        if (!data) {
+            if (this.debugPhysics) console.warn("No collider data found for:", collider.id);
+            return;
+        }
+
+        if (!entity.transform.physicsPosition) {
+            entity.transform.physicsPosition = entity.transform.position.clone();
+        }
+        let v = new THREE.Vector3().copy(entity.transform.velocity);
+        let reflected = false;
+        if(entity.transform.physicsPosition.y - data.collider.size + collider.offset.y <= entity.transform.groundHeight){     
+            if(v.length() < 20){
+                data.restitution = 0;
+                v.multiplyScalar(.9);
+            }       
+            v.copy(this.game.gameEntity.getComponent("game").world.getReflectionAt(entity.transform.position, v, data.restitution ));
+            entity.transform.physicsPosition.y = entity.transform.groundHeight + data.collider.size - collider.offset.y;
+            reflected = true;
+        
+        } else {
+            data.restitution = collider.restitution;
+        }
+       
+        this.physicsDataBuffer.push({
+            id: collider.id,
+            position: entity.transform.physicsPosition.clone(),
+            velocity: v,
+            quaternion: entity.transform.quaternion.clone(),
+            groundHeight: entity.transform.groundHeight,
+            aabb: data.aabb,
+            collider: data.collider,
+            reflected: reflected
+        });
     }
 
     handleWorkerMessage(e) {
         const { entities } = e.data;
-        
-        console.log(entities);
-        entities.forEach((updated) => {
+
+        if (!entities) {
+            if (this.debugPhysics) console.warn("No entities in physics worker response");
+            return;
+        }
+
+        entities.forEach(updated => {
             const data = this.colliders.get(updated.id);
-            if (!data) return;
-            const groundHeight = this.parent.transform.getGroundHeight(updated.position);
-            data.grounded = updated.position.y - data.size < groundHeight;
-            data.entity.grounded = data.grounded;
-            if(data.grounded){
-                updated.position.y = groundHeight + data.size - data.offset.y;
+            if (!data) {
+                if (this.debugPhysics) console.warn("No collider data found for updated entity:", updated.id);
+                return;
             }
-            data.entity.transform.physicsPosition.x = updated.position.x;
-            data.entity.transform.physicsPosition.y = updated.position.y;
-            data.entity.transform.physicsPosition.z = updated.position.z;
-            data.entity.transform.velocity.x = updated.velocity.x;
-            data.entity.transform.velocity.y = updated.velocity.y;
-            data.entity.transform.velocity.z = updated.velocity.z;            
+
+            const entity = data.entity;
+
+            // Update grounded state based on terrain collision
+            data.grounded = updated.collidedWithTerrain && Math.abs(updated.velocity.y) < 0.1;
+            entity.grounded = data.grounded;
+
+            entity.transform.physicsPosition.set(
+                updated.position.x,
+                updated.position.y,
+                updated.position.z
+            );
+
+            entity.transform.velocity.set(
+                updated.velocity.x,
+                updated.velocity.y,
+                updated.velocity.z
+            );
+
+            entity.transform.quaternion.set(
+                updated.quaternion.x,
+                updated.quaternion.y,
+                updated.quaternion.z,
+                updated.quaternion.w
+            );
+
             data.position = { ...updated.position };
             data.velocity = { ...updated.velocity };
-            // Update AABB if position changed
-            data.aabb = data.entity.getAABB(data.position);
-            if(updated.collidedWithEntity){
-                debugger;
-                data.entity.OnCollision(this.colliders.get(updated.collidedWith));   
+            data.quaternion = { ...updated.quaternion };
+            data.aabb = entity.getAABB ? entity.getAABB(data.position) : data.aabb;
+
+            // Handle entity-entity collisions
+            if (updated.collisions && updated.collisions.length > 0) {
+                updated.collisions.forEach(collidedId => {
+                    const collidedData = this.colliders.get(collidedId);
+                    if (collidedData && entity.OnCollision) {
+                        entity.OnCollision(collidedData);
+                    }
+                });
             }
-            if(updated.collidedWithStatic){
-                data.entity.OnStaticCollision();
+
+            // Handle entity-terrain collisions
+            if (updated.collidedWithTerrain) {
+                if (entity.OnStaticCollision) {
+                    entity.OnStaticCollision();
+                }
             }
-            if(updated.grounded){
-                data.entity.OnGrounded();
+
+            // Handle just-grounded events
+            if (data.grounded && !data.wasGrounded) {
+                if (entity.OnGrounded) {
+                    entity.OnGrounded();
+                }
+                data.wasGrounded = true;
+            } else if (!data.grounded) {
+                data.wasGrounded = false;
             }
         });
+
+        if (e.data.perf && this.debugPhysics) {
+            console.log("Physics FPS:", e.data.perf);
+        }
     }
 
     onDestroy() {
@@ -136,35 +219,9 @@ class Physics extends engine.Component {
 
     getWorkerCode() {
         return `
-            ${this.game.config.libraries["SimplexNoise"].script}
-
-            ${this.game.config.libraries["TerrainGenerator"].script}
-           
-            ${this.game.config.libraries["PhysicsEngine"].script}
-
-            const noise = new SimplexNoise();
-            const physicsEngine = new PhysicsEngine();
-            const terrainGenerator = new TerrainGenerator();
-            
-            // Handle worker messages
-            self.onmessage = function(e) {
-                const { entities, collisionData, deltaTime, gravity, biomeConfig, chunkSize, chunkResolution } = e.data;
-                
-                terrainGenerator.init(
-                    biomeConfig, 
-                    chunkSize, 
-                    chunkResolution,
-                    noise
-                );
-                physicsEngine.init({gravity: gravity, handleTerrainCollision: terrainGenerator.getReflectionAt.bind(terrainGenerator), getTerrainHeight: terrainGenerator.getHeight.bind(terrainGenerator)});
-                
-                // Update physics
-                const updatedEntities = physicsEngine.update(entities, collisionData, deltaTime);
-                
-                // Return updated entities
-                self.postMessage({ entities: updatedEntities });
-            };
-
-        `;
+    ${this.game.config.libraries["Ammo"].script}
+    ${this.game.config.libraries["AmmoWorker"].script}
+    
+`;
     }
 }
