@@ -110,7 +110,9 @@ self.onmessage = function(e) {
                 const motionState = new AmmoLib.btDefaultMotionState(tempTransform);
                 const bodyInfo = new AmmoLib.btRigidBodyConstructionInfo(mass, motionState, shape, tempVec3);
                 const body = new AmmoLib.btRigidBody(bodyInfo);
-                
+                body.setCcdMotionThreshold(1); // Trigger CCD at small motion
+                body.setCcdSweptSphereRadius(entity.collider.size / 2); // Sphere radius for CCD
+          
                 body.setRestitution(entity.collider.restitution || 0.5);
                 body.setFriction(0.5);
                 
