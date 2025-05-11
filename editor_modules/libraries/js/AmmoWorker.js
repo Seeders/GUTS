@@ -146,27 +146,25 @@ self.onmessage = function(e) {
               tempTransform.setOrigin(tempVec3);
 
               if (entity.reflected) {
-                  // Update velocity
-                  tempVec3.setValue(
-                      entity.velocity.x,
-                      entity.velocity.y,
-                      entity.velocity.z
-                  );
-                  body.setLinearVelocity(tempVec3);
+                // Update velocity
+                tempVec3.setValue(
+                    entity.velocity.x,
+                    entity.velocity.y,
+                    entity.velocity.z
+                );
+                body.setLinearVelocity(tempVec3);
 
                   // Update position to match main thread's snapped position
-                  body.getMotionState().setWorldTransform(tempTransform);
-
-                  // Disable gravity temporarily to prevent sinking
-                  body.setGravity(new AmmoLib.btVector3(0, 0, 0));
-                  body.userData.gravityDisabled = true;
+                body.getMotionState().setWorldTransform(tempTransform);
+                body.setGravity(new AmmoLib.btVector3(0, 0, 0));
+                body.userData.gravityDisabled = true;
               } else {
-                  // Restore gravity if not reflected
-                  if (body.userData.gravityDisabled) {
-                      body.setGravity(new AmmoLib.btVector3(0, entity.collider.gravity ? gravity : 0, 0));
-                      body.userData.gravityDisabled = false;
-                  }
-                  body.getMotionState().setWorldTransform(tempTransform);
+                // Restore gravity if not reflected
+                if (body.userData.gravityDisabled) {
+                    body.setGravity(new AmmoLib.btVector3(0, entity.collider.gravity ? gravity : 0, 0));
+                    body.userData.gravityDisabled = false;
+                }
+                body.getMotionState().setWorldTransform(tempTransform);
               }
 
               if (entity.quaternion) {
