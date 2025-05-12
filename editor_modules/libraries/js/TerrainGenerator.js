@@ -466,9 +466,10 @@ class TerrainGenerator {
                         const trunkRadius = 5.0 * instance.scale;
                         const trunkHeight = 20.0 * instance.scale;
                         aabb = {
+                            id: `tree_${position.x}_${position.z}`,
                             min: {
                                 x: position.x - trunkRadius,
-                                y: position.y,
+                                y: position.y - trunkHeight,
                                 z: position.z - trunkRadius
                             },
                             max: {
@@ -481,6 +482,7 @@ class TerrainGenerator {
                         const rockRadius = 1.0 * instance.scale;
                         const rockHeight = 1.0 * instance.scale;
                         aabb = {
+                            id: `rock_${position.x}_${position.z}`,
                             min: {
                                 x: position.x - rockRadius,
                                 y: position.y,
