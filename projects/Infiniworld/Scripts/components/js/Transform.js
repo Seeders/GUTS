@@ -12,7 +12,6 @@ class Transform extends engine.Component {
         this.quaternion = new THREE.Quaternion();
         this.quaternion.setFromAxisAngle( new THREE.Vector3( rotationX, rotationY, rotationZ ), Math.PI / 2 );        
         this.parent.transform = this;         
-        this.lerpFactor = .4; // Adjust this value to control smoothing (0-1)
         this.groundHeight = 0;
     }
     update() {

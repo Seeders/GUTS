@@ -49,8 +49,7 @@ class AircraftController extends engine.Component {
         // Initialize transform properties needed for physics
         this.parent.transform.physicsPosition = new THREE.Vector3().copy(this.parent.transform.position);
         this.parent.grounded = false;
-        this.parent.transform.lerpFactor = this.positionSmoothingFactor; // Reduced for smoother transitions
-        
+ 
         // Store last stable position/rotation for recovery
         this.lastStablePosition = new THREE.Vector3().copy(this.parent.transform.position);
         this.lastStableQuaternion = new THREE.Quaternion().copy(this.parent.transform.quaternion);

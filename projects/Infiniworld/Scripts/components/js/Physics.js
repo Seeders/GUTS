@@ -105,12 +105,26 @@ class Physics extends engine.Component {
         let v = new THREE.Vector3().copy(entity.transform.velocity);
         let reflected = false;
         let grounded = true;
-        if(entity.transform.physicsPosition.y - data.collider.size + data.collider.offset.y + v.y*this.game.deltaTime <= entity.transform.groundHeight){                  
+        if(entity.transform.physicsPosition.y - data.collider.size + data.collider.offset.y + v.y*this.game.deltaTime <= entity.transform.groundHeight) {                  
             reflected = true;
             
             entity.transform.physicsPosition.y = entity.transform.groundHeight + data.collider.size - data.collider.offset.y + .00001;   
-          
-            v.copy(this.game.gameEntity.getComponent("game").world.getReflectionAt(entity.transform.position, v, data.collider.restitution ));
+            
+            // Smoothly reduce restitution based on velocity
+            const velocityMagnitude = v.length();
+            const minVelocity = 10;  // Below this speed, no bounce
+            const maxVelocity = 50; // Above this speed, full bounce
+            const baseRestitution = data.collider.restitution;
+            
+            // Calculate smoothed restitution factor
+            let r = baseRestitution;
+            if (velocityMagnitude < maxVelocity) {
+                // Smooth interpolation between 0 and full restitution
+                const t = Math.max(0, (velocityMagnitude - minVelocity) / (maxVelocity - minVelocity));
+                r = baseRestitution * (t * t); // Square for more gradual initial reduction
+            }
+            
+            v.copy(this.game.gameEntity.getComponent("game").world.getReflectionAt(entity.transform.position, v, r));
         }
 
     

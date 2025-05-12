@@ -22,7 +22,8 @@ class Collider extends engine.Component {
         this.restitution = this.colliderData.restitution;
         this.debug = debug; // Enable debug mode
         this.debugMesh = null; // Store debug mesh
-
+        this.lerpFactor = this.colliderData.lerpFactor || .7; // Adjust this value to control smoothing (0-1)
+     
         // Register with physics system
         this.game.gameEntity.getComponent('Physics').registerCollider(this);
 
@@ -90,11 +91,14 @@ class Collider extends engine.Component {
     }
 
     update() {
-
+ 
         this.parent.transform.position.lerp(
             this.parent.transform.physicsPosition,
-            this.parent.transform.lerpFactor
+            this.lerpFactor
         );
+        if(this.parent.transform.position.y - this.size + this.offset.y + this.parent.transform.velocity.y*this.game.deltaTime <= this.parent.transform.groundHeight){                                        
+            this.parent.transform.position.y = this.parent.transform.groundHeight + this.size - this.offset.y + .00001;   
+        }
         // Update debug mesh position if it exists
         if (this.debug && this.debugMesh) {
             this.debugMesh.position.copy(this.parent.transform.physicsPosition).add(this.offset);
