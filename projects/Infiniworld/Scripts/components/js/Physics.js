@@ -5,6 +5,7 @@ class Physics extends engine.Component {
         this.workerBlobURL = URL.createObjectURL(blob);
         this.worker = new Worker(this.workerBlobURL);
         this.worker.onmessage = this.handleWorkerMessage.bind(this);
+        this.worker.postMessage({ hostname: location.host });
         this.colliders = new Map();
         this.collidersToRemove = [];
         this.physicsDataBuffer = [];
@@ -248,9 +249,8 @@ class Physics extends engine.Component {
 
     getWorkerCode() {
         return `
-    ${this.game.config.libraries["Ammo"].script}
-    ${this.game.config.libraries["AmmoWorker"].script}
-    
+    ${this.game.config.libraries["AmmoWasm"].script}    
+    ${this.game.config.libraries["AmmoWorker"].script}    
 `;
     }
 }

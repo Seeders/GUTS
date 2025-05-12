@@ -10,7 +10,6 @@
     "ShapeFactory",
     "SimplexNoise",
     "TerrainGenerator",
-    "Ammo",
     "ImageManager",
     "SpatialGrid",
     "CoordinateTranslator",
