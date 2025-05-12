@@ -20,7 +20,13 @@ const CACHE_DIR = path.join(__dirname, 'cache');
 // Configure Express server
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(express.json({ limit: '10mb' }));
-app.use(express.static(BASE_DIR));
+app.use(express.static(BASE_DIR, {
+    setHeaders: (res, path) => {
+        if (path.endsWith('.wasm')) {
+            res.set('Content-Type', 'application/wasm');
+        }
+    }
+}));
 
 // Map of watchers by directory
 const watchers = new Map();

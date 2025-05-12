@@ -36,16 +36,19 @@ function initPhysics() {
     tempQuat = new AmmoLib.btQuaternion(0, 0, 0, 1);
 }
 
-// Wait for Ammo to load
-Ammo().then(function(AmmoInstance) {
-    AmmoLib = AmmoInstance;
-    initPhysics();
-    if (debugWorker) console.log("Physics initialized");
-});
-
 self.onmessage = function(e) {
     if (!AmmoLib) {
-        if (debugWorker) console.warn("Ammo.js not yet initialized");
+                 
+        var config = {
+            locateFile: () => `http://${e.data.hostname || "localhost:5000"}/library/ammo.wasm.wasm`
+        }
+   
+        // Wait for Ammo to load
+        Ammo(config).then(function(AmmoInstance) {
+            AmmoLib = AmmoInstance;
+            initPhysics();
+            if (debugWorker) console.log("Physics initialized");
+        });
         return;
     }
 
