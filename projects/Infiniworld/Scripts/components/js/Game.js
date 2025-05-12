@@ -10,12 +10,12 @@ class Game extends engine.Component {
         this.physics = this.getComponent('Physics');
         this.gridSize = this.game.config.configs.game.gridSize;      
         this.world = this.getComponent('InfiniWorld');
-        this.fpsDiv = document.createElement('div');
-        this.fpsDiv.style.position = "absolute";
-        this.fpsDiv.style.top = '10px';
-        this.fpsDiv.style.left = '10px';
-        this.fpsDiv.style.zIndex = '10000';
-        document.body.append(this.fpsDiv);
+        this.debugDiv = document.createElement('div');
+        this.debugDiv.style.position = "absolute";
+        this.debugDiv.style.top = '10px';
+        this.debugDiv.style.left = '10px';
+        this.debugDiv.style.zIndex = '10000';
+        document.body.append(this.debugDiv);
     }
     
     update() {
@@ -42,20 +42,20 @@ class Game extends engine.Component {
                 this.fps.fpsValue = Math.round((this.fps.frameCount * 1000) / (this.currentTime - this.fps.lastFpsUpdate));
                 this.fps.frameCount = 0;
                 this.fps.lastFpsUpdate = this.currentTime;
-                this.fpsDiv.textContent = this.fps.fpsValue;
+                this.debugDiv.textContent = `fps:${this.fps.fpsValue}  entityCount:${this.game.state.entities.length}`;
             }
             
             // Fixed physics update
-          //  const physicsStep = 1/60; // 60 Hz physics update
-           // this.physicsAccumulator += this.game.deltaTime;
+           const physicsStep = 1/60; // 60 Hz physics update
+           this.physicsAccumulator += this.game.deltaTime;
          
             // Single entity loop
             const entitiesToKeep = [];
-           // let shouldUpdatePhysics = true;
-           // if(this.physicsAccumulator >= physicsStep) {
-                this.physics.startPhysicsUpdate( this.game.deltaTime );
-            //    shouldUpdatePhysics = true;
-           // }
+           let shouldUpdatePhysics = true;
+           if(this.physicsAccumulator >= physicsStep) {
+                this.physics.startPhysicsUpdate( physicsStep );
+               shouldUpdatePhysics = true;
+           }
             
             for (let i = 0; i < this.game.state.entities.length; i++) {
                 let e = this.game.state.entities[i];
@@ -67,15 +67,12 @@ class Game extends engine.Component {
                 }
             }
             
-
-            this.physics.setStaticAABBs(this.world.getStaticAABBs());
-            this.physics.setStaticAABBsToRemove(this.world.getStaticAABBsToRemove());
-          //  if (this.physicsAccumulator >= physicsStep) {
-            //    if (shouldUpdatePhysics) {
-            this.physics.sendToWorker(this.world);
-             //   }
-             //   this.physicsAccumulator -= physicsStep;
-           // }
+            if (this.physicsAccumulator >= physicsStep) {
+                if (shouldUpdatePhysics) {                
+                    this.physics.sendToWorker(this.world);
+                }
+               this.physicsAccumulator -= physicsStep;
+            }
             this.game.state.entities = entitiesToKeep;
             
             this.postUpdate();

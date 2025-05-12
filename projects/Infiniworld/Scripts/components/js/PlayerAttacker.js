@@ -11,8 +11,8 @@ class PlayerAttacker extends engine.Component {
         this.isThrowAnimationPlaying = false;
         this.throwRequested = false;
         this.throwTimer = 0;
-        this.throwDelay = 1.2; // Keep your original delay
-        this.throwDuration = 2;
+        this.throwDelay = 0;//1.2; // Keep your original delay
+        this.throwDuration = 0;//2;
     }
     
     update() {

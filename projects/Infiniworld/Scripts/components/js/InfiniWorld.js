@@ -253,11 +253,17 @@ class InfiniWorld extends engine.Component {
               this.chunks.delete(chunkKey);
               this.uniforms.delete(chunkKey);
           }
-      }      
+      }   
+      
+      if(chunksToGenerate.length > 0){        
+        this.parent.getComponent('game').physics.setStaticAABBs(this.getStaticAABBs(), this.getStaticAABBsToRemove());
+      }
   }
+
   getStaticAABBsToRemove() {
     return this.staticAABBsToRemove;
   }
+
   handleWorkerMessage(e) {    
     const { cx, cz, positions, indices, colors, normals, vegetation } = e.data;
     const chunkKey = `${cx},${cz}`;
@@ -598,204 +604,281 @@ class InfiniWorld extends engine.Component {
         this.chunks.delete(chunkKey);
         this.pendingChunks.delete(chunkKey);
     }
-}
+  }
 
-    getStaticAABBs() {
-      const cameraChunkX = Math.floor(this.camera.position.x / this.chunkSize);
-      const cameraChunkZ = Math.floor(this.camera.position.z / this.chunkSize);
-      let staticAABBs = [];
+  getStaticAABBs() {
+    const cameraChunkX = Math.floor(this.camera.position.x / this.chunkSize);
+    const cameraChunkZ = Math.floor(this.camera.position.z / this.chunkSize);
+    let staticAABBs = [];
 
-      // Check nearby chunks
-      for (let x = cameraChunkX - 1; x <= cameraChunkX + 1; x++) {
-        for (let z = cameraChunkZ - 1; z <= cameraChunkZ + 1; z++) {
-          staticAABBs = [...staticAABBs, ...this.getStaticAABBsAt(x, z)];
-        }
+    // Check nearby chunks
+    for (let x = cameraChunkX - 1; x <= cameraChunkX + 1; x++) {
+      for (let z = cameraChunkZ - 1; z <= cameraChunkZ + 1; z++) {
+        staticAABBs = [...staticAABBs, ...this.getStaticAABBsAt(x, z)];
       }
-      return staticAABBs;
     }
-    getStaticAABBsAt(cx, cz){
-      const chunkKey = `${cx},${cz}`;
-      const chunkData = this.chunks.get(chunkKey);
-      if (!chunkData) return [];
-      if(chunkData.collisionAABBs){
+    return staticAABBs;
+  }
+
+  getStaticAABBsAt(cx, cz){
+    const chunkKey = `${cx},${cz}`;
+    const chunkData = this.chunks.get(chunkKey);
+    if (!chunkData) return [];
+    if(chunkData.collisionAABBs){
+      const treeAABBs = chunkData.collisionAABBs.get('tree');
+      return [...(treeAABBs || [])];        
+    }
+    return [];
+  }
+    
+  checkTreeCollisions(colliderAABB) {
+    const collisions = [];
+    const cameraChunkX = Math.floor(this.camera.position.x / this.chunkSize);
+    const cameraChunkZ = Math.floor(this.camera.position.z / this.chunkSize);
+  
+    // Check nearby chunks
+    for (let x = cameraChunkX - 1; x <= cameraChunkX + 1; x++) {
+      for (let z = cameraChunkZ - 1; z <= cameraChunkZ + 1; z++) {
+        const chunkKey = `${x},${z}`;
+        const chunkData = this.chunks.get(chunkKey);
+        if (!chunkData) continue;
+  
         const treeAABBs = chunkData.collisionAABBs.get('tree');
-
-      
-        return [...(treeAABBs || [])];        
-      }
-      return [];
-    }
-      
-    checkTreeCollisions(colliderAABB) {
-      const collisions = [];
-      const cameraChunkX = Math.floor(this.camera.position.x / this.chunkSize);
-      const cameraChunkZ = Math.floor(this.camera.position.z / this.chunkSize);
-    
-      // Check nearby chunks
-      for (let x = cameraChunkX - 1; x <= cameraChunkX + 1; x++) {
-        for (let z = cameraChunkZ - 1; z <= cameraChunkZ + 1; z++) {
-          const chunkKey = `${x},${z}`;
-          const chunkData = this.chunks.get(chunkKey);
-          if (!chunkData) continue;
-    
-          const treeAABBs = chunkData.collisionAABBs.get('tree');
-          if(treeAABBs){
-            treeAABBs.forEach(aabb => {
-              if (this.aabbIntersects(colliderAABB, aabb)) {
-                collisions.push(aabb);
-              }
-            });
-          }
-          const rockAABBs = chunkData.collisionAABBs.get('rock');
-          if(rockAABBs){
-            rockAABBs.forEach(aabb => {
-              if (this.aabbIntersects(colliderAABB, aabb)) {
-                collisions.push(aabb);
-              }
-            });
-          }
-        }
-      }
-      return collisions;
-    }
-    
-    aabbIntersects(aabb1, aabb2) {
-      return (
-        aabb1.min.x <= aabb2.max.x &&
-        aabb1.max.x >= aabb2.min.x &&
-        aabb1.min.y <= aabb2.max.y &&
-        aabb1.max.y >= aabb2.min.y &&
-        aabb1.min.z <= aabb2.max.z &&
-        aabb1.max.z >= aabb2.min.z
-      );
-    }
-
-
-    update() {
-      if (!this.game.getCollections().configs.game.is3D) return;
-      this.timer += this.game.deltaTime || 0;
-      this.skyDome.position.set(this.camera.position.x, 0, this.camera.position.z); // Center it around the camera
-      this.updateChunks();
-    
-      const cameraPos = this.camera.position;
-    
-      // Update directional light position smoothly every frame
-      this.directionalLight.position.set(cameraPos.x + 500, 500, cameraPos.z + 500);
-      this.directionalLight.target.position.set(cameraPos.x, 0, cameraPos.z);
-      this.directionalLight.target.updateMatrixWorld();
-    
-      // Update shadow camera smoothly every frame
-      const shadowCamera = this.directionalLight.shadow.camera;
-    
-      // Center shadow camera on the player's position
-      const terrainHeight = this.getTerrainHeight(cameraPos);
-      shadowCamera.position.set(cameraPos.x, terrainHeight + 500, cameraPos.z);
-      shadowCamera.lookAt(cameraPos.x, terrainHeight, cameraPos.z);
-      shadowCamera.updateProjectionMatrix();
-      shadowCamera.updateMatrixWorld();
-    
-      // Only force shadow map update when terrain changes (e.g., new chunks)
-      // This is already handled in handleWorkerMessage with this.renderer.shadowMap.needsUpdate = true
-    
-      for (const key in this.uniforms) {
-        this.uniforms[key].time = { value: this.timer };
-      }
-    
-      this.renderer.render(this.scene, this.camera);
-    }
-  
-    onWindowResize() {
-   
-      if(this.canvas){
-
-        const width = this.container.clientWidth || window.innerWidth;
-        const height = this.container.clientHeight || window.innerHeight;
-        this.camera.aspect = width / height;
-        this.camera.updateProjectionMatrix();
-        this.renderer.setSize(width, height);
-        this.canvas.style.width = `${width}px`;
-        this.canvas.style.height = `${height}px`;
-      }
-    }
-  
-    processModelType(type, model, instances, chunkData) {
-        // Ensure model’s world matrices are up-to-date
-        model.updateMatrixWorld(true);
-    
-        // Collect mesh data with transformations relative to model root
-        const meshData = [];
-        model.traverse(node => {
-          if (node.isMesh) {
-            const parent = node.parent;
-            const parentWorldMatrix = parent.matrixWorld.clone();
-            const localMatrix = node.matrix.clone();
-    
-            // Compute transformation relative to model root
-            const relativeMatrix = new THREE.Matrix4();
-            relativeMatrix.copy(parentWorldMatrix);
-            relativeMatrix.multiply(localMatrix);
-    
-            meshData.push({
-              mesh: node,
-              relativeMatrix: relativeMatrix
-            });
-          }
-        });
-    
-        if (meshData.length === 0) {
-          console.warn(`No meshes found in model: ${type}`);
-          return;
-        }
-    
-        // Create instanced meshes for each mesh in the model
-        const instanceGroups = meshData.map(({ mesh, relativeMatrix }) => {
-          const instancedMesh = new THREE.InstancedMesh(
-            mesh.geometry,
-            mesh.material.clone(), // Clone material to avoid shared state
-            instances.length
-          );
-          instancedMesh.userData.relativeMatrix = relativeMatrix;
-          instancedMesh.castShadow = true;
-          instancedMesh.receiveShadow = true;
-          instancedMesh.material.needsUpdate = true; // Force material update
-          this.rootGroup.add(instancedMesh);
-          return { mesh: instancedMesh, instances: [] };
-        });
-    
-        // Set instance transformations
-        const matrix = new THREE.Matrix4();
-        const dummy = new THREE.Object3D();
-    
-        instances.forEach((instance, index) => {
-          // Set base transformation from worker data
-          dummy.position.set(
-            instance.position.x,
-            instance.position.y,
-            instance.position.z
-          );
-          dummy.rotation.y = instance.rotation;
-          dummy.scale.setScalar(instance.scale);
-          dummy.updateMatrix();
-    
-          // Apply base transformation combined with each mesh’s relative matrix
-          instanceGroups.forEach((group, meshIndex) => {
-            matrix.copy(dummy.matrix);
-            matrix.multiply(group.mesh.userData.relativeMatrix);
-            group.mesh.setMatrixAt(index, matrix);
-            group.instances.push(index);
+        if(treeAABBs){
+          treeAABBs.forEach(aabb => {
+            if (this.aabbIntersects(colliderAABB, aabb)) {
+              collisions.push(aabb);
+            }
           });
-        });
-    
-        // Update instance matrices
-        instanceGroups.forEach(group => {
-          group.mesh.instanceMatrix.needsUpdate = true;
-          this.renderer.shadowMap.needsUpdate = true; // Force shadow map update
-        });
-    
-        // Store instance groups in chunk data
-        chunkData.objectMeshes.set(type, instanceGroups);
+        }
+        const rockAABBs = chunkData.collisionAABBs.get('rock');
+        if(rockAABBs){
+          rockAABBs.forEach(aabb => {
+            if (this.aabbIntersects(colliderAABB, aabb)) {
+              collisions.push(aabb);
+            }
+          });
+        }
+      }
     }
-    getTerrainHeight(position) {
+    return collisions;
+  }
+  
+  aabbIntersects(aabb1, aabb2) {
+    return (
+      aabb1.min.x <= aabb2.max.x &&
+      aabb1.max.x >= aabb2.min.x &&
+      aabb1.min.y <= aabb2.max.y &&
+      aabb1.max.y >= aabb2.min.y &&
+      aabb1.min.z <= aabb2.max.z &&
+      aabb1.max.z >= aabb2.min.z
+    );
+  }
+
+
+  update() {
+    if (!this.game.getCollections().configs.game.is3D) return;
+    this.timer += this.game.deltaTime || 0;
+    this.skyDome.position.set(this.camera.position.x, 0, this.camera.position.z); // Center it around the camera
+    this.updateChunks();
+  
+    const cameraPos = this.camera.position;
+  
+    // Update directional light position smoothly every frame
+    this.directionalLight.position.set(cameraPos.x + 500, 500, cameraPos.z + 500);
+    this.directionalLight.target.position.set(cameraPos.x, 0, cameraPos.z);
+    this.directionalLight.target.updateMatrixWorld();
+  
+    // Update shadow camera smoothly every frame
+    const shadowCamera = this.directionalLight.shadow.camera;
+  
+    // Center shadow camera on the player's position
+    const terrainHeight = this.getTerrainHeight(cameraPos);
+    shadowCamera.position.set(cameraPos.x, terrainHeight + 500, cameraPos.z);
+    shadowCamera.lookAt(cameraPos.x, terrainHeight, cameraPos.z);
+    shadowCamera.updateProjectionMatrix();
+    shadowCamera.updateMatrixWorld();
+  
+    // Only force shadow map update when terrain changes (e.g., new chunks)
+    // This is already handled in handleWorkerMessage with this.renderer.shadowMap.needsUpdate = true
+  
+    for (const key in this.uniforms) {
+      this.uniforms[key].time = { value: this.timer };
+    }
+  
+    this.renderer.render(this.scene, this.camera);
+  }
+
+  onWindowResize() {
+  
+    if(this.canvas){
+
+      const width = this.container.clientWidth || window.innerWidth;
+      const height = this.container.clientHeight || window.innerHeight;
+      this.camera.aspect = width / height;
+      this.camera.updateProjectionMatrix();
+      this.renderer.setSize(width, height);
+      this.canvas.style.width = `${width}px`;
+      this.canvas.style.height = `${height}px`;
+    }
+  }
+
+  processModelType(type, model, instances, chunkData) {
+      // Ensure model’s world matrices are up-to-date
+      model.updateMatrixWorld(true);
+  
+      // Collect mesh data with transformations relative to model root
+      const meshData = [];
+      model.traverse(node => {
+        if (node.isMesh) {
+          const parent = node.parent;
+          const parentWorldMatrix = parent.matrixWorld.clone();
+          const localMatrix = node.matrix.clone();
+  
+          // Compute transformation relative to model root
+          const relativeMatrix = new THREE.Matrix4();
+          relativeMatrix.copy(parentWorldMatrix);
+          relativeMatrix.multiply(localMatrix);
+  
+          meshData.push({
+            mesh: node,
+            relativeMatrix: relativeMatrix
+          });
+        }
+      });
+  
+      if (meshData.length === 0) {
+        console.warn(`No meshes found in model: ${type}`);
+        return;
+      }
+  
+      // Create instanced meshes for each mesh in the model
+      const instanceGroups = meshData.map(({ mesh, relativeMatrix }) => {
+        const instancedMesh = new THREE.InstancedMesh(
+          mesh.geometry,
+          mesh.material.clone(), // Clone material to avoid shared state
+          instances.length
+        );
+        instancedMesh.userData.relativeMatrix = relativeMatrix;
+        instancedMesh.castShadow = true;
+        instancedMesh.receiveShadow = true;
+        instancedMesh.material.needsUpdate = true; // Force material update
+        this.rootGroup.add(instancedMesh);
+        return { mesh: instancedMesh, instances: [] };
+      });
+  
+      // Set instance transformations
+      const matrix = new THREE.Matrix4();
+      const dummy = new THREE.Object3D();
+  
+      instances.forEach((instance, index) => {
+        // Set base transformation from worker data
+        dummy.position.set(
+          instance.position.x,
+          instance.position.y,
+          instance.position.z
+        );
+        dummy.rotation.y = instance.rotation;
+        dummy.scale.setScalar(instance.scale);
+        dummy.updateMatrix();
+  
+        // Apply base transformation combined with each mesh’s relative matrix
+        instanceGroups.forEach((group, meshIndex) => {
+          matrix.copy(dummy.matrix);
+          matrix.multiply(group.mesh.userData.relativeMatrix);
+          group.mesh.setMatrixAt(index, matrix);
+          group.instances.push(index);
+        });
+      });
+  
+      // Update instance matrices
+      instanceGroups.forEach(group => {
+        group.mesh.instanceMatrix.needsUpdate = true;
+        this.renderer.shadowMap.needsUpdate = true; // Force shadow map update
+      });
+  
+      // Store instance groups in chunk data
+      chunkData.objectMeshes.set(type, instanceGroups);
+  }
+
+  getTerrainHeight(position) {
+    return this.terrainGenerator.getHeight(position);
+    // Create a raycaster
+    const raycaster = new THREE.Raycaster();
+    
+    // Set the ray origin high above the position
+    const rayOrigin = new THREE.Vector3(position.x, this.chunkSize * 2, position.z);
+    
+    // Set the ray direction downward
+    const rayDirection = new THREE.Vector3(0, -1, 0);
+    raycaster.set(rayOrigin, rayDirection);
+    
+    // Collect visible terrain chunks to test against
+    const chunks = [];
+    const cameraChunkX = Math.floor(position.x / this.chunkSize);
+    const cameraChunkZ = Math.floor(position.z / this.chunkSize);
+    
+    // Check nearby chunks (optimization: only check chunks in a certain radius)
+    for (let x = cameraChunkX - 1; x <= cameraChunkX + 1; x++) {
+      for (let z = cameraChunkZ - 1; z <= cameraChunkZ + 1; z++) {
+        const chunkKey = `${x},${z}`;
+        const chunkData = this.chunks.get(chunkKey);
+        if (chunkData && chunkData.terrainMesh) {
+          chunks.push(chunkData.terrainMesh);
+        }
+      }
+    }
+    
+    // Perform the raycast
+    const intersects = raycaster.intersectObjects(chunks, false);
+    
+    // If there's an intersection, return the y-coordinate
+    if (intersects.length > 0) {
+      return intersects[0].point.y;
+    }
+    
+    return 0;//this.terrainGenerator.getHeight(position);
+  }
+
+  getReflectionAt(position, velocity, restitution) {
+    debugger;
+      return this.terrainGenerator.getReflectionAt(position, velocity, restitution);
+      const normal = this.getTerrainNormal(position);
+      const dotProduct = 
+          velocity.x * normal.x + 
+          velocity.y * normal.y + 
+          velocity.z * normal.z;
+      
+      // Only reflect if moving toward the surface
+      if (dotProduct < 0) {
+          let r = (restitution || 0.3);
+          const slopeAmount = 1 - normal.y;
+          // Calculate reflection vector correctly (r affects the entire reflection, not just normal component)
+          // v_reflect = v - 2(v·n)n then scaled by restitution
+          let reflection = new THREE.Vector3(
+              velocity.x - 2 * dotProduct * normal.x,
+              velocity.y - 2 * dotProduct * normal.y,
+              velocity.z - 2 * dotProduct * normal.z
+          );
+
+
+          if(dotProduct > -10 || slopeAmount > .5 ){          
+            // r = normal.y;
+            r = .99;
+            // Scale by restitution (energy loss on bounce)
+          }
+          reflection.x *= r;
+          reflection.y *= r;
+          reflection.z *= r;
+          
+          return reflection;
+      } else {
+          // Not heading into surface, return original velocity
+          return { ...velocity };
+      }
+  } 
+
+  getTerrainNormal(position) {
       // Create a raycaster
       const raycaster = new THREE.Raycaster();
       
@@ -811,288 +894,217 @@ class InfiniWorld extends engine.Component {
       const cameraChunkX = Math.floor(position.x / this.chunkSize);
       const cameraChunkZ = Math.floor(position.z / this.chunkSize);
       
-      // Check nearby chunks (optimization: only check chunks in a certain radius)
+      // Check nearby chunks
       for (let x = cameraChunkX - 1; x <= cameraChunkX + 1; x++) {
-        for (let z = cameraChunkZ - 1; z <= cameraChunkZ + 1; z++) {
-          const chunkKey = `${x},${z}`;
-          const chunkData = this.chunks.get(chunkKey);
-          if (chunkData && chunkData.terrainMesh) {
-            chunks.push(chunkData.terrainMesh);
+          for (let z = cameraChunkZ - 1; z <= cameraChunkZ + 1; z++) {
+              const chunkKey = `${x},${z}`;
+              const chunkData = this.chunks.get(chunkKey);
+              if (chunkData && chunkData.terrainMesh) {
+                  chunks.push(chunkData.terrainMesh);
+              }
           }
-        }
       }
       
       // Perform the raycast
       const intersects = raycaster.intersectObjects(chunks, false);
       
-      // If there's an intersection, return the y-coordinate
+      // If there's an intersection, return the face normal
       if (intersects.length > 0) {
-        return intersects[0].point.y;
+          return {
+              x: intersects[0].face.normal.x,
+              y: intersects[0].face.normal.y,
+              z: intersects[0].face.normal.z
+          };
       }
       
-      return 0;//this.terrainGenerator.getHeight(position);
-    }
+      // Fallback to upward normal if no intersection found
+      return { x: 0, y: 1, z: 0 };
+  }
 
-    getReflectionAt(position, velocity, restitution) {
-        const normal = this.getTerrainNormal(position);
-        const dotProduct = 
-            velocity.x * normal.x + 
-            velocity.y * normal.y + 
-            velocity.z * normal.z;
-        
-        // Only reflect if moving toward the surface
-        if (dotProduct < 0) {
-            let r = (restitution || 0.3);
-            const slopeAmount = 1 - normal.y;
-            // Calculate reflection vector correctly (r affects the entire reflection, not just normal component)
-            // v_reflect = v - 2(v·n)n then scaled by restitution
-            let reflection = new THREE.Vector3(
-                velocity.x - 2 * dotProduct * normal.x,
-                velocity.y - 2 * dotProduct * normal.y,
-                velocity.z - 2 * dotProduct * normal.z
-            );
+  destroy() {
+    window.removeEventListener('resize', this.onWindowResizeHandler);
 
-
-            if(dotProduct > -10 || slopeAmount > .5 ){          
-             // r = normal.y;
-              r = .99;
-              // Scale by restitution (energy loss on bounce)
-            }
-            reflection.x *= r;
-            reflection.y *= r;
-            reflection.z *= r;
-            
-            return reflection;
-        } else {
-            // Not heading into surface, return original velocity
-            return { ...velocity };
-        }
-    } 
-    getTerrainNormal(position) {
-        // Create a raycaster
-        const raycaster = new THREE.Raycaster();
-        
-        // Set the ray origin high above the position
-        const rayOrigin = new THREE.Vector3(position.x, this.chunkSize * 2, position.z);
-        
-        // Set the ray direction downward
-        const rayDirection = new THREE.Vector3(0, -1, 0);
-        raycaster.set(rayOrigin, rayDirection);
-        
-        // Collect visible terrain chunks to test against
-        const chunks = [];
-        const cameraChunkX = Math.floor(position.x / this.chunkSize);
-        const cameraChunkZ = Math.floor(position.z / this.chunkSize);
-        
-        // Check nearby chunks
-        for (let x = cameraChunkX - 1; x <= cameraChunkX + 1; x++) {
-            for (let z = cameraChunkZ - 1; z <= cameraChunkZ + 1; z++) {
-                const chunkKey = `${x},${z}`;
-                const chunkData = this.chunks.get(chunkKey);
-                if (chunkData && chunkData.terrainMesh) {
-                    chunks.push(chunkData.terrainMesh);
-                }
-            }
-        }
-        
-        // Perform the raycast
-        const intersects = raycaster.intersectObjects(chunks, false);
-        
-        // If there's an intersection, return the face normal
-        if (intersects.length > 0) {
-            return {
-                x: intersects[0].face.normal.x,
-                y: intersects[0].face.normal.y,
-                z: intersects[0].face.normal.z
-            };
-        }
-        
-        // Fallback to upward normal if no intersection found
-        return { x: 0, y: 1, z: 0 };
-    }
-    destroy() {
-      window.removeEventListener('resize', this.onWindowResizeHandler);
-  
-      // Cleanup all chunks
-      for (const [, chunkData] of this.chunks) {
-        if (chunkData.terrainMesh) {
-          this.scene.remove(chunkData.terrainMesh);
-          chunkData.terrainMesh.geometry.dispose();
-          if (chunkData.terrainMesh.material) {
-            if (Array.isArray(chunkData.terrainMesh.material)) {
-              chunkData.terrainMesh.material.forEach(mat => mat.dispose());
-            } else {
-              chunkData.terrainMesh.material.dispose();
-            }
-          }
-        }
-        chunkData.objectMeshes.forEach((groups, type) => {
-          groups.forEach(group => {
-            if (group.mesh) {
-              this.scene.remove(group.mesh);
-              group.mesh.geometry.dispose();
-              if (group.mesh.material) {
-                if (Array.isArray(group.mesh.material)) {
-                  group.mesh.material.forEach(mat => mat.dispose());
-                } else {
-                  group.mesh.material.dispose();
-                }
-              }
-              group.mesh.dispose();
-            }
-          });
-        });
-      }
-  
-      // Cleanup object pools
-      if (this.objectPools) {
-        this.objectPools.forEach(pool => {
-          if (pool.mesh) {
-            this.scene.remove(pool.mesh);
-            pool.mesh.geometry.dispose();
-            if (pool.mesh.material) {
-              if (Array.isArray(pool.mesh.material)) {
-                pool.mesh.material.forEach(mat => mat.dispose());
-              } else {
-                pool.mesh.material.dispose();
-              }
-            }
-            pool.mesh.dispose();
-          }
-        });
-        this.objectPools.clear();
-      }
-  
-      // Cleanup object cache
-      this.objectCache.forEach(mesh => {
-        this.scene.remove(mesh);
-        mesh.geometry.dispose();
-        if (mesh.material) {
-          if (Array.isArray(mesh.material)) {
-            mesh.material.forEach(mat => mat.dispose());
+    // Cleanup all chunks
+    for (const [, chunkData] of this.chunks) {
+      if (chunkData.terrainMesh) {
+        this.scene.remove(chunkData.terrainMesh);
+        chunkData.terrainMesh.geometry.dispose();
+        if (chunkData.terrainMesh.material) {
+          if (Array.isArray(chunkData.terrainMesh.material)) {
+            chunkData.terrainMesh.material.forEach(mat => mat.dispose());
           } else {
-            mesh.material.dispose();
+            chunkData.terrainMesh.material.dispose();
           }
         }
-      });
-      this.objectCache.clear();
-  
-      // Terminate worker and clean up Blob URL
-      if (this.worker) {
-        this.worker.terminate();
-        this.worker = null;
       }
-      this.pendingChunks.clear();
-      this.chunks.clear();
-      this.scene.remove(this.rootGroup);
-    }
-    generateWaterMesh(cx, cz, terrainPositions) {
-      const chunkKey = `${cx},${cz}`;
-  
-      // Create a plane with higher resolution for visible waves
-      const geometry = new THREE.PlaneGeometry(this.chunkSize, this.chunkSize, 64, 64);
-      geometry.rotateX(-Math.PI / 2); // Align with terrain
-  
-      // Adjust UVs to be continuous across chunks
-      const uvAttribute = geometry.attributes.uv;
-      const positionAttribute = geometry.attributes.position;
-      for (let i = 0; i < uvAttribute.count; i++) {
-          const x = positionAttribute.getX(i) + (cx * this.chunkSize + this.chunkSize / 2);
-          const z = positionAttribute.getZ(i) + (cz * this.chunkSize + this.chunkSize / 2);
-          // Scale UVs based on world position
-          uvAttribute.setXY(i, x / this.chunkSize, z / this.chunkSize);
-      }
-      uvAttribute.needsUpdate = true;
-  
-      // Parse hex color
-      const parseHexColor = (hex) => {
-          const r = parseInt(hex.slice(1, 3), 16) / 255;
-          const g = parseInt(hex.slice(3, 5), 16) / 255;
-          const b = parseInt(hex.slice(5, 7), 16) / 255;
-          return { r, g, b };
-      };
-  
-      // Get water shader from configuration
-      const waterShader = this.game.getCollections().shaders["water"];
-      this.uniforms[chunkKey] = JSON.parse(waterShader.uniforms);
-  
-      // Set colors (fix color assignment)
-      const liquidColorHex = "#1E90FF"; // DodgerBlue for water
-      const foamColorHex = "#FFFFFF"; // White for foam
-      const liquidColor = parseHexColor(liquidColorHex);
-      const foamColor = parseHexColor(foamColorHex);
-  
-      // Vectorize properties
-      const vectorizeProps = waterShader.vectors;
-      vectorizeProps.forEach((prop) => {
-          if (this.uniforms[chunkKey][prop]) {
-              if (prop.toLowerCase().endsWith("color")) {
-                  const color = prop.toLowerCase().startsWith("foam") ? foamColor : liquidColor;
-                  this.uniforms[chunkKey][prop].value = new THREE.Vector3(color.r, color.g, color.b);
+      chunkData.objectMeshes.forEach((groups, type) => {
+        groups.forEach(group => {
+          if (group.mesh) {
+            this.scene.remove(group.mesh);
+            group.mesh.geometry.dispose();
+            if (group.mesh.material) {
+              if (Array.isArray(group.mesh.material)) {
+                group.mesh.material.forEach(mat => mat.dispose());
               } else {
-                  let arr = this.uniforms[chunkKey][prop].value;
-                  this.uniforms[chunkKey][prop].value = new THREE.Vector3(arr[0], arr[1], arr[2]);
+                group.mesh.material.dispose();
               }
+            }
+            group.mesh.dispose();
           }
+        });
       });
-  
-      // Set additional uniforms
-      this.uniforms[chunkKey].fogColor = { value: new THREE.Color(this.fogData.color) };
-      this.uniforms[chunkKey].fogDensity = this.fogData.enabled ? { value: this.fogData.density } : { value: 0 };
-      const data = new Float32Array(this.chunkResolution * this.chunkResolution);
-      for (let z = 0; z < this.chunkResolution; z++) {
-        for (let x = 0; x < this.chunkResolution; x++) {
-          const index = Math.floor((z * this.chunkResolution + x)*3);
-          data[Math.floor(index / 3)] = terrainPositions[index+1];
+    }
+
+    // Cleanup object pools
+    if (this.objectPools) {
+      this.objectPools.forEach(pool => {
+        if (pool.mesh) {
+          this.scene.remove(pool.mesh);
+          pool.mesh.geometry.dispose();
+          if (pool.mesh.material) {
+            if (Array.isArray(pool.mesh.material)) {
+              pool.mesh.material.forEach(mat => mat.dispose());
+            } else {
+              pool.mesh.material.dispose();
+            }
+          }
+          pool.mesh.dispose();
+        }
+      });
+      this.objectPools.clear();
+    }
+
+    // Cleanup object cache
+    this.objectCache.forEach(mesh => {
+      this.scene.remove(mesh);
+      mesh.geometry.dispose();
+      if (mesh.material) {
+        if (Array.isArray(mesh.material)) {
+          mesh.material.forEach(mat => mat.dispose());
+        } else {
+          mesh.material.dispose();
         }
       }
-      const heightmapTexture = new THREE.DataTexture(
-        data,
-        this.chunkResolution,
-        this.chunkResolution,
-        THREE.RedFormat,
-        THREE.FloatType
-      );
-      heightmapTexture.needsUpdate = true;
+    });
+    this.objectCache.clear();
 
-      this.uniforms[chunkKey].terrainHeightmap = { value: heightmapTexture };
-      this.uniforms[chunkKey].terrainSize = { value: new THREE.Vector2(this.chunkResolution, this.chunkResolution) };
-      this.uniforms[chunkKey].terrainOffset = { value: new THREE.Vector2(cx, cz) };
-      this.uniforms[chunkKey].foamWidth = { value: 0.5 }; // Adjust for wider/narrower foam bands
-      this.uniforms[chunkKey].foamColor = { value: new THREE.Vector3(1.0, 1.0, 1.0) }; 
-      // Create the shader material
-      const material = new THREE.ShaderMaterial({
-          uniforms: this.uniforms[chunkKey],
-          vertexShader: waterShader.vertexScript,
-          fragmentShader: waterShader.fragmentScript,
-          side: THREE.DoubleSide, // Use DoubleSide to avoid culling issues
-          transparent: true
-      });
-  
-      // Create water mesh
-      const waterMesh = new THREE.Mesh(geometry, material);
-      waterMesh.position.set(cx * this.chunkSize + this.chunkSize / 2, 0.1, cz * this.chunkSize + this.chunkSize / 2); // Center in chunk
-      waterMesh.name = `water_${chunkKey}`;
-      waterMesh.receiveShadow = true;
-  
-      return waterMesh;
-  }
-
-    getWorkerCode() {
-      return `
-        ${this.game.getCollections().libraries["SimplexNoise"].script}
-  
-        ${this.game.getCollections().libraries["TerrainGenerator"].script}
-  
-        const noise = new SimplexNoise();
-        const terrainGenerator = new TerrainGenerator();
-        terrainGenerator.init(${JSON.stringify(this.biomes)}, ${this.chunkSize}, ${this.chunkResolution}, noise);
-  
-        self.onmessage = function(e) {
-          const { cx, cz, chunkSize, chunkResolution } = e.data;
-          const result = terrainGenerator.generateChunk(cx, cz, chunkSize, chunkResolution);
-          self.postMessage(result);
-        };
-      `;
+    // Terminate worker and clean up Blob URL
+    if (this.worker) {
+      this.worker.terminate();
+      this.worker = null;
     }
+    this.pendingChunks.clear();
+    this.chunks.clear();
+    this.scene.remove(this.rootGroup);
   }
+
+  generateWaterMesh(cx, cz, terrainPositions) {
+    const chunkKey = `${cx},${cz}`;
+
+    // Create a plane with higher resolution for visible waves
+    const geometry = new THREE.PlaneGeometry(this.chunkSize, this.chunkSize, 64, 64);
+    geometry.rotateX(-Math.PI / 2); // Align with terrain
+
+    // Adjust UVs to be continuous across chunks
+    const uvAttribute = geometry.attributes.uv;
+    const positionAttribute = geometry.attributes.position;
+    for (let i = 0; i < uvAttribute.count; i++) {
+        const x = positionAttribute.getX(i) + (cx * this.chunkSize + this.chunkSize / 2);
+        const z = positionAttribute.getZ(i) + (cz * this.chunkSize + this.chunkSize / 2);
+        // Scale UVs based on world position
+        uvAttribute.setXY(i, x / this.chunkSize, z / this.chunkSize);
+    }
+    uvAttribute.needsUpdate = true;
+
+    // Parse hex color
+    const parseHexColor = (hex) => {
+        const r = parseInt(hex.slice(1, 3), 16) / 255;
+        const g = parseInt(hex.slice(3, 5), 16) / 255;
+        const b = parseInt(hex.slice(5, 7), 16) / 255;
+        return { r, g, b };
+    };
+
+    // Get water shader from configuration
+    const waterShader = this.game.getCollections().shaders["water"];
+    this.uniforms[chunkKey] = JSON.parse(waterShader.uniforms);
+
+    // Set colors (fix color assignment)
+    const liquidColorHex = "#1E90FF"; // DodgerBlue for water
+    const foamColorHex = "#FFFFFF"; // White for foam
+    const liquidColor = parseHexColor(liquidColorHex);
+    const foamColor = parseHexColor(foamColorHex);
+
+    // Vectorize properties
+    const vectorizeProps = waterShader.vectors;
+    vectorizeProps.forEach((prop) => {
+        if (this.uniforms[chunkKey][prop]) {
+            if (prop.toLowerCase().endsWith("color")) {
+                const color = prop.toLowerCase().startsWith("foam") ? foamColor : liquidColor;
+                this.uniforms[chunkKey][prop].value = new THREE.Vector3(color.r, color.g, color.b);
+            } else {
+                let arr = this.uniforms[chunkKey][prop].value;
+                this.uniforms[chunkKey][prop].value = new THREE.Vector3(arr[0], arr[1], arr[2]);
+            }
+        }
+    });
+
+    // Set additional uniforms
+    this.uniforms[chunkKey].fogColor = { value: new THREE.Color(this.fogData.color) };
+    this.uniforms[chunkKey].fogDensity = this.fogData.enabled ? { value: this.fogData.density } : { value: 0 };
+    const data = new Float32Array(this.chunkResolution * this.chunkResolution);
+    for (let z = 0; z < this.chunkResolution; z++) {
+      for (let x = 0; x < this.chunkResolution; x++) {
+        const index = Math.floor((z * this.chunkResolution + x)*3);
+        data[Math.floor(index / 3)] = terrainPositions[index+1];
+      }
+    }
+    const heightmapTexture = new THREE.DataTexture(
+      data,
+      this.chunkResolution,
+      this.chunkResolution,
+      THREE.RedFormat,
+      THREE.FloatType
+    );
+    heightmapTexture.needsUpdate = true;
+
+    this.uniforms[chunkKey].terrainHeightmap = { value: heightmapTexture };
+    this.uniforms[chunkKey].terrainSize = { value: new THREE.Vector2(this.chunkResolution, this.chunkResolution) };
+    this.uniforms[chunkKey].terrainOffset = { value: new THREE.Vector2(cx, cz) };
+    this.uniforms[chunkKey].foamWidth = { value: 0.5 }; // Adjust for wider/narrower foam bands
+    this.uniforms[chunkKey].foamColor = { value: new THREE.Vector3(1.0, 1.0, 1.0) }; 
+    // Create the shader material
+    const material = new THREE.ShaderMaterial({
+        uniforms: this.uniforms[chunkKey],
+        vertexShader: waterShader.vertexScript,
+        fragmentShader: waterShader.fragmentScript,
+        side: THREE.DoubleSide, // Use DoubleSide to avoid culling issues
+        transparent: true
+    });
+
+    // Create water mesh
+    const waterMesh = new THREE.Mesh(geometry, material);
+    waterMesh.position.set(cx * this.chunkSize + this.chunkSize / 2, 0.1, cz * this.chunkSize + this.chunkSize / 2); // Center in chunk
+    waterMesh.name = `water_${chunkKey}`;
+    waterMesh.receiveShadow = true;
+
+    return waterMesh;
+  }
+
+  getWorkerCode() {
+    return `
+      ${this.game.getCollections().libraries["SimplexNoise"].script}
+
+      ${this.game.getCollections().libraries["TerrainGenerator"].script}
+
+      const noise = new SimplexNoise();
+      const terrainGenerator = new TerrainGenerator();
+      terrainGenerator.init(${JSON.stringify(this.biomes)}, ${this.chunkSize}, ${this.chunkResolution}, noise);
+
+      self.onmessage = function(e) {
+        const { cx, cz, chunkSize, chunkResolution } = e.data;
+        const result = terrainGenerator.generateChunk(cx, cz, chunkSize, chunkResolution);
+        self.postMessage(result);
+      };
+    `;
+  }
+}

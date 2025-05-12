@@ -106,10 +106,8 @@ class TerrainGenerator {
         return normal;
     }
 
-    getReflectionAt(deltaTime, position, velocity, restitution) {
+    getReflectionAt(position, velocity, restitution) {
         const normal = this.getNormalAt(position);
-        
-        // Check if the velocity is heading into the surface
         const dotProduct = 
             velocity.x * normal.x + 
             velocity.y * normal.y + 
@@ -117,76 +115,25 @@ class TerrainGenerator {
         
         // Only reflect if moving toward the surface
         if (dotProduct < 0) {
-            const r = restitution || 0.3;
-            
+            let r = (restitution || 0.3);
+            const slopeAmount = 1 - normal.y;
             // Calculate reflection vector correctly (r affects the entire reflection, not just normal component)
             // v_reflect = v - 2(v·n)n then scaled by restitution
-            let reflection = {
-                x: velocity.x - 2 * dotProduct * normal.x,
-                y: velocity.y - 2 * dotProduct * normal.y,
-                z: velocity.z - 2 * dotProduct * normal.z
-            };
-            
-            // Scale by restitution (energy loss on bounce)
+            let reflection = new THREE.Vector3(
+                velocity.x - 2 * dotProduct * normal.x,
+                velocity.y - 2 * dotProduct * normal.y,
+                velocity.z - 2 * dotProduct * normal.z
+            );
+
+
+            if(dotProduct > -10 || slopeAmount > .5 ){          
+                // r = normal.y;
+                r = .99;
+                // Scale by restitution (energy loss on bounce)
+            }
             reflection.x *= r;
             reflection.y *= r;
             reflection.z *= r;
-            
-            // Calculate friction properly
-            const baseStaticFriction = 0.6;
-            const baseDynamicFriction = 0.3;
-            
-            // Calculate tangent vector (the direction along the surface)
-            // First find the projection of velocity onto normal
-            const projectionMagnitude = 
-                reflection.x * normal.x + 
-                reflection.y * normal.y + 
-                reflection.z * normal.z;
-                
-            const normalComponent = {
-                x: projectionMagnitude * normal.x,
-                y: projectionMagnitude * normal.y,
-                z: projectionMagnitude * normal.z
-            };
-            
-            // Tangential component = reflection - normalComponent
-            const tangent = {
-                x: reflection.x - normalComponent.x,
-                y: reflection.y - normalComponent.y,
-                z: reflection.z - normalComponent.z
-            };
-            
-            // Calculate tangent magnitude
-            const tangentMagnitude = Math.sqrt(
-                tangent.x * tangent.x + 
-                tangent.y * tangent.y + 
-                tangent.z * tangent.z
-            );
-            
-            // Apply friction only to tangential component
-            if (tangentMagnitude > 0.0001) {
-                // Normalize tangent
-                const invTangentMag = 1 / tangentMagnitude;
-                tangent.x *= invTangentMag;
-                tangent.y *= invTangentMag;
-                tangent.z *= invTangentMag;
-                
-                // Slope factor increases friction on steeper slopes
-                const slopeFactor = 1 + (1 - Math.abs(normal.y));
-                const frictionMagnitude = baseDynamicFriction * slopeFactor * deltaTime * tangentMagnitude;
-                
-                // If friction would stop the object, just set tangential velocity to zero
-                if (frictionMagnitude >= tangentMagnitude) {
-                    reflection.x = normalComponent.x;
-                    reflection.y = normalComponent.y;
-                    reflection.z = normalComponent.z;
-                } else {
-                    // Apply dynamic friction
-                    reflection.x -= frictionMagnitude * tangent.x;
-                    reflection.y -= frictionMagnitude * tangent.y;
-                    reflection.z -= frictionMagnitude * tangent.z;
-                }
-            }
             
             return reflection;
         } else {
