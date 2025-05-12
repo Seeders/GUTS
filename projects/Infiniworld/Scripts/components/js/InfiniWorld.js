@@ -132,7 +132,7 @@ class InfiniWorld extends engine.Component {
       this.worker.onmessage = this.handleWorkerMessage.bind(this);
       this.pendingChunks = new Map();
       this.chunkGeometry = new Map();
-  
+      this.staticAABBsToRemove = [];
       // Initialize terrain
       this.setupInitialChunks();
   
@@ -218,38 +218,45 @@ class InfiniWorld extends engine.Component {
           const { x, z } = chunksToGenerate[i];
           await this.generateChunk(x, z);
       }
-  
-      // // Remove old chunks
-      // for (const [chunkKey, chunkData] of this.chunks) {
-      //     if (!newChunks.has(chunkKey) && !chunkData.isGenerating) {
-      //         if (chunkData.terrainMesh) {
-      //             this.rootGroup.remove(chunkData.terrainMesh);
-      //             chunkData.terrainMesh.geometry.dispose();
-      //             chunkData.terrainMesh.material.dispose();
-      //         }
-      //         if (chunkData.waterMesh) {
-      //             this.rootGroup.remove(chunkData.waterMesh);
-      //             chunkData.waterMesh.geometry.dispose();
-      //             chunkData.waterMesh.material.dispose();
-      //         }
-      //         chunkData.objectMeshes.forEach((groups, type) => {
-      //             groups.forEach(group => {
-      //                 if (group.mesh) {
-      //                     this.rootGroup.remove(group.mesh);
-      //                     group.mesh.geometry.dispose();
-      //                     if (Array.isArray(group.mesh.material)) {
-      //                         group.mesh.material.forEach(mat => mat.dispose());
-      //                     } else {
-      //                         group.mesh.material.dispose();
-      //                     }
-      //                     group.mesh.dispose();
-      //                 }
-      //             });
-      //         });
-      //         this.chunks.delete(chunkKey);
-      //         this.uniforms.delete(chunkKey);
-      //     }
-      // }
+      this.staticAABBsToRemove = [];
+      // Remove old chunks
+      for (const [chunkKey, chunkData] of this.chunks) {
+          if (!newChunks.has(chunkKey) && !chunkData.isGenerating) {
+              let parts = chunkKey.split(',');
+              let x = parts[0];
+              let z = parts[1];
+              this.staticAABBsToRemove = [...this.staticAABBsToRemove, ...this.getStaticAABBsAt(x, z)];
+              if (chunkData.terrainMesh) {
+                  this.rootGroup.remove(chunkData.terrainMesh);
+                  chunkData.terrainMesh.geometry.dispose();
+                  chunkData.terrainMesh.material.dispose();
+              }
+              if (chunkData.waterMesh) {
+                  this.rootGroup.remove(chunkData.waterMesh);
+                  chunkData.waterMesh.geometry.dispose();
+                  chunkData.waterMesh.material.dispose();
+              }
+              chunkData.objectMeshes.forEach((groups, type) => {
+                  groups.forEach(group => {
+                      if (group.mesh) {
+                          this.rootGroup.remove(group.mesh);
+                          group.mesh.geometry.dispose();
+                          if (Array.isArray(group.mesh.material)) {
+                              group.mesh.material.forEach(mat => mat.dispose());
+                          } else {
+                              group.mesh.material.dispose();
+                          }
+                          group.mesh.dispose();
+                      }
+                  });
+              });
+              this.chunks.delete(chunkKey);
+              this.uniforms.delete(chunkKey);
+          }
+      }      
+  }
+  getStaticAABBsToRemove() {
+    return this.staticAABBsToRemove;
   }
   handleWorkerMessage(e) {    
     const { cx, cz, positions, indices, colors, normals, vegetation } = e.data;
@@ -601,17 +608,22 @@ class InfiniWorld extends engine.Component {
       // Check nearby chunks
       for (let x = cameraChunkX - 1; x <= cameraChunkX + 1; x++) {
         for (let z = cameraChunkZ - 1; z <= cameraChunkZ + 1; z++) {
-          const chunkKey = `${x},${z}`;
-          const chunkData = this.chunks.get(chunkKey);
-          if (!chunkData) continue;
-    
-          const treeAABBs = chunkData.collisionAABBs.get('tree');
-          const rockAABBs = chunkData.collisionAABBs.get('rock');
-          
-         staticAABBs = [...staticAABBs, ...(treeAABBs || []), ...(rockAABBs || [])];
+          staticAABBs = [...staticAABBs, ...this.getStaticAABBsAt(x, z)];
         }
       }
       return staticAABBs;
+    }
+    getStaticAABBsAt(cx, cz){
+      const chunkKey = `${cx},${cz}`;
+      const chunkData = this.chunks.get(chunkKey);
+      if (!chunkData) return [];
+      if(chunkData.collisionAABBs){
+        const treeAABBs = chunkData.collisionAABBs.get('tree');
+
+      
+        return [...(treeAABBs || [])];        
+      }
+      return [];
     }
       
     checkTreeCollisions(colliderAABB) {

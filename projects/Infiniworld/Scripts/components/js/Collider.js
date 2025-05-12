@@ -103,7 +103,7 @@ class Collider extends engine.Component {
         if (this.debug && this.debugMesh) {
             this.debugMesh.position.copy(this.parent.transform.physicsPosition).add(this.offset);
         }
-        this.game.gameEntity.getComponent('Physics').collectPhysicsData(this);
+        this.game.gameEntity.getComponent('game').physics.collectPhysicsData(this);
     }
 
     destroy() {

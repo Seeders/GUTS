@@ -198,48 +198,33 @@ self.onmessage = function(e) {
 
                 if (debugWorker) console.log("Created collider:", entity.id, entity.collider.type);
             } else {
-               // Update existing rigid body
-              const body = colliders.get(entity.id);
-              body.userData.reflected = entity.reflected;
+                // Update existing rigid body
+                const body = colliders.get(entity.id);
+                body.userData.reflected = entity.reflected;
 
-              tempTransform.setIdentity();
-              tempVec3.setValue(
-                  entity.position.x,
-                  entity.position.y,
-                  entity.position.z
-              );
-              tempTransform.setOrigin(tempVec3);
+                tempTransform.setIdentity();
 
-              if (entity.quaternion) {
-                  tempQuat.setValue(
-                      entity.quaternion.x,
-                      entity.quaternion.y,
-                      entity.quaternion.z,
-                      entity.quaternion.w
-                  );
-                  tempTransform.setRotation(tempQuat);
-              }
-
-              if (entity.reflected) {
-                // Update velocity
-                tempVec3.setValue(
-                    entity.velocity.x,
-                    entity.velocity.y,
-                    entity.velocity.z
-                );
-                body.setLinearVelocity(tempVec3);
-
-                  // Update position to match main thread's snapped position
-                body.setGravity(new AmmoLib.btVector3(0, 0, 0));
-                body.userData.gravityDisabled = true;
-              } else {
-                // Restore gravity if not reflected
-                if (body.userData.gravityDisabled) {
+                if (entity.reflected) {
+                    tempVec3.setValue(
+                        entity.velocity.x,
+                        entity.velocity.y,
+                        entity.velocity.z
+                    );
+                    body.setLinearVelocity(tempVec3);
+                    tempVec3.setValue(
+                        entity.position.x,
+                        entity.position.y,
+                        entity.position.z
+                    );
+                    tempTransform.setOrigin(tempVec3);
+                    body.setGravity(new AmmoLib.btVector3(0, 0, 0));
+                    body.userData.gravityDisabled = true;
+                } else if (body.userData.gravityDisabled) {
                     body.setGravity(new AmmoLib.btVector3(0, entity.collider.gravity ? gravity : 0, 0));
                     body.userData.gravityDisabled = false;
                 }
-              }
-              body.getMotionState().setWorldTransform(tempTransform);
+                
+                body.getMotionState().setWorldTransform(tempTransform);
             }
         });
     }
@@ -263,7 +248,7 @@ self.onmessage = function(e) {
 
     // Update physics
     if (data.deltaTime) {
-        const deltaTime = Math.min(data.deltaTime, 1/30);
+        const deltaTime = 1/120;
         physicsWorld.stepSimulation(deltaTime, 10);
 
         const numManifolds = dispatcher.getNumManifolds();
@@ -285,8 +270,6 @@ self.onmessage = function(e) {
             }
         }
 
-        // Process ground collision
-      //  checkGroundCollisions();
         
         update();
     }

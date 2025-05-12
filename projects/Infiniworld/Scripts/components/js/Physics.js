@@ -6,7 +6,7 @@ class Physics extends engine.Component {
         this.worker = new Worker(this.workerBlobURL);
         this.worker.onmessage = this.handleWorkerMessage.bind(this);
         this.colliders = new Map();
-        this.collidersToRemove = null;
+        this.collidersToRemove = [];
         this.physicsDataBuffer = [];
         this.groundHeightBuffer = [];
         this.lastUpdate = 0;
@@ -21,6 +21,10 @@ class Physics extends engine.Component {
 
     setStaticAABBs(aabbs){
         this.staticAABBs = aabbs;
+    }
+
+    setStaticAABBsToRemove(aabbs){
+        this.collidersToRemove = [...this.collidersToRemove, ...aabbs];
     }
 
     registerCollider(collider) {
@@ -43,7 +47,8 @@ class Physics extends engine.Component {
                 gravity: collider.gravity,
                 offset: collider.offset,
                 mass: collider.mass,
-                restitution: collider.restitution
+                restitution: collider.restitution,
+                reflected : 0
             },
             grounded: false
         });
@@ -54,9 +59,6 @@ class Physics extends engine.Component {
     unregisterCollider(colliderId) {
         if (this.colliders.has(colliderId)) {
             this.colliders.delete(colliderId);
-            if (!this.collidersToRemove) {
-                this.collidersToRemove = [];
-            }
             this.collidersToRemove.push(colliderId);
             if (this.debugPhysics) console.log("Unregistered collider:", colliderId);
         }
@@ -90,7 +92,7 @@ class Physics extends engine.Component {
         }
 
         this.physicsDataBuffer = [];
-        this.collidersToRemove = null;
+        this.collidersToRemove = [];
         this.shouldUpdate = false;
     }
 
@@ -104,33 +106,34 @@ class Physics extends engine.Component {
             if (this.debugPhysics) console.warn("No collider data found for:", collider.id);
             return;
         }
-
-        if (!entity.transform.physicsPosition) {
-            entity.transform.physicsPosition = entity.transform.position.clone();
-        }
         let v = new THREE.Vector3().copy(entity.transform.velocity);
         let reflected = false;
         let grounded = true;
-        if(entity.transform.physicsPosition.y - data.collider.size + data.collider.offset.y + v.y*this.game.deltaTime <= entity.transform.groundHeight) {                  
-            reflected = true;
-            
-            entity.transform.physicsPosition.y = entity.transform.groundHeight + data.collider.size - data.collider.offset.y + .00001;   
-            
+        if(data.collider.reflected <= 0 && entity.transform.physicsPosition.y - data.collider.size + data.collider.offset.y + v.y*this.game.deltaTime <= entity.transform.groundHeight) {                  
+            reflected = true; 
+            data.collider.reflected = 0;
             // Smoothly reduce restitution based on velocity
             const velocityMagnitude = v.length();
             const minVelocity = 10;  // Below this speed, no bounce
-            const maxVelocity = 50; // Above this speed, full bounce
+            const maxVelocity = 20; // Above this speed, full bounce
             const baseRestitution = data.collider.restitution;
-            
+            if(entity.type == 'projectile'){
+                console.log(velocityMagnitude);
+            }
             // Calculate smoothed restitution factor
             let r = baseRestitution;
             if (velocityMagnitude < maxVelocity) {
                 // Smooth interpolation between 0 and full restitution
                 const t = Math.max(0, (velocityMagnitude - minVelocity) / (maxVelocity - minVelocity));
-                r = baseRestitution * (t * t); // Square for more gradual initial reduction
+                r = baseRestitution * (t); // Square for more gradual initial reduction
             }
             
             v.copy(this.game.gameEntity.getComponent("game").world.getReflectionAt(entity.transform.position, v, r));
+            entity.transform.velocity.copy(v);
+            if(entity.transform.velocity.length() < 1) entity.transform.velocity.multiplyScalar(0);
+            entity.transform.physicsPosition.y = entity.transform.groundHeight + data.collider.size - data.collider.offset.y + 1;  
+        } else {
+            data.collider.reflected--;
         }
 
     
@@ -166,8 +169,8 @@ class Physics extends engine.Component {
             const entity = data.entity;
 
             // Update grounded state based on terrain collision
-            if(entity.transform.physicsPosition.y - data.collider.size + data.collider.offset.y <= entity.transform.groundHeight){                  
-                updated.position.y = entity.transform.groundHeight + data.collider.size - data.collider.offset.y + .00001;   
+            if(entity.transform.physicsPosition.y - data.collider.size + data.collider.offset.y + updated.velocity.y/30 <= entity.transform.groundHeight){                  
+            //    updated.position.y = entity.transform.groundHeight + data.collider.size - data.collider.offset.y + 1;   
             }
 
             if(new THREE.Vector3(updated.velocity).length() < 10){
