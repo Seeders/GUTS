@@ -20,42 +20,50 @@ const entityData = new Map();
 let tempTransform = null;
 let tempVec3 = null;
 let tempQuat = null;
+let physicsInterval = null;
 
-// Initialize Ammo.js physics world
-function initPhysics() {
-    collisionConfiguration = new AmmoLib.btDefaultCollisionConfiguration();
-    dispatcher = new AmmoLib.btCollisionDispatcher(collisionConfiguration);
-    broadphase = new AmmoLib.btDbvtBroadphase();
-    solver = new AmmoLib.btSequentialImpulseConstraintSolver();
-    physicsWorld = new AmmoLib.btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
-    physicsWorld.setGravity(new AmmoLib.btVector3(0, gravity, 0));
+function initLib(data){
+    var config = {
+        locateFile: () => `http://${data.hostname || "localhost:5000"}/library/ammo.wasm.wasm`
+    }
+    // Wait for Ammo to load
+    Ammo(config).then((AmmoInstance) => {
+        AmmoLib = AmmoInstance;
+        collisionConfiguration = new AmmoLib.btDefaultCollisionConfiguration();
+        dispatcher = new AmmoLib.btCollisionDispatcher(collisionConfiguration);
+        broadphase = new AmmoLib.btDbvtBroadphase();
+        solver = new AmmoLib.btSequentialImpulseConstraintSolver();
+        physicsWorld = new AmmoLib.btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
+        physicsWorld.setGravity(new AmmoLib.btVector3(0, gravity, 0));
 
-    // Initialize temp objects
-    tempTransform = new AmmoLib.btTransform();
-    tempVec3 = new AmmoLib.btVector3(0, 0, 0);
-    tempQuat = new AmmoLib.btQuaternion(0, 0, 0, 1);
+        // Initialize temp objects
+        tempTransform = new AmmoLib.btTransform();
+        tempVec3 = new AmmoLib.btVector3(0, 0, 0);
+        tempQuat = new AmmoLib.btQuaternion(0, 0, 0, 1);
+
+        if (debugWorker) console.log("Physics initialized");
+    });
+    
 }
 
 self.onmessage = function(e) {
-    if (!AmmoLib) {
-                 
-        var config = {
-            locateFile: () => `http://${e.data.hostname || "localhost:5000"}/library/ammo.wasm.wasm`
-        }
-   
-        // Wait for Ammo to load
-        Ammo(config).then(function(AmmoInstance) {
-            AmmoLib = AmmoInstance;
-            initPhysics();
-            if (debugWorker) console.log("Physics initialized");
-        });
-        return;
-    }
 
+    const messageType = e.data.messageType;
     const data = e.data;
-    const staticAABBs = e.data.staticAABBs;
+
+    if (messageType == 'setHostname') {                 
+        initLib(data);
+    } else if(AmmoLib && messageType == "staticAABBs"){
+        processStaticAABBs(data);
+    } else if(AmmoLib && messageType == "updateEntities"){
+        updateEntities(data);
+        update();
+    }
+};
+
+function processStaticAABBs(data){
+    const staticAABBs = data.staticAABBs;
     // Process entities
-    collisionsThisFrame.clear();
     if (staticAABBs && staticAABBs.length > 0) {
 
         staticAABBs.forEach(aabb => {
@@ -121,10 +129,13 @@ self.onmessage = function(e) {
             if (debugWorker) console.log("Created static capsule collider:", aabb.id, "center:", { x: centerX, y: centerY, z: centerZ }, "radius:", radius, "height:", height);
         });
     }
+}
 
+function updateEntities(data){
+    collisionsThisFrame.clear();
     if (data.entities && data.entities.length > 0) {
         data.entities.forEach(entity => {
-            if (!entity.id || !entity.collider) {
+            if (!entity.id) {
                 if (debugWorker) console.warn("Skipping entity with missing ID or collider:", entity);
                 return;
             }
@@ -139,37 +150,37 @@ self.onmessage = function(e) {
             if (!colliders.has(entity.id)) {
                 // Create new rigid body
                 let shape;
-                if (entity.collider.type === 'sphere') {
-                    const radius = Array.isArray(entity.collider.size) ? entity.collider.size[0] || 0.5 : entity.collider.size || 0.5;
+                if (entity.type === 'sphere') {
+                    const radius = Array.isArray(entity.size) ? entity.size[0] || 0.5 : entity.size || 0.5;
                     shape = new AmmoLib.btSphereShape(radius);
-                } else if (entity.collider.type === 'box') {
-                    const size = Array.isArray(entity.collider.size) ? entity.collider.size : [1, 1, 1];
+                } else if (entity.type === 'box') {
+                    const size = Array.isArray(entity.size) ? entity.size : [1, 1, 1];
                     tempVec3.setValue(size[0] || 1, size[1] || 1, size[2] || 1);
                     shape = new AmmoLib.btBoxShape(tempVec3);
                 } else {
-                    if (debugWorker) console.warn("Unsupported collider type:", entity.collider.type);
+                    if (debugWorker) console.warn("Unsupported collider type:", entity.type);
                     return;
                 }
 
                 tempTransform.setIdentity();
                 tempVec3.setValue(
-                    entity.position.x || 0,
-                    entity.position.y || 0,
-                    entity.position.z || 0
+                    entity.positionX || 0,
+                    entity.positionY || 0,
+                    entity.positionZ || 0
                 );
                 tempTransform.setOrigin(tempVec3);
                 
                 if (entity.quaternion) {
                     tempQuat.setValue(
-                        entity.quaternion.x || 0,
-                        entity.quaternion.y || 0,
-                        entity.quaternion.z || 0,
-                        entity.quaternion.w || 1
+                        entity.quaternionX || 0,
+                        entity.quaternionY || 0,
+                        entity.quaternionZ || 0,
+                        entity.quaternionW || 1
                     );
                     tempTransform.setRotation(tempQuat);
                 }
 
-                const mass = entity.collider.mass || 1;
+                const mass = entity.mass || 1;
                 tempVec3.setValue(0, 0, 0); // Reuse for inertia
                 if (mass > 0) {
                     shape.calculateLocalInertia(mass, tempVec3);
@@ -179,60 +190,67 @@ self.onmessage = function(e) {
                 const bodyInfo = new AmmoLib.btRigidBodyConstructionInfo(mass, motionState, shape, tempVec3);
                 const body = new AmmoLib.btRigidBody(bodyInfo);
                 body.setCcdMotionThreshold(1); // Trigger CCD at small motion
-                body.setCcdSweptSphereRadius(entity.collider.size / 2); // Sphere radius for CCD
+                body.setCcdSweptSphereRadius(entity.size / 2); // Sphere radius for CCD
           
-                body.setRestitution(entity.collider.restitution || 0.5);
+                body.setRestitution(entity.restitution || 0.5);
                 body.setFriction(0.5);
-                
                 tempVec3.setValue(
-                    entity.velocity.x || 0,
-                    entity.velocity.y || 0,
-                    entity.velocity.z || 0
+                    entity.velocityX,
+                    entity.velocityY,
+                    entity.velocityZ
                 );
                 body.setLinearVelocity(tempVec3);
                 
+                body.setCollisionFlags(0);
                 physicsWorld.addRigidBody(body);
-                body.userData = { id: entity.id, collider: entity.collider, reflected: false };
+                body.userData = { id: entity.id, collider: entity, reflected: false };
 
                 colliders.set(entity.id, body);
                 minfo.set(entity.id, new Float32Array(8));
 
                 AmmoLib.destroy(bodyInfo);
 
-                if (debugWorker) console.log("Created collider:", entity.id, entity.collider.type);
+                if (debugWorker) console.log("Created collider:", entity.id, entity.type);
             } else {
                 // Update existing rigid body
                 const body = colliders.get(entity.id);
                 body.userData.reflected = entity.reflected;
 
-                tempTransform.setIdentity();
 
                 if (entity.reflected) {
+
+                        // Set the body collision flag to kinematic
+             //       body.setCollisionFlags(2); // 2 is kinematic
+
+
+                                       // Teleport the body to the new position
+                    // tempTransform.setIdentity();
+                    // tempVec3.setValue(
+                    //     entity.positionX,
+                    //     entity.positionY,
+                    //     entity.positionZ
+                    // );
+                    // tempTransform.setOrigin(tempVec3);
+
+                    // Set the velocity (optional: you can keep the existing velocity or set a new one)
                     tempVec3.setValue(
-                        entity.velocity.x,
-                        entity.velocity.y,
-                        entity.velocity.z
+                        entity.velocityX,
+                        entity.velocityY,
+                        entity.velocityZ
                     );
                     body.setLinearVelocity(tempVec3);
-                    tempVec3.setValue(
-                        entity.position.x,
-                        entity.position.y,
-                        entity.position.z
-                    );
-                    tempTransform.setOrigin(tempVec3);
-                    body.setGravity(new AmmoLib.btVector3(0, 0, 0));
-                    body.userData.gravityDisabled = true;
-                } else if (body.userData.gravityDisabled) {
-                    body.setGravity(new AmmoLib.btVector3(0, entity.collider.gravity ? gravity : 0, 0));
-                    body.userData.gravityDisabled = false;
-                }
+                    //body.setCollisionFlags(0);
                 
-                body.getMotionState().setWorldTransform(tempTransform);
+
+                    // // Update motion state to teleport the body
+                    // const motionState = body.getMotionState();
+                    // motionState.setWorldTransform(tempTransform);
+                    // body.setMotionState(motionState);
+                }           
             }
         });
     }
 
-    // Remove colliders
     if (data.removeColliders && data.removeColliders.length > 0) {
         data.removeColliders.forEach(id => {
             const body = colliders.get(id);
@@ -249,10 +267,14 @@ self.onmessage = function(e) {
         });
     }
 
-    // Update physics
-    if (data.deltaTime) {
-        const deltaTime = 1/120;
-        physicsWorld.stepSimulation(deltaTime, 10);
+
+  
+}
+
+
+function update() {
+    if(physicsWorld){
+        physicsWorld.stepSimulation(1/60, 5);
 
         const numManifolds = dispatcher.getNumManifolds();
         for (let i = 0; i < numManifolds; i++) {
@@ -272,19 +294,12 @@ self.onmessage = function(e) {
                 }
             }
         }
-
-        
-        update();
     }
-};
-
-
-
-function update() {
     const updatedEntities = [];
     const tempTransform = new AmmoLib.btTransform(); // Temp transform for getting world transforms
 
     colliders.forEach((body, id) => {
+        if(body.userData.collider.static) return;
         const info = minfo.get(id);
         body.getMotionState().getWorldTransform(tempTransform);
         const origin = tempTransform.getOrigin();
@@ -303,17 +318,19 @@ function update() {
         const collisions = collisionsThisFrame.get(id) || [];
         const collidedWithTerrain = collisions.includes('terrain');
         const entityCollisions = collisions.filter(cid => cid !== 'terrain');
-        
         if(!isNaN(info[0])){
           updatedEntities.push({
               id,
-              position: { x: info[0], y: info[1], z: info[2] },
-              quaternion: { x: info[3], y: info[4], z: info[5], w: info[6] },
-              velocity: {
-                  x: velocity.x(),
-                  y: velocity.y(),
-                  z: velocity.z()
-              },
+              positionX: info[0], 
+              positionY: info[1], 
+              positionZ: info[2],
+              quaternionX: info[3], 
+              quaternionY: info[4], 
+              quaternionZ: info[5], 
+              quaternionW: info[6],
+              velocityX: velocity.x(),
+              velocityY: velocity.y(),
+              velocityZ: velocity.z(),
               sleeping: info[7] === 1,
               collisions: entityCollisions,
               collidedWithTerrain: collidedWithTerrain

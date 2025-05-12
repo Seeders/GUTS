@@ -64,8 +64,7 @@ class ShapeFactory {
                         color: 0xffffff,
                         metalness: shape.metalness || 0.5,
                         roughness: shape.roughness || 0.5,
-                        map: map,
-                        skinning: true
+                        map: map
                     });
                     child.material.needsUpdate = true;
                     child.castShadow = true;
