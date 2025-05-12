@@ -593,6 +593,26 @@ class InfiniWorld extends engine.Component {
     }
 }
 
+    getStaticAABBs() {
+      const cameraChunkX = Math.floor(this.camera.position.x / this.chunkSize);
+      const cameraChunkZ = Math.floor(this.camera.position.z / this.chunkSize);
+      let staticAABBs = [];
+
+      // Check nearby chunks
+      for (let x = cameraChunkX - 1; x <= cameraChunkX + 1; x++) {
+        for (let z = cameraChunkZ - 1; z <= cameraChunkZ + 1; z++) {
+          const chunkKey = `${x},${z}`;
+          const chunkData = this.chunks.get(chunkKey);
+          if (!chunkData) continue;
+    
+          const treeAABBs = chunkData.collisionAABBs.get('tree');
+          const rockAABBs = chunkData.collisionAABBs.get('rock');
+          
+         staticAABBs = [...staticAABBs, ...(treeAABBs || []), ...(rockAABBs || [])];
+        }
+      }
+      return staticAABBs;
+    }
       
     checkTreeCollisions(colliderAABB) {
       const collisions = [];

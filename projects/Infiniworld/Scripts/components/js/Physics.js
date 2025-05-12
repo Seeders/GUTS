@@ -15,6 +15,12 @@ class Physics extends engine.Component {
         this.game.physics = this;
         this.shouldUpdate = false;
         this.debugPhysics = false;
+        this.staticAABBs = [];
+    }
+
+
+    setStaticAABBs(aabbs){
+        this.staticAABBs = aabbs;
     }
 
     registerCollider(collider) {
@@ -68,11 +74,11 @@ class Physics extends engine.Component {
         if (this.physicsDataBuffer.length === 0 && !this.collidersToRemove) return;
 
         const gravityValue = -9.8 * 2.5;
-
         this.worker.postMessage({
             entities: this.physicsDataBuffer,
             removeColliders: this.collidersToRemove || [],
             deltaTime: this.deltaTime,
+            staticAABBs: this.staticAABBs,
             gravity: gravityValue
         });
 

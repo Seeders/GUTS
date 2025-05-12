@@ -67,6 +67,8 @@ class Game extends engine.Component {
                 }
             }
             
+
+            this.physics.setStaticAABBs(this.world.getStaticAABBs());
           //  if (this.physicsAccumulator >= physicsStep) {
             //    if (shouldUpdatePhysics) {
             this.physics.sendToWorker(this.world);

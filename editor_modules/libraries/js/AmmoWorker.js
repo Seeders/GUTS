@@ -50,9 +50,74 @@ self.onmessage = function(e) {
     }
 
     const data = e.data;
-
+    const staticAABBs = e.data.staticAABBs;
     // Process entities
     collisionsThisFrame.clear();
+    if (staticAABBs && staticAABBs.length > 0) {
+
+        staticAABBs.forEach(aabb => {
+            if (!aabb.id || !aabb.min || !aabb.max) {
+                if (debugWorker) console.warn("Skipping invalid static AABB:", aabb);
+                return;
+            }
+
+            // Validate AABB dimensions
+            if (aabb.max.x <= aabb.min.x || aabb.max.y <= aabb.min.y || aabb.max.z <= aabb.min.z) {
+                if (debugWorker) console.warn("Invalid AABB dimensions:", aabb);
+                return;
+            }
+
+            // Skip if already created
+            if (colliders.has(aabb.id)) {
+                if (debugWorker) console.log("Static AABB already exists:", aabb.id);
+                return;
+            }
+
+            // Calculate capsule dimensions
+            const height = aabb.max.y - aabb.min.y; // Full height of the trunk
+            // Use a provided radius or estimate from AABB (e.g., smaller of x/z dimensions)
+            const radius = aabb.radius || Math.min((aabb.max.x - aabb.min.x), (aabb.max.z - aabb.min.z)) / 2;
+            if (radius <= 0 || height <= 0) {
+                if (debugWorker) console.warn("Invalid capsule dimensions: radius=", radius, "height=", height, aabb);
+                return;
+            }
+
+            // Create capsule shape
+            const shape = new AmmoLib.btCapsuleShape(radius, height);
+
+            // Set position (align bottom of capsule with aabb.min.y)
+            const centerX = (aabb.min.x + aabb.max.x) / 2;
+            const centerZ = (aabb.min.z + aabb.max.z) / 2;
+            const centerY = aabb.min.y + (height / 2 + radius); // Capsule center: bottom + height/2 + radius
+            tempTransform.setIdentity();
+            tempVec3.setValue(centerX, centerY, centerZ);
+            tempTransform.setOrigin(tempVec3);
+
+            // Static body (mass = 0)
+            const mass = 0;
+            tempVec3.setValue(0, 0, 0); // No inertia for static bodies
+            const motionState = new AmmoLib.btDefaultMotionState(tempTransform);
+            const bodyInfo = new AmmoLib.btRigidBodyConstructionInfo(mass, motionState, shape, tempVec3);
+            const body = new AmmoLib.btRigidBody(bodyInfo);
+
+            // Set as static object
+            body.setCollisionFlags(body.getCollisionFlags() | AmmoLib.btCollisionObject.CF_STATIC_OBJECT);
+
+            // Configure body
+            body.setRestitution(aabb.restitution || 0.5);
+            body.setFriction(aabb.friction || 0.5);
+            body.userData = { id: aabb.id, collider: { type: 'capsule', static: true }, reflected: false };
+
+            // Add to physics world
+            physicsWorld.addRigidBody(body);
+            colliders.set(aabb.id, body);
+            minfo.set(aabb.id, new Float32Array(8));
+
+            AmmoLib.destroy(bodyInfo);
+
+            if (debugWorker) console.log("Created static capsule collider:", aabb.id, "center:", { x: centerX, y: centerY, z: centerZ }, "radius:", radius, "height:", height);
+        });
+    }
 
     if (data.entities && data.entities.length > 0) {
         data.entities.forEach(entity => {
@@ -145,6 +210,16 @@ self.onmessage = function(e) {
               );
               tempTransform.setOrigin(tempVec3);
 
+              if (entity.quaternion) {
+                  tempQuat.setValue(
+                      entity.quaternion.x,
+                      entity.quaternion.y,
+                      entity.quaternion.z,
+                      entity.quaternion.w
+                  );
+                  tempTransform.setRotation(tempQuat);
+              }
+
               if (entity.reflected) {
                 // Update velocity
                 tempVec3.setValue(
@@ -155,7 +230,6 @@ self.onmessage = function(e) {
                 body.setLinearVelocity(tempVec3);
 
                   // Update position to match main thread's snapped position
-                body.getMotionState().setWorldTransform(tempTransform);
                 body.setGravity(new AmmoLib.btVector3(0, 0, 0));
                 body.userData.gravityDisabled = true;
               } else {
@@ -164,18 +238,8 @@ self.onmessage = function(e) {
                     body.setGravity(new AmmoLib.btVector3(0, entity.collider.gravity ? gravity : 0, 0));
                     body.userData.gravityDisabled = false;
                 }
-                body.getMotionState().setWorldTransform(tempTransform);
               }
-
-              if (entity.quaternion) {
-                  tempQuat.setValue(
-                      entity.quaternion.x,
-                      entity.quaternion.y,
-                      entity.quaternion.z,
-                      entity.quaternion.w
-                  );
-                  tempTransform.setRotation(tempQuat);
-              }
+              body.getMotionState().setWorldTransform(tempTransform);
             }
         });
     }
