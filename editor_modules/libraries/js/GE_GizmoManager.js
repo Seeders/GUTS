@@ -441,17 +441,21 @@ class GE_GizmoManager {
         else if (this.graphicsEditor.state.selectedShapeIndex >= 0) {
             const shape = this.graphicsEditor.shapeManager.getShapeData(this.graphicsEditor.state.selectedShapeIndex);
             if (shape) {
-                shape.x = this.currentTransformTarget.position.x;
-                shape.y = this.currentTransformTarget.position.y;
-                shape.z = this.currentTransformTarget.position.z;
+                if(!shape.position) shape.position = {};
+                if(!shape.rotation) shape.rotation = {};
+                if(!shape.scale) shape.scale = {};
                 
-                shape.rotationX = this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.x);
-                shape.rotationY = this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.y);
-                shape.rotationZ = this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.z);
+                shape.position.x = this.currentTransformTarget.position.x;
+                shape.position.y = this.currentTransformTarget.position.y;
+                shape.position.z = this.currentTransformTarget.position.z;
                 
-                shape.scaleX = this.currentTransformTarget.scale.x;
-                shape.scaleY = this.currentTransformTarget.scale.y;
-                shape.scaleZ = this.currentTransformTarget.scale.z;
+                shape.rotation.x = this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.x);
+                shape.rotation.y = this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.y);
+                shape.rotation.z = this.graphicsEditor.rotationUtils.radToDeg(this.currentTransformTarget.rotation.z);
+                
+                shape.scale.x = this.currentTransformTarget.scale.x;
+                shape.scale.y = this.currentTransformTarget.scale.y;
+                shape.scale.z = this.currentTransformTarget.scale.z;
             }
         }
         this.graphicsEditor.renderShapes(false);

@@ -230,14 +230,13 @@
             "type": "cylinder",
             "size": 5,
             "color": "#888888",
-            "x": 0,
-            "y": 0,
-            "z": -1.4,
-            "rotationX": 90,
-            "rotationY": 0,
-            "rotationZ": 0,
             "height": 25,
-            "scaleX": 1
+            "rotation": {
+              "x": 90
+            },
+            "position": {
+              "z": -1.4
+            }
           },
           {
             "type": "cone",
@@ -355,6 +354,6 @@
   "isBallistic": true,
   "particle": "smoke",
   "shadows": false,
-  "hitSound": "explosion",
-  "attackSound": "missileLaunch"
+  "hitSound": "",
+  "attackSound": ""
 }

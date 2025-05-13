@@ -26,17 +26,23 @@ class ShapeFactory {
                 await this.handlePrimitiveShape(shape, index, group);
             }
         }));
-        group.position.x = groupData.position.x;
-        group.position.y = groupData.position.y;
-        group.position.z = groupData.position.z;
-        
-        group.rotation.x = groupData.rotation.x;
-        group.rotation.y = groupData.rotation.y;
-        group.rotation.z = groupData.rotation.z;
+        if(groupData.position){            
+            group.position.x = groupData.position.x || 0;
+            group.position.y = groupData.position.y || 0;
+            group.position.z = groupData.position.z || 0;
+        }
 
-        group.scale.x = groupData.scale.x;
-        group.scale.y = groupData.scale.y;
-        group.scale.z = groupData.scale.z;
+        if(groupData.rotation){
+            group.rotation.x = groupData.rotation.x || 0;
+            group.rotation.y = groupData.rotation.y || 0;
+            group.rotation.z = groupData.rotation.z || 0;
+        }
+
+        if(groupData.scale){
+            group.scale.x = groupData.scale.x || 1;
+            group.scale.y = groupData.scale.y || 1;
+            group.scale.z = groupData.scale.z || 1;
+        } 
         return group;
     }
 
@@ -44,16 +50,16 @@ class ShapeFactory {
         const applyTransformations = (model, gltf) => {
             // Extract animations
             const animations = gltf.animations;
-            model.position.set(shape.x || 0, shape.y || 0, shape.z || 0);
+            model.position.set(shape.position ? shape.position.x : shape.x || 0, shape.position ? shape.position.y : shape.y || 0, shape.position ? shape.position.z : shape.z || 0);
             model.scale.set(
-                shape.scaleX || 1,
-                shape.scaleY || 1,
-                shape.scaleZ || 1
+                shape.scale ? shape.scale.x : shape.scaleX || 1,
+                shape.scale ? shape.scale.y : shape.scaleY || 1,
+                shape.scale ? shape.scale.z : shape.scaleZ || 1
             );
             model.rotation.set(
-                (shape.rotationX || 0) * Math.PI / 180,
-                (shape.rotationY || 0) * Math.PI / 180,
-                (shape.rotationZ || 0) * Math.PI / 180
+                (shape.rotation ? shape.rotation.x : shape.rotationX || 0) * Math.PI / 180,
+                (shape.rotation ? shape.rotation.y : shape.rotationY || 0) * Math.PI / 180,
+                (shape.rotation ? shape.rotation.z : shape.rotationZ || 0) * Math.PI / 180
             );
     
             model.traverse(child => {
@@ -92,7 +98,6 @@ class ShapeFactory {
     
                 const mixer = new THREE.AnimationMixer(model);
                 const action = mixer.clipAction(animations[0]);
-                console.log('clip', animations[0]);
                 action.play();
     
                 model.userData.mixer = mixer;
@@ -104,15 +109,11 @@ class ShapeFactory {
                 });
     
                 if (!skinnedMesh) {
-                    console.error('No SkinnedMesh found in the glTF file');
                     return;
                 }    
                 const skeleton = skinnedMesh.skeleton;
                 model.userData.skeleton = skeleton;                
-            } else {
-                console.log('No animations found in GLTF file');
-            }
-        
+            }         
 
         };
     
@@ -230,16 +231,20 @@ class ShapeFactory {
         mesh.userData = { isShape: true, castShadow: true, index: index };
         
         // Position and rotation
-        mesh.position.set(shape.x || 0, shape.y || 0, shape.z || 0);
+        mesh.position.set(
+            shape.position && shape.position.x ? shape.position.x : shape.x || 0, 
+            shape.position && shape.position.y ? shape.position.y : shape.y || 0, 
+            shape.position && shape.position.z ? shape.position.z : shape.z || 0
+        );
         mesh.rotation.set(
-            (shape.rotationX || 0) * Math.PI / 180,
-            (shape.rotationY || 0) * Math.PI / 180,
-            (shape.rotationZ || 0) * Math.PI / 180
+            (shape.rotation && shape.rotation.x ? shape.rotation.x : shape.rotationX || 0) * Math.PI / 180,
+            (shape.rotation && shape.rotation.y ? shape.rotation.y : shape.rotationY || 0) * Math.PI / 180,
+            (shape.rotation && shape.rotation.z ? shape.rotation.z : shape.rotationZ || 0) * Math.PI / 180
         );
         mesh.scale.set(
-            shape.scaleX || 1,
-            shape.scaleY || 1,
-            shape.scaleZ || 1
+            shape.scale && shape.scale.x ? shape.scale.x : shape.scaleX || 1,
+            shape.scale && shape.scale.y ? shape.scale.y : shape.scaleY || 1,
+            shape.scale && shape.scale.z ? shape.scale.z : shape.scaleZ || 1
         );
         group.add(mesh);
     }
