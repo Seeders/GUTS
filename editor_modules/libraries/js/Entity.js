@@ -53,14 +53,12 @@ class Entity {
             this.components[c].update(); 
             if(this.destroyed) break;
         }                
-        return !this.destroyed;
     }
     postUpdate() {
         for(let c in this.components) {
             this.components[c].postUpdate();   
             if(this.destroyed) break;
         }     
-        return !this.destroyed;
     }
     draw() {
 

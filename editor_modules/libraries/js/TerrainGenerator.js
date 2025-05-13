@@ -165,36 +165,39 @@ class TerrainGenerator {
             positions: [],
             colors: [],
             normals: [],
-            biomeMap: []
+            biomeMap: [],
+            heightmap: []
         };
 
         const size = chunkSize / chunkResolution;
+        const vertexHeights = new Map();
+        const nx = chunkResolution + 1;
+        const ny = chunkResolution + 1;
 
-        // Generate positions with boundary alignment
-        const vertexHeights = new Map(); // Cache heights at shared edges
-        for (let z = 0; z <= chunkResolution; z++) {
-            for (let x = 0; x <= chunkResolution; x++) {
+        // Initialize heightmap as a flat array
+        const heights = new Array(nx * ny).fill(0);
+
+        for (let z = 0; z < ny; z++) {
+            for (let x = 0; x < nx; x++) {
                 const vx = x * size - chunkSize / 2;
                 const vz = z * size - chunkSize / 2;
                 const wx = cx * chunkSize + vx;
                 const wz = cz * chunkSize + vz;
 
-                // Check if this vertex is on a chunk boundary
-                const isBoundaryX = x === 0 || x === chunkResolution;
-                const isBoundaryZ = z === 0 || z === chunkResolution;
-                const boundaryKey = `${Math.round(wx * 1000) / 1000},${Math.round(wz * 1000) / 1000}`; // Round to avoid floating-point issues
-
+                const boundaryKey = `${Math.round(wx * 1000) / 1000},${Math.round(wz * 1000) / 1000}`;
                 let height;
-                if ((isBoundaryX || isBoundaryZ) && vertexHeights.has(boundaryKey)) {
-                    // Reuse height from cache for boundary vertices
+                if ((x === 0 || x === chunkResolution || z === 0 || z === chunkResolution) && vertexHeights.has(boundaryKey)) {
                     height = vertexHeights.get(boundaryKey);
                 } else {
                     const position = { x: wx, z: wz };
                     height = this.getHeight(position);
-                    if (isBoundaryX || isBoundaryZ) {
+                    if (x === 0 || x === chunkResolution || z === 0 || z === chunkResolution) {
                         vertexHeights.set(boundaryKey, height);
                     }
                 }
+
+                // Store height in row-major order: index = z * nx + x
+                heights[x * nx + z] = height;
 
                 const position = { x: wx, y: height, z: wz };
                 geometryData.positions.push(vx, height, vz);
@@ -462,7 +465,13 @@ class TerrainGenerator {
             indices,
             colors: geometryData.colors,
             normals: geometryData.normals,
-            vegetation: Array.from(vegetation.entries()).map(([worldObject, data]) => ({ worldObject, data }))
+            vegetation: Array.from(vegetation.entries()).map(([worldObject, data]) => ({ worldObject, data })),
+            heightmap: {
+                heights: heights,
+                nx: nx, // Number of points in x direction
+                ny: ny, // Number of points in z direction
+                scale: {x: chunkSize, y: 1, z: chunkSize} // Scale of each grid cell
+            }
         };
     }
 }
