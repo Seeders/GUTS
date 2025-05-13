@@ -250,14 +250,14 @@ class InfiniWorld extends engine.Component {
                   });
               });
               
-              this.game.gameEntity.getComponent('game').physics.removeChunkCollider(cx, cz);
+              this.game.gameEntity?.getComponent('game').physics.removeChunkCollider(cx, cz);
               this.chunks.delete(chunkKey);
               this.uniforms.delete(chunkKey);
           }
       }   
       
       if(chunksToGenerate.length > 0){        
-        this.parent.getComponent('game').physics.setStaticAABBs(this.getStaticAABBs(), this.getStaticAABBsToRemove());
+        this.game.gameEntity?.getComponent('game').physics.setStaticAABBs(this.getStaticAABBs(), this.getStaticAABBsToRemove());
       }
   }
 
@@ -271,7 +271,7 @@ class InfiniWorld extends engine.Component {
     const chunkData = this.pendingChunks.get(chunkKey);
     if (!chunkData) return;
 
-    this.parent.getComponent('game').physics.addChunkCollider(e.data);
+    this.game.gameEntity?.getComponent('game').physics.addChunkCollider(e.data);
     try {
         // Copy positions and normals for manipulation
         const adjustedPositions = positions.slice();

@@ -1,0 +1,51 @@
+{
+  "title": "Sequoia Tree",
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ]
+    },
+    "model": {
+      "shapes": {
+        "shapes": [
+          {
+            "type": "gltf",
+            "size": 10,
+            "color": "#ffffff",
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "rotationX": 0,
+            "rotationY": 0,
+            "rotationZ": 0,
+            "height": 20,
+            "scaleX": 40,
+            "texture": "",
+            "url": "samples/models/sequoia_tree/sequoia_tree.glb",
+            "scaleY": 40,
+            "scaleZ": 40,
+            "roughness": "1",
+            "metalness": "0"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      }
+    }
+  },
+  "entity": "staticObject"
+}

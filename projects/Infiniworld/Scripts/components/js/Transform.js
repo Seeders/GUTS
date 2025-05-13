@@ -8,7 +8,7 @@ class Transform extends engine.Component {
         this.physicsPosition = new THREE.Vector3(x, y, z);
         this.gridPosition = new THREE.Vector2(x, y);
         this.drawPosition = new THREE.Vector2(x, y);
-        this.scale = new THREE.Vector3(scaleX, scaleY, scaleZ);
+        this.scale = new THREE.Vector3(scaleX || 1, scaleY || 1, scaleZ || 1);
         this.quaternion = new THREE.Quaternion();
         this.quaternion.setFromAxisAngle( new THREE.Vector3( rotationX, rotationY, rotationZ ), Math.PI / 2 );        
         this.parent.transform = this;         

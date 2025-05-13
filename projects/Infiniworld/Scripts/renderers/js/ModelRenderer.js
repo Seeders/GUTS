@@ -53,11 +53,6 @@ class ModelRenderer extends engine.Component {
             }
         });
 
-        if (!mixer || !animations) {
-            console.error('No AnimationMixer or animations found in modelGroup');
-            return;
-        }
-
         this.mixer = mixer;
         this.animationActions = {};
 
@@ -71,12 +66,14 @@ class ModelRenderer extends engine.Component {
                     animModelAnimations = object.userData.animations;
                 }
             });
-            const clip = animModelAnimations[0];
-            if (clip) {
-                const action = this.mixer.clipAction(clip);
-                action.setLoop(THREE.LoopRepeat);
-                action.enabled = true;
-                this.animationActions[name] = action;
+            if(animModelAnimations?.length > 0){
+                const clip = animModelAnimations[0];
+                if (clip) {
+                    const action = this.mixer.clipAction(clip);
+                    action.setLoop(THREE.LoopRepeat);
+                    action.enabled = true;
+                    this.animationActions[name] = action;
+                }
             }
         });
 
@@ -196,7 +193,14 @@ class ModelRenderer extends engine.Component {
                 this.advanceFrame();
             }
         }
-
+        if(this.parent.type == "projectile"){
+            console.log(this.parent.transform.scale);
+        }
+        this.modelGroup.scale.set(
+            this.parent.transform.scale.x,
+            this.parent.transform.scale.y,
+            this.parent.transform.scale.z
+        );
         // Update position of model to match entity position
         if (this.parent && this.parent.transform.position) {
             this.modelGroup.position.set(

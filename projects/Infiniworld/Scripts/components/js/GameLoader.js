@@ -44,7 +44,7 @@ class GameLoader extends engine.Component {
                 this.game.gameEntity = this.game.createEntityFromConfig(sceneEntity.type, params, position);
                 this.game.audioManager = this.game.gameEntity.getComponent('AudioManager');  
             } else {
-                let spawned = this.game.spawn(sceneEntity.type, params, new THREE.Vector3(position.x, position.y, position.z));              
+                let spawned = this.game.spawn(sceneEntity.type, params, new THREE.Vector3(position.x, position.y, position.z));                              
                 spawned.transform.scale.copy(scale);
                 // Alternative quaternion approach
                 let euler = new THREE.Euler(

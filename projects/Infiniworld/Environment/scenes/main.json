@@ -2,7 +2,7 @@
   "title": "Main",
   "sceneData": [
     {
-      "id": 17,
+      "id": 7,
       "type": "game",
       "objectType": "gamePrefabs",
       "spawnType": "infiniworldShire",
@@ -38,7 +38,7 @@
       ]
     },
     {
-      "id": 18,
+      "id": 8,
       "type": "enemy",
       "objectType": "enemyPrefabs",
       "spawnType": "waving_npc",
@@ -74,7 +74,7 @@
       ]
     },
     {
-      "id": 19,
+      "id": 9,
       "type": "player",
       "objectType": "playerPrefabs",
       "spawnType": "waving_guy",
@@ -85,8 +85,8 @@
           "type": "transform",
           "parameters": {
             "position": {
-              "x": 0,
-              "y": 0,
+              "x": -289.28629498499913,
+              "y": 32.009141242213005,
               "z": 0
             },
             "rotation": {
@@ -104,7 +104,7 @@
       ]
     },
     {
-      "id": 20,
+      "id": 10,
       "type": "enemy",
       "objectType": "enemyPrefabs",
       "spawnType": "monster",
@@ -116,7 +116,7 @@
           "parameters": {
             "position": {
               "x": -43.5327299539353,
-              "y": -27.90653706911728,
+              "y": 30.283653808417835,
               "z": 120.71566069649644
             },
             "rotation": {
@@ -135,6 +135,36 @@
           "type": "Collider",
           "parameters": {
             "collider": "fighterCollider"
+          }
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "type": "staticObject",
+      "objectType": "worldObjectPrefabs",
+      "spawnType": "sequoia_tree",
+      "parent": null,
+      "children": [],
+      "components": [
+        {
+          "type": "transform",
+          "parameters": {
+            "position": {
+              "x": 53.23995363600116,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 10,
+              "y": 10,
+              "z": 10
+            }
           }
         }
       ]
