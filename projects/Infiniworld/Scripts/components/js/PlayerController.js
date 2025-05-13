@@ -247,46 +247,25 @@ class PlayerController extends engine.Component {
     }
     
     checkGrounded() {
-        // Use raycasting to detect ground beneath the character
-        const origin = this.parent.transform.position.clone().add(new THREE.Vector3(0, this.characterHeight * 0.5, 0));
-        const direction = new THREE.Vector3(0, -1, 0);
-        const maxDistance = this.characterHeight * 0.5 + 0.1; // Slightly more than half height
-        
-        // Visualization helper for debug
-        if (this.debug.showRaycasts) {
-            const arrowHelper = new THREE.ArrowHelper(
-                direction,
-                origin,
-                maxDistance,
-                this.isGrounded ? 0x00ff00 : 0xff0000,
-                0.2,
-                0.1
-            );
-            this.scene.add(arrowHelper);
-            this.debug.raycastHelpers.push(arrowHelper);
-        }
+
         
         // Get height from terrain
-        const groundHeight = this.parent.transform.groundHeight;
-        
+        const groundHeight = this.world.getTerrainHeight(this.parent.transform.position);
+        this.parent.transform.groundHeight = groundHeight;
         const characterBottom = this.parent.transform.position.y;
         const distanceToGround = characterBottom - groundHeight;
         
         // Check if we're on or near the ground
-        if (distanceToGround <= 0.1) {
+        if (distanceToGround <= 1) {
             this.isGrounded = true;
             this.isJumping = false;
             // Snap to ground
-            this.parent.transform.position.y = groundHeight;
+            this.parent.transform.position.y = groundHeight + .01;
             return true;
-        } else if (distanceToGround < maxDistance) {
-            // Close to ground but not exactly on it
-            this.isGrounded = false;
-            return false;
-        } else {
-            this.isGrounded = false;
-            return false;
-        }
+        } 
+        this.isGrounded = false;
+        return false;
+        
     }
     
     handleStepClimbing() {
@@ -335,6 +314,7 @@ class PlayerController extends engine.Component {
     update() {
         if (!this.controls.isLocked) return;
         const dt = Math.min(this.game.deltaTime, 0.1);
+
         
         // Check if we're on the ground
         this.checkGrounded();

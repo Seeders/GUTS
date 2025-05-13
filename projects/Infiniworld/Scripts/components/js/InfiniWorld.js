@@ -169,7 +169,6 @@ class InfiniWorld extends engine.Component {
       };
       this.chunks.set(chunkKey, chunkData);
       this.pendingChunks.set(chunkKey, chunkData);
-  
       // Send message to worker
       this.worker.postMessage({
         cx,
@@ -179,19 +178,19 @@ class InfiniWorld extends engine.Component {
       });
     }
   
-    getInstancedMeshPool(type, geometry, material) {
-      if (!this.objectPools) this.objectPools = new Map();
-  
-      const key = `${type}-${geometry.uuid}`;
-      if (!this.objectPools.has(key)) {
-        const pool = new (this.game.moduleManager.libraryClasses.InstancePool)(geometry, material, 1000);
-        this.rootGroup.add(pool.mesh);
-        this.objectPools.set(key, pool);
-      }
-      return this.objectPools.get(key);
+  getInstancedMeshPool(type, geometry, material) {
+    if (!this.objectPools) this.objectPools = new Map();
+
+    const key = `${type}-${geometry.uuid}`;
+    if (!this.objectPools.has(key)) {
+      const pool = new (this.game.moduleManager.libraryClasses.InstancePool)(geometry, material, 1000);
+      this.rootGroup.add(pool.mesh);
+      this.objectPools.set(key, pool);
     }
+    return this.objectPools.get(key);
+  }
   
-    async updateChunks() {
+  async updateChunks() {
       const cameraChunkX = Math.floor(this.camera.position.x / this.chunkSize);
       const cameraChunkZ = Math.floor(this.camera.position.z / this.chunkSize);
       const newChunks = new Set();
@@ -223,9 +222,9 @@ class InfiniWorld extends engine.Component {
       for (const [chunkKey, chunkData] of this.chunks) {
           if (!newChunks.has(chunkKey) && !chunkData.isGenerating) {
               let parts = chunkKey.split(',');
-              let x = parts[0];
-              let z = parts[1];
-              this.staticAABBsToRemove = [...this.staticAABBsToRemove, ...this.getStaticAABBsAt(x, z)];
+              let cx = parts[0];
+              let cz = parts[1];
+              this.staticAABBsToRemove = [...this.staticAABBsToRemove, ...this.getStaticAABBsAt(cx, cz)];
               if (chunkData.terrainMesh) {
                   this.rootGroup.remove(chunkData.terrainMesh);
                   chunkData.terrainMesh.geometry.dispose();
@@ -250,6 +249,8 @@ class InfiniWorld extends engine.Component {
                       }
                   });
               });
+              
+              this.game.gameEntity.getComponent('game').physics.removeChunkCollider(cx, cz);
               this.chunks.delete(chunkKey);
               this.uniforms.delete(chunkKey);
           }
@@ -270,6 +271,7 @@ class InfiniWorld extends engine.Component {
     const chunkData = this.pendingChunks.get(chunkKey);
     if (!chunkData) return;
 
+    this.parent.getComponent('game').physics.addChunkCollider(e.data);
     try {
         // Copy positions and normals for manipulation
         const adjustedPositions = positions.slice();
@@ -802,12 +804,12 @@ class InfiniWorld extends engine.Component {
   }
 
   getTerrainHeight(position) {
-    return this.terrainGenerator.getHeight(position);
+
     // Create a raycaster
     const raycaster = new THREE.Raycaster();
     
     // Set the ray origin high above the position
-    const rayOrigin = new THREE.Vector3(position.x, this.chunkSize * 2, position.z);
+    const rayOrigin = new THREE.Vector3(position.x, position.y + 10, position.z);
     
     // Set the ray direction downward
     const rayDirection = new THREE.Vector3(0, -1, 0);
@@ -841,7 +843,6 @@ class InfiniWorld extends engine.Component {
   }
 
   getReflectionAt(position, velocity, restitution) {
-    debugger;
       return this.terrainGenerator.getReflectionAt(position, velocity, restitution);
       const normal = this.getTerrainNormal(position);
       const dotProduct = 
@@ -999,6 +1000,7 @@ class InfiniWorld extends engine.Component {
   }
 
   generateWaterMesh(cx, cz, terrainPositions) {
+    return;
     const chunkKey = `${cx},${cz}`;
 
     // Create a plane with higher resolution for visible waves

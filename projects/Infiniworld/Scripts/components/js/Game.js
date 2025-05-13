@@ -46,34 +46,27 @@ class Game extends engine.Component {
             }
             
             // Fixed physics update
-           const physicsStep = 1/60; // 60 Hz physics update
-           this.physicsAccumulator += this.game.deltaTime;
-         
-            // Single entity loop
-            const entitiesToKeep = [];
-           let shouldUpdatePhysics = true;
-           if(this.physicsAccumulator >= physicsStep) {
-                this.physics.startPhysicsUpdate( physicsStep );
-               shouldUpdatePhysics = true;
-           }
-            
+            const physicsStep = 1/60; // 60 Hz physics update
+            this.physicsAccumulator += this.game.deltaTime;
+            let entitiesToRemove = [];
             for (let i = 0; i < this.game.state.entities.length; i++) {
                 let e = this.game.state.entities[i];
-                let result = e.update();
-                if (result) {
-                    entitiesToKeep.push(e);
+                e.update();
+                if(!e.destroyed){
                     e.draw();
-                    e.postUpdate();                  
-                }
+                    e.postUpdate();  
+                } else {
+                    entitiesToRemove.push(i);
+                }     
+            }
+            for(let i = entitiesToRemove.length - 1; i >= 0; i--){
+                this.game.state.entities.splice(entitiesToRemove[i], 1);
             }
             
-            if (this.physicsAccumulator >= physicsStep) {
-                if (shouldUpdatePhysics) {                
-                    this.physics.sendToWorker(this.world);
-                }
-               this.physicsAccumulator -= physicsStep;
+            if (this.physicsAccumulator >= physicsStep) {    
+                this.physics.sendToWorker(this.world);           
+                this.physicsAccumulator -= physicsStep;
             }
-            this.game.state.entities = entitiesToKeep;
             
             this.postUpdate();
             this.game.entitiesToAdd.forEach((entity) => this.game.state.addEntity(entity));

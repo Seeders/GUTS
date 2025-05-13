@@ -5,6 +5,7 @@
   "isIsometric": false,
   "libraries": [
     "threejs",
+    "Rapier",
     "three.SkeletonUtils",
     "three.PointerLockControls",
     "ShapeFactory",

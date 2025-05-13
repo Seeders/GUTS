@@ -15,7 +15,6 @@ class Transform extends engine.Component {
         this.groundHeight = 0;
     }
     update() {
-        this.groundHeight = this.getGroundHeight();
     }
 
     getGroundHeight(position) {

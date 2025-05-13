@@ -96,14 +96,13 @@ class Collider extends engine.Component {
             this.parent.transform.physicsPosition,
             this.lerpFactor
         );
-        if(this.parent.transform.position.y - this.size + this.offset.y + this.parent.transform.velocity.y*this.game.deltaTime <= this.parent.transform.groundHeight){                                        
-            this.parent.transform.position.y = this.parent.transform.groundHeight + this.size - this.offset.y + .00001;   
-        }
+        // if(this.parent.transform.position.y - this.size + this.offset.y + this.parent.transform.velocity.y*this.game.deltaTime <= this.parent.transform.groundHeight){                                        
+        //     this.parent.transform.position.y = this.parent.transform.groundHeight + this.size - this.offset.y + .00001;   
+        // }
         // Update debug mesh position if it exists
         if (this.debug && this.debugMesh) {
             this.debugMesh.position.copy(this.parent.transform.physicsPosition).add(this.offset);
         }
-        this.game.gameEntity.getComponent('game').physics.collectPhysicsData(this);
     }
 
     destroy() {
