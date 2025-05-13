@@ -250,7 +250,7 @@ class PlayerController extends engine.Component {
 
         
         // Get height from terrain
-        const groundHeight = this.world.getTerrainHeight(this.parent.transform.position);
+        const groundHeight = this.world.getTerrainHeight(this.parent.transform.position, true);
         this.parent.transform.groundHeight = groundHeight;
         const characterBottom = this.parent.transform.position.y;
         const distanceToGround = characterBottom - groundHeight;

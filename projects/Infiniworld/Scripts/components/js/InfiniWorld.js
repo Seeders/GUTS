@@ -803,8 +803,10 @@ class InfiniWorld extends engine.Component {
       chunkData.objectMeshes.set(type, instanceGroups);
   }
 
-  getTerrainHeight(position) {
-
+  getTerrainHeight(position, useRaycast = false) {
+    if(!useRaycast){      
+      return this.terrainGenerator.getHeight(position);
+    }
     // Create a raycaster
     const raycaster = new THREE.Raycaster();
     

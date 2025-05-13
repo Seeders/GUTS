@@ -107,6 +107,7 @@ class TerrainGenerator {
     }
 
     getReflectionAt(position, velocity, restitution) {
+        debugger;
         const normal = this.getNormalAt(position);
         const dotProduct = 
             velocity.x * normal.x + 

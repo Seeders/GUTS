@@ -116,7 +116,7 @@ class Physics extends engine.Component {
             rigidBodyDesc = r.RigidBodyDesc.dynamic()
                 .setLinearDamping(0.2)
                 .setAngularDamping(0.4)
-                .setCcdEnabled(true).setSoftCcdPrediction(10);
+                .setCcdEnabled(true);
         }
         
         // Set initial position
@@ -267,21 +267,27 @@ class Physics extends engine.Component {
     }
     
     handleGroundCollision(entity, data) {
-        if(entity.transform.position.y - data.size + data.offset.y + entity.transform.velocity.y*this.game.deltaTime > entity.transform.groundHeight){
+        if(entity.transform.physicsPosition.y - data.size + data.offset.y - entity.transform.velocity.y*this.game.deltaTime > entity.transform.groundHeight - .5){
             return;
         }
-
-        // Entity is colliding with the ground
-        if (data.reflected <= 0) {
-            const r = this.RAPIER;
-            
-            //custom ground effect.
-            
-            data.reflected = 5; // Skip a few frames before checking for ground again            
-       
-        } else {
-            data.reflected = Math.max(0, data.reflected - 1);
+        const rigidBody = data.rigidBody;
+        const r = this.RAPIER;
+        const reflection = this.game.gameEntity.getComponent('game').world.getReflectionAt(entity.transform.physicsPosition, entity.transform.velocity, data.restitution);
+        if(reflection){
+            rigidBody.setLinvel(reflection);
+            if(reflection.multiplyScalar){
+                rigidBody.setTranslation(
+                    {
+                        x: entity.transform.physicsPosition.x + reflection.x * this.game.deltaTime*5,
+                        y: entity.transform.physicsPosition.y + reflection.y * this.game.deltaTime*10,
+                        z: entity.transform.physicsPosition.z + reflection.z * this.game.deltaTime*5
+                    }
+                );
+            }
         }
+        data.reflected = 5; // Skip a few frames before checking for ground again            
+    
+ 
     }
     
     detectCollisions(data) {
@@ -336,7 +342,7 @@ class Physics extends engine.Component {
 
         // Create a static rigid body for the terrain chunk
         const rigidBodyDesc = r.RigidBodyDesc.fixed()
-                .setSoftCcdPrediction(10)
+                .setSoftCcdPrediction(5)
                 .setTranslation(
                     cx * this.game.terrain.chunkSize,
                     0,
