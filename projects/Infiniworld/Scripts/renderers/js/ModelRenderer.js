@@ -13,7 +13,7 @@ class ModelRenderer extends engine.Component {
         this.currentAnimationTime = 0;
         
         this.fadeTime = 0.3;
-        this.minAnimationTime = this.fadeTime * 2;
+        this.minAnimationTime = 0;//this.fadeTime * 2;
         // Load animation and model data
         this.animationData = this.game.config[objectType]?.[spawnType]?.render?.animations;
         this.modelData = this.game.config[objectType]?.[spawnType]?.render?.model;
@@ -43,7 +43,6 @@ class ModelRenderer extends engine.Component {
     }
 
     setupAnimationMixer() {
- 
         // Find the mixer and animations from userData
         let mixer, animations;
         this.modelGroup.traverse(object => {
@@ -59,14 +58,14 @@ class ModelRenderer extends engine.Component {
         // Create AnimationActions for each animation
         const animationNames = Object.keys(this.animationData);
         animationNames.forEach(name => {
-            const animModel = this.game.modelManager.getAnimation(this.objectType, this.spawnType, name)
+            const animModel = this.game.modelManager.getAnimation(this.objectType, this.spawnType, name);
             let animModelAnimations;
             animModel.traverse(object => {
                 if (object.userData.mixer) {
                     animModelAnimations = object.userData.animations;
                 }
             });
-            if(animModelAnimations?.length > 0){
+            if (animModelAnimations?.length > 0) {
                 const clip = animModelAnimations[0];
                 if (clip) {
                     const action = this.mixer.clipAction(clip);
@@ -81,22 +80,20 @@ class ModelRenderer extends engine.Component {
         this.currentAction = null;
     }
 
-    setAnimation(animationName) {
+    setAnimation(animationName, speed = 1) {
         if (!this.animationData[animationName]) {
             console.warn(`Animation '${animationName}' not found, defaulting to 'idle'`);
             animationName = 'idle';
-
             if (!this.animationData[animationName]) {
                 const availableAnims = Object.keys(this.animationData);
                 animationName = availableAnims.length > 0 ? availableAnims[0] : null;
-
                 if (!animationName) {
                     console.error('No animations available for this model');
                     return;
                 }
             }
         }
-     
+
         if (this.animationState !== animationName && 
             (this.currentAnimationTime >= this.minAnimationTime)) {
             this.animationState = animationName;
@@ -107,10 +104,19 @@ class ModelRenderer extends engine.Component {
                     console.error(`No AnimationAction for ${animationName}`, this.animationActions);
                     return;
                 }
-                // Crossfade to the new animation
-                this.crossfadeTo(newAction, this.fadeTime); // 0.3 seconds blend duration
+                if(newAction != this.currentAction){
+                    this.crossfadeTo(newAction, speed);
+                    this.currentAction.setEffectiveTimeScale(speed);
+                } else {
+                    this.currentAction.stop();
+                    this.currentAction.time = 0;
+                    this.currentAction.enabled = true;
+                    this.currentAction.setEffectiveTimeScale(speed);
+                    this.currentAction.play();
+                }
+
+
             } else {
-                // For non-GLTF, advance frame-based animation
                 this.currentFrameIndex = 0;
                 this.frameTime = 0;
                 this.updateModelFrame();
@@ -118,38 +124,30 @@ class ModelRenderer extends engine.Component {
         }
     }
 
-    crossfadeTo(newAction, duration) {
+    crossfadeTo(newAction, speed) {
+        if(!newAction) return;
         const previousAction = this.currentAction;
-
-        // Set the new action as current
         this.currentAction = newAction;
-
         if (previousAction && previousAction !== newAction) {
-            // Prepare previous action
-            previousAction.enabled = true;
-            previousAction.time = 0;
-            previousAction.setEffectiveTimeScale(1);
             previousAction.setEffectiveWeight(1);
 
-            // Prepare new action
-            newAction.enabled = true;
-            newAction.time = 0;
-            newAction.setEffectiveTimeScale(1);
             newAction.setEffectiveWeight(1);
 
-            // Play both actions
             previousAction.play();
             newAction.play();
 
-            // Crossfade
-            previousAction.crossFadeTo(newAction, duration, true);
+            previousAction.crossFadeTo(newAction, this.fadeTime / speed, true);
 
-            // Stop previous action after fade
             setTimeout(() => {
-                previousAction.stop();
-            }, duration * 1000);
+                if (previousAction && this.currentAction !== previousAction) {
+                    previousAction.stop();
+                }
+            }, this.fadeTime * 1000 / speed);
         } else {
-            // No previous action, just play the new one
+            newAction.enabled = true;
+            newAction.time = 0;
+            newAction.setEffectiveTimeScale(speed); // Apply animation speed
+            newAction.setEffectiveWeight(1);
             newAction.play();
         }
     }
@@ -161,30 +159,31 @@ class ModelRenderer extends engine.Component {
         this.currentAnimationTime += this.game.deltaTime;
         // Update AnimationMixer for GLTF models
         if (this.isGLTF && this.mixer) {
-            this.mixer.update(this.game.deltaTime);            
+            this.mixer.update(this.game.deltaTime);
         }
 
         this.updateDirection();
-        if(this.throwTimer >= 0) {
-            this.throwTimer += this.game.deltaTime; 
-            if(this.throwTimer > this.throwTime){
+        if (this.throwTimer >= 0) {
+            this.throwTimer += this.game.deltaTime;
+            if (this.throwTimer > this.throwTime) {
                 this.throwTimer = -1;
-            } else if(this.animationState !== 'throw') {
-                this.setAnimation('throw');
+            } else if (this.animationState !== 'throw') {
+                this.setAnimation('throw', this.throwSpeed);
             }
         }
-        
-        if(this.leapTimer >= 0) {            
+
+        if (this.leapTimer >= 0) {
             this.leapTimer += this.game.deltaTime;
-            if(this.leapTimer > this.leapTime){
+            if (this.leapTimer > this.leapTime) {
                 this.leapTimer = -1;
-            } else if(this.animationState !== 'leap') {
-                this.setAnimation('leap');
-            }    
+            } else if (this.animationState !== 'leap') {
+                this.setAnimation('leap', this.leapSpeed);
+            }
         }
-        if(this.throwTimer < 0 && this.leapTimer < 0){
+        if (this.throwTimer < 0 && this.leapTimer < 0) {
             this.setMovementAnimation();
         }
+
         // Update skeleton for skinned meshes
         this.modelGroup.traverse(object => {
             if (object.isSkinnedMesh && object.skeleton) {
@@ -195,8 +194,9 @@ class ModelRenderer extends engine.Component {
         // Update frame-based animations for non-GLTF models
         if (!this.isGLTF) {
             this.frameTime += this.game.deltaTime;
-            if (this.frameTime >= this.frameDuration) {
-                this.frameTime -= this.frameDuration;
+            const effectiveFrameDuration = this.frameDuration; // Scale frame duration
+            if (this.frameTime >= effectiveFrameDuration) {
+                this.frameTime -= effectiveFrameDuration;
                 this.advanceFrame();
             }
         }
@@ -218,33 +218,38 @@ class ModelRenderer extends engine.Component {
         }
     }
 
-    jump() {
-        this.setAnimation('leap');
+    jump(speed = 1) {
+        if(this.leapTimer > 0) {
+            return;
+        }
+        this.leapSpeed = speed;
+        this.setAnimation('leap', speed);
         this.leapTimer = 0;
+        this.leapTime = (this.animationActions['leap'].getClip().duration / speed);; // Scale leap time inversely with speed
     }
-
-    throw() {
-        this.setAnimation('throw');
+    throw(speed = 1) {
+        if(this.throwTimer > 0){
+            return;
+        }
+        this.throwSpeed = speed;
+        this.setAnimation('throw', speed);
         this.throwTimer = 0;
+        this.throwTime = (this.animationActions['throw'].getClip().duration / speed);
+    
     }
-
     updateDirection() {
-
-        
         if (this.parent && this.parent.transform.lastPosition) {
             this.modelGroup.quaternion.copy(this.parent.transform.quaternion);
         }
     }
 
     setMovementAnimation() {
-    
         const dx = this.parent.transform.position.x - this.parent.transform.lastPosition.x;
         const dy = this.parent.transform.position.z - this.parent.transform.lastPosition.z;
         // Only update direction if there's significant movement
         if (Math.abs(dx) > 0.01 || Math.abs(dy) > 0.01) {
             // Set walking animation when moving
-            
-            this.throwTimer = -1;
+            this.throwTimer = -1;            
             let moveAnim = this.isRunning ? "run" : "walk";
             if (this.animationData[moveAnim]) {
                 this.setAnimation(moveAnim);

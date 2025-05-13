@@ -3,7 +3,7 @@ class PlayerAttacker extends engine.Component {
         this.stats = this.parent.getComponent("stats").stats;
         this.camera = this.game.camera;
         // Bind mouse click event
-        this.cooldown = this.stats.attackSpeed;
+        this.cooldown = .25;
         this.onMouseDown = this.handleMouseDown.bind(this);
         document.addEventListener('mousedown', this.onMouseDown);
         
@@ -11,8 +11,9 @@ class PlayerAttacker extends engine.Component {
         this.isThrowAnimationPlaying = false;
         this.throwRequested = false;
         this.throwTimer = 0;
-        this.throwDelay = 0;//1.2; // Keep your original delay
-        this.throwDuration = 0;//2;
+        this.animationLength = 2;
+        this.throwDelay = this.animationLength * 0.6; // Keep your original delay
+        this.throwSpeed = this.cooldown;
     }
     
     update() {
@@ -26,7 +27,7 @@ class PlayerAttacker extends engine.Component {
             this.throwTimer += this.game.deltaTime;
             
             // When we reach the throw delay, launch the projectile
-            if (this.throwTimer >= this.throwDelay) {
+            if (this.throwTimer >= this.throwDelay * this.throwSpeed) {
                 this.throwRequested = false;
                 this.throwTimer = 0;
                 this.launchProjectile();
@@ -38,27 +39,20 @@ class PlayerAttacker extends engine.Component {
         
         return true;
     }
-    
     handleMouseDown(event) {
-        // Only respond to left click
         if (event.button !== 0) return;
-        
-        // If cooldown is active or throw animation is still playing, ignore the click
         if (this.cooldown > 0 || this.isThrowAnimationPlaying) return;
         
-        // Reset cooldown
-        this.cooldown = this.throwDuration;
+        this.cooldown = this.throwSpeed;
         
-        // Start throw animation
         const modelRenderer = this.parent.getComponent("modelRenderer");
-        if (modelRenderer) {
-            modelRenderer.throw();
+        if (modelRenderer) {            
+            modelRenderer.throw(this.animationLength / this.throwSpeed, this.animationLength);
             this.isThrowAnimationPlaying = true;
             this.throwRequested = true;
             this.throwTimer = 0;
         }
     }
-    
     launchProjectile() {
         const projectileType = this.stats.projectile;
         if (!projectileType) return;

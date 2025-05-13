@@ -31,7 +31,7 @@ class InfiniWorld extends engine.Component {
       this.uniforms = new Map();
       this.cameraData = this.game.getCollections().cameras[this.world.camera];  
       // Camera setup
-      this.camera = this.game.camera || new THREE.PerspectiveCamera(this.cameraData.fov, width / height, this.cameraData.near, this.cameraData.far);
+      this.camera = new THREE.PerspectiveCamera(this.cameraData.fov, width / height, this.cameraData.near, this.cameraData.far);
      
       // Terrain configuration
       this.heightMap = this.game.getCollections().heightMaps[this.world.heightMap];
@@ -48,7 +48,7 @@ class InfiniWorld extends engine.Component {
       
       const skyColor = parseInt(this.lighting.skyColor.replace('#', ''), 16);
             // Create a large sphere for the sky
-      const skyGeometry = new THREE.SphereGeometry(this.renderDistance * this.chunkSize, 32, 32); // Large enough to enclose the scene
+      const skyGeometry = new THREE.SphereGeometry(this.cameraData.far * .9, 32, 32); // Large enough to enclose the scene
      
       const skyMaterial = new THREE.MeshBasicMaterial({
         color: skyColor, // Use the same sky color
