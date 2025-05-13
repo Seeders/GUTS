@@ -413,7 +413,7 @@ class TerrainGenerator {
                     instances.push(instance);
 
                     let aabb;
-                    if (worldObjectPrefab === 'tree') {
+                    if (worldObjectPrefab.endsWith('tree')) {
                         const trunkRadius = 5.0 * instance.scale;
                         const trunkHeight = 20.0 * instance.scale;
                         aabb = {
@@ -429,7 +429,7 @@ class TerrainGenerator {
                                 z: position.z + trunkRadius
                             }
                         };
-                    } else if (worldObjectPrefab === 'rock') {
+                    } else if (worldObjectPrefab.endsWith('rock')) {
                         const rockRadius = 1.0 * instance.scale;
                         const rockHeight = 1.0 * instance.scale;
                         aabb = {
