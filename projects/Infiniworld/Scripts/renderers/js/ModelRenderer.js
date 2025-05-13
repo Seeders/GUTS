@@ -96,15 +96,11 @@ class ModelRenderer extends engine.Component {
                 }
             }
         }
-
-        // Allow 'throw' and 'leap' animations to override minAnimationTime check
-        const isHighPriorityAnimation = animationName === 'throw' || animationName === 'leap';
-        
+     
         if (this.animationState !== animationName && 
-            (isHighPriorityAnimation || this.currentAnimationTime >= this.minAnimationTime)) {
+            (this.currentAnimationTime >= this.minAnimationTime)) {
             this.animationState = animationName;
             this.currentAnimationTime = 0;
-            console.log('playing animation', animationName);
             if (this.isGLTF && this.mixer) {
                 const newAction = this.animationActions[animationName];
                 if (!newAction) {
@@ -168,16 +164,27 @@ class ModelRenderer extends engine.Component {
             this.mixer.update(this.game.deltaTime);            
         }
 
-        if(this.leapTimer >= 0) {
-            this.leapTimer += this.game.deltaTime;
-            if(this.leapTimer > this.leapTime) this.leapTimer = -1;
-        }
-
+        this.updateDirection();
         if(this.throwTimer >= 0) {
-            this.throwTimer += this.game.deltaTime;
-            if(this.throwTimer > this.throwTime) this.throwTimer = -1;
+            this.throwTimer += this.game.deltaTime; 
+            if(this.throwTimer > this.throwTime){
+                this.throwTimer = -1;
+            } else if(this.animationState !== 'throw') {
+                this.setAnimation('throw');
+            }
         }
-
+        
+        if(this.leapTimer >= 0) {            
+            this.leapTimer += this.game.deltaTime;
+            if(this.leapTimer > this.leapTime){
+                this.leapTimer = -1;
+            } else if(this.animationState !== 'leap') {
+                this.setAnimation('leap');
+            }    
+        }
+        if(this.throwTimer < 0 && this.leapTimer < 0){
+            this.setMovementAnimation();
+        }
         // Update skeleton for skinned meshes
         this.modelGroup.traverse(object => {
             if (object.isSkinnedMesh && object.skeleton) {
@@ -192,9 +199,6 @@ class ModelRenderer extends engine.Component {
                 this.frameTime -= this.frameDuration;
                 this.advanceFrame();
             }
-        }
-        if(this.parent.type == "projectile"){
-            console.log(this.parent.transform.scale);
         }
         this.modelGroup.scale.set(
             this.parent.transform.scale.x,
@@ -222,47 +226,33 @@ class ModelRenderer extends engine.Component {
     throw() {
         this.setAnimation('throw');
         this.throwTimer = 0;
-        // Force animation state to 'throw' and prevent it from being overridden
-        this.animationState = 'throw';
     }
 
     updateDirection() {
-        // Skip direction updates if throw or leap animations are in progress
-        if(this.throwTimer >= 0) {
-            // Ensure throw animation continues playing
-            if(this.animationState !== 'throw') {
-                this.animationState = 'throw';
-                this.setAnimation('throw');
-            }
-            return;
-        }
-        
-        if(this.leapTimer >= 0) {
-            // Ensure leap animation continues playing
-            if(this.animationState !== 'leap') {
-                this.animationState = 'leap';
-                this.setAnimation('leap');
-            }
-            return;
-        }
+
         
         if (this.parent && this.parent.transform.lastPosition) {
-            const dx = this.parent.transform.position.x - this.parent.transform.lastPosition.x;
-            const dy = this.parent.transform.position.z - this.parent.transform.lastPosition.z;
             this.modelGroup.quaternion.copy(this.parent.transform.quaternion);
+        }
+    }
 
-            // Only update direction if there's significant movement
-            if (Math.abs(dx) > 0.01 || Math.abs(dy) > 0.01) {
-                // Set walking animation when moving
-                let moveAnim = this.isRunning ? "run" : "walk";
-                if (this.animationData[moveAnim]) {
-                    this.setAnimation(moveAnim);
-                    return;
-                }
-            } else {
-                // Entity is stationary, use idle animation
-                this.setAnimation('idle');
+    setMovementAnimation() {
+    
+        const dx = this.parent.transform.position.x - this.parent.transform.lastPosition.x;
+        const dy = this.parent.transform.position.z - this.parent.transform.lastPosition.z;
+        // Only update direction if there's significant movement
+        if (Math.abs(dx) > 0.01 || Math.abs(dy) > 0.01) {
+            // Set walking animation when moving
+            
+            this.throwTimer = -1;
+            let moveAnim = this.isRunning ? "run" : "walk";
+            if (this.animationData[moveAnim]) {
+                this.setAnimation(moveAnim);
+                return;
             }
+        } else {
+            // Entity is stationary, use idle animation
+            this.setAnimation('idle');
         }
     }
 
