@@ -240,9 +240,9 @@ class GE_UIManager {
         this.addFormRow(inspector, 'Z Position', 'number', 'z', shape.z || 0, { step: 0.1 });
         
         // Rotation inputs
-        this.addFormRow(inspector, 'X Rotation', 'number', 'rotationX', shape.rotationX || 0, { step: 5 });
-        this.addFormRow(inspector, 'Y Rotation', 'number', 'rotationY', shape.rotationY || 0, { step: 5 });
-        this.addFormRow(inspector, 'Z Rotation', 'number', 'rotationZ', shape.rotationZ || 0, { step: 5 });
+        this.addFormRow(inspector, 'X Rotation', 'number', 'rotationX', shape.rotationX || 0, { step: 1 });
+        this.addFormRow(inspector, 'Y Rotation', 'number', 'rotationY', shape.rotationY || 0, { step: 1 });
+        this.addFormRow(inspector, 'Z Rotation', 'number', 'rotationZ', shape.rotationZ || 0, { step: 1 });
         
         // Size inputs
         if (['cube', 'sphere', 'tetrahedron', 'torus'].includes(shape.type)) {
@@ -328,8 +328,8 @@ class GE_UIManager {
             input.setAttribute('data-property', property);
             
             if (type === 'number') {
-                input.min = options.min !== undefined ? options.min : -64;
-                input.max = options.max !== undefined ? options.max : 64;
+                if(options.min != undefined) input.min = options.min;
+                if(options.max != undefined) input.max = options.max;
                 input.step = options.step || 1;
             }
         }
@@ -338,16 +338,15 @@ class GE_UIManager {
             let newValue = e.target.value;
             if (type === 'number') {
                 newValue = parseFloat(newValue);
-                console.log('change', this.graphicsEditor.shapeManager.currentTransformTarget);
                 // If we're editing a transform property, also update the transform target
                 if (this.graphicsEditor.shapeManager.currentTransformTarget && ['x', 'y', 'z', 'rotationX', 'rotationY', 'rotationZ', 'scaleX', 'scaleY', 'scaleZ'].includes(property)) {
                     if (property === 'x') this.graphicsEditor.shapeManager.currentTransformTarget.position.x = newValue;
                     if (property === 'y') this.graphicsEditor.shapeManager.currentTransformTarget.position.y = newValue;
                     if (property === 'z') this.graphicsEditor.shapeManager.currentTransformTarget.position.z = newValue;
                     
-                    if (property === 'rotationX') this.graphicsEditor.shapeManager.currentTransformTarget.rotation.x = this.graphicsEditor.rotationUtils.degToRad(newValue);
-                    if (property === 'rotationY') this.graphicsEditor.shapeManager.currentTransformTarget.rotation.y = this.graphicsEditor.rotationUtils.degToRad(newValue);
-                    if (property === 'rotationZ') this.graphicsEditor.shapeManager.currentTransformTarget.rotation.z = this.graphicsEditor.rotationUtils.degToRad(newValue);
+                    if (property === 'rotationX') this.graphicsEditor.shapeManager.currentTransformTarget.rotation.x = newValue;
+                    if (property === 'rotationY') this.graphicsEditor.shapeManager.currentTransformTarget.rotation.y = newValue;
+                    if (property === 'rotationZ') this.graphicsEditor.shapeManager.currentTransformTarget.rotation.z = newValue;
                     
                     if (property === 'scaleX') this.graphicsEditor.shapeManager.currentTransformTarget.scale.x = newValue;
                     if (property === 'scaleY') this.graphicsEditor.shapeManager.currentTransformTarget.scale.y = newValue;
@@ -367,33 +366,55 @@ class GE_UIManager {
         container.appendChild(row);
         return input;
     }
+
+    readTransformData(objData, property, value){
+        // Handle transform properties
+        if (property.startsWith('scale')) {
+            if(!objData.scale) objData.scale = {};
+            const axis = property.charAt(property.length - 1).toLowerCase();
+            if(Number(value) != 1){
+                objData.scale[axis] = value;
+            } else {
+                delete objData.scale[axis];
+                if(Object.keys(objData.scale).length == 0) delete objData.scale;
+            }
+        } else if (property.startsWith('rotation')) {
+            if(!objData.rotation) objData.rotation = {};
+            const axis = property.charAt(property.length - 1).toLowerCase();
+            if(Number(value) != 0){
+                objData.rotation[axis] = value;
+            } else {
+                delete objData.rotation[axis];
+                if(Object.keys(objData.rotation).length == 0) delete objData.rotation;
+            }            
+        } else if (['x', 'y', 'z'].includes(property)) {
+            if(!objData.position) objData.position = {};
+            const axis = property;
+            if(Number(value) != 0){
+                objData.position[axis] = value;
+            } else {
+                delete objData.position[axis];
+                if(Object.keys(objData.position).length == 0) delete objData.position;
+            }
+        }
+        delete objData[property];
+    }
+
     updatePropertyValue(property, value) {
         const shapeData = this.graphicsEditor.getFrameShape();
         if (shapeData) {
-            shapeData[property] = value;
-            return;
-        }
-        let groupData = this.graphicsEditor.getCurrentGroup();
-        if(!groupData){
-            groupData = {};
-            let currentFrame = this.graphicsEditor.getCurrentFrame();
-            if(currentFrame) {
-                currentFrame[this.graphicsEditor.state.currentGroup] = groupData;
-            }
-        }
-        
-        // Handle transform properties
-        if (property.startsWith('scale')) {
-            if(!groupData.scale) groupData.scale = {};
-            const axis = property.charAt(property.length - 1).toLowerCase();
-            groupData.scale[axis] = value;
-        } else if (property.startsWith('rotation')) {
-            if(!groupData.rotation) groupData.rotation = {};
-            const axis = property.charAt(property.length - 1).toLowerCase();
-            groupData.rotation[axis] = value;
-        } else if (['x', 'y', 'z'].includes(property)) {
-            if(!groupData.position) groupData.position = {};
-            groupData.position[property] = value;
+            // Handle transform properties            
+            this.readTransformData(shapeData, property, value);
+        } else {
+            let groupData = this.graphicsEditor.getCurrentGroup();
+            if(!groupData){
+                groupData = {};
+                let currentFrame = this.graphicsEditor.getCurrentFrame();
+                if(currentFrame) {
+                    currentFrame[this.graphicsEditor.state.currentGroup] = groupData;
+                }
+            }                    
+            this.readTransformData(groupData, property, value);
         }
     }
 
