@@ -133,9 +133,9 @@ class InfiniWorld extends engine.Component {
       this.pendingChunks = new Map();
       this.chunkGeometry = new Map();
       this.staticAABBsToRemove = [];
-      this.grassPerChunk = 100000; // Reduced from 500,000 for performance in chunk-based system
+      this.grassPerChunk = 262144;//2^18;
       this.grassBladeWidth = 4; // Adjusted for chunk scale
-      this.grassBladeHeight = 8;
+      this.grassBladeHeight = 10;
       this.grassShader = this.game.getCollections().shaders["grass"];
 
       // Initialize terrain
@@ -711,9 +711,9 @@ class InfiniWorld extends engine.Component {
     const shadowCamera = this.directionalLight.shadow.camera;
   
     // Center shadow camera on the player's position
-    const terrainHeight = this.getTerrainHeight(cameraPos);
-    shadowCamera.position.set(cameraPos.x, terrainHeight + 500, cameraPos.z);
-    shadowCamera.lookAt(cameraPos.x, terrainHeight, cameraPos.z);
+    //const terrainHeight = this.getTerrainHeight(cameraPos);
+    shadowCamera.position.set(cameraPos.x, 500, cameraPos.z);
+    shadowCamera.lookAt(cameraPos.x, 0, cameraPos.z);
     shadowCamera.updateProjectionMatrix();
     shadowCamera.updateMatrixWorld();
   
@@ -722,6 +722,7 @@ class InfiniWorld extends engine.Component {
     
   for (const [key, value] of this.uniforms.entries()) {
       value.time = { value: this.timer };
+      value.cameraPosition = { value: { x: this.camera.position.x, y: this.camera.position.y, z: this.camera.position.z } };
   }
   
     this.renderer.render(this.scene, this.camera);
@@ -818,8 +819,70 @@ class InfiniWorld extends engine.Component {
       // Store instance groups in chunk data
       chunkData.objectMeshes.set(type, instanceGroups);
   }
+getInterpolatedTerrainHeight(position) {
+    // Determine the chunk containing the position
+    let chunkX = Math.floor(position.x / this.chunkSize);
+    let chunkZ = Math.floor(position.z / this.chunkSize);
+    let localX = position.x - (chunkX * this.chunkSize);
+    let localZ = position.z - (chunkZ * this.chunkSize);
 
+    // Adjust chunk selection for boundary positions
+    const halfChunk = this.chunkSize / 2;
+    let chunkKey;
+    if (localX === halfChunk) {
+        chunkX += 1;
+        localX -= this.chunkSize;
+    } else if (localX === -halfChunk) {
+        chunkX -= 1;
+        localX += this.chunkSize;
+    }
+    if (localZ === halfChunk) {
+        chunkZ += 1;
+        localZ -= this.chunkSize;
+    } else if (localZ === -halfChunk) {
+        chunkZ -= 1;
+        localZ += this.chunkSize;
+    }
+    chunkKey = `${chunkX},${chunkZ}`;
+
+    // Get chunk data
+    const chunkData = this.chunks.get(chunkKey);
+    if (!chunkData || !chunkData.terrainMesh) {
+        // Fallback to terrain generator if chunk is not loaded
+        return this.terrainGenerator.getHeight({ x: position.x, z: position.z });
+    }
+
+    const terrainPositions = chunkData.terrainMesh.geometry.attributes.position.array;
+    const vertexCountPerRow = this.chunkResolution + 1; // e.g., 33 for 32x32 tiles
+    const step = this.chunkSize / this.chunkResolution; // e.g., 1024 / 32 = 32 units per tile
+
+    // Map to grid coordinates (0 to chunkResolution)
+    const x = (localX + this.chunkSize / 2) / step; // Map from [-chunkSize/2, chunkSize/2] to [0, chunkResolution]
+    const z = (localZ + this.chunkSize / 2) / step;
+
+    // Clamp grid coordinates to avoid out-of-bounds access
+    const xIdx = Math.min(Math.max(Math.floor(x), 0), this.chunkResolution - 1);
+    const zIdx = Math.min(Math.max(Math.floor(z), 0), this.chunkResolution - 1);
+    const fx = Math.min(Math.max(x - xIdx, 0), 1); // Fractional part for interpolation
+    const fz = Math.min(Math.max(z - zIdx, 0), 1);
+
+    // Get heights of the four surrounding vertices
+    const posIdx = (zIdx * vertexCountPerRow + xIdx) * 3;
+    const h00 = terrainPositions[posIdx + 1]; // Height at (xIdx, zIdx)
+    const h10 = xIdx + 1 < vertexCountPerRow ? terrainPositions[posIdx + 3 + 1] : h00; // Height at (xIdx+1, zIdx)
+    const h01 = zIdx + 1 < vertexCountPerRow ? terrainPositions[(zIdx + 1) * vertexCountPerRow * 3 + xIdx * 3 + 1] : h00; // Height at (xIdx, zIdx+1)
+    const h11 = xIdx + 1 < vertexCountPerRow && zIdx + 1 < vertexCountPerRow ? terrainPositions[(zIdx + 1) * vertexCountPerRow * 3 + (xIdx + 1) * 3 + 1] : h00; // Height at (xIdx+1, zIdx+1)
+
+    // Perform bilinear interpolation
+    const height = h00 * (1 - fx) * (1 - fz) +
+                   h10 * fx * (1 - fz) +
+                   h01 * (1 - fx) * fz +
+                   h11 * fx * fz;
+
+    return height;
+}
   getTerrainHeight(position, useRaycast = false) {
+  //    return this.getInterpolatedTerrainHeight(position);
     if(!useRaycast){      
       return this.terrainGenerator.getHeight(position);
     }
@@ -1149,17 +1212,19 @@ class InfiniWorld extends engine.Component {
       uniforms.groundColor = { value: new THREE.Color(this.lighting.groundColor) };
       uniforms.hemisphereIntensity = { value: this.lighting.hemisphereIntensity };
       uniforms.time = { value: this.timer };
+      uniforms.cameraPosition = { value: new THREE.Vector3(0, 0, 0) }; // Updated dynamically
+      uniforms.maxDistance = { value: 500.0 }; // Adjust based on your needs
 
       const grassMaterial = new THREE.ShaderMaterial({
           vertexShader: grassShader.vertexScript,
           fragmentShader: grassShader.fragmentScript,
           uniforms: uniforms,
-          transparent: true
+          side: THREE.DoubleSide
       });
 
       grassGeometry.computeVertexNormals();
       const grassMesh = new THREE.InstancedMesh(grassGeometry, grassMaterial, this.grassPerChunk);
-      grassMesh.castShadow = true;
+      grassMesh.castShadow = false;
       grassMesh.receiveShadow = false;
       grassMesh.name = `grass_${chunkKey}`;
 
@@ -1243,6 +1308,7 @@ class InfiniWorld extends engine.Component {
 
               const rotationY = Math.random() * Math.PI * 2;
               const scale = 0.7 + Math.random() * 0.5;
+             // dummy.position.set(worldX, this.getTerrainHeight({x: worldX, z: worldZ}), worldZ);
               dummy.position.set(worldX, height, worldZ);
               dummy.rotation.set(0, rotationY, 0);
               dummy.scale.set(scale, scale, scale);
