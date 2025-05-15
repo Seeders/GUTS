@@ -169,9 +169,9 @@ class GE_UIManager {
         this.addFormRow(inspector, 'Z Position', 'number', 'z', group.position?.z || 0, { step: 0.1 });
         
         // Rotation inputs
-        this.addFormRow(inspector, 'X Rotation', 'number', 'rotationX', group.rotation?.x || 0, { step: 5 });
-        this.addFormRow(inspector, 'Y Rotation', 'number', 'rotationY', group.rotation?.y || 0, { step: 5 });
-        this.addFormRow(inspector, 'Z Rotation', 'number', 'rotationZ', group.rotation?.z || 0, { step: 5 });
+        this.addFormRow(inspector, 'X Rotation', 'number', 'rotationX', group.rotation?.x || 0, { step: 1 });
+        this.addFormRow(inspector, 'Y Rotation', 'number', 'rotationY', group.rotation?.y || 0, { step: 1 });
+        this.addFormRow(inspector, 'Z Rotation', 'number', 'rotationZ', group.rotation?.z || 0, { step: 1 });
         
     }
 
