@@ -3,5 +3,5 @@
   "heightScale": 10,
   "chunkResolution": 32,
   "chunkSize": 1024,
-  "renderDistance": 8
+  "renderDistance": 2
 }

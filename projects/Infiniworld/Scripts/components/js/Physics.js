@@ -318,10 +318,7 @@ class Physics extends engine.Component {
             const { rigidBody, collider } = this.rigidbodies.get(chunkId);
             this.simulation.removeCollider(collider, true);
             this.simulation.removeRigidBody(rigidBody);
-            this.rigidbodies.delete(chunkId);
-
-            console.log(`Removed heightmap collider for chunk (${cx}, ${cz})`);
-        
+            this.rigidbodies.delete(chunkId);        
         }
     }
 
