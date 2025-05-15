@@ -7,5 +7,8 @@
     "plainsRocks",
     "plainsTrees"
   ],
-  "range": "[0,0.4]"
+  "range": [
+    0,
+    0.4
+  ]
 }

@@ -1,0 +1,32 @@
+{
+  "title": "Spruce Tree",
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ]
+    },
+    "model": {
+      "shapes": {
+        "shapes": [
+          {
+            "type": "gltf",
+            "size": 10,
+            "color": "#ffffff",
+            "height": 20,
+            "texture": "",
+            "url": "samples/models/spruce_tree/spruce_tree.glb",
+            "metalness": "0",
+            "roughness": "1",
+            "scale": {
+              "x": 20,
+              "y": 20,
+              "z": 20
+            }
+          }
+        ]
+      }
+    }
+  },
+  "entity": "staticObject"
+}

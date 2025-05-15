@@ -8,5 +8,8 @@
     "mountainRocks",
     "mountainTrees"
   ],
-  "range": "[0.5, 0.8]"
+  "range": [
+    0.5,
+    0.8
+  ]
 }

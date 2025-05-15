@@ -113,7 +113,7 @@ class InfiniWorld extends engine.Component {
               detail: detailNoiseData
             },
             worldObjects: worldObjectSpawns,
-            range: JSON.parse(biomeObjData.range)
+            range: biomeObjData.range
           }
 
           if(biomeName == "mountain"){     
@@ -125,19 +125,22 @@ class InfiniWorld extends engine.Component {
       this.terrainGenerator = new (this.game.moduleManager.libraryClasses.TerrainGenerator)(); 
       this.terrainGenerator.init(this.biomes, this.chunkSize, this.chunkResolution, this.noise);
   
+      this.grassPerChunk = 131072;//2^17;
       // Initialize Web Worker from Blob
+      this.grassTasks = [];
+      this.grassBatchSize = 10000; // Process 10,000 instances per frame
+      this.currentGrassTaskIndex = 0;
+
+      this.pendingChunks = new Map();
+      this.chunkGeometry = new Map();
+      this.staticAABBsToRemove = [];
+      this.grassBladeWidth = 4; // Adjusted for chunk scale
+      this.grassBladeHeight = 10;
+      this.grassShader = this.game.getCollections().shaders["grass"];
       const workerCode = this.getWorkerCode();
       const blob = new Blob([workerCode], { type: 'application/javascript' });
       this.worker = new Worker(URL.createObjectURL(blob));
       this.worker.onmessage = this.handleWorkerMessage.bind(this);
-      this.pendingChunks = new Map();
-      this.chunkGeometry = new Map();
-      this.staticAABBsToRemove = [];
-      this.grassPerChunk = 262144;//2^18;
-      this.grassBladeWidth = 4; // Adjusted for chunk scale
-      this.grassBladeHeight = 10;
-      this.grassShader = this.game.getCollections().shaders["grass"];
-
       // Initialize terrain
       this.setupInitialChunks();
   
@@ -259,7 +262,7 @@ class InfiniWorld extends engine.Component {
                       }
                   });
               });
-              
+              chunkData.grassData = null;
               this.game.gameEntity?.getComponent('game').physics.removeChunkCollider(cx, cz);
               this.chunks.delete(chunkKey);
               this.uniforms.delete(chunkKey);
@@ -271,16 +274,48 @@ class InfiniWorld extends engine.Component {
       }
   }
 
+  async updateGrassTasks() {
+    if(this.grassTasks.length == 0) return;
+    if(!this.currentGrassTask){
+      this.currentGrassTask = this.grassTasks.pop();
+    }
+    const grassMesh = this.currentGrassTask.grassMesh;
+    const dummy = new THREE.Object3D();
+    let finishedChunk = false;
+    // Use pre-computed grass data
+    for(let i = 0; i < this.grassBatchSize; i++){
+      let currentIndex = this.currentGrassTaskIndex + i;
+      if (currentIndex >= this.grassPerChunk){
+          this.currentGrassTaskIndex = 0;
+          this.currentGrassTask = null;
+          finishedChunk = true;
+          grassMesh.needsUpdate = true;
+          break; // Safety check
+      }      
+      const grass = this.currentGrassTask.grassData[currentIndex];
+
+      dummy.position.set(grass.position.x, grass.position.y, grass.position.z);
+      dummy.rotation.set(0, grass.rotation, 0);
+      dummy.scale.set(grass.scale, grass.scale, grass.scale);
+      dummy.updateMatrix();
+      grassMesh.setMatrixAt(currentIndex, dummy.matrix);      
+    };
+    if(!finishedChunk){
+      this.currentGrassTaskIndex += this.grassBatchSize;
+    } 
+    
+
+  }
+
   getStaticAABBsToRemove() {
     return this.staticAABBsToRemove;
   }
 
-  handleWorkerMessage(e) {    
-    const { cx, cz, positions, indices, colors, normals, vegetation } = e.data;
+  handleWorkerMessage(e) {      
+    const { cx, cz, positions, indices, colors, normals, vegetation, grassData } = e.data;
     const chunkKey = `${cx},${cz}`;
     const chunkData = this.pendingChunks.get(chunkKey);
     if (!chunkData) return;
-
     this.game.gameEntity?.getComponent('game').physics.addChunkCollider(e.data);
     try {
         // Copy positions and normals for manipulation
@@ -288,6 +323,7 @@ class InfiniWorld extends engine.Component {
         const adjustedNormals = normals.slice();
         const vertexCountPerRow = this.chunkResolution + 1;
 
+        chunkData.grassData = grassData;
         // IMPROVEMENT: Use integer-based positioning for chunk placement
         // This helps prevent floating point errors from accumulating
         const chunkWorldX = Math.round(cx * this.chunkSize);
@@ -590,7 +626,7 @@ class InfiniWorld extends engine.Component {
         }
 
         // Add grass to chunk
-        const grassMesh = this.addGrassToTerrain(cx, cz, adjustedPositions, colors);
+        const grassMesh = this.addGrassToTerrain(cx, cz, grassData);
         if (grassMesh) {
           grassMesh.position.set(chunkWorldX, 0, chunkWorldZ);
           this.rootGroup.add(grassMesh);
@@ -693,13 +729,13 @@ class InfiniWorld extends engine.Component {
     );
   }
 
-
   update() {
     if (!this.game.getCollections().configs.game.is3D) return;
     this.timer += this.game.deltaTime || 0;
     this.skyDome.position.set(this.camera.position.x, 0, this.camera.position.z); // Center it around the camera
     this.updateChunks();
-  
+   // this.updateGrassTasks(); // Process grass tasks incrementally
+
     const cameraPos = this.camera.position;
   
     // Update directional light position smoothly every frame
@@ -1180,147 +1216,66 @@ getInterpolatedTerrainHeight(position) {
 
     return waterMesh;
   }
-  addGrassToTerrain(cx, cz, terrainPositions, terrainColors) {
-      const chunkKey = `${cx},${cz}`;
-      const grassGeometry = this.createCurvedBladeGeometry(this.grassBladeWidth, this.grassBladeHeight);
-      grassGeometry.translate(0, -this.grassBladeHeight * 0.6, 0);
+  addGrassToTerrain(cx, cz, grassData) {
 
-      const phases = new Float32Array(this.grassPerChunk);
-      for (let i = 0; i < this.grassPerChunk; i++) {
-          phases[i] = Math.random() * Math.PI * 2;
-      }
-      grassGeometry.setAttribute('instancePhase', new THREE.InstancedBufferAttribute(phases, 1));
+    const chunkKey = `${cx},${cz}`;
+    const grassGeometry = this.createCurvedBladeGeometry(this.grassBladeWidth, this.grassBladeHeight);
+    grassGeometry.translate(0, -this.grassBladeHeight * 0.6, 0);
 
-      const grassTexture = this.createGrassTexture();
-      const grassShader = this.grassShader;
-      this.uniforms.set(`grass_${chunkKey}`, JSON.parse(grassShader.uniforms));
+    const phases = new Float32Array(this.grassPerChunk);
+    for (let i = 0; i < this.grassPerChunk; i++) {
+      phases[i] = Math.random() * Math.PI * 2;
+    }
+    grassGeometry.setAttribute('instancePhase', new THREE.InstancedBufferAttribute(phases, 1));
 
-      const uniforms = this.uniforms.get(`grass_${chunkKey}`);
-      uniforms.windDirection = { value: new THREE.Vector2(uniforms.windDirection.value[0], uniforms.windDirection.value[1]).normalize() };
-      uniforms.map = { value: grassTexture };
-      uniforms.fogColor = { value: new THREE.Color(this.fogData.color) };
-      uniforms.fogDensity = this.fogData.enabled ? { value: this.fogData.density } : { value: 0 };
-      const lightDirection = new THREE.Vector3();
-      lightDirection.subVectors(this.directionalLight.position, this.directionalLight.target.position);
-      lightDirection.normalize();
-      uniforms.directionalLightColor = { value: new THREE.Color(this.lighting.directionalColor) };
-      uniforms.directionalLightIntensity = { value: this.lighting.directionalIntensity };
-      uniforms.directionalLightDirection = { value: lightDirection };
-      uniforms.ambientLightColor = { value: new THREE.Color(this.lighting.ambientColor) };
-      uniforms.ambientLightIntensity = { value: this.lighting.ambientIntensity };
-      uniforms.skyColor = { value: new THREE.Color(this.lighting.skyColor) };
-      uniforms.groundColor = { value: new THREE.Color(this.lighting.groundColor) };
-      uniforms.hemisphereIntensity = { value: this.lighting.hemisphereIntensity };
-      uniforms.time = { value: this.timer };
-      uniforms.cameraPosition = { value: new THREE.Vector3(0, 0, 0) }; // Updated dynamically
-      uniforms.maxDistance = { value: 500.0 }; // Adjust based on your needs
+    const grassTexture = this.createGrassTexture();
+    const grassShader = this.grassShader;
+    this.uniforms.set(`grass_${chunkKey}`, JSON.parse(grassShader.uniforms));
 
-      const grassMaterial = new THREE.ShaderMaterial({
-          vertexShader: grassShader.vertexScript,
-          fragmentShader: grassShader.fragmentScript,
-          uniforms: uniforms,
-          side: THREE.DoubleSide
-      });
+    const uniforms = this.uniforms.get(`grass_${chunkKey}`);
+    uniforms.windDirection = { value: new THREE.Vector2(uniforms.windDirection.value[0], uniforms.windDirection.value[1]).normalize() };
+    uniforms.map = { value: grassTexture };
+    uniforms.fogColor = { value: new THREE.Color(this.fogData.color) };
+    uniforms.fogDensity = this.fogData.enabled ? { value: this.fogData.density } : { value: 0 };
+    const lightDirection = new THREE.Vector3();
+    lightDirection.subVectors(this.directionalLight.position, this.directionalLight.target.position);
+    lightDirection.normalize();
+    uniforms.directionalLightColor = { value: new THREE.Color(this.lighting.directionalColor) };
+    uniforms.directionalLightIntensity = { value: this.lighting.directionalIntensity };
+    uniforms.directionalLightDirection = { value: lightDirection };
+    uniforms.ambientLightColor = { value: new THREE.Color(this.lighting.ambientColor) };
+    uniforms.ambientLightIntensity = { value: this.lighting.ambientIntensity };
+    uniforms.skyColor = { value: new THREE.Color(this.lighting.skyColor) };
+    uniforms.groundColor = { value: new THREE.Color(this.lighting.groundColor) };
+    uniforms.hemisphereIntensity = { value: this.lighting.hemisphereIntensity };
+    uniforms.time = { value: this.timer };
+    uniforms.cameraPosition = { value: new THREE.Vector3(0, 0, 0) }; // Updated dynamically
+    uniforms.maxDistance = { value: 500.0 };
 
-      grassGeometry.computeVertexNormals();
-      const grassMesh = new THREE.InstancedMesh(grassGeometry, grassMaterial, this.grassPerChunk);
-      grassMesh.castShadow = false;
-      grassMesh.receiveShadow = false;
-      grassMesh.name = `grass_${chunkKey}`;
+    const grassMaterial = new THREE.ShaderMaterial({
+      vertexShader: grassShader.vertexScript,
+      fragmentShader: grassShader.fragmentScript,
+      uniforms: uniforms,
+      side: THREE.DoubleSide
+    });
 
-      const dummy = new THREE.Object3D();
-      const vertexCountPerRow = this.chunkResolution + 1; // 33 for 32x32 tiles
-      const step = this.chunkSize / this.chunkResolution; // 1024 / 32 = 32 units per tile
-
-      // Create density map based on terrain colors (green-dominant areas)
-      const densityMap = new Float32Array(this.chunkResolution * this.chunkResolution);
-      const greenBiome = Object.values(this.biomes).find(biome => biome.groundColor.g > biome.groundColor.r && biome.groundColor.g > biome.groundColor.b);
-      const greenColor = greenBiome ? greenBiome.groundColor : { r: 0, g: 1, b: 0 };
-
-      for (let z = 0; z < this.chunkResolution; z++) {
-          for (let x = 0; x < this.chunkResolution; x++) {
-              const colorIdx = (z * vertexCountPerRow + x) * 3;
-              const r = terrainColors[colorIdx];
-              const g = terrainColors[colorIdx + 1];
-              const b = terrainColors[colorIdx + 2];
-              const isGreenDominant = g > r && g > b;
-
-              if (isGreenDominant) {
-                  // Check neighboring vertices, allow partial green neighbors
-                  const neighbors = [
-                      [-1, -1], [0, -1], [1, -1],
-                      [-1, 0], [1, 0],
-                      [-1, 1], [0, 1], [1, 1]
-                  ];
-                  let greenNeighborCount = 0;
-                  let totalNeighbors = 0;
-                  for (const [dx, dz] of neighbors) {
-                      const nx = x + dx;
-                      const nz = z + dz;
-                      if (nx >= 0 && nx < this.chunkResolution && nz >= 0 && nz < this.chunkResolution) {
-                          totalNeighbors++;
-                          const nColorIdx = (nz * vertexCountPerRow + nx) * 3;
-                          const nr = terrainColors[nColorIdx];
-                          const ng = terrainColors[nColorIdx + 1];
-                          const nb = terrainColors[nColorIdx + 2];
-                          if (ng > nr && ng > nb) {
-                              greenNeighborCount++;
-                          }
-                      }
-                  }
-                  // Allow grass if the tile is green and at least half of valid neighbors are green
-                  densityMap[z * this.chunkResolution + x] = (isGreenDominant && greenNeighborCount >= totalNeighbors / 2) ? 1 : 0;
-              } else {
-                  densityMap[z * this.chunkResolution + x] = 0;
-              }
-          }
-      }
-
-      // Place grass based on density map
-      let placed = 0;
-      for (let i = 0; i < this.grassPerChunk * 2 && placed < this.grassPerChunk; i++) {
-          // Sample within tile grid (0 to chunkResolution)
-          const x = Math.random() * this.chunkResolution; // 0 to 32
-          const z = Math.random() * this.chunkResolution; // 0 to 32
-          const xIdx = Math.floor(x);
-          const zIdx = Math.floor(z);
-
-          if (densityMap[zIdx * this.chunkResolution + xIdx] > 0) {
-              const fx = x - xIdx;
-              const fz = z - zIdx;
-
-              // Get heights of the four surrounding vertices
-              const posIdx = (zIdx * vertexCountPerRow + xIdx) * 3;
-              const h00 = terrainPositions[posIdx + 1]; // Height at (xIdx, zIdx)
-              const h10 = xIdx + 1 < vertexCountPerRow ? terrainPositions[posIdx + 3 + 1] : h00; // Height at (xIdx+1, zIdx)
-              const h01 = zIdx + 1 < vertexCountPerRow ? terrainPositions[(zIdx + 1) * vertexCountPerRow * 3 + xIdx * 3 + 1] : h00; // Height at (xIdx, zIdx+1)
-              const h11 = xIdx + 1 < vertexCountPerRow && zIdx + 1 < vertexCountPerRow ? terrainPositions[(zIdx + 1) * vertexCountPerRow * 3 + (xIdx + 1) * 3 + 1] : h00; // Height at (xIdx+1, zIdx+1)
-
-              // Bilinear interpolation
-              const height = h00 * (1 - fx) * (1 - fz) +
-                            h10 * fx * (1 - fz) +
-                            h01 * (1 - fx) * fz +
-                            h11 * fx * fz;
-
-              // Correct world coordinate calculation
-              const worldX = x * step - this.chunkSize / 2;
-              const worldZ = z * step - this.chunkSize / 2;
-
-              const rotationY = Math.random() * Math.PI * 2;
-              const scale = 0.7 + Math.random() * 0.5;
-             // dummy.position.set(worldX, this.getTerrainHeight({x: worldX, z: worldZ}), worldZ);
-              dummy.position.set(worldX, height, worldZ);
-              dummy.rotation.set(0, rotationY, 0);
-              dummy.scale.set(scale, scale, scale);
-              dummy.updateMatrix();
-              grassMesh.setMatrixAt(placed++, dummy.matrix);
-          }
-      }
-
-      grassMesh.instanceMatrix.needsUpdate = true;
-      return grassMesh;
+    grassGeometry.computeVertexNormals();
+    const grassMesh = new THREE.InstancedMesh(grassGeometry, grassMaterial, this.grassPerChunk);
+    grassMesh.castShadow = false;
+    grassMesh.receiveShadow = false;
+    grassMesh.name = `grass_${chunkKey}`;
+    const dummy = new THREE.Object3D();    
+    // Use pre-computed grass data
+    grassData.forEach((grass, index)=>{
+      dummy.position.set(grass.position.x, grass.position.y, grass.position.z);
+      dummy.rotation.set(0, grass.rotation, 0);
+      dummy.scale.set(grass.scale, grass.scale, grass.scale);
+      dummy.updateMatrix();
+      grassMesh.setMatrixAt(index, dummy.matrix);      
+    });
+    grassMesh.needsUpdate = true;
+    return grassMesh;
   }
-
   createCurvedBladeGeometry(width = 0.1, height = 1) {
     const shape = new THREE.Shape();
     shape.moveTo(0, -height, 0);
@@ -1389,9 +1344,96 @@ getInterpolatedTerrainHeight(position) {
       const terrainGenerator = new TerrainGenerator();
       terrainGenerator.init(${JSON.stringify(this.biomes)}, ${this.chunkSize}, ${this.chunkResolution}, noise);
 
+      // Helper function for bilinear interpolation
+      function interpolateHeight(positions, xIdx, zIdx, fx, fz, vertexCountPerRow) {
+        const posIdx = (zIdx * vertexCountPerRow + xIdx) * 3;
+        const h00 = positions[posIdx + 1];
+        const h10 = xIdx + 1 < vertexCountPerRow ? positions[posIdx + 3 + 1] : h00;
+        const h01 = zIdx + 1 < vertexCountPerRow ? positions[(zIdx + 1) * vertexCountPerRow * 3 + xIdx * 3 + 1] : h00;
+        const h11 = xIdx + 1 < vertexCountPerRow && zIdx + 1 < vertexCountPerRow ? positions[(zIdx + 1) * vertexCountPerRow * 3 + (xIdx + 1) * 3 + 1] : h00;
+        return h00 * (1 - fx) * (1 - fz) + h10 * fx * (1 - fz) + h01 * (1 - fx) * fz + h11 * fx * fz;
+      }
+
       self.onmessage = function(e) {
         const { cx, cz, chunkSize, chunkResolution } = e.data;
         const result = terrainGenerator.generateChunk(cx, cz, chunkSize, chunkResolution);
+
+        // Grass generation parameters
+        const grassPerChunk = ${this.grassPerChunk};
+        const step = chunkSize / chunkResolution;
+        const vertexCountPerRow = chunkResolution + 1;
+
+        // Create density map based on terrain colors
+        const densityMap = new Float32Array(chunkResolution * chunkResolution);
+        const greenBiome = Object.values(${JSON.stringify(this.biomes)}).find(biome => biome.groundColor.g > biome.groundColor.r && biome.groundColor.g > biome.groundColor.b);
+        const greenColor = greenBiome ? greenBiome.groundColor : { r: 0, g: 1, b: 0 };
+
+        for (let z = 0; z < chunkResolution; z++) {
+          for (let x = 0; x < chunkResolution; x++) {
+            const colorIdx = (z * vertexCountPerRow + x) * 3;
+            const r = result.colors[colorIdx];
+            const g = result.colors[colorIdx + 1];
+            const b = result.colors[colorIdx + 2];
+            const isGreenDominant = g > r && g > b;
+
+            if (isGreenDominant) {
+              const neighbors = [
+                [-1, -1], [0, -1], [1, -1],
+                [-1, 0], [1, 0],
+                [-1, 1], [0, 1], [1, 1]
+              ];
+              let greenNeighborCount = 0;
+              let totalNeighbors = 0;
+              for (const [dx, dz] of neighbors) {
+                const nx = x + dx;
+                const nz = z + dz;
+                if (nx >= 0 && nx < chunkResolution && nz >= 0 && nz < chunkResolution) {
+                  totalNeighbors++;
+                  const nColorIdx = (nz * vertexCountPerRow + nx) * 3;
+                  const nr = result.colors[nColorIdx];
+                  const ng = result.colors[nColorIdx + 1];
+                  const nb = result.colors[nColorIdx + 2];
+                  if (ng > nr && ng > nb) {
+                    greenNeighborCount++;
+                  }
+                }
+              }
+              densityMap[z * chunkResolution + x] = (isGreenDominant && greenNeighborCount >= totalNeighbors / 2) ? 1 : 0;
+            } else {
+              densityMap[z * chunkResolution + x] = 0;
+            }
+          }
+        }
+        // Generate grass positions
+        const grassData = [];
+        let placed = 0;
+        for (let i = 0; i < grassPerChunk * 2 && placed < grassPerChunk; i++) {
+          const x = Math.random() * chunkResolution;
+          const z = Math.random() * chunkResolution;
+          const xIdx = Math.floor(x);
+          const zIdx = Math.floor(z);
+       //   if (densityMap[zIdx * chunkSize + xIdx] > 0) {
+            const fx = x - xIdx;
+            const fz = z - zIdx;
+
+            const height = interpolateHeight(result.positions, xIdx, zIdx, fx, fz, vertexCountPerRow);
+            const worldX = x * step - chunkSize / 2;
+            const worldZ = z * step - chunkSize / 2;
+            const rotationY = Math.random() * Math.PI * 2;
+            const scale = 0.7 + Math.random() * 0.5;
+
+            grassData.push({
+              position: { x: worldX, y: height, z: worldZ },
+              rotation: rotationY,
+              scale: scale
+            });
+            placed++;
+       //   }
+        }
+
+        // Add grass data to result
+        result.grassData = grassData;
+
         self.postMessage(result);
       };
     `;
