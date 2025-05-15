@@ -584,7 +584,6 @@ class InfiniWorld extends engine.Component {
         vegetation.forEach(({ worldObject, data }) => {
             if (worldObject.endsWith('_collision')) {
                 const objectType = worldObject.replace('_collision', '');
-                console.log('collider', objectType);
                 chunkData.collisionAABBs.set(objectType, data);
             } else {
                 const model = this.game.modelManager.getModel('worldObjectPrefabs', worldObject);

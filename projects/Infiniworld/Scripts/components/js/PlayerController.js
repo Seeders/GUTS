@@ -31,7 +31,7 @@ class PlayerController extends engine.Component {
 
         this.controls = { isLocked: false };
 
-        // Add these event listeners:
+        // Add event listeners
         document.addEventListener('click', () => {
             if (!this.controls.isLocked) {
                 this.world.renderer.domElement.requestPointerLock();
@@ -41,12 +41,12 @@ class PlayerController extends engine.Component {
         document.addEventListener('pointerlockchange', () => {
             this.controls.isLocked = document.pointerLockElement === this.world.renderer.domElement;
         });
+
         // Movement state
         this.velocity = new THREE.Vector3();
         this.isGrounded = false;
         this.isJumping = false;
         this.isRunning = false;
-        // Add a flag to track if jump was requested and can be executed
         this.jumpRequested = false;
         this.canJump = true;
         this.collisions = {
@@ -169,8 +169,6 @@ class PlayerController extends engine.Component {
             
             // Set parent rotation from yaw (character rotates horizontally with camera)
             this.parent.transform.quaternion.setFromEuler(new THREE.Euler(0, this.cameraYaw, 0));
-
-            // Don't update camera immediately - let updateCameraPosition handle it
         }
     }
     
@@ -205,7 +203,7 @@ class PlayerController extends engine.Component {
             
             // Apply forward offset along character's forward direction
             const forwardDir = new THREE.Vector3(0, 0, 1).applyQuaternion(combinedQuat); // Character's forward
-            const forwardOffset = 5; // Adjust this value (e.g., 0.1 to 0.5) to move camera in front of head
+            const forwardOffset = 5; // Adjust this value to move camera in front of head
             eyePosition.add(forwardDir.multiplyScalar(forwardOffset));
             
             this.camera.position.copy(eyePosition);
@@ -247,8 +245,6 @@ class PlayerController extends engine.Component {
     }
     
     checkGrounded() {
-
-        
         // Get height from terrain
         const groundHeight = this.world.getTerrainHeight(this.parent.transform.position, true);
         this.parent.transform.groundHeight = groundHeight;
@@ -260,12 +256,11 @@ class PlayerController extends engine.Component {
             this.isGrounded = true;
             this.isJumping = false;
             // Snap to ground
-            this.parent.transform.position.y = groundHeight + .01;
+            this.parent.transform.position.y = groundHeight + 0.01;
             return true;
         } 
         this.isGrounded = false;
         return false;
-        
     }
     
     handleStepClimbing() {
@@ -314,7 +309,6 @@ class PlayerController extends engine.Component {
     update() {
         if (!this.controls.isLocked) return;
         const dt = Math.min(this.game.deltaTime, 0.1);
-
         
         // Check if we're on the ground
         this.checkGrounded();
@@ -338,7 +332,7 @@ class PlayerController extends engine.Component {
         
         // Calculate velocity from input
         const speed = this.isRunning ? this.runSpeed : this.walkSpeed;
-        if(this.isGrounded && this.jumpRequested){
+        if (this.isGrounded && this.jumpRequested) {
             this.jumpTimer += this.game.deltaTime;
         }
         // Handle jumping - only jump if explicitly requested and on ground
@@ -378,7 +372,7 @@ class PlayerController extends engine.Component {
             }
         } else {
             // In air, apply gravity
-            this.velocity.y -= this.gravity * dt * .5;
+            this.velocity.y -= this.gravity * dt * 0.5;
             
             // Reduced air control
             const airControl = 0.3;
@@ -431,38 +425,108 @@ class PlayerController extends engine.Component {
         }
     }
 
+    // Helper function to get cylinder properties from an AABB (for static objects)
+    getCylinderFromAABB(aabb) {
+        const center = new THREE.Vector3(
+            (aabb.min.x + aabb.max.x) / 2,
+            (aabb.min.y + aabb.max.y) / 2, // Y-center, used for vertical checks
+            (aabb.min.z + aabb.max.z) / 2
+        );
+        // Use half the minimum width of the AABB in the XZ plane as the radius
+        const radius = Math.min(
+            (aabb.max.x - aabb.min.x) / 2,
+            (aabb.max.z - aabb.min.z) / 2
+        );
+        return { center, radius, minY: aabb.min.y, maxY: aabb.max.y };
+    }
+
+    // Always return player as a cylinder
+    getAABB(position = this.parent.transform.position) {
+        return {
+            center: position.clone(),
+            radius: this.parent.collisionRadius,
+            minY: position.y,
+            maxY: position.y + this.characterHeight
+        };
+    }
+
     applyMovementWithCollisions(movement, dt) {
         const currentPosition = this.parent.transform.position.clone();
         let remainingMovement = movement.clone();
         const maxSteps = 3; // Limit steps to prevent infinite loops
         let stepCount = 0;
-    
+
         while (remainingMovement.length() > 0.001 && stepCount < maxSteps) {
             stepCount++;
-            
+
             // Calculate new position for this step
             const stepMovement = remainingMovement.clone().multiplyScalar(1 / (maxSteps - stepCount + 1));
             const newPosition = this.parent.transform.position.clone().add(stepMovement);
-            const playerAABB = this.getAABB(newPosition);
-    
-            // Check for tree collisions
-            const collisions = this.world.checkStaticObjectCollisions(playerAABB);
-    
-            if (collisions.length === 0) {
+            const playerCylinder = this.getAABB(newPosition);
+
+            // Check for tree collisions (treating trees as cylinders)
+            const collisions = this.world.checkStaticObjectCollisions({
+                min: {
+                    x: newPosition.x - this.parent.collisionRadius,
+                    y: newPosition.y,
+                    z: newPosition.z - this.parent.collisionRadius
+                },
+                max: {
+                    x: newPosition.x + this.parent.collisionRadius,
+                    y: newPosition.y + this.characterHeight,
+                    z: newPosition.z + this.parent.collisionRadius
+                }
+            }); // Pass AABB to world for compatibility
+            let cylinderCollisions = [];
+
+            // Convert AABB collisions to cylinder collisions
+            for (const treeAABB of collisions) {
+                const treeCylinder = this.getCylinderFromAABB(treeAABB);
+                const distanceXZ = new THREE.Vector2(
+                    playerCylinder.center.x - treeCylinder.center.x,
+                    playerCylinder.center.z - treeCylinder.center.z
+                ).length();
+                const combinedRadius = playerCylinder.radius + treeCylinder.radius;
+
+                // Check if cylinders overlap in XZ plane and vertically
+                if (
+                    distanceXZ < combinedRadius &&
+                    playerCylinder.minY < treeCylinder.maxY &&
+                    playerCylinder.maxY > treeCylinder.minY
+                ) {
+                    cylinderCollisions.push({ treeCylinder, treeAABB });
+                }
+            }
+
+            if (cylinderCollisions.length === 0) {
                 // No collisions, apply this step's movement
                 this.parent.transform.position.copy(newPosition);
                 remainingMovement.sub(stepMovement);
                 continue;
             }
-    
+
             // Handle collisions
             let resolved = false;
-    
+
             // Try moving in X direction
             const tryX = this.parent.transform.position.clone().add(new THREE.Vector3(stepMovement.x, stepMovement.y, 0));
-            const tryXAABB = this.getAABB(tryX);
-            const xCollisions = this.world.checkStaticObjectCollisions(tryXAABB);
-    
+            const tryXCylinder = this.getAABB(tryX);
+            let xCollisions = [];
+            for (const treeAABB of collisions) {
+                const treeCylinder = this.getCylinderFromAABB(treeAABB);
+                const distanceXZ = new THREE.Vector2(
+                    tryXCylinder.center.x - treeCylinder.center.x,
+                    tryXCylinder.center.z - treeCylinder.center.z
+                ).length();
+                if (
+                    distanceXZ < tryXCylinder.radius + treeCylinder.radius &&
+                    tryXCylinder.minY < treeCylinder.maxY &&
+                    tryXCylinder.maxY > treeCylinder.minY
+                ) {
+                    xCollisions.push(treeCylinder);
+                }
+            }
+
             if (xCollisions.length === 0) {
                 this.parent.transform.position.copy(tryX);
                 this.velocity.z = 0; // Stop Z movement
@@ -471,9 +535,23 @@ class PlayerController extends engine.Component {
             } else {
                 // Try moving in Z direction
                 const tryZ = this.parent.transform.position.clone().add(new THREE.Vector3(0, stepMovement.y, stepMovement.z));
-                const tryZAABB = this.getAABB(tryZ);
-                const zCollisions = this.world.checkStaticObjectCollisions(tryZAABB);
-    
+                const tryZCylinder = this.getAABB(tryZ);
+                let zCollisions = [];
+                for (const treeAABB of collisions) {
+                    const treeCylinder = this.getCylinderFromAABB(treeAABB);
+                    const distanceXZ = new THREE.Vector2(
+                        tryZCylinder.center.x - treeCylinder.center.x,
+                        tryZCylinder.center.z - treeCylinder.center.z
+                    ).length();
+                    if (
+                        distanceXZ < tryZCylinder.radius + treeCylinder.radius &&
+                        tryZCylinder.minY < treeCylinder.maxY &&
+                        tryZCylinder.maxY > treeCylinder.minY
+                    ) {
+                        zCollisions.push(treeCylinder);
+                    }
+                }
+
                 if (zCollisions.length === 0) {
                     this.parent.transform.position.copy(tryZ);
                     this.velocity.x = 0; // Stop X movement
@@ -481,74 +559,81 @@ class PlayerController extends engine.Component {
                     resolved = true;
                 }
             }
-    
+
             if (!resolved) {
                 // No valid movement in X or Z, stop horizontal movement
                 this.velocity.x = 0;
                 this.velocity.z = 0;
                 remainingMovement.x = 0;
                 remainingMovement.z = 0;
-    
+
                 // Allow vertical movement (e.g., gravity or jumping)
                 this.parent.transform.position.y += stepMovement.y;
                 remainingMovement.y = 0;
             }
-    
+
             // Push out if still colliding
-            const finalAABB = this.getAABB(this.parent.transform.position);
-            const finalCollisions = this.world.checkStaticObjectCollisions(finalAABB);
-            if (finalCollisions.length > 0) {
-                // Calculate push-out vector (simplified example)
-                for (const treeAABB of finalCollisions) {
-                    const pushOut = this.calculatePushOut(finalAABB, treeAABB);
+            const finalCylinder = this.getAABB(this.parent.transform.position);
+            cylinderCollisions = [];
+            for (const treeAABB of this.world.checkStaticObjectCollisions({
+                min: {
+                    x: this.parent.transform.position.x - this.parent.collisionRadius,
+                    y: this.parent.transform.position.y,
+                    z: this.parent.transform.position.z - this.parent.collisionRadius
+                },
+                max: {
+                    x: this.parent.transform.position.x + this.parent.collisionRadius,
+                    y: this.parent.transform.position.y + this.characterHeight,
+                    z: this.parent.transform.position.z + this.parent.collisionRadius
+                }
+            })) {
+                const treeCylinder = this.getCylinderFromAABB(treeAABB);
+                const distanceXZ = new THREE.Vector2(
+                    finalCylinder.center.x - treeCylinder.center.x,
+                    finalCylinder.center.z - treeCylinder.center.z
+                ).length();
+                if (
+                    distanceXZ < finalCylinder.radius + treeCylinder.radius &&
+                    finalCylinder.minY < treeCylinder.maxY &&
+                    finalCylinder.maxY > treeCylinder.minY
+                ) {
+                    cylinderCollisions.push({ treeCylinder, treeAABB });
+                }
+            }
+
+            if (cylinderCollisions.length > 0) {
+                for (const { treeCylinder } of cylinderCollisions) {
+                    const pushOut = this.calculatePushOut(finalCylinder, treeCylinder);
                     this.parent.transform.position.add(pushOut);
                     this.velocity.set(0, this.velocity.y, 0); // Stop horizontal velocity
                 }
             }
         }
-    
+
         // Return true if any movement was applied
         return !this.parent.transform.position.equals(currentPosition);
     }
-    
-    // Helper function to calculate push-out vector
-    calculatePushOut(playerAABB, treeAABB) {
-        const pushOut = new THREE.Vector3();
-        const overlapX = Math.min(playerAABB.max.x - treeAABB.min.x, treeAABB.max.x - playerAABB.min.x);
-        const overlapZ = Math.min(playerAABB.max.z - treeAABB.min.z, treeAABB.max.z - playerAABB.min.z);
-    
-        if (overlapX < overlapZ) {
-            // Push out in X direction
-            if (playerAABB.min.x < treeAABB.min.x) {
-                pushOut.x = -(overlapX + 0.001); // Small epsilon to avoid re-collision
-            } else {
-                pushOut.x = overlapX + 0.001;
-            }
-        } else {
-            // Push out in Z direction
-            if (playerAABB.min.z < treeAABB.min.z) {
-                pushOut.z = -(overlapZ + 0.001);
-            } else {
-                pushOut.z = overlapZ + 0.001;
-            }
-        }
-    
-        return pushOut;
-    }
 
-    getAABB(position = this.parent.transform.position) {
-        return {
-            min: {
-                x: position.x - this.parent.collisionRadius,
-                y: position.y,
-                z: position.z - this.parent.collisionRadius
-            },
-            max: {
-                x: position.x + this.parent.collisionRadius,
-                y: position.y + this.characterHeight,
-                z: position.z + this.parent.collisionRadius
-            }
-        };
+    calculatePushOut(playerCylinder, treeCylinder) {
+        const pushOut = new THREE.Vector3();
+        const delta = new THREE.Vector2(
+            playerCylinder.center.x - treeCylinder.center.x,
+            playerCylinder.center.z - treeCylinder.center.z
+        );
+        const distance = delta.length();
+        const combinedRadius = playerCylinder.radius + treeCylinder.radius;
+
+        if (distance < combinedRadius && distance > 0.001) {
+            // Calculate push-out distance
+            const overlap = combinedRadius - distance + 0.001; // Small epsilon to avoid re-collision
+            const pushDir = delta.normalize();
+            pushOut.set(pushDir.x * overlap, 0, pushDir.y * overlap);
+        } else if (distance <= 0.001) {
+            // Rare case: objects are at nearly the same position
+            pushOut.set(combinedRadius + 0.001, 0, 0); // Push out along X arbitrarily
+        }
+
+        return pushOut;
     }
 
     onDestroy() {

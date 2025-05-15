@@ -67,7 +67,7 @@ class Physics extends engine.Component {
         const rigidBody = this.simulation.createRigidBody(rigidBodyDesc);
         
         // Create a cuboid collider
-        const colliderDesc = r.ColliderDesc.cuboid(halfWidth, halfHeight, halfDepth);
+        const colliderDesc = r.ColliderDesc.capsule(halfHeight, halfWidth);
         const collider = this.simulation.createCollider(colliderDesc, rigidBody);
         
         // Store reference to the static collider with a unique ID
