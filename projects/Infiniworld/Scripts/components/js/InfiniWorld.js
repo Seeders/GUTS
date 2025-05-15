@@ -584,6 +584,7 @@ class InfiniWorld extends engine.Component {
         vegetation.forEach(({ worldObject, data }) => {
             if (worldObject.endsWith('_collision')) {
                 const objectType = worldObject.replace('_collision', '');
+                console.log('collider', objectType);
                 chunkData.collisionAABBs.set(objectType, data);
             } else {
                 const model = this.game.modelManager.getModel('worldObjectPrefabs', worldObject);
@@ -622,18 +623,25 @@ class InfiniWorld extends engine.Component {
     return staticAABBs;
   }
 
-  getStaticAABBsAt(cx, cz){
-    const chunkKey = `${cx},${cz}`;
-    const chunkData = this.chunks.get(chunkKey);
-    if (!chunkData) return [];
-    if(chunkData.collisionAABBs){
-      const treeAABBs = chunkData.collisionAABBs.get('tree');
-      return [...(treeAABBs || [])];        
-    }
-    return [];
+  getStaticAABBsAt(cx, cz) {
+      const chunkKey = `${cx},${cz}`;
+      const chunkData = this.chunks.get(chunkKey);
+      if (!chunkData || !chunkData.collisionAABBs) return [];
+
+      let rockAndTreeAABBs = [];
+      
+      // Iterate through all collision types
+      for (const [key, aabbs] of chunkData.collisionAABBs) {
+          // Check if key ends with 'tree'
+          if (key.endsWith('tree') || key.endsWith('rock')) {
+              rockAndTreeAABBs = [...rockAndTreeAABBs, ...(aabbs || [])];
+          }
+      }
+      
+      return rockAndTreeAABBs;
   }
     
-  checkTreeCollisions(colliderAABB) {
+  checkStaticObjectCollisions(colliderAABB) {
     const collisions = [];
     const cameraChunkX = Math.floor(this.camera.position.x / this.chunkSize);
     const cameraChunkZ = Math.floor(this.camera.position.z / this.chunkSize);
@@ -645,22 +653,14 @@ class InfiniWorld extends engine.Component {
         const chunkData = this.chunks.get(chunkKey);
         if (!chunkData) continue;
   
-        const treeAABBs = chunkData.collisionAABBs.get('tree');
-        if(treeAABBs){
-          treeAABBs.forEach(aabb => {
+        const treeAndRockAABBs = this.getStaticAABBsAt(x, z);
+        if(treeAndRockAABBs){
+          treeAndRockAABBs.forEach(aabb => {
             if (this.aabbIntersects(colliderAABB, aabb)) {
               collisions.push(aabb);
             }
           });
-        }
-        const rockAABBs = chunkData.collisionAABBs.get('rock');
-        if(rockAABBs){
-          rockAABBs.forEach(aabb => {
-            if (this.aabbIntersects(colliderAABB, aabb)) {
-              collisions.push(aabb);
-            }
-          });
-        }
+        }       
       }
     }
     return collisions;

@@ -446,7 +446,7 @@ class PlayerController extends engine.Component {
             const playerAABB = this.getAABB(newPosition);
     
             // Check for tree collisions
-            const collisions = this.world.checkTreeCollisions(playerAABB);
+            const collisions = this.world.checkStaticObjectCollisions(playerAABB);
     
             if (collisions.length === 0) {
                 // No collisions, apply this step's movement
@@ -461,7 +461,7 @@ class PlayerController extends engine.Component {
             // Try moving in X direction
             const tryX = this.parent.transform.position.clone().add(new THREE.Vector3(stepMovement.x, stepMovement.y, 0));
             const tryXAABB = this.getAABB(tryX);
-            const xCollisions = this.world.checkTreeCollisions(tryXAABB);
+            const xCollisions = this.world.checkStaticObjectCollisions(tryXAABB);
     
             if (xCollisions.length === 0) {
                 this.parent.transform.position.copy(tryX);
@@ -472,7 +472,7 @@ class PlayerController extends engine.Component {
                 // Try moving in Z direction
                 const tryZ = this.parent.transform.position.clone().add(new THREE.Vector3(0, stepMovement.y, stepMovement.z));
                 const tryZAABB = this.getAABB(tryZ);
-                const zCollisions = this.world.checkTreeCollisions(tryZAABB);
+                const zCollisions = this.world.checkStaticObjectCollisions(tryZAABB);
     
                 if (zCollisions.length === 0) {
                     this.parent.transform.position.copy(tryZ);
@@ -496,7 +496,7 @@ class PlayerController extends engine.Component {
     
             // Push out if still colliding
             const finalAABB = this.getAABB(this.parent.transform.position);
-            const finalCollisions = this.world.checkTreeCollisions(finalAABB);
+            const finalCollisions = this.world.checkStaticObjectCollisions(finalAABB);
             if (finalCollisions.length > 0) {
                 // Calculate push-out vector (simplified example)
                 for (const treeAABB of finalCollisions) {
