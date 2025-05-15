@@ -8,6 +8,7 @@
     "Rapier",
     "three.SkeletonUtils",
     "three.PointerLockControls",
+    "three.BufferGeometryUtils",
     "ShapeFactory",
     "SimplexNoise",
     "TerrainGenerator",

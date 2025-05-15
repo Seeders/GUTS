@@ -10,48 +10,28 @@
       "shapes": {
         "shapes": [
           {
-            "type": "tetrahedron",
+            "type": "gltf",
             "size": 16,
-            "color": {
-              "paletteColor": "greyDColor"
+            "url": "samples/models/stone/stone.glb",
+            "color": "#ffffff",
+            "metalness": 0,
+            "roughness": 1,
+            "scale": {
+              "x": 10,
+              "y": 10,
+              "z": 10
             },
-            "x": 3.5,
-            "y": 2,
-            "z": 2.5,
-            "rotationX": 50,
-            "rotationY": 140,
-            "rotationZ": 10,
-            "scaleX": 1
-          },
-          {
-            "type": "tetrahedron",
-            "size": 12,
-            "color": {
-              "paletteColor": "greyDColor"
+            "position": {
+              "z": 0,
+              "y": 5
             },
-            "x": 10.5,
-            "y": 2,
-            "z": 7.5,
-            "rotationX": 50,
-            "rotationY": 150,
-            "rotationZ": 10
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
           }
-        ],
-        "position": {
-          "x": 0,
-          "y": 0,
-          "z": 0
-        },
-        "rotation": {
-          "x": 0,
-          "y": 0,
-          "z": 0
-        },
-        "scale": {
-          "x": 1,
-          "y": 1,
-          "z": 1
-        }
+        ]
       }
     }
   }

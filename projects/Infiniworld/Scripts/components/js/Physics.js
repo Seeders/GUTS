@@ -267,7 +267,7 @@ class Physics extends engine.Component {
     }
     
     handleGroundCollision(entity, data) {
-        if(entity.transform.physicsPosition.y - data.size + data.offset.y - entity.transform.velocity.y*this.game.deltaTime > entity.transform.groundHeight - .5){
+        if(entity.transform.physicsPosition.y - data.size + data.offset.y - entity.transform.velocity.y*this.game.deltaTime > entity.transform.groundHeight - data.size * 8){
             return;
         }
         const rigidBody = data.rigidBody;
@@ -279,7 +279,7 @@ class Physics extends engine.Component {
                 rigidBody.setTranslation(
                     {
                         x: entity.transform.physicsPosition.x + reflection.x * this.game.deltaTime*5,
-                        y: entity.transform.physicsPosition.y + reflection.y * this.game.deltaTime*10,
+                        y: entity.transform.groundHeight + reflection.y * this.game.deltaTime*10,
                         z: entity.transform.physicsPosition.z + reflection.z * this.game.deltaTime*5
                     }
                 );

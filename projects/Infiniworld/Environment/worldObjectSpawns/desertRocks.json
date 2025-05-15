@@ -1,6 +1,6 @@
 {
   "title": "Desert Rock",
-  "worldObjectPrefab": "rock",
+  "worldObjectPrefab": "rock2",
   "density": 0.1,
   "maxSlope": 0.25
 }

@@ -7,7 +7,7 @@
           "shapes": {
             "shapes": [
               {
-                "type": "sphere",
+                "type": "gltf",
                 "size": 1,
                 "color": {
                   "paletteColor": "greyDColor"
@@ -18,60 +18,7 @@
                 "rotationX": 0,
                 "rotationY": 0,
                 "rotationZ": 0,
-                "id": 0
-              }
-            ]
-          }
-        },
-        {
-          "shapes": {
-            "shapes": [
-              {
-                "type": "sphere",
-                "size": 1,
-                "color": {
-                  "paletteColor": "greyDColor"
-                },
-                "x": 0,
-                "y": 0,
-                "z": 0,
-                "rotationX": 0,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "id": 0
-              }
-            ],
-            "scale": {
-              "x": 2,
-              "y": 2,
-              "z": 2
-            }
-          }
-        },
-        {
-          "shapes": {
-            "shapes": [
-              {
-                "color": {
-                  "paletteColor": "greyDColor"
-                },
-                "id": 0
-              }
-            ],
-            "scale": {
-              "x": 4,
-              "y": 4,
-              "z": 4
-            }
-          }
-        },
-        {
-          "shapes": {
-            "shapes": [
-              {
-                "color": {
-                  "paletteColor": "greyDColor"
-                },
+                "url": "samples/models/palm_tree/palm_tree.glb",
                 "id": 0
               }
             ],
