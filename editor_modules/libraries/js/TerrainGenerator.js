@@ -404,7 +404,8 @@ class TerrainGenerator {
                 index++;
                 const instances = vegetation.get(worldObjectPrefab) || [];
                 const collisionData = vegetation.get(worldObjectPrefab + '_collision') || [];
-                 if (this.getRandomFromPosition({ x: position.x * index * 10000, y:0, z: position.z * index * 10000}, 1) < blendedDensity && slope <= blendedMaxSlope) {
+    
+                if (this.getRandomFromPosition({ x: position.x * index * 10000, y:0, z: position.z * index * 10000}, 1) < blendedDensity && slope <= blendedMaxSlope) {
                     const instance = {
                         position: { x: position.x, y: position.y - 5, z: position.z },
                         rotation: this.getRandomFromPosition(position, 2) * Math.PI * 2,
@@ -414,8 +415,8 @@ class TerrainGenerator {
 
                     let aabb;
                     if (worldObjectPrefab.endsWith('tree')) {
-                        const trunkRadius = 5.0 * instance.scale;
-                        const trunkHeight = 20.0 * instance.scale;
+                        const trunkRadius = 7.0 * instance.scale;
+                        const trunkHeight = 40.0 * instance.scale;
                         aabb = {
                             id: `${worldObjectPrefab}_${position.x}_${position.z}`,
                             min: {
@@ -430,8 +431,8 @@ class TerrainGenerator {
                             }
                         };
                     } else if (worldObjectPrefab.endsWith('rock')) {
-                        const rockRadius = 1.0 * instance.scale;
-                        const rockHeight = 1.0 * instance.scale;
+                        const rockRadius = 5.0 * instance.scale;
+                        const rockHeight = 10.0 * instance.scale;
                         aabb = {
                             id: `${worldObjectPrefab}_${position.x}_${position.z}`,
                             min: {
