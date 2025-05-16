@@ -33,14 +33,13 @@ class Physics extends engine.Component {
     createChunkStaticColliders(chunkId, chunkData) {
         chunkData.collisionAABBs.keys().forEach((worldObjectType) => {
             chunkData.collisionAABBs.get(worldObjectType).forEach((aabb) => {
-                debugger;
-                this.createStaticCollider(aabb);
+                this.createStaticCollider(chunkId, worldObjectType, aabb);
             });            
         });
         // this.rigidbodies.get(chunkId).push({ type: 'heightmap', rigidBody, collider });
     }
 
-    createStaticCollider(aabb) {
+    createStaticCollider(chunkId, worldObjectType, aabb) {
         if (!aabb || !aabb.id) {
             console.warn("Invalid AABB provided to createStaticCollider");
             return null;
@@ -69,7 +68,7 @@ class Physics extends engine.Component {
         const collider = this.simulation.createCollider(colliderDesc, rigidBody);
         
         // Store reference to the static collider with a unique ID
-        this.rigidbodies.set(aabb.id, { rigidBody, collider });
+        this.rigidbodies.get(chunkId).push({ type: worldObjectType, rigidBody, collider });
         this.staticColliderIds.add(aabb.id); // Mark this as a static collider
 
     }
@@ -326,18 +325,18 @@ class Physics extends engine.Component {
         const chunkId = `${cx},${cz}`;
         
         if (this.rigidbodies.has(`${chunkId}`)) {
-            this.rigidbodies.get(chunkId).forEach((body) => {
-                if(body.type == "heightmap"){
-                    console.log("removed heightmap collider", chunkId);
-                }
+            let c = 0;
+            this.rigidbodies.get(chunkId).forEach((body) => {                
                 const { rigidBody, collider } = body;
                 if (collider) {
                     this.simulation.removeCollider(collider, true);
+                    c++;
                 }
                 if (rigidBody) {
                     this.simulation.removeRigidBody(rigidBody);
                 }
             });
+            console.log(`Removed ${c} colliders for chunk ${chunkId}`);
             this.rigidbodies.delete(chunkId);
         }
     }
