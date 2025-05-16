@@ -223,9 +223,10 @@ class InfiniWorld extends engine.Component {
   
       for (let i = 0; i < Math.min(maxChunksPerFrame, chunksToGenerate.length); i++) {
           const { x, z } = chunksToGenerate[i];
-          await this.generateChunk(x, z);
+          this.generateChunk(x, z);
       }
       this.staticAABBsToRemove = [];
+      const physics = this.game.gameEntity?.getComponent('game').physics;
       // Remove old chunks
       for (const [chunkKey, chunkData] of this.chunks) {
           if (!newChunks.has(chunkKey) && !chunkData.isGenerating) {
@@ -263,15 +264,12 @@ class InfiniWorld extends engine.Component {
                   });
               });
               chunkData.grassData = null;
-              this.game.gameEntity?.getComponent('game').physics.removeChunkCollider(cx, cz);
+              physics.removeChunkColliders(cx, cz);
               this.chunks.delete(chunkKey);
               this.uniforms.delete(chunkKey);
           }
       }   
-      
-      if(chunksToGenerate.length > 0){        
-        this.game.gameEntity?.getComponent('game').physics.setStaticAABBs(this.getStaticAABBs(), this.getStaticAABBsToRemove());
-      }
+   
   }
 
   async updateGrassTasks() {
@@ -316,7 +314,8 @@ class InfiniWorld extends engine.Component {
     const chunkKey = `${cx},${cz}`;
     const chunkData = this.pendingChunks.get(chunkKey);
     if (!chunkData) return;
-    this.game.gameEntity?.getComponent('game').physics.addChunkCollider(e.data);
+    chunkData.cx = cx;
+    chunkData.cz = cz;
     try {
         // Copy positions and normals for manipulation
         const adjustedPositions = positions.slice();
@@ -612,7 +611,8 @@ class InfiniWorld extends engine.Component {
         chunkData.terrainMesh = mesh;
         chunkData.geometry = {
           positions: [...geometry.attributes.position.array],
-          indices: [...geometry.index.array]
+          indices: [...geometry.index.array],
+          normals: [...geometry.attributes.normal.array],
         };
         chunkData.position = new THREE.Vector3(chunkWorldX, 0, chunkWorldZ);
     //    this.chunkGeometry.set(chunkKey, geometry);
@@ -653,6 +653,7 @@ class InfiniWorld extends engine.Component {
 
         // Mark chunk as ready
         chunkData.isGenerating = false;
+        this.game.gameEntity?.getComponent('game').physics.addChunkCollider(chunkData);
         this.pendingChunks.delete(chunkKey);
     } catch (error) {
         console.error(`Failed to process chunk ${chunkKey}:`, error);

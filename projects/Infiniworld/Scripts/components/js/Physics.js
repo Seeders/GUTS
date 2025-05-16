@@ -2,6 +2,8 @@ class Physics extends engine.Component {
     async init() {
         this.colliders = new Map();
         this.rigidbodies = new Map();
+        this.staticColliderIds = new Set(); // Track which ids in rigidbodies are static
+        this.staticAABBs = [];  // Store AABB references, not physics objects
         this.collidersToRemove = [];
         this.lastUpdate = 0;
         this.deltaTime = 0;
@@ -28,30 +30,26 @@ class Physics extends engine.Component {
         });        
     }
 
-    setStaticAABBs(aabbs, aabbsToRemove) {
-        // Handle static collider removal
-        for (const aabbId of aabbsToRemove) {
-            this.removeStaticCollider(aabbId);
-        }
-        
-        // Update static colliders if changed
-        if (JSON.stringify(this.staticAABBs) !== JSON.stringify(aabbs)) {
-            this.updateStaticColliders(aabbs);
-            this.staticAABBs = aabbs;
-        }
+    createChunkStaticColliders(chunkId, chunkData) {
+        chunkData.collisionAABBs.keys().forEach((worldObjectType) => {
+            chunkData.collisionAABBs.get(worldObjectType).forEach((aabb) => {
+                debugger;
+                this.createStaticCollider(aabb);
+            });            
+        });
+        // this.rigidbodies.get(chunkId).push({ type: 'heightmap', rigidBody, collider });
     }
-    
-    updateStaticColliders(aabbs) {
-        // Remove old static colliders
-        this.removeAllStaticColliders();
-        
-        // Create new static colliders
-        for (const aabb of aabbs) {
-            this.createStaticCollider(aabb);
-        }
-    }
-    
+
     createStaticCollider(aabb) {
+        if (!aabb || !aabb.id) {
+            console.warn("Invalid AABB provided to createStaticCollider");
+            return null;
+        }
+
+        if (this.rigidbodies.has(aabb.id)) {
+            return;
+        }
+        
         const r = this.RAPIER;
         const halfWidth = (aabb.max.x - aabb.min.x) / 2;
         const halfHeight = (aabb.max.y - aabb.min.y) / 2;
@@ -71,31 +69,42 @@ class Physics extends engine.Component {
         const collider = this.simulation.createCollider(colliderDesc, rigidBody);
         
         // Store reference to the static collider with a unique ID
-        const staticId = `static_${centerX}_${centerY}_${centerZ}`;
-        this.rigidbodies.set(staticId, { rigidBody, collider });
-        
-        return staticId;
+        this.rigidbodies.set(aabb.id, { rigidBody, collider });
+        this.staticColliderIds.add(aabb.id); // Mark this as a static collider
+
     }
-    
     removeStaticCollider(staticId) {
+        if (!staticId) {
+            return false;
+        }
+        
         if (this.rigidbodies.has(staticId)) {
             const { rigidBody, collider } = this.rigidbodies.get(staticId);
-            this.simulation.removeCollider(collider, true);
-            this.simulation.removeRigidBody(rigidBody);
-            this.rigidbodies.delete(staticId);
             
-  
-        }
-    }
-    
-    removeAllStaticColliders() {
-        for (const [staticId, data] of this.rigidbodies.entries()) {
-            if (staticId.startsWith('static_')) {
-                this.removeStaticCollider(staticId);
+            try {
+                if (collider) {
+                    this.simulation.removeCollider(collider, true);
+                }
+                
+                if (rigidBody) {
+                    this.simulation.removeRigidBody(rigidBody);
+                }
+                
+                this.rigidbodies.delete(staticId);  
+                this.staticColliderIds.delete(staticId);
+                
+                return true;
+            } catch (error) {
+                console.error(`Error removing static collider ${staticId}:`, error);
+                // Still remove from our maps even if physics removal failed
+                this.rigidbodies.delete(staticId);
+                this.staticColliderIds.delete(staticId);
+                return false;
             }
+        } else {
+            return false;
         }
     }
-
     registerCollider(collider) {
         const r = this.RAPIER;
         if(!r){
@@ -300,37 +309,44 @@ class Physics extends engine.Component {
         // });
     }
     addChunkCollider(chunkData) {
+        const { cx, cz } = chunkData;
         if (!this.simulation) {
             this.preloaded.push(chunkData);
             return;
         }
-        this.createHeightmapCollider(chunkData);
+        const chunkId = `${cx},${cz}`;
+        if(!this.rigidbodies.has(chunkId)){
+            this.rigidbodies.set(chunkId, []);            
+        }
+        this.createHeightmapCollider(chunkId, chunkData);
+        this.createChunkStaticColliders(chunkId, chunkData);
     }
 
-    removeChunkCollider(cx, cz) {
-        const chunkId = `heightmap_${cx}_${cz}`;
-        if (this.rigidbodies.has(chunkId)) {
-            const { rigidBody, collider } = this.rigidbodies.get(chunkId);
-            this.simulation.removeCollider(collider, true);
-            this.simulation.removeRigidBody(rigidBody);
-            this.rigidbodies.delete(chunkId);        
+    removeChunkColliders(cx, cz) {
+        const chunkId = `${cx},${cz}`;
+        
+        if (this.rigidbodies.has(`${chunkId}`)) {
+            this.rigidbodies.get(chunkId).forEach((body) => {
+                if(body.type == "heightmap"){
+                    console.log("removed heightmap collider", chunkId);
+                }
+                const { rigidBody, collider } = body;
+                if (collider) {
+                    this.simulation.removeCollider(collider, true);
+                }
+                if (rigidBody) {
+                    this.simulation.removeRigidBody(rigidBody);
+                }
+            });
+            this.rigidbodies.delete(chunkId);
         }
     }
 
-    createHeightmapCollider(chunkData) {
+    createHeightmapCollider(chunkId, chunkData) {
         const r = this.RAPIER;
-        const { cx, cz, heightmap } = chunkData;
-        const { heights, nx, ny, scale } = heightmap;
-      
+        const { cx, cz } = chunkData;
+       // const { heights, nx, ny, scale } = heightmap;
         // Validate inputs
-        if (!heights || heights.length !== nx * ny) {
-            console.error('Invalid heightmap data:', { heightsLength: heights.length, expected: nx * ny });
-            return;
-        }
-        if (!scale || !scale.x || !scale.y || !scale.z) {
-            console.error('Invalid scale:', scale);
-            return;
-        }
 
         // Create a static rigid body for the terrain chunk
         const rigidBodyDesc = r.RigidBodyDesc.fixed()
@@ -343,47 +359,26 @@ class Physics extends engine.Component {
         const rigidBody = this.simulation.createRigidBody(rigidBodyDesc);
 
         // Create heightfield collider
-        const heightfield = new Float32Array(heights);
+       // const heightfield = new Float32Array(heights);
         // const colliderDesc = r.ColliderDesc.heightfield(nx - 1, ny - 1, heightfield, scale)
         //     .setSensor(false);
-        const colliderDesc = r.ColliderDesc.trimesh(chunkData.positions, chunkData.indices);
+        const colliderDesc = r.ColliderDesc.trimesh(chunkData.geometry.positions, chunkData.geometry.indices);
         const collider = this.simulation.createCollider(colliderDesc, rigidBody);
-
         // Store collider with a unique ID
-        const chunkId = `heightmap_${cx}_${cz}`;
-        this.rigidbodies.set(chunkId, { rigidBody, collider });
-        return chunkId;
+      //  this.createHeightmapMesh(cx, cz, chunkData);
+        this.rigidbodies.get(chunkId).push({ type: 'heightmap', rigidBody, collider });
     }
-    createHeightmapMesh(chunkData) {
-        const { cx, cz, heightmap } = chunkData;
-        const { heights, nx, ny, scale } = heightmap;
-
-        // Validate inputs (same as collider function)
-        if (!heights || heights.length !== nx * ny) {
-            console.error('Invalid heightmap data:', { heightsLength: heights.length, expected: nx * ny });
-            return;
-        }
-        if (!scale || !scale.x || !scale.y || !scale.z) {
-            console.error('Invalid scale:', scale);
-            return;
-        }
+    createHeightmapMesh(cx, cz, chunkData) {
+        const { geometry } = chunkData;       
 
         // Create geometry for the heightmap
-        const geometry = new THREE.PlaneGeometry(
-            scale.x, // Width of the plane
-            scale.z, // Height (depth) of the plane
-            nx - 1,             // Width segments
-            ny - 1              // Height segments
-        );
-
-        // Update vertex positions to match heightmap
-        const vertices = geometry.attributes.position.array;
-        for (let i = 0; i < heights.length; i++) {
-            const vertexIndex = i * 3; // Each vertex has x, y, z
-            vertices[vertexIndex + 2] = heights[i] * scale.y; // Set y-coordinate (height) scaled by scale.y
-        }
-        geometry.attributes.position.needsUpdate = true; // Mark for update
-        geometry.computeVertexNormals(); // Recalculate normals for lighting
+        const plane = new THREE.BufferGeometry();
+        plane.setAttribute('position', new THREE.Float32BufferAttribute(geometry.positions, 3));
+        plane.setAttribute('normal', new THREE.Float32BufferAttribute(geometry.normals, 3));
+        plane.setIndex(geometry.indices);
+        plane.attributes.position.needsUpdate = true; // Mark for update
+        plane.attributes.normal.needsUpdate = true; // Mark for update
+        plane.computeVertexNormals(); // Recalculate normals for lighting
 
         // Create material
         const material = new THREE.MeshStandardMaterial({
@@ -392,7 +387,7 @@ class Physics extends engine.Component {
         });
 
         // Create mesh
-        const mesh = new THREE.Mesh(geometry, material);
+        const mesh = new THREE.Mesh(plane, material);
 
         // Position mesh to match collider
         mesh.position.set(
@@ -401,9 +396,9 @@ class Physics extends engine.Component {
             cz * this.game.terrain.chunkSize  // Center z
         );
 
-        // Rotate plane to lie flat (x, z plane), as PlaneGeometry is initially in x, y plane
-        mesh.rotation.x = -Math.PI / 2;
-
+        // // Rotate plane to lie flat (x, z plane), as PlaneGeometry is initially in x, y plane
+        // mesh.rotation.x = -Math.PI / 2;
+console.log(cx, this.game.terrain.chunkSize);
         // Add to scene
         this.game.scene.add(mesh);
 
@@ -412,7 +407,6 @@ class Physics extends engine.Component {
         this.meshes = this.meshes || new Map(); // Assuming a meshes Map to store
         this.meshes.set(chunkId, mesh);
 
-        return chunkId;
     }
     onDestroy() {
         // Clean up Rapier resources
