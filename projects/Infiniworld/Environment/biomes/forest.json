@@ -5,7 +5,8 @@
   "detailNoiseSetting": "forestDetail",
   "worldObjectSpawns": [
     "forestRocks",
-    "forestTrees"
+    "forestTrees",
+    "forestGrass"
   ],
   "range": [
     0.2,

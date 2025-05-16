@@ -250,12 +250,7 @@ class Physics extends engine.Component {
             if (entity.getAABB) {
                 data.aabb = entity.getAABB(entity.transform.physicsPosition);
             }
-            
-            
-            // Handle floor reflection (bouncing) if needed
-            this.handleGroundCollision(entity, data);
-            
-
+           
             // Handle collision detection
             this.detectCollisions(colliderId, data);
         }
@@ -326,7 +321,7 @@ class Physics extends engine.Component {
         const r = this.RAPIER;
         const { cx, cz, heightmap } = chunkData;
         const { heights, nx, ny, scale } = heightmap;
-
+      
         // Validate inputs
         if (!heights || heights.length !== nx * ny) {
             console.error('Invalid heightmap data:', { heightsLength: heights.length, expected: nx * ny });
@@ -349,13 +344,73 @@ class Physics extends engine.Component {
 
         // Create heightfield collider
         const heightfield = new Float32Array(heights);
-        const colliderDesc = r.ColliderDesc.heightfield(nx - 1, ny - 1, heightfield, scale)
-            .setSensor(false);
+        // const colliderDesc = r.ColliderDesc.heightfield(nx - 1, ny - 1, heightfield, scale)
+        //     .setSensor(false);
+        const colliderDesc = r.ColliderDesc.trimesh(chunkData.positions, chunkData.indices);
         const collider = this.simulation.createCollider(colliderDesc, rigidBody);
 
         // Store collider with a unique ID
         const chunkId = `heightmap_${cx}_${cz}`;
         this.rigidbodies.set(chunkId, { rigidBody, collider });
+        return chunkId;
+    }
+    createHeightmapMesh(chunkData) {
+        const { cx, cz, heightmap } = chunkData;
+        const { heights, nx, ny, scale } = heightmap;
+
+        // Validate inputs (same as collider function)
+        if (!heights || heights.length !== nx * ny) {
+            console.error('Invalid heightmap data:', { heightsLength: heights.length, expected: nx * ny });
+            return;
+        }
+        if (!scale || !scale.x || !scale.y || !scale.z) {
+            console.error('Invalid scale:', scale);
+            return;
+        }
+
+        // Create geometry for the heightmap
+        const geometry = new THREE.PlaneGeometry(
+            scale.x, // Width of the plane
+            scale.z, // Height (depth) of the plane
+            nx - 1,             // Width segments
+            ny - 1              // Height segments
+        );
+
+        // Update vertex positions to match heightmap
+        const vertices = geometry.attributes.position.array;
+        for (let i = 0; i < heights.length; i++) {
+            const vertexIndex = i * 3; // Each vertex has x, y, z
+            vertices[vertexIndex + 2] = heights[i] * scale.y; // Set y-coordinate (height) scaled by scale.y
+        }
+        geometry.attributes.position.needsUpdate = true; // Mark for update
+        geometry.computeVertexNormals(); // Recalculate normals for lighting
+
+        // Create material
+        const material = new THREE.MeshStandardMaterial({
+            color: 0x00ff00, // Green for visibility, adjust as needed
+            wireframe: true   // Wireframe to visualize mesh structure
+        });
+
+        // Create mesh
+        const mesh = new THREE.Mesh(geometry, material);
+
+        // Position mesh to match collider
+        mesh.position.set(
+            cx * this.game.terrain.chunkSize, // Center x
+            1,                                                           // y (heights are in geometry)
+            cz * this.game.terrain.chunkSize  // Center z
+        );
+
+        // Rotate plane to lie flat (x, z plane), as PlaneGeometry is initially in x, y plane
+        mesh.rotation.x = -Math.PI / 2;
+
+        // Add to scene
+        this.game.scene.add(mesh);
+
+        // Store mesh for debugging (optional)
+        const chunkId = `heightmap_${cx}_${cz}`;
+        this.meshes = this.meshes || new Map(); // Assuming a meshes Map to store
+        this.meshes.set(chunkId, mesh);
 
         return chunkId;
     }

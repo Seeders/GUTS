@@ -5,7 +5,8 @@
   "detailNoiseSetting": "plainsDetail",
   "worldObjectSpawns": [
     "plainsRocks",
-    "plainsTrees"
+    "plainsTrees",
+    "plainsGrass"
   ],
   "range": [
     0,

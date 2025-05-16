@@ -160,7 +160,21 @@ class TerrainGenerator {
         const val = Math.sin(a + b + c) * 43758.5453;
         return val - Math.floor(val);
     }
+    // Convert hex color (e.g., "#FF0000") to RGB object { r, g, b } with values in [0, 1]
+    hexToRGB(hex) {
+        const r = parseInt(hex.slice(1, 3), 16) / 255;
+        const g = parseInt(hex.slice(3, 5), 16) / 255;
+        const b = parseInt(hex.slice(5, 7), 16) / 255;
+        return { r, g, b };
+    }
 
+    // Convert RGB object { r, g, b } (values in [0, 1]) to hex color string (e.g., "#FF0000")
+    rgbToHex(rgb) {
+        const r = Math.round(rgb.r * 255).toString(16).padStart(2, '0');
+        const g = Math.round(rgb.g * 255).toString(16).padStart(2, '0');
+        const b = Math.round(rgb.b * 255).toString(16).padStart(2, '0');
+        return `#${r}${g}${b}`;
+    }
     generateChunk(cx, cz, chunkSize, chunkResolution) {
         const geometryData = {
             positions: [],
@@ -178,6 +192,7 @@ class TerrainGenerator {
         // Initialize heightmap as a flat array
         const heights = new Array(nx * ny).fill(0);
 
+        // Generate positions and heights
         for (let z = 0; z < ny; z++) {
             for (let x = 0; x < nx; x++) {
                 const vx = x * size - chunkSize / 2;
@@ -197,8 +212,7 @@ class TerrainGenerator {
                     }
                 }
 
-                // Store height in row-major order: index = z * nx + x
-                heights[x * nx + z] = height;
+                heights[z * nx + x] = height; // Store height in row-major order
 
                 const position = { x: wx, y: height, z: wz };
                 geometryData.positions.push(vx, height, vz);
@@ -215,6 +229,7 @@ class TerrainGenerator {
         const contributions = new Array(geometryData.positions.length / 3).fill(0);
         const indices = [];
 
+        // Generate indices and normals (unchanged)
         for (let z = 0; z < chunkResolution; z++) {
             for (let x = 0; x < chunkResolution; x++) {
                 const a = x + (z * (chunkResolution + 1));
@@ -292,8 +307,7 @@ class TerrainGenerator {
                     }
                 }
 
-                // Accumulate normals at each vertex
-                // First triangle (a, c, b)
+                // Accumulate normals
                 normals[a * 3] += normal1[0];
                 normals[a * 3 + 1] += normal1[1];
                 normals[a * 3 + 2] += normal1[2];
@@ -309,7 +323,6 @@ class TerrainGenerator {
                 normals[b * 3 + 2] += normal1[2];
                 contributions[b]++;
 
-                // Second triangle (c, d, b)
                 normals[c * 3] += normal2[0];
                 normals[c * 3 + 1] += normal2[1];
                 normals[c * 3 + 2] += normal2[2];
@@ -355,38 +368,80 @@ class TerrainGenerator {
 
         geometryData.normals = normals;
 
-        // Generate colors (unchanged)
-        geometryData.biomeMap.forEach(({ weights }) => {
-            let r = 0, g = 0, b = 0;
-            for (const biomeName in weights) {
-                const weight = weights[biomeName];
-                const { r: br, g: bg, b: bb } = this.biomes[biomeName].groundColor;
-                r += br * weight;
-                g += bg * weight;
-                b += bb * weight;
-            }
-            geometryData.colors.push(r, g, b);
-        });
+  
 
-        // Vegetation generation (unchanged)
+        // Vegetation generation
         const vegetation = new Map();
+        let grassData = null;
+        let blendedGrass = null;
+        let totalGrassWeight = 0;
+
         geometryData.biomeMap.forEach(({ weights, position, slope }) => {
             const objectTypes = new Map();
+
+            let r = 0, g = 0, b = 0;
+            // Aggregate grass and world object definitions
             for (const biomeName in weights) {
                 const biome = this.biomes[biomeName];
-                biome.worldObjects.forEach(objDef => {
-                    if (!objectTypes.has(objDef.worldObjectPrefab)) {
-                        objectTypes.set(objDef.worldObjectPrefab, []);
+                const weight = weights[biomeName];
+                r += this.biomes[biomeName].groundColor.r * weight;
+                g += this.biomes[biomeName].groundColor.g * weight;
+                b += this.biomes[biomeName].groundColor.b * weight;
+                if (weight === 0) continue;
+
+                biome.worldObjects.forEach((objDef, type) => {
+                    if (!objDef.worldObjectPrefab) {
+                        // Handle grass
+                        if (objDef.title.toLowerCase().endsWith('grass')) {
+                            if (!blendedGrass) {
+                                blendedGrass = {
+                                    bladeWidth: 0,
+                                    bladeHeight: 0,
+                                    baseColor: { r: 0, g: 0, b: 0 },
+                                    tipColor: { r: 0, g: 0, b: 0 },
+                                    density: 0,
+                                    maxSlope: 0,
+                                    weight: 0,
+                                    transforms: []
+                                };
+                            }
+                            // Convert hex colors to RGB for blending
+                            const baseColorRGB = this.hexToRGB(objDef.baseColor);
+                            const tipColorRGB = this.hexToRGB(objDef.tipColor);
+                            // Accumulate weighted grass properties
+                            blendedGrass.bladeWidth += objDef.bladeWidth * weight;
+                            blendedGrass.bladeHeight += objDef.bladeHeight * weight;
+                            blendedGrass.baseColor.r += baseColorRGB.r * weight;
+                            blendedGrass.baseColor.g += baseColorRGB.g * weight;
+                            blendedGrass.baseColor.b += baseColorRGB.b * weight;
+                            blendedGrass.tipColor.r += tipColorRGB.r * weight;
+                            blendedGrass.tipColor.g += tipColorRGB.g * weight;
+                            blendedGrass.tipColor.b += tipColorRGB.b * weight;
+                            blendedGrass.density += objDef.density * weight;
+                            blendedGrass.maxSlope += objDef.maxSlope * weight;
+                            totalGrassWeight += weight;
+                        }
+                    } else {
+                        // Handle world objects (unchanged)
+                        if (!objectTypes.has(objDef.worldObjectPrefab)) {
+                            objectTypes.set(objDef.worldObjectPrefab, []);
+                        }
+                        objectTypes.get(objDef.worldObjectPrefab).push({
+                            density: objDef.density,
+                            maxSlope: objDef.maxSlope,
+                            weight: weights[biomeName]
+                        });
                     }
-                    objectTypes.get(objDef.worldObjectPrefab).push({
-                        density: objDef.density,
-                        maxSlope: objDef.maxSlope,
-                        weight: weights[biomeName]
-                    });
                 });
             }
+            geometryData.colors.push(r, g, b);
+
+ 
+
+            // Process world objects (unchanged)
             let index = 0;
             objectTypes.forEach((defs, worldObjectPrefab) => {
+                if (!worldObjectPrefab) return;
                 let blendedDensity = 0;
                 let blendedMaxSlope = 0;
                 let totalWeight = 0;
@@ -404,8 +459,8 @@ class TerrainGenerator {
                 index++;
                 const instances = vegetation.get(worldObjectPrefab) || [];
                 const collisionData = vegetation.get(worldObjectPrefab + '_collision') || [];
-    
-                if (this.getRandomFromPosition({ x: position.x * index * 10000, y:0, z: position.z * index * 10000}, 1) < blendedDensity && slope <= blendedMaxSlope) {
+
+                if (this.getRandomFromPosition({ x: position.x * index * 10000, y: 0, z: position.z * index * 10000 }, 1) < blendedDensity && slope <= blendedMaxSlope) {
                     const instance = {
                         position: { x: position.x, y: position.y - 5, z: position.z },
                         rotation: this.getRandomFromPosition(position, 2) * Math.PI * 2,
@@ -419,32 +474,16 @@ class TerrainGenerator {
                         const trunkHeight = 40.0 * instance.scale;
                         aabb = {
                             id: `${worldObjectPrefab}_${position.x}_${position.z}`,
-                            min: {
-                                x: position.x - trunkRadius,
-                                y: position.y - trunkHeight,
-                                z: position.z - trunkRadius
-                            },
-                            max: {
-                                x: position.x + trunkRadius,
-                                y: position.y + trunkHeight,
-                                z: position.z + trunkRadius
-                            }
+                            min: { x: position.x - trunkRadius, y: position.y - trunkHeight, z: position.z - trunkRadius },
+                            max: { x: position.x + trunkRadius, y: position.y + trunkHeight, z: position.z + trunkRadius }
                         };
                     } else if (worldObjectPrefab.endsWith('rock')) {
                         const rockRadius = 5.0 * instance.scale;
                         const rockHeight = 10.0 * instance.scale;
                         aabb = {
                             id: `${worldObjectPrefab}_${position.x}_${position.z}`,
-                            min: {
-                                x: position.x - rockRadius,
-                                y: position.y,
-                                z: position.z - rockRadius
-                            },
-                            max: {
-                                x: position.x + rockRadius,
-                                y: position.y + rockHeight,
-                                z: position.z + rockRadius
-                            }
+                            min: { x: position.x - rockRadius, y: position.y, z: position.z - rockRadius },
+                            max: { x: position.x + rockRadius, y: position.y + rockHeight, z: position.z + rockRadius }
                         };
                     }
 
@@ -458,8 +497,56 @@ class TerrainGenerator {
                     vegetation.set(`${worldObjectPrefab}_collision`, collisionData);
                 }
             });
-        });
 
+        });
+                // Normalize grass properties
+        if (blendedGrass && totalGrassWeight > 0) {
+            blendedGrass.bladeWidth /= totalGrassWeight;
+            blendedGrass.bladeHeight /= totalGrassWeight;
+            blendedGrass.baseColor.r /= totalGrassWeight;
+            blendedGrass.baseColor.g /= totalGrassWeight;
+            blendedGrass.baseColor.b /= totalGrassWeight;
+            blendedGrass.tipColor.r /= totalGrassWeight;
+            blendedGrass.tipColor.g /= totalGrassWeight;
+            blendedGrass.tipColor.b /= totalGrassWeight;
+            blendedGrass.density /= totalGrassWeight;
+            blendedGrass.maxSlope /= totalGrassWeight;
+            // Optionally convert back to hex if your rendering system expects hex
+            blendedGrass.baseColor = this.rgbToHex(blendedGrass.baseColor);
+            blendedGrass.tipColor = this.rgbToHex(blendedGrass.tipColor);
+        }
+                    // Generate grass instances with blended properties
+        if (blendedGrass && totalGrassWeight > 0) {
+            const grassPerChunk = blendedGrass.density * chunkSize * chunkResolution;
+            blendedGrass.grassPerChunk = grassPerChunk;
+            const step = chunkSize / chunkResolution;
+            const vertexCountPerRow = chunkResolution + 1;
+            blendedGrass.phases = new Float32Array(grassPerChunk);
+            for (let i = 0; i < grassPerChunk; i++) {
+                const x = Math.random() * chunkResolution;
+                const z = Math.random() * chunkResolution;
+                const xIdx = Math.floor(x);
+                const zIdx = Math.floor(z);
+                const fx = x - xIdx;
+                const fz = z - zIdx;
+
+                const height = this.interpolateHeight(geometryData.positions, xIdx, zIdx, fx, fz, vertexCountPerRow);
+                const worldX = (x * step - chunkSize / 2);
+                const worldZ = (z * step - chunkSize / 2);
+                const rotationY = Math.random() * Math.PI * 2;
+                const scale = 0.7 + Math.random() * 0.5;
+
+                blendedGrass.transforms.push({
+                    position: { x: worldX, y: height, z: worldZ },
+                    rotation: rotationY,
+                    scale: scale
+                });
+                blendedGrass.phases[i] = Math.random() * Math.PI * 2;
+            }
+            if (blendedGrass.transforms.length > 0) {
+                grassData = blendedGrass;
+            }
+        }
         return {
             cx,
             cz,
@@ -468,12 +555,22 @@ class TerrainGenerator {
             colors: geometryData.colors,
             normals: geometryData.normals,
             vegetation: Array.from(vegetation.entries()).map(([worldObject, data]) => ({ worldObject, data })),
+            grassData: grassData,
             heightmap: {
                 heights: heights,
-                nx: nx, // Number of points in x direction
-                ny: ny, // Number of points in z direction
-                scale: {x: chunkSize, y: 1, z: chunkSize} // Scale of each grid cell
+                nx: nx,
+                ny: ny,
+                scale: { x: chunkSize, y: 1, z: chunkSize }
             }
         };
+    }
+
+    interpolateHeight(positions, xIdx, zIdx, fx, fz, vertexCountPerRow) {
+        const posIdx = (zIdx * vertexCountPerRow + xIdx) * 3;
+        const h00 = positions[posIdx + 1];
+        const h10 = xIdx + 1 < vertexCountPerRow ? positions[posIdx + 3 + 1] : h00;
+        const h01 = zIdx + 1 < vertexCountPerRow ? positions[(zIdx + 1) * vertexCountPerRow * 3 + xIdx * 3 + 1] : h00;
+        const h11 = xIdx + 1 < vertexCountPerRow && zIdx + 1 < vertexCountPerRow ? positions[(zIdx + 1) * vertexCountPerRow * 3 + (xIdx + 1) * 3 + 1] : h00;
+        return h00 * (1 - fx) * (1 - fz) + h10 * fx * (1 - fz) + h01 * (1 - fx) * fz + h11 * fx * fz;
     }
 }

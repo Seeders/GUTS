@@ -1,0 +1,10 @@
+{
+  "title": "Mountain Grass",
+  "density": 0.75,
+  "maxSlope": 1,
+  "bladeWidth": 4,
+  "bladeHeight": 12,
+  "shader": "grass",
+  "tipColor": "#d9b38c",
+  "baseColor": "#4a2f1f"
+}

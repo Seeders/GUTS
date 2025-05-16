@@ -1217,18 +1217,14 @@ getInterpolatedTerrainHeight(position) {
     return waterMesh;
   }
   addGrassToTerrain(cx, cz, grassData) {
-
+if(!grassData) return;
     const chunkKey = `${cx},${cz}`;
-    const grassGeometry = this.createCurvedBladeGeometry(this.grassBladeWidth, this.grassBladeHeight);
-    grassGeometry.translate(0, -this.grassBladeHeight * 0.6, 0);
+    const grassGeometry = this.createCurvedBladeGeometry(grassData.bladeWidth, grassData.bladeHeight);
+    grassGeometry.translate(0, -grassData.bladeHeight * 0.6, 0);
 
-    const phases = new Float32Array(this.grassPerChunk);
-    for (let i = 0; i < this.grassPerChunk; i++) {
-      phases[i] = Math.random() * Math.PI * 2;
-    }
-    grassGeometry.setAttribute('instancePhase', new THREE.InstancedBufferAttribute(phases, 1));
+    grassGeometry.setAttribute('instancePhase', new THREE.InstancedBufferAttribute(grassData.phases, 1));
 
-    const grassTexture = this.createGrassTexture();
+    const grassTexture = this.createGrassTexture(grassData);
     const grassShader = this.grassShader;
     this.uniforms.set(`grass_${chunkKey}`, JSON.parse(grassShader.uniforms));
 
@@ -1260,13 +1256,13 @@ getInterpolatedTerrainHeight(position) {
     });
 
     grassGeometry.computeVertexNormals();
-    const grassMesh = new THREE.InstancedMesh(grassGeometry, grassMaterial, this.grassPerChunk);
+    const grassMesh = new THREE.InstancedMesh(grassGeometry, grassMaterial, grassData.grassPerChunk);
     grassMesh.castShadow = false;
     grassMesh.receiveShadow = false;
     grassMesh.name = `grass_${chunkKey}`;
     const dummy = new THREE.Object3D();    
     // Use pre-computed grass data
-    grassData.forEach((grass, index)=>{
+    grassData.transforms.forEach((grass, index)=>{
       dummy.position.set(grass.position.x, grass.position.y, grass.position.z);
       dummy.rotation.set(0, grass.rotation, 0);
       dummy.scale.set(grass.scale, grass.scale, grass.scale);
@@ -1313,16 +1309,15 @@ getInterpolatedTerrainHeight(position) {
     return shapeGeom;
   }
 
-  createGrassTexture() {
+  createGrassTexture(grassData) {
     const canvas = document.createElement('canvas');
     canvas.width = 4;
     canvas.height = 32;
     const ctx = canvas.getContext('2d');
-    let palette = this.game.getCollections().palettes[this.game.getCollections().configs.game.palette];
     const gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);
-    gradient.addColorStop(0.0, palette["greenMColor"] || '#00ff00');
-    gradient.addColorStop(0.8, palette["greenMColor"] || '#00ff00');
-    gradient.addColorStop(1.0, palette["redLColor"] || '#ff0000');
+    gradient.addColorStop(0.0, grassData.baseColor);
+    gradient.addColorStop(0.8, grassData.baseColor);
+    gradient.addColorStop(1.0, grassData.tipColor);
 
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -1344,96 +1339,9 @@ getInterpolatedTerrainHeight(position) {
       const terrainGenerator = new TerrainGenerator();
       terrainGenerator.init(${JSON.stringify(this.biomes)}, ${this.chunkSize}, ${this.chunkResolution}, noise);
 
-      // Helper function for bilinear interpolation
-      function interpolateHeight(positions, xIdx, zIdx, fx, fz, vertexCountPerRow) {
-        const posIdx = (zIdx * vertexCountPerRow + xIdx) * 3;
-        const h00 = positions[posIdx + 1];
-        const h10 = xIdx + 1 < vertexCountPerRow ? positions[posIdx + 3 + 1] : h00;
-        const h01 = zIdx + 1 < vertexCountPerRow ? positions[(zIdx + 1) * vertexCountPerRow * 3 + xIdx * 3 + 1] : h00;
-        const h11 = xIdx + 1 < vertexCountPerRow && zIdx + 1 < vertexCountPerRow ? positions[(zIdx + 1) * vertexCountPerRow * 3 + (xIdx + 1) * 3 + 1] : h00;
-        return h00 * (1 - fx) * (1 - fz) + h10 * fx * (1 - fz) + h01 * (1 - fx) * fz + h11 * fx * fz;
-      }
-
       self.onmessage = function(e) {
         const { cx, cz, chunkSize, chunkResolution } = e.data;
-        const result = terrainGenerator.generateChunk(cx, cz, chunkSize, chunkResolution);
-
-        // Grass generation parameters
-        const grassPerChunk = ${this.grassPerChunk};
-        const step = chunkSize / chunkResolution;
-        const vertexCountPerRow = chunkResolution + 1;
-
-        // Create density map based on terrain colors
-        const densityMap = new Float32Array(chunkResolution * chunkResolution);
-        const greenBiome = Object.values(${JSON.stringify(this.biomes)}).find(biome => biome.groundColor.g > biome.groundColor.r && biome.groundColor.g > biome.groundColor.b);
-        const greenColor = greenBiome ? greenBiome.groundColor : { r: 0, g: 1, b: 0 };
-
-        for (let z = 0; z < chunkResolution; z++) {
-          for (let x = 0; x < chunkResolution; x++) {
-            const colorIdx = (z * vertexCountPerRow + x) * 3;
-            const r = result.colors[colorIdx];
-            const g = result.colors[colorIdx + 1];
-            const b = result.colors[colorIdx + 2];
-            const isGreenDominant = g > r && g > b;
-
-            if (isGreenDominant) {
-              const neighbors = [
-                [-1, -1], [0, -1], [1, -1],
-                [-1, 0], [1, 0],
-                [-1, 1], [0, 1], [1, 1]
-              ];
-              let greenNeighborCount = 0;
-              let totalNeighbors = 0;
-              for (const [dx, dz] of neighbors) {
-                const nx = x + dx;
-                const nz = z + dz;
-                if (nx >= 0 && nx < chunkResolution && nz >= 0 && nz < chunkResolution) {
-                  totalNeighbors++;
-                  const nColorIdx = (nz * vertexCountPerRow + nx) * 3;
-                  const nr = result.colors[nColorIdx];
-                  const ng = result.colors[nColorIdx + 1];
-                  const nb = result.colors[nColorIdx + 2];
-                  if (ng > nr && ng > nb) {
-                    greenNeighborCount++;
-                  }
-                }
-              }
-              densityMap[z * chunkResolution + x] = (isGreenDominant && greenNeighborCount >= totalNeighbors / 2) ? 1 : 0;
-            } else {
-              densityMap[z * chunkResolution + x] = 0;
-            }
-          }
-        }
-        // Generate grass positions
-        const grassData = [];
-        let placed = 0;
-        for (let i = 0; i < grassPerChunk * 2 && placed < grassPerChunk; i++) {
-          const x = Math.random() * chunkResolution;
-          const z = Math.random() * chunkResolution;
-          const xIdx = Math.floor(x);
-          const zIdx = Math.floor(z);
-       //   if (densityMap[zIdx * chunkSize + xIdx] > 0) {
-            const fx = x - xIdx;
-            const fz = z - zIdx;
-
-            const height = interpolateHeight(result.positions, xIdx, zIdx, fx, fz, vertexCountPerRow);
-            const worldX = x * step - chunkSize / 2;
-            const worldZ = z * step - chunkSize / 2;
-            const rotationY = Math.random() * Math.PI * 2;
-            const scale = 0.7 + Math.random() * 0.5;
-
-            grassData.push({
-              position: { x: worldX, y: height, z: worldZ },
-              rotation: rotationY,
-              scale: scale
-            });
-            placed++;
-       //   }
-        }
-
-        // Add grass data to result
-        result.grassData = grassData;
-
+        const result = terrainGenerator.generateChunk(cx, cz, chunkSize, chunkResolution);     
         self.postMessage(result);
       };
     `;

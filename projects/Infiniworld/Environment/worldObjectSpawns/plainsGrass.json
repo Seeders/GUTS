@@ -1,0 +1,10 @@
+{
+  "title": "Plains Grass",
+  "density": 1,
+  "maxSlope": 1,
+  "bladeWidth": 4,
+  "bladeHeight": 16,
+  "shader": "grass",
+  "tipColor": "#a3d39c",
+  "baseColor": "#5a8a4f"
+}

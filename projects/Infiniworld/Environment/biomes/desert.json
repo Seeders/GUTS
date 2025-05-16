@@ -5,7 +5,8 @@
   "detailNoiseSetting": "desertDetail",
   "worldObjectSpawns": [
     "desertRocks",
-    "desertTrees"
+    "desertTrees",
+    "desertGrass"
   ],
   "range": [
     0.7,

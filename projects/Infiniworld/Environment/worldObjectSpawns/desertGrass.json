@@ -1,0 +1,10 @@
+{
+  "title": "Desert Grass",
+  "density": 0.1,
+  "maxSlope": 1,
+  "bladeWidth": 2,
+  "bladeHeight": 4,
+  "shader": "grass",
+  "tipColor": "#d9b38c",
+  "baseColor": "#8b5e3c"
+}
