@@ -12,5 +12,7 @@
   "range": [
     0.5,
     0.8
-  ]
+  ],
+  "groundRestitution": 0,
+  "groundFriction": 0.2
 }

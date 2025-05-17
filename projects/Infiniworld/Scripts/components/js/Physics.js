@@ -280,7 +280,6 @@ class Physics extends engine.Component {
                     this.simulation.removeRigidBody(rigidBody);
                 }
             });
-            console.log(`Removed ${c} colliders for chunk ${chunkId}`);
             this.rigidbodies.delete(chunkId);
         }
     }
@@ -334,14 +333,15 @@ class Physics extends engine.Component {
                     cz * this.game.terrain.chunkSize
                 );
         const rigidBody = this.simulation.createRigidBody(rigidBodyDesc);
-
         // Create heightfield collider
        // const heightfield = new Float32Array(heights);
         // const colliderDesc = r.ColliderDesc.heightfield(nx - 1, ny - 1, heightfield, scale)
         //     .setSensor(false);
         const colliderDesc = r.ColliderDesc.trimesh(chunkData.geometry.positions, chunkData.geometry.indices)    
             .setCollisionGroups(0x00010004) // Belongs to group 0x0001, interacts with group 0x0004 (dynamic)
-            .setSolverGroups(0x00010004); // Same for solver groups;
+            .setSolverGroups(0x00010004)
+            .setRestitution(chunkData.restitution)
+            .setFriction(chunkData.friction); // Same for solver groups;
         const collider = this.simulation.createCollider(colliderDesc, rigidBody);    
         // Store collider with a unique ID
       //  this.createHeightmapMesh(cx, cz, chunkData);
@@ -377,7 +377,6 @@ class Physics extends engine.Component {
 
         // // Rotate plane to lie flat (x, z plane), as PlaneGeometry is initially in x, y plane
         // mesh.rotation.x = -Math.PI / 2;
-console.log(cx, this.game.terrain.chunkSize);
         // Add to scene
         this.game.scene.add(mesh);
 

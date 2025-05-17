@@ -113,7 +113,8 @@ class InfiniWorld extends engine.Component {
               detail: detailNoiseData
             },
             worldObjects: worldObjectSpawns,
-            range: biomeObjData.range
+            range: biomeObjData.range,
+            groundRestitution: biomeObjData.groundRestitution
           }
 
           if(biomeName == "mountain"){     
@@ -310,7 +311,7 @@ class InfiniWorld extends engine.Component {
   }
 
   handleWorkerMessage(e) {      
-    const { cx, cz, positions, indices, colors, normals, vegetation, grassData } = e.data;
+    const { cx, cz, positions, indices, colors, normals, vegetation, grassData, restitution, friction } = e.data;
     const chunkKey = `${cx},${cz}`;
     const chunkData = this.pendingChunks.get(chunkKey);
     if (!chunkData) return;
@@ -650,7 +651,8 @@ class InfiniWorld extends engine.Component {
 
         // Force shadow map update to avoid shadow artifacts at boundaries
         this.renderer.shadowMap.needsUpdate = true;
-
+        chunkData.restitution = restitution;
+        chunkData.friction = friction;
         // Mark chunk as ready
         chunkData.isGenerating = false;
         this.game.gameEntity?.getComponent('game').physics.addChunkCollider(chunkData);
