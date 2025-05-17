@@ -1,18 +1,22 @@
 class PlayerController extends engine.Component {
     init({
-        walkSpeed = 50,
-        runSpeed = 100,
-        jumpForce = 180,
-        gravity = 980,
-        mouseSensitivity = 0.02,
-        characterHeight = 1.8,
-        cameraHeight = 20,
-        stepHeight = 0.3,
+        walkSpeed = 100, // Adjusted for Rapier (meters/second)
+        runSpeed = 200,
+        jumpForce = 500, // Adjusted for Rapier (meters/second)
+        gravity = 981, // Standard gravity (m/s²)
+        mouseSensitivity = 0.002,
+        characterHeight = 18,
+        characterRadius = 3,
+        cameraHeight = 16,
         cameraSmoothing = 0.2
     }) {
-        this.world = this.game.gameEntity.getComponent("InfiniWorld");
+        let gameComponent = this.game.gameEntity.getComponent('game');
+        this.world = gameComponent.world;
+        this.physics = gameComponent.physics;
+        this.physics.registerPlayer(this.setupPhysics.bind(this));
         this.scene = this.world.scene;
         this.camera = this.game.camera;
+
         // Movement parameters
         this.walkSpeed = walkSpeed;
         this.runSpeed = runSpeed;
@@ -20,62 +24,37 @@ class PlayerController extends engine.Component {
         this.gravity = gravity;
         this.mouseSensitivity = mouseSensitivity;
         this.cameraSmoothing = cameraSmoothing;
-        
+
         // Character dimensions
         this.characterHeight = characterHeight;
+        this.characterRadius = characterRadius;
         this.cameraHeight = cameraHeight;
-        this.stepHeight = stepHeight;
-        
-        // Initialize character position and rotation
-        this.parent.transform.position.y = 50; // Start above ground level to let gravity place the character
 
-        this.controls = { isLocked: false };
 
-        // Add event listeners
-        document.addEventListener('click', () => {
-            if (!this.controls.isLocked) {
-                this.world.renderer.domElement.requestPointerLock();
-            }
-        });
-        
-        document.addEventListener('pointerlockchange', () => {
-            this.controls.isLocked = document.pointerLockElement === this.world.renderer.domElement;
-        });
-
-        // Movement state
-        this.velocity = new THREE.Vector3();
+        // Initialize movement state
+        this.velocity = new THREE.Vector3(); // For tracking vertical velocity (e.g., jumping, gravity)
         this.isGrounded = false;
-        this.isJumping = false;
-        this.isRunning = false;
         this.jumpRequested = false;
-        this.canJump = true;
-        this.collisions = {
-            down: false,
-            forward: false,
-            backward: false,
-            left: false,
-            right: false
-        };
-        
+        this.isRunning = false;
+
         // Camera properties
-        this.isFirstPerson = false;
+        this.isFirstPerson = false; // Default to first-person
         this.thirdPersonDistance = 50;
         this.thirdPersonHeight = 25;
         this.cameraTargetPosition = new THREE.Vector3();
         this.cameraLookAt = new THREE.Vector3();
         this.cameraPitch = 0;
         this.cameraYaw = 0;
-        
+
         // Local axes
         this.forward = new THREE.Vector3(0, 0, 1);
         this.up = new THREE.Vector3(0, 1, 0);
         this.right = new THREE.Vector3(1, 0, 0);
-        
+
         // Movement inputs
         this.moveForward = 0;
         this.moveRight = 0;
-        this.moveUp = 0;
-        
+
         // Input state
         this.keys = {
             KeyW: false,
@@ -85,7 +64,18 @@ class PlayerController extends engine.Component {
             ShiftLeft: false,
             Space: false
         };
-        
+
+        // Pointer lock controls
+        this.controls = { isLocked: false };
+        document.addEventListener('click', () => {
+            if (!this.controls.isLocked) {
+                this.world.renderer.domElement.requestPointerLock();
+            }
+        });
+        document.addEventListener('pointerlockchange', () => {
+            this.controls.isLocked = document.pointerLockElement === this.world.renderer.domElement;
+        });
+
         // Bind event handlers
         this.onKeyDown = this.onKeyDown.bind(this);
         this.onKeyUp = this.onKeyUp.bind(this);
@@ -93,34 +83,87 @@ class PlayerController extends engine.Component {
         document.addEventListener('keydown', this.onKeyDown);
         document.addEventListener('keyup', this.onKeyUp);
         document.addEventListener('mousemove', this.onMouseMove);
-        
+
         // Debug helpers
         this.debug = {
             showRaycasts: false,
             raycastHelpers: []
         };
-        
-        this.jumpTimer = 0;
-        this.jumpDelay = 1/10;
-        // Initialize camera
+
+        // Sync initial camera position
         this.updateCameraPosition();
     }
-    
+
+    setupPhysics(simulation) {
+        
+        // Initialize Rapier physics
+        this.rapierWorld = simulation; // Assume InfiniWorld initializes a Rapier World
+        this.characterController = this.rapierWorld.createCharacterController(0.01); // Offset of 0.01m
+        this.setupCharacterController();
+
+        // Create player rigid-body and collider
+        this.setupPlayerBody();
+    }
+
+    setupCharacterController() {
+        // Configure Rapier character controller
+        this.characterController.enableAutostep(0.3, 0.2, true); // Auto-step for stairs/obstacles
+        this.characterController.enableSnapToGround(0.5); // Stick to ground when going downhill
+        this.characterController.setMaxSlopeClimbAngle(45 * Math.PI / 180); // Max 45° climb
+        this.characterController.setMinSlopeSlideAngle(30 * Math.PI / 180); // Slide on steep slopes
+        this.characterController.setApplyImpulsesToDynamicBodies(true); // Push dynamic objects
+        this.characterController.setUp({ x: 0, y: 1, z: 0 }); // Up vector is +Y
+    }
+
+    setupPlayerBody() {
+        // Create a kinematic position-based rigid-body
+        let rigidBodyDesc = RAPIER.RigidBodyDesc.kinematicPositionBased()
+            .setTranslation(0, 50, 0); // Start above ground
+        this.rigidBody = this.rapierWorld.createRigidBody(rigidBodyDesc);
+
+        // Create a capsule collider for the player
+        let colliderDesc = RAPIER.ColliderDesc.capsule(
+            this.characterHeight / 2 - this.characterRadius, // Half-height (excluding caps)
+            this.characterRadius
+        )
+            .setTranslation(0, this.characterHeight / 2, 0) // Center capsule vertically
+            .setCollisionGroups(0x0001) // Optional: set collision groups
+            .setSolverGroups(0x0001); // Optional: set solver groups
+        this.collider = this.rapierWorld.createCollider(colliderDesc, this.rigidBody);
+
+        // Store collision radius for camera calculations
+        this.parent.collisionRadius = this.characterRadius;
+
+        // Sync Three.js transform with Rapier
+        this.syncTransformToRapier();
+    }
+
+    syncTransformToRapier() {
+        // Update Rapier rigid-body position from Three.js transform
+        const pos = this.parent.transform.position;
+        this.rigidBody.setNextKinematicTranslation({ x: pos.x, y: pos.y, z: pos.z });
+    }
+
+    syncRapierToTransform() {
+        // Update Three.js transform from Rapier rigid-body position
+        const pos = this.rigidBody.translation();
+        const smoothingFactor = 0.5;
+        this.parent.transform.position.lerp(
+            new THREE.Vector3(pos.x, pos.y, pos.z),
+            Math.min(1, this.game.deltaTime * 60 * smoothingFactor)
+        );
+    }
+
     onKeyDown(event) {
         if (event.code in this.keys) {
             this.keys[event.code] = true;
-            
-            // Set jump request only when first pressed (not held)
-            if (event.code === 'Space' && !event.repeat && this.isGrounded && this.canJump) {
+            if (event.code === 'Space' && !event.repeat && this.isGrounded) {
                 this.jumpRequested = true;
                 this.parent.getComponent("modelRenderer").jump();
             }
         }
-        
-        // Toggle camera view
         if (event.code === 'KeyV') {
             this.isFirstPerson = !this.isFirstPerson;
-            // When switching to third person, position the camera smoothly
             if (!this.isFirstPerson) {
                 const offset = new THREE.Vector3(0, this.thirdPersonHeight, this.thirdPersonDistance)
                     .applyQuaternion(this.parent.transform.quaternion);
@@ -128,11 +171,8 @@ class PlayerController extends engine.Component {
                 this.cameraLookAt.copy(this.parent.transform.position);
             }
         }
-        
-        // Toggle debug visualization
         if (event.code === 'KeyB') {
             this.debug.showRaycasts = !this.debug.showRaycasts;
-            // Clear existing helpers when toggled off
             if (!this.debug.showRaycasts) {
                 this.debug.raycastHelpers.forEach(helper => {
                     if (helper && this.scene.children.includes(helper)) {
@@ -143,278 +183,141 @@ class PlayerController extends engine.Component {
             }
         }
     }
-    
+
     onKeyUp(event) {
         if (event.code in this.keys) {
             this.keys[event.code] = false;
-            
-            // Reset canJump when space is released
-            if (event.code === 'Space') {
-                this.canJump = true;
-            }
         }
     }
-    
+
     onMouseMove(event) {
         if (this.controls.isLocked) {
-            // Adjust sensitivity to a more reasonable value
-            const sensitivity = 0.002;
-            
-            // Update rotation angles based on mouse movement
-            this.cameraYaw -= event.movementX * sensitivity;
-            this.cameraPitch += event.movementY * sensitivity;
-            
-            // Clamp pitch to prevent camera flipping
+            this.cameraYaw -= event.movementX * this.mouseSensitivity;
+            this.cameraPitch += event.movementY * this.mouseSensitivity;
             this.cameraPitch = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, this.cameraPitch));
-            
-            // Set parent rotation from yaw (character rotates horizontally with camera)
             this.parent.transform.quaternion.setFromEuler(new THREE.Euler(0, this.cameraYaw, 0));
         }
     }
-    
+
     updateAxes() {
-        // Update local coordinate axes
         const rotation = new THREE.Euler(0, this.cameraYaw, 0, 'YXZ');
         const quaternion = new THREE.Quaternion().setFromEuler(rotation);
-        
         this.forward.set(0, 0, 1).applyQuaternion(quaternion).normalize();
-        this.forward.y = 0; // Project onto XZ plane for movement
+        this.forward.y = 0;
         this.forward.normalize();
-        
         this.right.set(-1, 0, 0).applyQuaternion(quaternion).normalize();
-        this.right.y = 0; // Project onto XZ plane for movement
+        this.right.y = 0;
         this.right.normalize();
-        
         this.up.set(0, 1, 0);
     }
-    
+
     updateCameraPosition() {
         const dt = Math.min(this.game.deltaTime, 0.033);
         const smoothingAlpha = this.cameraSmoothing * dt * 60;
-        
-        // Create consistent rotation quaternions
+
         const pitchQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), this.cameraPitch);
         const yawQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), this.cameraYaw);
         const combinedQuat = new THREE.Quaternion().multiplyQuaternions(yawQuat, pitchQuat);
-        
+
         if (this.isFirstPerson) {
-            // Position camera at character's eye level
-            const eyePosition = this.parent.transform.position.clone().add(new THREE.Vector3(0, this.cameraHeight - 10, 0));
-            
-            // Apply forward offset along character's forward direction
-            const forwardDir = new THREE.Vector3(0, 0, 1).applyQuaternion(combinedQuat); // Character's forward
-            const forwardOffset = 5; // Adjust this value to move camera in front of head
+            const eyePosition = this.parent.transform.position.clone().add(new THREE.Vector3(0, this.cameraHeight, 0));
+            const forwardDir = new THREE.Vector3(0, 0, 1).applyQuaternion(combinedQuat);
+            const forwardOffset = 0.2; // Small offset to avoid clipping
             eyePosition.add(forwardDir.multiplyScalar(forwardOffset));
-            
             this.camera.position.copy(eyePosition);
-            
-            // Apply camera rotation with 180-degree yaw offset and inverted pitch
-            const yawOffsetQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI); // 180 degrees
-            const invertedPitchQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -this.cameraPitch); // Invert pitch
+            const yawOffsetQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI);
+            const invertedPitchQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -this.cameraPitch);
             const finalQuat = new THREE.Quaternion().multiplyQuaternions(yawQuat, yawOffsetQuat).multiply(invertedPitchQuat);
             this.camera.quaternion.copy(finalQuat);
         } else {
-            // Third person: camera behind character
             const forwardDir = new THREE.Vector3(0, 0, 1).applyQuaternion(combinedQuat);
-            const upDir = new THREE.Vector3(0, 1, 0);
-            
-            // Calculate camera position behind the character
             const offsetDistance = this.thirdPersonDistance;
             const offsetHeight = this.thirdPersonHeight;
             const targetPosition = this.parent.transform.position.clone()
                 .add(new THREE.Vector3(0, offsetHeight, 0))
                 .sub(forwardDir.clone().multiplyScalar(offsetDistance));
-                
-            // Check for obstacles between character and camera
-            const raycaster = new THREE.Raycaster();
-            raycaster.set(
-                this.parent.transform.position.clone().add(new THREE.Vector3(0, this.cameraHeight, 0)),
-                forwardDir.clone().negate().normalize(),
-                0,
-                offsetDistance + this.parent.collisionRadius
-            );
-            
-            // Smoothly move camera to target position
             this.camera.position.lerp(targetPosition, smoothingAlpha);
-            
-            // Look at character's head position
             const lookAtPos = this.parent.transform.position.clone().add(new THREE.Vector3(0, this.cameraHeight, 0));
             this.cameraLookAt.lerp(lookAtPos, smoothingAlpha);
             this.camera.lookAt(this.cameraLookAt);
         }
     }
-    
-    checkGrounded() {
-        // Get height from terrain
-        const groundHeight = this.world.getTerrainHeight(this.parent.transform.position, true);
-        this.parent.transform.groundHeight = groundHeight;
-        const characterBottom = this.parent.transform.position.y;
-        const distanceToGround = characterBottom - groundHeight;
-        
-        // Check if we're on or near the ground
-        if (distanceToGround <= 1) {
-            this.isGrounded = true;
-            this.isJumping = false;
-            // Snap to ground
-            this.parent.transform.position.y = groundHeight + 0.01;
-            return true;
-        } 
-        this.isGrounded = false;
-        return false;
-    }
-    
-    handleStepClimbing() {
-        if (!this.isGrounded) return;
-        
-        // Calculate move direction in world space
-        const moveDir = new THREE.Vector3();
-        if (this.moveForward !== 0) moveDir.add(this.forward.clone().multiplyScalar(this.moveForward));
-        if (this.moveRight !== 0) moveDir.add(this.right.clone().multiplyScalar(this.moveRight));
-        
-        if (moveDir.lengthSq() === 0) return; // Not moving
-        moveDir.normalize();
-        
-        // Cast ray forward at step height to detect steps
-        const origin = this.parent.transform.position.clone().add(new THREE.Vector3(0, this.stepHeight, 0));
-        const maxStepDistance = this.parent.collisionRadius + 0.1;
-        
-        if (this.debug.showRaycasts) {
-            const arrowHelper = new THREE.ArrowHelper(
-                moveDir,
-                origin,
-                maxStepDistance,
-                0x0000ff,
-                0.2,
-                0.1
-            );
-            this.scene.add(arrowHelper);
-            this.debug.raycastHelpers.push(arrowHelper);
-        }
-        
-        // Check terrain height slightly ahead in movement direction
-        const stepCheckDistance = this.parent.collisionRadius + 0.2;
-        const checkPoint = this.parent.transform.position.clone().add(
-            moveDir.clone().multiplyScalar(stepCheckDistance)
-        );
-        
-        const forwardHeight = this.world.getTerrainHeight(checkPoint);
-        const heightDifference = forwardHeight - this.parent.transform.position.y;
-        
-        // If there's a small step up ahead, climb it
-        if (heightDifference > 0 && heightDifference <= this.stepHeight) {
-            this.parent.transform.position.y = forwardHeight;
-        }
-    }
-    
+
     update() {
         if (!this.controls.isLocked) return;
         const dt = Math.min(this.game.deltaTime, 0.1);
-        
-        // Check if we're on the ground
-        this.checkGrounded();
-        
-        // Update local axes for movement direction
+
+        // Update local axes
         this.updateAxes();
-        
+
         // Process inputs
         this.moveForward = 0;
         this.moveRight = 0;
-        
         if (this.keys.KeyW) this.moveForward += 1;
         if (this.keys.KeyS) this.moveForward -= 1;
         if (this.keys.KeyA) this.moveRight -= 1;
         if (this.keys.KeyD) this.moveRight += 1;
-        
-        // Check if running
         this.isRunning = this.keys.ShiftLeft;
-        
+
         this.parent.getComponent("modelRenderer").isRunning = this.isRunning;
-        
-        // Calculate velocity from input
+
+        // Compute desired movement
         const speed = this.isRunning ? this.runSpeed : this.walkSpeed;
-        if (this.isGrounded && this.jumpRequested) {
-            this.jumpTimer += this.game.deltaTime;
-        }
-        // Handle jumping - only jump if explicitly requested and on ground
-        if (this.isGrounded && this.jumpRequested && this.jumpTimer > this.jumpDelay) {
+        const moveDir = new THREE.Vector3();
+        if (this.moveForward !== 0) moveDir.add(this.forward.clone().multiplyScalar(this.moveForward));
+        if (this.moveRight !== 0) moveDir.add(this.right.clone().multiplyScalar(this.moveRight));
+        moveDir.normalize();
+
+        // Apply gravity and jumping
+        this.velocity.y -= this.gravity * dt;
+        if (this.jumpRequested && this.isGrounded) {
             this.velocity.y = this.jumpForce;
+            this.jumpRequested = false;
             this.isGrounded = false;
-            this.isJumping = true;
-            this.jumpRequested = false; // Reset jump request
-            this.canJump = false; // Prevent repeated jumps until key is released
-            this.jumpTimer = 0;
         }
-        
+
+        // Compute desired translation
+        const desiredTranslation = {
+            x: moveDir.x * speed * dt,
+            y: this.velocity.y * dt,
+            z: moveDir.z * speed * dt
+        };
+
+        // Use Rapier character controller to compute corrected movement
+        this.characterController.computeColliderMovement(this.collider, desiredTranslation);
+
+        // Check if grounded
+        this.isGrounded = this.characterController.computedGrounded();
+
+        // Apply corrected movement
+        const correctedMovement = this.characterController.computedMovement();
+        const currentPos = this.rigidBody.translation();
+        const newPos = {
+            x: currentPos.x + correctedMovement.x,
+            y: currentPos.y + correctedMovement.y,
+            z: currentPos.z + correctedMovement.z
+        };
+        this.rigidBody.setNextKinematicTranslation(newPos);
+
+        // Sync Three.js transform
+        this.syncRapierToTransform();
+
+        // Handle collision events (e.g., for sound effects or pushing objects)
+        for (let i = 0; i < this.characterController.numComputedCollisions(); i++) {
+            const collision = this.characterController.computedCollision(i);
+            // Example: Log collision or trigger effects
+            console.log('Collision with collider handle:', collision.handle);
+        }
+
+        // Reset vertical velocity if grounded
         if (this.isGrounded) {
-            // On ground, set vertical velocity to zero
             this.velocity.y = 0;
-            
-            // Check for step climbing
-            this.handleStepClimbing();
-            
-            // Apply movement based on inputs
-            const moveDir = new THREE.Vector3();
-            if (this.moveForward !== 0) moveDir.add(this.forward.clone().multiplyScalar(this.moveForward));
-            if (this.moveRight !== 0) moveDir.add(this.right.clone().multiplyScalar(this.moveRight));
-            
-            if (moveDir.lengthSq() > 0) {
-                moveDir.normalize();
-                this.velocity.x = moveDir.x * speed;
-                this.velocity.z = moveDir.z * speed;
-            } else {
-                // Apply friction when not actively moving
-                this.velocity.x *= 0.8;
-                this.velocity.z *= 0.8;
-                
-                // Prevent tiny sliding
-                if (Math.abs(this.velocity.x) < 0.1) this.velocity.x = 0;
-                if (Math.abs(this.velocity.z) < 0.1) this.velocity.z = 0;
-            }
-        } else {
-            // In air, apply gravity
-            this.velocity.y -= this.gravity * dt * 0.5;
-            
-            // Reduced air control
-            const airControl = 0.3;
-            const moveDir = new THREE.Vector3();
-            if (this.moveForward !== 0) moveDir.add(this.forward.clone().multiplyScalar(this.moveForward));
-            if (this.moveRight !== 0) moveDir.add(this.right.clone().multiplyScalar(this.moveRight));
-            
-            if (moveDir.lengthSq() > 0) {
-                moveDir.normalize();
-                this.velocity.x += moveDir.x * speed * airControl * dt;
-                this.velocity.z += moveDir.z * speed * airControl * dt;
-                
-                // Cap horizontal air velocity
-                const horizontalVelocity = new THREE.Vector2(this.velocity.x, this.velocity.z);
-                const maxAirSpeed = speed * 0.8;
-                if (horizontalVelocity.length() > maxAirSpeed) {
-                    horizontalVelocity.normalize().multiplyScalar(maxAirSpeed);
-                    this.velocity.x = horizontalVelocity.x;
-                    this.velocity.z = horizontalVelocity.y;
-                }
-            }
         }
-        
-        // Apply velocity to position
-        const movement = this.velocity.clone().multiplyScalar(dt);
-        this.applyMovementWithCollisions(movement, dt);
-        
-        // Check terrain collision and adjust height
-        if (!this.isGrounded) {
-            const terrainHeight = this.parent.transform.groundHeight;
-            if (this.parent.transform.position.y < terrainHeight) {
-                this.parent.transform.position.y = terrainHeight;
-                this.isGrounded = true;
-                this.isJumping = false;
-                this.velocity.y = 0;
-            }
-        }
-        
+
         // Update camera
         this.updateCameraPosition();
-        
-        // Clean up debug visuals after each frame
+
+        // Clean up debug visuals
         if (this.debug.showRaycasts) {
             this.debug.raycastHelpers.forEach(helper => {
                 if (helper && this.scene.children.includes(helper)) {
@@ -425,223 +328,16 @@ class PlayerController extends engine.Component {
         }
     }
 
-    // Helper function to get cylinder properties from an AABB (for static objects)
-    getCylinderFromAABB(aabb) {
-        const center = new THREE.Vector3(
-            (aabb.min.x + aabb.max.x) / 2,
-            (aabb.min.y + aabb.max.y) / 2, // Y-center, used for vertical checks
-            (aabb.min.z + aabb.max.z) / 2
-        );
-        // Use half the minimum width of the AABB in the XZ plane as the radius
-        const radius = Math.min(
-            (aabb.max.x - aabb.min.x) / 2,
-            (aabb.max.z - aabb.min.z) / 2
-        );
-        return { center, radius, minY: aabb.min.y, maxY: aabb.max.y };
-    }
-
-    // Always return player as a cylinder
-    getAABB(position = this.parent.transform.position) {
-        return {
-            center: position.clone(),
-            radius: this.parent.collisionRadius,
-            minY: position.y,
-            maxY: position.y + this.characterHeight
-        };
-    }
-
-    applyMovementWithCollisions(movement, dt) {
-        const currentPosition = this.parent.transform.position.clone();
-        let remainingMovement = movement.clone();
-        const maxSteps = 3; // Limit steps to prevent infinite loops
-        let stepCount = 0;
-
-        while (remainingMovement.length() > 0.001 && stepCount < maxSteps) {
-            stepCount++;
-
-            // Calculate new position for this step
-            const stepMovement = remainingMovement.clone().multiplyScalar(1 / (maxSteps - stepCount + 1));
-            const newPosition = this.parent.transform.position.clone().add(stepMovement);
-            const playerCylinder = this.getAABB(newPosition);
-
-            // Check for tree collisions (treating trees as cylinders)
-            const collisions = this.world.checkStaticObjectCollisions({
-                min: {
-                    x: newPosition.x - this.parent.collisionRadius,
-                    y: newPosition.y,
-                    z: newPosition.z - this.parent.collisionRadius
-                },
-                max: {
-                    x: newPosition.x + this.parent.collisionRadius,
-                    y: newPosition.y + this.characterHeight,
-                    z: newPosition.z + this.parent.collisionRadius
-                }
-            }); // Pass AABB to world for compatibility
-            let cylinderCollisions = [];
-
-            // Convert AABB collisions to cylinder collisions
-            for (const treeAABB of collisions) {
-                const treeCylinder = this.getCylinderFromAABB(treeAABB);
-                const distanceXZ = new THREE.Vector2(
-                    playerCylinder.center.x - treeCylinder.center.x,
-                    playerCylinder.center.z - treeCylinder.center.z
-                ).length();
-                const combinedRadius = playerCylinder.radius + treeCylinder.radius;
-
-                // Check if cylinders overlap in XZ plane and vertically
-                if (
-                    distanceXZ < combinedRadius &&
-                    playerCylinder.minY < treeCylinder.maxY &&
-                    playerCylinder.maxY > treeCylinder.minY
-                ) {
-                    cylinderCollisions.push({ treeCylinder, treeAABB });
-                }
-            }
-
-            if (cylinderCollisions.length === 0) {
-                // No collisions, apply this step's movement
-                this.parent.transform.position.copy(newPosition);
-                remainingMovement.sub(stepMovement);
-                continue;
-            }
-
-            // Handle collisions
-            let resolved = false;
-
-            // Try moving in X direction
-            const tryX = this.parent.transform.position.clone().add(new THREE.Vector3(stepMovement.x, stepMovement.y, 0));
-            const tryXCylinder = this.getAABB(tryX);
-            let xCollisions = [];
-            for (const treeAABB of collisions) {
-                const treeCylinder = this.getCylinderFromAABB(treeAABB);
-                const distanceXZ = new THREE.Vector2(
-                    tryXCylinder.center.x - treeCylinder.center.x,
-                    tryXCylinder.center.z - treeCylinder.center.z
-                ).length();
-                if (
-                    distanceXZ < tryXCylinder.radius + treeCylinder.radius &&
-                    tryXCylinder.minY < treeCylinder.maxY &&
-                    tryXCylinder.maxY > treeCylinder.minY
-                ) {
-                    xCollisions.push(treeCylinder);
-                }
-            }
-
-            if (xCollisions.length === 0) {
-                this.parent.transform.position.copy(tryX);
-                this.velocity.z = 0; // Stop Z movement
-                remainingMovement.z = 0;
-                resolved = true;
-            } else {
-                // Try moving in Z direction
-                const tryZ = this.parent.transform.position.clone().add(new THREE.Vector3(0, stepMovement.y, stepMovement.z));
-                const tryZCylinder = this.getAABB(tryZ);
-                let zCollisions = [];
-                for (const treeAABB of collisions) {
-                    const treeCylinder = this.getCylinderFromAABB(treeAABB);
-                    const distanceXZ = new THREE.Vector2(
-                        tryZCylinder.center.x - treeCylinder.center.x,
-                        tryZCylinder.center.z - treeCylinder.center.z
-                    ).length();
-                    if (
-                        distanceXZ < tryZCylinder.radius + treeCylinder.radius &&
-                        tryZCylinder.minY < treeCylinder.maxY &&
-                        tryZCylinder.maxY > treeCylinder.minY
-                    ) {
-                        zCollisions.push(treeCylinder);
-                    }
-                }
-
-                if (zCollisions.length === 0) {
-                    this.parent.transform.position.copy(tryZ);
-                    this.velocity.x = 0; // Stop X movement
-                    remainingMovement.x = 0;
-                    resolved = true;
-                }
-            }
-
-            if (!resolved) {
-                // No valid movement in X or Z, stop horizontal movement
-                this.velocity.x = 0;
-                this.velocity.z = 0;
-                remainingMovement.x = 0;
-                remainingMovement.z = 0;
-
-                // Allow vertical movement (e.g., gravity or jumping)
-                this.parent.transform.position.y += stepMovement.y;
-                remainingMovement.y = 0;
-            }
-
-            // Push out if still colliding
-            const finalCylinder = this.getAABB(this.parent.transform.position);
-            cylinderCollisions = [];
-            for (const treeAABB of this.world.checkStaticObjectCollisions({
-                min: {
-                    x: this.parent.transform.position.x - this.parent.collisionRadius,
-                    y: this.parent.transform.position.y,
-                    z: this.parent.transform.position.z - this.parent.collisionRadius
-                },
-                max: {
-                    x: this.parent.transform.position.x + this.parent.collisionRadius,
-                    y: this.parent.transform.position.y + this.characterHeight,
-                    z: this.parent.transform.position.z + this.parent.collisionRadius
-                }
-            })) {
-                const treeCylinder = this.getCylinderFromAABB(treeAABB);
-                const distanceXZ = new THREE.Vector2(
-                    finalCylinder.center.x - treeCylinder.center.x,
-                    finalCylinder.center.z - treeCylinder.center.z
-                ).length();
-                if (
-                    distanceXZ < finalCylinder.radius + treeCylinder.radius &&
-                    finalCylinder.minY < treeCylinder.maxY &&
-                    finalCylinder.maxY > treeCylinder.minY
-                ) {
-                    cylinderCollisions.push({ treeCylinder, treeAABB });
-                }
-            }
-
-            if (cylinderCollisions.length > 0) {
-                for (const { treeCylinder } of cylinderCollisions) {
-                    const pushOut = this.calculatePushOut(finalCylinder, treeCylinder);
-                    this.parent.transform.position.add(pushOut);
-                    this.velocity.set(0, this.velocity.y, 0); // Stop horizontal velocity
-                }
-            }
-        }
-
-        // Return true if any movement was applied
-        return !this.parent.transform.position.equals(currentPosition);
-    }
-
-    calculatePushOut(playerCylinder, treeCylinder) {
-        const pushOut = new THREE.Vector3();
-        const delta = new THREE.Vector2(
-            playerCylinder.center.x - treeCylinder.center.x,
-            playerCylinder.center.z - treeCylinder.center.z
-        );
-        const distance = delta.length();
-        const combinedRadius = playerCylinder.radius + treeCylinder.radius;
-
-        if (distance < combinedRadius && distance > 0.001) {
-            // Calculate push-out distance
-            const overlap = combinedRadius - distance + 0.001; // Small epsilon to avoid re-collision
-            const pushDir = delta.normalize();
-            pushOut.set(pushDir.x * overlap, 0, pushDir.y * overlap);
-        } else if (distance <= 0.001) {
-            // Rare case: objects are at nearly the same position
-            pushOut.set(combinedRadius + 0.001, 0, 0); // Push out along X arbitrarily
-        }
-
-        return pushOut;
-    }
-
     onDestroy() {
-        if (this.controls) this.controls.dispose();
         document.removeEventListener('keydown', this.onKeyDown);
         document.removeEventListener('keyup', this.onKeyUp);
         document.removeEventListener('mousemove', this.onMouseMove);
-        
+
+        // Clean up Rapier objects
+        this.rapierWorld.removeCollider(this.collider);
+        this.rapierWorld.removeRigidBody(this.rigidBody);
+        this.rapierWorld.removeCharacterController(this.characterController);
+
         // Clean up debug helpers
         this.debug.raycastHelpers.forEach(helper => {
             if (helper && this.scene.children.includes(helper)) {

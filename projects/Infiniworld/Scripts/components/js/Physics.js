@@ -21,6 +21,9 @@ class Physics extends engine.Component {
         let gravity = new r.Vector3(0.0, -98.1, 0.0);
         this.simulation = new r.World(gravity);
         this.simulation.timestep = 1/60;
+        if(this.playerCallback){
+            this.playerCallback(this.simulation);
+        }
         this.preloaded.forEach((c) => {
             if (c.heights) {
                 this.createHeightmapCollider(c); // Handle heightmap colliders
@@ -39,6 +42,9 @@ class Physics extends engine.Component {
         // this.rigidbodies.get(chunkId).push({ type: 'heightmap', rigidBody, collider });
     }
 
+    registerPlayer(callback){
+        this.playerCallback = callback;
+    }
 
     removeStaticCollider(staticId) {
         if (!staticId) {

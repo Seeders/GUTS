@@ -12,6 +12,6 @@
     0,
     0.4
   ],
-  "groundRestitution": 0,
+  "groundRestitution": 0.5,
   "groundFriction": 0.7
 }
