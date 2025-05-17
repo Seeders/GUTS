@@ -2,7 +2,7 @@ class PlayerController extends engine.Component {
     init({
         walkSpeed = 100, // Adjusted for Rapier (meters/second)
         runSpeed = 200,
-        jumpForce = 500, // Adjusted for Rapier (meters/second)
+        jumpForce = 350, // Adjusted for Rapier (meters/second)
         gravity = 981, // Standard gravity (m/s²)
         mouseSensitivity = 0.002,
         characterHeight = 18,
@@ -159,7 +159,7 @@ class PlayerController extends engine.Component {
             this.keys[event.code] = true;
             if (event.code === 'Space' && !event.repeat && this.isGrounded) {
                 this.jumpRequested = true;
-                this.parent.getComponent("modelRenderer").jump();
+                this.parent.getComponent("modelRenderer").jump(500 / this.jumpForce);
             }
         }
         if (event.code === 'KeyV') {
@@ -247,18 +247,21 @@ class PlayerController extends engine.Component {
         if (!this.controls.isLocked) return;
         const dt = Math.min(this.game.deltaTime, 0.1);
 
-        // Update local axes
-        this.updateAxes();
+        // Check if grounded
+        this.isGrounded = this.characterController.computedGrounded();
 
         // Process inputs
-        this.moveForward = 0;
-        this.moveRight = 0;
-        if (this.keys.KeyW) this.moveForward += 1;
-        if (this.keys.KeyS) this.moveForward -= 1;
-        if (this.keys.KeyA) this.moveRight -= 1;
-        if (this.keys.KeyD) this.moveRight += 1;
-        this.isRunning = this.keys.ShiftLeft;
-
+        if(this.isGrounded){
+            // Update local axes
+            this.updateAxes();
+            this.moveForward = 0;
+            this.moveRight = 0;
+            if (this.keys.KeyW) this.moveForward += 1;
+            if (this.keys.KeyS) this.moveForward -= 1;
+            if (this.keys.KeyA) this.moveRight -= 1;
+            if (this.keys.KeyD) this.moveRight += 1;
+            this.isRunning = this.keys.ShiftLeft;
+        }
         this.parent.getComponent("modelRenderer").isRunning = this.isRunning;
 
         // Compute desired movement
@@ -286,8 +289,6 @@ class PlayerController extends engine.Component {
         // Use Rapier character controller to compute corrected movement
         this.characterController.computeColliderMovement(this.collider, desiredTranslation);
 
-        // Check if grounded
-        this.isGrounded = this.characterController.computedGrounded();
 
         // Apply corrected movement
         const correctedMovement = this.characterController.computedMovement();
