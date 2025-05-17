@@ -186,7 +186,6 @@ class TerrainGenerator {
         const positions = new Float32Array(vertexCount * 3);
         const colors = new Float32Array(vertexCount * 3);
         const normals = new Float32Array(vertexCount * 3);
-        const heights = new Float32Array(vertexCount);
         const biomeMap = new Array(vertexCount);
         
         // Use a more efficient data structure for vertex heights
@@ -213,8 +212,6 @@ class TerrainGenerator {
                 } else {
                     height = this.getHeight({x: wx, z: wz});
                 }
-
-                heights[idx] = height;
                 
                 positions[posIdx] = vx;
                 positions[posIdx + 1] = height;
@@ -263,9 +260,8 @@ class TerrainGenerator {
 
         // Normalize accumulated normals
         this._normalizeNormals(normalAccum, contributions, normals);
-
         // Calculate vertex colors and vegetation
-        const { vegetation, grassData } = this._processVegetationAndColors(
+        const { vegetation, grassData, restitution, friction } = this._processVegetationAndColors(
             biomeMap, colors, positions, nx, ny, chunkSize, chunkResolution
         );
 
@@ -276,14 +272,10 @@ class TerrainGenerator {
             indices: Array.from(indices),
             colors: Array.from(colors),
             normals: Array.from(normals),
+            restitution,
+            friction,
             vegetation,
-            grassData,
-            heightmap: {
-                heights: Array.from(heights),
-                nx,
-                ny,
-                scale: { x: chunkSize, y: 1, z: chunkSize }
-            }
+            grassData
         };
     }
 
@@ -396,7 +388,8 @@ class TerrainGenerator {
         const vegetation = new Map();
         let blendedGrass = null;
         let totalGrassWeight = 0;
-        
+        let restitution = 0;
+        let friction = 0;
         for (let i = 0; i < biomeMap.length; i++) {
             const { weights, position, slope } = biomeMap[i];
             const objectTypes = new Map();
@@ -411,9 +404,9 @@ class TerrainGenerator {
                 r += biome.groundColor.r * weight;
                 g += biome.groundColor.g * weight;
                 b += biome.groundColor.b * weight;
-                
                 if (weight === 0) continue;
-                
+                restitution += biome.groundRestitution * weight;
+                friction += biome.groundFriction * weight;
                 // Process biome objects
                 this._processWorldObjects(biome, weight, objectTypes, position, slope, vegetation);
                 
@@ -433,8 +426,7 @@ class TerrainGenerator {
         const grassData = totalGrassWeight > 0 ? 
             this._finalizeGrass(blendedGrass, totalGrassWeight, chunkSize, chunkResolution, positions, nx) : 
             null;
-        
-        return { vegetation: this._finalizeVegetation(vegetation), grassData };
+        return { vegetation: this._finalizeVegetation(vegetation), grassData, restitution: restitution / totalGrassWeight, friction: friction / totalGrassWeight };
     }
 
     // Process world objects from a biome
