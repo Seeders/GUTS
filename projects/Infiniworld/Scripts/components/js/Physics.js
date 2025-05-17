@@ -39,39 +39,7 @@ class Physics extends engine.Component {
         // this.rigidbodies.get(chunkId).push({ type: 'heightmap', rigidBody, collider });
     }
 
-    createStaticCollider(chunkId, worldObjectType, aabb) {
-        if (!aabb || !aabb.id) {
-            console.warn("Invalid AABB provided to createStaticCollider");
-            return null;
-        }
 
-        if (this.rigidbodies.has(aabb.id)) {
-            return;
-        }
-        
-        const r = this.RAPIER;
-        const halfWidth = (aabb.max.x - aabb.min.x) / 2;
-        const halfHeight = (aabb.max.y - aabb.min.y) / 2;
-        const halfDepth = (aabb.max.z - aabb.min.z) / 2;
-        
-        const centerX = (aabb.max.x + aabb.min.x) / 2;
-        const centerY = (aabb.max.y + aabb.min.y) / 2;
-        const centerZ = (aabb.max.z + aabb.min.z) / 2;
-        
-        // Create a static rigid body
-        const rigidBodyDesc = r.RigidBodyDesc.fixed()
-            .setTranslation(centerX, centerY, centerZ);
-        const rigidBody = this.simulation.createRigidBody(rigidBodyDesc);
-        
-        // Create a cuboid collider
-        const colliderDesc = r.ColliderDesc.capsule(halfHeight, halfWidth);
-        const collider = this.simulation.createCollider(colliderDesc, rigidBody);
-        
-        // Store reference to the static collider with a unique ID
-        this.rigidbodies.get(chunkId).push({ type: worldObjectType, rigidBody, collider });
-        this.staticColliderIds.add(aabb.id); // Mark this as a static collider
-
-    }
     removeStaticCollider(staticId) {
         if (!staticId) {
             return false;
@@ -268,31 +236,7 @@ class Physics extends engine.Component {
         }
         this.collidersToRemove = [];
     }
-    
-    handleGroundCollision(entity, data) {
-        if(entity.transform.physicsPosition.y - data.size + data.offset.y - entity.transform.velocity.y*this.game.deltaTime > entity.transform.groundHeight - data.size * 8){
-            return;
-        }
-        const rigidBody = data.rigidBody;
-        const r = this.RAPIER;
-        const reflection = this.game.gameEntity.getComponent('game').world.getReflectionAt(entity.transform.physicsPosition, entity.transform.velocity, data.restitution);
-        if(reflection){
-            rigidBody.setLinvel(reflection);
-            if(reflection.multiplyScalar){
-                rigidBody.setTranslation(
-                    {
-                        x: entity.transform.physicsPosition.x + reflection.x * this.game.deltaTime*5,
-                        y: entity.transform.groundHeight + reflection.y * this.game.deltaTime*10,
-                        z: entity.transform.physicsPosition.z + reflection.z * this.game.deltaTime*5
-                    }
-                );
-            }
-        }
-        data.reflected = 5; // Skip a few frames before checking for ground again            
-    
- 
-    }
-    
+        
     detectCollisions(data) {
 
         
@@ -340,7 +284,41 @@ class Physics extends engine.Component {
             this.rigidbodies.delete(chunkId);
         }
     }
+    createStaticCollider(chunkId, worldObjectType, aabb) {
+        if (!aabb || !aabb.id) {
+            console.warn("Invalid AABB provided to createStaticCollider");
+            return null;
+        }
 
+        if (this.rigidbodies.has(aabb.id)) {
+            return;
+        }
+        
+        const r = this.RAPIER;
+        const halfWidth = (aabb.max.x - aabb.min.x) / 2;
+        const halfHeight = (aabb.max.y - aabb.min.y) / 2;
+        const halfDepth = (aabb.max.z - aabb.min.z) / 2;
+        
+        const centerX = (aabb.max.x + aabb.min.x) / 2;
+        const centerY = (aabb.max.y + aabb.min.y) / 2;
+        const centerZ = (aabb.max.z + aabb.min.z) / 2;
+        
+        // Create a static rigid body
+        const rigidBodyDesc = r.RigidBodyDesc.fixed()
+            .setTranslation(centerX, centerY, centerZ);
+        const rigidBody = this.simulation.createRigidBody(rigidBodyDesc);
+        
+        // Create a cuboid collider
+        const colliderDesc = r.ColliderDesc.capsule(halfHeight, halfWidth)
+                .setCollisionGroups(0x00020004) // Belongs to group 0x0002, interacts with group 0x0004 (dynamic)
+                .setSolverGroups(0x00020004); // Same for solver groups
+        const collider = this.simulation.createCollider(colliderDesc, rigidBody);
+        
+        // Store reference to the static collider with a unique ID
+        this.rigidbodies.get(chunkId).push({ type: worldObjectType, rigidBody, collider });
+        this.staticColliderIds.add(aabb.id); // Mark this as a static collider
+
+    }
     createHeightmapCollider(chunkId, chunkData) {
         const r = this.RAPIER;
         const { cx, cz } = chunkData;
@@ -361,8 +339,10 @@ class Physics extends engine.Component {
        // const heightfield = new Float32Array(heights);
         // const colliderDesc = r.ColliderDesc.heightfield(nx - 1, ny - 1, heightfield, scale)
         //     .setSensor(false);
-        const colliderDesc = r.ColliderDesc.trimesh(chunkData.geometry.positions, chunkData.geometry.indices);
-        const collider = this.simulation.createCollider(colliderDesc, rigidBody);
+        const colliderDesc = r.ColliderDesc.trimesh(chunkData.geometry.positions, chunkData.geometry.indices)    
+            .setCollisionGroups(0x00010004) // Belongs to group 0x0001, interacts with group 0x0004 (dynamic)
+            .setSolverGroups(0x00010004); // Same for solver groups;
+        const collider = this.simulation.createCollider(colliderDesc, rigidBody);    
         // Store collider with a unique ID
       //  this.createHeightmapMesh(cx, cz, chunkData);
         this.rigidbodies.get(chunkId).push({ type: 'heightmap', rigidBody, collider });

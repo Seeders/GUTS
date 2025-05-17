@@ -12,27 +12,9 @@ class Transform extends engine.Component {
         this.quaternion = new THREE.Quaternion();
         this.quaternion.setFromAxisAngle( new THREE.Vector3( rotationX, rotationY, rotationZ ), Math.PI / 2 );        
         this.parent.transform = this;         
-        this.groundHeight = 0;
-    }
-    update() {
-        this.groundHeight = this.getGroundHeight();
-    }
 
-    getGroundHeight(position) {
-        const p = position ? position : this.position;
-        if(!this.world && this.game?.gameEntity){
-            this.world = this.game.gameEntity.getComponent("InfiniWorld");            
-        }
-        if(this.world){
-            return this.world.getTerrainHeight(p);
-        }
-        return 0;
     }
-
-    isGrounded(position) {
-        const p = position ? position : this.position;
-        return p.y <= this.groundHeight;
-    }
+  
 
     postUpdate() {
         
