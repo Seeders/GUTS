@@ -2,9 +2,9 @@
   "title": "Forest Grass",
   "density": 1,
   "maxSlope": 1,
-  "bladeWidth": 8,
-  "bladeHeight": 16,
+  "bladeWidth": 2,
+  "bladeHeight": 4,
   "shader": "grass",
-  "tipColor": "#d9b38c",
-  "baseColor": "#5a8a4f"
+  "tipColor": "#5a8a4f",
+  "baseColor": "#2f4a29"
 }

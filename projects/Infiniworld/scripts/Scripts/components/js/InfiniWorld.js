@@ -25,14 +25,23 @@ class InfiniWorld extends engine.Component {
       }
       this.renderer.shadowMap.enabled = true;
       this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    
+
       this.scene = this.game.scene || new window.THREE.Scene();
       this.scene.add(this.rootGroup);
       this.uniforms = new Map();
       this.cameraData = this.game.getCollections().cameras[this.world.camera];  
       // Camera setup
       this.camera = new THREE.PerspectiveCamera(this.cameraData.fov, width / height, this.cameraData.near, this.cameraData.far);
-     
+    	this.composer = new THREE_.EffectComposer( this.renderer );
+      this.pixelSize = 8;
+      const renderPixelatedPass = new THREE_.RenderPixelatedPass( this.pixelSize, this.scene, this.camera );
+      console.log(renderPixelatedPass);
+      window.renderPixelatedPass = renderPixelatedPass;
+      renderPixelatedPass.normalEdgeStrength = 0;
+      
+			this.composer.addPass( renderPixelatedPass );
+			const outputPass = new THREE_.OutputPass();
+			this.composer.addPass( outputPass );
       // Terrain configuration
       this.heightMap = this.game.getCollections().heightMaps[this.world.heightMap];
       this.chunkSize = this.heightMap.chunkSize;
@@ -763,9 +772,46 @@ class InfiniWorld extends engine.Component {
       value.time = { value: this.timer };
       value.cameraPosition = { value: { x: this.camera.position.x, y: this.camera.position.y, z: this.camera.position.z } };
   }
-  
+  	const rendererSize = this.renderer.getSize( new THREE.Vector2() );
+    const aspectRatio = rendererSize.x / rendererSize.y;
+  	this.pixelAlignFrustum( this.camera, aspectRatio, Math.floor( rendererSize.x / this.pixelSize ),
+					Math.floor( rendererSize.y / this.pixelSize ) );
+
     this.renderer.render(this.scene, this.camera);
+		this.composer.render();
   }
+  pixelAlignFrustum( camera, aspectRatio, pixelsPerScreenWidth, pixelsPerScreenHeight ) {
+
+			// 0. Get Pixel Grid Units
+			const worldScreenWidth = ( ( camera.right - camera.left ) / camera.zoom );
+			const worldScreenHeight = ( ( camera.top - camera.bottom ) / camera.zoom );
+			const pixelWidth = worldScreenWidth / pixelsPerScreenWidth;
+			const pixelHeight = worldScreenHeight / pixelsPerScreenHeight;
+
+			// 1. Project the current camera position along its local rotation bases
+			const camPos = new THREE.Vector3(); camera.getWorldPosition( camPos );
+			const camRot = new THREE.Quaternion(); camera.getWorldQuaternion( camRot );
+			const camRight = new THREE.Vector3( 1.0, 0.0, 0.0 ).applyQuaternion( camRot );
+			const camUp = new THREE.Vector3( 0.0, 1.0, 0.0 ).applyQuaternion( camRot );
+			const camPosRight = camPos.dot( camRight );
+			const camPosUp = camPos.dot( camUp );
+
+			// 2. Find how far along its position is along these bases in pixel units
+			const camPosRightPx = camPosRight / pixelWidth;
+			const camPosUpPx = camPosUp / pixelHeight;
+
+			// 3. Find the fractional pixel units and convert to world units
+			const fractX = camPosRightPx - Math.round( camPosRightPx );
+			const fractY = camPosUpPx - Math.round( camPosUpPx );
+
+			// 4. Add fractional world units to the left/right top/bottom to align with the pixel grid
+			camera.left = - aspectRatio - ( fractX * pixelWidth );
+			camera.right = aspectRatio - ( fractX * pixelWidth );
+			camera.top = 1.0 - ( fractY * pixelHeight );
+			camera.bottom = - 1.0 - ( fractY * pixelHeight );
+			camera.updateProjectionMatrix();
+
+		}
 
   onWindowResize() {
   
@@ -821,7 +867,7 @@ class InfiniWorld extends engine.Component {
         instancedMesh.castShadow = true;
         instancedMesh.receiveShadow = true;
         instancedMesh.material.transparent = false;
-        instancedMesh.material.alphaTest = 0.5; // Set alpha test for transparency
+        instancedMesh.material.alphaTest = 0.1; // Set alpha test for transparency
         instancedMesh.material.needsUpdate = true; // Force material update
         instancedMesh.material.side = THREE.DoubleSide; // Set side to double for better visibility
         this.rootGroup.add(instancedMesh);
@@ -1242,11 +1288,11 @@ if(!grassData) return;
     const lightDirection = new THREE.Vector3();
     lightDirection.subVectors(this.directionalLight.position, this.directionalLight.target.position);
     lightDirection.normalize();
-    uniforms.directionalLightColor = { value: new THREE.Color(this.lighting.directionalColor) };
-    uniforms.directionalLightIntensity = { value: this.lighting.directionalIntensity };
-    uniforms.directionalLightDirection = { value: lightDirection };
-    uniforms.ambientLightColor = { value: new THREE.Color(this.lighting.ambientColor) };
-    uniforms.ambientLightIntensity = { value: this.lighting.ambientIntensity };
+    // uniforms.directionalLightColor = { value: new THREE.Color(this.lighting.directionalColor) };
+    // uniforms.directionalLightIntensity = { value: this.lighting.directionalIntensity };
+    // uniforms.directionalLightDirection = { value: lightDirection };
+    // uniforms.ambientLightColor = { value: new THREE.Color(this.lighting.ambientColor) };
+    // uniforms.ambientLightIntensity = { value: this.lighting.ambientIntensity };
     uniforms.skyColor = { value: new THREE.Color(this.lighting.skyColor) };
     uniforms.groundColor = { value: new THREE.Color(this.lighting.groundColor) };
     uniforms.hemisphereIntensity = { value: this.lighting.hemisphereIntensity };
@@ -1255,6 +1301,7 @@ if(!grassData) return;
     uniforms.maxDistance = { value: 500.0 };
 
     const grassMaterial = new THREE.ShaderMaterial({
+      color: 0xffffff,
       vertexShader: grassShader.vertexScript,
       fragmentShader: grassShader.fragmentScript,
       uniforms: uniforms,

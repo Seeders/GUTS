@@ -38,9 +38,17 @@ class ThreeJsWorld extends engine.Component {
             this.scene.fog = new THREE.FogExp2(this.fogSettings.color, this.fogSettings.density);
         }
 
-        this.camera = new THREE.PerspectiveCamera(
-            this.cameraSettings.fov,
-            width / height,
+        // this.camera = new THREE.PerspectiveCamera(
+        //     this.cameraSettings.fov,
+        //     width / height,
+        //     this.cameraSettings.near,
+        //     this.cameraSettings.far
+        // );
+        this.camera = new THREE.OrthographicCamera(
+             width / - 2, 
+             width / 2, 
+             height / 2, 
+             height / - 2, 
             this.cameraSettings.near,
             this.cameraSettings.far
         );
@@ -114,6 +122,14 @@ class ThreeJsWorld extends engine.Component {
             this.lightingSettings.hemisphereIntensity
         );
         this.scene.add(this.hemisphereLight);
+
+        this.composer = new THREE_.EffectComposer( this.renderer );
+        this.pixelSize = 4;
+         const renderPixelatedPass = new THREE_.RenderPixelatedPass( this.pixelSize, this.scene, this.camera );
+        this.composer.addPass( renderPixelatedPass );
+        const outputPass = new THREE_.OutputPass();
+        this.composer.addPass( outputPass );
+
         this.tileMap = this.game.config.levels[this.game.state.level].tileMap;
         this.setupGround();
         this.generateLiquidSurfaceMesh(0);
@@ -392,7 +408,46 @@ class ThreeJsWorld extends engine.Component {
         for(const key in this.uniforms) {
             this.uniforms[key].time = { value: this.timer };            
         }
+        
+        const rendererSize = this.renderer.getSize( new THREE.Vector2() );
+        const aspectRatio = rendererSize.x / rendererSize.y;
+  	    this.pixelAlignFrustum( this.camera, aspectRatio, Math.floor( rendererSize.x / this.pixelSize ),
+					Math.floor( rendererSize.y / this.pixelSize ) );
+
         this.renderer.render(this.scene, this.camera);
+         this.composer.render();
+    }
+    pixelAlignFrustum( camera, aspectRatio, pixelsPerScreenWidth, pixelsPerScreenHeight ) {
+
+        // 0. Get Pixel Grid Units
+        const worldScreenWidth = ( ( camera.right - camera.left ) / camera.zoom );
+        const worldScreenHeight = ( ( camera.top - camera.bottom ) / camera.zoom );
+        const pixelWidth = worldScreenWidth / pixelsPerScreenWidth;
+        const pixelHeight = worldScreenHeight / pixelsPerScreenHeight;
+
+        // 1. Project the current camera position along its local rotation bases
+        const camPos = new THREE.Vector3(); camera.getWorldPosition( camPos );
+        const camRot = new THREE.Quaternion(); camera.getWorldQuaternion( camRot );
+        const camRight = new THREE.Vector3( 1.0, 0.0, 0.0 ).applyQuaternion( camRot );
+        const camUp = new THREE.Vector3( 0.0, 1.0, 0.0 ).applyQuaternion( camRot );
+        const camPosRight = camPos.dot( camRight );
+        const camPosUp = camPos.dot( camUp );
+
+        // 2. Find how far along its position is along these bases in pixel units
+        const camPosRightPx = camPosRight / pixelWidth;
+        const camPosUpPx = camPosUp / pixelHeight;
+
+        // 3. Find the fractional pixel units and convert to world units
+        const fractX = camPosRightPx - Math.round( camPosRightPx );
+        const fractY = camPosUpPx - Math.round( camPosUpPx );
+
+        // 4. Add fractional world units to the left/right top/bottom to align with the pixel grid
+        camera.left = - aspectRatio - ( fractX * pixelWidth );
+        camera.right = aspectRatio - ( fractX * pixelWidth );
+        camera.top = 1.0 - ( fractY * pixelHeight );
+        camera.bottom = - 1.0 - ( fractY * pixelHeight );
+        camera.updateProjectionMatrix();
+
     }
 
     addGrassToTerrain() {

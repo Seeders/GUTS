@@ -18,7 +18,10 @@
     "GameState",
     "ModelManager",
     "three.OrbitControls",
-    "GLTFLoader"
+    "GLTFLoader",
+    "three.EffectComposer",
+    "three.RenderPixelatedPass",
+    "three.OutputPass"
   ],
   "fileName": "game",
   "interface": "main",

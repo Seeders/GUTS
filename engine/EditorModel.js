@@ -74,31 +74,26 @@ class EditorModel {
         } catch (e) {
             console.warn('Error saving to localStorage:', e);
         }    
-        if( this.state.currentProject == "default_project" ){
+
+        if(location.hostname !== "localhost"){
             this.state.project = JSON.parse(localStorage.getItem(this.state.currentProject)); 
-            if(!this.state.project){
-                this.state.project = DEFAULT_PROJECT_CONFIG;            
-            }
         } else {
-            if(location.hostname !== "localhost"){
-                this.state.project = JSON.parse(localStorage.getItem(this.state.currentProject)); 
+            const response = await fetch('/load-config', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ projectName: this.state.currentProject }),
+            });
+
+            if (!response.ok) {                    
+                throw new Error(`HTTP error! status: ${response.status}`);
             } else {
-                const response = await fetch('/load-config', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ projectName: this.state.currentProject }),
-                });
-    
-                if (!response.ok) {                    
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                } else {
-                    const data = await response.json();  
-                    this.state.project = data.config;
-                }
+                const data = await response.json();  
+                this.state.project = data.config;
             }
         }
+    
 
     }
 

@@ -11,6 +11,9 @@
     "TerrainGenerator",
     "ModelManager",
     "SE_GizmoManager",
+    "three.EffectComposer",
+    "three.RenderPixelatedPass",
+    "three.OutputPass",
     "SceneEditor"
   ],
   "propertyName": "sceneData",
