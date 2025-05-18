@@ -40,7 +40,7 @@ const SUPPORTED_EXTENSIONS = ['.json', '.js', '.html', '.css']; // Add more if n
 app.post('/save-project', async (req, res) => {
     const project = JSON.parse(req.body.project);
     const projectName = req.body.projectName;
-    const buildFolder = path.join(PROJS_DIR, `${projectName}/build`);
+    const buildFolder = path.join(PROJS_DIR, `${projectName}/config`);
     const fileName = projectName.toUpperCase().replace(/ /g, '_');
     const buildFilePath = path.join(buildFolder, `${fileName}.json`);
 
@@ -57,7 +57,7 @@ app.post('/save-project', async (req, res) => {
 });
 app.post('/load-project', async (req, res) => {
     const projectName = req.body.projectName;
-    const buildFolder = path.join(PROJS_DIR, `${projectName}/build`);
+    const buildFolder = path.join(PROJS_DIR, `${projectName}/config`);
     const fileName = projectName.toUpperCase().replace(/ /g, '_');
     const buildFilePath = path.join(buildFolder, `${fileName}.json`);
     try {
