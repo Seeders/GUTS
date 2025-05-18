@@ -61,7 +61,6 @@ class Entity {
         }     
     }
     draw() {
-
         for(let r in this.renderers) {
             this.renderers[r].draw();  
         }

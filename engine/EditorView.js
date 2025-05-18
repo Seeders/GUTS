@@ -737,7 +737,8 @@ class EditorView {
     setupActionEventListeners() {
         // Launch game button
         this.elements.launchGameBtn?.addEventListener('click', () => {
-            window.open("game.html", "_blank");
+            let projectName = this.controller.getCurrentProject();
+            window.open(`projects/${projectName}/game.html`, "_blank");
         });
     }
   
