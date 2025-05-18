@@ -8,7 +8,6 @@ class Stats extends engine.Component {
   init( {objectType, spawnType} ) {        
         
         let stats = this.game.config[objectType][spawnType];
-        console.log(stats);
         this.type = spawnType;
         this.stats = {...stats};
         this.defaultStats = {...this.stats};

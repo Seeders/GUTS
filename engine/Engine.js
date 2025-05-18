@@ -87,6 +87,8 @@ class Engine {
             this.projectEntity.update();  
             this.projectEntity.draw();   
         }      
+        this.entitiesToAdd.forEach((entity) => this.state.addEntity(entity));        
+        this.entitiesToAdd = [];
         this.animationFrameId = requestAnimationFrame(() => this.gameLoop());
     }
 

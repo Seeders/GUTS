@@ -48,7 +48,7 @@
             "scaleZ": 1,
             "color": "#FFFFFF",
             "texture": "carbonFiber",
-            "url": "samples/models/waving_guy/waving_guy.glb",
+            "url": "/samples/models/waving_guy/waving_guy.glb",
             "roughness": "1",
             "metalness": "0"
           }

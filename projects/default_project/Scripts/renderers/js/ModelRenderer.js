@@ -15,7 +15,7 @@ class ModelRenderer extends engine.Component {
 
         // Get the model
         this.model = this.game.modelManager.getModel(objectType, spawnType);
-        
+  
         if (!this.model || !this.animationData || !this.modelData) {
             console.error(`No model or data found for ${objectType}_${spawnType}`);
             return;

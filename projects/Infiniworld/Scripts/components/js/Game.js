@@ -69,8 +69,6 @@ class Game extends engine.Component {
             }
             
             this.postUpdate();
-            this.game.entitiesToAdd.forEach((entity) => this.game.state.addEntity(entity));
-            this.game.entitiesToAdd = [];
         }
     }
     

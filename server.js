@@ -101,7 +101,7 @@ app.post('/upload-model', upload.single('gltfFile'), async (req, res) => {
 
         const relativePath = path.relative(BASE_DIR, finalGltfPath).replace(/\\/g, '/');
         const gameData = {
-            filePath: relativePath,
+            filePath:  "/" + relativePath,
             fileName: req.file.originalname,
         };
 

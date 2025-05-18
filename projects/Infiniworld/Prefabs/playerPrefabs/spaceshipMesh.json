@@ -47,7 +47,7 @@
             "scaleY": 1,
             "scaleZ": 1,
             "color": "#FFFFFF",
-            "url": "samples/models/spaceship/spaceship.glb",
+            "url": "/samples/models/spaceship/spaceship.glb",
             "roughness": "0.1",
             "metalness": "0.8"
           }

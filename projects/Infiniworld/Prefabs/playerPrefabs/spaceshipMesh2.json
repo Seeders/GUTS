@@ -47,7 +47,7 @@
             "scaleY": 1,
             "scaleZ": 1,
             "color": "#FFFFFF",
-            "url": "samples/models/blue_spaceship/blue_spaceship.glb"
+            "url": "/samples/models/blue_spaceship/blue_spaceship.glb"
           }
         ]
       }

@@ -17,6 +17,7 @@ class Game extends engine.Component {
             y: endY * this.gridSize + this.gridSize / 2,
             z: 0
         }
+        debugger;
         this.keep = this.game.spawn("tower",{ spawnType: 'keep', objectType: 'towers', setDirection: 1}, keepPosition);
         this.keep.placed = true;
         
@@ -29,7 +30,6 @@ class Game extends engine.Component {
         } else {
             this.getComponent("MapRenderer")?.renderBG(this.game.state.tileMapData, this.game.state.paths);
         }
-        
         if (!this.game.state.isPaused) {
             this.currentTime = Date.now();
 
@@ -51,26 +51,23 @@ class Game extends engine.Component {
             });
 
             this.game.state.stats = {...this.game.state.defaultStats};//reset stats to recalculate upgrades from base stats.
-            // Single loop through entities for update, draw and postUpdate
-            const entitiesToKeep = [];
-            for(let i = 0; i < this.game.state.entities.length; i++) {
+
+            let entitiesToRemove = [];
+            for (let i = 0; i < this.game.state.entities.length; i++) {
                 let e = this.game.state.entities[i];
-                let result = e.update();    
-                
-                if(result) {
-                    entitiesToKeep.push(e);
+                e.update();
+                if(!e.destroyed){
                     e.draw();
-                    e.postUpdate();
-                }
+                    e.postUpdate();  
+                } else {
+                    entitiesToRemove.push(i);
+                }     
+            }
+            for(let i = entitiesToRemove.length - 1; i >= 0; i--){
+                this.game.state.entities.splice(entitiesToRemove[i], 1);
             }
             
-            // Replace the entities array with only entities that should be kept
-            this.game.state.entities = entitiesToKeep;
-            
             this.postUpdate();
-            // Add any new entities
-            this.game.entitiesToAdd.forEach((entity) => this.game.state.addEntity(entity));
-            this.game.entitiesToAdd = [];
         }     
         if(!this.game.config.configs.game.is3D){
             this.getComponent("MapRenderer")?.renderFG(this.game.state.tileMapData, this.game.state.paths);
