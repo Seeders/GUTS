@@ -37,6 +37,7 @@ class EditorController {
         this.view = new EditorView(this);
         this.fs = new FileSystemSyncService(this); 
         this.componentClasses = {};
+        window.GUTS = this;
     }
 
     /**

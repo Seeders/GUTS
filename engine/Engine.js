@@ -10,7 +10,7 @@ class Engine {
         this.engineClasses = [];
         this.libraries = {};
         this.state = {};
-        window.GUTS = {};
+        window.GUTS = this;
     }
 
     async init() {
@@ -45,9 +45,7 @@ class Engine {
 
         requestAnimationFrame(() => {
             this.hideLoadingScreen();
-        });
-        window.GUTS.state = this.state;
-        window.GUTS.collections = this.collections;
+        });    
     }
     
     getCollections() {
