@@ -8,7 +8,7 @@ class UiManager extends engine.Component {
     init({ canvas, canvasBuffer, terrainCanvasBuffer }) {
         this.canvas = canvas;
         this.canvasBuffer = canvasBuffer;
-        if(this.game.config.configs.game.is3D) {
+        if(this.game.getCollections().configs.game.is3D) {
             this.finalCtx = this.canvas.getContext("webgl2");
             this.ctx = this.canvasBuffer.getContext("webgl2");
         } else {
@@ -16,7 +16,7 @@ class UiManager extends engine.Component {
             this.ctx = this.canvasBuffer.getContext("2d");
         }
         this.terrainCanvasBuffer = terrainCanvasBuffer;
-        this.projectConfig = this.game.config.configs.game;
+        this.projectConfig = this.game.getCollections().configs.game;
         this.gridSize = this.projectConfig.gridSize;
         this.isometric = this.projectConfig.isIsometric || false;
         this.upgradeMenu = document.getElementById('upgradeMenu');
@@ -38,9 +38,9 @@ class UiManager extends engine.Component {
         this.gameOverWave = document.getElementById('gameOverWave');
         this.towerMenu = document.getElementById('towerMenu');
         let towerMenuOptions = '';
-        for(let type in this.game.config.towers) {
-            if(this.game.config.towers[type].cost > 0){
-                towerMenuOptions += `<button class="tower-option" data-type="${type}">${this.game.config.towers[type].title} (${this.game.config.towers[type].cost})</button>`;
+        for(let type in this.game.getCollections().towers) {
+            if(this.game.getCollections().towers[type].cost > 0){
+                towerMenuOptions += `<button class="tower-option" data-type="${type}">${this.game.getCollections().towers[type].title} (${this.game.getCollections().towers[type].cost})</button>`;
             }
         }
         this.towerMenu.innerHTML = towerMenuOptions;
@@ -58,7 +58,7 @@ class UiManager extends engine.Component {
     }
 
     setMousePosition(clientX, clientY) {
-        if(!this.game.config.configs.game.is3D) {
+        if(!this.game.getCollections().configs.game.is3D) {
             const rect = this.canvas.getBoundingClientRect();
                 
             // Account for canvas scaling and offset
@@ -67,8 +67,8 @@ class UiManager extends engine.Component {
             
             const mapGridWidth = this.game.state.tileMap.length;
             // Calculate mouse position relative to canvas with scaling
-            const mouseX = (clientX - rect.left) * scaleX + (this.isometric ? 0 : -( this.canvas.width - mapGridWidth * this.game.config.configs.game.gridSize) / 2);
-            const mouseY = (clientY - rect.top) * scaleY + (this.isometric ? 0 : -( this.canvas.height - mapGridWidth * this.game.config.configs.game.gridSize) / 2);
+            const mouseX = (clientX - rect.left) * scaleX + (this.isometric ? 0 : -( this.canvas.width - mapGridWidth * this.game.getCollections().configs.game.gridSize) / 2);
+            const mouseY = (clientY - rect.top) * scaleY + (this.isometric ? 0 : -( this.canvas.height - mapGridWidth * this.game.getCollections().configs.game.gridSize) / 2);
 
             // Convert to isometric and grid coordinates
             const gridPos = this.game.translator.isoToGrid(mouseX, mouseY);
@@ -107,8 +107,8 @@ class UiManager extends engine.Component {
             
             if (intersectPoint) {
                 // Convert to grid coordinates
-                const gridX = Math.floor(intersectPoint.x / this.game.config.configs.game.gridSize);
-                const gridY = Math.floor(intersectPoint.z / this.game.config.configs.game.gridSize);
+                const gridX = Math.floor(intersectPoint.x / this.game.getCollections().configs.game.gridSize);
+                const gridY = Math.floor(intersectPoint.z / this.game.getCollections().configs.game.gridSize);
                 
                 // Update state with world and grid coordinates
                 this.game.state.mousePosition = {
@@ -193,8 +193,8 @@ class UiManager extends engine.Component {
 
             if (this.checkValidTowerPosition(this.game.state.mousePosition.gridX, this.game.state.mousePosition.gridY)) {
                 // Create the tower
-                let cost = this.game.config.towers[this.game.state.selectedTowerType].cost;
-                let populationCost = this.game.config.towers[this.game.state.selectedTowerType].population || 0;
+                let cost = this.game.getCollections().towers[this.game.state.selectedTowerType].cost;
+                let populationCost = this.game.getCollections().towers[this.game.state.selectedTowerType].population || 0;
                 
                 const finalCost = Math.floor(cost * this.game.state.stats.towerCostMod);
                 
@@ -212,8 +212,8 @@ class UiManager extends engine.Component {
                     this.game.state.bloodShards -= finalCost;
                     this.game.state.previewTower.destroy();
                     this.game.state.previewTower = null;
-                    const gameEventData = this.game.config.gameEvents['placeTower'];
-                    const audioData = this.game.config.sounds[gameEventData.sound].audio;
+                    const gameEventData = this.game.getCollections().gameEvents['placeTower'];
+                    const audioData = this.game.getCollections().sounds[gameEventData.sound].audio;
                     this.game.audioManager.playSynthSound('placeTower', audioData);
                     // Clear selection
                     this.game.state.selectedTowerType = null;
@@ -242,10 +242,10 @@ class UiManager extends engine.Component {
                 if(this.game.state.isPaused) return;
                 
                 const type = button.getAttribute('data-type');
-                let cost = this.game.config.towers[type].cost;
+                let cost = this.game.getCollections().towers[type].cost;
                 const finalCost = Math.floor(cost * this.game.state.stats.towerCostMod);
                 
-                let populationCost = this.game.config.towers[type].population || 0;
+                let populationCost = this.game.getCollections().towers[type].population || 0;
                 if (this.game.state.bloodShards >= finalCost && this.game.state.stats.population + populationCost <= this.game.state.stats.maxPopulation) {
                     this.game.state.selectedTowerType = type;
                     if(this.game.state.previewTower) {
@@ -258,7 +258,7 @@ class UiManager extends engine.Component {
             // Show tooltip with info
             button.addEventListener('mouseover', (e) => {
                 const type = button.getAttribute('data-type');
-                let info = this.game.config.towers[type].info;
+                let info = this.game.getCollections().towers[type].info;
                 
                 this.showTooltip(e.clientX, e.clientY, info);
             });
@@ -303,7 +303,7 @@ class UiManager extends engine.Component {
             this.ctx.textAlign = 'center';
             this.ctx.fillText(`Next Wave in ${countdown}...`, this.canvas.width / 2, 50);
         }  
-        if(!this.game.config.configs.game.is3D) {
+        if(!this.game.getCollections().configs.game.is3D) {
             this.renderCanvas();
         }
     }

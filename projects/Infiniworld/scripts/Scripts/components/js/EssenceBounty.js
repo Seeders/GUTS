@@ -1,10 +1,5 @@
 class EssenceBounty extends engine.Component {
     
-    constructor(game, parent, params) {
-        super(game, parent, params);
-    }
-    
-    
     init(){
         this.statsComp = this.parent.getComponent('stats');
     }

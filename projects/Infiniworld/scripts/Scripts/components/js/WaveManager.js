@@ -1,17 +1,12 @@
 class WaveManager extends engine.Component {
     
-    constructor(game, parent, params) {
-        super(game, parent, params);
-    }
-    
-    
     init() {   
         
         this.resetWaveState();
     }
 
     resetWaveState() {
-        this.game.state.waveSets = this.game.config.levels[this.game.state.level].wavesets;
+        this.game.state.waveSets = this.game.getCollections().levels[this.game.state.level].wavesets;
         this.game.state.currentWaveIds = [];
         this.game.state.currentWaveEnemies = [];
         this.game.state.enemiesSpawned = [];
@@ -30,7 +25,7 @@ class WaveManager extends engine.Component {
 
         // Process all wavesets in parallel
         for (let i = 0; i < this.game.state.currentWaveIds.length; i++) {
-            let waveSet = this.game.config.wavesets[this.game.state.waveSets[i]];
+            let waveSet = this.game.getCollections().wavesets[this.game.state.waveSets[i]];
             
             // Skip if still in start delay
             if (waveSet.startDelay && this.game.state.startDelayTimer < waveSet.startDelay) continue;
@@ -87,7 +82,7 @@ class WaveManager extends engine.Component {
         let totalWaves = 0;
         for (let i = 0; i < this.game.state.waveSets.length; i++) {
             const waveSetId = this.game.state.waveSets[i];
-            const waveSet = this.game.config.wavesets[waveSetId];
+            const waveSet = this.game.getCollections().wavesets[waveSetId];
             
             // Check if this waveset has enough waves for the current round
             if (this.game.state.round < waveSet.waves.length) {
@@ -95,7 +90,7 @@ class WaveManager extends engine.Component {
                 
                 // Add this wave to the current active waves
                 this.game.state.currentWaveIds.push(currentWaveId);
-                this.game.state.currentWaveEnemies.push(this.game.config.waves[currentWaveId].enemies);
+                this.game.state.currentWaveEnemies.push(this.game.getCollections().waves[currentWaveId].enemies);
                 this.game.state.enemiesSpawned.push(0);
                 this.game.state.spawnTimers.push(0); // Initialize spawn timer for this waveset
             }

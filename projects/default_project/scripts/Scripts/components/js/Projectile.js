@@ -7,7 +7,7 @@ class Projectile extends engine.Component {
     
 init({ spawnType, owner, target, targetPosition, stats }) {
   this.type = spawnType;
-  this.def = this.game.config.projectiles[this.type];
+  this.def = this.game.getCollections().projectiles[this.type];
   this.owner = owner;
   this.target = target;
   this.targetPosition = targetPosition;
@@ -97,7 +97,7 @@ update() {
           }, enemy.transform.position);
           if (this.ownerStats.slowAmount) {
             enemyStats.addEffect(
-              this.game.config.effects.slow,
+              this.game.getCollections().effects.slow,
               this.game.effects.slow,
               this.ownerStats.slowAmount
             );
@@ -153,7 +153,7 @@ update() {
       },this.target.transform.position);
       if (this.ownerStats.slowAmount) {
         targetStats.addEffect(
-          this.game.config.effects.slow,
+          this.game.getCollections().effects.slow,
           this.game.effects.slow,
           this.ownerStats.slowAmount
         );
@@ -233,7 +233,7 @@ update() {
 
 // Helper method to find a new target for piercing
 findNewTarget(nearbyEnemies) {
-  const gridSize = this.game.config.configs.game.gridSize;
+  const gridSize = this.game.getCollections().configs.game.gridSize;
   const rangeSq = this.ownerStats.range * this.ownerStats.range * gridSize * gridSize;
   for (let enemy of nearbyEnemies) {
     if (!enemy.destroyed && !this.piercedEnemies.includes(enemy)) {
@@ -250,7 +250,7 @@ findNewTarget(nearbyEnemies) {
 
 // Helper method to apply splash damage
 applySplashDamage(nearbyEnemies) {
-  const gridSize = this.game.config.configs.game.gridSize;
+  const gridSize = this.game.getCollections().configs.game.gridSize;
   const splashRadiusSq = this.stats.splashRadius * this.stats.splashRadius * gridSize * gridSize;
   for (const enemy of nearbyEnemies) {
     if (enemy.isDead || this.piercedEnemies.includes(enemy)) continue;
@@ -275,7 +275,7 @@ applySplashDamage(nearbyEnemies) {
         },enemy.transform.position);
         if (this.ownerStats.slowAmount) {
           enemyStats.addEffect(
-            this.game.config.effects.slow,
+            this.game.getCollections().effects.slow,
             this.game.effects.slow,
             this.ownerStats.slowAmount
           );

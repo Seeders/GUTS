@@ -1,12 +1,8 @@
 class Renderer extends engine.Component {
-    
-    constructor(game, parent, params) {
-        super(game, parent, params);
-    }
-    
+
     
   init( { objectType, spawnType, setDirection = -2}) {
-        if(this.game.config.configs.game.is3D) {
+        if(this.game.getCollections().configs.game.is3D) {
             return;
         }
         this.images = this.game.imageManager.getImages(objectType, spawnType);  
@@ -24,11 +20,11 @@ class Renderer extends engine.Component {
             { min: -3*Math.PI/8, max: -Math.PI/8 },   // 6: Up-Right (Northeast)
             { min: -Math.PI/8, max: Math.PI/8 }       // 7: Right (East)
         ];
-        this.isometric = this.game.config.configs.game.isIsometric;
+        this.isometric = this.game.getCollections().configs.game.isIsometric;
     }
 
     draw() {
-        if(this.game.config.configs.game.is3D) {
+        if(this.game.getCollections().configs.game.is3D) {
             return;
         }
         if( this.setDirection < 0 ) {

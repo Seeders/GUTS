@@ -1,6 +1,6 @@
 class ModelRenderer extends engine.Component {
     init({ objectType, spawnType, frameDuration }) {
-        if (!this.game.config.configs.game.is3D) {
+        if (!this.game.getCollections().configs.game.is3D) {
             return;
         }
         this.objectType = objectType;
@@ -15,8 +15,8 @@ class ModelRenderer extends engine.Component {
         this.fadeTime = 0.3;
         this.minAnimationTime = 0;//this.fadeTime * 2;
         // Load animation and model data
-        this.animationData = this.game.config[objectType]?.[spawnType]?.render?.animations;
-        this.modelData = this.game.config[objectType]?.[spawnType]?.render?.model;
+        this.animationData = this.game.getCollections()[objectType]?.[spawnType]?.render?.animations;
+        this.modelData = this.game.getCollections()[objectType]?.[spawnType]?.render?.model;
         this.isGLTF = this.modelData[Object.keys(this.modelData)[0]].shapes[0].type === "gltf";
         this.clock = new THREE.Clock();
         this.clock.start();
@@ -153,7 +153,7 @@ class ModelRenderer extends engine.Component {
     }
 
     draw() {
-        if (!this.game.config.configs.game.is3D) {
+        if (!this.game.getCollections().configs.game.is3D) {
             return;
         }
         this.currentAnimationTime += this.game.deltaTime;

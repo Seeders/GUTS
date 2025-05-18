@@ -78,7 +78,7 @@ class EditorModel {
         if(location.hostname !== "localhost"){
             this.state.project = JSON.parse(localStorage.getItem(this.state.currentProject)); 
         } else {
-            const response = await fetch('/load-config', {
+            const response = await fetch('/load-project', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -90,7 +90,7 @@ class EditorModel {
                 throw new Error(`HTTP error! status: ${response.status}`);
             } else {
                 const data = await response.json();  
-                this.state.project = data.config;
+                this.state.project = data.project;
             }
         }
     
@@ -105,7 +105,7 @@ class EditorModel {
     saveProject() {
         if (!this.state.currentProject) return;
 
-        const configText = JSON.stringify(this.state.project);
+        const projectText = JSON.stringify(this.state.project);
         for(const key in this.state.project.objectTypes){
             if(!this.state.project.objectTypeDefinitions.find((e) => e.id == key)){
                 console.log(`did not find ${key}`);
@@ -121,17 +121,17 @@ class EditorModel {
             
             if(window.location.hostname != "localhost") {
                 // Save to localStorage
-                localStorage.setItem(this.state.currentProject, configText);
+                localStorage.setItem(this.state.currentProject, projectText);
             } else {
             // If server saving is enabled, send config to server
             
-                fetch('/save-config', {
+                fetch('/save-project', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        config: configText,
+                        project: projectText,
                         projectName: this.state.currentProject
                     })
                 })

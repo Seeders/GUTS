@@ -1,8 +1,8 @@
 class Collider extends engine.Component {
     init({ debug = false, objectType, spawnType }) {
         this.id = this.parent.id;
-        this.prefabData = this.game.config[objectType][spawnType];
-        this.colliderData = this.game.config.colliders[this.prefabData.collider];
+        this.prefabData = this.game.getCollections()[objectType][spawnType];
+        this.colliderData = this.game.getCollections().colliders[this.prefabData.collider];
         if(!this.colliderData){
             this.colliderData = {
                 type: "sphere",

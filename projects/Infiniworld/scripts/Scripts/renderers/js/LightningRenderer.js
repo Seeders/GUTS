@@ -1,14 +1,10 @@
 class LightningRenderer extends engine.Component {
     
-    constructor(game, parent, params) {
-        super(game, parent, params);
-    }
     
-    
-  init( {owner}) {
+    init( {owner}) {
         this.ctx = this.game.ctx;
         const ownerStats = owner.getComponent("stats").stats;
-        this.startOffsetY = ownerStats.projectileStartOffsetY || this.game.config.configs.game.gridSize / 2;
+        this.startOffsetY = ownerStats.projectileStartOffsetY || this.game.getCollections().configs.game.gridSize / 2;
     }
 
     draw() {

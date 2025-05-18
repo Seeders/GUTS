@@ -18,7 +18,7 @@ class Health extends engine.Component {
     }
 
     draw() {
-        let imageSize = this.game.config.configs.game.imageSize;
+        let imageSize = this.game.getCollections().configs.game.imageSize;
         let statsComp = this.parent.getComponent('stats');
         const healthPercentage = this.hp / statsComp.stats.maxHp;
         const barWidth = 30;

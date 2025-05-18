@@ -1,6 +1,6 @@
 class ModelRenderer extends engine.Component {
     init({ objectType, spawnType, frameDuration }) {
-        if(!this.game.config.configs.game.is3D) {
+        if(!this.game.getCollections().configs.game.is3D) {
             return;
         }
         this.animationState = 'idle';
@@ -10,8 +10,8 @@ class ModelRenderer extends engine.Component {
         this.lastDirection = -1;
         
         // Load animation and model data
-        this.animationData = this.game.config[objectType]?.[spawnType]?.render?.animations;
-        this.modelData = this.game.config[objectType]?.[spawnType]?.render?.model;
+        this.animationData = this.game.getCollections()[objectType]?.[spawnType]?.render?.animations;
+        this.modelData = this.game.getCollections()[objectType]?.[spawnType]?.render?.model;
 
         // Get the model
         this.model = this.game.modelManager.getModel(objectType, spawnType);
@@ -57,7 +57,7 @@ class ModelRenderer extends engine.Component {
     }
     
     draw() {
-        if(!this.game.config.configs.game.is3D) {
+        if(!this.game.getCollections().configs.game.is3D) {
             return;
         }
         // Update animation frames

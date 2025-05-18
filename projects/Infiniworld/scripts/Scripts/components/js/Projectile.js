@@ -1,11 +1,8 @@
 class Projectile extends engine.Component {
-  constructor(game, parent, params) {
-      super(game, parent, params);
-  }
    
   init({ spawnType, owner, direction }) {
-      this.projectilePrefabData = this.game.config.projectilePrefabs[spawnType];
-      this.projectileData = this.game.config.projectiles[this.projectilePrefabData.projectile];
+      this.projectilePrefabData = this.game.getCollections().projectilePrefabs[spawnType];
+      this.projectileData = this.game.getCollections().projectiles[this.projectilePrefabData.projectile];
       this.owner = owner;
       this.piercedEnemies = [];
       if(this.owner){

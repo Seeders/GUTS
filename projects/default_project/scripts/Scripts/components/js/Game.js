@@ -8,7 +8,7 @@ class Game extends engine.Component {
         
     init() {
         this.initEffectsAndUpgrades();
-        this.gridSize = this.game.config.configs.game.gridSize;
+        this.gridSize = this.game.getCollections().configs.game.gridSize;
         let endPath = this.game.state.paths[0][this.game.state.paths[0].length - 1];
         let endY = endPath.y;
         let endX = endPath.x;
@@ -24,7 +24,7 @@ class Game extends engine.Component {
     }
 
     update() {
-        if(this.game.config.configs.game.is3D){
+        if(this.game.getCollections().configs.game.is3D){
             this.getComponent("MapRenderer")?.render(this.game.state.tileMapData, this.game.state.paths);
         } else {
             this.getComponent("MapRenderer")?.renderBG(this.game.state.tileMapData, this.game.state.paths);
@@ -68,7 +68,7 @@ class Game extends engine.Component {
             
             this.postUpdate();
         }     
-        if(!this.game.config.configs.game.is3D){
+        if(!this.game.getCollections().configs.game.is3D){
             this.getComponent("MapRenderer")?.renderFG(this.game.state.tileMapData, this.game.state.paths);
         }   
         
@@ -142,7 +142,7 @@ class Game extends engine.Component {
 
         this.game.effects = {
             slow: (stats, additiveStats, multiplicitiveStats, slowAmount) => {
-                stats[this.game.config.effects.slow.stat] *= slowAmount;
+                stats[this.game.getCollections().effects.slow.stat] *= slowAmount;
             }
         }
         this.game.upgrades = [
@@ -150,24 +150,24 @@ class Game extends engine.Component {
             new Upgrade(
                 'sentryFrenzy',
                 'Sentry Frenzy',
-                'Sentry Swarm: ' + this.game.config.upgrades.sentryFrenzy.desc,
+                'Sentry Swarm: ' + this.game.getCollections().upgrades.sentryFrenzy.desc,
                 '🦇',
                 'sentry',
                 (state) => true,
                 (stats, additiveStats, multiplicitiveStats) => {
-                    multiplicitiveStats['attackSpeed'].push(this.game.config.upgrades.sentryFrenzy.value);
+                    multiplicitiveStats['attackSpeed'].push(this.game.getCollections().upgrades.sentryFrenzy.value);
                 }
             ),
             new Upgrade(
                 'sentryIntelligence',
                 'Sentry Intelligence',
-                'Sentry Swarm: ' + this.game.config.upgrades.sentryIntelligence.desc,
+                'Sentry Swarm: ' + this.game.getCollections().upgrades.sentryIntelligence.desc,
                 '🦇',
                 'sentry',
                 (state) => true,
                 (stats, additiveStats, multiplicitiveStats) => {            
-                    multiplicitiveStats['damage'].push(this.game.config.upgrades.sentryIntelligence.damage);
-                    multiplicitiveStats['range'].push(this.game.config.upgrades.sentryIntelligence.range);        
+                    multiplicitiveStats['damage'].push(this.game.getCollections().upgrades.sentryIntelligence.damage);
+                    multiplicitiveStats['range'].push(this.game.getCollections().upgrades.sentryIntelligence.range);        
                 }
             ),
 
@@ -175,14 +175,14 @@ class Game extends engine.Component {
             new Upgrade(
                 'necroSummon',
                 'Raise Dead',
-                'Necromancer: ' + this.game.config.upgrades.necroSummon.desc,
+                'Necromancer: ' + this.game.getCollections().upgrades.necroSummon.desc,
                 '💀',
                 'fabricator',
                 (state) => true,
                 (stats, additiveStats, multiplicitiveStats) => {
                     stats.summonChance = 1;
                     if(!additiveStats.summonChance) additiveStats.summonChance = [];
-                    additiveStats['summonChance'].push(this.game.config.upgrades.necroSummon.summonChance);
+                    additiveStats['summonChance'].push(this.game.getCollections().upgrades.necroSummon.summonChance);
                 }
             ),
 
@@ -190,12 +190,12 @@ class Game extends engine.Component {
             new Upgrade(
                 'overCharge',
                 'Overcharge',
-                'Tesla Coil: ' + this.game.config.upgrades.overCharge.desc,
+                'Tesla Coil: ' + this.game.getCollections().upgrades.overCharge.desc,
                 '📏',
                 'teslaCoil',
                 (state) => true,
                 (stats, additiveStats, multiplicitiveStats) => {
-                    additiveStats['range'].push(this.game.config.upgrades.overCharge.range);
+                    additiveStats['range'].push(this.game.getCollections().upgrades.overCharge.range);
                 }
             ),
 
@@ -203,12 +203,12 @@ class Game extends engine.Component {
             new Upgrade(
                 'pyreSoul',
                 'Radiant Soul',
-                'Soul Pyre: ' + this.game.config.upgrades.pyreSoul.desc,
+                'Soul Pyre: ' + this.game.getCollections().upgrades.pyreSoul.desc,
                 '💉',
                 'soulPyre',
                 (state) => true,
                 (stats, additiveStats, multiplicitiveStats) => {
-                    additiveStats['splashRadius'].push(this.game.config.upgrades.pyreSoul.splashRadius);
+                    additiveStats['splashRadius'].push(this.game.getCollections().upgrades.pyreSoul.splashRadius);
                 }
             ),
 
@@ -216,49 +216,49 @@ class Game extends engine.Component {
             new Upgrade(
                 'mistSlow',
                 'Chilling Mist',
-                'Mist Shrine: ' + this.game.config.upgrades.mistSlow.desc,
+                'Mist Shrine: ' + this.game.getCollections().upgrades.mistSlow.desc,
                 '❄️',
                 'mistShrine',
                 (state) => true,
                 (stats, additiveStats, multiplicitiveStats) => {
-                    multiplicitiveStats['slowAmount'].push(this.game.config.upgrades.mistSlow.slowAmount);
+                    multiplicitiveStats['slowAmount'].push(this.game.getCollections().upgrades.mistSlow.slowAmount);
                 }
             ),
             // Global Upgrades
             new Upgrade(
                 'homeReinforcement',
                 'Reinforcement',
-                this.game.config.upgrades.bloodCore.desc,
+                this.game.getCollections().upgrades.bloodCore.desc,
                 '🛡️',
                 'global',
                 (state) => true,
                 (stats) => {
-                    stats.maxBloodCoreHP *= this.game.config.upgrades.bloodCore.maxHpMultiplier;
+                    stats.maxBloodCoreHP *= this.game.getCollections().upgrades.bloodCore.maxHpMultiplier;
                 },
                 (state) => {
-                    state.bloodCoreHP = Math.min(state.stats.maxBloodCoreHP, state.bloodCoreHP + this.game.config.upgrades.bloodCore.healAmount);
+                    state.bloodCoreHP = Math.min(state.stats.maxBloodCoreHP, state.bloodCoreHP + this.game.getCollections().upgrades.bloodCore.healAmount);
                 }
             ),
             new Upgrade(
                 'essenceExtraction',
                 'Essence Extraction',
-                this.game.config.upgrades.essenceExtraction.desc,
+                this.game.getCollections().upgrades.essenceExtraction.desc,
                 '🔮',
                 'global',
                 (state) => true,
                 (stats) => {
-                    stats.essenceMultiplier *= this.game.config.upgrades.essenceExtraction.value;
+                    stats.essenceMultiplier *= this.game.getCollections().upgrades.essenceExtraction.value;
                 }
             ),
             new Upgrade(
                 'essenceOverflow',
                 'Essence Overflow',
-                this.game.config.upgrades.essenceOverflow.desc,
+                this.game.getCollections().upgrades.essenceOverflow.desc,
                 '🔮',
                 'global',
                 (state) => state.bloodCoreHP > state.stats.maxBloodCoreHP / 2,
                 (stats) => {
-                    stats.essenceMultiplier *= this.game.config.upgrades.essenceOverflow.value;
+                    stats.essenceMultiplier *= this.game.getCollections().upgrades.essenceOverflow.value;
                 }
             ),
 

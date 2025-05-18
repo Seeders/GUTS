@@ -1,9 +1,5 @@
 class LifeSpan extends engine.Component {
-    
-    constructor(game, parent, params) {
-        super(game, parent, params);
-    }
-    
+
     
     init( {lifeSpan}) {
         this.lifeSpan = lifeSpan || this.getComponent('stats').stats.lifeSpan;

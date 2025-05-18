@@ -1,7 +1,4 @@
 class AudioManager extends engine.Component {
-    constructor(game, parent, params) {
-        super(game, parent, params);
-    }
 
     init() {
         this.isInitialized = false;
@@ -236,8 +233,8 @@ class AudioManager extends engine.Component {
     }
 
     getSynthSound(soundCollectionName, soundName) {
-        if (this.game.config[soundCollectionName]?.[soundName]) {
-            return this.game.config[soundCollectionName][soundName].audio;
+        if (this.game.getCollections()[soundCollectionName]?.[soundName]) {
+            return this.game.getCollections()[soundCollectionName][soundName].audio;
         }
         console.warn('sound not found', soundCollectionName, soundName);
         return null;

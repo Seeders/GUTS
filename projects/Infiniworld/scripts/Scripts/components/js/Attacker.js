@@ -1,10 +1,5 @@
 class Attacker extends engine.Component {
     
-    constructor(game, parent, params) {
-        super(game, parent, params);
-    }
-    
-    
  init() {        
         this.stats = this.getComponent('stats').stats;    
         this.level = 1;
@@ -82,7 +77,7 @@ class Attacker extends engine.Component {
     launchProjectile() {
         this.stats = this.getComponent('stats').stats;    
         let projectileType = this.stats.projectile;
-        let projectileDef = this.game.config.projectilePrefabs[projectileType];
+        let projectileDef = this.game.getCollections().projectilePrefabs[projectileType];
         
 
         let projStats = { ...projectileDef };

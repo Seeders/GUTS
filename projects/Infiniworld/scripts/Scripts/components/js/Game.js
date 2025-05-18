@@ -8,7 +8,7 @@ class Game extends engine.Component {
    
     init() {
         this.physics = this.getComponent('Physics');
-        this.gridSize = this.game.config.configs.game.gridSize;      
+        this.gridSize = this.game.getCollections().configs.game.gridSize;      
         this.world = this.getComponent('InfiniWorld');
         this.debugDiv = document.createElement('div');
         this.debugDiv.style.position = "absolute";

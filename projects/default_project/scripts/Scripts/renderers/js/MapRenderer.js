@@ -45,7 +45,7 @@ class MapRenderer extends engine.Component {
         
         this.terrainTileMapper = this.game.terrainTileMapper;
         this.game.mapRenderer = this;
-        this.isometric = this.game.config.configs.game.isIsometric;
+        this.isometric = this.game.getCollections().configs.game.isIsometric;
     }
 
     draw(){}
@@ -131,7 +131,7 @@ class MapRenderer extends engine.Component {
                 if (g > r && g > b) {
                     dummy.position.set(
                         obj.x, 
-                        this.game.config.heightMaps[this.game.config.worlds[this.level.world].heightMap].heightStep * this.tileMap.extensionTerrainType, 
+                        this.game.getCollections().heightMaps[this.game.getCollections().worlds[this.level.world].heightMap].heightStep * this.tileMap.extensionTerrainType, 
                         obj.y
                     );
                     dummy.rotation.y = Math.random() * Math.PI * 2;

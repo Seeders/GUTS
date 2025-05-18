@@ -1,10 +1,5 @@
 class ChainProjectile extends engine.Component {
     
-    constructor(game, parent, params) {
-        super(game, parent, params);
-    }
-    
-    
     init( { spawnType, owner, target, stats }) {        
         this.type = spawnType;
         this.owner = owner;
@@ -53,7 +48,7 @@ class ChainProjectile extends engine.Component {
                 const dx = enemy.transform.position.x - this.target.transform.position.x;
                 const dy = enemy.transform.position.y - this.target.transform.position.y;
                 const distSq = dx * dx + dy * dy;
-                let gridSize = this.game.config.configs.game.gridSize;
+                let gridSize = this.game.getCollections().configs.game.gridSize;
                 if (distSq <= this.ownerStats.range * this.ownerStats.range * gridSize * gridSize) {
                     let enemyHealth = enemy.getComponent("health");
                     let enemyEnergyShield = enemy.getComponent("energyshield");
@@ -77,7 +72,7 @@ class ChainProjectile extends engine.Component {
         // Apply additional effects (e.g., slow, leech) to all hit targets
         for (let enemy of this.chainTargets) {
             if (this.ownerStats.slowAmount) {
-                enemy.getComponent("stats").addEffect(this.game.config.effects.slow, this.game.effects.slow, this.ownerStats.slowAmount);
+                enemy.getComponent("stats").addEffect(this.game.getCollections().effects.slow, this.game.effects.slow, this.ownerStats.slowAmount);
             }
             if (this.ownerStats.leech > 0) {
                 const healing = this.stats.damage * this.ownerStats.leech * this.game.state.stats.healingMultiplier;

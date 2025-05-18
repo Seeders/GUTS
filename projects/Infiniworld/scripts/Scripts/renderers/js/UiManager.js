@@ -1,14 +1,9 @@
 class UiManager extends engine.Component {
     
-    constructor(game, parent, params) {
-        super(game, parent, params);
-    }
-    
-    
     init({ canvas, canvasBuffer, terrainCanvasBuffer }) {
         this.canvas = canvas || this.game.canvas;
         this.canvasBuffer = canvasBuffer || this.game.canvasBuffer;
-        if(this.game.config.configs.game.is3D) {
+        if(this.game.getCollections().configs.game.is3D) {
             this.finalCtx = this.canvas.getContext("webgl2");
             this.ctx = this.canvasBuffer.getContext("webgl2");
         } else {
@@ -16,17 +11,17 @@ class UiManager extends engine.Component {
             this.ctx = this.canvasBuffer.getContext("2d");
         }
         this.terrainCanvasBuffer = terrainCanvasBuffer || this.game.terrainCanvasBuffer;
-        this.projectConfig = this.game.config.configs.game;
+        this.projectConfig = this.game.getCollections().configs.game;
         this.gridSize = this.projectConfig.gridSize;
         this.isometric = this.projectConfig.isIsometric || false;
-       this.overlay = document.getElementById('overlay');
+        this.overlay = document.getElementById('overlay');
         this.tooltip = document.getElementById('tooltip');
         this.gameOverMenu = document.getElementById('gameOverMenu');
         this.victoryMenu = document.getElementById('victoryMenu');
 
-       this.hpDisplay = document.getElementById('hpDisplay');
-       this.gameOverWave = document.getElementById('gameOverWave');
-  
+        this.hpDisplay = document.getElementById('hpDisplay');
+        this.gameOverWave = document.getElementById('gameOverWave');
+    
         this.setupEventListeners();
         this.game.uiManager = this;
        
@@ -40,7 +35,7 @@ class UiManager extends engine.Component {
     }
 
     setMousePosition(clientX, clientY) {
-        if(!this.game.config.configs.game.is3D) {
+        if(!this.game.getCollections().configs.game.is3D) {
             const rect = this.canvas.getBoundingClientRect();
                 
             // Account for canvas scaling and offset
@@ -49,8 +44,8 @@ class UiManager extends engine.Component {
             
             const mapGridWidth = this.game.state.tileMap.length;
             // Calculate mouse position relative to canvas with scaling
-            const mouseX = (clientX - rect.left) * scaleX + (this.isometric ? 0 : -( this.canvas.width - mapGridWidth * this.game.config.configs.game.gridSize) / 2);
-            const mouseY = (clientY - rect.top) * scaleY + (this.isometric ? 0 : -( this.canvas.height - mapGridWidth * this.game.config.configs.game.gridSize) / 2);
+            const mouseX = (clientX - rect.left) * scaleX + (this.isometric ? 0 : -( this.canvas.width - mapGridWidth * this.game.getCollections().configs.game.gridSize) / 2);
+            const mouseY = (clientY - rect.top) * scaleY + (this.isometric ? 0 : -( this.canvas.height - mapGridWidth * this.game.getCollections().configs.game.gridSize) / 2);
 
             // Convert to isometric and grid coordinates
             const gridPos = this.game.translator.isoToGrid(mouseX, mouseY);
@@ -89,8 +84,8 @@ class UiManager extends engine.Component {
             
             if (intersectPoint) {
                 // Convert to grid coordinates
-                const gridX = Math.floor(intersectPoint.x / this.game.config.configs.game.gridSize);
-                const gridY = Math.floor(intersectPoint.z / this.game.config.configs.game.gridSize);
+                const gridX = Math.floor(intersectPoint.x / this.game.getCollections().configs.game.gridSize);
+                const gridY = Math.floor(intersectPoint.z / this.game.getCollections().configs.game.gridSize);
                 
                 // Update state with world and grid coordinates
                 this.game.state.mousePosition = {

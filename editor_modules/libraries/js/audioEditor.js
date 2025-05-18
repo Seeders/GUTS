@@ -1,8 +1,8 @@
 class AudioEditor {
     constructor(gameEditor) {
         this.gameEditor = gameEditor;
-        let configObj = { state: {}, config: this.gameEditor.getCollections() };
-        this.audioManager = new (this.gameEditor.scriptContext.getComponent("AudioManager"))(configObj, null, {} );
+        let collectionObj = { state: {}, collections: this.gameEditor.getCollections() };
+        this.audioManager = new (this.gameEditor.scriptContext.getComponent("AudioManager"))(collectionObj, null, {} );
         this.audioManager.init();
         this.volume = 1;
         this.setupEventListeners();

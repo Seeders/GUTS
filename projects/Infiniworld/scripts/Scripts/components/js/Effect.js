@@ -1,10 +1,5 @@
 class Effect extends engine.Component {
     
-    constructor(game, parent, params) {
-        super(game, parent, params);
-    }
-    
-    
     init( {config, applyFn, amount }) {
         this.id = config.id;
         this.title = config.title;

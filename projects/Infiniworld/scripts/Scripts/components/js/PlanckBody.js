@@ -1,9 +1,5 @@
 class PlanckBody extends engine.Component {
-    
-    constructor(game, parent, params) {
-        super(game, parent, params);
-    }
-    
+
     
 init({box2DBodySize = 1, density = 1, friction= 0, layer = 0x0001, collidesWith = 0x0001}) {
   

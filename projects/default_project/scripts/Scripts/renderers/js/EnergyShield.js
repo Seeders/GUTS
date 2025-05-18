@@ -90,7 +90,7 @@ class EnergyShield extends engine.Component {
         const shieldPercentage = this.energyShield / this.maxEnergyShield;        
         
         // Shield bar will be slightly above that
-        const barY = this.parent.drawPosition.y - this.game.config.configs.game.imageSize * .3 - this.barOffset;
+        const barY = this.parent.drawPosition.y - this.game.getCollections().configs.game.imageSize * .3 - this.barOffset;
         
         // Draw shield background/empty bar
         this.game.ctx.fillStyle = this.shieldEmptyColor;

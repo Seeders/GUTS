@@ -4,16 +4,16 @@ class ThreeJsWorld extends engine.Component {
         width = window.innerWidth,
         height = window.innerHeight,
         useControls = true}) {
-        if (!this.game.config.configs.game.is3D) {
+        if (!this.game.getCollections().configs.game.is3D) {
             return;
         }
-        this.level = this.game.config.levels[this.game.state.level];
-        this.world = this.game.config.worlds[this.level.world];
-        this.lightingSettings = this.game.config.lightings[this.world.lighting];
-        this.shadowSettings = this.game.config.shadows[this.world.shadow];
-        this.fogSettings = this.game.config.fogs[this.world.fog]; 
-        this.heightMapSettings = this.game.config.heightMaps[this.world.heightMap];      
-        this.cameraSettings = this.game.config.cameras[this.world.camera];
+        this.level = this.game.getCollections().levels[this.game.state.level];
+        this.world = this.game.getCollections().worlds[this.level.world];
+        this.lightingSettings = this.game.getCollections().lightings[this.world.lighting];
+        this.shadowSettings = this.game.getCollections().shadows[this.world.shadow];
+        this.fogSettings = this.game.getCollections().fogs[this.world.fog]; 
+        this.heightMapSettings = this.game.getCollections().heightMaps[this.world.heightMap];      
+        this.cameraSettings = this.game.getCollections().cameras[this.world.camera];
 
         this.heightStep = this.heightMapSettings.heightStep;
         this.showStats = false;
@@ -130,7 +130,7 @@ class ThreeJsWorld extends engine.Component {
         const outputPass = new THREE_.OutputPass();
         this.composer.addPass( outputPass );
 
-        this.tileMap = this.game.config.levels[this.game.state.level].tileMap;
+        this.tileMap = this.game.getCollections().levels[this.game.state.level].tileMap;
         this.setupGround();
         this.generateLiquidSurfaceMesh(0);
         this.generateLiquidSurfaceMesh(1);
@@ -381,7 +381,7 @@ class ThreeJsWorld extends engine.Component {
     }
 
     update() {
-        if (!this.game.config.configs.game.is3D) {
+        if (!this.game.getCollections().configs.game.is3D) {
             return;
         }   
     
@@ -457,7 +457,7 @@ class ThreeJsWorld extends engine.Component {
         grassGeometry.translate(0, bladeHeight / 2, 0);
         const grassCount = 500000;
 
-        const gridSize = this.game.config.configs.game.gridSize;
+        const gridSize = this.game.getCollections().configs.game.gridSize;
         const phases = new Float32Array(grassCount);
         for (let i = 0; i < grassCount; i++) {
             phases[i] = Math.random() * Math.PI * 2;
@@ -465,7 +465,7 @@ class ThreeJsWorld extends engine.Component {
         grassGeometry.setAttribute('instancePhase', new THREE.InstancedBufferAttribute(phases, 1));
 
         const grassTexture = this.createGrassTexture();
-        const grassShader = this.game.config.shaders[this.level.grassShader];
+        const grassShader = this.game.getCollections().shaders[this.level.grassShader];
         this.uniforms['grass'] = JSON.parse(grassShader.uniforms);
         
         this.uniforms['grass'].windDirection = { value: new THREE.Vector2(this.uniforms['grass'].windDirection.value[0], this.uniforms['grass'].windDirection.value[1]).normalize()};
@@ -661,7 +661,7 @@ class ThreeJsWorld extends engine.Component {
 
     generateLiquidSurfaceMesh(terrainType) {
         const terrainMap = this.tileMap.terrainMap;
-        const gridSize = this.game.config.configs.game.gridSize;
+        const gridSize = this.game.getCollections().configs.game.gridSize;
         const rows = terrainMap.length;
         const cols = terrainMap[0].length;
         
@@ -801,7 +801,7 @@ class ThreeJsWorld extends engine.Component {
             const b = parseInt(hex.slice(5, 7), 16) / 255;
             return { r, g, b };
         };
-        const waterShader = this.game.config.shaders[this.level.waterShader];
+        const waterShader = this.game.getCollections().shaders[this.level.waterShader];
         // Use the hex color in a ShaderMaterial
         this.uniforms[terrainType] = JSON.parse(waterShader.uniforms);
         let vectorizeProps = JSON.parse(waterShader.vectors);

@@ -1,8 +1,5 @@
 class MultishotProjectile extends engine.Component {
     
-    constructor(game, parent, params) {
-        super(game, parent, params);
-    }
     
     
 init({ spawnType, stats, target, owner }) {

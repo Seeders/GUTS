@@ -1,10 +1,5 @@
 class RangeIndicator extends engine.Component {
     
-    constructor(game, parent, params) {
-        super(game, parent, params);
-    }
-    
-    
     init() {
         this.ctx = this.game.ctx;
         this.translator = this.game.translator; // Access translator for tileWidth
@@ -26,8 +21,8 @@ class RangeIndicator extends engine.Component {
         gridPos = this.translator.snapToGrid(gridPos.x, gridPos.y);
         const isoPos = this.translator.pixelToIso(pixelX, pixelY);
     
-        let isoRangeX = drawRage * this.game.config.configs.game.gridSize;  // Matches gridToIso X scaling
-        let isoRangeY = drawRage * this.game.config.configs.game.gridSize * (this.game.state.isometric ? 0.5 : 1); // Matches gridToIso Y scaling
+        let isoRangeX = drawRage * this.game.getCollections().configs.game.gridSize;  // Matches gridToIso X scaling
+        let isoRangeY = drawRage * this.game.getCollections().configs.game.gridSize * (this.game.state.isometric ? 0.5 : 1); // Matches gridToIso Y scaling
     
         if( this.game.state.isometric ) {
             isoRangeX *= .56;

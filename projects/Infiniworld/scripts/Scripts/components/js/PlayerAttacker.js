@@ -56,7 +56,7 @@ class PlayerAttacker extends engine.Component {
     launchProjectile() {
         const projectileType = this.stats.projectile;
         if (!projectileType) return;
-        let projectileDef = this.game.config.projectilePrefabs[projectileType];
+        let projectileDef = this.game.getCollections().projectilePrefabs[projectileType];
        
         let projStats = { ...projectileDef };
         delete projStats.render;
@@ -73,7 +73,7 @@ class PlayerAttacker extends engine.Component {
         
         // Spawn position: slightly offset from player
         let spawnPos = this.parent.transform.position.clone().add(direction.clone().multiplyScalar(5));
-        let projectileParams = this.game.config.projectiles[projectileType];
+        let projectileParams = this.game.getCollections().projectiles[projectileType];
            
         if (projectileParams.offset) {
             const offset = JSON.parse(projectileParams.offset);

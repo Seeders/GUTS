@@ -1,7 +1,6 @@
 class Engine {
     constructor(target) {
         this.entityId = 0;
-
         this.applicationTarget = document.getElementById(target);
         this.entitiesToAdd = [];
         this.plugins = {};
@@ -10,20 +9,21 @@ class Engine {
         this.deltaTime = 0;
         this.engineClasses = [];
         this.libraries = {};
+        this.state = {};
+        window.GUTS = {};
     }
 
     async init() {
-        this.config = await this.loadCollections();
-      
-        if (!this.config) {
+        this.collections = await this.loadCollections();
+        if (!this.collections) {
             console.error("Failed to load game configuration");
             return;
         }
 
         // Initialize ModuleManager
-        this.moduleManager = new ModuleManager(this, this.config, this.applicationTarget, this.applicationTarget);
+        this.moduleManager = new ModuleManager(this, this.collections, this.applicationTarget, this.applicationTarget);
         
-        let projectConfig = this.config.configs.game;
+        let projectConfig = this.collections.configs.game;
         if (projectConfig.libraries) {
             // Use ModuleManager to load modules
             this.moduleManager.libraryClasses = await this.moduleManager.loadModules({ "game": projectConfig });
@@ -32,9 +32,13 @@ class Engine {
         //components, renderers, and functions
         this.setupScriptEnvironment();
         this.preCompileScripts();  
-        this.loader = this.createEntityFromConfig(projectConfig.loaderEntity, {config: this.config}, {x:0, y:0, z:0 }).getComponent(projectConfig.loaderComponent);        
-        await this.loader.load({config: this.config });
-        this.projectEntity = this.loader.getProject();        
+
+        this.state = new (this.libraryClasses.GameState)(this.collections);  
+
+
+        this.state.loader = this.createEntityFromCollections(projectConfig.loaderEntity, {}, {x:0, y:0, z:0 }).getComponent(projectConfig.loaderComponent);        
+        await this.state.loader.load();
+        this.state.projectEntity = this.state.loader.getProject();        
         // Use ModuleManager's script environment
 
         this.animationFrameId = requestAnimationFrame(() => this.gameLoop());
@@ -42,10 +46,12 @@ class Engine {
         requestAnimationFrame(() => {
             this.hideLoadingScreen();
         });
+        window.GUTS.state = this.state;
+        window.GUTS.collections = this.collections;
     }
     
     getCollections() {
-        return this.config;
+        return this.collections;
     }
 
 
@@ -64,28 +70,28 @@ class Engine {
 
     // Pre-compile all scripts to ensure availability
     preCompileScripts() {
-        for (let componentType in this.config.components) {
-            const componentDef = this.config.components[componentType];
+        for (let componentType in this.collections.components) {
+            const componentDef = this.collections.components[componentType];
             if (componentDef.script) {
                 this.moduleManager.compileScript(componentDef.script, componentType);
             }
         }
-        for (let componentType in this.config.renderers) {
-            const componentDef = this.config.renderers[componentType];
+        for (let componentType in this.collections.renderers) {
+            const componentDef = this.collections.renderers[componentType];
             if (componentDef.script) {
                 this.moduleManager.compileScript(componentDef.script, componentType);
             }
         }
-        for( let funcType in this.config.functions) {            
-            const funcDef = this.config.functions[funcType];
+        for( let funcType in this.collections.functions) {            
+            const funcDef = this.collections.functions[funcType];
             this.moduleManager.compileFunction(funcDef.script, funcType);
         }
     }
     
-    gameLoop() {      
-        if(this.projectEntity && this.projectEntity.update) {
-            this.projectEntity.update();  
-            this.projectEntity.draw();   
+    gameLoop() {    
+        if(this.state.projectEntity && this.state.projectEntity.update) {
+            this.state.projectEntity.update();  
+            this.state.projectEntity.draw();   
         }      
         this.entitiesToAdd.forEach((entity) => this.state.addEntity(entity));        
         this.entitiesToAdd = [];
@@ -101,21 +107,21 @@ class Engine {
     }
 
     spawn(type, params, position) {
-        let entity = this.createEntityFromConfig(type, params, position);
+        let entity = this.createEntityFromCollections(type, params, position);
         this.entitiesToAdd.push(entity);        
         return entity;
     }
     
-    createEntityFromConfig(type, params, position) {
+    createEntityFromCollections(type, params, position) {
 
         const entity = this.createEntity(type, position);
-        const def = this.config.entities[type];
+        const def = this.collections.entities[type];
 
         entity.transform = entity.addComponent("transform", { x: position.x, y: position.y, z: position.z });
         
         if (def.components) {
             def.components.forEach((componentType) => {
-                const componentDef = this.config.components[componentType];
+                const componentDef = this.collections.components[componentType];
                 if (componentDef.script) {
                     const ScriptComponent = this.moduleManager.getCompiledScript(componentType, 'components');
                     if (ScriptComponent) {
@@ -126,7 +132,7 @@ class Engine {
         }
         if (def.renderers) {
             def.renderers.forEach((rendererType) => {
-                const componentDef = this.config.renderers[rendererType];
+                const componentDef = this.collections.renderers[rendererType];
                 if (componentDef.script) {
                     const ScriptComponent = this.moduleManager.getCompiledScript(rendererType, 'renderers');
                     if (ScriptComponent) {
@@ -145,10 +151,10 @@ class Engine {
 
     async loadCollections() {
         let currentProject = localStorage.getItem("currentProject");
-        let gameData = {};
+        let project = {};
 
         if(location.hostname === "localhost"){
-            const response = await fetch('/load-config', {
+            const response = await fetch('/load-project', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -156,20 +162,16 @@ class Engine {
                 body: JSON.stringify({ projectName: currentProject }),
             });
 
-            if (!response.ok) {
-                if (response.status === 404) {                
-                    gameData = DEFAULT_PROJECT_CONFIG;
-                } else {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+            if (!response.ok) {      
+                throw new Error(`HTTP error! status: ${response.status}`);                
             } else {
                 const data = await response.json();            
-                gameData = data.config;
+                project = data.project;
             }
         } else if(location.hostname !== "") {
-            gameData = JSON.parse(localStorage.getItem(currentProject)); 
+            project = JSON.parse(localStorage.getItem(currentProject)); 
         }
-        return gameData.objectTypes;
+        return project.objectTypes;
     }
 
 }

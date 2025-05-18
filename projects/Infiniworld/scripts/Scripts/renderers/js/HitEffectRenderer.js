@@ -1,11 +1,7 @@
 class HitEffectRenderer extends engine.Component {
     
-    constructor(game, parent, params) {
-        super(game, parent, params);
-    }
     
-    
- init( ) {
+    init( ) {
         this.ctx = this.game.ctx;
     }
 

@@ -5,7 +5,7 @@ class FollowPath extends engine.Component {
     }
     
     init({ pathIndex = 0 }) {
-        this.gridSize = this.game.config.configs.game.gridSize;
+        this.gridSize = this.game.getCollections().configs.game.gridSize;
         this.pathIndex = pathIndex;
         this.indexInPath = 0;
         // Store grid coordinates
@@ -24,7 +24,7 @@ class FollowPath extends engine.Component {
 
     update() {
         this.stats = this.getComponent('stats').stats;
-        this.gridSize = this.game.config.configs.game.gridSize;
+        this.gridSize = this.game.getCollections().configs.game.gridSize;
 
         if (this.indexInPath < this.game.state.paths[this.pathIndex].length - 1) {
             const target = this.game.state.paths[this.pathIndex][this.indexInPath + 1];

@@ -6,7 +6,7 @@ class Explosion extends engine.Component {
     
     
    init( {radius}) {
-        this.maxRadius = radius * this.game.config.configs.game.gridSize / 2;
+        this.maxRadius = radius * this.game.getCollections().configs.game.gridSize / 2;
         this.currentRadius = 0;
         this.alpha = 1;
     }

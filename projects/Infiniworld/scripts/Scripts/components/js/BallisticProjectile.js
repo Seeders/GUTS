@@ -1,13 +1,9 @@
 class BallisticProjectile extends engine.Component {
     
-    constructor(game, parent, params) {
-        super(game, parent, params);
-    }
-    
     
 init({ spawnType, owner, target, stats }) {
     this.type = spawnType;
-    this.def = this.game.config.projectilePrefabs[this.type];
+    this.def = this.game.getCollections().projectilePrefabs[this.type];
     this.owner = owner;
     this.target = target;
     this.stats = stats;
@@ -44,7 +40,7 @@ init({ spawnType, owner, target, stats }) {
 
 setAnimation(anim) {
 
-    if(this.game.config.configs.game.is3D) {
+    if(this.game.getCollections().configs.game.is3D) {
         this.modelRenderer = this.parent.getComponent('modelRenderer');
         this.modelRenderer?.setAnimation(anim);
     } else {
@@ -168,7 +164,7 @@ processSplashDamage() {
         const dy = enemy.transform.position.y - this.parent.transform.position.y;
         const distSq = dx * dx + dy * dy;
         
-        let gridSize = this.game.config.configs.game.gridSize;
+        let gridSize = this.game.getCollections().configs.game.gridSize;
         const splashRadiusSq = this.stats.splashRadius * this.stats.splashRadius * gridSize * gridSize;
         
         if (distSq <= splashRadiusSq) {
@@ -184,7 +180,7 @@ processSplashDamage() {
                 enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);
                 this.game.spawn("hitEffect", { damageType: this.stats.damageType , lifeSpan: .3},enemy.transform.position);
                 if (this.ownerStats.slowAmount) {
-                    enemyStats.addEffect(this.game.config.effects.slow, this.game.effects.slow, this.ownerStats.slowAmount);
+                    enemyStats.addEffect(this.game.getCollections().effects.slow, this.game.effects.slow, this.ownerStats.slowAmount);
                 }
             }
         }

@@ -1,10 +1,5 @@
 class PopulationBurden extends engine.Component {
-    
-    constructor(game, parent, params) {
-        super(game, parent, params);
-    }
-    
-    
+        
     init(){
         this.stats = this.parent.getComponent('stats').stats;        
     }

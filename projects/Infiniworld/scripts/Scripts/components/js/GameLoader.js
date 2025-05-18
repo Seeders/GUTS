@@ -1,27 +1,21 @@
 class GameLoader extends engine.Component {
     
-    constructor(game, parent, params) {
-        super(game, parent, params);
-    }
-
     init() {}
     
-    async load({config}){
-        this.config = config;        
-        this.config.configs.game.canvasWidth = window.outerWidth;
-        this.config.configs.game.canvasHeight = window.outerHeight;
-        this.state = new (this.game.libraryClasses.GameState)(this.config);  
-        this.game.state = this.state;
-        this.game.palette = this.config.palettes && this.config.configs.game.palette ? this.config.palettes[this.config.configs.game.palette] : null;
-        this.isometric = this.config.configs.game.isIsometric;
-        if (this.game.state.modifierSet && this.config.modifierSets) {
-            this.game.state.stats = this.config.modifierSets[this.game.state.modifierSet];
+    async load(){
+        this.collections = this.game.getCollections();        
+        this.collections.configs.game.canvasWidth = window.outerWidth;
+        this.collections.configs.game.canvasHeight = window.outerHeight;    
+        this.game.palette = this.collections.palettes && this.collections.configs.game.palette ? this.collections.palettes[this.collections.configs.game.palette] : null;
+        this.isometric = this.collections.configs.game.isIsometric;
+        if (this.game.state.modifierSet && this.collections.modifierSets) {
+            this.game.state.stats = this.collections.modifierSets[this.game.state.modifierSet];
             this.game.state.defaultStats = { ...this.game.state.stats };
         }   
-        this.setupCanvas(this.config.configs.game.canvasWidth, this.config.configs.game.canvasHeight);
+        this.setupCanvas(this.collections.configs.game.canvasWidth, this.collections.configs.game.canvasHeight);
         await this.loadAssets();
 
-        const scene = this.config.scenes["main"];
+        const scene = this.collections.scenes["main"];
         const sceneEntities = scene.sceneData;
         sceneEntities.forEach((sceneEntity) => {
             
@@ -41,7 +35,7 @@ class GameLoader extends engine.Component {
                 params = {...params, ...entityComp.parameters };
             });
             if(sceneEntity.type == "game"){  
-                this.game.gameEntity = this.game.createEntityFromConfig(sceneEntity.type, params, position);
+                this.game.gameEntity = this.game.createEntityFromCollections(sceneEntity.type, params, position);
                 this.game.audioManager = this.game.gameEntity.getComponent('AudioManager');  
             } else {
                 let spawned = this.game.spawn(sceneEntity.type, params, new THREE.Vector3(position.x, position.y, position.z));                              
@@ -53,7 +47,6 @@ class GameLoader extends engine.Component {
                     rotation.z
                 );
                 spawned.transform.quaternion.setFromEuler(euler);
-                console.log(spawned.transform.quaternion, rotation, euler);
                 if(sceneEntity.type.startsWith("player")){
                     this.player = spawned;
                     this.game.player = this.player;
@@ -70,7 +63,7 @@ class GameLoader extends engine.Component {
     }
     setupCanvas(canvasWidth, canvasHeight) {
         this.canvas = document.getElementById("gameCanvas");
-        if(this.game.config.configs.game.is3D){
+        if(this.game.getCollections().configs.game.is3D){
             this.finalCtx = this.canvas.getContext("webgl2");
         } else {
             this.finalCtx = this.canvas.getContext("2d");
@@ -91,10 +84,10 @@ class GameLoader extends engine.Component {
         this.game.terrainCanvasBuffer = this.terrainCanvasBuffer;
     }
     async loadAssets() {     
-        this.game.modelManager = new (this.game.libraryClasses.ModelManager)(this.game, {}, {ShapeFactory: this.game.libraryClasses.ShapeFactory, palette: this.game.palette, textures: this.game.config.textures});    
-        for(let objectType in this.config) {
+        this.game.modelManager = new (this.game.libraryClasses.ModelManager)(this.game, {}, {ShapeFactory: this.game.libraryClasses.ShapeFactory, palette: this.game.palette, textures: this.game.getCollections().textures});    
+        for(let objectType in this.collections) {
             
-            await this.game.modelManager.loadModels(objectType, this.config[objectType]);
+            await this.game.modelManager.loadModels(objectType, this.collections[objectType]);
         }  
  
         console.log("loaded all Models");

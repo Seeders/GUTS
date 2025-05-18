@@ -1,10 +1,5 @@
 class PlanckWorld extends engine.Component {
-    
-    constructor(game, parent, params) {
-        super(game, parent, params);
-    }
-    
-        
+            
     //planckWorld component
     init({gravity = 10, gravityX = 0, gravityY = 0}) {
         this.velocityIterations = 6;

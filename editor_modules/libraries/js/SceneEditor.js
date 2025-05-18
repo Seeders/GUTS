@@ -240,7 +240,7 @@ class SceneEditor {
         }        
     }
 
-    async createEntityFromConfig(type, params) {
+    async createEntityFromCollections(type, params) {
         const entity = this.createEntity(type, params);  
 
         return entity;

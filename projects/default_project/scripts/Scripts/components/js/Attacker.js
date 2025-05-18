@@ -82,7 +82,7 @@ class Attacker extends engine.Component {
     launchProjectile() {
         this.stats = this.getComponent('stats').stats;    
         let projectileType = this.stats.projectile;
-        let projectileDef = this.game.config.projectiles[projectileType];
+        let projectileDef = this.game.getCollections().projectiles[projectileType];
         
 
         let projStats = { ...projectileDef };

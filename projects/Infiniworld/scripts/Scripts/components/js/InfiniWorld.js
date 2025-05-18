@@ -33,10 +33,10 @@ class InfiniWorld extends engine.Component {
       // Camera setup
       this.camera = new THREE.PerspectiveCamera(this.cameraData.fov, width / height, this.cameraData.near, this.cameraData.far);
     	this.composer = new THREE_.EffectComposer( this.renderer );
-      this.pixelSize = 8;
+      this.pixelSize = 1;
       const renderPixelatedPass = new THREE_.RenderPixelatedPass( this.pixelSize, this.scene, this.camera );
-      console.log(renderPixelatedPass);
-      window.renderPixelatedPass = renderPixelatedPass;
+      window.GUTS.postProcessors = {};
+      window.GUTS.postProcessors.pixelPass = renderPixelatedPass;
       renderPixelatedPass.normalEdgeStrength = 0;
       
 			this.composer.addPass( renderPixelatedPass );
@@ -1301,7 +1301,6 @@ if(!grassData) return;
     uniforms.maxDistance = { value: 500.0 };
 
     const grassMaterial = new THREE.ShaderMaterial({
-      color: 0xffffff,
       vertexShader: grassShader.vertexScript,
       fragmentShader: grassShader.fragmentScript,
       uniforms: uniforms,
