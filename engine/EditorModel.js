@@ -74,27 +74,19 @@ class EditorModel {
         } catch (e) {
             console.warn('Error saving to localStorage:', e);
         }    
-
-        if(location.hostname !== "localhost"){
-            this.state.project = JSON.parse(localStorage.getItem(this.state.currentProject)); 
-        } else {
-            const response = await fetch('/load-project', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ projectName: this.state.currentProject }),
-            });
+    
+        this.state.project = JSON.parse(localStorage.getItem(this.state.currentProject)); 
+        
+        if(!this.state.project){
+            const response = await fetch(`/projects/${this.state.currentProject}/build/${this.state.currentProject.toUpperCase().replace(/ /g, '_')}.json`);
 
             if (!response.ok) {                    
                 throw new Error(`HTTP error! status: ${response.status}`);
             } else {
                 const data = await response.json();  
-                this.state.project = data.project;
+                this.state.project = data;
             }
         }
-    
-
     }
 
     /**
