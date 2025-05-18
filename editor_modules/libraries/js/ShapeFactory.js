@@ -196,7 +196,7 @@ class ShapeFactory {
                         (error) => reject(error)
                     );
                 });
-                material = new THREE.MeshStandardMaterial({ map: texture });
+                material = new THREE.MeshStandardMaterial({ map: texture, color: colorToUse });
             } else {                
                 material = new THREE.MeshStandardMaterial({ color: colorToUse });
             }
