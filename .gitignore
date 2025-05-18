@@ -17,10 +17,6 @@ pids
 # package-lock.json
 # yarn.lock
 
-# Build output (if you have a build step)
-dist/
-build/
-
 # Environment variables
 .env
 .env.local
