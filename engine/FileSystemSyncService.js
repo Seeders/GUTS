@@ -147,7 +147,7 @@ class FileSystemSyncService {
         }
     
         try {
-            const projectPath = `${projectId}`;
+            const projectPath = `${projectId}/${this.projectScriptDirectoryName}`;
             console.log('Importing project from filesystem:', projectPath);
     
             const response = await fetch('/list-files', {
@@ -193,7 +193,6 @@ class FileSystemSyncService {
             this.gameEditor.model.saveProject();
             console.log('All modules successfully imported');
 
-            console.log(files);
         } catch(e) {
             console.warn(e);
         }
@@ -622,7 +621,7 @@ class FileSystemSyncService {
             return;
         }
 
-        const projectPath = `${projectId}`;
+        const projectPath = `${projectId}/${this.projectScriptDirectoryName}`;
 
         fetch('/list-files', {
             method: 'POST',

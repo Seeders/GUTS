@@ -120,14 +120,10 @@ class EditorModel {
                     body: JSON.stringify({ projectName: this.state.currentProject }),
                 });
     
-                if (!response.ok) {
-                    if (response.status === 404) {                
-                        this.state.project = DEFAULT_PROJECT_CONFIG;
-                    } else {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
+                if (!response.ok) {                    
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 } else {
-                    const data = await response.json();            
+                    const data = await response.json();  
                     this.state.project = data.config;
                 }
             }
