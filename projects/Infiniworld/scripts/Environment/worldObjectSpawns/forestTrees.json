@@ -1,6 +1,6 @@
 {
   "title": "Forest Trees",
-  "worldObjectPrefab": "spruce_tree",
+  "worldObjectPrefab": "ash_medium_tree",
   "density": 0.075,
   "maxSlope": 0.8
 }

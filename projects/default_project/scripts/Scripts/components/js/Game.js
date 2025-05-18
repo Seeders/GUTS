@@ -17,7 +17,6 @@ class Game extends engine.Component {
             y: endY * this.gridSize + this.gridSize / 2,
             z: 0
         }
-        debugger;
         this.keep = this.game.spawn("tower",{ spawnType: 'keep', objectType: 'towers', setDirection: 1}, keepPosition);
         this.keep.placed = true;
         

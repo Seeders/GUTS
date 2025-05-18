@@ -24,7 +24,10 @@
     "ModelManager",
     "three.OrbitControls",
     "GLTFLoader",
-    "InstancePool"
+    "InstancePool",
+    "three.EffectComposer",
+    "three.RenderPixelatedPass",
+    "three.OutputPass"
   ],
   "fileName": "game",
   "interface": "main",
