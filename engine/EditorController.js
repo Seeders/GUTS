@@ -44,8 +44,7 @@ class EditorController {
      * Called when application starts
      */
     async init() {
-        // Make sure default projects exist in localStorage
-        this.model.initializeDefaultProjects();
+     
         // Determine which project to load (saved or default)
         const initialProject = this.model.getInitialProject();
         await this.loadProject(initialProject);
@@ -187,11 +186,6 @@ class EditorController {
             }
         } catch (e) {
             console.error('Error loading modules:', e);
-        }
-        if(!this.model.defaultProjects[name]) {
-            this.elements.deleteProjectBtn.classList.remove("hidden");
-        } else {
-            this.elements.deleteProjectBtn.classList.add("hidden");
         }
         // Update UI components to reflect loaded project
         this.view.renderObjectList();

@@ -67,10 +67,12 @@ class ModelManager {
 
         // Collect textures
         tempModels.forEach(({ modelKey, model, spawnType }) => {
+            let meshIndex = 0;
             model.traverse(child => {
                 if (child.isMesh && child.material.map) {
-                    textures.push(child.material.map);
-                    textureInfo.push({ modelKey, spawnType });
+                    textures.push(child.material.map);                    
+                    textureInfo.push({ modelKey, spawnType, meshIndex });
+                    meshIndex++;
                 }
             });
         });
@@ -260,7 +262,7 @@ class ModelManager {
             const size = textureSizes[i];
             const pos = gridPositions[i];
             ctx.drawImage(img, pos.x, pos.y, size.width, size.height);
-            this.uvMappings.set(textureInfo[i].spawnType, [
+            this.uvMappings.set(`${textureInfo[i].spawnType}_${textureInfo[i].meshIndex}`, [
                 pos.x / atlasWidth,
                 pos.y / atlasHeight,
                 (pos.x + size.width) / atlasWidth,
@@ -276,6 +278,7 @@ class ModelManager {
     async createModel(objectType, spawnType, modelData, useAtlas = true) {
         const modelGroup = await this.createObjectsFromJSON(modelData, {}, objectType, spawnType);
         if (modelGroup) {
+            let meshIndex = 0;
             modelGroup.traverse((child) => {
                 if (child.isMesh) {
                     child.castShadow = true;
@@ -291,7 +294,8 @@ class ModelManager {
                         });
                         child.material.needsUpdate = true;
                         // Remap UVs
-                        const uvMapping = this.uvMappings.get(spawnType);
+                        const uvMapping = this.uvMappings.get(`${spawnType}_${meshIndex}`);
+                        meshIndex++;
                         const [uMin, vMin, uMax, vMax] = uvMapping;
                         const uvAttribute = geometry.attributes.uv;
                         if (uvAttribute) {                   

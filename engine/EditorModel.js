@@ -30,39 +30,10 @@ class EditorModel {
             selectedObject: null,
             expandedCategories: {}
         };
-
-        // Define default projects that come pre-installed
-        this.defaultProjects = {
-            "default_project": DEFAULT_PROJECT_CONFIG
-        };
     }
 
     getCurrentVersion() {
       return this.state.currentVersion;
-    }
-
-    initializeDefaultProjects() {
-      
-        if(localStorage.getItem('version') != this.getCurrentVersion()){
-          Object.keys(this.defaultProjects).forEach((key) => {
-            localStorage.removeItem(key);  
-          });
-          localStorage.setItem('version', this.getCurrentVersion());
-        }
-        let defaultProjects = [];
-        Object.keys(this.defaultProjects).forEach((key) => {
-            defaultProjects.push(key);
-            if (!localStorage.getItem(key) && window.location.hostname != "localhost") {
-                localStorage.setItem(key, JSON.stringify(this.defaultProjects[key]));
-            }
-        });
-        if(!localStorage.getItem('projects')){
-            localStorage.setItem('projects', JSON.stringify(defaultProjects));
-        }
-        if(window.location.hostname == "localhost"){
-            localStorage.setItem('saveToFile',1);
-            return;
-        }
     }
 
     setSelectedType(type){
