@@ -37,8 +37,8 @@ const fileTimestamps = new Map();
 const SUPPORTED_EXTENSIONS = ['.json', '.js', '.html', '.css']; // Add more if needed
 
 // Endpoint to save the config
-app.post('/save-config', async (req, res) => {
-    const config = JSON.parse(req.body.config);
+app.post('/save-project', async (req, res) => {
+    const project = JSON.parse(req.body.project);
     const projectName = req.body.projectName;
     const buildFolder = path.join(PROJS_DIR, `${projectName}/build`);
     const fileName = projectName.toUpperCase().replace(/ /g, '_');
@@ -48,14 +48,14 @@ app.post('/save-config', async (req, res) => {
         if (!fsSync.existsSync(buildFolder)) {
             await fs.mkdir(buildFolder, { recursive: true });
         }        
-        await fs.writeFile(`${buildFilePath}`, `${JSON.stringify(config, null, 2)}`, 'utf8');
+        await fs.writeFile(`${buildFilePath}`, `${JSON.stringify(project, null, 2)}`, 'utf8');
         res.status(200).send('Config saved successfully!');
     } catch (error) {
         console.error('Error saving config:', error);
         res.status(500).send('Error saving config');
     }
 });
-app.post('/load-config', async (req, res) => {
+app.post('/load-project', async (req, res) => {
     const projectName = req.body.projectName;
     const buildFolder = path.join(PROJS_DIR, `${projectName}/build`);
     const fileName = projectName.toUpperCase().replace(/ /g, '_');
@@ -68,9 +68,9 @@ app.post('/load-config', async (req, res) => {
             return res.status(404).send('Config not found');
         }
         // Read and parse the JSON file        
-        const config = JSON.parse(await fsSync.promises.readFile(buildFilePath, 'utf8'));
+        const project = JSON.parse(await fsSync.promises.readFile(buildFilePath, 'utf8'));
 
-        res.status(200).json({ config });
+        res.status(200).json({ project });
     } catch (error) {
         console.error('Error loading config:', error);
         res.status(500).send('Error loading config');
