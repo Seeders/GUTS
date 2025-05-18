@@ -183,7 +183,7 @@ class ModuleManager {
 
     // Build the import map from module libraries
     Object.entries(modules).forEach(([moduleId, moduleConfig]) => {
-        const libraries = moduleConfig.library ? [moduleConfig.library] : moduleConfig.libraries || [moduleId];
+        const libraries = (moduleConfig?.library ? [moduleConfig?.library] : moduleConfig?.libraries) || [moduleId];
         libraries.forEach((library) => {
             let libraryDef = this.collections.libraries[library];
             if (libraryDef && libraryDef.importName && libraryDef.href && libraryDef.isModule) {
