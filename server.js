@@ -13,7 +13,7 @@ const BASE_DIR = path.join(__dirname, '/');
 const PROJS_DIR = path.join(BASE_DIR, 'projects');
 const MODULES_DIR = path.join(BASE_DIR, 'editor_modules');
 const MODELS_DIR = path.join(BASE_DIR, 'samples/models');
-const CONFIG_DIR = path.join(BASE_DIR, 'config');
+
 const upload = multer({ dest: path.join(BASE_DIR, 'uploads') });
 
 const CACHE_DIR = path.join(__dirname, 'cache');
@@ -39,18 +39,16 @@ const SUPPORTED_EXTENSIONS = ['.json', '.js', '.html', '.css']; // Add more if n
 // Endpoint to save the config
 app.post('/save-config', async (req, res) => {
     const config = JSON.parse(req.body.config);
-    const projectName = req.body.projectName.toUpperCase().replace(/ /g, '_');
-    const filePath1 = path.join(CONFIG_DIR, `${projectName}_config.js`);
+    const projectName = req.body.projectName;
+    const buildFolder = path.join(PROJS_DIR, `${projectName}/build`);
+    const fileName = projectName.toUpperCase().replace(/ /g, '_');
+    const buildFilePath = path.join(buildFolder, `${fileName}.json`);
 
     try {
-        if (!fsSync.existsSync(CONFIG_DIR)) {
-            await fs.mkdir(CONFIG_DIR, { recursive: true });
-        }
-        if(projectName == "DEFAULT_PROJECT") {
-            await fs.writeFile(filePath1, `const ${projectName}_CONFIG = ${JSON.stringify(config, null, 2)}; `, 'utf8');
-        } else {
-            await fs.writeFile(`${filePath1}on`, `${JSON.stringify(config, null, 2)}`, 'utf8');
-        }
+        if (!fsSync.existsSync(buildFolder)) {
+            await fs.mkdir(buildFolder, { recursive: true });
+        }        
+        await fs.writeFile(`${buildFilePath}`, `${JSON.stringify(config, null, 2)}`, 'utf8');
         res.status(200).send('Config saved successfully!');
     } catch (error) {
         console.error('Error saving config:', error);
@@ -58,19 +56,19 @@ app.post('/save-config', async (req, res) => {
     }
 });
 app.post('/load-config', async (req, res) => {
-    const projectName = req.body.projectName.toUpperCase().replace(/ /g, '_');
-    const filePath = path.join(CONFIG_DIR, `${projectName}_config.json`);
+    const projectName = req.body.projectName;
+    const buildFolder = path.join(PROJS_DIR, `${projectName}/build`);
+    const fileName = projectName.toUpperCase().replace(/ /g, '_');
+    const buildFilePath = path.join(buildFolder, `${fileName}.json`);
     try {
         if (!projectName) {
             return res.status(400).send('Project name is required');
         }
-
-        if (!fsSync.existsSync(filePath)) {
+        if (!fsSync.existsSync(buildFilePath)) {
             return res.status(404).send('Config not found');
         }
-
         // Read and parse the JSON file        
-        const config = JSON.parse(await fsSync.promises.readFile(filePath, 'utf8'));
+        const config = JSON.parse(await fsSync.promises.readFile(buildFilePath, 'utf8'));
 
         res.status(200).json({ config });
     } catch (error) {

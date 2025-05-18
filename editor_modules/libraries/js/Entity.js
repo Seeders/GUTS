@@ -1,5 +1,5 @@
 class Entity {
-    constructor(game, type, position) {
+    constructor(game, type) {
         this.game = game;
         this.moduleManager = game.moduleManager;        
         this.components = [];
@@ -8,8 +8,7 @@ class Entity {
         this.id = ++game.entityId;
         this.type = type;
         this.collisionRadius = 5;   
-        this.entityHeight = 10;    
-        this.transform = this.addComponent("transform", { x: position.x, y: position.y, z: position.z });        
+        this.entityHeight = 10;        
     }
     getAABB(position = this.transform.position) {
         return {

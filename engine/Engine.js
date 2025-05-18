@@ -101,11 +101,13 @@ class Engine {
     }
 
     spawn(type, params, position) {
-        return this.addEntity(this.createEntityFromConfig(type, params, position));
+        let entity = this.addEntity(this.createEntityFromConfig(type, params), position);
+        entity.transform = entity.addComponent("transform", { x: position.x, y: position.y, z: position.z });
+        return entity;
     }
 
     addEntity(entity) {
-        this.entitiesToAdd.push(entity);
+        this.entitiesToAdd.push(entity);        
         return entity;
     }
     

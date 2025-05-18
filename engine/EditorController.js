@@ -193,10 +193,6 @@ class EditorController {
         } else {
             this.elements.deleteProjectBtn.classList.add("hidden");
         }
-        this.modelManager = new (this.moduleManager.libraryClasses.ModelManager)(this,{}, {ShapeFactory: this.moduleManager.libraryClasses.ShapeFactory, palette: this.getPalette(), textures: this.getCollections().textures});    
-        for(let objectType in this.getCollections()) {            
-            await this.modelManager.loadModels(objectType, this.getCollections()[objectType]);
-        }
         // Update UI components to reflect loaded project
         this.view.renderObjectList();
         this.view.updateSidebarButtons();
