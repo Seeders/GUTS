@@ -78,7 +78,7 @@ class EditorModel {
         this.state.project = JSON.parse(localStorage.getItem(this.state.currentProject)); 
         
         if(!this.state.project){
-            const response = await fetch(`/projects/${this.state.currentProject}/build/${this.state.currentProject.toUpperCase().replace(/ /g, '_')}.json`);
+            const response = await fetch(`/projects/${this.state.currentProject}/config/${this.state.currentProject.toUpperCase().replace(/ /g, '_')}.json`);
 
             if (!response.ok) {                    
                 throw new Error(`HTTP error! status: ${response.status}`);
