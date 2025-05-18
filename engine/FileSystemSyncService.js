@@ -7,6 +7,7 @@ class FileSystemSyncService {
             autoSync: true,
             syncInterval: 3000
         };
+        this.projectScriptDirectoryName = 'scripts';
         this.propertyConfig = [
             { propertyName: 'script', ext: 'js' },
             { propertyName: 'html', ext: 'html' },
@@ -347,7 +348,7 @@ class FileSystemSyncService {
             return;
         }
 
-        const basePath = `${projectId}/${category}/${type}`;
+        const basePath = `${projectId}/${this.projectScriptDirectoryName}/${category}/${type}`;
 
         // Check for special properties in this object
         const specialProperties = {};
@@ -439,7 +440,7 @@ class FileSystemSyncService {
             return;
         }
 
-        const projectPath = `${projectId}`;
+        const projectPath = `${projectId}/${this.projectScriptDirectoryName}`;
         console.log('Checking filesystem for changes in:', projectPath);
 
         const response = await fetch('/list-files', {

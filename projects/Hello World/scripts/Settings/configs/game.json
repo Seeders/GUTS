@@ -1,6 +1,7 @@
 {
   "title": "Hello World",
   "libraries": [
+    "threejs",
     "Entity",
     "Component",
     "GameState"
