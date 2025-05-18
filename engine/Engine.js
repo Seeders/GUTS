@@ -101,12 +101,7 @@ class Engine {
     }
 
     spawn(type, params, position) {
-        let entity = this.addEntity(this.createEntityFromConfig(type, params), position);
-        entity.transform = entity.addComponent("transform", { x: position.x, y: position.y, z: position.z });
-        return entity;
-    }
-
-    addEntity(entity) {
+        let entity = this.createEntityFromConfig(type, params, position);
         this.entitiesToAdd.push(entity);        
         return entity;
     }
@@ -115,6 +110,8 @@ class Engine {
 
         const entity = this.createEntity(type, position);
         const def = this.config.entities[type];
+
+        entity.transform = entity.addComponent("transform", { x: position.x, y: position.y, z: position.z });
         
         if (def.components) {
             def.components.forEach((componentType) => {
