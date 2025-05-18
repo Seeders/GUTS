@@ -151,23 +151,18 @@ class Engine {
         let currentProject = localStorage.getItem("currentProject");
         let project = {};
 
-        if(location.hostname === "localhost"){
-            const response = await fetch('/load-project', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ projectName: currentProject }),
-            });
 
-            if (!response.ok) {      
-                throw new Error(`HTTP error! status: ${response.status}`);                
+        project = JSON.parse(localStorage.getItem(currentProject)); 
+        
+        if(!project){
+            const response = await fetch(`/projects/${currentProject}/build/${currentProject.toUpperCase().replace(/ /g, '_')}.json`);
+
+            if (!response.ok) {                    
+                throw new Error(`HTTP error! status: ${response.status}`);
             } else {
-                const data = await response.json();            
-                project = data.project;
+                const data = await response.json();  
+                project = data;
             }
-        } else if(location.hostname !== "") {
-            project = JSON.parse(localStorage.getItem(currentProject)); 
         }
         return project.objectTypes;
     }
