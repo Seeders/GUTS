@@ -22,9 +22,9 @@ class GameLoader extends engine.Component {
         this.setupCanvas(this.collections.configs.game.canvasWidth, this.collections.configs.game.canvasHeight);
         await this.loadAssets();
 
-        this.game.translator = new (this.game.libraryClasses.CoordinateTranslator)(this.collections.configs.game, this.collections.levels[this.state.level].tileMap.terrainMap.length, this.isometric);
-        this.game.spatialGrid = new (this.game.libraryClasses.SpatialGrid)(this.collections.levels[this.state.level].tileMap.terrainMap.length, this.collections.configs.game.gridSize);
-        const terrainImages = this.game.imageManager.getImages("levels", this.state.level);
+        this.game.translator = new (this.game.libraryClasses.CoordinateTranslator)(this.collections.configs.game, this.collections.levels[this.game.state.level].tileMap.terrainMap.length, this.isometric);
+        this.game.spatialGrid = new (this.game.libraryClasses.SpatialGrid)(this.collections.levels[this.game.state.level].tileMap.terrainMap.length, this.collections.configs.game.gridSize);
+        const terrainImages = this.game.imageManager.getImages("levels", this.game.state.level);
 
         // Use ModuleManager's script environment
         this.game.terrainTileMapper = new (this.game.libraryClasses.TileMap)(this, {}, {CanvasUtility: this.game.libraryClasses.CanvasUtility});
@@ -53,8 +53,8 @@ class GameLoader extends engine.Component {
         this.canvas.setAttribute('height', canvasHeight);  
         
         this.terrainCanvasBuffer = document.createElement('canvas');
-        this.terrainCanvasBuffer.width = this.collections.configs.game.gridSize * this.collections.levels[this.state.level].tileMap.terrainMap[0].length;
-        this.terrainCanvasBuffer.height = this.collections.configs.game.gridSize * this.collections.levels[this.state.level].tileMap.terrainMap.length;
+        this.terrainCanvasBuffer.width = this.collections.configs.game.gridSize * this.collections.levels[this.game.state.level].tileMap.terrainMap[0].length;
+        this.terrainCanvasBuffer.height = this.collections.configs.game.gridSize * this.collections.levels[this.game.state.level].tileMap.terrainMap.length;
 
         this.game.canvas = this.canvas;
         this.game.finalCtx = this.finalCtx;

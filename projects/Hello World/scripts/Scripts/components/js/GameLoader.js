@@ -5,8 +5,6 @@ class GameLoader extends engine.Component {
     
     async load(){
         this.collections = this.game.getCollections();        
-        this.state = new (this.game.libraryClasses.GameState)(this.collections);  
-        this.game.state = this.state;
         this.game.palette = this.collections.palettes && this.collections.configs.game.palette ? this.collections.palettes[this.collections.configs.game.palette] : null;
         
 

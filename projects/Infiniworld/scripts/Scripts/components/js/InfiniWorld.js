@@ -33,13 +33,18 @@ class InfiniWorld extends engine.Component {
       // Camera setup
       this.camera = new THREE.PerspectiveCamera(this.cameraData.fov, width / height, this.cameraData.near, this.cameraData.far);
     	this.composer = new THREE_.EffectComposer( this.renderer );
-      this.pixelSize = 1;
-      const renderPixelatedPass = new THREE_.RenderPixelatedPass( this.pixelSize, this.scene, this.camera );
-      window.GUTS.postProcessors = {};
-      window.GUTS.postProcessors.pixelPass = renderPixelatedPass;
-      renderPixelatedPass.normalEdgeStrength = 0;
+      this.pixelSize = this.gameConfig.pixelSize || 1;
       
-			this.composer.addPass( renderPixelatedPass );
+      this.pixelPass = new THREE_.RenderPixelatedPass( this.pixelSize, this.scene, this.camera );
+      if(this.pixelSize == 1) {
+        this.pixelPass.enabled = false;
+      }
+      this.game.postProcessors = {
+        pixelPass: this.pixelPass
+      };
+      this.pixelPass.normalEdgeStrength = 0;
+      
+			this.composer.addPass( this.pixelPass );
 			const outputPass = new THREE_.OutputPass();
 			this.composer.addPass( outputPass );
       // Terrain configuration
@@ -768,17 +773,20 @@ class InfiniWorld extends engine.Component {
     // Only force shadow map update when terrain changes (e.g., new chunks)
     // This is already handled in handleWorkerMessage with this.renderer.shadowMap.needsUpdate = true
     
-  for (const [key, value] of this.uniforms.entries()) {
-      value.time = { value: this.timer };
-      value.cameraPosition = { value: { x: this.camera.position.x, y: this.camera.position.y, z: this.camera.position.z } };
-  }
-  	const rendererSize = this.renderer.getSize( new THREE.Vector2() );
-    const aspectRatio = rendererSize.x / rendererSize.y;
-  	this.pixelAlignFrustum( this.camera, aspectRatio, Math.floor( rendererSize.x / this.pixelSize ),
+    for (const [key, value] of this.uniforms.entries()) {
+        value.time = { value: this.timer };
+        value.cameraPosition = { value: { x: this.camera.position.x, y: this.camera.position.y, z: this.camera.position.z } };
+    }
+    if(this.pixelPass.enabled){
+  	  const rendererSize = this.renderer.getSize( new THREE.Vector2() );
+      const aspectRatio = rendererSize.x / rendererSize.y;
+  	  this.pixelAlignFrustum( this.camera, aspectRatio, Math.floor( rendererSize.x / this.pixelSize ),
 					Math.floor( rendererSize.y / this.pixelSize ) );
-
+    }
     this.renderer.render(this.scene, this.camera);
-		this.composer.render();
+    if(this.pixelPass.enabled){
+		  this.composer.render();
+    }
   }
   pixelAlignFrustum( camera, aspectRatio, pixelsPerScreenWidth, pixelsPerScreenHeight ) {
 
@@ -1288,11 +1296,13 @@ if(!grassData) return;
     const lightDirection = new THREE.Vector3();
     lightDirection.subVectors(this.directionalLight.position, this.directionalLight.target.position);
     lightDirection.normalize();
-    // uniforms.directionalLightColor = { value: new THREE.Color(this.lighting.directionalColor) };
-    // uniforms.directionalLightIntensity = { value: this.lighting.directionalIntensity };
-    // uniforms.directionalLightDirection = { value: lightDirection };
-    // uniforms.ambientLightColor = { value: new THREE.Color(this.lighting.ambientColor) };
-    // uniforms.ambientLightIntensity = { value: this.lighting.ambientIntensity };
+    if(!this.pixelPass.enabled){
+      uniforms.directionalLightColor = { value: new THREE.Color(this.lighting.directionalColor) };
+      uniforms.directionalLightIntensity = { value: this.lighting.directionalIntensity };
+      uniforms.directionalLightDirection = { value: lightDirection };
+      uniforms.ambientLightColor = { value: new THREE.Color(this.lighting.ambientColor) };
+      uniforms.ambientLightIntensity = { value: this.lighting.ambientIntensity };
+    }
     uniforms.skyColor = { value: new THREE.Color(this.lighting.skyColor) };
     uniforms.groundColor = { value: new THREE.Color(this.lighting.groundColor) };
     uniforms.hemisphereIntensity = { value: this.lighting.hemisphereIntensity };

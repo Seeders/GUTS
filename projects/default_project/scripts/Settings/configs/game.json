@@ -30,5 +30,6 @@
   "canvasWidth": 1600,
   "canvasHeight": 1000,
   "is3D": true,
-  "palette": "main"
+  "palette": "main",
+  "pixelSize": 4
 }

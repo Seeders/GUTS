@@ -4,7 +4,8 @@ class ThreeJsWorld extends engine.Component {
         width = window.innerWidth,
         height = window.innerHeight,
         useControls = true}) {
-        if (!this.game.getCollections().configs.game.is3D) {
+        this.gameConfig = this.game.getCollections().configs.game;
+        if (!this.gameConfig.is3D) {
             return;
         }
         this.level = this.game.getCollections().levels[this.game.state.level];
@@ -45,13 +46,16 @@ class ThreeJsWorld extends engine.Component {
         //     this.cameraSettings.far
         // );
         this.camera = new THREE.OrthographicCamera(
-             width / - 2, 
-             width / 2, 
-             height / 2, 
-             height / - 2, 
+            width / - 2, 
+            width / 2, 
+            height / 2, 
+            height / - 2, 
             this.cameraSettings.near,
             this.cameraSettings.far
         );
+        this.camera.zoom = .0035;
+this.camera.updateProjectionMatrix();
+
         let cameraPos = JSON.parse(this.cameraSettings.position);
 
         this.camera.position.set(
@@ -124,9 +128,17 @@ class ThreeJsWorld extends engine.Component {
         this.scene.add(this.hemisphereLight);
 
         this.composer = new THREE_.EffectComposer( this.renderer );
-        this.pixelSize = 4;
-         const renderPixelatedPass = new THREE_.RenderPixelatedPass( this.pixelSize, this.scene, this.camera );
-        this.composer.addPass( renderPixelatedPass );
+        this.pixelSize = this.gameConfig.pixelSize || 1;
+        this.pixelPass = new THREE_.RenderPixelatedPass( this.pixelSize, this.scene, this.camera );
+        if(this.pixelSize == 1) {
+            this.pixelPass.enabled = false;
+        }
+        this.game.postProcessors = {
+            pixelPass: this.pixelPass
+        };
+        this.pixelPass.normalEdgeStrength = 0;
+    
+        this.composer.addPass( this.pixelPass );
         const outputPass = new THREE_.OutputPass();
         this.composer.addPass( outputPass );
 
@@ -409,13 +421,16 @@ class ThreeJsWorld extends engine.Component {
             this.uniforms[key].time = { value: this.timer };            
         }
         
-        const rendererSize = this.renderer.getSize( new THREE.Vector2() );
-        const aspectRatio = rendererSize.x / rendererSize.y;
-  	    this.pixelAlignFrustum( this.camera, aspectRatio, Math.floor( rendererSize.x / this.pixelSize ),
-					Math.floor( rendererSize.y / this.pixelSize ) );
-
+        if(this.pixelPass.enabled){
+            const rendererSize = this.renderer.getSize( new THREE.Vector2() );
+            const aspectRatio = rendererSize.x / rendererSize.y;
+            this.pixelAlignFrustum( this.camera, aspectRatio, Math.floor( rendererSize.x / this.pixelSize ),
+                        Math.floor( rendererSize.y / this.pixelSize ) );
+        }
         this.renderer.render(this.scene, this.camera);
-         this.composer.render();
+        if(this.pixelPass.enabled){
+            this.composer.render();
+        }
     }
     pixelAlignFrustum( camera, aspectRatio, pixelsPerScreenWidth, pixelsPerScreenHeight ) {
 
@@ -475,12 +490,13 @@ class ThreeJsWorld extends engine.Component {
         const lightDirection = new THREE.Vector3();
         lightDirection.subVectors(this.directionalLight.position, this.directionalLight.target.position);
         lightDirection.normalize();
-
-        this.uniforms['grass'].directionalLightColor = { value: new THREE.Color(this.lightingSettings.directionalColor) };
-        this.uniforms['grass'].directionalLightIntensity = { value: this.lightingSettings.directionalIntensity };
-        this.uniforms['grass'].directionalLightDirection = { value: lightDirection };
-        this.uniforms['grass'].ambientLightColor = { value: new THREE.Color(this.lightingSettings.ambientColor) };
-        this.uniforms['grass'].ambientLightIntensity = { value: this.lightingSettings.ambientIntensity };
+        if(!this.pixelPass.enabled){
+            this.uniforms['grass'].directionalLightColor = { value: new THREE.Color(this.lightingSettings.directionalColor) };
+            this.uniforms['grass'].directionalLightIntensity = { value: this.lightingSettings.directionalIntensity };
+            this.uniforms['grass'].directionalLightDirection = { value: lightDirection };
+            this.uniforms['grass'].ambientLightColor = { value: new THREE.Color(this.lightingSettings.ambientColor) };
+            this.uniforms['grass'].ambientLightIntensity = { value: this.lightingSettings.ambientIntensity };
+        }
         this.uniforms['grass'].skyColor =  { value: new THREE.Color(this.lightingSettings.skyColor) }; // HemisphereLight sky color
         this.uniforms['grass'].groundColor = { value: new THREE.Color(this.lightingSettings.groundColor) }; // HemisphereLight ground color
         this.uniforms['grass'].hemisphereIntensity = { value: this.lightingSettings.hemisphereIntensity };

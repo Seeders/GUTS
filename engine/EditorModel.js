@@ -104,7 +104,14 @@ class EditorModel {
      */
     saveProject() {
         if (!this.state.currentProject) return;
-
+        let projectLibraries = {};
+        const projectLibraryNames = this.state.project.objectTypes.configs.game.libraries;
+        if(projectLibraryNames && projectLibraryNames.length > 0) {
+            projectLibraryNames.forEach((libraryName) => {
+                projectLibraries[libraryName] = this.state.project.objectTypes.libraries[libraryName];
+            });
+        };
+        this.state.project.objectTypes.libraries = projectLibraries;        
         const projectText = JSON.stringify(this.state.project);
         for(const key in this.state.project.objectTypes){
             if(!this.state.project.objectTypeDefinitions.find((e) => e.id == key)){
