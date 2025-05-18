@@ -38,24 +38,25 @@ class ThreeJsWorld extends engine.Component {
         if (this.fogSettings.enabled) {
             this.scene.fog = new THREE.FogExp2(this.fogSettings.color, this.fogSettings.density);
         }
-
-        // this.camera = new THREE.PerspectiveCamera(
-        //     this.cameraSettings.fov,
-        //     width / height,
-        //     this.cameraSettings.near,
-        //     this.cameraSettings.far
-        // );
-        this.camera = new THREE.OrthographicCamera(
-            width / - 2, 
-            width / 2, 
-            height / 2, 
-            height / - 2, 
-            this.cameraSettings.near,
-            this.cameraSettings.far
-        );
-        this.camera.zoom = .0035;
-this.camera.updateProjectionMatrix();
-
+        if(this.cameraSettings.fov){
+            this.camera = new THREE.PerspectiveCamera(
+                this.cameraSettings.fov,
+                width / height,
+                this.cameraSettings.near,
+                this.cameraSettings.far
+            );
+        } else if(this.cameraSettings.zoom){
+            this.camera = new THREE.OrthographicCamera(
+                width / - 2, 
+                width / 2, 
+                height / 2, 
+                height / - 2, 
+                this.cameraSettings.near,
+                this.cameraSettings.far
+            );
+            this.camera.zoom = this.cameraSettings.zoom;
+            this.camera.updateProjectionMatrix();
+        }
         let cameraPos = JSON.parse(this.cameraSettings.position);
 
         this.camera.position.set(

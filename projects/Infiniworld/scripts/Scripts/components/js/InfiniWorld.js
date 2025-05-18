@@ -31,7 +31,25 @@ class InfiniWorld extends engine.Component {
       this.uniforms = new Map();
       this.cameraData = this.game.getCollections().cameras[this.world.camera];  
       // Camera setup
-      this.camera = new THREE.PerspectiveCamera(this.cameraData.fov, width / height, this.cameraData.near, this.cameraData.far);
+      if(this.cameraData.fov){
+          this.camera = new THREE.PerspectiveCamera(
+              this.cameraData.fov,
+              width / height,
+              this.cameraData.near,
+              this.cameraData.far
+          );
+      } else if(this.cameraData.zoom){
+          this.camera = new THREE.OrthographicCamera(
+              width / - 2, 
+              width / 2, 
+              height / 2, 
+              height / - 2, 
+              this.cameraData.near,
+              this.cameraData.far
+          );
+          this.camera.zoom = this.cameraData.zoom;
+          this.camera.updateProjectionMatrix();
+      }
     	this.composer = new THREE_.EffectComposer( this.renderer );
       this.pixelSize = this.gameConfig.pixelSize || 1;
       
