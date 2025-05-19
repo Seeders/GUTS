@@ -30,7 +30,7 @@
                 "scaleZ": 1,
                 "color": "#FFFFFF",
                 "texture": "carbonFiber",
-                "url": "/samples/models/walk_guy/walk_guy.glb",
+                "url": "projects/InfiniWorld/resources/models/walk_guy/walk_guy.glb",
                 "metalness": "0",
                 "roughness": "1",
                 "id": 0
@@ -59,7 +59,7 @@
                 "scaleZ": 1,
                 "color": "#FFFFFF",
                 "texture": "carbonFiber",
-                "url": "/samples/models/spearthrow_guy/spearthrow_guy.glb",
+                "url": "projects/InfiniWorld/resources/models/spearthrow_guy/spearthrow_guy.glb",
                 "metalness": "0",
                 "roughness": "1",
                 "id": 0
@@ -88,7 +88,7 @@
                 "scaleZ": 1,
                 "color": "#FFFFFF",
                 "texture": "carbonFiber",
-                "url": "/samples/models/running_guy/running_guy.glb",
+                "url": "projects/InfiniWorld/resources/models/running_guy/running_guy.glb",
                 "metalness": "0",
                 "roughness": "1",
                 "id": 0
@@ -117,7 +117,7 @@
                 "scaleZ": 1,
                 "color": "#FFFFFF",
                 "texture": "carbonFiber",
-                "url": "/samples/models/leaping_guy/leaping_guy.glb",
+                "url": "projects/InfiniWorld/resources/models/leaping_guy/leaping_guy.glb",
                 "metalness": "0",
                 "roughness": "1",
                 "id": 0
@@ -161,7 +161,7 @@
             "scaleZ": 1,
             "color": "#FFFFFF",
             "texture": "carbonFiber",
-            "url": "/samples/models/idle_guy/idle_guy.glb",
+            "url": "projects/InfiniWorld/resources/models/idle_guy/idle_guy.glb",
             "metalness": "0",
             "roughness": "1"
           }

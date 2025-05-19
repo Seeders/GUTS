@@ -27,7 +27,7 @@
                 "scaleZ": 1,
                 "color": "#FFFFFF",
                 "texture": "carbonFiber",
-                "url": "/samples/models/KnightIdle/KnightIdle.glb",
+                "url": "projects/InfiniWorld/resources/models/KnightIdle/KnightIdle.glb",
                 "id": 0
               }
             ]
@@ -54,7 +54,7 @@
                 "scaleZ": 1,
                 "color": "#FFFFFF",
                 "texture": "carbonFiber",
-                "url": "/samples/models/KnightWalk/KnightWalk.glb",
+                "url": "projects/InfiniWorld/resources/models/KnightWalk/KnightWalk.glb",
                 "id": 0
               }
             ]
@@ -96,7 +96,7 @@
             "scaleZ": 1,
             "color": "#FFFFFF",
             "texture": "carbonFiber",
-            "url": "/samples/models/KnightIdle/KnightIdle.glb",
+            "url": "projects/InfiniWorld/resources/models/KnightIdle/KnightIdle.glb",
             "metalness": ".8",
             "roughness": "0.25"
           }

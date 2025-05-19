@@ -15,7 +15,7 @@
             "color": "#ffffff",
             "height": 20,
             "texture": "",
-            "url": "/samples/models/ash_medium_leaves/ash_medium_leaves.glb",
+            "url": "projects/InfiniWorld/resources/models/ash_medium_leaves/ash_medium_leaves.glb",
             "metalness": "0",
             "roughness": "1",
             "scale": {
@@ -30,7 +30,7 @@
             "color": "#ffffff",
             "height": 20,
             "texture": "",
-            "url": "/samples/models/ash_medium_trunk/ash_medium_trunk.glb",
+            "url": "projects/InfiniWorld/resources/models/ash_medium_trunk/ash_medium_trunk.glb",
             "metalness": "0",
             "roughness": "1",
             "scale": {

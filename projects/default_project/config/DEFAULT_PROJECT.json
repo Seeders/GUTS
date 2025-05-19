@@ -13381,7 +13381,7 @@
                   "scaleX": 500,
                   "scaleY": 500,
                   "scaleZ": 500,
-                  "url": "/samples/models/Avocado/Avocado.gltf"
+                  "url": "resources/models/Avocado/Avocado.gltf"
                 },
                 {
                   "type": "cylinder",

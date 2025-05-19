@@ -97,7 +97,7 @@ class ModelManager {
                         const animMainGroup = anim[Object.keys(anim)[0]];
                         let mergedModel = JSON.parse(JSON.stringify(cfg.render.model));
                         if (animMainGroup) {
-                            mergedModel[modelGroupName].shapes[0].url = animMainGroup.shapes[0].url;
+                            mergedModel[modelGroupName].shapes[0].url = `.${animMainGroup.shapes[0].url}`;
                         }
                         const modelKey = `${prefix}_${type}_${animationName}`;
                         this.models[modelKey] = await this.createModel(prefix, type, mergedModel, true);

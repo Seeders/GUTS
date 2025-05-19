@@ -15,7 +15,7 @@
             "color": "#ffffff",
             "height": 20,
             "texture": "",
-            "url": "/samples/models/spruce_tree/spruce_tree.glb",
+            "url": "projects/InfiniWorld/resources/models/spruce_tree/spruce_tree.glb",
             "metalness": "0",
             "roughness": "1",
             "scale": {

@@ -84,12 +84,12 @@ app.post('/upload-model', upload.single('gltfFile'), async (req, res) => {
         if (!req.file.originalname.endsWith('.gltf') && !req.file.originalname.endsWith('.glb')) {
             return res.status(400).json({ error: `Uploaded file "${req.file.originalname}" is not a .gltf file or .glb file.` });
         }
-
+        const projectName = req.body.projectName;
         const gltfPath = req.file.path;
         const gltfContent = await fs.readFile(gltfPath, 'utf8');
 
         const modelName = req.file.originalname.endsWith('.gltf') ? path.basename(req.file.originalname, '.gltf') : path.basename(req.file.originalname, '.glb');
-        const modelFolder = path.join(MODELS_DIR, modelName);
+        const modelFolder = path.join(PROJS_DIR, projectName, "resources/models", modelName);
         const finalGltfPath = path.join(modelFolder, req.file.originalname);
 
         if (!fsSync.existsSync(modelFolder)) {
@@ -99,7 +99,7 @@ app.post('/upload-model', upload.single('gltfFile'), async (req, res) => {
 
         const relativePath = path.relative(BASE_DIR, finalGltfPath).replace(/\\/g, '/');
         const gameData = {
-            filePath:  "/" + relativePath,
+            filePath:  relativePath,
             fileName: req.file.originalname,
         };
 
