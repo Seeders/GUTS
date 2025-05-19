@@ -7,7 +7,6 @@ class MultiplayerManager extends engine.Component {
     this.networkObjects = {};      // Networked physics objects
     
     // Create network manager
-    this.network = new (this.game.libraryClasses.NetworkManager)(this);
     this.serverUrl = serverUrl;
     // Interpolation settings
     this.interpolationDelay = 100; // ms    
@@ -16,6 +15,7 @@ class MultiplayerManager extends engine.Component {
   // Initialize networking
   async initializeMultiplayer() {
     try {
+      this.network = new (this.game.libraryClasses.NetworkManager)(this);
       const networkId = await this.network.connect(this.serverUrl);
       console.log(`Multiplayer initialized with player ID: ${networkId}`);
       return networkId;
