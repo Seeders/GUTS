@@ -3,6 +3,9 @@ class ModelManager {
         this.app = app;
         this.models = {};
         this.shapeFactory = new ShapeFactory(palette, textures);
+        if(location.hostname != "localhost") {
+            this.shapeFactory.setURLRoot("/GUTS/");
+        }
     }
 
     clear() {

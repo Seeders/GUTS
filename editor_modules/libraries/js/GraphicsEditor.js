@@ -20,6 +20,9 @@ class GraphicsEditor {
         this.gameEditor = gameEditor;
         this.config = config;
         this.shapeFactory = new ShapeFactory(this.gameEditor.getPalette(), this.gameEditor.getCollections().textures, null);
+        if(location.hostname != "localhost") {
+            this.shapeFactory.setURLRoot("/GUTS/");
+        }
         this.canvas = document.getElementById('graphics-editor-canvas');
         // Initialize sub-modules
         this.sceneRenderer = new GE_SceneRenderer(gameEditor, this);
