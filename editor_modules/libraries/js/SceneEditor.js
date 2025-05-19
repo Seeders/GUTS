@@ -27,6 +27,9 @@ class SceneEditor {
         } 
         this.componentsToUpdate = [];
         this.shapeFactory = new ShapeFactory(this.gameEditor.getPalette(), this.gameEditor.getCollections().textures, null);
+        if(location.hostname != "localhost") {
+            this.shapeFactory.setURLRoot("/GUTS/");
+        }
         this.nextEntityId = 1;
         this.initThreeJS(this.canvas);
         this.gizmoManager = new SE_GizmoManager();
