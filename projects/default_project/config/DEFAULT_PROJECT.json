@@ -138,8 +138,8 @@
           },
           "effects": {
             "filter": {
-              "type": "lowpass",
-              "frequency": 400,
+              "type": "highpass",
+              "frequency": 4000,
               "Q": 1
             },
             "distortion": 5,
@@ -192,33 +192,41 @@
       "plasma": {
         "title": "Plasma",
         "audio": {
-          "waveform": "noise",
-          "frequency": 73,
+          "waveform": "square",
+          "frequency": 150,
           "duration": 0.1,
+          "noise": {
+            "type": "pink",
+            "amount": 0.63,
+            "filter": {
+              "type": "lowpass",
+              "frequency": 20
+            }
+          },
           "envelope": {
             "attack": 0.001,
-            "decay": 2,
+            "decay": 0,
             "sustain": 0,
             "release": 0.001
           },
           "pitchEnvelope": {
-            "start": 0.97,
-            "end": 1.01,
+            "start": 0.75,
+            "end": 0.25,
             "time": 0.1
           },
           "effects": {
             "filter": {
-              "type": "lowpass",
-              "frequency": 70,
-              "Q": 2
+              "type": "highpass",
+              "frequency": 13141,
+              "Q": 0.1
             },
-            "distortion": 3,
+            "distortion": 0,
             "delay": {
               "time": 0,
               "feedback": 0
             },
             "reverb": 0,
-            "bitcrusher": 0.1,
+            "bitcrusher": 0,
             "pan": 0
           }
         }

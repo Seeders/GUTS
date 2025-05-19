@@ -17,8 +17,8 @@
     },
     "effects": {
       "filter": {
-        "type": "lowpass",
-        "frequency": 400,
+        "type": "highpass",
+        "frequency": 4000,
         "Q": 1
       },
       "distortion": 5,
