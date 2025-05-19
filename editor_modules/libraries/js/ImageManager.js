@@ -22,7 +22,7 @@ class ImageManager {
         const aspect = 1;
 
         this.shapeFactory = new ShapeFactory(palette, textures);
-        if(location.hostname != "localhost") {
+        if(location.hostname == "github") {
             this.shapeFactory.setURLRoot("/GUTS/");
         }
         // Create 8 cameras for isometric views at 45-degree intervals

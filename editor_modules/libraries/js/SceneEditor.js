@@ -1,5 +1,5 @@
 class SceneEditor {
-    constructor(gameEditor, config, {ShapeFactory, SE_GizmoManager}) {
+    constructor(gameEditor, config, {ShapeFactory, SE_GizmoManager, ModelManager}) {
         this.gameEditor = gameEditor;
         this.config = config;
         this.scene = null;
@@ -27,9 +27,11 @@ class SceneEditor {
         } 
         this.componentsToUpdate = [];
         this.shapeFactory = new ShapeFactory(this.gameEditor.getPalette(), this.gameEditor.getCollections().textures, null);
-        if(location.hostname != "localhost") {
+        if(location.hostname == "github") {
             this.shapeFactory.setURLRoot("/GUTS/");
-        }
+        }   
+        this.gameEditor.modelManager = new ModelManager(this.gameEditor, {}, {ShapeFactory, palette: this.gameEditor.palette, textures: this.gameEditor.getCollections().textures});    
+     
         this.nextEntityId = 1;
         this.initThreeJS(this.canvas);
         this.gizmoManager = new SE_GizmoManager();
@@ -164,10 +166,11 @@ class SceneEditor {
         window.addEventListener('resize', this.handleResize.bind(this));
     }
     
-    handleRenderSceneObject(event) {
+    async handleRenderSceneObject(event) {
         this.canvas.width = this.gameEditor.getCollections().configs.game.canvasWidth;
         this.canvas.height = this.gameEditor.getCollections().configs.game.canvasHeight;
-        this.canvas.setAttribute('style','');       
+        this.canvas.setAttribute('style','');   
+        await this.loadAssets();    
         this.clearScene();
         this.renderSceneData(event.detail.data);
         console.log(event.detail.data);
@@ -177,6 +180,15 @@ class SceneEditor {
         requestAnimationFrame(() => {
             this.state.selectedEntityIndex = -1;
         });
+    }
+
+    async loadAssets() {
+        if(!this.gameEditor.modelManager.assetsLoaded){
+            let collections = this.gameEditor.getCollections();
+            for(let objectType in collections) {            
+                await this.gameEditor.modelManager.loadModels(objectType, collections[objectType]);
+            }  
+        } 
     }
 
     animate() {
