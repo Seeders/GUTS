@@ -20,7 +20,7 @@ class GraphicsEditor {
         this.gameEditor = gameEditor;
         this.config = config;
         this.shapeFactory = new ShapeFactory(this.gameEditor.getPalette(), this.gameEditor.getCollections().textures, null);
-        if(location.hostname != "localhost") {
+        if(location.hostname == "github") {
             this.shapeFactory.setURLRoot("/GUTS/");
         }
         this.canvas = document.getElementById('graphics-editor-canvas');

@@ -4,12 +4,13 @@ class ModelManager {
         this.config = config;
         this.models = {};
         this.shapeFactory = new ShapeFactory(palette, textures, null);
-        if(location.hostname != "localhost") {
+        if(location.hostname == "github") {
             this.shapeFactory.setURLRoot("/GUTS/");
         }
         this.textureAtlases = new Map();
         this.uvMappings = new Map();
         this.mergedGeometries = new Map();
+        this.assetsLoaded = false;
     }
 
     clear() {
@@ -115,6 +116,8 @@ class ModelManager {
         // }
         // Dispose temporary models
         tempModels.forEach(({ model }) => this.shapeFactory.disposeObject(model));
+
+        this.assetsLoaded = true;
     }
     debugTextureAtlas(config, prefix) {
         if (!this.textureAtlases[prefix] || this.uvMappings.size === 0) {
