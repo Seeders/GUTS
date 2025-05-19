@@ -79,8 +79,12 @@ class Game extends engine.Component {
             const tile = this.game.state.tileMap[Math.floor(gridPosition.y)][Math.floor(gridPosition.x)];
             if (!tile) {
                 return 0;
+            }              
+            let heightStep = 1;
+            if(this.game.heightMapConfig){
+                heightStep = this.game.heightMapConfig.heightStep
             }
-            const terrainHeight = tile.typeId * this.game.heightMapConfig.heightStep;
+            const terrainHeight = tile.typeId * heightStep;
             return terrainHeight;
         }
         return 0;

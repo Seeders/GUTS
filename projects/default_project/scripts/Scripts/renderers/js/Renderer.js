@@ -70,8 +70,8 @@ class Renderer extends engine.Component {
                 const imgWidth = image.width;
                 const imgHeight = image.height;
                 
-                const drawX = this.parent.drawPosition.x - imgWidth / 2;
-                let drawY = this.parent.drawPosition.y - imgHeight / 2;
+                const drawX = this.parent.transform.drawPosition.x - imgWidth / 2;
+                let drawY = this.parent.transform.drawPosition.y - imgHeight / 2;
                 if( this.parent.transform.position.z ) {
                    drawY -= this.parent.transform.position.z;                   
                 }
