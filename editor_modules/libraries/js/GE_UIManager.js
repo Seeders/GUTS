@@ -209,7 +209,7 @@ class GE_UIManager {
                 // // Create FormData and append the file
                  const formData = new FormData();
                  formData.append('gltfFile', file); // 'gltfFile' matches the multer.single('gltfFile') on the server
-
+                 formData.append('projectName', this.gameEditor.getCurrentProject());
                 try {
                      const response = await fetch('/upload-model', {
                          method: 'POST',
