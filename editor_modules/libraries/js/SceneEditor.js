@@ -173,7 +173,6 @@ class SceneEditor {
         await this.loadAssets();    
         this.clearScene();
         this.renderSceneData(event.detail.data);
-        console.log(event.detail.data);
         this.handleResize();
         this.clock = new window.THREE.Clock();
         this.clock.start(); 
