@@ -13,8 +13,8 @@ class Engine {
         window.GUTS = this;
     }
 
-    async init() {
-        this.collections = await this.loadCollections();
+    async init(projectName) {
+        this.collections = await this.loadCollections(projectName);
         if (!this.collections) {
             console.error("Failed to load game configuration");
             return;
@@ -147,8 +147,8 @@ class Engine {
         return entity;
     }
 
-    async loadCollections() {
-        let currentProject = localStorage.getItem("currentProject");
+    async loadCollections(projectName) {
+        let currentProject = projectName;
         let project = {};
 
 

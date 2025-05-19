@@ -30,6 +30,11 @@ class EditorModel {
             selectedObject: null,
             expandedCategories: {}
         };
+        let projects = localStorage.getItem("projects");
+        if(!projects){
+            localStorage.setItem("currentProject", "default_project");
+            localStorage.setItem("projects", JSON.stringify(["default_project", "Hello World", "Infiniworld"]));
+        }
     }
 
     getCurrentVersion() {
