@@ -2,7 +2,7 @@
   "title": "Main",
   "sceneData": [
     {
-      "id": 1,
+      "id": 4,
       "type": "game",
       "objectType": "gamePrefabs",
       "spawnType": "infiniworldShire",
@@ -38,7 +38,7 @@
       ]
     },
     {
-      "id": 4,
+      "id": 5,
       "type": "staticObject",
       "objectType": "worldObjectPrefabs",
       "spawnType": "sequoia_tree",
@@ -68,7 +68,7 @@
       ]
     },
     {
-      "id": 5,
+      "id": 6,
       "type": "player",
       "objectType": "playerPrefabs",
       "spawnType": "waving_guy",

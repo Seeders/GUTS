@@ -37,8 +37,8 @@ class GameLoader extends engine.Component {
             if(sceneEntity.type == "game"){  
                 this.game.gameEntity = this.game.createEntityFromCollections(sceneEntity.type, params, position);
                 this.game.audioManager = this.game.gameEntity.getComponent('AudioManager');  
-                this.game.multiplayerManager = this.game.gameEntity.getComponent("MultiplayerManager");
-                this.game.multiplayerManager.init({scene: this.game.scene, world: this.game.physics, serverUrl: 'http://10.0.0.40:3000' });
+            //    this.game.multiplayerManager = this.game.gameEntity.getComponent("MultiplayerManager");
+             //   this.game.multiplayerManager.init({scene: this.game.scene, world: this.game.physics, serverUrl: 'http://10.0.0.40:3000' });
             } else {
                 let spawned = this.game.spawn(sceneEntity.type, params, new THREE.Vector3(position.x, position.y, position.z));                              
                 spawned.transform.scale.copy(scale);
@@ -57,7 +57,7 @@ class GameLoader extends engine.Component {
             }
         });
 
-        if(this.player) {
+        if(this.player && this.game.multiplayerManager) {
             this.playerId = await this.game.multiplayerManager.initializeMultiplayer(this.serverUrl);            
             this.game.multiplayerManager.createLocalPlayer(this.playerId, this.player);
         }
