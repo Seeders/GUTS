@@ -190,6 +190,7 @@ class FileSystemSyncService {
             const files = await response.json();
     
             await this.loadFiles(files, true);
+            this.setCollectionDefs();
             this.gameEditor.model.saveProject();
             console.log('All modules successfully imported');
 
@@ -323,6 +324,7 @@ class FileSystemSyncService {
         }
     
         this.currentCollections[collectionIdFromPath][objectId] = objectData;
+        
         const updateEvent = new CustomEvent('projectUpdated', { cancelable: true });
         document.body.dispatchEvent(updateEvent);
     }
