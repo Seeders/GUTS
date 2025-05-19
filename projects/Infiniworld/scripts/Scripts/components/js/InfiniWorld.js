@@ -893,7 +893,6 @@ class InfiniWorld extends engine.Component {
         instancedMesh.castShadow = true;
         instancedMesh.receiveShadow = true;
         instancedMesh.material.transparent = false;
-        instancedMesh.material.alphaTest = 0.1; // Set alpha test for transparency
         instancedMesh.material.needsUpdate = true; // Force material update
         instancedMesh.material.side = THREE.DoubleSide; // Set side to double for better visibility
         this.rootGroup.add(instancedMesh);

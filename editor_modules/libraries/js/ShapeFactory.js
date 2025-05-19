@@ -4,7 +4,11 @@ class ShapeFactory {
         this.gltfLoader = new THREE_.GLTFLoader();
         this.palette = palette;
         this.textures = textures;
-        this.skeleUtils = THREE_.SkeletonUtils;        
+        this.skeleUtils = THREE_.SkeletonUtils;   
+        this.urlRoot = "/";     
+    }
+    setURLRoot(root){
+        this.urlRoot = root;
     }
     async createMergedGroupFromJSON(model, frameData, groupName) {
         let mergedGroup = this.getMergedGroup(model, frameData, groupName);
@@ -75,7 +79,8 @@ class ShapeFactory {
                         metalness: shape.metalness || 0.5,
                         roughness: shape.roughness || 0.5,
                         map: map
-                    });
+                    });                           
+                    child.material.alphaTest = 0.1;
                     child.material.needsUpdate = true;
                     child.castShadow = true;
                     child.receiveShadow = true;
@@ -130,7 +135,7 @@ class ShapeFactory {
             } else if (shape.url && location.hostname !== "") {
                 await new Promise((resolve, reject) => {
                     this.gltfLoader.load(
-                        shape.url,
+                        `${this.urlRoot}${shape.url}`,
                         (gltf) => {
                             const clonedScene = this.skeleUtils.clone(gltf.scene);
                             this.gltfCache.set(shape.url, gltf);

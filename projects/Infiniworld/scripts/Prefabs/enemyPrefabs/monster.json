@@ -15,7 +15,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/InfiniWorld/resources/models/walk_monster/walk_monster.glb",
+                "url": "projects/Infiniworld/resources/models/walk_monster/walk_monster.glb",
                 "id": 0
               }
             ]
@@ -57,7 +57,7 @@
             "scaleZ": 1,
             "color": "#FFFFFF",
             "texture": "carbonFiber",
-            "url": "projects/InfiniWorld/resources/model/idle_monster/idle_monster.glb",
+            "url": "projects/Infiniworld/resources/models/idle_monster/idle_monster.glb",
             "metalness": "0",
             "roughness": "1"
           }
