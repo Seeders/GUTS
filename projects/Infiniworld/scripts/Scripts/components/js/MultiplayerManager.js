@@ -1,5 +1,5 @@
-class MultiplayerGameEngine {
-  constructor(scene, world) {
+class MultiplayerManager extends engine.Component {
+  init({scene, world, serverUrl}) {
     this.scene = scene;            // Three.js scene
     this.world = world;            // Rapier world
     this.localPlayer = null;       // Local player object
@@ -7,18 +7,18 @@ class MultiplayerGameEngine {
     this.networkObjects = {};      // Networked physics objects
     
     // Create network manager
-    this.network = new NetworkManager(this);
-    
+    this.network = new (this.game.libraryClasses.NetworkManager)(this);
+    this.serverUrl = serverUrl;
     // Interpolation settings
-    this.interpolationDelay = 100; // ms
+    this.interpolationDelay = 100; // ms    
   }
   
   // Initialize networking
-  async initializeMultiplayer(serverUrl) {
+  async initializeMultiplayer() {
     try {
-      const playerId = await this.network.connect(serverUrl);
-      console.log(`Multiplayer initialized with player ID: ${playerId}`);
-      return playerId;
+      const networkId = await this.network.connect(this.serverUrl);
+      console.log(`Multiplayer initialized with player ID: ${networkId}`);
+      return networkId;
     } catch (err) {
       console.error('Failed to initialize multiplayer:', err);
       throw err;
@@ -26,13 +26,12 @@ class MultiplayerGameEngine {
   }
   
   // Update called from your game loop
-  update(deltaTime) {
+  update() {
     // Update local player position on network
     if (this.localPlayer) {
-      const position = this.localPlayer.mesh.position;
-      const quaternion = this.localPlayer.mesh.quaternion;
-      const velocity = this.localPlayer.body ? 
-        this.localPlayer.body.linvel() : { x: 0, y: 0, z: 0 };
+      const position = this.localPlayer.transform.position;
+      const quaternion = this.localPlayer.transform.quaternion;
+      const velocity = this.localPlayer.transform.velocity;
       
       this.network.sendPlayerUpdate(
         { x: position.x, y: position.y, z: position.z },
@@ -42,71 +41,58 @@ class MultiplayerGameEngine {
     }
     
     // Interpolate remote players
-    this.updateRemotePlayers(deltaTime);
+    this.updateRemotePlayers();
   }
   
   // Update remote players with interpolation
-  updateRemotePlayers(deltaTime) {
-    Object.keys(this.remotePlayers).forEach(playerId => {
-      const player = this.remotePlayers[playerId];
+  updateRemotePlayers() {
+    Object.keys(this.remotePlayers).forEach(networkId => {
+      const player = this.remotePlayers[networkId];
       
-      if (player.targetPosition && player.targetQuaternion) {
+      if (player.transform.networkPosition) {
         // Position interpolation
-        player.mesh.position.lerp(player.targetPosition, 0.2);
-        
+        player.transform.position.lerp(player.transform.networkPosition, 0.2);
+      }
+      if(player.transform.networkQuaternion){
         // Rotation interpolation
-        player.mesh.quaternion.slerp(player.targetQuaternion, 0.2);
+        player.transform.quaternion.slerp(player.transform.networkQuaternion, 0.2);
       }
     });
   }
   
   // Create local player
-  createLocalPlayer(mesh, body) {
-    this.localPlayer = { mesh, body };
+  createLocalPlayer(networkId, entity) {
+    this.localPlayer = entity;
+    this.localPlayer.networkId = networkId;
+    entity.transform.networkPosition = entity.transform.position;
+    entity.transform.networkQuaternion = entity.transform.quaternion;
+    entity.transform.networkVelocity = entity.transform.velocity;
     return this.localPlayer;
   }
   
   // Create remote player representation
-  createRemotePlayer(playerId, playerData) {
-    // Create mesh for remote player - customize based on your game's player representation
-    const geometry = new THREE.BoxGeometry(1, 2, 1);
-    const material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
-    const mesh = new THREE.Mesh(geometry, material);
-    
-    // Set initial position and rotation
-    if (playerData.position) {
-      mesh.position.set(
-        playerData.position.x,
-        playerData.position.y,
-        playerData.position.z
-      );
-    }
-    
-    if (playerData.quaternion) {
-      mesh.quaternion.set(
-        playerData.quaternion.x,
-        playerData.quaternion.y,
-        playerData.quaternion.z,
-        playerData.quaternion.w
-      );
-    }
-    
-    // Add to scene
-    this.scene.add(mesh);
-    
-    // Store in remote players
-    const remotePlayer = {
-      id: playerId,
-      mesh: mesh,
-      targetPosition: mesh.position.clone(),
-      targetQuaternion: mesh.quaternion.clone(),
-      velocity: new THREE.Vector3()
-    };
-    
-    this.remotePlayers[playerId] = remotePlayer;
+  createRemotePlayer(networkId, data) {
+    let objEntity = this.game.spawn(data.type, { networkId: networkId }, data.position);
+    objEntity.networkId = networkId;
+    this.setNetworkTransform(objEntity);
+    this.remotePlayers[networkId] = remotePlayer;
     return remotePlayer;
   }
-  
+
+  createNetworkObjectEntity(networkId, data) {
+    let objEntity = this.game.spawn(data.type, { networkId: networkId }, data.position);
+    objEntity.networkId = this.network;
+    this.setNetworkTransform(objEntity);    
+    this.networkObjects[networkId] = objEntity;  
+    return object;
+  }
+    
+  setNetworkTransform(entity) {
+    entity.transform.networkPosition = entity.transform.position.clone();
+    entity.transform.networkQuaternion = entity.transform.quaternion.clone();
+    entity.transform.networkVelocity = entity.transform.velocity.clone();
+    return entity;
+  }
   // Update remote player
   updateRemotePlayer(playerId, playerData) {
     const player = this.remotePlayers[playerId];
@@ -114,7 +100,7 @@ class MultiplayerGameEngine {
     
     // Update target position and rotation for interpolation
     if (playerData.position) {
-      player.targetPosition.set(
+      player.transform.networkPosition.set(
         playerData.position.x,
         playerData.position.y,
         playerData.position.z
@@ -122,7 +108,7 @@ class MultiplayerGameEngine {
     }
     
     if (playerData.quaternion) {
-      player.targetQuaternion.set(
+      player.transform.networkQuaternion.set(
         playerData.quaternion.x,
         playerData.quaternion.y,
         playerData.quaternion.z,
@@ -131,7 +117,7 @@ class MultiplayerGameEngine {
     }
     
     if (playerData.velocity) {
-      player.velocity.set(
+      player.transform.networkVelocity.set(
         playerData.velocity.x,
         playerData.velocity.y,
         playerData.velocity.z
@@ -144,128 +130,11 @@ class MultiplayerGameEngine {
     const player = this.remotePlayers[playerId];
     if (!player) return;
     
-    // Remove from scene
-    this.scene.remove(player.mesh);
-    
-    // Dispose resources
-    if (player.mesh.geometry) player.mesh.geometry.dispose();
-    if (player.mesh.material) {
-      if (Array.isArray(player.mesh.material)) {
-        player.mesh.material.forEach(material => material.dispose());
-      } else {
-        player.mesh.material.dispose();
-      }
-    }
-    
+    player.destroy();
     // Remove from cache
     delete this.remotePlayers[playerId];
   }
   
-  // Create object from server data
-  createObjectFromServer(objectData) {
-    // Implement based on your object types and creation logic
-    // This is just a basic example
-    const object = this.createNetworkObject(objectData);
-    
-    if (object) {
-      this.networkObjects[objectData.id] = object;
-    }
-    
-    return object;
-  }
-  
-  // Create a networked physics object
-  createNetworkObject(data) {
-    // Example implementation - customize based on your game objects
-    let mesh, body;
-    
-    // Create Three.js mesh
-    if (data.type === 'box') {
-      const geometry = new THREE.BoxGeometry(data.size.x, data.size.y, data.size.z);
-      const material = new THREE.MeshStandardMaterial({ color: data.color || 0xaaaaaa });
-      mesh = new THREE.Mesh(geometry, material);
-    } else if (data.type === 'sphere') {
-      const geometry = new THREE.SphereGeometry(data.radius, 16, 16);
-      const material = new THREE.MeshStandardMaterial({ color: data.color || 0xaaaaaa });
-      mesh = new THREE.Mesh(geometry, material);
-    } else {
-      // Default or custom object type
-      return null;
-    }
-    
-    // Set position and rotation
-    if (data.position) {
-      mesh.position.set(data.position.x, data.position.y, data.position.z);
-    }
-    
-    if (data.quaternion) {
-      mesh.quaternion.set(
-        data.quaternion.x,
-        data.quaternion.y,
-        data.quaternion.z,
-        data.quaternion.w
-      );
-    }
-    
-    // Add to scene
-    this.scene.add(mesh);
-    
-    // Create Rapier physics body if we have a physics world
-    if (this.world) {
-      // Create rigid body description
-      let bodyDesc;
-      if (data.isStatic) {
-        bodyDesc = RAPIER.RigidBodyDesc.fixed();
-      } else {
-        bodyDesc = RAPIER.RigidBodyDesc.dynamic();
-      }
-      
-      if (data.position) {
-        bodyDesc.setTranslation(data.position.x, data.position.y, data.position.z);
-      }
-      
-      if (data.quaternion) {
-        bodyDesc.setRotation({
-          x: data.quaternion.x,
-          y: data.quaternion.y,
-          z: data.quaternion.z,
-          w: data.quaternion.w
-        });
-      }
-      
-      // Create the rigid body
-      body = this.world.createRigidBody(bodyDesc);
-      
-      // Create collision shape
-      let collider;
-      if (data.type === 'box') {
-        collider = RAPIER.ColliderDesc.cuboid(
-          data.size.x / 2, 
-          data.size.y / 2, 
-          data.size.z / 2
-        );
-      } else if (data.type === 'sphere') {
-        collider = RAPIER.ColliderDesc.ball(data.radius);
-      }
-      
-      if (collider) {
-        // Set restitution, friction, etc.
-        if (data.restitution !== undefined) collider.setRestitution(data.restitution);
-        if (data.friction !== undefined) collider.setFriction(data.friction);
-        
-        // Create the collider
-        this.world.createCollider(collider, body);
-      }
-    }
-    
-    // Return the created object
-    return {
-      id: data.id,
-      mesh: mesh,
-      body: body,
-      data: data
-    };
-  }
   
   // Update object from server data
   updateObjectFromServer(objectData) {
@@ -273,8 +142,8 @@ class MultiplayerGameEngine {
     if (!object) return;
     
     // Update mesh and body
-    if (objectData.position && object.mesh) {
-      object.mesh.position.set(
+    if (objectData.position && object.transform) {
+      object.transform.position.set(
         objectData.position.x,
         objectData.position.y,
         objectData.position.z
@@ -282,7 +151,7 @@ class MultiplayerGameEngine {
     }
     
     if (objectData.quaternion && object.mesh) {
-      object.mesh.quaternion.set(
+      object.transform.quaternion.set(
         objectData.quaternion.x,
         objectData.quaternion.y,
         objectData.quaternion.z,
@@ -334,11 +203,11 @@ class MultiplayerGameEngine {
   
   // Get local player position for reconciliation
   getLocalPlayerPosition() {
-    if (!this.localPlayer || !this.localPlayer.mesh) {
+    if (!this.localPlayer || !this.localPlayer.transform) {
       return { x: 0, y: 0, z: 0 };
     }
     
-    const pos = this.localPlayer.mesh.position;
+    const pos = this.localPlayer.transform.position;
     return { x: pos.x, y: pos.y, z: pos.z };
   }
   
@@ -347,8 +216,8 @@ class MultiplayerGameEngine {
     if (!this.localPlayer) return;
     
     // Update position
-    if (position && this.localPlayer.mesh) {
-      this.localPlayer.mesh.position.set(position.x, position.y, position.z);
+    if (position && this.localPlayer.transform) {
+      this.localPlayer.transform.position.set(position.x, position.y, position.z);
     }
     
     // Update velocity

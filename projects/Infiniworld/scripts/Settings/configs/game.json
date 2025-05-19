@@ -27,7 +27,8 @@
     "InstancePool",
     "three.EffectComposer",
     "three.RenderPixelatedPass",
-    "three.OutputPass"
+    "three.OutputPass",
+    "NetworkManager"
   ],
   "fileName": "game",
   "interface": "main",

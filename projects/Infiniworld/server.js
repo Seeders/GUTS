@@ -7,7 +7,13 @@ const path = require('path');
 // Create Express app and HTTP server
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+const io = new Server(server, {
+  cors: {
+    origin: "*", // Allow all origins (for development only)
+    methods: ["GET", "POST"], // Allowed HTTP methods
+    credentials: true // Optional: allow cookies to be sent
+  }
+});
 
 // Serve static files from the "public" directory
 app.use(express.static(path.join(__dirname, 'public')));

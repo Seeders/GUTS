@@ -14,10 +14,10 @@ class GameLoader extends engine.Component {
         }   
         this.setupCanvas(this.collections.configs.game.canvasWidth, this.collections.configs.game.canvasHeight);
         await this.loadAssets();
-
+        this.playerId = 0;
         const scene = this.collections.scenes["main"];
         const sceneEntities = scene.sceneData;
-        sceneEntities.forEach((sceneEntity) => {
+        sceneEntities.forEach(async (sceneEntity) => {
             
             let position = new THREE.Vector3();
             let scale = new THREE.Vector3(1, 1, 1);
@@ -37,6 +37,8 @@ class GameLoader extends engine.Component {
             if(sceneEntity.type == "game"){  
                 this.game.gameEntity = this.game.createEntityFromCollections(sceneEntity.type, params, position);
                 this.game.audioManager = this.game.gameEntity.getComponent('AudioManager');  
+                this.game.multiplayerManager = this.game.gameEntity.getComponent("MultiplayerManager");
+                this.game.multiplayerManager.init({scene: this.game.scene, world: this.game.physics, serverUrl: 'http://localhost:3000' });
             } else {
                 let spawned = this.game.spawn(sceneEntity.type, params, new THREE.Vector3(position.x, position.y, position.z));                              
                 spawned.transform.scale.copy(scale);
@@ -54,6 +56,11 @@ class GameLoader extends engine.Component {
                 }
             }
         });
+
+        if(this.player) {
+            this.playerId = await this.game.multiplayerManager.initializeMultiplayer(this.serverUrl);            
+            this.game.multiplayerManager.createLocalPlayer(this.playerId, this.player);
+        }
  
 
     }
