@@ -8,12 +8,12 @@ class PlayerController extends engine.Component {
         characterHeight = 18,
         characterRadius = 3,
         cameraHeight = 16,
-        cameraSmoothing = 0.2
+        cameraSmoothing = 0.2,
+        isRemote = false
     }) {
         let gameComponent = this.game.gameEntity.getComponent('game');
         this.world = gameComponent.world;
         this.physics = gameComponent.physics;
-        this.physics.registerPlayer(this.setupPhysics.bind(this));
         this.scene = this.world.scene;
         this.camera = this.game.camera;
 
@@ -55,6 +55,8 @@ class PlayerController extends engine.Component {
         this.moveForward = 0;
         this.moveRight = 0;
 
+        //this is just a ghost instance of a remote player
+        this.isRemote = isRemote;
         // Input state
         this.keys = {
             KeyW: false,
@@ -67,31 +69,34 @@ class PlayerController extends engine.Component {
 
         // Pointer lock controls
         this.controls = { isLocked: false };
-        document.addEventListener('click', () => {
-            if (!this.controls.isLocked) {
-                this.world.renderer.domElement.requestPointerLock();
-            }
-        });
-        document.addEventListener('pointerlockchange', () => {
-            this.controls.isLocked = document.pointerLockElement === this.world.renderer.domElement;
-        });
 
+
+        if(!this.isRemote) { 
+            document.addEventListener('click', () => {            
+                if (!this.controls.isLocked) {
+                    this.world.renderer.domElement.requestPointerLock();
+                }
+            });
+            document.addEventListener('pointerlockchange', () => {
+                this.controls.isLocked = document.pointerLockElement === this.world.renderer.domElement;
+            });
         // Bind event handlers
-        this.onKeyDown = this.onKeyDown.bind(this);
-        this.onKeyUp = this.onKeyUp.bind(this);
-        this.onMouseMove = this.onMouseMove.bind(this);
-        document.addEventListener('keydown', this.onKeyDown);
-        document.addEventListener('keyup', this.onKeyUp);
-        document.addEventListener('mousemove', this.onMouseMove);
-
+            this.onKeyDown = this.onKeyDown.bind(this);
+            this.onKeyUp = this.onKeyUp.bind(this);
+            this.onMouseMove = this.onMouseMove.bind(this);
+            document.addEventListener('keydown', this.onKeyDown);
+            document.addEventListener('keyup', this.onKeyUp);
+            document.addEventListener('mousemove', this.onMouseMove);
+        }
         // Debug helpers
         this.debug = {
             showRaycasts: false,
             raycastHelpers: []
         };
+    }
 
-        // Sync initial camera position
-        this.updateCameraPosition();
+    setNetworkInput(input){
+        this.keys = input;
     }
 
     setupPhysics(simulation) {
@@ -134,27 +139,15 @@ class PlayerController extends engine.Component {
         // Store collision radius for camera calculations
         this.parent.collisionRadius = this.characterRadius;
 
-        // Sync Three.js transform with Rapier
-        this.syncTransformToRapier();
-    }
-
-    syncTransformToRapier() {
-        // Update Rapier rigid-body position from Three.js transform
         const pos = this.parent.transform.position;
         this.rigidBody.setNextKinematicTranslation({ x: pos.x, y: pos.y, z: pos.z });
     }
 
-    syncRapierToTransform() {
-        // Update Three.js transform from Rapier rigid-body position
-        const pos = this.rigidBody.translation();
-        const smoothingFactor = 0.5;
-        this.parent.transform.position.lerp(
-            new THREE.Vector3(pos.x, pos.y, pos.z),
-            Math.min(1, this.game.deltaTime * 60 * smoothingFactor)
-        );
-    }
 
     onKeyDown(event) {
+            if(this.isRemote) {
+            return;
+        }
         if (event.code in this.keys) {
             this.keys[event.code] = true;
             if (event.code === 'Space' && !event.repeat && this.isGrounded) {
@@ -185,12 +178,18 @@ class PlayerController extends engine.Component {
     }
 
     onKeyUp(event) {
+            if(this.isRemote) {
+            return;
+        }
         if (event.code in this.keys) {
             this.keys[event.code] = false;
         }
     }
 
     onMouseMove(event) {
+            if(this.isRemote) {
+            return;
+        }
         if (this.controls.isLocked) {
             this.cameraYaw -= event.movementX * this.mouseSensitivity;
             this.cameraPitch += event.movementY * this.mouseSensitivity;
@@ -212,6 +211,9 @@ class PlayerController extends engine.Component {
     }
 
     updateCameraPosition() {
+        if(this.isRemote) {
+            return;
+        }
         const dt = Math.min(this.game.deltaTime, 0.033);
         const smoothingAlpha = this.cameraSmoothing * dt * 60;
 
@@ -244,16 +246,51 @@ class PlayerController extends engine.Component {
     }
 
     update() {
-        if (!this.controls.isLocked) return;
+        if ((!this.controls.isLocked || this.isRemote) && !this.game.isServer) return;
         const dt = Math.min(this.game.deltaTime, 0.1);
 
-        // Check if grounded
-        this.isGrounded = this.characterController.computedGrounded();
+        if(!this.isRemote){
+            
+            // Update camera
+            this.updateCameraPosition();  
+            this.updateAxes();   
+            this.game.state.playerInput = {
+                keys: this.keys,
+                quaternion: {
+                    x: this.parent.transform.quaternion.x,
+                    y: this.parent.transform.quaternion.y,
+                    z: this.parent.transform.quaternion.z,
+                    w: this.parent.transform.quaternion.w
+                },
+                direction: {
+                    forward: {
+                        x: this.forward.x,
+                        y: this.forward.y,
+                        z: this.forward.z
+                    },
+                    right:{
+                        x: this.right.x,
+                        y: this.right.y,
+                        z: this.right.z
+                    },
+                    up: {
+                        x: this.up.x,
+                        y: this.up.y,
+                        z: this.up.z
+                    }
+                }
+            }
+        }
 
+        this.parent.getComponent("modelRenderer").isRunning = this.isRunning;
+
+        if(!this.game.isServer) return;
+        // Check if grounded
+
+        this.isGrounded = this.characterController.computedGrounded();
         // Process inputs
         if(this.isGrounded){
             // Update local axes
-            this.updateAxes();
             this.moveForward = 0;
             this.moveRight = 0;
             if (this.keys.KeyW) this.moveForward += 1;
@@ -261,8 +298,8 @@ class PlayerController extends engine.Component {
             if (this.keys.KeyA) this.moveRight -= 1;
             if (this.keys.KeyD) this.moveRight += 1;
             this.isRunning = this.keys.ShiftLeft;
+
         }
-        this.parent.getComponent("modelRenderer").isRunning = this.isRunning;
 
         // Compute desired movement
         const speed = this.isRunning ? this.runSpeed : this.walkSpeed;
@@ -300,23 +337,23 @@ class PlayerController extends engine.Component {
         };
         this.rigidBody.setNextKinematicTranslation(newPos);
 
-        // Sync Three.js transform
-        this.syncRapierToTransform();
+        const pos = this.rigidBody.translation();
+        const smoothingFactor = 0.5;
+        this.parent.transform.position.lerp(
+            new THREE.Vector3(pos.x, pos.y, pos.z),
+            Math.min(1, this.game.deltaTime * 60 * smoothingFactor)
+        );
 
-        // Handle collision events (e.g., for sound effects or pushing objects)
-        for (let i = 0; i < this.characterController.numComputedCollisions(); i++) {
-            const collision = this.characterController.computedCollision(i);
-            // Example: Log collision or trigger effects
-            console.log('Collision with collider handle:', collision.handle);
-        }
+        // // Handle collision events (e.g., for sound effects or pushing objects)
+        // for (let i = 0; i < this.characterController.numComputedCollisions(); i++) {
+        //     const collision = this.characterController.computedCollision(i);
+        //     // Example: Log collision or trigger effects
+        // }
 
         // Reset vertical velocity if grounded
         if (this.isGrounded) {
             this.velocity.y = 0;
         }
-
-        // Update camera
-        this.updateCameraPosition();
 
         // Clean up debug visuals
         if (this.debug.showRaycasts) {

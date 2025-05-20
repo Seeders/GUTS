@@ -231,10 +231,13 @@ class ModelRenderer extends engine.Component {
         if(this.throwTimer > 0){
             return;
         }
-        this.throwSpeed = speed;
-        this.setAnimation('throw', speed);
-        this.throwTimer = 0;
-        this.throwTime = (this.animationActions['throw'].getClip().duration / speed);
+        if(this.animationActions['throw']){
+                
+            this.throwSpeed = speed;
+            this.setAnimation('throw', speed);
+            this.throwTimer = 0;
+            this.throwTime = (this.animationActions['throw'].getClip().duration / speed);
+        }
     
     }
     updateDirection() {

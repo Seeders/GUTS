@@ -43,7 +43,11 @@ class Physics extends engine.Component {
     }
 
     registerPlayer(callback){
-        this.playerCallback = callback;
+        if(this.simulation) {
+            callback(this.simulation);
+        } else {
+            this.playerCallback = callback;
+        }
     }
 
     removeStaticCollider(staticId) {

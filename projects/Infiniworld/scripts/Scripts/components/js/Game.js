@@ -15,6 +15,8 @@ class Game extends engine.Component {
         this.debugDiv.style.top = '10px';
         this.debugDiv.style.left = '10px';
         this.debugDiv.style.zIndex = '10000';
+        
+        this.physicsStep = 1/60; // 60 Hz physics update
         document.body.append(this.debugDiv);
     }
     
@@ -46,7 +48,6 @@ class Game extends engine.Component {
             }
             
             // Fixed physics update
-            const physicsStep = 1/60; // 60 Hz physics update
             this.physicsAccumulator += this.game.deltaTime;
             let entitiesToRemove = [];
             for (let i = 0; i < this.game.state.entities.length; i++) {
@@ -63,15 +64,16 @@ class Game extends engine.Component {
                 this.game.state.entities.splice(entitiesToRemove[i], 1);
             }
             
-            if (this.physicsAccumulator >= physicsStep) {    
+            if (this.physicsAccumulator >= this.physicsStep && this.game.isServer) {    
                 this.physics.sendToWorker(this.world);           
-                this.physicsAccumulator -= physicsStep;
+                this.physicsAccumulator -= this.physicsStep;
             }
             
             this.postUpdate();
         }
-    }
-    
+    }    
+
+
     getTerrainHeight(position) {
         return this.world ? this.world.getTerrainHeight(position) : 0;
     }

@@ -1,11 +1,11 @@
 class MultiplayerManager extends engine.Component {
-  init({scene, world, serverUrl}) {
+  init({scene, physics, serverUrl}) {
     this.scene = scene;            // Three.js scene
-    this.world = world;            // Rapier world
+    this.physics = physics;            // Rapier world
     this.localPlayer = null;       // Local player object
     this.remotePlayers = {};       // Other players
     this.networkObjects = {};      // Networked physics objects
-    
+    this.isServer = false;
     // Create network manager
     this.serverUrl = serverUrl;
     // Interpolation settings
@@ -24,28 +24,39 @@ class MultiplayerManager extends engine.Component {
       throw err;
     }
   }
+
+  setHost(isHost){
+    this.isServer = isHost;
+    this.game.isServer = this.isServer;
+    if(this.game.isServer){            
+        this.game.player.getComponent("PlayerController").setupPhysics(this.physics.simulation);
+    }
+  }
   
   // Update called from your game loop
   update() {
     // Update local player position on network
-    if (this.localPlayer) {
-      const position = this.localPlayer.transform.position;
-      const quaternion = this.localPlayer.transform.quaternion;
-      const velocity = this.localPlayer.transform.velocity;
-      
-      this.network.sendPlayerUpdate(
-        { x: position.x, y: position.y, z: position.z },
-        { x: quaternion.x, y: quaternion.y, z: quaternion.z, w: quaternion.w },
-        { x: velocity.x, y: velocity.y, z: velocity.z }
-      );
-    }
-    
-    // Interpolate remote players
-    this.updateRemotePlayers();
+    if (!this.game.isServer) {    
+      if(this.game.state.playerInput){  
+        this.network.sendPlayerInput(this.game.state.playerInput);          
+      }
+      // Interpolate remote players
+      this.updatePlayers();  
+    } else {
+      this.network.sendGameState();
+    }   
   }
   
   // Update remote players with interpolation
-  updateRemotePlayers() {
+  updatePlayers() {
+    if (this.localPlayer.transform.networkPosition) {
+      // Position interpolation
+      this.localPlayer.transform.position.lerp(this.localPlayer.transform.networkPosition, 0.2);
+    }
+    if(this.localPlayer.transform.networkQuaternion){
+      // Rotation interpolation
+      this.localPlayer.transform.quaternion.slerp(this.localPlayer.transform.networkQuaternion, 0.2);
+    }
     Object.keys(this.remotePlayers).forEach(networkId => {
       const player = this.remotePlayers[networkId];
       
@@ -71,11 +82,14 @@ class MultiplayerManager extends engine.Component {
   }
   
   // Create remote player representation
-  createRemotePlayer(networkId, data) {
-    let objEntity = this.game.spawn("enemy", { objectType: "enemyPrefabs", spawnType: "waving_npc", networkId: networkId }, data.position);
-    objEntity.networkId = networkId;
+  createRemotePlayer(data) {
+    let objEntity = this.game.spawn("player", { objectType: "playerPrefabs", spawnType: "knight", networkId: data.networkId, isRemote: true }, new THREE.Vector3(data.position));
+    objEntity.networkId = data.networkId;
     this.setNetworkTransform(objEntity);
-    this.remotePlayers[networkId] = objEntity;
+    this.remotePlayers[data.networkId] = objEntity;
+    if(this.game.isServer){            
+      objEntity.getComponent("PlayerController").setupPhysics(this.physics.simulation);
+    }
     return objEntity;
   }
 
@@ -94,10 +108,13 @@ class MultiplayerManager extends engine.Component {
     return entity;
   }
   // Update remote player
-  updateRemotePlayer(playerId, playerData) {
-    const player = this.remotePlayers[playerId];
-    if (!player) return;
-    
+  updatePlayer(playerData) {
+    let player = this.remotePlayers[playerData.networkId];
+    if (!player && this.localPlayer && this.localPlayer.networkId == playerData.networkId) {
+      player = this.localPlayer;
+    };
+
+    if(!player) return;
     // Update target position and rotation for interpolation
     if (playerData.position) {
       player.transform.networkPosition.set(
@@ -107,6 +124,7 @@ class MultiplayerManager extends engine.Component {
       );
     }
     
+      console.log(playerData);
     if (playerData.quaternion) {
       player.transform.networkQuaternion.set(
         playerData.quaternion.x,
