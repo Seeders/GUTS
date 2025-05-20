@@ -1,10 +1,10 @@
 class NetworkManager {
-  constructor(gameEngine) {
+  constructor(multiplayerManager) {
     this.socket = null;
     this.connected = false;
     this.playerId = null;
     this.players = {}; // Other players
-    this.gameEngine = gameEngine; // Reference to your main game engine
+    this.multiplayerManager = multiplayerManager; // Reference to your main game engine
     this.pendingObjects = {}; // Objects waiting for server ID
     
     // Server reconciliation
@@ -64,50 +64,57 @@ class NetworkManager {
   
   setupEventHandlers() {
     if (!this.socket) return;
-    
-    // Initial game state from server
-    this.socket.on('gameState', (gameState) => {
-      console.log('Received initial game state:', gameState);
-      this.serverState = gameState;
-      
-      // Create other players
-      Object.keys(gameState.players).forEach(playerId => {
-        if (playerId !== this.playerId) {
-          this.addRemotePlayer(playerId, gameState.players[playerId]);
-        }
-      });
-      
-      // Create existing objects
-      Object.keys(gameState.objects || {}).forEach(objId => {
-        this.gameEngine.createObjectFromServer(gameState.objects[objId]);
-      });
+
+    this.socket.on('setHost', (data) => {
+      console.log('Setting host:', data);
+      this.isHost = data.isHost;  
+      this.multiplayerManager.setHost(this.isHost);
     });
-    
+   
     // New player joined
-    this.socket.on('playerJoined', (playerData) => {
+    this.socket.on('playerConnected', (playerData) => {
       console.log('Player joined:', playerData);
-      this.addRemotePlayer(playerData.id, playerData);
+      this.addRemotePlayer(playerData);
     });
     
     // Player left
-    this.socket.on('playerLeft', (data) => {
+    this.socket.on('playerDisconnected', (data) => {
       console.log('Player left:', data.id);
       this.removeRemotePlayer(data.id);
     });
     
     // Player moved
-    this.socket.on('playerMoved', (data) => {
-      this.updateRemotePlayer(data.id, data);
+    this.socket.on('playerInput', (data) => {
+      if(data.networkId && data.keys && this.isHost){
+        let player = this.players[data.networkId];
+        if(player){
+          let playerController = player.getComponent('PlayerController');       
+          playerController.setNetworkInput(data.keys, true);  
+          // Create vectors
+          const forward = new THREE.Vector3(data.direction.forward.x, data.direction.forward.y, data.direction.forward.z);
+          const right = new THREE.Vector3(data.direction.right.x, data.direction.right.y, data.direction.right.z);
+          const up = new THREE.Vector3(data.direction.up.x, data.direction.up.y, data.direction.up.z);
+          
+          // Extract quaternion from matrix          
+          player.transform.quaternion = new THREE.Quaternion(data.quaternion.x, data.quaternion.y, data.quaternion.z, data.quaternion.w);
+          
+          // Store directions for other uses
+          playerController.forward = forward;
+          playerController.right = right;
+          playerController.up = up;
+        }
+      }
+
     });
     
     // Object update from server
     this.socket.on('objectUpdated', (objectData) => {
-      this.gameEngine.updateObjectFromServer(objectData);
+      this.multiplayerManager.updateObjectFromServer(objectData);
     });
     
     // New object created
     this.socket.on('newObject', (objectData) => {
-      this.gameEngine.createObjectFromServer(objectData);
+      this.multiplayerManager.createObjectFromServer(objectData);
     });
     
     // Object added confirmation
@@ -117,21 +124,23 @@ class NetworkManager {
         const object = this.pendingObjects[data.clientId];
         delete this.pendingObjects[data.clientId];
         // Update the object with the server ID
-        this.gameEngine.updateObjectId(data.clientId, data.serverId);
+        this.multiplayerManager.updateObjectId(data.clientId, data.serverId);
       }
     });
     
     // Server state update (server-authoritative mode)
-    this.socket.on('gameStateUpdate', (update) => {
+    this.socket.on('gameState', (update) => {
       // Process server reconciliation
-      this.handleServerUpdate(update);
+      if(!this.isHost){
+        this.handleServerUpdate(update);
+      }
     });
     
     // Handle disconnection
     this.socket.on('disconnect', () => {
       console.log('Disconnected from game server');
       this.connected = false;
-      this.gameEngine.handleDisconnect();
+      this.multiplayerManager.handleDisconnect();
     });
   }
   
@@ -152,14 +161,34 @@ class NetworkManager {
     
     // Add sequence number for reconciliation
     input.seq = this.inputSequence++;
-    
+
     // Send to server
-    this.socket.emit('playerInput', input);
+    this.socket.emit('playerInput', {networkId: this.playerId, ...input});
     
     // Save this input for reconciliation
     this.pendingInputs.push(input);
     
     return input.seq;
+  }
+    // Send player input for server-authoritative physics
+  sendGameState() {
+    if (!this.connected || !this.isHost) return;
+    
+    let data = {
+      players: []
+    };
+    Object.keys(this.players).forEach((networkId) => {
+      let entity = this.players[networkId];
+      data.players.push({
+        networkId: networkId,
+        position: { x: entity.transform.position.x, y: entity.transform.position.y, z: entity.transform.position.z },
+        quaternion: { x: entity.transform.quaternion.x, y: entity.transform.quaternion.y, z: entity.transform.quaternion.z, w: entity.transform.quaternion.w },
+        velocity: { x: entity.transform.velocity.x, y: entity.transform.velocity.y, z: entity.transform.velocity.z }
+      });
+    });
+    // Send to server
+    this.socket.emit('gameState', data);    
+    
   }
   
   // Create a new object on the server
@@ -192,11 +221,11 @@ class NetworkManager {
   }
   
   // Add a new remote player
-  addRemotePlayer(playerId, playerData) {
-    if (this.players[playerId] || playerId === this.playerId) return;
+  addRemotePlayer(data) {
+    if (this.players[data.networkId] || data.networkId === this.playerId) return;
     
     // Create remote player representation
-    this.players[playerId] = this.gameEngine.createRemotePlayer(playerId, playerData);
+    this.players[data.networkId] = this.multiplayerManager.createRemotePlayer(data);
   }
   
   // Remove a remote player
@@ -204,70 +233,28 @@ class NetworkManager {
     if (!this.players[playerId]) return;
     
     // Remove from scene
-    this.gameEngine.removeRemotePlayer(playerId);
+    this.multiplayerManager.removeRemotePlayer(playerId);
     
     // Remove from local cache
     delete this.players[playerId];
   }
   
   // Update remote player position and rotation
-  updateRemotePlayer(playerId, playerData) {
-    if (!this.players[playerId]) {
-      // Player doesn't exist yet, create them
-      this.addRemotePlayer(playerId, playerData);
-      return;
-    }
-    
+  updateRemotePlayer(playerData) {
     // Update the player in the game engine
-    this.gameEngine.updateRemotePlayer(playerId, playerData);
+    this.multiplayerManager.updateRemotePlayer(playerData);
   }
   
   // Handle server state update (for server-authoritative mode)
   handleServerUpdate(update) {
     // Update server state
     this.serverState = update;
-    
-    // Server reconciliation for player character
-    if (update.players[this.playerId] && this.gameEngine.localPlayer) {
-      const serverPos = update.players[this.playerId].position;
-      const serverVel = update.players[this.playerId].velocity;
-      
-      // Find the last input that the server processed
-      const lastProcessedInput = update.players[this.playerId].lastProcessedInput;
-      
-      // Remove older inputs
-      if (lastProcessedInput !== undefined) {
-        this.pendingInputs = this.pendingInputs.filter(input => input.seq > lastProcessedInput);
-      }
-      
-      // Check if we need to reconcile
-      const localPos = this.gameEngine.getLocalPlayerPosition();
-      const posDiff = {
-        x: serverPos.x - localPos.x,
-        y: serverPos.y - localPos.y,
-        z: serverPos.z - localPos.z
-      };
-      
-      const distSquared = posDiff.x * posDiff.x + posDiff.y * posDiff.y + posDiff.z * posDiff.z;
-      
-      // If difference is too large, reconcile
-      if (distSquared > 1) { // Threshold distance (1 unit squared)
-        // Reset to server position
-        this.gameEngine.reconcileLocalPlayer(serverPos, serverVel);
-        
-        // Reapply all pending inputs
-        this.pendingInputs.forEach(input => {
-          this.gameEngine.applyInput(input);
-        });
-      }
-    }
-    
-    // Update other players
-    Object.keys(update.players).forEach(playerId => {
-      if (playerId !== this.playerId) {
-        this.updateRemotePlayer(playerId, update.players[playerId]);
-      }
+    update.players.forEach((playerData) => {
+      // Server reconciliation for player character             
+      this.multiplayerManager.updatePlayer( playerData);       
     });
+
+
   }
   
   // Disconnect from server

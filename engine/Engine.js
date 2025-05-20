@@ -10,6 +10,7 @@ class Engine {
         this.engineClasses = [];
         this.libraries = {};
         this.state = {};
+        this.isServer = false;
         window.GUTS = this;
     }
 
