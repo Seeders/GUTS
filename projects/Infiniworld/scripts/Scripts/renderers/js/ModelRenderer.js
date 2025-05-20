@@ -59,6 +59,7 @@ class ModelRenderer extends engine.Component {
         const animationNames = Object.keys(this.animationData);
         animationNames.forEach( async (name) => {
             const animModel = await this.game.modelManager.getAnimation(this.objectType, this.spawnType, name);
+            
             if(!animModel) return;
             let animModelAnimations;
             animModel.traverse(object => {

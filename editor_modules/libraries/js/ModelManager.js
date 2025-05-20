@@ -93,25 +93,29 @@ class ModelManager {
                 if (isGLTF) {
                     const modelKey = `${prefix}_${type}`;
                     this.models[modelKey] = await this.createModel(prefix, type, cfg.render.model, true);
+                            console.log('created', modelKey);
                     const animations = cfg.render.animations;
                     if (animations) {
                         await Promise.all(Object.keys(animations).map(async (animationName) => {
-                            const anim = animations[animationName][0];
-                            if (!anim) return;
-                            
-                            const animMainGroup = anim[Object.keys(anim)[0]];
+                            let mergedModel = JSON.parse(JSON.stringify(cfg.render.model));
+                            let animMainGroup = mergedModel[Object.keys(mergedModel)[0]]; 
+                            const anim = animations[animationName][0];                            
+                            if (anim && Object.keys(anim).length > 0){;
+                                animMainGroup = anim[Object.keys(anim)[0]];                                
+                            }
                             if (!animMainGroup) return;
                             
-                            let mergedModel = JSON.parse(JSON.stringify(cfg.render.model));
                             if (animMainGroup && animMainGroup.shapes && animMainGroup.shapes[0] && animMainGroup.shapes[0].url) {
                                 mergedModel[modelGroupName].shapes[0].url = `${animMainGroup.shapes[0].url}`;
                             }
                             const modelKey = `${prefix}_${type}_${animationName}`;
                             this.models[modelKey] = await this.createModel(prefix, type, mergedModel, true);
+                            console.log('created', modelKey);
                         }));
                     }
                 } else {
                     this.models[`${prefix}_${type}`] = await this.createModel(prefix, type, cfg.render.model, false);
+                            console.log('created', `${prefix}_${type}`);
                 }
             }
         }  
@@ -244,7 +248,8 @@ getModel(prefix, type) {
     }
     
     // Create a properly cloned model with correct materials and geometries
-    return this.deepCloneModel(masterModel);
+    let model = this.deepCloneModel(masterModel);
+    return model;
 }
 
 getAnimation(prefix, type, anim) {
@@ -257,131 +262,206 @@ getAnimation(prefix, type, anim) {
     }
     
     // Create a properly cloned model with correct materials and geometries
-    return this.deepCloneModel(masterModel);
+    let model = this.deepCloneModel(masterModel);
+    return model;
 }
 
 // Helper method to properly clone a THREE.js model with all its properties
-deepCloneModel(sourceModel) {
-    // First create a new empty group to hold our cloned content
+deepCloneModel(sourceRoot) {
+    let sourceModel = sourceRoot.children[0];
     const clonedModel = new THREE.Group();
-    
-    // Copy basic properties
     clonedModel.name = sourceModel.name;
     clonedModel.position.copy(sourceModel.position);
     clonedModel.quaternion.copy(sourceModel.quaternion);
     clonedModel.scale.copy(sourceModel.scale);
-    
-    // Safely clone userData without using JSON.parse/stringify
     clonedModel.userData = this.safeCloneUserData(sourceModel.userData || {});
-    
-    // Clone children recursively
+
+    // Clone children
     sourceModel.children.forEach(child => {
         const clonedChild = this.cloneObject3D(child);
         if (clonedChild) {
             clonedModel.add(clonedChild);
         }
-    });
+        // Handle animations
+        if (clonedChild.userData.isGLTFRoot && clonedChild.userData.animations && clonedChild.userData.animations.length > 0) {
     
-    return clonedModel;
-}
+            // Create a map of original bone UUIDs to cloned bones
+            const boneMap = new Map();
+            sourceModel.traverse(src => {
+                if (src.isBone) {
+                    clonedChild.traverse(cloned => {
+                    if (cloned.isBone && cloned.name === src.name) {
+                        boneMap.set(src.uuid, cloned);
+                    }
+                    });
+                }
+            });
 
-// Helper method to clone different types of Object3D objects
-cloneObject3D(source) {
-    // Skip if null
-    if (!source) return null;
-    
-    let cloned;
-    
-    if (source.isMesh) {
-        // For meshes, we need to clone both geometry and material
-        const geometry = source.geometry.clone();
-        
-        // Clone the material(s)
-        let material;
-        if (Array.isArray(source.material)) {
-            material = source.material.map(mat => mat.clone());
+            // Remap AnimationClip tracks to cloned bones
+            clonedChild.userData.animations = clonedChild.userData.animations.map(clip => {
+            const newTracks = clip.tracks.map(track => {
+                const [uuid, property] = track.name.split('.');
+                const newBone = boneMap.get(uuid);
+                if (newBone) {
+                return new THREE[track.constructor.name](`${newBone.uuid}.${property}`, track.times, track.values);
+                }
+                return track;
+            });
+            return new THREE.AnimationClip(clip.name, clip.duration, newTracks);
+            });
+
+            // Create new AnimationMixer
+            const mixer = new THREE.AnimationMixer(clonedChild);
+            const action = mixer.clipAction(clonedChild.userData.animations[0]);
+            action.play();
+            clonedChild.userData.mixer = mixer;
+            console.log('Animation mixer created for cloned model, clip:', clonedChild.userData.animations[0].name);
         } else {
-            material = source.material.clone();
-            
-            // Make sure to clone the texture atlas reference correctly
-            if (material.map) {
-                material.map = source.material.map;
-                material.needsUpdate = true;
-            }
-        }
-        
-        // Create a new mesh with the cloned geometry and material
-        cloned = new THREE.Mesh(geometry, material);
-    } else if (source.isGroup) {
-        // For groups, create a new group
-        cloned = new THREE.Group();
-    } else {
-        // For any other Object3D type, create a base Object3D
-        cloned = new THREE.Object3D();
-    }
-    
-    // Copy common properties
-    cloned.name = source.name;
-    cloned.position.copy(source.position);
-    cloned.quaternion.copy(source.quaternion);
-    cloned.scale.copy(source.scale);
-    
-    // Safely clone userData without using JSON.parse/stringify
-    cloned.userData = this.safeCloneUserData(source.userData || {});
-    
-    // Important: Copy shadow properties
-    cloned.castShadow = source.castShadow;
-    cloned.receiveShadow = source.receiveShadow;
-    
-    // Clone children recursively
-    source.children.forEach(child => {
-        const clonedChild = this.cloneObject3D(child);
-        if (clonedChild) {
-            cloned.add(clonedChild);
+            console.warn('No animations found for cloned model:', sourceModel.name);
         }
     });
-    
-    return cloned;
+
+    const clonedRoot = new THREE.Group();
+    clonedRoot.name = sourceRoot.name;
+    clonedRoot.position.copy(sourceRoot.position);
+    clonedRoot.quaternion.copy(sourceRoot.quaternion);
+    clonedRoot.scale.copy(sourceRoot.scale);
+    clonedRoot.userData = this.safeCloneUserData(sourceRoot.userData || {});
+    clonedRoot.add(clonedModel);
+    return clonedRoot;
+}
+cloneObject3D(source) {
+  if (!source) return null;
+
+  let cloned;
+
+  if (source.isSkinnedMesh) {
+    // Clone geometry and material
+    const geometry = source.geometry.clone();
+    let material;
+    if (Array.isArray(source.material)) {
+      material = source.material.map(mat => mat.clone());
+    } else {
+      material = source.material.clone();
+      if (material.map) {
+        material.map = source.material.map; // Preserve texture atlas
+        material.needsUpdate = true;
+      }
+    }
+
+    // Create new SkinnedMesh
+    cloned = new THREE.SkinnedMesh(geometry, material);
+
+    // Clone skeleton and preserve bone hierarchy
+    if (source.skeleton) {
+      // Create a map to track cloned bones
+      const boneMap = new Map();
+      const clonedBones = [];
+
+      // Clone bones and preserve hierarchy
+      source.skeleton.bones.forEach(bone => {
+        const clonedBone = bone.clone(false); // Clone without children
+        boneMap.set(bone.uuid, clonedBone);
+        clonedBones.push(clonedBone);
+      });
+
+      // Rebuild bone hierarchy
+      source.skeleton.bones.forEach(bone => {
+        const clonedBone = boneMap.get(bone.uuid);
+        if (bone.parent && bone.parent.isBone) {
+          const clonedParent = boneMap.get(bone.parent.uuid);
+          if (clonedParent) {
+            clonedParent.add(clonedBone);
+          }
+        } else {
+          // Root bones are added to the SkinnedMesh or its parent group
+          cloned.add(clonedBone);
+        }
+      });
+
+      // Create new skeleton
+      const clonedSkeleton = new THREE.Skeleton(clonedBones, source.skeleton.boneInverses.map(m => m.clone()));
+
+      // Bind skeleton to the cloned mesh
+      cloned.bind(clonedSkeleton, source.bindMatrix.clone());
+
+      // Store skeleton in userData
+      cloned.userData.skeleton = clonedSkeleton;
+      console.log('Cloned SkinnedMesh with skeleton:', clonedSkeleton.bones.length, 'bones');
+    }
+  } else if (source.isMesh) {
+    const geometry = source.geometry.clone();
+    let material;
+    if (Array.isArray(source.material)) {
+      material = source.material.map(mat => mat.clone());
+    } else {
+      material = source.material.clone();
+      if (material.map) {
+        material.map = source.material.map;
+        material.needsUpdate = true;
+      }
+    }
+    cloned = new THREE.Mesh(geometry, material);
+  } else if (source.isGroup) {
+    cloned = new THREE.Group();
+  } else {
+    cloned = new THREE.Object3D();
+  }
+
+  // Copy common properties
+  cloned.name = source.name;
+  cloned.position.copy(source.position);
+  cloned.quaternion.copy(source.quaternion);
+  cloned.scale.copy(source.scale);
+  cloned.castShadow = source.castShadow;
+  cloned.receiveShadow = source.receiveShadow;
+
+  // Clone userData
+  cloned.userData = this.safeCloneUserData(source.userData || {});
+
+  // Clone children recursively
+  source.children.forEach(child => {
+    const clonedChild = this.cloneObject3D(child);
+    if (clonedChild) {
+      cloned.add(clonedChild);
+    }
+  });
+
+  return cloned;
 }
 safeCloneUserData(userData) {
-    const result = {};
-    
-    // Only copy primitive values and simple objects
-    for (const key in userData) {
-        const value = userData[key];
-        
-        // Skip functions, DOM nodes, and other non-serializable objects
-        if (value === null || value === undefined) {
-            result[key] = value;
+  const result = {};
+
+  for (const key in userData) {
+    const value = userData[key];
+
+    if (value === null || value === undefined) {
+      result[key] = value;
+    } else if (typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean') {
+      result[key] = value;
+    } else if (value instanceof Array) {
+      if (value.length > 0 && value[0] instanceof THREE.AnimationClip) {
+        result[key] = value.map(clip => clip.clone());
+      } else {
+        result[key] = [...value];
+      }
+    } else if (typeof value === 'object') {
+      if (key === 'mixer' || key === 'skeleton') {
+        continue; // Skip mixer and skeleton
+      }
+      if (Object.getPrototypeOf(value) === Object.prototype) {
+        result[key] = { ...value };
+      } else if (typeof value.clone === 'function') {
+        try {
+          result[key] = value.clone();
+        } catch (e) {
+          console.warn(`Failed to clone userData property ${key}`, e);
         }
-        else if (typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean') {
-            result[key] = value;
-        }
-        else if (value instanceof Array) {
-            // For arrays, create a shallow copy
-            // This avoids deep recursion while still preserving arrays of primitives
-            result[key] = [...value];
-        }
-        else if (typeof value === 'object') {
-            // For objects, create a shallow copy to avoid circular references
-            // Only include if it's a plain object (not a class instance like THREE.Vector3)
-            if (Object.getPrototypeOf(value) === Object.prototype) {
-                result[key] = { ...value };
-            }
-            // For THREE.js specific objects that have a .clone() method
-            else if (typeof value.clone === 'function') {
-                try {
-                    result[key] = value.clone();
-                } catch (e) {
-                    // If cloning fails, skip this property
-                    console.warn(`Failed to clone userData property ${key}`, e);
-                }
-            }
-            // Skip other complex objects
-        }
+      }
     }
-    
-    return result;
+  }
+
+  return result;
 }
     async createObjectsFromJSON(model, frameData, objectType, spawnType) {
         const rootGroup = new THREE.Group();
