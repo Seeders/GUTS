@@ -1,5 +1,5 @@
 class ModelRenderer extends engine.Component {
-    init({ objectType, spawnType, frameDuration }) {
+    async init({ objectType, spawnType, frameDuration }) {
         if (!this.game.getCollections().configs.game.is3D) {
             return;
         }
@@ -22,7 +22,7 @@ class ModelRenderer extends engine.Component {
         this.clock.start();
 
         // Get the model
-        this.model = this.game.modelManager.getModel(objectType, spawnType);
+        this.model = await this.game.modelManager.getModel(objectType, spawnType);
         this.skeletonUtils = THREE_.SkeletonUtils;
         this.throwTimer = -1;
         this.leapTimer = -1;
@@ -35,14 +35,14 @@ class ModelRenderer extends engine.Component {
         this.isRunning = false;
         // Initialize AnimationMixer and actions if GLTF
         if (this.isGLTF) {
-            this.setupAnimationMixer();
+            await this.setupAnimationMixer();
         }
 
         // Set initial animation
         this.setAnimation('idle');
     }
 
-    setupAnimationMixer() {
+    async setupAnimationMixer() {
         // Find the mixer and animations from userData
         let mixer, animations;
         this.modelGroup.traverse(object => {
@@ -57,8 +57,9 @@ class ModelRenderer extends engine.Component {
 
         // Create AnimationActions for each animation
         const animationNames = Object.keys(this.animationData);
-        animationNames.forEach(name => {
-            const animModel = this.game.modelManager.getAnimation(this.objectType, this.spawnType, name);
+        animationNames.forEach( async (name) => {
+            const animModel = await this.game.modelManager.getAnimation(this.objectType, this.spawnType, name);
+            if(!animModel) return;
             let animModelAnimations;
             animModel.traverse(object => {
                 if (object.userData.mixer) {
@@ -153,6 +154,7 @@ class ModelRenderer extends engine.Component {
     }
 
     draw() {
+        if(!this.modelGroup) return;
         if (!this.game.getCollections().configs.game.is3D) {
             return;
         }

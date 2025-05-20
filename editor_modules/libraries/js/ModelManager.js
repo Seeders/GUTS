@@ -18,7 +18,6 @@ class ModelManager {
         this.uvMappings.clear();
         this.mergedGeometries.clear();
         this.textureAtlases.clear();
-
     }
 
     dispose() {
@@ -29,7 +28,6 @@ class ModelManager {
         this.uvMappings.clear();
         this.mergedGeometries.clear();
         this.textureAtlases.clear();
-
     }
 
     disposeModel(model) {
@@ -96,124 +94,34 @@ class ModelManager {
                     const modelKey = `${prefix}_${type}`;
                     this.models[modelKey] = await this.createModel(prefix, type, cfg.render.model, true);
                     const animations = cfg.render.animations;
-                    await Promise.all(Object.keys(animations).map(async (animationName) => {
-                        const anim = animations[animationName][0];
-                        const animMainGroup = anim[Object.keys(anim)[0]];
-                        let mergedModel = JSON.parse(JSON.stringify(cfg.render.model));
-                        if (animMainGroup) {
-                            mergedModel[modelGroupName].shapes[0].url = `${animMainGroup.shapes[0].url}`;
-                        }
-                        const modelKey = `${prefix}_${type}_${animationName}`;
-                        this.models[modelKey] = await this.createModel(prefix, type, mergedModel, true);
-                    }));
+                    if (animations) {
+                        await Promise.all(Object.keys(animations).map(async (animationName) => {
+                            const anim = animations[animationName][0];
+                            if (!anim) return;
+                            
+                            const animMainGroup = anim[Object.keys(anim)[0]];
+                            if (!animMainGroup) return;
+                            
+                            let mergedModel = JSON.parse(JSON.stringify(cfg.render.model));
+                            if (animMainGroup && animMainGroup.shapes && animMainGroup.shapes[0] && animMainGroup.shapes[0].url) {
+                                mergedModel[modelGroupName].shapes[0].url = `${animMainGroup.shapes[0].url}`;
+                            }
+                            const modelKey = `${prefix}_${type}_${animationName}`;
+                            this.models[modelKey] = await this.createModel(prefix, type, mergedModel, true);
+                        }));
+                    }
                 } else {
                     this.models[`${prefix}_${type}`] = await this.createModel(prefix, type, cfg.render.model, false);
                 }
             }
         }  
-        // if (textures.length > 0) {
-        //     this.debugTextureAtlas(config, prefix);
-        // }
+
         // Dispose temporary models
         tempModels.forEach(({ model }) => this.shapeFactory.disposeObject(model));
 
         this.assetsLoaded = true;
     }
-    debugTextureAtlas(config, prefix) {
-        if (!this.textureAtlases[prefix] || this.uvMappings.size === 0) {
-            console.warn('No texture atlas or UV mappings available to debug.');
-            return;
-        }
 
-        // Create a new canvas
-        const canvas = document.createElement('canvas');
-        canvas.width = this.textureAtlases[prefix].image.width;
-        canvas.height = this.textureAtlases[prefix].image.height;
-        const ctx = canvas.getContext('2d');
-
-        // Draw the texture atlas
-        ctx.drawImage(this.textureAtlases[prefix].image, 0, 0);
-
-        // Draw UV mapping regions (atlas regions per spawnType)
-        ctx.lineWidth = 2;
-        const colors = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF'];
-        let index = 0;
-        this.uvMappings.forEach((uv, spawnType) => {
-            const [uMin, vMin, uMax, vMax] = uv;
-            const x = uMin * canvas.width;
-            const y = vMin * canvas.height;
-            const width = (uMax - uMin) * canvas.width;
-            const height = (vMax - vMin) * canvas.height;
-
-            // Draw rectangle for atlas region
-            ctx.strokeStyle = colors[index % colors.length];
-            ctx.strokeRect(x, y, width, height);
-
-            // Draw label
-            ctx.fillStyle = colors[index % colors.length];
-            ctx.font = '16px Arial';
-            ctx.fillText(spawnType, x + 5, y + 20);
-
-            index++;
-        });
-        index = 0;
-        for (const [type] of Object.entries(config)) {
-
-            const model = this.getModel(prefix, type);
-            if (!model) continue;
-
-            model.traverse((child) => {
-                
-                if (child.isMesh && child.geometry && child.geometry.attributes.uv && child.material.map) {
-                    const geometry = child.geometry;
-                    const uvAttribute = geometry.attributes.uv;
-                    const indexAttribute = geometry.index;
-                    const textureWidth = canvas.width;
-                    const textureHeight = canvas.height;
-                    // Draw UVs as a wireframe (using remapped UVs from createModel)
-                    ctx.fillStyle = colors[(index) % colors.length];
-                    ctx.strokeStyle = colors[(index) % colors.length];
-                    ctx.beginPath();
-                    if (indexAttribute) {
-                        // Draw lines for each triangle
-                        for (let i = 0; i < indexAttribute.count; i += 3) {
-                            const a = indexAttribute.getX(i);
-                            const b = indexAttribute.getX(i + 1);
-                            const c = indexAttribute.getX(i + 2);
-
-                            const uvA = [uvAttribute.getX(a), uvAttribute.getY(a)];
-                            const uvB = [uvAttribute.getX(b), uvAttribute.getY(b)];
-                            const uvC = [uvAttribute.getX(c), uvAttribute.getY(c)];
-
-                            // Scale UVs to canvas coordinates
-                            const xA = uvA[0] * textureWidth;
-                            const yA = uvA[1] * textureHeight;
-                            const xB = uvB[0] * textureWidth;
-                            const yB = uvB[1] * textureHeight;
-                            const xC = uvC[0] * textureWidth;
-                            const yC = uvC[1] * textureHeight;
-
-                            // Draw triangle edges
-                           ctx.moveTo(xA, yA);
-                           ctx.lineTo(xB, yB);
-                           ctx.lineTo(xC, yC);
-                           ctx.lineTo(xA, yA);
-                        }
-                    } 
-                    ctx.stroke();
-            index++;
-                }
-            });
-            
-        }
-        // Style the canvas for visibility
-        canvas.style.border = '1px solid black';
-        canvas.style.margin = '10px';
-        canvas.title = `Texture Atlas with UV Mappings and Geometry UVs (Prefix: ${prefix})`;
-
-        // Append to document body
-        document.body.appendChild(canvas);
-    }
     async generateTextureAtlas(objectType, textures, textureInfo) {
         const textureSizes = textures.map((texture) => {
             const img = texture.image;
@@ -290,7 +198,7 @@ class ModelManager {
                     child.castShadow = true;
                     child.receiveShadow = true;
                     const geometry = child.geometry;
-                    if (useAtlas && this.textureAtlases[objectType] && this.uvMappings.has(spawnType) && !geometry.userData.uvsRemapped) {
+                    if (useAtlas && this.textureAtlases[objectType] && this.uvMappings.has(`${spawnType}_${meshIndex}`) && !geometry.userData.uvsRemapped) {
                         geometry.userData.uvsRemapped = true;
                         // Apply texture atlas material
                         child.material = new THREE.MeshStandardMaterial({
@@ -306,14 +214,13 @@ class ModelManager {
                         const uvAttribute = geometry.attributes.uv;
                         if (uvAttribute) {                   
                             for (let i = 0; i < uvAttribute.count; i++) {
-                                   
                                 let u = uvAttribute.getX(i);
                                 let v = uvAttribute.getY(i);
                                 // Map UVs to atlas region
                                 const uNew = uMin + u * (uMax - uMin);
                                 // Flip v to match GLTF (bottom-left) if atlas is top-left
-                                const vNew = vMin + v * (vMax - vMin); // Flip vertically                                 
-                                uvAttribute.setXY(i,uNew, vNew);
+                                const vNew = vMin + v * (vMax - vMin);                              
+                                uvAttribute.setXY(i, uNew, vNew);
                             }
                             uvAttribute.needsUpdate = true;
                         }
@@ -324,14 +231,158 @@ class ModelManager {
         return modelGroup;
     }
 
-    getModel(prefix, type) {
-        return this.models[`${prefix}_${type}`];
+    // Updated getModel to create fresh instances
+    // Use a more efficient approach: deep clone the prebuilt models
+// This maintains the correct UV mapping and materials
+getModel(prefix, type) {
+    const modelKey = `${prefix}_${type}`;
+    const masterModel = this.models[modelKey];
+    
+    if (!masterModel) {
+        console.error(`Model not found for ${modelKey}`);
+        return null;
     }
+    
+    // Create a properly cloned model with correct materials and geometries
+    return this.deepCloneModel(masterModel);
+}
 
-    getAnimation(prefix, type, anim) {
-        return this.models[`${prefix}_${type}_${anim}`];
+getAnimation(prefix, type, anim) {
+    const modelKey = `${prefix}_${type}_${anim}`;
+    const masterModel = this.models[modelKey];
+    
+    if (!masterModel) {
+        console.error(`Animation model not found for ${modelKey}`);
+        return null;
     }
+    
+    // Create a properly cloned model with correct materials and geometries
+    return this.deepCloneModel(masterModel);
+}
 
+// Helper method to properly clone a THREE.js model with all its properties
+deepCloneModel(sourceModel) {
+    // First create a new empty group to hold our cloned content
+    const clonedModel = new THREE.Group();
+    
+    // Copy basic properties
+    clonedModel.name = sourceModel.name;
+    clonedModel.position.copy(sourceModel.position);
+    clonedModel.quaternion.copy(sourceModel.quaternion);
+    clonedModel.scale.copy(sourceModel.scale);
+    
+    // Safely clone userData without using JSON.parse/stringify
+    clonedModel.userData = this.safeCloneUserData(sourceModel.userData || {});
+    
+    // Clone children recursively
+    sourceModel.children.forEach(child => {
+        const clonedChild = this.cloneObject3D(child);
+        if (clonedChild) {
+            clonedModel.add(clonedChild);
+        }
+    });
+    
+    return clonedModel;
+}
+
+// Helper method to clone different types of Object3D objects
+cloneObject3D(source) {
+    // Skip if null
+    if (!source) return null;
+    
+    let cloned;
+    
+    if (source.isMesh) {
+        // For meshes, we need to clone both geometry and material
+        const geometry = source.geometry.clone();
+        
+        // Clone the material(s)
+        let material;
+        if (Array.isArray(source.material)) {
+            material = source.material.map(mat => mat.clone());
+        } else {
+            material = source.material.clone();
+            
+            // Make sure to clone the texture atlas reference correctly
+            if (material.map) {
+                material.map = source.material.map;
+                material.needsUpdate = true;
+            }
+        }
+        
+        // Create a new mesh with the cloned geometry and material
+        cloned = new THREE.Mesh(geometry, material);
+    } else if (source.isGroup) {
+        // For groups, create a new group
+        cloned = new THREE.Group();
+    } else {
+        // For any other Object3D type, create a base Object3D
+        cloned = new THREE.Object3D();
+    }
+    
+    // Copy common properties
+    cloned.name = source.name;
+    cloned.position.copy(source.position);
+    cloned.quaternion.copy(source.quaternion);
+    cloned.scale.copy(source.scale);
+    
+    // Safely clone userData without using JSON.parse/stringify
+    cloned.userData = this.safeCloneUserData(source.userData || {});
+    
+    // Important: Copy shadow properties
+    cloned.castShadow = source.castShadow;
+    cloned.receiveShadow = source.receiveShadow;
+    
+    // Clone children recursively
+    source.children.forEach(child => {
+        const clonedChild = this.cloneObject3D(child);
+        if (clonedChild) {
+            cloned.add(clonedChild);
+        }
+    });
+    
+    return cloned;
+}
+safeCloneUserData(userData) {
+    const result = {};
+    
+    // Only copy primitive values and simple objects
+    for (const key in userData) {
+        const value = userData[key];
+        
+        // Skip functions, DOM nodes, and other non-serializable objects
+        if (value === null || value === undefined) {
+            result[key] = value;
+        }
+        else if (typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean') {
+            result[key] = value;
+        }
+        else if (value instanceof Array) {
+            // For arrays, create a shallow copy
+            // This avoids deep recursion while still preserving arrays of primitives
+            result[key] = [...value];
+        }
+        else if (typeof value === 'object') {
+            // For objects, create a shallow copy to avoid circular references
+            // Only include if it's a plain object (not a class instance like THREE.Vector3)
+            if (Object.getPrototypeOf(value) === Object.prototype) {
+                result[key] = { ...value };
+            }
+            // For THREE.js specific objects that have a .clone() method
+            else if (typeof value.clone === 'function') {
+                try {
+                    result[key] = value.clone();
+                } catch (e) {
+                    // If cloning fails, skip this property
+                    console.warn(`Failed to clone userData property ${key}`, e);
+                }
+            }
+            // Skip other complex objects
+        }
+    }
+    
+    return result;
+}
     async createObjectsFromJSON(model, frameData, objectType, spawnType) {
         const rootGroup = new THREE.Group();
         for (const groupName in model) {

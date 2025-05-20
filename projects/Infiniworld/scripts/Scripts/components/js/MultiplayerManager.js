@@ -83,7 +83,7 @@ class MultiplayerManager extends engine.Component {
   
   // Create remote player representation
   createRemotePlayer(data) {
-    let objEntity = this.game.spawn("player", { objectType: "playerPrefabs", spawnType: "knight", networkId: data.networkId, isRemote: true }, new THREE.Vector3(data.position));
+    let objEntity = this.game.spawn("player", { objectType: "playerPrefabs", spawnType: "waving_guy", networkId: data.networkId, isRemote: true }, new THREE.Vector3(data.position));
     objEntity.networkId = data.networkId;
     this.setNetworkTransform(objEntity);
     this.remotePlayers[data.networkId] = objEntity;

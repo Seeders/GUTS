@@ -667,12 +667,12 @@ class InfiniWorld extends engine.Component {
         }
         // Process vegetation data
         chunkData.collisionAABBs = new Map();
-        vegetation.forEach(({ worldObject, data }) => {
+        vegetation.forEach(async ({ worldObject, data }) => {
             if (worldObject.endsWith('_collision')) {
                 const objectType = worldObject.replace('_collision', '');
                 chunkData.collisionAABBs.set(objectType, data);
             } else {
-                const model = this.game.modelManager.getModel('worldObjectPrefabs', worldObject);
+                const model = await this.game.modelManager.getModel('worldObjectPrefabs', worldObject);
                 if (!model) {
                     console.warn(`Model not found: ${worldObject}`);
                     return;
