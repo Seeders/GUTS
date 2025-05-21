@@ -75,6 +75,9 @@ class NetworkManager {
     this.socket.on('playerConnected', (playerData) => {
       console.log('Player joined:', playerData);
       this.addRemotePlayer(playerData);
+      if(this.isHost){
+        this.socket.emit('playerConnected', playerData);
+      }
     });
     
     // Player left
