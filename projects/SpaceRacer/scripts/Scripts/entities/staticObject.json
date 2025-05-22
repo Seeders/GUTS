@@ -1,0 +1,11 @@
+{
+  "title": "Static Object",
+  "components": [
+    "ArrayTracker",
+    "Animator"
+  ],
+  "renderers": [
+    "ModelRenderer",
+    "Renderer"
+  ]
+}

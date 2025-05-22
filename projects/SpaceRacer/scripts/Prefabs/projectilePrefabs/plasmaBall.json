@@ -1,0 +1,25 @@
+{
+  "title": "PlasmaBall",
+  "damageType": "physical",
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ]
+    },
+    "model": {
+      "shapes": {
+        "shapes": [
+          {
+            "type": "sphere",
+            "size": 2,
+            "color": "#ee6060"
+          }
+        ]
+      }
+    }
+  },
+  "entity": "projectile",
+  "collider": "plasmaBolt",
+  "projectile": "plasmaBall"
+}

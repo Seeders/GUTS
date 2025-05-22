@@ -1,0 +1,9 @@
+{
+  "title": "Fighter Collider",
+  "size": 2,
+  "type": "sphere",
+  "offset": "{ \"x\": 0, \"y\": 3, \"z\": 0 }",
+  "mass": 10,
+  "gravity": false,
+  "restitution": 0.7
+}

@@ -1,0 +1,13 @@
+{
+  "title": "Player",
+  "components": [
+    "Stats",
+    "PlayerController",
+    "Animator",
+    "PlayerAttacker"
+  ],
+  "renderers": [
+    "ModelRenderer",
+    "Health"
+  ]
+}

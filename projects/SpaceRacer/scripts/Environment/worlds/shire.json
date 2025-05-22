@@ -1,0 +1,21 @@
+{
+  "title": "Shire",
+  "lighting": "sunnyDayLighting",
+  "shadow": "sunnyDayShadows",
+  "fog": "sunnyDayFog",
+  "camera": "main",
+  "worldObjects": [
+    "tree",
+    "rock"
+  ],
+  "backgroundColor": "#0288d1",
+  "heightMap": "fiveStep",
+  "biomes": [
+    "plains",
+    "desert",
+    "mountain",
+    "forest"
+  ],
+  "grassShader": "grass",
+  "waterShader": "water"
+}

@@ -1,0 +1,39 @@
+{
+  "title": "Smooth Rock",
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ]
+    },
+    "model": {
+      "shapes": {
+        "shapes": [
+          {
+            "type": "gltf",
+            "size": 16,
+            "url": "projects/Infiniworld/resources/models/stone2/stone2.glb",
+            "color": "#ffffff",
+            "metalness": 0,
+            "roughness": 1,
+            "scale": {
+              "x": 10,
+              "y": 10,
+              "z": 10
+            },
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          }
+        ]
+      }
+    }
+  },
+  "entity": "staticObject"
+}

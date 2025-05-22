@@ -1,0 +1,14 @@
+{
+  "title": "Projectile",
+  "components": [
+    "Stats",
+    "ArrayTracker",
+    "Projectile",
+    "Animator",
+    "Collider"
+  ],
+  "renderers": [
+    "ModelRenderer",
+    "Renderer"
+  ]
+}

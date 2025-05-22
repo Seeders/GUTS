@@ -1,0 +1,6 @@
+{
+  "title": "Plains Trees",
+  "worldObjectPrefab": "tree",
+  "density": 0.02,
+  "maxSlope": 0.8
+}

@@ -1,0 +1,12 @@
+{
+  "title": "Player Aircraft",
+  "components": [
+    "Stats",
+    "PlayerAttacker",
+    "AircraftController"
+  ],
+  "renderers": [
+    "ModelRenderer",
+    "Health"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "title": "Plains",
+  "groundColor": "#a3d39c",
+  "elevationNoiseSetting": "plainsElevation",
+  "detailNoiseSetting": "plainsDetail",
+  "worldObjectSpawns": [
+    "plainsRocks",
+    "plainsTrees",
+    "plainsGrass"
+  ],
+  "range": [
+    0,
+    0.4
+  ],
+  "groundRestitution": 0.5,
+  "groundFriction": 0.7
+}

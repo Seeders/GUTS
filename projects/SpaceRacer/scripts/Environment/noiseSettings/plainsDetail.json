@@ -1,0 +1,8 @@
+{
+  "title": "Plains Detail",
+  "scale": 0.001,
+  "octaves": 2,
+  "persistence": 0.8,
+  "lacunarity": 1.5,
+  "heightScale": 2
+}

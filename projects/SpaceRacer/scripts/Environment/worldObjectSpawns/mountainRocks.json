@@ -1,0 +1,6 @@
+{
+  "title": "Mountain Rock",
+  "worldObjectPrefab": "rock",
+  "density": 0.03,
+  "maxSlope": 0.6
+}

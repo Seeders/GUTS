@@ -1,0 +1,63 @@
+{
+  "title": "SpaceShipMesh1",
+  "hp": 501,
+  "speed": 0.5,
+  "essence": 50,
+  "value": 50,
+  "boss": true,
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ],
+      "walk": [
+        {}
+      ]
+    },
+    "model": {
+      "main": {
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 30,
+          "y": 30,
+          "z": 30
+        },
+        "shapes": [
+          {
+            "type": "gltf",
+            "width": 2,
+            "height": 0.2,
+            "depth": 1,
+            "x": 0,
+            "y": 0.2,
+            "z": 0,
+            "rotationX": 0,
+            "rotationY": 0,
+            "rotationZ": 0,
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1,
+            "color": "#FFFFFF",
+            "url": "projects/Infiniworld/resources/models/spaceship/spaceship.glb",
+            "roughness": "0.1",
+            "metalness": "0.8"
+          }
+        ]
+      }
+    }
+  },
+  "fireResistance": 75,
+  "coldResistance": 25,
+  "electricResistance": 25,
+  "projectile": "plasmaBolt",
+  "entity": "playerAircraft"
+}

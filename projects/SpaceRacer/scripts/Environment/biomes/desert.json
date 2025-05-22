@@ -1,0 +1,17 @@
+{
+  "title": "Desert",
+  "groundColor": "#d9b38c",
+  "elevationNoiseSetting": "desertElevation",
+  "detailNoiseSetting": "desertDetail",
+  "worldObjectSpawns": [
+    "desertRocks",
+    "desertTrees",
+    "desertGrass"
+  ],
+  "range": [
+    0.7,
+    1
+  ],
+  "groundRestitution": 0,
+  "groundFriction": 1
+}

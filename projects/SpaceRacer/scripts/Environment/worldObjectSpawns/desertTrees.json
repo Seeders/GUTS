@@ -1,0 +1,6 @@
+{
+  "title": "Desert Trees",
+  "worldObjectPrefab": "palm_tree",
+  "density": 0.001,
+  "maxSlope": 0.8
+}

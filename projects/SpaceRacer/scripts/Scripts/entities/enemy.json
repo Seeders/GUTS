@@ -1,0 +1,13 @@
+{
+  "title": "Enemy",
+  "components": [
+    "Stats",
+    "ArrayTracker",
+    "Collider"
+  ],
+  "renderers": [
+    "ModelRenderer",
+    "Health",
+    "EnergyShield"
+  ]
+}

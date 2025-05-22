@@ -1,0 +1,12 @@
+{
+  "title": "Particle",
+  "components": [
+    "Stats",
+    "LifeSpan",
+    "Animator"
+  ],
+  "renderers": [
+    "ModelRenderer",
+    "Renderer"
+  ]
+}

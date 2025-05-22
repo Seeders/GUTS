@@ -1,0 +1,18 @@
+{
+  "title": "Mountain",
+  "groundColor": "#cfd8dc",
+  "elevationNoiseSetting": "mountainElevation",
+  "detailNoiseSetting": "mountainDetail",
+  "ridgeNoiseSetting": "mountainRidge",
+  "worldObjectSpawns": [
+    "mountainRocks",
+    "mountainTrees",
+    "mountainGrass"
+  ],
+  "range": [
+    0.5,
+    0.8
+  ],
+  "groundRestitution": 0.8,
+  "groundFriction": 0.2
+}

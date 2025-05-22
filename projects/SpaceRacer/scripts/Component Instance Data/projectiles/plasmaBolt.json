@@ -1,0 +1,8 @@
+{
+  "title": "Plasma Bolt",
+  "speed": 2000,
+  "hitSound": "",
+  "attackSound": "",
+  "particlePrefab": "",
+  "impactParticlePrefab": ""
+}

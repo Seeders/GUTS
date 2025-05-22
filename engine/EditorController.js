@@ -424,7 +424,7 @@ class EditorController {
      * @param {Object} params - Parameters for component initialization
      * @returns {Object|null} - Instantiated component or null if failed
      */
-    instantiateComponent(typeName, params = {}) {
+    instantiateComponent(typeName) {
         const ComponentClass = this.getComponentClass(typeName);
         if (!ComponentClass) {
             console.error(`Component class ${typeName} not found`);
@@ -432,7 +432,7 @@ class EditorController {
         }
 
         try {
-            return new ComponentClass(this, null, {...params, isEditor: true}, this.scriptContext);
+            return new ComponentClass(this, null);
         } catch (error) {
             console.error(`Error instantiating component ${typeName}:`, error);
             return null;
