@@ -452,8 +452,7 @@
         "detailNoiseSetting": "desertDetail",
         "worldObjectSpawns": [
           "desertRocks",
-          "desertTrees",
-          "desertGrass"
+          "desertTrees"
         ],
         "range": [
           0.7,
@@ -469,8 +468,7 @@
         "detailNoiseSetting": "forestDetail",
         "worldObjectSpawns": [
           "forestRocks",
-          "forestTrees",
-          "forestGrass"
+          "forestTrees"
         ],
         "range": [
           0.2,
@@ -487,8 +485,7 @@
         "ridgeNoiseSetting": "mountainRidge",
         "worldObjectSpawns": [
           "mountainRocks",
-          "mountainTrees",
-          "mountainGrass"
+          "mountainTrees"
         ],
         "range": [
           0.5,
@@ -504,8 +501,7 @@
         "detailNoiseSetting": "plainsDetail",
         "worldObjectSpawns": [
           "plainsRocks",
-          "plainsTrees",
-          "plainsGrass"
+          "plainsTrees"
         ],
         "range": [
           0,
@@ -537,9 +533,9 @@
       "fiveStep": {
         "title": "Ten",
         "heightScale": 10,
-        "chunkResolution": 32,
-        "chunkSize": 1024,
-        "renderDistance": 2
+        "chunkResolution": 8,
+        "chunkSize": 2048,
+        "renderDistance": 8
       }
     },
     "levels": {
@@ -784,7 +780,7 @@
       },
       "forestTrees": {
         "title": "Forest Trees",
-        "worldObjectPrefab": "ash_medium_tree",
+        "worldObjectPrefab": "spruce_tree",
         "density": 0.075,
         "maxSlope": 0.8
       },

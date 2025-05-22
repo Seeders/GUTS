@@ -6,8 +6,7 @@
   "ridgeNoiseSetting": "mountainRidge",
   "worldObjectSpawns": [
     "mountainRocks",
-    "mountainTrees",
-    "mountainGrass"
+    "mountainTrees"
   ],
   "range": [
     0.5,
