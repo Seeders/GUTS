@@ -1,12 +1,16 @@
 class PlayerAttacker extends engine.Component {
-    init() {
+    init({isRemote = false}) {
         this.stats = this.parent.getComponent("stats").stats;
         this.camera = this.game.camera;
+        this.isRemote = isRemote;
         // Bind mouse click event
         this.cooldown = .25;
-        this.onMouseDown = this.handleMouseDown.bind(this);
-        document.addEventListener('mousedown', this.onMouseDown);
-        
+
+        if(!this.isRemote){
+            this.onMouseDown = this.handleMouseDown.bind(this);
+
+            document.addEventListener('mousedown', this.onMouseDown);
+        }
         // Throw state tracking
         this.isThrowAnimationPlaying = false;
         this.throwRequested = false;

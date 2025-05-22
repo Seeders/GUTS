@@ -12,6 +12,8 @@ class PlayerController extends engine.Component {
         isRemote = false
     }) {
         let gameComponent = this.game.gameEntity.getComponent('game');
+        
+        this.modelRenderer = this.parent.getComponent('ModelRenderer');
         this.world = gameComponent.world;
         this.physics = gameComponent.physics;
         this.scene = this.world.scene;
@@ -66,7 +68,7 @@ class PlayerController extends engine.Component {
             ShiftLeft: false,
             Space: false
         };
-
+        this.lastKeys = {...this.keys};
         // Pointer lock controls
         this.controls = { isLocked: false };
 
@@ -94,9 +96,49 @@ class PlayerController extends engine.Component {
             raycastHelpers: []
         };
     }
+    getNetworkData(){     
+        let data = {
+            keys: this.keys,
+            direction: {
+                forward: {
+                    x: this.forward.x,
+                    y: this.forward.y,
+                    z: this.forward.z
+                },
+                right:{
+                    x: this.right.x,
+                    y: this.right.y,
+                    z: this.right.z
+                },
+                up: {
+                    x: this.up.x,
+                    y: this.up.y,
+                    z: this.up.z
+                }
+            }
+        } 
+        
+        if(JSON.stringify(this.lastKeys) != JSON.stringify(this.keys)){
+            console.log('get', data);
+        }   
+        this.lastKeys = {...this.keys};
+        return data;       
+    }
+    
+    setNetworkData(data){
 
-    setNetworkInput(input){
-        this.keys = input;
+        if(this.game.isServer){
+    
+            if(data.keys){
+                if(JSON.stringify(data.keys) != JSON.stringify(this.keys)){
+                    console.log('set', data);
+                }
+                this.keys = data.keys;
+                this.forward.set(data.direction.forward.x, data.direction.forward.y, data.direction.forward.z);
+                this.right.set(data.direction.right.x, data.direction.right.y, data.direction.right.z);
+                this.up.set(data.direction.up.x, data.direction.up.y, data.direction.up.z);
+            }
+        }
     }
 
     setupPhysics(simulation) {
@@ -249,40 +291,31 @@ class PlayerController extends engine.Component {
         if ((!this.controls.isLocked || this.isRemote) && !this.game.isServer) return;
         const dt = Math.min(this.game.deltaTime, 0.1);
 
-        if(!this.isRemote){
-            
+        if(!this.isRemote){            
             // Update camera
             this.updateCameraPosition();  
-            this.updateAxes();   
-            this.game.state.playerInput = {
-                keys: this.keys,
-                quaternion: {
-                    x: this.parent.transform.quaternion.x,
-                    y: this.parent.transform.quaternion.y,
-                    z: this.parent.transform.quaternion.z,
-                    w: this.parent.transform.quaternion.w
-                },
-                direction: {
-                    forward: {
-                        x: this.forward.x,
-                        y: this.forward.y,
-                        z: this.forward.z
-                    },
-                    right:{
-                        x: this.right.x,
-                        y: this.right.y,
-                        z: this.right.z
-                    },
-                    up: {
-                        x: this.up.x,
-                        y: this.up.y,
-                        z: this.up.z
-                    }
-                }
-            }
+            this.updateAxes();     
         }
 
-        this.parent.getComponent("modelRenderer").isRunning = this.isRunning;
+        if(this.modelRenderer){
+            this.isRunning = this.keys.ShiftLeft;
+            let moveForward = 0;
+            let moveRight = 0;
+            if (this.keys.KeyW) moveForward += 1;
+            if (this.keys.KeyS) moveForward -= 1;
+            if (this.keys.KeyA) moveRight -= 1;
+            if (this.keys.KeyD) moveRight += 1;
+
+            if(moveForward != 0 || moveRight != 0) {
+                if(this.isRunning){
+                    this.modelRenderer.setAnimation('run');
+                } else {
+                    this.modelRenderer.setAnimation('walk');
+                }
+            } else {
+                this.modelRenderer.setAnimation('idle');
+            }
+        }
 
         if(!this.game.isServer) return;
         // Check if grounded
@@ -297,7 +330,6 @@ class PlayerController extends engine.Component {
             if (this.keys.KeyS) this.moveForward -= 1;
             if (this.keys.KeyA) this.moveRight -= 1;
             if (this.keys.KeyD) this.moveRight += 1;
-            this.isRunning = this.keys.ShiftLeft;
 
         }
 

@@ -801,6 +801,12 @@ class InfiniWorld extends engine.Component {
   	  this.pixelAlignFrustum( this.camera, aspectRatio, Math.floor( rendererSize.x / this.pixelSize ),
 					Math.floor( rendererSize.y / this.pixelSize ) );
     }
+    if(!this.game.isServer){
+      this.render();
+    }
+  }
+  render() {
+    
     this.renderer.render(this.scene, this.camera);
     if(this.pixelPass.enabled){
 		  this.composer.render();
@@ -892,6 +898,7 @@ class InfiniWorld extends engine.Component {
         instancedMesh.userData.relativeMatrix = relativeMatrix;
         instancedMesh.castShadow = true;
         instancedMesh.receiveShadow = true;
+        instancedMesh.material.alphaTest = 0.1;
         instancedMesh.material.transparent = false;
         instancedMesh.material.needsUpdate = true; // Force material update
         instancedMesh.material.side = THREE.DoubleSide; // Set side to double for better visibility

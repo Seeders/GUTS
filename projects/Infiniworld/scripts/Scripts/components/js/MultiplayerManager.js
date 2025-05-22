@@ -36,15 +36,40 @@ class MultiplayerManager extends engine.Component {
   // Update called from your game loop
   update() {
     // Update local player position on network
+      this.updatePlayers();  
     if (!this.game.isServer) {    
-      if(this.game.state.playerInput){  
-        this.network.sendPlayerInput(this.game.state.playerInput);          
+      if(this.localPlayer){  
+        this.network.sendPlayerInput({ components: this.localPlayer.getNetworkComponentData() });          
       }
       // Interpolate remote players
-      this.updatePlayers();  
     } else {
-      this.network.sendGameState();
+      let data = {
+        players: []
+      };
+      Object.keys(this.remotePlayers).forEach((networkId) => {
+        let entity = this.remotePlayers[networkId];
+        let componentData = entity.getNetworkComponentData();
+        data.players.push({
+          networkId: networkId,
+          components: {
+            ...componentData
+          }
+        });
+      });
+      this.network.sendGameState(data);
     }   
+  }
+    // Update remote player
+  updatePlayer(playerData) {
+    let player = this.remotePlayers[playerData.networkId];
+    let isRemote = true;
+    if (!player && this.localPlayer && this.localPlayer.networkId == playerData.networkId) {
+      player = this.localPlayer;
+      isRemote = false;
+    };
+
+    if(!player) return;
+    player.setNetworkComponentData(playerData, isRemote);
   }
   
   // Update remote players with interpolation
@@ -107,42 +132,7 @@ class MultiplayerManager extends engine.Component {
     entity.transform.networkVelocity = entity.transform.velocity.clone();
     return entity;
   }
-  // Update remote player
-  updatePlayer(playerData) {
-    let player = this.remotePlayers[playerData.networkId];
-    if (!player && this.localPlayer && this.localPlayer.networkId == playerData.networkId) {
-      player = this.localPlayer;
-    };
 
-    if(!player) return;
-    // Update target position and rotation for interpolation
-    if (playerData.position) {
-      player.transform.networkPosition.set(
-        playerData.position.x,
-        playerData.position.y,
-        playerData.position.z
-      );
-    }
-    
-      console.log(playerData);
-    if (playerData.quaternion) {
-      player.transform.networkQuaternion.set(
-        playerData.quaternion.x,
-        playerData.quaternion.y,
-        playerData.quaternion.z,
-        playerData.quaternion.w
-      );
-    }
-    
-    if (playerData.velocity) {
-      player.transform.networkVelocity.set(
-        playerData.velocity.x,
-        playerData.velocity.y,
-        playerData.velocity.z
-      );
-    }
-  }
-  
   // Remove remote player
   removeRemotePlayer(playerId) {
     const player = this.remotePlayers[playerId];

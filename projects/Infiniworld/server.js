@@ -38,21 +38,27 @@ io.on('connection', (socket) => {
         io.emit('playerConnected', data);      
     });
     hostSocket.on('playerDisconnected', (data) => {
+    console.log(`Removing Player: ${socket.id}`); 
         io.emit('playerDisconnected', data);      
+    });
+    hostSocket.on('disconnect', () => {     
+    console.log(`Host disconnected: ${socket.id}`); 
+      hostSocket = null;
     });
   } else {
   console.log(`Player connected: ${socket.id}`);
 
-    hostSocket.emit('playerConnected', {
+    hostSocket?.emit('playerConnected', {
       networkId: socket.id
     });
     
     socket.on('playerInput', (data) => {    
-      hostSocket.emit('playerInput', data);
+      hostSocket?.emit('playerInput', data);
     });
 
-    socket.on('disconnect', () => {
-      hostSocket.emit('playerDisconnected', { networkId: socket.id });
+    socket.on('disconnect', () => {      
+    console.log(`Player disconnected: ${socket.id}`); 
+      hostSocket?.emit('playerDisconnected', { networkId: socket.id });
     });
   }
 });

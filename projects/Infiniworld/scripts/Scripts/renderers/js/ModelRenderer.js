@@ -42,6 +42,7 @@ class ModelRenderer extends engine.Component {
         this.setAnimation('idle');
     }
 
+
     async setupAnimationMixer() {
         // Find the mixer and animations from userData
         let mixer, animations;
@@ -82,7 +83,8 @@ class ModelRenderer extends engine.Component {
         this.currentAction = null;
     }
 
-    setAnimation(animationName, speed = 1) {
+    setAnimation(animationName, speed = 1, minAnimationTime = 0) {
+     
         if (!this.animationData[animationName]) {
             console.warn(`Animation '${animationName}' not found, defaulting to 'idle'`);
             animationName = 'idle';
@@ -100,6 +102,7 @@ class ModelRenderer extends engine.Component {
             (this.currentAnimationTime >= this.minAnimationTime)) {
             this.animationState = animationName;
             this.currentAnimationTime = 0;
+            this.minAnimationTime = minAnimationTime;
             if (this.isGLTF && this.mixer) {
                 const newAction = this.animationActions[animationName];
                 if (!newAction) {
@@ -183,10 +186,6 @@ class ModelRenderer extends engine.Component {
                 this.setAnimation('leap', this.leapSpeed);
             }
         }
-        if (this.throwTimer < 0 && this.leapTimer < 0) {
-            this.setMovementAnimation();
-        }
-
         // Update skeleton for skinned meshes
         this.modelGroup.traverse(object => {
             if (object.isSkinnedMesh && object.skeleton) {
@@ -226,20 +225,20 @@ class ModelRenderer extends engine.Component {
             return;
         }
         this.leapSpeed = speed;
-        this.setAnimation('leap', speed);
         this.leapTimer = 0;
-        this.leapTime = (this.animationActions['leap'].getClip().duration / speed);; // Scale leap time inversely with speed
+        this.leapTime = (this.animationActions['leap'].getClip().duration / speed);; // Scale leap time inversely with speed        
+        this.setAnimation('leap', speed,  this.leapTime);
     }
-    throw(speed = 1) {
+    throw(speed = 1) {        
         if(this.throwTimer > 0){
             return;
         }
         if(this.animationActions['throw']){
                 
             this.throwSpeed = speed;
-            this.setAnimation('throw', speed);
             this.throwTimer = 0;
-            this.throwTime = (this.animationActions['throw'].getClip().duration / speed);
+            this.throwTime = (this.animationActions['throw'].getClip().duration / speed);            
+            this.setAnimation('throw', speed, this.throwTime * .5);
         }
     
     }
@@ -249,23 +248,6 @@ class ModelRenderer extends engine.Component {
         }
     }
 
-    setMovementAnimation() {
-        const dx = this.parent.transform.position.x - this.parent.transform.lastPosition.x;
-        const dy = this.parent.transform.position.z - this.parent.transform.lastPosition.z;
-        // Only update direction if there's significant movement
-        if (Math.abs(dx) > 0.01 || Math.abs(dy) > 0.01) {
-            // Set walking animation when moving
-            this.throwTimer = -1;            
-            let moveAnim = this.isRunning ? "run" : "walk";
-            if (this.animationData[moveAnim]) {
-                this.setAnimation(moveAnim);
-                return;
-            }
-        } else {
-            // Entity is stationary, use idle animation
-            this.setAnimation('idle');
-        }
-    }
 
     advanceFrame() {
         const frames = this.animationData[this.animationState];

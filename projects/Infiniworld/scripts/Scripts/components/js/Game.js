@@ -54,7 +54,9 @@ class Game extends engine.Component {
                 let e = this.game.state.entities[i];
                 e.update();
                 if(!e.destroyed){
-                    e.draw();
+                    if(!this.game.isServer){
+                        e.draw();
+                    }
                     e.postUpdate();  
                 } else {
                     entitiesToRemove.push(i);

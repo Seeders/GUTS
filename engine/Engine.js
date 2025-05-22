@@ -89,8 +89,10 @@ class Engine {
     
     gameLoop() {    
         if(this.state.projectEntity && this.state.projectEntity.update) {
-            this.state.projectEntity.update();  
-            this.state.projectEntity.draw();   
+            this.state.projectEntity.update(); 
+            if(!this.isServer){ 
+                this.state.projectEntity.draw();   
+            }
         }      
         this.entitiesToAdd.forEach((entity) => this.state.addEntity(entity));        
         this.entitiesToAdd = [];
@@ -116,7 +118,7 @@ class Engine {
         const entity = this.createEntity(type, position);
         const def = this.collections.entities[type];
 
-        entity.transform = entity.addComponent("transform", { x: position.x, y: position.y, z: position.z });
+        entity.transform = entity.addComponent("transform");
         
         if (def.components) {
             def.components.forEach((componentType) => {
@@ -124,7 +126,7 @@ class Engine {
                 if (componentDef.script) {
                     const ScriptComponent = this.moduleManager.getCompiledScript(componentType, 'components');
                     if (ScriptComponent) {
-                        entity.addComponent(componentType, params);                  
+                        entity.addComponent(componentType);                  
                     }
                 }
             });
@@ -135,11 +137,13 @@ class Engine {
                 if (componentDef.script) {
                     const ScriptComponent = this.moduleManager.getCompiledScript(rendererType, 'renderers');
                     if (ScriptComponent) {
-                        entity.addRenderer(rendererType, params);                  
+                        entity.addRenderer(rendererType);                  
                     }
                 }
             });
         }
+        //this allows components to reference other components on the entity at init, since they will now all exist before init.
+        entity.init({ position, ...params});
         return entity;
     }
 

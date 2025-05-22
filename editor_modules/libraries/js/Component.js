@@ -1,8 +1,7 @@
 class Component {
-    constructor(game, parent, params) { 
+    constructor(game, parent) { 
         this.game = game;
         this.parent = parent;
-        this.init(params);
     }
     init(params) {}
     getComponent(type) {
@@ -10,9 +9,7 @@ class Component {
     }
     update() {}
     postUpdate() {}
+    getNetworkData(){ return null }
+    setNetworkData(data){ }
     destroy() {}
-    
-    OnCollision(collidedWith){}
-    OnStaticCollision(){}
-    OnGrounded(){}
 }

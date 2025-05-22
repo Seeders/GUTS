@@ -73,38 +73,29 @@ class NetworkManager {
    
     // New player joined
     this.socket.on('playerConnected', (playerData) => {
-      console.log('Player joined:', playerData);
-      this.addRemotePlayer(playerData);
-      if(this.isHost){
-        this.socket.emit('playerConnected', playerData);
+      
+      if(!this.players[playerData.networkId]){
+        this.addRemotePlayer(playerData);
+        console.log('Player joined:', playerData);
+
       }
     });
     
     // Player left
     this.socket.on('playerDisconnected', (data) => {
-      console.log('Player left:', data.id);
-      this.removeRemotePlayer(data.id);
+      console.log('Player left:', data.networkId);
+      this.removeRemotePlayer(data.networkId);
+      if(this.isHost){
+        this.socket.emit('playerDisconnected', playerData);
+      }
     });
     
     // Player moved
     this.socket.on('playerInput', (data) => {
-      if(data.networkId && data.keys && this.isHost){
+      if(data.networkId && this.isHost){
         let player = this.players[data.networkId];
         if(player){
-          let playerController = player.getComponent('PlayerController');       
-          playerController.setNetworkInput(data.keys, true);  
-          // Create vectors
-          const forward = new THREE.Vector3(data.direction.forward.x, data.direction.forward.y, data.direction.forward.z);
-          const right = new THREE.Vector3(data.direction.right.x, data.direction.right.y, data.direction.right.z);
-          const up = new THREE.Vector3(data.direction.up.x, data.direction.up.y, data.direction.up.z);
-          
-          // Extract quaternion from matrix          
-          player.transform.quaternion = new THREE.Quaternion(data.quaternion.x, data.quaternion.y, data.quaternion.z, data.quaternion.w);
-          
-          // Store directions for other uses
-          playerController.forward = forward;
-          playerController.right = right;
-          playerController.up = up;
+          player.setNetworkComponentData(data, true);                 
         }
       }
 
@@ -135,7 +126,14 @@ class NetworkManager {
     this.socket.on('gameState', (update) => {
       // Process server reconciliation
       if(!this.isHost){
-        this.handleServerUpdate(update);
+        this.serverState = update;
+        update.players.forEach((playerData) => {
+          if(!this.players[playerData.networkId]){
+            this.addRemotePlayer(playerData);
+          }
+          // Server reconciliation for player character             
+          this.multiplayerManager.updatePlayer(playerData);       
+        });
       }
     });
     
@@ -159,36 +157,25 @@ class NetworkManager {
   }
   
   // Send player input for server-authoritative physics
-  sendPlayerInput(input) {
+  sendPlayerInput(playerData) {
     if (!this.connected) return;
     
     // Add sequence number for reconciliation
-    input.seq = this.inputSequence++;
+    playerData.seq = this.inputSequence++;
 
     // Send to server
-    this.socket.emit('playerInput', {networkId: this.playerId, ...input});
+    this.socket.emit('playerInput', {networkId: this.playerId, ...playerData});
     
     // Save this input for reconciliation
-    this.pendingInputs.push(input);
+    this.pendingInputs.push(playerData);
     
-    return input.seq;
+    return playerData.seq;
   }
     // Send player input for server-authoritative physics
-  sendGameState() {
+  sendGameState(data) {
     if (!this.connected || !this.isHost) return;
     
-    let data = {
-      players: []
-    };
-    Object.keys(this.players).forEach((networkId) => {
-      let entity = this.players[networkId];
-      data.players.push({
-        networkId: networkId,
-        position: { x: entity.transform.position.x, y: entity.transform.position.y, z: entity.transform.position.z },
-        quaternion: { x: entity.transform.quaternion.x, y: entity.transform.quaternion.y, z: entity.transform.quaternion.z, w: entity.transform.quaternion.w },
-        velocity: { x: entity.transform.velocity.x, y: entity.transform.velocity.y, z: entity.transform.velocity.z }
-      });
-    });
+
     // Send to server
     this.socket.emit('gameState', data);    
     
@@ -248,18 +235,7 @@ class NetworkManager {
     this.multiplayerManager.updateRemotePlayer(playerData);
   }
   
-  // Handle server state update (for server-authoritative mode)
-  handleServerUpdate(update) {
-    // Update server state
-    this.serverState = update;
-    update.players.forEach((playerData) => {
-      // Server reconciliation for player character             
-      this.multiplayerManager.updatePlayer( playerData);       
-    });
-
-
-  }
-  
+ 
   // Disconnect from server
   disconnect() {
     if (this.socket && this.connected) {
