@@ -13,7 +13,10 @@
 <script>    
     const game = new Engine("appContainer");  
     async function main() {  
-        await game.init("SpaceRacer");
+        await setTimeout(async () => {
+            await game.init("SpaceRacer");
+        }, 1000)
+        
     }
     window.onload = main;
 </script>

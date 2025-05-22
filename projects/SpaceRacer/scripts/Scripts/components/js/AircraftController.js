@@ -380,7 +380,8 @@ class AircraftController extends engine.Component {
     update() {
         const dt = this.game.deltaTime;
         
-        const groundHeight = this.parent.transform.groundHeight;
+        const groundHeight = this.game.gameEntity.getComponent('game').getTerrainHeight(this.parent.transform.position);
+
         if(this.parent.transform.position.y <= groundHeight) this.OnGrounded();
         // Update stable state tracking
         this.updateStableState(dt);

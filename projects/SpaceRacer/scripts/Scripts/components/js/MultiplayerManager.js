@@ -28,7 +28,8 @@ class MultiplayerManager extends engine.Component {
   setHost(isHost){
     this.isServer = isHost;
     this.game.isServer = this.isServer;
-    if(this.game.isServer){            
+    if(this.game.isServer){      
+        this.game.state.isPaused = false;      
         this.game.player.getComponent("PlayerController")?.setupPhysics(this.physics.simulation);
     }
   }
@@ -108,7 +109,13 @@ class MultiplayerManager extends engine.Component {
   
   // Create remote player representation
   createRemotePlayer(data) {
-    let objEntity = this.game.spawn("playerAircraft", { objectType: "playerPrefabs", spawnType: "spaceshipMesh", networkId: data.networkId, isRemote: true }, new THREE.Vector3(data.position));
+    let spawnPosition = new THREE.Vector3(data.position);
+    if(!data.position){
+      spawnPosition.x = Math.random()*200 - 100;
+      spawnPosition.y = Math.random()*20 + 200;
+      spawnPosition.z = Math.random()*200 - 100;
+    }
+    let objEntity = this.game.spawn("playerAircraft", { objectType: "playerPrefabs", spawnType: "spaceshipMesh", networkId: data.networkId, isRemote: true }, spawnPosition);
     objEntity.networkId = data.networkId;
     this.setNetworkTransform(objEntity);
     this.remotePlayers[data.networkId] = objEntity;
