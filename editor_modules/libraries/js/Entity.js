@@ -10,6 +10,12 @@ class Entity {
         this.collisionRadius = 5;   
         this.entityHeight = 10;        
     }
+
+    init(params) {
+        for(let c in this.components) {
+            this.components[c].init(params);               
+        }     
+    }
     getAABB(position = this.transform.position) {
         return {
             min: {
@@ -30,16 +36,39 @@ class Entity {
     }
     addRenderer(RendererClassName, params) {
         const RendererClass = this.moduleManager.getCompiledScript(RendererClassName, 'renderers');
-        const renderer = new RendererClass(this.game, this, params);
+        const renderer = new RendererClass(this.game, this);
         this.renderers[RendererClass.name.toLowerCase()] = renderer;
         this.components[RendererClass.name.toLowerCase()] = renderer;
+        if(params){
+            renderer.init(params);
+        }
         return renderer;
     }
     addComponent(ComponentClassName, params) {        
         const ComponentClass = this.moduleManager.getCompiledScript(ComponentClassName, 'components');
-        const component = new ComponentClass(this.game, this, params);
+        const component = new ComponentClass(this.game, this);
         this.components[ComponentClass.name.toLowerCase()] = component;
+        if(params){
+            component.init(params);
+        }
         return component;
+    }
+    getNetworkComponentData(){
+        let data = {};
+        for(let c in this.components) {
+            let cData = this.components[c].getNetworkData(); 
+            if(cData){
+                data[c] = cData;
+            }
+        }    
+        return data;
+    }
+    setNetworkComponentData(data, isRemote=false){            
+        if(data?.components){
+            for(let c in data.components) {
+                this.components[c]?.setNetworkData(data.components[c], isRemote); 
+            }    
+        }
     }
     removeComponent(component) {
         let index = this.components.indexOf(component);
