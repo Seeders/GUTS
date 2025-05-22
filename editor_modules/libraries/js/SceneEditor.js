@@ -335,6 +335,7 @@ class SceneEditor {
         const entityObjData = this.gameEditor.getCollections().entities[type];
         const combined = [...entityObjData.renderers, ...entityObjData.components];
 
+        let compsToInit = [];
          
         combined.forEach((componentName) => {
          
@@ -359,10 +360,22 @@ class SceneEditor {
                 if(componentDef.updateInEditor){
              
 
-                    this.componentsToUpdate.push(this.gameEditor.instantiateComponent(componentName, { ...prefabData, ...component.parameters}));
+                    let comp = this.gameEditor.instantiateComponent(componentName);
+                    let params = {...prefabData, ...component.parameters, isEditor: true};
+                    compsToInit.push({
+                        component: comp,
+                        params: params
+                    })
                 }
             }
         });
+
+        compsToInit.forEach((compObj) => {
+            let comp = compObj.component;
+            let params = compObj.params;
+            comp.init(params)
+            this.componentsToUpdate.push(comp);
+        })
  
         return components;
     }
