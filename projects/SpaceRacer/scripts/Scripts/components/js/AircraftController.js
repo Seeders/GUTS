@@ -11,6 +11,8 @@ class AircraftController extends engine.Component {
         maxSpeed = 6000,
         cameraSmoothing = 0.4,
         collisionRecoveryTime = 2,
+        
+        isRemote = false,
         // New parameters for stability
         physicsUpdateRate = 60,      // Hz for physics updates
         positionSmoothingFactor = 0.1, // Reduced from 0.5 for smoother transitions
@@ -30,7 +32,7 @@ class AircraftController extends engine.Component {
         this.maxSpeed = maxSpeed;
         this.cameraSmoothing = cameraSmoothing;
         this.parent.transform.quaternion = new THREE.Quaternion();
-        
+        this.isRemote = isRemote;
         // New stability parameters
         this.physicsUpdateRate = physicsUpdateRate;
         this.physicsUpdateInterval = 1 / physicsUpdateRate;
@@ -58,7 +60,6 @@ class AircraftController extends engine.Component {
 
         this.controls = new THREE_.PointerLockControls(this.camera, this.world.renderer.domElement);
         this.controls.pointerSpeed = 0;
-        this.scene.add(this.controls.object);
 
         // Movement properties
         this.thrust = 0;
@@ -67,8 +68,6 @@ class AircraftController extends engine.Component {
         this.pitchInput = 0;
         this.yawInput = 0;
         this.rollInput = 0;
-        this.mouseXInput = 0;
-        this.mouseYInput = 0;
         this.velocity = new THREE.Vector3();
         this.targetVelocity = new THREE.Vector3(); // New target velocity for smoothing
         this.collisionTimer = 0;
@@ -91,8 +90,14 @@ class AircraftController extends engine.Component {
             KeyE: false,
             ShiftLeft: false,
             KeyZ: false,
-            Space: false
+            Space: false,
+            mouseX: 0,
+            mouseY: 0
         };
+        this.mouse = {
+            x: 0,
+            y: 0
+        }
         this.initialPosition = new THREE.Vector3();
         this.initialPosition.copy(this.parent.transform.position);
         // Camera settings
@@ -105,24 +110,64 @@ class AircraftController extends engine.Component {
         this.smoothedAircraftPosition = new THREE.Vector3().copy(this.parent.transform.position);
         this.smoothedAircraftQuaternion = new THREE.Quaternion().copy(this.parent.transform.quaternion);
      
-        // Bind event handlers
-        this.onKeyDown = this.onKeyDown.bind(this);
-        this.onKeyUp = this.onKeyUp.bind(this);
-        this.onMouseMove = this.onMouseMove.bind(this);
-        this.onMouseDown = this.onMouseDown.bind(this);
-        this.onWheel = this.onWheel.bind(this);
-        document.addEventListener('keydown', this.onKeyDown);
-        document.addEventListener('keyup', this.onKeyUp);
-        document.addEventListener('mousemove', this.onMouseMove);
-        document.addEventListener('mousedown', this.onMouseDown);
-        document.addEventListener('wheel', this.onWheel);
+        if(!this.isRemote) { 
+            this.scene.add(this.controls.object);
+            // Bind event handlers
+            this.onKeyDown = this.onKeyDown.bind(this);
+            this.onKeyUp = this.onKeyUp.bind(this);
+            this.onMouseMove = this.onMouseMove.bind(this);
+            this.onMouseDown = this.onMouseDown.bind(this);
+            this.onWheel = this.onWheel.bind(this);
+            document.addEventListener('keydown', this.onKeyDown);
+            document.addEventListener('keyup', this.onKeyUp);
+            document.addEventListener('mousemove', this.onMouseMove);
+            document.addEventListener('mousedown', this.onMouseDown);
+            document.addEventListener('wheel', this.onWheel);
 
-        // Initialize camera
-        this.updateCameraPosition();
-        
+            // Initialize camera
+            this.updateCameraPosition();
+        }
         // Debug mode for development
         this.debugMode = false;
         this.debugInfo = { jitterCount: 0, maxJitter: 0 };
+    }
+    getNetworkData(){     
+        let data = {
+            keys: this.keys,
+            mouse: this.mouse,
+            direction: {
+                forward: {
+                    x: this.forward.x,
+                    y: this.forward.y,
+                    z: this.forward.z
+                },
+                right:{
+                    x: this.right.x,
+                    y: this.right.y,
+                    z: this.right.z
+                },
+                up: {
+                    x: this.up.x,
+                    y: this.up.y,
+                    z: this.up.z
+                }
+            }
+        } 
+        
+        return data;       
+    }
+    
+    setNetworkData(data){
+
+        if(this.game.isServer){
+    
+            this.mouse = data.mouse;
+            this.keys = data.keys;
+            this.forward.set(data.direction.forward.x, data.direction.forward.y, data.direction.forward.z);
+            this.right.set(data.direction.right.x, data.direction.right.y, data.direction.right.z);
+            this.up.set(data.direction.up.x, data.direction.up.y, data.direction.up.z);
+        
+        }
     }
 
     OnGrounded() {
@@ -200,11 +245,11 @@ class AircraftController extends engine.Component {
             const newMouseYInput = -(event.movementY || 0) * this.mouseSensitivity;
             
             // Apply smoothing between old and new values
-            this.mouseXInput = this.mouseXInput + newMouseXInput;
-            this.mouseYInput = this.mouseYInput + newMouseYInput;
+            this.mouse.x = this.mouse.x + newMouseXInput;
+            this.mouse.y = this.mouse.y + newMouseYInput;
         } else {
-            this.mouseXInput = 0;
-            this.mouseYInput = 0;
+            this.mouse.x = 0;
+            this.mouse.y = 0;
         }
     }
     
@@ -339,9 +384,10 @@ class AircraftController extends engine.Component {
         if(this.parent.transform.position.y <= groundHeight) this.OnGrounded();
         // Update stable state tracking
         this.updateStableState(dt);
-
-        // Update local axes
-        this.updateAxes();
+        if(!this.isRemote){
+            // Update local axes
+            this.updateAxes();
+        }
 
         if (!this.hasCollided) {
             // Normal flight controls when not in collision state
@@ -350,8 +396,8 @@ class AircraftController extends engine.Component {
             const inputDamping = 1 - (this.dampingFactor * dt);
             // Cap pitch/yaw inputs to ensure consistent rotation rate
             const maxInput = 1.0; // Maximum input value for pitch/yaw
-            this.pitchInput = (this.pitchInput * inputDamping) + Math.max(-maxInput, Math.min(maxInput, this.mouseYInput * this.pitchSpeed));
-            this.yawInput = (this.yawInput * inputDamping) + Math.max(-maxInput, Math.min(maxInput, this.mouseXInput * this.yawSpeed));
+            this.pitchInput = (this.pitchInput * inputDamping) + Math.max(-maxInput, Math.min(maxInput, this.mouse.y * this.pitchSpeed));
+            this.yawInput = (this.yawInput * inputDamping) + Math.max(-maxInput, Math.min(maxInput, this.mouse.x * this.yawSpeed));
             this.rollInput = (this.keys.KeyD ? 1 : 0) + (this.keys.KeyA ? -1 : 0);
             this.rollInput *= this.rollSpeed * dt;
 
@@ -404,14 +450,19 @@ class AircraftController extends engine.Component {
             this.updateCollisionState(dt);
         }       
 
+        if(this.game.isServer){
         // Update physics system with latest position and velocity
-        this.updatePhysics(dt);
-        // Update camera position
-        this.updateCameraPosition();
+            this.updatePhysics(dt);
+        }
+        
+        if(!this.isRemote){
+            // Update camera position
+            this.updateCameraPosition();
+        }
 
         // Reset mouse input
-        this.mouseXInput *= 0.8; // Gradual decay instead of immediate reset
-        this.mouseYInput *= 0.8;
+        this.mouse.x *= 0.8; // Gradual decay instead of immediate reset
+        this.mouse.y *= 0.8;
         
         // Show debug info if enabled
         if (this.debugMode) {

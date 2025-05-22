@@ -29,7 +29,7 @@ class MultiplayerManager extends engine.Component {
     this.isServer = isHost;
     this.game.isServer = this.isServer;
     if(this.game.isServer){            
-        this.game.player.getComponent("PlayerController").setupPhysics(this.physics.simulation);
+        this.game.player.getComponent("PlayerController")?.setupPhysics(this.physics.simulation);
     }
   }
   
@@ -108,12 +108,12 @@ class MultiplayerManager extends engine.Component {
   
   // Create remote player representation
   createRemotePlayer(data) {
-    let objEntity = this.game.spawn("player", { objectType: "playerPrefabs", spawnType: "waving_guy", networkId: data.networkId, isRemote: true }, new THREE.Vector3(data.position));
+    let objEntity = this.game.spawn("playerAircraft", { objectType: "playerPrefabs", spawnType: "spaceshipMesh", networkId: data.networkId, isRemote: true }, new THREE.Vector3(data.position));
     objEntity.networkId = data.networkId;
     this.setNetworkTransform(objEntity);
     this.remotePlayers[data.networkId] = objEntity;
     if(this.game.isServer){            
-      objEntity.getComponent("PlayerController").setupPhysics(this.physics.simulation);
+      objEntity.getComponent("PlayerController")?.setupPhysics(this.physics.simulation);
     }
     return objEntity;
   }
@@ -235,21 +235,6 @@ class MultiplayerManager extends engine.Component {
         y: velocity.y,
         z: velocity.z
       }, true);
-    }
-  }
-  
-  // Apply pending input for reconciliation
-  applyInput(input) {
-    // Implement based on your input system
-    // For example, if input contains movement:
-    if (input.movement && this.localPlayer && this.localPlayer.body) {
-      const force = new THREE.Vector3(
-        input.movement.x,
-        input.movement.y,
-        input.movement.z
-      ).multiplyScalar(input.deltaTime * 1000); // Convert to appropriate force
-      
-      this.localPlayer.body.applyImpulse(force, true);
     }
   }
   
