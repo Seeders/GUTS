@@ -83,10 +83,13 @@ class NetworkManager {
     
     // Player left
     this.socket.on('playerDisconnected', (data) => {
-      console.log('Player left:', data.networkId);
-      this.removeRemotePlayer(data.networkId);
-      if(this.isHost){
-        this.socket.emit('playerDisconnected', data);
+      let player = this.players[data.networkId];
+      if(player){
+        console.log('Player left:', data.networkId);
+        this.removeRemotePlayer(data.networkId);
+        if(this.isHost){
+          this.socket.emit('playerDisconnected', data);
+        }
       }
     });
     

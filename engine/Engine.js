@@ -160,7 +160,7 @@ class Engine {
         project = JSON.parse(localStorage.getItem(currentProject)); 
         
         if(!project){
-            const response = await fetch(`config/${currentProject.toUpperCase().replace(/ /g, '_')}.json`);
+            const response = await window.fetch(`config/${currentProject.toUpperCase().replace(/ /g, '_')}.json`);
 
             if (!response.ok) {                    
                 throw new Error(`HTTP error! status: ${response.status}`);
