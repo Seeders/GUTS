@@ -1,7 +1,7 @@
 {
   "title": "Ten",
   "heightScale": 10,
-  "chunkResolution": 8,
+  "chunkResolution": 4,
   "chunkSize": 2048,
-  "renderDistance": 8
+  "renderDistance": 16
 }

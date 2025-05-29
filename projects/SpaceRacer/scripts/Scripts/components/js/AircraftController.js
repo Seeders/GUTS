@@ -4,9 +4,9 @@ class AircraftController extends engine.Component {
         strafeAcceleration = 20,
         verticalAcceleration = 20,
         pitchSpeed = 1.5,
-        yawSpeed = 1.2,
+        yawSpeed = .1,
         rollSpeed = 1.5,
-        mouseSensitivity = 0.000004,
+        mouseSensitivity = 0.001,
         dampingFactor = 0.12,
         maxSpeed = 8000,
         cameraSmoothing = 0.3,
@@ -28,7 +28,6 @@ class AircraftController extends engine.Component {
         this.world = this.game.gameEntity.getComponent("InfiniWorld");
         this.scene = this.world.scene;
         this.camera = this.game.camera;
-        
         // Base parameters
         this.acceleration = acceleration;
         this.strafeAcceleration = strafeAcceleration;
@@ -239,7 +238,6 @@ class AircraftController extends engine.Component {
             this.up.set(data.direction.up.x, data.direction.up.y, data.direction.up.z);
             if(data.flightState) this.flightState = data.flightState;
         }
-       
     }
 
     OnGrounded() {
@@ -364,7 +362,7 @@ class AircraftController extends engine.Component {
     onMouseMove(event) {
         if (this.controls.isLocked && !this.hasCollided) {
             // Direct, responsive mouse input
-            const sensitivity = this.mouseSensitivity * 100; // Increased sensitivity
+            const sensitivity = this.mouseSensitivity; // Increased sensitivity
             this.mouse.x += -(event.movementX || 0) * sensitivity;
             this.mouse.y += -(event.movementY || 0) * sensitivity;
             
@@ -491,48 +489,61 @@ class AircraftController extends engine.Component {
 
     updateCameraPosition() {
         const dt = this.game.deltaTime;
-        const dynamicSmoothing = Math.max(0.1, this.cameraSmoothing - (this.velocity.length() / 10000));
-    
-        // Enhanced forward vector calculation
+
+        // Frame-rate-independent smoothing factor (base value adjusted for stability)
+        const baseSmoothing = 0.75; // Increased from 0.1 to reduce lag
+        const speedFactor = Math.max(1, Math.min(2.5, this.velocity.length() * .00025));
+        const dynamicSmoothing = 1 - Math.pow(1 - baseSmoothing, dt * 60); // Normalize for 60 FPS
+
+        // Update smoothed aircraft position and quaternion
+        this.smoothedAircraftPosition.lerp( this.parent.transform.position, dynamicSmoothing);
+        this.smoothedAircraftQuaternion.slerp(this.parent.transform.quaternion, dynamicSmoothing);
+
+        // Calculate forward vector for look target
         const forward = this.smoothedForward.clone();
-        const lookAheadDistance = this.cameraLookAhead + (this.velocity.length() * 0.001);
-        this.lookTarget.lerp(this.parent.transform.position.clone().add(
-            forward.multiplyScalar(lookAheadDistance)
-        ), 1);
-    
+        this.lookTarget.copy(this.parent.transform.position.clone().add(this.up.multiplyScalar(10)));
+
         if (this.isThirdPerson) {
             // Dynamic camera distance based on speed
-            const speedFactor = Math.max(0.7, Math.min(1.3, 1 + (this.velocity.length() - 2000) / 4000));
-            const dynamicDistance = this.thirdPersonDistance;
-            const dynamicHeight = this.thirdPersonHeight;
-            
-            const offset = new THREE.Vector3(0, dynamicHeight, -dynamicDistance)
+            const dynamicDistance = this.thirdPersonDistance * speedFactor;
+            const dynamicHeight = this.thirdPersonHeight * speedFactor;
+
+            // Calculate camera offset with reduced banking effect
+            const bankEffect = 0;//Math.sin(this.flightState.bankAngle) * 2; // Reduced from 5
+            const offset = new THREE.Vector3(bankEffect, dynamicHeight, -dynamicDistance)
                 .applyQuaternion(this.parent.transform.quaternion);
-            
-            // Add slight banking effect to camera
-            const bankEffect = Math.sin(this.flightState.bankAngle) * 5;
-            offset.x += bankEffect;
-            
-            const targetPos = this.parent.transform.position.clone().add(offset);
-            
-            this.camera.position.copy(targetPos);
-            // Enhanced camera orientation with roll preservation
+
+            // Smooth camera position to reduce jitter
+            this.camera.position.copy(this.parent.transform.position.clone().add(offset));
+
+            // Calculate camera orientation with stable up vector
             const up = this.smoothedUp.clone();
             const right = new THREE.Vector3().crossVectors(forward, up).normalize();
             up.crossVectors(right, forward).normalize();
-    
+
             const lookAtMatrix = new THREE.Matrix4().lookAt(
                 this.camera.position,
                 this.lookTarget,
                 up
             );
-            
-            const newQuaternion = new THREE.Quaternion().setFromRotationMatrix(lookAtMatrix);
-            this.camera.quaternion.slerp(newQuaternion, dynamicSmoothing * 1.5);
-    
+
+            // Smooth quaternion to prevent rapid orientation changes
+            const targetQuaternion = new THREE.Quaternion().setFromRotationMatrix(lookAtMatrix);
+            this.camera.quaternion.slerp(targetQuaternion, dynamicSmoothing);
         } else {
-            this.camera.position.copy(this.parent.transform.position);
-            this.camera.quaternion.copy(this.parent.transform.quaternion);
+            // First-person mode: directly follow aircraft
+            this.camera.position.copy(this.smoothedAircraftPosition);
+            this.camera.quaternion.copy(this.smoothedAircraftQuaternion);
+        }
+
+        // Store last camera position for debugging
+        this.lastCameraPosition.copy(this.camera.position);
+        this.lastCameraLookAt.copy(this.lookTarget);
+
+        // Debug output for jitter analysis (optional, enable in debugMode)
+        if (this.debugMode) {
+            const cameraDelta = this.camera.position.clone().sub(this.lastCameraPosition).length();
+            console.log(`Camera Delta: ${cameraDelta.toFixed(4)} | Smoothing: ${dynamicSmoothing.toFixed(4)}`);
         }
     }
 
@@ -678,7 +689,7 @@ class AircraftController extends engine.Component {
             }
 
             // Direct yaw control
-            if (Math.abs(this.yawInput) > 0.001) {
+            if (Math.abs(this.yawInput) > 0.0001) {
                 const yawQuat = new THREE.Quaternion().setFromAxisAngle(this.up, this.yawInput);
                 this.parent.transform.quaternion.premultiply(yawQuat);
             }
