@@ -702,7 +702,7 @@ class EditorView {
           if (confirm(`Delete project "${this.controller.getCurrentProject()}"?`)) {
             this.controller.deleteProject(this.controller.getCurrentProject());
             this.elements.app.style.display = 'none';
-            localStorage.setItem("currentProject", "default_project");
+            localStorage.setItem("currentProject", "Hello World");
             window.location.reload();
           }
         });
@@ -719,7 +719,7 @@ class EditorView {
             return;
           }
           
-          const result = this.controller.createProject(name, DEFAULT_PROJECT_CONFIG);
+          const result = this.controller.createProject(name);
           if (result.success) {
             newProjectModal.classList.remove('show');
             this.controller.loadProject(name);

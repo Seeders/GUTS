@@ -11,8 +11,7 @@ const bodyParser = require('body-parser');
 // Base directory for all file operations
 const BASE_DIR = path.join(__dirname, '/');
 const PROJS_DIR = path.join(BASE_DIR, 'projects');
-const MODULES_DIR = path.join(BASE_DIR, 'editor_modules');
-const MODELS_DIR = path.join(BASE_DIR, 'samples/models');
+const MODULES_DIR = path.join(BASE_DIR, 'global');
 
 const upload = multer({ dest: path.join(BASE_DIR, 'uploads') });
 
