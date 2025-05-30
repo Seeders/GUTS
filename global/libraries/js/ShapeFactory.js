@@ -23,6 +23,7 @@ class ShapeFactory {
         group.name = groupName;
         group.userData = { isGroup: true };
         // Use Promise.all with map instead of forEach to properly await all shapes
+  
         await Promise.all(groupData.shapes.map(async (shape, index) => {
             if (shape.type === 'gltf') {
                 await this.handleGLTFShape(shape, index, group);

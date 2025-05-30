@@ -239,6 +239,8 @@ class ModelManager {
     // Use a more efficient approach: deep clone the prebuilt models
 // This maintains the correct UV mapping and materials
 getModel(prefix, type) {
+  
+        debugger;
     const modelKey = `${prefix}_${type}`;
     const masterModel = this.models[modelKey];
     
@@ -268,68 +270,76 @@ getAnimation(prefix, type, anim) {
 
 // Helper method to properly clone a THREE.js model with all its properties
 deepCloneModel(sourceRoot) {
-    let sourceModel = sourceRoot.children[0];
-    const clonedModel = new THREE.Group();
-    clonedModel.name = sourceModel.name;
-    clonedModel.position.copy(sourceModel.position);
-    clonedModel.quaternion.copy(sourceModel.quaternion);
-    clonedModel.scale.copy(sourceModel.scale);
-    clonedModel.userData = this.safeCloneUserData(sourceModel.userData || {});
-
-    // Clone children
-    sourceModel.children.forEach(child => {
-        const clonedChild = this.cloneObject3D(child);
-        if (clonedChild) {
-            clonedModel.add(clonedChild);
-        }
-        // Handle animations
-        if (clonedChild.userData.isGLTFRoot && clonedChild.userData.animations && clonedChild.userData.animations.length > 0) {
-    
-            // Create a map of original bone UUIDs to cloned bones
-            const boneMap = new Map();
-            sourceModel.traverse(src => {
-                if (src.isBone) {
-                    clonedChild.traverse(cloned => {
-                    if (cloned.isBone && cloned.name === src.name) {
-                        boneMap.set(src.uuid, cloned);
-                    }
-                    });
-                }
-            });
-
-            // Remap AnimationClip tracks to cloned bones
-            clonedChild.userData.animations = clonedChild.userData.animations.map(clip => {
-            const newTracks = clip.tracks.map(track => {
-                const [uuid, property] = track.name.split('.');
-                const newBone = boneMap.get(uuid);
-                if (newBone) {
-                return new THREE[track.constructor.name](`${newBone.uuid}.${property}`, track.times, track.values);
-                }
-                return track;
-            });
-            return new THREE.AnimationClip(clip.name, clip.duration, newTracks);
-            });
-
-            // Create new AnimationMixer
-            const mixer = new THREE.AnimationMixer(clonedChild);
-            const action = mixer.clipAction(clonedChild.userData.animations[0]);
-            action.play();
-            clonedChild.userData.mixer = mixer;
-            console.log('Animation mixer created for cloned model, clip:', clonedChild.userData.animations[0].name);
-        } else {
-            console.warn('No animations found for cloned model:', sourceModel.name);
-        }
-    });
-
+    // Create a new root group to hold all cloned children
     const clonedRoot = new THREE.Group();
     clonedRoot.name = sourceRoot.name;
     clonedRoot.position.copy(sourceRoot.position);
     clonedRoot.quaternion.copy(sourceRoot.quaternion);
     clonedRoot.scale.copy(sourceRoot.scale);
     clonedRoot.userData = this.safeCloneUserData(sourceRoot.userData || {});
-    clonedRoot.add(clonedModel);
+
+    // Clone all children of the sourceRoot
+    sourceRoot.children.forEach(sourceModel => {
+        const clonedModel = new THREE.Group();
+        clonedModel.name = sourceModel.name;
+        clonedModel.position.copy(sourceModel.position);
+        clonedModel.quaternion.copy(sourceModel.quaternion);
+        clonedModel.scale.copy(sourceModel.scale);
+        clonedModel.userData = this.safeCloneUserData(sourceModel.userData || {});
+
+        // Clone children of the current sourceModel
+        sourceModel.children.forEach(child => {
+            const clonedChild = this.cloneObject3D(child);
+            if (clonedChild) {
+                clonedModel.add(clonedChild);
+            }
+
+            // Handle animations for this child if it has them
+            if (clonedChild.userData.isGLTFRoot && clonedChild.userData.animations && clonedChild.userData.animations.length > 0) {
+                // Create a map of original bone UUIDs to cloned bones
+                const boneMap = new Map();
+                sourceModel.traverse(src => {
+                    if (src.isBone) {
+                        clonedChild.traverse(cloned => {
+                            if (cloned.isBone && cloned.name === src.name) {
+                                boneMap.set(src.uuid, cloned);
+                            }
+                        });
+                    }
+                });
+
+                // Remap AnimationClip tracks to cloned bones
+                clonedChild.userData.animations = clonedChild.userData.animations.map(clip => {
+                    const newTracks = clip.tracks.map(track => {
+                        const [uuid, property] = track.name.split('.');
+                        const newBone = boneMap.get(uuid);
+                        if (newBone) {
+                            return new THREE[track.constructor.name](`${newBone.uuid}.${property}`, track.times, track.values);
+                        }
+                        return track;
+                    });
+                    return new THREE.AnimationClip(clip.name, clip.duration, newTracks);
+                });
+
+                // Create new AnimationMixer
+                const mixer = new THREE.AnimationMixer(clonedChild);
+                const action = mixer.clipAction(clonedChild.userData.animations[0]);
+                action.play();
+                clonedChild.userData.mixer = mixer;
+                console.log('Animation mixer created for cloned model, clip:', clonedChild.userData.animations[0].name);
+            } else {
+                console.warn('No animations found for cloned model:', sourceModel.name);
+            }
+        });
+
+        // Add the cloned model to the root
+        clonedRoot.add(clonedModel);
+    });
+
+    console.log(`Cloned root ${clonedRoot.name} with ${clonedRoot.children.length} children`);
     return clonedRoot;
 }
+
 cloneObject3D(source) {
   if (!source) return null;
 

@@ -32,8 +32,8 @@ class EditorModel {
         };
         let projects = localStorage.getItem("projects");
         if(!projects){
-            localStorage.setItem("currentProject", "default_project");
-            localStorage.setItem("projects", JSON.stringify(["default_project", "Hello World", "Infiniworld", "SpaceRacer"]));
+            localStorage.setItem("currentProject", "Hello World");
+            localStorage.setItem("projects", JSON.stringify(["Hello World", "TowerDefense", "Infiniworld", "SpaceRacer"]));
         }
     }
 
@@ -57,7 +57,7 @@ class EditorModel {
         const savedProject = localStorage.getItem("currentProject");
         return savedProject && this.listProjects().includes(savedProject) 
             ? savedProject 
-            : "default_project";
+            : "Hello World";
     }
 
     /**
@@ -259,7 +259,7 @@ class EditorModel {
      * @returns {Array} List of project identifiers
      */
     listProjects() {
-        const projects = JSON.parse(localStorage.getItem('projects') || '["default_project"]');
+        const projects = JSON.parse(localStorage.getItem('projects') || '["Hello World"]');
         return Array.isArray(projects) ? projects : [];
     }
 
