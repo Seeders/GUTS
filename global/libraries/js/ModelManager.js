@@ -240,7 +240,6 @@ class ModelManager {
 // This maintains the correct UV mapping and materials
 getModel(prefix, type) {
   
-        debugger;
     const modelKey = `${prefix}_${type}`;
     const masterModel = this.models[modelKey];
     

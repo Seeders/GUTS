@@ -1,9 +1,5 @@
 class FollowPath extends engine.Component {
-    
-    constructor(game, parent, params) {
-        super(game, parent, params);
-    }
-    
+
     init({ pathIndex = 0 }) {
         this.gridSize = this.game.getCollections().configs.game.gridSize;
         this.pathIndex = pathIndex;
@@ -16,21 +12,19 @@ class FollowPath extends engine.Component {
         this.parent.transform.position.y = this.y * this.gridSize + this.gridSize / 2;
 
         this.progress = 0; // Progress between grid points (0 to 1)
+        this.gridSize = this.game.getCollections().configs.game.gridSize;
         
         // Convert pixel-based speed to grid-based speed
-        this.stats = this.getComponent('stats').stats;
-        this.gridSpeed = this.stats.speed / this.gridSize;
     }
 
     update() {
         this.stats = this.getComponent('stats').stats;
-        this.gridSize = this.game.getCollections().configs.game.gridSize;
 
         if (this.indexInPath < this.game.state.paths[this.pathIndex].length - 1) {
             const target = this.game.state.paths[this.pathIndex][this.indexInPath + 1];
             
             // Use converted grid-based speed
-            this.progress += this.gridSpeed * this.game.deltaTime * 100;
+            this.progress += (this.stats.speed / this.gridSize) * this.game.deltaTime * 100;
             
             if (this.progress >= 1) {
                 this.indexInPath++;

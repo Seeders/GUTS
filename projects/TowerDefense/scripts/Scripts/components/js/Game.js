@@ -17,7 +17,6 @@ class Game extends engine.Component {
             endY * this.gridSize + this.gridSize / 2,
             0
         );
-        debugger;
         this.keep = this.game.spawn("tower",{ spawnType: 'keep', objectType: 'towers', setDirection: 1}, keepPosition);
         this.keep.placed = true;
         console.log(keepPosition);
@@ -147,7 +146,10 @@ class Game extends engine.Component {
 
         this.game.effects = {
             slow: (stats, additiveStats, multiplicitiveStats, slowAmount) => {
-                stats[this.game.getCollections().effects.slow.stat] *= slowAmount;
+                if(!multiplicitiveStats[this.game.getCollections().effects.slow.stat]){
+                    multiplicitiveStats[this.game.getCollections().effects.slow.stat] = [];
+                }
+                multiplicitiveStats[this.game.getCollections().effects.slow.stat].push(slowAmount);
             }
         }
         this.game.upgrades = [
