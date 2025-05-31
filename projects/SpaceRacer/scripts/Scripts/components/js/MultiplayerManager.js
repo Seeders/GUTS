@@ -15,7 +15,7 @@ class MultiplayerManager extends engine.Component {
   // Initialize networking
   async initializeMultiplayer() {
     try {
-      this.network = new (this.game.libraryClasses.NetworkManager)(this);
+      this.network = new GUTS.NetworkManager(this);
       const networkId = await this.network.connect(this.serverUrl);
       console.log(`Multiplayer initialized with player ID: ${networkId}`);
       return networkId;

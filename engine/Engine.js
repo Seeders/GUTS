@@ -11,7 +11,7 @@ class Engine {
         this.libraries = {};
         this.state = {};
         this.isServer = false;
-        window.GUTS = this;
+        window.APP = this;
     }
 
     async init(projectName) {
@@ -28,13 +28,13 @@ class Engine {
         if (projectConfig.libraries) {
             // Use ModuleManager to load modules
             this.moduleManager.libraryClasses = await this.moduleManager.loadModules({ "game": projectConfig });
-            this.libraryClasses = this.moduleManager.libraryClasses;
+            window.GUTS = this.moduleManager.libraryClasses;
         }
         //components, renderers, and functions
         this.setupScriptEnvironment();
         this.preCompileScripts();  
 
-        this.state = new (this.libraryClasses.GameState)(this.collections);  
+        this.state = new GUTS.GameState(this.collections);  
 
 
         this.state.loader = this.createEntityFromCollections(projectConfig.loaderEntity, {}, {x:0, y:0, z:0 }).getComponent(projectConfig.loaderComponent);        
@@ -148,7 +148,7 @@ class Engine {
     }
 
     createEntity(type, position) {
-        const entity = new (this.libraryClasses.Entity)(this, type, position);
+        const entity = new GUTS.Entity(this, type, position);
         return entity;
     }
 

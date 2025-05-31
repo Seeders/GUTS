@@ -22,12 +22,12 @@ class GameLoader extends engine.Component {
         this.setupCanvas(this.collections.configs.game.canvasWidth, this.collections.configs.game.canvasHeight);
         await this.loadAssets();
 
-        this.game.translator = new (this.game.libraryClasses.CoordinateTranslator)(this.collections.configs.game, this.collections.levels[this.game.state.level].tileMap.terrainMap.length, this.isometric);
-        this.game.spatialGrid = new (this.game.libraryClasses.SpatialGrid)(this.collections.levels[this.game.state.level].tileMap.terrainMap.length, this.collections.configs.game.gridSize);
+        this.game.translator = new GUTS.CoordinateTranslator(this.collections.configs.game, this.collections.levels[this.game.state.level].tileMap.terrainMap.length, this.isometric);
+        this.game.spatialGrid = new GUTS.SpatialGrid(this.collections.levels[this.game.state.level].tileMap.terrainMap.length, this.collections.configs.game.gridSize);
         const terrainImages = this.game.imageManager.getImages("levels", this.game.state.level);
 
         // Use ModuleManager's script environment
-        this.game.terrainTileMapper = new (this.game.libraryClasses.TileMap)(this, {}, {CanvasUtility: this.game.libraryClasses.CanvasUtility});
+        this.game.terrainTileMapper = new GUTS.TileMap(this, {}, {CanvasUtility: GUTS.CanvasUtility});
         this.game.terrainTileMapper.init(this.terrainCanvasBuffer, this.collections.configs.game.gridSize, terrainImages, this.isometric);
 
         this.game.gameEntity = this.game.createEntityFromCollections('game', { gameConfig: this.collections.configs.game, canvas: this.canvas, canvasBuffer: this.canvasBuffer, terrainCanvasBuffer: this.terrainCanvasBuffer, worldObjects: this.collections.worldObjects, imageManager: this.game.imageManager, levelName: this.game.state.level, level: this.collections.levels[this.game.state.level], palette: this.game.palette }, new THREE.Vector3());
@@ -63,12 +63,12 @@ class GameLoader extends engine.Component {
         this.game.terrainCanvasBuffer = this.terrainCanvasBuffer;
     }
     async loadAssets() {
-        this.game.imageManager = new (this.game.libraryClasses.ImageManager)(this, { imageSize: this.collections.configs.game.imageSize, palette: this.game.palette, textures:  this.game.getCollections().textures}, {ShapeFactory: this.game.libraryClasses.ShapeFactory});    
+        this.game.imageManager = new GUTS.ImageManager(this, { imageSize: this.collections.configs.game.imageSize, palette: this.game.palette, textures:  this.game.getCollections().textures}, {ShapeFactory: GUTS.ShapeFactory});    
         // Load all images
         for(let objectType in this.collections) {
             await this.game.imageManager.loadImages(objectType, this.collections[objectType]);
         }  
-        this.game.modelManager = new (this.game.libraryClasses.ModelManager)(this, {}, { ShapeFactory: this.game.libraryClasses.ShapeFactory, palette: this.game.palette, textures: this.game.getCollections().textures});
+        this.game.modelManager = new GUTS.ModelManager(this, {}, { ShapeFactory: GUTS.ShapeFactory, palette: this.game.palette, textures: this.game.getCollections().textures});
         
         for(let objectType in this.collections) {
             await this.game.modelManager.loadModels(objectType, this.collections[objectType]);

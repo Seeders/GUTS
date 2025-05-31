@@ -4,7 +4,7 @@ class ExportScripts {
   }
   export(project) {
       // Initialize JSZip
-      const zip = new (this.app.libraryClasses.JSZip)();
+      const zip = new GUTS.JSZip();
 
       // Iterate over each script type (e.g., "renderers", "components")
       Object.keys(project).forEach(scriptType => {
