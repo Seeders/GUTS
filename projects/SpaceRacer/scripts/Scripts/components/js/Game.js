@@ -1,9 +1,11 @@
 class Game extends engine.Component {
-   
+     
     constructor(game, parent, params) {
         super(game, parent, params);
         this.physicsAccumulator = 0;
         this.lastTime = Date.now();
+        this.physicsStep = 1/60; // 60 Hz physics update
+        this.lastPhysicsTime = 0;
     }
    
     init() {
@@ -15,8 +17,6 @@ class Game extends engine.Component {
         this.debugDiv.style.top = '10px';
         this.debugDiv.style.left = '10px';
         this.debugDiv.style.zIndex = '10000';
-        
-        this.physicsStep = 1/60; // 60 Hz physics update
         document.body.append(this.debugDiv);
     }
     
@@ -47,8 +47,30 @@ class Game extends engine.Component {
                 this.debugDiv.textContent = `fps:${this.fps.fpsValue}  entityCount:${this.game.state.entities.length}`;
             }
             
-            // Fixed physics update
+            // Store physics timing info for interpolation
+            const physicsDidUpdate = this.physicsAccumulator >= this.physicsStep && (this.game.isServer || this.game.isSinglePlayer);
+            
+            // Fixed physics update with proper timing
             this.physicsAccumulator += this.game.deltaTime;
+            if (physicsDidUpdate) {    
+                this.lastPhysicsTime = performance.now();
+                this.physics.sendToWorker(this.world);           
+                this.physicsAccumulator -= this.physicsStep;
+                
+                // Notify all entities that physics updated
+                for (let i = 0; i < this.game.state.entities.length; i++) {
+                    let e = this.game.state.entities[i];
+                    if (e.onPhysicsUpdate) {
+                        e.onPhysicsUpdate(this.lastPhysicsTime, this.physicsStep * 1000); // Convert to ms
+                    }
+                }
+            }
+            
+            // Calculate interpolation alpha for all entities
+            const timeSincePhysics = performance.now() - this.lastPhysicsTime;
+            const physicsStepMs = this.physicsStep * 1000;
+            this.physicsInterpolationAlpha = Math.min(timeSincePhysics / physicsStepMs, 1.0);
+            
             let entitiesToRemove = [];
             for (let i = 0; i < this.game.state.entities.length; i++) {
                 let e = this.game.state.entities[i];
@@ -66,14 +88,9 @@ class Game extends engine.Component {
                 this.game.state.entities.splice(entitiesToRemove[i], 1);
             }
             
-            if (this.physicsAccumulator >= this.physicsStep && this.game.isServer) {    
-                this.physics.sendToWorker(this.world);           
-                this.physicsAccumulator -= this.physicsStep;
-            }
-            
             this.postUpdate();
         }
-    }    
+    }
 
 
     getTerrainHeight(position) {

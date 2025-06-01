@@ -66,7 +66,7 @@ class Game extends engine.Component {
                 this.game.state.entities.splice(entitiesToRemove[i], 1);
             }
             
-            if (this.physicsAccumulator >= this.physicsStep && this.game.isServer) {    
+            if (this.physicsAccumulator >= this.physicsStep && (this.game.isServer || this.game.isSinglePlayer)) {    
                 this.physics.sendToWorker(this.world);           
                 this.physicsAccumulator -= this.physicsStep;
             }

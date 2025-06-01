@@ -11,5 +11,6 @@ class Component {
     postUpdate() {}
     getNetworkData(){ return null }
     setNetworkData(data){ }
+    onPhysicsUpdate(timestamp, physicsStepMs){}
     destroy() {}
 }

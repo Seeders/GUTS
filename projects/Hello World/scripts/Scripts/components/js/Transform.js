@@ -1,10 +1,10 @@
 class Transform extends engine.Component {
-    init({x, y, z, scaleX, scaleY, scaleZ, rotationX, rotationY, rotationZ}) {
+    init({position, scaleX, scaleY, scaleZ, rotationX, rotationY, rotationZ}) {
 
-        this.position = new THREE.Vector3(x, y, z);
-        this.lastPosition = new THREE.Vector3(x, y, z);
-        this.gridPosition = new THREE.Vector2(x, y);
-        this.drawPosition = new THREE.Vector2(x, y);
+        this.position = new THREE.Vector3(position.x, position.y, position.z);
+        this.lastPosition = new THREE.Vector3(position.x, position.y, position.z);
+        this.gridPosition = new THREE.Vector2(position.x, position.y);
+        this.drawPosition = new THREE.Vector2(position.x, position.y);
         this.scale = new THREE.Vector3(scaleX, scaleY, scaleZ);
         this.quaternion = new THREE.Quaternion();
         this.quaternion.setFromAxisAngle( new THREE.Vector3( rotationX, rotationY, rotationZ ), Math.PI / 2 );

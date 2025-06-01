@@ -288,6 +288,7 @@ class PlayerController extends engine.Component {
     }
 
     update() {
+        debugger;
         if ((!this.controls.isLocked || this.isRemote) && !this.game.isServer) return;
         const dt = Math.min(this.game.deltaTime, 0.1);
 
@@ -317,7 +318,7 @@ class PlayerController extends engine.Component {
             }
         }
 
-        if(!this.game.isServer) return;
+        if(!this.game.isServer && !this.game.isSinglePlayer) return;
         // Check if grounded
 
         this.isGrounded = this.characterController.computedGrounded();

@@ -10,6 +10,7 @@ class MultiplayerManager extends engine.Component {
     this.serverUrl = serverUrl;
     // Interpolation settings
     this.interpolationDelay = 100; // ms    
+    this.connected = false;
   }
   
   // Initialize networking
@@ -18,10 +19,11 @@ class MultiplayerManager extends engine.Component {
       this.network = new GUTS.NetworkManager(this);
       const networkId = await this.network.connect(this.serverUrl);
       console.log(`Multiplayer initialized with player ID: ${networkId}`);
+      this.connected = true;
       return networkId;
     } catch (err) {
       console.error('Failed to initialize multiplayer:', err);
-      throw err;
+      return 0;
     }
   }
 
@@ -35,6 +37,9 @@ class MultiplayerManager extends engine.Component {
   
   // Update called from your game loop
   update() {
+    if(!this.connected){
+      return;
+    }
     // Update local player position on network
       this.updatePlayers();  
     if (!this.game.isServer) {    

@@ -58,8 +58,15 @@ class GameLoader extends engine.Component {
         });
 
         if(this.player && this.game.multiplayerManager) {
-            this.playerId = await this.game.multiplayerManager.initializeMultiplayer(this.serverUrl);            
-            this.game.multiplayerManager.createLocalPlayer(this.playerId, this.player);
+            this.playerId = await this.game.multiplayerManager.initializeMultiplayer(this.serverUrl);   
+            if(this.playerId != 0){
+                this.game.multiplayerManager.createLocalPlayer(this.playerId, this.player);
+                this.game.isSinglePlayer = false;
+            } else {
+                this.game.isSinglePlayer = true;
+                this.game.isServer = false;
+                this.player.getComponent("AircraftController")?.setupPhysics(this.game.physics.simulation);
+            }  
         }
  
 
