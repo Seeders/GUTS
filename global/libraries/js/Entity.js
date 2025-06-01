@@ -109,6 +109,11 @@ class Entity {
             this.components[c].OnGrounded();                           
         }                
     }
+    onPhysicsUpdate(timestamp, physicsStepMs)  {
+        for(let c in this.components) {
+            this.components[c].onPhysicsUpdate(timestamp, physicsStepMs);                           
+        }     
+    }
     destroy() {
         this.destroyed = true;
         for(let c in this.components) {
