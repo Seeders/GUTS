@@ -323,8 +323,8 @@ deepCloneModel(sourceRoot) {
                 // Create new AnimationMixer
                 const mixer = new THREE.AnimationMixer(clonedChild);
                 const action = mixer.clipAction(clonedChild.userData.animations[0]);
-                action.play();
                 clonedChild.userData.mixer = mixer;
+                clonedChild.userData.action = action;
                 console.log('Animation mixer created for cloned model, clip:', clonedChild.userData.animations[0].name);
             } else {
                 console.warn('No animations found for cloned model:', sourceModel.name);
