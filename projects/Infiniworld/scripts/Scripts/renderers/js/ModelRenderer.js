@@ -37,9 +37,7 @@ class ModelRenderer extends engine.Component {
         if (this.isGLTF) {
             await this.setupAnimationMixer();
         }
-
-        // Set initial animation
-        this.setAnimation('idle');
+        this.jump();
     }
 
 
@@ -56,29 +54,35 @@ class ModelRenderer extends engine.Component {
         this.mixer = mixer;
         this.animationActions = {};
 
-        // Create AnimationActions for each animation
+        // Create AnimationActions for each animation - wait for all to load
         const animationNames = Object.keys(this.animationData);
-        animationNames.forEach( async (name) => {
+        const animationPromises = animationNames.map(async (name) => {
             const animModel = await this.game.modelManager.getAnimation(this.objectType, this.spawnType, name);
             
-            if(!animModel) return;
-            let animModelAnimations;
+            if (!animModel) return;
+            
+            let animModelAnimations, animAction;
             animModel.traverse(object => {
                 if (object.userData.mixer) {
                     animModelAnimations = object.userData.animations;
+                    animAction = object.userData.action;
                 }
             });
+            
             if (animModelAnimations?.length > 0) {
                 const clip = animModelAnimations[0];
                 if (clip) {
                     const action = this.mixer.clipAction(clip);
                     action.setLoop(THREE.LoopRepeat);
-                    action.enabled = true;
+                    action.enabled = true; 
                     this.animationActions[name] = action;
                 }
             }
         });
 
+        // Wait for all animations to load
+        await Promise.all(animationPromises);
+        
         // Store the current action
         this.currentAction = null;
     }
@@ -113,10 +117,6 @@ class ModelRenderer extends engine.Component {
                     this.crossfadeTo(newAction, speed);
                     this.currentAction.setEffectiveTimeScale(speed);
                 } else {
-                    this.currentAction.stop();
-                    this.currentAction.time = 0;
-                    this.currentAction.enabled = true;
-                    this.currentAction.setEffectiveTimeScale(speed);
                     this.currentAction.play();
                 }
 
@@ -134,25 +134,15 @@ class ModelRenderer extends engine.Component {
         const previousAction = this.currentAction;
         this.currentAction = newAction;
         if (previousAction && previousAction !== newAction) {
-            previousAction.setEffectiveWeight(1);
+          //  previousAction.setEffectiveWeight(1);
 
-            newAction.setEffectiveWeight(1);
+           // newAction.setEffectiveWeight(1);
 
-            previousAction.play();
-            newAction.play();
-
-            previousAction.crossFadeTo(newAction, this.fadeTime / speed, true);
-
-            setTimeout(() => {
-                if (previousAction && this.currentAction !== previousAction) {
-                    previousAction.stop();
-                }
-            }, this.fadeTime * 1000 / speed);
+           // previousAction.play();
+            newAction.play();            
+            previousAction.stop();
         } else {
             newAction.enabled = true;
-            newAction.time = 0;
-            newAction.setEffectiveTimeScale(speed); // Apply animation speed
-            newAction.setEffectiveWeight(1);
             newAction.play();
         }
     }
@@ -162,15 +152,17 @@ class ModelRenderer extends engine.Component {
         if (!this.game.getCollections().configs.game.is3D) {
             return;
         }
-        this.currentAnimationTime += this.game.deltaTime;
+
+        let dt = this.clock.getDelta();
+        this.currentAnimationTime += dt;
         // Update AnimationMixer for GLTF models
         if (this.isGLTF && this.mixer) {
-            this.mixer.update(this.game.deltaTime);
+            this.mixer.update(dt);
         }
 
         this.updateDirection();
         if (this.throwTimer >= 0) {
-            this.throwTimer += this.game.deltaTime;
+            this.throwTimer += dt;
             if (this.throwTimer > this.throwTime) {
                 this.throwTimer = -1;
             } else if (this.animationState !== 'throw') {
@@ -179,7 +171,7 @@ class ModelRenderer extends engine.Component {
         }
 
         if (this.leapTimer >= 0) {
-            this.leapTimer += this.game.deltaTime;
+            this.leapTimer += dt;
             if (this.leapTimer > this.leapTime) {
                 this.leapTimer = -1;
             } else if (this.animationState !== 'leap') {
@@ -192,10 +184,9 @@ class ModelRenderer extends engine.Component {
                 object.skeleton.update();
             }
         });
-
         // Update frame-based animations for non-GLTF models
         if (!this.isGLTF) {
-            this.frameTime += this.game.deltaTime;
+            this.frameTime += dt;
             const effectiveFrameDuration = this.frameDuration; // Scale frame duration
             if (this.frameTime >= effectiveFrameDuration) {
                 this.frameTime -= effectiveFrameDuration;
@@ -238,7 +229,7 @@ class ModelRenderer extends engine.Component {
             this.throwSpeed = speed;
             this.throwTimer = 0;
             this.throwTime = (this.animationActions['throw'].getClip().duration / speed);            
-            this.setAnimation('throw', speed, this.throwTime * .5);
+            this.setAnimation('throw', speed, this.throwTime);
         }
     
     }

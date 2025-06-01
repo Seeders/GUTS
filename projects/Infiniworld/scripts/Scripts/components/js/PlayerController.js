@@ -288,7 +288,6 @@ class PlayerController extends engine.Component {
     }
 
     update() {
-        debugger;
         if ((!this.controls.isLocked || this.isRemote) && !this.game.isServer) return;
         const dt = Math.min(this.game.deltaTime, 0.1);
 
