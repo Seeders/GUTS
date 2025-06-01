@@ -4,7 +4,7 @@ class ModelManager {
         this.config = config;
         this.models = {};
         this.shapeFactory = new ShapeFactory(palette, textures, null);
-        if(location.hostname == "github") {
+        if(location.hostname.indexOf('github') >= 0) {
             this.shapeFactory.setURLRoot("/GUTS/");
         }
         this.textureAtlases = new Map();
