@@ -14,6 +14,7 @@ class PlayerController extends engine.Component {
         let gameComponent = this.game.gameEntity.getComponent('game');
         
         this.modelRenderer = this.parent.getComponent('ModelRenderer');
+        this.modelRenderer.setFrustumCulled(false);
         this.world = gameComponent.world;
         this.physics = gameComponent.physics;
         this.scene = this.world.scene;
@@ -264,15 +265,16 @@ class PlayerController extends engine.Component {
         const combinedQuat = new THREE.Quaternion().multiplyQuaternions(yawQuat, pitchQuat);
 
         if (this.isFirstPerson) {
-            const eyePosition = this.parent.transform.position.clone().add(new THREE.Vector3(0, this.cameraHeight, 0));
+            const eyePosition = this.parent.transform.position.clone().add(new THREE.Vector3(0, this.cameraHeight + 5, 0));
             const forwardDir = new THREE.Vector3(0, 0, 1).applyQuaternion(combinedQuat);
-            const forwardOffset = 0.2; // Small offset to avoid clipping
+            const forwardOffset = -17; // Small offset to avoid clipping
             eyePosition.add(forwardDir.multiplyScalar(forwardOffset));
             this.camera.position.copy(eyePosition);
             const yawOffsetQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI);
             const invertedPitchQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -this.cameraPitch);
             const finalQuat = new THREE.Quaternion().multiplyQuaternions(yawQuat, yawOffsetQuat).multiply(invertedPitchQuat);
             this.camera.quaternion.copy(finalQuat);
+            this.camera.near = 0.01;
         } else {
             const forwardDir = new THREE.Vector3(0, 0, 1).applyQuaternion(combinedQuat);
             const offsetDistance = this.thirdPersonDistance;
@@ -284,6 +286,7 @@ class PlayerController extends engine.Component {
             const lookAtPos = this.parent.transform.position.clone().add(new THREE.Vector3(0, this.cameraHeight, 0));
             this.cameraLookAt.lerp(lookAtPos, smoothingAlpha);
             this.camera.lookAt(this.cameraLookAt);
+            this.camera.near = 0.01;
         }
     }
 

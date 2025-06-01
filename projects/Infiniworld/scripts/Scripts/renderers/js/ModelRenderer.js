@@ -40,8 +40,15 @@ class ModelRenderer extends engine.Component {
         this.jump();
     }
 
+    setFrustumCulled(culled){
+        this.frustumCulled = culled;      
+        if(this.modelGroup){
+            this.modelGroup.frustumCulled = this.frustumCulled;
+        }
+    }
 
     async setupAnimationMixer() {
+        this.modelGroup.frustumCulled = this.frustumCulled;
         // Find the mixer and animations from userData
         let mixer, animations;
         this.modelGroup.traverse(object => {
@@ -215,16 +222,18 @@ class ModelRenderer extends engine.Component {
         if(this.leapTimer > 0) {
             return;
         }
-        this.leapSpeed = speed;
-        this.leapTimer = 0;
-        this.leapTime = (this.animationActions['leap'].getClip().duration / speed);; // Scale leap time inversely with speed        
-        this.setAnimation('leap', speed,  this.leapTime);
+        if(this.animationActions && this.animationActions['leap']) {
+            this.leapSpeed = speed;
+            this.leapTimer = 0;
+            this.leapTime = (this.animationActions['leap'].getClip().duration / speed);; // Scale leap time inversely with speed        
+            this.setAnimation('leap', speed,  this.leapTime);
+        }
     }
     throw(speed = 1) {        
         if(this.throwTimer > 0){
             return;
         }
-        if(this.animationActions['throw']){
+        if(this.animationActions && this.animationActions['throw']){
                 
             this.throwSpeed = speed;
             this.throwTimer = 0;
