@@ -145,9 +145,9 @@ class ModelRenderer extends engine.Component {
 
            // newAction.setEffectiveWeight(1);
 
-           // previousAction.play();
-            newAction.play();            
-            previousAction.stop();
+           // previousAction.play();           
+            previousAction.crossFadeTo(newAction, this.fadeTime, false).stop();
+            newAction.crossFadeFrom(previousAction, this.fadeTime, false).play();
         } else {
             newAction.enabled = true;
             newAction.play();
@@ -238,7 +238,7 @@ class ModelRenderer extends engine.Component {
             this.throwSpeed = speed;
             this.throwTimer = 0;
             this.throwTime = (this.animationActions['throw'].getClip().duration / speed);            
-            this.setAnimation('throw', speed, this.throwTime);
+            this.setAnimation('throw', speed / 2, this.throwTime);
         }
     
     }
