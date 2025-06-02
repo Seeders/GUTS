@@ -107,15 +107,15 @@ class Engine {
         }
     }
 
-    spawn(type, params, position) {
-        let entity = this.createEntityFromCollections(type, params, position);
+    spawn(type, params) {
+        let entity = this.createEntityFromCollections(type, params);
         this.entitiesToAdd.push(entity);        
         return entity;
     }
     
-    createEntityFromCollections(type, params, position) {
+    createEntityFromCollections(type, params) {
 
-        const entity = this.createEntity(type, position);
+        const entity = this.createEntity(type);
         const def = this.collections.entities[type];
 
         entity.transform = entity.addComponent("transform");
@@ -143,12 +143,12 @@ class Engine {
             });
         }
         //this allows components to reference other components on the entity at init, since they will now all exist before init.
-        entity.init({ position, ...params});
+        entity.init(params);
         return entity;
     }
 
-    createEntity(type, position) {
-        const entity = new GUTS.Entity(this, type, position);
+    createEntity(type) {
+        const entity = new GUTS.Entity(this, type);
         return entity;
     }
 

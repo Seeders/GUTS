@@ -93,7 +93,6 @@ class ModelManager {
                 if (isGLTF) {
                     const modelKey = `${prefix}_${type}`;
                     this.models[modelKey] = await this.createModel(prefix, type, cfg.render.model, true);
-                            console.log('created', modelKey);
                     const animations = cfg.render.animations;
                     if (animations) {
                         await Promise.all(Object.keys(animations).map(async (animationName) => {
@@ -110,12 +109,11 @@ class ModelManager {
                             }
                             const modelKey = `${prefix}_${type}_${animationName}`;
                             this.models[modelKey] = await this.createModel(prefix, type, mergedModel, true);
-                            console.log('created', modelKey);
                         }));
                     }
                 } else {
                     this.models[`${prefix}_${type}`] = await this.createModel(prefix, type, cfg.render.model, false);
-                            console.log('created', `${prefix}_${type}`);
+                  
                 }
             }
         }  
@@ -325,17 +323,13 @@ deepCloneModel(sourceRoot) {
                 const action = mixer.clipAction(clonedChild.userData.animations[0]);
                 clonedChild.userData.mixer = mixer;
                 clonedChild.userData.action = action;
-                console.log('Animation mixer created for cloned model, clip:', clonedChild.userData.animations[0].name);
-            } else {
-                console.warn('No animations found for cloned model:', sourceModel.name);
-            }
+            } 
         });
 
         // Add the cloned model to the root
         clonedRoot.add(clonedModel);
     });
 
-    console.log(`Cloned root ${clonedRoot.name} with ${clonedRoot.children.length} children`);
     return clonedRoot;
 }
 
