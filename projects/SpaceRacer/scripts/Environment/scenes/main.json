@@ -38,37 +38,7 @@
       ]
     },
     {
-      "id": 2,
-      "type": "staticObject",
-      "objectType": "worldObjectPrefabs",
-      "spawnType": "sequoia_tree",
-      "parent": null,
-      "children": [],
-      "components": [
-        {
-          "type": "transform",
-          "parameters": {
-            "position": {
-              "x": 53.23995363600116,
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 10,
-              "y": 10,
-              "z": 10
-            }
-          }
-        }
-      ]
-    },
-    {
-      "id": 4,
+      "id": 3,
       "type": "playerAircraft",
       "objectType": "playerPrefabs",
       "spawnType": "spaceshipMesh",
@@ -80,7 +50,7 @@
           "parameters": {
             "position": {
               "x": 0,
-              "y": 0,
+              "y": 423.5381369994752,
               "z": 0
             },
             "rotation": {

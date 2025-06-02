@@ -1,8 +1,8 @@
 class PlayerController extends engine.Component {
     init({
-        walkSpeed = 100, // Adjusted for Rapier (meters/second)
-        runSpeed = 200,
-        jumpForce = 350, // Adjusted for Rapier (meters/second)
+        walkSpeed = 40, // Adjusted for Rapier (meters/second)
+        runSpeed = 100,
+        jumpForce = 250, // Adjusted for Rapier (meters/second)
         gravity = 981, // Standard gravity (m/s²)
         mouseSensitivity = 0.002,
         characterHeight = 18,

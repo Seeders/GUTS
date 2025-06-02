@@ -329,7 +329,7 @@ class InfiniWorld extends engine.Component {
       dummy.rotation.set(0, grass.rotation, 0);
       dummy.scale.set(grass.scale, grass.scale, grass.scale);
       dummy.updateMatrix();
-      grassMesh.setMatrixAt(currentIndex, dummy.matrix);      
+      grassMesh.setMatrixAt(currentIndex, dummy.matrix);  
     };
     if(!finishedChunk){
       this.currentGrassTaskIndex += this.grassBatchSize;
@@ -640,6 +640,8 @@ class InfiniWorld extends engine.Component {
         mesh.receiveShadow = true;
         mesh.material.needsUpdate = true;
         mesh.userData.isTerrain = true;
+        mesh.matrixAutoUpdate = false;
+        mesh.updateMatrix();
         this.rootGroup.add(mesh);
         chunkData.terrainMesh = mesh;
         chunkData.geometry = {
@@ -662,6 +664,7 @@ class InfiniWorld extends engine.Component {
         const grassMesh = this.addGrassToTerrain(cx, cz, grassData);
         if (grassMesh) {
           grassMesh.position.set(chunkWorldX, 0, chunkWorldZ);
+          grassMesh.updateMatrix();
           this.rootGroup.add(grassMesh);
           chunkData.grassMesh = grassMesh;
         }
@@ -920,7 +923,7 @@ class InfiniWorld extends engine.Component {
         dummy.rotation.y = instance.rotation;
         dummy.scale.setScalar(instance.scale);
         dummy.updateMatrix();
-  
+        dummy.matrixAutoUpdate = false;
         // Apply base transformation combined with each mesh’s relative matrix
         instanceGroups.forEach((group, meshIndex) => {
           matrix.copy(dummy.matrix);
@@ -933,6 +936,7 @@ class InfiniWorld extends engine.Component {
       // Update instance matrices
       instanceGroups.forEach(group => {
         group.mesh.instanceMatrix.needsUpdate = true;
+        group.matrixAutoUpdate = false;
         this.renderer.shadowMap.needsUpdate = true; // Force shadow map update
       });
   
@@ -1356,6 +1360,7 @@ if(!grassData) return;
       grassMesh.setMatrixAt(index, dummy.matrix);      
     });
     grassMesh.needsUpdate = true;
+    grassMesh.matrixAutoUpdate = false;
     return grassMesh;
   }
   createCurvedBladeGeometry(width = 0.1, height = 1) {

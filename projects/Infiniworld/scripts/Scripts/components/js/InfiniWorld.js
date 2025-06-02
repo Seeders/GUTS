@@ -640,6 +640,8 @@ class InfiniWorld extends engine.Component {
         mesh.receiveShadow = true;
         mesh.material.needsUpdate = true;
         mesh.userData.isTerrain = true;
+        mesh.matrixAutoUpdate = false;
+        mesh.updateMatrix();
         this.rootGroup.add(mesh);
         chunkData.terrainMesh = mesh;
         chunkData.geometry = {
@@ -662,6 +664,7 @@ class InfiniWorld extends engine.Component {
         const grassMesh = this.addGrassToTerrain(cx, cz, grassData);
         if (grassMesh) {
           grassMesh.position.set(chunkWorldX, 0, chunkWorldZ);
+          grassMesh.updateMatrix();
           this.rootGroup.add(grassMesh);
           chunkData.grassMesh = grassMesh;
         }
@@ -895,6 +898,7 @@ class InfiniWorld extends engine.Component {
           mesh.material.clone(), // Clone material to avoid shared state
           instances.length
         );
+        instancedMesh.matrixAutoUpdate = false;
         instancedMesh.userData.relativeMatrix = relativeMatrix;
         instancedMesh.castShadow = true;
         instancedMesh.receiveShadow = true;
@@ -920,12 +924,14 @@ class InfiniWorld extends engine.Component {
         dummy.rotation.y = instance.rotation;
         dummy.scale.setScalar(instance.scale);
         dummy.updateMatrix();
+        dummy.matrixAutoUpdate = false;
   
         // Apply base transformation combined with each mesh’s relative matrix
         instanceGroups.forEach((group, meshIndex) => {
           matrix.copy(dummy.matrix);
           matrix.multiply(group.mesh.userData.relativeMatrix);
           group.mesh.setMatrixAt(index, matrix);
+          group.mesh.matrixAutoUpdate = false;
           group.instances.push(index);
         });
       });
@@ -1356,6 +1362,7 @@ if(!grassData) return;
       grassMesh.setMatrixAt(index, dummy.matrix);      
     });
     grassMesh.needsUpdate = true;
+    grassMesh.matrixAutoUpdate = false;
     return grassMesh;
   }
   createCurvedBladeGeometry(width = 0.1, height = 1) {

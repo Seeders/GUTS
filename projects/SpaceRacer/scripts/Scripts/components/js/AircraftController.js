@@ -2,15 +2,15 @@ class AircraftController extends engine.Component {
     init({
         thrustPower = 500,
         maxSpeed = 3000,
-        minSpeed = 50,
-        pitchSpeed = .1,
+        minSpeed = 0,
+        pitchSpeed = .2,
         yawSpeed = 1.5,
         rollSpeed = 1.0,
         bankingTurnMultiplier = 2.0,
         mouseSensitivity = 0.002,
         aircraftLength = 20,
         aircraftRadius = 3,
-        cameraOffset = { x: 0, y: 5, z: -30 },
+        cameraOffset = { x: 0, y: 10, z: -100 },
         cameraSmoothing = 0.1,
         isRemote = false
     }) {
@@ -41,7 +41,7 @@ class AircraftController extends engine.Component {
         // Flight state
         this.velocity = new THREE.Vector3();
         this.currentSpeed = this.minSpeed;
-        this.throttle = 0.3;
+        this.throttle = 0;
         
         // Rotation state
         this.pitch = 0;
@@ -388,7 +388,7 @@ class AircraftController extends engine.Component {
         
         const liftFactor = Math.max(0, this.currentSpeed / this.maxSpeed);
         const gravity = new THREE.Vector3(0, -9.81 * (1 - liftFactor * 0.8), 0);
-        this.velocity.add(gravity);
+    //    this.velocity.add(gravity);
 
         this.rigidBody.setLinvel({
             x: this.velocity.x,
