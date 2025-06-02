@@ -110,8 +110,9 @@ handleEnemyCollision(enemy) {
     enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);
     this.game.spawn("hitEffect", {
       damageType: this.stats.damageType,
-      lifeSpan: 0.3
-    }, enemy.transform.position);
+      lifeSpan: 0.3, 
+      position: enemy.transform.position
+    });
     if (this.ownerStats.slowAmount) {
       enemyStats.addEffect(
         this.game.getCollections().effects.slow,
@@ -130,8 +131,9 @@ handleEnemyCollision(enemy) {
     this.game.spawn("summonedTower", {
       objectType: "towers",
       spawnType: this.ownerStats.summonType,
-      owner: this.owner
-    },enemy.transform.position);
+      owner: this.owner, 
+      position: enemy.transform.position
+    });
   }
   if (this.ownerStats.leech > 0) {
     const healing = this.stats.damage * this.ownerStats.leech * this.game.state.stats.healingMultiplier;
@@ -149,8 +151,9 @@ handleEnemyCollision(enemy) {
   if (this.stats.splashRadius > 0) {
     this.applySplashDamage(enemy);
     this.game.spawn("explosion", {
-      radius: this.stats.splashRadius
-    },this.parent.transform.position);
+      radius: this.stats.splashRadius,
+      position: this.parent.transform.position
+    });
   }
 
   // Piercing logic
@@ -225,8 +228,9 @@ applySplashDamage(centerEnemy) {
         enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);
         this.game.spawn("hitEffect", {
           damageType: this.stats.damageType,
-          lifeSpan: 0.3
-        }, enemy.transform.position);
+          lifeSpan: 0.3,
+          position: enemy.transform.position
+        });
         if (this.ownerStats.slowAmount) {
           enemyStats.addEffect(
             this.game.getCollections().effects.slow,
@@ -289,8 +293,9 @@ update() {
     if (this.distanceTraveled > this.distanceToSpawnParticle) {
       this.game.spawn("particle", { 
         objectType: "particles", 
-        spawnType: this.def.particle
-      }, currentPos);
+        spawnType: this.def.particle,
+        position: currentPos
+      });
       this.distanceTraveled = 0;
       this.distanceToSpawnParticle = 24 + Math.random() * 3;
     }

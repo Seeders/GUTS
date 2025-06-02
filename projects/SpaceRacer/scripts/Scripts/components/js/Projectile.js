@@ -53,8 +53,9 @@ class Projectile extends engine.Component {
           if (this.projectileData.particle && this.distanceTraveled > this.distanceToSpawnParticle) {
               this.game.spawn("particle", { 
                   objectType: "particlePrefabs", 
-                  spawnType: this.projectileData.particlePrefab
-              }, this.parent.transform.position);
+                  spawnType: this.projectileData.particlePrefab, 
+                  position: this.parent.transform.position
+              });
               this.distanceTraveled = 0;
               this.distanceToSpawnParticle += Math.random() * 3;
           }
@@ -94,10 +95,11 @@ class Projectile extends engine.Component {
       
       // Optional: Spawn impact effect
       if (this.projectileData.impactParticle) {
-          this.game.spawn("particle", {
-              objectType: "particlePrefabs", 
-              spawnType: this.projectileData.impactParticlePrefab
-          }, this.parent.transform.position);
+        this.game.spawn("particle", {
+            objectType: "particlePrefabs", 
+            spawnType: this.projectileData.impactParticlePrefab, 
+            position: this.parent.transform.position
+        });
       }
   }
 }

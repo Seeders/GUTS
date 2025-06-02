@@ -18,37 +18,22 @@ class GameLoader extends engine.Component {
         const scene = this.collections.scenes["main"];
         const sceneEntities = scene.sceneData;
         sceneEntities.forEach(async (sceneEntity) => {
-            
-            let position = new THREE.Vector3();
-            let scale = new THREE.Vector3(1, 1, 1);
-            let rotation = new THREE.Vector3();
+              
+
             let params = {
                 "objectType": sceneEntity.objectType,
                 "spawnType": sceneEntity.spawnType,
             };
             sceneEntity.components.forEach((entityComp) => {
-                if(entityComp.type == "transform"){
-                    position = entityComp.parameters.position;
-                    scale = entityComp.parameters.scale;
-                    rotation = entityComp.parameters.rotation;
-                }
                 params = {...params, ...entityComp.parameters };
             });
             if(sceneEntity.type == "game"){  
-                this.game.gameEntity = this.game.createEntityFromCollections(sceneEntity.type, params, position);
+                this.game.gameEntity = this.game.createEntityFromCollections(sceneEntity.type, params);
                 this.game.audioManager = this.game.gameEntity.getComponent('AudioManager');  
                 this.game.multiplayerManager = this.game.gameEntity.getComponent("MultiplayerManager");
                 this.game.multiplayerManager.init({scene: this.game.scene, physics: this.game.physics, serverUrl: 'http://10.0.0.40:3000' });
             } else {
-                let spawned = this.game.spawn(sceneEntity.type, params, new THREE.Vector3(position.x, position.y, position.z));                              
-                spawned.transform.scale.copy(scale);
-                // Alternative quaternion approach
-                let euler = new THREE.Euler(
-                    rotation.x,
-                    rotation.y,
-                    rotation.z
-                );
-                spawned.transform.quaternion.setFromEuler(euler);
+                let spawned = this.game.spawn(sceneEntity.type, params);                                  
                 if(sceneEntity.type.startsWith("player")){
                     this.player = spawned;
                     this.game.player = this.player;

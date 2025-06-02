@@ -141,7 +141,7 @@ update() {
     
     if (this.def.particle && this.distanceTraveled > this.distanceToSpawnParticle) {
         let position = new THREE.Vector3(this.parent.lastPosition.x + Math.random() * 4 - 2, this.parent.lastPosition.y + Math.random() * 4 - 2, this.parent.transform.position.z + Math.random() * 4 - 2)
-        this.game.spawn("particle", { objectType: "particlePrefabs", spawnType: this.def.particle }, position);
+        this.game.spawn("particle", { objectType: "particlePrefabs", spawnType: this.def.particle, position});
 
         this.distanceTraveled = 0;
         this.distanceToSpawnParticle += Math.random() * 2;
@@ -156,7 +156,7 @@ processSplashDamage() {
         this.stats.splashRadius,
         "enemy"
     );
-    this.game.spawn("explosion", { radius: this.stats.splashRadius },this.parent.transform.position);
+    this.game.spawn("explosion", { radius: this.stats.splashRadius, position: this.parent.transform.position});
     for (const enemy of nearbyEnemies) {
         if (enemy.isDead) continue;
         
@@ -178,7 +178,7 @@ processSplashDamage() {
             if (!damageResult.wasEvaded) {
                 enemyHealth.hp -= damageResult.damageDealt;
                 enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);
-                this.game.spawn("hitEffect", { damageType: this.stats.damageType , lifeSpan: .3},enemy.transform.position);
+                this.game.spawn("hitEffect", { damageType: this.stats.damageType , lifeSpan: .3, position: enemy.transform.position});
                 if (this.ownerStats.slowAmount) {
                     enemyStats.addEffect(this.game.getCollections().effects.slow, this.game.effects.slow, this.ownerStats.slowAmount);
                 }

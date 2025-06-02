@@ -164,9 +164,8 @@ class PlayerController extends engine.Component {
     }
 
     setupPlayerBody() {
-        // Create a kinematic position-based rigid-body
-        let rigidBodyDesc = RAPIER.RigidBodyDesc.kinematicPositionBased()
-            .setTranslation(0, 50, 0); // Start above ground
+        const pos = this.parent.transform.position;
+        let rigidBodyDesc = RAPIER.RigidBodyDesc.kinematicPositionBased().setTranslation(pos.x, pos.y, pos.z);
         this.rigidBody = this.rapierWorld.createRigidBody(rigidBodyDesc);
 
         // Create a capsule collider for the player
@@ -181,9 +180,6 @@ class PlayerController extends engine.Component {
 
         // Store collision radius for camera calculations
         this.parent.collisionRadius = this.characterRadius;
-
-        const pos = this.parent.transform.position;
-        this.rigidBody.setNextKinematicTranslation({ x: pos.x, y: pos.y, z: pos.z });
     }
 
 

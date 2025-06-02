@@ -93,8 +93,9 @@ update() {
           enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);
           this.game.spawn("hitEffect", {
             damageType: this.stats.damageType,
-            lifeSpan: 0.3
-          }, enemy.transform.position);
+            lifeSpan: 0.3,
+            position: enemy.transform.position
+          });
           if (this.ownerStats.slowAmount) {
             enemyStats.addEffect(
               this.game.getCollections().effects.slow,
@@ -119,8 +120,9 @@ update() {
         if (this.stats.splashRadius > 0) {
           this.applySplashDamage(nearbyEnemies);
           this.game.spawn("explosion", {
-            radius: this.stats.splashRadius
-          }, this.parent.transform.position);
+            radius: this.stats.splashRadius,
+            position: this.parent.transform.position
+          });
         }
 
         // Destroy projectile if no piercing or piercing limit reached
@@ -149,8 +151,9 @@ update() {
       targetEnergyShield.absorbDamage(damageResult.damageAbsorbed);
       this.game.spawn("hitEffect", {
         damageType: this.stats.damageType,
-        lifeSpan: 0.3
-      },this.target.transform.position);
+        lifeSpan: 0.3,
+        position: this.target.transform.position
+      });
       if (this.ownerStats.slowAmount) {
         targetStats.addEffect(
           this.game.getCollections().effects.slow,
@@ -169,8 +172,9 @@ update() {
       this.game.spawn("summonedTower", {
         objectType: "towers",
         spawnType: this.ownerStats.summonType,
-        owner: this.owner
-      }, this.target.transform.position);
+        owner: this.owner,
+        position: this.target.transform.position
+      });
     }
     if (this.ownerStats.leech > 0) {
       const healing = this.stats.damage * this.ownerStats.leech * this.game.state.stats.healingMultiplier;
@@ -225,7 +229,7 @@ update() {
 
   this.distanceTraveled += tDist;
   if (this.def.particle && this.distanceTraveled > this.distanceToSpawnParticle) {
-    this.game.spawn("particle", { objectType: "particles", spawnType: this.def.particle}, this.parent.transform.position);
+    this.game.spawn("particle", { objectType: "particles", spawnType: this.def.particle, position: this.parent.transform.position});
     this.distanceTraveled = 0;
     this.distanceToSpawnParticle += Math.random() * 3;
   }
@@ -271,8 +275,9 @@ applySplashDamage(nearbyEnemies) {
         enemyEnergyShield.absorbDamage(damageResult.damageAbsorbed);
         this.game.spawn("hitEffect", {
           damageType: this.stats.damageType,
-          lifeSpan: 0.3
-        },enemy.transform.position);
+          lifeSpan: 0.3,
+          position: enemy.transform.position
+        });
         if (this.ownerStats.slowAmount) {
           enemyStats.addEffect(
             this.game.getCollections().effects.slow,

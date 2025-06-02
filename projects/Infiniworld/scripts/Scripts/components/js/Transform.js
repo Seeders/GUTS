@@ -1,8 +1,12 @@
 class Transform extends engine.Component {
-    init({position, scaleX, scaleY, scaleZ, rotationX, rotationY, rotationZ}) {
-        let x = position.x;
-        let y = position.y;
-        let z = position.z;
+    init({position, scale, rotation}) {
+        let x, y, z = 0;
+        if(position){
+            x = position.x;
+            y = position.y;
+            z = position.z;
+        }
+        console.log(position);
         this.position = new THREE.Vector3(x, y, z);
         this.velocity = new THREE.Vector3();
         this.physicsVelocity = new THREE.Vector3();
@@ -10,14 +14,16 @@ class Transform extends engine.Component {
         this.physicsPosition = new THREE.Vector3(x, y, z);
         this.gridPosition = new THREE.Vector2(x, y);
         this.drawPosition = new THREE.Vector2(x, y);
-        this.scale = new THREE.Vector3(scaleX || 1, scaleY || 1, scaleZ || 1);
-        this.quaternion = new THREE.Quaternion();
-        this.quaternion.setFromAxisAngle( new THREE.Vector3( rotationX, rotationY, rotationZ ), Math.PI / 2 );   
+        this.scale = scale ? new THREE.Vector3(scale.x, scale.y, scale.z) : new THREE.Vector3(1,1,1);
+        this.quaternion = new THREE.Quaternion();  
+        if(rotation){
+            let euler = new THREE.Euler(rotation.x, rotation.y, rotation.z);
+            this.quaternion.setFromEuler(euler);
+        }
         this.parent.transform = this;      
         this.networkPosition = this.position.clone();
         this.networkQuaternion = this.quaternion.clone();   
         this.networkVelocity = this.velocity.clone();   
-
     }
   
     getNetworkData(){        

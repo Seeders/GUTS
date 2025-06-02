@@ -90,13 +90,13 @@ class Attacker extends engine.Component {
         projStats.critMultiplier = this.stats.critMultiplier || 2;
     
        	if(projectileDef.customRenderer == "lightning") {
-         	this.game.spawn('lightningProjectile', { objectType: "projectilePrefabs", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats }, this.parent.transform.position);
+         	this.game.spawn('lightningProjectile', { objectType: "projectilePrefabs", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats, position: this.parent.transform.position });
         } else if(projectileDef.isBallistic) {
-         	this.game.spawn('ballisticProjectile', { objectType: "projectilePrefabs", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats }, this.parent.transform.position);
+         	this.game.spawn('ballisticProjectile', { objectType: "projectilePrefabs", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats, position: this.parent.transform.position});
         } else if( this.stats.projectileCount > 0 ) {
-          this.game.spawn('multiShotProjectile', { objectType: "projectilePrefabs", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats }, this.parent.transform.position);
+          this.game.spawn('multiShotProjectile', { objectType: "projectilePrefabs", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats, position: this.parent.transform.position});
         } else {
-          this.game.spawn('projectile', { objectType: "projectilePrefabs", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats }, this.parent.transform.position);
+          this.game.spawn('projectile', { objectType: "projectilePrefabs", spawnType: projectileType, target: this.target, owner: this.parent, stats: projStats, position: this.parent.transform.position});
         }
     }
 }

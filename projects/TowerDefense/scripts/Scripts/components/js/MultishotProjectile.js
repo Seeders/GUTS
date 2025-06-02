@@ -45,9 +45,9 @@ init({ spawnType, stats, target, owner }) {
         targetPosition: {
           x: this.parent.transform.position.x + deltaX, // Start from parent, extend to new position
           y: this.parent.transform.position.y + deltaY
-        }
-      },
-      this.parent.transform.position
+        }, 
+        position: this.parent.transform.position
+      }
     );
   }
 

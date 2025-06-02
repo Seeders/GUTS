@@ -204,7 +204,7 @@ class UiManager extends engine.Component {
                         this.game.state.mousePosition.gridY * this.gridSize + this.gridSize / 2,
                         0
                     );
-                    const tower = this.game.spawn("tower", { objectType: "towers", spawnType: this.game.state.selectedTowerType, setDirection: 1}, position);
+                    const tower = this.game.spawn("tower", { objectType: "towers", spawnType: this.game.state.selectedTowerType, setDirection: 1, position});
                     tower.placed = true;
                     tower.transform.position.z = this.game.gameEntity.getComponent('game').getTerrainHeight(tower.transform.gridPosition);
                     this.game.state.tileMap[this.game.state.mousePosition.gridY][this.game.state.mousePosition.gridX].buildable = false;
@@ -251,7 +251,7 @@ class UiManager extends engine.Component {
                     if(this.game.state.previewTower) {
                         this.game.state.previewTower.destroy();
                     }
-                    this.game.state.previewTower = this.game.spawn('previewTower', { objectType: "towers", spawnType: this.game.state.selectedTowerType}, new THREE.Vector3());
+                    this.game.state.previewTower = this.game.spawn('previewTower', { objectType: "towers", spawnType: this.game.state.selectedTowerType, position: new THREE.Vector3()});
                 }
             });
             

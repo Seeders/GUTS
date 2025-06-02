@@ -97,9 +97,9 @@ class PlayerAttacker extends engine.Component {
                 spawnType: projectileType,
                 direction: direction, // No specific target, uses direction
                 owner: this.parent,
-                stats: projStats
-            },
-            spawnPos
+                stats: projStats, 
+                position: spawnPos
+            }
         );          
     }
     

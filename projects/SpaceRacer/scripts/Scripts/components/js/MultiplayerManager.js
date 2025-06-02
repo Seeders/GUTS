@@ -118,7 +118,7 @@ class MultiplayerManager extends engine.Component {
       spawnPosition.y = Math.random()*20 + 200;
       spawnPosition.z = Math.random()*200 - 100;
     }
-    let objEntity = this.game.spawn("playerAircraft", { objectType: "playerPrefabs", spawnType: "spaceshipMesh", networkId: data.networkId, isRemote: true }, spawnPosition);
+    let objEntity = this.game.spawn("playerAircraft", { objectType: "playerPrefabs", spawnType: "spaceshipMesh", networkId: data.networkId, isRemote: true, position: spawnPosition});
     objEntity.networkId = data.networkId;
     this.setNetworkTransform(objEntity);
     this.remotePlayers[data.networkId] = objEntity;
@@ -129,7 +129,7 @@ class MultiplayerManager extends engine.Component {
   }
 
   createNetworkObjectEntity(networkId, data) {
-    let objEntity = this.game.spawn(data.type, { networkId: networkId }, data.position);
+    let objEntity = this.game.spawn(data.type, { networkId: networkId, position: data.position});
     objEntity.networkId = this.network;
     this.setNetworkTransform(objEntity);    
     this.networkObjects[networkId] = objEntity;  
