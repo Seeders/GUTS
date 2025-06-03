@@ -31,7 +31,7 @@ async function createHostClient() {
     // Launch headless browser
     const browser = await puppeteer.launch({
       headless: 'new', // Headless mode
-      args: ['--no-sandbox', '--disable-setuid-sandbox'], // Required for some server environments
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu'], // Required for some server environments
     });
 
     // Create a new page
