@@ -6,6 +6,7 @@ const puppeteer = require('puppeteer');
 
 // Get project name from CLI argument
 const projectName = process.argv[2];
+const gameURL = process.argv[3];
 if (!projectName) {
   console.error('Please provide a project name as a CLI argument (e.g., node server.js myProject)');
   process.exit(1);
@@ -37,7 +38,7 @@ async function createHostClient() {
     const page = await browser.newPage();
 
     // Load game.html
-    await page.goto(`http://localhost:5000/projects/${projectName}/game.html`, { waitUntil: 'networkidle2' });
+    await page.goto(`http://${gameURL}/projects/${projectName}/game.html`, { waitUntil: 'networkidle2' });
 
     // Log to confirm Puppeteer environment is set up
     console.log('Puppeteer host client initialized, waiting for socket connection...');
