@@ -120,7 +120,6 @@ class InfiniWorld extends engine.Component {
       }
   
       this.chunks = new Map();
-      this.objectCache = new Map();
   
       this.noise = new (this.game.moduleManager.libraryClasses.SimplexNoise)(); // Fixed seed for consistency
       let biomes = {};
@@ -219,18 +218,6 @@ class InfiniWorld extends engine.Component {
       });
     }
   
-  getInstancedMeshPool(type, geometry, material) {
-    if (!this.objectPools) this.objectPools = new Map();
-
-    const key = `${type}-${geometry.uuid}`;
-    if (!this.objectPools.has(key)) {
-      const pool = new (this.game.moduleManager.libraryClasses.InstancePool)(geometry, material, 1000);
-      this.rootGroup.add(pool.mesh);
-      this.objectPools.set(key, pool);
-    }
-    return this.objectPools.get(key);
-  }
-  
   async updateChunks() {
       const cameraChunkX = Math.floor(this.camera.position.x / this.chunkSize);
       const cameraChunkZ = Math.floor(this.camera.position.z / this.chunkSize);
@@ -303,39 +290,6 @@ class InfiniWorld extends engine.Component {
           }
       }   
    
-  }
-
-  async updateGrassTasks() {
-    if(this.grassTasks.length == 0) return;
-    if(!this.currentGrassTask){
-      this.currentGrassTask = this.grassTasks.pop();
-    }
-    const grassMesh = this.currentGrassTask.grassMesh;
-    const dummy = new THREE.Object3D();
-    let finishedChunk = false;
-    // Use pre-computed grass data
-    for(let i = 0; i < this.grassBatchSize; i++){
-      let currentIndex = this.currentGrassTaskIndex + i;
-      if (currentIndex >= this.grassPerChunk){
-          this.currentGrassTaskIndex = 0;
-          this.currentGrassTask = null;
-          finishedChunk = true;
-          grassMesh.needsUpdate = true;
-          break; // Safety check
-      }      
-      const grass = this.currentGrassTask.grassData[currentIndex];
-
-      dummy.position.set(grass.position.x, grass.position.y, grass.position.z);
-      dummy.rotation.set(0, grass.rotation, 0);
-      dummy.scale.set(grass.scale, grass.scale, grass.scale);
-      dummy.updateMatrix();
-      grassMesh.setMatrixAt(currentIndex, dummy.matrix);      
-    };
-    if(!finishedChunk){
-      this.currentGrassTaskIndex += this.grassBatchSize;
-    } 
-    
-
   }
 
   getStaticAABBsToRemove() {
@@ -730,52 +684,13 @@ class InfiniWorld extends engine.Component {
       
       return rockAndTreeAABBs;
   }
-    
-  checkStaticObjectCollisions(colliderAABB) {
-    const collisions = [];
-    const cameraChunkX = Math.floor(this.camera.position.x / this.chunkSize);
-    const cameraChunkZ = Math.floor(this.camera.position.z / this.chunkSize);
-  
-    // Check nearby chunks
-    for (let x = cameraChunkX - 1; x <= cameraChunkX + 1; x++) {
-      for (let z = cameraChunkZ - 1; z <= cameraChunkZ + 1; z++) {
-        const chunkKey = `${x},${z}`;
-        const chunkData = this.chunks.get(chunkKey);
-        if (!chunkData) continue;
-  
-        const treeAndRockAABBs = this.getStaticAABBsAt(x, z);
-        if(treeAndRockAABBs){
-          treeAndRockAABBs.forEach(aabb => {
-            if (this.aabbIntersects(colliderAABB, aabb)) {
-              collisions.push(aabb);
-            }
-          });
-        }       
-      }
-    }
-    return collisions;
-  }
-  
-  aabbIntersects(aabb1, aabb2) {
-    return (
-      aabb1.min.x <= aabb2.max.x &&
-      aabb1.max.x >= aabb2.min.x &&
-      aabb1.min.y <= aabb2.max.y &&
-      aabb1.max.y >= aabb2.min.y &&
-      aabb1.min.z <= aabb2.max.z &&
-      aabb1.max.z >= aabb2.min.z
-    );
-  }
 
   update() {
     if (!this.game.getCollections().configs.game.is3D) return;
     this.timer += this.game.deltaTime || 0;
     this.skyDome.position.set(this.camera.position.x, 0, this.camera.position.z); // Center it around the camera
     this.updateChunks();
-   // this.updateGrassTasks(); // Process grass tasks incrementally
-
-    const cameraPos = this.camera.position;
-  
+    const cameraPos = this.camera.position;  
     // Update directional light position smoothly every frame
     this.directionalLight.position.set(cameraPos.x + 500, 500, cameraPos.z + 500);
     this.directionalLight.target.position.set(cameraPos.x, 0, cameraPos.z);
@@ -808,8 +723,7 @@ class InfiniWorld extends engine.Component {
       this.render();
     }
   }
-  render() {
-    
+  render() {    
     this.renderer.render(this.scene, this.camera);
     if(this.pixelPass.enabled){
 		  this.composer.render();
@@ -846,7 +760,7 @@ class InfiniWorld extends engine.Component {
 			camera.bottom = - 1.0 - ( fractY * pixelHeight );
 			camera.updateProjectionMatrix();
 
-		}
+	}
 
   onWindowResize() {
   
@@ -945,70 +859,8 @@ class InfiniWorld extends engine.Component {
       // Store instance groups in chunk data
       chunkData.objectMeshes.set(type, instanceGroups);
   }
-getInterpolatedTerrainHeight(position) {
-    // Determine the chunk containing the position
-    let chunkX = Math.floor(position.x / this.chunkSize);
-    let chunkZ = Math.floor(position.z / this.chunkSize);
-    let localX = position.x - (chunkX * this.chunkSize);
-    let localZ = position.z - (chunkZ * this.chunkSize);
 
-    // Adjust chunk selection for boundary positions
-    const halfChunk = this.chunkSize / 2;
-    let chunkKey;
-    if (localX === halfChunk) {
-        chunkX += 1;
-        localX -= this.chunkSize;
-    } else if (localX === -halfChunk) {
-        chunkX -= 1;
-        localX += this.chunkSize;
-    }
-    if (localZ === halfChunk) {
-        chunkZ += 1;
-        localZ -= this.chunkSize;
-    } else if (localZ === -halfChunk) {
-        chunkZ -= 1;
-        localZ += this.chunkSize;
-    }
-    chunkKey = `${chunkX},${chunkZ}`;
-
-    // Get chunk data
-    const chunkData = this.chunks.get(chunkKey);
-    if (!chunkData || !chunkData.terrainMesh) {
-        // Fallback to terrain generator if chunk is not loaded
-        return this.terrainGenerator.getHeight({ x: position.x, z: position.z });
-    }
-
-    const terrainPositions = chunkData.terrainMesh.geometry.attributes.position.array;
-    const vertexCountPerRow = this.chunkResolution + 1; // e.g., 33 for 32x32 tiles
-    const step = this.chunkSize / this.chunkResolution; // e.g., 1024 / 32 = 32 units per tile
-
-    // Map to grid coordinates (0 to chunkResolution)
-    const x = (localX + this.chunkSize / 2) / step; // Map from [-chunkSize/2, chunkSize/2] to [0, chunkResolution]
-    const z = (localZ + this.chunkSize / 2) / step;
-
-    // Clamp grid coordinates to avoid out-of-bounds access
-    const xIdx = Math.min(Math.max(Math.floor(x), 0), this.chunkResolution - 1);
-    const zIdx = Math.min(Math.max(Math.floor(z), 0), this.chunkResolution - 1);
-    const fx = Math.min(Math.max(x - xIdx, 0), 1); // Fractional part for interpolation
-    const fz = Math.min(Math.max(z - zIdx, 0), 1);
-
-    // Get heights of the four surrounding vertices
-    const posIdx = (zIdx * vertexCountPerRow + xIdx) * 3;
-    const h00 = terrainPositions[posIdx + 1]; // Height at (xIdx, zIdx)
-    const h10 = xIdx + 1 < vertexCountPerRow ? terrainPositions[posIdx + 3 + 1] : h00; // Height at (xIdx+1, zIdx)
-    const h01 = zIdx + 1 < vertexCountPerRow ? terrainPositions[(zIdx + 1) * vertexCountPerRow * 3 + xIdx * 3 + 1] : h00; // Height at (xIdx, zIdx+1)
-    const h11 = xIdx + 1 < vertexCountPerRow && zIdx + 1 < vertexCountPerRow ? terrainPositions[(zIdx + 1) * vertexCountPerRow * 3 + (xIdx + 1) * 3 + 1] : h00; // Height at (xIdx+1, zIdx+1)
-
-    // Perform bilinear interpolation
-    const height = h00 * (1 - fx) * (1 - fz) +
-                   h10 * fx * (1 - fz) +
-                   h01 * (1 - fx) * fz +
-                   h11 * fx * fz;
-
-    return height;
-}
   getTerrainHeight(position, useRaycast = false) {
-  //    return this.getInterpolatedTerrainHeight(position);
     if(!useRaycast){      
       return this.terrainGenerator.getHeight(position);
     }
@@ -1046,87 +898,7 @@ getInterpolatedTerrainHeight(position) {
       return intersects[0].point.y;
     }
     
-    return 0;//this.terrainGenerator.getHeight(position);
-  }
-
-  getReflectionAt(position, velocity, restitution) {
-      return this.terrainGenerator.getReflectionAt(position, velocity, restitution);
-      const normal = this.getTerrainNormal(position);
-      const dotProduct = 
-          velocity.x * normal.x + 
-          velocity.y * normal.y + 
-          velocity.z * normal.z;
-      
-      // Only reflect if moving toward the surface
-      if (dotProduct < 0) {
-          let r = (restitution || 0.3);
-          const slopeAmount = 1 - normal.y;
-          // Calculate reflection vector correctly (r affects the entire reflection, not just normal component)
-          // v_reflect = v - 2(v·n)n then scaled by restitution
-          let reflection = new THREE.Vector3(
-              velocity.x - 2 * dotProduct * normal.x,
-              velocity.y - 2 * dotProduct * normal.y,
-              velocity.z - 2 * dotProduct * normal.z
-          );
-
-
-          if(dotProduct > -10 || slopeAmount > .5 ){          
-            // r = normal.y;
-            r = .99;
-            // Scale by restitution (energy loss on bounce)
-          }
-          reflection.x *= r;
-          reflection.y *= r;
-          reflection.z *= r;
-          
-          return reflection;
-      } else {
-          // Not heading into surface, return original velocity
-          return { ...velocity };
-      }
-  } 
-
-  getTerrainNormal(position) {
-      // Create a raycaster
-      const raycaster = new THREE.Raycaster();
-      
-      // Set the ray origin high above the position
-      const rayOrigin = new THREE.Vector3(position.x, this.chunkSize * 2, position.z);
-      
-      // Set the ray direction downward
-      const rayDirection = new THREE.Vector3(0, -1, 0);
-      raycaster.set(rayOrigin, rayDirection);
-      
-      // Collect visible terrain chunks to test against
-      const chunks = [];
-      const cameraChunkX = Math.floor(position.x / this.chunkSize);
-      const cameraChunkZ = Math.floor(position.z / this.chunkSize);
-      
-      // Check nearby chunks
-      for (let x = cameraChunkX - 1; x <= cameraChunkX + 1; x++) {
-          for (let z = cameraChunkZ - 1; z <= cameraChunkZ + 1; z++) {
-              const chunkKey = `${x},${z}`;
-              const chunkData = this.chunks.get(chunkKey);
-              if (chunkData && chunkData.terrainMesh) {
-                  chunks.push(chunkData.terrainMesh);
-              }
-          }
-      }
-      
-      // Perform the raycast
-      const intersects = raycaster.intersectObjects(chunks, false);
-      
-      // If there's an intersection, return the face normal
-      if (intersects.length > 0) {
-          return {
-              x: intersects[0].face.normal.x,
-              y: intersects[0].face.normal.y,
-              z: intersects[0].face.normal.z
-          };
-      }
-      
-      // Fallback to upward normal if no intersection found
-      return { x: 0, y: 1, z: 0 };
+    return 0;
   }
 
   destroy() {
@@ -1171,38 +943,6 @@ getInterpolatedTerrainHeight(position) {
         });
       });
     }
-
-    if (this.objectPools) {
-      this.objectPools.forEach(pool => {
-        if (pool.mesh) {
-          this.scene.remove(pool.mesh);
-          pool.mesh.geometry.dispose();
-          if (pool.mesh.material) {
-            if (Array.isArray(pool.mesh.material)) {
-              pool.mesh.material.forEach(mat => mat.dispose());
-            } else {
-              pool.mesh.material.dispose();
-            }
-          }
-          pool.mesh.dispose();
-        }
-      });
-      this.objectPools.clear();
-    }
-
-    this.objectCache.forEach(mesh => {
-      this.scene.remove(mesh);
-      mesh.geometry.dispose();
-      if (mesh.material) {
-        if (Array.isArray(mesh.material)) {
-          mesh.material.forEach(mat => mat.dispose());
-        } else {
-          mesh.material.dispose();
-        }
-      }
-    });
-    this.objectCache.clear();
-
     if (this.worker) {
       this.worker.terminate();
       this.worker = null;
