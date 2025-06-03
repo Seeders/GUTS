@@ -6,7 +6,6 @@ class Transform extends engine.Component {
             y = position.y;
             z = position.z;
         }
-        console.log(position);
         this.position = new THREE.Vector3(x, y, z);
         this.velocity = new THREE.Vector3();
         this.physicsVelocity = new THREE.Vector3();

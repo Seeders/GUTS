@@ -6,6 +6,7 @@
   "libraries": [
     "threejs",
     "Rapier",
+    "three-nebula",
     "three.SkeletonUtils",
     "three.PointerLockControls",
     "three.BufferGeometryUtils",
