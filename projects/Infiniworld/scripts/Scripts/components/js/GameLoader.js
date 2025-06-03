@@ -31,7 +31,7 @@ class GameLoader extends engine.Component {
                 this.game.gameEntity = this.game.createEntityFromCollections(sceneEntity.type, params);
                 this.game.audioManager = this.game.gameEntity.getComponent('AudioManager');  
                 this.game.multiplayerManager = this.game.gameEntity.getComponent("MultiplayerManager");
-                this.game.multiplayerManager.init({scene: this.game.scene, physics: this.game.physics, serverUrl: 'http://10.0.0.40:3000' });
+                this.game.multiplayerManager.init({scene: this.game.scene, physics: this.game.physics, serverUrl: this.collections.configs.game.multiplayerServerUrl });
             } else {
                 let spawned = this.game.spawn(sceneEntity.type, params);                                  
                 if(sceneEntity.type.startsWith("player")){
