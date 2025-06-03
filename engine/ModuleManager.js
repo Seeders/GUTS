@@ -106,13 +106,14 @@ class ModuleManager {
 
     // Function to instantiate a library once its script is loaded
     const instantiateModuleFromLibrary = (library, moduleConfig) => {
-        let libraryClass = window.loadingLibraries[library];
+        let libraryKey = library.replace(/-/g, "__");
+        let libraryClass = window.loadingLibraries[libraryKey];
         try {
             if (!libraryClass) {
-                throw new Error(`Library class ${library} not found in global scope`);
+                throw new Error(`Library class ${libraryKey} not found in global scope`);
             }
-            this.registeredLibraries[library] = libraryClass;
-            delete window.loadingLibraries[library];
+            this.registeredLibraries[libraryKey] = libraryClass;
+            delete window.loadingLibraries[libraryKey];
             pendingLibraries.delete(library);
         } catch (error) {
             console.error(`Error initializing library ${library}:`, error);
@@ -134,7 +135,7 @@ class ModuleManager {
                     scriptTag.setAttribute("type", "module");
                 }
                 if (libraryDef.script) {
-                    const scriptContent = `window.loadingLibraries.${library} = ${libraryDef.script};`;
+                    const scriptContent = `window.loadingLibraries.${library.replace(/-/g, "__")} = ${libraryDef.script};`;
                     const blob = new Blob([scriptContent], { type: 'application/javascript' });
                     scriptUrl = URL.createObjectURL(blob);
                     scriptTag.src = scriptUrl;

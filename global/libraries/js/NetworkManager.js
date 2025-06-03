@@ -49,7 +49,7 @@ class NetworkManager {
       
       this.socket.on('connect_error', (err) => {
         console.error('Connection error:', err);
-        this.connected = false;
+        this.disconnect();
         reject(err);
       });
       
@@ -241,7 +241,7 @@ class NetworkManager {
  
   // Disconnect from server
   disconnect() {
-    if (this.socket && this.connected) {
+    if (this.socket) {
       this.socket.disconnect();
       this.connected = false;
     }
