@@ -106,5 +106,5 @@ const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`Game server running on port ${PORT}`);
   // Start the host client after the server is ready
- // createHostClient();
+  createHostClient();
 });
