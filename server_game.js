@@ -49,7 +49,7 @@ async function createHostClient() {
     const url = `http://${gameURL}/projects/${projectName}/game.html`;
     // Load game.html
     await page.goto(url, { waitUntil: 'networkidle2' });
-    await testpage.screenshot({ path: 'testpuppet_game.png' });
+    await page.screenshot({ path: 'testpuppet_game.png' });
 
     console.log('loading', url, '...');
     // Keep browser open until disconnect (handled by socket logic)
