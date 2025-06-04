@@ -39,7 +39,7 @@ async function createHostClient() {
     const testpage = await browser.newPage();
     await testpage.goto(`http://${gameURL}`);
     console.log('loading', `http://${gameURL}`, '...');
-    await testpage.screenshot({ path: 'testpuppet.png' });
+    await testpage.screenshot({ path: 'testpuppet_editor.png' });
     console.log('testpuppet screenshot created');
     await testpage.close();
     // Log to confirm Puppeteer environment is set up
@@ -49,6 +49,7 @@ async function createHostClient() {
     const url = `http://${gameURL}/projects/${projectName}/game.html`;
     // Load game.html
     await page.goto(url, { waitUntil: 'networkidle2' });
+    await testpage.screenshot({ path: 'testpuppet_game.png' });
 
     console.log('loading', url, '...');
     // Keep browser open until disconnect (handled by socket logic)
