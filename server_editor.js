@@ -7,6 +7,7 @@ const multer = require('multer');
 const path = require('path');
 const chokidar = require('chokidar');
 const bodyParser = require('body-parser');
+const port = process.argv[2] || 5000;
 
 // Base directory for all file operations
 const BASE_DIR = path.join(__dirname, '/');
@@ -311,8 +312,7 @@ app.post('/api/cache', async (req, res) => {
 });
 
 // Start the server
-const PORT = process.env.PORT || 443;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
     console.log(`Files will be served from: ${PROJS_DIR}`);
 });
