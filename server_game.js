@@ -46,19 +46,17 @@ async function createHostClient() {
 
     // Create a new page
     const page = await browser.newPage();
+    page.on('console', msg => console.log('Page Console:', msg.text()));
+    page.on('pageerror', error => console.error('Page Error:', error));
     const url = `http://${gameURL}/projects/${projectName}/game.html`;
     console.log('loading', url, '...');
     // Load game.html
-    await page.setRequestInterception(true);
-    page.on('request', request => {
-      console.log('Request Headers:', request.headers());
-      request.continue();
-    });
     const response = await page.goto(url, { waitUntil: 'networkidle2' });
     console.log('Status:', response.status(), response.statusText());
     console.log('Headers:', response.headers());    
     const content = await page.content();
     console.log(content);
+    
     // Keep browser open until disconnect (handled by socket logic)
     // Optionally, close browser on process exit
     process.on('SIGINT', async () => {
