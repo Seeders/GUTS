@@ -34,15 +34,15 @@ async function createHostClient() {
       args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu'], // Required for some server environments
     });
 
+    // Log to confirm Puppeteer environment is set up
+    console.log('Puppeteer host client initialized...');
     // Create a new page
     const page = await browser.newPage();
-
+    const url = `http://${gameURL}/projects/${projectName}/game.html`;
     // Load game.html
-    await page.goto(`http://${gameURL}/projects/${projectName}/game.html`, { waitUntil: 'networkidle2' });
+    await page.goto(url, { waitUntil: 'networkidle2' });
 
-    // Log to confirm Puppeteer environment is set up
-    console.log('Puppeteer host client initialized, waiting for socket connection...');
-
+    console.log('loading', url, '...');
     // Keep browser open until disconnect (handled by socket logic)
     // Optionally, close browser on process exit
     process.on('SIGINT', async () => {
