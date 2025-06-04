@@ -37,8 +37,8 @@ async function createHostClient() {
     // Log to confirm Puppeteer environment is set up
     console.log('Puppeteer host client initialized...');
     const testpage = await browser.newPage();
-    await testpage.goto(`http://${gameURL}`);
-    console.log('loading', `http://${gameURL}`, '...');
+    await testpage.goto(`http://google.com`);
+    console.log('loading', `http://google.com`, '...');
     await testpage.screenshot({ path: 'testpuppet_editor.png' });
     console.log('testpuppet screenshot created');
     await testpage.close();
