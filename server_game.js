@@ -30,12 +30,20 @@ async function createHostClient() {
   try {
     // Launch headless browser
     const browser = await puppeteer.launch({
-      headless: 'new', // Headless mode
+      headless: true, // Headless mode
       args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu'], // Required for some server environments
     });
 
     // Log to confirm Puppeteer environment is set up
     console.log('Puppeteer host client initialized...');
+    const testpage = await browser.newPage();
+    await testpage.goto(`http://${gameURL}`);
+    console.log('loading', `http://${gameURL}`, '...');
+    await testpage.screenshot({ path: 'testpuppet.png' });
+    console.log('testpuppet screenshot created');
+    await testpage.close();
+    // Log to confirm Puppeteer environment is set up
+
     // Create a new page
     const page = await browser.newPage();
     const url = `http://${gameURL}/projects/${projectName}/game.html`;
