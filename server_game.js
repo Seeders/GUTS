@@ -54,7 +54,7 @@ async function createHostClient() {
       console.log('Request Headers:', request.headers());
       request.continue();
     });
-    await page.goto(url, { waitUntil: 'networkidle2' });
+    const response = await page.goto(url, { waitUntil: 'networkidle2' });
     console.log('Status:', response.status(), response.statusText());
     console.log('Headers:', response.headers());    
     const content = await page.content();
