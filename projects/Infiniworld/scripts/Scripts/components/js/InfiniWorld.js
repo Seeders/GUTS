@@ -19,52 +19,57 @@ class InfiniWorld extends engine.Component {
       // Initialize core properties
       this.clock = clock;
       this.onWindowResizeHandler = this.onWindowResize.bind(this);
-      this.renderer = this.game.renderer || new THREE.WebGLRenderer({ antialias: true, canvas: this.canvas, alpha: true });
-      if(!isEditor){
-        this.renderer.setSize(width, height);
+      
+      if(!this.game.isServer){
+        this.renderer = this.game.renderer || new THREE.WebGLRenderer({ antialias: true, canvas: this.canvas, alpha: true });
+        if(!isEditor){
+          this.renderer.setSize(width, height);
+        }
+        this.renderer.shadowMap.enabled = true;
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       }
-      this.renderer.shadowMap.enabled = true;
-      this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
       this.scene = this.game.scene || new window.THREE.Scene();
       this.scene.add(this.rootGroup);
       this.uniforms = new Map();
       this.cameraData = this.game.getCollections().cameras[this.world.camera];  
       // Camera setup
-      if(this.cameraData.fov){
-          this.camera = new THREE.PerspectiveCamera(
-              this.cameraData.fov,
-              width / height,
-              this.cameraData.near,
-              this.cameraData.far
-          );
-      } else if(this.cameraData.zoom){
-          this.camera = new THREE.OrthographicCamera(
-              width / - 2, 
-              width / 2, 
-              height / 2, 
-              height / - 2, 
-              this.cameraData.near,
-              this.cameraData.far
-          );
-          this.camera.zoom = this.cameraData.zoom;
-          this.camera.updateProjectionMatrix();
-      }
-    	this.composer = new THREE_.EffectComposer( this.renderer );
-      this.pixelSize = this.gameConfig.pixelSize || 1;
+        if(this.cameraData.fov){
+            this.camera = new THREE.PerspectiveCamera(
+                this.cameraData.fov,
+                width / height,
+                this.cameraData.near,
+                this.cameraData.far
+            );
+        } else if(this.cameraData.zoom){
+            this.camera = new THREE.OrthographicCamera(
+                width / - 2, 
+                width / 2, 
+                height / 2, 
+                height / - 2, 
+                this.cameraData.near,
+                this.cameraData.far
+            );
+            this.camera.zoom = this.cameraData.zoom;
+            this.camera.updateProjectionMatrix();
+        }
       
-      this.pixelPass = new THREE_.RenderPixelatedPass( this.pixelSize, this.scene, this.camera );
-      if(this.pixelSize == 1) {
-        this.pixelPass.enabled = false;
+      if(!this.game.isServer){
+        this.composer = new THREE_.EffectComposer( this.renderer );
+        this.pixelSize = this.gameConfig.pixelSize || 1;
+        
+        this.pixelPass = new THREE_.RenderPixelatedPass( this.pixelSize, this.scene, this.camera );
+        if(this.pixelSize == 1) {
+          this.pixelPass.enabled = false;
+        }
+        this.game.postProcessors = {
+          pixelPass: this.pixelPass
+        };
+        this.pixelPass.normalEdgeStrength = 0;
+        
+        this.composer.addPass( this.pixelPass );
+        const outputPass = new THREE_.OutputPass();
+        this.composer.addPass( outputPass );
       }
-      this.game.postProcessors = {
-        pixelPass: this.pixelPass
-      };
-      this.pixelPass.normalEdgeStrength = 0;
-      
-			this.composer.addPass( this.pixelPass );
-			const outputPass = new THREE_.OutputPass();
-			this.composer.addPass( outputPass );
       // Terrain configuration
       this.heightMap = this.game.getCollections().heightMaps[this.world.heightMap];
       this.chunkSize = this.heightMap.chunkSize;
@@ -613,14 +618,15 @@ class InfiniWorld extends engine.Component {
             this.rootGroup.add(waterMesh);
             chunkData.waterMesh = waterMesh;
         }
-
-        // Add grass to chunk
-        const grassMesh = this.addGrassToTerrain(cx, cz, grassData);
-        if (grassMesh) {
-          grassMesh.position.set(chunkWorldX, 0, chunkWorldZ);
-          grassMesh.updateMatrix();
-          this.rootGroup.add(grassMesh);
-          chunkData.grassMesh = grassMesh;
+        if(!this.game.isServer){
+          // Add grass to chunk
+          const grassMesh = this.addGrassToTerrain(cx, cz, grassData);
+          if (grassMesh) {
+            grassMesh.position.set(chunkWorldX, 0, chunkWorldZ);
+            grassMesh.updateMatrix();
+            this.rootGroup.add(grassMesh);
+            chunkData.grassMesh = grassMesh;
+          }
         }
         // Process vegetation data
         chunkData.collisionAABBs = new Map();
@@ -628,7 +634,7 @@ class InfiniWorld extends engine.Component {
             if (worldObject.endsWith('_collision')) {
                 const objectType = worldObject.replace('_collision', '');
                 chunkData.collisionAABBs.set(objectType, data);
-            } else {
+            } else if(!this.game.isServer){
                 const model = await this.game.modelManager.getModel('worldObjectPrefabs', worldObject);
                 if (!model) {
                     console.warn(`Model not found: ${worldObject}`);
@@ -637,9 +643,10 @@ class InfiniWorld extends engine.Component {
                 this.processModelType(worldObject, model, data, chunkData);
             }
         });
-
+        if(!this.game.isServer){
         // Force shadow map update to avoid shadow artifacts at boundaries
-        this.renderer.shadowMap.needsUpdate = true;
+          this.renderer.shadowMap.needsUpdate = true;
+        }
         chunkData.restitution = restitution;
         chunkData.friction = friction;
         // Mark chunk as ready
@@ -713,7 +720,7 @@ class InfiniWorld extends engine.Component {
         value.time = { value: this.timer };
         value.cameraPosition = { value: { x: this.camera.position.x, y: this.camera.position.y, z: this.camera.position.z } };
     }
-    if(this.pixelPass.enabled){
+    if(this.pixelPass.enabled && !this.game.isServer){
   	  const rendererSize = this.renderer.getSize( new THREE.Vector2() );
       const aspectRatio = rendererSize.x / rendererSize.y;
   	  this.pixelAlignFrustum( this.camera, aspectRatio, Math.floor( rendererSize.x / this.pixelSize ),
@@ -764,7 +771,7 @@ class InfiniWorld extends engine.Component {
 
   onWindowResize() {
   
-    if(this.canvas){
+    if(this.canvas && !this.game.isServer){
 
       const width = this.container.clientWidth || window.innerWidth;
       const height = this.container.clientHeight || window.innerHeight;
