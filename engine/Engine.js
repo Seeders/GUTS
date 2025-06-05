@@ -12,6 +12,7 @@ class Engine {
         this.state = {};
         const urlParams = new URLSearchParams(window.location.search);
         this.isServer = urlParams.get('isServer');
+        console.log("isServer", this.isServer);
         window.APP = this;
     }
 
