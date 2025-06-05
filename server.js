@@ -14,7 +14,7 @@ const cors = require('cors');
 // CLI Arguments
 const projectName = process.argv[2];
 const gameURL = process.argv[3] || `localhost`;
-const port = process.argv[4] || 80;
+const port = process.argv[4] || 443;
 
 // Base directory for all file operations
 const BASE_DIR = path.join(__dirname, '/');
@@ -361,7 +361,7 @@ async function createHostClient() {
     page.on('console', msg => console.log('Page Console:', msg.text()));
     page.on('pageerror', error => console.error('Page Error:', error));
     
-    const url = `http://${gameURL}${port != 80 ? ':' + port : ''}/projects/${projectName}/game.html?isServer=true`;
+    const url = `https://${gameURL}${port != 443 ? ':' + port : ''}/projects/${projectName}/game.html?isServer=true`;
     console.log('Loading', url, '...');
     
     const response = await page.goto(url, { waitUntil: 'networkidle2' });
