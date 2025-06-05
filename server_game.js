@@ -3,6 +3,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
 const puppeteer = require('puppeteer');
+const cors = require('cors');
 
 // Get project name from CLI argument
 const projectName = process.argv[2];
@@ -14,6 +15,11 @@ if (!projectName) {
 
 // Create Express app and HTTP server
 const app = express();
+app.use(cors({
+  origin: `*`, // Allow game.html origin
+  methods: ['GET', 'POST'],
+  credentials: true,
+}));
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
