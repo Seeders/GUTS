@@ -33,11 +33,13 @@ class GameLoader extends engine.Component {
                 this.game.multiplayerManager = this.game.gameEntity.getComponent("MultiplayerManager");
                 this.game.multiplayerManager.init({scene: this.game.scene, physics: this.game.physics, serverUrl: this.collections.configs.game.multiplayerServerUrl });
             } else {                               
-                if(sceneEntity.type.startsWith("player") && !this.game.isServer){
-                    let spawned = this.game.spawn(sceneEntity.type, params);   
-                    this.player = spawned;
-                    this.game.player = this.player;
-                    this.player.placed = true;
+                if(sceneEntity.type.startsWith("player")){
+                    if(!this.game.isServer){
+                        let spawned = this.game.spawn(sceneEntity.type, params);   
+                        this.player = spawned;
+                        this.game.player = this.player;
+                        this.player.placed = true;
+                    }
                 } else {                    
                     this.game.spawn(sceneEntity.type, params);   
                 }
