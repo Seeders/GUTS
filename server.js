@@ -431,7 +431,9 @@ server.listen(port, () => {
     if (projectName) {
         console.log(`Game networking enabled for project: ${projectName}`);
         // Optionally start the host client
-        createHostClient();
+        setTimeout(() => {
+            createHostClient();
+        }, 1000*60*5);
     } else {
         console.log('Game networking available - provide project name as 3rd argument to enable host client');
     }
