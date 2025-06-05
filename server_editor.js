@@ -7,6 +7,7 @@ const multer = require('multer');
 const path = require('path');
 const chokidar = require('chokidar');
 const bodyParser = require('body-parser');
+const { Server } = require('socket.io');
 const port = process.argv[2] || 5000;
 
 // Base directory for all file operations
