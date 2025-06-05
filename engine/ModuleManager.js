@@ -96,9 +96,9 @@ class ModuleManager {
   async loadModules(modules) {
     if (!modules) return;
 
-    if(this.isServer){
-        return this.loadServerModules(modules);
-    }
+    // if(this.isServer){
+    //     return this.loadServerModules(modules);
+    // }
 
     window.loadingLibraries = {};
     window.require = (f) => { 
