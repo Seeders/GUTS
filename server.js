@@ -352,7 +352,7 @@ async function createHostClient() {
   try {
     const browser = await puppeteer.launch({
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-features=HttpsUpgrades'],
     });
 
     console.log('Puppeteer host client initialized...');
