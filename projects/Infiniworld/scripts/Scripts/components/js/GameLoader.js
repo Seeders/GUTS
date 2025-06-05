@@ -32,26 +32,30 @@ class GameLoader extends engine.Component {
                 this.game.audioManager = this.game.gameEntity.getComponent('AudioManager');  
                 this.game.multiplayerManager = this.game.gameEntity.getComponent("MultiplayerManager");
                 this.game.multiplayerManager.init({scene: this.game.scene, physics: this.game.physics, serverUrl: this.collections.configs.game.multiplayerServerUrl });
-            } else {
-                let spawned = this.game.spawn(sceneEntity.type, params);                                  
-                if(sceneEntity.type.startsWith("player")){
+            } else {                               
+                if(sceneEntity.type.startsWith("player") && !this.game.isServer){
+                    let spawned = this.game.spawn(sceneEntity.type, params);   
                     this.player = spawned;
                     this.game.player = this.player;
                     this.player.placed = true;
+                } else {                    
+                    this.game.spawn(sceneEntity.type, params);   
                 }
             }
         });
 
-        if(this.player && this.game.multiplayerManager) {
-            this.playerId = await this.game.multiplayerManager.initializeMultiplayer(this.serverUrl);       
-            if(this.playerId != 0){
-                this.game.multiplayerManager.createLocalPlayer(this.playerId, this.player);
-                this.game.isSinglePlayer = false;
-            } else {
-                this.game.isSinglePlayer = true;
-                this.game.isServer = false;
-                this.player.getComponent("PlayerController").setupPhysics(this.game.physics.simulation);
-            }    
+        if(this.game.multiplayerManager) {
+            this.playerId = await this.game.multiplayerManager.initializeMultiplayer(this.serverUrl);   
+            if(this.player){    
+                if(this.playerId != 0){
+                    this.game.multiplayerManager.createLocalPlayer(this.playerId, this.player);
+                    this.game.isSinglePlayer = false;
+                } else {
+                    this.game.isSinglePlayer = true;
+                    this.game.isServer = false;
+                    this.player.getComponent("PlayerController").setupPhysics(this.game.physics.simulation);
+                }    
+            }
             
         }
  
