@@ -10,7 +10,8 @@ class Engine {
         this.engineClasses = [];
         this.libraries = {};
         this.state = {};
-        this.isServer = false;
+        const urlParams = new URLSearchParams(window.location.search);
+        this.isServer = urlParams.get('isServer');
         window.APP = this;
     }
 
