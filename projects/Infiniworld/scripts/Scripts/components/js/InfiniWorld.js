@@ -720,13 +720,13 @@ class InfiniWorld extends engine.Component {
         value.time = { value: this.timer };
         value.cameraPosition = { value: { x: this.camera.position.x, y: this.camera.position.y, z: this.camera.position.z } };
     }
-    if(this.pixelPass.enabled && !this.game.isServer){
-  	  const rendererSize = this.renderer.getSize( new THREE.Vector2() );
-      const aspectRatio = rendererSize.x / rendererSize.y;
-  	  this.pixelAlignFrustum( this.camera, aspectRatio, Math.floor( rendererSize.x / this.pixelSize ),
-					Math.floor( rendererSize.y / this.pixelSize ) );
-    }
     if(!this.game.isServer){
+      if(this.pixelPass && this.pixelPass.enabled){
+        const rendererSize = this.renderer.getSize( new THREE.Vector2() );
+        const aspectRatio = rendererSize.x / rendererSize.y;
+        this.pixelAlignFrustum( this.camera, aspectRatio, Math.floor( rendererSize.x / this.pixelSize ),
+            Math.floor( rendererSize.y / this.pixelSize ) );
+      }
       this.render();
     }
   }
