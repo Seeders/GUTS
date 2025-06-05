@@ -79,13 +79,15 @@ class MultiplayerManager extends engine.Component {
   
   // Update remote players with interpolation
   updatePlayers() {
-    if (this.localPlayer.transform.networkPosition) {
-      // Position interpolation
-      this.localPlayer.transform.position.lerp(this.localPlayer.transform.networkPosition, 0.2);
-    }
-    if(this.localPlayer.transform.networkQuaternion){
-      // Rotation interpolation
-      this.localPlayer.transform.quaternion.slerp(this.localPlayer.transform.networkQuaternion, 0.2);
+    if(this.localPlayer){
+      if (this.localPlayer.transform.networkPosition) {
+        // Position interpolation
+        this.localPlayer.transform.position.lerp(this.localPlayer.transform.networkPosition, 0.2);
+      }
+      if(this.localPlayer.transform.networkQuaternion){
+        // Rotation interpolation
+        this.localPlayer.transform.quaternion.slerp(this.localPlayer.transform.networkQuaternion, 0.2);
+      }
     }
     Object.keys(this.remotePlayers).forEach(networkId => {
       const player = this.remotePlayers[networkId];
