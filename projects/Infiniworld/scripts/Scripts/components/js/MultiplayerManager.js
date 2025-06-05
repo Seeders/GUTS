@@ -31,7 +31,7 @@ class MultiplayerManager extends engine.Component {
     this.isServer = isHost;
     this.game.isServer = this.isServer;
     if(this.game.isServer){            
-        this.game.player.getComponent("PlayerController").setupPhysics(this.physics.simulation);
+       // this.game.player.getComponent("PlayerController").setupPhysics(this.physics.simulation);
     }
   }
   
