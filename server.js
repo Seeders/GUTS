@@ -361,7 +361,7 @@ async function createHostClient() {
     page.on('console', msg => console.log('Page Console:', msg.text()));
     page.on('pageerror', error => console.error('Page Error:', error));
     
-    const url = `http://${gameURL}${port != 80 ? ':' + port : ''}/projects/${projectName}/game.html`;
+    const url = `http://${gameURL}${port != 80 ? ':' + port : ''}/projects/${projectName}/game.html?isServer=true`;
     console.log('Loading', url, '...');
     
     const response = await page.goto(url, { waitUntil: 'networkidle2' });
