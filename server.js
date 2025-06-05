@@ -1,24 +1,41 @@
-// server-file-watcher.js
+// merged-server.js
 const express = require('express');
-const app = express();
+const http = require('http');
+const { Server } = require('socket.io');
 const fs = require('fs').promises;
 const fsSync = require('fs');
 const multer = require('multer');
 const path = require('path');
 const chokidar = require('chokidar');
 const bodyParser = require('body-parser');
-const { Server } = require('socket.io');
-const port = process.argv[2] || 5000;
+const puppeteer = require('puppeteer');
+const cors = require('cors');
+
+// CLI Arguments
+const projectName = process.argv[2];
+const gameURL = process.argv[3] || `localhost`;
+const port = process.argv[4] || 80;
 
 // Base directory for all file operations
 const BASE_DIR = path.join(__dirname, '/');
 const PROJS_DIR = path.join(BASE_DIR, 'projects');
 const MODULES_DIR = path.join(BASE_DIR, 'global');
+const CACHE_DIR = path.join(__dirname, 'cache');
 
 const upload = multer({ dest: path.join(BASE_DIR, 'uploads') });
 
-const CACHE_DIR = path.join(__dirname, 'cache');
-// Configure Express server
+// Create Express app and HTTP server
+const app = express();
+const server = http.createServer(app);
+
+// Configure CORS
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST'],
+  credentials: true,
+}));
+
+// Configure Express middleware
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(BASE_DIR, {
@@ -29,13 +46,24 @@ app.use(express.static(BASE_DIR, {
     }
 }));
 
-// Map of watchers by directory
-const watchers = new Map();
-// Map of file timestamps
-const fileTimestamps = new Map();
+// Socket.IO setup
+const io = new Server(server, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST'],
+    credentials: true,
+  },
+});
 
-// Supported file extensions (aligned with FileSystemSyncService.propertyConfig)
-const SUPPORTED_EXTENSIONS = ['.json', '.js', '.html', '.css']; // Add more if needed
+// File watcher variables
+const watchers = new Map();
+const fileTimestamps = new Map();
+const SUPPORTED_EXTENSIONS = ['.json', '.js', '.html', '.css'];
+
+// Game server variables
+let hostSocket = null;
+
+// ===== FILE MANAGEMENT ENDPOINTS =====
 
 // Endpoint to save the config
 app.post('/save-project', async (req, res) => {
@@ -56,6 +84,7 @@ app.post('/save-project', async (req, res) => {
         res.status(500).send('Error saving config');
     }
 });
+
 app.post('/load-project', async (req, res) => {
     const projectName = req.body.projectName;
     const buildFolder = path.join(PROJS_DIR, `${projectName}/config`);
@@ -68,15 +97,14 @@ app.post('/load-project', async (req, res) => {
         if (!fsSync.existsSync(buildFilePath)) {
             return res.status(404).send('Config not found');
         }
-        // Read and parse the JSON file        
         const project = JSON.parse(await fsSync.promises.readFile(buildFilePath, 'utf8'));
-
         res.status(200).json({ project });
     } catch (error) {
         console.error('Error loading config:', error);
         res.status(500).send('Error loading config');
     }
 });
+
 app.post('/upload-model', upload.single('gltfFile'), async (req, res) => {
     try {
         if (!req.file) {
@@ -201,6 +229,7 @@ app.post('/list-files', async (req, res) => {
         res.status(500).send({ success: false, error: error.message });
     }
 });
+
 app.post('/list-modules', async (req, res) => {
     let { path: dirPath, since } = req.body;
     dirPath = path.join(MODULES_DIR, dirPath);
@@ -225,7 +254,7 @@ app.post('/list-modules', async (req, res) => {
         res.status(500).send({ success: false, error: error.message });
     }
 });
-// File watcher setup
+
 function setupWatcher(dirPath) {
     if (watchers.has(dirPath)) {
         return;
@@ -261,7 +290,6 @@ function setupWatcher(dirPath) {
 
     watchers.set(dirPath, watcher);
 }
-
 
 app.get('/browse-directory', (req, res) => {
     const directories = [
@@ -312,8 +340,102 @@ app.post('/api/cache', async (req, res) => {
     }
 });
 
+// ===== GAME NETWORKING WITH SOCKET.IO =====
+
+// Simulate host client using Puppeteer (optional)
+async function createHostClient() {
+  if (!projectName) {
+    console.log('No project name provided - skipping host client creation');
+    return;
+  }
+  
+  try {
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
+
+    console.log('Puppeteer host client initialized...');
+ 
+    const page = await browser.newPage();
+    page.on('console', msg => console.log('Page Console:', msg.text()));
+    page.on('pageerror', error => console.error('Page Error:', error));
+    
+    const url = `http://${gameURL}${port != 80 ? ':' + port : ''}/projects/${projectName}/game.html`;
+    console.log('Loading', url, '...');
+    
+    const response = await page.goto(url, { waitUntil: 'networkidle2' });
+    console.log('Status:', response.status(), response.statusText());
+    console.log('Headers:', response.headers());    
+    const content = await page.content();
+    console.log(content);
+    
+    process.on('SIGINT', async () => {
+      await browser.close();
+      process.exit();
+    });
+  } catch (error) {
+    console.error('Error creating Puppeteer host client:', error);
+    setTimeout(createHostClient, 5000);
+  }
+}
+
+// Handle Socket.IO connections
+io.on('connection', (socket) => {
+  if (!hostSocket) {
+    console.log(`Host connected: ${socket.id}`);
+    hostSocket = socket;
+
+    hostSocket.emit('setHost', { isHost: true });
+
+    hostSocket.on('gameState', (data) => {
+      io.emit('gameState', data);
+    });
+
+    hostSocket.on('playerConnected', (data) => {
+      io.emit('playerConnected', data);
+    });
+
+    hostSocket.on('playerDisconnected', (data) => {
+      console.log(`Removing Player: ${data.networkId}`);
+      io.emit('playerDisconnected', data);
+    });
+
+    hostSocket.on('disconnect', () => {
+      console.log(`Host disconnected: ${socket.id}`);
+      hostSocket = null;
+    });
+  } else {
+    console.log(`Player connected: ${socket.id}`);
+
+    hostSocket?.emit('playerConnected', {
+      networkId: socket.id,
+    });
+
+    socket.on('playerInput', (data) => {
+      hostSocket?.emit('playerInput', data);
+    });
+
+    socket.on('disconnect', () => {
+      console.log(`Player disconnected: ${socket.id}`);
+      hostSocket?.emit('playerDisconnected', { networkId: socket.id });
+    });
+  }
+});
+
 // Start the server
-app.listen(port, () => {
+server.listen(port, () => {
     console.log(`Server running on port ${port}`);
     console.log(`Files will be served from: ${PROJS_DIR}`);
+    
+    if (projectName) {
+        console.log(`Game networking enabled for project: ${projectName}`);
+        // Optionally start the host client
+        // createHostClient();
+    } else {
+        console.log('Game networking available - provide project name as 3rd argument to enable host client');
+    }
+    
+    console.log('Usage: node server.js [projectName] [gameURL] [port]');
+    console.log(`Example: node server.js myProject localhost 5000`);
 });

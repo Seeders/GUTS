@@ -40,5 +40,5 @@
   "is3D": true,
   "palette": "main",
   "pixelSize": 1,
-  "multiplayerServerUrl": "http://3.16.154.52:3000"
+  "multiplayerServerUrl": "http://localhost:5000"
 }

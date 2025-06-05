@@ -10,6 +10,7 @@ class ModuleManager {
     this.libraryClasses = {};
     this.moduleInstances = {};
     this.core.scriptContext = null;
+    this.isServer = this.core.isServer;    
     this.importMap = {};
   }
 
@@ -94,6 +95,11 @@ class ModuleManager {
   }
   async loadModules(modules) {
     if (!modules) return;
+
+    if(this.isServer){
+        return this.loadServerModules(modules);
+    }
+
     window.loadingLibraries = {};
     window.require = (f) => { 
         window.module = {};
@@ -261,6 +267,37 @@ class ModuleManager {
     });
   }
 
+  async loadServerModules(modules){
+
+    const collections = this.core.getCollections();
+    // Server: Load modules using Node.js require/import
+    const loadedLibraries = {};
+    for (const [moduleId, moduleConfig] of Object.entries(modules)) {
+        const libraries = moduleConfig?.library ? [moduleConfig.library] : moduleConfig?.libraries || [moduleId];
+        for (const library of libraries) {
+            const libraryDef = collections.libraries[library];
+            if (libraryDef) {
+                if (libraryDef.href && libraryDef.isModule) {
+                    try {
+                        const module = await import(libraryDef.href);
+                        const libraryKey = library.replace(/-/g, '__');
+                        this.registeredLibraries[libraryKey] = module[libraryDef.requireName] || module.default;
+                        loadedLibraries[libraryKey] = this.registeredLibraries[libraryKey];
+                    } catch (error) {
+                        console.error(`Error loading module ${library}:`, error);
+                    }
+                } else if (libraryDef.script) {
+                    const libraryKey = library.replace(/-/g, '__');
+                    const scriptFunction = new Function('return ' + libraryDef.script)();
+                    this.registeredLibraries[libraryKey] = scriptFunction;
+                    loadedLibraries[libraryKey] = scriptFunction;
+                }
+            }
+        }
+    }
+    return loadedLibraries;
+     
+  }
 
   instantiateCollection(app, collection, classLibrary) {
       let instances = {};
