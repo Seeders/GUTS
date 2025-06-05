@@ -49,6 +49,9 @@ class Engine {
         requestAnimationFrame(() => {
             this.hideLoadingScreen();
         });    
+        if(this.isServer){
+            this.state.isPaused = false;
+        }
     }
     
     getCollections() {
