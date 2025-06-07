@@ -362,7 +362,7 @@ async function createHostClient() {
         });        
     } else {
         browser = await puppeteer.launch({
-            executablePath: '/usr/bin/google-chrome',
+           // executablePath: '/usr/bin/google-chrome',
             headless: true,
             args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-features=HttpsUpgrades'],
         });
