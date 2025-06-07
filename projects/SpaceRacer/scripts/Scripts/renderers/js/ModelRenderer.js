@@ -37,7 +37,6 @@ class ModelRenderer extends engine.Component {
         if (this.isGLTF) {
             await this.setupAnimationMixer();
         }
-
         // Set initial animation
         this.setAnimation('idle');
     }
@@ -209,11 +208,7 @@ class ModelRenderer extends engine.Component {
         );
         // Update position of model to match entity position
         if (this.parent && this.parent.transform.position) {
-            this.modelGroup.position.set(
-                this.parent.transform.position.x,
-                this.parent.transform.position.y,
-                this.parent.transform.position.z
-            );
+            this.modelGroup.position.copy(this.parent.transform.position);          
 
             // Handle rotation based on movement direction
             this.updateDirection();
@@ -243,7 +238,7 @@ class ModelRenderer extends engine.Component {
     
     }
     updateDirection() {
-        if (this.parent && this.parent.transform.lastPosition) {
+        if (this.parent && this.parent.transform.quaternion) {
             this.modelGroup.quaternion.copy(this.parent.transform.quaternion);
         }
     }

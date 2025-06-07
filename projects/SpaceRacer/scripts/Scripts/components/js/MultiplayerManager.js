@@ -6,11 +6,12 @@ class MultiplayerManager extends engine.Component {
     this.remotePlayers = {};       // Other players
     this.networkObjects = {};      // Networked physics objects
     this.isServer = false;
-    this.connected = false;
     // Create network manager
     this.serverUrl = serverUrl;
     // Interpolation settings
     this.interpolationDelay = 100; // ms    
+    this.connected = false;
+    this.game.multiplayerManager = this;
   }
   
   // Initialize networking
@@ -18,8 +19,8 @@ class MultiplayerManager extends engine.Component {
     try {
       this.network = new GUTS.NetworkManager(this);
       const networkId = await this.network.connect(this.serverUrl);
-      this.connected = true;
       console.log(`Multiplayer initialized with player ID: ${networkId}`);
+      this.connected = true;
       return networkId;
     } catch (err) {
       console.error('Failed to initialize multiplayer:', err);
@@ -30,17 +31,15 @@ class MultiplayerManager extends engine.Component {
   setHost(isHost){
     this.isServer = isHost;
     this.game.isServer = this.isServer;
-    if(this.game.isServer){      
-        this.game.state.isPaused = false;      
-        this.game.player.getComponent("PlayerController")?.setupPhysics(this.physics.simulation);
-    }
   }
   
   // Update called from your game loop
   update() {
-    if(!this.connected) return;
+    if(!this.connected){
+      return;
+    }
     // Update local player position on network
-      this.updatePlayers();  
+    this.updatePlayers();  
     if (!this.game.isServer) {    
       if(this.localPlayer){  
         this.network.sendPlayerInput({ components: this.localPlayer.getNetworkComponentData() });          
@@ -78,13 +77,15 @@ class MultiplayerManager extends engine.Component {
   
   // Update remote players with interpolation
   updatePlayers() {
-    if (this.localPlayer.transform.networkPosition) {
-      // Position interpolation
-      this.localPlayer.transform.position.lerp(this.localPlayer.transform.networkPosition, 0.2);
-    }
-    if(this.localPlayer.transform.networkQuaternion){
-      // Rotation interpolation
-      this.localPlayer.transform.quaternion.slerp(this.localPlayer.transform.networkQuaternion, 0.2);
+    if(this.localPlayer){
+      if (this.localPlayer.transform.networkPosition) {
+        // Position interpolation
+        this.localPlayer.transform.position.lerp(this.localPlayer.transform.networkPosition, 0.2);
+      }
+      if(this.localPlayer.transform.networkQuaternion){
+        // Rotation interpolation
+        this.localPlayer.transform.quaternion.slerp(this.localPlayer.transform.networkQuaternion, 0.2);
+      }
     }
     Object.keys(this.remotePlayers).forEach(networkId => {
       const player = this.remotePlayers[networkId];
@@ -112,24 +113,18 @@ class MultiplayerManager extends engine.Component {
   
   // Create remote player representation
   createRemotePlayer(data) {
-    let spawnPosition = new THREE.Vector3(data.position);
-    if(!data.position){
-      spawnPosition.x = Math.random()*200 - 100;
-      spawnPosition.y = Math.random()*20 + 200;
-      spawnPosition.z = Math.random()*200 - 100;
-    }
-    let objEntity = this.game.spawn("playerAircraft", { objectType: "playerPrefabs", spawnType: "spaceshipMesh", networkId: data.networkId, isRemote: true, position: spawnPosition});
+    let objEntity = this.game.spawn("playerAircraft", { objectType: "playerPrefabs", spawnType: "spaceshipMesh", networkId: data.networkId, isRemote: true , position:  new THREE.Vector3(data.position)});
     objEntity.networkId = data.networkId;
     this.setNetworkTransform(objEntity);
     this.remotePlayers[data.networkId] = objEntity;
     if(this.game.isServer){            
-      objEntity.getComponent("PlayerController")?.setupPhysics(this.physics.simulation);
+      objEntity.getComponent("AircraftController").setupPhysics(this.physics.simulation);
     }
     return objEntity;
   }
 
   createNetworkObjectEntity(networkId, data) {
-    let objEntity = this.game.spawn(data.type, { networkId: networkId, position: data.position});
+    let objEntity = this.game.spawn(data.type, { networkId: networkId , position: data.position});
     objEntity.networkId = this.network;
     this.setNetworkTransform(objEntity);    
     this.networkObjects[networkId] = objEntity;  
@@ -153,7 +148,28 @@ class MultiplayerManager extends engine.Component {
     delete this.remotePlayers[playerId];
   }
   
+  requestServerData(params, callback){
+    if(this.network){
+      console.log('has network');
+      this.network.requestServerData(params, callback);
+    }
+  }
   
+  handleServerDataRequest(requestKey, responseObj, params){
+    if(params.function == "getTerrainChunk"){
+      this.getTerrainChunk(requestKey, responseObj, params.params);
+    } else {
+      this.network.serverDataResponse(responseObj);
+    }
+  }
+
+  getTerrainChunk(requestKey, responseObj, params){
+    this.game.terrain.requestTerrainChunk(requestKey, params, (chunkData) => {
+      responseObj.chunkData = chunkData;
+      this.network.serverDataResponse(responseObj);
+    });
+  }
+
   // Update object from server data
   updateObjectFromServer(objectData) {
     const object = this.networkObjects[objectData.id];
@@ -245,6 +261,21 @@ class MultiplayerManager extends engine.Component {
         y: velocity.y,
         z: velocity.z
       }, true);
+    }
+  }
+  
+  // Apply pending input for reconciliation
+  applyInput(input) {
+    // Implement based on your input system
+    // For example, if input contains movement:
+    if (input.movement && this.localPlayer && this.localPlayer.body) {
+      const force = new THREE.Vector3(
+        input.movement.x,
+        input.movement.y,
+        input.movement.z
+      ).multiplyScalar(input.deltaTime * 1000); // Convert to appropriate force
+      
+      this.localPlayer.body.applyImpulse(force, true);
     }
   }
   

@@ -369,7 +369,7 @@ class PlayerController extends engine.Component {
         this.rigidBody.setNextKinematicTranslation(newPos);
 
         const pos = this.rigidBody.translation();
-        const smoothingFactor = 0.5;
+        const smoothingFactor = 0.9;
         this.parent.transform.position.lerp(
             new THREE.Vector3(pos.x, pos.y, pos.z),
             Math.min(1, this.game.deltaTime * 60 * smoothingFactor)

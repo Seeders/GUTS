@@ -19,52 +19,57 @@ class InfiniWorld extends engine.Component {
       // Initialize core properties
       this.clock = clock;
       this.onWindowResizeHandler = this.onWindowResize.bind(this);
-      this.renderer = this.game.renderer || new THREE.WebGLRenderer({ antialias: true, canvas: this.canvas, alpha: true });
-      if(!isEditor){
-        this.renderer.setSize(width, height);
+      
+      if(!this.game.isServer){
+        this.renderer = this.game.renderer || new THREE.WebGLRenderer({ antialias: true, canvas: this.canvas, alpha: true });
+        if(!isEditor){
+          this.renderer.setSize(width, height);
+        }
+        this.renderer.shadowMap.enabled = true;
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       }
-      this.renderer.shadowMap.enabled = true;
-      this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
       this.scene = this.game.scene || new window.THREE.Scene();
       this.scene.add(this.rootGroup);
       this.uniforms = new Map();
       this.cameraData = this.game.getCollections().cameras[this.world.camera];  
       // Camera setup
-      if(this.cameraData.fov){
-          this.camera = new THREE.PerspectiveCamera(
-              this.cameraData.fov,
-              width / height,
-              this.cameraData.near,
-              this.cameraData.far
-          );
-      } else if(this.cameraData.zoom){
-          this.camera = new THREE.OrthographicCamera(
-              width / - 2, 
-              width / 2, 
-              height / 2, 
-              height / - 2, 
-              this.cameraData.near,
-              this.cameraData.far
-          );
-          this.camera.zoom = this.cameraData.zoom;
-          this.camera.updateProjectionMatrix();
-      }
-    	this.composer = new THREE_.EffectComposer( this.renderer );
-      this.pixelSize = this.gameConfig.pixelSize || 1;
+        if(this.cameraData.fov){
+            this.camera = new THREE.PerspectiveCamera(
+                this.cameraData.fov,
+                width / height,
+                this.cameraData.near,
+                this.cameraData.far
+            );
+        } else if(this.cameraData.zoom){
+            this.camera = new THREE.OrthographicCamera(
+                width / - 2, 
+                width / 2, 
+                height / 2, 
+                height / - 2, 
+                this.cameraData.near,
+                this.cameraData.far
+            );
+            this.camera.zoom = this.cameraData.zoom;
+            this.camera.updateProjectionMatrix();
+        }
       
-      this.pixelPass = new THREE_.RenderPixelatedPass( this.pixelSize, this.scene, this.camera );
-      if(this.pixelSize == 1) {
-        this.pixelPass.enabled = false;
+      if(!this.game.isServer){
+        this.composer = new THREE_.EffectComposer( this.renderer );
+        this.pixelSize = this.gameConfig.pixelSize || 1;
+        
+        this.pixelPass = new THREE_.RenderPixelatedPass( this.pixelSize, this.scene, this.camera );
+        if(this.pixelSize == 1) {
+          this.pixelPass.enabled = false;
+        }
+        this.game.postProcessors = {
+          pixelPass: this.pixelPass
+        };
+        this.pixelPass.normalEdgeStrength = 0;
+        
+        this.composer.addPass( this.pixelPass );
+        const outputPass = new THREE_.OutputPass();
+        this.composer.addPass( outputPass );
       }
-      this.game.postProcessors = {
-        pixelPass: this.pixelPass
-      };
-      this.pixelPass.normalEdgeStrength = 0;
-      
-			this.composer.addPass( this.pixelPass );
-			const outputPass = new THREE_.OutputPass();
-			this.composer.addPass( outputPass );
       // Terrain configuration
       this.heightMap = this.game.getCollections().heightMaps[this.world.heightMap];
       this.chunkSize = this.heightMap.chunkSize;
@@ -120,7 +125,6 @@ class InfiniWorld extends engine.Component {
       }
   
       this.chunks = new Map();
-      this.objectCache = new Map();
   
       this.noise = new (this.game.moduleManager.libraryClasses.SimplexNoise)(); // Fixed seed for consistency
       let biomes = {};
@@ -163,7 +167,7 @@ class InfiniWorld extends engine.Component {
       this.grassTasks = [];
       this.grassBatchSize = 10000; // Process 10,000 instances per frame
       this.currentGrassTaskIndex = 0;
-
+      this.chunkRequests = new Map();
       this.pendingChunks = new Map();
       this.chunkGeometry = new Map();
       this.staticAABBsToRemove = [];
@@ -175,8 +179,9 @@ class InfiniWorld extends engine.Component {
       this.worker = new Worker(URL.createObjectURL(blob));
       this.worker.onmessage = this.handleWorkerMessage.bind(this);
       // Initialize terrain
-      this.setupInitialChunks();
-  
+      if(!this.game.multiplayerManager){
+       // this.setupInitialChunks();
+      }
      // window.addEventListener('resize', this.onWindowResizeHandler);
       this.game.scene = this.scene;
       this.game.camera = this.camera;
@@ -189,9 +194,9 @@ class InfiniWorld extends engine.Component {
       const cameraChunkX = Math.floor(this.camera.position.x / this.chunkSize);
       const cameraChunkZ = Math.floor(this.camera.position.z / this.chunkSize);
       const promises = [];
-  
       for (let x = cameraChunkX - this.renderDistance; x <= cameraChunkX + this.renderDistance; x++) {
         for (let z = cameraChunkZ - this.renderDistance; z <= cameraChunkZ + this.renderDistance; z++) {
+          
           promises.push(this.generateChunk(x, z));
         }
       }
@@ -199,11 +204,38 @@ class InfiniWorld extends engine.Component {
       await Promise.all(promises);
     }
   
-    async generateChunk(cx, cz) {
+    requestTerrainChunk(requestKey, params, callback){
+
+      if(this.chunkRequests.has(requestKey)) {
+        return;
+      }
+      if(typeof params.cx != "undefined" && typeof params.cz != "undefined"){
+        this.chunkRequests.set(requestKey, callback);
+        this.generateChunk(params.cx, params.cz, requestKey);
+      }
+    
+    }
+
+    async generateChunk(cx, cz, requestKey) {
       const chunkKey = `${cx},${cz}`;
-      if (this.chunks.has(chunkKey)) return;
-  
+      if (this.chunks.has(chunkKey)){
+        if(requestKey){
+          let chunkData = this.chunks.get(chunkKey);
+          let requestResponse = {
+            cx: chunkData.cx,
+            cz: chunkData.cz,
+            position: chunkData.position,
+            geometry: chunkData.geometry,
+            restitution: chunkData.restitution,
+            friction: chunkData.friction
+          };
+          this.sendChunkResponse(requestKey, requestResponse);
+        }
+        return;
+      }
       const chunkData = {
+        cx: cx, 
+        cz: cz,
         terrainMesh: null,
         objectMeshes: new Map(),
         isGenerating: true
@@ -211,25 +243,36 @@ class InfiniWorld extends engine.Component {
       this.chunks.set(chunkKey, chunkData);
       this.pendingChunks.set(chunkKey, chunkData);
       // Send message to worker
-      this.worker.postMessage({
-        cx,
-        cz,
-        chunkSize: this.chunkSize,
-        chunkResolution: this.chunkResolution
-      });
-    }
-  
-  getInstancedMeshPool(type, geometry, material) {
-    if (!this.objectPools) this.objectPools = new Map();
 
-    const key = `${type}-${geometry.uuid}`;
-    if (!this.objectPools.has(key)) {
-      const pool = new (this.game.moduleManager.libraryClasses.InstancePool)(geometry, material, 1000);
-      this.rootGroup.add(pool.mesh);
-      this.objectPools.set(key, pool);
+      if(!this.game.isServer){
+        if(this.game.multiplayerManager){
+          console.log('requested');
+          this.game.multiplayerManager.requestServerData({
+            function: 'getTerrainChunk',
+            params: {
+              cx, 
+              cz
+            }
+          }, (response) => {
+            let rx = response.chunkData.cx;
+            let rz = response.chunkData.cz;
+            let cData = this.chunks.get(`${rx},${rz}`);
+            cData.restitution = response.chunkData.restitution;
+            cData.friction = response.chunkData.friction;
+            console.log('response', cData);
+            this.createTerrainMesh(cData, rx, rz, response.chunkData.geometry.positions, response.chunkData.geometry.color, response.chunkData.geometry.normals, response.chunkData.geometry.indices);
+          });
+        }
+      } else {
+        this.worker.postMessage({
+          cx,
+          cz,
+          chunkSize: this.chunkSize,
+          chunkResolution: this.chunkResolution, 
+          requestKey
+        });
+      }
     }
-    return this.objectPools.get(key);
-  }
   
   async updateChunks() {
       const cameraChunkX = Math.floor(this.camera.position.x / this.chunkSize);
@@ -305,398 +348,390 @@ class InfiniWorld extends engine.Component {
    
   }
 
-  async updateGrassTasks() {
-    if(this.grassTasks.length == 0) return;
-    if(!this.currentGrassTask){
-      this.currentGrassTask = this.grassTasks.pop();
-    }
-    const grassMesh = this.currentGrassTask.grassMesh;
-    const dummy = new THREE.Object3D();
-    let finishedChunk = false;
-    // Use pre-computed grass data
-    for(let i = 0; i < this.grassBatchSize; i++){
-      let currentIndex = this.currentGrassTaskIndex + i;
-      if (currentIndex >= this.grassPerChunk){
-          this.currentGrassTaskIndex = 0;
-          this.currentGrassTask = null;
-          finishedChunk = true;
-          grassMesh.needsUpdate = true;
-          break; // Safety check
-      }      
-      const grass = this.currentGrassTask.grassData[currentIndex];
-
-      dummy.position.set(grass.position.x, grass.position.y, grass.position.z);
-      dummy.rotation.set(0, grass.rotation, 0);
-      dummy.scale.set(grass.scale, grass.scale, grass.scale);
-      dummy.updateMatrix();
-      grassMesh.setMatrixAt(currentIndex, dummy.matrix);  
-    };
-    if(!finishedChunk){
-      this.currentGrassTaskIndex += this.grassBatchSize;
-    } 
-    
-
-  }
-
   getStaticAABBsToRemove() {
     return this.staticAABBsToRemove;
   }
 
   handleWorkerMessage(e) {      
-    const { cx, cz, positions, indices, colors, normals, vegetation, grassData, restitution, friction } = e.data;
+    const { cx, cz, positions, indices, colors, normals, vegetation, grassData, restitution, friction, requestKey } = e.data;
     const chunkKey = `${cx},${cz}`;
     const chunkData = this.pendingChunks.get(chunkKey);
     if (!chunkData) return;
-    chunkData.cx = cx;
-    chunkData.cz = cz;
-    try {
-        // Copy positions and normals for manipulation
-        const adjustedPositions = positions.slice();
-        const adjustedNormals = normals.slice();
-        const vertexCountPerRow = this.chunkResolution + 1;
 
-        chunkData.grassData = grassData;
-        // IMPROVEMENT: Use integer-based positioning for chunk placement
-        // This helps prevent floating point errors from accumulating
-        const chunkWorldX = Math.round(cx * this.chunkSize);
-        const chunkWorldZ = Math.round(cz * this.chunkSize);
+    chunkData.restitution = restitution;
+    chunkData.friction = friction;
+    // Copy positions and normals for manipulation
+    const adjustedPositions = positions.slice();
+    const adjustedNormals = normals.slice();
+    const vertexCountPerRow = this.chunkResolution + 1;
 
-        // Enhanced shared edge processing 
-        const processSharedEdge = (thisChunk, neighborChunk, edgeSelector, neighborEdgeSelector) => {
-            if (!neighborChunk || !neighborChunk.terrainMesh) return;
-            
-            const thisGeom = {
-                positions: adjustedPositions,
-                normals: adjustedNormals
-            };
-            
-            const neighborGeom = {
-                positions: neighborChunk.terrainMesh.geometry.attributes.position.array,
-                normals: neighborChunk.terrainMesh.geometry.attributes.normal.array
-            };
-            
-            // Get vertices along the shared edge
-            const thisIndices = edgeSelector(vertexCountPerRow);
-            const neighborIndices = neighborEdgeSelector(vertexCountPerRow);
-            
-            // For each vertex along the edge
-            for (let i = 0; i < thisIndices.length; i++) {
-                const thisIdx = thisIndices[i];
-                const neighborIdx = neighborIndices[i];
-                
-                // CRITICAL FIX: Ensure absolute world positions match exactly
-                // Calculate world position of the neighbor vertex
-                const neighborWorldX = neighborChunk.terrainMesh.position.x + neighborGeom.positions[neighborIdx*3];
-                const neighborWorldY = neighborChunk.terrainMesh.position.y + neighborGeom.positions[neighborIdx*3+1];
-                const neighborWorldZ = neighborChunk.terrainMesh.position.z + neighborGeom.positions[neighborIdx*3+2];
-                
-                // Set local position based on exact world position of neighbor
-                // This ensures perfect alignment with zero gaps
-                const localX = neighborWorldX - chunkWorldX;
-                const localY = neighborWorldY; // Y doesn't need offset since chunks are at y=0
-                const localZ = neighborWorldZ - chunkWorldZ;
-                
-                // Apply exact position to eliminate gaps completely
-                thisGeom.positions[thisIdx*3] = localX;
-                thisGeom.positions[thisIdx*3+1] = localY;
-                thisGeom.positions[thisIdx*3+2] = localZ;
-                
-                // Average the normals for smooth lighting across chunk boundaries
-                const n1 = [
-                    thisGeom.normals[thisIdx*3], 
-                    thisGeom.normals[thisIdx*3+1], 
-                    thisGeom.normals[thisIdx*3+2]
-                ];
-                const n2 = [
-                    neighborGeom.normals[neighborIdx*3], 
-                    neighborGeom.normals[neighborIdx*3+1], 
-                    neighborGeom.normals[neighborIdx*3+2]
-                ];
-                
-                // Calculate average normal
-                const avgNormal = [
-                    (n1[0] + n2[0]) / 2,
-                    (n1[1] + n2[1]) / 2,
-                    (n1[2] + n2[2]) / 2
-                ];
-                
-                // Normalize the averaged normal
-                const mag = Math.sqrt(
-                    avgNormal[0] * avgNormal[0] + 
-                    avgNormal[1] * avgNormal[1] + 
-                    avgNormal[2] * avgNormal[2]
-                );
-                
-                if (mag > 0.00001) {
-                    avgNormal[0] /= mag;
-                    avgNormal[1] /= mag;
-                    avgNormal[2] /= mag;
-                    
-                    // Apply to current chunk
-                    adjustedNormals[thisIdx*3] = avgNormal[0];
-                    adjustedNormals[thisIdx*3+1] = avgNormal[1];
-                    adjustedNormals[thisIdx*3+2] = avgNormal[2];
-                    
-                    // Also update the neighbor's normal in memory
-                    neighborChunk.terrainMesh.geometry.attributes.normal.array[neighborIdx*3] = avgNormal[0];
-                    neighborChunk.terrainMesh.geometry.attributes.normal.array[neighborIdx*3+1] = avgNormal[1];
-                    neighborChunk.terrainMesh.geometry.attributes.normal.array[neighborIdx*3+2] = avgNormal[2];
-                }
+    chunkData.grassData = grassData;
+    chunkData.collisionAABBs = new Map();
+    vegetation.forEach(async ({ worldObject, data }) => {
+        if (worldObject.endsWith('_collision')) {
+            const objectType = worldObject.replace('_collision', '');
+            chunkData.collisionAABBs.set(objectType, data);
+        } else if(!this.game.isServer){
+            const model = await this.game.modelManager.getModel('worldObjectPrefabs', worldObject);
+            if (!model) {
+                console.warn(`Model not found: ${worldObject}`);
+                return;
             }
-            
-            // Mark the neighbor's geometry for update
-            neighborChunk.terrainMesh.geometry.attributes.normal.needsUpdate = true;
-            neighborChunk.terrainMesh.geometry.attributes.position.needsUpdate = true;
+            this.processModelType(worldObject, model, data, chunkData);
+        }
+    });
+    // IMPROVEMENT: Use integer-based positioning for chunk placement
+    // This helps prevent floating point errors from accumulating
+    const chunkWorldX = Math.round(cx * this.chunkSize);
+    const chunkWorldZ = Math.round(cz * this.chunkSize);
+
+    // Enhanced shared edge processing 
+    const processSharedEdge = (thisChunk, neighborChunk, edgeSelector, neighborEdgeSelector) => {
+        if (!neighborChunk || !neighborChunk.terrainMesh) return;
+        
+        const thisGeom = {
+            positions: adjustedPositions,
+            normals: adjustedNormals
         };
         
-        // Process each edge with its neighboring chunk
-        const neighbors = [
-            // [neighborKey, thisEdgeFn, neighborEdgeFn]
-            [`${cx - 1},${cz}`, // Left neighbor
-                (vpr) => Array.from({length: vpr}, (_, z) => z * vpr), // Left edge 
-                (vpr) => Array.from({length: vpr}, (_, z) => z * vpr + (vpr - 1)) // Right edge
-            ],
-            [`${cx + 1},${cz}`, // Right neighbor
-                (vpr) => Array.from({length: vpr}, (_, z) => z * vpr + (vpr - 1)), // Right edge
-                (vpr) => Array.from({length: vpr}, (_, z) => z * vpr) // Left edge
-            ],
-            [`${cx},${cz - 1}`, // Bottom neighbor
-                (vpr) => Array.from({length: vpr}, (_, x) => x), // Bottom edge
-                (vpr) => Array.from({length: vpr}, (_, x) => (vpr - 1) * vpr + x) // Top edge
-            ],
-            [`${cx},${cz + 1}`, // Top neighbor
-                (vpr) => Array.from({length: vpr}, (_, x) => (vpr - 1) * vpr + x), // Top edge
-                (vpr) => Array.from({length: vpr}, (_, x) => x) // Bottom edge
-            ]
-        ];
-
-        // Process all neighbor edges
-        for (const [neighborKey, thisEdgeFn, neighborEdgeFn] of neighbors) {
-            processSharedEdge(
-                chunkData,
-                this.chunks.get(neighborKey),
-                thisEdgeFn,
-                neighborEdgeFn
-            );
-        }
-
-        // Fix corner vertices by finding diagonal neighbors
-        const cornerVertices = [
-            {pos: 0, // Bottom left
-             neighbors: [`${cx-1},${cz}`, `${cx},${cz-1}`, `${cx-1},${cz-1}`]},
-            {pos: vertexCountPerRow - 1, // Bottom right
-             neighbors: [`${cx+1},${cz}`, `${cx},${cz-1}`, `${cx+1},${cz-1}`]},
-            {pos: (vertexCountPerRow - 1) * vertexCountPerRow, // Top left
-             neighbors: [`${cx-1},${cz}`, `${cx},${cz+1}`, `${cx-1},${cz+1}`]},
-            {pos: vertexCountPerRow * vertexCountPerRow - 1, // Top right
-             neighbors: [`${cx+1},${cz}`, `${cx},${cz+1}`, `${cx+1},${cz+1}`]}
-        ];
-
-        // Process each corner to ensure diagonal neighbors connect properly
-        for (const corner of cornerVertices) {
-            let validNeighbors = [];
-            let sumPos = [0, 0, 0];
-            let sumNormal = [0, 0, 0];
-            let count = 0;
-            
-            // Add this chunk's corner
-            sumPos[0] += adjustedPositions[corner.pos*3];
-            sumPos[1] += adjustedPositions[corner.pos*3+1];
-            sumPos[2] += adjustedPositions[corner.pos*3+2];
-            sumNormal[0] += adjustedNormals[corner.pos*3];
-            sumNormal[1] += adjustedNormals[corner.pos*3+1];
-            sumNormal[2] += adjustedNormals[corner.pos*3+2];
-            count++;
-
-            // Find corresponding vertices in neighbors
-            for (const neighborKey of corner.neighbors) {
-                const neighbor = this.chunks.get(neighborKey);
-                if (!neighbor || !neighbor.terrainMesh) continue;
-                
-                // Determine which corner of the neighbor corresponds to our corner
-                let neighborCornerPos;
-                if (neighborKey === `${cx-1},${cz-1}`) { // Diagonal bottom-left
-                    neighborCornerPos = vertexCountPerRow * vertexCountPerRow - 1; // Top-right of neighbor
-                } else if (neighborKey === `${cx+1},${cz-1}`) { // Diagonal bottom-right
-                    neighborCornerPos = (vertexCountPerRow - 1) * vertexCountPerRow; // Top-left of neighbor
-                } else if (neighborKey === `${cx-1},${cz+1}`) { // Diagonal top-left
-                    neighborCornerPos = vertexCountPerRow - 1; // Bottom-right of neighbor
-                } else if (neighborKey === `${cx+1},${cz+1}`) { // Diagonal top-right
-                    neighborCornerPos = 0; // Bottom-left of neighbor
-                } else if (neighborKey === `${cx-1},${cz}`) { // Left
-                    neighborCornerPos = corner.pos === 0 ? vertexCountPerRow - 1 : 
-                                     vertexCountPerRow * vertexCountPerRow - 1;
-                } else if (neighborKey === `${cx+1},${cz}`) { // Right
-                    neighborCornerPos = corner.pos === vertexCountPerRow - 1 ? 0 : 
-                                     (vertexCountPerRow - 1) * vertexCountPerRow;
-                } else if (neighborKey === `${cx},${cz-1}`) { // Bottom
-                    neighborCornerPos = corner.pos === 0 ? 
-                                     (vertexCountPerRow - 1) * vertexCountPerRow : 
-                                     vertexCountPerRow * vertexCountPerRow - 1;
-                } else if (neighborKey === `${cx},${cz+1}`) { // Top
-                    neighborCornerPos = corner.pos === (vertexCountPerRow - 1) * vertexCountPerRow ? 
-                                     0 : vertexCountPerRow - 1;
-                }
-
-                if (neighborCornerPos !== undefined) {
-                    const nGeom = neighbor.terrainMesh.geometry;
-                    const nPos = nGeom.attributes.position.array;
-                    const nNorm = nGeom.attributes.normal.array;
-                    
-                    // Calculate world position of neighbor's vertex
-                    const worldX = neighbor.terrainMesh.position.x + nPos[neighborCornerPos*3];
-                    const worldY = neighbor.terrainMesh.position.y + nPos[neighborCornerPos*3+1];
-                    const worldZ = neighbor.terrainMesh.position.z + nPos[neighborCornerPos*3+2];
-                    
-                    // Add to sums
-                    sumPos[0] += worldX - chunkWorldX; // Convert to local coords
-                    sumPos[1] += worldY;
-                    sumPos[2] += worldZ - chunkWorldZ;
-                    sumNormal[0] += nNorm[neighborCornerPos*3];
-                    sumNormal[1] += nNorm[neighborCornerPos*3+1];
-                    sumNormal[2] += nNorm[neighborCornerPos*3+2];
-                    count++;
-                    
-                    validNeighbors.push({
-                        chunk: neighbor,
-                        pos: neighborCornerPos
-                    });
-                }
-            }
-            
-            if (count > 1) {
-                // Average positions and normals
-                const avgPos = [sumPos[0]/count, sumPos[1]/count, sumPos[2]/count];
-                const avgNorm = [sumNormal[0]/count, sumNormal[1]/count, sumNormal[2]/count];
-                
-                // Normalize the normal
-                const mag = Math.sqrt(avgNorm[0]*avgNorm[0] + avgNorm[1]*avgNorm[1] + avgNorm[2]*avgNorm[2]);
-                if (mag > 0.00001) {
-                    avgNorm[0] /= mag;
-                    avgNorm[1] /= mag;
-                    avgNorm[2] /= mag;
-                }
-                
-                // Apply to this chunk
-                adjustedPositions[corner.pos*3] = avgPos[0];
-                adjustedPositions[corner.pos*3+1] = avgPos[1];
-                adjustedPositions[corner.pos*3+2] = avgPos[2];
-                adjustedNormals[corner.pos*3] = avgNorm[0];
-                adjustedNormals[corner.pos*3+1] = avgNorm[1];
-                adjustedNormals[corner.pos*3+2] = avgNorm[2];
-                
-                // Apply to all valid neighbors too
-                for (const n of validNeighbors) {
-                    const worldX = chunkWorldX + avgPos[0];
-                    const worldY = avgPos[1]; // Y position is absolute
-                    const worldZ = chunkWorldZ + avgPos[2];
-                    
-                    // Convert world position to neighbor's local space
-                    const neighborLocalX = worldX - n.chunk.terrainMesh.position.x;
-                    const neighborLocalY = worldY - n.chunk.terrainMesh.position.y;
-                    const neighborLocalZ = worldZ - n.chunk.terrainMesh.position.z;
-                    
-                    // Apply position and normal
-                    const nGeom = n.chunk.terrainMesh.geometry;
-                    nGeom.attributes.position.array[n.pos*3] = neighborLocalX;
-                    nGeom.attributes.position.array[n.pos*3+1] = neighborLocalY;
-                    nGeom.attributes.position.array[n.pos*3+2] = neighborLocalZ;
-                    nGeom.attributes.normal.array[n.pos*3] = avgNorm[0];
-                    nGeom.attributes.normal.array[n.pos*3+1] = avgNorm[1];
-                    nGeom.attributes.normal.array[n.pos*3+2] = avgNorm[2];
-                    
-                    // Mark for update
-                    nGeom.attributes.position.needsUpdate = true;
-                    nGeom.attributes.normal.needsUpdate = true;
-                }
-            }
-        }
-
-        // Create geometry with adjusted positions and normals
-        const geometry = new THREE.BufferGeometry();
-        geometry.setAttribute('position', new THREE.Float32BufferAttribute(adjustedPositions, 3));
-        geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-        geometry.setAttribute('normal', new THREE.Float32BufferAttribute(adjustedNormals, 3));
-        geometry.setIndex(indices);
-
-        // Improved material settings for gap-free appearance
-        const material = new THREE.MeshStandardMaterial({
-            vertexColors: true,
-            roughness: 0.9, 
-            metalness: 0.1,
-            side: THREE.FrontSide,
-            flatShading: false,
-            dithering: true,
-            // NEW: Add slight overdraw to help with small gaps
-            polygonOffset: true,
-            polygonOffsetFactor: -1,  // Slight offset to prevent z-fighting
-            polygonOffsetUnits: -1
-        });
-
-        // Create mesh with precise positioning
-        const mesh = new THREE.Mesh(geometry, material);
-        mesh.position.set(chunkWorldX, 0, chunkWorldZ); // Use exact integer positions
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-        mesh.material.needsUpdate = true;
-        mesh.userData.isTerrain = true;
-        mesh.matrixAutoUpdate = false;
-        mesh.updateMatrix();
-        this.rootGroup.add(mesh);
-        chunkData.terrainMesh = mesh;
-        chunkData.geometry = {
-          positions: [...geometry.attributes.position.array],
-          indices: [...geometry.index.array],
-          normals: [...geometry.attributes.normal.array],
+        const neighborGeom = {
+            positions: neighborChunk.terrainMesh.geometry.attributes.position.array,
+            normals: neighborChunk.terrainMesh.geometry.attributes.normal.array
         };
-        chunkData.position = new THREE.Vector3(chunkWorldX, 0, chunkWorldZ);
-    //    this.chunkGeometry.set(chunkKey, geometry);
-        // Generate water mesh
-        const waterMesh = this.generateWaterMesh(cx, cz, adjustedPositions);
-        if (waterMesh) {
-            // Position water mesh exactly to avoid gaps
-            waterMesh.position.set(chunkWorldX, 0, chunkWorldZ);
-            this.rootGroup.add(waterMesh);
-            chunkData.waterMesh = waterMesh;
-        }
-
-        // Add grass to chunk
-        const grassMesh = this.addGrassToTerrain(cx, cz, grassData);
-        if (grassMesh) {
-          grassMesh.position.set(chunkWorldX, 0, chunkWorldZ);
-          grassMesh.updateMatrix();
-          this.rootGroup.add(grassMesh);
-          chunkData.grassMesh = grassMesh;
-        }
-        // Process vegetation data
-        chunkData.collisionAABBs = new Map();
-        vegetation.forEach(async ({ worldObject, data }) => {
-            if (worldObject.endsWith('_collision')) {
-                const objectType = worldObject.replace('_collision', '');
-                chunkData.collisionAABBs.set(objectType, data);
-            } else {
-                const model = await this.game.modelManager.getModel('worldObjectPrefabs', worldObject);
-                if (!model) {
-                    console.warn(`Model not found: ${worldObject}`);
-                    return;
-                }
-                this.processModelType(worldObject, model, data, chunkData);
+        
+        // Get vertices along the shared edge
+        const thisIndices = edgeSelector(vertexCountPerRow);
+        const neighborIndices = neighborEdgeSelector(vertexCountPerRow);
+        
+        // For each vertex along the edge
+        for (let i = 0; i < thisIndices.length; i++) {
+            const thisIdx = thisIndices[i];
+            const neighborIdx = neighborIndices[i];
+            
+            // CRITICAL FIX: Ensure absolute world positions match exactly
+            // Calculate world position of the neighbor vertex
+            const neighborWorldX = neighborChunk.terrainMesh.position.x + neighborGeom.positions[neighborIdx*3];
+            const neighborWorldY = neighborChunk.terrainMesh.position.y + neighborGeom.positions[neighborIdx*3+1];
+            const neighborWorldZ = neighborChunk.terrainMesh.position.z + neighborGeom.positions[neighborIdx*3+2];
+            
+            // Set local position based on exact world position of neighbor
+            // This ensures perfect alignment with zero gaps
+            const localX = neighborWorldX - chunkWorldX;
+            const localY = neighborWorldY; // Y doesn't need offset since chunks are at y=0
+            const localZ = neighborWorldZ - chunkWorldZ;
+            
+            // Apply exact position to eliminate gaps completely
+            thisGeom.positions[thisIdx*3] = localX;
+            thisGeom.positions[thisIdx*3+1] = localY;
+            thisGeom.positions[thisIdx*3+2] = localZ;
+            
+            // Average the normals for smooth lighting across chunk boundaries
+            const n1 = [
+                thisGeom.normals[thisIdx*3], 
+                thisGeom.normals[thisIdx*3+1], 
+                thisGeom.normals[thisIdx*3+2]
+            ];
+            const n2 = [
+                neighborGeom.normals[neighborIdx*3], 
+                neighborGeom.normals[neighborIdx*3+1], 
+                neighborGeom.normals[neighborIdx*3+2]
+            ];
+            
+            // Calculate average normal
+            const avgNormal = [
+                (n1[0] + n2[0]) / 2,
+                (n1[1] + n2[1]) / 2,
+                (n1[2] + n2[2]) / 2
+            ];
+            
+            // Normalize the averaged normal
+            const mag = Math.sqrt(
+                avgNormal[0] * avgNormal[0] + 
+                avgNormal[1] * avgNormal[1] + 
+                avgNormal[2] * avgNormal[2]
+            );
+            
+            if (mag > 0.00001) {
+                avgNormal[0] /= mag;
+                avgNormal[1] /= mag;
+                avgNormal[2] /= mag;
+                
+                // Apply to current chunk
+                adjustedNormals[thisIdx*3] = avgNormal[0];
+                adjustedNormals[thisIdx*3+1] = avgNormal[1];
+                adjustedNormals[thisIdx*3+2] = avgNormal[2];
+                
+                // Also update the neighbor's normal in memory
+                neighborChunk.terrainMesh.geometry.attributes.normal.array[neighborIdx*3] = avgNormal[0];
+                neighborChunk.terrainMesh.geometry.attributes.normal.array[neighborIdx*3+1] = avgNormal[1];
+                neighborChunk.terrainMesh.geometry.attributes.normal.array[neighborIdx*3+2] = avgNormal[2];
             }
-        });
+        }
+        
+        // Mark the neighbor's geometry for update
+        neighborChunk.terrainMesh.geometry.attributes.normal.needsUpdate = true;
+        neighborChunk.terrainMesh.geometry.attributes.position.needsUpdate = true;
+    };
+    
+    // Process each edge with its neighboring chunk
+    const neighbors = [
+        // [neighborKey, thisEdgeFn, neighborEdgeFn]
+        [`${cx - 1},${cz}`, // Left neighbor
+            (vpr) => Array.from({length: vpr}, (_, z) => z * vpr), // Left edge 
+            (vpr) => Array.from({length: vpr}, (_, z) => z * vpr + (vpr - 1)) // Right edge
+        ],
+        [`${cx + 1},${cz}`, // Right neighbor
+            (vpr) => Array.from({length: vpr}, (_, z) => z * vpr + (vpr - 1)), // Right edge
+            (vpr) => Array.from({length: vpr}, (_, z) => z * vpr) // Left edge
+        ],
+        [`${cx},${cz - 1}`, // Bottom neighbor
+            (vpr) => Array.from({length: vpr}, (_, x) => x), // Bottom edge
+            (vpr) => Array.from({length: vpr}, (_, x) => (vpr - 1) * vpr + x) // Top edge
+        ],
+        [`${cx},${cz + 1}`, // Top neighbor
+            (vpr) => Array.from({length: vpr}, (_, x) => (vpr - 1) * vpr + x), // Top edge
+            (vpr) => Array.from({length: vpr}, (_, x) => x) // Bottom edge
+        ]
+    ];
 
-        // Force shadow map update to avoid shadow artifacts at boundaries
-        this.renderer.shadowMap.needsUpdate = true;
-        chunkData.restitution = restitution;
-        chunkData.friction = friction;
-        // Mark chunk as ready
-        chunkData.isGenerating = false;
-        this.game.gameEntity?.getComponent('game').physics.addChunkCollider(chunkData);
-        this.pendingChunks.delete(chunkKey);
-    } catch (error) {
-        console.error(`Failed to process chunk ${chunkKey}:`, error);
-        this.chunks.delete(chunkKey);
-        this.pendingChunks.delete(chunkKey);
+    // Process all neighbor edges
+    for (const [neighborKey, thisEdgeFn, neighborEdgeFn] of neighbors) {
+        processSharedEdge(
+            chunkData,
+            this.chunks.get(neighborKey),
+            thisEdgeFn,
+            neighborEdgeFn
+        );
     }
+
+    // Fix corner vertices by finding diagonal neighbors
+    const cornerVertices = [
+        {pos: 0, // Bottom left
+          neighbors: [`${cx-1},${cz}`, `${cx},${cz-1}`, `${cx-1},${cz-1}`]},
+        {pos: vertexCountPerRow - 1, // Bottom right
+          neighbors: [`${cx+1},${cz}`, `${cx},${cz-1}`, `${cx+1},${cz-1}`]},
+        {pos: (vertexCountPerRow - 1) * vertexCountPerRow, // Top left
+          neighbors: [`${cx-1},${cz}`, `${cx},${cz+1}`, `${cx-1},${cz+1}`]},
+        {pos: vertexCountPerRow * vertexCountPerRow - 1, // Top right
+          neighbors: [`${cx+1},${cz}`, `${cx},${cz+1}`, `${cx+1},${cz+1}`]}
+    ];
+
+    // Process each corner to ensure diagonal neighbors connect properly
+    for (const corner of cornerVertices) {
+        let validNeighbors = [];
+        let sumPos = [0, 0, 0];
+        let sumNormal = [0, 0, 0];
+        let count = 0;
+        
+        // Add this chunk's corner
+        sumPos[0] += adjustedPositions[corner.pos*3];
+        sumPos[1] += adjustedPositions[corner.pos*3+1];
+        sumPos[2] += adjustedPositions[corner.pos*3+2];
+        sumNormal[0] += adjustedNormals[corner.pos*3];
+        sumNormal[1] += adjustedNormals[corner.pos*3+1];
+        sumNormal[2] += adjustedNormals[corner.pos*3+2];
+        count++;
+
+        // Find corresponding vertices in neighbors
+        for (const neighborKey of corner.neighbors) {
+            const neighbor = this.chunks.get(neighborKey);
+            if (!neighbor || !neighbor.terrainMesh) continue;
+            
+            // Determine which corner of the neighbor corresponds to our corner
+            let neighborCornerPos;
+            if (neighborKey === `${cx-1},${cz-1}`) { // Diagonal bottom-left
+                neighborCornerPos = vertexCountPerRow * vertexCountPerRow - 1; // Top-right of neighbor
+            } else if (neighborKey === `${cx+1},${cz-1}`) { // Diagonal bottom-right
+                neighborCornerPos = (vertexCountPerRow - 1) * vertexCountPerRow; // Top-left of neighbor
+            } else if (neighborKey === `${cx-1},${cz+1}`) { // Diagonal top-left
+                neighborCornerPos = vertexCountPerRow - 1; // Bottom-right of neighbor
+            } else if (neighborKey === `${cx+1},${cz+1}`) { // Diagonal top-right
+                neighborCornerPos = 0; // Bottom-left of neighbor
+            } else if (neighborKey === `${cx-1},${cz}`) { // Left
+                neighborCornerPos = corner.pos === 0 ? vertexCountPerRow - 1 : 
+                                  vertexCountPerRow * vertexCountPerRow - 1;
+            } else if (neighborKey === `${cx+1},${cz}`) { // Right
+                neighborCornerPos = corner.pos === vertexCountPerRow - 1 ? 0 : 
+                                  (vertexCountPerRow - 1) * vertexCountPerRow;
+            } else if (neighborKey === `${cx},${cz-1}`) { // Bottom
+                neighborCornerPos = corner.pos === 0 ? 
+                                  (vertexCountPerRow - 1) * vertexCountPerRow : 
+                                  vertexCountPerRow * vertexCountPerRow - 1;
+            } else if (neighborKey === `${cx},${cz+1}`) { // Top
+                neighborCornerPos = corner.pos === (vertexCountPerRow - 1) * vertexCountPerRow ? 
+                                  0 : vertexCountPerRow - 1;
+            }
+
+            if (neighborCornerPos !== undefined) {
+                const nGeom = neighbor.terrainMesh.geometry;
+                const nPos = nGeom.attributes.position.array;
+                const nNorm = nGeom.attributes.normal.array;
+                
+                // Calculate world position of neighbor's vertex
+                const worldX = neighbor.terrainMesh.position.x + nPos[neighborCornerPos*3];
+                const worldY = neighbor.terrainMesh.position.y + nPos[neighborCornerPos*3+1];
+                const worldZ = neighbor.terrainMesh.position.z + nPos[neighborCornerPos*3+2];
+                
+                // Add to sums
+                sumPos[0] += worldX - chunkWorldX; // Convert to local coords
+                sumPos[1] += worldY;
+                sumPos[2] += worldZ - chunkWorldZ;
+                sumNormal[0] += nNorm[neighborCornerPos*3];
+                sumNormal[1] += nNorm[neighborCornerPos*3+1];
+                sumNormal[2] += nNorm[neighborCornerPos*3+2];
+                count++;
+                
+                validNeighbors.push({
+                    chunk: neighbor,
+                    pos: neighborCornerPos
+                });
+            }
+        }
+        
+        if (count > 1) {
+            // Average positions and normals
+            const avgPos = [sumPos[0]/count, sumPos[1]/count, sumPos[2]/count];
+            const avgNorm = [sumNormal[0]/count, sumNormal[1]/count, sumNormal[2]/count];
+            
+            // Normalize the normal
+            const mag = Math.sqrt(avgNorm[0]*avgNorm[0] + avgNorm[1]*avgNorm[1] + avgNorm[2]*avgNorm[2]);
+            if (mag > 0.00001) {
+                avgNorm[0] /= mag;
+                avgNorm[1] /= mag;
+                avgNorm[2] /= mag;
+            }
+            
+            // Apply to this chunk
+            adjustedPositions[corner.pos*3] = avgPos[0];
+            adjustedPositions[corner.pos*3+1] = avgPos[1];
+            adjustedPositions[corner.pos*3+2] = avgPos[2];
+            adjustedNormals[corner.pos*3] = avgNorm[0];
+            adjustedNormals[corner.pos*3+1] = avgNorm[1];
+            adjustedNormals[corner.pos*3+2] = avgNorm[2];
+            
+            // Apply to all valid neighbors too
+            for (const n of validNeighbors) {
+                const worldX = chunkWorldX + avgPos[0];
+                const worldY = avgPos[1]; // Y position is absolute
+                const worldZ = chunkWorldZ + avgPos[2];
+                
+                // Convert world position to neighbor's local space
+                const neighborLocalX = worldX - n.chunk.terrainMesh.position.x;
+                const neighborLocalY = worldY - n.chunk.terrainMesh.position.y;
+                const neighborLocalZ = worldZ - n.chunk.terrainMesh.position.z;
+                
+                // Apply position and normal
+                const nGeom = n.chunk.terrainMesh.geometry;
+                nGeom.attributes.position.array[n.pos*3] = neighborLocalX;
+                nGeom.attributes.position.array[n.pos*3+1] = neighborLocalY;
+                nGeom.attributes.position.array[n.pos*3+2] = neighborLocalZ;
+                nGeom.attributes.normal.array[n.pos*3] = avgNorm[0];
+                nGeom.attributes.normal.array[n.pos*3+1] = avgNorm[1];
+                nGeom.attributes.normal.array[n.pos*3+2] = avgNorm[2];
+                
+                // Mark for update
+                nGeom.attributes.position.needsUpdate = true;
+                nGeom.attributes.normal.needsUpdate = true;
+            }
+        }
+    }
+    this.createTerrainMesh(chunkData, cx, cz, adjustedPositions, colors, adjustedNormals, indices);
+
+    
+    if(requestKey){
+      let requestResponse = {
+        cx: cx,
+        cz: cz,
+        position: chunkData.position,
+        geometry: chunkData.geometry,
+        restitution: restitution,
+        friction: friction
+      };
+      this.sendChunkResponse(requestKey, requestResponse);
+    }
+
+    this.game.gameEntity?.getComponent('game').physics.addChunkCollider(chunkData);
+  }
+
+  sendChunkResponse(requestKey, chunkData){
+      const requestCallback = this.chunkRequests.get(requestKey);
+      if(requestCallback){        
+        requestCallback(chunkData);
+        this.chunkRequests.delete(requestKey);
+      }
+  }
+
+  createTerrainMesh(chunkData, cx, cz, adjustedPositions, colors, adjustedNormals, indices){
+    const chunkWorldX = Math.round(cx * this.chunkSize);
+    const chunkWorldZ = Math.round(cz * this.chunkSize);
+    // Create geometry with adjusted positions and normals
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(adjustedPositions, 3));
+    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    geometry.setAttribute('normal', new THREE.Float32BufferAttribute(adjustedNormals, 3));
+    geometry.setIndex(indices);
+
+    // Improved material settings for gap-free appearance
+    const material = new THREE.MeshStandardMaterial({
+        vertexColors: true,
+        roughness: 0.9, 
+        metalness: 0.1,
+        side: THREE.FrontSide,
+        flatShading: false,
+        dithering: true,
+        // NEW: Add slight overdraw to help with small gaps
+        polygonOffset: true,
+        polygonOffsetFactor: -1,  // Slight offset to prevent z-fighting
+        polygonOffsetUnits: -1
+    });
+
+    // Create mesh with precise positioning
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(chunkWorldX, 0, chunkWorldZ); // Use exact integer positions
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    mesh.material.needsUpdate = true;
+    mesh.userData.isTerrain = true;
+    mesh.matrixAutoUpdate = false;
+    mesh.updateMatrix();
+    this.rootGroup.add(mesh);
+    chunkData.terrainMesh = mesh;
+    chunkData.geometry = {
+      positions: [...geometry.attributes.position.array],
+      indices: [...geometry.index.array],
+      normals: [...geometry.attributes.normal.array],
+      color: [...geometry.attributes.color.array]
+    };
+    chunkData.position = new THREE.Vector3(chunkWorldX, 0, chunkWorldZ);
+//    this.chunkGeometry.set(chunkKey, geometry);
+    // Generate water mesh
+    if(!this.game.isServer){
+      const waterMesh = this.generateWaterMesh(cx, cz, adjustedPositions);
+      if (waterMesh) {
+          // Position water mesh exactly to avoid gaps
+          waterMesh.position.set(chunkWorldX, 0, chunkWorldZ);
+          this.rootGroup.add(waterMesh);
+          chunkData.waterMesh = waterMesh;
+      }
+      // Add grass to chunk
+      const grassMesh = this.addGrassToTerrain(cx, cz, chunkData.grassData);
+      if (grassMesh) {
+        grassMesh.position.set(chunkWorldX, 0, chunkWorldZ);
+        grassMesh.updateMatrix();
+        this.rootGroup.add(grassMesh);
+        chunkData.grassMesh = grassMesh;
+      }
+    }
+    // Process vegetation data
+   
+    if(!this.game.isServer){
+    // Force shadow map update to avoid shadow artifacts at boundaries
+      this.renderer.shadowMap.needsUpdate = true;
+    }
+    chunkData.isGenerating = false;
+
+    this.pendingChunks.delete(`${cx},${cz}`);
+
   }
 
   getStaticAABBs() {
@@ -730,87 +765,47 @@ class InfiniWorld extends engine.Component {
       
       return rockAndTreeAABBs;
   }
-    
-  checkStaticObjectCollisions(colliderAABB) {
-    const collisions = [];
-    const cameraChunkX = Math.floor(this.camera.position.x / this.chunkSize);
-    const cameraChunkZ = Math.floor(this.camera.position.z / this.chunkSize);
-  
-    // Check nearby chunks
-    for (let x = cameraChunkX - 1; x <= cameraChunkX + 1; x++) {
-      for (let z = cameraChunkZ - 1; z <= cameraChunkZ + 1; z++) {
-        const chunkKey = `${x},${z}`;
-        const chunkData = this.chunks.get(chunkKey);
-        if (!chunkData) continue;
-  
-        const treeAndRockAABBs = this.getStaticAABBsAt(x, z);
-        if(treeAndRockAABBs){
-          treeAndRockAABBs.forEach(aabb => {
-            if (this.aabbIntersects(colliderAABB, aabb)) {
-              collisions.push(aabb);
-            }
-          });
-        }       
-      }
-    }
-    return collisions;
-  }
-  
-  aabbIntersects(aabb1, aabb2) {
-    return (
-      aabb1.min.x <= aabb2.max.x &&
-      aabb1.max.x >= aabb2.min.x &&
-      aabb1.min.y <= aabb2.max.y &&
-      aabb1.max.y >= aabb2.min.y &&
-      aabb1.min.z <= aabb2.max.z &&
-      aabb1.max.z >= aabb2.min.z
-    );
-  }
 
   update() {
     if (!this.game.getCollections().configs.game.is3D) return;
-   // this.updateGrassTasks(); // Process grass tasks incrementally
-
+    if(this.game.isServer) return;
+    this.timer += this.game.deltaTime || 0;
+    this.skyDome.position.set(this.camera.position.x, 0, this.camera.position.z); // Center it around the camera
+    this.updateChunks();
+    const cameraPos = this.camera.position;  
+    // Update directional light position smoothly every frame
+    this.directionalLight.position.set(cameraPos.x + 500, 500, cameraPos.z + 500);
+    this.directionalLight.target.position.set(cameraPos.x, 0, cameraPos.z);
+    this.directionalLight.target.updateMatrixWorld();
   
-    if(!this.isServer){
-      this.updateChunks();
-      this.timer += this.game.deltaTime || 0;
-      this.skyDome.position.set(this.camera.position.x, 0, this.camera.position.z); // Center it around the camera
-      const cameraPos = this.camera.position;
-      // Update directional light position smoothly every frame
-      this.directionalLight.position.set(cameraPos.x + 500, 500, cameraPos.z + 500);
-      this.directionalLight.target.position.set(cameraPos.x, 0, cameraPos.z);
-      this.directionalLight.target.updateMatrixWorld();
-    
-      // Update shadow camera smoothly every frame
-      const shadowCamera = this.directionalLight.shadow.camera;
-    
-      // Center shadow camera on the player's position
-      //const terrainHeight = this.getTerrainHeight(cameraPos);
-      shadowCamera.position.set(cameraPos.x, 500, cameraPos.z);
-      shadowCamera.lookAt(cameraPos.x, 0, cameraPos.z);
-      shadowCamera.updateProjectionMatrix();
-      shadowCamera.updateMatrixWorld();
+    // Update shadow camera smoothly every frame
+    const shadowCamera = this.directionalLight.shadow.camera;
   
-      // Only force shadow map update when terrain changes (e.g., new chunks)
-      // This is already handled in handleWorkerMessage with this.renderer.shadowMap.needsUpdate = true
-      
-      for (const [key, value] of this.uniforms.entries()) {
-          value.time = { value: this.timer };
-          value.cameraPosition = { value: { x: this.camera.position.x, y: this.camera.position.y, z: this.camera.position.z } };
-      }
-      if(this.pixelPass.enabled){
+    // Center shadow camera on the player's position
+    //const terrainHeight = this.getTerrainHeight(cameraPos);
+    shadowCamera.position.set(cameraPos.x, 500, cameraPos.z);
+    shadowCamera.lookAt(cameraPos.x, 0, cameraPos.z);
+    shadowCamera.updateProjectionMatrix();
+    shadowCamera.updateMatrixWorld();
+  
+    // Only force shadow map update when terrain changes (e.g., new chunks)
+    // This is already handled in handleWorkerMessage with this.renderer.shadowMap.needsUpdate = true
+    
+    for (const [key, value] of this.uniforms.entries()) {
+        value.time = { value: this.timer };
+        value.cameraPosition = { value: { x: this.camera.position.x, y: this.camera.position.y, z: this.camera.position.z } };
+    }
+    if(!this.game.isServer){
+      if(this.pixelPass && this.pixelPass.enabled){
         const rendererSize = this.renderer.getSize( new THREE.Vector2() );
         const aspectRatio = rendererSize.x / rendererSize.y;
         this.pixelAlignFrustum( this.camera, aspectRatio, Math.floor( rendererSize.x / this.pixelSize ),
             Math.floor( rendererSize.y / this.pixelSize ) );
       }
-
       this.render();
     }
   }
-  render() {
-    
+  render() {    
     this.renderer.render(this.scene, this.camera);
     if(this.pixelPass.enabled){
 		  this.composer.render();
@@ -847,11 +842,11 @@ class InfiniWorld extends engine.Component {
 			camera.bottom = - 1.0 - ( fractY * pixelHeight );
 			camera.updateProjectionMatrix();
 
-		}
+	}
 
   onWindowResize() {
   
-    if(this.canvas){
+    if(this.canvas && !this.game.isServer){
 
       const width = this.container.clientWidth || window.innerWidth;
       const height = this.container.clientHeight || window.innerHeight;
@@ -899,6 +894,7 @@ class InfiniWorld extends engine.Component {
           mesh.material.clone(), // Clone material to avoid shared state
           instances.length
         );
+        instancedMesh.matrixAutoUpdate = false;
         instancedMesh.userData.relativeMatrix = relativeMatrix;
         instancedMesh.castShadow = true;
         instancedMesh.receiveShadow = true;
@@ -925,11 +921,13 @@ class InfiniWorld extends engine.Component {
         dummy.scale.setScalar(instance.scale);
         dummy.updateMatrix();
         dummy.matrixAutoUpdate = false;
+  
         // Apply base transformation combined with each mesh’s relative matrix
         instanceGroups.forEach((group, meshIndex) => {
           matrix.copy(dummy.matrix);
           matrix.multiply(group.mesh.userData.relativeMatrix);
           group.mesh.setMatrixAt(index, matrix);
+          group.mesh.matrixAutoUpdate = false;
           group.instances.push(index);
         });
       });
@@ -937,77 +935,14 @@ class InfiniWorld extends engine.Component {
       // Update instance matrices
       instanceGroups.forEach(group => {
         group.mesh.instanceMatrix.needsUpdate = true;
-        group.matrixAutoUpdate = false;
         this.renderer.shadowMap.needsUpdate = true; // Force shadow map update
       });
   
       // Store instance groups in chunk data
       chunkData.objectMeshes.set(type, instanceGroups);
   }
-getInterpolatedTerrainHeight(position) {
-    // Determine the chunk containing the position
-    let chunkX = Math.floor(position.x / this.chunkSize);
-    let chunkZ = Math.floor(position.z / this.chunkSize);
-    let localX = position.x - (chunkX * this.chunkSize);
-    let localZ = position.z - (chunkZ * this.chunkSize);
 
-    // Adjust chunk selection for boundary positions
-    const halfChunk = this.chunkSize / 2;
-    let chunkKey;
-    if (localX === halfChunk) {
-        chunkX += 1;
-        localX -= this.chunkSize;
-    } else if (localX === -halfChunk) {
-        chunkX -= 1;
-        localX += this.chunkSize;
-    }
-    if (localZ === halfChunk) {
-        chunkZ += 1;
-        localZ -= this.chunkSize;
-    } else if (localZ === -halfChunk) {
-        chunkZ -= 1;
-        localZ += this.chunkSize;
-    }
-    chunkKey = `${chunkX},${chunkZ}`;
-
-    // Get chunk data
-    const chunkData = this.chunks.get(chunkKey);
-    if (!chunkData || !chunkData.terrainMesh) {
-        // Fallback to terrain generator if chunk is not loaded
-        return this.terrainGenerator.getHeight({ x: position.x, z: position.z });
-    }
-
-    const terrainPositions = chunkData.terrainMesh.geometry.attributes.position.array;
-    const vertexCountPerRow = this.chunkResolution + 1; // e.g., 33 for 32x32 tiles
-    const step = this.chunkSize / this.chunkResolution; // e.g., 1024 / 32 = 32 units per tile
-
-    // Map to grid coordinates (0 to chunkResolution)
-    const x = (localX + this.chunkSize / 2) / step; // Map from [-chunkSize/2, chunkSize/2] to [0, chunkResolution]
-    const z = (localZ + this.chunkSize / 2) / step;
-
-    // Clamp grid coordinates to avoid out-of-bounds access
-    const xIdx = Math.min(Math.max(Math.floor(x), 0), this.chunkResolution - 1);
-    const zIdx = Math.min(Math.max(Math.floor(z), 0), this.chunkResolution - 1);
-    const fx = Math.min(Math.max(x - xIdx, 0), 1); // Fractional part for interpolation
-    const fz = Math.min(Math.max(z - zIdx, 0), 1);
-
-    // Get heights of the four surrounding vertices
-    const posIdx = (zIdx * vertexCountPerRow + xIdx) * 3;
-    const h00 = terrainPositions[posIdx + 1]; // Height at (xIdx, zIdx)
-    const h10 = xIdx + 1 < vertexCountPerRow ? terrainPositions[posIdx + 3 + 1] : h00; // Height at (xIdx+1, zIdx)
-    const h01 = zIdx + 1 < vertexCountPerRow ? terrainPositions[(zIdx + 1) * vertexCountPerRow * 3 + xIdx * 3 + 1] : h00; // Height at (xIdx, zIdx+1)
-    const h11 = xIdx + 1 < vertexCountPerRow && zIdx + 1 < vertexCountPerRow ? terrainPositions[(zIdx + 1) * vertexCountPerRow * 3 + (xIdx + 1) * 3 + 1] : h00; // Height at (xIdx+1, zIdx+1)
-
-    // Perform bilinear interpolation
-    const height = h00 * (1 - fx) * (1 - fz) +
-                   h10 * fx * (1 - fz) +
-                   h01 * (1 - fx) * fz +
-                   h11 * fx * fz;
-
-    return height;
-}
   getTerrainHeight(position, useRaycast = false) {
-  //    return this.getInterpolatedTerrainHeight(position);
     if(!useRaycast){      
       return this.terrainGenerator.getHeight(position);
     }
@@ -1045,87 +980,7 @@ getInterpolatedTerrainHeight(position) {
       return intersects[0].point.y;
     }
     
-    return 0;//this.terrainGenerator.getHeight(position);
-  }
-
-  getReflectionAt(position, velocity, restitution) {
-      return this.terrainGenerator.getReflectionAt(position, velocity, restitution);
-      const normal = this.getTerrainNormal(position);
-      const dotProduct = 
-          velocity.x * normal.x + 
-          velocity.y * normal.y + 
-          velocity.z * normal.z;
-      
-      // Only reflect if moving toward the surface
-      if (dotProduct < 0) {
-          let r = (restitution || 0.3);
-          const slopeAmount = 1 - normal.y;
-          // Calculate reflection vector correctly (r affects the entire reflection, not just normal component)
-          // v_reflect = v - 2(v·n)n then scaled by restitution
-          let reflection = new THREE.Vector3(
-              velocity.x - 2 * dotProduct * normal.x,
-              velocity.y - 2 * dotProduct * normal.y,
-              velocity.z - 2 * dotProduct * normal.z
-          );
-
-
-          if(dotProduct > -10 || slopeAmount > .5 ){          
-            // r = normal.y;
-            r = .99;
-            // Scale by restitution (energy loss on bounce)
-          }
-          reflection.x *= r;
-          reflection.y *= r;
-          reflection.z *= r;
-          
-          return reflection;
-      } else {
-          // Not heading into surface, return original velocity
-          return { ...velocity };
-      }
-  } 
-
-  getTerrainNormal(position) {
-      // Create a raycaster
-      const raycaster = new THREE.Raycaster();
-      
-      // Set the ray origin high above the position
-      const rayOrigin = new THREE.Vector3(position.x, this.chunkSize * 2, position.z);
-      
-      // Set the ray direction downward
-      const rayDirection = new THREE.Vector3(0, -1, 0);
-      raycaster.set(rayOrigin, rayDirection);
-      
-      // Collect visible terrain chunks to test against
-      const chunks = [];
-      const cameraChunkX = Math.floor(position.x / this.chunkSize);
-      const cameraChunkZ = Math.floor(position.z / this.chunkSize);
-      
-      // Check nearby chunks
-      for (let x = cameraChunkX - 1; x <= cameraChunkX + 1; x++) {
-          for (let z = cameraChunkZ - 1; z <= cameraChunkZ + 1; z++) {
-              const chunkKey = `${x},${z}`;
-              const chunkData = this.chunks.get(chunkKey);
-              if (chunkData && chunkData.terrainMesh) {
-                  chunks.push(chunkData.terrainMesh);
-              }
-          }
-      }
-      
-      // Perform the raycast
-      const intersects = raycaster.intersectObjects(chunks, false);
-      
-      // If there's an intersection, return the face normal
-      if (intersects.length > 0) {
-          return {
-              x: intersects[0].face.normal.x,
-              y: intersects[0].face.normal.y,
-              z: intersects[0].face.normal.z
-          };
-      }
-      
-      // Fallback to upward normal if no intersection found
-      return { x: 0, y: 1, z: 0 };
+    return 0;
   }
 
   destroy() {
@@ -1170,38 +1025,6 @@ getInterpolatedTerrainHeight(position) {
         });
       });
     }
-
-    if (this.objectPools) {
-      this.objectPools.forEach(pool => {
-        if (pool.mesh) {
-          this.scene.remove(pool.mesh);
-          pool.mesh.geometry.dispose();
-          if (pool.mesh.material) {
-            if (Array.isArray(pool.mesh.material)) {
-              pool.mesh.material.forEach(mat => mat.dispose());
-            } else {
-              pool.mesh.material.dispose();
-            }
-          }
-          pool.mesh.dispose();
-        }
-      });
-      this.objectPools.clear();
-    }
-
-    this.objectCache.forEach(mesh => {
-      this.scene.remove(mesh);
-      mesh.geometry.dispose();
-      if (mesh.material) {
-        if (Array.isArray(mesh.material)) {
-          mesh.material.forEach(mat => mat.dispose());
-        } else {
-          mesh.material.dispose();
-        }
-      }
-    });
-    this.objectCache.clear();
-
     if (this.worker) {
       this.worker.terminate();
       this.worker = null;
@@ -1432,8 +1255,9 @@ if(!grassData) return;
       terrainGenerator.init(${JSON.stringify(this.biomes)}, ${this.chunkSize}, ${this.chunkResolution}, noise);
 
       self.onmessage = function(e) {
-        const { cx, cz, chunkSize, chunkResolution } = e.data;
+        const { cx, cz, chunkSize, chunkResolution, requestKey } = e.data;
         const result = terrainGenerator.generateChunk(cx, cz, chunkSize, chunkResolution);     
+        result.requestKey = requestKey;
         self.postMessage(result);
       };
     `;

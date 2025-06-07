@@ -17,8 +17,8 @@ class GameLoader extends engine.Component {
         this.playerId = 0;
         const scene = this.collections.scenes["main"];
         const sceneEntities = scene.sceneData;
-        sceneEntities.forEach(async (sceneEntity) => {
-              
+          sceneEntities.forEach(async (sceneEntity) => {
+            
 
             let params = {
                 "objectType": sceneEntity.objectType,
@@ -29,29 +29,35 @@ class GameLoader extends engine.Component {
             });
             if(sceneEntity.type == "game"){  
                 this.game.gameEntity = this.game.createEntityFromCollections(sceneEntity.type, params);
-                this.game.audioManager = this.game.gameEntity.getComponent('AudioManager');  
-                this.game.multiplayerManager = this.game.gameEntity.getComponent("MultiplayerManager");
-                this.game.multiplayerManager.init({scene: this.game.scene, physics: this.game.physics, serverUrl: this.collections.configs.game.multiplayerServerUrl });
-            } else {
-                let spawned = this.game.spawn(sceneEntity.type, params);                                  
+            } else {                               
                 if(sceneEntity.type.startsWith("player")){
-                    this.player = spawned;
-                    this.game.player = this.player;
-                    this.player.placed = true;
+                    if(!this.game.isServer){
+                        let spawned = this.game.spawn(sceneEntity.type, params);   
+                        this.player = spawned;
+                        this.game.player = this.player;
+                        this.player.placed = true;
+                    }
+                } else {                    
+                    this.game.spawn(sceneEntity.type, params);   
                 }
             }
         });
 
-        if(this.player && this.game.multiplayerManager) {
+        if(this.game.multiplayerManager) {
+            this.game.multiplayerManager.init({scene: this.game.scene, physics: this.game.physics, serverUrl: this.collections.configs.game.multiplayerServerUrl });
             this.playerId = await this.game.multiplayerManager.initializeMultiplayer(this.serverUrl);   
-            if(this.playerId != 0){
-                this.game.multiplayerManager.createLocalPlayer(this.playerId, this.player);
-                this.game.isSinglePlayer = false;
-            } else {
-                this.game.isSinglePlayer = true;
-                this.game.isServer = false;
-                this.player.getComponent("AircraftController")?.setupPhysics(this.game.physics.simulation);
-            }  
+            this.game.terrain.setupInitialChunks();
+            if(this.player){    
+                if(this.playerId != 0){
+                    this.game.multiplayerManager.createLocalPlayer(this.playerId, this.player);
+                    this.game.isSinglePlayer = false;
+                } else {
+                    this.game.isSinglePlayer = true;
+                    this.game.isServer = false;
+                    this.player.getComponent("AircraftController").setupPhysics(this.game.physics.simulation);
+                }    
+            }
+            
         }
  
 

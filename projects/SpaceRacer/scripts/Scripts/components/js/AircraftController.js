@@ -127,36 +127,39 @@ class AircraftController extends engine.Component {
     }
 
     getNetworkData(){     
-        let data = {
-            keys: this.keys,
-            direction: {
-                forward: {
-                    x: this.forward.x,
-                    y: this.forward.y,
-                    z: this.forward.z
-                },
-                right:{
-                    x: this.right.x,
-                    y: this.right.y,
-                    z: this.right.z
-                },
-                up: {
-                    x: this.up.x,
-                    y: this.up.y,
-                    z: this.up.z
-                }
-            },
-            rotation: {
-                pitch: this.pitch,
-                yaw: this.yaw,
-                roll: this.roll
-            },
-            throttle: this.throttle
-        } 
+        let data = {} 
         
-        if(JSON.stringify(this.lastKeys) != JSON.stringify(this.keys)){
-            console.log('get', data);
-        }   
+        if(this.game.isServer){
+            data = {
+                direction: {
+                    forward: {
+                        x: this.forward.x,
+                        y: this.forward.y,
+                        z: this.forward.z
+                    },
+                    right:{
+                        x: this.right.x,
+                        y: this.right.y,
+                        z: this.right.z
+                    },
+                    up: {
+                        x: this.up.x,
+                        y: this.up.y,
+                        z: this.up.z
+                    }
+                },
+                rotation: {
+                    pitch: this.pitch,
+                    yaw: this.yaw,
+                    roll: this.roll
+                },
+                currentSpeed: this.currentSpeed
+            };
+        } else {
+            data = {
+                keys: this.keys
+            };
+        }
         this.lastKeys = {...this.keys};
         return data;       
     }
@@ -164,18 +167,16 @@ class AircraftController extends engine.Component {
     setNetworkData(data){
         if(this.game.isServer){
             if(data.keys){
-                if(JSON.stringify(data.keys) != JSON.stringify(this.keys)){
-                    console.log('set', data);
-                }
                 this.keys = data.keys;
-                this.forward.set(data.direction.forward.x, data.direction.forward.y, data.direction.forward.z);
-                this.right.set(data.direction.right.x, data.direction.right.y, data.direction.right.z);
-                this.up.set(data.direction.up.x, data.direction.up.y, data.direction.up.z);
-                this.pitch = data.rotation.pitch;
-                this.yaw = data.rotation.yaw;
-                this.roll = data.rotation.roll;
-                this.throttle = data.rotation.throttle;
             }
+        } else {            
+            this.forward.set(data.direction.forward.x, data.direction.forward.y, data.direction.forward.z);
+            this.right.set(data.direction.right.x, data.direction.right.y, data.direction.right.z);
+            this.up.set(data.direction.up.x, data.direction.up.y, data.direction.up.z);
+            this.pitch = data.rotation.pitch;
+            this.yaw = data.rotation.yaw;
+            this.roll = data.rotation.roll;
+            this.currentSpeed = data.currentSpeed;            
         }
     }
 
@@ -204,7 +205,7 @@ class AircraftController extends engine.Component {
 
         const pos = this.parent.transform.position;
         this.rigidBody.setTranslation({ x: pos.x, y: pos.y, z: pos.z }, true);
-        
+   
         // Initialize physics interpolation positions
         this.updatePhysicsPositions();
     }
@@ -236,40 +237,6 @@ class AircraftController extends engine.Component {
             this.previousPhysicsRotation.copy(this.currentPhysicsRotation);
             this.hasValidPhysicsStates = true;
         }
-    }
-
-    interpolatePhysics() {
-        if (!this.hasValidPhysicsStates) {
-            // If we don't have valid physics states yet, just use current position
-            if (this.rigidBody) {
-                const pos = this.rigidBody.translation();
-                const rot = this.rigidBody.rotation();
-                this.renderPosition.set(pos.x, pos.y, pos.z);
-                this.renderRotation.set(rot.x, rot.y, rot.z, rot.w);
-            }
-            return;
-        }
-        
-        // Use the interpolation alpha calculated by the Game class
-        const alpha = .5;//this.game.gameEntity.getComponent('game').physicsInterpolationAlpha || 0;
-        
-        // Interpolate position
-        this.renderPosition.lerpVectors(
-            this.previousPhysicsPosition, 
-            this.currentPhysicsPosition, 
-            alpha
-        );
-        
-        // Interpolate rotation (slerp for quaternions)
-        this.renderRotation.slerpQuaternions(
-            this.previousPhysicsRotation,
-            this.currentPhysicsRotation,
-            alpha
-        );
-        
-        // Apply interpolated transforms to the visual object
-        this.parent.transform.position.lerp(this.renderPosition, alpha);
-        this.parent.transform.quaternion.slerp(this.renderRotation, alpha);
     }
 
     onKeyDown(event) {
@@ -315,7 +282,6 @@ class AircraftController extends engine.Component {
         this.inputYaw *= 0.9;
         this.inputRoll *= 0.9;
         this.inputThrottle = 0;
-
         if (this.keys.KeyW) this.inputPitch -= 1;
         if (this.keys.KeyS) this.inputPitch += 1;
         if (this.keys.KeyA) this.inputRoll += 1;
@@ -347,7 +313,7 @@ class AircraftController extends engine.Component {
         const speedDifference = (targetSpeed * airBrakeMultiplier) - this.currentSpeed;
         this.currentSpeed += speedDifference * dt * 3.0;
         this.currentSpeed = Math.max(this.minSpeed * 0.5, this.currentSpeed);
-
+        if(this.currentSpeed < 1) this.currentSpeed = 0;
         const speedFactor = this.currentSpeed / this.maxSpeed;
         
         this.pitchVelocity += this.inputPitch * this.pitchSpeed * speedFactor * dt * 10;
@@ -369,33 +335,57 @@ class AircraftController extends engine.Component {
         this.roll *= Math.pow(0.98, dt * 60);
     }
 
-    updateTransform() {
+    updateTransform() {        
+        // Sanitize rotation inputs
+        this.pitch = isNaN(this.pitch) ? 0 : Math.max(-Math.PI/2, Math.min(Math.PI/2, this.pitch));
+        this.yaw = isNaN(this.yaw) ? 0 : this.yaw;
+        this.roll = isNaN(this.roll) ? 0 : this.roll;
+
         const pitchQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(-1, 0, 0), this.pitch);
         const yawQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), this.yaw);
         const rollQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, -1), this.roll);
         
         const combinedQuat = new THREE.Quaternion()
             .multiplyQuaternions(yawQuat, pitchQuat)
-            .multiply(rollQuat);
+            .multiply(rollQuat)
+            .normalize(); // Ensure quaternion is normalized
 
+        // Update orientation vectors
         this.forward.set(0, 0, 1).applyQuaternion(combinedQuat).normalize();
         this.right.set(1, 0, 0).applyQuaternion(combinedQuat).normalize();
         this.up.set(0, 1, 0).applyQuaternion(combinedQuat).normalize();
 
-        this.rigidBody.setRotation(combinedQuat, true);
+        // Validate forward vector
+        if (isNaN(this.forward.x) || isNaN(this.forward.y) || isNaN(this.forward.z)) {
+            console.error('Invalid forward vector:', this.forward);
+            this.forward.set(0, 0, 1);
+        }
 
+        // Compute velocity
+        this.currentSpeed = isNaN(this.currentSpeed) ? this.minSpeed : Math.max(this.minSpeed * 0.5, this.currentSpeed);
         this.velocity.copy(this.forward).multiplyScalar(this.currentSpeed);
-        
+
         const liftFactor = Math.max(0, this.currentSpeed / this.maxSpeed);
         const gravity = new THREE.Vector3(0, -9.81 * (1 - liftFactor * 0.8), 0);
-    //    this.velocity.add(gravity);
+        // this.velocity.add(gravity); // Uncomment if needed
 
-        this.rigidBody.setLinvel({
-            x: this.velocity.x,
-            y: this.velocity.y,
-            z: this.velocity.z
-        }, true);
+        // Update physics velocity
+        if (this.rigidBody) {
+            this.rigidBody.setRotation(combinedQuat, true);
+            this.rigidBody.setLinvel({
+                x: isNaN(this.velocity.x) ? 0 : this.velocity.x,
+                y: isNaN(this.velocity.y) ? 0 : this.velocity.y,
+                z: isNaN(this.velocity.z) ? 0 : this.velocity.z
+            }, true);
 
+            // Update position
+            const pos = this.rigidBody.translation();
+            const rot = this.rigidBody.rotation();
+            if (pos && !isNaN(pos.x) && !isNaN(pos.y) && !isNaN(pos.z)) {
+                this.parent.transform.position.set(pos.x, pos.y, pos.z);
+                this.parent.transform.quaternion.set(rot.x, rot.y, rot.z, rot.w);
+            } 
+        }
     }
 
     updateCameraPosition() {
@@ -406,23 +396,24 @@ class AircraftController extends engine.Component {
 
         if (this.isFirstPerson) {
             // Use interpolated position for smooth camera
-            const cockpitOffset = new THREE.Vector3(0, 2, 5).applyQuaternion(this.renderRotation);
-            const cockpitPos = this.renderPosition.clone().add(cockpitOffset);
+            const cockpitOffset = new THREE.Vector3(0, 2, 5).applyQuaternion(this.parent.transform.quaternion);
+            const cockpitPos = this.parent.transform.position.clone().add(cockpitOffset);
             this.camera.position.copy(cockpitPos);
-            this.camera.quaternion.copy(this.renderRotation);
+            this.camera.quaternion.copy(this.parent.transform.quaternion);
         } else {
             // Use interpolated transforms for third-person camera
             const offset = new THREE.Vector3(
                 this.cameraOffset.x,
                 this.cameraOffset.y,
                 this.cameraOffset.z
-            ).applyQuaternion(this.renderRotation);
+            ).applyQuaternion(this.parent.transform.quaternion);
             
-            const targetPosition = this.renderPosition.clone().add(offset);
-            this.camera.position.lerp(targetPosition, smoothingAlpha);
+            const targetPosition = this.parent.transform.position.clone().add(offset.multiplyScalar(Math.max(1, this.currentSpeed / 1000)));
+            console.log(offset.multiplyScalar(2));
+            this.camera.position.copy(targetPosition);
             
-            const lookAtPos = this.renderPosition.clone();
-            this.cameraLookAt.lerp(lookAtPos, smoothingAlpha);
+            const lookAtPos = this.parent.transform.position.clone();
+            this.cameraLookAt.copy(lookAtPos);
             this.camera.lookAt(this.cameraLookAt);
         }
     }
@@ -433,10 +424,8 @@ class AircraftController extends engine.Component {
         const dt = Math.min(this.game.deltaTime, 0.1);
 
         // Process inputs
-        this.processInputs(dt);
-
         // **ALWAYS interpolate physics for smooth rendering**
-        this.interpolatePhysics();
+       // this.interpolatePhysics();
 
         if(!this.isRemote){            
             // Update camera with interpolated positions
@@ -453,11 +442,12 @@ class AircraftController extends engine.Component {
             //     this.modelRenderer.setAnimation('idle');
             // }
             
-                this.modelRenderer.setAnimation('idle');
+            //this.modelRenderer.setAnimation('idle');
         }
 
         if(!this.game.isServer && !this.game.isSinglePlayer) return;
 
+        this.processInputs(dt);
         // Update flight dynamics and physics (this happens less frequently)
         this.updateFlightDynamics(dt);
         this.updateTransform();
@@ -471,7 +461,7 @@ class AircraftController extends engine.Component {
             const velocityLength = this.velocity.length() * 0.1;
             const arrowHelper = new THREE.ArrowHelper(
                 velocityDir, 
-                this.renderPosition, // Use interpolated position
+                this.parent.transform.position, // Use interpolated position
                 velocityLength, 
                 0x00ff00
             );

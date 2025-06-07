@@ -5,7 +5,7 @@ class Transform extends engine.Component {
             x = position.x;
             y = position.y;
             z = position.z;
-        }
+        }   
         this.position = new THREE.Vector3(x, y, z);
         this.velocity = new THREE.Vector3();
         this.physicsVelocity = new THREE.Vector3();
@@ -23,25 +23,26 @@ class Transform extends engine.Component {
         this.networkPosition = this.position.clone();
         this.networkQuaternion = this.quaternion.clone();   
         this.networkVelocity = this.velocity.clone();   
+
     }
   
-    getNetworkData(){        
+    getNetworkData(){ 
         return {
             position: {
-                x: this.position.x, 
-                y: this.position.y,
-                z: this.position.z
+                x: this.position.x || 0, 
+                y: this.position.y || 0,
+                z: this.position.z || 0
             },
             quaternion: {
-                x:  this.quaternion.x,
-                y:  this.quaternion.y,
-                z:  this.quaternion.z,
-                w:  this.quaternion.w
+                x:  this.quaternion.x || 0,
+                y:  this.quaternion.y || 0,
+                z:  this.quaternion.z || 0,
+                w:  this.quaternion.w || 0
             },
             velocity: {
-                x: this.velocity.x,
-                y: this.velocity.y,
-                z: this.velocity.z
+                x: this.velocity.x || 0,
+                y: this.velocity.y || 0,
+                z: this.velocity.z || 0
             }
         }
         
@@ -56,15 +57,13 @@ class Transform extends engine.Component {
             );
         }
         
-        if (data.quaternion) {
-            if(this.game.isServer || isRemote){  //dont override local quaternion              
-                this.networkQuaternion.set(
-                    data.quaternion.x,
-                    data.quaternion.y,
-                    data.quaternion.z,
-                    data.quaternion.w
-                );
-            }
+        if (data.quaternion) {               
+            this.networkQuaternion.set(
+                data.quaternion.x,
+                data.quaternion.y,
+                data.quaternion.z,
+                data.quaternion.w
+            );            
         }
         
         if (data.velocity) {
