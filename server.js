@@ -28,6 +28,8 @@ const upload = multer({ dest: path.join(BASE_DIR, 'uploads') });
 const app = express();
 const server = http.createServer(app);
 
+const connections = new Map();
+
 // Configure CORS
 app.use(cors({
   origin: '*',
@@ -350,11 +352,21 @@ async function createHostClient() {
   }
   
   try {
-    const browser = await puppeteer.launch({
-      executablePath: '/usr/bin/google-chrome',
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-features=HttpsUpgrades'],
-    });
+    let browser = null;
+    let protocol = 'https';
+    if(gameURL == "localhost") {
+        protocol = 'http';
+        browser = await puppeteer.launch({           
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-features=HttpsUpgrades'],
+        });        
+    } else {
+        browser = await puppeteer.launch({
+            executablePath: '/usr/bin/google-chrome',
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-features=HttpsUpgrades'],
+        });
+    }
 
     console.log('Puppeteer host client initialized...');
  
@@ -362,7 +374,7 @@ async function createHostClient() {
     page.on('console', msg => console.log('Page Console:', msg.text()));
     page.on('pageerror', error => console.error('Page Error:', error));
     
-    const url = `https://${gameURL}${port != 443 ? ':' + port : ''}/projects/${projectName}/game.html?isServer=true`;
+    const url = `${protocol}://${gameURL}${port != 443 ? ':' + port : ''}/projects/${projectName}/game.html?isServer=true`;
     console.log('Loading', url, '...');
     
     const response = await page.goto(url, { waitUntil: 'networkidle2' });
@@ -383,6 +395,7 @@ async function createHostClient() {
 
 // Handle Socket.IO connections
 io.on('connection', (socket) => {
+  connections.set(socket.id, socket);
   if (!hostSocket) {
     console.log(`Host connected: ${socket.id}`);
     hostSocket = socket;
@@ -395,6 +408,13 @@ io.on('connection', (socket) => {
 
     hostSocket.on('playerConnected', (data) => {
       io.emit('playerConnected', data);
+    });
+
+    hostSocket.on('serverDataResponse', (data) => {
+      let socket = connections.get(data.clientId);
+      if(socket){
+        socket.emit('serverDataResponse', data);
+      }
     });
 
     hostSocket.on('playerDisconnected', (data) => {
@@ -417,7 +437,12 @@ io.on('connection', (socket) => {
       hostSocket?.emit('playerInput', data);
     });
 
+    socket.on('serverDataRequest', (data) => {
+      hostSocket?.emit('serverDataRequest', data);
+    });
+
     socket.on('disconnect', () => {
+      connections.delete(socket.id);
       console.log(`Player disconnected: ${socket.id}`);
       hostSocket?.emit('playerDisconnected', { networkId: socket.id });
     });

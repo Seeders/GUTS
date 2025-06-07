@@ -2,7 +2,7 @@ class NetworkManager {
   constructor(multiplayerManager) {
     this.socket = null;
     this.connected = false;
-    this.playerId = null;
+    this.networkId = null;
     this.players = {}; // Other players
     this.multiplayerManager = multiplayerManager; // Reference to your main game engine
     this.pendingObjects = {}; // Objects waiting for server ID
@@ -11,6 +11,8 @@ class NetworkManager {
     this.serverState = {};
     this.inputSequence = 0;
     this.pendingInputs = [];
+    this.pendingRequests = new Map();
+    this.requestId = 0;
   }
   
   // Connect to the multiplayer server
@@ -43,8 +45,8 @@ class NetworkManager {
       this.socket.on('connect', () => {
         console.log('Connected to game server');
         this.connected = true;
-        this.playerId = this.socket.id;
-        resolve(this.playerId);
+        this.networkId = this.socket.id;
+        resolve(this.networkId);
       });
       
       this.socket.on('connect_error', (err) => {
@@ -62,6 +64,20 @@ class NetworkManager {
     }
   }
   
+  requestServerData(params, callback){
+    if (!this.connected) return;
+    console.log("is connected");
+    this.requestId++;
+    this.pendingRequests.set(this.requestId, callback);
+    // Send to server
+    this.socket.emit('serverDataRequest', {networkId: this.networkId, requestId: this.requestId, ...params});
+  }
+  serverDataResponse(params){
+          console.log('serverDataResponse');
+    if (!this.connected) return;
+    this.socket.emit('serverDataResponse', {networkId: this.networkId, ...params});
+  }
+
   setupEventHandlers() {
     if (!this.socket) return;
 
@@ -101,7 +117,30 @@ class NetworkManager {
           player.setNetworkComponentData(data, true);                 
         }
       }
-
+    });
+    // Player moved
+    this.socket.on('serverDataRequest', (data) => {
+      if(data.networkId && this.isHost){     
+        let responseObj = {
+          requestId: data.requestId,
+          clientId: data.networkId
+        };           
+    
+        let requestKey = `${responseObj.clientId}_${responseObj.requestId}`;
+        this.multiplayerManager.handleServerDataRequest(requestKey, responseObj, data);
+      }
+    });
+    this.socket.on('serverDataResponse', (data) => {
+          console.log('serverDataResponse');
+      if(data.clientId == this.networkId){        
+        
+        let callback = this.pendingRequests.get(data.requestId);
+        if(callback){
+          console.log('callback');
+          callback(data);
+          this.pendingRequests.delete(data.requestId);
+        }
+      }
     });
     
     // Object update from server
@@ -167,7 +206,7 @@ class NetworkManager {
     playerData.seq = this.inputSequence++;
 
     // Send to server
-    this.socket.emit('playerInput', {networkId: this.playerId, ...playerData});
+    this.socket.emit('playerInput', {networkId: this.networkId, ...playerData});
     
     // Save this input for reconciliation
     this.pendingInputs.push(playerData);
@@ -215,7 +254,7 @@ class NetworkManager {
   
   // Add a new remote player
   addRemotePlayer(data) {
-    if (this.players[data.networkId] || data.networkId === this.playerId) return;
+    if (this.players[data.networkId] || data.networkId === this.networkId) return;
     
     // Create remote player representation
     this.players[data.networkId] = this.multiplayerManager.createRemotePlayer(data);

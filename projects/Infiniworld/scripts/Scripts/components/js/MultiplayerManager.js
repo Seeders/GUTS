@@ -11,6 +11,7 @@ class MultiplayerManager extends engine.Component {
     // Interpolation settings
     this.interpolationDelay = 100; // ms    
     this.connected = false;
+    this.game.multiplayerManager = this;
   }
   
   // Initialize networking
@@ -30,9 +31,6 @@ class MultiplayerManager extends engine.Component {
   setHost(isHost){
     this.isServer = isHost;
     this.game.isServer = this.isServer;
-    if(this.game.isServer){            
-       // this.game.player.getComponent("PlayerController").setupPhysics(this.physics.simulation);
-    }
   }
   
   // Update called from your game loop
@@ -41,7 +39,7 @@ class MultiplayerManager extends engine.Component {
       return;
     }
     // Update local player position on network
-      this.updatePlayers();  
+    this.updatePlayers();  
     if (!this.game.isServer) {    
       if(this.localPlayer){  
         this.network.sendPlayerInput({ components: this.localPlayer.getNetworkComponentData() });          
@@ -150,7 +148,28 @@ class MultiplayerManager extends engine.Component {
     delete this.remotePlayers[playerId];
   }
   
+  requestServerData(params, callback){
+    if(this.network){
+      console.log('has network');
+      this.network.requestServerData(params, callback);
+    }
+  }
   
+  handleServerDataRequest(requestKey, responseObj, params){
+    if(params.function == "getTerrainChunk"){
+      this.getTerrainChunk(requestKey, responseObj, params.params);
+    } else {
+      this.network.serverDataResponse(responseObj);
+    }
+  }
+
+  getTerrainChunk(requestKey, responseObj, params){
+    this.game.terrain.requestTerrainChunk(requestKey, params, (chunkData) => {
+      responseObj.chunkData = chunkData;
+      this.network.serverDataResponse(responseObj);
+    });
+  }
+
   // Update object from server data
   updateObjectFromServer(objectData) {
     const object = this.networkObjects[objectData.id];

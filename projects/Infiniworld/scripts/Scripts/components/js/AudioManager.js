@@ -3,6 +3,7 @@ class AudioManager extends engine.Component {
     init() {
         this.isInitialized = false;
         this.bindInitialization();
+        this.game.audioManager = this;  
     }
 
     bindInitialization() {

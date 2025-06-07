@@ -29,9 +29,6 @@ class GameLoader extends engine.Component {
             });
             if(sceneEntity.type == "game"){  
                 this.game.gameEntity = this.game.createEntityFromCollections(sceneEntity.type, params);
-                this.game.audioManager = this.game.gameEntity.getComponent('AudioManager');  
-                this.game.multiplayerManager = this.game.gameEntity.getComponent("MultiplayerManager");
-                this.game.multiplayerManager.init({scene: this.game.scene, physics: this.game.physics, serverUrl: this.collections.configs.game.multiplayerServerUrl });
             } else {                               
                 if(sceneEntity.type.startsWith("player")){
                     if(!this.game.isServer){
@@ -47,7 +44,10 @@ class GameLoader extends engine.Component {
         });
 
         if(this.game.multiplayerManager) {
+            this.game.multiplayerManager.init({scene: this.game.scene, physics: this.game.physics, serverUrl: this.collections.configs.game.multiplayerServerUrl });
             this.playerId = await this.game.multiplayerManager.initializeMultiplayer(this.serverUrl);   
+            console.log('setup chunks');
+            this.game.terrain.setupInitialChunks();
             if(this.player){    
                 if(this.playerId != 0){
                     this.game.multiplayerManager.createLocalPlayer(this.playerId, this.player);

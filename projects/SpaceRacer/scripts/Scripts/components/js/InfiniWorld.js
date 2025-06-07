@@ -769,42 +769,43 @@ class InfiniWorld extends engine.Component {
 
   update() {
     if (!this.game.getCollections().configs.game.is3D) return;
-    this.timer += this.game.deltaTime || 0;
-    this.skyDome.position.set(this.camera.position.x, 0, this.camera.position.z); // Center it around the camera
-    this.updateChunks();
    // this.updateGrassTasks(); // Process grass tasks incrementally
 
-    const cameraPos = this.camera.position;
   
-    // Update directional light position smoothly every frame
-    this.directionalLight.position.set(cameraPos.x + 500, 500, cameraPos.z + 500);
-    this.directionalLight.target.position.set(cameraPos.x, 0, cameraPos.z);
-    this.directionalLight.target.updateMatrixWorld();
-  
-    // Update shadow camera smoothly every frame
-    const shadowCamera = this.directionalLight.shadow.camera;
-  
-    // Center shadow camera on the player's position
-    //const terrainHeight = this.getTerrainHeight(cameraPos);
-    shadowCamera.position.set(cameraPos.x, 500, cameraPos.z);
-    shadowCamera.lookAt(cameraPos.x, 0, cameraPos.z);
-    shadowCamera.updateProjectionMatrix();
-    shadowCamera.updateMatrixWorld();
-  
-    // Only force shadow map update when terrain changes (e.g., new chunks)
-    // This is already handled in handleWorkerMessage with this.renderer.shadowMap.needsUpdate = true
+    if(!this.isServer){
+      this.updateChunks();
+      this.timer += this.game.deltaTime || 0;
+      this.skyDome.position.set(this.camera.position.x, 0, this.camera.position.z); // Center it around the camera
+      const cameraPos = this.camera.position;
+      // Update directional light position smoothly every frame
+      this.directionalLight.position.set(cameraPos.x + 500, 500, cameraPos.z + 500);
+      this.directionalLight.target.position.set(cameraPos.x, 0, cameraPos.z);
+      this.directionalLight.target.updateMatrixWorld();
     
-    for (const [key, value] of this.uniforms.entries()) {
-        value.time = { value: this.timer };
-        value.cameraPosition = { value: { x: this.camera.position.x, y: this.camera.position.y, z: this.camera.position.z } };
-    }
-    if(this.pixelPass.enabled){
-  	  const rendererSize = this.renderer.getSize( new THREE.Vector2() );
-      const aspectRatio = rendererSize.x / rendererSize.y;
-  	  this.pixelAlignFrustum( this.camera, aspectRatio, Math.floor( rendererSize.x / this.pixelSize ),
-					Math.floor( rendererSize.y / this.pixelSize ) );
-    }
-    if(!this.game.isServer){
+      // Update shadow camera smoothly every frame
+      const shadowCamera = this.directionalLight.shadow.camera;
+    
+      // Center shadow camera on the player's position
+      //const terrainHeight = this.getTerrainHeight(cameraPos);
+      shadowCamera.position.set(cameraPos.x, 500, cameraPos.z);
+      shadowCamera.lookAt(cameraPos.x, 0, cameraPos.z);
+      shadowCamera.updateProjectionMatrix();
+      shadowCamera.updateMatrixWorld();
+  
+      // Only force shadow map update when terrain changes (e.g., new chunks)
+      // This is already handled in handleWorkerMessage with this.renderer.shadowMap.needsUpdate = true
+      
+      for (const [key, value] of this.uniforms.entries()) {
+          value.time = { value: this.timer };
+          value.cameraPosition = { value: { x: this.camera.position.x, y: this.camera.position.y, z: this.camera.position.z } };
+      }
+      if(this.pixelPass.enabled){
+        const rendererSize = this.renderer.getSize( new THREE.Vector2() );
+        const aspectRatio = rendererSize.x / rendererSize.y;
+        this.pixelAlignFrustum( this.camera, aspectRatio, Math.floor( rendererSize.x / this.pixelSize ),
+            Math.floor( rendererSize.y / this.pixelSize ) );
+      }
+
       this.render();
     }
   }
