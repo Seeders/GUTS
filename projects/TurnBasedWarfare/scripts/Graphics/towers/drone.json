@@ -1,0 +1,286 @@
+{
+  "title": "Drone",
+  "info": "Raise the dead.",
+  "drawOffsetY": -12,
+  "population": 1,
+  "range": 2,
+  "damage": 5,
+  "attackSpeed": 1,
+  "projectile": "neutronFragment",
+  "critMultiplier": 1,
+  "lifeSpan": 5,
+  "render": {
+    "animations": {
+      "idle": [
+        {
+          "shapes": {
+            "shapes": [
+              {
+                "type": "torus",
+                "size": 9,
+                "tubeSize": 1.5,
+                "x": 0,
+                "y": 33.85714285714286,
+                "z": 0,
+                "rotationX": 90,
+                "color": {
+                  "paletteColor": "blueDColor"
+                },
+                "id": 0
+              },
+              {
+                "color": {
+                  "paletteColor": "blueDColor"
+                },
+                "id": 1
+              },
+              {
+                "color": {
+                  "paletteColor": "blueLColor"
+                },
+                "id": 2
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 3
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 4
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 5
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 6
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 7
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 8
+              },
+              {
+                "color": {
+                  "paletteColor": "blueDColor"
+                },
+                "id": 9
+              },
+              {
+                "color": {
+                  "paletteColor": "blueDColor"
+                },
+                "id": 10
+              },
+              {
+                "color": {
+                  "paletteColor": "blueDColor"
+                },
+                "id": 11
+              },
+              {
+                "color": {
+                  "paletteColor": "blueDColor"
+                },
+                "id": 12
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "model": {
+      "shapes": {
+        "shapes": [
+          {
+            "type": "torus",
+            "size": 9,
+            "tubeSize": 1.5,
+            "x": 0,
+            "y": 33.85714285714286,
+            "z": 0,
+            "rotationX": 90,
+            "color": {
+              "paletteColor": "blueDColor"
+            }
+          },
+          {
+            "type": "torus",
+            "size": 9,
+            "tubeSize": 1.5,
+            "x": 0,
+            "y": 33.85714285714286,
+            "z": 0,
+            "rotationY": 90,
+            "color": {
+              "paletteColor": "blueDColor"
+            }
+          },
+          {
+            "type": "sphere",
+            "size": 2.25,
+            "x": 0,
+            "y": 39.85714285714286,
+            "z": 0,
+            "color": {
+              "paletteColor": "blueLColor"
+            }
+          },
+          {
+            "type": "cylinder",
+            "size": 10,
+            "height": 0.75,
+            "x": 0,
+            "y": 34,
+            "z": 0,
+            "rotationX": 90,
+            "rotationY": 0,
+            "color": {
+              "paletteColor": "greyDColor"
+            }
+          },
+          {
+            "type": "cylinder",
+            "size": 11,
+            "height": 0.75,
+            "x": 0,
+            "y": 34,
+            "z": 0,
+            "rotationX": 0,
+            "rotationY": 90,
+            "color": {
+              "paletteColor": "greyDColor"
+            },
+            "rotationZ": 0,
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1
+          },
+          {
+            "type": "cylinder",
+            "size": 3,
+            "height": 0.75,
+            "x": 10.5,
+            "y": 32.35714285714286,
+            "z": 10.5,
+            "color": {
+              "paletteColor": "greyDColor"
+            }
+          },
+          {
+            "type": "cylinder",
+            "size": 3,
+            "height": 0.75,
+            "x": -10.5,
+            "y": 32.35714285714286,
+            "z": 10.5,
+            "color": {
+              "paletteColor": "greyDColor"
+            }
+          },
+          {
+            "type": "cylinder",
+            "size": 3,
+            "height": 0.75,
+            "x": 10.5,
+            "y": 32.35714285714286,
+            "z": -10.5,
+            "color": {
+              "paletteColor": "greyDColor"
+            }
+          },
+          {
+            "type": "cylinder",
+            "size": 3,
+            "height": 0.75,
+            "x": -10.5,
+            "y": 32.35714285714286,
+            "z": -10.5,
+            "color": {
+              "paletteColor": "greyDColor"
+            }
+          },
+          {
+            "type": "torus",
+            "size": 4.5,
+            "tubeSize": 0.75,
+            "x": 10.5,
+            "y": 33.10714285714286,
+            "z": 10.5,
+            "rotationX": 90,
+            "color": {
+              "paletteColor": "blueDColor"
+            }
+          },
+          {
+            "type": "torus",
+            "size": 4.5,
+            "tubeSize": 0.75,
+            "x": -10.5,
+            "y": 33.10714285714286,
+            "z": 10.5,
+            "rotationX": 90,
+            "color": {
+              "paletteColor": "blueDColor"
+            }
+          },
+          {
+            "type": "torus",
+            "size": 4.5,
+            "tubeSize": 0.75,
+            "x": 10.5,
+            "y": 33.10714285714286,
+            "z": -10.5,
+            "rotationX": 90,
+            "color": {
+              "paletteColor": "blueDColor"
+            }
+          },
+          {
+            "type": "torus",
+            "size": 4.5,
+            "tubeSize": 0.75,
+            "x": -10.5,
+            "y": 33.10714285714286,
+            "z": -10.5,
+            "rotationX": 90,
+            "color": {
+              "paletteColor": "blueDColor"
+            }
+          }
+        ],
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      }
+    }
+  }
+}

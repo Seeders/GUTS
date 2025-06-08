@@ -1,0 +1,280 @@
+{
+  "hp": 20,
+  "speed": 1.2,
+  "value": 7,
+  "essence": 12,
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ],
+      "walk": [
+        {},
+        {
+          "shapes": {
+            "shapes": [
+              {
+                "y": 40,
+                "id": 0
+              },
+              {
+                "rotationZ": 0,
+                "rotationY": 10,
+                "id": 1
+              },
+              {
+                "y": 41,
+                "id": 2
+              },
+              {
+                "y": 41,
+                "id": 3
+              },
+              {
+                "y": 29,
+                "rotationX": 90,
+                "id": 4
+              },
+              {
+                "y": 25,
+                "rotationX": 120,
+                "id": 5
+              },
+              {
+                "y": 29,
+                "id": 6
+              },
+              {
+                "y": 20,
+                "id": 7
+              },
+              {
+                "z": -2,
+                "rotationX": 15,
+                "rotationY": 0,
+                "id": 8
+              },
+              {
+                "z": 2,
+                "rotationX": -15,
+                "id": 9
+              },
+              {
+                "z": -4,
+                "id": 10
+              },
+              {
+                "z": 6,
+                "id": 11
+              }
+            ]
+          }
+        },
+        {},
+        {
+          "shapes": {
+            "shapes": [
+              {
+                "y": 40,
+                "id": 0
+              },
+              {
+                "rotationY": -10,
+                "id": 1
+              },
+              {
+                "y": 41,
+                "id": 2
+              },
+              {
+                "y": 41,
+                "id": 3
+              },
+              {
+                "y": 25,
+                "rotationX": 120,
+                "id": 4
+              },
+              {
+                "y": 29,
+                "rotationX": 90,
+                "id": 5
+              },
+              {
+                "y": 20,
+                "id": 6
+              },
+              {
+                "y": 29,
+                "id": 7
+              },
+              {
+                "z": 2,
+                "rotationX": -15,
+                "id": 8
+              },
+              {
+                "z": -2,
+                "rotationX": 15,
+                "id": 9
+              },
+              {
+                "z": 6,
+                "id": 10
+              },
+              {
+                "z": -4,
+                "id": 11
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "model": {
+      "shapes": {
+        "shapes": [
+          {
+            "type": "sphere",
+            "size": 14,
+            "color": "#E0DED8",
+            "x": 0,
+            "y": 41,
+            "z": 0,
+            "name": "head"
+          },
+          {
+            "type": "box",
+            "width": 16,
+            "height": 20,
+            "depth": 8,
+            "color": "#CFCBC0",
+            "x": 0,
+            "y": 24,
+            "z": 0,
+            "name": "body",
+            "scaleX": 1
+          },
+          {
+            "type": "sphere",
+            "size": 3,
+            "color": "#000000",
+            "x": 4,
+            "y": 42,
+            "z": 5,
+            "name": "eye-left"
+          },
+          {
+            "type": "sphere",
+            "size": 3,
+            "color": "#000000",
+            "x": -4,
+            "y": 42,
+            "z": 5,
+            "name": "eye-right"
+          },
+          {
+            "type": "cylinder",
+            "size": 3,
+            "height": 18,
+            "color": "#E0DED8",
+            "x": 8,
+            "y": 27,
+            "z": 10,
+            "rotationX": 105,
+            "rotationZ": 15,
+            "name": "arm-left"
+          },
+          {
+            "type": "cylinder",
+            "size": 3,
+            "height": 18,
+            "color": "#E0DED8",
+            "x": -8,
+            "y": 27,
+            "z": 10,
+            "rotationX": 105,
+            "rotationZ": -15,
+            "name": "arm-right"
+          },
+          {
+            "type": "sphere",
+            "size": 5,
+            "color": "#E0DED8",
+            "x": 6,
+            "y": 25,
+            "z": 20,
+            "name": "hand-left"
+          },
+          {
+            "type": "sphere",
+            "size": 5,
+            "color": "#E0DED8",
+            "x": -6,
+            "y": 25,
+            "z": 20,
+            "name": "hand-right"
+          },
+          {
+            "type": "cylinder",
+            "size": 3,
+            "height": 22,
+            "color": "#E0DED8",
+            "x": 5,
+            "y": 14,
+            "z": 0,
+            "rotationZ": 0,
+            "name": "leg-left",
+            "rotationX": 0
+          },
+          {
+            "type": "cylinder",
+            "size": 3,
+            "height": 22,
+            "color": "#E0DED8",
+            "x": -5,
+            "y": 14,
+            "z": 0,
+            "rotationZ": 0,
+            "name": "leg-right"
+          },
+          {
+            "type": "sphere",
+            "size": 5,
+            "color": "#E0DED8",
+            "x": 5,
+            "y": 2,
+            "z": 0,
+            "name": "foot-left"
+          },
+          {
+            "type": "sphere",
+            "size": 5,
+            "color": "#E0DED8",
+            "x": -5,
+            "y": 2,
+            "z": 0,
+            "name": "foot-right"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      }
+    }
+  },
+  "electricResistance": 75,
+  "title": "skeleton"
+}

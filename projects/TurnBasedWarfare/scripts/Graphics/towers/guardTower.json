@@ -1,0 +1,94 @@
+{
+  "id": "guardTower",
+  "title": "Guard Tower",
+  "info": "A robust defensive structure that deals consistent damage while slowing enemies within a radius.",
+  "cost": 70,
+  "population": 3,
+  "range": 4,
+  "damage": 8,
+  "attackSpeed": 4,
+  "projectile": "plasmaBolt",
+  "critChance": 0.05,
+  "critMultiplier": 2,
+  "splashRadius": 2,
+  "render": {
+    "animations": {
+      "idle": [
+        {
+          "shapes": {
+            "shapes": [
+              {
+                "points": [
+                  {
+                    "x": -1,
+                    "y": 4
+                  },
+                  {
+                    "x": 1,
+                    "y": 4
+                  }
+                ],
+                "id": 5
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "model": {
+      "shapes": {
+        "shapes": [
+          {
+            "type": "box",
+            "width": 15,
+            "height": 30,
+            "color": {
+              "paletteColor": "greyMColor"
+            },
+            "x": 2.25,
+            "y": 6.75,
+            "z": 0
+          },
+          {
+            "type": "box",
+            "x": 0.2,
+            "y": 21.75,
+            "width": 10,
+            "height": 15,
+            "color": {
+              "paletteColor": "redMColor"
+            },
+            "z": 0,
+            "scaleX": 1
+          },
+          {
+            "type": "box",
+            "x": -5.25,
+            "y": 36.75,
+            "width": 25,
+            "height": 5,
+            "color": {
+              "paletteColor": "greyDColor"
+            },
+            "z": 0
+          }
+        ],
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      }
+    }
+  }
+}

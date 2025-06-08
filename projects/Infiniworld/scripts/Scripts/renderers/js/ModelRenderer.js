@@ -1,5 +1,6 @@
 class ModelRenderer extends engine.Component {
     async init({ objectType, spawnType, frameDuration }) {
+        //test
         if (!this.game.getCollections().configs.game.is3D) {
             return;
         }

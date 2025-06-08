@@ -1,0 +1,366 @@
+{
+  "title": "Fabricator",
+  "info": "Can be upgraded to summon drones from defeated enemies.",
+  "summonType": "drone",
+  "cost": 200,
+  "population": 4,
+  "range": 5,
+  "damage": 8,
+  "attackSpeed": 0.5,
+  "projectile": "nanoOrb",
+  "piercing": 1,
+  "critChance": 0.15,
+  "critMultiplier": 1.8,
+  "render": {
+    "animations": {
+      "idle": [
+        {
+          "shapes": {
+            "shapes": [
+              {
+                "type": "box",
+                "width": 40,
+                "height": 6,
+                "depth": 40,
+                "x": 0,
+                "y": 3,
+                "z": 0,
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 0
+              },
+              {
+                "color": {
+                  "paletteColor": "greyMColor"
+                },
+                "id": 1
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 2
+              },
+              {
+                "color": {
+                  "paletteColor": "greyMColor"
+                },
+                "id": 3
+              },
+              {
+                "color": {
+                  "paletteColor": "blueDColor"
+                },
+                "id": 4
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 5
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 6
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 7
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 8
+              },
+              {
+                "color": {
+                  "paletteColor": "blueMColor"
+                },
+                "id": 9
+              },
+              {
+                "color": {
+                  "paletteColor": "blueMColor"
+                },
+                "id": 10
+              },
+              {
+                "color": {
+                  "paletteColor": "blueMColor"
+                },
+                "id": 11
+              },
+              {
+                "color": {
+                  "paletteColor": "blueMColor"
+                },
+                "id": 12
+              },
+              {
+                "color": {
+                  "paletteColor": "greyDColor"
+                },
+                "id": 13
+              },
+              {
+                "color": {
+                  "paletteColor": "blueDColor"
+                },
+                "id": 14
+              },
+              {
+                "color": {
+                  "paletteColor": "blueMColor"
+                },
+                "id": 15
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "model": {
+      "shapes": {
+        "shapes": [
+          {
+            "type": "box",
+            "width": 40,
+            "height": 6,
+            "depth": 40,
+            "x": 0,
+            "y": 3,
+            "z": 0,
+            "color": {
+              "paletteColor": "greyDColor"
+            }
+          },
+          {
+            "type": "cylinder",
+            "size": 36,
+            "height": 14,
+            "x": 0,
+            "y": 13,
+            "z": 0,
+            "color": {
+              "paletteColor": "greyMColor"
+            }
+          },
+          {
+            "type": "cylinder",
+            "size": 28,
+            "height": 4,
+            "x": 0,
+            "y": 22,
+            "z": 0,
+            "color": {
+              "paletteColor": "greyDColor"
+            }
+          },
+          {
+            "type": "cylinder",
+            "size": 24,
+            "height": 16,
+            "x": 0,
+            "y": 32,
+            "z": 0,
+            "color": {
+              "paletteColor": "greyMColor"
+            }
+          },
+          {
+            "type": "torus",
+            "size": 20,
+            "tubeSize": 2,
+            "x": 0,
+            "y": 42,
+            "z": 0,
+            "color": {
+              "paletteColor": "blueDColor"
+            },
+            "rotationX": 90,
+            "rotationY": 0,
+            "rotationZ": 0,
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1
+          },
+          {
+            "type": "box",
+            "width": 6,
+            "height": 28,
+            "depth": 6,
+            "x": 16,
+            "y": 20,
+            "z": 16,
+            "color": {
+              "paletteColor": "greyDColor"
+            }
+          },
+          {
+            "type": "box",
+            "width": 6,
+            "height": 28,
+            "depth": 6,
+            "x": -16,
+            "y": 20,
+            "z": 16,
+            "color": {
+              "paletteColor": "greyDColor"
+            }
+          },
+          {
+            "type": "box",
+            "width": 6,
+            "height": 28,
+            "depth": 6,
+            "x": 16,
+            "y": 20,
+            "z": -16,
+            "color": {
+              "paletteColor": "greyDColor"
+            }
+          },
+          {
+            "type": "box",
+            "width": 6,
+            "height": 28,
+            "depth": 6,
+            "x": -16,
+            "y": 20,
+            "z": -16,
+            "color": {
+              "paletteColor": "greyDColor"
+            }
+          },
+          {
+            "type": "sphere",
+            "size": 4,
+            "x": 16,
+            "y": 38,
+            "z": 16,
+            "color": {
+              "paletteColor": "blueMColor"
+            }
+          },
+          {
+            "type": "sphere",
+            "size": 4,
+            "x": -16,
+            "y": 38,
+            "z": 16,
+            "color": {
+              "paletteColor": "blueMColor"
+            }
+          },
+          {
+            "type": "sphere",
+            "size": 4,
+            "x": 16,
+            "y": 38,
+            "z": -16,
+            "color": {
+              "paletteColor": "blueMColor"
+            }
+          },
+          {
+            "type": "sphere",
+            "size": 4,
+            "x": -16,
+            "y": 38,
+            "z": -16,
+            "color": {
+              "paletteColor": "blueMColor"
+            }
+          },
+          {
+            "type": "cylinder",
+            "size": 10,
+            "height": 4,
+            "x": 0,
+            "y": 42,
+            "z": 0,
+            "color": {
+              "paletteColor": "greyDColor"
+            }
+          },
+          {
+            "type": "cylinder",
+            "size": 6,
+            "height": 8,
+            "x": 0,
+            "y": 48,
+            "z": 0,
+            "color": {
+              "paletteColor": "blueDColor"
+            }
+          },
+          {
+            "type": "torus",
+            "size": 8,
+            "tubeSize": 1,
+            "x": 0,
+            "y": 48,
+            "z": 0,
+            "rotationX": 90,
+            "color": {
+              "paletteColor": "blueMColor"
+            }
+          },
+          {
+            "type": "sphere",
+            "size": 2,
+            "x": 6,
+            "y": 48,
+            "z": 0,
+            "color": "#FFFFFF"
+          },
+          {
+            "type": "sphere",
+            "size": 2,
+            "x": -6,
+            "y": 48,
+            "z": 0,
+            "color": "#FFFFFF"
+          },
+          {
+            "type": "sphere",
+            "size": 2,
+            "x": 0,
+            "y": 48,
+            "z": 6,
+            "color": "#FFFFFF"
+          },
+          {
+            "type": "sphere",
+            "size": 2,
+            "x": 0,
+            "y": 48,
+            "z": -6,
+            "color": "#FFFFFF"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      }
+    }
+  }
+}

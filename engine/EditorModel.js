@@ -33,7 +33,7 @@ class EditorModel {
         let projects = localStorage.getItem("projects");
         if(!projects){
             localStorage.setItem("currentProject", "Hello World");
-            localStorage.setItem("projects", JSON.stringify(["Hello World", "TowerDefense", "Infiniworld", "SpaceRacer"]));
+            localStorage.setItem("projects", JSON.stringify(["Hello World", "TowerDefense", "Infiniworld", "SpaceRacer", "TurnBasedWarfare"]));
         }
     }
 
