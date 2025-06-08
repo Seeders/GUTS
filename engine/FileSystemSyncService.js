@@ -135,9 +135,10 @@ class FileSystemSyncService {
 
     async importProject(projectId) {
         // Load project data from storage via the model    
-        await this.importProjectFromFilesystem(projectId);            
-        await this.importModulesFromFilesystem();
+        await this.importModulesFromFilesystem();      
+        await this.importProjectFromFilesystem(projectId);      
         this.setCollectionDefs();
+        this.gameEditor.model.saveProject();
     }
 
     async importProjectFromFilesystem(projectId) {
@@ -162,7 +163,6 @@ class FileSystemSyncService {
             if (!response.ok) throw new Error(`Failed to list files: ${response.status}`);
             const files = await response.json();
             await this.loadFiles(files, false);
-            this.gameEditor.model.saveProject();
             console.log('All files successfully imported');
         } catch (error) {
             console.error('Error importing project:', error);
@@ -190,8 +190,6 @@ class FileSystemSyncService {
             const files = await response.json();
     
             await this.loadFiles(files, true);
-            this.setCollectionDefs();
-            this.gameEditor.model.saveProject();
             console.log('All modules successfully imported');
 
         } catch(e) {
@@ -210,6 +208,7 @@ class FileSystemSyncService {
         const fileGroups = {};
 
         files.forEach(file => {
+            console.log('loading file', file.name);
             const parts = file.name.split('/');
             if (parts.length < 3) {
                 console.warn(`Skipping malformed file path: ${file.name}`);
