@@ -37,15 +37,18 @@ class Engine {
         this.preCompileScripts();  
 
         this.state = new GUTS.GameState(this.collections);  
-
+        this.sceneManager = new GUTS.SceneManager(this); 
+        this.imageManager = new GUTS.ImageManager(this, { imageSize: this.collections.configs.game.imageSize, palette: this.collections.configs.game.palette, textures:  this.collections.textures}, {ShapeFactory: GUTS.ShapeFactory});    
+      
 
         this.state.loader = this.createEntityFromCollections(projectConfig.loaderEntity, {}, {x:0, y:0, z:0 }).getComponent(projectConfig.loaderComponent);        
         await this.state.loader.load();
-        this.state.projectEntity = this.state.loader.getProject();        
+        
+        this.sceneManager.load(projectConfig.initialScene || "main");
         // Use ModuleManager's script environment
 
         this.animationFrameId = requestAnimationFrame(() => this.gameLoop());
-
+        this.imageManager.dispose();
         requestAnimationFrame(() => {
             this.hideLoadingScreen();
         });    
@@ -58,7 +61,10 @@ class Engine {
         return this.collections;
     }
 
-
+    setGameEntity(gameEntity){        
+        this.gameEntity = gameEntity;  
+        gameEntity.excluded = true;
+    }
 
     hideLoadingScreen() {      
         document.body.style = "";  
@@ -93,10 +99,10 @@ class Engine {
     }
     
     gameLoop() {    
-        if(this.state.projectEntity && this.state.projectEntity.update) {
-            this.state.projectEntity.update(); 
+        if(this.gameEntity && this.gameEntity.update) {
+            this.gameEntity.update(); 
             if(!this.isServer){ 
-                this.state.projectEntity.draw();   
+                this.gameEntity.draw();   
             }
         }      
         this.entitiesToAdd.forEach((entity) => this.state.addEntity(entity));        
@@ -114,7 +120,9 @@ class Engine {
 
     spawn(type, params) {
         let entity = this.createEntityFromCollections(type, params);
-        this.entitiesToAdd.push(entity);        
+        if(!entity.excluded){
+            this.entitiesToAdd.push(entity);        
+        }
         return entity;
     }
     

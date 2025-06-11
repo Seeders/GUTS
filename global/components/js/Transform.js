@@ -23,6 +23,7 @@ class Transform extends engine.Component {
         this.networkPosition = this.position.clone();
         this.networkQuaternion = this.quaternion.clone();   
         this.networkVelocity = this.velocity.clone();   
+        this.setGridPosition(); 
 
     }
   
@@ -75,6 +76,9 @@ class Transform extends engine.Component {
         }
     }
 
+    update() {        
+        this.setGridPosition(); 
+    }
     postUpdate() {
         
         // Update grid and draw positions
@@ -84,4 +88,12 @@ class Transform extends engine.Component {
 
     }
     
+    setGridPosition() {
+        if(this.game.translator){
+            let gridPosition = this.game.translator.pixelToGrid( this.position.x, this.position.z ); 
+            this.gridPosition = this.game.translator.snapToGrid(gridPosition.x, gridPosition.y);   
+            return;
+        }
+        this.gridPosition = { x: 0, y: 0 };
+    }
 }
