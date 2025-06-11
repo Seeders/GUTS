@@ -1,26 +1,25 @@
 class MapRenderer extends engine.Component {
-    
-    constructor(game, parent, params) {
-        super(game, parent, params);
-    }
-    
-    
-    init({canvasBuffer, terrainCanvasBuffer, worldObjects, imageManager, levelName, gameConfig, level, isEditor, palette}) {   
-        this.config = gameConfig;
-        this.imageManager = imageManager;
+   
+    init({worldObjects, levelName, level, isEditor, palette}) {   
+        this.config = this.game.getCollections().configs.game;
+        this.imageManager = this.game.imageManager;
         this.worldObjects = worldObjects;
         this.selectedTowerType = null;
         this.hoverCell = { x: -1, y: -1 };
         this.showRange = false;
         this.isMapCached = false; // Flag to track if map needs redrawing
         this.currentLevel = levelName;
-        this.level = level;
-        this.tileMap = level.tileMap;
+        if(level){
+            this.level = level;
+        } else {
+            this.level = this.game.getCollections().levels[this.currentLevel];
+        }
+        this.tileMap = this.level.tileMap;
         this.palette = palette;
 
         // Create off-screen canvas for caching
         if(!this.config.is3D || isEditor) {
-            this.ctx = canvasBuffer.getContext('2d');
+            this.ctx = this.game.canvasBuffer.getContext('2d');
             this.mapCacheCanvas = document.createElement('canvas');
             this.mapCacheCanvas.width = this.config.canvasWidth;
             this.mapCacheCanvas.height = this.config.canvasHeight;
@@ -37,7 +36,7 @@ class MapRenderer extends engine.Component {
             this.envCacheCanvasFG.height = this.config.canvasHeight / 2;
             this.envCacheCtxFG = this.envCacheCanvasFG.getContext('2d');
         }
-        this.terrainCanvas = terrainCanvasBuffer;
+        this.terrainCanvas = this.game.terrainCanvasBuffer;
         this.terrainCanvas.width = this.tileMap.size * this.config.gridSize;
         this.terrainCanvas.height = this.tileMap.size * this.config.gridSize;
         this.terrainCtx = this.terrainCanvas.getContext('2d');
@@ -45,6 +44,7 @@ class MapRenderer extends engine.Component {
         this.terrainTileMapper = this.game.terrainTileMapper;
         this.game.mapRenderer = this;
         this.isometric = this.game.getCollections().configs.game.isIsometric;
+        this.render(this.game.state.tileMapData, this.game.state.paths);
     }
 
     draw(){}

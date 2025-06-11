@@ -1,13 +1,8 @@
 class UiManager extends engine.Component {
-    
-    constructor(game, parent, params) {
-        super(game, parent, params);
-    }
-    
-    
-    init({ canvas, canvasBuffer, terrainCanvasBuffer }) {
-        this.canvas = canvas;
-        this.canvasBuffer = canvasBuffer;
+        
+    init({}) {
+        this.canvas = this.game.canvas;
+        this.canvasBuffer = this.game.canvasBuffer;
         if(this.game.getCollections().configs.game.is3D) {
             this.finalCtx = this.canvas.getContext("webgl2");
             this.ctx = this.canvasBuffer.getContext("webgl2");
@@ -15,7 +10,7 @@ class UiManager extends engine.Component {
             this.finalCtx = this.canvas.getContext("2d");
             this.ctx = this.canvasBuffer.getContext("2d");
         }
-        this.terrainCanvasBuffer = terrainCanvasBuffer;
+        this.terrainCanvasBuffer = this.game.terrainCanvasBuffer;
         this.projectConfig = this.game.getCollections().configs.game;
         this.gridSize = this.projectConfig.gridSize;
         this.isometric = this.projectConfig.isIsometric || false;
@@ -54,7 +49,7 @@ class UiManager extends engine.Component {
         this.finalCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);    
     }
     renderCanvas() {      
-        this.finalCtx.drawImage(this.canvasBuffer, 0, 0);
+       this.finalCtx.drawImage(this.canvasBuffer, 0, 0);
     }
 
     setMousePosition(clientX, clientY) {
@@ -144,8 +139,8 @@ class UiManager extends engine.Component {
 
             if (this.game.state.selectedTowerType && this.game.state.previewTower) {
                 this.game.state.previewTower.transform.position.x = this.game.state.mousePosition.gridX * this.gridSize + this.gridSize / 2;
-                this.game.state.previewTower.transform.position.y = this.game.state.mousePosition.gridY * this.gridSize + this.gridSize / 2;
-                this.game.state.previewTower.transform.position.z = this.game.gameEntity.getComponent('game').getTerrainHeight(this.game.state.previewTower.transform.gridPosition);
+                this.game.state.previewTower.transform.position.z = this.game.state.mousePosition.gridY * this.gridSize + this.gridSize / 2;
+                this.game.state.previewTower.transform.position.y = this.game.gameEntity.getComponent('mapManager').getTerrainHeight(this.game.state.previewTower.transform.gridPosition);
                 const isValidPosition = this.checkValidTowerPosition(this.game.state.mousePosition.gridX, this.game.state.mousePosition.gridY);
                 this.canvas.style.cursor = isValidPosition ? 'pointer' : 'not-allowed';
             }
@@ -201,12 +196,12 @@ class UiManager extends engine.Component {
                 if (this.game.state.bloodShards >= finalCost && this.game.state.stats.population + populationCost <= this.game.state.stats.maxPopulation) {
                     let position = new THREE.Vector3(
                         this.game.state.mousePosition.gridX * this.gridSize + this.gridSize / 2, 
-                        this.game.state.mousePosition.gridY * this.gridSize + this.gridSize / 2,
-                        0
+                        0,                        
+                        this.game.state.mousePosition.gridY * this.gridSize + this.gridSize / 2
                     );
                     const tower = this.game.spawn("tower", { objectType: "towers", spawnType: this.game.state.selectedTowerType, setDirection: 1, position});
                     tower.placed = true;
-                    tower.transform.position.z = this.game.gameEntity.getComponent('game').getTerrainHeight(tower.transform.gridPosition);
+                    tower.transform.position.y = this.game.gameEntity.getComponent('mapManager').getTerrainHeight(tower.transform.gridPosition);
                     this.game.state.tileMap[this.game.state.mousePosition.gridY][this.game.state.mousePosition.gridX].buildable = false;
                     this.game.state.tileMap[this.game.state.mousePosition.gridY][this.game.state.mousePosition.gridX].tower = tower;
                     this.game.state.bloodShards -= finalCost;

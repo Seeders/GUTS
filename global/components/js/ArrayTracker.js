@@ -1,10 +1,5 @@
 class ArrayTracker extends engine.Component {
-    
-    constructor(game, parent, params) {
-        super(game, parent, params);
-    }
-    
-    
+
     init( {objectType}) {
         this.arr = objectType;
         if(!this.game.state[this.arr]){

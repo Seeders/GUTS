@@ -5,34 +5,34 @@ class MapManager extends engine.Component {
     }
     
     
-init({level}) {
-  this.nodeClass = class Node {
-    constructor(x, y, tileType, parent = null) {
-        this.x = x;
-        this.y = y;
-        this.tileType = tileType;
-        this.parent = parent;
+    init({level}) {
+        this.nodeClass = class Node {
+            constructor(x, y, tileType, parent = null) {
+                this.x = x;
+                this.y = y;
+                this.tileType = tileType;
+                this.parent = parent;
+                
+                this.g = 0; // Cost from start to current node
+                this.h = 0; // Heuristic (estimated cost from current to goal)
+                this.f = 0; // Total cost (g + h)
+            }
+
+            equals(other) {
+                return this.x === other.x && this.y === other.y;
+            }
+
+            // Unique key for node based on coordinates
+            key() {
+                return `${this.x},${this.y}`;
+            }
+        };
+        this.tileMap = level.tileMap;
         
-        this.g = 0; // Cost from start to current node
-        this.h = 0; // Heuristic (estimated cost from current to goal)
-        this.f = 0; // Total cost (g + h)
+        const {tileMap, paths} = this.generateMap();
+        this.game.state.tileMap = tileMap;
+        this.game.state.paths = paths;
     }
-
-    equals(other) {
-        return this.x === other.x && this.y === other.y;
-    }
-
-    // Unique key for node based on coordinates
-    key() {
-        return `${this.x},${this.y}`;
-    }
-};
-  this.tileMap = level.tileMap;
-   
-   const {tileMap, paths} = this.generateMap();
-   this.game.state.tileMap = tileMap;
-   this.game.state.paths = paths;
-}
 
     generateMap() {
         // Extract values from the data object

@@ -6,10 +6,10 @@ class FollowPath extends engine.Component {
         this.indexInPath = 0;
         // Store grid coordinates
         this.x = this.game.state.paths[this.pathIndex][this.indexInPath].x;
-        this.y = this.game.state.paths[this.pathIndex][this.indexInPath].y;
+        this.z = this.game.state.paths[this.pathIndex][this.indexInPath].y;
         // Convert to pixel position
         this.parent.transform.position.x = this.x * this.gridSize + this.gridSize / 2;
-        this.parent.transform.position.y = this.y * this.gridSize + this.gridSize / 2;
+        this.parent.transform.position.z = this.z * this.gridSize + this.gridSize / 2;
 
         this.progress = 0; // Progress between grid points (0 to 1)
         this.gridSize = this.game.getCollections().configs.game.gridSize;
@@ -30,19 +30,19 @@ class FollowPath extends engine.Component {
                 this.indexInPath++;
                 this.progress = 0;
                 this.x = target.x;
-                this.y = target.y;
+                this.z = target.y;
             } else {
                 // Interpolate between current and target grid positions
                 this.x = this.game.state.paths[this.pathIndex][this.indexInPath].x * (1 - this.progress) + 
                         target.x * this.progress;
-                this.y = this.game.state.paths[this.pathIndex][this.indexInPath].y * (1 - this.progress) + 
+                this.z = this.game.state.paths[this.pathIndex][this.indexInPath].y * (1 - this.progress) + 
                         target.y * this.progress;
             }
             
             // Convert grid coordinates to pixel coordinates
             this.parent.transform.position.x = this.x * this.gridSize + this.gridSize / 2;
-            this.parent.transform.position.y = this.y * this.gridSize + this.gridSize / 2;
-            this.parent.transform.position.z = this.game.gameEntity.getComponent('game').getTerrainHeight(this.parent.transform.gridPosition);
+            this.parent.transform.position.z = this.z * this.gridSize + this.gridSize / 2;
+            this.parent.transform.position.y = this.game.gameEntity.getComponent('mapManager').getTerrainHeight(this.parent.transform.gridPosition);
         } else {
             this.game.state.bloodCoreHP -= this.stats.value;
             this.parent.destroy();

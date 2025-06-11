@@ -6,6 +6,7 @@
   "libraries": [
     "threejs",
     "three.SkeletonUtils",
+    "SceneManager",
     "ShapeFactory",
     "ImageManager",
     "SpatialGrid",

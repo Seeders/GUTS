@@ -178,7 +178,6 @@ class ThreeJsWorld extends engine.Component {
         this.groundTexture.wrapT = THREE.ClampToEdgeWrapping;
         this.groundTexture.minFilter = THREE.NearestFilter;
         this.groundTexture.magFilter = THREE.NearestFilter;
-
         if (this.heightMapSettings) {
             this.createHeightMapTerrain();
         } else {
@@ -397,7 +396,6 @@ class ThreeJsWorld extends engine.Component {
         if (!this.game.getCollections().configs.game.is3D) {
             return;
         }   
-    
         if (this.controls) {
             this.controls.update();
         }

@@ -1,7 +1,8 @@
 class Entity {
     constructor(game, type) {
         this.game = game;
-        this.moduleManager = game.moduleManager;        
+        this.moduleManager = game.moduleManager;
+        this.children = [];        
         this.components = [];
         this.renderers = [];
         this.destroyed = false;        
@@ -114,8 +115,18 @@ class Entity {
             this.components[c].onPhysicsUpdate(timestamp, physicsStepMs);                           
         }     
     }
+    addChild(entity){
+        this.children.push(entity);
+        entity.parent = this;
+        return entity;
+    }
     destroy() {
         this.destroyed = true;
+        this.children.forEach((c) => {
+            if(!c.destroyed){
+                c.destroy();
+            }
+        });
         for(let c in this.components) {
             this.components[c].destroy();   
         }   

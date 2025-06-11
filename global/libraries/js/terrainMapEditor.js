@@ -296,15 +296,11 @@ class TerrainMapEditor {
         this.terrainCanvasBuffer.height =  this.tileMap.size * this.gameEditor.getCollections().configs.game.gridSize;
 
         this.terrainTileMapper.init(this.terrainCanvasBuffer, this.gameEditor.getCollections().configs.game.gridSize, terrainImages, this.gameEditor.getCollections().configs.game.isIsometric);
-        this.game = { state: {}, terrainTileMapper: this.terrainTileMapper, getCollections: this.gameEditor.getCollections.bind(this.gameEditor), translator: this.translator };
+        this.game = { state: {}, imageManager: this.imageManager, canvasBuffer: this.canvasEl, terrainCanvasBuffer: this.terrainCanvasBuffer, terrainTileMapper: this.terrainTileMapper, getCollections: this.gameEditor.getCollections.bind(this.gameEditor), translator: this.translator };
 
         this.mapRenderer = new (this.gameEditor.scriptContext.getRenderer("MapRenderer"))(this.game, null);
         this.mapRenderer.init({ 
-                gameConfig: this.config, 
-                terrainCanvasBuffer: this.terrainCanvasBuffer, 
-                canvasBuffer: this.canvasEl, 
                 environment: this.worldObjects, 
-                imageManager: this.imageManager, 
                 levelName: 'level', 
                 level: { tileMap: this.tileMap },
                 isEditor: true,

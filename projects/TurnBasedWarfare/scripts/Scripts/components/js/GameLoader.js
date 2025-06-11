@@ -1,8 +1,4 @@
 class GameLoader extends engine.Component {
-    
-    constructor(game, parent, params) {
-        super(game, parent, params);
-    }
 
     init() {}
     
@@ -21,23 +17,20 @@ class GameLoader extends engine.Component {
 
         this.setupCanvas(this.collections.configs.game.canvasWidth, this.collections.configs.game.canvasHeight);
         await this.loadAssets();
-
         this.game.translator = new GUTS.CoordinateTranslator(this.collections.configs.game, this.collections.levels[this.game.state.level].tileMap.terrainMap.length, this.isometric);
+        
+    
         this.game.spatialGrid = new GUTS.SpatialGrid(this.collections.levels[this.game.state.level].tileMap.terrainMap.length, this.collections.configs.game.gridSize);
         const terrainImages = this.game.imageManager.getImages("levels", this.game.state.level);
 
         // Use ModuleManager's script environment
         this.game.terrainTileMapper = new GUTS.TileMap(this, {}, {CanvasUtility: GUTS.CanvasUtility});
-        this.game.terrainTileMapper.init(this.terrainCanvasBuffer, this.collections.configs.game.gridSize, terrainImages, this.isometric);
 
-        this.game.gameEntity = this.game.createEntityFromCollections('game', { gameConfig: this.collections.configs.game, canvas: this.canvas, canvasBuffer: this.canvasBuffer, terrainCanvasBuffer: this.terrainCanvasBuffer, worldObjects: this.collections.worldObjects, imageManager: this.game.imageManager, levelName: this.game.state.level, level: this.collections.levels[this.game.state.level], palette: this.game.palette }, new THREE.Vector3());
-        this.game.imageManager.dispose();    
-        this.game.audioManager = this.game.gameEntity.getComponent('AudioManager');  
+        this.game.terrainTileMapper.init(this.game.terrainCanvasBuffer, this.collections.configs.game.gridSize, terrainImages, this.isometric);
+
+
     }
 
-    getProject() {
-        return this.game.gameEntity;
-    }
     setupCanvas(canvasWidth, canvasHeight) {
         this.canvas = document.getElementById("gameCanvas");
         if(this.game.getCollections().configs.game.is3D){
@@ -63,8 +56,7 @@ class GameLoader extends engine.Component {
         this.game.terrainCanvasBuffer = this.terrainCanvasBuffer;
     }
     async loadAssets() {
-        this.game.imageManager = new GUTS.ImageManager(this, { imageSize: this.collections.configs.game.imageSize, palette: this.game.palette, textures:  this.game.getCollections().textures}, {ShapeFactory: GUTS.ShapeFactory});    
-        // Load all images
+         // Load all images
         for(let objectType in this.collections) {
             await this.game.imageManager.loadImages(objectType, this.collections[objectType]);
         }  

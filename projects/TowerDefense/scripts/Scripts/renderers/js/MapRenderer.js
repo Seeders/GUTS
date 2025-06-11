@@ -1,10 +1,5 @@
 class MapRenderer extends engine.Component {
     
-    constructor(game, parent, params) {
-        super(game, parent, params);
-    }
-    
-    
     init({canvasBuffer, terrainCanvasBuffer, worldObjects, imageManager, levelName, gameConfig, level, isEditor, palette}) {   
         this.config = gameConfig;
         this.imageManager = imageManager;

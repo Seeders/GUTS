@@ -1,33 +1,13 @@
 class Game extends engine.Component {
-    
-    constructor(game, parent, params) {
-        super(game, parent, params);
-    }
-    
-    
-        
+       
     init() {
         this.initEffectsAndUpgrades();
         this.gridSize = this.game.getCollections().configs.game.gridSize;
-        let endPath = this.game.state.paths[0][this.game.state.paths[0].length - 1];
-        let endY = endPath.y;
-        let endX = endPath.x;
-        let keepPosition = new THREE.Vector3(
-            endX * this.gridSize + this.gridSize / 2,
-            endY * this.gridSize + this.gridSize / 2,
-            0
-        );
-        this.keep = this.game.spawn("tower",{ spawnType: 'keep', objectType: 'towers', setDirection: 1, position: keepPosition});
-        this.keep.placed = true;
-        this.keep.transform.position.z = this.getTerrainHeight(this.keep.transform.gridPosition);
+        this.game.setGameEntity(this.parent);
     }
 
     update() {
-        if(this.game.getCollections().configs.game.is3D){
-            this.getComponent("MapRenderer")?.render(this.game.state.tileMapData, this.game.state.paths);
-        } else {
-            this.getComponent("MapRenderer")?.renderBG(this.game.state.tileMapData, this.game.state.paths);
-        }
+  
         if (!this.game.state.isPaused) {
             this.currentTime = Date.now();
 
@@ -42,11 +22,6 @@ class Game extends engine.Component {
 
             this.game.deltaTime = Math.min(1/30, timeSinceLastUpdate / 1000); // Cap at 1/30th of a second        
             this.lastTime = this.currentTime;
-
-            // Sort entities by y position for proper drawing order
-            this.game.state.entities.sort((a, b) => {
-                return (a.transform.position.y * this.game.state.tileMap.length + a.transform.position.x) - (b.transform.position.y * this.game.state.tileMap.length + b.transform.position.x)
-            });
 
             this.game.state.stats = {...this.game.state.defaultStats};//reset stats to recalculate upgrades from base stats.
 
@@ -67,27 +42,8 @@ class Game extends engine.Component {
             
             this.postUpdate();
         }     
-        if(!this.game.getCollections().configs.game.is3D){
-            this.getComponent("MapRenderer")?.renderFG(this.game.state.tileMapData, this.game.state.paths);
-        }   
-        
     }
 
-    getTerrainHeight(gridPosition) {
-        if(this.game.state.tileMap.length > gridPosition.y && gridPosition.y > 0 && this.game.state.tileMap[Math.floor(gridPosition.y)] && this.game.state.tileMap[Math.floor(gridPosition.y)].length > gridPosition.x && gridPosition.x > 0){
-            const tile = this.game.state.tileMap[Math.floor(gridPosition.y)][Math.floor(gridPosition.x)];
-            if (!tile) {
-                return 0;
-            }              
-            let heightStep = 1;
-            if(this.game.heightMapConfig){
-                heightStep = this.game.heightMapConfig.heightStep
-            }
-            const terrainHeight = tile.typeId * heightStep;
-            return terrainHeight;
-        }
-        return 0;
-    }
     postUpdate() {
         
             if (this.game.state.gameOver || this.game.state.victory || this.game.state.isLevelingUp) return;
@@ -98,8 +54,6 @@ class Game extends engine.Component {
             }
     }
 
-
-    // Game-over and victory functions
     gameOver() {
         this.game.state.gameOver = true;
         this.game.state.isPaused = true;
@@ -114,10 +68,6 @@ class Game extends engine.Component {
         victoryMenu.style.display = 'block';
         overlay.style.display = 'block';
     }
-
-
-    // Tower placement system
-  
 
     initEffectsAndUpgrades() {
 

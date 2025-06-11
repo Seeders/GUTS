@@ -1,8 +1,4 @@
 class UpgradeManager extends engine.Component {
-    
-    constructor(game, parent, params) {
-        super(game, parent, params);
-    }
 
     init() {
         this.game.state.activeUpgrades = {};

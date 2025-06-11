@@ -70,8 +70,8 @@ class ModelRenderer extends engine.Component {
         if (this.parent && this.parent.transform.position) {
             this.modelGroup.position.set(
                 this.parent.transform.position.x,
-                this.parent.transform.position.z,
-                this.parent.transform.position.y
+                this.parent.transform.position.y,
+                this.parent.transform.position.z
             );
             
             // Handle rotation based on movement direction
@@ -85,12 +85,12 @@ class ModelRenderer extends engine.Component {
         // Calculate direction based on movement
         if (this.parent && this.parent.transform.lastPosition) {
             const dx = this.parent.transform.position.x - this.parent.transform.lastPosition.x;
-            const dy = this.parent.transform.position.y - this.parent.transform.lastPosition.y;
+            const dz = this.parent.transform.position.z - this.parent.transform.lastPosition.z;
             
             // Only update direction if there's significant movement
-            if (Math.abs(dx) > 0.001 || Math.abs(dy) > 0.001) {
+            if (Math.abs(dx) > 0.001 || Math.abs(dz) > 0.001) {
                 // Calculate angle in radians
-                let angle = Math.atan2(dy, dx);
+                let angle = Math.atan2(dz, dx);
             
                 // Rotate model to face movement direction
                 this.modelGroup.rotation.y = -angle + Math.PI / 2;
