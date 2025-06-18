@@ -4,11 +4,17 @@
     "threejs",
     "Entity",
     "Component",
-    "GameState"
+    "GameState",
+    "SceneManager",
+    "ImageManager",
+    "ShapeFactory",
+    "GLTFLoader",
+    "HelloLoader",
+    "ECGame"
   ],
   "fileName": "game",
   "interface": "main",
-  "loaderComponent": "GameLoader",
-  "loaderEntity": "GameLoader",
+  "appLibrary": "ECGame",
+  "appLoaderLibrary": "HelloLoader",
   "palette": "main"
 }

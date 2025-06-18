@@ -1,10 +1,5 @@
 class Stats extends engine.Component {
     
-    constructor(game, parent, params) {
-        super(game, parent, params);
-    }
-    
-    
   init( {objectType, spawnType} ) {        
         
         let stats = this.game.getCollections()[objectType][spawnType];

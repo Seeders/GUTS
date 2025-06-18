@@ -3,8 +3,8 @@
   "sceneData": [
     {
       "id": 1,
-      "type": "ECSGame",
-      "objectType": "gamePrefabs",
+      "type": "game",
+      "objectType": "appPrefabs",
       "spawnType": "main",
       "parent": null,
       "children": [],
@@ -43,8 +43,7 @@
           "parameters": {
             "levelName": "level1"
           }
-        }
-      ]
+        }]
     }
   ]
 }

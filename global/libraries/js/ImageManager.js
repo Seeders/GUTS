@@ -1,6 +1,6 @@
 
 class ImageManager {
-    constructor(app, {imageSize, palette, textures}, {ShapeFactory}) {
+    constructor(app, {imageSize, palette, textures}) {
         this.app = app;
         this.images = {};
         this.imageSize = imageSize || 128;
@@ -21,7 +21,7 @@ class ImageManager {
         const frustumSize = cameraDistance + 16;
         const aspect = 1;
 
-        this.shapeFactory = new ShapeFactory(palette, textures);
+        this.shapeFactory = new GUTS.ShapeFactory(palette, textures);
         if(location.hostname.indexOf('github') >= 0) {
             this.shapeFactory.setURLRoot("/GUTS/");
         }

@@ -22,15 +22,17 @@
     "GLTFLoader",
     "three.EffectComposer",
     "three.RenderPixelatedPass",
-    "three.OutputPass"
+    "three.OutputPass",
+    "GameLoader",
+    "ECSGame"
   ],
   "fileName": "game",
   "interface": "main",
-  "loaderComponent": "GameLoader",
-  "loaderEntity": "GameLoader",
+  "appLibrary": "ECSGame",
   "canvasWidth": 1600,
   "canvasHeight": 1000,
   "is3D": true,
   "palette": "main",
-  "pixelSize": 2
+  "pixelSize": 2,
+  "appLoaderLibrary": "GameLoader"
 }

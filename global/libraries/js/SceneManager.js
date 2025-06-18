@@ -31,7 +31,7 @@ class SceneManager {
             });                              
             let e = this.game.spawn(sceneEntity.type, params);
             this.addEntityToScene(e);  
-            
+            console.log('spawned', e);
         });
     }
 

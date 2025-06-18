@@ -1,49 +1,8 @@
 <div id="gameContainer">
-    <div id="waveInfo">
-        <span>Wave: <span id="waveDisplay">1</span></span>             
-        <div class="progress-bar">
-            <div class="progress-fill" id="waveProgress"></div>
-        </div>
-    </div>
-    <div id="statsContainer">
-        <div id="stats">
-            <div class="stat">
-                <div class="stat-icon" style="background-color: var(--gold-color);"></div>
-                <span>Gold: <span id="shardsDisplay">50</span></span>                 
-            </div>
-            <div class="stat">
-                <div class="stat-icon" style="background-color: var(--essence-color);"></div>
-                <span>Essence: <span id="essenceDisplay">0</span>/<span id="essenceNeededDisplay">100</span></span>                 
-            </div>
-            <div class="stat">
-                <div class="stat-icon" style="background-color: var(--essence-color);"></div>
-                <span>Population: <span id="populationDisplay">0</span>/<span id="maxPopulationDisplay">5</span></span>                 
-            </div>
-            <div class="stat">
-                <div class="stat-icon" style="background-color: var(--health-color);"></div>
-                <span>Core: <span id="hpDisplay">100</span></span>                 
-            </div>
-        </div>
-    </div>
     <canvas id="gameCanvas" width="1536" height="768"></canvas>
-    <div id="towerMenu">
-        <div class="tower-option" data-type="sentry">Photon Sentry (25)</div>
-        <div class="tower-option" data-type="fusionCore">Fusion Core (50)</div>
-        <div class="tower-option" data-type="barracks">Barracks (100)</div>
-        <div class="tower-option" data-type="fabricator">Fabricator (200)</div>
-        <div class="tower-option" data-type="teslaCoil">Tesla Coil (70)</div>
-        <div class="tower-option" data-type="missileLauncher">Missile Launcher (90)</div>
-        <div class="tower-option" data-type="chrono">Chrono Defibrilator (100)</div>
-        <div class="tower-option" data-type="guardTower">Guard Tower (70)</div>
-    </div>
     <button id="startGameBtn">Start Game</button>    
 </div>
 <div id="overlay"></div>
-<div id="upgradeMenu">
-    <h2>Level Up! Choose an Upgrade:</h2>
-    <div id="upgradeOptions"></div>
-</div>
-<div id="tooltip" style="display: none;"></div>
 <div id="gameOverMenu">
     <h2>Home Destroyed!</h2>
     <p>You survived <span id="gameOverWave">0</span> waves</p>
