@@ -1,12 +1,11 @@
 class Entity {
     constructor(game, type) {
         this.game = game;
-        this.moduleManager = game.moduleManager;
         this.children = [];        
         this.components = [];
         this.renderers = [];
         this.destroyed = false;        
-        this.id = ++game.entityId;
+        this.id = -1;
         this.type = type;
         this.collisionRadius = 5;   
         this.entityHeight = 10;        
@@ -36,7 +35,7 @@ class Entity {
         return this.components[name.toLowerCase()] || this.components[`${name.toLowerCase()}`];
     }
     addRenderer(RendererClassName, params) {
-        const RendererClass = this.moduleManager.getCompiledScript(RendererClassName, 'renderers');
+        const RendererClass = this.game.moduleManager.getCompiledScript(RendererClassName, 'renderers');
         const renderer = new RendererClass(this.game, this);
         this.renderers[RendererClass.name.toLowerCase()] = renderer;
         this.components[RendererClass.name.toLowerCase()] = renderer;
@@ -46,7 +45,7 @@ class Entity {
         return renderer;
     }
     addComponent(ComponentClassName, params) {        
-        const ComponentClass = this.moduleManager.getCompiledScript(ComponentClassName, 'components');
+        const ComponentClass = this.game.moduleManager.getCompiledScript(ComponentClassName, 'components');
         const component = new ComponentClass(this.game, this);
         this.components[ComponentClass.name.toLowerCase()] = component;
         if(params){

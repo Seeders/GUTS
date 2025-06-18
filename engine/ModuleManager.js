@@ -109,7 +109,7 @@ class ModuleManager {
     const collections = this.core.getCollections();
     const pendingLibraries = new Set();
     this.importMap = this.importMap || {}; // Ensure importMap is initialized
-
+    window.engine = this.registeredLibraries;
     // Function to instantiate a library once its script is loaded
     const instantiateModuleFromLibrary = (library, moduleConfig) => {
         let libraryKey = library.replace(/-/g, "__");

@@ -15,19 +15,7 @@ class GameState {
                 this[key] = state[key];
             }
         }
-        this.entities = [];
         // If stats is present, create defaultStats as a copy
   
-    }
-
-    addEntity(entity) {
-        this.entities.push(entity);
-    }
-    removeEntity(entity) {
-    
-        let index = this.entities.indexOf(entity);
-        if( index >= 0 ) {
-            this.entities.splice(index, 1);
-        }
     }
 }

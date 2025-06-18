@@ -37,7 +37,7 @@ class EditorController {
         this.view = new EditorView(this);
         this.fs = new FileSystemSyncService(this); 
         this.componentClasses = {};
-        window.GUTS = this;
+        window.APP = this;
     }
 
     /**
@@ -161,7 +161,7 @@ class EditorController {
                     }
                 });
                 this.moduleManager.libraryClasses = await this.moduleManager.loadModules(moduleLibraries);
-
+                window.GUTS = this.moduleManager.libraryClasses;
 
                 
                 // Load property module classes dynamically

@@ -1,15 +1,12 @@
 class Engine {
     constructor(target) {
-        this.entityId = 0;
         this.applicationTarget = document.getElementById(target);
-        this.entitiesToAdd = [];
         this.plugins = {};
         this.currentTime = Date.now();
         this.lastTime = Date.now();
         this.deltaTime = 0;
         this.engineClasses = [];
         this.libraries = {};
-        this.state = {};
         const urlParams = new URLSearchParams(window.location.search);
         this.isServer = urlParams.get('isServer');
         console.log("isServer", this.isServer);
@@ -35,35 +32,22 @@ class Engine {
         //components, renderers, and functions
         this.setupScriptEnvironment();
         this.preCompileScripts();  
+ 
+        this.gameInstance = new GUTS[projectConfig.appLibrary](this);    
 
-        this.state = new GUTS.GameState(this.collections);  
-        this.sceneManager = new GUTS.SceneManager(this); 
-        this.imageManager = new GUTS.ImageManager(this, { imageSize: this.collections.configs.game.imageSize, palette: this.collections.configs.game.palette, textures:  this.collections.textures}, {ShapeFactory: GUTS.ShapeFactory});    
-      
-
-        this.state.loader = this.createEntityFromCollections(projectConfig.loaderEntity, {}, {x:0, y:0, z:0 }).getComponent(projectConfig.loaderComponent);        
-        await this.state.loader.load();
-        
-        this.sceneManager.load(projectConfig.initialScene || "main");
+        this.loader = new GUTS[projectConfig.appLoaderLibrary](this.gameInstance);     
+        await this.loader.load();
+            
         // Use ModuleManager's script environment
 
         this.animationFrameId = requestAnimationFrame(() => this.gameLoop());
-        this.imageManager.dispose();
         requestAnimationFrame(() => {
             this.hideLoadingScreen();
         });    
-        if(this.isServer){
-            this.state.isPaused = false;
-        }
     }
     
     getCollections() {
         return this.collections;
-    }
-
-    setGameEntity(gameEntity){        
-        this.gameEntity = gameEntity;  
-        gameEntity.excluded = true;
     }
 
     hideLoadingScreen() {      
@@ -92,6 +76,12 @@ class Engine {
                 this.moduleManager.compileScript(componentDef.script, componentType);
             }
         }
+        for (let systemType in this.collections.systems) {
+            const systemDef = this.collections.systems[systemType];
+            if (systemDef.script) {
+                this.moduleManager.compileScript(systemDef.script, systemType);
+            }
+        }
         for( let funcType in this.collections.functions) {            
             const funcDef = this.collections.functions[funcType];
             this.moduleManager.compileFunction(funcDef.script, funcType);
@@ -99,14 +89,9 @@ class Engine {
     }
     
     gameLoop() {    
-        if(this.gameEntity && this.gameEntity.update) {
-            this.gameEntity.update(); 
-            if(!this.isServer){ 
-                this.gameEntity.draw();   
-            }
+        if(this.gameInstance && this.gameInstance.update) {
+            this.gameInstance.update(); 
         }      
-        this.entitiesToAdd.forEach((entity) => this.state.addEntity(entity));        
-        this.entitiesToAdd = [];
         this.animationFrameId = requestAnimationFrame(() => this.gameLoop());
     }
 
@@ -116,53 +101,6 @@ class Engine {
             cancelAnimationFrame(this.animationFrameId);
             this.animationFrameId = null;
         }
-    }
-
-    spawn(type, params) {
-        let entity = this.createEntityFromCollections(type, params);
-        if(!entity.excluded){
-            this.entitiesToAdd.push(entity);        
-        }
-        return entity;
-    }
-    
-    createEntityFromCollections(type, params) {
-
-        const entity = this.createEntity(type);
-        const def = this.collections.entities[type];
-
-        entity.transform = entity.addComponent("transform");
-        
-        if (def.components) {
-            def.components.forEach((componentType) => {
-                const componentDef = this.collections.components[componentType];
-                if (componentDef.script) {
-                    const ScriptComponent = this.moduleManager.getCompiledScript(componentType, 'components');
-                    if (ScriptComponent) {
-                        entity.addComponent(componentType);                  
-                    }
-                }
-            });
-        }
-        if (def.renderers) {
-            def.renderers.forEach((rendererType) => {
-                const componentDef = this.collections.renderers[rendererType];
-                if (componentDef.script) {
-                    const ScriptComponent = this.moduleManager.getCompiledScript(rendererType, 'renderers');
-                    if (ScriptComponent) {
-                        entity.addRenderer(rendererType);                  
-                    }
-                }
-            });
-        }
-        //this allows components to reference other components on the entity at init, since they will now all exist before init.
-        entity.init(params);
-        return entity;
-    }
-
-    createEntity(type) {
-        const entity = new GUTS.Entity(this, type);
-        return entity;
     }
 
     async loadCollections(projectName) {

@@ -178,25 +178,11 @@ class ThreeJsWorld extends engine.Component {
         this.groundTexture.wrapT = THREE.ClampToEdgeWrapping;
         this.groundTexture.minFilter = THREE.NearestFilter;
         this.groundTexture.magFilter = THREE.NearestFilter;
-        if (this.heightMapSettings) {
-            this.createHeightMapTerrain();
-        } else {
-            const groundGeometry = new THREE.PlaneGeometry(this.extendedSize, this.extendedSize);
-            this.groundMaterial = this.getGroundMaterial();
-            this.ground = new THREE.Mesh(groundGeometry, this.groundMaterial);
-            this.ground.rotation.x = -Math.PI / 2;
-            this.ground.position.set(this.terrainSize / 2, 0, this.terrainSize / 2);
-            this.ground.receiveShadow = true;
-            this.ground.castShadow = true;
-            this.scene.add(this.ground);
-        }
-    }
-
-    createHeightMapTerrain() {
+        
         this.heightMapData = new Float32Array(this.extendedSize * this.extendedSize);
         this.terrainTypes = this.tileMap.terrainTypes || [];
 
-        const segments = this.heightMapResolution;
+        const segments = this.heightMapResolution || 1;
         const groundGeometry = new THREE.PlaneGeometry(
             this.extendedSize,
             this.extendedSize,
@@ -205,7 +191,6 @@ class ThreeJsWorld extends engine.Component {
         );
 
         this.groundVertices = groundGeometry.attributes.position;
-
         this.groundMaterial = this.getGroundMaterial();
 
         this.ground = new THREE.Mesh(groundGeometry, this.groundMaterial);
