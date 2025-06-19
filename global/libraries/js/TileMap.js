@@ -105,7 +105,7 @@ class TileMap {
 		let analyzedMap = this.analyzeMap(this.tileMap);
 		this.drawMap(analyzedMap);
         if(this.isometric){
-            this.drawIsometric();
+          //  this.drawIsometric();
         }
 
     }
@@ -799,5 +799,8 @@ class TileMap {
 			ctx.drawImage(layerCanvases[layerIndex], 0, 0);
 		//}
 		});
+		this.terrainData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height).data;
+          
+        console.log('draw terrainCanvas', this.terrainData);
 	}
   }

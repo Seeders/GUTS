@@ -1,13 +1,17 @@
 class ThreeJsWorld extends engine.Component {
     init({
-        containerSelector = '#gameContainer',
-        width = window.innerWidth,
-        height = window.innerHeight,
-        useControls = true}) {
+    containerSelector = '#gameContainer',
+    width = window.innerWidth,
+    height = window.innerHeight,
+    useControls = true,
+    canvas,
+    scene,
+    camera,
+    renderer,
+    isEditor}) {
         this.gameConfig = this.game.getCollections().configs.game;
-        if (!this.gameConfig.is3D) {
-            return;
-        }
+  
+        this.canvas = canvas;
         this.level = this.game.getCollections().levels[this.game.state.level];
         this.world = this.game.getCollections().worlds[this.level.world];
         this.lightingSettings = this.game.getCollections().lightings[this.world.lighting];
@@ -26,36 +30,42 @@ class ThreeJsWorld extends engine.Component {
         this.extendedSize = this.terrainSize + 2 * this.world.extensionSize;
         this.heightMapResolution = this.extendedSize / this.heightMapSettings.resolutionDivisor;
         this.container = document.querySelector(containerSelector) || document.body;
-        this.renderer = new THREE.WebGLRenderer({ antialias: true, canvas: this.game.canvas, alpha: true });
+        this.renderer = renderer;
+        if(!this.renderer){
+            this.renderer = new THREE.WebGLRenderer({ antialias: true, canvas: this.canvas, alpha: true });
         
-        this.renderer.setSize(width, height);        
-        this.renderer.shadowMap.enabled = this.shadowSettings.enabled;
-        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            this.renderer.setSize(width, height);        
+            this.renderer.shadowMap.enabled = this.shadowSettings.enabled;
+            this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        }
         this.uniforms = {};
-        this.scene = new THREE.Scene();
+        this.scene = scene || new THREE.Scene();
         this.scene.background = new THREE.Color(this.world.backgroundColor);
 
         if (this.fogSettings.enabled) {
             this.scene.fog = new THREE.FogExp2(this.fogSettings.color, this.fogSettings.density);
         }
-        if(this.cameraSettings.fov){
-            this.camera = new THREE.PerspectiveCamera(
-                this.cameraSettings.fov,
-                width / height,
-                this.cameraSettings.near,
-                this.cameraSettings.far
-            );
-        } else if(this.cameraSettings.zoom){
-            this.camera = new THREE.OrthographicCamera(
-                width / - 2, 
-                width / 2, 
-                height / 2, 
-                height / - 2, 
-                this.cameraSettings.near,
-                this.cameraSettings.far
-            );
-            this.camera.zoom = this.cameraSettings.zoom;
-            this.camera.updateProjectionMatrix();
+        this.camera = camera;
+        if(!this.camera){
+            if(this.cameraSettings.fov){
+                this.camera = new THREE.PerspectiveCamera(
+                    this.cameraSettings.fov,
+                    width / height,
+                    this.cameraSettings.near,
+                    this.cameraSettings.far
+                );
+            } else if(this.cameraSettings.zoom){
+                this.camera = new THREE.OrthographicCamera(
+                    width / - 2, 
+                    width / 2, 
+                    height / 2, 
+                    height / - 2, 
+                    this.cameraSettings.near,
+                    this.cameraSettings.far
+                );
+                this.camera.zoom = this.cameraSettings.zoom;
+                this.camera.updateProjectionMatrix();
+            }
         }
         let cameraPos = JSON.parse(this.cameraSettings.position);
 
@@ -71,7 +81,7 @@ class ThreeJsWorld extends engine.Component {
             lookAt.z
         );
 
-        if (useControls) {
+        if (useControls && !isEditor) {
             this.controls = new THREE_.OrbitControls(this.camera, this.renderer.domElement);
             this.controls.target.set(
                 lookAt.x,
@@ -215,14 +225,17 @@ class ThreeJsWorld extends engine.Component {
         return bestTypeIndex;
     }
     updateHeightMap() {
-        if (!this.heightMapSettings.enabled || !this.game.terrainCanvasBuffer) return;
+        if (!this.heightMapSettings.enabled || !this.game.terrainTileMapper.canvas) return;
 
         try {
-            const terrainCanvas = this.game.terrainCanvasBuffer;
-            const ctx = terrainCanvas.getContext('2d', { alpha: false, willReadFrequently: true });
-            ctx.imageSmoothingEnabled = false;
-            const terrainData = ctx.getImageData(0, 0, terrainCanvas.width, terrainCanvas.height).data;
+            const terrainCanvas = this.game.terrainTileMapper.canvas;
+            const terrainCtx = terrainCanvas.getContext('2d', { alpha: false, willReadFrequently: true });
+            terrainCanvas.width = this.game.getCollections().configs.game.gridSize * this.level.tileMap.terrainMap[0].length;
+            terrainCanvas.height = this.game.getCollections().configs.game.gridSize * this.level.tileMap.terrainMap.length;
 
+            terrainCtx.imageSmoothingEnabled = false;
+            const terrainData = this.game.terrainTileMapper.terrainData;//terrainCtx.getImageData(0, 0, terrainCanvas.width, terrainCanvas.height).data;
+            console.log('read terrainCanvas', terrainData);
             const terrainTypeColors = this.createTerrainTypeColorMap();
 
             this.heightMapData = new Float32Array(this.extendedSize * this.extendedSize);
@@ -279,7 +292,6 @@ class ThreeJsWorld extends engine.Component {
                     if (lowestNeighborType < typeIndex) {
                         height = lowestNeighborType * this.heightStep;
                     }
-            
                     const extX = x + this.extensionSize;
                     const extZ = z + this.extensionSize;
                     this.heightMapData[extZ * this.extendedSize + extX] = height;
@@ -366,15 +378,18 @@ class ThreeJsWorld extends engine.Component {
     }
 
     onWindowResize() {
-        const width = this.container.clientWidth || window.innerWidth;
-        const height = this.container.clientHeight || window.innerHeight;
+        if(!this.isEditor){
+            const width = this.container.clientWidth || window.innerWidth;
+            const height = this.container.clientHeight || window.innerHeight;
 
-        this.camera.aspect = width / height;
-        this.camera.updateProjectionMatrix();
-        this.renderer.setSize(width, height);
+            this.camera.aspect = width / height;
+            this.camera.updateProjectionMatrix();
+            this.renderer.setSize(width, height);
+            this.canvas.style.width = `${width}px`;
+            this.canvas.style.height = `${height}px`;
+        }
                 // Ensure canvas display size matches resolution
-        this.game.canvas.style.width = `${width}px`;
-        this.game.canvas.style.height = `${height}px`;
+        
     }
 
     update() {
@@ -391,10 +406,11 @@ class ThreeJsWorld extends engine.Component {
             this.stats.update();
         }
         if (!this.drawn && this.groundTexture && this.game.mapRenderer && this.game.mapRenderer.isMapCached) {
-            this.groundCtx.drawImage(this.game.terrainCanvasBuffer, this.extensionSize, this.extensionSize);
+            this.groundCtx.drawImage(this.game.terrainTileMapper.canvas, this.extensionSize, this.extensionSize);
             this.groundTexture.needsUpdate = true;
 
             if (this.heightMapSettings.enabled) {
+                console.log('here');
                 this.updateHeightMap();
             }
 
@@ -411,9 +427,12 @@ class ThreeJsWorld extends engine.Component {
             this.pixelAlignFrustum( this.camera, aspectRatio, Math.floor( rendererSize.x / this.pixelSize ),
                         Math.floor( rendererSize.y / this.pixelSize ) );
         }
-        this.renderer.render(this.scene, this.camera);
-        if(this.pixelPass.enabled){
-            this.composer.render();
+        if(!this.isEditor){
+            this.renderer.render(this.scene, this.camera);
+        
+            if(this.pixelPass.enabled){
+                this.composer.render();
+            }
         }
     }
     pixelAlignFrustum( camera, aspectRatio, pixelsPerScreenWidth, pixelsPerScreenHeight ) {

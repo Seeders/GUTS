@@ -3,7 +3,6 @@
   "editorCategories": "",
   "theme": "claude2",
   "editorModules": [
-    "ShapeFactory",
     "terrainModule",
     "sceneModule",
     "graphicsModule",

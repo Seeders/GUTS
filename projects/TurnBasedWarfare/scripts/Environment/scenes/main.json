@@ -30,7 +30,10 @@
           }
         },
         {
-          "type": "ThreeJsWorld"
+          "type": "MapRenderer",
+          "parameters": {
+            "levelName": "level1"
+          }
         },
         {
           "type": "MapManager",
@@ -39,7 +42,7 @@
           }
         },
         {
-          "type": "MapRenderer",
+          "type": "ThreeJsWorld",
           "parameters": {
             "levelName": "level1"
           }

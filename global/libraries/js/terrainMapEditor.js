@@ -282,7 +282,7 @@ class TerrainMapEditor {
     async initImageManager() {
         let palette = this.gameEditor.getPalette();
         this.imageManager = new this.engineClasses.ImageManager(this.gameEditor, { imageSize: this.config.imageSize, palette: palette}, {ShapeFactory: this.engineClasses.ShapeFactory});
-        await this.imageManager.loadImages("levels", { level: { tileMap: this.tileMap } }, false, false);
+        await this.imageManager.loadImages("levels", { level: this.objectData }, false, false);
         if(this.worldObjects){
             await this.imageManager.loadImages("environment", this.worldObjects, false, false);
         }
@@ -294,17 +294,32 @@ class TerrainMapEditor {
         }
         this.terrainCanvasBuffer.width = this.tileMap.size * this.gameEditor.getCollections().configs.game.gridSize;
         this.terrainCanvasBuffer.height =  this.tileMap.size * this.gameEditor.getCollections().configs.game.gridSize;
-
+        if(!this.gameEditor.modelManager.assetsLoaded){
+            let collections = this.gameEditor.getCollections();
+            for(let objectType in collections) {            
+                await this.gameEditor.modelManager.loadModels(objectType, collections[objectType]);
+            }  
+        } 
         this.terrainTileMapper.init(this.terrainCanvasBuffer, this.gameEditor.getCollections().configs.game.gridSize, terrainImages, this.gameEditor.getCollections().configs.game.isIsometric);
-        this.game = { state: {}, imageManager: this.imageManager, canvasBuffer: this.canvasEl, terrainCanvasBuffer: this.terrainCanvasBuffer, terrainTileMapper: this.terrainTileMapper, getCollections: this.gameEditor.getCollections.bind(this.gameEditor), translator: this.translator };
+        this.game = { 
+            state: {}, 
+            modelManager: this.gameEditor.modelManager, 
+            imageManager: this.imageManager, 
+            canvasBuffer: this.canvasEl, 
+            terrainCanvasBuffer: this.terrainCanvasBuffer, 
+            terrainTileMapper: this.terrainTileMapper, 
+            getCollections: this.gameEditor.getCollections.bind(this.gameEditor), 
+            translator: this.translator
+        };
 
         this.mapRenderer = new (this.gameEditor.scriptContext.getRenderer("MapRenderer"))(this.game, null);
         this.mapRenderer.init({ 
                 environment: this.worldObjects, 
                 levelName: 'level', 
-                level: { tileMap: this.tileMap },
+                level: this.objectData,
                 isEditor: true,
-                palette: palette
+                palette: palette,
+                canvas: this.canvasEl
             });
     }
     updatePreviewImage() {

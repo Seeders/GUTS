@@ -2,8 +2,9 @@
   "title": "Terrain Editor",
   "container": "level-editor-container",
   "libraries": [
-    "threejs",
+    "threejs",    
     "ShapeFactory",
+    "ModelManager",
     "CoordinateTranslator",
     "ImageManager",
     "CanvasUtility",

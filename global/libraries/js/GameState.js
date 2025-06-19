@@ -1,6 +1,6 @@
 class GameState {
     constructor(gameConfig = {}) {
-        let state = gameConfig.configs.state;
+        let state = gameConfig.configs?.state;
      
         // Clear all existing properties
         for (let prop in this) {

@@ -1,14 +1,19 @@
 class SceneEditor {
-    constructor(gameEditor, config, {ShapeFactory, SE_GizmoManager, ModelManager}) {
+    constructor(gameEditor, config, {ShapeFactory, SE_GizmoManager, ModelManager, GameState, ImageManager}) {
         this.gameEditor = gameEditor;
         this.config = config;
         this.scene = null;
         this.camera = null;
         this.renderer = null;
         this.controls = null;
+        this.collections = this.gameEditor.getCollections();
         this.clock = new window.THREE.Clock();
+        this.gameEditor.state = new GameState(this.gameEditor.getCollections());  
         this.canvas = document.getElementById('scene-editor-canvas');
-        
+        this.terrainCanvasBuffer = document.createElement('canvas');
+        let palette = this.gameEditor.getPalette();
+        this.gameEditor.imageManager = new GUTS.ImageManager(this.gameEditor, { imageSize: this.config.imageSize, palette: palette}, {ShapeFactory: GUTS.ShapeFactory});
+
         this.state = {
             sceneData: [],
             selectedEntityIndex: -1,
@@ -26,7 +31,8 @@ class SceneEditor {
             removePrefabBtn: document.getElementById('scene-removePrefabBtn'),
         } 
         this.componentsToUpdate = [];
-        this.shapeFactory = new ShapeFactory(this.gameEditor.getPalette(), this.gameEditor.getCollections().textures, null);
+        this.gameEditor.palette = this.gameEditor.getPalette();
+        this.shapeFactory = new ShapeFactory(this.gameEditor.palette, this.gameEditor.getCollections().textures, null);
         if(location.hostname.indexOf('github') >= 0) {
             this.shapeFactory.setURLRoot("/GUTS/");
         }   
@@ -121,7 +127,6 @@ class SceneEditor {
     }
 
     initThreeJS(canvas) {
-        this.gameEditor.canvas = canvas;
         // Scene setup
         this.scene = new window.THREE.Scene();
         this.gameEditor.scene = this.scene;
@@ -188,6 +193,12 @@ class SceneEditor {
                 await this.gameEditor.modelManager.loadModels(objectType, collections[objectType]);
             }  
         } 
+       
+        this.gameEditor.terrainTileMapper = this.gameEditor.editorModuleInstances.TileMap; 
+       
+        await this.gameEditor.imageManager.loadImages("levels", { level: this.gameEditor.getCollections().levels["level1"] }, false, false);
+        const terrainImages = this.gameEditor.imageManager.getImages("levels", "level");
+        this.gameEditor.terrainTileMapper.init(this.terrainCanvasBuffer, this.gameEditor.getCollections().configs.game.gridSize, terrainImages, this.gameEditor.getCollections().configs.game.isIsometric);
     }
 
     animate() {
@@ -245,7 +256,11 @@ class SceneEditor {
         for(let entity of sceneData){
 
             const prefabData = this.gameEditor.getCollections()[entity.objectType][entity.spawnType];   
-            let params = { "objectType": entity.objectType, "spawnType": entity.spawnType, "transform": entity.components[0].parameters, ...prefabData };             
+            let componentData = {};
+            entity.components.forEach((c) => {
+                componentData[c.type] = c.parameters;
+            });
+            let params = { "objectType": entity.objectType, "spawnType": entity.spawnType, ...componentData, ...prefabData };             
             if(params.render && params.render.model){
                 await this.addModelToScene(entity.type, params);                
             }
@@ -338,7 +353,6 @@ class SceneEditor {
         let compsToInit = [];
          
         combined.forEach((componentName) => {
-         
             const componentDataKey = componentName.charAt(0).toLowerCase() + componentName.slice(1, componentName.length);
             const compInstanceId = prefabData[componentDataKey];
             if(compInstanceId){
@@ -351,17 +365,21 @@ class SceneEditor {
                     type: componentName,
                     parameters: {}
                 };       
-                const componentDataCollectionDef = this.gameEditor.getCollectionDefs().find(t => 
-                    componentName.toLowerCase().endsWith(t.singular.replace(/ /g,'').toLowerCase()));
-                
-                component.parameters[componentDataCollectionDef.singular.charAt(0).toLowerCase() + componentDataCollectionDef.singular.slice(1, componentDataCollectionDef.singular.length)] = compInstanceId;
+                let componentDataCollectionDef = this.gameEditor.getCollectionDefs().find(t =>                     
+                    componentName.toLowerCase() == t.singular.replace(/ /g,'').toLowerCase() 
+                );
+                if(!componentDataCollectionDef){
+                    componentDataCollectionDef = this.gameEditor.getCollectionDefs().find(t =>   
+                        componentName.toLowerCase().endsWith(t.singular.replace(/ /g,'').toLowerCase())
+                    );
+                }
+                component.parameters = prefabData[componentName];
                 components.push(component);
-                
                 if(componentDef.updateInEditor){
              
 
                     let comp = this.gameEditor.instantiateComponent(componentName);
-                    let params = {...prefabData, ...component.parameters, isEditor: true};
+                    let params = {...component.parameters, canvas: this.canvas, scene: this.scene, camera: this.camera, renderer: this.renderer, isEditor: true};
                     compsToInit.push({
                         component: comp,
                         params: params
