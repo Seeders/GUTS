@@ -208,7 +208,7 @@ class FileSystemSyncService {
         const fileGroups = {};
 
         files.forEach(file => {
-            console.log('loading file', file.name);
+         //   console.log('loading file', file.name);
             const parts = file.name.split('/');
             if (parts.length < 3) {
                 console.warn(`Skipping malformed file path: ${file.name}`);

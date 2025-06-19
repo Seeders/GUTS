@@ -1,6 +1,7 @@
 class MapRenderer extends engine.Component {
    
-    init({worldObjects, levelName, level, isEditor, palette}) {   
+    init({worldObjects, levelName, level, isEditor, palette, canvas}) {   
+
         this.config = this.game.getCollections().configs.game;
         this.imageManager = this.game.imageManager;
         this.worldObjects = worldObjects;
@@ -19,7 +20,8 @@ class MapRenderer extends engine.Component {
 
         // Create off-screen canvas for caching
         if(!this.config.is3D || isEditor) {
-            this.ctx = this.game.canvasBuffer.getContext('2d');
+            this.canvasBuffer = canvas;
+            this.ctx = this.canvasBuffer.getContext('2d');
             this.mapCacheCanvas = document.createElement('canvas');
             this.mapCacheCanvas.width = this.config.canvasWidth;
             this.mapCacheCanvas.height = this.config.canvasHeight;
@@ -36,15 +38,15 @@ class MapRenderer extends engine.Component {
             this.envCacheCanvasFG.height = this.config.canvasHeight / 2;
             this.envCacheCtxFG = this.envCacheCanvasFG.getContext('2d');
         }
-        this.terrainCanvas = this.game.terrainCanvasBuffer;
+        this.terrainCanvas = this.game.terrainTileMapper.canvas;
         this.terrainCanvas.width = this.tileMap.size * this.config.gridSize;
         this.terrainCanvas.height = this.tileMap.size * this.config.gridSize;
         this.terrainCtx = this.terrainCanvas.getContext('2d');
-        
+ 
         this.terrainTileMapper = this.game.terrainTileMapper;
         this.game.mapRenderer = this;
         this.isometric = this.game.getCollections().configs.game.isIsometric;
-        this.render(this.game.state.tileMapData, this.game.state.paths);
+        this.render(this.level.tileMap, this.game.state.paths);
     }
 
     draw(){}
@@ -62,7 +64,7 @@ class MapRenderer extends engine.Component {
         this.isMapCached = true;
     }
     renderEnvironment() {
-        if (this.tileMap.environmentObjects.length === 0) return;
+        if (!this.game.scene || this.tileMap.environmentObjects.length === 0) return;
     
         // Group environment objects by type
         const objectsByType = {};

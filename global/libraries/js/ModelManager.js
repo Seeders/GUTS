@@ -11,6 +11,7 @@ class ModelManager {
         this.uvMappings = new Map();
         this.mergedGeometries = new Map();
         this.assetsLoaded = false;
+        this.app.modelManager = this;
     }
 
     clear() {

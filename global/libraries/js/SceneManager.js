@@ -27,7 +27,7 @@ class SceneManager {
                 "spawnType": sceneEntity.spawnType,
             };
             sceneEntity.components.forEach((entityComp) => {
-                params = {...params, ...entityComp.parameters };
+                params = {...params, ...entityComp.parameters, canvas: this.game.canvas };
             });                              
             let e = this.game.spawn(sceneEntity.type, params);
             this.addEntityToScene(e);  

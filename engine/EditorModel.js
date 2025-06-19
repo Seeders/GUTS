@@ -338,21 +338,34 @@ class EditorModel {
         return typeDef ? typeDef.category : null;
     }
 
-    
+        
     findMatchingTypes(key) {
-      const matchingTypePlural = this.getCollectionDefs().find(t => 
-          key.toLowerCase().endsWith(t.id.toLowerCase()));
-      
-      const matchingTypeSingular = this.getCollectionDefs().find(t => 
-         key.toLowerCase().endsWith(t.singular.replace(/ /g,'').toLowerCase()));
-      
-      const matchingModuleType = Object.values(this.getCollections().editorModules).find((t) => {
-          return (t.propertyName && key.toLowerCase().endsWith(t.propertyName.toLowerCase())) ||
+        const keyLower = key.toLowerCase();
+        const collectionDefs = this.getCollectionDefs();
+        const editorModules = Object.values(this.getCollections().editorModules);
+        
+        // Check for exact matches first, fall back to endsWith if no exact match
+        const matchingTypePlural = collectionDefs.find(t => 
+            keyLower === t.id.toLowerCase()) ||
+            collectionDefs.find(t => 
+                keyLower.endsWith(t.id.toLowerCase()));
+        
+        const matchingTypeSingular = collectionDefs.find(t => 
+            keyLower === t.singular.replace(/ /g,'').toLowerCase()) ||
+            collectionDefs.find(t => 
+                keyLower.endsWith(t.singular.replace(/ /g,'').toLowerCase()));
+        
+        const matchingModuleType = editorModules.find((t) => {
+            return (t.propertyName && keyLower === t.propertyName.toLowerCase()) ||
                 (t.propertyNames && JSON.parse(t.propertyNames).some(name => 
-                    key.toLowerCase().endsWith(name.toLowerCase())));
-      });
-      
-      return { matchingTypePlural, matchingTypeSingular, matchingModuleType };
+                    keyLower === name.toLowerCase()));
+        }) || editorModules.find((t) => {
+            return (t.propertyName && keyLower.endsWith(t.propertyName.toLowerCase())) ||
+                (t.propertyNames && JSON.parse(t.propertyNames).some(name => 
+                    keyLower.endsWith(name.toLowerCase())));
+        });
+        
+        return { matchingTypePlural, matchingTypeSingular, matchingModuleType };
     }
 
     /**
