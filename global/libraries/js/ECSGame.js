@@ -15,7 +15,14 @@ class ECSGame {
         this.entityId = 0;
         this.entitiesToAdd = [];
         this.entities = new Map();
+        this.components = new Map();        
+        this.systems = [];
+        
+        this.nextEntityId = 1;
+        this.lastTime = 0;
     }
+        
+
     init() {       
         this.imageManager.dispose();
     }
@@ -41,22 +48,11 @@ class ECSGame {
             this.deltaTime = Math.min(1/30, timeSinceLastUpdate / 1000); // Cap at 1/30th of a second        
             this.lastTime = this.currentTime;
 
-            let entitiesToRemove = [];
-            for (const e of this.entities.values()) {
-                e.update();
-                if(!e.destroyed){
-                    if(!this.isServer){
-                        e.draw();
-                    }
-                    e.postUpdate();  
-                } else {
-                    entitiesToRemove.push(e);
-                }     
-            }
-
-            for(let i = 0; i < entitiesToRemove.length; i++){
-                this.removeEntity(entitiesToRemove[i]);
-            }
+            this.systems.forEach(system => {
+                if (system.update) {
+                    system.update(this.deltaTime);
+                }
+            });
 
             this.postUpdate();
         }     
@@ -91,64 +87,76 @@ class ECSGame {
         overlay.style.display = 'block';
     }
 
-    spawn(type, params) {
-        let entity = this.createEntityFromCollections(type, params);
-        if(!entity.excluded){
-            this.entitiesToAdd.push(entity);        
-        }
-        return entity;
+    spawn() {
+        console.log('spawn', arguments);
+    }
+
+    createEntity() {
+        const id = this.nextEntityId++;
+        this.entities.set(id, new Set());
+        return id;
     }
     
-    createEntityFromCollections(type, params) {
-
-        const entity = this.createEntity(type);
-        const def = this.getCollections().entities[type];
-
-        entity.transform = entity.addComponent("transform");
-        if(def.id){
-            entity.id = def.id;
-        }
-        if (def.components) {
-            def.components.forEach((componentType) => {
-                const componentDef = this.getCollections().components[componentType];
-                if (componentDef.script) {
-                    const ScriptComponent = this.moduleManager.getCompiledScript(componentType, 'components');
-                    if (ScriptComponent) {
-                        entity.addComponent(componentType);                  
-                    }
-                }
+    destroyEntity(entityId) {
+        if (this.entities.has(entityId)) {
+            const componentTypes = this.entities.get(entityId);
+            componentTypes.forEach(type => {
+                this.removeComponent(entityId, type);
             });
+            this.entities.delete(entityId);
         }
-        if (def.renderers) {
-            def.renderers.forEach((rendererType) => {
-                const componentDef = this.getCollections().renderers[rendererType];
-                if (componentDef.script) {
-                    const ScriptComponent = this.moduleManager.getCompiledScript(rendererType, 'renderers');
-                    if (ScriptComponent) {
-                        entity.addRenderer(rendererType);                  
-                    }
-                }
-            });
+    }
+    
+    addComponent(entityId, componentType, componentData) {
+        if (!this.entities.has(entityId)) {
+            throw new Error(`Entity ${entityId} does not exist`);
         }
-        //this allows components to reference other components on the entity at init, since they will now all exist before init.
-        entity.init(params);
-        return entity;
+        
+        if (!this.components.has(componentType)) {
+            this.components.set(componentType, new Map());
+        }
+        
+        this.components.get(componentType).set(entityId, componentData);
+        this.entities.get(entityId).add(componentType);
     }
-
-    createEntity(type) {
-        const entity = new GUTS.Entity(this, type);
-        entity.id = ++this.entityId;
-        return entity;
+    
+    removeComponent(entityId, componentType) {
+        if (this.components.has(componentType)) {
+            this.components.get(componentType).delete(entityId);
+        }
+        if (this.entities.has(entityId)) {
+            this.entities.get(entityId).delete(componentType);
+        }
     }
-
-    getEntityById(id){
-        return this.entities.get(id);
+    
+    getComponent(entityId, componentType) {
+        if (this.components.has(componentType)) {
+            return this.components.get(componentType).get(entityId);
+        }
+        return null;
     }
-
-    addEntity(entity) {
-        this.entities.set(entity.id, entity);
+    
+    hasComponent(entityId, componentType) {
+        return this.components.has(componentType) && 
+                this.components.get(componentType).has(entityId);
     }
-    removeEntity(entity) {        
-        this.entities.delete(entity.id);        
+    
+    getEntitiesWith(...componentTypes) {
+        const result = [];
+        for (const [entityId, entityComponents] of this.entities) {
+            if (componentTypes.every(type => entityComponents.has(type))) {
+                result.push(entityId);
+            }
+        }
+        return result;
     }
+    
+    addSystem(system) {
+        system.game = this;
+        this.systems.push(system);
+        if (system.init) {
+            system.init();
+        }
+    }
+        
 }

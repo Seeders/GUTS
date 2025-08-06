@@ -7,6 +7,7 @@ class Engine {
         this.deltaTime = 0;
         this.engineClasses = [];
         this.libraries = {};
+        this.running = false;
         const urlParams = new URLSearchParams(window.location.search);
         this.isServer = urlParams.get('isServer');
         console.log("isServer", this.isServer);
@@ -39,11 +40,7 @@ class Engine {
         await this.loader.load();
             
         // Use ModuleManager's script environment
-
-        this.animationFrameId = requestAnimationFrame(() => this.gameLoop());
-        requestAnimationFrame(() => {
-            this.hideLoadingScreen();
-        });    
+        this.start();
     }
     
     getCollections() {
@@ -89,14 +86,25 @@ class Engine {
     }
     
     gameLoop() {    
+        if (!this.running) return;
         if(this.gameInstance && this.gameInstance.update) {
             this.gameInstance.update(); 
         }      
         this.animationFrameId = requestAnimationFrame(() => this.gameLoop());
     }
 
-
-    stopGameLoop() {
+    start() {
+        this.running = true;
+        this.lastTime = performance.now();
+        
+        this.animationFrameId = requestAnimationFrame(() => this.gameLoop());
+        requestAnimationFrame(() => {
+            this.hideLoadingScreen();
+        }); 
+    }
+    
+    stop() {
+        this.running = false;
         if (this.animationFrameId) {
             cancelAnimationFrame(this.animationFrameId);
             this.animationFrameId = null;

@@ -230,8 +230,8 @@ class ThreeJsWorld extends engine.Component {
         try {
             const terrainCanvas = this.game.terrainTileMapper.canvas;
             const terrainCtx = terrainCanvas.getContext('2d', { alpha: false, willReadFrequently: true });
-            terrainCanvas.width = this.game.getCollections().configs.game.gridSize * this.level.tileMap.terrainMap[0].length;
-            terrainCanvas.height = this.game.getCollections().configs.game.gridSize * this.level.tileMap.terrainMap.length;
+            terrainCanvas.width = 700;//this.game.getCollections().configs.game.gridSize * this.level.tileMap.terrainMap[0].length;
+            terrainCanvas.height = 500;//this.game.getCollections().configs.game.gridSize * this.level.tileMap.terrainMap.length;
 
             terrainCtx.imageSmoothingEnabled = false;
             const terrainData = this.game.terrainTileMapper.terrainData;//terrainCtx.getImageData(0, 0, terrainCanvas.width, terrainCanvas.height).data;
@@ -421,7 +421,7 @@ class ThreeJsWorld extends engine.Component {
             this.uniforms[key].time = { value: this.timer };            
         }
         
-        if(this.pixelPass.enabled){
+        if(this.pixelPass.enabled && this.pixelSize > 1){
             const rendererSize = this.renderer.getSize( new THREE.Vector2() );
             const aspectRatio = rendererSize.x / rendererSize.y;
             this.pixelAlignFrustum( this.camera, aspectRatio, Math.floor( rendererSize.x / this.pixelSize ),

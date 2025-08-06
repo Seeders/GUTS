@@ -249,7 +249,6 @@ class ImageManager {
 
         // Create a map of terrain type to its image data first
         const terrainMap = {};
-        
         await Promise.all(config.tileMap.terrainTypes.map(async (terrainType, terrainIndex) => {
             const pixelData = terrainType.image;
             if (pixelData && pixelData.length > 0) {

@@ -1,6 +1,6 @@
 class MapRenderer extends engine.Component {
    
-    init({worldObjects, levelName, level, isEditor, palette, canvas}) {   
+    init({worldObjects, level, levelData, isEditor, palette, canvas}) {   
 
         this.config = this.game.getCollections().configs.game;
         this.imageManager = this.game.imageManager;
@@ -9,9 +9,9 @@ class MapRenderer extends engine.Component {
         this.hoverCell = { x: -1, y: -1 };
         this.showRange = false;
         this.isMapCached = false; // Flag to track if map needs redrawing
-        this.currentLevel = levelName;
-        if(level){
-            this.level = level;
+        this.currentLevel = level;
+        if(levelData){
+            this.level = levelData;
         } else {
             this.level = this.game.getCollections().levels[this.currentLevel];
         }
@@ -39,8 +39,8 @@ class MapRenderer extends engine.Component {
             this.envCacheCtxFG = this.envCacheCanvasFG.getContext('2d');
         }
         this.terrainCanvas = this.game.terrainTileMapper.canvas;
-        this.terrainCanvas.width = this.tileMap.size * this.config.gridSize;
-        this.terrainCanvas.height = this.tileMap.size * this.config.gridSize;
+        this.terrainCanvas.width = 700;//this.tileMap.size * this.config.gridSize;
+        this.terrainCanvas.height = 500;//this.tileMap.size * this.config.gridSize;
         this.terrainCtx = this.terrainCanvas.getContext('2d');
  
         this.terrainTileMapper = this.game.terrainTileMapper;

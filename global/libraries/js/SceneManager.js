@@ -19,7 +19,13 @@ class SceneManager {
             this.game.currentScene.destroy();
         } 
         this.currentSceneData = this.game.getCollections().scenes[this.currentSceneName];
+
         this.game.state.currentScene = this.game.spawn("scene", {sceneData: this.currentSceneData});
+
+        if(this.currentSceneData.type == "ECS") {
+            return this.loadECS();
+        }
+
         const sceneEntities = this.currentSceneData.sceneData;
         sceneEntities.forEach(async (sceneEntity) => {
             let params = {
@@ -31,9 +37,34 @@ class SceneManager {
             });                              
             let e = this.game.spawn(sceneEntity.type, params);
             this.addEntityToScene(e);  
-            console.log('spawned', e);
         });
     }
 
+    loadECS() {
+        
+        const sceneEntities = this.currentSceneData.sceneData;
+          sceneEntities.forEach(async (sceneEntity) => {         
+            
+            sceneEntity.managers.forEach((managerDef) => {
+                let params = {...managerDef.parameters, canvas: this.game.canvas };
+                const ManagerClass = this.game.moduleManager.getCompiledScript(managerDef.type, 'managers');
+                const managerInst = new ManagerClass(this.game, this);
+                if(managerInst.init){
+                    managerInst.init(params);
+                }                
+            });   
+
+            sceneEntity.systems.forEach((systemDef) => {
+                let params = {...systemDef.parameters, canvas: this.game.canvas };
+                const SystemClass = this.game.moduleManager.getCompiledScript(systemDef.type, 'systems');
+                const systemInst = new SystemClass(this.game, this);
+                if(systemInst.init){
+                    systemInst.init(params);
+                }
+                this.game.addSystem(systemInst);
+                
+            });                         
+        });
+    }
 
 }
