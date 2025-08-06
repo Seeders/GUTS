@@ -3,9 +3,6 @@ class RenderSystem {
         this.game = game;
         this.componentTypes = this.game.componentManager.getComponentTypes();
         
-        // Initialize Three.js scene, camera, and renderer
-        this.initializeThreeJS();
-        
         // Track entities with 3D models
         this.entityModels = new Map();
         this.entityAnimations = new Map(); // For GLTF animations
@@ -15,142 +12,29 @@ class RenderSystem {
         // Animation state tracking
         this.entityAnimationStates = new Map();
         this.clock = new THREE.Clock();
-    }
-    
-    initializeThreeJS() {
-        // Get the existing game canvas for Three.js
-        const gameCanvas = document.getElementById('gameCanvas');
-        if (!gameCanvas) {
-            console.error('gameCanvas not found!');
-            return;
-        }
-        
-        // Create scene
-        this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color(0x111111);
-        
-        // Create camera - positioned further back for larger game board
-        this.camera = new THREE.PerspectiveCamera(
-            75, 
-            window.innerWidth / window.innerHeight, 
-            0.1, 
-            2000
-        );
-        
-        // Position camera much further back to accommodate larger game board
-        this.camera.position.set(0, 150, 120);
-        this.camera.lookAt(0, 0, 0);
-        
-        console.log('Camera positioned for larger game board view');
-        
-        // Create renderer using the existing canvas
-        this.renderer = new THREE.WebGLRenderer({ 
-            canvas: gameCanvas,
-            antialias: true,
-            alpha: false
-        });
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
-        this.renderer.shadowMap.enabled = true;
-        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        
-        // Add lighting
-        this.setupLighting();
-        
-        // Add ground plane for visual reference
-        this.createGroundPlane();
-        
-        // Store reference in game for ModelManager access
-        this.game.scene = this.scene;
-        this.game.camera = this.camera;
-        this.game.renderer = this.renderer;
-        
-        // Handle window resize
-        window.addEventListener('resize', () => this.onWindowResize());
-        
-        console.log('Three.js initialized with gameCanvas:', gameCanvas);
-        console.log('Scene:', this.scene);
-        console.log('Renderer:', this.renderer);
-    }
-    
-    setupLighting() {
-        // Ambient light
-        const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
-        this.scene.add(ambientLight);
-        
-        // Directional light (main light)
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        directionalLight.position.set(10, 10, 5);
-        directionalLight.castShadow = true;
-        directionalLight.shadow.mapSize.width = 2048;
-        directionalLight.shadow.mapSize.height = 2048;
-        directionalLight.shadow.camera.near = 0.5;
-        directionalLight.shadow.camera.far = 50;
-        directionalLight.shadow.camera.left = -20;
-        directionalLight.shadow.camera.right = 20;
-        directionalLight.shadow.camera.top = 20;
-        directionalLight.shadow.camera.bottom = -20;
-        this.scene.add(directionalLight);
-        
-        // Additional fill light
-        const fillLight = new THREE.DirectionalLight(0x8888ff, 0.3);
-        fillLight.position.set(-5, 5, -5);
-        this.scene.add(fillLight);
-    }
-    
-    createGroundPlane() {
-        // Create a much larger ground plane to accommodate full-sized models
-        const groundGeometry = new THREE.PlaneGeometry(500, 500);
-        const groundMaterial = new THREE.MeshLambertMaterial({ 
-            color: 0x336633,
-            transparent: true,
-            opacity: 0.8
-        });
-        
-        const groundPlane = new THREE.Mesh(groundGeometry, groundMaterial);
-        groundPlane.rotation.x = -Math.PI / 2; // Rotate to be horizontal
-        groundPlane.position.y = -0.5; // Position slightly below units
-        groundPlane.receiveShadow = true;
-        
-        this.scene.add(groundPlane);
-        
-        // Add a larger grid helper for the game board
-        const gridHelper = new THREE.GridHelper(500, 50, 0x444444, 0x444444);
-        gridHelper.position.y = -0.4;
-        this.scene.add(gridHelper);
-        
-        // Add battlefield divider line at center
-        const dividerGeometry = new THREE.BoxGeometry(2, 10, 500);
-        const dividerMaterial = new THREE.MeshBasicMaterial({ color: 0xff4444 });
-        const divider = new THREE.Mesh(dividerGeometry, dividerMaterial);
-        divider.position.set(0, 5, 0);
-        this.scene.add(divider);
-        
-        console.log('Large game board created (500x500) for full-sized models');
-    }
-    
-    onWindowResize() {
-        this.camera.aspect = window.innerWidth / window.innerHeight;
-        this.camera.updateProjectionMatrix();
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
+
+        console.log('RenderSystem: Initialized for entity rendering');
     }
     
     update(deltaTime) {
+
+        // Only update if we have access to Three.js scene from WorldRenderSystem
+        if (!this.game.scene || !this.game.camera || !this.game.renderer) {
+            return;
+        }
+
         this.game.deltaTime = deltaTime;
         
         // Update 3D models
         this.update3DModels(deltaTime);
-        
-        // Render 3D scene
-        this.renderer.render(this.scene, this.camera);
     }
-    
+        
     update3DModels(deltaTime) {
         // Get entities that should have 3D models
         const entities = this.game.getEntitiesWith(
             this.componentTypes.POSITION, 
             this.componentTypes.UNIT_TYPE
         );
-        
         entities.forEach(entityId => {
             const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
             const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
@@ -165,11 +49,11 @@ class RenderSystem {
             
             const modelGroup = this.entityModels.get(entityId);
             if (modelGroup) {
-                // Convert canvas coordinates to larger 3D world coordinates
-                const worldX = (pos.x / window.innerWidth) * 500 - 250;
-                const worldZ = (pos.y / window.innerHeight) * 500 - 250;
+                // Position is already in world coordinates - use directly!
+                const worldX = pos.x;
+                const worldZ = pos.y; // Note: your 2D system uses y for what's Z in 3D
                 
-                // Update position
+                // Update position - no conversion needed
                 modelGroup.position.set(worldX, 0, worldZ);
                 
                 // Update animations and mixers
@@ -203,7 +87,7 @@ class RenderSystem {
     async createModelForEntity(entityId, objectType, spawnType, team) {
         // Check if ModelManager exists
         if (!this.game.modelManager) {
-            console.error('ModelManager not found on game object!');
+            console.error('RenderSystem: ModelManager not found!');
             this.createFallbackModel(entityId, team);
             return;
         }
@@ -213,7 +97,7 @@ class RenderSystem {
         
         // Create fallback model if no proper definition
         if (!unitDefinition || !unitDefinition.render) {
-            console.warn(`No unit definition or render data for ${spawnType}, creating fallback cube`);
+            console.warn(`RenderSystem: No unit definition or render data for ${spawnType}, creating fallback cube`);
             this.createFallbackModel(entityId, team);
             return;
         }
@@ -224,7 +108,7 @@ class RenderSystem {
             
             if (modelGroup) {
                 // Add to scene
-                this.scene.add(modelGroup);
+                this.game.scene.add(modelGroup);
                 this.entityModels.set(entityId, modelGroup);
                 
                 // Set up animations if this is a GLTF model
@@ -243,17 +127,17 @@ class RenderSystem {
                     currentAction: null
                 });
             } else {
-                console.warn(`No model returned from ModelManager for ${objectType}/${spawnType}, creating fallback`);
+                console.warn(`RenderSystem: No model returned from ModelManager for ${objectType}/${spawnType}, creating fallback`);
                 this.createFallbackModel(entityId, team);
             }
         } catch (error) {
-            console.error(`Failed to create model for entity ${entityId}:`, error);
+            console.error(`RenderSystem: Failed to create model for entity ${entityId}:`, error);
             this.createFallbackModel(entityId, team);
         }
     }
     
     createFallbackModel(entityId, team) {
-        console.log(`Creating fallback cube for entity ${entityId}`);
+        console.log(`RenderSystem: Creating fallback cube for entity ${entityId}`);
         
         // Create a simple colored cube as fallback
         const geometry = new THREE.BoxGeometry(1, 1, 1);
@@ -269,14 +153,14 @@ class RenderSystem {
         const modelGroup = new THREE.Group();
         modelGroup.add(cube);
         
-        this.scene.add(modelGroup);
+        this.game.scene.add(modelGroup);
         this.entityModels.set(entityId, modelGroup);
         
-        console.log(`Fallback cube created for entity ${entityId}`);
+        console.log(`RenderSystem: Fallback cube created for entity ${entityId}`);
     }
     
     async setupEntityAnimations(entityId, objectType, spawnType, modelGroup) {
-        console.log(`ANIMATION DEBUG: Setting up animations for entity ${entityId}, type: ${objectType}/${spawnType}`);
+        console.log(`RenderSystem ANIMATION DEBUG: Setting up animations for entity ${entityId}, type: ${objectType}/${spawnType}`);
         
         // Get unit definition to check animation type
         const unitDefinition = this.getUnitDefinition(spawnType);
@@ -284,7 +168,7 @@ class RenderSystem {
         const modelData = unitDefinition?.render?.model;
         
         if (!animationData || !modelData) {
-            console.log(`ANIMATION DEBUG: No animation or model data found for ${spawnType}`);
+            console.log(`RenderSystem ANIMATION DEBUG: No animation or model data found for ${spawnType}`);
             return;
         }
         
@@ -293,7 +177,7 @@ class RenderSystem {
         const firstShape = modelData[firstGroupName]?.shapes?.[0];
         const isGLTF = firstShape?.type === "gltf";
         
-        console.log(`ANIMATION DEBUG: Animation type for ${spawnType}: ${isGLTF ? 'GLTF' : 'Proprietary'}`);
+        console.log(`RenderSystem ANIMATION DEBUG: Animation type for ${spawnType}: ${isGLTF ? 'GLTF' : 'Proprietary'}`);
         
         if (isGLTF) {
             // Handle GLTF animations
@@ -305,7 +189,7 @@ class RenderSystem {
     }
     
     async setupGLTFAnimations(entityId, objectType, spawnType, modelGroup, animationData) {
-        console.log(`ANIMATION DEBUG: Setting up GLTF animations for entity ${entityId}`);
+        console.log(`RenderSystem ANIMATION DEBUG: Setting up GLTF animations for entity ${entityId}`);
         
         // Check if this is a GLTF model with animations
         let mixer, animations;
@@ -313,32 +197,32 @@ class RenderSystem {
             if (object.userData.mixer) {
                 mixer = object.userData.mixer;
                 animations = object.userData.animations;
-                console.log(`ANIMATION DEBUG: Found mixer and ${animations?.length || 0} animations in model`);
+                console.log(`RenderSystem ANIMATION DEBUG: Found mixer and ${animations?.length || 0} animations in model`);
             }
         });
         
         // If no mixer found, check for raw animation clips
         if (!mixer) {
-            console.log(`ANIMATION DEBUG: No mixer found, checking for raw animation clips...`);
+            console.log(`RenderSystem ANIMATION DEBUG: No mixer found, checking for raw animation clips...`);
             modelGroup.traverse(object => {
                 if (object.animations && object.animations.length > 0) {
-                    console.log(`ANIMATION DEBUG: Found ${object.animations.length} raw animation clips on object "${object.name}"`);
+                    console.log(`RenderSystem ANIMATION DEBUG: Found ${object.animations.length} raw animation clips on object "${object.name}"`);
                     mixer = new THREE.AnimationMixer(object);
                     animations = object.animations;
-                    console.log(`ANIMATION DEBUG: Created manual mixer for entity ${entityId}`);
+                    console.log(`RenderSystem ANIMATION DEBUG: Created manual mixer for entity ${entityId}`);
                 }
             });
         }
         
         if (mixer && animations && animations.length > 0) {
             this.entityMixers.set(entityId, mixer);
-            console.log(`ANIMATION DEBUG: GLTF mixer set for entity ${entityId}`);
+            console.log(`RenderSystem ANIMATION DEBUG: GLTF mixer set for entity ${entityId}`);
             
             const animationActions = {};
             
             // Create animation actions for each animation type
             for (const animName of Object.keys(animationData)) {
-                console.log(`ANIMATION DEBUG: Loading GLTF animation '${animName}' for ${objectType}/${spawnType}`);
+                console.log(`RenderSystem ANIMATION DEBUG: Loading GLTF animation '${animName}' for ${objectType}/${spawnType}`);
                 try {
                     const animModel = await this.game.modelManager.getAnimation(objectType, spawnType, animName);
                     if (animModel) {
@@ -357,20 +241,20 @@ class RenderSystem {
                             action.setLoop(THREE.LoopRepeat);
                             action.enabled = true;
                             animationActions[animName] = action;
-                            console.log(`ANIMATION DEBUG: Successfully created GLTF action for '${animName}', duration: ${clip.duration}s`);
+                            console.log(`RenderSystem ANIMATION DEBUG: Successfully created GLTF action for '${animName}', duration: ${clip.duration}s`);
                         }
                     }
                 } catch (error) {
-                    console.error(`ANIMATION DEBUG: Failed to load GLTF animation ${animName}:`, error);
+                    console.error(`RenderSystem ANIMATION DEBUG: Failed to load GLTF animation ${animName}:`, error);
                 }
             }
             
-            console.log(`ANIMATION DEBUG: Final GLTF animation actions for entity ${entityId}:`, Object.keys(animationActions));
+            console.log(`RenderSystem ANIMATION DEBUG: Final GLTF animation actions for entity ${entityId}:`, Object.keys(animationActions));
             this.entityAnimations.set(entityId, animationActions);
             
             // Start with idle animation
             if (animationActions.idle) {
-                console.log(`ANIMATION DEBUG: Starting GLTF idle animation for entity ${entityId}`);
+                console.log(`RenderSystem ANIMATION DEBUG: Starting GLTF idle animation for entity ${entityId}`);
                 animationActions.idle.play();
                 const animState = this.entityAnimationStates.get(entityId);
                 if (animState) {
@@ -378,13 +262,13 @@ class RenderSystem {
                 }
             }
         } else {
-            console.log(`ANIMATION DEBUG: No GLTF animations found for entity ${entityId}`);
+            console.log(`RenderSystem ANIMATION DEBUG: No GLTF animations found for entity ${entityId}`);
         }
     }
     
     setupProprietaryAnimations(entityId, objectType, spawnType, modelGroup, animationData, modelData) {
-        console.log(`ANIMATION DEBUG: Setting up proprietary animations for entity ${entityId}`);
-        console.log(`ANIMATION DEBUG: Available proprietary animations:`, Object.keys(animationData));
+        console.log(`RenderSystem ANIMATION DEBUG: Setting up proprietary animations for entity ${entityId}`);
+        console.log(`RenderSystem ANIMATION DEBUG: Available proprietary animations:`, Object.keys(animationData));
         
         // Store animation data for frame-based animation
         const animationInfo = {
@@ -402,7 +286,7 @@ class RenderSystem {
         }
         this.entityProprietaryAnimations.set(entityId, animationInfo);
         
-        console.log(`ANIMATION DEBUG: Proprietary animation system set up for entity ${entityId}`);
+        console.log(`RenderSystem ANIMATION DEBUG: Proprietary animation system set up for entity ${entityId}`);
         
         // Set initial animation
         this.setProprietaryAnimation(entityId, 'idle');
@@ -489,7 +373,7 @@ class RenderSystem {
         
         // Default to idle if animation doesn't exist
         if (!animationActions[animationName]) {
-            console.warn(`Animation '${animationName}' not found for entity ${entityId}, trying fallbacks`);
+            console.warn(`RenderSystem: Animation '${animationName}' not found for entity ${entityId}, trying fallbacks`);
             
             // Try common fallback animations
             const fallbacks = {
@@ -503,7 +387,7 @@ class RenderSystem {
             if (fallbacks[animationName]) {
                 for (const fallback of fallbacks[animationName]) {
                     if (animationActions[fallback]) {
-                        console.log(`Using fallback animation '${fallback}' for '${animationName}'`);
+                        console.log(`RenderSystem: Using fallback animation '${fallback}' for '${animationName}'`);
                         animationName = fallback;
                         foundFallback = true;
                         break;
@@ -564,7 +448,7 @@ class RenderSystem {
         if (!proprietaryAnim) return;
         
         if (proprietaryAnim.animationData[animationName]) {
-            console.log(`ANIMATION DEBUG: Setting proprietary animation '${animationName}' for entity ${entityId}`);
+            console.log(`RenderSystem ANIMATION DEBUG: Setting proprietary animation '${animationName}' for entity ${entityId}`);
             proprietaryAnim.animationState = animationName;
             proprietaryAnim.currentFrameIndex = 0;
             proprietaryAnim.frameTime = 0;
@@ -572,7 +456,7 @@ class RenderSystem {
             // Apply first frame immediately
             this.applyProprietaryFrame(entityId, proprietaryAnim);
         } else {
-            console.log(`ANIMATION DEBUG: Proprietary animation '${animationName}' not found for entity ${entityId}`);
+            console.log(`RenderSystem ANIMATION DEBUG: Proprietary animation '${animationName}' not found for entity ${entityId}`);
         }
     }
     
@@ -678,6 +562,7 @@ class RenderSystem {
             shape?.scaleZ ?? modelShape.scaleZ ?? 1
         );
     }
+    
     entityJump(entityId, speed = 1) {
         const animState = this.entityAnimationStates.get(entityId);
         if (!animState || animState.currentAnimation === 'leap') return;
@@ -754,8 +639,8 @@ class RenderSystem {
     removeEntityModel(entityId) {
         // Clean up model
         const modelGroup = this.entityModels.get(entityId);
-        if (modelGroup) {
-            this.scene.remove(modelGroup);
+        if (modelGroup && this.game.scene) {
+            this.game.scene.remove(modelGroup);
             
             // Dispose of geometries and materials
             modelGroup.traverse(child => {
@@ -785,20 +670,24 @@ class RenderSystem {
         this.entityAnimations.delete(entityId);
         this.entityMixers.delete(entityId);
         this.entityAnimationStates.delete(entityId);
+        this.entityProprietaryAnimations?.delete(entityId);
     }
     
     destroy() {
+        console.log('RenderSystem: Destroying...');
+        
         // Clean up all entity models
         for (const [entityId] of this.entityModels.entries()) {
             this.removeEntityModel(entityId);
         }
         
-        // Clean up Three.js resources
-        if (this.renderer) {
-            this.renderer.dispose();
-        }
+        // Clear all maps
+        this.entityModels.clear();
+        this.entityAnimations.clear();
+        this.entityMixers.clear();
+        this.entityAnimationStates.clear();
+        this.entityProprietaryAnimations?.clear();
         
-        // Remove event listeners
-        window.removeEventListener('resize', this.onWindowResize);
+        console.log('RenderSystem: Destroyed');
     }
 }

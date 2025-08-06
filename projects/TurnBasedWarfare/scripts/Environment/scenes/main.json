@@ -18,6 +18,9 @@
       ],
       "systems": [
         {
+          "type": "WorldSystem"
+        },
+        {
           "type": "RenderSystem"
         },
         {

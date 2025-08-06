@@ -4,8 +4,8 @@ class MovementSystem {
         this.componentTypes = this.game.componentManager.getComponentTypes();
         
         // Configuration variables
-        this.DEFAULT_UNIT_RADIUS = 150;           // Default radius when no size specified
-        this.COLLISION_BUFFER_DISTANCE = 5;     // Extra space between units (px)
+        this.DEFAULT_UNIT_RADIUS = 15;           // Default radius in world units (much smaller for world coords)
+        this.COLLISION_BUFFER_DISTANCE = 5;     // Extra space between units (world units)
         this.AVOIDANCE_RADIUS_MULTIPLIER = 1;    // How far to look for other units (radius * multiplier)
         this.STRONG_AVOIDANCE_FORCE = 100;       // Force when units are overlapping
         this.GENTLE_AVOIDANCE_FORCE = 20;        // Force when units are nearby but not overlapping
@@ -36,14 +36,22 @@ class MovementSystem {
                 this.faceMovementDirection(entityId, vel.vx, vel.vy);
             }
             
-            // Update position
+            // Update position (pos.x and pos.y are now world coordinates)
             pos.x += vel.vx * deltaTime;
-            pos.y += vel.vy * deltaTime;
+            pos.y += vel.vy * deltaTime; // pos.y represents world Z coordinate
             
-            // Keep units on battlefield
-            const canvas = document.getElementById('gameCanvas');
-            pos.x = Math.max(unitRadius, Math.min(canvas.width - unitRadius, pos.x));
-            pos.y = Math.max(unitRadius, Math.min(canvas.height - unitRadius, pos.y));
+            // Keep units within game board boundaries (world coordinates)
+            const terrainSize = this.game.worldSystem?.terrainSize || 768;
+            const halfTerrain = terrainSize / 2;
+            
+            // Clamp to game board boundaries with unit radius buffer
+            pos.x = Math.max(-halfTerrain + unitRadius, Math.min(halfTerrain - unitRadius, pos.x));
+            pos.y = Math.max(-halfTerrain + unitRadius, Math.min(halfTerrain - unitRadius, pos.y));
+            
+            // Debug logging occasionally
+            if (Math.random() < 0.001) { // 0.1% chance
+                console.log(`MovementSystem: Entity ${entityId} at world position (${pos.x.toFixed(1)}, ${pos.y.toFixed(1)})`);
+            }
         });
     }
     
@@ -65,7 +73,7 @@ class MovementSystem {
             const otherRadius = this.getUnitRadius(otherUnitType);
             
             const dx = pos.x - otherPos.x;
-            const dy = pos.y - otherPos.y;
+            const dy = pos.y - otherPos.y; // world coordinates
             const distance = Math.sqrt(dx * dx + dy * dy);
             
             // Check if units are too close
@@ -120,7 +128,8 @@ class MovementSystem {
     getUnitRadius(unitType) {
         // Try to get size from unit definition
         if (unitType && unitType.size) {
-            return unitType.size / 2;
+            // Convert from old system to world coordinates (much smaller values)
+            return Math.max(this.DEFAULT_UNIT_RADIUS, unitType.size * 0.1); // Scale down significantly
         }
         
         // Try to get from collections if available
@@ -128,11 +137,11 @@ class MovementSystem {
         if (collections && collections.units && unitType) {
             const unitDef = collections.units[unitType.id || unitType.type];
             if (unitDef && unitDef.size) {
-                return unitDef.size / 2;
+                return Math.max(this.DEFAULT_UNIT_RADIUS, unitDef.size * 0.1); // Scale down significantly
             }
         }
         
-        // Default radius
+        // Default radius for world coordinates
         return this.DEFAULT_UNIT_RADIUS;
     }
 }

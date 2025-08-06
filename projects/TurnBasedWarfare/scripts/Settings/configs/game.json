@@ -30,8 +30,8 @@
   "fileName": "game",
   "interface": "main",
   "appLibrary": "ECSGame",
-  "canvasWidth": 700,
-  "canvasHeight": 500,
+  "canvasWidth": 1600,
+  "canvasHeight": 1600,
   "is3D": true,
   "palette": "main",
   "appLoaderLibrary": "GameLoader"

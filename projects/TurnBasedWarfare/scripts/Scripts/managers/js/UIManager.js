@@ -1,11 +1,17 @@
- class UIManager {
+class UIManager {
     constructor(app) {
         this.game = app;
         this.game.uiManager = this;
         this.phaseTimer = null;
         this.canvas = document.getElementById('gameCanvas');
+        
+        // Add raycaster for 3D mouse picking
+        this.raycaster = new THREE.Raycaster();
+        this.mouse = new THREE.Vector2();
+        
         this.setupEventListeners();
     }
+    
     setupEventListeners() {
         this.canvas.addEventListener('click', (event) => this.handleCanvasClick(event));
 
@@ -68,31 +74,136 @@
     
     handleCanvasClick(event) {
         if (this.game.state.phase !== 'placement' || !this.game.state.selectedUnitType) return;
-        const canvas = this.canvas;
-        const rect = canvas.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-        
-        // Only allow placement on player side (left half)
-        if (x > canvas.width / 2) return;
         
         // Check if player has enough gold
         if (this.game.state.playerGold < this.game.state.selectedUnitType.value) return;
         
-        // Create unit
-        this.createUnit(x, y, this.game.state.selectedUnitType, 'player');
+        // Get 3D world position from mouse click
+        const worldPosition = this.getWorldPositionFromMouse(event);
+        if (!worldPosition) {
+            console.warn('UIManager: Could not determine world position from mouse click');
+            return;
+        }
+        
+        // Check if placement is on player side (left half of the battlefield)
+        if (!this.isValidPlayerPlacement(worldPosition)) {
+            console.log('UIManager: Invalid placement location - must be on player side');
+            return;
+        }
+        
+        // Create unit at the world position
+        this.createUnit(worldPosition.x, worldPosition.z, this.game.state.selectedUnitType, 'player');
         this.game.state.playerGold -= this.game.state.selectedUnitType.value;
         
         this.updateUI();
+        
+        console.log('UIManager: Unit placed at world position:', worldPosition);
     }
     
-    createUnit(x, y, unitType, team) {
+    getWorldPositionFromMouse(event) {
+        // Make sure we have access to the 3D scene components
+        if (!this.game.scene || !this.game.camera) {
+            console.warn('UIManager: 3D scene or camera not available for raycasting');
+            return null;
+        }
+        
+        const canvas = this.canvas;
+        const rect = canvas.getBoundingClientRect();
+        
+        // Convert mouse coordinates to normalized device coordinates (-1 to +1)
+        this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+        
+        // Update the raycaster
+        this.raycaster.setFromCamera(this.mouse, this.game.camera);
+        
+        // Get the ground/terrain mesh to raycast against
+        const ground = this.getGroundMesh();
+        if (!ground) {
+            console.warn('UIManager: Ground mesh not found for raycasting');
+            return null;
+        }
+        
+        // Perform raycast
+        const intersects = this.raycaster.intersectObject(ground, false);
+        
+        if (intersects.length > 0) {
+            const intersectPoint = intersects[0].point;
+            return {
+                x: intersectPoint.x,
+                y: intersectPoint.y,
+                z: intersectPoint.z
+            };
+        }
+        
+        return null;
+    }
+    
+    getGroundMesh() {
+        // Look for the ground mesh in the scene
+        // This assumes your WorldSystem creates a ground mesh that we can raycast against
+        if (this.game.scene) {
+            // Try to find the ground mesh - it might be stored differently in your system
+            // Check if WorldSystem exposes the ground mesh
+            if (this.game.worldSystem && this.game.worldSystem.ground) {
+                return this.game.worldSystem.ground;
+            }
+            
+            // Fallback: search through scene children for a mesh that looks like ground
+            for (let child of this.game.scene.children) {
+                if (child.isMesh && child.geometry && child.geometry.type === 'PlaneGeometry') {
+                    return child;
+                }
+            }
+        }
+        
+        return null;
+    }
+    
+    isValidPlayerPlacement(worldPosition) {
+        // Get terrain dimensions from the world system
+        const terrainSize = this.game.worldSystem?.terrainSize || 768;
+        const extensionSize = this.game.worldSystem?.extensionSize || 0;
+        
+        // Calculate actual game board boundaries (excluding extension areas)
+        // The game board is centered at origin, so it extends from -terrainSize/2 to +terrainSize/2
+        const gameBoardMinX = -terrainSize / 2;
+        const gameBoardMaxX = terrainSize / 2;
+        const gameBoardMinZ = -terrainSize / 2;
+        const gameBoardMaxZ = terrainSize / 2;
+        
+        // Check if position is within the actual game board (not in extension area)
+        const withinGameBoard = worldPosition.x >= gameBoardMinX && 
+                               worldPosition.x <= gameBoardMaxX &&
+                               worldPosition.z >= gameBoardMinZ && 
+                               worldPosition.z <= gameBoardMaxZ;
+        
+        if (!withinGameBoard) {
+            console.log('UIManager: Placement outside game board boundaries');
+            return false;
+        }
+        
+        // Additional check: player side is the left half of the game board
+        const playerSideMaxX = 0; // Player can place from left edge to center line
+        const onPlayerSide = worldPosition.x <= playerSideMaxX;
+        
+        if (!onPlayerSide) {
+            console.log('UIManager: Placement not on player side');
+            return false;
+        }
+        
+        console.log(`UIManager: Valid placement at (${worldPosition.x.toFixed(1)}, ${worldPosition.z.toFixed(1)}) within game board bounds`);
+        return true;
+    }
+    
+    createUnit(worldX, worldZ, unitType, team) {
         const entity = this.game.createEntity();
         const ComponentTypes = this.game.componentManager.getComponentTypes();
         const Components = this.game.componentManager.getComponents();
         
+        // Store world coordinates directly - no conversion needed
         this.game.addComponent(entity, ComponentTypes.POSITION, 
-            Components.Position(x, y));
+            Components.Position(worldX, worldZ));
         
         this.game.addComponent(entity, ComponentTypes.VELOCITY, 
             Components.Velocity(0, 0, unitType.speed * 20));
@@ -121,7 +232,48 @@
         this.game.addComponent(entity, ComponentTypes.ANIMATION, 
             Components.Animation());
         
+        console.log(`UIManager: Created ${team} unit at world coordinates (${worldX.toFixed(1)}, ${worldZ.toFixed(1)})`);
+        
         return entity;
+    }
+    
+    placeEnemyUnits() {
+        const unitCount = 3 + Math.floor(this.game.state.round / 2);
+        
+        const UnitTypes = this.game.getCollections().units;
+        const availableUnits = Object.values(UnitTypes);        
+        const availableUnitKeys = Object.keys(UnitTypes);
+
+        // Get terrain dimensions for proper boundary calculation
+        const terrainSize = this.game.worldSystem?.terrainSize || 768;
+        
+        // Calculate enemy side boundaries (right half of the game board)
+        const gameBoardMinX = 0; // Enemy side starts at center line
+        const gameBoardMaxX = terrainSize / 2; // Enemy side extends to right edge
+        const gameBoardMinZ = -terrainSize / 2; // Full Z range
+        const gameBoardMaxZ = terrainSize / 2;
+        
+        // Add some padding to keep units away from exact edges
+        const padding = 20;
+        const enemyMinX = gameBoardMinX + padding;
+        const enemyMaxX = gameBoardMaxX - padding;
+        const enemyMinZ = gameBoardMinZ + padding;
+        const enemyMaxZ = gameBoardMaxZ - padding;
+
+        for (let i = 0; i < unitCount; i++) {
+            const chosen = Math.floor(Math.random() * availableUnits.length);
+            const unitType = availableUnits[chosen];
+            const unitId = availableUnitKeys[chosen];
+            
+            // Generate random position within enemy territory (world coordinates)
+            const worldX = enemyMinX + Math.random() * (enemyMaxX - enemyMinX);
+            const worldZ = enemyMinZ + Math.random() * (enemyMaxZ - enemyMinZ);
+            
+            // Create unit directly with world coordinates
+            this.createUnit(worldX, worldZ, { id: unitId, ...unitType }, 'enemy');
+        }
+        
+        this.updateUI();
     }
     
     startPlacementPhase() {
@@ -147,27 +299,6 @@
         }, 2000);
     }
     
-    placeEnemyUnits() {
-        const canvas = this.canvas;
-        const unitCount = 3 + Math.floor(this.game.state.round / 2);
-        
-        const UnitTypes = this.game.getCollections().units;
-        const availableUnits = Object.values(UnitTypes);        
-        const availableUnitKeys = Object.keys(UnitTypes);
-
-        for (let i = 0; i < unitCount; i++) {
-            const chosen = Math.floor(Math.random() * availableUnits.length);
-            const unitType = availableUnits[chosen];
-            const unitId = availableUnitKeys[chosen];
-            const x = canvas.width / 2 + 50 + Math.random() * (canvas.width / 2 - 100);
-            const y = 50 + Math.random() * (canvas.height - 100);
-            
-            this.createUnit(x, y, { id: unitId, ...unitType }, 'enemy');
-        }
-        
-        this.updateUI();
-    }
-    
     startBattlePhase() {
         this.game.state.phase = 'battle';
         this.updatePhaseDisplay();
@@ -175,7 +306,6 @@
         
         // Disable placement UI
         document.getElementById('readyButton').disabled = true;
-      
     }
     
     endBattle(result) {

@@ -3,12 +3,12 @@ class CombatAISystem {
         this.game = game;
         this.componentTypes = this.game.componentManager.getComponentTypes();
         
-        // Configuration variables
-        this.DEFAULT_UNIT_RADIUS = 150;              // Default radius when no size specified
+        // Configuration variables (adjusted for world coordinates)
+        this.DEFAULT_UNIT_RADIUS = 15;              // Default radius in world units
         this.ATTACK_RANGE_BUFFER = 5;               // Extra distance added to attack range
-        this.ALLY_SPACING_DISTANCE = 40;            // Minimum distance to maintain from allies
-        this.ENEMY_SPACING_DISTANCE = 20;            // Minimum distance to maintain from enemies
-        this.AVOIDANCE_RADIUS_MULTIPLIER = 1;     // How far to look for units to avoid (radius * multiplier)
+        this.ALLY_SPACING_DISTANCE = 10;            // Minimum distance to maintain from allies (world units)
+        this.ENEMY_SPACING_DISTANCE = 5;            // Minimum distance to maintain from enemies (world units)
+        this.AVOIDANCE_RADIUS_MULTIPLIER = 1;       // How far to look for units to avoid (radius * multiplier)
         this.STRONG_AVOIDANCE_FORCE = 50;           // Force when units are overlapping
         this.GENTLE_AVOIDANCE_FORCE = 10;           // Force when units are nearby allies
         this.FACING_DIRECTION_OFFSET = Math.PI / 2; // Offset for 3D model facing direction
@@ -53,8 +53,9 @@ class CombatAISystem {
             
             enemies.forEach(enemyId => {
                 const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
+                // Using world coordinates directly
                 const dx = enemyPos.x - pos.x;
-                const dy = enemyPos.y - pos.y;
+                const dy = enemyPos.y - pos.y; // pos.y is world Z coordinate
                 const distance = Math.sqrt(dx * dx + dy * dy);
                 
                 if (distance < nearestDistance) {
@@ -69,15 +70,17 @@ class CombatAISystem {
             const enemyUnitType = this.game.getComponent(nearestEnemy, this.componentTypes.UNIT_TYPE);
             const enemyRadius = this.getUnitRadius(enemyUnitType);
             
+            // Using world coordinates
             const dx = enemyPos.x - pos.x;
             const dy = enemyPos.y - pos.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
             
-            // Calculate attack distance (unit radii + combat range)
-            const attackDistance = Math.max(combat.range, unitRadius + enemyRadius + this.ATTACK_RANGE_BUFFER);
+            // Calculate attack distance (unit radii + combat range, scaled for world coords)
+            const scaledRange = Math.max(combat.range * 0.1, 20); // Scale combat range down to world coords
+            const attackDistance = Math.max(scaledRange, unitRadius + enemyRadius + this.ATTACK_RANGE_BUFFER);
             
             // Make unit face the target
-          //  this.faceTarget(entityId, dx, dy);
+            this.faceTarget(entityId, dx, dy);
             
             // Combat logic
             if (distance <= attackDistance) {
@@ -95,8 +98,8 @@ class CombatAISystem {
                 // Move towards enemy with collision avoidance
                 aiState.state = 'chasing';
                 
-                // Basic movement towards enemy
-                const moveSpeed = vel.maxSpeed;
+                // Basic movement towards enemy (scaled for world coordinates)
+                const moveSpeed = Math.max(vel.maxSpeed * 0.1, 50); // Scale speed down to world coords
                 let moveX = (dx / distance) * moveSpeed;
                 let moveY = (dy / distance) * moveSpeed;
                 
@@ -116,6 +119,11 @@ class CombatAISystem {
                 
                 vel.vx = moveX;
                 vel.vy = moveY;
+                
+                // Debug logging occasionally
+                if (Math.random() < 0.001) { // 0.1% chance
+                    console.log(`CombatAI: Entity ${entityId} chasing, distance: ${distance.toFixed(1)}, attack range: ${attackDistance.toFixed(1)}`);
+                }
             }
         });
     }
@@ -138,6 +146,7 @@ class CombatAISystem {
             
             const otherRadius = this.getUnitRadius(otherUnitType);
             
+            // World coordinates
             const dx = pos.x - otherPos.x;
             const dy = pos.y - otherPos.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
@@ -202,14 +211,15 @@ class CombatAISystem {
     
     getUnitRadius(unitType) {
         if (unitType && unitType.size) {
-            return unitType.size / 2;
+            // Scale down from old canvas coordinate system to world coordinates
+            return Math.max(this.DEFAULT_UNIT_RADIUS, unitType.size * 0.1);
         }
         
         const collections = this.game.getCollections && this.game.getCollections();
         if (collections && collections.units && unitType) {
             const unitDef = collections.units[unitType.id || unitType.type];
             if (unitDef && unitDef.size) {
-                return unitDef.size / 2;
+                return Math.max(this.DEFAULT_UNIT_RADIUS, unitDef.size * 0.1);
             }
         }
         

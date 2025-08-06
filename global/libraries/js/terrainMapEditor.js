@@ -52,6 +52,8 @@ class TerrainMapEditor {
         this.terrainCanvasBuffer = document.createElement('canvas');
         this.terrainCanvasBuffer.width = this.tileMap.size * this.gameEditor.getCollections().configs.game.gridSize;
         this.terrainCanvasBuffer.height =  this.tileMap.size * this.gameEditor.getCollections().configs.game.gridSize;
+
+        console.log(this.tileMap.size, this.terrainCanvasBuffer.width, this.terrainCanvasBuffer.height);
         this.modalId = 'modal-addTerrainType';
         // Bind methods to maintain correct context
         this.init();
