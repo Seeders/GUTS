@@ -4,8 +4,8 @@ class GameLoader {
     }    
     async load(){
         this.collections = this.game.getCollections();        
-        this.collections.configs.game.canvasWidth = window.outerWidth;
-        this.collections.configs.game.canvasHeight = window.outerHeight;
+       // this.collections.configs.game.canvasWidth = window.outerWidth;
+       // this.collections.configs.game.canvasHeight = window.outerHeight;
         this.game.palette = this.collections.palettes && this.collections.configs.game.palette ? this.collections.palettes[this.collections.configs.game.palette] : null;
         this.isometric = this.collections.configs.game.isIsometric;
         this.game.state.tileMapData = this.collections.levels[this.game.state.level].tileMap;
@@ -35,6 +35,7 @@ class GameLoader {
     }
 
     setupCanvas(canvasWidth, canvasHeight) {
+        
         this.canvas = document.getElementById("gameCanvas");
         if(this.game.getCollections().configs.game.is3D){
             this.finalCtx = this.canvas.getContext("webgl2");

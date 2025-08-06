@@ -1,0 +1,307 @@
+{
+  "title": "Pirate",
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ]
+    },
+    "model": {
+      "shapes": {
+        "shapes": [
+          {
+            "type": "box",
+            "width": 12,
+            "height": 16,
+            "depth": 7,
+            "x": 0,
+            "y": 24,
+            "z": 0,
+            "color": "#2F1A4A",
+            "name": "torso",
+            "scaleX": 1
+          },
+          {
+            "type": "sphere",
+            "size": 10,
+            "x": 0,
+            "y": 35,
+            "z": 0,
+            "color": "#E8C9A0",
+            "name": "head"
+          },
+          {
+            "type": "box",
+            "width": 3,
+            "height": 2,
+            "depth": 4,
+            "x": 0,
+            "y": 35,
+            "z": 4,
+            "color": "#E8C9A0",
+            "name": "nose"
+          },
+          {
+            "type": "box",
+            "width": 8,
+            "height": 2,
+            "depth": 4,
+            "x": 0,
+            "y": 32,
+            "z": 3,
+            "color": "#ECB69B",
+            "name": "jaw"
+          },
+          {
+            "type": "sphere",
+            "size": 2,
+            "x": -3,
+            "y": 36,
+            "z": 4,
+            "color": "#87CEFA",
+            "name": "eye-right"
+          },
+          {
+            "type": "sphere",
+            "size": 1,
+            "x": -3.5,
+            "y": 36,
+            "z": 4.5,
+            "color": "#000000",
+            "name": "pupil-right"
+          },
+          {
+            "type": "box",
+            "width": 3,
+            "height": 2,
+            "depth": 1,
+            "x": 2,
+            "y": 36,
+            "z": 5,
+            "color": "#000000",
+            "name": "eyepatch-left"
+          },
+          {
+            "type": "box",
+            "width": 4,
+            "height": 12,
+            "depth": 4,
+            "x": -8,
+            "y": 24,
+            "z": 0,
+            "color": "#2F1A4A",
+            "name": "arm-right",
+            "rotationZ": -15
+          },
+          {
+            "type": "box",
+            "width": 4,
+            "height": 12,
+            "depth": 4,
+            "x": 8,
+            "y": 24,
+            "z": 0,
+            "color": "#2F1A4A",
+            "name": "arm-left",
+            "rotationZ": 15
+          },
+          {
+            "type": "box",
+            "width": 5,
+            "height": 3,
+            "depth": 5,
+            "x": -8,
+            "y": 16,
+            "z": 1,
+            "color": "#E8C9A0",
+            "name": "hand-right",
+            "rotationX": 90
+          },
+          {
+            "type": "box",
+            "width": 2,
+            "height": 4,
+            "depth": 2,
+            "x": 8,
+            "y": 16,
+            "z": 1,
+            "color": "#C0C0C0",
+            "name": "hook-left",
+            "rotationZ": -45
+          },
+          {
+            "type": "box",
+            "width": 4,
+            "height": 12,
+            "depth": 4,
+            "x": -3,
+            "y": 8,
+            "z": 0,
+            "color": "#3B3B3B",
+            "name": "leg-right"
+          },
+          {
+            "type": "cylinder",
+            "size": 3,
+            "height": 13,
+            "x": 3,
+            "y": 7.5,
+            "z": 0,
+            "color": "#8B4513",
+            "name": "peg-leg-left"
+          },
+          {
+            "type": "box",
+            "width": 5,
+            "height": 2,
+            "depth": 6,
+            "x": -3,
+            "y": 2,
+            "z": 2,
+            "color": "#3B3B3B",
+            "name": "boot-right"
+          },
+          {
+            "type": "cylinder",
+            "size": 4,
+            "height": 2,
+            "x": 3,
+            "y": 2,
+            "z": 2,
+            "color": "#8B4513",
+            "name": "peg-foot-left"
+          },
+          {
+            "type": "box",
+            "width": 11,
+            "height": 10,
+            "depth": 8,
+            "x": 0,
+            "y": 15,
+            "z": 0,
+            "color": "#FF0000",
+            "name": "pants"
+          },
+          {
+            "type": "box",
+            "width": 12,
+            "height": 8,
+            "depth": 2,
+            "x": 0,
+            "y": 32,
+            "z": 3,
+            "color": "#000000",
+            "name": "beard"
+          },
+          {
+            "type": "box",
+            "width": 14,
+            "height": 6,
+            "depth": 10,
+            "x": 0,
+            "y": 40,
+            "z": 0,
+            "color": "#000000",
+            "name": "hat"
+          },
+          {
+            "type": "box",
+            "width": 2,
+            "height": 4,
+            "depth": 2,
+            "x": -9,
+            "y": 14,
+            "z": 1,
+            "color": "#8B4513",
+            "name": "sword-handle",
+            "rotationZ": 0,
+            "rotationX": -45
+          },
+          {
+            "type": "box",
+            "width": 2,
+            "height": 2.2,
+            "depth": 6,
+            "x": -9,
+            "y": 13,
+            "z": 2,
+            "color": "#C0C0C0",
+            "name": "sword-guard",
+            "rotationZ": 45,
+            "rotationX": 0,
+            "rotationY": 90
+          },
+          {
+            "type": "box",
+            "width": 1,
+            "height": 1,
+            "depth": 18,
+            "x": -9,
+            "y": 8,
+            "z": 7,
+            "color": "#C0C0C0",
+            "name": "sword-blade",
+            "rotationZ": 45,
+            "rotationX": 45
+          },
+          {
+            "type": "box",
+            "width": 8,
+            "height": 2,
+            "depth": 10,
+            "x": 0,
+            "y": 16,
+            "z": 0,
+            "color": "#FFD700",
+            "name": "sash"
+          },
+          {
+            "type": "box",
+            "width": 2,
+            "height": 2,
+            "depth": 2,
+            "x": -2,
+            "y": 43,
+            "z": 0,
+            "color": "#FF0000",
+            "name": "hat-feather-right",
+            "rotationZ": 45
+          },
+          {
+            "type": "box",
+            "width": 2,
+            "height": 2,
+            "depth": 2,
+            "x": 2,
+            "y": 43,
+            "z": 0,
+            "color": "#FF0000",
+            "name": "hat-feather-left",
+            "rotationZ": -45
+          }
+        ],
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      }
+    }
+  },
+  "damage": 10,
+  "range": 2,
+  "hp": 10,
+  "value": 10,
+  "size": 50,
+  "speed": 1
+}

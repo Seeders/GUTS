@@ -5,6 +5,7 @@
   "isIsometric": false,
   "libraries": [
     "threejs",
+    "Rapier",
     "three.SkeletonUtils",
     "SceneManager",
     "ShapeFactory",
@@ -29,10 +30,9 @@
   "fileName": "game",
   "interface": "main",
   "appLibrary": "ECSGame",
-  "canvasWidth": 1600,
-  "canvasHeight": 1000,
+  "canvasWidth": 700,
+  "canvasHeight": 500,
   "is3D": true,
   "palette": "main",
-  "pixelSize": 2,
   "appLoaderLibrary": "GameLoader"
 }

@@ -1,6 +1,6 @@
 class MapManager extends engine.Component {
         
-    init({levelName}) {
+    init({level}) {
         this.nodeClass = class Node {
             constructor(x, y, tileType, parent = null) {
                 this.x = x;
@@ -22,7 +22,7 @@ class MapManager extends engine.Component {
                 return `${this.x},${this.y}`;
             }
         };
-        this.tileMap = this.game.getCollections().levels[levelName].tileMap;
+        this.tileMap = this.game.getCollections().levels[level].tileMap;
 
         const {tileMap, paths} = this.generateMap();
         this.game.state.tileMap = tileMap;

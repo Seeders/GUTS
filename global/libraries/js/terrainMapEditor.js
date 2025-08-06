@@ -315,8 +315,8 @@ class TerrainMapEditor {
         this.mapRenderer = new (this.gameEditor.scriptContext.getRenderer("MapRenderer"))(this.game, null);
         this.mapRenderer.init({ 
                 environment: this.worldObjects, 
-                levelName: 'level', 
-                level: this.objectData,
+                level: 'level', 
+                levelData: this.objectData,
                 isEditor: true,
                 palette: palette,
                 canvas: this.canvasEl

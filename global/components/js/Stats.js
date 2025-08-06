@@ -39,6 +39,8 @@ class Stats extends engine.Component {
     }
     
     applyUpgrades() {
-        engine.getFunction("calculateStats")(this.stats, this.game.state.activeUpgrades[this.type]);        
+        if(this.game.state.activeUpgrades && this.game.state.activeUpgrades[this.type]){
+            engine.getFunction("calculateStats")(this.stats, this.game.state.activeUpgrades[this.type]);        
+        }
     }
 }

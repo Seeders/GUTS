@@ -1,13 +1,35 @@
 {
   "title": "Main",
+  "type": "ECS",
   "sceneData": [
     {
       "id": 1,
-      "type": "ECSGame",
       "objectType": "gamePrefabs",
       "spawnType": "main",
       "parent": null,
       "children": [],
+      "managers": [
+        {
+          "type": "UIManager"
+        },
+        {
+          "type": "ComponentManager"
+        }
+      ],
+      "systems": [
+        {
+          "type": "RenderSystem"
+        },
+        {
+          "type": "MovementSystem"
+        },
+        {
+          "type": "CombatAISystem"
+        },
+        {
+          "type": "AnimationSystem"
+        }
+      ],
       "components": [
         {
           "type": "transform",
@@ -32,19 +54,19 @@
         {
           "type": "MapRenderer",
           "parameters": {
-            "levelName": "level1"
+            "level": "level1"
           }
         },
         {
           "type": "MapManager",
           "parameters": {
-            "levelName": "level1"
+            "level": "level1"
           }
         },
         {
           "type": "ThreeJsWorld",
           "parameters": {
-            "levelName": "level1"
+            "level": "level1"
           }
         }
       ]

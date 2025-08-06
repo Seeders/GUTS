@@ -72,22 +72,6 @@
         "buildable": false
       },
       {
-        "type": "path",
-        "texture": "path",
-        "color": "#ffcc80",
-        "image": [
-          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAY0lEQVRIS2P8f6bhPwMNAePIseDWcx4GNckvJAfm0A0imI8Hpw9IiQ+8PiDFIFyxPziDiJS0OjR8gC+u6OsDclINIT309QEpqYNYtQR9QCgICFlE0AJCBhCSH+EWEBM/Qz+IANm2agm6Nb5uAAAAAElFTkSuQmCC",
-          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAYklEQVRIS2P8f6bhPwMVAaNJAyOycYzUtgBkOLIlNLEA2RK4Bbee8zCoSX6hYmBBfEIzH8BcOmoBwTgbDSLig4gW+QCc4WhRVNC8LBq1gGDKITqIqJGyRlMRwfgYDSKCQQQA625a4Y+giZcAAAAASUVORK5CYII=",
-          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAVklEQVRIS2NkoDFgpLH5DMPAgv9nGv7TMpgYRy0gFLyjQUQohBiGURDdes7DoCb5BcPLuMQJhg1UwTAKImK9TKq6YRJElKYUfMFGchCR6hiSLRh5kQwAnpVN4Zf6kr4AAAAASUVORK5CYII=",
-          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAY0lEQVRIS2NkoDFgpLH5DMPAgv9nGv5TI5gYTRqwhgYjtSwAORKbJVS1AJsloxZgpA/0eBi4ILr1nIdBTfILySl48PiAZKdDNQxTH5ASoYTUDtMgIjfFYNM3uIOIUAQPz+IaAHMAXBkmVDzCAAAAAElFTkSuQmCC",
-          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAdklEQVRIS2P8f6bhPwMNAeOgtuDWcx4GNckveP0/uH1ATNQNvA+ICWd8Phl4HxATzkT7gJzgIKRnaAQRPl8MDR8QHcmUphhs+vEGEaEUQoyDyIoDUiwmywJiXA5TQzMLYL6kmQUk+4CUcEcOwsHjA1Iilq4+AAAqa2oJpPaTtgAAAABJRU5ErkJggg==",
-          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAXklEQVRIS2P8f6bhPwMNAeOoBYRCd5gH0a3nPAxqkl8IhQJe+WEeRBSFDVTzMAoiaqQYbEE6jIKIGilmNIjICkX6pSJa5ANGkwZGmvkAZDgoTGliAcxwmliAbDjIAgBn21rhMB5PBAAAAABJRU5ErkJggg==",
-          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAWElEQVRIS2P8f6bhPwMNAePIs+DWcx4GNckvRAcqOIhI1US06UCFIzAOSAkekNphFES4UhKlKWwYBRGpqYNY9aNBRDCkRoOIcBARVEGhAkYK9RPUPvQtAACMFk3hQ/NGpQAAAABJRU5ErkJggg==",
-          "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAaklEQVRIS2P8f6bhPwMVAaNJAyOycYyDyoJbz3kY1CS/4PXv4PYBMVE1TH1ATOTBgoeQ2mEaRMSkDmLVDJ4gIhSZuHw0eHxAbJijqxv1AcGQo2kQoRsOcg3VajRshoMtIOhnChWMWkAwAAGoflwZO+biqwAAAABJRU5ErkJggg=="
-        ],
-        "buildable": false
-      },
-      {
         "type": "grass",
         "texture": "grass",
         "color": "#5a8a4f",
@@ -138,292 +122,292 @@
     ],
     "terrainMap": [
       [
-        5,
-        5,
-        2,
-        5,
-        5,
-        5,
-        5,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
       ],
       [
-        5,
-        5,
         4,
-        5,
-        5,
-        5,
+        4,
+        4,
+        4,
+        4,
+        4,
         0,
-        0,
-        6,
-        6,
-        6,
         4,
         4,
         4,
-        6,
-        6
+        4,
+        4,
+        5,
+        5,
+        4,
+        4
       ],
       [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
         5,
         5,
-        4,
         5,
         5,
         5,
         5,
-        6,
-        6,
-        4,
-        4,
-        4,
-        4,
-        4,
-        4,
-        6
+        5,
+        4
       ],
       [
+        4,
+        4,
+        4,
+        6,
+        0,
+        0,
+        0,
         5,
         5,
-        4,
-        7,
-        0,
-        0,
-        0,
-        6,
-        4,
-        4,
-        6,
-        6,
-        4,
-        6,
-        4,
-        6
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        4
       ],
       [
+        4,
+        4,
+        4,
+        0,
+        0,
+        0,
+        0,
         5,
         5,
-        4,
-        0,
-        0,
-        0,
-        0,
-        6,
-        4,
-        6,
-        6,
-        6,
-        4,
-        6,
-        4,
-        6
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        4
       ],
       [
+        4,
+        4,
+        4,
+        0,
+        0,
+        0,
+        0,
         5,
-        4,
-        4,
-        0,
-        0,
-        0,
-        0,
-        6,
-        4,
-        6,
-        6,
-        6,
-        4,
-        6,
-        4,
-        2
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        4
       ],
       [
+        4,
+        4,
+        0,
+        0,
+        0,
+        0,
+        0,
         5,
-        4,
-        0,
-        0,
-        0,
-        0,
-        0,
-        4,
-        4,
-        6,
-        6,
-        6,
-        4,
-        6,
-        6,
-        6
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        4
       ],
       [
-        5,
+        4,
         4,
         0,
         0,
         0,
         0,
         0,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        4
+      ],
+      [
+        4,
+        4,
+        6,
+        0,
+        0,
+        6,
+        5,
+        5,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        5,
+        4
+      ],
+      [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        5,
+        4,
+        4,
+        4,
+        0,
+        0,
+        0,
+        4,
+        4,
+        4
+      ],
+      [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        0
+      ],
+      [
+        4,
+        4,
         4,
         6,
         6,
+        4,
+        4,
+        4,
+        4,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4,
+        0
+      ],
+      [
+        4,
+        0,
+        0,
         6,
         6,
         4,
         4,
+        4,
+        4,
+        0,
+        0,
         6,
-        6
+        0,
+        0,
+        4,
+        0
       ],
       [
-        5,
         4,
-        7,
         0,
         0,
-        7,
+        0,
+        6,
         4,
         4,
-        5,
-        5,
-        5,
-        5,
-        5,
         4,
         4,
-        6
+        4,
+        0,
+        0,
+        0,
+        4,
+        4,
+        0
       ],
       [
-        5,
+        4,
+        0,
+        0,
         4,
         4,
         4,
         4,
         4,
         4,
-        5,
-        5,
-        5,
-        1,
-        1,
-        1,
-        5,
         4,
-        5
+        4,
+        4,
+        4,
+        4,
+        4,
+        0
       ],
       [
-        5,
-        5,
-        5,
-        5,
-        5,
-        5,
-        5,
-        5,
-        5,
-        1,
-        1,
-        1,
-        1,
-        1,
-        4,
-        1
-      ],
-      [
-        5,
-        5,
-        5,
-        7,
-        7,
-        5,
         4,
         4,
         4,
-        1,
-        1,
-        5,
-        1,
-        1,
         4,
-        1
-      ],
-      [
-        5,
-        0,
-        0,
-        7,
-        7,
-        5,
         4,
-        5,
         4,
-        1,
-        1,
-        1,
-        1,
-        1,
         4,
-        1
-      ],
-      [
-        5,
+        4,
+        4,
         0,
         0,
         0,
-        7,
-        5,
-        4,
-        5,
-        4,
-        4,
-        1,
-        1,
-        4,
-        4,
-        4,
-        1
-      ],
-      [
-        5,
         0,
-        0,
-        5,
-        5,
-        5,
-        4,
-        5,
-        5,
         4,
         4,
-        4,
-        4,
-        1,
-        1,
-        1
-      ],
-      [
-        5,
-        5,
-        5,
-        5,
-        5,
-        5,
-        3,
-        5,
-        5,
-        1,
-        1,
-        1,
-        1,
-        1,
-        5,
-        1
+        0
       ]
     ],
     "terrainBGColor": {
@@ -432,1212 +416,420 @@
     "environmentObjects": [
       {
         "type": "tree",
-        "imageIndex": 1,
-        "x": -348,
-        "y": 432
-      },
-      {
-        "type": "tree",
-        "imageIndex": 1,
-        "x": 515,
-        "y": -243
-      },
-      {
-        "type": "tree",
-        "imageIndex": 1,
-        "x": 1141,
-        "y": 339
-      },
-      {
-        "type": "tree",
-        "imageIndex": 1,
-        "x": 426.0000000000001,
-        "y": 1258
-      },
-      {
-        "type": "tree",
-        "imageIndex": 1,
-        "x": 1058,
-        "y": -246
-      },
-      {
-        "type": "tree",
-        "imageIndex": 1,
-        "x": 1312,
-        "y": 872
-      },
-      {
-        "type": "tree",
-        "imageIndex": 1,
-        "x": 638.9999999999999,
-        "y": 1433
-      },
-      {
-        "type": "tree",
-        "imageIndex": 1,
-        "x": -251.00000000000006,
-        "y": 1107
-      },
-      {
-        "type": "tree",
-        "imageIndex": 1,
-        "x": 747,
-        "y": -467.00000000000006
-      },
-      {
-        "type": "tree",
-        "imageIndex": 1,
-        "x": -864,
-        "y": 324
-      },
-      {
-        "type": "tree",
-        "imageIndex": 1,
-        "x": -25.00000000000003,
-        "y": 1133
-      },
-      {
-        "type": "tree",
-        "imageIndex": 1,
-        "x": -401,
-        "y": -146.99999999999997
-      },
-      {
-        "type": "tree",
-        "imageIndex": 1,
-        "x": 762,
-        "y": 978
-      },
-      {
-        "type": "tree",
-        "imageIndex": 1,
-        "x": -173,
-        "y": -411
-      },
-      {
-        "type": "tree",
-        "imageIndex": 1,
-        "x": 1555,
-        "y": 413
-      },
-      {
-        "type": "tree",
-        "imageIndex": 1,
-        "x": 372.00000000000006,
-        "y": 1076
-      },
-      {
-        "type": "tree",
-        "imageIndex": 1,
-        "x": 231.99999999999994,
-        "y": 1611.9999999999998
-      },
-      {
-        "type": "tree",
-        "imageIndex": 1,
-        "x": 138,
-        "y": -586
-      },
-      {
-        "type": "tree",
-        "imageIndex": 1,
-        "x": 1094,
-        "y": -102
-      },
-      {
-        "type": "tree",
-        "imageIndex": 1,
-        "x": 1149,
-        "y": -149.00000000000006
-      },
-      {
-        "type": "tree",
-        "imageIndex": 1,
-        "x": 855,
-        "y": -215
+        "imageIndex": 0,
+        "x": -131,
+        "y": 555.8125
       },
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": 228,
-        "y": -211.99999999999997
+        "x": -132,
+        "y": 555.8125
       },
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": -297,
-        "y": 109.00000000000003
+        "x": -133,
+        "y": 555.8125
       },
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": -619,
-        "y": 679
+        "x": -147,
+        "y": 556.8125
       },
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": 861,
-        "y": 1203
+        "x": -172,
+        "y": 527.8125
       },
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": 1605,
-        "y": 631
+        "x": -181,
+        "y": 497.8125
       },
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": 1278,
-        "y": -33.99999999999994
+        "x": -154,
+        "y": 467.8125
       },
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": 278.99999999999994,
-        "y": -859
+        "x": -113,
+        "y": 437.8125
       },
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": -319,
-        "y": 819
+        "x": -104,
+        "y": 399.8125
       },
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": -691,
-        "y": 115.00000000000003
+        "x": -110,
+        "y": 345.8125
       },
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": -165,
-        "y": 1305
+        "x": -158,
+        "y": 252.8125
       },
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": 453.99999999999994,
-        "y": 1593.9999999999998
+        "x": -207,
+        "y": 182.8125
       },
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": 1124,
-        "y": 1096
+        "x": -310,
+        "y": 136.8125
       },
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": 1018,
-        "y": 554
+        "x": -356,
+        "y": 207.8125
       },
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": 1901,
-        "y": 415
+        "x": -330,
+        "y": 486.8125
       },
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": -155,
-        "y": -249
+        "x": -204,
+        "y": 645.8125
       },
       {
         "type": "tree",
         "imageIndex": 0,
         "x": -177,
-        "y": 577
+        "y": 709.8125
       },
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": -151.00000000000003,
-        "y": 279
+        "x": -255,
+        "y": 788.8125
       },
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": -500.00000000000006,
-        "y": 952
+        "x": -193,
+        "y": 872.8125
       },
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": -966,
-        "y": 453.99999999999994
+        "x": -113,
+        "y": 901.8125
       },
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": 984,
-        "y": -336
+        "x": -335,
+        "y": 902.8125
       },
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": 372.00000000000006,
-        "y": -560
+        "x": -167,
+        "y": 863.8125
       },
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": 1023,
-        "y": 132.99999999999994
+        "x": -111,
+        "y": 292.8125
       },
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": 1325,
-        "y": 623
+        "x": -103,
+        "y": 193.8125
       },
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": 950,
-        "y": 838
+        "x": -149,
+        "y": 113.8125
       },
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": 524,
-        "y": 1072
+        "x": -152,
+        "y": 80.8125
       },
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": 747,
-        "y": 1477
+        "x": 445,
+        "y": 4.8125
       },
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": 148.99999999999997,
-        "y": 1187
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": -495,
-        "y": 474.99999999999994
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": -581,
-        "y": -75
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": -113.00000000000001,
-        "y": -611
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 573,
-        "y": -749
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 436,
-        "y": 1844
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": -90,
-        "y": 822
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": -793,
-        "y": 221
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 1468,
-        "y": 207.99999999999994
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 1623,
-        "y": 189
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 845,
-        "y": -609
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 48,
-        "y": -876
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": -492.99999999999994,
-        "y": 157
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": -354,
-        "y": 498
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 1109,
-        "y": 951
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 1334,
-        "y": 386.00000000000006
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 734,
-        "y": -162.00000000000006
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 452,
-        "y": -48
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 858,
-        "y": 294
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 232.00000000000003,
-        "y": 1388
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 942,
-        "y": 1346
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 1035,
-        "y": 733
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": -155,
-        "y": 83
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": -898.0000000000001,
-        "y": 70.00000000000003
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": -1216,
-        "y": 223.99999999999997
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": -862.0000000000001,
-        "y": 690.0000000000001
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 1775,
-        "y": 596.9999999999999
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 1294,
-        "y": 1038
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 64,
-        "y": -140
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": -420.99999999999994,
-        "y": -387
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": -140,
-        "y": 524
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": -298,
-        "y": 1058
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": -76.00000000000003,
-        "y": -516
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 305,
-        "y": -1121
-      },
-      {
-        "type": "rock",
-        "imageIndex": 1,
-        "x": 1029,
-        "y": 1223
-      },
-      {
-        "type": "rock",
-        "imageIndex": 1,
-        "x": 1140,
-        "y": 140.00000000000006
-      },
-      {
-        "type": "rock",
-        "imageIndex": 1,
-        "x": 839,
-        "y": -39
-      },
-      {
-        "type": "rock",
-        "imageIndex": 1,
-        "x": 12,
-        "y": 932
-      },
-      {
-        "type": "rock",
-        "imageIndex": 1,
-        "x": -284,
-        "y": 304
-      },
-      {
-        "type": "rock",
-        "imageIndex": 1,
-        "x": -165,
-        "y": -83.00000000000001
-      },
-      {
-        "type": "rock",
-        "imageIndex": 1,
-        "x": -55.99999999999997,
-        "y": 916.0000000000001
-      },
-      {
-        "type": "rock",
-        "imageIndex": 1,
-        "x": -371,
-        "y": 623
-      },
-      {
-        "type": "rock",
-        "imageIndex": 1,
-        "x": 62.00000000000006,
-        "y": 1050
-      },
-      {
-        "type": "rock",
-        "imageIndex": 1,
-        "x": 64.00000000000003,
-        "y": 1052
-      },
-      {
-        "type": "rock",
-        "imageIndex": 1,
-        "x": 397,
-        "y": 1395
-      },
-      {
-        "type": "rock",
-        "imageIndex": 1,
-        "x": 607,
-        "y": 1229
-      },
-      {
-        "type": "rock",
-        "imageIndex": 1,
-        "x": 890,
-        "y": -126.00000000000004
-      },
-      {
-        "type": "rock",
-        "imageIndex": 1,
-        "x": 571,
-        "y": -451
-      },
-      {
-        "type": "rock",
-        "imageIndex": 1,
-        "x": 198,
-        "y": -406
-      },
-      {
-        "type": "rock",
-        "imageIndex": 1,
-        "x": 37.99999999999997,
-        "y": 958.0000000000001
-      },
-      {
-        "type": "rock",
-        "imageIndex": 1,
-        "x": -494.00000000000006,
-        "y": 870
-      },
-      {
-        "type": "rock",
-        "imageIndex": 1,
-        "x": -627,
-        "y": 519
-      },
-      {
-        "type": "rock",
-        "imageIndex": 1,
-        "x": -657,
-        "y": 261
-      },
-      {
-        "type": "rock",
-        "imageIndex": 1,
-        "x": 1355,
-        "y": 677
-      },
-      {
-        "type": "rock",
-        "imageIndex": 1,
-        "x": 1022,
-        "y": 366.00000000000006
-      },
-      {
-        "type": "rock",
-        "imageIndex": 1,
-        "x": 894,
-        "y": 994.0000000000001
-      },
-      {
-        "type": "rock",
-        "imageIndex": 1,
-        "x": 456,
-        "y": 940
-      },
-      {
-        "type": "rock",
-        "imageIndex": 1,
-        "x": 60,
-        "y": 916
-      },
-      {
-        "type": "rock",
-        "imageIndex": 1,
-        "x": -32.00000000000006,
-        "y": 1392
-      },
-      {
-        "type": "rock",
-        "imageIndex": 1,
-        "x": -34.00000000000003,
-        "y": 1390
-      },
-      {
-        "type": "rock",
-        "imageIndex": 1,
-        "x": -115.00000000000003,
-        "y": 934.9999999999999
-      },
-      {
-        "type": "rock",
-        "imageIndex": 1,
-        "x": 557,
-        "y": 1607.0000000000002
-      },
-      {
-        "type": "rock",
-        "imageIndex": 3,
-        "x": 743,
-        "y": 1553.0000000000002
-      },
-      {
-        "type": "rock",
-        "imageIndex": 3,
-        "x": 694,
-        "y": 1074
-      },
-      {
-        "type": "rock",
-        "imageIndex": 3,
-        "x": 1198,
-        "y": 54
-      },
-      {
-        "type": "rock",
-        "imageIndex": 3,
-        "x": -142,
-        "y": -134
-      },
-      {
-        "type": "rock",
-        "imageIndex": 3,
-        "x": -609,
-        "y": -179
-      },
-      {
-        "type": "rock",
-        "imageIndex": 3,
-        "x": -718,
-        "y": 390
-      },
-      {
-        "type": "rock",
-        "imageIndex": 3,
-        "x": -842,
-        "y": 538
-      },
-      {
-        "type": "rock",
-        "imageIndex": 3,
-        "x": -79.99999999999997,
-        "y": 1012.0000000000001
-      },
-      {
-        "type": "rock",
-        "imageIndex": 3,
-        "x": 334,
-        "y": -978
-      },
-      {
-        "type": "rock",
-        "imageIndex": 3,
-        "x": 335,
-        "y": -979
-      },
-      {
-        "type": "rock",
-        "imageIndex": 3,
-        "x": 1142,
-        "y": -270
-      },
-      {
-        "type": "rock",
-        "imageIndex": 3,
-        "x": 64.00000000000003,
-        "y": 916.0000000000001
-      },
-      {
-        "type": "rock",
-        "imageIndex": 4,
-        "x": -169.99999999999997,
-        "y": 1210
-      },
-      {
-        "type": "rock",
-        "imageIndex": 4,
-        "x": -713,
-        "y": 713
-      },
-      {
-        "type": "rock",
-        "imageIndex": 4,
-        "x": 1079,
-        "y": 533
-      },
-      {
-        "type": "rock",
-        "imageIndex": 4,
-        "x": 205,
-        "y": 915
-      },
-      {
-        "type": "rock",
-        "imageIndex": 4,
-        "x": 200,
-        "y": -124
-      },
-      {
-        "type": "rock",
-        "imageIndex": 5,
-        "x": 476.00000000000006,
-        "y": -420
-      },
-      {
-        "type": "rock",
-        "imageIndex": 5,
-        "x": 44.000000000000014,
-        "y": -756
-      },
-      {
-        "type": "rock",
-        "imageIndex": 5,
-        "x": 42.999999999999986,
-        "y": -759
-      },
-      {
-        "type": "rock",
-        "imageIndex": 5,
-        "x": -427,
-        "y": -297
-      },
-      {
-        "type": "rock",
-        "imageIndex": 5,
-        "x": 733.0000000000001,
-        "y": 1371
-      },
-      {
-        "type": "rock",
-        "imageIndex": 5,
-        "x": 542,
-        "y": 1694.0000000000002
-      },
-      {
-        "type": "rock",
-        "imageIndex": 5,
-        "x": 1436,
-        "y": 776
-      },
-      {
-        "type": "rock",
-        "imageIndex": 5,
-        "x": 1151,
-        "y": 701
-      },
-      {
-        "type": "rock",
-        "imageIndex": 5,
-        "x": 1565,
-        "y": 278.9999999999999
-      },
-      {
-        "type": "rock",
-        "imageIndex": 6,
-        "x": -528,
-        "y": 568
-      },
-      {
-        "type": "rock",
-        "imageIndex": 6,
-        "x": 31.99999999999997,
-        "y": -456
-      },
-      {
-        "type": "rock",
-        "imageIndex": 6,
-        "x": -133.00000000000003,
-        "y": 309
-      },
-      {
-        "type": "rock",
-        "imageIndex": 6,
-        "x": 192,
-        "y": 1140
-      },
-      {
-        "type": "rock",
-        "imageIndex": 6,
-        "x": 30.999999999999943,
-        "y": 1365
-      },
-      {
-        "type": "rock",
-        "imageIndex": 6,
-        "x": 30,
-        "y": 1366
-      },
-      {
-        "type": "rock",
-        "imageIndex": 7,
-        "x": 286,
-        "y": 1658
-      },
-      {
-        "type": "rock",
-        "imageIndex": 7,
-        "x": 284,
-        "y": 1656
-      },
-      {
-        "type": "rock",
-        "imageIndex": 7,
-        "x": 43.99999999999997,
-        "y": 1444
-      },
-      {
-        "type": "rock",
-        "imageIndex": 7,
-        "x": -221,
-        "y": 973
-      },
-      {
-        "type": "rock",
-        "imageIndex": 7,
-        "x": -543,
-        "y": 603
-      },
-      {
-        "type": "rock",
-        "imageIndex": 7,
-        "x": 516.0000000000001,
-        "y": 1564
-      },
-      {
-        "type": "rock",
-        "imageIndex": 7,
-        "x": 665.9999999999999,
-        "y": 1610
-      },
-      {
-        "type": "rock",
-        "imageIndex": 7,
-        "x": 1550,
-        "y": 682
-      },
-      {
-        "type": "rock",
-        "imageIndex": 7,
-        "x": 1155,
-        "y": -363
-      },
-      {
-        "type": "rock",
-        "imageIndex": 7,
-        "x": 598,
-        "y": -858
-      },
-      {
-        "type": "rock",
-        "imageIndex": 7,
-        "x": 589,
-        "y": -869
-      },
-      {
-        "type": "rock",
-        "imageIndex": 7,
-        "x": 208.00000000000003,
-        "y": -1028
-      },
-      {
-        "type": "rock",
-        "imageIndex": 7,
-        "x": -377.99999999999994,
-        "y": -550
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": -250,
-        "y": 674
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": -236,
-        "y": 732
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": -218,
-        "y": 810
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 631,
-        "y": 1021
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 78.99999999999994,
-        "y": 909
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 39,
-        "y": 905
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 121.00000000000003,
-        "y": 1018.9999999999999
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 130.99999999999997,
-        "y": 925.0000000000001
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": -721,
-        "y": 485
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 289,
-        "y": -444.99999999999994
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 359,
-        "y": -283
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": -115,
-        "y": 63
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": -142,
-        "y": 242
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": -396,
-        "y": 268
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": -574,
-        "y": 270
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 913,
-        "y": 230.99999999999994
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 931,
-        "y": -15
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 937.9999999999999,
-        "y": -25.99999999999997
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 1033,
-        "y": -25.00000000000003
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 1022,
-        "y": -18
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 1032,
-        "y": -96
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 1033,
-        "y": -97.00000000000003
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 1064,
-        "y": -48
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 1037,
-        "y": -117
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 1086,
-        "y": 54
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 882,
-        "y": -306
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 643,
-        "y": -423
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 452,
-        "y": -704
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 1165,
-        "y": -269
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 1166,
-        "y": -270
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 945,
-        "y": -513
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": -193.99999999999997,
-        "y": 994.0000000000001
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": -192,
-        "y": 1092
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": -508,
-        "y": 776
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": -645,
-        "y": -79.00000000000003
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": -783,
-        "y": -84.99999999999999
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": -786,
-        "y": -86.00000000000001
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": -595,
-        "y": -317
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": -312,
-        "y": -211.99999999999997
-      },
-      {
-        "type": "tree",
-        "imageIndex": 0,
-        "x": 74.00000000000001,
-        "y": -338
+        "x": 498,
+        "y": 73.8125
       },
       {
         "type": "tree",
         "imageIndex": 0,
         "x": 568,
-        "y": 1172
+        "y": 59.8125
       },
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": 347.9999999999999,
-        "y": 1352
+        "x": 371,
+        "y": 47.8125
       },
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": 49.00000000000003,
-        "y": 1571
+        "x": -47,
+        "y": 0.8125
       },
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": 1187,
-        "y": 549
+        "x": 29,
+        "y": 55.8125
       },
       {
         "type": "tree",
         "imageIndex": 0,
-        "x": 1363,
-        "y": 204.99999999999994
+        "x": 368,
+        "y": 70.8125
       },
       {
-        "type": "rock",
+        "type": "tree",
         "imageIndex": 0,
-        "x": -193,
-        "y": -135
+        "x": 461,
+        "y": 46.8125
       },
       {
-        "type": "rock",
+        "type": "tree",
         "imageIndex": 0,
-        "x": -140,
-        "y": -96
+        "x": 734,
+        "y": 2.8125
+      },
+      {
+        "type": "tree",
+        "imageIndex": 0,
+        "x": 904,
+        "y": 84.8125
+      },
+      {
+        "type": "tree",
+        "imageIndex": 0,
+        "x": 975,
+        "y": 113.8125
+      },
+      {
+        "type": "tree",
+        "imageIndex": 0,
+        "x": 1113,
+        "y": 111.8125
+      },
+      {
+        "type": "tree",
+        "imageIndex": 0,
+        "x": 1168,
+        "y": 52.8125
+      },
+      {
+        "type": "tree",
+        "imageIndex": 0,
+        "x": 1087,
+        "y": 58.8125
+      },
+      {
+        "type": "tree",
+        "imageIndex": 0,
+        "x": 1025,
+        "y": 188.8125
+      },
+      {
+        "type": "tree",
+        "imageIndex": 0,
+        "x": 1123,
+        "y": 453.8125
+      },
+      {
+        "type": "tree",
+        "imageIndex": 0,
+        "x": 1100,
+        "y": 673.8125
+      },
+      {
+        "type": "tree",
+        "imageIndex": 0,
+        "x": 1005,
+        "y": 783.8125
+      },
+      {
+        "type": "tree",
+        "imageIndex": 0,
+        "x": 1052,
+        "y": 918.8125
+      },
+      {
+        "type": "tree",
+        "imageIndex": 0,
+        "x": 1019,
+        "y": 944.8125
+      },
+      {
+        "type": "tree",
+        "imageIndex": 0,
+        "x": 792,
+        "y": 946.8125
+      },
+      {
+        "type": "tree",
+        "imageIndex": 0,
+        "x": 589,
+        "y": 898.8125
+      },
+      {
+        "type": "tree",
+        "imageIndex": 0,
+        "x": 261,
+        "y": 942.8125
+      },
+      {
+        "type": "tree",
+        "imageIndex": 0,
+        "x": -8,
+        "y": 913.8125
+      },
+      {
+        "type": "tree",
+        "imageIndex": 0,
+        "x": 164,
+        "y": 908.8125
+      },
+      {
+        "type": "tree",
+        "imageIndex": 0,
+        "x": 433,
+        "y": 873.8125
+      },
+      {
+        "type": "tree",
+        "imageIndex": 0,
+        "x": 249,
+        "y": 852.8125
+      },
+      {
+        "type": "tree",
+        "imageIndex": 0,
+        "x": 701,
+        "y": 870.8125
+      },
+      {
+        "type": "tree",
+        "imageIndex": 0,
+        "x": 808,
+        "y": 894.8125
+      },
+      {
+        "type": "tree",
+        "imageIndex": 0,
+        "x": 920,
+        "y": 872.8125
+      },
+      {
+        "type": "tree",
+        "imageIndex": 0,
+        "x": 973,
+        "y": 813.8125
+      },
+      {
+        "type": "tree",
+        "imageIndex": 0,
+        "x": 1007,
+        "y": 688.8125
+      },
+      {
+        "type": "tree",
+        "imageIndex": 0,
+        "x": 872,
+        "y": 578.8125
+      },
+      {
+        "type": "tree",
+        "imageIndex": 0,
+        "x": 876,
+        "y": 573.8125
+      },
+      {
+        "type": "tree",
+        "imageIndex": 0,
+        "x": 1097,
+        "y": 500.8125
+      },
+      {
+        "type": "tree",
+        "imageIndex": 0,
+        "x": 1005,
+        "y": 390.8125
+      },
+      {
+        "type": "tree",
+        "imageIndex": 0,
+        "x": 937,
+        "y": 282.8125
+      },
+      {
+        "type": "tree",
+        "imageIndex": 0,
+        "x": 1046,
+        "y": 191.8125
+      },
+      {
+        "type": "tree",
+        "imageIndex": 0,
+        "x": 924,
+        "y": 60.8125
+      },
+      {
+        "type": "tree",
+        "imageIndex": 0,
+        "x": -252,
+        "y": 0.8125
+      },
+      {
+        "type": "tree",
+        "imageIndex": 0,
+        "x": -319,
+        "y": 33.8125
+      },
+      {
+        "type": "tree",
+        "imageIndex": 0,
+        "x": -342,
+        "y": 36.8125
+      },
+      {
+        "type": "tree",
+        "imageIndex": 0,
+        "x": -345,
+        "y": 36.8125
       }
     ],
-    "extensionTerrainType": 5
+    "extensionTerrainType": 4
   },
   "world": "shire",
   "grassShader": "grass",

@@ -1,15 +1,59 @@
 <div id="gameContainer">
-    <canvas id="gameCanvas" width="1536" height="768"></canvas>
-    <button id="startGameBtn">Start Game</button>    
-</div>
-<div id="overlay"></div>
-<div id="gameOverMenu">
-    <h2>Home Destroyed!</h2>
-    <p>You survived <span id="gameOverWave">0</span> waves</p>
-    <button class="menu-button">Try Again</button>     
-</div>
-<div id="victoryMenu">
-    <h2>Victory!</h2>
-    <p>You've successfully defended your Home through all waves!</p>
-    <button class="menu-button">Play Again</button>     
+    
+    <div id="canvasContainer">
+        <canvas id="gameCanvas"></canvas>
+    </div>
+    
+    <div id="uiContainer">
+        <button id="startGameBtn">Start Game</button>    
+        
+        <div class="game-layout">
+            <div class="player-panel">
+                <h3>🛡️ YOUR ARMY</h3>
+                
+                <div class="resources">
+                    Gold: <span id="playerGold">100</span>
+                </div>
+                
+                <div class="unit-shop" id="unitShop">
+                    <!-- Unit cards will be populated here -->
+                </div>
+                
+                <button id="readyButton">Ready for Battle!</button>
+                
+                <div class="army-list" id="playerArmy">
+                    <!-- Player army units -->
+                </div>
+            </div>
+            <div class="enemy-panel">
+                <h3>👹 ENEMY ARMY</h3>
+                
+                <div class="resources">
+                    AI Strength: <span id="enemyStrength">Normal</span>
+                </div>
+                
+                <div style="text-align: center; padding: 20px;">
+                    <div style="color: #ff8888;">AI is building army...</div>
+                    <div style="margin-top: 10px;">⚡ ⚔️ 🛡️</div>
+                </div>
+                
+                <div class="army-list" id="enemyArmy">
+                    <!-- Enemy army units -->
+                </div>
+            </div>
+        </div>
+        
+        
+        <div class="phase-info">
+            <div class="round-info">Round <span id="roundNumber">1</span></div>
+            <div class="phase-title" id="phaseTitle">PLACEMENT PHASE</div>
+            <div class="phase-timer" id="phaseTimer">30s</div>
+        </div>
+        <div class="battle-log" id="battleLog" style="display: none">
+            <div class="log-entry">Welcome to Auto Battle Arena!</div>
+            <div class="log-entry">Place your units and prepare for battle...</div>
+        </div>
+    </div>
+    
+
 </div>

@@ -238,7 +238,6 @@ class UiManager extends engine.Component {
         const towerButtons = document.querySelectorAll('.tower-option');
         towerButtons.forEach(button => {
             button.addEventListener('click', () => {
-debugger;
                 if(this.game.state.isPaused) return;
                 
                 const type = button.getAttribute('data-type');

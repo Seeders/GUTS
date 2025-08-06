@@ -102,10 +102,12 @@ class SceneEditor {
             let objectTypes = collections[prefabTypeName];
             for(let spawnTypeName in objectTypes){
                 let spawnData = objectTypes[spawnTypeName];
-                let option = document.createElement('option');
-                option.innerText = spawnData.title;
-                option.value = `${prefabTypeName}.${spawnTypeName}`;
-                this.elements.addPrefabSelect.append(option);
+                if(spawnData.entity){
+                    let option = document.createElement('option');
+                    option.innerText = spawnData.title;
+                    option.value = `${prefabTypeName}.${spawnTypeName}`;
+                    this.elements.addPrefabSelect.append(option);
+                }
             }
         }
 
@@ -373,7 +375,10 @@ class SceneEditor {
                         componentName.toLowerCase().endsWith(t.singular.replace(/ /g,'').toLowerCase())
                     );
                 }
-                component.parameters = prefabData[componentName];
+                if(componentDataCollectionDef){
+                    component.parameters = this.gameEditor.getCollections()[componentDataCollectionDef.id][prefabData[componentDataKey]];
+                    delete component.parameters.title;
+                }
                 components.push(component);
                 if(componentDef.updateInEditor){
              
