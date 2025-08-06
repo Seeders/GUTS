@@ -230,8 +230,8 @@ class ThreeJsWorld extends engine.Component {
         try {
             const terrainCanvas = this.game.terrainTileMapper.canvas;
             const terrainCtx = terrainCanvas.getContext('2d', { alpha: false, willReadFrequently: true });
-            terrainCanvas.width = 700;//this.game.getCollections().configs.game.gridSize * this.level.tileMap.terrainMap[0].length;
-            terrainCanvas.height = 500;//this.game.getCollections().configs.game.gridSize * this.level.tileMap.terrainMap.length;
+            terrainCanvas.width = this.game.getCollections().configs.game.gridSize * this.level.tileMap.terrainMap[0].length;
+            terrainCanvas.height = this.game.getCollections().configs.game.gridSize * this.level.tileMap.terrainMap.length;
 
             terrainCtx.imageSmoothingEnabled = false;
             const terrainData = this.game.terrainTileMapper.terrainData;//terrainCtx.getImageData(0, 0, terrainCanvas.width, terrainCanvas.height).data;

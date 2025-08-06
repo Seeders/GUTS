@@ -39,8 +39,8 @@ class MapRenderer extends engine.Component {
             this.envCacheCtxFG = this.envCacheCanvasFG.getContext('2d');
         }
         this.terrainCanvas = this.game.terrainTileMapper.canvas;
-        this.terrainCanvas.width = 700;//this.tileMap.size * this.config.gridSize;
-        this.terrainCanvas.height = 500;//this.tileMap.size * this.config.gridSize;
+        this.terrainCanvas.width = this.tileMap.size * this.config.gridSize;
+        this.terrainCanvas.height = this.tileMap.size * this.config.gridSize;
         this.terrainCtx = this.terrainCanvas.getContext('2d');
  
         this.terrainTileMapper = this.game.terrainTileMapper;
