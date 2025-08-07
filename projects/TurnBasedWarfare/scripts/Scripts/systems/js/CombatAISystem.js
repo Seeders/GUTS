@@ -55,16 +55,23 @@ class CombatAISystem {
             });
             
             if (enemies.length === 0) {
-                // No enemies - set AI state to idle, let MovementSystem handle stopping
                 aiState.state = 'idle';
                 aiBehavior.currentTarget = null;
                 aiBehavior.targetPosition = null;
                 return;
             }
             
+            // Always update target position if we have a target
+            if (aiBehavior.currentTarget) {
+                const targetPos = this.game.getComponent(aiBehavior.currentTarget, this.componentTypes.POSITION);
+                if (targetPos) {
+                    aiBehavior.targetPosition = { x: targetPos.x, y: targetPos.y };
+                }
+            }
+            
             // Only make new decisions at intervals to reduce jitter
             const shouldMakeDecision = (aiBehavior.lastDecisionTime === 0) || 
-                                     (now - aiBehavior.lastDecisionTime > this.MOVEMENT_DECISION_INTERVAL);
+                                    (now - aiBehavior.lastDecisionTime > this.MOVEMENT_DECISION_INTERVAL);
             
             if (shouldMakeDecision) {
                 this.makeAIDecision(entityId, pos, combat, team, aiState, enemies, unitRadius, now);
@@ -94,15 +101,19 @@ class CombatAISystem {
         aiBehavior.currentTarget = targetEnemy;
         aiBehavior.targetPosition = { x: enemyPos.x, y: enemyPos.y };
         
-        // Calculate distance to target
+        // Calculate center-to-center distance
         const dx = enemyPos.x - pos.x;
         const dy = enemyPos.y - pos.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
+        const centerToCenterDistance = Math.sqrt(dx * dx + dy * dy);
         
+        // Calculate distance from attacker center to target edge
+        const distanceToTargetEdge = Math.max(0, centerToCenterDistance - enemyRadius);
+        
+        // Calculate attack range (weapon range plus buffer)
         const scaledRange = Math.max(combat.range, 20);
-        const attackDistance = Math.max(scaledRange, unitRadius + enemyRadius + this.ATTACK_RANGE_BUFFER);
+        const effectiveAttackRange = scaledRange + this.ATTACK_RANGE_BUFFER;
         
-        if (distance <= attackDistance) {
+        if (distanceToTargetEdge <= effectiveAttackRange) {
             // In range - set state to attacking (MovementSystem will handle stopping)
             aiState.state = 'attacking';
         } else {
@@ -159,16 +170,21 @@ class CombatAISystem {
             return;
         }
         
+        // Calculate center-to-center distance
         const dx = targetPos.x - pos.x;
         const dy = targetPos.y - pos.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
+        const centerToCenterDistance = Math.sqrt(dx * dx + dy * dy);
         
+        // Calculate distance from attacker center to target edge
         const targetUnitType = this.game.getComponent(aiBehavior.currentTarget, this.componentTypes.UNIT_TYPE);
         const targetRadius = this.getUnitRadius(targetUnitType);
-        const scaledRange = Math.max(combat.range, 20);
-        const attackDistance = Math.max(scaledRange, unitRadius + targetRadius + this.ATTACK_RANGE_BUFFER);
+        const distanceToTargetEdge = Math.max(0, centerToCenterDistance - targetRadius);
         
-        if (distance <= attackDistance) {
+        // Calculate attack range (weapon range plus buffer)
+        const scaledRange = Math.max(combat.range, 20);
+        const effectiveAttackRange = scaledRange + this.ATTACK_RANGE_BUFFER;
+        
+        if (distanceToTargetEdge <= effectiveAttackRange) {
             // Attack if cooldown is ready
             if (now - combat.lastAttack >= 1 / combat.attackSpeed) {
                 this.attack(entityId, aiBehavior.currentTarget);

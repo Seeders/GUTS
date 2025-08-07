@@ -14,10 +14,11 @@ class RenderSystem {
         this.entityAnimationStates = new Map();
         this.clock = new THREE.Clock();
 
+        // Configuration for facing direction
+        this.MIN_MOVEMENT_THRESHOLD = 0.1;
     }
     
     update(deltaTime) {
-
         // Only update if we have access to Three.js scene from WorldRenderSystem
         if (!this.game.scene || !this.game.camera || !this.game.renderer) {
             return;
@@ -56,6 +57,9 @@ class RenderSystem {
                 // Update position - no conversion needed
                 modelGroup.position.set(worldX, 0, worldZ);
                 
+                // Update facing direction BEFORE animations
+                this.updateFacingDirection(entityId, modelGroup, velocity);
+                
                 // Update animations and mixers
                 this.updateEntityAnimation(entityId, velocity, health, deltaTime);
                 
@@ -83,6 +87,47 @@ class RenderSystem {
         // Clean up removed entities
         this.cleanupRemovedEntities(entities);
     }
+    
+    updateFacingDirection(entityId, modelGroup, velocity) {
+        const aiState = this.game.getComponent(entityId, this.componentTypes.AI_STATE);
+        const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
+        
+        let facingAngle = null;
+        
+        // Priority 1: If we have a current target, always face toward it
+        if (aiState && aiState.aiBehavior && aiState.aiBehavior.currentTarget && pos) {
+            // Get the current position of the target (fresh every frame)
+            const targetPos = this.game.getComponent(aiState.aiBehavior.currentTarget, this.componentTypes.POSITION);
+            
+            if (targetPos) {
+                const dx = targetPos.x - pos.x;
+                const dy = targetPos.y - pos.y;
+                
+                // Only update if we have a meaningful direction
+                if (Math.abs(dx) > this.MIN_MOVEMENT_THRESHOLD || Math.abs(dy) > this.MIN_MOVEMENT_THRESHOLD) {
+                    // Convert 2D direction to 3D rotation
+                    // In 3D: positive X = right, positive Z = forward
+                    // Your 2D: positive X = right, positive Y = down/forward
+                    facingAngle = Math.atan2(dy, dx);
+                }
+            }
+        } 
+        // Priority 2: Face movement direction if moving
+        else if (velocity && (Math.abs(velocity.vx) > this.MIN_MOVEMENT_THRESHOLD || Math.abs(velocity.vy) > this.MIN_MOVEMENT_THRESHOLD)) {
+            // Calculate facing angle from movement direction
+            facingAngle = Math.atan2(velocity.vy, velocity.vx);
+        }
+        
+        // Apply rotation if we have a valid angle
+        if (facingAngle !== null) {
+            // Convert from 2D angle to 3D Y-axis rotation
+            // Adjust the angle offset as needed for your model orientation
+            // Most models face forward along negative Z, so we need to adjust
+            modelGroup.rotation.y = -facingAngle + Math.PI / 2;
+        }
+    }
+    
+    // ... rest of the class remains exactly the same ...
     
     async createModelForEntity(entityId, objectType, spawnType, team) {
         // Check if ModelManager exists
@@ -304,11 +349,7 @@ class RenderSystem {
             animationSpeed = Math.min(speed / 30, 2);
         }
         
-        // Update rotation to face movement direction
-        if (velocity && (Math.abs(velocity.vx) > 0.1 || Math.abs(velocity.vy) > 0.1)) {
-            const angle = Math.atan2(velocity.vy, velocity.vx);
-            modelGroup.quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), -angle + Math.PI / 2);
-        }
+        // REMOVED: Rotation update from here - now handled in updateFacingDirection
         
         // Check for damaged state (low health animation)
         if (health && health.current < health.max * 0.3 && desiredAnimation === 'idle') {
