@@ -4,14 +4,17 @@ class CombatAISystem {
         this.componentTypes = this.game.componentManager.getComponentTypes();
         
         // Configuration variables (adjusted for world coordinates)
-        this.DEFAULT_UNIT_RADIUS = 15;              // Default radius in world units
-        this.ATTACK_RANGE_BUFFER = 5;               // Extra distance added to attack range
-        this.ALLY_SPACING_DISTANCE = 10;            // Minimum distance to maintain from allies (world units)
-        this.ENEMY_SPACING_DISTANCE = 5;            // Minimum distance to maintain from enemies (world units)
-        this.AVOIDANCE_RADIUS_MULTIPLIER = 1;       // How far to look for units to avoid (radius * multiplier)
-        this.STRONG_AVOIDANCE_FORCE = 50;           // Force when units are overlapping
-        this.GENTLE_AVOIDANCE_FORCE = 10;           // Force when units are nearby allies
-        this.FACING_DIRECTION_OFFSET = Math.PI / 2; // Offset for 3D model facing direction
+        this.DEFAULT_UNIT_RADIUS = 15;
+        this.ATTACK_RANGE_BUFFER = 5;
+        this.ALLY_SPACING_DISTANCE = 10;
+        this.ENEMY_SPACING_DISTANCE = 5;
+        this.AVOIDANCE_RADIUS_MULTIPLIER = 1;
+        this.STRONG_AVOIDANCE_FORCE = 50;
+        this.GENTLE_AVOIDANCE_FORCE = 10;
+        
+        // AI decision parameters
+        this.TARGET_SWITCH_COOLDOWN = 0.3;
+        this.MOVEMENT_DECISION_INTERVAL = 0.05;
     }
     
     update(deltaTime) {
@@ -29,9 +32,20 @@ class CombatAISystem {
             const vel = this.game.getComponent(entityId, this.componentTypes.VELOCITY);
             const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
             
-            if(!pos) return;
+            if(!pos || !vel) return;
             
-            // Get unit size
+            // Get or create AI behavior tracking
+            if (!aiState.aiBehavior) {
+                aiState.aiBehavior = {
+                    lastDecisionTime: 0,
+                    currentTarget: null,
+                    targetLockTime: 0,
+                    targetPosition: null
+                };
+            }
+            const aiBehavior = aiState.aiBehavior;
+            
+            const now = Date.now() / 1000;
             const unitRadius = this.getUnitRadius(unitType);
             
             // Find enemies
@@ -41,177 +55,133 @@ class CombatAISystem {
             });
             
             if (enemies.length === 0) {
-                vel.vx = 0;
-                vel.vy = 0;
+                // No enemies - set AI state to idle, let MovementSystem handle stopping
                 aiState.state = 'idle';
+                aiBehavior.currentTarget = null;
+                aiBehavior.targetPosition = null;
                 return;
             }
             
-            // Find nearest enemy
-            let nearestEnemy = null;
-            let nearestDistance = Infinity;
+            // Only make new decisions at intervals to reduce jitter
+            const shouldMakeDecision = (aiBehavior.lastDecisionTime === 0) || 
+                                     (now - aiBehavior.lastDecisionTime > this.MOVEMENT_DECISION_INTERVAL);
             
-            enemies.forEach(enemyId => {
-                const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
-                // Using world coordinates directly
-                const dx = enemyPos.x - pos.x;
-                const dy = enemyPos.y - pos.y; // pos.y is world Z coordinate
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                
-                if (distance < nearestDistance) {
-                    nearestDistance = distance;
-                    nearestEnemy = enemyId;
-                }
-            });
+            if (shouldMakeDecision) {
+                this.makeAIDecision(entityId, pos, combat, team, aiState, enemies, unitRadius, now);
+                aiBehavior.lastDecisionTime = now;
+            }
             
-            if (!nearestEnemy) return;
+            // Handle combat
+            this.handleCombat(entityId, pos, combat, aiState, unitRadius, now);
+        });
+    }
+    
+    makeAIDecision(entityId, pos, combat, team, aiState, enemies, unitRadius, now) {
+        const aiBehavior = aiState.aiBehavior;
+        
+        // Find best target (with target stickiness)
+        let targetEnemy = this.findBestTarget(pos, enemies, aiBehavior, now);
+        
+        if (!targetEnemy) return;
+        
+        const enemyPos = this.game.getComponent(targetEnemy, this.componentTypes.POSITION);
+        const enemyUnitType = this.game.getComponent(targetEnemy, this.componentTypes.UNIT_TYPE);
+        const enemyRadius = this.getUnitRadius(enemyUnitType);
+        
+        if (!enemyPos) return;
+        
+        // Store target info
+        aiBehavior.currentTarget = targetEnemy;
+        aiBehavior.targetPosition = { x: enemyPos.x, y: enemyPos.y };
+        
+        // Calculate distance to target
+        const dx = enemyPos.x - pos.x;
+        const dy = enemyPos.y - pos.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        const scaledRange = Math.max(combat.range * 0.1, 20);
+        const attackDistance = Math.max(scaledRange, unitRadius + enemyRadius + this.ATTACK_RANGE_BUFFER);
+        
+        if (distance <= attackDistance) {
+            // In range - set state to attacking (MovementSystem will handle stopping)
+            aiState.state = 'attacking';
+        } else {
+            // Need to chase target (MovementSystem will handle movement)
+            aiState.state = 'chasing';
+        }
+    }
+    
+    findBestTarget(pos, enemies, aiBehavior, now) {
+        let bestTarget = null;
+        let bestScore = -1;
+        
+        enemies.forEach(enemyId => {
+            const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
+            if (!enemyPos) return;
             
-            const enemyPos = this.game.getComponent(nearestEnemy, this.componentTypes.POSITION);
-            const enemyUnitType = this.game.getComponent(nearestEnemy, this.componentTypes.UNIT_TYPE);
-            const enemyRadius = this.getUnitRadius(enemyUnitType);
-            
-            // Using world coordinates
             const dx = enemyPos.x - pos.x;
             const dy = enemyPos.y - pos.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
             
-            // Calculate attack distance (unit radii + combat range, scaled for world coords)
-            const scaledRange = Math.max(combat.range * 0.1, 20); // Scale combat range down to world coords
-            const attackDistance = Math.max(scaledRange, unitRadius + enemyRadius + this.ATTACK_RANGE_BUFFER);
+            // Score based on distance (closer = better)
+            let score = 1000 - distance;
             
-            // Make unit face the target
-            this.faceTarget(entityId, dx, dy);
-            
-            // Combat logic
-            if (distance <= attackDistance) {
-                // In range - attack
-                aiState.state = 'attacking';
-                vel.vx = 0;
-                vel.vy = 0;
-                
-                const now = Date.now() / 1000;
-                if (now - combat.lastAttack >= 1 / combat.attackSpeed) {
-                    this.attack(entityId, nearestEnemy);
-                    combat.lastAttack = now;
-                }
-            } else {
-                // Move towards enemy with collision avoidance
-                aiState.state = 'chasing';
-                
-                // Basic movement towards enemy (scaled for world coordinates)
-                const moveSpeed = Math.max(vel.maxSpeed * 0.1, 50); // Scale speed down to world coords
-                let moveX = (dx / distance) * moveSpeed;
-                let moveY = (dy / distance) * moveSpeed;
-                
-                // Simple collision avoidance with allies
-                const avoidance = this.calculateSimpleAvoidance(entityId, pos, unitRadius, combatUnits, team.team);
-                
-                // Blend movement with avoidance
-                moveX += avoidance.x;
-                moveY += avoidance.y;
-                
-                // Limit to max speed
-                const finalSpeed = Math.sqrt(moveX * moveX + moveY * moveY);
-                if (finalSpeed > moveSpeed) {
-                    moveX = (moveX / finalSpeed) * moveSpeed;
-                    moveY = (moveY / finalSpeed) * moveSpeed;
-                }
-                
-                vel.vx = moveX;
-                vel.vy = moveY;
-                
-                // Debug logging occasionally
-                if (Math.random() < 0.001) { // 0.1% chance
-                    console.log(`CombatAI: Entity ${entityId} chasing, distance: ${distance.toFixed(1)}, attack range: ${attackDistance.toFixed(1)}`);
-                }
+            // Bonus for current target to prevent switching
+            if (aiBehavior.currentTarget === enemyId && 
+                now - aiBehavior.targetLockTime < this.TARGET_SWITCH_COOLDOWN) {
+                score += 300; // Bonus to stick with current target
             }
-        });
-    }
-    
-    calculateSimpleAvoidance(entityId, pos, unitRadius, allUnits, teamName) {
-        let avoidX = 0;
-        let avoidY = 0;
-        let count = 0;
-        
-        const avoidRadius = unitRadius * this.AVOIDANCE_RADIUS_MULTIPLIER;
-        
-        allUnits.forEach(otherId => {
-            if (otherId === entityId) return;
             
-            const otherPos = this.game.getComponent(otherId, this.componentTypes.POSITION);
-            const otherTeam = this.game.getComponent(otherId, this.componentTypes.TEAM);
-            const otherUnitType = this.game.getComponent(otherId, this.componentTypes.UNIT_TYPE);
-            
-            if (!otherPos) return;
-            
-            const otherRadius = this.getUnitRadius(otherUnitType);
-            
-            // World coordinates
-            const dx = pos.x - otherPos.x;
-            const dy = pos.y - otherPos.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            const isAlly = otherTeam && otherTeam.team === teamName;
-            const spacingDistance = isAlly ? this.ALLY_SPACING_DISTANCE : this.ENEMY_SPACING_DISTANCE;
-            const minDistance = unitRadius + otherRadius + spacingDistance;
-            
-            if (distance < avoidRadius && distance > 0) {
-                let strength = 0;
-                
-                if (distance < minDistance) {
-                    // Too close - push away
-                    strength = (minDistance - distance) / minDistance * this.STRONG_AVOIDANCE_FORCE;
-                } else if (isAlly) {
-                    // Nearby ally - gentle avoidance
-                    strength = (avoidRadius - distance) / avoidRadius * this.GENTLE_AVOIDANCE_FORCE;
-                }
-                
-                if (strength > 0) {
-                    avoidX += (dx / distance) * strength;
-                    avoidY += (dy / distance) * strength;
-                    count++;
-                }
+            if (score > bestScore) {
+                bestScore = score;
+                bestTarget = enemyId;
             }
         });
         
-        return { x: avoidX, y: avoidY };
+        // If we're switching targets, reset the lock time
+        if (bestTarget !== aiBehavior.currentTarget) {
+            aiBehavior.targetLockTime = now;
+        }
+        
+        return bestTarget;
     }
     
-    faceTarget(entityId, dx, dy) {
-        // Calculate the angle to face the target
-        const angle = Math.atan2(dy, dx);
+    handleCombat(entityId, pos, combat, aiState, unitRadius, now) {
+        const aiBehavior = aiState.aiBehavior;
         
-        // Try to update the 3D model rotation if RenderSystem exists
-        if (this.game.renderSystem && this.game.renderSystem.entityModels) {
-            const modelGroup = this.game.renderSystem.entityModels.get(entityId);
-            if (modelGroup) {
-                // For 3D models, rotate around Y-axis to face target
-                // Add PI/2 to convert from movement direction to facing direction
-                modelGroup.rotation.y = -angle + Math.PI / 2;
+        if (!aiBehavior.currentTarget || aiState.state !== 'attacking') return;
+        
+        // Check if target still exists and is in range
+        const targetPos = this.game.getComponent(aiBehavior.currentTarget, this.componentTypes.POSITION);
+        if (!targetPos) {
+            aiBehavior.currentTarget = null;
+            aiBehavior.targetPosition = null;
+            return;
+        }
+        
+        const dx = targetPos.x - pos.x;
+        const dy = targetPos.y - pos.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        const targetUnitType = this.game.getComponent(aiBehavior.currentTarget, this.componentTypes.UNIT_TYPE);
+        const targetRadius = this.getUnitRadius(targetUnitType);
+        const scaledRange = Math.max(combat.range * 0.1, 20);
+        const attackDistance = Math.max(scaledRange, unitRadius + targetRadius + this.ATTACK_RANGE_BUFFER);
+        
+        if (distance <= attackDistance) {
+            // Attack if cooldown is ready
+            if (now - combat.lastAttack >= 1 / combat.attackSpeed) {
+                this.attack(entityId, aiBehavior.currentTarget);
+                combat.lastAttack = now;
             }
         }
         
-        // Also store the facing direction in a component if it exists
-        const facing = this.game.getComponent(entityId, this.componentTypes.FACING);
-        if (facing) {
-            facing.angle = angle;
-            facing.direction = { x: Math.cos(angle), y: Math.sin(angle) };
-        } else {
-            // Create a facing component if it doesn't exist
-            try {
-                this.game.addComponent(entityId, this.componentTypes.FACING, {
-                    angle: angle,
-                    direction: { x: Math.cos(angle), y: Math.sin(angle) }
-                });
-            } catch (e) {
-                // FACING component type might not exist, that's okay
-            }
-        }
+        // Update target position for MovementSystem to use
+        aiBehavior.targetPosition = { x: targetPos.x, y: targetPos.y };
     }
     
     getUnitRadius(unitType) {
         if (unitType && unitType.size) {
-            // Scale down from old canvas coordinate system to world coordinates
             return Math.max(this.DEFAULT_UNIT_RADIUS, unitType.size * 0.1);
         }
         
@@ -234,16 +204,13 @@ class CombatAISystem {
         
         if (!targetHealth) return;
         
-        // Deal damage
         targetHealth.current -= attackerCombat.damage;
         
-        // Flash animation
         const targetAnimation = this.game.getComponent(targetId, this.componentTypes.ANIMATION);
         if (targetAnimation) {
             targetAnimation.flash = 0.5;
         }
         
-        // Log damage
         const attackerType = this.game.getComponent(attackerId, this.componentTypes.UNIT_TYPE);
         const targetType = this.game.getComponent(targetId, this.componentTypes.UNIT_TYPE);
         
@@ -251,14 +218,11 @@ class CombatAISystem {
             this.game.uiManager.addBattleLog(`${attackerTeam.team} ${attackerType.type} deals ${attackerCombat.damage} damage to ${targetTeam.team} ${targetType.type}`, 'log-damage');
         }
         
-        // Check for death
         if (targetHealth.current <= 0) {
             if (this.game.uiManager) {
                 this.game.uiManager.addBattleLog(`${targetTeam.team} ${targetType.type} defeated!`, 'log-death');
             }
             this.game.destroyEntity(targetId);
-            
-            // Check win condition
             this.checkBattleEnd();
         }
     }
