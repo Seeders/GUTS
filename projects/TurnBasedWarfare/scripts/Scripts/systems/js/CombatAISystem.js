@@ -5,7 +5,7 @@ class CombatAISystem {
         
         // Configuration variables (adjusted for world coordinates)
         this.DEFAULT_UNIT_RADIUS = 15;
-        this.ATTACK_RANGE_BUFFER = 5;
+        this.ATTACK_RANGE_BUFFER = 10;
         this.ALLY_SPACING_DISTANCE = 10;
         this.ENEMY_SPACING_DISTANCE = 5;
         this.AVOIDANCE_RADIUS_MULTIPLIER = 1;
@@ -99,7 +99,7 @@ class CombatAISystem {
         const dy = enemyPos.y - pos.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         
-        const scaledRange = Math.max(combat.range * 0.1, 20);
+        const scaledRange = Math.max(combat.range, 20);
         const attackDistance = Math.max(scaledRange, unitRadius + enemyRadius + this.ATTACK_RANGE_BUFFER);
         
         if (distance <= attackDistance) {
@@ -165,7 +165,7 @@ class CombatAISystem {
         
         const targetUnitType = this.game.getComponent(aiBehavior.currentTarget, this.componentTypes.UNIT_TYPE);
         const targetRadius = this.getUnitRadius(targetUnitType);
-        const scaledRange = Math.max(combat.range * 0.1, 20);
+        const scaledRange = Math.max(combat.range, 20);
         const attackDistance = Math.max(scaledRange, unitRadius + targetRadius + this.ATTACK_RANGE_BUFFER);
         
         if (distance <= attackDistance) {
@@ -182,14 +182,14 @@ class CombatAISystem {
     
     getUnitRadius(unitType) {
         if (unitType && unitType.size) {
-            return Math.max(this.DEFAULT_UNIT_RADIUS, unitType.size * 0.1);
+            return Math.max(this.DEFAULT_UNIT_RADIUS, unitType.size);
         }
         
         const collections = this.game.getCollections && this.game.getCollections();
         if (collections && collections.units && unitType) {
             const unitDef = collections.units[unitType.id || unitType.type];
             if (unitDef && unitDef.size) {
-                return Math.max(this.DEFAULT_UNIT_RADIUS, unitDef.size * 0.1);
+                return Math.max(this.DEFAULT_UNIT_RADIUS, unitDef.size);
             }
         }
         
@@ -243,12 +243,12 @@ class CombatAISystem {
         if (playerUnits.length === 0) {
             if (this.game.uiManager) {
                 this.game.uiManager.addBattleLog('DEFEAT! Enemy army victorious!', 'log-death');
-                this.game.uiManager.endBattle('defeat');
+                this.game.phaseManager.endBattle('defeat');
             }
         } else if (enemyUnits.length === 0) {
             if (this.game.uiManager) {
                 this.game.uiManager.addBattleLog('VICTORY! Your army prevails!', 'log-victory');
-                this.game.uiManager.endBattle('victory');
+                this.game.phaseManager.endBattle('victory');
             }
         }
     }

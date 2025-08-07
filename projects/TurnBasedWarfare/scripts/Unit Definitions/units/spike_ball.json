@@ -263,7 +263,6 @@
       }
     }
   },
-  "size": 50,
   "title": "spike_ball",
   "description": "A rolling spike ball monster with spinning spikes",
   "id": "spike_ball"

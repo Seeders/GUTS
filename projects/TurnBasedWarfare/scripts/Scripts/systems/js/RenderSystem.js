@@ -1,6 +1,7 @@
 class RenderSystem {
     constructor(game) {
         this.game = game;
+        this.game.renderSystem = this;
         this.componentTypes = this.game.componentManager.getComponentTypes();
         
         // Track entities with 3D models
@@ -13,7 +14,6 @@ class RenderSystem {
         this.entityAnimationStates = new Map();
         this.clock = new THREE.Clock();
 
-        console.log('RenderSystem: Initialized for entity rendering');
     }
     
     update(deltaTime) {
@@ -87,7 +87,6 @@ class RenderSystem {
     async createModelForEntity(entityId, objectType, spawnType, team) {
         // Check if ModelManager exists
         if (!this.game.modelManager) {
-            console.error('RenderSystem: ModelManager not found!');
             this.createFallbackModel(entityId, team);
             return;
         }
@@ -97,7 +96,6 @@ class RenderSystem {
         
         // Create fallback model if no proper definition
         if (!unitDefinition || !unitDefinition.render) {
-            console.warn(`RenderSystem: No unit definition or render data for ${spawnType}, creating fallback cube`);
             this.createFallbackModel(entityId, team);
             return;
         }
@@ -127,17 +125,14 @@ class RenderSystem {
                     currentAction: null
                 });
             } else {
-                console.warn(`RenderSystem: No model returned from ModelManager for ${objectType}/${spawnType}, creating fallback`);
                 this.createFallbackModel(entityId, team);
             }
         } catch (error) {
-            console.error(`RenderSystem: Failed to create model for entity ${entityId}:`, error);
             this.createFallbackModel(entityId, team);
         }
     }
     
     createFallbackModel(entityId, team) {
-        console.log(`RenderSystem: Creating fallback cube for entity ${entityId}`);
         
         // Create a simple colored cube as fallback
         const geometry = new THREE.BoxGeometry(1, 1, 1);
@@ -156,11 +151,9 @@ class RenderSystem {
         this.game.scene.add(modelGroup);
         this.entityModels.set(entityId, modelGroup);
         
-        console.log(`RenderSystem: Fallback cube created for entity ${entityId}`);
     }
     
     async setupEntityAnimations(entityId, objectType, spawnType, modelGroup) {
-        console.log(`RenderSystem ANIMATION DEBUG: Setting up animations for entity ${entityId}, type: ${objectType}/${spawnType}`);
         
         // Get unit definition to check animation type
         const unitDefinition = this.getUnitDefinition(spawnType);
@@ -168,7 +161,6 @@ class RenderSystem {
         const modelData = unitDefinition?.render?.model;
         
         if (!animationData || !modelData) {
-            console.log(`RenderSystem ANIMATION DEBUG: No animation or model data found for ${spawnType}`);
             return;
         }
         
@@ -177,7 +169,6 @@ class RenderSystem {
         const firstShape = modelData[firstGroupName]?.shapes?.[0];
         const isGLTF = firstShape?.type === "gltf";
         
-        console.log(`RenderSystem ANIMATION DEBUG: Animation type for ${spawnType}: ${isGLTF ? 'GLTF' : 'Proprietary'}`);
         
         if (isGLTF) {
             // Handle GLTF animations
@@ -189,7 +180,6 @@ class RenderSystem {
     }
     
     async setupGLTFAnimations(entityId, objectType, spawnType, modelGroup, animationData) {
-        console.log(`RenderSystem ANIMATION DEBUG: Setting up GLTF animations for entity ${entityId}`);
         
         // Check if this is a GLTF model with animations
         let mixer, animations;
@@ -197,32 +187,26 @@ class RenderSystem {
             if (object.userData.mixer) {
                 mixer = object.userData.mixer;
                 animations = object.userData.animations;
-                console.log(`RenderSystem ANIMATION DEBUG: Found mixer and ${animations?.length || 0} animations in model`);
             }
         });
         
         // If no mixer found, check for raw animation clips
         if (!mixer) {
-            console.log(`RenderSystem ANIMATION DEBUG: No mixer found, checking for raw animation clips...`);
             modelGroup.traverse(object => {
                 if (object.animations && object.animations.length > 0) {
-                    console.log(`RenderSystem ANIMATION DEBUG: Found ${object.animations.length} raw animation clips on object "${object.name}"`);
                     mixer = new THREE.AnimationMixer(object);
                     animations = object.animations;
-                    console.log(`RenderSystem ANIMATION DEBUG: Created manual mixer for entity ${entityId}`);
                 }
             });
         }
         
         if (mixer && animations && animations.length > 0) {
             this.entityMixers.set(entityId, mixer);
-            console.log(`RenderSystem ANIMATION DEBUG: GLTF mixer set for entity ${entityId}`);
             
             const animationActions = {};
             
             // Create animation actions for each animation type
             for (const animName of Object.keys(animationData)) {
-                console.log(`RenderSystem ANIMATION DEBUG: Loading GLTF animation '${animName}' for ${objectType}/${spawnType}`);
                 try {
                     const animModel = await this.game.modelManager.getAnimation(objectType, spawnType, animName);
                     if (animModel) {
@@ -241,34 +225,26 @@ class RenderSystem {
                             action.setLoop(THREE.LoopRepeat);
                             action.enabled = true;
                             animationActions[animName] = action;
-                            console.log(`RenderSystem ANIMATION DEBUG: Successfully created GLTF action for '${animName}', duration: ${clip.duration}s`);
                         }
                     }
                 } catch (error) {
-                    console.error(`RenderSystem ANIMATION DEBUG: Failed to load GLTF animation ${animName}:`, error);
                 }
             }
             
-            console.log(`RenderSystem ANIMATION DEBUG: Final GLTF animation actions for entity ${entityId}:`, Object.keys(animationActions));
             this.entityAnimations.set(entityId, animationActions);
             
             // Start with idle animation
             if (animationActions.idle) {
-                console.log(`RenderSystem ANIMATION DEBUG: Starting GLTF idle animation for entity ${entityId}`);
                 animationActions.idle.play();
                 const animState = this.entityAnimationStates.get(entityId);
                 if (animState) {
                     animState.currentAction = animationActions.idle;
                 }
             }
-        } else {
-            console.log(`RenderSystem ANIMATION DEBUG: No GLTF animations found for entity ${entityId}`);
-        }
+        } 
     }
     
     setupProprietaryAnimations(entityId, objectType, spawnType, modelGroup, animationData, modelData) {
-        console.log(`RenderSystem ANIMATION DEBUG: Setting up proprietary animations for entity ${entityId}`);
-        console.log(`RenderSystem ANIMATION DEBUG: Available proprietary animations:`, Object.keys(animationData));
         
         // Store animation data for frame-based animation
         const animationInfo = {
@@ -285,9 +261,7 @@ class RenderSystem {
             this.entityProprietaryAnimations = new Map();
         }
         this.entityProprietaryAnimations.set(entityId, animationInfo);
-        
-        console.log(`RenderSystem ANIMATION DEBUG: Proprietary animation system set up for entity ${entityId}`);
-        
+                
         // Set initial animation
         this.setProprietaryAnimation(entityId, 'idle');
     }
@@ -373,7 +347,6 @@ class RenderSystem {
         
         // Default to idle if animation doesn't exist
         if (!animationActions[animationName]) {
-            console.warn(`RenderSystem: Animation '${animationName}' not found for entity ${entityId}, trying fallbacks`);
             
             // Try common fallback animations
             const fallbacks = {
@@ -387,7 +360,6 @@ class RenderSystem {
             if (fallbacks[animationName]) {
                 for (const fallback of fallbacks[animationName]) {
                     if (animationActions[fallback]) {
-                        console.log(`RenderSystem: Using fallback animation '${fallback}' for '${animationName}'`);
                         animationName = fallback;
                         foundFallback = true;
                         break;
@@ -448,15 +420,12 @@ class RenderSystem {
         if (!proprietaryAnim) return;
         
         if (proprietaryAnim.animationData[animationName]) {
-            console.log(`RenderSystem ANIMATION DEBUG: Setting proprietary animation '${animationName}' for entity ${entityId}`);
             proprietaryAnim.animationState = animationName;
             proprietaryAnim.currentFrameIndex = 0;
             proprietaryAnim.frameTime = 0;
             
             // Apply first frame immediately
             this.applyProprietaryFrame(entityId, proprietaryAnim);
-        } else {
-            console.log(`RenderSystem ANIMATION DEBUG: Proprietary animation '${animationName}' not found for entity ${entityId}`);
         }
     }
     
@@ -674,8 +643,7 @@ class RenderSystem {
     }
     
     destroy() {
-        console.log('RenderSystem: Destroying...');
-        
+
         // Clean up all entity models
         for (const [entityId] of this.entityModels.entries()) {
             this.removeEntityModel(entityId);
@@ -688,6 +656,5 @@ class RenderSystem {
         this.entityAnimationStates.clear();
         this.entityProprietaryAnimations?.clear();
         
-        console.log('RenderSystem: Destroyed');
     }
 }

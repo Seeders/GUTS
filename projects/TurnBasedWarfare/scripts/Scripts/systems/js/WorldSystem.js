@@ -1,6 +1,8 @@
 class WorldSystem {
     constructor(game) {
         this.game = game;
+        this.game.worldSystem = this;
+        
         this.initialized = false;
         
         // Core Three.js components

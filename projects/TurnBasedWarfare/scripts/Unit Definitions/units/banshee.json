@@ -258,6 +258,6 @@
   "title": "banshee",
   "damage": 10,
   "attackSpeed": 1,
-  "size": 50,
+  "size": 5,
   "range": 200
 }

@@ -1,11 +1,12 @@
 class MovementSystem {
     constructor(game){
         this.game = game;
+        this.game.movementSystem = this;
         this.componentTypes = this.game.componentManager.getComponentTypes();
         
         // Configuration variables
         this.DEFAULT_UNIT_RADIUS = 15;
-        this.COLLISION_BUFFER_DISTANCE = 5;
+        this.COLLISION_BUFFER_DISTANCE = 10;
         this.AVOIDANCE_RADIUS_MULTIPLIER = 1;
         this.STRONG_AVOIDANCE_FORCE = 100;
         this.GENTLE_AVOIDANCE_FORCE = 20;
@@ -94,8 +95,8 @@ class MovementSystem {
             this.smoothFacingDirection(entityId, vel, smoothMovement, deltaTime);
             
             // Update position
-            pos.x += vel.vx * deltaTime;
-            pos.y += vel.vy * deltaTime;
+            pos.x += vel.vx * deltaTime * .1;
+            pos.y += vel.vy * deltaTime * .1;
             
             // Keep units within boundaries
             const terrainSize = this.game.worldSystem?.terrainSize || 768;
@@ -239,14 +240,14 @@ class MovementSystem {
     
     getUnitRadius(unitType) {
         if (unitType && unitType.size) {
-            return Math.max(this.DEFAULT_UNIT_RADIUS, unitType.size * 0.1);
+            return Math.max(this.DEFAULT_UNIT_RADIUS, unitType.size);
         }
         
         const collections = this.game.getCollections && this.game.getCollections();
         if (collections && collections.units && unitType) {
             const unitDef = collections.units[unitType.id || unitType.type];
             if (unitDef && unitDef.size) {
-                return Math.max(this.DEFAULT_UNIT_RADIUS, unitDef.size * 0.1);
+                return Math.max(this.DEFAULT_UNIT_RADIUS, unitDef.size);
             }
         }
         

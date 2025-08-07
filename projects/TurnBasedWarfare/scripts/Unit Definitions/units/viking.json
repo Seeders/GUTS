@@ -720,7 +720,7 @@
     }
   },
   "coldResistance": 75,
-  "size": 50,
+  "size": 5,
   "title": "Viking",
   "entity": "Unit"
 }

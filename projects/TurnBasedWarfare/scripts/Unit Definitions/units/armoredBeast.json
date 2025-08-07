@@ -361,6 +361,6 @@
   "armor": 100,
   "title": "Armored Beast",
   "damage": 10,
-  "size": 50,
+  "size": 5,
   "color": "yellow"
 }

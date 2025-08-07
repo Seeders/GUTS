@@ -10,11 +10,47 @@
       "children": [],
       "managers": [
         {
-          "type": "UIManager"
+          "type": "ComponentManager"
         },
         {
-          "type": "ComponentManager"
-        }
+          "type": "EventManager"
+        },
+        {
+          "type": "GameManager"
+        },
+        {
+          "type": "GameModeManager"
+        },
+        {
+          "type": "KeyboardManager"
+        },
+        {
+          "type": "LoadingManager"
+        },
+        {
+          "type": "MenuManager"
+        },
+        {
+          "type": "ResultsManager"
+        },
+        {
+          "type": "SaveManager"
+        },
+        {
+          "type": "ScreenManager"
+        },
+        {
+          "type": "InputManager"
+        },
+        {
+          "type": "ShopManager"
+        },
+        {
+          "type": "PhaseManager"
+        },        
+        {
+          "type": "UIManager"
+        }    
       ],
       "systems": [
         {
@@ -31,6 +67,9 @@
         },
         {
           "type": "AnimationSystem"
+        },
+        {
+          "type": "UnitRadiusSystem"
         }
       ],
       "components": [

@@ -1,59 +1,112 @@
-<div id="gameContainer">
-    
-    <div id="canvasContainer">
-        <canvas id="gameCanvas"></canvas>
-    </div>
-    
-    <div id="uiContainer">
-        <button id="startGameBtn">Start Game</button>    
-        
-        <div class="game-layout">
-            <div class="player-panel">
-                <h3>🛡️ YOUR ARMY</h3>
-                
-                <div class="resources">
-                    Gold: <span id="playerGold">100</span>
-                </div>
-                
-                <div class="unit-shop" id="unitShop">
-                    <!-- Unit cards will be populated here -->
-                </div>
-                
-                <button id="readyButton">Ready for Battle!</button>
-                
-                <div class="army-list" id="playerArmy">
-                    <!-- Player army units -->
-                </div>
-            </div>
-            <div class="enemy-panel">
-                <h3>👹 ENEMY ARMY</h3>
-                
-                <div class="resources">
-                    AI Strength: <span id="enemyStrength">Normal</span>
-                </div>
-                
-                <div style="text-align: center; padding: 20px;">
-                    <div style="color: #ff8888;">AI is building army...</div>
-                    <div style="margin-top: 10px;">⚡ ⚔️ 🛡️</div>
-                </div>
-                
-                <div class="army-list" id="enemyArmy">
-                    <!-- Enemy army units -->
-                </div>
-            </div>
-        </div>
-        
-        
-        <div class="phase-info">
-            <div class="round-info">Round <span id="roundNumber">1</span></div>
-            <div class="phase-title" id="phaseTitle">PLACEMENT PHASE</div>
-            <div class="phase-timer" id="phaseTimer">30s</div>
-        </div>
-        <div class="battle-log" id="battleLog" style="display: none">
-            <div class="log-entry">Welcome to Auto Battle Arena!</div>
-            <div class="log-entry">Place your units and prepare for battle...</div>
+<!-- Main Menu Screen -->
+    <div id="mainMenu" class="screen active">
+        <div class="game-title">AUTO BATTLE ARENA</div>
+        <div class="subtitle">Tactical Combat Meets AI Strategy</div>
+        <div class="main-menu-buttons">
+            <button id="mainMenu_PlayGameBtn" class="btn">🎮 PLAY GAME</button>
+            <button id="mainMenu_TutorialBtn" class="btn btn-secondary">📚 TUTORIAL</button>
+            <button id="mainMenu_SettingsBtn" class="btn btn-secondary">⚙️ SETTINGS</button>
+            <button id="mainMenu_CreditsBtn" class="btn btn-secondary">👥 CREDITS</button>
         </div>
     </div>
-    
 
-</div>
+    <!-- Game Mode Selection Screen -->
+    <div id="gameModeSelect" class="screen">
+        <div class="mode-selection">
+            <h2>🎯 SELECT GAME MODE</h2>
+            <div class="mode-grid" id="modeGrid">
+                <!-- Game mode cards populated by GameModeManager -->
+            </div>
+            <div>
+                <button id="gameMode_StartBtn" class="btn">🚀 START BATTLE</button>
+                <button id="gameMode_BackBtn" class="btn btn-secondary">← BACK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="screen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Initializing Battle Systems...</div>
+            <div class="loading-tip">Tip: Each unit type has unique strengths and weaknesses. Experiment with different combinations!</div>
+        </div>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="gameScreen" class="screen">
+        <div id="gameContainer">
+            <div id="canvasContainer">
+                <canvas id="gameCanvas"></canvas>
+            </div>
+            
+            <div id="uiContainer">
+                <div class="player-panel">
+                    <h3 class="panel-title">🛡️ YOUR ARMY</h3>
+                    
+                    <div class="resources">
+                        Gold: <span id="playerGold">100</span>g
+                    </div>
+                    
+                    <div class="unit-shop" id="unitShop">
+                        <!-- Unit cards populated by game -->
+                    </div>
+                    
+                    <button id="readyButton" class="btn">Ready for Battle!</button>
+                    
+                    <div class="army-list" id="playerArmy">
+                        <!-- Player army units -->
+                    </div>
+                </div>
+                
+                <button id="game_PauseBtn" class="btn btn-danger" style="margin-top: 1rem;">⏸️ PAUSE</button>
+                <button id="game_ExitBtn" class="btn btn-secondary">🚪 EXIT</button>
+            </div>
+            
+            <div class="phase-info">
+                <div class="round-info">Round <span id="roundNumber">1</span></div>
+                <div class="phase-title" id="phaseTitle">PLACEMENT PHASE</div>
+                <div class="phase-timer" id="phaseTimer">30s</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Victory Screen -->
+    <div id="victoryScreen" class="screen">
+        <div class="result-content">
+            <div class="result-title victory-title">🎉 VICTORY! 🎉</div>
+            <div class="stats-grid" id="victoryStats">
+                <!-- Stats populated by ResultsManager -->
+            </div>
+            <div>
+                <button id="victory_NextRoundBtn" class="btn">⚔️ NEXT ROUND</button>
+                <button id="victory_RestartBtn" class="btn btn-secondary">🔄 RESTART</button>
+                <button id="victory_MainMenuBtn" class="btn btn-secondary">🏠 MAIN MENU</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Defeat Screen -->
+    <div id="defeatScreen" class="screen">
+        <div class="result-content">
+            <div class="result-title defeat-title">💀 DEFEAT 💀</div>
+            <div class="stats-grid" id="defeatStats">
+                <!-- Stats populated by ResultsManager -->
+            </div>
+            <div>
+                <button id="defeat_RetryBtn" class="btn">⚡ RETRY</button>
+                <button id="defeat_ChangeModeBtn" class="btn btn-secondary">🎯 CHANGE MODE</button>
+                <button id="defeat_MainMenuBtn" class="btn btn-secondary">🏠 MAIN MENU</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pause Menu (Overlay) -->
+    <div id="pauseMenu" class="pause-overlay">
+        <div class="pause-content">
+            <h2>⏸️ GAME PAUSED</h2>
+            <button id="paused_ResumeBtn" class="btn">▶️ RESUME</button>
+            <button id="paused_RestartBtn" class="btn btn-secondary">🔄 RESTART</button>
+            <button id="paused_MainMenuBtn" class="btn btn-secondary">🏠 MAIN MENU</button>
+        </div>
+    </div>

@@ -324,6 +324,6 @@
   "title": "blood beast",
   "attackSpeed": 1,
   "damage": 10,
-  "size": 50,
+  "size": 5,
   "range": 2
 }
