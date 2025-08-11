@@ -26,12 +26,7 @@
     "three.OutputPass",
     "GameModeConfigs",
     "UIComponents",
-    "ArmyDisplaySystem",
-    "BattleLogSystem",
-    "EffectsSystem",
     "NotificationSystem",
-    "PlacementSystem",
-    "StatisticsTracker",
     "GameLoader",
     "ECSGame"
   ],

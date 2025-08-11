@@ -1,6 +1,7 @@
 class CombatAISystem {
     constructor(game){
         this.game = game;
+        this.game.combatAISystems = this;
         this.componentTypes = this.game.componentManager.getComponentTypes();
         
         // Configuration variables (adjusted for world coordinates)
@@ -203,7 +204,7 @@ class CombatAISystem {
         
         const collections = this.game.getCollections && this.game.getCollections();
         if (collections && collections.units && unitType) {
-            const unitDef = collections.units[unitType.id || unitType.type];
+            const unitDef = collections.units[unitType.id];
             if (unitDef && unitDef.size) {
                 return Math.max(this.DEFAULT_UNIT_RADIUS, unitDef.size);
             }
@@ -230,13 +231,13 @@ class CombatAISystem {
         const attackerType = this.game.getComponent(attackerId, this.componentTypes.UNIT_TYPE);
         const targetType = this.game.getComponent(targetId, this.componentTypes.UNIT_TYPE);
         
-        if (this.game.uiManager) {
-            this.game.uiManager.addBattleLog(`${attackerTeam.team} ${attackerType.type} deals ${attackerCombat.damage} damage to ${targetTeam.team} ${targetType.type}`, 'log-damage');
+        if (this.game.battleLogSystem) {
+            this.game.battleLogSystem.add(`${attackerTeam.team} ${attackerType.type} deals ${attackerCombat.damage} damage to ${targetTeam.team} ${targetType.type}`, 'log-damage');
         }
         
         if (targetHealth.current <= 0) {
-            if (this.game.uiManager) {
-                this.game.uiManager.addBattleLog(`${targetTeam.team} ${targetType.type} defeated!`, 'log-death');
+            if (this.game.battleLogSystem) {
+                this.game.battleLogSystem.add(`${targetTeam.team} ${targetType.type} defeated!`, 'log-death');
             }
             this.game.destroyEntity(targetId);
             this.checkBattleEnd();
@@ -257,14 +258,14 @@ class CombatAISystem {
         });
         
         if (playerUnits.length === 0) {
-            if (this.game.uiManager) {
-                this.game.uiManager.addBattleLog('DEFEAT! Enemy army victorious!', 'log-death');
-                this.game.phaseManager.endBattle('defeat');
+            if (this.game.battleLogSystem) {
+                this.game.battleLogSystem.add('DEFEAT! Enemy army victorious!', 'log-death');
+                this.game.phaseSystem.endBattle('defeat');
             }
         } else if (enemyUnits.length === 0) {
-            if (this.game.uiManager) {
-                this.game.uiManager.addBattleLog('VICTORY! Your army prevails!', 'log-victory');
-                this.game.phaseManager.endBattle('victory');
+            if (this.game.battleLogSystem) {
+                this.game.battleLogSystem.add('VICTORY! Your army prevails!', 'log-victory');
+                this.game.phaseSystem.endBattle('victory');
             }
         }
     }

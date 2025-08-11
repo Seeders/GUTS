@@ -28,9 +28,6 @@
           "type": "LoadingManager"
         },
         {
-          "type": "MenuManager"
-        },
-        {
           "type": "ResultsManager"
         },
         {
@@ -41,16 +38,7 @@
         },
         {
           "type": "InputManager"
-        },
-        {
-          "type": "ShopManager"
-        },
-        {
-          "type": "PhaseManager"
-        },        
-        {
-          "type": "UIManager"
-        }    
+        }
       ],
       "systems": [
         {
@@ -67,6 +55,30 @@
         },
         {
           "type": "AnimationSystem"
+        },
+        {
+          "type": "ArmyDisplaySystem"
+        },
+        {
+          "type": "EffectsSystem"
+        },
+        {
+          "type": "PlacementSystem"
+        },
+        {
+          "type": "StatisticsTrackingSystem"
+        },
+        {
+          "type": "BattleLogSystem"
+        },
+        {
+          "type": "ShopSystem"
+        },
+        {
+          "type": "PhaseSystem"
+        },
+        {
+          "type": "UISystem"
         }
       ],
       "components": [

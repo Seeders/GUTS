@@ -20,7 +20,7 @@ class InputManager {
         if (!canvas) return;
         
         canvas.addEventListener('click', (event) => {
-            this.game.uiManager.placement.handleCanvasClick(event);
+            this.game.placementSystem.handleCanvasClick(event);
         });
         
         canvas.addEventListener('contextmenu', (event) => {
@@ -39,19 +39,10 @@ class InputManager {
         const readyButton = document.getElementById('readyButton');
         if (readyButton) {
             readyButton.addEventListener('click', () => {
-                this.game.uiManager.toggleReady();
+                this.game.phaseSystem.toggleReady();
             });
         }
         
-        // Start game button
-        // const startButton = document.getElementById('startGameBtn');
-        // if (startButton) {
-        //     startButton.addEventListener('click', () => {
-        //         this.game.uiManager.getGameState().isPaused = false;
-        //         this.game.uiManager.start();
-        //     });
-        // }
-
         const mainMenuPlayGameBtn = document.getElementById('mainMenu_PlayGameBtn');
         const mainMenuTutorialBtn = document.getElementById('mainMenu_TutorialBtn');
         const mainMenuSettingsBtn = document.getElementById('mainMenu_SettingsBtn');
@@ -82,13 +73,13 @@ class InputManager {
             this.game.screenManager.showGameModeSelect();
         });
         mainMenuTutorialBtn?.addEventListener('click', () => {
-            this.game.menuManager.showTutorial();
+            alert('Tutorial coming soon! Check the battle log for basic instructions when you start playing.');
         });
         mainMenuSettingsBtn?.addEventListener('click', () => {
             this.showSettingsModal();
         });
         mainMenuCreditsBtn?.addEventListener('click', () => {
-            this.game.menuManager.showCredits();
+            alert('Auto Battle Arena\nDeveloped with Claude AI\n\nA tactical auto-battler game featuring strategic unit placement and AI opponents.');
         });
 
         gameModeStartBtn?.addEventListener('click', () => {
@@ -177,9 +168,9 @@ class InputManager {
         // Define keyboard shortcuts
         this.shortcuts.set('Escape', () => this.handleEscapeKey());
         this.shortcuts.set('KeyH', () => this.showHelpModal());
-        this.shortcuts.set('KeyP', () => this.game.uiManager.pauseGame());
+        this.shortcuts.set('KeyP', () => this.game.phaseSystem.pauseGame());
         this.shortcuts.set('Space', () => this.handleSpaceKey());
-        this.shortcuts.set('KeyR+Control', () => this.game.uiManager.restartGame());
+        this.shortcuts.set('KeyR+Control', () => this.game.phaseSystem.restartGame());
         this.shortcuts.set('F1', () => this.showHelpModal());
         this.shortcuts.set('KeyS+Control', () => this.handleSaveGame());
         this.shortcuts.set('Digit1', () => this.selectUnitShortcut(0));
@@ -217,23 +208,23 @@ class InputManager {
     handleEscapeKey() {
         const pauseMenu = document.getElementById('pauseMenu');
         
-        if (this.game.uiManager.getGameState().currentScreen === 'gameScreen') {
-            this.game.uiManager.pauseGame();
+        if (this.game.state.currentScreen === 'gameScreen') {
+            this.game.phaseSystem.pauseGame();
         } else if (pauseMenu && pauseMenu.style.display === 'flex') {
-            this.game.uiManager.resumeGame();
+            this.game.phaseSystem.resumeGame();
         }
     }
     
     handleSpaceKey() {
-        const state = this.game.uiManager.getGameState();
+        const state = this.game.state;
         if (state.phase === 'placement') {
-            this.game.uiManager.toggleReady();
+            this.game.phaseSystem.toggleReady();
         }
     }
     
     handleSaveGame() {
         // Trigger save game functionality
-        this.game.uiManager.statistics.saveSessionStats();
+        this.game.statisticsTrackingSystem.saveSessionStats();
         GUTS.NotificationSystem.show('Game saved!', 'success', 2000);
     }
     
@@ -274,13 +265,13 @@ class InputManager {
     
     handleRightClick(event) {
         // Handle right-click on canvas (e.g., cancel selection)
-        const state = this.game.uiManager.getGameState();
+        const state = this.game.state;
         if (state.selectedUnitType) {
             state.selectedUnitType = null;
             document.querySelectorAll('.unit-card').forEach(card => {
                 card.classList.remove('selected');
             });
-            this.game.uiManager.battleLog.add('Selection cancelled');
+            this.game.battleLogSystem.add('Selection cancelled');
         }
     }
     
@@ -295,7 +286,7 @@ class InputManager {
     
     handleCanvasHover(event) {
         // Show placement preview or hover effects
-        const state = this.game.uiManager.getGameState();
+        const state = this.game.state;
         if (state.phase === 'placement' && state.selectedUnitType) {
             this.showPlacementPreview(event);
         }
@@ -303,8 +294,8 @@ class InputManager {
     
     showPlacementPreview(event) {
         // Visual preview of unit placement (could integrate with effects system)
-        const worldPos = this.game.uiManager.placement.getWorldPositionFromMouse(event);
-        if (worldPos && this.game.uiManager.placement.isValidPlayerPlacement(worldPos)) {
+        const worldPos = this.game.placementSystem.getWorldPositionFromMouse(event);
+        if (worldPos && this.game.placementSystem.isValidPlayerPlacement(worldPos)) {
             // Show valid placement indicator
             document.body.style.cursor = 'crosshair';
         } else {

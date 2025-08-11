@@ -37,10 +37,8 @@ class GameManager {
         if (mode && this.gameInstance) {
             this.applyModeConfiguration(mode);
         }
-        this.game.uiManager.getGameState().isPaused = false;
-        this.game.uiManager.start();
-        // Initialize existing game systems
-        this.integrateWithExistingGame();
+        this.game.state.isPaused = false;
+        this.game.uiSystem.start();
     }
 
     applyModeConfiguration(mode) {
@@ -49,20 +47,6 @@ class GameManager {
             this.gameInstance.state.gameMode = mode.id;
             this.gameInstance.state.maxRounds = mode.maxRounds;
             this.gameInstance.state.goldMultiplier = mode.goldMultiplier;
-        }
-    }
-
-    integrateWithExistingGame() {
-        // Wait for the existing game to be initialized
-        if (window.game) {
-            this.gameInstance = window.game;
-            // Set up enhanced UI manager
-            if (!window.enhancedUI) {
-                window.enhancedUI = new EnhancedUIManager(this.gameInstance, this);
-            }
-        } else {
-            // Retry after a short delay
-            setTimeout(() => this.integrateWithExistingGame(), 100);
         }
     }
 
@@ -159,8 +143,8 @@ class GameManager {
             this.gameInstance.state.round++;
             
             // Start next round
-            if (this.gameInstance.uiManager && this.gameInstance.uiManager.startPlacementPhase) {
-                this.gameInstance.uiManager.startPlacementPhase();
+            if (this.gameInstance.phaseSystem && this.gameInstance.phaseSystem.startPlacementPhase) {
+                this.gameInstance.phaseSystem.startPlacementPhase();
             }
         }
     }

@@ -1,6 +1,7 @@
 class AnimationSystem {
     constructor(game){
         this.game = game;
+        this.game.animationSystem = this;
         this.componentTypes = this.game.componentManager.getComponentTypes();
         
     }
