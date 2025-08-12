@@ -188,7 +188,12 @@ class CombatAISystem {
         if (distanceToTargetEdge <= effectiveAttackRange) {
             // Attack if cooldown is ready
             if (now - combat.lastAttack >= 1 / combat.attackSpeed) {
-                this.attack(entityId, aiBehavior.currentTarget);
+                // Check if this unit uses projectiles
+                if (combat.projectile && this.game.projectileSystem) {
+                    this.fireProjectileAttack(entityId, aiBehavior.currentTarget, combat.projectile);
+                } else {
+                    this.attack(entityId, aiBehavior.currentTarget); // Keep melee attack
+                }
                 combat.lastAttack = now;
             }
         }
@@ -196,7 +201,35 @@ class CombatAISystem {
         // Update target position for MovementSystem to use
         aiBehavior.targetPosition = { x: targetPos.x, y: targetPos.y };
     }
-    
+    fireProjectileAttack(attackerId, targetId, projectileTypeId) {
+
+        if (!this.game.projectileSystem) return;
+        
+        const projectileData = this.game.getCollections().projectiles[projectileTypeId];
+
+        if(!projectileData){
+            console.warn("No projectile data found for ", projectileTypeId, "attackerId: " , attackerId);
+            return;
+        }
+
+        const attackerTeam = this.game.getComponent(attackerId, this.componentTypes.TEAM);
+        const attackerType = this.game.getComponent(attackerId, this.componentTypes.UNIT_TYPE);
+        
+        // Fire the projectile
+        const projectileInstanceId = this.game.projectileSystem.fireProjectile(attackerId, targetId, {
+            id: projectileTypeId,
+            ...projectileData
+        });
+        
+        if (projectileInstanceId && this.game.battleLogSystem) {
+            this.game.battleLogSystem.add(
+                `${attackerTeam.team} ${attackerType.type} fires projectile!`, 
+                'log-attack'
+            );
+        }
+        
+        return projectileInstanceId;
+    }
     getUnitRadius(unitType) {
         if (unitType && unitType.size) {
             return Math.max(this.DEFAULT_UNIT_RADIUS, unitType.size);

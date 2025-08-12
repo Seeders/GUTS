@@ -61,8 +61,6 @@ class WorldSystem {
     init() {
         if (this.initialized) return;
 
-        console.log('WorldRenderSystem: Initializing...');
-
         // Initialize Three.js core components
         this.initializeThreeJS();
         
@@ -76,7 +74,6 @@ class WorldSystem {
         this.setupWorld();
         
         this.initialized = true;
-        console.log('WorldRenderSystem initialized successfully');
     }
 
     initializeThreeJS() {
@@ -109,7 +106,6 @@ class WorldSystem {
         this.game.camera = this.camera;
         this.game.scene = this.scene;
         this.game.renderer = this.renderer;
-        console.log('WorldRenderSystem: Three.js core initialized');
     }
 
     initializeTerrainCanvas() {
@@ -118,7 +114,6 @@ class WorldSystem {
         this.terrainCanvas.height = 500;
         this.terrainCtx = this.terrainCanvas.getContext('2d');
         
-        console.log('WorldRenderSystem: Terrain canvas initialized');
     }
 
     loadWorldData() {
@@ -156,12 +151,7 @@ class WorldSystem {
         this.extendedSize = this.terrainSize + 2 * this.extensionSize;
         this.heightMapResolution = this.extendedSize / (this.heightMapSettings?.resolutionDivisor || 1);
         
-        console.log('WorldRenderSystem: World data loaded', {
-            level: currentLevel,
-            world: this.level.world,
-            terrainSize: this.terrainSize,
-            extendedSize: this.extendedSize
-        });
+       
     }
 
     setupWorld() {
@@ -192,7 +182,6 @@ class WorldSystem {
                 this.fogSettings.color, 
                 this.fogSettings.density
             );
-            console.log('WorldRenderSystem: Fog enabled');
         }
     }
 
@@ -261,13 +250,11 @@ class WorldSystem {
         );
         this.scene.add(this.hemisphereLight);
 
-        console.log('WorldRenderSystem: Lighting setup complete');
     }
 
     setupPostProcessing() {
         const gameConfig = this.game.getCollections()?.configs?.game;
         if (!gameConfig) {
-            console.log('WorldRenderSystem: No game config found, skipping post-processing');
             return;
         }
 
@@ -285,14 +272,9 @@ class WorldSystem {
         const outputPass = new THREE_.OutputPass();
         this.composer.addPass(outputPass);
 
-        console.log('WorldRenderSystem: Post-processing setup complete', {
-            pixelSize: pixelSize,
-            pixelPassEnabled: pixelPass.enabled
-        });
     }
 
     setupCamera() {
-        debugger;
         if (!this.cameraSettings) {
             this.cameraSettings = {
                 position: '{"x":0,"y":200,"z":300}',
@@ -318,12 +300,7 @@ class WorldSystem {
 
         this.setupOrbitControls(lookAt);
 
-        console.log('WorldRenderSystem: Camera setup complete', {
-            position: cameraPos,
-            lookAt: lookAt,
-            groundPosition: this.ground ? this.ground.position : 'Ground not created yet',
-            groundSize: this.extendedSize
-        });
+     
     }
 
     setupOrbitControls(lookAt) {
@@ -345,7 +322,6 @@ class WorldSystem {
         
         this.controls.update();
         
-        console.log('WorldRenderSystem: Orbit controls enabled');
     }
 
     setupGround() {
@@ -354,7 +330,6 @@ class WorldSystem {
             return;
         }
 
-        console.log('WorldRenderSystem: Setting up ground...');
 
         this.groundCanvas = document.createElement('canvas');
         this.groundCanvas.width = this.extendedSize;
@@ -371,7 +346,6 @@ class WorldSystem {
         }
         
         const finalBgColor = bgColor || '#333333';
-        console.log('WorldRenderSystem: Using background color:', finalBgColor);
         
         this.groundCtx.fillStyle = finalBgColor;
         this.groundCtx.fillRect(0, 0, this.extendedSize, this.extendedSize);
@@ -409,18 +383,12 @@ class WorldSystem {
 
         this.heightMapData = new Float32Array(this.extendedSize * this.extendedSize);
 
-        console.log('WorldRenderSystem: Ground setup complete', {
-            position: this.ground.position,
-            size: this.extendedSize,
-            segments: segments,
-            terrainSize: this.terrainSize
-        });
+   
     }
 
     createExtensionPlanes() {
         if (!this.tileMap) return;
         
-        console.log('WorldRenderSystem: Creating extension planes...');
         
         // Get the extension terrain color
         const extensionTerrainType = this.tileMap.extensionTerrainType || 0;
@@ -432,7 +400,6 @@ class WorldSystem {
         }
         
         const extensionColor = bgColor || '#333333';
-        console.log('WorldRenderSystem: EXTENSION PLANE COLOR:', extensionColor);
         
         // Extension settings
         const extensionDistance = 19000; // How far the planes extend
@@ -502,12 +469,6 @@ class WorldSystem {
         this.scene.add(westPlane);
         this.extensionPlanes.push(westPlane);
         
-        console.log('WorldRenderSystem: Extension planes created', {
-            extensionDistance: extensionDistance,
-            detailedGroundSize: detailedGroundSize,
-            extensionColor: extensionColor,
-            planesCreated: this.extensionPlanes.length
-        });
     }
 
     renderTerrain() {
@@ -516,7 +477,6 @@ class WorldSystem {
             return;
         }
 
-        console.log('WorldRenderSystem: Rendering terrain...');
         
         // Clear terrain canvas
         this.terrainCtx.clearRect(0, 0, this.terrainCanvas.width, this.terrainCanvas.height);
@@ -529,7 +489,6 @@ class WorldSystem {
         
         this.terrainRendered = true;
         
-        console.log('WorldRenderSystem: Terrain rendered');
     }
 
     drawTerrainTiles(terrainMap) {       
@@ -542,7 +501,6 @@ class WorldSystem {
             return;
         }
 
-        console.log('WorldRenderSystem: Updating ground texture...');
 
         // Draw terrain data onto ground canvas
         this.groundCtx.drawImage(
@@ -553,7 +511,6 @@ class WorldSystem {
         this.groundTexture.needsUpdate = true;
         
         if (this.heightMapSettings?.enabled) {
-            console.log("WorldRenderSystem: Updating height map");
             this.updateHeightMap();
         }
         
@@ -569,7 +526,6 @@ class WorldSystem {
         // Render environment objects
         this.renderEnvironmentObjects();
 
-        console.log('WorldRenderSystem: Ground texture updated successfully');
     }
 
     renderEnvironmentObjects() {
@@ -662,7 +618,6 @@ class WorldSystem {
             });
         });
 
-        console.log('WorldRenderSystem: Environment objects rendered');
     }
 
     onWindowResize() {
@@ -713,19 +668,9 @@ class WorldSystem {
             return;
         }
 
-        // Debug: Log scene objects occasionally
-        if (Math.floor(this.timer) % 5 === 0 && this.timer > 0) {
-            console.log('WorldRenderSystem: Scene objects:', this.scene.children.length);
-        }
-
         // Always use basic renderer for now to debug
         this.renderer.render(this.scene, this.camera);
 
-        // if (this.composer) {
-        //     this.composer.render();
-        // } else {
-        //     this.renderer.render(this.scene, this.camera);
-        // }
     }
 
     updateHeightMap() {
@@ -1010,21 +955,14 @@ class WorldSystem {
         // Step 5: Apply perimeter extensions
         perimeterExtensions.forEach((ext, vertexIndex) => {
             const idx = vertexIndex * 3;
-            const [origX, origZ] = originalPositions[vertexIndex];
-
-            // Log the bottom-right corner for debugging
-            if (ext.extendRight && ext.extendDown) {
-                console.log(`Bottom-right corner at (${origX}, ${origZ}): Before extension - x: ${vertices[idx]}, z: ${vertices[idx + 2]}`);
-            }
+            const [origX, origZ] = originalPositions[vertexIndex];     
 
             if (ext.extendLeft) vertices[idx] -= extensionAmount; // Extend left
             if (ext.extendRight) vertices[idx] += extensionAmount; // Extend right
             if (ext.extendUp) vertices[idx + 2] -= extensionAmount; // Extend north (decrease z)
             if (ext.extendDown) vertices[idx + 2] += extensionAmount; // Extend south (increase z)
 
-            if (ext.extendRight && ext.extendDown) {
-                console.log(`Bottom-right corner at (${origX}, ${origZ}): After extension - x: ${vertices[idx]}, z: ${vertices[idx + 2]}`);
-            }
+       
         });
         
         // Step 6: Create the BufferGeometry
@@ -1086,12 +1024,6 @@ class WorldSystem {
         this.scene.add(waterMesh);
         this.liquidMeshes.push(waterMesh);
 
-        console.log(`WorldRenderSystem: Liquid surface created for terrain type ${terrainType}`, {
-            vertexCount: vertices.length / 3,
-            centerOffset: { x: centerOffsetX, z: centerOffsetZ },
-            terrainDimensions: { width: terrainWorldWidth, height: terrainWorldHeight },
-            extensionAmount: extensionAmount
-        });
     }
 
     addGrassToTerrain() {
@@ -1280,7 +1212,6 @@ class WorldSystem {
     setControlsEnabled(enabled) {
         if (this.controls) {
             this.controls.enabled = enabled;
-            console.log(`WorldRenderSystem: Orbit controls ${enabled ? 'enabled' : 'disabled'}`);
         }
     }
 
@@ -1300,7 +1231,6 @@ class WorldSystem {
             this.camera.lookAt(lookAt.x, lookAt.y, lookAt.z);
         }
 
-        console.log('WorldRenderSystem: Camera reset to initial position');
     }
 
     // Terrain update methods for dynamic changes
@@ -1311,7 +1241,6 @@ class WorldSystem {
     }
 
     destroy() {
-        console.log('WorldRenderSystem: Destroying...');
 
         // Clean up extension planes
         if (this.extensionPlanes) {
@@ -1384,6 +1313,5 @@ class WorldSystem {
         this.composer = null;
 
         this.initialized = false;
-        console.log('WorldRenderSystem: Destroyed');
     }
 }

@@ -86,15 +86,19 @@ class PlacementSystem {
         // Add components
         this.game.addComponent(entity, ComponentTypes.POSITION, Components.Position(worldX, worldZ));
         this.game.addComponent(entity, ComponentTypes.VELOCITY, Components.Velocity(0, 0, unitType.speed * 20));
-        this.game.addComponent(entity, ComponentTypes.RENDERABLE, Components.Renderable(unitType.color, unitType.size, 'circle'));
+        this.game.addComponent(entity, ComponentTypes.RENDERABLE, Components.Renderable("units", unitType.id));
         this.game.addComponent(entity, ComponentTypes.COLLISION, Components.Collision(unitType.size));
         this.game.addComponent(entity, ComponentTypes.HEALTH, Components.Health(unitType.hp));
-        this.game.addComponent(entity, ComponentTypes.COMBAT, Components.Combat(unitType.damage, unitType.range, unitType.attackSpeed));
+        this.game.addComponent(entity, ComponentTypes.COMBAT, Components.Combat(unitType.damage, unitType.range, unitType.attackSpeed, unitType.projectile, 0));
         this.game.addComponent(entity, ComponentTypes.TEAM, Components.Team(team));
         this.game.addComponent(entity, ComponentTypes.UNIT_TYPE, Components.UnitType(unitType.id, unitType.title, unitType.value));
         this.game.addComponent(entity, ComponentTypes.AI_STATE, Components.AIState('idle'));
         this.game.addComponent(entity, ComponentTypes.ANIMATION, Components.Animation());
         
+
+        if(unitType.projectile){
+            console.log('created ranged Unit', entity, unitType, unitType.projectile);
+        }
         return entity;
     }
     

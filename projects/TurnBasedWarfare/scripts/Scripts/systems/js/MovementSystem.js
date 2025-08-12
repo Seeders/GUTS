@@ -47,8 +47,8 @@ class MovementSystem {
                 desiredVy = 0;
             } else {
                 // Default behavior - stop if idle
-                desiredVx = 0;
-                desiredVy = 0;
+                desiredVx = vel.vx;
+                desiredVy = vel.vy;
             }
             
             // Set velocity directly
@@ -56,13 +56,11 @@ class MovementSystem {
             vel.vy = desiredVy;
             
             // Clamp very small velocities to zero
-            const speed = Math.sqrt(vel.vx * vel.vx + vel.vy * vel.vy);
-            if (speed < this.MIN_MOVEMENT_THRESHOLD) {
+            const speedSqrd = vel.vx * vel.vx + vel.vy * vel.vy;
+            if (speedSqrd < this.MIN_MOVEMENT_THRESHOLD * this.MIN_MOVEMENT_THRESHOLD) {
                 vel.vx = 0;
                 vel.vy = 0;
             }
-            
-            // REMOVED: setFacingDirection call - let RenderSystem handle all rotation
             
             // Update position
             pos.x += vel.vx * deltaTime * this.POSITION_UPDATE_MULTIPLIER;

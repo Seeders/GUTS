@@ -54,6 +54,9 @@
           "type": "CombatAISystem"
         },
         {
+          "type": "ProjectileSystem"
+        },
+        {
           "type": "AnimationSystem"
         },
         {

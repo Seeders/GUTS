@@ -259,5 +259,6 @@
   "damage": 10,
   "attackSpeed": 1,
   "size": 5,
-  "range": 200
+  "range": 200,
+  "projectile": "plasmaBolt"
 }

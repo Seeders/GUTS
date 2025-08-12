@@ -38,14 +38,14 @@ class RenderSystem {
         );
         entities.forEach(entityId => {
             const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-            const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
+            const renderable = this.game.getComponent(entityId, this.componentTypes.RENDERABLE);
             const team = this.game.getComponent(entityId, this.componentTypes.TEAM);
             const health = this.game.getComponent(entityId, this.componentTypes.HEALTH);
             const velocity = this.game.getComponent(entityId, this.componentTypes.VELOCITY);
             
             // Check if entity needs a model
             if (!this.entityModels.has(entityId)) {
-                this.createModelForEntity(entityId, "units", unitType.id, team);
+                this.createModelForEntity(entityId, renderable.objectType, renderable.spawnType, team);
             }
             
             const modelGroup = this.entityModels.get(entityId);
@@ -83,7 +83,7 @@ class RenderSystem {
                 });
             }
         });
-        
+      
         // Clean up removed entities
         this.cleanupRemovedEntities(entities);
     }
@@ -130,25 +130,10 @@ class RenderSystem {
     // ... rest of the class remains exactly the same ...
     
     async createModelForEntity(entityId, objectType, spawnType, team) {
-        // Check if ModelManager exists
-        if (!this.game.modelManager) {
-            this.createFallbackModel(entityId, team);
-            return;
-        }
-        
-        // Get unit definition from game data
-        const unitDefinition = this.getUnitDefinition(spawnType);
-        
-        // Create fallback model if no proper definition
-        if (!unitDefinition || !unitDefinition.render) {
-            this.createFallbackModel(entityId, team);
-            return;
-        }
-        
+           // Get unit definition from game data        
         try {
             // Get model from ModelManager
             const modelGroup = this.game.modelManager.getModel(objectType, spawnType);
-            
             if (modelGroup) {
                 // Add to scene
                 this.game.scene.add(modelGroup);
@@ -170,10 +155,10 @@ class RenderSystem {
                     currentAction: null
                 });
             } else {
-                this.createFallbackModel(entityId, team);
+                console.error("no model group found", objectType, spawnType);
             }
         } catch (error) {
-            this.createFallbackModel(entityId, team);
+            console.error(error);
         }
     }
     
@@ -198,6 +183,51 @@ class RenderSystem {
         
     }
     
+    
+    createProjectileModel(projectileId, visual) {
+        const geometry = new THREE.SphereGeometry(visual.size || 2, 8, 6);
+        const material = new THREE.MeshLambertMaterial({ 
+            color: visual.color || '#ffff00',
+            emissive: visual.color || '#ffff00',
+            emissiveIntensity: 0.3
+        });
+        
+        const sphere = new THREE.Mesh(geometry, material);
+        sphere.castShadow = true;
+        
+        const group = new THREE.Group();
+        group.add(sphere);
+        
+        this.game.scene.add(group);
+        this.entityModels.set(projectileId, group);
+    }
+
+    updateProjectileTrail(model, trail, visual) {
+        // Remove old trail
+        const existingTrail = model.getObjectByName('trail');
+        if (existingTrail) {
+            model.remove(existingTrail);
+            existingTrail.geometry?.dispose();
+            existingTrail.material?.dispose();
+        }
+        
+        if (!trail || trail.length < 2) return;
+        
+        // Create new trail geometry
+        const points = trail.map(point => new THREE.Vector3(point.x, 1, point.y));
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        
+        const material = new THREE.LineBasicMaterial({ 
+            color: visual.color || '#ffff00',
+            transparent: true,
+            opacity: 0.6
+        });
+        
+        const line = new THREE.Line(geometry, material);
+        line.name = 'trail';
+        model.add(line);
+    }
+
     async setupEntityAnimations(entityId, objectType, spawnType, modelGroup) {
         
         // Get unit definition to check animation type
@@ -288,7 +318,7 @@ class RenderSystem {
             }
         } 
     }
-    
+
     setupProprietaryAnimations(entityId, objectType, spawnType, modelGroup, animationData, modelData) {
         
         // Store animation data for frame-based animation
