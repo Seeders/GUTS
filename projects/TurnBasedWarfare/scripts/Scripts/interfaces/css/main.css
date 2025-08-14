@@ -569,3 +569,158 @@ body {
     color: #00ff00;
     font-weight: bold;
 }
+
+
+/* Team Health Bar Styles */
+.team-health-container {
+    position: absolute;
+    top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 2rem;
+    z-index: 100;
+    pointer-events: none;
+}
+
+.team-health-bar {
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid #333;
+    border-radius: 10px;
+    padding: 0.8rem;
+    min-width: 200px;
+    text-align: center;
+}
+
+.player-health {
+    border-color: #00ff00;
+}
+
+.enemy-health {
+    border-color: #ff4444;
+}
+
+.team-label {
+    font-size: 0.9rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 0 5px currentColor;
+}
+
+.player-health .team-label {
+    color: #00ff00;
+}
+
+.enemy-health .team-label {
+    color: #ff4444;
+}
+
+.health-bar-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.health-bar {
+    width: 100%;
+    height: 20px;
+    background: #222;
+    border: 1px solid #444;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+}
+
+.health-fill {
+    height: 100%;
+    transition: width 0.5s ease;
+    border-radius: 10px;
+    position: relative;
+}
+
+.player-fill {
+    background: linear-gradient(90deg, #004400 0%, #00aa00 50%, #00ff00 100%);
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+}
+
+.enemy-fill {
+    background: linear-gradient(90deg, #440000 0%, #aa0000 50%, #ff4444 100%);
+    box-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
+}
+
+.health-text {
+    font-size: 0.8rem;
+    color: #fff;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px #000;
+}
+
+/* Damage popup animation */
+.damage-popup {
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px #000;
+    animation: damageFloat 2s ease-out forwards;
+    pointer-events: none;
+    z-index: 1001;
+}
+
+.player-damage {
+    color: #ff6666;
+}
+
+.enemy-damage {
+    color: #ff6666;
+}
+
+@keyframes damageFloat {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+        font-size: 1.5rem;
+    }
+    50% {
+        opacity: 1;
+        transform: translateY(-30px);
+        font-size: 2rem;
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-60px);
+        font-size: 1rem;
+    }
+}
+
+/* Low health warning effects */
+.health-fill[style*="width: 0%"], 
+.health-fill[style*="width: 1%"], 
+.health-fill[style*="width: 2%"] {
+    animation: criticalHealth 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes criticalHealth {
+    0% { opacity: 0.3; }
+    100% { opacity: 1; }
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+    .team-health-container {
+        flex-direction: column;
+        gap: 0.5rem;
+        top: 0.5rem;
+    }
+    
+    .team-health-bar {
+        min-width: 150px;
+        padding: 0.5rem;
+    }
+    
+    .team-label {
+        font-size: 0.8rem;
+    }
+    
+    .health-text {
+        font-size: 0.7rem;
+    }
+}

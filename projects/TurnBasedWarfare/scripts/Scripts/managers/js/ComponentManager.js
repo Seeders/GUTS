@@ -7,8 +7,9 @@ class ComponentManager {
 
     getComponents() {
         return  {
-            Position: (x = 0, y = 0) => ({ x, y }),
-            Velocity: (vx = 0, vy = 0, maxSpeed = 100) => ({ vx, vy, maxSpeed }),
+            Position: (x = 0, y = 0, z = 0) => ({ x, y, z }),
+            Velocity: (vx = 0, vy = 0, vz = 0, maxSpeed = 100) => ({ vx, vy, vz, maxSpeed }),
+            Facing: (angle) => ({ angle: angle || 0 }), // Rotation angle in radians
             Renderable: ( objectType, spawnType ) => ({ objectType, spawnType }),
             Collision: (radius = 10) => ({ radius }),
             Health: (max = 100) => ({ max, current: max }),
@@ -32,7 +33,7 @@ class ComponentManager {
             // Transform components
             TRANSFORM: 'transform',
             POSITION: 'position',
-            ROTATION: 'rotation',
+            FACING: 'facing',
             VELOCITY: 'velocity',
             SCALE: 'scale',
             

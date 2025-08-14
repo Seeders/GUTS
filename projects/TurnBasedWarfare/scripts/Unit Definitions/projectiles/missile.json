@@ -350,9 +350,11 @@
       }
     }
   },
-  "speed": 1,
+  "speed": 100,
   "title": "Missile",
-  "isBallistic": true,
+  "ballistic": true,
+  "homing": false,
+  "homingStrength": 0,
   "particle": "smoke",
   "shadows": false,
   "hitSound": "explosion",

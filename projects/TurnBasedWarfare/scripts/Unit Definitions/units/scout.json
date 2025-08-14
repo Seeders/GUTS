@@ -1,0 +1,1747 @@
+{
+  "title": "Scout",
+  "size": 11,
+  "value": 35,
+  "hp": 60,
+  "speed": 65,
+  "damage": 18,
+  "attackSpeed": 1.8,
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ],
+      "walk": [
+        {
+          "torso": {
+            "shapes": [
+              {
+                "position": {
+                  "y": -8
+                },
+                "id": 1
+              },
+              {
+                "type": "box",
+                "width": 10,
+                "height": 14,
+                "depth": 6,
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "color": "#2F4F2F",
+                "name": "chest",
+                "id": 0
+              }
+            ]
+          },
+          "head": {
+            "shapes": [
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 2
+              },
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 3
+              },
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 4
+              },
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 5
+              },
+              {
+                "position": {
+                  "y": 6
+                },
+                "id": 6
+              }
+            ]
+          },
+          "dagger": {
+            "shapes": [
+              {
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 4
+                },
+                "rotation": {
+                  "x": 180,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                },
+                "id": 1
+              }
+            ]
+          }
+        },
+        {
+          "torso": {
+            "rotation": {
+              "x": 0.05,
+              "y": 0,
+              "z": 0
+            },
+            "position": {
+              "x": 0,
+              "y": 26,
+              "z": 0
+            }
+          },
+          "head": {
+            "rotation": {
+              "x": -0.05,
+              "y": 0.05,
+              "z": 0
+            },
+            "position": {
+              "x": 0,
+              "y": 40,
+              "z": 0
+            }
+          },
+          "left arm": {
+            "rotation": {
+              "x": 0.5,
+              "y": 0,
+              "z": 0
+            }
+          },
+          "right arm": {
+            "rotation": {
+              "x": -0.5,
+              "y": 0,
+              "z": 0
+            }
+          },
+          "left leg": {
+            "rotation": {
+              "x": -0.6,
+              "y": 0,
+              "z": 0
+            }
+          },
+          "right leg": {
+            "rotation": {
+              "x": 0.4,
+              "y": 0,
+              "z": 0
+            }
+          },
+          "dagger": {
+            "position": {
+              "x": -8.769647696476955,
+              "y": 17.056603773584904,
+              "z": -6.097560975609785
+            },
+            "rotation": {
+              "x": 0.391634856545069,
+              "y": 0,
+              "z": 0
+            }
+          },
+          "cloak": {
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0.1
+            }
+          }
+        },
+        {
+          "torso": {
+            "shapes": [
+              {
+                "position": {
+                  "y": -8
+                },
+                "id": 1
+              }
+            ]
+          },
+          "head": {
+            "shapes": [
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 2
+              },
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 3
+              },
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 4
+              },
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 5
+              },
+              {
+                "position": {
+                  "y": 6
+                },
+                "id": 6
+              }
+            ]
+          },
+          "dagger": {
+            "shapes": [
+              {
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 4
+                },
+                "rotation": {
+                  "x": 180,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                },
+                "id": 1
+              }
+            ]
+          }
+        },
+        {
+          "torso": {
+            "rotation": {
+              "x": 0.05,
+              "y": 0,
+              "z": 0
+            },
+            "position": {
+              "x": 0,
+              "y": 26,
+              "z": 0
+            }
+          },
+          "head": {
+            "rotation": {
+              "x": -0.05,
+              "y": -0.05,
+              "z": 0
+            },
+            "position": {
+              "x": 0,
+              "y": 40,
+              "z": 0
+            }
+          },
+          "left arm": {
+            "rotation": {
+              "x": -0.5,
+              "y": 0,
+              "z": 0
+            }
+          },
+          "right arm": {
+            "rotation": {
+              "x": 0.5,
+              "y": 0,
+              "z": 0
+            }
+          },
+          "left leg": {
+            "rotation": {
+              "x": 0.4,
+              "y": 0,
+              "z": 0
+            }
+          },
+          "right leg": {
+            "rotation": {
+              "x": -0.6,
+              "y": 0,
+              "z": 0
+            }
+          },
+          "dagger": {
+            "rotation": {
+              "x": -0.39163485654506947,
+              "y": 0,
+              "z": 0
+            },
+            "position": {
+              "x": -8.769647696476955,
+              "y": 18.404312668463614,
+              "z": 9.078590785907846
+            }
+          },
+          "cloak": {
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": -0.1
+            }
+          }
+        }
+      ],
+      "attack": [
+        {
+          "torso": {
+            "shapes": [
+              {
+                "position": {
+                  "y": -8
+                },
+                "id": 1
+              }
+            ]
+          },
+          "head": {
+            "shapes": [
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 2
+              },
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 3
+              },
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 4
+              },
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 5
+              },
+              {
+                "position": {
+                  "y": 6
+                },
+                "id": 6
+              },
+              {
+                "position": {
+                  "y": 4
+                },
+                "id": 7
+              }
+            ]
+          },
+          "left arm": {
+            "rotation": {
+              "x": 0.38312105531582985,
+              "y": 0,
+              "z": 0
+            }
+          },
+          "right arm": {
+            "rotation": {
+              "x": -0.6470488934222871,
+              "y": 0,
+              "z": 0
+            }
+          },
+          "dagger": {
+            "shapes": [
+              {
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 4
+                },
+                "rotation": {
+                  "x": 180,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                },
+                "id": 1
+              }
+            ],
+            "position": {
+              "x": -8.769647696476955,
+              "y": 16.113207547169807,
+              "z": -5.0135501355013545
+            },
+            "rotation": {
+              "x": 0.4171762602327909,
+              "y": 0,
+              "z": 0
+            }
+          }
+        },
+        {
+          "torso": {
+            "rotation": {
+              "x": -0.11919321720936882,
+              "y": -0.3235244467111437,
+              "z": 0
+            },
+            "position": {
+              "x": 0,
+              "y": 25,
+              "z": -1.084010840108407
+            }
+          },
+          "head": {
+            "position": {
+              "x": 0,
+              "y": 39,
+              "z": -2.8455284552845628
+            }
+          },
+          "left arm": {
+            "shapes": [
+              {
+                "id": 0,
+                "rotation": {
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                }
+              },
+              {
+                "id": 1,
+                "position": {
+                  "x": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                }
+              },
+              {
+                "id": 2,
+                "position": {
+                  "x": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                }
+              }
+            ],
+            "rotation": {
+              "x": 1.0982803585720413,
+              "y": -0.40866245900354975,
+              "z": 0.09365181352164711
+            }
+          },
+          "right arm": {
+            "rotation": {
+              "x": -1.7067941598012832,
+              "y": -1.4502288259166107e-15,
+              "z": -0.01269637295670712
+            }
+          },
+          "left leg": {
+            "rotation": {
+              "y": -1.5750532274095175,
+              "z": 0
+            },
+            "position": {
+              "x": -3,
+              "y": 16,
+              "z": -1.6260162601626105
+            }
+          },
+          "right leg": {
+            "shapes": [
+              {
+                "id": 0,
+                "position": {
+                  "x": 0,
+                  "y": -3.5,
+                  "z": -2.8455284552845406
+                },
+                "rotation": {
+                  "x": -25,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1.4,
+                  "z": 1
+                }
+              },
+              {
+                "id": 1,
+                "position": {
+                  "x": 0,
+                  "y": -10.134770889487868,
+                  "z": -0.40650406504065817
+                },
+                "rotation": {
+                  "x": -8,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1.1
+                }
+              },
+              {
+                "id": 2,
+                "position": {
+                  "x": 0,
+                  "y": -14.5,
+                  "z": 2
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                }
+              }
+            ],
+            "position": {
+              "x": 3,
+              "y": 16,
+              "z": 5.962059620596216
+            }
+          },
+          "dagger": {
+            "shapes": [
+              {
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 4
+                },
+                "rotation": {
+                  "x": 180,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                },
+                "id": 1
+              }
+            ],
+            "position": {
+              "x": -7.0081300813008,
+              "y": 22.447439353099725,
+              "z": -13.414634146341466
+            },
+            "rotation": {
+              "x": 1.1238217622597613,
+              "y": -0.4597452663789934,
+              "z": -0.05108280737544339
+            }
+          },
+          "cloak": {
+            "position": {
+              "x": 0,
+              "y": 25,
+              "z": -6.574525745257449
+            },
+            "rotation": {
+              "x": 0.11919321720936882,
+              "y": -0.15324842212633152,
+              "z": 0
+            }
+          }
+        },
+        {
+          "torso": {
+            "shapes": [
+              {
+                "position": {
+                  "y": -8
+                },
+                "id": 1
+              }
+            ],
+            "rotation": {
+              "x": 0.12770701843860915,
+              "y": 0.31501064548190416,
+              "z": 0
+            }
+          },
+          "head": {
+            "rotation": {
+              "x": 0,
+              "y": 0.20433122950177496,
+              "z": 0
+            },
+            "position": {
+              "x": 0,
+              "y": 39,
+              "z": 2.3035230352303593
+            }
+          },
+          "left arm": {
+            "rotation": {
+              "x": -1.0642251536550775,
+              "y": 0.05959660860468367,
+              "z": 0
+            },
+            "shapes": [
+              {
+                "id": 2,
+                "position": {
+                  "x": 0,
+                  "y": -18,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 44,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                }
+              }
+            ]
+          },
+          "right arm": {
+            "rotation": {
+              "x": 0.5448832786714014,
+              "y": 0,
+              "z": 0
+            }
+          },
+          "left leg": {
+            "rotation": {
+              "x": 0.7917835143193802,
+              "y": 0,
+              "z": 0
+            }
+          },
+          "right leg": {
+            "shapes": [
+              {
+                "id": 0,
+                "position": {
+                  "x": 0,
+                  "y": -4.982479784366575,
+                  "z": -0.13550135501354532
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1.3,
+                  "z": 1
+                }
+              },
+              {
+                "id": 1,
+                "position": {
+                  "x": 0,
+                  "y": -12.425876010781675,
+                  "z": -0.13550135501354532
+                },
+                "rotation": {
+                  "x": 9,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                }
+              },
+              {
+                "id": 2,
+                "position": {
+                  "x": 0,
+                  "y": -16.386792452830214,
+                  "z": -0.7100271002710352
+                },
+                "rotation": {
+                  "x": 30,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                }
+              }
+            ],
+            "rotation": {
+              "x": -0.5363694774421602,
+              "y": 0,
+              "z": 0
+            }
+          },
+          "dagger": {
+            "shapes": [
+              {
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 4
+                },
+                "rotation": {
+                  "x": 180,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                },
+                "id": 1
+              }
+            ],
+            "position": {
+              "x": -8.769647696476955,
+              "y": 23.660377358490578,
+              "z": 17.344173441734412
+            },
+            "rotation": {
+              "x": -0.34055204916962595,
+              "y": 0,
+              "z": 0
+            }
+          },
+          "cloak": {
+            "shapes": [
+              {
+                "id": 0,
+                "position": {
+                  "x": 0,
+                  "y": -2,
+                  "z": 0
+                },
+                "rotation": {
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                }
+              }
+            ],
+            "rotation": {
+              "x": 0.9450319364457106,
+              "y": 0.2298726331894967,
+              "z": -0.28946924179418176
+            },
+            "position": {
+              "x": -3.1165311653116534,
+              "y": 27.291105121293807,
+              "z": -9.420054200542012
+            }
+          }
+        },
+        {
+          "torso": {
+            "shapes": [
+              {
+                "position": {
+                  "y": -8
+                },
+                "id": 1
+              }
+            ]
+          },
+          "head": {
+            "shapes": [
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 2
+              },
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 3
+              },
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 4
+              },
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 5
+              },
+              {
+                "position": {
+                  "y": 6
+                },
+                "id": 6
+              },
+              {
+                "position": {
+                  "y": 4
+                },
+                "id": 7
+              }
+            ]
+          },
+          "left arm": {
+            "rotation": {
+              "x": -0.4642251536550789,
+              "y": 0,
+              "z": 0.1
+            }
+          },
+          "right arm": {
+            "rotation": {
+              "x": -0.18326971309013815,
+              "y": 0.017027602458480624,
+              "z": 0.08730362704329342
+            }
+          },
+          "left leg": {
+            "rotation": {
+              "x": 0.3577283094024161,
+              "y": 0,
+              "z": 0
+            }
+          },
+          "right leg": {
+            "rotation": {
+              "x": -0.24271766392051403,
+              "y": 0,
+              "z": 0
+            },
+            "shapes": [
+              {
+                "id": 0,
+                "position": {
+                  "x": 0,
+                  "y": -4.3,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 2,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                }
+              },
+              {
+                "id": 1,
+                "position": {
+                  "y": -10.8
+                }
+              },
+              {
+                "id": 2,
+                "position": {
+                  "x": 0,
+                  "y": -15.578167115902964,
+                  "z": 2
+                },
+                "rotation": {
+                  "x": 12,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                }
+              }
+            ]
+          },
+          "dagger": {
+            "shapes": [
+              {
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 4
+                },
+                "rotation": {
+                  "x": 180,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                },
+                "id": 1
+              }
+            ],
+            "position": {
+              "x": -6.195121951219506,
+              "y": 18.13477088948788,
+              "z": 8.807588075880755
+            },
+            "rotation": {
+              "x": -0.4938004712959575,
+              "y": 0,
+              "z": 0
+            }
+          }
+        }
+      ],
+      "hurt": [
+        {
+          "torso": {
+            "shapes": [
+              {
+                "position": {
+                  "y": -8
+                },
+                "id": 1
+              }
+            ]
+          },
+          "head": {
+            "shapes": [
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 2
+              },
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 3
+              },
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 4
+              },
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 5
+              },
+              {
+                "position": {
+                  "y": 6
+                },
+                "id": 6
+              }
+            ]
+          },
+          "cloak": {
+            "shapes": [
+              {
+                "type": "box",
+                "width": 14,
+                "height": 18,
+                "depth": 1.5,
+                "x": 0,
+                "y": -2,
+                "z": 0,
+                "color": "#2F4F2F",
+                "name": "cloak-main",
+                "id": 0
+              }
+            ]
+          },
+          "dagger": {
+            "shapes": [
+              {
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 4
+                },
+                "rotation": {
+                  "x": 180,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                },
+                "id": 1
+              }
+            ]
+          }
+        },
+        {
+          "torso": {
+            "rotation": {
+              "x": -0.4,
+              "y": -0.3,
+              "z": -0.2
+            },
+            "position": {
+              "x": -3,
+              "y": 20,
+              "z": -4
+            }
+          },
+          "head": {
+            "rotation": {
+              "x": 0.3,
+              "y": -0.4,
+              "z": 0.1
+            },
+            "position": {
+              "x": -3,
+              "y": 34,
+              "z": -7
+            }
+          },
+          "left arm": {
+            "rotation": {
+              "x": -0.6,
+              "y": 0.5,
+              "z": 0.8
+            },
+            "position": {
+              "x": -11,
+              "y": 27,
+              "z": -4
+            }
+          },
+          "right arm": {
+            "rotation": {
+              "x": 0.4,
+              "y": -0.3,
+              "z": -0.9
+            },
+            "position": {
+              "x": 5,
+              "y": 27,
+              "z": -5
+            }
+          },
+          "left leg": {
+            "rotation": {
+              "x": 0.2,
+              "y": 0,
+              "z": -0.1
+            },
+            "position": {
+              "x": -6,
+              "y": 16,
+              "z": 0
+            }
+          },
+          "right leg": {
+            "rotation": {
+              "x": 0.3,
+              "y": 0,
+              "z": -0.2
+            },
+            "position": {
+              "x": 0,
+              "y": 16,
+              "z": 0
+            }
+          },
+          "dagger": {
+            "rotation": {
+              "x": 0.4,
+              "y": -0.6,
+              "z": -0.5
+            },
+            "position": {
+              "x": 2,
+              "y": 12,
+              "z": -8
+            }
+          },
+          "cloak": {
+            "rotation": {
+              "x": -0.4,
+              "y": -0.3,
+              "z": -0.4
+            },
+            "position": {
+              "x": -3,
+              "y": 20,
+              "z": -8
+            }
+          }
+        }
+      ],
+      "stealth": [
+        {
+          "torso": {
+            "shapes": [
+              {
+                "position": {
+                  "y": -8
+                },
+                "id": 1
+              }
+            ]
+          },
+          "head": {
+            "shapes": [
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 2
+              },
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 3
+              },
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 4
+              },
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 5
+              },
+              {
+                "position": {
+                  "y": 6
+                },
+                "id": 6
+              }
+            ]
+          }
+        },
+        {
+          "torso": {
+            "rotation": {
+              "x": 0.3,
+              "y": 0,
+              "z": 0
+            },
+            "position": {
+              "x": 0,
+              "y": 18,
+              "z": 0
+            }
+          },
+          "head": {
+            "rotation": {
+              "x": -0.2,
+              "y": 0,
+              "z": 0
+            },
+            "position": {
+              "x": 0,
+              "y": 32,
+              "z": 0
+            }
+          },
+          "left arm": {
+            "rotation": {
+              "x": 0.8,
+              "y": 0,
+              "z": 0.2
+            },
+            "position": {
+              "x": -8,
+              "y": 25,
+              "z": 0
+            }
+          },
+          "right arm": {
+            "rotation": {
+              "x": 0.8,
+              "y": 0,
+              "z": -0.2
+            },
+            "position": {
+              "x": 8,
+              "y": 25,
+              "z": 0
+            }
+          },
+          "left leg": {
+            "rotation": {
+              "x": -0.8,
+              "y": 0,
+              "z": 0
+            },
+            "position": {
+              "x": -3,
+              "y": 9,
+              "z": 0
+            }
+          },
+          "right leg": {
+            "rotation": {
+              "x": -0.8,
+              "y": 0,
+              "z": 0
+            },
+            "position": {
+              "x": 3,
+              "y": 9,
+              "z": 0
+            }
+          },
+          "dagger": {
+            "rotation": {
+              "x": 0.8,
+              "y": 0,
+              "z": -0.2
+            },
+            "position": {
+              "x": 8,
+              "y": 12,
+              "z": 3
+            }
+          },
+          "cloak": {
+            "rotation": {
+              "x": 0.3,
+              "y": 0,
+              "z": 0
+            },
+            "position": {
+              "x": 0,
+              "y": 18,
+              "z": -2
+            }
+          }
+        }
+      ]
+    },
+    "model": {
+      "torso": {
+        "shapes": [
+          {
+            "type": "box",
+            "width": 10,
+            "height": 14,
+            "depth": 6,
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "color": "#2F4F2F",
+            "name": "chest"
+          },
+          {
+            "type": "box",
+            "width": 11,
+            "height": 2.5,
+            "depth": 7,
+            "color": "#654321",
+            "name": "belt",
+            "x": 0,
+            "y": -8,
+            "z": 0
+          }
+        ],
+        "position": {
+          "x": 0,
+          "y": 25,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "head": {
+        "shapes": [
+          {
+            "type": "sphere",
+            "size": 10,
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "color": "#e8c9a0",
+            "name": "head-main"
+          },
+          {
+            "type": "box",
+            "width": 3.5,
+            "height": 2.5,
+            "depth": 3.5,
+            "x": 0,
+            "y": 0,
+            "z": 4,
+            "color": "#e8c9a0",
+            "name": "nose"
+          },
+          {
+            "type": "sphere",
+            "size": 2,
+            "x": -2,
+            "y": 2,
+            "z": 3.5,
+            "color": "#228B22",
+            "name": "eye-left"
+          },
+          {
+            "type": "sphere",
+            "size": 2,
+            "x": 2,
+            "y": 2,
+            "z": 3.5,
+            "color": "#228B22",
+            "name": "eye-right"
+          },
+          {
+            "type": "sphere",
+            "size": 0.6,
+            "x": -2,
+            "y": 2,
+            "z": 4.2,
+            "color": "#000000",
+            "name": "pupil-left"
+          },
+          {
+            "type": "sphere",
+            "size": 0.6,
+            "x": 2,
+            "y": 2,
+            "z": 4.2,
+            "color": "#000000",
+            "name": "pupil-right"
+          },
+          {
+            "type": "box",
+            "width": 11,
+            "height": 4,
+            "depth": 4,
+            "x": 0,
+            "y": 6.5,
+            "z": 0,
+            "color": "#2F4F2F",
+            "name": "hood"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "y": 39,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "left arm": {
+        "shapes": [
+          {
+            "type": "box",
+            "width": 4,
+            "height": 7.5,
+            "depth": 4,
+            "x": 0,
+            "y": -3.75,
+            "z": 0,
+            "color": "#2F4F2F",
+            "name": "upper-arm-left"
+          },
+          {
+            "type": "box",
+            "width": 3.5,
+            "height": 6.5,
+            "depth": 3.5,
+            "x": 0,
+            "y": -10.75,
+            "z": 0,
+            "color": "#2F4F2F",
+            "name": "lower-arm-left"
+          },
+          {
+            "type": "box",
+            "width": 4.5,
+            "height": 3.5,
+            "depth": 4,
+            "x": 0,
+            "y": -16.25,
+            "z": 0,
+            "color": "#e8c9a0",
+            "name": "hand-left"
+          }
+        ],
+        "position": {
+          "x": -8,
+          "y": 32,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "right arm": {
+        "shapes": [
+          {
+            "type": "box",
+            "width": 4,
+            "height": 7.5,
+            "depth": 4,
+            "x": 0,
+            "y": -3.75,
+            "z": 0,
+            "color": "#2F4F2F",
+            "name": "upper-arm-right"
+          },
+          {
+            "type": "box",
+            "width": 3.5,
+            "height": 6.5,
+            "depth": 3.5,
+            "x": 0,
+            "y": -10.75,
+            "z": 0,
+            "color": "#2F4F2F",
+            "name": "lower-arm-right"
+          },
+          {
+            "type": "box",
+            "width": 4.5,
+            "height": 3.5,
+            "depth": 4,
+            "x": 0,
+            "y": -16.25,
+            "z": 0,
+            "color": "#e8c9a0",
+            "name": "hand-right"
+          }
+        ],
+        "position": {
+          "x": 8,
+          "y": 32,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "left leg": {
+        "shapes": [
+          {
+            "type": "box",
+            "width": 5,
+            "height": 6.5,
+            "depth": 5,
+            "x": 0,
+            "y": -3.25,
+            "z": 0,
+            "color": "#2F4F2F",
+            "name": "thigh-left"
+          },
+          {
+            "type": "box",
+            "width": 4,
+            "height": 5.5,
+            "depth": 4,
+            "x": 0,
+            "y": -8.75,
+            "z": 0,
+            "color": "#2F4F2F",
+            "name": "shin-left"
+          },
+          {
+            "type": "box",
+            "width": 5.5,
+            "height": 2.5,
+            "depth": 8,
+            "x": 0,
+            "y": -13.25,
+            "z": 1,
+            "color": "#654321",
+            "name": "foot-left"
+          }
+        ],
+        "position": {
+          "x": -3,
+          "y": 16,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "right leg": {
+        "shapes": [
+          {
+            "type": "box",
+            "width": 5,
+            "height": 6.5,
+            "depth": 5,
+            "x": 0,
+            "y": -3.25,
+            "z": 0,
+            "color": "#2F4F2F",
+            "name": "thigh-right"
+          },
+          {
+            "type": "box",
+            "width": 4,
+            "height": 5.5,
+            "depth": 4,
+            "x": 0,
+            "y": -8.75,
+            "z": 0,
+            "color": "#2F4F2F",
+            "name": "shin-right"
+          },
+          {
+            "type": "box",
+            "width": 5.5,
+            "height": 2.5,
+            "depth": 8,
+            "x": 0,
+            "y": -13.25,
+            "z": 1,
+            "color": "#654321",
+            "name": "foot-right"
+          }
+        ],
+        "position": {
+          "x": 3,
+          "y": 16,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "dagger": {
+        "shapes": [
+          {
+            "type": "cylinder",
+            "size": 0.8,
+            "height": 8,
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "color": "#654321",
+            "name": "dagger-handle",
+            "rotationX": 90
+          },
+          {
+            "type": "box",
+            "width": 1.5,
+            "height": 0.8,
+            "depth": 6,
+            "x": 0,
+            "y": 0,
+            "z": 4,
+            "color": "#C0C0C0",
+            "name": "dagger-blade",
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 4
+            },
+            "rotation": {
+              "x": 180,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          },
+          {
+            "type": "cone",
+            "size": 0.8,
+            "height": 2,
+            "x": 0,
+            "y": 0,
+            "z": 7,
+            "color": "#C0C0C0",
+            "name": "dagger-point",
+            "rotationX": 90
+          },
+          {
+            "type": "cylinder",
+            "size": 1.2,
+            "height": 1,
+            "x": 0,
+            "y": 0,
+            "z": -4,
+            "color": "#8B4513",
+            "name": "dagger-pommel",
+            "rotationX": 90
+          }
+        ],
+        "position": {
+          "x": -8.769647696476955,
+          "y": 15.574123989218325,
+          "z": 1.6260162601625883
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "cloak": {
+        "shapes": [
+          {
+            "type": "box",
+            "width": 14,
+            "height": 18,
+            "depth": 1.5,
+            "x": 0,
+            "y": -2,
+            "z": 0,
+            "color": "#2F4F2F",
+            "name": "cloak-main"
+          },
+          {
+            "type": "box",
+            "width": 16,
+            "height": 6,
+            "depth": 2,
+            "x": 0,
+            "y": 6,
+            "z": 0,
+            "color": "#2F4F2F",
+            "name": "cloak-hood-back"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "y": 25,
+          "z": -4
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      }
+    }
+  }
+}

@@ -81,6 +81,12 @@
           "type": "PhaseSystem"
         },
         {
+          "type": "TeamHealthSystem"
+        },
+        {
+          "type": "HealthBarSystem"
+        },
+        {
           "type": "UISystem"
         }
       ],

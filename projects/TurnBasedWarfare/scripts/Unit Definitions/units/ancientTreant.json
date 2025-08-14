@@ -1,0 +1,896 @@
+{
+  "title": "Ancient Treant",
+  "size": 28,
+  "value": 500,
+  "hp": 450,
+  "speed": 15,
+  "damage": 90,
+  "attackSpeed": 0.6,
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ],
+      "walk": [
+        {
+          "shapes": {
+            "shapes": [
+              {
+                "y": 23,
+                "color": {
+                  "paletteColor": "greenMColor"
+                },
+                "id": 0
+              },
+              {
+                "y": 37.5,
+                "id": 1
+              },
+              {
+                "y": 29.5,
+                "id": 2
+              },
+              {
+                "y": 31.5,
+                "id": 3
+              },
+              {
+                "y": 31.5,
+                "id": 4
+              },
+              {
+                "y": 31.5,
+                "id": 5
+              },
+              {
+                "y": 31.5,
+                "id": 6
+              },
+              {
+                "y": 42.5,
+                "id": 7
+              },
+              {
+                "y": 42.5,
+                "id": 8
+              },
+              {
+                "y": 42.5,
+                "id": 9
+              },
+              {
+                "y": 42.5,
+                "id": 10
+              },
+              {
+                "x": 1.5,
+                "rotationZ": 10,
+                "id": 11
+              },
+              {
+                "x": 3,
+                "rotationZ": 15,
+                "id": 12
+              },
+              {
+                "z": 3,
+                "rotationX": 15,
+                "id": 13
+              },
+              {
+                "y": 8,
+                "z": -5,
+                "rotationX": -25,
+                "id": 14
+              },
+              {
+                "y": 3,
+                "z": 9,
+                "rotationX": 15,
+                "id": 15
+              },
+              {
+                "z": -10,
+                "rotationX": -25,
+                "id": 16
+              },
+              {
+                "z": -1,
+                "rotationX": -20,
+                "id": 17
+              },
+              {
+                "z": 2,
+                "rotationX": -60,
+                "id": 18
+              },
+              {
+                "z": 1,
+                "id": 19
+              },
+              {
+                "y": 22,
+                "z": 5,
+                "id": 20
+              },
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 21
+              },
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 22
+              },
+              {
+                "x": 1.5,
+                "rotationZ": 10,
+                "id": 23
+              },
+              {
+                "x": 3,
+                "rotationZ": 15,
+                "id": 24
+              }
+            ]
+          }
+        },
+        {
+          "shapes": {
+            "shapes": [
+              {
+                "type": "box",
+                "width": 12,
+                "height": 25,
+                "depth": 12,
+                "x": 0,
+                "y": 22.8,
+                "z": 0,
+                "rotationX": 46,
+                "color": {
+                  "paletteColor": "greenMColor"
+                },
+                "name": "body",
+                "scaleX": 1,
+                "rotationY": 0,
+                "rotationZ": 0,
+                "scaleY": 1,
+                "scaleZ": 1,
+                "texture": "scales",
+                "id": 0
+              },
+              {
+                "y": 37.3,
+                "id": 1
+              },
+              {
+                "y": 29.3,
+                "id": 2
+              },
+              {
+                "y": 31.3,
+                "id": 3
+              },
+              {
+                "y": 31.3,
+                "id": 4
+              },
+              {
+                "y": 31.3,
+                "id": 5
+              },
+              {
+                "y": 31.3,
+                "id": 6
+              },
+              {
+                "y": 42.3,
+                "id": 7
+              },
+              {
+                "y": 42.3,
+                "id": 8
+              },
+              {
+                "y": 42.3,
+                "id": 9
+              },
+              {
+                "y": 42.3,
+                "id": 10
+              },
+              {
+                "y": 9,
+                "rotationX": -5,
+                "id": 13
+              },
+              {
+                "y": 11,
+                "rotationX": 5,
+                "id": 14
+              },
+              {
+                "y": 0.5,
+                "z": -1,
+                "rotationX": -5,
+                "id": 15
+              },
+              {
+                "y": 1.5,
+                "z": 1,
+                "rotationX": 5,
+                "id": 16
+              },
+              {
+                "rotationX": -50,
+                "id": 17
+              },
+              {
+                "rotationX": -30,
+                "id": 18
+              },
+              {
+                "y": 23,
+                "z": 4,
+                "id": 19
+              },
+              {
+                "y": 25,
+                "z": 2,
+                "id": 20
+              },
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 21
+              },
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 22
+              }
+            ]
+          }
+        },
+        {
+          "shapes": {
+            "shapes": [
+              {
+                "type": "box",
+                "width": 12,
+                "height": 25,
+                "depth": 12,
+                "x": 0,
+                "y": 23,
+                "z": 0,
+                "rotationX": 46,
+                "color": {
+                  "paletteColor": "greenMColor"
+                },
+                "name": "body",
+                "scaleX": 1,
+                "rotationY": 0,
+                "rotationZ": 0,
+                "scaleY": 1,
+                "scaleZ": 1,
+                "texture": "scales",
+                "id": 0
+              },
+              {
+                "y": 37.5,
+                "id": 1
+              },
+              {
+                "y": 29.5,
+                "id": 2
+              },
+              {
+                "y": 31.5,
+                "id": 3
+              },
+              {
+                "y": 31.5,
+                "id": 4
+              },
+              {
+                "y": 31.5,
+                "id": 5
+              },
+              {
+                "y": 31.5,
+                "id": 6
+              },
+              {
+                "y": 42.5,
+                "id": 7
+              },
+              {
+                "y": 42.5,
+                "id": 8
+              },
+              {
+                "y": 42.5,
+                "id": 9
+              },
+              {
+                "y": 42.5,
+                "id": 10
+              },
+              {
+                "x": -1.5,
+                "rotationZ": -10,
+                "id": 11
+              },
+              {
+                "x": -3,
+                "rotationZ": -15,
+                "id": 12
+              },
+              {
+                "y": 8,
+                "z": -5,
+                "rotationX": -25,
+                "id": 13
+              },
+              {
+                "z": 3,
+                "rotationX": 15,
+                "id": 14
+              },
+              {
+                "z": -10,
+                "rotationX": -25,
+                "id": 15
+              },
+              {
+                "y": 3,
+                "z": 9,
+                "rotationX": 15,
+                "id": 16
+              },
+              {
+                "z": 2,
+                "rotationX": -60,
+                "id": 17
+              },
+              {
+                "z": -1,
+                "rotationX": -20,
+                "id": 18
+              },
+              {
+                "y": 22,
+                "z": 5,
+                "id": 19
+              },
+              {
+                "z": 1,
+                "id": 20
+              },
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 21
+              },
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 22
+              },
+              {
+                "x": -1.5,
+                "rotationZ": -10,
+                "id": 23
+              },
+              {
+                "x": -3,
+                "rotationZ": -15,
+                "id": 24
+              }
+            ]
+          }
+        },
+        {
+          "shapes": {
+            "shapes": [
+              {
+                "type": "box",
+                "width": 12,
+                "height": 25,
+                "depth": 12,
+                "x": 0,
+                "y": 22.8,
+                "z": 0,
+                "rotationX": 46,
+                "color": {
+                  "paletteColor": "greenMColor"
+                },
+                "name": "body",
+                "scaleX": 1,
+                "rotationY": 0,
+                "rotationZ": 0,
+                "scaleY": 1,
+                "scaleZ": 1,
+                "texture": "scales",
+                "id": 0
+              },
+              {
+                "y": 37.3,
+                "id": 1
+              },
+              {
+                "y": 29.3,
+                "id": 2
+              },
+              {
+                "y": 31.3,
+                "id": 3
+              },
+              {
+                "y": 31.3,
+                "id": 4
+              },
+              {
+                "y": 31.3,
+                "id": 5
+              },
+              {
+                "y": 31.3,
+                "id": 6
+              },
+              {
+                "y": 42.3,
+                "id": 7
+              },
+              {
+                "y": 42.3,
+                "id": 8
+              },
+              {
+                "y": 42.3,
+                "id": 9
+              },
+              {
+                "y": 42.3,
+                "id": 10
+              },
+              {
+                "y": 11,
+                "rotationX": 5,
+                "id": 13
+              },
+              {
+                "y": 9,
+                "rotationX": -5,
+                "id": 14
+              },
+              {
+                "y": 1.5,
+                "z": 1,
+                "rotationX": 5,
+                "id": 15
+              },
+              {
+                "y": 0.5,
+                "z": -1,
+                "rotationX": -5,
+                "id": 16
+              },
+              {
+                "rotationX": -30,
+                "id": 17
+              },
+              {
+                "rotationX": -50,
+                "id": 18
+              },
+              {
+                "y": 25,
+                "z": 2,
+                "id": 19
+              },
+              {
+                "y": 23,
+                "z": 4,
+                "id": 20
+              },
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 21
+              },
+              {
+                "color": {
+                  "paletteColor": "greenDColor"
+                },
+                "id": 22
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "model": {
+      "shapes": {
+        "shapes": [
+          {
+            "type": "box",
+            "width": 12,
+            "height": 25,
+            "depth": 12,
+            "x": 0,
+            "y": 22.6,
+            "z": 0,
+            "rotationX": 46,
+            "color": {
+              "paletteColor": "greenMColor"
+            },
+            "name": "body",
+            "scaleX": 1,
+            "rotationY": 0,
+            "rotationZ": 0,
+            "scaleY": 1,
+            "scaleZ": 1,
+            "texture": "scales"
+          },
+          {
+            "type": "box",
+            "width": 13,
+            "height": 10,
+            "depth": 16,
+            "x": 0,
+            "y": 37,
+            "z": 12,
+            "color": {
+              "paletteColor": "greenMColor"
+            },
+            "name": "head-top",
+            "texture": "scales"
+          },
+          {
+            "type": "box",
+            "width": 10,
+            "height": 4,
+            "depth": 14,
+            "x": 0,
+            "y": 29,
+            "z": 14,
+            "color": {
+              "paletteColor": "greenMColor"
+            },
+            "name": "jaw",
+            "texture": "scales"
+          },
+          {
+            "type": "box",
+            "width": 8,
+            "height": 1,
+            "depth": 1,
+            "x": 0,
+            "y": 31,
+            "z": 20,
+            "color": {
+              "paletteColor": "redDColor"
+            },
+            "name": "gums"
+          },
+          {
+            "type": "box",
+            "width": 1,
+            "height": 2,
+            "depth": 1,
+            "x": -3,
+            "y": 31,
+            "z": 20.1,
+            "color": {
+              "paletteColor": "greyLColor"
+            },
+            "name": "tooth-right"
+          },
+          {
+            "type": "box",
+            "width": 1,
+            "height": 2,
+            "depth": 1,
+            "x": 0,
+            "y": 31,
+            "z": 20.1,
+            "color": {
+              "paletteColor": "greyLColor"
+            },
+            "name": "tooth-middle"
+          },
+          {
+            "type": "box",
+            "width": 1,
+            "height": 2,
+            "depth": 1,
+            "x": 3,
+            "y": 31,
+            "z": 20.1,
+            "color": {
+              "paletteColor": "greyLColor"
+            },
+            "name": "tooth-left"
+          },
+          {
+            "type": "sphere",
+            "size": 3,
+            "x": -7,
+            "y": 42,
+            "z": 14,
+            "color": {
+              "paletteColor": "redLColor"
+            },
+            "name": "eye-right"
+          },
+          {
+            "type": "sphere",
+            "size": 1.5,
+            "x": -7,
+            "y": 42,
+            "z": 15,
+            "color": {
+              "paletteColor": "brownDColor"
+            },
+            "name": "pupil-right"
+          },
+          {
+            "type": "sphere",
+            "size": 3,
+            "x": 7,
+            "y": 42,
+            "z": 14,
+            "color": {
+              "paletteColor": "redLColor"
+            },
+            "name": "eye-left"
+          },
+          {
+            "type": "sphere",
+            "size": 1.5,
+            "x": 7,
+            "y": 42,
+            "z": 15,
+            "color": {
+              "paletteColor": "brownDColor"
+            },
+            "name": "pupil-left"
+          },
+          {
+            "type": "box",
+            "width": 6,
+            "height": 4,
+            "depth": 14,
+            "x": 0,
+            "y": 18,
+            "z": -17.9,
+            "rotationX": -20,
+            "color": {
+              "paletteColor": "greenMColor"
+            },
+            "name": "tail-base",
+            "texture": "scales"
+          },
+          {
+            "type": "box",
+            "width": 4,
+            "height": 3,
+            "depth": 10,
+            "x": 0,
+            "y": 15,
+            "z": -30,
+            "rotationX": -10,
+            "color": {
+              "paletteColor": "greenMColor"
+            },
+            "name": "tail-tip",
+            "texture": "scales"
+          },
+          {
+            "type": "box",
+            "width": 5,
+            "height": 16,
+            "depth": 5,
+            "x": 6,
+            "y": 10,
+            "z": 0,
+            "color": {
+              "paletteColor": "greenMColor"
+            },
+            "name": "leg-left",
+            "texture": "scales"
+          },
+          {
+            "type": "box",
+            "width": 5,
+            "height": 16,
+            "depth": 5,
+            "x": -6,
+            "y": 10,
+            "z": 0,
+            "color": {
+              "paletteColor": "greenMColor"
+            },
+            "name": "leg-right",
+            "texture": "scales"
+          },
+          {
+            "type": "box",
+            "width": 7,
+            "height": 2,
+            "depth": 9,
+            "x": 6,
+            "y": 1,
+            "z": 0,
+            "color": {
+              "paletteColor": "greenMColor"
+            },
+            "name": "foot-left",
+            "texture": "scales"
+          },
+          {
+            "type": "box",
+            "width": 7,
+            "height": 2,
+            "depth": 9,
+            "x": -6,
+            "y": 1,
+            "z": 0,
+            "color": {
+              "paletteColor": "greenMColor"
+            },
+            "name": "foot-right",
+            "texture": "scales"
+          },
+          {
+            "type": "box",
+            "width": 3,
+            "height": 5,
+            "depth": 3,
+            "x": 8,
+            "y": 26,
+            "z": 0,
+            "rotationX": -40,
+            "color": {
+              "paletteColor": "greenMColor"
+            },
+            "name": "arm-left",
+            "texture": "scales"
+          },
+          {
+            "type": "box",
+            "width": 3,
+            "height": 5,
+            "depth": 3,
+            "x": -8,
+            "y": 26,
+            "z": 0,
+            "rotationX": -40,
+            "color": {
+              "paletteColor": "greenMColor"
+            },
+            "name": "arm-right",
+            "texture": "scales"
+          },
+          {
+            "type": "box",
+            "width": 2,
+            "height": 2,
+            "depth": 1,
+            "x": 8,
+            "y": 24,
+            "z": 3,
+            "color": {
+              "paletteColor": "greyMColor"
+            },
+            "name": "hand-left"
+          },
+          {
+            "type": "box",
+            "width": 2,
+            "height": 2,
+            "depth": 1,
+            "x": -8,
+            "y": 24,
+            "z": 3,
+            "color": {
+              "paletteColor": "greyMColor"
+            },
+            "name": "hand-right"
+          },
+          {
+            "type": "cone",
+            "size": 4,
+            "height": 6,
+            "x": 0,
+            "y": 32,
+            "z": -2,
+            "rotationX": -60,
+            "color": {
+              "paletteColor": "greenDColor"
+            },
+            "name": "spike1",
+            "rotationY": 0,
+            "rotationZ": 0,
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1
+          },
+          {
+            "type": "cone",
+            "size": 4,
+            "height": 6,
+            "x": 0,
+            "y": 25,
+            "z": -8,
+            "rotationX": -75,
+            "color": {
+              "paletteColor": "greenDColor"
+            },
+            "name": "spike2",
+            "rotationY": 0,
+            "rotationZ": 0,
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1
+          },
+          {
+            "type": "cone",
+            "size": 3,
+            "height": 4,
+            "x": 0,
+            "y": 19.923156801661484,
+            "z": -20,
+            "rotationX": -25,
+            "color": {
+              "paletteColor": "greenDColor"
+            },
+            "name": "spike3",
+            "rotationY": 0,
+            "rotationZ": 0,
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1
+          },
+          {
+            "type": "cone",
+            "size": 2,
+            "height": 3,
+            "x": 0,
+            "y": 18,
+            "z": -28,
+            "rotationX": -25,
+            "color": {
+              "paletteColor": "greenDColor"
+            },
+            "name": "spike4"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      }
+    }
+  }
+}

@@ -23,7 +23,7 @@ class ShopSystem {
         card.innerHTML = `
             <div class="unit-name">${unitType.title}</div>
             <div class="unit-cost">Cost: ${unitType.value}g</div>
-            <div class="unit-stats">${unitType.hp} HP | ${unitType.damage} DMG</div>
+            <div class="unit-stats"><p>${unitType.hp} HP</p><p>${unitType.damage} DMG</p></div>
         `;
         
         card.addEventListener('click', () => this.selectUnit({ id: unitId, ...unitType }));

@@ -86,6 +86,7 @@ class GameManager {
 
     exitToMenu() {
         if (confirm('Are you sure you want to exit to the main menu? Your progress will be lost.')) {
+            this.game.phaseSystem.reset();
             this.game.screenManager.showMainMenu();
             this.game.eventManager.reset();
         }
@@ -97,55 +98,6 @@ class GameManager {
         this.initializeGame();
     }
 
-    handleBattleEnd(result, stats = {}) {
-        this.game.eventManager.updateStats(stats);
-        
-        if (result === 'victory') {
-            const shouldEnd = this.game.gameModeManager.shouldEndCampaign(this.game.eventManager.stats.round);
-            if (shouldEnd) {
-                this.game.eventManager.endGame('victory', stats);
-                resultsManager.showVictory(this.game.eventManager.stats);
-            } else {
-                this.showRoundVictory(stats);
-            }
-        } else {
-            this.game.eventManager.endGame('defeat', stats);
-            resultsManager.showDefeat(this.game.eventManager.stats);
-        }
-    }
 
-    showRoundVictory(stats) {
-        // Brief victory notification before continuing
-        const notification = this.createVictoryNotification(stats);
-        document.body.appendChild(notification);
 
-        setTimeout(() => {
-            document.body.removeChild(notification);
-            // Continue with next round
-            this.setupNextRound(stats);
-        }, 2000);
-    }
-
-    createVictoryNotification(stats) {
-        const notification = document.createElement('div');
-        notification.className = 'victory-notification';
-        notification.innerHTML = `
-            <h2>🎉 ROUND ${stats.round} COMPLETE! 🎉</h2>
-            <p>Gold Earned: +${50 + (stats.round * 10)}g</p>
-            <p style="margin-top: 1rem; color: #888;">Preparing next round...</p>
-        `;
-        return notification;
-    }
-
-    setupNextRound(stats) {
-        if (this.gameInstance && this.gameInstance.state) {
-            this.gameInstance.state.playerGold += 50 + (stats.round * 10);
-            this.gameInstance.state.round++;
-            
-            // Start next round
-            if (this.gameInstance.phaseSystem && this.gameInstance.phaseSystem.startPlacementPhase) {
-                this.gameInstance.phaseSystem.startPlacementPhase();
-            }
-        }
-    }
 }

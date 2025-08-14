@@ -6,13 +6,6 @@ class RenderSystem {
         
         // Track entities with 3D models
         this.entityModels = new Map();
-        this.entityAnimations = new Map(); // For GLTF animations
-        this.entityMixers = new Map(); // For GLTF mixers
-        this.entityProprietaryAnimations = new Map(); // For proprietary frame-based animations
-        
-        // Animation state tracking
-        this.entityAnimationStates = new Map();
-        this.clock = new THREE.Clock();
 
         // Configuration for facing direction
         this.MIN_MOVEMENT_THRESHOLD = 0.1;
@@ -29,7 +22,7 @@ class RenderSystem {
         // Update 3D models
         this.update3DModels(deltaTime);
     }
-        
+            
     update3DModels(deltaTime) {
         // Get entities that should have 3D models
         const entities = this.game.getEntitiesWith(
@@ -40,8 +33,8 @@ class RenderSystem {
             const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
             const renderable = this.game.getComponent(entityId, this.componentTypes.RENDERABLE);
             const team = this.game.getComponent(entityId, this.componentTypes.TEAM);
-            const health = this.game.getComponent(entityId, this.componentTypes.HEALTH);
             const velocity = this.game.getComponent(entityId, this.componentTypes.VELOCITY);
+            const facing = this.game.getComponent(entityId, this.componentTypes.FACING);
             
             // Check if entity needs a model
             if (!this.entityModels.has(entityId)) {
@@ -50,30 +43,16 @@ class RenderSystem {
             
             const modelGroup = this.entityModels.get(entityId);
             if (modelGroup) {
-                // Position is already in world coordinates - use directly!
+                // Use full 3D coordinates directly
                 const worldX = pos.x;
-                const worldZ = pos.y; // Note: your 2D system uses y for what's Z in 3D
+                const worldY = pos.y; // Use actual Y coordinate from position
+                const worldZ = pos.z; // Use actual Z coordinate from position
                 
-                // Update position - no conversion needed
-                modelGroup.position.set(worldX, 0, worldZ);
+                // Update position with proper 3D coordinates
+                modelGroup.position.set(worldX, worldY, worldZ);
                 
-                // Update facing direction BEFORE animations
-                this.updateFacingDirection(entityId, modelGroup, velocity);
-                
-                // Update animations and mixers
-                this.updateEntityAnimation(entityId, velocity, health, deltaTime);
-                
-                // Update animation mixer if it exists (GLTF)
-                const mixer = this.entityMixers.get(entityId);
-                if (mixer) {
-                    mixer.update(deltaTime);
-                }
-                
-                // Update proprietary frame-based animations
-                const proprietaryAnim = this.entityProprietaryAnimations?.get(entityId);
-                if (proprietaryAnim) {
-                    this.updateProprietaryAnimation(entityId, proprietaryAnim, deltaTime);
-                }
+                // Update facing direction
+                this.updateFacingDirection(entityId, modelGroup, velocity, facing);
                 
                 // Update skeleton for skinned meshes
                 modelGroup.traverse(object => {
@@ -83,12 +62,12 @@ class RenderSystem {
                 });
             }
         });
-      
+
         // Clean up removed entities
         this.cleanupRemovedEntities(entities);
     }
-    
-    updateFacingDirection(entityId, modelGroup, velocity) {
+
+    updateFacingDirection(entityId, modelGroup, velocity, facing) {
         const aiState = this.game.getComponent(entityId, this.componentTypes.AI_STATE);
         const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
         
@@ -101,21 +80,23 @@ class RenderSystem {
             
             if (targetPos) {
                 const dx = targetPos.x - pos.x;
-                const dy = targetPos.y - pos.y;
+                const dz = targetPos.z - pos.z; // Use Z for forward/backward in 3D
                 
                 // Only update if we have a meaningful direction
-                if (Math.abs(dx) > this.MIN_MOVEMENT_THRESHOLD || Math.abs(dy) > this.MIN_MOVEMENT_THRESHOLD) {
-                    // Convert 2D direction to 3D rotation
-                    // In 3D: positive X = right, positive Z = forward
-                    // Your 2D: positive X = right, positive Y = down/forward
-                    facingAngle = Math.atan2(dy, dx);
+                if (Math.abs(dx) > this.MIN_MOVEMENT_THRESHOLD || Math.abs(dz) > this.MIN_MOVEMENT_THRESHOLD) {
+                    // Calculate facing angle using X and Z coordinates
+                    facingAngle = Math.atan2(dz, dx);
                 }
             }
         } 
         // Priority 2: Face movement direction if moving
-        else if (velocity && (Math.abs(velocity.vx) > this.MIN_MOVEMENT_THRESHOLD || Math.abs(velocity.vy) > this.MIN_MOVEMENT_THRESHOLD)) {
-            // Calculate facing angle from movement direction
-            facingAngle = Math.atan2(velocity.vy, velocity.vx);
+        else if (velocity && (Math.abs(velocity.vx) > this.MIN_MOVEMENT_THRESHOLD || Math.abs(velocity.vz) > this.MIN_MOVEMENT_THRESHOLD)) {
+            // Calculate facing angle from movement direction (X and Z)
+            facingAngle = Math.atan2(velocity.vz, velocity.vx);
+        }
+        // Priority 3: Use initial facing direction if no movement or target
+        else if (facing && facing.angle !== undefined) {
+            facingAngle = facing.angle;
         }
         
         // Apply rotation if we have a valid angle
@@ -127,10 +108,8 @@ class RenderSystem {
         }
     }
     
-    // ... rest of the class remains exactly the same ...
-    
     async createModelForEntity(entityId, objectType, spawnType, team) {
-           // Get unit definition from game data        
+        // Get unit definition from game data        
         try {
             // Get model from ModelManager
             const modelGroup = this.game.modelManager.getModel(objectType, spawnType);
@@ -139,489 +118,26 @@ class RenderSystem {
                 this.game.scene.add(modelGroup);
                 this.entityModels.set(entityId, modelGroup);
                 
-                // Set up animations if this is a GLTF model
-                await this.setupEntityAnimations(entityId, objectType, spawnType, modelGroup);
+                // Set up animations through AnimationSystem
+                if (this.game.animationSystem) {
+                    await this.game.animationSystem.setupEntityAnimations(entityId, objectType, spawnType, modelGroup);
+                }
                 
                 // Apply team-based styling
                 if (team) {
                     this.applyTeamStyling(modelGroup, team.team);
                 }
                 
-                // Initialize animation state
-                this.entityAnimationStates.set(entityId, {
-                    currentAnimation: 'idle',
-                    animationTime: 0,
-                    minAnimationTime: 0,
-                    currentAction: null
-                });
+                // Apply initial facing direction
+                const facing = this.game.getComponent(entityId, this.componentTypes.FACING);
+                if (facing && facing.angle !== undefined) {
+                    modelGroup.rotation.y = -facing.angle + Math.PI / 2;
+                }
             } else {
                 console.error("no model group found", objectType, spawnType);
             }
         } catch (error) {
             console.error(error);
-        }
-    }
-    
-    createFallbackModel(entityId, team) {
-        
-        // Create a simple colored cube as fallback
-        const geometry = new THREE.BoxGeometry(1, 1, 1);
-        const color = team?.team === 'player' ? 0x00ff00 : 
-                     team?.team === 'enemy' ? 0xff0000 : 0xffffff;
-        const material = new THREE.MeshLambertMaterial({ color });
-        
-        const cube = new THREE.Mesh(geometry, material);
-        cube.position.set(0, 0.5, 0); // Lift it above ground
-        cube.castShadow = true;
-        
-        // Create a group to match the expected structure
-        const modelGroup = new THREE.Group();
-        modelGroup.add(cube);
-        
-        this.game.scene.add(modelGroup);
-        this.entityModels.set(entityId, modelGroup);
-        
-    }
-    
-    
-    createProjectileModel(projectileId, visual) {
-        const geometry = new THREE.SphereGeometry(visual.size || 2, 8, 6);
-        const material = new THREE.MeshLambertMaterial({ 
-            color: visual.color || '#ffff00',
-            emissive: visual.color || '#ffff00',
-            emissiveIntensity: 0.3
-        });
-        
-        const sphere = new THREE.Mesh(geometry, material);
-        sphere.castShadow = true;
-        
-        const group = new THREE.Group();
-        group.add(sphere);
-        
-        this.game.scene.add(group);
-        this.entityModels.set(projectileId, group);
-    }
-
-    updateProjectileTrail(model, trail, visual) {
-        // Remove old trail
-        const existingTrail = model.getObjectByName('trail');
-        if (existingTrail) {
-            model.remove(existingTrail);
-            existingTrail.geometry?.dispose();
-            existingTrail.material?.dispose();
-        }
-        
-        if (!trail || trail.length < 2) return;
-        
-        // Create new trail geometry
-        const points = trail.map(point => new THREE.Vector3(point.x, 1, point.y));
-        const geometry = new THREE.BufferGeometry().setFromPoints(points);
-        
-        const material = new THREE.LineBasicMaterial({ 
-            color: visual.color || '#ffff00',
-            transparent: true,
-            opacity: 0.6
-        });
-        
-        const line = new THREE.Line(geometry, material);
-        line.name = 'trail';
-        model.add(line);
-    }
-
-    async setupEntityAnimations(entityId, objectType, spawnType, modelGroup) {
-        
-        // Get unit definition to check animation type
-        const unitDefinition = this.getUnitDefinition(spawnType);
-        const animationData = unitDefinition?.render?.animations;
-        const modelData = unitDefinition?.render?.model;
-        
-        if (!animationData || !modelData) {
-            return;
-        }
-        
-        // Determine if this is GLTF or proprietary animation system
-        const firstGroupName = Object.keys(modelData)[0];
-        const firstShape = modelData[firstGroupName]?.shapes?.[0];
-        const isGLTF = firstShape?.type === "gltf";
-        
-        
-        if (isGLTF) {
-            // Handle GLTF animations
-            await this.setupGLTFAnimations(entityId, objectType, spawnType, modelGroup, animationData);
-        } else {
-            // Handle proprietary frame-based animations
-            this.setupProprietaryAnimations(entityId, objectType, spawnType, modelGroup, animationData, modelData);
-        }
-    }
-    
-    async setupGLTFAnimations(entityId, objectType, spawnType, modelGroup, animationData) {
-        
-        // Check if this is a GLTF model with animations
-        let mixer, animations;
-        modelGroup.traverse(object => {
-            if (object.userData.mixer) {
-                mixer = object.userData.mixer;
-                animations = object.userData.animations;
-            }
-        });
-        
-        // If no mixer found, check for raw animation clips
-        if (!mixer) {
-            modelGroup.traverse(object => {
-                if (object.animations && object.animations.length > 0) {
-                    mixer = new THREE.AnimationMixer(object);
-                    animations = object.animations;
-                }
-            });
-        }
-        
-        if (mixer && animations && animations.length > 0) {
-            this.entityMixers.set(entityId, mixer);
-            
-            const animationActions = {};
-            
-            // Create animation actions for each animation type
-            for (const animName of Object.keys(animationData)) {
-                try {
-                    const animModel = await this.game.modelManager.getAnimation(objectType, spawnType, animName);
-                    if (animModel) {
-                        let animModelAnimations;
-                        animModel.traverse(object => {
-                            if (object.userData.animations) {
-                                animModelAnimations = object.userData.animations;
-                            } else if (object.animations && object.animations.length > 0) {
-                                animModelAnimations = object.animations;
-                            }
-                        });
-                        
-                        if (animModelAnimations?.length > 0) {
-                            const clip = animModelAnimations[0];
-                            const action = mixer.clipAction(clip);
-                            action.setLoop(THREE.LoopRepeat);
-                            action.enabled = true;
-                            animationActions[animName] = action;
-                        }
-                    }
-                } catch (error) {
-                }
-            }
-            
-            this.entityAnimations.set(entityId, animationActions);
-            
-            // Start with idle animation
-            if (animationActions.idle) {
-                animationActions.idle.play();
-                const animState = this.entityAnimationStates.get(entityId);
-                if (animState) {
-                    animState.currentAction = animationActions.idle;
-                }
-            }
-        } 
-    }
-
-    setupProprietaryAnimations(entityId, objectType, spawnType, modelGroup, animationData, modelData) {
-        
-        // Store animation data for frame-based animation
-        const animationInfo = {
-            animationData: animationData,
-            modelData: modelData,
-            currentFrameIndex: 0,
-            frameTime: 0,
-            frameDuration: 0.17, // Default frame duration
-            animationState: 'idle'
-        };
-        
-        // Store in a separate map for proprietary animations
-        if (!this.entityProprietaryAnimations) {
-            this.entityProprietaryAnimations = new Map();
-        }
-        this.entityProprietaryAnimations.set(entityId, animationInfo);
-                
-        // Set initial animation
-        this.setProprietaryAnimation(entityId, 'idle');
-    }
-    
-    updateEntityAnimation(entityId, velocity, health, deltaTime) {
-        const animState = this.entityAnimationStates.get(entityId);
-        const modelGroup = this.entityModels.get(entityId);
-        
-        if (!animState || !modelGroup) return;
-        
-        animState.animationTime += deltaTime;
-        
-        // Get additional components to determine animation state
-        const combat = this.game.getComponent(entityId, this.componentTypes.COMBAT);
-        const aiState = this.game.getComponent(entityId, this.componentTypes.AI_STATE);
-        
-        // Determine desired animation based on AI state and movement
-        let desiredAnimation = 'idle';
-        let animationSpeed = 1;
-        
-        // Check AI state first for combat animations
-        if (aiState) {
-            if (aiState.state === 'attacking' || aiState.state === 'combat') {
-                desiredAnimation = 'attack';
-                animationSpeed = combat ? (combat.attackSpeed || 1) : 1;
-            } else if (aiState.state === 'chasing' || aiState.state === 'moving') {
-                desiredAnimation = 'walk';
-                // Calculate speed based on velocity if available
-                if (velocity && (Math.abs(velocity.vx) > 0.1 || Math.abs(velocity.vy) > 0.1)) {
-                    const speed = Math.sqrt(velocity.vx * velocity.vx + velocity.vy * velocity.vy);
-                    animationSpeed = Math.min(speed / 30, 2); // Adjust speed scaling
-                }
-            }
-        }
-        
-        // Fallback to velocity-based animation if no AI state
-        if (desiredAnimation === 'idle' && velocity && (Math.abs(velocity.vx) > 0.1 || Math.abs(velocity.vy) > 0.1)) {
-            desiredAnimation = 'walk';
-            const speed = Math.sqrt(velocity.vx * velocity.vx + velocity.vy * velocity.vy);
-            animationSpeed = Math.min(speed / 30, 2);
-        }
-        
-        // REMOVED: Rotation update from here - now handled in updateFacingDirection
-        
-        // Check for damaged state (low health animation)
-        if (health && health.current < health.max * 0.3 && desiredAnimation === 'idle') {
-            desiredAnimation = 'hurt';
-        }
-        
-        // Change animation if needed
-        if (animState.currentAnimation !== desiredAnimation && 
-            animState.animationTime >= animState.minAnimationTime) {
-            
-            // Check if this entity uses GLTF or proprietary animations
-            const hasGLTFAnimations = this.entityAnimations.has(entityId);
-            const hasProprietaryAnimations = this.entityProprietaryAnimations?.has(entityId);
-            
-            if (hasGLTFAnimations) {
-                this.setEntityAnimation(entityId, desiredAnimation, animationSpeed);
-            } else if (hasProprietaryAnimations) {
-                this.setProprietaryAnimation(entityId, desiredAnimation);
-                // Update animation state
-                animState.currentAnimation = desiredAnimation;
-                animState.animationTime = 0;
-            }
-        }
-        
-        // Update current action speed if it's GLTF and same animation but speed changed
-        if (animState.currentAnimation === desiredAnimation && animState.currentAction) {
-            animState.currentAction.setEffectiveTimeScale(animationSpeed);
-        }
-    }
-    
-    setEntityAnimation(entityId, animationName, speed = 1, minAnimationTime = 0) {
-        const animState = this.entityAnimationStates.get(entityId);
-        const animationActions = this.entityAnimations.get(entityId);
-        
-        if (!animState || !animationActions) return;
-        
-        // Default to idle if animation doesn't exist
-        if (!animationActions[animationName]) {
-            
-            // Try common fallback animations
-            const fallbacks = {
-                'attack': ['combat', 'fight', 'swing', 'strike'],
-                'walk': ['run', 'move', 'step'],
-                'hurt': ['damage', 'hit', 'pain'],
-                'idle': ['stand', 'rest', 'default']
-            };
-            
-            let foundFallback = false;
-            if (fallbacks[animationName]) {
-                for (const fallback of fallbacks[animationName]) {
-                    if (animationActions[fallback]) {
-                        animationName = fallback;
-                        foundFallback = true;
-                        break;
-                    }
-                }
-            }
-            
-            // If no fallback found, try idle
-            if (!foundFallback) {
-                animationName = 'idle';
-                if (!animationActions[animationName]) {
-                    const availableAnims = Object.keys(animationActions);
-                    animationName = availableAnims.length > 0 ? availableAnims[0] : null;
-                    if (!animationName) return;
-                }
-            }
-        }
-        
-        const newAction = animationActions[animationName];
-        if (!newAction) return;
-        
-        // Update animation state
-        animState.currentAnimation = animationName;
-        animState.animationTime = 0;
-        animState.minAnimationTime = minAnimationTime;
-        
-        // Crossfade to new animation
-        if (animState.currentAction && animState.currentAction !== newAction) {
-            const fadeTime = 0.3;
-            
-            animState.currentAction.setEffectiveWeight(1);
-            newAction.setEffectiveWeight(1);
-            newAction.setEffectiveTimeScale(speed);
-            
-            animState.currentAction.play();
-            newAction.play();
-            
-            animState.currentAction.crossFadeTo(newAction, fadeTime / speed, true);
-            
-            setTimeout(() => {
-                if (animState.currentAction && animState.currentAction !== newAction) {
-                    animState.currentAction.stop();
-                }
-            }, fadeTime * 1000 / speed);
-        } else {
-            newAction.enabled = true;
-            newAction.time = 0;
-            newAction.setEffectiveTimeScale(speed);
-            newAction.setEffectiveWeight(1);
-            newAction.play();
-        }
-        
-        animState.currentAction = newAction;
-    }
-    
-    setProprietaryAnimation(entityId, animationName) {
-        const proprietaryAnim = this.entityProprietaryAnimations?.get(entityId);
-        if (!proprietaryAnim) return;
-        
-        if (proprietaryAnim.animationData[animationName]) {
-            proprietaryAnim.animationState = animationName;
-            proprietaryAnim.currentFrameIndex = 0;
-            proprietaryAnim.frameTime = 0;
-            
-            // Apply first frame immediately
-            this.applyProprietaryFrame(entityId, proprietaryAnim);
-        }
-    }
-    
-    updateProprietaryAnimation(entityId, proprietaryAnim, deltaTime) {
-        const frames = proprietaryAnim.animationData[proprietaryAnim.animationState];
-        if (!frames || frames.length === 0) return;
-        
-        proprietaryAnim.frameTime += deltaTime;
-        
-        if (proprietaryAnim.frameTime >= proprietaryAnim.frameDuration) {
-            proprietaryAnim.frameTime -= proprietaryAnim.frameDuration;
-            proprietaryAnim.currentFrameIndex = (proprietaryAnim.currentFrameIndex + 1) % frames.length;
-            
-            this.applyProprietaryFrame(entityId, proprietaryAnim);
-        }
-    }
-    
-    applyProprietaryFrame(entityId, proprietaryAnim) {
-        const modelGroup = this.entityModels.get(entityId);
-        if (!modelGroup) return;
-        
-        const frames = proprietaryAnim.animationData[proprietaryAnim.animationState];
-        const frameData = frames[proprietaryAnim.currentFrameIndex] || {};
-        
-        // Apply frame transformations to the model
-        modelGroup.traverse((obj) => {
-            // Handle group-level transformations
-            if (!obj.isMesh && obj.name && proprietaryAnim.modelData[obj.name]) {
-                const groupName = obj.name;
-                const groupData = frameData[groupName];
-                const modelGroupData = proprietaryAnim.modelData[groupName];
-                this.updateObjectTransforms(obj, groupData, modelGroupData);
-            }
-            
-            // Handle shape-level transformations
-            if (obj.isMesh && obj.userData?.index >= 0 && obj.parent?.name) {
-                const groupName = obj.parent.name;
-                const index = obj.userData.index;
-                const groupData = frameData[groupName];
-                const modelGroupData = proprietaryAnim.modelData[groupName];
-                let shape;
-                if (groupData?.shapes) {
-                    shape = groupData.shapes.find(s => s.id === index);
-                }
-                const modelShape = modelGroupData?.shapes?.[index];
-                
-                if (shape || modelShape) {
-                    this.updateShapeTransforms(obj, shape, modelShape);
-                }
-            }
-        });
-    }
-    
-    updateObjectTransforms(obj, groupData, modelGroupData) {
-        if (!modelGroupData) return;
-        
-        // Position
-        const pos = groupData?.position || modelGroupData.position || { x: 0, y: 0, z: 0 };
-        obj.position.set(
-            pos.x ?? modelGroupData.position?.x ?? 0,
-            pos.y ?? modelGroupData.position?.y ?? 0,
-            pos.z ?? modelGroupData.position?.z ?? 0
-        );
-        
-        // Rotation
-        const rot = groupData?.rotation || modelGroupData.rotation || { x: 0, y: 0, z: 0 };
-        obj.rotation.set(
-            rot.x ?? modelGroupData.rotation?.x ?? 0,
-            rot.y ?? modelGroupData.rotation?.y ?? 0,
-            rot.z ?? modelGroupData.rotation?.z ?? 0
-        );
-        
-        // Scale
-        const scale = groupData?.scale || modelGroupData.scale || { x: 1, y: 1, z: 1 };
-        obj.scale.set(
-            scale.x ?? modelGroupData.scale?.x ?? 1,
-            scale.y ?? modelGroupData.scale?.y ?? 1,
-            scale.z ?? modelGroupData.scale?.z ?? 1
-        );
-    }
-    
-    updateShapeTransforms(obj, shape, modelShape) {
-        if (!modelShape) return;
-        
-        // Position (local to group)
-        obj.position.set(
-            shape?.x ?? modelShape.x ?? 0,
-            shape?.y ?? modelShape.y ?? 0,
-            shape?.z ?? modelShape.z ?? 0
-        );
-        
-        // Rotation (local to group, convert degrees to radians)
-        obj.rotation.set(
-            ((shape?.rotationX ?? modelShape.rotationX) || 0) * Math.PI / 180,
-            ((shape?.rotationY ?? modelShape.rotationY) || 0) * Math.PI / 180,
-            ((shape?.rotationZ ?? modelShape.rotationZ) || 0) * Math.PI / 180
-        );
-        
-        // Scale (local to group)
-        obj.scale.set(
-            shape?.scaleX ?? modelShape.scaleX ?? 1,
-            shape?.scaleY ?? modelShape.scaleY ?? 1,
-            shape?.scaleZ ?? modelShape.scaleZ ?? 1
-        );
-    }
-    
-    entityJump(entityId, speed = 1) {
-        const animState = this.entityAnimationStates.get(entityId);
-        if (!animState || animState.currentAnimation === 'leap') return;
-        
-        const animationActions = this.entityAnimations.get(entityId);
-        if (animationActions && animationActions.leap) {
-            const leapTime = animationActions.leap.getClip().duration / speed;
-            this.setEntityAnimation(entityId, 'leap', speed, leapTime);
-        }
-    }
-    
-    entityThrow(entityId, speed = 1) {
-        const animState = this.entityAnimationStates.get(entityId);
-        if (!animState || animState.currentAnimation === 'throw') return;
-        
-        const animationActions = this.entityAnimations.get(entityId);
-        if (animationActions && animationActions.throw) {
-            const throwTime = animationActions.throw.getClip().duration / speed;
-            this.setEntityAnimation(entityId, 'throw', speed, throwTime * 0.5);
         }
     }
     
@@ -642,28 +158,6 @@ class RenderSystem {
                 }
             }
         });
-    }
-    
-    getUnitDefinition(unitType) {
-        // Get from game collections
-        const collections = this.game.getCollections && this.game.getCollections();
-        if (collections && collections.units && collections.units[unitType]) {
-            return collections.units[unitType];
-        }
-        
-        // Fallback
-        return {
-            render: {
-                spawnType: unitType,
-                frameDuration: 0.17,
-                animations: {
-                    idle: [],
-                    walk: [],
-                    attack: [],
-                    hurt: []
-                }
-            }
-        };
     }
     
     cleanupRemovedEntities(currentEntities) {
@@ -695,26 +189,16 @@ class RenderSystem {
             });
         }
         
-        // Clean up animation mixer
-        const mixer = this.entityMixers.get(entityId);
-        if (mixer) {
-            const animationActions = this.entityAnimations.get(entityId);
-            if (animationActions) {
-                Object.values(animationActions).forEach(action => action.stop());
-            }
-            mixer.uncacheRoot(modelGroup);
+        // Clean up animations through AnimationSystem
+        if (this.game.animationSystem) {
+            this.game.animationSystem.removeEntityAnimations(entityId);
         }
         
         // Remove from maps
         this.entityModels.delete(entityId);
-        this.entityAnimations.delete(entityId);
-        this.entityMixers.delete(entityId);
-        this.entityAnimationStates.delete(entityId);
-        this.entityProprietaryAnimations?.delete(entityId);
     }
     
     destroy() {
-
         // Clean up all entity models
         for (const [entityId] of this.entityModels.entries()) {
             this.removeEntityModel(entityId);
@@ -722,10 +206,5 @@ class RenderSystem {
         
         // Clear all maps
         this.entityModels.clear();
-        this.entityAnimations.clear();
-        this.entityMixers.clear();
-        this.entityAnimationStates.clear();
-        this.entityProprietaryAnimations?.clear();
-        
     }
 }

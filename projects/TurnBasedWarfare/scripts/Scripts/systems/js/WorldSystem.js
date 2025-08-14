@@ -1314,4 +1314,72 @@ class WorldSystem {
 
         this.initialized = false;
     }
+
+    // Add this method to the WorldSystem class
+
+    getTerrainHeightAtPosition(worldX, worldZ) {
+        // Check if height map is available and enabled
+        if (!this.heightMapData || !this.heightMapSettings?.enabled) {
+            return 0; // Fallback to flat ground
+        }
+        
+        // Convert world coordinates to height map coordinates
+        // The ground is centered at origin, so we need to offset by half the extended size
+        const heightMapX = Math.floor(worldX + this.extendedSize / 2);
+        const heightMapZ = Math.floor(worldZ + this.extendedSize / 2);
+        
+        // Ensure coordinates are within bounds
+        if (heightMapX < 0 || heightMapX >= this.extendedSize || heightMapZ < 0 || heightMapZ >= this.extendedSize) {
+            // Outside terrain bounds, use extension terrain height
+            const extensionTerrainType = this.tileMap?.extensionTerrainType || 0;
+            return extensionTerrainType * this.heightStep;
+        }
+        
+        // Get height from height map
+        const heightIndex = heightMapZ * this.extendedSize + heightMapX;
+        return this.heightMapData[heightIndex] || 0;
+    }
+
+    // Optional: Add bilinear interpolation for smoother height transitions
+    getTerrainHeightAtPositionSmooth(worldX, worldZ) {
+        // Check if height map is available and enabled
+        if (!this.heightMapData || !this.heightMapSettings?.enabled) {
+            return 0; // Fallback to flat ground
+        }
+        
+        // Convert world coordinates to height map coordinates (with decimal precision)
+        const heightMapX = worldX + this.extendedSize / 2;
+        const heightMapZ = worldZ + this.extendedSize / 2;
+        
+        // Get the four surrounding grid points
+        const x0 = Math.floor(heightMapX);
+        const x1 = x0 + 1;
+        const z0 = Math.floor(heightMapZ);
+        const z1 = z0 + 1;
+        
+        // Get fractional parts for interpolation
+        const fx = heightMapX - x0;
+        const fz = heightMapZ - z0;
+        
+        // Helper function to get height at specific grid point
+        const getHeightAt = (x, z) => {
+            if (x < 0 || x >= this.extendedSize || z < 0 || z >= this.extendedSize) {
+                const extensionTerrainType = this.tileMap?.extensionTerrainType || 0;
+                return extensionTerrainType * this.heightStep;
+            }
+            const heightIndex = z * this.extendedSize + x;
+            return this.heightMapData[heightIndex] || 0;
+        };
+        
+        // Get heights at the four corners
+        const h00 = getHeightAt(x0, z0);
+        const h10 = getHeightAt(x1, z0);
+        const h01 = getHeightAt(x0, z1);
+        const h11 = getHeightAt(x1, z1);
+        
+        // Bilinear interpolation
+        const h0 = h00 * (1 - fx) + h10 * fx;
+        const h1 = h01 * (1 - fx) + h11 * fx;
+        return h0 * (1 - fz) + h1 * fz;
+    }
 }

@@ -1,16 +1,28 @@
 class ProjectileSystem {
-    constructor(game) {
+ constructor(game) {
         this.game = game;
         this.game.projectileSystem = this;
         this.componentTypes = this.game.componentManager.getComponentTypes();
         
         // Configuration
-        this.GRAVITY = 0; // Set to positive value for arcing projectiles
         this.HIT_DETECTION_RADIUS = 5;
         this.TRAIL_UPDATE_INTERVAL = 0.05;
         
+        // Ballistic configuration
+        this.DEFAULT_LAUNCH_ANGLE = Math.PI / 4; // 45 degrees
+        this.MIN_LAUNCH_ANGLE = Math.PI / 6; // 30 degrees
+        this.MAX_LAUNCH_ANGLE = Math.PI / 3; // 60 degrees
+        this.BALLISTIC_HEIGHT_MULTIPLIER = 0.3; // How high the arc goes relative to distance
+        this.PROJECTILE_LIFETIME = 200;
+        
+        // Ground impact detection
+        this.GROUND_IMPACT_THRESHOLD = 0; // Distance from ground to trigger impact
+        
         // Trail tracking for visual effects
         this.projectileTrails = new Map();
+        
+        // Get gravity from movement system
+        this.GRAVITY = this.game.movementSystem?.GRAVITY;
     }
     
     fireProjectile(sourceId, targetId, projectileData = {}) {
@@ -25,32 +37,39 @@ class ProjectileSystem {
         const components = this.game.componentManager.getComponents();
         const now = Date.now() / 1000;
         
-        // Calculate initial direction and velocity
-        const dx = targetPos.x - sourcePos.x;
-        const dy = targetPos.y - sourcePos.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
+        // Pass source ID to trajectory calculation for ballistic projectiles
+        const projectileDataWithSource = { ...projectileData, sourceId: sourceId };
         
-        const projectileSpeed = projectileData.speed || 200;
-        const initialVx = distance > 0 ? (dx / distance) * projectileSpeed : 0;
-        const initialVy = distance > 0 ? (dy / distance) * projectileSpeed : 0;
+        // Calculate trajectory based on projectile type
+        const trajectory = this.calculateTrajectory(sourcePos, targetPos, projectileDataWithSource);
         
-        console.log('fire projectile', projectileData, sourcePos, initialVx, initialVy, projectileSpeed);
-        // Add components
+        // Determine spawn height - ballistic projectiles start above ground to avoid immediate impact
+        const spawnHeight = Math.max(sourcePos.y + 20, 20);           
+        
+        // Add components with full 3D support
         this.game.addComponent(projectileId, this.componentTypes.POSITION, 
-            components.Position(sourcePos.x, sourcePos.y));
+            components.Position(sourcePos.x, spawnHeight, sourcePos.z));
         
         this.game.addComponent(projectileId, this.componentTypes.VELOCITY, 
-            components.Velocity(initialVx, initialVy, projectileSpeed));
+            components.Velocity(trajectory.vx, trajectory.vy, trajectory.vz, projectileData.speed));
         
         this.game.addComponent(projectileId, this.componentTypes.PROJECTILE, {
             damage: sourceCombat.damage,
-            speed: projectileSpeed,
-            range: sourceCombat.range * 1.5, // Projectiles can travel a bit further
+            speed: projectileData.speed,
+            range: sourceCombat.range * 1.5, // Allow projectiles to travel a bit beyond weapon range
             target: targetId,
             source: sourceId,
             startTime: now,
             startX: sourcePos.x,
-            startY: sourcePos.y
+            startY: spawnHeight, // Use spawn height, not source height
+            startZ: sourcePos.z,
+            isBallistic: projectileData.ballistic || false,
+            targetX: targetPos.x,
+            targetY: targetPos.y + 20,
+            targetZ: targetPos.z,
+            launchAngle: trajectory.launchAngle,
+            timeToTarget: trajectory.timeToTarget,
+            weaponRange: trajectory.weaponRange || sourceCombat.range
         });
 
         const sourceTeam = this.game.getComponent(sourceId, this.componentTypes.TEAM);
@@ -66,20 +85,166 @@ class ProjectileSystem {
         }
 
         // Visual component        
-        this.game.addComponent(projectileId, this.componentTypes.RENDERABLE, components.Renderable("projectiles", projectileData.id));
+        this.game.addComponent(projectileId, this.componentTypes.RENDERABLE, 
+            components.Renderable("projectiles", projectileData.id));
         
-        // Lifetime component
-        this.game.addComponent(projectileId, this.componentTypes.LIFETIME, 
-            components.Lifetime(10, now)); // 10 second max lifetime
+        // Lifetime component (longer for ballistic projectiles since they may take longer to reach target)
+        this.game.addComponent(projectileId, this.componentTypes.LIFETIME, components.Lifetime(this.PROJECTILE_LIFETIME, now));
         
-        // Homing component if specified
+        // Homing component if specified (reduced effectiveness for ballistic projectiles)
         if (projectileData.homing && projectileData.homingStrength > 0) {
+            const homingStrength = projectileData.ballistic ? 
+                projectileData.homingStrength * 0.3 : projectileData.homingStrength; // Reduced homing for ballistic
             this.game.addComponent(projectileId, this.componentTypes.HOMING_TARGET, 
-                components.HomingTarget(targetId, projectileData.homingStrength, { x: targetPos.x, y: targetPos.y }));
+                components.HomingTarget(targetId, homingStrength, { x: targetPos.x, y: targetPos.y, z: targetPos.z }));
         }
         
         return projectileId;
     }
+    
+    calculateTrajectory(sourcePos, targetPos, projectileData) {
+        const dx = targetPos.x - sourcePos.x;
+        const dy = targetPos.y - sourcePos.y; // Height difference
+        const dz = targetPos.z - sourcePos.z; // Forward/backward distance
+        const projectileSpeed = projectileData.speed;
+        
+        // For ballistic projectiles, calculate arc trajectory based on weapon range
+        if (projectileData.ballistic) {
+            return this.calculateBallisticTrajectory(sourcePos, targetPos, projectileSpeed, projectileData);
+        } else {
+            // Direct trajectory for non-ballistic projectiles
+            const totalDistance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+            if (totalDistance === 0) {
+                return { vx: 0, vy: 0, vz: 0, launchAngle: 0, timeToTarget: 0 };
+            }
+            
+            const initialVx = (dx / totalDistance) * projectileSpeed;
+            const initialVy = (dy / totalDistance) * projectileSpeed;
+            const initialVz = (dz / totalDistance) * projectileSpeed;
+            
+            return {
+                vx: initialVx,
+                vy: initialVy,
+                vz: initialVz,
+                launchAngle: Math.atan2(Math.sqrt(dx * dx + dz * dz), dy),
+                timeToTarget: totalDistance / projectileSpeed
+            };
+        }
+    }
+    
+    calculateBallisticTrajectory(sourcePos, targetPos, speed, projectileData) {
+        const dx = targetPos.x - sourcePos.x;
+        const dy = targetPos.y - sourcePos.y; // Height difference
+        const dz = targetPos.z - sourcePos.z; // Forward/backward distance
+        
+        const horizontalDistance = Math.sqrt(dx * dx + dz * dz);
+        
+        if (horizontalDistance === 0) {
+            return { vx: 0, vy: 0, vz: 0, launchAngle: 0, timeToTarget: 0 };
+        }
+        
+        // Get the firing unit's combat range to determine proper ballistic trajectory
+        const sourceId = projectileData.sourceId;
+        const sourceCombat = sourceId ? this.game.getComponent(sourceId, this.componentTypes.COMBAT) : null;
+        const weaponRange = sourceCombat ? sourceCombat.range : horizontalDistance;
+        
+        // Use 45-degree angle for optimal range (gives maximum distance for given initial velocity)
+        const launchAngle = Math.PI / 4; // 45 degrees
+        const g = this.GRAVITY;
+        
+        // Calculate the initial velocity needed to reach the weapon's maximum range at 45 degrees
+        // Using: range = (v₀² * sin(2θ)) / g
+        // At 45 degrees: sin(2θ) = sin(90°) = 1
+        // So: range = v₀² / g
+        // Therefore: v₀ = sqrt(range * g)
+        const optimalInitialVelocity = Math.sqrt(weaponRange * g);
+        
+        // Calculate what range this velocity would achieve at our target distance
+        const actualRange = Math.min(horizontalDistance, weaponRange);
+        
+        // If target is within range, calculate trajectory to hit it exactly
+        let initialVelocity;
+        let actualLaunchAngle = launchAngle;
+        
+        if (horizontalDistance <= weaponRange) {
+            // Target is within range - calculate exact trajectory
+            // For distances less than max range, we can use angles other than 45°
+            // Using: range = (v₀² * sin(2θ)) / g
+            // We want to use our optimal velocity but adjust angle for shorter distances
+            
+            // Try to use the optimal velocity first
+            const maxRangeAtOptimalVelocity = (optimalInitialVelocity * optimalInitialVelocity) / g;
+            
+            if (horizontalDistance <= maxRangeAtOptimalVelocity) {
+                // We can reach this distance with our optimal velocity
+                initialVelocity = optimalInitialVelocity;
+                // Calculate the required angle: sin(2θ) = (range * g) / v₀²
+                const sin2Theta = (horizontalDistance * g) / (initialVelocity * initialVelocity);
+                
+                // We want the lower trajectory angle (there are two solutions)
+                const angle2Theta = Math.asin(Math.min(1, sin2Theta));
+                actualLaunchAngle = angle2Theta / 2;
+                
+                // Prefer angles between 15° and 75° for realistic artillery
+                if (actualLaunchAngle < Math.PI / 12) { // Less than 15°
+                    actualLaunchAngle = Math.PI / 12;
+                } else if (actualLaunchAngle > 5 * Math.PI / 12) { // More than 75°
+                    actualLaunchAngle = 5 * Math.PI / 12;
+                }
+            } else {
+                // Use 45° and calculate required velocity for this specific distance
+                actualLaunchAngle = Math.PI / 4;
+                initialVelocity = Math.sqrt(horizontalDistance * g);
+            }
+        } else {
+            // Target is beyond weapon range - fire at maximum range in target direction
+            initialVelocity = optimalInitialVelocity;
+            actualLaunchAngle = Math.PI / 4; // 45° for maximum range
+        }
+        
+        // Calculate time of flight
+        // Using: t = (2 * v₀ * sin(θ)) / g
+        const timeToTarget = (2 * initialVelocity * Math.sin(actualLaunchAngle)) / g;
+        
+        // Calculate horizontal direction unit vector
+        const horizontalDirectionX = dx / horizontalDistance;
+        const horizontalDirectionZ = dz / horizontalDistance;
+        
+        // Calculate initial velocity components
+        const horizontalVelocity = initialVelocity * Math.cos(actualLaunchAngle);
+        const vx = horizontalDirectionX * horizontalVelocity;
+        const vz = horizontalDirectionZ * horizontalVelocity;
+        const vy = initialVelocity * Math.sin(actualLaunchAngle); // Initial upward velocity
+        
+        // Adjust for height difference if target is at different elevation
+        if (Math.abs(dy) > 5) { // Only adjust for significant height differences
+            // Add extra vertical velocity to account for height difference
+            // This is an approximation - we add the height difference over the flight time
+            const heightAdjustment = dy / timeToTarget;
+            const adjustedVy = vy + heightAdjustment;
+            
+            return {
+                vx: vx,
+                vy: adjustedVy,
+                vz: vz,
+                launchAngle: actualLaunchAngle,
+                timeToTarget: timeToTarget,
+                weaponRange: weaponRange,
+                calculatedRange: (initialVelocity * initialVelocity * Math.sin(2 * actualLaunchAngle)) / g
+            };
+        }
+        
+        return {
+            vx: vx,
+            vy: vy,
+            vz: vz,
+            launchAngle: actualLaunchAngle,
+            timeToTarget: timeToTarget,
+            weaponRange: weaponRange,
+            calculatedRange: (initialVelocity * initialVelocity * Math.sin(2 * actualLaunchAngle)) / g
+        };
+    }
+    
     update(deltaTime) {
         if (this.game.state.phase !== 'battle') return;
         
@@ -104,36 +269,73 @@ class ProjectileSystem {
                 return;
             }
             
-            // Check range limit
-            const distanceTraveled = Math.sqrt(
-                Math.pow(pos.x - projectile.startX, 2) + 
-                Math.pow(pos.y - projectile.startY, 2)
-            );
-            if (distanceTraveled > projectile.range) {
-                this.destroyProjectile(projectileId);
-                return;
-            }
-            
             // Update homing behavior
-            if (homing && homing.targetId) {
+            if (homing && homing.targetId && projectile.isBallistic) {
+                this.updateBallisticHoming(projectileId, pos, vel, projectile, homing, deltaTime, now);
+            } else if (homing && homing.targetId) {
                 this.updateHomingProjectile(projectileId, pos, vel, projectile, homing, deltaTime);
             }
             
-            // Apply gravity if configured
-            if (this.GRAVITY > 0) {
-                vel.vy += this.GRAVITY * deltaTime;
+            // Handle different collision types based on projectile type
+            if (projectile.isBallistic) {
+                // Ballistic projectiles ONLY check for ground impact
+                this.handleProjectileGroundImpact(projectileId, pos, projectile);
+            } else {
+                // Non-ballistic projectiles check for direct unit hits
+                this.checkProjectileCollisions(projectileId, pos, projectile);
             }
-            
-            // Update position
-            pos.x += vel.vx * deltaTime;
-            pos.y += vel.vy * deltaTime;
-            
-            // Check for collisions with targets
-            this.checkProjectileCollisions(projectileId, pos, projectile);
             
             // Update visual trail
             this.updateProjectileTrail(projectileId, pos);
         });
+    }
+    
+    updateBallisticHoming(projectileId, pos, vel, projectile, homing, deltaTime, now) {
+        // Get current target position
+        const targetPos = this.game.getComponent(homing.targetId, this.componentTypes.POSITION);
+        
+        if (targetPos) {
+            // Update last known position
+            homing.lastKnownPosition = { x: targetPos.x, y: targetPos.y, z: targetPos.z };
+            
+            // For ballistic projectiles, we adjust the trajectory mid-flight
+            // Calculate time elapsed since launch
+            const timeElapsed = now - projectile.startTime;
+            const remainingTime = Math.max(0.1, projectile.timeToTarget - timeElapsed);
+            
+            // Calculate where we need to be to hit the moving target
+            const dx = targetPos.x - pos.x;
+            const dy = targetPos.y - pos.y;
+            const dz = targetPos.z - pos.z;
+            
+            // Adjust horizontal velocity to reach new target position
+            const requiredHorizontalVelX = dx / remainingTime;
+            const requiredHorizontalVelZ = dz / remainingTime;
+            
+            // Apply homing adjustment with strength factor
+            const homingStrength = homing.homingStrength * deltaTime * 2; // Reduced for ballistic
+            vel.vx = vel.vx * (1 - homingStrength) + requiredHorizontalVelX * homingStrength;
+            vel.vz = vel.vz * (1 - homingStrength) + requiredHorizontalVelZ * homingStrength;
+            
+            // For vertical homing, we need to be more careful to maintain ballistic arc
+            // Only adjust if we're in the descending phase
+            if (vel.vy < 0) { // Falling down
+                const requiredVerticalVel = (dy + 0.5 * this.GRAVITY * remainingTime * remainingTime) / remainingTime;
+                vel.vy = vel.vy * (1 - homingStrength * 0.5) + requiredVerticalVel * (homingStrength * 0.5);
+            }
+        } else if (homing.lastKnownPosition) {
+            // Target is gone, continue toward last known position
+            const dx = homing.lastKnownPosition.x - pos.x;
+            const dy = homing.lastKnownPosition.y - pos.y;
+            const dz = homing.lastKnownPosition.z - pos.z;
+            const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+            
+            if (distance < 20) {
+                // Close enough to last known position, destroy projectile
+                this.destroyProjectile(projectileId);
+                return;
+            }
+        }
     }
     
     updateHomingProjectile(projectileId, pos, vel, projectile, homing, deltaTime) {
@@ -142,49 +344,44 @@ class ProjectileSystem {
         
         if (targetPos) {
             // Update last known position
-            homing.lastKnownPosition = { x: targetPos.x, y: targetPos.y };
+            homing.lastKnownPosition = { x: targetPos.x, y: targetPos.y, z: targetPos.z };
             
             // Calculate direction to target
             const dx = targetPos.x - pos.x;
             const dy = targetPos.y - pos.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
+            const dz = targetPos.z - pos.z;
+            const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
             
             if (distance > 0) {
                 // Calculate desired velocity direction
                 const desiredVx = (dx / distance) * projectile.speed;
                 const desiredVy = (dy / distance) * projectile.speed;
+                const desiredVz = (dz / distance) * projectile.speed;
                 
                 // Blend current velocity with desired velocity based on homing strength
                 const homingStrength = homing.homingStrength * deltaTime * 5; // Adjust responsiveness
                 vel.vx = vel.vx * (1 - homingStrength) + desiredVx * homingStrength;
                 vel.vy = vel.vy * (1 - homingStrength) + desiredVy * homingStrength;
+                vel.vz = vel.vz * (1 - homingStrength) + desiredVz * homingStrength;
                 
                 // Maintain speed
-                const currentSpeed = Math.sqrt(vel.vx * vel.vx + vel.vy * vel.vy);
+                const currentSpeed = Math.sqrt(vel.vx * vel.vx + vel.vy * vel.vy + vel.vz * vel.vz);
                 if (currentSpeed > 0) {
                     const speedRatio = projectile.speed / currentSpeed;
                     vel.vx *= speedRatio;
                     vel.vy *= speedRatio;
+                    vel.vz *= speedRatio;
                 }
             }
-        } else if (homing.lastKnownPosition) {
-            // Target is gone, continue toward last known position
-            const dx = homing.lastKnownPosition.x - pos.x;
-            const dy = homing.lastKnownPosition.y - pos.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            if (distance < 10) {
-                // Close enough to last known position, destroy projectile
-                this.destroyProjectile(projectileId);
-                return;
-            }
         } else {
-            // No target and no last known position, continue straight
             homing.targetId = null;
         }
     }
     
     checkProjectileCollisions(projectileId, pos, projectile) {
+        // Only for NON-ballistic projectiles
+        if (projectile.isBallistic) return; // Skip collision check for ballistic
+        
         // Get all potential targets
         const allEntities = this.game.getEntitiesWith(
             this.componentTypes.POSITION, 
@@ -205,28 +402,48 @@ class ProjectileSystem {
             if (!entityPos || !entityTeam || !entityHealth) return;
             if (entityTeam.team === sourceTeam.team) return; // Don't hit allies
             
-            // Calculate distance
+            // Calculate 3D distance
             const dx = entityPos.x - pos.x;
             const dy = entityPos.y - pos.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
+            const dz = entityPos.z - pos.z;
+            const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
             
             // Get entity radius for collision detection
             const entityUnitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
             const entityRadius = this.getUnitRadius(entityUnitType);
             
+            // Check collision for direct hit
             if (distance <= entityRadius + this.HIT_DETECTION_RADIUS) {
-                // Hit detected!
+                // Direct hit detected!
                 this.handleProjectileHit(projectileId, entityId, projectile);
                 return;
             }
         });
     }
     
+    handleProjectileGroundImpact(entityId, pos, projectile) {
+        // Only for ballistic projectiles
+        if (!projectile.isBallistic) return;
+        
+        // Get actual terrain height for projectile impact
+        const terrainHeight = this.game.worldSystem.getTerrainHeightAtPosition(pos.x, pos.z);
+        const actualGroundLevel = terrainHeight !== null ? terrainHeight : this.game.movementSystem?.GROUND_LEVEL || 0;
+        
+        // Check if projectile hit the ground
+        if (pos.y <= actualGroundLevel + this.GROUND_IMPACT_THRESHOLD) {
+            // Ballistic projectiles explode on ground impact
+            this.triggerBallisticExplosion(entityId, pos, projectile, actualGroundLevel);
+            return;
+        }
+    }
+
     handleProjectileHit(projectileId, targetId, projectile) {
-        // Apply damage
+        // Apply damage for direct hits (non-ballistic projectiles only)
         const targetHealth = this.game.getComponent(targetId, this.componentTypes.HEALTH);
         if (targetHealth) {
-            targetHealth.current -= projectile.damage;
+            const damage = projectile.damage; // No bonus for direct hits
+            
+            targetHealth.current -= damage;
             
             // Visual feedback
             const targetAnimation = this.game.getComponent(targetId, this.componentTypes.ANIMATION);
@@ -242,17 +459,17 @@ class ProjectileSystem {
                 const targetTeam = this.game.getComponent(targetId, this.componentTypes.TEAM);
                 
                 this.game.battleLogSystem.add(
-                    `${sourceTeam.team} ${sourceUnitType.type} projectile hits ${targetTeam.team} ${targetUnitType.type} for ${projectile.damage} damage`, 
+                    `${sourceTeam.team} ${sourceUnitType.type} projectile hits ${targetTeam.team} ${targetUnitType.type} for ${damage} damage`, 
                     'log-damage'
                 );
             }
             
-            // Check if target is killed
+            // Check if target is eliminated
             if (targetHealth.current <= 0) {
                 if (this.game.battleLogSystem) {
                     const targetUnitType = this.game.getComponent(targetId, this.componentTypes.UNIT_TYPE);
                     const targetTeam = this.game.getComponent(targetId, this.componentTypes.TEAM);
-                    this.game.battleLogSystem.add(`${targetTeam.team} ${targetUnitType.type} defeated by projectile!`, 'log-death');
+                    this.game.battleLogSystem.add(`${targetTeam.team} ${targetUnitType.type} eliminated by projectile!`, 'log-death');
                 }
                 this.game.destroyEntity(targetId);
                 this.game.combatAISystems?.checkBattleEnd();
@@ -260,13 +477,13 @@ class ProjectileSystem {
         }
         
         // Create hit effect
-        this.createHitEffect(projectileId, targetId);
+        this.createHitEffect(projectileId, targetId, false); // Not ballistic hit effect
         
         // Destroy projectile
         this.destroyProjectile(projectileId);
     }
     
-    createHitEffect(projectileId, targetId) {
+    createHitEffect(projectileId, targetId, isBallistic = false) {
         const projectilePos = this.game.getComponent(projectileId, this.componentTypes.POSITION);
         const projectileVisual = this.game.getComponent(projectileId, this.componentTypes.PROJECTILE_VISUAL);
         
@@ -276,22 +493,25 @@ class ProjectileSystem {
         const effectId = this.game.createEntity();
         const components = this.game.componentManager.getComponents();
         
-        // Position at hit location
+        // Position at hit location (full 3D)
         this.game.addComponent(effectId, this.componentTypes.POSITION, 
-            components.Position(projectilePos.x, projectilePos.y));
+            components.Position(projectilePos.x, projectilePos.y, projectilePos.z));
         
-        // Visual component for the effect
+        // Visual component for the effect (smaller for direct hits)
         const effectColor = projectileVisual?.color || '#ffaa00';
+        const effectSize = 6; // Smaller effect for direct hits
         this.game.addComponent(effectId, this.componentTypes.RENDERABLE, 
-            components.Renderable(effectColor, 8, 'explosion'));
+            components.Renderable(effectColor, effectSize, 'impact'));
         
-        // Short lifetime
+        // Short lifetime for direct hit effects
+        const effectDuration = 0.3;
         this.game.addComponent(effectId, this.componentTypes.LIFETIME, 
-            components.Lifetime(0.3, Date.now() / 1000));
+            components.Lifetime(effectDuration, Date.now() / 1000));
         
         // Animation for the effect
+        const effectScale = 2;
         this.game.addComponent(effectId, this.componentTypes.ANIMATION, 
-            components.Animation(2, 0, 1)); // Scale 2x, flash
+            components.Animation(effectScale, 0, 1));
     }
     
     updateProjectileTrail(projectileId, pos) {
@@ -304,15 +524,14 @@ class ProjectileSystem {
         
         const trail = this.projectileTrails.get(projectileId);
         
-        // Add current position to trail
-        trail.push({ x: pos.x, y: pos.y, time: Date.now() / 1000 });
+        // Add current position to trail (full 3D)
+        trail.push({ x: pos.x, y: pos.y, z: pos.z, time: Date.now() / 1000 });
         
         // Remove old trail points
         while (trail.length > projectileVisual.trailLength) {
             trail.shift();
         }
     }
-    
     
     destroyProjectile(projectileId) {
         // Clean up trail data
@@ -343,4 +562,134 @@ class ProjectileSystem {
     getProjectileTrail(projectileId) {
         return this.projectileTrails.get(projectileId) || [];
     }
+
+
+    triggerBallisticExplosion(entityId, pos, projectile, groundLevel) {
+        console.log('Ballistic projectile exploding at ground impact:', pos);
+        
+        // Create explosion effect at ground impact point
+        this.createGroundExplosion(entityId, pos, projectile, groundLevel);
+        
+        // Check for area damage to nearby entities
+        this.applySplashDamage(entityId, pos, projectile);
+        
+        // Destroy the projectile
+        this.destroyProjectile(entityId);
+        
+        // Log the explosion
+        if (this.game.battleLogSystem) {
+            this.game.battleLogSystem.add('Ballistic projectile explodes on impact!', 'log-explosion');
+        }
+    }
+
+    createGroundExplosion(projectileId, pos, projectile, groundLevel) {
+        // Create a visual explosion effect
+        const effectId = this.game.createEntity();
+        const components = this.game.componentManager.getComponents();
+        
+        // Position at ground impact point (use actual terrain height)
+        this.game.addComponent(effectId, this.componentTypes.POSITION, 
+            components.Position(pos.x, groundLevel + 5, pos.z));
+        
+        // Visual component for explosion
+        this.game.addComponent(effectId, this.componentTypes.RENDERABLE, 
+            components.Renderable("effects", "explosion"));
+        
+        // Explosion lifetime
+        this.game.addComponent(effectId, this.componentTypes.LIFETIME, 
+            components.Lifetime(1.5, Date.now() / 1000)); // Longer explosion duration
+        
+        // Explosion animation
+        this.game.addComponent(effectId, this.componentTypes.ANIMATION, 
+            components.Animation(6, 0, 1)); // Large, dramatic explosion
+    }
+    
+    applySplashDamage(projectileId, pos, projectile) {
+        const splashRadius = 80; // Reasonable explosion radius (adjust as needed)
+        const splashDamage = Math.floor(projectile.damage * 0.8); // 80% of direct hit damage
+        
+        console.log(`Checking splash damage in radius ${splashRadius} from position:`, pos);
+        
+        // Find all entities within splash radius
+        const allEntities = this.game.getEntitiesWith(
+            this.componentTypes.POSITION, 
+            this.componentTypes.HEALTH,
+            this.componentTypes.TEAM
+        );
+        
+        const sourceTeam = this.game.getComponent(projectile.source, this.componentTypes.TEAM);
+        if (!sourceTeam) {
+            console.log('No source team found for projectile');
+            return;
+        }
+        
+        let entitiesInRange = 0;
+        let damageDealt = 0;
+        
+        allEntities.forEach(entityId => {
+            if (entityId === projectile.source) return; // Don't damage source
+            
+            const entityPos = this.game.getComponent(entityId, this.componentTypes.POSITION);
+            const entityTeam = this.game.getComponent(entityId, this.componentTypes.TEAM);
+            const entityHealth = this.game.getComponent(entityId, this.componentTypes.HEALTH);
+            
+            if (!entityPos || !entityTeam || !entityHealth) return;
+            if (entityTeam.team === sourceTeam.team) return; // Don't damage allies
+            
+            // Calculate 3D distance from explosion center
+            const dx = entityPos.x - pos.x;
+            const dy = entityPos.y - pos.y;
+            const dz = entityPos.z - pos.z;
+            const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+            
+            if (distance <= splashRadius) {
+                entitiesInRange++;
+                
+                // Calculate damage based on distance (closer = more damage)
+                const damageMultiplier = Math.max(0.2, 1 - (distance / splashRadius));
+                const finalDamage = Math.floor(splashDamage * damageMultiplier);
+                
+                // Apply area damage
+                entityHealth.current -= finalDamage;
+                damageDealt += finalDamage;
+                
+                console.log(`Entity ${entityId} at distance ${distance.toFixed(1)} takes ${finalDamage} area damage`);
+                
+                // Visual feedback
+                const targetAnimation = this.game.getComponent(entityId, this.componentTypes.ANIMATION);
+                if (targetAnimation) {
+                    targetAnimation.flash = 0.7;
+                }
+                
+                // Log area damage
+                if (this.game.battleLogSystem) {
+                    const targetUnitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
+                    this.game.battleLogSystem.add(
+                        `${entityTeam.team} ${targetUnitType.type} takes ${finalDamage} explosion damage!`, 
+                        'log-damage'
+                    );
+                }
+                
+                // Check if target is eliminated by area damage
+                if (entityHealth.current <= 0) {
+                    const targetUnitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
+                    if (this.game.battleLogSystem) {
+                        this.game.battleLogSystem.add(
+                            `${entityTeam.team} ${targetUnitType.type} eliminated by explosion!`, 
+                            'log-death'
+                        );
+                    }
+                    this.game.destroyEntity(entityId);
+                    
+                    // Ensure battle end check happens after entity destruction
+                    if (this.game.combatAISystems) {
+                        this.game.combatAISystems.checkBattleEnd();
+                    }
+                }
+            }
+        });
+        
+        console.log(`Splash damage complete: ${entitiesInRange} entities in range, ${damageDealt} total damage dealt`);
+    }
+    
 }

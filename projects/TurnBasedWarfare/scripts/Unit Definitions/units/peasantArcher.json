@@ -1,0 +1,1144 @@
+{
+  "title": "Peasant Archer",
+  "size": 10,
+  "value": 30,
+  "hp": 45,
+  "speed": 45,
+  "damage": 12,
+  "attackSpeed": 1.5,
+  "range": 120,
+  "projectile": "arrow",
+  "render": {
+    "animations": {
+      "idle": [
+        {
+          "torso": {
+            "shapes": [
+              {
+                "position": {
+                  "y": -8
+                },
+                "id": 1
+              }
+            ]
+          },
+          "head": {
+            "shapes": [
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 2
+              },
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 3
+              },
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 4
+              },
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 5
+              },
+              {
+                "position": {
+                  "y": 6
+                },
+                "id": 6
+              }
+            ]
+          }
+        }
+      ],
+      "walk": [
+        {
+          "torso": {
+            "shapes": [
+              {
+                "position": {
+                  "y": -8
+                },
+                "id": 1
+              }
+            ]
+          },
+          "head": {
+            "shapes": [
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 2
+              },
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 3
+              },
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 4
+              },
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 5
+              },
+              {
+                "position": {
+                  "y": 6
+                },
+                "id": 6
+              }
+            ]
+          }
+        },
+        {
+          "left arm": {
+            "rotation": {
+              "x": 0.3,
+              "y": 0,
+              "z": 0
+            }
+          },
+          "right arm": {
+            "rotation": {
+              "x": -0.3,
+              "y": 0,
+              "z": 0
+            }
+          },
+          "left leg": {
+            "rotation": {
+              "x": -0.4,
+              "y": 0,
+              "z": 0
+            }
+          },
+          "right leg": {
+            "rotation": {
+              "x": 0.3,
+              "y": 0,
+              "z": 0
+            }
+          },
+          "bow": {
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0.1
+            }
+          },
+          "quiver": {
+            "rotation": {
+              "x": 0,
+              "y": 0.1,
+              "z": 0
+            }
+          }
+        },
+        {
+          "torso": {
+            "shapes": [
+              {
+                "position": {
+                  "y": -8
+                },
+                "id": 1
+              }
+            ]
+          },
+          "head": {
+            "shapes": [
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 2
+              },
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 3
+              },
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 4
+              },
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 5
+              },
+              {
+                "position": {
+                  "y": 6
+                },
+                "id": 6
+              }
+            ]
+          }
+        },
+        {
+          "left arm": {
+            "rotation": {
+              "x": -0.3,
+              "y": 0,
+              "z": 0
+            }
+          },
+          "right arm": {
+            "rotation": {
+              "x": 0.3,
+              "y": 0,
+              "z": 0
+            }
+          },
+          "left leg": {
+            "rotation": {
+              "x": 0.3,
+              "y": 0,
+              "z": 0
+            }
+          },
+          "right leg": {
+            "rotation": {
+              "x": -0.4,
+              "y": 0,
+              "z": 0
+            }
+          },
+          "bow": {
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": -0.1
+            }
+          },
+          "quiver": {
+            "rotation": {
+              "x": 0,
+              "y": -0.1,
+              "z": 0
+            }
+          }
+        }
+      ],
+      "attack": [
+        {
+          "torso": {
+            "shapes": [
+              {
+                "position": {
+                  "y": -8
+                },
+                "id": 1
+              }
+            ]
+          },
+          "head": {
+            "shapes": [
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 2
+              },
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 3
+              },
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 4
+              },
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 5
+              },
+              {
+                "position": {
+                  "y": 6
+                },
+                "id": 6
+              }
+            ]
+          }
+        },
+        {
+          "torso": {
+            "rotation": {
+              "x": 0,
+              "y": 0.2,
+              "z": 0
+            }
+          },
+          "head": {
+            "rotation": {
+              "x": 0,
+              "y": 0.2,
+              "z": 0
+            }
+          },
+          "left arm": {
+            "rotation": {
+              "x": 0,
+              "y": 0.5,
+              "z": -1.4
+            },
+            "position": {
+              "x": -8,
+              "y": 32,
+              "z": 0
+            }
+          },
+          "right arm": {
+            "rotation": {
+              "x": 0,
+              "y": 0.5,
+              "z": 0.3
+            },
+            "position": {
+              "x": 8,
+              "y": 32,
+              "z": 0
+            },
+            "shapes": [
+              {
+                "id": 2,
+                "position": {
+                  "x": 5,
+                  "y": -18,
+                  "z": 0
+                }
+              }
+            ]
+          },
+          "bow": {
+            "rotation": {
+              "x": 0,
+              "y": 0.5,
+              "z": -1.4
+            },
+            "position": {
+              "x": -12,
+              "y": 25,
+              "z": 5
+            }
+          },
+          "arrow": {
+            "position": {
+              "x": -8,
+              "y": 25,
+              "z": 5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0.5,
+              "z": 0
+            }
+          },
+          "left leg": {
+            "rotation": {
+              "x": 0,
+              "y": 0.2,
+              "z": 0
+            }
+          },
+          "right leg": {
+            "rotation": {
+              "x": 0,
+              "y": 0.2,
+              "z": 0
+            }
+          }
+        },
+        {
+          "torso": {
+            "shapes": [
+              {
+                "position": {
+                  "y": -8
+                },
+                "id": 1
+              }
+            ]
+          },
+          "head": {
+            "shapes": [
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 2
+              },
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 3
+              },
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 4
+              },
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 5
+              },
+              {
+                "position": {
+                  "y": 6
+                },
+                "id": 6
+              }
+            ]
+          }
+        },
+        {
+          "torso": {
+            "rotation": {
+              "x": 0,
+              "y": 0.3,
+              "z": 0
+            }
+          },
+          "head": {
+            "rotation": {
+              "x": 0,
+              "y": 0.3,
+              "z": 0
+            }
+          },
+          "left arm": {
+            "rotation": {
+              "x": 0,
+              "y": 0.6,
+              "z": -1.5
+            },
+            "position": {
+              "x": -8,
+              "y": 32,
+              "z": 0
+            }
+          },
+          "right arm": {
+            "rotation": {
+              "x": 0,
+              "y": 0.6,
+              "z": 0.8
+            },
+            "position": {
+              "x": 8,
+              "y": 32,
+              "z": 0
+            },
+            "shapes": [
+              {
+                "id": 2,
+                "position": {
+                  "x": 8,
+                  "y": -18,
+                  "z": 0
+                }
+              }
+            ]
+          },
+          "bow": {
+            "rotation": {
+              "x": 0,
+              "y": 0.6,
+              "z": -1.5
+            },
+            "position": {
+              "x": -12,
+              "y": 25,
+              "z": 8
+            }
+          },
+          "arrow": {
+            "position": {
+              "x": 50,
+              "y": 25,
+              "z": 15
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0.6,
+              "z": 0
+            }
+          }
+        }
+      ],
+      "hurt": [
+        {
+          "torso": {
+            "shapes": [
+              {
+                "position": {
+                  "y": -8
+                },
+                "id": 1
+              }
+            ]
+          },
+          "head": {
+            "shapes": [
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 2
+              },
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 3
+              },
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 4
+              },
+              {
+                "position": {
+                  "y": 2
+                },
+                "id": 5
+              },
+              {
+                "position": {
+                  "y": 6
+                },
+                "id": 6
+              }
+            ]
+          }
+        },
+        {
+          "torso": {
+            "rotation": {
+              "x": -0.3,
+              "y": -0.2,
+              "z": -0.3
+            },
+            "position": {
+              "x": -2,
+              "y": 22,
+              "z": -3
+            }
+          },
+          "head": {
+            "rotation": {
+              "x": 0.2,
+              "y": -0.3,
+              "z": 0.2
+            },
+            "position": {
+              "x": -2,
+              "y": 36,
+              "z": -5
+            }
+          },
+          "left arm": {
+            "rotation": {
+              "x": -0.4,
+              "y": 0.3,
+              "z": 0.5
+            },
+            "position": {
+              "x": -10,
+              "y": 29,
+              "z": -3
+            }
+          },
+          "right arm": {
+            "rotation": {
+              "x": 0.6,
+              "y": -0.2,
+              "z": -0.7
+            },
+            "position": {
+              "x": 6,
+              "y": 29,
+              "z": -4
+            }
+          },
+          "left leg": {
+            "rotation": {
+              "x": 0.1,
+              "y": 0,
+              "z": -0.2
+            },
+            "position": {
+              "x": -5,
+              "y": 16,
+              "z": 0
+            }
+          },
+          "right leg": {
+            "rotation": {
+              "x": 0.2,
+              "y": 0,
+              "z": -0.3
+            },
+            "position": {
+              "x": 1,
+              "y": 16,
+              "z": 0
+            }
+          },
+          "bow": {
+            "rotation": {
+              "x": -0.4,
+              "y": 0.4,
+              "z": 0.6
+            },
+            "position": {
+              "x": -15,
+              "y": 15,
+              "z": -5
+            }
+          },
+          "quiver": {
+            "rotation": {
+              "x": -0.3,
+              "y": -0.2,
+              "z": -0.3
+            },
+            "position": {
+              "x": 2,
+              "y": 22,
+              "z": -8
+            }
+          }
+        }
+      ]
+    },
+    "model": {
+      "torso": {
+        "shapes": [
+          {
+            "type": "box",
+            "width": 11,
+            "height": 15,
+            "depth": 7,
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "color": "#8B7355",
+            "name": "chest"
+          },
+          {
+            "type": "box",
+            "width": 13,
+            "height": 3,
+            "depth": 8,
+            "color": "#654321",
+            "name": "belt",
+            "x": 0,
+            "y": -8,
+            "z": 0
+          }
+        ],
+        "position": {
+          "x": 0,
+          "y": 25,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "head": {
+        "shapes": [
+          {
+            "type": "sphere",
+            "size": 11,
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "color": "#e8c9a0",
+            "name": "head-main"
+          },
+          {
+            "type": "box",
+            "width": 4,
+            "height": 3,
+            "depth": 4,
+            "x": 0,
+            "y": 0,
+            "z": 4.5,
+            "color": "#e8c9a0",
+            "name": "nose"
+          },
+          {
+            "type": "sphere",
+            "size": 2.5,
+            "x": -2.5,
+            "y": 2,
+            "z": 4,
+            "color": "#4682B4",
+            "name": "eye-left"
+          },
+          {
+            "type": "sphere",
+            "size": 2.5,
+            "x": 2.5,
+            "y": 2,
+            "z": 4,
+            "color": "#4682B4",
+            "name": "eye-right"
+          },
+          {
+            "type": "sphere",
+            "size": 0.8,
+            "x": -2.5,
+            "y": 2,
+            "z": 5,
+            "color": "#000000",
+            "name": "pupil-left"
+          },
+          {
+            "type": "sphere",
+            "size": 0.8,
+            "x": 2.5,
+            "y": 2,
+            "z": 5,
+            "color": "#000000",
+            "name": "pupil-right"
+          },
+          {
+            "type": "box",
+            "width": 12,
+            "height": 5,
+            "depth": 5,
+            "x": 0,
+            "y": 7,
+            "z": 0,
+            "color": "#D2691E",
+            "name": "hair"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "y": 39,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "left arm": {
+        "shapes": [
+          {
+            "type": "box",
+            "width": 4.5,
+            "height": 8,
+            "depth": 4.5,
+            "x": 0,
+            "y": -4,
+            "z": 0,
+            "color": "#8B7355",
+            "name": "upper-arm-left"
+          },
+          {
+            "type": "box",
+            "width": 4,
+            "height": 7,
+            "depth": 4,
+            "x": 0,
+            "y": -11.5,
+            "z": 0,
+            "color": "#8B7355",
+            "name": "lower-arm-left"
+          },
+          {
+            "type": "box",
+            "width": 5,
+            "height": 4,
+            "depth": 4.5,
+            "x": 0,
+            "y": -17,
+            "z": 0,
+            "color": "#e8c9a0",
+            "name": "hand-left"
+          }
+        ],
+        "position": {
+          "x": -8,
+          "y": 32,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "right arm": {
+        "shapes": [
+          {
+            "type": "box",
+            "width": 4.5,
+            "height": 8,
+            "depth": 4.5,
+            "x": 0,
+            "y": -4,
+            "z": 0,
+            "color": "#8B7355",
+            "name": "upper-arm-right"
+          },
+          {
+            "type": "box",
+            "width": 4,
+            "height": 7,
+            "depth": 4,
+            "x": 0,
+            "y": -11.5,
+            "z": 0,
+            "color": "#8B7355",
+            "name": "lower-arm-right"
+          },
+          {
+            "type": "box",
+            "width": 5,
+            "height": 4,
+            "depth": 4.5,
+            "x": 0,
+            "y": -17,
+            "z": 0,
+            "color": "#e8c9a0",
+            "name": "hand-right"
+          }
+        ],
+        "position": {
+          "x": 8,
+          "y": 32,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "left leg": {
+        "shapes": [
+          {
+            "type": "box",
+            "width": 5.5,
+            "height": 7,
+            "depth": 5.5,
+            "x": 0,
+            "y": -3.5,
+            "z": 0,
+            "color": "#654321",
+            "name": "thigh-left"
+          },
+          {
+            "type": "box",
+            "width": 4.5,
+            "height": 6,
+            "depth": 4.5,
+            "x": 0,
+            "y": -9.5,
+            "z": 0,
+            "color": "#654321",
+            "name": "shin-left"
+          },
+          {
+            "type": "box",
+            "width": 6,
+            "height": 3,
+            "depth": 9,
+            "x": 0,
+            "y": -14,
+            "z": 1.5,
+            "color": "#8B4513",
+            "name": "foot-left"
+          }
+        ],
+        "position": {
+          "x": -3,
+          "y": 16,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "right leg": {
+        "shapes": [
+          {
+            "type": "box",
+            "width": 5.5,
+            "height": 7,
+            "depth": 5.5,
+            "x": 0,
+            "y": -3.5,
+            "z": 0,
+            "color": "#654321",
+            "name": "thigh-right"
+          },
+          {
+            "type": "box",
+            "width": 4.5,
+            "height": 6,
+            "depth": 4.5,
+            "x": 0,
+            "y": -9.5,
+            "z": 0,
+            "color": "#654321",
+            "name": "shin-right"
+          },
+          {
+            "type": "box",
+            "width": 6,
+            "height": 3,
+            "depth": 9,
+            "x": 0,
+            "y": -14,
+            "z": 1.5,
+            "color": "#8B4513",
+            "name": "foot-right"
+          }
+        ],
+        "position": {
+          "x": 3,
+          "y": 16,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "bow": {
+        "shapes": [
+          {
+            "type": "cylinder",
+            "size": 1,
+            "height": 22,
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "color": "#8B4513",
+            "name": "bow-stave",
+            "rotationX": 0,
+            "rotationY": 0,
+            "rotationZ": 0
+          },
+          {
+            "type": "box",
+            "width": 0.5,
+            "height": 0.5,
+            "depth": 20,
+            "x": 2,
+            "y": 0,
+            "z": 0,
+            "color": "#F5DEB3",
+            "name": "bowstring",
+            "rotationX": 90
+          }
+        ],
+        "position": {
+          "x": -10,
+          "y": 20,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "quiver": {
+        "shapes": [
+          {
+            "type": "cylinder",
+            "size": 3,
+            "height": 12,
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "color": "#654321",
+            "name": "quiver-body",
+            "rotationX": 0
+          },
+          {
+            "type": "cylinder",
+            "size": 0.3,
+            "height": 8,
+            "x": 1,
+            "y": 2,
+            "z": 0,
+            "color": "#8B4513",
+            "name": "arrow-shaft-1",
+            "rotationX": 0
+          },
+          {
+            "type": "cylinder",
+            "size": 0.3,
+            "height": 8,
+            "x": -1,
+            "y": 2,
+            "z": 0,
+            "color": "#8B4513",
+            "name": "arrow-shaft-2",
+            "rotationX": 0
+          },
+          {
+            "type": "cylinder",
+            "size": 0.3,
+            "height": 8,
+            "x": 0,
+            "y": 2,
+            "z": 1,
+            "color": "#8B4513",
+            "name": "arrow-shaft-3",
+            "rotationX": 0
+          }
+        ],
+        "position": {
+          "x": 4,
+          "y": 28,
+          "z": -6
+        },
+        "rotation": {
+          "x": 0.010530758205818173,
+          "y": 0.30649684425266305,
+          "z": -0.17878982581405395
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "arrow": {
+        "shapes": [
+          {
+            "type": "cylinder",
+            "size": 0.4,
+            "height": 16,
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "color": "#8B4513",
+            "name": "arrow-shaft",
+            "rotationX": 90
+          },
+          {
+            "type": "cone",
+            "size": 1,
+            "height": 3,
+            "x": 0,
+            "y": 0,
+            "z": 8,
+            "color": "#C0C0C0",
+            "name": "arrow-head",
+            "rotationX": 90
+          },
+          {
+            "type": "box",
+            "width": 0.5,
+            "height": 2,
+            "depth": 1.5,
+            "x": 0,
+            "y": 0,
+            "z": -8,
+            "color": "#228B22",
+            "name": "arrow-fletching",
+            "rotationX": 0
+          }
+        ],
+        "position": {
+          "x": 4.200542005420088,
+          "y": 31.73854447439353,
+          "z": -6.368563685636856
+        },
+        "rotation": {
+          "x": 1.4303186065124265,
+          "y": -0.20433122950177496,
+          "z": -0.0255414036877225
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      }
+    }
+  }
+}

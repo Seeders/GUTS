@@ -1,0 +1,207 @@
+{
+  "title": "Necromancer",
+  "size": 13,
+  "value": 275,  
+  "hp": 90,
+  "speed": 35,
+  "damage": 30,
+  "attackSpeed": 1,
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ],
+      "walk": [
+        {},
+        {},
+        {
+          "shapes": {
+            "shapes": [
+              {
+                "y": 32,
+                "id": 0
+              },
+              {
+                "y": 22,
+                "id": 1
+              },
+              {
+                "y": 12,
+                "id": 2
+              },
+              {
+                "y": 7,
+                "id": 3
+              },
+              {
+                "y": 7,
+                "id": 4
+              },
+              {
+                "y": 7,
+                "id": 5
+              },
+              {
+                "y": 32,
+                "id": 6
+              },
+              {
+                "y": 32,
+                "id": 7
+              },
+              {
+                "y": 29,
+                "id": 8
+              }
+            ]
+          }
+        },
+        {
+          "shapes": {
+            "shapes": [
+              {
+                "y": 32,
+                "id": 0
+              },
+              {
+                "y": 22,
+                "id": 1
+              },
+              {
+                "y": 12,
+                "id": 2
+              },
+              {
+                "y": 7,
+                "id": 3
+              },
+              {
+                "y": 7,
+                "id": 4
+              },
+              {
+                "y": 7,
+                "id": 5
+              },
+              {
+                "y": 32,
+                "id": 6
+              },
+              {
+                "y": 32,
+                "id": 7
+              },
+              {
+                "y": 29,
+                "id": 8
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "model": {
+      "shapes": {
+        "shapes": [
+          {
+            "type": "sphere",
+            "size": 16,
+            "color": "#C2E8F7",
+            "x": 0,
+            "y": 31,
+            "z": 0,
+            "scaleX": 1
+          },
+          {
+            "type": "sphere",
+            "size": 14,
+            "color": "#D8F0F9",
+            "x": 0,
+            "y": 21,
+            "z": 0
+          },
+          {
+            "type": "sphere",
+            "size": 12,
+            "color": "#E5F6FC",
+            "x": 0,
+            "y": 11,
+            "z": 0
+          },
+          {
+            "type": "cone",
+            "size": 8,
+            "height": 14,
+            "color": "#E5F6FC",
+            "x": 6,
+            "y": 6,
+            "z": 0,
+            "rotationX": 180
+          },
+          {
+            "type": "cone",
+            "size": 8,
+            "height": 14,
+            "color": "#E5F6FC",
+            "x": -6,
+            "y": 6,
+            "z": 0,
+            "rotationX": 180
+          },
+          {
+            "type": "cone",
+            "size": 8,
+            "height": 14,
+            "color": "#E5F6FC",
+            "x": 0,
+            "y": 6,
+            "z": 0,
+            "rotationX": 180
+          },
+          {
+            "type": "sphere",
+            "size": 4,
+            "color": "#1A1A1A",
+            "x": 4,
+            "y": 31,
+            "z": 7
+          },
+          {
+            "type": "sphere",
+            "size": 4,
+            "color": "#1A1A1A",
+            "x": -4,
+            "y": 31,
+            "z": 7
+          },
+          {
+            "type": "sphere",
+            "size": 8,
+            "color": "#1A1A1A",
+            "x": 0,
+            "y": 28,
+            "z": 4,
+            "rotationX": 45,
+            "rotationY": 0,
+            "rotationZ": 0
+          }
+        ],
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      }
+    }
+  }
+}
