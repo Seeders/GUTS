@@ -1,15 +1,22 @@
 class ShapeFactory {
-    constructor(palette, textures, libraryClasses) {
+    constructor(palette, textures, libraryClasses, gltfModelScale = 32) {
         this.gltfCache = new Map();
         this.gltfLoader = new THREE_.GLTFLoader();
         this.palette = palette;
         this.textures = textures;
         this.skeleUtils = THREE_.SkeletonUtils;   
-        this.urlRoot = "/";     
+        this.urlRoot = "/";
+        this.gltfModelScale = gltfModelScale; // Add GLTF scale parameter
     }
+    
     setURLRoot(root){
         this.urlRoot = root;
     }
+    
+    setGLTFScale(scale) {
+        this.gltfModelScale = scale;
+    }
+    
     async createMergedGroupFromJSON(model, frameData, groupName) {
         let mergedGroup = this.getMergedGroup(model, frameData, groupName);
         if( mergedGroup){
@@ -18,6 +25,7 @@ class ShapeFactory {
             return null;
         }
     }
+    
     async createGroupFromJSON(groupName, groupData) {
         const group = new THREE.Group();
         group.name = groupName;
@@ -31,6 +39,7 @@ class ShapeFactory {
                 await this.handlePrimitiveShape(shape, index, group);
             }
         }));
+        
         if(groupData.position){            
             group.position.x = groupData.position.x || 0;
             group.position.y = groupData.position.y || 0;
@@ -55,16 +64,25 @@ class ShapeFactory {
         const applyTransformations = (model, gltf) => {
             // Extract animations
             const animations = gltf.animations;
+            
+            // Apply individual shape transformations first
             model.position.set(
                 (shape.position ? shape.position.x : shape.x) || 0, 
                 (shape.position ? shape.position.y : shape.y) || 0, 
                 (shape.position ? shape.position.z : shape.z) || 0
             );
+            
+            // Apply shape-specific scale first, then multiply by global GLTF scale
+            const shapeScaleX = (shape.scale ? shape.scale.x : shape.scaleX) || 1;
+            const shapeScaleY = (shape.scale ? shape.scale.y : shape.scaleY) || 1;
+            const shapeScaleZ = (shape.scale ? shape.scale.z : shape.scaleZ) || 1;
+            
             model.scale.set(
-                (shape.scale ? shape.scale.x : shape.scaleX) || 1,
-                (shape.scale ? shape.scale.y : shape.scaleY) || 1,
-                (shape.scale ? shape.scale.z : shape.scaleZ) || 1
+                shapeScaleX * this.gltfModelScale,
+                shapeScaleY * this.gltfModelScale,
+                shapeScaleZ * this.gltfModelScale
             );
+            
             model.rotation.set(
                 ((shape.rotation ? shape.rotation.x : shape.rotationX) || 0) * Math.PI / 180,
                 ((shape.rotation ? shape.rotation.y : shape.rotationY) || 0) * Math.PI / 180,
@@ -101,11 +119,10 @@ class ShapeFactory {
                 animations: animations
             };
     
+            console.log(`Applied GLTF scale ${this.gltfModelScale} to model. Final scale:`, model.scale);
             group.add(model);
     
             if (animations && animations.length > 0) {
- 
-    
                 const mixer = new THREE.AnimationMixer(model);
                 const action = mixer.clipAction(animations[0]);
                 action.play();
@@ -124,13 +141,11 @@ class ShapeFactory {
                 const skeleton = skinnedMesh.skeleton;
                 model.userData.skeleton = skeleton;                
             }         
-
         };
     
         if (shape.url) {
             const cached = this.gltfCache.get(shape.url);
             if (cached) {
-                
                 const clonedScene = this.skeleUtils.clone(cached.scene);
                 applyTransformations(clonedScene, cached);
             } else if (shape.url && location.hostname !== "") {
@@ -240,7 +255,7 @@ class ShapeFactory {
         const mesh = new THREE.Mesh(geometry, material);
         mesh.userData = { isShape: true, castShadow: true, index: index };
         
-        // Position and rotation
+        // Position and rotation for primitive shapes (no global scale applied)
         mesh.position.set(
             (shape.position && shape.position.x ? shape.position.x : shape.x) || 0, 
             (shape.position && shape.position.y ? shape.position.y : shape.y) || 0, 
@@ -256,6 +271,7 @@ class ShapeFactory {
             (shape.scale && shape.scale.y ? shape.scale.y : shape.scaleY) || 1,
             (shape.scale && shape.scale.z ? shape.scale.z : shape.scaleZ) || 1
         );
+        
         group.add(mesh);
     }
 
@@ -395,5 +411,4 @@ class ShapeFactory {
             delete frameData[groupName];
         }
     }
-
 }
