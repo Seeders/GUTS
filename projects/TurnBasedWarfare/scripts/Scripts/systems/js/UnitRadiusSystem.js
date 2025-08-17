@@ -4,7 +4,7 @@ class UnitRadiusSystem {
         this.game.unitRadiusSystem = this;        
         this.componentTypes = this.game.componentManager.getComponentTypes();
         this.debugCircles = new Map(); // entityId -> { sizeCircle, attackCircle }
-        this.enabled = true; // Toggle this to show/hide circles
+        this.enabled = false; // Toggle this to show/hide circles
         
         // Visual configuration
         this.SIZE_CIRCLE_COLOR = 0x00ff00;      // Green for unit size
@@ -34,10 +34,10 @@ class UnitRadiusSystem {
     
     updateEntityCircles(entityId) {
         const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-        const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
+        const collision = this.game.getComponent(entityId, this.componentTypes.COLLISION);
         const combat = this.game.getComponent(entityId, this.componentTypes.COMBAT);
         
-        if (!pos || !unitType) return;
+        if (!pos || !collision) return;
         
         // Get or create debug circles for this entity
         let circles = this.debugCircles.get(entityId);
@@ -51,14 +51,14 @@ class UnitRadiusSystem {
         }
         
         // Update positions
-        circles.sizeCircle.position.set(pos.x, 50, pos.y); // y=1 to avoid z-fighting
-        circles.attackCircle.position.set(pos.x, 60, pos.y); // y=2 to be above size circle
+        circles.sizeCircle.position.set(pos.x, pos.y + 50, pos.z); // y=1 to avoid z-fighting
+        circles.attackCircle.position.set(pos.x, pos.y + 60, pos.z); // y=2 to be above size circle
         
         // Update sizes
-        const unitRadius = this.getUnitRadius(unitType);
-        const attackRange = this.getAttackRange(combat, unitType);
+        const unitRadius = this.getUnitRadius(collision);
+        const attackRange = this.getAttackRange(combat, collision);
         
-        console.log(`Entity ${entityId}: unitRadius=${unitRadius}, attackRange=${attackRange}, pos=(${pos.x}, ${pos.y})`);
+        //console.log(`Entity ${entityId}: unitRadius=${unitRadius}, attackRange=${attackRange}, pos=(${pos.x}, ${pos.y})`);
         
         // Scale the circles - base circle is 50 units radius, so scale accordingly
         circles.sizeCircle.scale.setScalar(unitRadius / 50);
@@ -117,27 +117,19 @@ class UnitRadiusSystem {
         return { sizeCircle, attackCircle };
     }
     
-    getUnitRadius(unitType) {
+    getUnitRadius(collision) {
         // Use the same logic as your MovementSystem
-        if (unitType && unitType.size) {
-            return unitType.size; 
+        if (collision && collision.radius) {
+            return collision.radius; 
         }
         
-        const collections = this.game.getCollections && this.game.getCollections();
-        if (collections && collections.units && unitType) {
-            const unitDef = collections.units[unitType.id || unitType.type];
-            if (unitDef && unitDef.size) {
-                return unitDef.size;
-            }
-        }
-        
-        return this.game.movementSystem.DEFAULT_UNIT_RADIUS;
+        return 0.1;
     }
     
-    getAttackRange(combat, unitType) {
+    getAttackRange(combat, collision) {
         if (!combat) return 0;
         
-        const unitRadius = this.getUnitRadius(unitType);
+        const unitRadius = this.getUnitRadius(collision);
         const attackRange = Math.max(combat.range, unitRadius);
         
         return attackRange;

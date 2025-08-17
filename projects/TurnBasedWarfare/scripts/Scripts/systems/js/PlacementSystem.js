@@ -3,14 +3,25 @@ class PlacementSystem {
         this.game = app;
         this.game.placementSystem = this;
         
-        // 3D mouse picking
         this.raycaster = new THREE.Raycaster();
         this.mouse = new THREE.Vector2();
         this.canvas = document.getElementById('gameCanvas');
         
-        // Unit placement tracking
-        this.playerPlacements = []; // Array of {x, y, z, unitType, roundPlaced}
-        this.enemyPlacements = [];  // Array of {x, y, z, unitType, roundPlaced}
+        this.playerPlacements = [];
+        this.enemyPlacements = [];
+        
+        this.config = {
+            maxUnitsPerRound: 10,
+            maxCombinationsToCheck: 10000,
+            unitPlacementDelay: 200,
+            terrainPadding: 20,
+            unitEfficiencyWeights: {
+                hp: 0.3,
+                damage: 0.4,
+                range: 0.2,
+                speed: 0.1
+            }
+        };
     }
     
     handleCanvasClick(event) {
@@ -31,26 +42,20 @@ class PlacementSystem {
             return;
         }
         
-        // Get the terrain height at the clicked position
         const terrainHeight = this.getTerrainHeightAtPosition(worldPosition.x, worldPosition.z);
         const unitY = terrainHeight !== null ? terrainHeight : 0;
         
-        // Create unit with proper 3D position using terrain height
         const entityId = this.createUnit(worldPosition.x, unitY, worldPosition.z, state.selectedUnitType, 'player');
         state.playerGold -= state.selectedUnitType.value;
         
-        // Remember this placement for future rounds
         this.playerPlacements.push({
             x: worldPosition.x,
             y: unitY,
             z: worldPosition.z,
-            unitType: { ...state.selectedUnitType }, // Clone the unit type
+            unitType: { ...state.selectedUnitType },
             roundPlaced: state.round,
             entityId: entityId
         });
-        
-        console.log(`Saved player placement at (${worldPosition.x.toFixed(1)}, ${unitY.toFixed(1)}, ${worldPosition.z.toFixed(1)})`);
-        console.log(`Total player placements: ${this.playerPlacements.length}`);
         
         this.game.battleLogSystem.add(`Deployed ${state.selectedUnitType.title}`, 'log-victory');
         this.game.effectsSystem.showPlacementEffect(
@@ -59,38 +64,25 @@ class PlacementSystem {
         );
     }
     
-    // Respawn all previously placed units at the start of a new round
     respawnPlayerUnits() {
-        console.log(`Respawning ${this.playerPlacements.length} player units for round ${this.game.state.round}`);
-        
-        this.playerPlacements.forEach((placement, index) => {
-            const entityId = this.createUnit(placement.x, placement.y, placement.z, placement.unitType, 'player');
-            // Update the entity ID for this placement
-            placement.entityId = entityId;
-            
-            console.log(`Respawned player unit ${index + 1}: ${placement.unitType.title} at (${placement.x.toFixed(1)}, ${placement.y.toFixed(1)}, ${placement.z.toFixed(1)})`);
-        });
-        
+        this.respawnUnits(this.playerPlacements, 'player');
         if (this.playerPlacements.length > 0) {
             this.game.battleLogSystem.add(`Respawned ${this.playerPlacements.length} player units from previous rounds`);
         }
     }
     
-    // Respawn enemy units from previous rounds
     respawnEnemyUnits() {
-        console.log(`Respawning ${this.enemyPlacements.length} enemy units for round ${this.game.state.round}`);
-        
-        this.enemyPlacements.forEach((placement, index) => {
-            const entityId = this.createUnit(placement.x, placement.y, placement.z, placement.unitType, 'enemy');
-            // Update the entity ID for this placement
-            placement.entityId = entityId;
-            
-            console.log(`Respawned enemy unit ${index + 1}: ${placement.unitType.title} at (${placement.x.toFixed(1)}, ${placement.y.toFixed(1)}, ${placement.z.toFixed(1)})`);
-        });
-        
+        this.respawnUnits(this.enemyPlacements, 'enemy');
         if (this.enemyPlacements.length > 0) {
             this.game.battleLogSystem.add(`Enemy respawned ${this.enemyPlacements.length} units from previous rounds`);
         }
+    }
+    
+    respawnUnits(placements, team) {
+        placements.forEach(placement => {
+            const entityId = this.createUnit(placement.x, placement.y, placement.z, placement.unitType, team);
+            placement.entityId = entityId;
+        });
     }
     
     getWorldPositionFromMouse(event) {
@@ -113,7 +105,6 @@ class PlacementSystem {
             return this.game.worldSystem.ground;
         }
         
-        // Fallback search
         for (let child of this.game.scene.children) {
             if (child.isMesh && child.geometry?.type === 'PlaneGeometry') {
                 return child;
@@ -126,36 +117,21 @@ class PlacementSystem {
         const terrainSize = this.game.worldSystem?.terrainSize || 768;
         const halfSize = terrainSize / 2;
         
-        // Check bounds (X and Z for horizontal plane)
         const withinBounds = worldPosition.x >= -halfSize && worldPosition.x <= halfSize &&
                            worldPosition.z >= -halfSize && worldPosition.z <= halfSize;
         
-        // Player side is left half (x <= 0)
         return withinBounds && worldPosition.x <= 0;
     }
     
     getTerrainHeightAtPosition(worldX, worldZ) {
-        // Delegate to WorldSystem
         if (this.game.worldSystem && this.game.worldSystem.getTerrainHeightAtPosition) {
             return this.game.worldSystem.getTerrainHeightAtPosition(worldX, worldZ);
         }
-        return 0; // Fallback to flat ground
+        return 0;
     }
     
-    /**
-     * Calculate the initial facing direction for a unit based on its team
-     * @param {string} team - 'player' or 'enemy'
-     * @returns {number} - Rotation angle in radians for Y-axis rotation
-     */
     calculateInitialFacing(team) {
-        if (team === 'player') {
-            // Player units face right (towards positive X where enemies spawn)
-            return 0; // Facing positive X direction
-        } else if (team === 'enemy') {
-            // Enemy units face left (towards negative X where players spawn)
-            return Math.PI; // Facing negative X direction (180 degrees)
-        }
-        return 0; // Default facing
+        return team === 'player' ? 0 : Math.PI;
     }
     
     createUnit(worldX, worldY, worldZ, unitType, team) {
@@ -163,10 +139,8 @@ class PlacementSystem {
         const ComponentTypes = this.game.componentManager.getComponentTypes();
         const Components = this.game.componentManager.getComponents();
         
-        // Calculate initial facing direction
         const initialFacing = this.calculateInitialFacing(team);
         
-        // Add components with full 3D position
         this.game.addComponent(entity, ComponentTypes.POSITION, Components.Position(worldX, worldY, worldZ));
         this.game.addComponent(entity, ComponentTypes.VELOCITY, Components.Velocity(0, 0, 0, unitType.speed * 20));
         this.game.addComponent(entity, ComponentTypes.RENDERABLE, Components.Renderable("units", unitType.id));
@@ -177,114 +151,227 @@ class PlacementSystem {
         this.game.addComponent(entity, ComponentTypes.UNIT_TYPE, Components.UnitType(unitType.id, unitType.title, unitType.value));
         this.game.addComponent(entity, ComponentTypes.AI_STATE, Components.AIState('idle'));
         this.game.addComponent(entity, ComponentTypes.ANIMATION, Components.Animation());
-        
-        // Add initial facing component
         this.game.addComponent(entity, ComponentTypes.FACING, Components.Facing(initialFacing));
+        this.game.addComponent(entity, ComponentTypes.EQUIPMENT, Components.Equipment());
         
-        if(unitType.projectile){
-            console.log('created ranged Unit', entity, unitType, unitType.projectile);
-        }
+        this.equipUnitFromDefinition(entity, unitType);
+        
         return entity;
     }
     
-    placeEnemyUnits(onComplete) {
-        console.log('placeEnemyUnits called with callback:', !!onComplete);
+    async equipUnitFromDefinition(entityId, unitType) {
+        if (!this.game.equipmentSystem || !unitType.equipment) return;
         
-        // First, respawn existing enemy units from previous rounds
+        setTimeout(async () => {
+            for (const equippedItem of unitType.equipment) {
+                const itemData = this.getItemFromCollection(equippedItem.item);
+                if (itemData) {
+                    try {
+                        await this.game.equipmentSystem.equipItem(entityId, equippedItem, itemData, equippedItem.item);
+                    } catch (error) {
+                        console.warn(`Failed to equip ${equippedItem.item} on slot ${equippedItem.slot}:`, error);
+                    }
+                }
+            }
+        }, 100);
+    }
+    
+    getItemFromCollection(itemId) {
+        const collections = this.game.getCollections();
+        if (!collections || !collections.items || !collections.items[itemId]) {
+            console.warn(`Item ${itemId} not found in collections`);
+            return null;
+        }
+        
+        return collections.items[itemId];
+    }
+    
+    placeEnemyUnits(onComplete) {
         this.respawnEnemyUnits();
         
-        // Calculate enemy gold budget for this round (same as player)
         const round = this.game.state.round;
-        const enemyGoldBudget = 50 + (round * 50); // Same formula as player
-        
-        // Calculate how much they can spend on new units
+        const enemyTotalGold = this.calculateEnemyTotalGold(round);
         const existingValue = this.calculateExistingEnemyValue();
-        const availableGold = Math.max(0, enemyGoldBudget - existingValue);
+        const availableGold = Math.max(0, enemyTotalGold - existingValue);
         
-        console.log(`Enemy Round ${round}: ${enemyGoldBudget} total budget, ${existingValue} existing value, ${availableGold} available for new units`);
+        console.log(`Enemy Round ${round}: ${enemyTotalGold} total budget, ${existingValue} existing value, ${availableGold} available for new units`);
         
-        // Add new enemy units within budget
-        this.addNewEnemyUnitsWithBudget(availableGold, () => {
-            console.log('Enemy unit placement completed');
-            
-            // Call the completion callback if provided
-            if (onComplete && typeof onComplete === 'function') {
-                console.log('Calling placement completion callback');
-                onComplete();
-            }
-        });
+        this.addNewEnemyUnitsWithOptimalBudget(availableGold, onComplete);
     }
     
     calculateExistingEnemyValue() {
-        let totalValue = 0;
-        this.enemyPlacements.forEach(placement => {
-            totalValue += placement.unitType.value || 0;
-        });
-        return totalValue;
+        return this.enemyPlacements.reduce((total, placement) => total + (placement.unitType.value || 0), 0);
     }
     
-    addNewEnemyUnitsWithBudget(budget, onComplete) {
+    calculateEnemyTotalGold(round) {
+        let totalGold = 0;
+        for (let r = 1; r <= round; r++) {
+            totalGold += this.game.phaseSystem.calculateRoundGold(r);
+        }
+        return totalGold;
+    }
+    
+    findOptimalUnitCombination(budget, availableUnits, maxUnits = this.config.maxUnitsPerRound) {
+        const units = availableUnits.map((unit, index) => ({
+            id: Object.keys(this.game.getCollections().units)[availableUnits.indexOf(unit)],
+            ...unit,
+            index: index
+        })).filter(unit => unit.value <= budget);
+        
+        if (units.length === 0) {
+            return { units: [], totalCost: 0, efficiency: 0 };
+        }
+        
+        const validCombinations = this.generateValidCombinations(units, budget, maxUnits);
+        
+        let bestCombination = { units: [], totalCost: 0, efficiency: 0 };
+        
+        for (const combination of validCombinations) {
+            const efficiency = combination.totalCost / budget;
+            if (efficiency > bestCombination.efficiency) {
+                bestCombination = combination;
+            }
+        }
+        
+        return bestCombination;
+    }
+    
+    generateValidCombinations(units, budget, maxUnits) {
+        const combinations = [];
+        
+        combinations.push(this.getGreedyCombination(units, budget, maxUnits));
+        
+        this.generateCombinationsRecursive(units, budget, maxUnits, [], 0, 0, 0, combinations, this.config.maxCombinationsToCheck);
+        
+        return combinations;
+    }
+    
+    generateCombinationsRecursive(units, budget, maxUnits, currentUnits, currentCost, currentCount, startIndex, combinations, maxCombinations) {
+        if (combinations.length >= maxCombinations) return;
+        
+        if (currentUnits.length > 0 && currentCost <= budget) {
+            combinations.push({
+                units: [...currentUnits],
+                totalCost: currentCost,
+                efficiency: currentCost / budget
+            });
+        }
+        
+        for (let i = startIndex; i < units.length && currentCount < maxUnits; i++) {
+            const unit = units[i];
+            const newCost = currentCost + unit.value;
+            
+            if (newCost > budget) continue;
+            
+            currentUnits.push(unit);
+            this.generateCombinationsRecursive(
+                units, budget, maxUnits, currentUnits, newCost, currentCount + 1, i, combinations, maxCombinations
+            );
+            currentUnits.pop();
+        }
+    }
+    
+    getGreedyCombination(units, budget, maxUnits) {
+        const sortedUnits = [...units].sort((a, b) => {
+            const aEfficiency = this.calculateUnitEfficiency(a);
+            const bEfficiency = this.calculateUnitEfficiency(b);
+            return bEfficiency - aEfficiency;
+        });
+        
+        const selectedUnits = [];
+        let remainingBudget = budget;
+        let unitsPlaced = 0;
+        
+        for (const unit of sortedUnits) {
+            while (remainingBudget >= unit.value && unitsPlaced < maxUnits) {
+                selectedUnits.push(unit);
+                remainingBudget -= unit.value;
+                unitsPlaced++;
+            }
+        }
+        
+        return {
+            units: selectedUnits,
+            totalCost: budget - remainingBudget,
+            efficiency: (budget - remainingBudget) / budget
+        };
+    }
+    
+    calculateUnitEfficiency(unit) {
+        const weights = this.config.unitEfficiencyWeights;
+        const hp = unit.hp || 100;
+        const damage = unit.damage || 10;
+        const range = unit.range || 1;
+        const speed = unit.speed || 1;
+        
+        const combatValue = (hp * weights.hp) + (damage * weights.damage) + (range * weights.range) + (speed * weights.speed);
+        return combatValue / unit.value;
+    }
+    
+    addNewEnemyUnitsWithOptimalBudget(budget, onComplete) {
         const UnitTypes = this.game.getCollections().units;
         const availableUnits = Object.values(UnitTypes);
-        const availableUnitKeys = Object.keys(UnitTypes);
-        const terrainSize = this.game.worldSystem?.terrainSize || 768;
         
-        // Enemy placement area (right half, using X and Z coordinates)
-        const padding = 20;
-        const enemyMinX = padding;
-        const enemyMaxX = terrainSize / 2 - padding;
-        const enemyMinZ = -terrainSize / 2 + padding;
-        const enemyMaxZ = terrainSize / 2 - padding;
-
-        let remainingBudget = budget;
-        let newUnitsPlaced = 0;
+        if (budget <= 0) {
+            if (onComplete && typeof onComplete === 'function') {
+                onComplete();
+            }
+            return;
+        }
         
-        // Track units being placed for animation timing
-        const unitsToPlace = [];
+        const optimalCombination = this.findOptimalUnitCombination(budget, availableUnits);
         
-        // Pre-calculate all units to place
-        while (remainingBudget > 0 && newUnitsPlaced < 10) { // Max 10 new units per round
-            // Find units they can afford
-            const affordableUnits = availableUnits.filter((unit, index) => {
-                const unitData = { id: availableUnitKeys[index], ...unit };
-                return unitData.value <= remainingBudget;
-            });
-            
-            if (affordableUnits.length === 0) break; // Can't afford any more units
-            
-            // Choose a random affordable unit
-            const chosen = Math.floor(Math.random() * affordableUnits.length);
-            const unitType = affordableUnits[chosen];
-            const unitId = availableUnitKeys[availableUnits.indexOf(unitType)];
-            const fullUnitType = { id: unitId, ...unitType };
-            
+        if (optimalCombination.units.length === 0) {
+            if (onComplete && typeof onComplete === 'function') {
+                onComplete();
+            }
+            return;
+        }
+        
+        const unitsToPlace = this.prepareUnitsForPlacement(optimalCombination.units);
+        this.placeUnitsWithTiming(unitsToPlace, optimalCombination, budget, onComplete);
+    }
+    
+    prepareUnitsForPlacement(units) {
+        const { enemyMinX, enemyMaxX, enemyMinZ, enemyMaxZ } = this.getEnemyPlacementBounds();
+        
+        return units.map(unit => {
             const worldX = enemyMinX + Math.random() * (enemyMaxX - enemyMinX);
             const worldZ = enemyMinZ + Math.random() * (enemyMaxZ - enemyMinZ);
-            
-            // Get the terrain height at this position
             const terrainHeight = this.getTerrainHeightAtPosition(worldX, worldZ);
             const worldY = terrainHeight !== null ? terrainHeight : 0;
             
-            unitsToPlace.push({
-                worldX, worldY, worldZ, fullUnitType, round: this.game.state.round
-            });
-            
-            remainingBudget -= fullUnitType.value;
-            newUnitsPlaced++;
-        }
+            return {
+                worldX, worldY, worldZ,
+                fullUnitType: unit,
+                round: this.game.state.round
+            };
+        });
+    }
+    
+    getEnemyPlacementBounds() {
+        const terrainSize = this.game.worldSystem?.terrainSize || 768;
+        const padding = this.config.terrainPadding;
         
-        console.log(`Placing ${unitsToPlace.length} enemy units with staggered timing`);
-        
-        // Place units with small delays for visual effect
+        return {
+            enemyMinX: padding,
+            enemyMaxX: terrainSize / 2 - padding,
+            enemyMinZ: -terrainSize / 2 + padding,
+            enemyMaxZ: terrainSize / 2 - padding
+        };
+    }
+    
+    placeUnitsWithTiming(unitsToPlace, optimalCombination, budget, onComplete) {
         let placedCount = 0;
         
         const placeNextUnit = () => {
             if (placedCount >= unitsToPlace.length) {
-                // All units placed, log summary and call completion
                 const totalEnemyUnits = this.enemyPlacements.length;
-                this.game.battleLogSystem.add(`Enemy deployed ${newUnitsPlaced} new units (${totalEnemyUnits} total)! Budget: ${budget - remainingBudget}/${budget}g`);
+                const efficiency = (optimalCombination.totalCost / budget * 100).toFixed(1);
+                this.game.battleLogSystem.add(
+                    `Enemy deployed ${unitsToPlace.length} new units (${totalEnemyUnits} total)! Budget: ${optimalCombination.totalCost}/${budget}g (${efficiency}% efficiency)`
+                );
                 
-                console.log('All enemy units placed, calling completion callback');
                 if (onComplete && typeof onComplete === 'function') {
                     onComplete();
                 }
@@ -294,7 +381,6 @@ class PlacementSystem {
             const unit = unitsToPlace[placedCount];
             const entityId = this.createUnit(unit.worldX, unit.worldY, unit.worldZ, unit.fullUnitType, 'enemy');
             
-            // Remember this enemy placement for future rounds
             this.enemyPlacements.push({
                 x: unit.worldX,
                 y: unit.worldY,
@@ -304,39 +390,21 @@ class PlacementSystem {
                 entityId: entityId
             });
             
-            console.log(`Enemy placed: ${unit.fullUnitType.title} (${unit.fullUnitType.value}g) - Unit ${placedCount + 1}/${unitsToPlace.length}`);
-            
             placedCount++;
             
-            // Place next unit after a short delay (for visual effect)
             if (placedCount < unitsToPlace.length) {
-                setTimeout(placeNextUnit, 200); // 200ms between placements
+                setTimeout(placeNextUnit, this.config.unitPlacementDelay);
             } else {
-                // This was the last unit, call completion immediately
                 placeNextUnit();
             }
         };
         
-        // Start placing units
-        if (unitsToPlace.length > 0) {
-            placeNextUnit();
-        } else {
-            // No units to place, call completion immediately
-            console.log('No enemy units to place, calling completion callback immediately');
-            if (onComplete && typeof onComplete === 'function') {
-                onComplete();
-            }
-        }
+        placeNextUnit();
     }
     
-    // Call this when starting a new placement phase (after any round result)
     startNewPlacementPhase() {
-        console.log('Starting new placement phase - respawning player units');
-        
-        // ALWAYS respawn all existing player units, regardless of who won last round
         this.respawnPlayerUnits();
         
-        // Show summary
         if (this.playerPlacements.length > 0) {
             this.game.battleLogSystem.add(`Your army: ${this.playerPlacements.length} units ready for battle!`);
         } else {
@@ -344,15 +412,12 @@ class PlacementSystem {
         }
     }
     
-    // Reset all placements (for game restart or defeat)
     resetAllPlacements() {
-        console.log('Resetting all unit placements');
         this.playerPlacements = [];
         this.enemyPlacements = [];
         this.game.battleLogSystem.add('All unit placements cleared');
     }
     
-    // Get placement statistics
     getPlacementStats() {
         return {
             playerUnits: this.playerPlacements.length,

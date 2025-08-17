@@ -5,7 +5,7 @@ class TeamHealthSystem {
         this.componentTypes = this.game.componentManager.getComponentTypes();
         
         // Team health configuration
-        this.MAX_TEAM_HEALTH = 1000;
+        this.MAX_TEAM_HEALTH = 2500;
         this.teamHealth = {
             player: this.MAX_TEAM_HEALTH,
             enemy: this.MAX_TEAM_HEALTH
@@ -317,13 +317,12 @@ class TeamHealthSystem {
     }
     
     dealDamageToTeam(team, damage) {
-        const adjustedDamage = Math.max(1, Math.floor(damage / 3)); // Scale down damage
-        this.teamHealth[team] = Math.max(0, this.teamHealth[team] - adjustedDamage);
+        this.teamHealth[team] = Math.max(0, this.teamHealth[team] - damage);
         
-        console.log(`Dealt ${adjustedDamage} damage to ${team} team. Health: ${this.teamHealth[team]}/${this.MAX_TEAM_HEALTH}`);
+        console.log(`Dealt ${damage} damage to ${team} team. Health: ${this.teamHealth[team]}/${this.MAX_TEAM_HEALTH}`);
         
         this.updateHealthDisplay();
-        this.showDamageEffect(team, adjustedDamage);
+        this.showDamageEffect(team, damage);
     }
     
     showDamageEffect(team, damage) {

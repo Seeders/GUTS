@@ -1,0 +1,108 @@
+{
+  "title": "Siege Catapult",
+  "size": 25,
+  "value": 300,  
+  "hp": 200,
+  "speed": 10,
+  "damage": 100,  
+  "attackSpeed": 0.3,
+  "range": 250,
+  "projectile": "missile",
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ],
+      "walk": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "projects/TurnBasedWarfare/resources/models/walk/walk.glb",
+                "id": 0
+              }
+            ]
+          }
+        }
+      ],
+      "attack": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "projects/TurnBasedWarfare/resources/models/throw/throw.glb",
+                "id": 0
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "model": {
+      "shapes": {
+        "shapes": [
+          {
+            "type": "sphere",
+            "size": 16,
+            "color": "#3A6A8A",
+            "x": 0,
+            "y": 24,
+            "z": 0,
+            "scaleX": 1
+          },
+          {
+            "type": "sphere",
+            "size": 8,
+            "color": "#FFFFFF",
+            "x": 0,
+            "y": 24,
+            "z": 6
+          },
+          {
+            "type": "sphere",
+            "size": 4,
+            "color": "#000000",
+            "x": 0,
+            "y": 24,
+            "z": 8.5
+          },
+          {
+            "type": "cylinder",
+            "size": 6,
+            "height": 4,
+            "color": "#2A5A7A",
+            "x": -8,
+            "y": 22,
+            "z": 0,
+            "rotationZ": 30
+          },
+          {
+            "type": "cylinder",
+            "size": 6,
+            "height": 4,
+            "color": "#2A5A7A",
+            "x": 8,
+            "y": 22,
+            "z": 0,
+            "rotationZ": -30
+          }
+        ],
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      }
+    }
+  }
+}

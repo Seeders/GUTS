@@ -1,0 +1,84 @@
+{
+  "title": "Crossbow Seargeant",
+  "size": 25,
+  "value": 85,  
+  "hp": 75,
+  "speed": 40,
+  "damage": 28,
+  "attackSpeed": 1,
+  "range": 150,
+  "projectile": "bolt",
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ],
+      "walk": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "projects/TurnBasedWarfare/resources/models/walk/walk.glb",
+                "id": 0
+              }
+            ]
+          }
+        }
+      ],
+      "attack": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "projects/TurnBasedWarfare/resources/models/throw/throw.glb",
+                "id": 0
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "model": {
+      "main": {
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "shapes": [
+          {
+            "type": "gltf",
+            "url": "projects/TurnBasedWarfare/resources/models/idle_ranger/idle_ranger.glb",
+            "width": 2,
+            "height": 0.2,
+            "depth": 1,
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "rotationX": 0,
+            "rotationY": 0,
+            "rotationZ": 0,
+            "color": "#FFFFFF",
+            "metalness": "0",
+            "roughness": "1",
+            "scale": {
+              "z": 1,
+              "y": 1,
+              "x": 1
+            }
+          }
+        ]
+      }
+    }
+  }
+}

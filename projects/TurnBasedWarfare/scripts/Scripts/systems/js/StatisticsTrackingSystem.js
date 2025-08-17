@@ -160,4 +160,8 @@ class StatisticsTrackingSystem {
     getSessionStats() {
         return { ...this.sessionStats };
     }
+
+    resetSession() {
+        
+    }
 }

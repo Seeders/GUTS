@@ -4,8 +4,8 @@ class CombatAISystem {
         this.game.combatAISystems = this;
         this.componentTypes = this.game.componentManager.getComponentTypes();
         
-        // Configuration variables (adjusted for world coordinates)
-        this.DEFAULT_UNIT_RADIUS = 15;
+        // Configuration variables
+        this.DEFAULT_UNIT_RADIUS = 25;
         this.ATTACK_RANGE_BUFFER = 10;
         this.ALLY_SPACING_DISTANCE = 10;
         this.ENEMY_SPACING_DISTANCE = 5;
@@ -18,12 +18,16 @@ class CombatAISystem {
         this.MOVEMENT_DECISION_INTERVAL = 0.05;
         
         // Animation coordination
-        this.MIN_ATTACK_ANIMATION_TIME = 0.4; // Minimum time to play attack animation
-        this.STATE_CHANGE_COOLDOWN = 0.1; // Prevent rapid state changes
+        this.MIN_ATTACK_ANIMATION_TIME = 0.4;
+        this.STATE_CHANGE_COOLDOWN = 0.1;
         
         // Battle end checking
         this.lastBattleEndCheck = 0;
-        this.BATTLE_END_CHECK_INTERVAL = 1.0; // Check every second as backup
+        this.BATTLE_END_CHECK_INTERVAL = 1.0;
+        
+        // Damage timing system
+        this.pendingDamageEvents = new Map();
+        this.DAMAGE_TIMING_RATIO = 0.5;
     }
     
     update(deltaTime) {
@@ -31,7 +35,8 @@ class CombatAISystem {
         
         const now = Date.now() / 1000;
         
-        // Periodic battle end check as backup
+        this.processPendingDamage(now);
+        
         if (now - this.lastBattleEndCheck > this.BATTLE_END_CHECK_INTERVAL) {
             this.performBattleEndCheck();
             this.lastBattleEndCheck = now;
@@ -47,7 +52,7 @@ class CombatAISystem {
             const team = this.game.getComponent(entityId, this.componentTypes.TEAM);
             const aiState = this.game.getComponent(entityId, this.componentTypes.AI_STATE);
             const vel = this.game.getComponent(entityId, this.componentTypes.VELOCITY);
-            const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
+            const collision = this.game.getComponent(entityId, this.componentTypes.COLLISION);
             
             if(!pos || !vel) return;
             
@@ -65,7 +70,6 @@ class CombatAISystem {
             const aiBehavior = aiState.aiBehavior;
             
             const now = Date.now() / 1000;
-            const unitRadius = this.getUnitRadius(unitType);
             
             // Find enemies
             const enemies = combatUnits.filter(otherId => {
@@ -93,39 +97,81 @@ class CombatAISystem {
                                     (now - aiBehavior.lastDecisionTime > this.MOVEMENT_DECISION_INTERVAL);
             
             if (shouldMakeDecision) {
-                this.makeAIDecision(entityId, pos, combat, team, aiState, enemies, unitRadius, now);
+                this.makeAIDecision(entityId, pos, combat, team, aiState, enemies, collision, now);
                 aiBehavior.lastDecisionTime = now;
             }
             
-            // Handle combat
-            this.handleCombat(entityId, pos, combat, aiState, unitRadius, now);
+            this.handleCombat(entityId, pos, combat, aiState, collision, now);
         });
+    }
+    
+    // CONSOLIDATED: Calculate distances between two entities
+    calculateDistances(pos1, pos2, collision1, collision2) {
+        const dx = pos2.x - pos1.x;
+        const dz = pos2.z - pos1.z;
+        const centerToCenterDistance = Math.sqrt(dx * dx + dz * dz);
+        
+        const radius1 = this.getUnitRadius(collision1);
+        const radius2 = this.getUnitRadius(collision2);
+        
+        const edgeToEdgeDistance = Math.max(0, centerToCenterDistance - radius1 - radius2);
+        const distanceToTargetEdge = Math.max(0, centerToCenterDistance - radius2);
+        
+        return {
+            centerToCenter: centerToCenterDistance,
+            edgeToEdge: edgeToEdgeDistance,
+            attackerCenterToTargetEdge: distanceToTargetEdge,
+            attackerRadius: radius1,
+            targetRadius: radius2
+        };
+    }
+    
+    // CONSOLIDATED: Check if attacker is in range of target
+    isInAttackRange(attackerId, targetId, combat, extraBuffer = 0) {
+        const attackerPos = this.game.getComponent(attackerId, this.componentTypes.POSITION);
+        const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
+        const attackerCollision = this.game.getComponent(attackerId, this.componentTypes.COLLISION);
+        const targetCollision = this.game.getComponent(targetId, this.componentTypes.COLLISION);
+        
+        if (!attackerPos || !targetPos) return false;
+        
+        const distances = this.calculateDistances(attackerPos, targetPos, attackerCollision, targetCollision);
+        const effectiveRange = combat.range + this.ATTACK_RANGE_BUFFER + extraBuffer;
+        
+        return distances.attackerCenterToTargetEdge <= effectiveRange;
+    }
+    
+    // CONSOLIDATED: Check if units are within edge-to-edge range
+    isWithinEdgeToEdgeRange(attackerId, targetId, maxRange) {
+        const attackerPos = this.game.getComponent(attackerId, this.componentTypes.POSITION);
+        const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
+        const attackerCollision = this.game.getComponent(attackerId, this.componentTypes.COLLISION);
+        const targetCollision = this.game.getComponent(targetId, this.componentTypes.COLLISION);
+        
+        if (!attackerPos || !targetPos) return false;
+        
+        const distances = this.calculateDistances(attackerPos, targetPos, attackerCollision, targetCollision);
+        return distances.edgeToEdge <= maxRange;
     }
     
     changeAIState(aiState, newState, now) {
         const aiBehavior = aiState.aiBehavior;
         
-        // Prevent rapid state changes
         if (now - aiBehavior.lastStateChange < this.STATE_CHANGE_COOLDOWN) {
             return false;
         }
         
-        // Special handling for attack state transitions
         if (aiState.state === 'attacking') {
             const attackDuration = now - aiBehavior.lastAttackStart;
-            
-            // Don't interrupt attack animation too early
             if (attackDuration < this.MIN_ATTACK_ANIMATION_TIME) {
                 return false;
             }
         }
         
-        // Only change if it's actually different
         if (aiState.state !== newState) {
             aiState.state = newState;
             aiBehavior.lastStateChange = now;
             
-            // Track when attack states start for animation coordination
             if (newState === 'attacking') {
                 aiBehavior.lastAttackStart = now;
             }
@@ -136,41 +182,24 @@ class CombatAISystem {
         return false;
     }
     
-    makeAIDecision(entityId, pos, combat, team, aiState, enemies, unitRadius, now) {
+    makeAIDecision(entityId, pos, combat, team, aiState, enemies, collision, now) {
         const aiBehavior = aiState.aiBehavior;
         
-        // Find best target (with target stickiness)
         let targetEnemy = this.findBestTarget(pos, enemies, aiBehavior, now);
         
         if (!targetEnemy) return;
         
         const enemyPos = this.game.getComponent(targetEnemy, this.componentTypes.POSITION);
-        const enemyUnitType = this.game.getComponent(targetEnemy, this.componentTypes.UNIT_TYPE);
-        const enemyRadius = this.getUnitRadius(enemyUnitType);
-        
         if (!enemyPos) return;
         
         // Store target info
         aiBehavior.currentTarget = targetEnemy;
         aiBehavior.targetPosition = { x: enemyPos.x, y: enemyPos.y, z: enemyPos.z };
         
-        // Calculate 3D distance (ignoring Y for ground units)
-        const dx = enemyPos.x - pos.x;
-        const dz = enemyPos.z - pos.z;
-        const centerToCenterDistance = Math.sqrt(dx * dx + dz * dz);
-        
-        // Calculate distance from attacker center to target edge
-        const distanceToTargetEdge = Math.max(0, centerToCenterDistance - enemyRadius);
-        
-        // Calculate attack range (weapon range plus buffer)
-        const scaledRange = Math.max(combat.range, 20);
-        const effectiveAttackRange = scaledRange + this.ATTACK_RANGE_BUFFER;
-        
-        if (distanceToTargetEdge <= effectiveAttackRange) {
-            // In range - try to change to attacking state
+        // SIMPLIFIED: Use consolidated range checking
+        if (this.isInAttackRange(entityId, targetEnemy, combat)) {
             this.changeAIState(aiState, 'attacking', now);
         } else {
-            // Need to chase target - try to change to chasing state
             this.changeAIState(aiState, 'chasing', now);
         }
     }
@@ -183,18 +212,15 @@ class CombatAISystem {
             const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
             if (!enemyPos) return;
             
-            // Use 3D distance (ignoring Y for ground units)
             const dx = enemyPos.x - pos.x;
             const dz = enemyPos.z - pos.z;
             const distance = Math.sqrt(dx * dx + dz * dz);
             
-            // Score based on distance (closer = better)
             let score = 1000 - distance;
             
-            // Bonus for current target to prevent switching
             if (aiBehavior.currentTarget === enemyId && 
                 now - aiBehavior.targetLockTime < this.TARGET_SWITCH_COOLDOWN) {
-                score += 300; // Bonus to stick with current target
+                score += 300;
             }
             
             if (score > bestScore) {
@@ -203,7 +229,6 @@ class CombatAISystem {
             }
         });
         
-        // If we're switching targets, reset the lock time
         if (bestTarget !== aiBehavior.currentTarget) {
             aiBehavior.targetLockTime = now;
         }
@@ -211,12 +236,12 @@ class CombatAISystem {
         return bestTarget;
     }
     
-    handleCombat(entityId, pos, combat, aiState, unitRadius, now) {
+    handleCombat(entityId, pos, combat, aiState, collision, now) {
         const aiBehavior = aiState.aiBehavior;
         
         if (!aiBehavior.currentTarget || aiState.state !== 'attacking') return;
         
-        // Check if target still exists and is in range
+        // Check if target still exists
         const targetPos = this.game.getComponent(aiBehavior.currentTarget, this.componentTypes.POSITION);
         if (!targetPos) {
             aiBehavior.currentTarget = null;
@@ -225,42 +250,163 @@ class CombatAISystem {
             return;
         }
         
-        // Calculate 3D distance (ignoring Y for ground units)
-        const dx = targetPos.x - pos.x;
-        const dz = targetPos.z - pos.z;
-        const centerToCenterDistance = Math.sqrt(dx * dx + dz * dz);
-        
-        // Calculate distance from attacker center to target edge
-        const targetUnitType = this.game.getComponent(aiBehavior.currentTarget, this.componentTypes.UNIT_TYPE);
-        const targetRadius = this.getUnitRadius(targetUnitType);
-        const distanceToTargetEdge = Math.max(0, centerToCenterDistance - targetRadius);
-        
-        // Calculate attack range (weapon range plus buffer)
-        const scaledRange = Math.max(combat.range, 20);
-        const effectiveAttackRange = scaledRange + this.ATTACK_RANGE_BUFFER;
-        
-        // If target moved out of range, switch to chasing
-        if (distanceToTargetEdge > effectiveAttackRange) {
+        // SIMPLIFIED: Use consolidated range checking with small buffer for combat
+        if (!this.isInAttackRange(entityId, aiBehavior.currentTarget, combat, 5)) {
             this.changeAIState(aiState, 'chasing', now);
             return;
         }
         
         // Attack if cooldown is ready
         if (now - combat.lastAttack >= 1 / combat.attackSpeed) {
-            // Check if this unit uses projectiles
-            if (combat.projectile && this.game.projectileSystem) {
-                this.fireProjectileAttack(entityId, aiBehavior.currentTarget, combat.projectile);
-            } else {
-                this.attack(entityId, aiBehavior.currentTarget); // Keep melee attack
-            }
+            this.initiateAttack(entityId, aiBehavior.currentTarget, combat, now);
             combat.lastAttack = now;
-            
-            // Reset attack start time for animation coordination
             aiBehavior.lastAttackStart = now;
         }
         
-        // Update target position for MovementSystem to use (full 3D)
+        // Update target position for MovementSystem
         aiBehavior.targetPosition = { x: targetPos.x, y: targetPos.y, z: targetPos.z };
+    }
+
+    initiateAttack(attackerId, targetId, combat, now) {
+        if (combat.projectile && this.game.projectileSystem) {
+            this.scheduleProjectileLaunch(attackerId, targetId, combat, now);
+        } else {
+            this.scheduleMeleeDamage(attackerId, targetId, combat, now);
+        }
+    }
+
+    scheduleMeleeDamage(attackerId, targetId, combat, now) {
+        const attackInterval = 1 / combat.attackSpeed;
+        const damageDelay = attackInterval * this.DAMAGE_TIMING_RATIO;
+        const damageTime = now + damageDelay;
+        
+        const eventId = `${attackerId}_${targetId}_${now}`;
+        this.pendingDamageEvents.set(eventId, {
+            type: 'melee',
+            attackerId: attackerId,
+            targetId: targetId,
+            damage: combat.damage,
+            triggerTime: damageTime,
+            eventId: eventId
+        });
+        
+        this.logAttackStart(attackerId, targetId, 'attacks');
+    }
+
+    scheduleProjectileLaunch(attackerId, targetId, combat, now) {
+        const attackInterval = 1 / combat.attackSpeed;
+        const launchDelay = attackInterval * this.DAMAGE_TIMING_RATIO;
+        const launchTime = now + launchDelay;
+        
+        const eventId = `${attackerId}_${targetId}_${now}`;
+        this.pendingDamageEvents.set(eventId, {
+            type: 'projectile',
+            attackerId: attackerId,
+            targetId: targetId,
+            projectileTypeId: combat.projectile,
+            triggerTime: launchTime,
+            eventId: eventId
+        });
+        
+        this.logAttackStart(attackerId, targetId, 'prepares to fire');
+    }
+
+    // CONSOLIDATED: Attack logging
+    logAttackStart(attackerId, targetId, actionText) {
+        if (!this.game.battleLogSystem) return;
+        
+        const attackerTeam = this.game.getComponent(attackerId, this.componentTypes.TEAM);
+        const attackerType = this.game.getComponent(attackerId, this.componentTypes.UNIT_TYPE);
+        const targetTeam = this.game.getComponent(targetId, this.componentTypes.TEAM);
+        const targetType = this.game.getComponent(targetId, this.componentTypes.UNIT_TYPE);
+        
+        this.game.battleLogSystem.add(
+            `${attackerTeam.team} ${attackerType.type} ${actionText} ${targetTeam.team} ${targetType.type}!`, 
+            'log-attack'
+        );
+    }
+
+    processPendingDamage(now) {
+        const eventsToRemove = [];
+        
+        for (const [eventId, event] of this.pendingDamageEvents.entries()) {
+            if (now >= event.triggerTime) {
+                if (event.type === 'melee') {
+                    this.executeMeleeDamage(event);
+                } else if (event.type === 'projectile') {
+                    this.executeProjectileLaunch(event);
+                }
+                
+                eventsToRemove.push(eventId);
+            }
+        }
+        
+        eventsToRemove.forEach(eventId => {
+            this.pendingDamageEvents.delete(eventId);
+        });
+    }
+
+    // SIMPLIFIED: Execute melee damage using consolidated methods
+    executeMeleeDamage(event) {
+        
+        const attackerPos = this.game.getComponent(event.attackerId, this.componentTypes.POSITION);
+        const targetPos = this.game.getComponent(event.targetId, this.componentTypes.POSITION);
+        const targetHealth = this.game.getComponent(event.targetId, this.componentTypes.HEALTH);
+        const attackerCombat = this.game.getComponent(event.attackerId, this.componentTypes.COMBAT);
+        
+        if (!attackerPos || !targetPos || !targetHealth || !attackerCombat) {
+            console.log('Missing components - damage cancelled');
+            return;
+        }
+        
+        // SIMPLIFIED: Use consolidated edge-to-edge range checking
+        const maxRange = attackerCombat.range + this.ATTACK_RANGE_BUFFER + 1;
+        
+        if (this.isWithinEdgeToEdgeRange(event.attackerId, event.targetId, maxRange)) {
+            this.applyDamage(event.attackerId, event.targetId, event.damage);
+        }
+    }
+
+    executeProjectileLaunch(event) {
+        const attackerPos = this.game.getComponent(event.attackerId, this.componentTypes.POSITION);
+        if (!attackerPos) {
+            return;
+        }
+        
+        this.fireProjectileAttack(event.attackerId, event.targetId, event.projectileTypeId);
+    }
+
+    applyDamage(attackerId, targetId, damage) {
+        const targetHealth = this.game.getComponent(targetId, this.componentTypes.HEALTH);
+        const targetTeam = this.game.getComponent(targetId, this.componentTypes.TEAM);
+        const attackerTeam = this.game.getComponent(attackerId, this.componentTypes.TEAM);
+        
+        if (!targetHealth) return;
+        
+        targetHealth.current -= damage;
+        
+        const targetAnimation = this.game.getComponent(targetId, this.componentTypes.ANIMATION);
+        if (targetAnimation) {
+            targetAnimation.flash = 0.5;
+        }
+        
+        const attackerType = this.game.getComponent(attackerId, this.componentTypes.UNIT_TYPE);
+        const targetType = this.game.getComponent(targetId, this.componentTypes.UNIT_TYPE);
+        
+        if (this.game.battleLogSystem) {
+            this.game.battleLogSystem.add(
+                `${attackerTeam.team} ${attackerType.type} deals ${damage} damage to ${targetTeam.team} ${targetType.type}`, 
+                'log-damage'
+            );
+        }
+        
+        if (targetHealth.current <= 0) {
+            if (this.game.battleLogSystem) {
+                this.game.battleLogSystem.add(`${targetTeam.team} ${targetType.type} defeated!`, 'log-death');
+            }
+            this.game.destroyEntity(targetId);
+            this.checkBattleEnd();
+        }
     }
 
     fireProjectileAttack(attackerId, targetId, projectileTypeId) {
@@ -276,7 +422,6 @@ class CombatAISystem {
         const attackerTeam = this.game.getComponent(attackerId, this.componentTypes.TEAM);
         const attackerType = this.game.getComponent(attackerId, this.componentTypes.UNIT_TYPE);
         
-        // Fire the projectile
         const projectileInstanceId = this.game.projectileSystem.fireProjectile(attackerId, targetId, {
             id: projectileTypeId,
             ...projectileData
@@ -285,76 +430,55 @@ class CombatAISystem {
         if (projectileInstanceId && this.game.battleLogSystem) {
             this.game.battleLogSystem.add(
                 `${attackerTeam.team} ${attackerType.type} fires projectile!`, 
-                'log-attack'
+                'log-projectile'
             );
         }
         
         return projectileInstanceId;
     }
-    
-    getUnitRadius(unitType) {
-        if (unitType && unitType.size) {
-            return Math.max(this.DEFAULT_UNIT_RADIUS, unitType.size);
+
+    attack(attackerId, targetId) {
+        console.warn("Direct attack() method is deprecated. Use scheduleMeleeDamage() instead.");
+        const attackerCombat = this.game.getComponent(attackerId, this.componentTypes.COMBAT);
+        if (attackerCombat) {
+            this.applyDamage(attackerId, targetId, attackerCombat.damage);
         }
+    }
+
+    cleanupPendingEventsForEntity(entityId) {
+        const eventsToRemove = [];
         
-        const collections = this.game.getCollections && this.game.getCollections();
-        if (collections && collections.units && unitType) {
-            const unitDef = collections.units[unitType.id];
-            if (unitDef && unitDef.size) {
-                return Math.max(this.DEFAULT_UNIT_RADIUS, unitDef.size);
+        for (const [eventId, event] of this.pendingDamageEvents.entries()) {
+            if (event.attackerId === entityId || event.targetId === entityId) {
+                eventsToRemove.push(eventId);
             }
         }
         
+        eventsToRemove.forEach(eventId => {
+            this.pendingDamageEvents.delete(eventId);
+        });
+    }
+    
+    getUnitRadius(collision) {
+        if (collision && collision.radius) {
+            return Math.max(this.DEFAULT_UNIT_RADIUS, collision.radius);
+        }
         return this.DEFAULT_UNIT_RADIUS;
     }
     
-    attack(attackerId, targetId) {
-        const attackerCombat = this.game.getComponent(attackerId, this.componentTypes.COMBAT);
-        const targetHealth = this.game.getComponent(targetId, this.componentTypes.HEALTH);
-        const targetTeam = this.game.getComponent(targetId, this.componentTypes.TEAM);
-        const attackerTeam = this.game.getComponent(attackerId, this.componentTypes.TEAM);
-        
-        if (!targetHealth) return;
-        
-        targetHealth.current -= attackerCombat.damage;
-        
-        const targetAnimation = this.game.getComponent(targetId, this.componentTypes.ANIMATION);
-        if (targetAnimation) {
-            targetAnimation.flash = 0.5;
-        }
-        
-        const attackerType = this.game.getComponent(attackerId, this.componentTypes.UNIT_TYPE);
-        const targetType = this.game.getComponent(targetId, this.componentTypes.UNIT_TYPE);
-        
-        if (this.game.battleLogSystem) {
-            this.game.battleLogSystem.add(`${attackerTeam.team} ${attackerType.type} deals ${attackerCombat.damage} damage to ${targetTeam.team} ${targetType.type}`, 'log-damage');
-        }
-        
-        if (targetHealth.current <= 0) {
-            if (this.game.battleLogSystem) {
-                this.game.battleLogSystem.add(`${targetTeam.team} ${targetType.type} defeated!`, 'log-death');
-            }
-            this.game.destroyEntity(targetId);
-            this.checkBattleEnd();
-        }
-    }
-    
     checkBattleEnd() {
-        // Use the team health system for round end checking
         if (this.game.phaseSystem) {
             this.game.phaseSystem.checkForRoundEnd();
         }
     }
 
     performBattleEndCheck() {
-        // Get all entities that have both team and health components (living units)
         const allLivingEntities = this.game.getEntitiesWith(
             this.componentTypes.TEAM, 
             this.componentTypes.HEALTH,
             this.componentTypes.UNIT_TYPE
         );
         
-        // Filter for units that are actually alive (health > 0)
         const aliveEntities = allLivingEntities.filter(id => {
             const health = this.game.getComponent(id, this.componentTypes.HEALTH);
             return health && health.current > 0;
@@ -370,14 +494,11 @@ class CombatAISystem {
             return team && team.team === 'enemy';
         });
         
-        
-        // Only end battle if we're actually in battle phase
         if (this.game.state.phase !== 'battle') {
             return;
         }
         
         if (playerUnits.length === 0 && enemyUnits.length > 0) {
-            console.log('Battle ending: Defeat');
             if (this.game.battleLogSystem) {
                 this.game.battleLogSystem.add('DEFEAT! Enemy army victorious!', 'log-death');
             }
@@ -385,7 +506,6 @@ class CombatAISystem {
                 this.game.phaseSystem.endBattle('defeat');
             }
         } else if (enemyUnits.length === 0 && playerUnits.length > 0) {
-            console.log('Battle ending: Victory');
             if (this.game.battleLogSystem) {
                 this.game.battleLogSystem.add('VICTORY! Your army prevails!', 'log-victory');
             }
@@ -393,7 +513,6 @@ class CombatAISystem {
                 this.game.phaseSystem.endBattle('victory');
             }
         } else if (playerUnits.length === 0 && enemyUnits.length === 0) {
-            console.log('Battle ending: Draw');
             if (this.game.battleLogSystem) {
                 this.game.battleLogSystem.add('DRAW! All units defeated!', 'log-death');
             }
@@ -401,6 +520,5 @@ class CombatAISystem {
                 this.game.phaseSystem.endBattle('draw');
             }
         }
-        // If both teams still have units, battle continues
     }
 }

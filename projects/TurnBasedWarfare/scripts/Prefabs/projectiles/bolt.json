@@ -1,0 +1,52 @@
+{
+  "damageType": "physical",
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ]
+    },
+    "model": {
+      "main": {
+        "position": {
+          "x": 0,
+          "y": 0.1
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "shapes": [
+          {
+            "type": "gltf",
+            "url": "projects/TurnBasedWarfare/resources/models/projectile_arrow/projectile_arrow.glb",
+            "width": 2,
+            "height": 0.2,
+            "depth": 1,
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "rotationX": 0,
+            "rotationY": 0,
+            "rotationZ": 0,
+            "color": "#FFFFFF",
+            "metalness": "0",
+            "roughness": "1"
+          }
+        ],
+        "scale": {
+          "z": 10,
+          "y": 10,
+          "x": 10
+        }
+      }
+    }
+  },
+  "speed": 1000,
+  "title": "Bolt",
+  "attackSound": "plasma",
+  "hitSound": "plasma",
+  "homing": false,
+  "homingStrength": 0
+}

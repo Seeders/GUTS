@@ -1,0 +1,113 @@
+{
+  "title": "Knight",
+  "size": 25,
+  "value": 100,
+  "hp": 180,
+  "speed": 25,
+  "damage": 35,
+  "attackSpeed": 0.8,
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ],
+      "walk": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "projects/TurnBasedWarfare/resources/models/walk/walk.glb",
+                "id": 0
+              }
+            ]
+          }
+        }
+      ],
+      "attack": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "projects/TurnBasedWarfare/resources/models/throw/throw.glb",
+                "id": 0
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "model": {
+      "main": {
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "shapes": [
+          {
+            "type": "gltf",
+            "width": 2,
+            "height": 0.2,
+            "depth": 1,
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "rotationX": 0,
+            "rotationY": 0,
+            "rotationZ": 0,
+            "color": "#FFFFFF",
+            "url": "projects/TurnBasedWarfare/resources/models/idle_knight/idle_knight.glb",
+            "metalness": "0",
+            "roughness": "1"
+          }
+        ],
+        "scale": {
+          "z": 1,
+          "y": 1,
+          "x": 1
+        }
+      }
+    }
+  },
+  "equipment": [
+    {
+      "slot": "mainHand",
+      "item": "knightSword",
+      "attachmentData": {
+        "bone": "RightHand",
+        "offset": {
+          "x": -0.05,
+          "y": 0.11,
+          "z": 0.05
+        },
+        "rotation": {
+          "x": 180,
+          "y": -90,
+          "z": 90
+        }
+      }
+    },
+    {
+      "slot": "offHand",
+      "item": "knightShield",
+      "attachmentData": {
+        "bone": "LeftHand",
+        "offset": {
+          "x": -0.15,
+          "y": -0.1,
+          "z": 0
+        },
+        "rotation": {
+          "x": 180,
+          "y": -90,
+          "z": 90
+        }
+      }
+    }
+  ]
+}

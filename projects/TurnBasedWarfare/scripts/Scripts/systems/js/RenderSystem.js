@@ -125,7 +125,7 @@ class RenderSystem {
                 
                 // Apply team-based styling
                 if (team) {
-                    this.applyTeamStyling(modelGroup, team.team);
+                   // this.applyTeamStyling(modelGroup, team.team);
                 }
                 
                 // Apply initial facing direction

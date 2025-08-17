@@ -184,11 +184,6 @@ class AnimationSystem {
         
         if (!animState) return;
         
-        // Temporarily disable T-pose validation to see if it's causing issues
-        // if (Math.random() < 0.005) { // 0.5% chance per frame to validate (much less frequent)
-        //     this.validateAnimationState(entityId);
-        // }
-        
         animState.animationTime += deltaTime;
         
         // Get additional components to determine animation state
@@ -204,8 +199,37 @@ class AnimationSystem {
         if (aiState) {
             if (aiState.state === 'attacking' || aiState.state === 'combat') {
                 desiredAnimation = 'attack';
-                animationSpeed = combat ? (combat.attackSpeed || 1) : 1;
-                minAnimationTime = 0.3; // Ensure attack animations play for minimum duration
+                
+                if (combat && combat.attackSpeed) {
+                    // Calculate the actual attack interval (time between attacks)
+                    const attackInterval = 1 / combat.attackSpeed;
+                    
+                    // Get the base duration of the attack animation
+                    const animationActions = this.entityAnimations.get(entityId);
+                    let baseAnimationDuration = 0.8; // Default fallback
+                    
+                    if (animationActions && animationActions.attack) {
+                        const attackAction = animationActions.attack;
+                        if (attackAction.getClip) {
+                            baseAnimationDuration = attackAction.getClip().duration;
+                        }
+                    }
+                    
+                    // Calculate speed to make animation duration match attack interval
+                    // We want the animation to complete slightly before the next attack
+                    const targetAnimationDuration = Math.max(attackInterval * 0.9, 0.2); // 90% of attack interval, minimum 0.2s
+                    animationSpeed = baseAnimationDuration / targetAnimationDuration;
+                    
+                    // Clamp animation speed to reasonable bounds
+                    animationSpeed = Math.max(0.5, Math.min(animationSpeed, 4.0));
+                    
+                    // Set minimum time to slightly less than attack interval
+                    minAnimationTime = Math.max(targetAnimationDuration * 0.8, 0.2);
+                } else {
+                    animationSpeed = 1;
+                    minAnimationTime = 0.3;
+                }
+                
             } else if (aiState.state === 'chasing' || aiState.state === 'moving') {
                 desiredAnimation = 'walk';
                 // Calculate speed based on velocity if available
@@ -232,9 +256,11 @@ class AnimationSystem {
         const shouldChangeAnimation = animState.currentAnimation !== desiredAnimation && 
                                      animState.animationTime >= Math.max(animState.minAnimationTime, 0.1);
         
-        // Additional check: don't interrupt attack animations too early
+        // Additional check: don't interrupt attack animations too early unless switching to another attack
         if (animState.currentAnimation === 'attack' && desiredAnimation !== 'attack') {
-            if (animState.animationTime < 0.4) { // Minimum attack animation duration
+            // For attack animations, use the calculated minimum time, not a fixed value
+            const requiredAttackTime = minAnimationTime || 0.4;
+            if (animState.animationTime < requiredAttackTime) {
                 return; // Keep playing attack animation
             }
         }
@@ -244,11 +270,23 @@ class AnimationSystem {
             const hasGLTFAnimations = this.entityAnimations.has(entityId);
             const hasProprietaryAnimations = this.entityProprietaryAnimations?.has(entityId);
             
-            
             if (hasGLTFAnimations) {
                 this.setEntityAnimation(entityId, desiredAnimation, animationSpeed, minAnimationTime);
             } else if (hasProprietaryAnimations) {
                 this.setProprietaryAnimation(entityId, desiredAnimation);
+                // For proprietary animations, adjust frame duration based on speed
+                const proprietaryAnim = this.entityProprietaryAnimations.get(entityId);
+                if (proprietaryAnim && desiredAnimation === 'attack' && combat && combat.attackSpeed) {
+                    const attackInterval = 1 / combat.attackSpeed;
+                    const frames = proprietaryAnim.animationData[desiredAnimation];
+                    if (frames && frames.length > 0) {
+                        // Distribute the attack interval across all frames
+                        proprietaryAnim.frameDuration = (attackInterval * 0.9) / frames.length;
+                        // Clamp frame duration to reasonable bounds
+                        proprietaryAnim.frameDuration = Math.max(0.05, Math.min(proprietaryAnim.frameDuration, 0.3));
+                    }
+                }
+                
                 // Update animation state
                 animState.currentAnimation = desiredAnimation;
                 animState.animationTime = 0;
@@ -271,9 +309,6 @@ class AnimationSystem {
         const animationActions = this.entityAnimations.get(entityId);
         
         if (!animState || !animationActions) return;
-        
-        // Temporarily disable validation during animation changes
-        // this.validateAnimationState(entityId);
         
         // Default to idle if animation doesn't exist
         if (!animationActions[animationName]) {
@@ -554,136 +589,6 @@ class AnimationSystem {
         }
     }
     
-    // Enhanced validateAnimationState with better recovery
-    validateAnimationState(entityId) {
-        const animState = this.entityAnimationStates.get(entityId);
-        const animationActions = this.entityAnimations.get(entityId);
-        const mixer = this.entityMixers.get(entityId);
-        
-        if (!animState || !animationActions || !mixer) return false;
-        
-        // Check if any action is actually playing with weight > 0
-        const activeActions = Object.values(animationActions).filter(action => 
-            action.enabled && action.isRunning() && action.getEffectiveWeight() > 0
-        );
-        
-        // Also check if the current action is valid
-        const currentActionValid = animState.currentAction && 
-                                  animState.currentAction.enabled && 
-                                  animState.currentAction.isRunning() && 
-                                  animState.currentAction.getEffectiveWeight() > 0;
-        
-        if (activeActions.length === 0 || !currentActionValid) {
-            
-            // Force a recovery animation based on current state
-            const aiState = this.game.getComponent(entityId, this.componentTypes.AI_STATE);
-            const velocity = this.game.getComponent(entityId, this.componentTypes.VELOCITY);
-            
-            let recoveryAnimation = 'idle';
-            if (aiState) {
-                if (aiState.state === 'attacking') {
-                    recoveryAnimation = 'attack';
-                } else if (aiState.state === 'chasing' && velocity && 
-                          (Math.abs(velocity.vx) > 0.1 || Math.abs(velocity.vz) > 0.1)) {
-                    recoveryAnimation = 'walk';
-                }
-            }
-            
-            // Force the recovery animation
-            this.forceAnimation(entityId, recoveryAnimation);
-            return true; // Recovered
-        }
-        
-        return false; // No issue or couldn't recover
-    }
-    
-    // New method to force an animation without crossfading
-    forceAnimation(entityId, animationName) {
-        const animState = this.entityAnimationStates.get(entityId);
-        const animationActions = this.entityAnimations.get(entityId);
-        
-        if (!animState || !animationActions) return;
-        
-        // Find the animation to force
-        let targetAnimation = animationActions[animationName];
-        if (!targetAnimation) {
-            // Try fallbacks
-            const fallbacks = {
-                'attack': ['combat', 'fight', 'swing', 'strike'],
-                'walk': ['run', 'move', 'step'],
-                'hurt': ['damage', 'hit', 'pain'],
-                'idle': ['stand', 'rest', 'default']
-            };
-            
-            if (fallbacks[animationName]) {
-                for (const fallback of fallbacks[animationName]) {
-                    if (animationActions[fallback]) {
-                        targetAnimation = animationActions[fallback];
-                        animationName = fallback;
-                        break;
-                    }
-                }
-            }
-            
-            // Last resort - use first available animation
-            if (!targetAnimation) {
-                const availableAnims = Object.keys(animationActions);
-                if (availableAnims.length > 0) {
-                    targetAnimation = animationActions[availableAnims[0]];
-                    animationName = availableAnims[0];
-                }
-            }
-        }
-        
-        if (!targetAnimation) return;
-        
-        
-        // Instead of stopping all actions immediately, do a quick transition
-        const currentAction = animState.currentAction;
-        
-        if (currentAction && currentAction !== targetAnimation) {
-            // Quick crossfade instead of abrupt stop
-            targetAnimation.enabled = true;
-            targetAnimation.setEffectiveWeight(0);
-            targetAnimation.setEffectiveTimeScale(1);
-            targetAnimation.play();
-            
-            // Very fast crossfade
-            currentAction.crossFadeTo(targetAnimation, 0.05, false);
-            
-            setTimeout(() => {
-                // Clean up other actions
-                Object.values(animationActions).forEach(action => {
-                    if (action !== targetAnimation) {
-                        action.stop();
-                        action.setEffectiveWeight(0);
-                        action.enabled = false;
-                    }
-                });
-            }, 60); // After crossfade
-        } else {
-            // No current action or same action
-            Object.values(animationActions).forEach(action => {
-                if (action !== targetAnimation) {
-                    action.stop();
-                    action.setEffectiveWeight(0);
-                    action.enabled = false;
-                }
-            });
-            
-            targetAnimation.enabled = true;
-            targetAnimation.setEffectiveWeight(1);
-            targetAnimation.setEffectiveTimeScale(1);
-            targetAnimation.play();
-        }
-        
-        // Update state
-        animState.currentAction = targetAnimation;
-        animState.currentAnimation = animationName;
-        animState.animationTime = 0;
-        animState.minAnimationTime = 0;
-    }
-    
     stopAllAnimations(entityId) {
         const animationActions = this.entityAnimations.get(entityId);
         if (!animationActions) return;
@@ -741,6 +646,11 @@ class AnimationSystem {
             if (modelGroup) {
                 mixer.uncacheRoot(modelGroup);
             }
+        }
+        
+        // Clean up pending damage events when entity is removed
+        if (this.game.combatAISystems && this.game.combatAISystems.cleanupPendingEventsForEntity) {
+            this.game.combatAISystems.cleanupPendingEventsForEntity(entityId);
         }
         
         // Remove from maps

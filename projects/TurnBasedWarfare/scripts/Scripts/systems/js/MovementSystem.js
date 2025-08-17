@@ -5,7 +5,7 @@ class MovementSystem {
         this.componentTypes = this.game.componentManager.getComponentTypes();
         
         // Configuration variables
-        this.DEFAULT_UNIT_RADIUS = 15;
+        this.DEFAULT_UNIT_RADIUS = 25;
         this.MIN_MOVEMENT_THRESHOLD = 0.1;
         
         // AI movement configuration
@@ -29,6 +29,7 @@ class MovementSystem {
             const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
             const vel = this.game.getComponent(entityId, this.componentTypes.VELOCITY);
             const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
+            const collision = this.game.getComponent(entityId, this.componentTypes.COLLISION);
             const aiState = this.game.getComponent(entityId, this.componentTypes.AI_STATE);
             const projectile = this.game.getComponent(entityId, this.componentTypes.PROJECTILE);
             
@@ -54,7 +55,7 @@ class MovementSystem {
                 // Handle ground interactions (including terrain height)
                 this.handleGroundInteraction(pos, vel);
                 // Keep units within boundaries (use X and Z for horizontal bounds)
-                this.enforceBoundaries(pos, unitType);
+                this.enforceBoundaries(pos, collision);
             }
         });
     }
@@ -160,29 +161,21 @@ class MovementSystem {
     }
     
     
-    enforceBoundaries(pos, unitType) {
+    enforceBoundaries(pos, collision) {
         const terrainSize = this.game.worldSystem?.terrainSize || this.DEFAULT_TERRAIN_SIZE;
         const halfTerrain = terrainSize / 2;
-        const unitRadius = this.getUnitRadius(unitType);
+        const unitRadius = this.getUnitRadius(collision);
         
         pos.x = Math.max(-halfTerrain + unitRadius, Math.min(halfTerrain - unitRadius, pos.x));
         pos.z = Math.max(-halfTerrain + unitRadius, Math.min(halfTerrain - unitRadius, pos.z));
         // Y coordinate is now handled by terrain following in handleGroundInteraction
     }
     
-    getUnitRadius(unitType) {
-        if (unitType && unitType.size) {
-            return Math.max(this.DEFAULT_UNIT_RADIUS, unitType.size);
+    getUnitRadius(collision) {
+        if (collision && collision.radius) {
+            return Math.max(this.DEFAULT_UNIT_RADIUS, collision.radius);
         }
-        
-        const collections = this.game.getCollections && this.game.getCollections();
-        if (collections && collections.units && unitType) {
-            const unitDef = collections.units[unitType.id || unitType.type];
-            if (unitDef && unitDef.size) {
-                return Math.max(this.DEFAULT_UNIT_RADIUS, unitDef.size);
-            }
-        }
-        
+  
         return this.DEFAULT_UNIT_RADIUS;
     }
 }

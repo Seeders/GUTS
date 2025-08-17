@@ -87,6 +87,12 @@
           "type": "HealthBarSystem"
         },
         {
+          "type": "UnitRadiusSystem"
+        },
+        {
+          "type": "EquipmentSystem"
+        },
+        {
           "type": "UISystem"
         }
       ],

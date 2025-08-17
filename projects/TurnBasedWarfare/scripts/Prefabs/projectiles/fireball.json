@@ -1,0 +1,57 @@
+{
+  "damageType": "fire",
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ]
+    },
+    "model": {
+      "main": {
+        "shapes": [
+          {
+            "name": "ball",
+            "type": "sphere",
+            "size": 6,
+            "x": 0,
+            "y": 5,
+            "z": 0,
+            "rotationX": 90,
+            "color": {
+              "paletteColor": "redDColor"
+            },
+            "rotationY": 0,
+            "rotationZ": 0,
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1
+          }
+        ],
+        "position": {
+          "x": -3.00653594771243,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      }
+    }
+  },
+  "speed": 100,
+  "title": "Fireball",
+  "ballistic": true,
+  "homing": false,
+  "homingStrength": 0,
+  "particle": "smoke",
+  "shadows": false,
+  "hitSound": "explosion",
+  "attackSound": "missileLaunch"
+}
