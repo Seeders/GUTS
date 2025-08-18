@@ -97,7 +97,18 @@
   #main-content-container > div.show {
     display: flex;
   }
-
+  #togglePropertyVisibility {
+    float: right;
+    padding: 0;
+    text-decoration: none;
+    color: #fff;
+  }
+  #togglePropertyVisibility:hover {
+    color: #aaa;
+  }
+  .hide {
+    display: none !important;
+  }
   .editor {
     border-radius: 0;
     padding: 20px;
