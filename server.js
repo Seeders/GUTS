@@ -106,7 +106,43 @@ app.post('/load-project', async (req, res) => {
         res.status(500).send('Error loading config');
     }
 });
+app.post('/upload-file', upload.single('file'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded.' });
+        }
 
+        const projectName = req.body.projectName;
+        const objectType = req.body.objectType;
+        const uploadedFile = req.file;
+        
+        // Create the target directory based on object type
+        // e.g., animations -> /resources/animations/
+        const resourceFolder = path.join(PROJS_DIR, projectName, "resources", objectType);
+        const finalFilePath = path.join(resourceFolder, uploadedFile.originalname);
+
+        // Create directory if it doesn't exist
+        if (!fsSync.existsSync(resourceFolder)) {
+            await fs.mkdir(resourceFolder, { recursive: true });
+        }
+
+        // Move file from temp upload location to final location
+        await fs.rename(uploadedFile.path, finalFilePath);
+
+        // Create relative path for the game to use
+        const relativePath = path.relative(BASE_DIR, finalFilePath).replace(/\\/g, '/');
+        
+        const gameData = {
+            filePath: relativePath,
+            fileName: uploadedFile.originalname,
+        };
+
+        res.json(gameData);
+    } catch (error) {
+        console.error('Error uploading file:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
 app.post('/upload-model', upload.single('gltfFile'), async (req, res) => {
     try {
         if (!req.file) {

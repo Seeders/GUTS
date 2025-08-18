@@ -13,7 +13,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/idle/idle.glb",
+                "url": "projects/TurnBasedWarfare/resources/models/death_fallback/death_fallback.glb",
                 "id": 0
               }
             ]
@@ -43,6 +43,18 @@
             ]
           }
         }
+      ],
+      "death": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "projects/TurnBasedWarfare/resources/models/death_fallback/death_fallback.glb",
+                "id": 0
+              }
+            ]
+          }
+        }
       ]
     },
     "model": {
@@ -57,9 +69,9 @@
           "z": 0
         },
         "scale": {
-          "x": 1,
-          "y": 1,
-          "z": 1
+          "x": 2,
+          "y": 2,
+          "z": 2
         },
         "shapes": [
           {

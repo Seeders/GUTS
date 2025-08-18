@@ -156,6 +156,8 @@ class EditorView {
       // Create value input based on property type
       if (key.toLowerCase().endsWith('color')) {
           this.appendColorInput(propertyItem, value);
+      } else if(key.toLowerCase().endsWith('file')){
+          this.appendFileInput(propertyItem, value);
       } else if (typeof value === 'boolean') {
           this.appendBooleanSelect(propertyItem, value);
       } else if (matchingModuleType) {
@@ -206,7 +208,80 @@ class EditorView {
   
         propertyItem.appendChild(valueContainer);
     }
+appendFileInput(propertyItem, value) {
+    const valueContainer = this.createValueContainer();
     
+    // Create a container for the file input and display
+    const fileContainer = document.createElement('div');
+    fileContainer.className = 'file-input-container';
+    
+    // Create hidden text input to store the file path - make sure it has the right class
+    const valueInput = document.createElement('input');
+    valueInput.type = 'hidden'; // Use type='hidden' instead of hiding with CSS
+    valueInput.value = value || '';
+    valueInput.className = 'property-value'; // This is crucial for readObject() to find it
+    
+    // Create file input for uploading
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.className = 'file-upload-input';
+    
+    // Create display element to show current file
+    const fileDisplay = document.createElement('div');
+    fileDisplay.className = 'file-display';
+    fileDisplay.textContent = value ? `Current: ${value.split('/').pop()}` : 'No file selected';
+    
+    // Handle file upload
+    fileInput.addEventListener('change', async (e) => {
+        e.preventDefault();
+        
+        const file = e.target.files[0];
+        if (!file) {
+            console.error('No file selected');
+            return;
+        }
+        
+        try {
+            // Create FormData and append the file
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('projectName', this.controller.getCurrentProject());
+            formData.append('objectType', this.controller.getSelectedType());
+            
+            // Upload the file
+            const response = await fetch('/upload-file', {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Upload failed: ${response.statusText}`);
+            }
+            
+            const result = await response.json();
+            
+            // Update the hidden input with the file path
+            valueInput.value = result.filePath;
+            
+            // Update the display
+            fileDisplay.textContent = `Current: ${result.fileName}`;
+            
+            console.log('File uploaded successfully, path stored:', result.filePath);
+            
+        } catch (error) {
+            console.error('Error uploading file:', error);
+            alert(`Upload failed: ${error.message}`);
+        }
+    });
+    
+    // Assemble the file input components
+    // Put the hidden input first so it's easier to find in readObject()
+    valueContainer.appendChild(valueInput);
+    fileContainer.appendChild(fileDisplay);
+    fileContainer.appendChild(fileInput);
+    valueContainer.appendChild(fileContainer);
+    propertyItem.appendChild(valueContainer);
+}
     appendBooleanSelect(propertyItem, value) {
         const valueContainer = this.createValueContainer();
         const valueInput = document.createElement('select');
