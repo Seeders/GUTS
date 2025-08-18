@@ -1,6 +1,6 @@
 {
   "title": "Knight",
-  "size": 25,
+  "size": 35,
   "value": 100,
   "hp": 180,
   "speed": 25,
@@ -9,14 +9,23 @@
   "render": {
     "animations": {
       "idle": [
-        {}
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "projects/TurnBasedWarfare/resources/models/idle/idle.glb",
+                "id": 0
+              }
+            ]
+          }
+        }
       ],
       "walk": [
         {
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/walk/walk.glb",
+                "url": "projects/TurnBasedWarfare/resources/models/walk_with_shield/walk_with_shield.glb",
                 "id": 0
               }
             ]
@@ -28,7 +37,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/throw/throw.glb",
+                "url": "projects/TurnBasedWarfare/resources/models/sword_slash/sword_slash.glb",
                 "id": 0
               }
             ]
@@ -61,7 +70,7 @@
             "rotationY": 0,
             "rotationZ": 0,
             "color": "#FFFFFF",
-            "url": "projects/TurnBasedWarfare/resources/models/idle_knight/idle_knight.glb",
+            "url": "projects/TurnBasedWarfare/resources/models/knight/knight.glb",
             "metalness": "0",
             "roughness": "1"
           }
@@ -72,42 +81,42 @@
           "x": 1
         }
       }
-    }
-  },
-  "equipment": [
-    {
-      "slot": "mainHand",
-      "item": "knightSword",
-      "attachmentData": {
-        "bone": "RightHand",
-        "offset": {
-          "x": -0.05,
-          "y": 0.11,
-          "z": 0.05
-        },
-        "rotation": {
-          "x": 180,
-          "y": -90,
-          "z": 90
-        }
-      }
     },
-    {
-      "slot": "offHand",
-      "item": "knightShield",
-      "attachmentData": {
-        "bone": "LeftHand",
-        "offset": {
-          "x": -0.15,
-          "y": -0.1,
-          "z": 0
-        },
-        "rotation": {
-          "x": 180,
-          "y": -90,
-          "z": 90
+    "equipment": [
+      {
+        "slot": "mainHand",
+        "item": "knightSword",
+        "attachmentData": {
+          "bone": "RightHand",
+          "offset": {
+            "x": 6,
+            "y": 16,
+            "z": 0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": -90
+          }
+        }
+      },
+      {
+        "slot": "offHand",
+        "item": "knightShield",
+        "attachmentData": {
+          "bone": "LeftHand",
+          "offset": {
+            "x": 0,
+            "y": 10,
+            "z": -16
+          },
+          "rotation": {
+            "x": 8,
+            "y": 180,
+            "z": -90
+          }
         }
       }
-    }
-  ]
+    ]
+  }
 }

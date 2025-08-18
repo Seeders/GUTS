@@ -7,18 +7,27 @@
   "damage": 80,
   "attackSpeed": 0.5,
   "range": 200,
-  "projectile": "missile",
+  "projectile": "fireball",
   "render": {
     "animations": {
       "idle": [
-        {}
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "projects/TurnBasedWarfare/resources/models/idle/idle.glb",
+                "id": 0
+              }
+            ]
+          }
+        }
       ],
       "walk": [
         {
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/walk/walk.glb",
+                "url": "projects/TurnBasedWarfare/resources/models/walk_steady_right_hand/walk_steady_right_hand.glb",
                 "id": 0
               }
             ]
@@ -30,7 +39,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/throw/throw.glb",
+                "url": "projects/TurnBasedWarfare/resources/models/1h_spell_throw/1h_spell_throw.glb",
                 "id": 0
               }
             ]
@@ -58,7 +67,7 @@
         "shapes": [
           {
             "type": "gltf",
-            "url": "projects/TurnBasedWarfare/resources/models/idle_mage/idle_mage.glb",
+            "url": "projects/TurnBasedWarfare/resources/models/archmage/archmage.glb",
             "width": 2,
             "height": 0.2,
             "depth": 1,
@@ -74,6 +83,25 @@
           }
         ]
       }
-    }
+    },
+    "equipment": [
+      {
+        "slot": "offHand",
+        "item": "woodStaff",
+        "attachmentData": {
+          "bone": "LeftHand",
+          "offset": {
+            "x": -15,
+            "y": 15,
+            "z": 2
+          },
+          "rotation": {
+            "x": 180,
+            "y": -5,
+            "z": 90
+          }
+        }
+      }
+    ]
   }
 }

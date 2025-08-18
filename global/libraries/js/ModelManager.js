@@ -3,7 +3,7 @@ class ModelManager {
         this.app = app;
         this.config = config;
         this.models = {};
-        this.gltfModelScale = 32;
+        this.gltfModelScale = 1;
         // Pass the GLTF scale to ShapeFactory
         this.shapeFactory = new ShapeFactory(palette, textures, null, this.gltfModelScale);
         

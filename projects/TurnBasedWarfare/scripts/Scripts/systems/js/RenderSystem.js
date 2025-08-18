@@ -1,4 +1,4 @@
-class RenderSystem {
+    class RenderSystem {
     constructor(game) {
         this.game = game;
         this.game.renderSystem = this;
@@ -6,7 +6,7 @@ class RenderSystem {
         
         // Track entities with 3D models
         this.entityModels = new Map();
-
+        this.modelScale = 32;
         // Configuration for facing direction
         this.MIN_MOVEMENT_THRESHOLD = 0.1;
     }
@@ -49,8 +49,8 @@ class RenderSystem {
                 const worldZ = pos.z; // Use actual Z coordinate from position
                 
                 // Update position with proper 3D coordinates
-                modelGroup.position.set(worldX, worldY, worldZ);
-                
+                modelGroup.position.set(worldX, worldY, worldZ);              
+               // modelGroup.updateMatrix();
                 // Update facing direction
                 this.updateFacingDirection(entityId, modelGroup, velocity, facing);
                 
@@ -115,6 +115,11 @@ class RenderSystem {
             const modelGroup = this.game.modelManager.getModel(objectType, spawnType);
             if (modelGroup) {
                 // Add to scene
+                modelGroup.scale.set(
+                    modelGroup.scale.x * this.modelScale,
+                    modelGroup.scale.y * this.modelScale,
+                    modelGroup.scale.z * this.modelScale
+                );
                 this.game.scene.add(modelGroup);
                 this.entityModels.set(entityId, modelGroup);
                 

@@ -12,11 +12,10 @@
           {
             "name": "ball",
             "type": "sphere",
-            "size": 6,
             "x": 0,
-            "y": 5,
+            "y": 0,
             "z": 0,
-            "rotationX": 90,
+            "size": 0.2,
             "color": {
               "paletteColor": "redDColor"
             },
@@ -28,7 +27,6 @@
           }
         ],
         "position": {
-          "x": -3.00653594771243,
           "y": 0,
           "z": 0
         },

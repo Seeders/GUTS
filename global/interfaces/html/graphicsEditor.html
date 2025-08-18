@@ -1,7 +1,9 @@
 <div id="graphics-editor-container" class="main-content-container">
    <div id="graphics-sidebar" class="content-sidebar">
+      
+      <!-- Standard Graphics Editor Toolbar -->
       <div id="toolbar" class="toolbar">
-         <div>    
+         <div id="graphics-toolbar">    
             <div>
                <button id="add-animation" class="btn btn-add" title="Add Animation">+A</button>                        
                <button id="delete-animation" class="btn btn-danger" title="Delete Animation">-A</button>                        
@@ -19,29 +21,145 @@
                <button id="delete-shape" class="btn btn-danger" title="Delete Shape">-S</button>           
             </div>
          </div>  
-         <div>
+         <div id="graphics-toolbar-right">
             <div>
                <button id="preview-animation" class="btn btn-primary" title="Preview Animation">▶</button> 
                <button id="generate-isometric" class="btn btn-primary" title="Generate Isometric Sprites">Iso</button>                    
             </div>
          </div>
+         
+         <!-- Equipment Toolbar (hidden by default) -->
+         <div id="equipment-toolbar">
+            <div>
+               <button id="equipment-add-btn" class="btn btn-add" title="Add Equipment">+E</button>
+               <button id="equipment-remove-btn" class="btn btn-danger" title="Remove Equipment">-E</button>
+               <button id="equipment-reset-btn" class="btn btn-primary" title="Reset Position">↻</button>
+            </div>
+            <div>
+               <button id="equipment-mode-toggle" class="btn btn-primary" title="Toggle Equipment Mode">⚔</button>
+               <button id="equipment-save-btn" class="btn btn-primary" title="Save Equipment">💾</button>
+            </div>
+         </div>
       </div>
-      <div id="frame-list"></div>
-      <div id="group-list"></div>
-      <div id="shape-list"></div>
+
+      <!-- Standard Graphics Editor Lists -->
+      <div id="graphics-lists">
+         <div id="frame-list"></div>
+         <div id="group-list"></div>
+         <div id="shape-list"></div>
+      </div>
+
+      <!-- Equipment Controls (hidden by default) -->
+      <div id="equipment-controls">
+         
+         <!-- Add Equipment Section -->
+         <div style="background: #34495e; padding: 10px; border-radius: 4px; margin-bottom: 10px;">
+            <h4 style="margin: 0 0 8px 0; color: #3498db; font-size: 0.9em;">Add Equipment</h4>
+            <div style="display: flex; gap: 5px; margin-bottom: 8px; align-items: center;">
+               <label style="min-width: 30px; font-size: 0.8em; color: #95a5a6;">Item:</label>
+               <select id="equipment-item-selector" style="flex: 1; padding: 4px; background: #2c3e50; border: 1px solid #3498db; border-radius: 3px; color: #ecf0f1; font-size: 0.8em;">
+                  <option value="">Select Item...</option>
+               </select>
+            </div>
+            <div style="display: flex; gap: 5px; margin-bottom: 8px; align-items: center;">
+               <label style="min-width: 30px; font-size: 0.8em; color: #95a5a6;">Slot:</label>
+               <select id="equipment-slot-selector" style="flex: 1; padding: 4px; background: #2c3e50; border: 1px solid #3498db; border-radius: 3px; color: #ecf0f1; font-size: 0.8em;">
+                  <option value="">Select Slot...</option>
+                  <option value="mainHand">Main Hand</option>
+                  <option value="offHand">Off Hand</option>
+                  <option value="head">Head</option>
+                  <option value="chest">Chest</option>
+                  <option value="back">Back</option>
+                  <option value="legs">Legs</option>
+                  <option value="feet">Feet</option>
+               </select>
+            </div>
+         </div>
+
+         <!-- Equipment List -->
+         <div style="background: #2c3e50; border: 1px solid #34495e; border-radius: 4px; margin-bottom: 10px;">
+            <div style="background: #34495e; padding: 8px; border-bottom: 1px solid #3498db;">
+               <h4 style="margin: 0; color: #3498db; font-size: 0.9em;">Equipment List</h4>
+            </div>
+            <div id="equipment-list" style="max-height: 150px; overflow-y: auto;">
+               <div class="no-equipment" style="text-align: center; padding: 20px; color: #95a5a6; font-style: italic; font-size: 0.8em;">
+                  No equipment loaded
+               </div>
+            </div>
+         </div>
+
+      </div>
    </div>
+
+   <!-- Canvas Container -->
    <div id="canvas-container" class="grid-background">
       <canvas id="graphics-editor-canvas"></canvas>
       <div class="scene-info">
          <div>Shapes: <span id="shape-count">0</span></div>
          <div>Selected: <span id="selected-shape">None</span></div>
+         <div id="equipment-info">Equipment: <span id="equipment-count">0</span></div>
+         <div id="selected-equipment-info">Selected: <span id="selected-equipment">None</span></div>
          <div><small>Controls: Left-click to select, Drag to rotate, Right-drag to pan, Scroll to zoom</small></div>
       </div>
    </div>
+
+   <!-- Right Sidebar -->
    <div id="graphics-rightbar">
+      
+      <!-- Standard Inspector -->
       <div id="inspector"></div>
+      
+      <!-- Equipment Inspector (hidden by default) -->
+      <div id="equipment-inspector">
+         <div style="background: #34495e; padding: 10px; border-radius: 4px; margin-bottom: 10px;">
+            <h4 style="margin: 0 0 10px 0; color: #3498db; font-size: 0.9em;">Equipment Attachment</h4>
+            
+            <div style="display: flex; gap: 5px; margin-bottom: 8px; align-items: center;">
+               <label style="min-width: 30px; font-size: 0.8em; color: #95a5a6;">Bone:</label>
+               <select id="equipment-bone-selector" style="flex: 1; padding: 4px; background: #2c3e50; border: 1px solid #3498db; border-radius: 3px; color: #ecf0f1; font-size: 0.8em;">
+                  <option value="">Auto-detect</option>
+               </select>
+            </div>
+
+            <h5 style="margin: 10px 0 5px 0; color: #3498db; font-size: 0.8em;">Position Offset</h5>
+            <div style="display: flex; gap: 5px; margin-bottom: 8px; align-items: center;">
+               <label style="min-width: 15px; font-size: 0.8em; color: #95a5a6;">X:</label>
+               <input type="number" id="equipment-offset-x" step="0.01" value="0" style="flex: 1; padding: 4px; background: #2c3e50; border: 1px solid #3498db; border-radius: 3px; color: #ecf0f1; font-size: 0.8em;">
+               <label style="min-width: 15px; font-size: 0.8em; color: #95a5a6;">Y:</label>
+               <input type="number" id="equipment-offset-y" step="0.01" value="0" style="flex: 1; padding: 4px; background: #2c3e50; border: 1px solid #3498db; border-radius: 3px; color: #ecf0f1; font-size: 0.8em;">
+               <label style="min-width: 15px; font-size: 0.8em; color: #95a5a6;">Z:</label>
+               <input type="number" id="equipment-offset-z" step="0.01" value="0" style="flex: 1; padding: 4px; background: #2c3e50; border: 1px solid #3498db; border-radius: 3px; color: #ecf0f1; font-size: 0.8em;">
+            </div>
+
+            <h5 style="margin: 10px 0 5px 0; color: #3498db; font-size: 0.8em;">Rotation (degrees)</h5>
+            <div style="display: flex; gap: 5px; margin-bottom: 8px; align-items: center;">
+               <label style="min-width: 15px; font-size: 0.8em; color: #95a5a6;">X:</label>
+               <input type="number" id="equipment-rotation-x" step="1" value="0" style="flex: 1; padding: 4px; background: #2c3e50; border: 1px solid #3498db; border-radius: 3px; color: #ecf0f1; font-size: 0.8em;">
+               <label style="min-width: 15px; font-size: 0.8em; color: #95a5a6;">Y:</label>
+               <input type="number" id="equipment-rotation-y" step="1" value="0" style="flex: 1; padding: 4px; background: #2c3e50; border: 1px solid #3498db; border-radius: 3px; color: #ecf0f1; font-size: 0.8em;">
+               <label style="min-width: 15px; font-size: 0.8em; color: #95a5a6;">Z:</label>
+               <input type="number" id="equipment-rotation-z" step="1" value="0" style="flex: 1; padding: 4px; background: #2c3e50; border: 1px solid #3498db; border-radius: 3px; color: #ecf0f1; font-size: 0.8em;">
+            </div>
+
+            <div style="font-size: 0.7em; color: #95a5a6; margin-top: 10px; line-height: 1.3;">
+               Select equipment to adjust positioning. Changes apply in real-time.
+            </div>
+         </div>
+
+         <!-- Equipment Properties -->
+         <div style="background: #34495e; padding: 10px; border-radius: 4px;">
+            <h4 style="margin: 0 0 10px 0; color: #3498db; font-size: 0.9em;">Equipment Properties</h4>
+            <div id="equipment-property-list">
+               <div style="font-size: 0.8em; color: #95a5a6; text-align: center; padding: 20px;">
+                  Select equipment to view properties
+               </div>
+            </div>
+         </div>
+      </div>
+      
+      <!-- JSON Editor -->
       <div id="json-editor" style="display: none">                        
         <textarea id="json-content" placeholder="Edit JSON here..."></textarea>                    
-			</div>
+      </div>
    </div>
 </div>

@@ -3,35 +3,14 @@
   "render": {
     "animations": {
       "idle": [
-        {
-          "main": {
-            "shapes": [
-              {
-                "type": "gltf",
-                "url": "projects/TurnBasedWarfare/resources/models/item_sword_knight/item_sword_knight.glb",
-                "width": 2,
-                "height": 0.2,
-                "depth": 1,
-                "x": 0,
-                "y": 0,
-                "z": 0,
-                "rotationX": 0,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "color": "#FFFFFF",
-                "metalness": "0",
-                "roughness": "1",
-                "id": 0
-              }
-            ]
-          }
-        }
+        {}
       ]
     },
     "model": {
       "main": {
         "position": {
-          "x": 0
+          "x": 0,
+          "y": 0.1
         },
         "rotation": {
           "x": 0,
@@ -57,9 +36,9 @@
           }
         ],
         "scale": {
-          "x": 2,
-          "y": 2,
-          "z": 2
+          "x": 6,
+          "y": 6,
+          "z": 6
         }
       }
     }

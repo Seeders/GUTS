@@ -7,6 +7,8 @@ class EquipmentSystem {
         this.entityEquipment = new Map();
         this.equipmentCache = new Map();
         
+        this.scaleFactor = 32;
+        this.bonePrefix = 'mixamorig';
         this.boneNameMappings = {
             default: {
                 mainHand: ['RightHand', 'Hand_R', 'hand_R', 'R_Hand'],
@@ -37,7 +39,7 @@ class EquipmentSystem {
             console.warn(`Entity ${entityId} has no equipment component`);
             return false;
         }
-        
+        debugger;
         const slotType = equippedItem.slot;
         
         await this.unequipItem(entityId, slotType);
@@ -134,13 +136,12 @@ class EquipmentSystem {
                         }
                     }
                 });
-                const scaleFactor = this.game.modelManager.gltfModelScale;
+                const scaleFactor = this.scaleFactor;
                 model.scale.set(
-                    model.scale.x / scaleFactor,
-                    model.scale.y / scaleFactor,
-                    model.scale.z / scaleFactor
+                    model.scale.x * scaleFactor,
+                    model.scale.y * scaleFactor,
+                    model.scale.z * scaleFactor
                 );                
-                model.updateMatrix();
                 this.equipmentCache.set(cacheKey, model);
                 return this.cloneEquipmentModel(model);
             }
@@ -162,7 +163,7 @@ class EquipmentSystem {
         
         if (boneName) {
             characterModel.traverse(object => {
-                if (object.isBone && object.name === boneName) {
+                if (object.isBone && object.name.replace(this.bonePrefix,'') === boneName) {
                     targetBone = object;
                 }
             });

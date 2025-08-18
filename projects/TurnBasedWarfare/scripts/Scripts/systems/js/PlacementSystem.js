@@ -160,10 +160,10 @@ class PlacementSystem {
     }
     
     async equipUnitFromDefinition(entityId, unitType) {
-        if (!this.game.equipmentSystem || !unitType.equipment) return;
+        if (!this.game.equipmentSystem || !unitType?.render?.equipment) return;
         
         setTimeout(async () => {
-            for (const equippedItem of unitType.equipment) {
+            for (const equippedItem of unitType.render.equipment) {
                 const itemData = this.getItemFromCollection(equippedItem.item);
                 if (itemData) {
                     try {

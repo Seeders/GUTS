@@ -1,7 +1,7 @@
 {
   "title": "Crossbow Seargeant",
   "size": 25,
-  "value": 85,  
+  "value": 85,
   "hp": 75,
   "speed": 40,
   "damage": 28,
@@ -11,14 +11,33 @@
   "render": {
     "animations": {
       "idle": [
-        {}
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "projects/TurnBasedWarfare/resources/models/idle/idle.glb",
+                "scale": {
+                  "z": 1,
+                  "y": 1,
+                  "x": 1
+                },
+                "id": 0
+              }
+            ]
+          }
+        }
       ],
       "walk": [
         {
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/walk/walk.glb",
+                "url": "projects/TurnBasedWarfare/resources/models/walk_bow/walk_bow.glb",
+                "scale": {
+                  "z": 1,
+                  "y": 1,
+                  "x": 1
+                },
                 "id": 0
               }
             ]
@@ -30,7 +49,12 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/throw/throw.glb",
+                "url": "projects/TurnBasedWarfare/resources/models/shooting_arrow/shooting_arrow.glb",
+                "scale": {
+                  "z": 1,
+                  "y": 1,
+                  "x": 1
+                },
                 "id": 0
               }
             ]
@@ -58,7 +82,7 @@
         "shapes": [
           {
             "type": "gltf",
-            "url": "projects/TurnBasedWarfare/resources/models/idle_ranger/idle_ranger.glb",
+            "url": "projects/TurnBasedWarfare/resources/models/scout/scout.glb",
             "width": 2,
             "height": 0.2,
             "depth": 1,

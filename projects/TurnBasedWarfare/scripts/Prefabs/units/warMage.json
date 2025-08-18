@@ -30,14 +30,33 @@
   "render": {
     "animations": {
       "idle": [
-        {}
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "projects/TurnBasedWarfare/resources/models/idle/idle.glb",
+                "scale": {
+                  "z": 1,
+                  "y": 1,
+                  "x": 1
+                },
+                "id": 0
+              }
+            ]
+          }
+        }
       ],
       "walk": [
         {
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/walk/walk.glb",
+                "url": "projects/TurnBasedWarfare/resources/models/walk_steady_right_hand/walk_steady_right_hand.glb",
+                "scale": {
+                  "z": 1,
+                  "y": 1,
+                  "x": 1
+                },
                 "id": 0
               }
             ]
@@ -49,7 +68,12 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/throw/throw.glb",
+                "url": "projects/TurnBasedWarfare/resources/models/2h_spell_summon/2h_spell_summon.glb",
+                "scale": {
+                  "z": 1,
+                  "y": 1,
+                  "x": 1
+                },
                 "id": 0
               }
             ]
@@ -98,6 +122,25 @@
           }
         ]
       }
-    }
+    },
+    "equipment": [
+      {
+        "slot": "mainHand",
+        "item": "woodStaff",
+        "attachmentData": {
+          "bone": "RightHand",
+          "offset": {
+            "x": 10,
+            "y": 0,
+            "z": -5
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": -90
+          }
+        }
+      }
+    ]
   }
 }
