@@ -1,11 +1,11 @@
 {
   "title": "Shadow Assassin",
   "size": 25,
-  "value": 350,
-  "hp": 120,
+  "value": 320,
+  "hp": 160,
   "speed": 80,
-  "damage": 85,
-  "attackSpeed": 2.2,
+  "damage": 28,
+  "attackSpeed": 2,
   "render": {
     "animations": {
       "idle": [
@@ -13,7 +13,20 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/idle/idle.glb",
+                "type": "gltf",
+                "url": "projects/TurnBasedWarfare/resources/animations/idle.glb",
+                "width": 2,
+                "height": 0.2,
+                "depth": 1,
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "rotationX": 0,
+                "rotationY": 0,
+                "rotationZ": 0,
+                "color": "#FFFFFF",
+                "metalness": "0",
+                "roughness": "1",
                 "id": 0
               }
             ]
@@ -25,7 +38,20 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/walk_bow/walk_bow.glb",
+                "type": "gltf",
+                "url": "projects/TurnBasedWarfare/resources/animations/walk_bow.glb",
+                "width": 2,
+                "height": 0.2,
+                "depth": 1,
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "rotationX": 0,
+                "rotationY": 0,
+                "rotationZ": 0,
+                "color": "#FFFFFF",
+                "metalness": "0",
+                "roughness": "1",
                 "id": 0
               }
             ]
@@ -37,7 +63,32 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/sword_slash/sword_slash.glb",
+                "type": "gltf",
+                "url": "projects/TurnBasedWarfare/resources/animations/sword_slash.glb",
+                "width": 2,
+                "height": 0.2,
+                "depth": 1,
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "rotationX": 0,
+                "rotationY": 0,
+                "rotationZ": 0,
+                "color": "#FFFFFF",
+                "metalness": "0",
+                "roughness": "1",
+                "id": 0
+              }
+            ]
+          }
+        }
+      ],
+      "death": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "projects/TurnBasedWarfare/resources/animations/death_fallback.glb",
                 "id": 0
               }
             ]
@@ -81,6 +132,42 @@
           }
         ]
       }
-    }
+    },
+    "equipment": [
+      {
+        "slot": "mainHand",
+        "item": "knightSword",
+        "attachmentData": {
+          "bone": "RightHand",
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 20,
+            "z": -60
+          }
+        }
+      },
+      {
+        "slot": "offHand",
+        "item": "knightSword",
+        "attachmentData": {
+          "bone": "LeftHand",
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "x": 0,
+            "y": -20,
+            "z": 60
+          }
+        }
+      }
+    ]
   }
 }

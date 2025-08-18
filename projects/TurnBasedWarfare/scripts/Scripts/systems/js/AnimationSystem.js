@@ -63,7 +63,61 @@ class AnimationSystem {
         // Clean up removed entities
         this.cleanupRemovedEntities(entities);
     }
-    
+    playDeathAnimation(entityId) {
+        const animState = this.entityAnimationStates.get(entityId);
+        const animationActions = this.entityAnimations.get(entityId);
+        
+        if (!animState) return;
+        // Force death animation regardless of current state
+        if (animationActions && animationActions.death) {
+            this.setDeathAnimation(entityId, 'death');
+        } 
+    }
+
+    setDeathAnimation(entityId, animationName) {
+        const animState = this.entityAnimationStates.get(entityId);
+        const animationActions = this.entityAnimations.get(entityId);
+        
+        if (!animState || !animationActions || !animationActions[animationName]) return;
+        
+        const newAction = animationActions[animationName];
+        
+        // Stop all other animations
+        Object.values(animationActions).forEach(action => {
+            if (action !== newAction) {
+                action.stop();
+                action.setEffectiveWeight(0);
+                action.enabled = false;
+            }
+        });
+        
+        // Set up death animation (do not loop)
+        newAction.enabled = true;
+        newAction.setLoop(THREE.LoopOnce); // Play only once
+        newAction.setEffectiveTimeScale(1);
+        newAction.setEffectiveWeight(1);
+        newAction.clampWhenFinished = true; // Stay at last frame when finished
+        newAction.play();
+        
+        // Update animation state
+        animState.currentAnimation = animationName;
+        animState.currentAction = newAction;
+        animState.animationTime = 0;
+        animState.isDying = true;
+        
+        console.log(`Playing death animation '${animationName}' for entity ${entityId}`);
+    }
+
+    setCorpseAnimation(entityId) {
+        // Keep the last frame of death animation or set to a corpse pose
+        const animState = this.entityAnimationStates.get(entityId);
+        if (animState && animState.currentAction) {
+            // Ensure animation stays at final frame
+            animState.currentAction.paused = true;
+            animState.isDying = false;
+            animState.isCorpse = true;
+        }
+    }
     async setupEntityAnimations(entityId, objectType, spawnType, modelGroup) {
         // Get unit definition to check animation type
         const unitDefinition = this.getUnitDefinition(spawnType);
@@ -183,6 +237,16 @@ class AnimationSystem {
         const animState = this.entityAnimationStates.get(entityId);
         
         if (!animState) return;
+        
+        // Skip animation updates for dying entities (let death animation play)
+        if (animState.isDying || animState.isCorpse) {
+            // Still update mixer for death animation
+            const mixer = this.entityMixers.get(entityId);
+            if (mixer) {
+                mixer.update(deltaTime);
+            }
+            return;
+        }
         
         animState.animationTime += deltaTime;
         

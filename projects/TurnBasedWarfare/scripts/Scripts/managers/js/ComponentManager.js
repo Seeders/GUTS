@@ -60,7 +60,18 @@ class ComponentManager {
                         rotation: { x: 0, y: 0, z: 0 }
                     }
                 }
-            })
+            }),
+            Corpse: (originalUnitType = null, deathTime = 0, teamAtDeath = 'neutral') => ({ 
+                originalUnitType, 
+                deathTime, 
+                teamAtDeath,
+                isCorpse: true 
+            }),
+            DeathState: (isDying = false, deathStartTime = 0, deathAnimationDuration = 2.0) => ({ 
+                isDying, 
+                deathStartTime, 
+                deathAnimationDuration 
+            }),
         }
     }
 
@@ -91,7 +102,9 @@ class ComponentManager {
             LEVEL_DATA: 'levelData',
             EQUIPMENT: 'equipment',
             EQUIPMENT_SLOT: 'equipmentSlot',
-            EQUIPMENT_ITEM: 'equipmentItem'
+            EQUIPMENT_ITEM: 'equipmentItem',
+            CORPSE: 'corpse',
+            DEATH_STATE: 'deathState',
         }
     }
 }

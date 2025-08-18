@@ -103,7 +103,6 @@ class HealthBarSystem {
             lastHealth: -1 // Force initial update
         });
         
-        console.log(`Created health bar sprite for entity ${entityId}`);
     }
     
     updateHealthBarSprite(entityId, pos, health, team) {
@@ -254,7 +253,6 @@ class HealthBarSystem {
             // Remove from map
             this.healthBarSprites.delete(entityId);
             
-            console.log(`Removed health bar sprite for entity ${entityId}`);
         }
     }
     

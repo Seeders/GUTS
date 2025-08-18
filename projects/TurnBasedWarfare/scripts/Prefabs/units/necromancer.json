@@ -1,10 +1,10 @@
 {
   "title": "Necromancer",
   "size": 25,
-  "value": 275,
-  "hp": 90,
+  "value": 250,
+  "hp": 180,
   "speed": 35,
-  "damage": 30,
+  "damage": 12,
   "attackSpeed": 1,
   "render": {
     "animations": {
@@ -13,7 +13,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/idle/idle.glb",
+                "url": "projects/TurnBasedWarfare/resources/animations/idle.glb",
                 "id": 0
               }
             ]
@@ -25,7 +25,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/walk_steady_right_hand/walk_steady_right_hand.glb",
+                "url": "projects/TurnBasedWarfare/resources/animations/walk_steady_right_hand.glb",
                 "id": 0
               }
             ]
@@ -37,7 +37,19 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/2h_spell_summon/2h_spell_summon.glb",
+                "url": "projects/TurnBasedWarfare/resources/animations/2h_spell_summon.glb",
+                "id": 0
+              }
+            ]
+          }
+        }
+      ],
+      "death": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "projects/TurnBasedWarfare/resources/animations/death_fallback.glb",
                 "id": 0
               }
             ]

@@ -1,32 +1,13 @@
 {
   "title": "War Mage",
   "size": 25,
-  "value": 22,
-  "hp": 110,
+  "value": 140,
+  "hp": 150,
   "speed": 55,
-  "damage": 55,
-  "attackSpeed": 0.7,
+  "damage": 16,
+  "attackSpeed": 0.9,
   "range": 160,
   "projectile": "fireball",
-  "equipment": [
-    {
-      "slot": "mainHand",
-      "item": "woodStaff",
-      "attachmentData": {
-        "bone": "RightHand",
-        "offset": {
-          "x": -0.05,
-          "y": 0.1,
-          "z": 0.1
-        },
-        "rotation": {
-          "x": 180,
-          "y": -90,
-          "z": 90
-        }
-      }
-    }
-  ],
   "render": {
     "animations": {
       "idle": [
@@ -34,7 +15,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/idle/idle.glb",
+                "url": "projects/TurnBasedWarfare/resources/animations/idle.glb",
                 "scale": {
                   "z": 1,
                   "y": 1,
@@ -51,7 +32,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/walk_steady_right_hand/walk_steady_right_hand.glb",
+                "url": "projects/TurnBasedWarfare/resources/animations/walk_steady_right_hand.glb",
                 "scale": {
                   "z": 1,
                   "y": 1,
@@ -68,12 +49,24 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/2h_spell_summon/2h_spell_summon.glb",
+                "url": "projects/TurnBasedWarfare/resources/animations/2h_spell_summon.glb",
                 "scale": {
                   "z": 1,
                   "y": 1,
                   "x": 1
                 },
+                "id": 0
+              }
+            ]
+          }
+        }
+      ],
+      "death": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "projects/TurnBasedWarfare/resources/animations/death_fallback.glb",
                 "id": 0
               }
             ]

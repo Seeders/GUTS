@@ -71,11 +71,41 @@ class CombatAISystem {
             
             const now = Date.now() / 1000;
             
-            // Find enemies
+            // Find enemies - FIXED: Exclude dying units
             const enemies = combatUnits.filter(otherId => {
                 const otherTeam = this.game.getComponent(otherId, this.componentTypes.TEAM);
-                return otherId !== entityId && otherTeam && otherTeam.team !== team.team;
+                const otherHealth = this.game.getComponent(otherId, this.componentTypes.HEALTH);
+                const otherDeathState = this.game.getComponent(otherId, this.componentTypes.DEATH_STATE);
+                
+                // Skip if same entity or different team
+                if (otherId === entityId || !otherTeam || otherTeam.team === team.team) {
+                    return false;
+                }
+                
+                // Skip if unit is dead or dying
+                if (!otherHealth || otherHealth.current <= 0) {
+                    return false;
+                }
+                
+                // Skip if unit is in dying state
+                if (otherDeathState && otherDeathState.isDying) {
+                    return false;
+                }
+                
+                return true;
             });
+            
+            // Clear current target if it's no longer valid
+            if (aiBehavior.currentTarget) {
+                const targetHealth = this.game.getComponent(aiBehavior.currentTarget, this.componentTypes.HEALTH);
+                const targetDeathState = this.game.getComponent(aiBehavior.currentTarget, this.componentTypes.DEATH_STATE);
+                
+                // Clear target if it's dead or dying
+                if (!targetHealth || targetHealth.current <= 0 || (targetDeathState && targetDeathState.isDying)) {
+                    aiBehavior.currentTarget = null;
+                    aiBehavior.targetPosition = null;
+                }
+            }
             
             if (enemies.length === 0) {
                 this.changeAIState(aiState, 'idle', now);
@@ -187,7 +217,22 @@ class CombatAISystem {
         
         let targetEnemy = this.findBestTarget(pos, enemies, aiBehavior, now);
         
-        if (!targetEnemy) return;
+        if (!targetEnemy) {
+            // Clear target if no valid enemies found
+            aiBehavior.currentTarget = null;
+            aiBehavior.targetPosition = null;
+            return;
+        }
+        
+        // Additional validation: make sure target is still alive and not dying
+        const targetHealth = this.game.getComponent(targetEnemy, this.componentTypes.HEALTH);
+        const targetDeathState = this.game.getComponent(targetEnemy, this.componentTypes.DEATH_STATE);
+        
+        if (!targetHealth || targetHealth.current <= 0 || (targetDeathState && targetDeathState.isDying)) {
+            aiBehavior.currentTarget = null;
+            aiBehavior.targetPosition = null;
+            return;
+        }
         
         const enemyPos = this.game.getComponent(targetEnemy, this.componentTypes.POSITION);
         if (!enemyPos) return;
@@ -210,7 +255,13 @@ class CombatAISystem {
         
         enemies.forEach(enemyId => {
             const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
-            if (!enemyPos) return;
+            const enemyHealth = this.game.getComponent(enemyId, this.componentTypes.HEALTH);
+            const enemyDeathState = this.game.getComponent(enemyId, this.componentTypes.DEATH_STATE);
+            
+            if (!enemyPos || !enemyHealth || enemyHealth.current <= 0) return;
+            
+            // Skip dying enemies
+            if (enemyDeathState && enemyDeathState.isDying) return;
             
             const dx = enemyPos.x - pos.x;
             const dz = enemyPos.z - pos.z;
@@ -241,9 +292,12 @@ class CombatAISystem {
         
         if (!aiBehavior.currentTarget || aiState.state !== 'attacking') return;
         
-        // Check if target still exists
+        // Check if target still exists and is alive
         const targetPos = this.game.getComponent(aiBehavior.currentTarget, this.componentTypes.POSITION);
-        if (!targetPos) {
+        const targetHealth = this.game.getComponent(aiBehavior.currentTarget, this.componentTypes.HEALTH);
+        const targetDeathState = this.game.getComponent(aiBehavior.currentTarget, this.componentTypes.DEATH_STATE);
+        
+        if (!targetPos || !targetHealth || targetHealth.current <= 0 || (targetDeathState && targetDeathState.isDying)) {
             aiBehavior.currentTarget = null;
             aiBehavior.targetPosition = null;
             this.changeAIState(aiState, 'idle', now);
@@ -268,6 +322,14 @@ class CombatAISystem {
     }
 
     initiateAttack(attackerId, targetId, combat, now) {
+        // Additional safety check before initiating attack
+        const targetHealth = this.game.getComponent(targetId, this.componentTypes.HEALTH);
+        const targetDeathState = this.game.getComponent(targetId, this.componentTypes.DEATH_STATE);
+        
+        if (!targetHealth || targetHealth.current <= 0 || (targetDeathState && targetDeathState.isDying)) {
+            return; // Don't attack dead or dying targets
+        }
+        
         if (combat.projectile && this.game.projectileSystem) {
             this.scheduleProjectileLaunch(attackerId, targetId, combat, now);
         } else {
@@ -331,6 +393,16 @@ class CombatAISystem {
         
         for (const [eventId, event] of this.pendingDamageEvents.entries()) {
             if (now >= event.triggerTime) {
+                // Additional validation before executing damage
+                const targetHealth = this.game.getComponent(event.targetId, this.componentTypes.HEALTH);
+                const targetDeathState = this.game.getComponent(event.targetId, this.componentTypes.DEATH_STATE);
+                
+                // Skip damage if target is already dead or dying
+                if (!targetHealth || targetHealth.current <= 0 || (targetDeathState && targetDeathState.isDying)) {
+                    eventsToRemove.push(eventId);
+                    continue;
+                }
+                
                 if (event.type === 'melee') {
                     this.executeMeleeDamage(event);
                 } else if (event.type === 'projectile') {
@@ -352,10 +424,17 @@ class CombatAISystem {
         const attackerPos = this.game.getComponent(event.attackerId, this.componentTypes.POSITION);
         const targetPos = this.game.getComponent(event.targetId, this.componentTypes.POSITION);
         const targetHealth = this.game.getComponent(event.targetId, this.componentTypes.HEALTH);
+        const targetDeathState = this.game.getComponent(event.targetId, this.componentTypes.DEATH_STATE);
         const attackerCombat = this.game.getComponent(event.attackerId, this.componentTypes.COMBAT);
         
         if (!attackerPos || !targetPos || !targetHealth || !attackerCombat) {
             console.log('Missing components - damage cancelled');
+            return;
+        }
+        
+        // Skip if target is dying
+        if (targetDeathState && targetDeathState.isDying) {
+            console.log('Target is dying - damage cancelled');
             return;
         }
         
@@ -369,7 +448,15 @@ class CombatAISystem {
 
     executeProjectileLaunch(event) {
         const attackerPos = this.game.getComponent(event.attackerId, this.componentTypes.POSITION);
-        if (!attackerPos) {
+        const targetHealth = this.game.getComponent(event.targetId, this.componentTypes.HEALTH);
+        const targetDeathState = this.game.getComponent(event.targetId, this.componentTypes.DEATH_STATE);
+        
+        if (!attackerPos || !targetHealth || targetHealth.current <= 0) {
+            return;
+        }
+        
+        // Skip if target is dying
+        if (targetDeathState && targetDeathState.isDying) {
             return;
         }
         
@@ -378,10 +465,14 @@ class CombatAISystem {
 
     applyDamage(attackerId, targetId, damage) {
         const targetHealth = this.game.getComponent(targetId, this.componentTypes.HEALTH);
+        const targetDeathState = this.game.getComponent(targetId, this.componentTypes.DEATH_STATE);
         const targetTeam = this.game.getComponent(targetId, this.componentTypes.TEAM);
         const attackerTeam = this.game.getComponent(attackerId, this.componentTypes.TEAM);
         
         if (!targetHealth) return;
+        
+        // Skip if target is already dying
+        if (targetDeathState && targetDeathState.isDying) return;
         
         targetHealth.current -= damage;
         
@@ -404,11 +495,53 @@ class CombatAISystem {
             if (this.game.battleLogSystem) {
                 this.game.battleLogSystem.add(`${targetTeam.team} ${targetType.type} defeated!`, 'log-death');
             }
-            this.game.destroyEntity(targetId);
+            
+            // Instead of immediately destroying, start death process
+            this.startDeathProcess(targetId);
             this.checkBattleEnd();
         }
     }
-
+    
+    startDeathProcess(entityId) {
+        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const Components = this.game.componentManager.getComponents();
+        
+        // Check if already dying to prevent restarting death process
+        const existingDeathState = this.game.getComponent(entityId, ComponentTypes.DEATH_STATE);
+        if (existingDeathState && existingDeathState.isDying) {
+            return; // Already dying, don't restart the process
+        }
+        
+        // Add death state component
+        this.game.addComponent(entityId, ComponentTypes.DEATH_STATE, Components.DeathState(true, Date.now() / 1000, 2.0));
+        
+        // Remove AI state to stop all AI behavior
+        if (this.game.hasComponent(entityId, ComponentTypes.AI_STATE)) {
+            this.game.removeComponent(entityId, ComponentTypes.AI_STATE);
+        }
+        
+        // Stop all movement
+        const velocity = this.game.getComponent(entityId, ComponentTypes.VELOCITY);
+        if (velocity) {
+            velocity.vx = 0;
+            velocity.vy = 0;
+            velocity.vz = 0;
+        }
+        
+        // Remove combat ability
+        if (this.game.hasComponent(entityId, ComponentTypes.COMBAT)) {
+            this.game.removeComponent(entityId, ComponentTypes.COMBAT);
+        }
+        
+        // Clean up any pending damage events for this entity
+        this.cleanupPendingEventsForEntity(entityId);
+        
+        // Play death animation if animation system exists
+        if (this.game.animationSystem && this.game.animationSystem.playDeathAnimation) {
+            this.game.animationSystem.playDeathAnimation(entityId);
+        }
+    }
+    
     fireProjectileAttack(attackerId, targetId, projectileTypeId) {
         if (!this.game.projectileSystem) return;
         
@@ -475,13 +608,15 @@ class CombatAISystem {
     performBattleEndCheck() {
         const allLivingEntities = this.game.getEntitiesWith(
             this.componentTypes.TEAM, 
-            this.componentTypes.HEALTH,
+            this.componentTypes.HEALTH, // Only entities with health (excludes corpses)
             this.componentTypes.UNIT_TYPE
         );
         
         const aliveEntities = allLivingEntities.filter(id => {
             const health = this.game.getComponent(id, this.componentTypes.HEALTH);
-            return health && health.current > 0;
+            // Also exclude entities that are currently dying
+            const deathState = this.game.getComponent(id, this.componentTypes.DEATH_STATE);
+            return health && health.current > 0 && (!deathState || !deathState.isDying);
         });
         
         const playerUnits = aliveEntities.filter(id => {

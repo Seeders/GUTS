@@ -2,10 +2,10 @@
   "title": "Knight",
   "size": 35,
   "value": 100,
-  "hp": 180,
+  "hp": 240,
   "speed": 25,
-  "damage": 35,
-  "attackSpeed": 0.8,
+  "damage": 20,
+  "attackSpeed": 0.9,
   "render": {
     "animations": {
       "idle": [
@@ -13,7 +13,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/idle/idle.glb",
+                "url": "projects/TurnBasedWarfare/resources/animations/idle.glb",
                 "id": 0
               }
             ]
@@ -25,7 +25,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/walk_with_shield/walk_with_shield.glb",
+                "url": "projects/TurnBasedWarfare/resources/animations/walk_with_shield.glb",
                 "id": 0
               }
             ]
@@ -37,7 +37,19 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/sword_slash/sword_slash.glb",
+                "url": "projects/TurnBasedWarfare/resources/animations/sword_slash.glb",
+                "id": 0
+              }
+            ]
+          }
+        }
+      ],
+      "death": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "projects/TurnBasedWarfare/resources/animations/death_fallback.glb",
                 "id": 0
               }
             ]

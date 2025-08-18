@@ -38,8 +38,7 @@ class EquipmentSystem {
         if (!equipment) {
             console.warn(`Entity ${entityId} has no equipment component`);
             return false;
-        }
-        debugger;
+        }        
         const slotType = equippedItem.slot;
         
         await this.unequipItem(entityId, slotType);

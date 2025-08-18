@@ -2,10 +2,10 @@
   "title": "Battle Cleric",
   "size": 25,
   "value": 110,
-  "hp": 120,
+  "hp": 200,
   "speed": 35,
-  "damage": 22,
-  "attackSpeed": 1.1,
+  "damage": 14,
+  "attackSpeed": 1,
   "render": {
     "animations": {
       "idle": [
@@ -13,7 +13,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/idle/idle.glb",
+                "url": "projects/TurnBasedWarfare/resources/animations/idle.glb",
                 "id": 0
               }
             ]
@@ -25,7 +25,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/walk_with_shield/walk_with_shield.glb",
+                "url": "projects/TurnBasedWarfare/resources/animations/walk_with_shield.glb",
                 "id": 0
               }
             ]
@@ -37,7 +37,19 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/sword_slash/sword_slash.glb",
+                "url": "projects/TurnBasedWarfare/resources/animations/sword_slash.glb",
+                "id": 0
+              }
+            ]
+          }
+        }
+      ],
+      "death": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "projects/TurnBasedWarfare/resources/animations/death_fallback.glb",
                 "id": 0
               }
             ]

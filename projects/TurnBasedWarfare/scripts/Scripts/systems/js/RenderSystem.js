@@ -198,7 +198,7 @@
         if (this.game.animationSystem) {
             this.game.animationSystem.removeEntityAnimations(entityId);
         }
-        
+        console.log("Removing Model for ", entityId);
         // Remove from maps
         this.entityModels.delete(entityId);
     }

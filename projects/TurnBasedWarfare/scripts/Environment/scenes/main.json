@@ -93,6 +93,9 @@
           "type": "EquipmentSystem"
         },
         {
+          "type": "DeathSystem"
+        },
+        {
           "type": "UISystem"
         }
       ],

@@ -2,9 +2,9 @@
   "title": "Paladin",
   "size": 25,
   "value": 200,
-  "hp": 250,
+  "hp": 350,
   "speed": 30,
-  "damage": 45,
+  "damage": 20,
   "attackSpeed": 0.9,
   "render": {
     "animations": {
@@ -13,7 +13,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/idle/idle.glb",
+                "url": "projects/TurnBasedWarfare/resources/animations/idle.glb",
                 "id": 0
               }
             ]
@@ -25,7 +25,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/walk_with_shield/walk_with_shield.glb",
+                "url": "projects/TurnBasedWarfare/resources/animations/walk_with_shield.glb",
                 "id": 0
               }
             ]
@@ -37,7 +37,19 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/sword_slash/sword_slash.glb",
+                "url": "projects/TurnBasedWarfare/resources/animations/sword_slash.glb",
+                "id": 0
+              }
+            ]
+          }
+        }
+      ],
+      "death": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "projects/TurnBasedWarfare/resources/animations/death_fallback.glb",
                 "id": 0
               }
             ]
@@ -84,19 +96,36 @@
     },
     "equipment": [
       {
-        "slot": "mainHand",
-        "item": "woodStaff",
+        "slot": "offHand",
+        "item": "knightShield",
         "attachmentData": {
-          "bone": "",
+          "bone": "LeftHand",
           "offset": {
             "x": 0,
             "y": 0,
-            "z": 0
+            "z": -28
+          },
+          "rotation": {
+            "x": 192,
+            "y": 0,
+            "z": 90
+          }
+        }
+      },
+      {
+        "slot": "mainHand",
+        "item": "knightSword",
+        "attachmentData": {
+          "bone": "RightHand",
+          "offset": {
+            "x": 10,
+            "y": 10,
+            "z": -10
           },
           "rotation": {
             "x": 0,
             "y": 0,
-            "z": 0
+            "z": -90
           }
         }
       }

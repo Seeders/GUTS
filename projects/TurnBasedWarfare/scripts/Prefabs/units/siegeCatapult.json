@@ -1,13 +1,13 @@
 {
   "title": "Siege Catapult",
   "size": 25,
-  "value": 300,  
+  "value": 275,  
   "hp": 200,
   "speed": 10,
-  "damage": 100,  
-  "attackSpeed": 0.3,
+  "damage": 40,  
+  "attackSpeed": 0.4,
   "range": 250,
-  "projectile": "missile",
+  "projectile": "boulder",
   "render": {
     "animations": {
       "idle": [
@@ -18,7 +18,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/walk/walk.glb",
+                "url": "projects/TurnBasedWarfare/resources/animations/walk/walk.glb",
                 "id": 0
               }
             ]
@@ -30,7 +30,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/throw/throw.glb",
+                "url": "projects/TurnBasedWarfare/resources/animations/throw/throw.glb",
                 "id": 0
               }
             ]

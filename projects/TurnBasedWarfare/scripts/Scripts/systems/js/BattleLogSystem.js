@@ -19,8 +19,7 @@ class BattleLogSystem {
         
         if (this.entries.length > this.maxEntries) {
             this.entries = this.entries.slice(-50);
-        }
-        console.log(entry);        
+        } 
     }
     
     categorizeMessage(className) {

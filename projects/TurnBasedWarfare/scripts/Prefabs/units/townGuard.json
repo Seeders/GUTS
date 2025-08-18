@@ -1,10 +1,10 @@
 {
   "title": "Town Guard",
   "size": 25,
-  "value": 40,
-  "hp": 100,
+  "value": 50,
+  "hp": 150,
   "speed": 35,
-  "damage": 20,
+  "damage": 12,
   "attackSpeed": 1,
   "render": {
     "animations": {
@@ -13,7 +13,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/idle/idle.glb",
+                "url": "projects/TurnBasedWarfare/resources/animations/idle.glb",
                 "scale": {
                   "z": 1,
                   "y": 1,
@@ -30,7 +30,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/walk_with_shield/walk_with_shield.glb",
+                "url": "projects/TurnBasedWarfare/resources/animations/walk_with_shield.glb",
                 "scale": {
                   "z": 1,
                   "y": 1,
@@ -47,12 +47,24 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/sword_slash/sword_slash.glb",
+                "url": "projects/TurnBasedWarfare/resources/animations/sword_slash.glb",
                 "scale": {
                   "z": 1,
                   "y": 1,
                   "x": 1
                 },
+                "id": 0
+              }
+            ]
+          }
+        }
+      ],
+      "death": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "projects/TurnBasedWarfare/resources/animations/death_fallback.glb",
                 "id": 0
               }
             ]

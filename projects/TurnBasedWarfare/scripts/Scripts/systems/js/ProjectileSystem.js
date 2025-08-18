@@ -471,7 +471,7 @@ class ProjectileSystem {
                     const targetTeam = this.game.getComponent(targetId, this.componentTypes.TEAM);
                     this.game.battleLogSystem.add(`${targetTeam.team} ${targetUnitType.type} eliminated by projectile!`, 'log-death');
                 }
-                this.game.destroyEntity(targetId);
+                this.game.combatAISystems?.startDeathProcess(targetId);
                 this.game.combatAISystems?.checkBattleEnd();
             }
         }
@@ -606,10 +606,7 @@ class ProjectileSystem {
     
     applySplashDamage(projectileId, pos, projectile) {
         const splashRadius = 80; // Reasonable explosion radius (adjust as needed)
-        const splashDamage = Math.floor(projectile.damage * 0.8); // 80% of direct hit damage
-        
-        console.log(`Checking splash damage in radius ${splashRadius} from position:`, pos);
-        
+        const splashDamage = Math.floor(projectile.damage);
         // Find all entities within splash radius
         const allEntities = this.game.getEntitiesWith(
             this.componentTypes.POSITION, 
@@ -652,9 +649,7 @@ class ProjectileSystem {
                 // Apply area damage
                 entityHealth.current -= finalDamage;
                 damageDealt += finalDamage;
-                
-                console.log(`Entity ${entityId} at distance ${distance.toFixed(1)} takes ${finalDamage} area damage`);
-                
+             
                 // Visual feedback
                 const targetAnimation = this.game.getComponent(entityId, this.componentTypes.ANIMATION);
                 if (targetAnimation) {
@@ -689,7 +684,6 @@ class ProjectileSystem {
             }
         });
         
-        console.log(`Splash damage complete: ${entitiesInRange} entities in range, ${damageDealt} total damage dealt`);
     }
     
 }

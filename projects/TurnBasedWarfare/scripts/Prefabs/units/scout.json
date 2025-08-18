@@ -1,10 +1,10 @@
 {
   "title": "Scout",
   "size": 25,
-  "value": 35,
-  "hp": 60,
+  "value": 40,
+  "hp": 95,
   "speed": 65,
-  "damage": 18,
+  "damage": 10,
   "attackSpeed": 1.8,
   "render": {
     "animations": {
@@ -13,7 +13,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/idle/idle.glb",
+                "url": "projects/TurnBasedWarfare/resources/animations/idle.glb",
                 "scale": {
                   "z": 1,
                   "y": 1,
@@ -30,7 +30,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/walk_bow/walk_bow.glb",
+                "url": "projects/TurnBasedWarfare/resources/animations/walk_bow.glb",
                 "scale": {
                   "z": 1,
                   "y": 1,
@@ -47,12 +47,24 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/sword_slash/sword_slash.glb",
+                "url": "projects/TurnBasedWarfare/resources/animations/sword_slash.glb",
                 "scale": {
                   "z": 1,
                   "y": 1,
                   "x": 1
                 },
+                "id": 0
+              }
+            ]
+          }
+        }
+      ],
+      "death": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "projects/TurnBasedWarfare/resources/animations/death_fallback.glb",
                 "id": 0
               }
             ]
@@ -101,6 +113,25 @@
           }
         ]
       }
-    }
+    },
+    "equipment": [
+      {
+        "slot": "mainHand",
+        "item": "knightSword",
+        "attachmentData": {
+          "bone": "RightHand",
+          "offset": {
+            "x": 0,
+            "y": 20,
+            "z": -5
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": -90
+          }
+        }
+      }
+    ]
   }
 }

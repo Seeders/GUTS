@@ -1,10 +1,10 @@
 {
   "title": "Militia Spearman",
   "size": 25,
-  "value": 25,
-  "hp": 80,
+  "value": 30,
+  "hp": 85,
   "speed": 40,
-  "damage": 15,
+  "damage": 7,
   "attackSpeed": 1.2,
   "render": {
     "animations": {
@@ -13,7 +13,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/idle/idle.glb",
+                "url": "projects/TurnBasedWarfare/resources/animations/idle.glb",
                 "id": 0
               }
             ]
@@ -25,7 +25,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/walk_steady_right_hand/walk_steady_right_hand.glb",
+                "url": "projects/TurnBasedWarfare/resources/animations/walk_steady_right_hand.glb",
                 "id": 0
               }
             ]
@@ -37,7 +37,32 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/sword_slash/sword_slash.glb",
+                "type": "gltf",
+                "url": "projects/TurnBasedWarfare/resources/animations/2h_slash.glb",
+                "width": 2,
+                "height": 0.2,
+                "depth": 1,
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "rotationX": 0,
+                "rotationY": 0,
+                "rotationZ": 0,
+                "color": "#FFFFFF",
+                "metalness": "0",
+                "roughness": "1",
+                "id": 0
+              }
+            ]
+          }
+        }
+      ],
+      "death": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "projects/TurnBasedWarfare/resources/animations/death_fallback.glb",
                 "id": 0
               }
             ]
@@ -81,6 +106,25 @@
           }
         ]
       }
-    }
+    },
+    "equipment": [
+      {
+        "slot": "mainHand",
+        "item": "woodStaff",
+        "attachmentData": {
+          "bone": "RightHand",
+          "offset": {
+            "x": 20,
+            "y": -5,
+            "z": -10
+          },
+          "rotation": {
+            "x": 0,
+            "y": 45,
+            "z": -90
+          }
+        }
+      }
+    ]
   }
 }

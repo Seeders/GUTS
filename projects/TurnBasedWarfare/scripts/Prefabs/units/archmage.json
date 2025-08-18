@@ -1,11 +1,11 @@
 {
   "title": "Archmage",
   "size": 25,
-  "value": 450,
-  "hp": 150,
+  "value": 420,
+  "hp": 200,
   "speed": 30,
-  "damage": 80,
-  "attackSpeed": 0.5,
+  "damage": 30,
+  "attackSpeed": 0.7,
   "range": 200,
   "projectile": "fireball",
   "render": {
@@ -15,7 +15,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/idle/idle.glb",
+                "url": "projects/TurnBasedWarfare/resources/animations/idle.glb",
                 "id": 0
               }
             ]
@@ -27,7 +27,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/walk_steady_right_hand/walk_steady_right_hand.glb",
+                "url": "projects/TurnBasedWarfare/resources/animations/walk_steady_right_hand.glb",
                 "id": 0
               }
             ]
@@ -39,7 +39,19 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/1h_spell_throw/1h_spell_throw.glb",
+                "url": "projects/TurnBasedWarfare/resources/animations/1h_spell_throw.glb",
+                "id": 0
+              }
+            ]
+          }
+        }
+      ],
+      "death": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "projects/TurnBasedWarfare/resources/animations/death_fallback.glb",
                 "id": 0
               }
             ]
