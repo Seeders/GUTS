@@ -88,7 +88,12 @@ class ShapeFactory {
                 ((shape.rotation ? shape.rotation.y : shape.rotationY) || 0) * Math.PI / 180,
                 ((shape.rotation ? shape.rotation.z : shape.rotationZ) || 0) * Math.PI / 180
             );
-    
+
+            // Store reference to all bones for equipment attachment
+            const modelBones = new Map();
+            let skinnedMesh = null;
+            let skeleton = null;
+
             model.traverse(child => {
                 if (child.isMesh) {
                     // Override material with skinning enabled
@@ -108,38 +113,63 @@ class ShapeFactory {
                         index: index,
                         isGLTFChild: true
                     };
+                    
+                    // Check if this is a skinned mesh
+                    if (child.isSkinnedMesh) {
+                        skinnedMesh = child;
+                        skeleton = child.skeleton;
+                    }
+                }
+                
+                // Collect all bones for equipment attachment
+                if (child.isBone) {
+                    modelBones.set(child.name, child);
+                    // Mark bone with special userData for identification
+                    child.userData.isCharacterBone = true;
+                    child.userData.modelIndex = index;
                 }
             });
-    
+
+            // Store skeleton and bone information in model userData
             model.userData = {
                 isShape: true,
                 index: index,
                 isGLTFRoot: true,
                 castShadow: true,
-                animations: animations
+                animations: animations,
+                bones: modelBones,
+                skeleton: skeleton,
+                skinnedMesh: skinnedMesh
             };
-    
+
             console.log(`Applied GLTF scale ${this.gltfModelScale} to model. Final scale:`, model.scale);
+            console.log(`Found ${modelBones.size} bones in GLTF model:`, Array.from(modelBones.keys()));
+            
             group.add(model);
-    
+
             if (animations && animations.length > 0) {
                 const mixer = new THREE.AnimationMixer(model);
                 const action = mixer.clipAction(animations[0]);
                 action.play();
-    
+
                 model.userData.mixer = mixer;
-                let skinnedMesh;
-                gltf.scene.traverse((child) => {
-                    if (child.isSkinnedMesh) {
-                        skinnedMesh = child;
-                    }
-                });
-    
-                if (!skinnedMesh) {
-                    return;
-                }    
-                const skeleton = skinnedMesh.skeleton;
-                model.userData.skeleton = skeleton;                
+                
+                if (skeleton) {
+                    model.userData.skeleton = skeleton;
+                    console.log(`Skeleton with ${skeleton.bones.length} bones attached to model`);
+                    
+                    // Ensure bones are accessible for equipment attachment
+                    skeleton.bones.forEach(bone => {
+                        if (!modelBones.has(bone.name)) {
+                            modelBones.set(bone.name, bone);
+                            bone.userData.isCharacterBone = true;
+                            bone.userData.modelIndex = index;
+                        }
+                    });
+                    
+                    // Update bones map in userData
+                    model.userData.bones = modelBones;
+                }
             }         
         };
     

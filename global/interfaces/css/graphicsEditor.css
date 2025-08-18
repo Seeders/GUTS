@@ -231,3 +231,77 @@
     background: #0066cc;
     border-color: #0088ff;
 }
+
+/* Equipment-specific styles */
+#graphics-editor-container .equipment-item {
+    padding: 8px 12px;
+    border-bottom: 1px solid #34495e;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#graphics-editor-container .equipment-item:hover {
+    background: #3498db;
+}
+
+#graphics-editor-container .equipment-item.selected {
+    background: #3498db;
+    color: white;
+}
+
+#graphics-editor-container .equipment-item:last-child {
+    border-bottom: none;
+}
+
+#graphics-editor-container .equipment-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+#graphics-editor-container .item-name {
+    font-weight: bold;
+    font-size: 0.9em;
+}
+
+#graphics-editor-container .slot-name {
+    color: #95a5a6;
+    font-size: 0.8em;
+}
+
+#graphics-editor-container .bone-info {
+    font-size: 0.7em;
+    color: #95a5a6;
+    margin-top: 2px;
+}
+
+#graphics-editor-container .no-equipment {
+    text-align: center;
+    padding: 20px;
+    color: #95a5a6;
+    font-style: italic;
+    font-size: 0.8em;
+}
+
+/* Mode-specific visibility */
+#graphics-editor-container .equipment-mode #graphics-toolbar,
+#graphics-editor-container .equipment-mode #graphics-lists,
+#graphics-editor-container .equipment-mode #inspector {
+    display: none !important;
+}
+
+#graphics-editor-container .equipment-mode #equipment-toolbar,
+#graphics-editor-container .equipment-mode #equipment-controls,
+#graphics-editor-container .equipment-mode #equipment-inspector,
+#graphics-editor-container .equipment-mode #equipment-info,
+#graphics-editor-container .equipment-mode #selected-equipment-info {
+    display: block !important;
+}
+
+#graphics-editor-container .equipment-mode #shape-count,
+#graphics-editor-container .equipment-mode #selected-shape {
+    display: none !important;
+}

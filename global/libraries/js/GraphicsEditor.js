@@ -16,22 +16,23 @@ class GraphicsEditor {
      * @param {Function} managers.GE_GroupManager - Handles shape grouping
      * @param {Function} managers.GE_GizmoManager - Manages transformation gizmos
      */
-    constructor(gameEditor, config, {ShapeFactory, GE_SceneRenderer, GE_ShapeManager, GE_AnimationManager, GE_RotationUtils, GE_UIManager, GE_GroupManager, GE_GizmoManager}) {
+    constructor(gameEditor, config, {}) {
         this.gameEditor = gameEditor;
         this.config = config;
-        this.shapeFactory = new ShapeFactory(this.gameEditor.getPalette(), this.gameEditor.getCollections().textures, null);
+        this.shapeFactory = new GUTS.ShapeFactory(this.gameEditor.getPalette(), this.gameEditor.getCollections().textures, null);
         if(location.hostname.indexOf('github') >= 0) {
             this.shapeFactory.setURLRoot("/GUTS/");
         }
         this.canvas = document.getElementById('graphics-editor-canvas');
         // Initialize sub-modules
-        this.sceneRenderer = new GE_SceneRenderer(gameEditor, this);
-        this.shapeManager = new GE_ShapeManager(gameEditor, this);
-        this.uiManager = new GE_UIManager(gameEditor, this);
-        this.animationManager = new GE_AnimationManager(gameEditor, this);
-        this.groupManager = new GE_GroupManager(gameEditor, this);
-        this.gizmoManager = new GE_GizmoManager(gameEditor, this);
-        this.rotationUtils = GE_RotationUtils;
+        this.sceneRenderer = new GUTS.GE_SceneRenderer(gameEditor, this);
+        this.shapeManager = new GUTS.GE_ShapeManager(gameEditor, this);
+        this.uiManager = new GUTS.GE_UIManager(gameEditor, this);
+        this.animationManager = new GUTS.GE_AnimationManager(gameEditor, this);
+        this.groupManager = new GUTS.GE_GroupManager(gameEditor, this);
+        this.gizmoManager = new GUTS.GE_GizmoManager(gameEditor, this);
+        this.equipmentEditor = new GUTS.GE_EquipmentEditor(gameEditor, this);
+        this.rotationUtils = GUTS.GE_RotationUtils;
         // State management (simplified)
         this.state = {
             editingModel: true,
@@ -57,6 +58,7 @@ class GraphicsEditor {
         this.animationManager.init();
         this.groupManager.init();
         this.gizmoManager.init();
+        this.equipmentEditor.init();
         this.sceneRenderer.animate();    
     }
 
@@ -74,6 +76,18 @@ class GraphicsEditor {
      * @returns {Promise<void>}
      */
     async renderShapes(fireSave = true) {
+        // Store equipment models before clearing scene
+        const equipmentModels = new Map();
+        if (this.equipmentEditor.equipmentModels.size > 0) {
+            this.equipmentEditor.equipmentModels.forEach((data, index) => {
+                // Temporarily detach equipment from bones to preserve them
+                if (data.model.parent) {
+                    data.model.parent.remove(data.model);
+                }
+                equipmentModels.set(index, data);
+            });
+        }
+
         await this.clearScene();
         await this.setupLights();
         
@@ -82,8 +96,59 @@ class GraphicsEditor {
         }
         
         await this.renderGroups();
+        
+        // Re-attach equipment after character model is loaded
+        if (equipmentModels.size > 0) {
+            // Wait a bit for bones to be properly set up
+            setTimeout(() => {
+                this.equipmentEditor.findCharacterBones();
+                equipmentModels.forEach((data, index) => {
+                    const bone = this.equipmentEditor.findAttachmentBone(data.equipment);
+                    if (bone) {
+                        bone.add(data.model);
+                        data.bone = bone;
+                        this.equipmentEditor.equipmentModels.set(index, data);
+                        console.log(`Re-attached equipment ${data.equipment.item} to bone ${bone.name}`);
+                    } else {
+                        // Fallback to root group
+                        this.rootGroup.add(data.model);
+                        data.bone = null;
+                        this.equipmentEditor.equipmentModels.set(index, data);
+                        console.warn(`Could not find bone for equipment ${data.equipment.item}, added to root`);
+                    }
+                });
+                
+                // Emit scene updated event
+                document.body.dispatchEvent(new CustomEvent('sceneUpdated'));
+            }, 100);
+        }
+        
         await this.updateUI(fireSave);
         await this.updateSelection();
+    }
+
+    // Also add this helper method to GraphicsEditor
+    /**
+     * Get all bones in the current character model
+     */
+    getAllBones() {
+        const bones = new Map();
+        
+        this.rootGroup.traverse(object => {
+            if (object.isBone) {
+                bones.set(object.name, object);
+            }
+            
+            // Check for GLTF bones
+            if (object.userData && object.userData.isGLTFRoot && object.userData.skeleton) {
+                const skeleton = object.userData.skeleton;
+                skeleton.bones.forEach(bone => {
+                    bones.set(bone.name, bone);
+                });
+            }
+        });
+        
+        return bones;
     }
 
     /**

@@ -14,8 +14,7 @@ class GE_SceneRenderer {
     }
     initEventListeners() {
         document.body.addEventListener('renderGraphicsObject', this.handleRenderObject.bind(this));
-        document.body.addEventListener('resizedEditor', () => { 
-            console.log('resized');
+        document.body.addEventListener('resizedEditor', () => {             
             this.graphicsEditor.canvas.width = this.gameEditor.getCollections().configs.game.canvasWidth;
             this.graphicsEditor.canvas.height = this.gameEditor.getCollections().configs.game.canvasHeight;
             this.graphicsEditor.canvas.setAttribute('style','');
@@ -74,6 +73,8 @@ class GE_SceneRenderer {
     handleRenderObject(event) {
         this.graphicsEditor.canvas.width = this.gameEditor.getCollections().configs.game.canvasWidth;
         this.graphicsEditor.canvas.height = this.gameEditor.getCollections().configs.game.canvasHeight;
+        
+        this.graphicsEditor.equipmentEditor.clearAllEquipment();
         this.graphicsEditor.canvas.setAttribute('style','');
         this.graphicsEditor.setPreviewAnimationState(false);
         this.graphicsEditor.state.renderData = event.detail.data;
