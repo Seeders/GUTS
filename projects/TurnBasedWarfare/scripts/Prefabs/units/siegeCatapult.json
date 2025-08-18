@@ -1,13 +1,18 @@
 {
   "title": "Siege Catapult",
   "size": 25,
-  "value": 275,  
+  "value": 275,
   "hp": 200,
   "speed": 10,
-  "damage": 40,  
+  "damage": 40,
   "attackSpeed": 0.4,
   "range": 250,
   "projectile": "boulder",
+  "element": "physical",
+  "armor": 5,
+  "fireResistance": 0.3,
+  "coldResistance": 0.2,
+  "lightningResistance": 0.1,
   "render": {
     "animations": {
       "idle": [

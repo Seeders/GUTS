@@ -1,5 +1,5 @@
 class ProjectileSystem {
- constructor(game) {
+    constructor(game) {
         this.game = game;
         this.game.projectileSystem = this;
         this.componentTypes = this.game.componentManager.getComponentTypes();
@@ -37,6 +37,9 @@ class ProjectileSystem {
         const components = this.game.componentManager.getComponents();
         const now = Date.now() / 1000;
         
+        // Determine projectile element (from weapon, combat component, or projectile data)
+        const projectileElement = this.determineProjectileElement(sourceId, projectileData);
+        
         // Pass source ID to trajectory calculation for ballistic projectiles
         const projectileDataWithSource = { ...projectileData, sourceId: sourceId };
         
@@ -53,6 +56,7 @@ class ProjectileSystem {
         this.game.addComponent(projectileId, this.componentTypes.VELOCITY, 
             components.Velocity(trajectory.vx, trajectory.vy, trajectory.vz, projectileData.speed));
         
+        // Enhanced projectile component with element
         this.game.addComponent(projectileId, this.componentTypes.PROJECTILE, {
             damage: sourceCombat.damage,
             speed: projectileData.speed,
@@ -69,7 +73,8 @@ class ProjectileSystem {
             targetZ: targetPos.z,
             launchAngle: trajectory.launchAngle,
             timeToTarget: trajectory.timeToTarget,
-            weaponRange: trajectory.weaponRange || sourceCombat.range
+            weaponRange: trajectory.weaponRange || sourceCombat.range,
+            element: projectileElement  // Add element to projectile
         });
 
         const sourceTeam = this.game.getComponent(sourceId, this.componentTypes.TEAM);
@@ -101,6 +106,37 @@ class ProjectileSystem {
         
         return projectileId;
     }
+
+    // =============================================
+    // ELEMENT DETERMINATION
+    // =============================================
+
+    /**
+     * Determine the element of a projectile based on various sources
+     */
+    determineProjectileElement(sourceId, projectileData) {
+        // Priority order: projectile data > weapon element > combat element > default physical
+        
+        // 1. Check projectile data for explicit element
+        if (projectileData.element) {
+            return projectileData.element;
+        }
+        
+        // 2. Check combat component element
+        const sourceCombat = this.game.getComponent(sourceId, this.componentTypes.COMBAT);
+        if (sourceCombat && sourceCombat.element) {
+            return sourceCombat.element;
+        }
+        
+        // 3. Default to physical
+        return this.game.damageSystem?.ELEMENT_TYPES?.PHYSICAL || 'physical';
+    }
+
+  
+
+    // =============================================
+    // TRAJECTORY CALCULATION
+    // =============================================
     
     calculateTrajectory(sourcePos, targetPos, projectileData) {
         const dx = targetPos.x - sourcePos.x;
@@ -153,10 +189,6 @@ class ProjectileSystem {
         const g = this.GRAVITY;
         
         // Calculate the initial velocity needed to reach the weapon's maximum range at 45 degrees
-        // Using: range = (v₀² * sin(2θ)) / g
-        // At 45 degrees: sin(2θ) = sin(90°) = 1
-        // So: range = v₀² / g
-        // Therefore: v₀ = sqrt(range * g)
         const optimalInitialVelocity = Math.sqrt(weaponRange * g);
         
         // Calculate what range this velocity would achieve at our target distance
@@ -168,11 +200,6 @@ class ProjectileSystem {
         
         if (horizontalDistance <= weaponRange) {
             // Target is within range - calculate exact trajectory
-            // For distances less than max range, we can use angles other than 45°
-            // Using: range = (v₀² * sin(2θ)) / g
-            // We want to use our optimal velocity but adjust angle for shorter distances
-            
-            // Try to use the optimal velocity first
             const maxRangeAtOptimalVelocity = (optimalInitialVelocity * optimalInitialVelocity) / g;
             
             if (horizontalDistance <= maxRangeAtOptimalVelocity) {
@@ -203,7 +230,6 @@ class ProjectileSystem {
         }
         
         // Calculate time of flight
-        // Using: t = (2 * v₀ * sin(θ)) / g
         const timeToTarget = (2 * initialVelocity * Math.sin(actualLaunchAngle)) / g;
         
         // Calculate horizontal direction unit vector
@@ -218,8 +244,6 @@ class ProjectileSystem {
         
         // Adjust for height difference if target is at different elevation
         if (Math.abs(dy) > 5) { // Only adjust for significant height differences
-            // Add extra vertical velocity to account for height difference
-            // This is an approximation - we add the height difference over the flight time
             const heightAdjustment = dy / timeToTarget;
             const adjustedVy = vy + heightAdjustment;
             
@@ -244,6 +268,10 @@ class ProjectileSystem {
             calculatedRange: (initialVelocity * initialVelocity * Math.sin(2 * actualLaunchAngle)) / g
         };
     }
+
+    // =============================================
+    // PROJECTILE UPDATE AND COLLISION
+    // =============================================
     
     update(deltaTime) {
         if (this.game.state.phase !== 'battle') return;
@@ -437,55 +465,89 @@ class ProjectileSystem {
         }
     }
 
+    // =============================================
+    // DAMAGE APPLICATION (using DamageSystem)
+    // =============================================
+
     handleProjectileHit(projectileId, targetId, projectile) {
-        // Apply damage for direct hits (non-ballistic projectiles only)
-        const targetHealth = this.game.getComponent(targetId, this.componentTypes.HEALTH);
-        if (targetHealth) {
-            const damage = projectile.damage; // No bonus for direct hits
+        // Use centralized damage system for projectile hits
+        if (this.game.damageSystem) {
+            const damage = projectile.damage;
+            const element = projectile.element || this.game.damageSystem.ELEMENT_TYPES.PHYSICAL;
             
-            targetHealth.current -= damage;
+            // Apply elemental damage through the damage system
+            const result = this.game.damageSystem.applyDamage(projectile.source, targetId, damage, element, {
+                isProjectile: true,
+                projectileId: projectileId
+            });
             
-            // Visual feedback
-            const targetAnimation = this.game.getComponent(targetId, this.componentTypes.ANIMATION);
-            if (targetAnimation) {
-                targetAnimation.flash = 0.5;
-            }
-            
-            // Logging
-            if (this.game.battleLogSystem) {
+            // Log projectile hit
+            if (result.damage > 0 && this.game.battleLogSystem) {
                 const sourceUnitType = this.game.getComponent(projectile.source, this.componentTypes.UNIT_TYPE);
                 const targetUnitType = this.game.getComponent(targetId, this.componentTypes.UNIT_TYPE);
                 const sourceTeam = this.game.getComponent(projectile.source, this.componentTypes.TEAM);
                 const targetTeam = this.game.getComponent(targetId, this.componentTypes.TEAM);
                 
-                this.game.battleLogSystem.add(
-                    `${sourceTeam.team} ${sourceUnitType.type} projectile hits ${targetTeam.team} ${targetUnitType.type} for ${damage} damage`, 
-                    'log-damage'
-                );
-            }
-            
-            // Check if target is eliminated
-            if (targetHealth.current <= 0) {
-                if (this.game.battleLogSystem) {
-                    const targetUnitType = this.game.getComponent(targetId, this.componentTypes.UNIT_TYPE);
-                    const targetTeam = this.game.getComponent(targetId, this.componentTypes.TEAM);
-                    this.game.battleLogSystem.add(`${targetTeam.team} ${targetUnitType.type} eliminated by projectile!`, 'log-death');
+                if (sourceUnitType && targetUnitType && sourceTeam && targetTeam) {
+                    const elementText = element !== this.game.damageSystem.ELEMENT_TYPES.PHYSICAL ? ` (${element})` : '';
+                    this.game.battleLogSystem.add(
+                        `${sourceTeam.team} ${sourceUnitType.type} projectile${elementText} hits ${targetTeam.team} ${targetUnitType.type} for ${result.damage} damage`, 
+                        'log-damage'
+                    );
                 }
-                this.game.combatAISystems?.startDeathProcess(targetId);
-                this.game.combatAISystems?.checkBattleEnd();
             }
         }
         
         // Create hit effect
-        this.createHitEffect(projectileId, targetId, false); // Not ballistic hit effect
+        this.createHitEffect(projectileId, targetId, false);
         
         // Destroy projectile
         this.destroyProjectile(projectileId);
     }
+
+    triggerBallisticExplosion(entityId, pos, projectile, groundLevel) {
+        console.log('Ballistic projectile exploding at ground impact:', pos);
+        
+        // Create explosion effect at ground impact point
+        this.createGroundExplosion(entityId, pos, projectile, groundLevel);
+        
+        // Apply splash damage using centralized damage system
+        if (this.game.damageSystem) {
+            const splashRadius = 80; // Reasonable explosion radius
+            const splashDamage = Math.floor(projectile.damage);
+            const element = projectile.element || this.game.damageSystem.ELEMENT_TYPES.PHYSICAL;
+            
+            const results = this.game.damageSystem.applySplashDamage(
+                projectile.source,
+                pos,
+                splashDamage,
+                element,
+                splashRadius,
+                {
+                    isBallistic: true,
+                    projectileId: entityId,
+                    allowFriendlyFire: false
+                }
+            );
+            
+            // Log explosion with results
+            if (this.game.battleLogSystem) {
+                const elementText = element !== this.game.damageSystem.ELEMENT_TYPES.PHYSICAL ? ` ${element}` : '';
+                this.game.battleLogSystem.add(`Ballistic${elementText} projectile explodes on impact!`, 'log-explosion');
+            }
+        }
+        
+        // Destroy the projectile
+        this.destroyProjectile(entityId);
+    }
+
+    // =============================================
+    // VISUAL EFFECTS
+    // =============================================
     
     createHitEffect(projectileId, targetId, isBallistic = false) {
         const projectilePos = this.game.getComponent(projectileId, this.componentTypes.POSITION);
-        const projectileVisual = this.game.getComponent(projectileId, this.componentTypes.PROJECTILE_VISUAL);
+        const projectile = this.game.getComponent(projectileId, this.componentTypes.PROJECTILE);
         
         if (!projectilePos) return;
         
@@ -497,8 +559,8 @@ class ProjectileSystem {
         this.game.addComponent(effectId, this.componentTypes.POSITION, 
             components.Position(projectilePos.x, projectilePos.y, projectilePos.z));
         
-        // Visual component for the effect (smaller for direct hits)
-        const effectColor = projectileVisual?.color || '#ffaa00';
+        // Visual component for the effect - color based on element
+        const effectColor = this.getElementalEffectColor(projectile.element);
         const effectSize = 6; // Smaller effect for direct hits
         this.game.addComponent(effectId, this.componentTypes.RENDERABLE, 
             components.Renderable(effectColor, effectSize, 'impact'));
@@ -513,6 +575,75 @@ class ProjectileSystem {
         this.game.addComponent(effectId, this.componentTypes.ANIMATION, 
             components.Animation(effectScale, 0, 1));
     }
+
+    createGroundExplosion(projectileId, pos, projectile, groundLevel) {
+        // Create a visual explosion effect
+        const effectId = this.game.createEntity();
+        const components = this.game.componentManager.getComponents();
+        
+        // Position at ground impact point (use actual terrain height)
+        this.game.addComponent(effectId, this.componentTypes.POSITION, 
+            components.Position(pos.x, groundLevel + 5, pos.z));
+        
+        // Visual component for explosion - color based on element
+        const explosionColor = this.getElementalExplosionEffect(projectile.element);
+        this.game.addComponent(effectId, this.componentTypes.RENDERABLE, 
+            components.Renderable("effects", explosionColor));
+        
+        // Explosion lifetime
+        this.game.addComponent(effectId, this.componentTypes.LIFETIME, 
+            components.Lifetime(1.5, Date.now() / 1000)); // Longer explosion duration
+        
+        // Explosion animation
+        this.game.addComponent(effectId, this.componentTypes.ANIMATION, 
+            components.Animation(6, 0, 1)); // Large, dramatic explosion
+    }
+
+    // Get visual effect color based on element
+    getElementalEffectColor(element) {
+        if (!this.game.damageSystem) return '#ffaa00'; // Default orange
+        
+        switch (element) {
+            case this.game.damageSystem.ELEMENT_TYPES.FIRE:
+                return '#ff4400'; // Orange-red
+            case this.game.damageSystem.ELEMENT_TYPES.COLD:
+                return '#44aaff'; // Light blue
+            case this.game.damageSystem.ELEMENT_TYPES.LIGHTNING:
+                return '#ffff44'; // Bright yellow
+            case this.game.damageSystem.ELEMENT_TYPES.POISON:
+                return '#44ff44'; // Green
+            case this.game.damageSystem.ELEMENT_TYPES.DIVINE:
+                return '#ffddaa'; // Golden
+            case this.game.damageSystem.ELEMENT_TYPES.PHYSICAL:
+            default:
+                return '#ffaa00'; // Default orange
+        }
+    }
+
+    // Get explosion effect type based on element
+    getElementalExplosionEffect(element) {
+        if (!this.game.damageSystem) return 'explosion';
+        
+        switch (element) {
+            case this.game.damageSystem.ELEMENT_TYPES.FIRE:
+                return 'fire_explosion';
+            case this.game.damageSystem.ELEMENT_TYPES.COLD:
+                return 'ice_explosion';
+            case this.game.damageSystem.ELEMENT_TYPES.LIGHTNING:
+                return 'lightning_explosion';
+            case this.game.damageSystem.ELEMENT_TYPES.POISON:
+                return 'poison_explosion';
+            case this.game.damageSystem.ELEMENT_TYPES.DIVINE:
+                return 'divine_explosion';
+            case this.game.damageSystem.ELEMENT_TYPES.PHYSICAL:
+            default:
+                return 'explosion';
+        }
+    }
+
+    // =============================================
+    // UTILITY METHODS
+    // =============================================
     
     updateProjectileTrail(projectileId, pos) {
         const projectileVisual = this.game.getComponent(projectileId, this.componentTypes.PROJECTILE_VISUAL);
@@ -562,128 +693,4 @@ class ProjectileSystem {
     getProjectileTrail(projectileId) {
         return this.projectileTrails.get(projectileId) || [];
     }
-
-
-    triggerBallisticExplosion(entityId, pos, projectile, groundLevel) {
-        console.log('Ballistic projectile exploding at ground impact:', pos);
-        
-        // Create explosion effect at ground impact point
-        this.createGroundExplosion(entityId, pos, projectile, groundLevel);
-        
-        // Check for area damage to nearby entities
-        this.applySplashDamage(entityId, pos, projectile);
-        
-        // Destroy the projectile
-        this.destroyProjectile(entityId);
-        
-        // Log the explosion
-        if (this.game.battleLogSystem) {
-            this.game.battleLogSystem.add('Ballistic projectile explodes on impact!', 'log-explosion');
-        }
-    }
-
-    createGroundExplosion(projectileId, pos, projectile, groundLevel) {
-        // Create a visual explosion effect
-        const effectId = this.game.createEntity();
-        const components = this.game.componentManager.getComponents();
-        
-        // Position at ground impact point (use actual terrain height)
-        this.game.addComponent(effectId, this.componentTypes.POSITION, 
-            components.Position(pos.x, groundLevel + 5, pos.z));
-        
-        // Visual component for explosion
-        this.game.addComponent(effectId, this.componentTypes.RENDERABLE, 
-            components.Renderable("effects", "explosion"));
-        
-        // Explosion lifetime
-        this.game.addComponent(effectId, this.componentTypes.LIFETIME, 
-            components.Lifetime(1.5, Date.now() / 1000)); // Longer explosion duration
-        
-        // Explosion animation
-        this.game.addComponent(effectId, this.componentTypes.ANIMATION, 
-            components.Animation(6, 0, 1)); // Large, dramatic explosion
-    }
-    
-    applySplashDamage(projectileId, pos, projectile) {
-        const splashRadius = 80; // Reasonable explosion radius (adjust as needed)
-        const splashDamage = Math.floor(projectile.damage);
-        // Find all entities within splash radius
-        const allEntities = this.game.getEntitiesWith(
-            this.componentTypes.POSITION, 
-            this.componentTypes.HEALTH,
-            this.componentTypes.TEAM
-        );
-        
-        const sourceTeam = this.game.getComponent(projectile.source, this.componentTypes.TEAM);
-        if (!sourceTeam) {
-            console.log('No source team found for projectile');
-            return;
-        }
-        
-        let entitiesInRange = 0;
-        let damageDealt = 0;
-        
-        allEntities.forEach(entityId => {
-            if (entityId === projectile.source) return; // Don't damage source
-            
-            const entityPos = this.game.getComponent(entityId, this.componentTypes.POSITION);
-            const entityTeam = this.game.getComponent(entityId, this.componentTypes.TEAM);
-            const entityHealth = this.game.getComponent(entityId, this.componentTypes.HEALTH);
-            
-            if (!entityPos || !entityTeam || !entityHealth) return;
-            if (entityTeam.team === sourceTeam.team) return; // Don't damage allies
-            
-            // Calculate 3D distance from explosion center
-            const dx = entityPos.x - pos.x;
-            const dy = entityPos.y - pos.y;
-            const dz = entityPos.z - pos.z;
-            const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-            
-            if (distance <= splashRadius) {
-                entitiesInRange++;
-                
-                // Calculate damage based on distance (closer = more damage)
-                const damageMultiplier = Math.max(0.2, 1 - (distance / splashRadius));
-                const finalDamage = Math.floor(splashDamage * damageMultiplier);
-                
-                // Apply area damage
-                entityHealth.current -= finalDamage;
-                damageDealt += finalDamage;
-             
-                // Visual feedback
-                const targetAnimation = this.game.getComponent(entityId, this.componentTypes.ANIMATION);
-                if (targetAnimation) {
-                    targetAnimation.flash = 0.7;
-                }
-                
-                // Log area damage
-                if (this.game.battleLogSystem) {
-                    const targetUnitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
-                    this.game.battleLogSystem.add(
-                        `${entityTeam.team} ${targetUnitType.type} takes ${finalDamage} explosion damage!`, 
-                        'log-damage'
-                    );
-                }
-                
-                // Check if target is eliminated by area damage
-                if (entityHealth.current <= 0) {
-                    const targetUnitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
-                    if (this.game.battleLogSystem) {
-                        this.game.battleLogSystem.add(
-                            `${entityTeam.team} ${targetUnitType.type} eliminated by explosion!`, 
-                            'log-death'
-                        );
-                    }
-                    this.game.destroyEntity(entityId);
-                    
-                    // Ensure battle end check happens after entity destruction
-                    if (this.game.combatAISystems) {
-                        this.game.combatAISystems.checkBattleEnd();
-                    }
-                }
-            }
-        });
-        
-    }
-    
 }

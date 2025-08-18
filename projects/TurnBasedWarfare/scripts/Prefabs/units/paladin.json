@@ -6,6 +6,11 @@
   "speed": 30,
   "damage": 20,
   "attackSpeed": 0.9,
+  "element": "divine",
+  "armor": 10,
+  "fireResistance": 0.25,
+  "coldResistance": 0.25,
+  "lightningResistance": 0.25,
   "render": {
     "animations": {
       "idle": [

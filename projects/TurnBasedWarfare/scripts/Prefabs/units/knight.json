@@ -6,6 +6,12 @@
   "speed": 25,
   "damage": 20,
   "attackSpeed": 0.9,
+  "element": "physical",
+  "armor": 8,
+  "fireResistance": 0.15,
+  "coldResistance": 0.15,
+  "lightningResistance": 0.1,
+  "poisonResistance": 0.2,
   "render": {
     "animations": {
       "idle": [

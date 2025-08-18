@@ -8,6 +8,11 @@
   "attackSpeed": 1.6,
   "range": 180,
   "projectile": "elvenArrow",
+  "element": "physical",
+  "armor": 3,
+  "fireResistance": 0.1,
+  "coldResistance": 0.15,
+  "lightningResistance": 0.2,
   "render": {
     "animations": {
       "idle": [

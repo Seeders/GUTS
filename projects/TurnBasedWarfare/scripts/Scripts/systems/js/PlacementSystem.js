@@ -22,6 +22,16 @@ class PlacementSystem {
                 speed: 0.1
             }
         };
+        
+        // Element types for reference
+        this.ELEMENT_TYPES = {
+            PHYSICAL: 'physical',
+            FIRE: 'fire',
+            COLD: 'cold',
+            LIGHTNING: 'lightning',
+            POISON: 'poison',
+            DIVINE: 'divine'
+        };
     }
     
     handleCanvasClick(event) {
@@ -141,12 +151,27 @@ class PlacementSystem {
         
         const initialFacing = this.calculateInitialFacing(team);
         
+        // Add basic components
         this.game.addComponent(entity, ComponentTypes.POSITION, Components.Position(worldX, worldY, worldZ));
         this.game.addComponent(entity, ComponentTypes.VELOCITY, Components.Velocity(0, 0, 0, unitType.speed * 20));
         this.game.addComponent(entity, ComponentTypes.RENDERABLE, Components.Renderable("units", unitType.id));
         this.game.addComponent(entity, ComponentTypes.COLLISION, Components.Collision(unitType.size));
         this.game.addComponent(entity, ComponentTypes.HEALTH, Components.Health(unitType.hp));
-        this.game.addComponent(entity, ComponentTypes.COMBAT, Components.Combat(unitType.damage, unitType.range, unitType.attackSpeed, unitType.projectile, 0));
+        
+        // Enhanced Combat component with elemental properties
+        this.game.addComponent(entity, ComponentTypes.COMBAT, Components.Combat(
+            unitType.damage || 10,
+            unitType.range || 25, 
+            unitType.attackSpeed || 1.0,
+            unitType.projectile || null,
+            0, // lastAttack
+            unitType.element || this.ELEMENT_TYPES.PHYSICAL,
+            unitType.armor || 0,
+            unitType.fireResistance || 0,
+            unitType.coldResistance || 0,
+            unitType.lightningResistance || 0
+        ));
+        
         this.game.addComponent(entity, ComponentTypes.TEAM, Components.Team(team));
         this.game.addComponent(entity, ComponentTypes.UNIT_TYPE, Components.UnitType(unitType.id, unitType.title, unitType.value));
         this.game.addComponent(entity, ComponentTypes.AI_STATE, Components.AIState('idle'));
@@ -304,7 +329,26 @@ class PlacementSystem {
         const range = unit.range || 1;
         const speed = unit.speed || 1;
         
-        const combatValue = (hp * weights.hp) + (damage * weights.damage) + (range * weights.range) + (speed * weights.speed);
+        // Enhanced efficiency calculation that considers elemental properties
+        let combatValue = (hp * weights.hp) + (damage * weights.damage) + (range * weights.range) + (speed * weights.speed);
+        
+        // Bonus for defensive capabilities
+        const armor = unit.armor || 0;
+        const fireResist = unit.fireResistance || 0;
+        const coldResist = unit.coldResistance || 0;
+        const lightningResist = unit.lightningResistance || 0;
+        
+        // Calculate defensive value (armor counts more since it's linear reduction)
+        const defensiveValue = (armor * 2) + (fireResist * 20) + (coldResist * 20) + (lightningResist * 20);
+        combatValue += defensiveValue * 0.15; // 15% weight for defensive capabilities
+        
+        // Bonus for special elements
+        if (unit.element === this.ELEMENT_TYPES.DIVINE) {
+            combatValue *= 1.2; // Divine damage is unresistable
+        } else if (unit.element === this.ELEMENT_TYPES.POISON) {
+            combatValue *= 1.1; // Poison ignores armor
+        }
+        
         return combatValue / unit.value;
     }
     
@@ -434,5 +478,23 @@ class PlacementSystem {
             counts[type] = (counts[type] || 0) + 1;
         });
         return counts;
+    }
+    
+    // Debug method to test unit creation with elemental properties
+    debugUnitCreation(unitType, team = 'player') {
+        console.log('Creating unit with properties:', {
+            damage: unitType.damage,
+            element: unitType.element,
+            armor: unitType.armor,
+            fireResistance: unitType.fireResistance,
+            coldResistance: unitType.coldResistance,
+            lightningResistance: unitType.lightningResistance
+        });
+        
+        const entityId = this.createUnit(0, 0, 0, unitType, team);
+        const combat = this.game.getComponent(entityId, this.game.componentManager.getComponentTypes().COMBAT);
+        
+        console.log('Created unit combat component:', combat);
+        return entityId;
     }
 }

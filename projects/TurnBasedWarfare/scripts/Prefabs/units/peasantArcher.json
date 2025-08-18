@@ -8,6 +8,8 @@
   "attackSpeed": 1.5,
   "range": 120,
   "projectile": "arrow",
+  "element": "physical",
+  "armor": 1,
   "render": {
     "animations": {
       "idle": [

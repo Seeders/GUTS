@@ -8,6 +8,11 @@
   "attackSpeed": 0.7,
   "range": 200,
   "projectile": "fireball",
+  "element": "fire",
+  "armor": 4,
+  "fireResistance": 0.5,
+  "coldResistance": 0.2,
+  "lightningResistance": 0.3,
   "render": {
     "animations": {
       "idle": [

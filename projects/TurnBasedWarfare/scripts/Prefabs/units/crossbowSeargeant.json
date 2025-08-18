@@ -8,6 +8,11 @@
   "attackSpeed": 1,
   "range": 150,
   "projectile": "bolt",
+  "element": "physical",
+  "armor": 4,
+  "fireResistance": 0.1,
+  "coldResistance": 0.1,
+  "lightningResistance": 0.05,
   "render": {
     "animations": {
       "idle": [

@@ -6,6 +6,9 @@
   "speed": 60,
   "damage": 70,
   "attackSpeed": 0,
+  "element": "fire",
+  "armor": 1,
+  "fireResistance": 0.2,
   "render": {
     "animations": {
       "idle": [

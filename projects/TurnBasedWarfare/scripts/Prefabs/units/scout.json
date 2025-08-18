@@ -6,6 +6,8 @@
   "speed": 65,
   "damage": 10,
   "attackSpeed": 1.8,
+  "element": "physical",
+  "armor": 2,
   "render": {
     "animations": {
       "idle": [
