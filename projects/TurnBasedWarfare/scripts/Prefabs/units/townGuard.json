@@ -75,6 +75,18 @@
             ]
           }
         }
+      ],
+      "celebrate": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "projects/TurnBasedWarfare/resources/animations/gangnamstyle.glb",
+                "id": 0
+              }
+            ]
+          }
+        }
       ]
     },
     "model": {

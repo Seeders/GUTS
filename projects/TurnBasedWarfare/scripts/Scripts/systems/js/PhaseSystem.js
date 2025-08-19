@@ -124,19 +124,36 @@ class PhaseSystem {
         });
         
         let roundResult = null;
+        let victoriousUnits = [];
         
         if (playerUnits.length === 0 && enemyUnits.length > 0) {
             roundResult = this.game.teamHealthSystem?.applyRoundDamage('enemy', enemyUnits);
+            victoriousUnits = enemyUnits;
         } else if (enemyUnits.length === 0 && playerUnits.length > 0) {
             roundResult = this.game.teamHealthSystem?.applyRoundDamage('player', playerUnits);
+            victoriousUnits = playerUnits;
         } else if (playerUnits.length === 0 && enemyUnits.length === 0) {
             roundResult = this.game.teamHealthSystem?.applyRoundDraw();
+            victoriousUnits = [];
         }
         
         if (roundResult) {
             this.game.state.roundEnding = true;
+            
+            if (victoriousUnits.length > 0) {
+                this.startVictoryCelebration(victoriousUnits);
+            }
+            
             this.handleRoundResult(roundResult);
         }
+    }
+    
+    startVictoryCelebration(victoriousUnits) {
+        if (!this.game.animationSystem) return;
+        
+        victoriousUnits.forEach(entityId => {
+            this.game.animationSystem.startCelebration(entityId);
+        });
     }
     
     handleRoundResult(roundResult) {
@@ -280,10 +297,8 @@ class PhaseSystem {
         if (endScreen) {
             endScreen.classList.add('active');
             this.updateEndScreenStats(statsId, stats, result);
-            // Clear match data after showing the screen
             this.clearMatchData();
         } else {
-            // Create overlay first, then clear data
             this.createGameEndOverlay(stats, result);
             this.clearMatchData();
         }
@@ -337,7 +352,6 @@ class PhaseSystem {
             font-family: 'Courier New', monospace;
         `;
         
-        // Store reference to game instance for button click
         const gameInstance = this.game;
         
         overlay.innerHTML = `
@@ -353,7 +367,6 @@ class PhaseSystem {
         
         document.body.appendChild(overlay);
         
-        // Add click handler to the button
         const button = document.getElementById(`${overlayId}Button`);
         if (button) {
             button.onclick = () => {
