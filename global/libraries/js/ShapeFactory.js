@@ -141,10 +141,6 @@ class ShapeFactory {
                 skeleton: skeleton,
                 skinnedMesh: skinnedMesh
             };
-
-            console.log(`Applied GLTF scale ${this.gltfModelScale} to model. Final scale:`, model.scale);
-            console.log(`Found ${modelBones.size} bones in GLTF model:`, Array.from(modelBones.keys()));
-            
             group.add(model);
 
             if (animations && animations.length > 0) {
@@ -156,8 +152,6 @@ class ShapeFactory {
                 
                 if (skeleton) {
                     model.userData.skeleton = skeleton;
-                    console.log(`Skeleton with ${skeleton.bones.length} bones attached to model`);
-                    
                     // Ensure bones are accessible for equipment attachment
                     skeleton.bones.forEach(bone => {
                         if (!modelBones.has(bone.name)) {
