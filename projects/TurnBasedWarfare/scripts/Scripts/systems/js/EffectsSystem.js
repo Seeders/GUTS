@@ -305,9 +305,9 @@ class EffectsSystem {
                 100% { opacity: 0; }
             }
             
-            .victory-notification {
+            .victory-notification, .defeat-notification {
                 position: fixed;
-                top: 50%;
+                bottom: 0px;
                 left: 50%;
                 transform: translate(-50%, -50%);
                 background: linear-gradient(145deg, #001100, #003300);
@@ -318,8 +318,10 @@ class EffectsSystem {
                 z-index: 2000;
                 color: #00ff00;
                 font-family: 'Courier New', monospace;
-                animation: victoryAppear 0.5s ease-out;
-                box-shadow: 0 0 30px rgba(0, 255, 0, 0.3);
+            }
+
+            .victory-notification h2 {
+                margin-bottom: 1rem;
             }
             
             @keyframes victoryAppear {

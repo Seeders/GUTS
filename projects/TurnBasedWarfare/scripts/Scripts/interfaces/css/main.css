@@ -490,26 +490,6 @@ body {
     margin-bottom: 2rem;
 }
 
-/* Victory Notification */
-.victory-notification, .defeat-notification {
-    position: fixed;
-    bottom: 0px;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: linear-gradient(145deg, #001100, #003300);
-    border: 2px solid #00ff00;
-    border-radius: 10px;
-    padding: 2rem;
-    text-align: center;
-    z-index: 2000;
-    color: #00ff00;
-    font-family: 'Courier New', monospace;
-}
-
-.victory-notification h2 {
-    margin-bottom: 1rem;
-}
-
 /* Responsive Design */
 @media (max-width: 768px) {
     .game-title {

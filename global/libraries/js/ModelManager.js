@@ -114,19 +114,30 @@ class ModelManager {
                     const animations = cfg.render.animations;
                     if (animations) {
                         await Promise.all(Object.keys(animations).map(async (animationName) => {
-                            let mergedModel = JSON.parse(JSON.stringify(cfg.render.model));
-                            let animMainGroup = mergedModel[Object.keys(mergedModel)[0]]; 
-                            const anim = animations[animationName][0];                            
-                            if (anim && Object.keys(anim).length > 0){;
-                                animMainGroup = anim[Object.keys(anim)[0]];                                
-                            }
-                            if (!animMainGroup) return;
+                            const animVariants = animations[animationName];
                             
-                            if (animMainGroup && animMainGroup.shapes && animMainGroup.shapes[0] && animMainGroup.shapes[0].url) {
-                                mergedModel[modelGroupName].shapes[0].url = `${animMainGroup.shapes[0].url}`;
-                            }
-                            const modelKey = `${prefix}_${type}_${animationName}`;
-                            this.models[modelKey] = await this.createModel(prefix, type, mergedModel, false, true); // Pass isGLTF flag
+                            // Load all variants of this animation
+                            await Promise.all(animVariants.map(async (anim, variantIndex) => {
+                                let mergedModel = JSON.parse(JSON.stringify(cfg.render.model));
+                                let animMainGroup = mergedModel[Object.keys(mergedModel)[0]]; 
+                                
+                                if (anim && Object.keys(anim).length > 0) {
+                                    animMainGroup = anim[Object.keys(anim)[0]];                                
+                                }
+                                if (!animMainGroup) return;
+                                
+                                if (animMainGroup && animMainGroup.shapes && animMainGroup.shapes[0] && animMainGroup.shapes[0].url) {
+                                    mergedModel[modelGroupName].shapes[0].url = `${animMainGroup.shapes[0].url}`;
+                                }
+                                
+                                // Create unique key for each variant
+                                const modelKey = variantIndex === 0 
+                                    ? `${prefix}_${type}_${animationName}` 
+                                    : `${prefix}_${type}_${animationName}_${variantIndex}`;
+                                    
+                                this.models[modelKey] = await this.createModel(prefix, type, mergedModel, false, true);
+                                console.log(`Loaded animation variant: ${modelKey}`);
+                            }));
                         }));
                     }
                 } else {
@@ -290,8 +301,12 @@ class ModelManager {
         return model;
     }
 
-    getAnimation(prefix, type, anim) {
-        const modelKey = `${prefix}_${type}_${anim}`;
+    getAnimation(prefix, type, anim, variantIndex = 0) {
+        // Create the model key based on variant index
+        const modelKey = variantIndex === 0 
+            ? `${prefix}_${type}_${anim}` 
+            : `${prefix}_${type}_${anim}_${variantIndex}`;
+            
         const masterModel = this.models[modelKey];
         
         if (!masterModel) {
@@ -304,6 +319,7 @@ class ModelManager {
         
         return model;
     }
+
     // Helper method to properly clone a THREE.js model with deferred UV remapping
     deepCloneModel(sourceRoot, prefix, type) {
         // Create a new root group to hold all cloned children

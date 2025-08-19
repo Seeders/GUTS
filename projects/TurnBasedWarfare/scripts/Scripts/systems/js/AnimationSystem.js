@@ -151,32 +151,73 @@ class AnimationSystem {
             const animationActions = {};
             
             for (const animName of Object.keys(animationData)) {
-                try {
-                    const animModel = await this.game.modelManager.getAnimation(objectType, spawnType, animName);
-                    if (animModel) {
-                        let animModelAnimations;
-                        animModel.traverse(object => {
-                            if (object.userData.animations) {
-                                animModelAnimations = object.userData.animations;
-                            } else if (object.animations && object.animations.length > 0) {
-                                animModelAnimations = object.animations;
+                const animDataArray = animationData[animName];
+                
+                // Handle multiple animation variants (like celebrate)
+                if (Array.isArray(animDataArray) && animDataArray.length > 1) {
+                    console.log(`Loading ${animDataArray.length} variants for ${animName}`);
+                    for (let i = 0; i < animDataArray.length; i++) {
+                        try {
+                            const animModel = await this.game.modelManager.getAnimation(objectType, spawnType, animName, i);
+                            if (animModel) {
+                                let animModelAnimations;
+                                animModel.traverse(object => {
+                                    if (object.userData.animations) {
+                                        animModelAnimations = object.userData.animations;
+                                    } else if (object.animations && object.animations.length > 0) {
+                                        animModelAnimations = object.animations;
+                                    }
+                                });
+                                
+                                if (animModelAnimations?.length > 0) {
+                                    const clip = animModelAnimations[0];
+                                    const action = mixer.clipAction(clip);
+                                    action.setLoop(THREE.LoopRepeat);
+                                    action.enabled = true;
+                                    
+                                    // Store with variant index
+                                    const variantKey = i === 0 ? animName : `${animName}_${i}`;
+                                    animationActions[variantKey] = action;
+                                    console.log(`Loaded ${animName} variant ${i} as '${variantKey}' for entity ${entityId}`);
+                                }
+                            } else {
+                                console.warn(`No animation model returned for ${animName} variant ${i}`);
                             }
-                        });
-                        
-                        if (animModelAnimations?.length > 0) {
-                            const clip = animModelAnimations[0];
-                            const action = mixer.clipAction(clip);
-                            action.setLoop(THREE.LoopRepeat);
-                            action.enabled = true;
-                            animationActions[animName] = action;
+                        } catch (error) {
+                            console.warn(`Failed to load ${animName} variant ${i}:`, error);
                         }
                     }
-                } catch (error) {
-                    // Animation not found, continue
+                } else {
+                    // Handle single animation (original logic)
+                    try {
+                        const animModel = await this.game.modelManager.getAnimation(objectType, spawnType, animName);
+                        if (animModel) {
+                            let animModelAnimations;
+                            animModel.traverse(object => {
+                                if (object.userData.animations) {
+                                    animModelAnimations = object.userData.animations;
+                                } else if (object.animations && object.animations.length > 0) {
+                                    animModelAnimations = object.animations;
+                                }
+                            });
+                            
+                            if (animModelAnimations?.length > 0) {
+                                const clip = animModelAnimations[0];
+                                const action = mixer.clipAction(clip);
+                                action.setLoop(THREE.LoopRepeat);
+                                action.enabled = true;
+                                animationActions[animName] = action;
+                            }
+                        }
+                    } catch (error) {
+                        // Animation not found, continue
+                    }
                 }
             }
             
             this.entityAnimations.set(entityId, animationActions);
+            
+            console.log(`Entity ${entityId} loaded animations:`, Object.keys(animationActions));
             
             if (animationActions.idle) {
                 animationActions.idle.play();
@@ -548,7 +589,7 @@ class AnimationSystem {
         );
     }
     
-    startCelebration(entityId) {
+    startCelebration(entityId, teamType = null) {
         const animState = this.entityAnimationStates.get(entityId);
         if (!animState) return;
         
@@ -558,25 +599,37 @@ class AnimationSystem {
         const hasProprietaryAnimations = this.entityProprietaryAnimations?.has(entityId);
         
         if (hasGLTFAnimations) {
-            this.setCelebrationAnimation(entityId);
+            this.setCelebrationAnimation(entityId, teamType);
         } else if (hasProprietaryAnimations) {
             this.setProprietaryAnimation(entityId, 'celebrate');
         }
     }
     
-    setCelebrationAnimation(entityId) {
+    setCelebrationAnimation(entityId, teamType = null) {
         const animState = this.entityAnimationStates.get(entityId);
         const animationActions = this.entityAnimations.get(entityId);
         
         if (!animState || !animationActions) return;
         
         let celebrationAnimName = null;
-        const celebrationNames = ['celebrate', 'victory', 'cheer', 'dance', 'happy', 'win'];
         
-        for (const name of celebrationNames) {
-            if (animationActions[name]) {
-                celebrationAnimName = name;
-                break;
+        // First try to get team-specific celebration variant
+        if (teamType) {
+            const variantKey = teamType === 'player' ? 'celebrate' : 'celebrate_1';
+            if (animationActions[variantKey]) {
+                celebrationAnimName = variantKey;
+                console.log(`Selected ${teamType} team celebration: ${variantKey}`);
+            }
+        }
+        
+        // Fallback to any available celebration animation
+        if (!celebrationAnimName) {
+            const celebrationNames = ['celebrate', 'celebrate_1', 'victory', 'cheer', 'dance', 'happy', 'win'];
+            for (const name of celebrationNames) {
+                if (animationActions[name]) {
+                    celebrationAnimName = name;
+                    break;
+                }
             }
         }
         

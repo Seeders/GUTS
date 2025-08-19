@@ -152,8 +152,14 @@ class PhaseSystem {
     startVictoryCelebration(victoriousUnits) {
         if (!this.game.animationSystem) return;
         
+        // Determine which team won
+        const firstUnit = victoriousUnits[0];
+        const ComponentTypes = this.game.componentManager.getComponentTypes();
+        const team = this.game.getComponent(firstUnit, ComponentTypes.TEAM);
+        const teamType = team?.team || 'player';
+        
         victoriousUnits.forEach(entityId => {
-            this.game.animationSystem.startCelebration(entityId);
+            this.game.animationSystem.startCelebration(entityId, teamType);
         });
     }
     
