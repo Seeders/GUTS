@@ -19,8 +19,6 @@ class CombatAISystem {
         this.MIN_ATTACK_ANIMATION_TIME = 0.4;
         this.STATE_CHANGE_COOLDOWN = 0.1;
 
-        this.lastBattleEndCheck = 0;
-        this.BATTLE_END_CHECK_INTERVAL = 1.0;
 
         this.DAMAGE_TIMING_RATIO = 0.5;        
 
@@ -28,12 +26,7 @@ class CombatAISystem {
 
     update(deltaTime) {
         if (this.game.state.phase !== 'battle') return;
-        // const now = Date.now() / 1000;
-
-        // // if (now - this.lastBattleEndCheck > this.BATTLE_END_CHECK_INTERVAL) {
-        // //     this.checkBattleEnd();
-        // //     this.lastBattleEndCheck = now;
-        // // }
+   
 
         const combatUnits = this.game.getEntitiesWith(
             this.componentTypes.POSITION,

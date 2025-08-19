@@ -491,9 +491,9 @@ body {
 }
 
 /* Victory Notification */
-.victory-notification {
+.victory-notification, .defeat-notification {
     position: fixed;
-    top: 50%;
+    bottom: 0px;
     left: 50%;
     transform: translate(-50%, -50%);
     background: linear-gradient(145deg, #001100, #003300);

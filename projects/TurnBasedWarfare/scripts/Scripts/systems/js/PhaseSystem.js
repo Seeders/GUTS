@@ -3,13 +3,14 @@ class PhaseSystem {
         this.game = app;
         this.game.phaseSystem = this;
         this.phaseTimer = null;
-        
+        this.lastBattleEndCheck = 0;
+        this.BATTLE_END_CHECK_INTERVAL = 1.0;
         this.config = {
             placementPhaseTime: 30,
             enemyPlacementDelay: 2000,
             battleCleanupDelay: 1500,
             roundTransitionDelay: 500,
-            notificationDisplayTime: 2500,
+            notificationDisplayTime: 5000,
             baseGoldPerRound: 50,
             startingGold: 100,
             hintDisplayDelay: 3000
@@ -276,7 +277,6 @@ class PhaseSystem {
             
             const color = colors[roundResult.result];
             notification.style.cssText = `
-                position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
                 background: ${color.bg}; color: white; padding: 2rem; border-radius: 10px;
                 text-align: center; z-index: 10000; border: 2px solid ${color.border};
             `;
@@ -506,6 +506,13 @@ class PhaseSystem {
     }
     
     update(deltaTime) {
+        const now = Date.now() / 1000;
+
+        if (now - this.lastBattleEndCheck > this.BATTLE_END_CHECK_INTERVAL) {
+            this.checkForRoundEnd();
+            this.lastBattleEndCheck = now;
+        }
+
         const state = this.game.state;
         document.getElementById('roundNumber').textContent = state.round;
         document.getElementById('phaseTitle').textContent = 
