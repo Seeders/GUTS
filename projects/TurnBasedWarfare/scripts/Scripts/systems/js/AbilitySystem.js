@@ -4,11 +4,9 @@ class AbilitySystem {
         this.game.abilitySystem = this;
         this.componentTypes = this.game.componentManager.getComponentTypes();
         
-        // Track entity abilities and cooldowns
         this.entityAbilities = new Map();
         this.abilityCooldowns = new Map();
         this.abilityQueue = new Map();
-        
     }    
     
     addAbilitiesToUnit(entityId, abilityIds) {
@@ -65,23 +63,26 @@ class AbilitySystem {
             this.considerAbilityUsage(entityId, abilities, now);
         }
     }
-    
+        
     considerAbilityUsage(entityId, abilities, now) {
-        // Filter and sort abilities by priority
         const availableAbilities = abilities
             .filter(ability => this.isAbilityOffCooldown(entityId, ability.id, now))
             .filter(ability => ability.canExecute(entityId))
             .sort((a, b) => b.priority - a.priority);
         
-        // Use the highest priority available ability
+        // Check if unit is waiting and now has abilities available
+        const aiState = this.game.getComponent(entityId, this.componentTypes.AI_STATE);
+        if (aiState && aiState.state === 'waiting' && availableAbilities.length > 0) {
+            // Transition back to attacking state since we have abilities ready
+            if (this.game.combatAISystems) {
+                this.game.combatAISystems.changeAIState(aiState, 'attacking', now);
+            }
+        }
+        
         if (availableAbilities.length > 0) {
             this.useAbility(entityId, availableAbilities[0].id);
         }
     }
-    
-    // =============================================
-    // ABILITY EXECUTION
-    // =============================================
     
     useAbility(entityId, abilityId, targetData = null) {
         const abilities = this.entityAbilities.get(entityId);
@@ -92,54 +93,56 @@ class AbilitySystem {
         
         const now = Date.now() / 1000;
         
-        // Check cooldown
         if (!this.isAbilityOffCooldown(entityId, abilityId, now)) {
             return false;
         }
         
-        // Check if ability can be executed
         if (!ability.canExecute(entityId, targetData)) {
             return false;
         }
         
-        // Start ability animation
         if (ability.animation && this.game.animationSystem) {
-            this.startAbilityAnimation(entityId, ability.animation);
+            this.startAbilityAnimation(entityId, ability);
         }
         
-        // Queue the ability for execution
         this.abilityQueue.set(entityId, {
             abilityId: abilityId,
             targetData: targetData,
             executeTime: now + ability.castTime
         });
         
-        // Set cooldown
         this.setCooldown(entityId, abilityId, now, ability.cooldown);
-        
-        // Log ability start
         ability.logAbilityUsage(entityId);
         
         return true;
     }
     
-    startAbilityAnimation(entityId, animationName) {
-        if (!this.game.animationSystem?.setEntityAnimation) return;
+    startAbilityAnimation(entityId, ability) {
+        if (!this.game.animationSystem?.triggerSinglePlayAnimation) return;
         
-        const animationsToTry = [animationName, 'cast', 'attack', 'idle'];
+        const animationsToTry = [ability.animationName, 'cast', 'attack', 'idle'];
         
         for (const anim of animationsToTry) {
             const animationActions = this.game.animationSystem.entityAnimations.get(entityId);
             if (animationActions?.[anim]) {
-                this.game.animationSystem.setEntityAnimation(entityId, anim, 1.0, 1.5);
+                // For abilities, use normal speed unless it's an attack-based ability
+                let animationSpeed = 1.0;
+                let minAnimationTime = 1.5;
+                
+                // If this is an attack-based ability, scale with attack speed
+                if (anim === 'attack') {
+                    const combat = this.game.getComponent(entityId, this.componentTypes.COMBAT);
+                    if (combat && this.game.combatAISystems) {
+                        animationSpeed = this.game.combatAISystems.calculateAttackAnimationSpeed(entityId, { ...combat, attackSpeed: ability.castTime });
+                        minAnimationTime = 1 / combat.attackSpeed * 0.8;
+                    }
+                }
+                
+                this.game.animationSystem.triggerSinglePlayAnimation(entityId, anim, animationSpeed, minAnimationTime);
                 break;
             }
         }
     }
-    
-    // =============================================
-    // COOLDOWN MANAGEMENT
-    // =============================================
     
     setCooldown(entityId, abilityId, currentTime, cooldownDuration) {
         const key = `${entityId}_${abilityId}`;
@@ -158,10 +161,6 @@ class AbilitySystem {
         return !cooldownEnd ? 0 : Math.max(0, cooldownEnd - currentTime);
     }
     
-    // =============================================
-    // PUBLIC API
-    // =============================================
-    
     getEntityAbilities(entityId) {
         return this.entityAbilities.get(entityId) || [];
     }
@@ -178,26 +177,19 @@ class AbilitySystem {
         }));
     }
     
-    // Create a new ability instance by ID
     createAbility(abilityId) {
         const AbilityClass = APP.appClasses[abilityId];
         return AbilityClass ? new AbilityClass() : null;
     }
     
-    // Get all available ability IDs
     getAvailableAbilityIds() {
         return Object.keys(this.game.getCollections().abilities);
     }
-    
-    // =============================================
-    // CLEANUP
-    // =============================================
     
     removeEntityAbilities(entityId) {
         this.entityAbilities.delete(entityId);
         this.abilityQueue.delete(entityId);
         
-        // Remove cooldowns
         const keysToRemove = [];
         for (const key of this.abilityCooldowns.keys()) {
             if (key.startsWith(`${entityId}_`)) {

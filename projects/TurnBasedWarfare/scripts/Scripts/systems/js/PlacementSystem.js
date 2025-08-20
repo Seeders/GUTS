@@ -10,6 +10,10 @@ class PlacementSystem {
         this.playerPlacements = [];
         this.enemyPlacements = [];
         
+        // Add undo functionality
+        this.undoStack = [];
+        this.maxUndoSteps = 10; // Maximum number of undo steps
+        
         this.config = {
             maxUnitsPerRound: 10,
             maxCombinationsToCheck: 10000,
@@ -23,7 +27,6 @@ class PlacementSystem {
             }
         };
         
-        // Element types for reference
         this.ELEMENT_TYPES = {
             PHYSICAL: 'physical',
             FIRE: 'fire',
@@ -32,6 +35,19 @@ class PlacementSystem {
             POISON: 'poison',
             DIVINE: 'divine'
         };
+        
+        // Bind keyboard event listener
+        this.initializeKeyboardControls();
+    }
+    
+    initializeKeyboardControls() {
+        document.addEventListener('keydown', (event) => {
+            // Check for Ctrl+Z (or Cmd+Z on Mac)
+            if ((event.ctrlKey || event.metaKey) && event.key === 'z') {
+                event.preventDefault();
+                this.undoLastPlacement();
+            }
+        });
     }
     
     handleCanvasClick(event) {
@@ -56,6 +72,21 @@ class PlacementSystem {
         const unitY = terrainHeight !== null ? terrainHeight : 0;
         
         const entityId = this.createUnit(worldPosition.x, unitY, worldPosition.z, state.selectedUnitType, 'player');
+        
+        // Store undo information BEFORE making changes
+        const undoInfo = {
+            type: 'placement',
+            entityId: entityId,
+            unitType: { ...state.selectedUnitType },
+            cost: state.selectedUnitType.value,
+            position: { x: worldPosition.x, y: unitY, z: worldPosition.z },
+            placementIndex: this.playerPlacements.length // Index where unit will be added
+        };
+        
+        // Add to undo stack
+        this.addToUndoStack(undoInfo);
+        
+        // Make the actual changes
         state.playerGold -= state.selectedUnitType.value;
         
         this.playerPlacements.push({
@@ -69,14 +100,74 @@ class PlacementSystem {
         
         this.game.battleLogSystem.add(`Deployed ${state.selectedUnitType.title}`, 'log-victory');
         
-        // Fixed: Show placement effect at world coordinates instead of screen coordinates
         if (this.game.effectsSystem) {
-            this.game.effectsSystem.showPlacementEffect(
-                worldPosition.x, 
-                unitY + 25, // Higher above the unit
-                worldPosition.z
-            );
+            // this.game.effectsSystem.showPlacementEffect(
+            //     worldPosition.x, 
+            //     unitY + 25,
+            //     worldPosition.z
+            // );
         }
+    }
+    
+    addToUndoStack(undoInfo) {
+        this.undoStack.push(undoInfo);
+        
+        // Limit undo stack size
+        if (this.undoStack.length > this.maxUndoSteps) {
+            this.undoStack.shift(); // Remove oldest undo step
+        }
+    }
+    
+    undoLastPlacement() {
+        const state = this.game.state;
+        
+        // Only allow undo during placement phase
+        if (state.phase !== 'placement') {
+            this.game.battleLogSystem.add('Can only undo during placement phase!', 'log-damage');
+            return;
+        }
+        
+        // Check if there's anything to undo
+        if (this.undoStack.length === 0) {
+            this.game.battleLogSystem.add('Nothing to undo!', 'log-damage');
+            return;
+        }
+        
+        const undoInfo = this.undoStack.pop();
+        
+        if (undoInfo.type === 'placement') {
+            // Remove the unit from the game world
+            if (this.game.destroyEntity) {
+                this.game.destroyEntity(undoInfo.entityId);
+            }
+            
+            // Refund the gold
+            state.playerGold += undoInfo.cost;
+            
+            // Remove from playerPlacements array
+            const placementIndex = this.playerPlacements.findIndex(p => p.entityId === undoInfo.entityId);
+            if (placementIndex !== -1) {
+                this.playerPlacements.splice(placementIndex, 1);
+            }
+            
+            // Show undo effect
+            if (this.game.effectsSystem) {
+                this.game.effectsSystem.createParticleEffect(
+                    undoInfo.position.x,
+                    undoInfo.position.y + 15,
+                    undoInfo.position.z,
+                    'magic', // Blue particles for undo
+                    { count: 6, speedMultiplier: 0.7 }
+                );
+            }
+            
+            this.game.battleLogSystem.add(`Undid placement of ${undoInfo.unitType.title} (+${undoInfo.cost}g)`, 'log-victory');
+        }
+    }
+    
+    // Clear undo stack when starting new round or resetting
+    clearUndoStack() {
+        this.undoStack = [];
     }
     
     respawnPlayerUnits() {
@@ -98,7 +189,6 @@ class PlacementSystem {
             const entityId = this.createUnit(placement.x, placement.y, placement.z, placement.unitType, team);
             placement.entityId = entityId;
             
-            // Add respawn effect for existing units
             if (this.game.effectsSystem) {
                 const effectType = team === 'player' ? 'magic' : 'heal';
                 this.game.effectsSystem.createParticleEffect(
@@ -168,25 +258,23 @@ class PlacementSystem {
         
         const initialFacing = this.calculateInitialFacing(team);
         
-        // Add basic components
         this.game.addComponent(entity, ComponentTypes.POSITION, Components.Position(worldX, worldY, worldZ));
         this.game.addComponent(entity, ComponentTypes.VELOCITY, Components.Velocity(0, 0, 0, unitType.speed * 20));
         this.game.addComponent(entity, ComponentTypes.RENDERABLE, Components.Renderable("units", unitType.id));
         this.game.addComponent(entity, ComponentTypes.COLLISION, Components.Collision(unitType.size));
         this.game.addComponent(entity, ComponentTypes.HEALTH, Components.Health(unitType.hp));
         
-        // Enhanced Combat component with elemental properties
         this.game.addComponent(entity, ComponentTypes.COMBAT, Components.Combat(
-            unitType.damage || 10,
-            unitType.range || 25, 
-            unitType.attackSpeed || 1.0,
-            unitType.projectile || null,
-            0, // lastAttack
-            unitType.element || this.ELEMENT_TYPES.PHYSICAL,
-            unitType.armor || 0,
-            unitType.fireResistance || 0,
-            unitType.coldResistance || 0,
-            unitType.lightningResistance || 0
+            unitType.damage,
+            unitType.range, 
+            unitType.attackSpeed,
+            unitType.projectile,
+            0,
+            unitType.element,
+            unitType.armor,
+            unitType.fireResistance,
+            unitType.coldResistance,
+            unitType.lightningResistance
         ));
         
         this.game.addComponent(entity, ComponentTypes.TEAM, Components.Team(team));
@@ -361,24 +449,20 @@ class PlacementSystem {
         const range = unit.range || 1;
         const speed = unit.speed || 1;
         
-        // Enhanced efficiency calculation that considers elemental properties
         let combatValue = (hp * weights.hp) + (damage * weights.damage) + (range * weights.range) + (speed * weights.speed);
         
-        // Bonus for defensive capabilities
         const armor = unit.armor || 0;
         const fireResist = unit.fireResistance || 0;
         const coldResist = unit.coldResistance || 0;
         const lightningResist = unit.lightningResistance || 0;
         
-        // Calculate defensive value (armor counts more since it's linear reduction)
         const defensiveValue = (armor * 2) + (fireResist * 20) + (coldResist * 20) + (lightningResist * 20);
-        combatValue += defensiveValue * 0.15; // 15% weight for defensive capabilities
+        combatValue += defensiveValue * 0.15;
         
-        // Bonus for special elements
         if (unit.element === this.ELEMENT_TYPES.DIVINE) {
-            combatValue *= 1.2; // Divine damage is unresistable
+            combatValue *= 1.2;
         } else if (unit.element === this.ELEMENT_TYPES.POISON) {
-            combatValue *= 1.1; // Poison ignores armor
+            combatValue *= 1.1;
         }
         
         return combatValue / unit.value;
@@ -466,14 +550,12 @@ class PlacementSystem {
                 entityId: entityId
             });
             
-            // Add enemy placement effect
             if (this.game.effectsSystem) {
-                // Use a different effect for enemy placements
                 this.game.effectsSystem.createParticleEffect(
                     unit.worldX, 
                     unit.worldY, 
                     unit.worldZ, 
-                    'defeat', // Red particles for enemy
+                    'defeat',
                     { count: 8, speedMultiplier: 0.8 }
                 );
             }
@@ -493,6 +575,8 @@ class PlacementSystem {
     startNewPlacementPhase() {
         this.respawnPlayerUnits();
         
+        // Don't clear undo stack here - allow undoing placements from current round
+        
         if (this.playerPlacements.length > 0) {
             this.game.battleLogSystem.add(`Your army: ${this.playerPlacements.length} units ready for battle!`);
         } else {
@@ -501,7 +585,6 @@ class PlacementSystem {
     }
     
     resetAllPlacements() {
-        // Show destruction effects for all existing units before clearing
         if (this.game.effectsSystem) {
             [...this.playerPlacements, ...this.enemyPlacements].forEach(placement => {
                 this.game.effectsSystem.createParticleEffect(
@@ -516,6 +599,7 @@ class PlacementSystem {
         
         this.playerPlacements = [];
         this.enemyPlacements = [];
+        this.clearUndoStack(); // Clear undo stack when resetting everything
         this.game.battleLogSystem.add('All unit placements cleared');
     }
     
@@ -537,10 +621,8 @@ class PlacementSystem {
         return counts;
     }
     
-    // Additional effect methods for enhanced visual feedback
     showInvalidPlacementEffect(screenX, screenY) {
         if (this.game.effectsSystem) {
-            // Convert screen coordinates to world for effect
             const worldPos = this.game.effectsSystem.screenToWorldPosition(screenX, screenY);
             this.game.effectsSystem.createParticleEffect(
                 worldPos.x, 
@@ -554,7 +636,6 @@ class PlacementSystem {
     
     showPlacementPreview(worldX, worldY, worldZ) {
         if (this.game.effectsSystem) {
-            // Subtle preview effect
             this.game.effectsSystem.createParticleEffect(
                 worldX, 
                 worldY + 5, 
@@ -565,7 +646,6 @@ class PlacementSystem {
         }
     }
     
-    // Debug method to test unit creation with elemental properties
     debugUnitCreation(unitType, team = 'player') {
         console.log('Creating unit with properties:', {
             damage: unitType.damage,
@@ -581,5 +661,14 @@ class PlacementSystem {
         
         console.log('Created unit combat component:', combat);
         return entityId;
+    }
+    
+    // Method to get the current undo stack status (for UI display)
+    getUndoStatus() {
+        return {
+            canUndo: this.undoStack.length > 0,
+            undoCount: this.undoStack.length,
+            lastAction: this.undoStack.length > 0 ? this.undoStack[this.undoStack.length - 1] : null
+        };
     }
 }

@@ -111,8 +111,8 @@
             "rotationZ": 0,
             "color": "#FFFFFF",
             "url": "projects/TurnBasedWarfare/resources/models/knight/knight.glb",
-            "metalness": "0",
-            "roughness": "1"
+            "metalness": ".6",
+            "roughness": ".5"
           }
         ],
         "scale": {
@@ -158,5 +158,6 @@
         }
       }
     ]
-  }
+  },
+  "buyable": true
 }

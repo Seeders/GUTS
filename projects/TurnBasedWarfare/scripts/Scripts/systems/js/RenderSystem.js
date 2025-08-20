@@ -72,18 +72,18 @@ class RenderSystem {
         const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
         
         let facingAngle = null;
-        
+        const isAttacking = aiState && (aiState.state === 'attacking' || aiState.state === 'waiting');
         // Priority 1: Face movement direction if moving (unless attacking)
         if (velocity && (Math.abs(velocity.vx) > this.MIN_MOVEMENT_THRESHOLD || Math.abs(velocity.vz) > this.MIN_MOVEMENT_THRESHOLD)) {
             // Only face movement direction if NOT actively attacking
-            if (!aiState || aiState.state !== 'attacking') {
+            if (!aiState || !isAttacking) {
                 // Calculate facing angle from movement direction (X and Z)
                 facingAngle = Math.atan2(velocity.vz, velocity.vx);
             }
         }
         
         // Priority 2: If actively attacking, face the target
-        if (facingAngle === null && aiState && aiState.state === 'attacking' && aiState.aiBehavior && aiState.aiBehavior.currentTarget && pos) {
+        if (facingAngle === null && aiState && isAttacking && aiState.aiBehavior && aiState.aiBehavior.currentTarget && pos) {
             // Get the current position of the target (fresh every frame)
             const targetPos = this.game.getComponent(aiState.aiBehavior.currentTarget, this.componentTypes.POSITION);
             

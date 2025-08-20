@@ -130,17 +130,21 @@
         "attachmentData": {
           "bone": "LeftHand",
           "offset": {
-            "x": -15,
+            "x": 0,
             "y": 15,
             "z": 2
           },
           "rotation": {
-            "x": 180,
-            "y": -5,
-            "z": 90
+            "x": 0,
+            "y": 180,
+            "z": 0
           }
         }
       }
     ]
-  }
+  },
+  "abilities": [
+    "ChainLightningAbility"
+  ],
+  "buyable": false
 }

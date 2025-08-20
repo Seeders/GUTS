@@ -4,7 +4,6 @@ class CombatAISystem {
         this.game.combatAISystems = this;
         this.componentTypes = this.game.componentManager.getComponentTypes();
         
-        // Config
         this.DEFAULT_UNIT_RADIUS = 25;
         this.ATTACK_RANGE_BUFFER = 10;
         this.ALLY_SPACING_DISTANCE = 10;
@@ -19,14 +18,11 @@ class CombatAISystem {
         this.MIN_ATTACK_ANIMATION_TIME = 0.4;
         this.STATE_CHANGE_COOLDOWN = 0.1;
 
-
-        this.DAMAGE_TIMING_RATIO = 0.5;        
-
+        this.DAMAGE_TIMING_RATIO = 0.5;
     }
 
     update(deltaTime) {
         if (this.game.state.phase !== 'battle') return;
-   
 
         const combatUnits = this.game.getEntitiesWith(
             this.componentTypes.POSITION,
@@ -102,10 +98,6 @@ class CombatAISystem {
         });
     }
 
-    // =============================================
-    // AI DECISION MAKING
-    // =============================================
-
     changeAIState(aiState, newState, now) {
         const aiBehavior = aiState.aiBehavior;
         if (now - aiBehavior.lastStateChange < this.STATE_CHANGE_COOLDOWN) return false;
@@ -151,6 +143,24 @@ class CombatAISystem {
     findBestTarget(pos, enemies, aiBehavior, now) {
         let bestTarget = null;
         let bestScore = -1;
+        
+        // If unit is currently attacking, stick with current target unless it's dead/invalid
+        if (aiBehavior.currentTarget) {
+            const currentTargetHealth = this.game.getComponent(aiBehavior.currentTarget, this.componentTypes.HEALTH);
+            const currentTargetDeathState = this.game.getComponent(aiBehavior.currentTarget, this.componentTypes.DEATH_STATE);
+            
+            // Only switch if current target is dead/dying or not in enemy list anymore
+            const isCurrentTargetValid = enemies.includes(aiBehavior.currentTarget) && 
+                                       currentTargetHealth && 
+                                       currentTargetHealth.current > 0 && 
+                                       (!currentTargetDeathState || !currentTargetDeathState.isDying);
+            
+            if (isCurrentTargetValid) {
+                return aiBehavior.currentTarget; // Keep attacking current target
+            }
+        }
+        
+        // Find new target only if we don't have a valid current target
         enemies.forEach(enemyId => {
             const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
             const enemyHealth = this.game.getComponent(enemyId, this.componentTypes.HEALTH);
@@ -161,21 +171,16 @@ class CombatAISystem {
             const dz = enemyPos.z - pos.z;
             const distance = Math.sqrt(dx * dx + dz * dz);
             let score = 1000 - distance;
-            if (aiBehavior.currentTarget === enemyId && now - aiBehavior.targetLockTime < this.TARGET_SWITCH_COOLDOWN) {
-                score += 300;
-            }
+            
             if (score > bestScore) {
                 bestScore = score;
                 bestTarget = enemyId;
             }
         });
+        
         if (bestTarget !== aiBehavior.currentTarget) aiBehavior.targetLockTime = now;
         return bestTarget;
     }
-
-    // =============================================
-    // COMBAT HANDLING
-    // =============================================
 
     handleCombat(entityId, pos, combat, aiState, collision, now) {
         const aiBehavior = aiState.aiBehavior;
@@ -193,7 +198,15 @@ class CombatAISystem {
             this.changeAIState(aiState, 'chasing', now);
             return;
         }
-        if (now - combat.lastAttack >= 1 / combat.attackSpeed) {
+        
+        // Check if unit is in the middle of an attack animation
+        if (this.isUnitCurrentlyAttacking(entityId)) {
+            // Don't start new attack while animation is playing
+            aiBehavior.targetPosition = { x: targetPos.x, y: targetPos.y, z: targetPos.z };
+            return;
+        }
+        
+        if (now - combat.lastAttack >= 1 / combat.attackSpeed && combat.damage > 0) {
             this.initiateAttack(entityId, aiBehavior.currentTarget, combat, now);
             combat.lastAttack = now;
             aiBehavior.lastAttackStart = now;
@@ -201,10 +214,39 @@ class CombatAISystem {
         aiBehavior.targetPosition = { x: targetPos.x, y: targetPos.y, z: targetPos.z };
     }
 
+    isUnitCurrentlyAttacking(entityId) {
+        if (!this.game.animationSystem) return false;
+        
+        const animState = this.game.animationSystem.entityAnimationStates.get(entityId);
+        if (!animState) return false;
+        
+        const currentAnim = animState.currentAnimation;
+        if (!currentAnim) return false;
+        
+        // Check if currently playing an attack animation
+        const attackAnimations = ['attack', 'shoot', 'bow', 'cast', 'throw', 'combat', 'fight', 'swing', 'strike', 'aim', 'fire'];
+        if (!attackAnimations.includes(currentAnim.toLowerCase())) return false;
+        
+        // Check if it's a single-play animation that's still running
+        const isSinglePlay = this.game.animationSystem.SINGLE_PLAY_ANIMATIONS.has(currentAnim.toLowerCase());
+        if (!isSinglePlay) return false;
+        
+        // Check if animation is still playing
+        const isFinished = this.game.animationSystem.isAnimationFinished(entityId, currentAnim);
+        return !isFinished;
+    }
+
     initiateAttack(attackerId, targetId, combat, now) {
         const targetHealth = this.game.getComponent(targetId, this.componentTypes.HEALTH);
         const targetDeathState = this.game.getComponent(targetId, this.componentTypes.DEATH_STATE);
         if (!targetHealth || targetHealth.current <= 0 || (targetDeathState && targetDeathState.isDying)) return;
+        
+        if (this.game.animationSystem) {
+            const animationSpeed = this.calculateAttackAnimationSpeed(attackerId, combat);
+            const minAnimationTime = 1 / combat.attackSpeed * 0.8; // 80% of attack interval
+            
+            this.game.animationSystem.triggerSinglePlayAnimation(attackerId, 'attack', animationSpeed, minAnimationTime);
+        }
         
         if (combat.projectile && this.game.projectileSystem) {
             this.scheduleProjectileLaunch(attackerId, targetId, combat, now);
@@ -213,9 +255,28 @@ class CombatAISystem {
         }
     }
 
-    // =============================================
-    // DAMAGE SCHEDULING (uses DamageSystem)
-    // =============================================
+    calculateAttackAnimationSpeed(attackerId, combat) {
+        const attackInterval = 1 / combat.attackSpeed;
+        
+        // Get the base animation duration
+        let baseAnimationDuration = 0.8; // Default fallback
+        
+        if (this.game.animationSystem) {
+            const animationActions = this.game.animationSystem.entityAnimations.get(attackerId);
+            if (animationActions && animationActions.attack) {
+                const attackAction = animationActions.attack;
+                if (attackAction.getClip) {
+                    baseAnimationDuration = attackAction.getClip().duration;
+                }
+            }
+        }
+        
+        // Calculate speed to fit animation into attack interval (leaving some buffer)
+        const targetAnimationDuration = Math.max(attackInterval * 0.9, 0.2);
+        let animationSpeed = baseAnimationDuration / targetAnimationDuration;
+        
+        return animationSpeed;
+    }
 
     scheduleMeleeDamage(attackerId, targetId, combat, now) {
         if (!this.game.damageSystem) {
@@ -226,10 +287,8 @@ class CombatAISystem {
         const attackInterval = 1 / combat.attackSpeed;
         const damageDelay = attackInterval * this.DAMAGE_TIMING_RATIO;
         
-        // Determine damage element from combat component or equipment
         const element = this.getDamageElement(attackerId, combat);
         
-        // Schedule damage through the centralized damage system
         this.game.damageSystem.scheduleDamage(
             attackerId, 
             targetId, 
@@ -247,7 +306,6 @@ class CombatAISystem {
         const attackInterval = 1 / combat.attackSpeed;
         const launchDelay = attackInterval * this.DAMAGE_TIMING_RATIO;
         
-        // Schedule projectile launch (projectile system will handle damage)
         setTimeout(() => {
             this.fireProjectileAttack(attackerId, targetId, combat.projectile);
         }, launchDelay * 1000);
@@ -263,39 +321,25 @@ class CombatAISystem {
         });
     }
 
-    // =============================================
-    // DAMAGE CALCULATION HELPERS
-    // =============================================
-
-    /**
-     * Determine the damage element for an attack
-     */
     getDamageElement(entityId, combat) {
-        // Priority: combat element > weapon element > physical
         if (combat.element) {
             return combat.element;
         }
         
-        // Check weapon element from equipment
         const weaponElement = this.getWeaponElement(entityId);
         if (weaponElement) {
             return weaponElement;
         }
         
-        // Default to physical
         return this.game.damageSystem?.ELEMENT_TYPES?.PHYSICAL || 'physical';
     }
 
-    /**
-     * Get weapon element from equipped items
-     */
     getWeaponElement(entityId) {
         if (!this.game.equipmentSystem) return null;
         
         const equipment = this.game.getComponent(entityId, this.componentTypes.EQUIPMENT);
         if (!equipment) return null;
         
-        // Check main hand weapon
         const mainHandItem = equipment.slots.mainHand;
         if (mainHandItem) {
             const itemData = this.game.equipmentSystem.getItemData(mainHandItem);
@@ -304,7 +348,6 @@ class CombatAISystem {
             }
         }
         
-        // Check off hand weapon
         const offHandItem = equipment.slots.offHand;
         if (offHandItem) {
             const itemData = this.game.equipmentSystem.getItemData(offHandItem);
@@ -315,10 +358,6 @@ class CombatAISystem {
         
         return null;
     }
-
-    // =============================================
-    // RANGE AND DISTANCE CALCULATIONS
-    // =============================================
 
     calculateDistances(pos1, pos2, collision1, collision2) {
         const dx = pos2.x - pos1.x;
@@ -365,17 +404,12 @@ class CombatAISystem {
         return this.DEFAULT_UNIT_RADIUS;
     }
 
-    // =============================================
-    // DEATH AND BATTLE END HANDLING
-    // =============================================
-
     startDeathProcess(entityId) {
         const ComponentTypes = this.game.componentManager.getComponentTypes();
         const Components = this.game.componentManager.getComponents();
         const existingDeathState = this.game.getComponent(entityId, ComponentTypes.DEATH_STATE);
         if (existingDeathState && existingDeathState.isDying) return;
         
-        // Clear any status effects when unit dies (handled by DamageSystem)
         if (this.game.damageSystem) {
             this.game.damageSystem.clearAllStatusEffects(entityId);
         }
@@ -387,24 +421,15 @@ class CombatAISystem {
         const velocity = this.game.getComponent(entityId, ComponentTypes.VELOCITY);
         if (velocity) { velocity.x = 0; velocity.y = 0; velocity.z = 0; }
         
-        // Remove combat ability
         if (this.game.hasComponent(entityId, ComponentTypes.COMBAT)) {
             this.game.removeComponent(entityId, ComponentTypes.COMBAT);
         }
         
-        // Play death animation if animation system exists
         if (this.game.animationSystem && this.game.animationSystem.playDeathAnimation) {
             this.game.animationSystem.playDeathAnimation(entityId);
         }
     }
     
-    // =============================================
-    // DAMAGE SYSTEM INTEGRATION METHODS
-    // =============================================
-
-    /**
-     * Apply damage directly (delegates to DamageSystem)
-     */
     applyDamage(sourceId, targetId, damage, element, options = {}) {
         if (!this.game.damageSystem) {
             console.warn('DamageSystem not found, cannot apply damage');
@@ -414,9 +439,6 @@ class CombatAISystem {
         return this.game.damageSystem.applyDamage(sourceId, targetId, damage, element, options);
     }
 
-    /**
-     * Apply splash damage (delegates to DamageSystem)
-     */
     applySplashDamage(sourceId, centerPos, damage, element, radius, options = {}) {
         if (!this.game.damageSystem) {
             console.warn('DamageSystem not found, cannot apply splash damage');
@@ -426,9 +448,6 @@ class CombatAISystem {
         return this.game.damageSystem.applySplashDamage(sourceId, centerPos, damage, element, radius, options);
     }
 
-    /**
-     * Cure poison (delegates to DamageSystem)
-     */
     curePoison(targetId, stacksToRemove = null) {
         if (!this.game.damageSystem) {
             console.warn('DamageSystem not found, cannot cure poison');
@@ -438,9 +457,6 @@ class CombatAISystem {
         return this.game.damageSystem.curePoison(targetId, stacksToRemove);
     }
 
-    /**
-     * Get poison stacks (delegates to DamageSystem)
-     */
     getPoisonStacks(entityId) {
         if (!this.game.damageSystem) {
             return 0;
@@ -449,9 +465,6 @@ class CombatAISystem {
         return this.game.damageSystem.getPoisonStacks(entityId);
     }
 
-    /**
-     * Check resistance (delegates to DamageSystem)
-     */
     hasResistance(entityId, element, threshold = 0.5) {
         if (!this.game.damageSystem) {
             return false;
@@ -460,9 +473,6 @@ class CombatAISystem {
         return this.game.damageSystem.hasResistance(entityId, element, threshold);
     }
 
-    /**
-     * Get status effects (delegates to DamageSystem)
-     */
     getStatusEffects(entityId) {
         if (!this.game.damageSystem) {
             return { poison: [] };
@@ -471,9 +481,6 @@ class CombatAISystem {
         return this.game.damageSystem.getStatusEffects(entityId);
     }
 
-    /**
-     * Debug status effects (delegates to DamageSystem)
-     */
     debugStatusEffects() {
         if (!this.game.damageSystem) {
             console.log('DamageSystem not found');
@@ -483,4 +490,3 @@ class CombatAISystem {
         this.game.damageSystem.debugStatusEffects();
     }
 }
-

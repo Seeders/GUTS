@@ -13,6 +13,13 @@ class AnimationSystem {
         this.MIN_MOVEMENT_THRESHOLD = 0.1;
         this.MIN_ATTACK_ANIMATION_TIME = 0.4;
         this.STATE_CHANGE_COOLDOWN = 0.1;
+        
+        this.SINGLE_PLAY_ANIMATIONS = new Set([
+            'attack', 'combat', 'fight', 'swing', 'strike',
+            'shoot', 'bow', 'aim', 'fire', // Ranged attack animations
+            'cast', 'spell', 'magic', 'throw', 'leap', 'jump',
+            'hurt', 'damage', 'hit', 'pain', 'death', 'die'
+        ]);
     }
     
     update(deltaTime) {
@@ -87,7 +94,6 @@ class AnimationSystem {
         animState.currentAction = newAction;
         animState.animationTime = 0;
         animState.isDying = true;
-        
     }
 
     setCorpseAnimation(entityId) {
@@ -152,7 +158,6 @@ class AnimationSystem {
             for (const animName of Object.keys(animationData)) {
                 const animDataArray = animationData[animName];
                 
-                // Handle multiple animation variants (like celebrate)
                 if (Array.isArray(animDataArray) && animDataArray.length > 1) {
                     for (let i = 0; i < animDataArray.length; i++) {
                         try {
@@ -170,10 +175,16 @@ class AnimationSystem {
                                 if (animModelAnimations?.length > 0) {
                                     const clip = animModelAnimations[0];
                                     const action = mixer.clipAction(clip);
-                                    action.setLoop(THREE.LoopRepeat);
+                                    
+                                    if (this.SINGLE_PLAY_ANIMATIONS.has(animName.toLowerCase())) {
+                                        action.setLoop(THREE.LoopOnce);
+                                        action.clampWhenFinished = true;
+                                    } else {
+                                        action.setLoop(THREE.LoopRepeat);
+                                    }
+                                    
                                     action.enabled = true;
                                     
-                                    // Store with variant index
                                     const variantKey = i === 0 ? animName : `${animName}_${i}`;
                                     animationActions[variantKey] = action;
                                 }
@@ -185,7 +196,6 @@ class AnimationSystem {
                         }
                     }
                 } else {
-                    // Handle single animation (original logic)
                     try {
                         const animModel = await this.game.modelManager.getAnimation(objectType, spawnType, animName);
                         if (animModel) {
@@ -201,7 +211,14 @@ class AnimationSystem {
                             if (animModelAnimations?.length > 0) {
                                 const clip = animModelAnimations[0];
                                 const action = mixer.clipAction(clip);
-                                action.setLoop(THREE.LoopRepeat);
+                                
+                                if (this.SINGLE_PLAY_ANIMATIONS.has(animName.toLowerCase())) {
+                                    action.setLoop(THREE.LoopOnce);
+                                    action.clampWhenFinished = true;
+                                } else {
+                                    action.setLoop(THREE.LoopRepeat);
+                                }
+                                
                                 action.enabled = true;
                                 animationActions[animName] = action;
                             }
@@ -238,6 +255,39 @@ class AnimationSystem {
         this.setProprietaryAnimation(entityId, 'idle');
     }
     
+    triggerSinglePlayAnimation(entityId, animationName, speed = 1, minAnimationTime = 0) {
+        const animState = this.entityAnimationStates.get(entityId);
+        if (!animState) return;
+        
+        animState.pendingAnimation = animationName;
+        animState.pendingAnimationSpeed = speed;
+        animState.pendingAnimationMinTime = minAnimationTime;
+        animState.animationTriggered = true;
+    }
+    
+    isAnimationFinished(entityId, animationName) {
+        const animState = this.entityAnimationStates.get(entityId);
+        const animationActions = this.entityAnimations.get(entityId);
+        
+        if (!animState || !animationActions) return true;
+        
+        const action = animationActions[animationName];
+        if (!action) return true;
+        
+        const isSinglePlay = this.SINGLE_PLAY_ANIMATIONS.has(animationName.toLowerCase());
+        if (!isSinglePlay) return false;
+        
+        // Check if action is running and hasn't reached the end
+        if (!action.isRunning()) return true;
+        
+        const clip = action.getClip();
+        if (!clip) return true;
+        
+        // Consider animation finished if it's reached 95% completion or stopped
+        const progress = action.time / clip.duration;
+        return progress >= 0.95 || action.paused;
+    }
+    
     updateEntityAnimation(entityId, velocity, health, deltaTime) {
         const animState = this.entityAnimationStates.get(entityId);
         
@@ -252,14 +302,29 @@ class AnimationSystem {
         }
         
         if (animState.isCelebrating) {
-            // Mixer is already updated in the main loop, don't update again
             return;
         }
         
         animState.animationTime += deltaTime;
         
+        if (animState.animationTriggered && animState.pendingAnimation) {
+            const pendingAnim = animState.pendingAnimation;
+            const pendingSpeed = animState.pendingAnimationSpeed || 1;
+            const pendingMinTime = animState.pendingAnimationMinTime || 0;
+            
+            animState.pendingAnimation = null;
+            animState.animationTriggered = false;
+            animState.pendingAnimationSpeed = null;
+            animState.pendingAnimationMinTime = null;
+            
+            this.setEntityAnimation(entityId, pendingAnim, pendingSpeed, pendingMinTime);
+            return;
+        }
+        
         const combat = this.game.getComponent(entityId, this.componentTypes.COMBAT);
         const aiState = this.game.getComponent(entityId, this.componentTypes.AI_STATE);
+        
+        const currentAnimIsFinished = this.isAnimationFinished(entityId, animState.currentAnimation);
         
         let desiredAnimation = 'idle';
         let animationSpeed = 1;
@@ -267,30 +332,11 @@ class AnimationSystem {
         
         if (aiState) {
             if (aiState.state === 'attacking' || aiState.state === 'combat') {
-                desiredAnimation = 'attack';
-                
-                if (combat && combat.attackSpeed) {
-                    const attackInterval = 1 / combat.attackSpeed;
-                    
-                    const animationActions = this.entityAnimations.get(entityId);
-                    let baseAnimationDuration = 0.8;
-                    
-                    if (animationActions && animationActions.attack) {
-                        const attackAction = animationActions.attack;
-                        if (attackAction.getClip) {
-                            baseAnimationDuration = attackAction.getClip().duration;
-                        }
-                    }
-                    
-                    const targetAnimationDuration = Math.max(attackInterval * 0.9, 0.2);
-                    animationSpeed = baseAnimationDuration / targetAnimationDuration;
-                    animationSpeed = Math.max(0.5, Math.min(animationSpeed, 4.0));
-                    minAnimationTime = Math.max(targetAnimationDuration * 0.8, 0.2);
+                if (currentAnimIsFinished && !this.SINGLE_PLAY_ANIMATIONS.has(animState.currentAnimation.toLowerCase())) {
+                    desiredAnimation = 'idle';
                 } else {
-                    animationSpeed = 1;
-                    minAnimationTime = 0.3;
+                    desiredAnimation = animState.currentAnimation;
                 }
-                
             } else if (aiState.state === 'chasing' || aiState.state === 'moving') {
                 desiredAnimation = 'walk';
                 if (velocity && (Math.abs(velocity.vx) > 0.1 || Math.abs(velocity.vz) > 0.1)) {
@@ -311,14 +357,9 @@ class AnimationSystem {
         }
         
         const shouldChangeAnimation = animState.currentAnimation !== desiredAnimation && 
-                                     animState.animationTime >= Math.max(animState.minAnimationTime, 0.1);
-        
-        if (animState.currentAnimation === 'attack' && desiredAnimation !== 'attack') {
-            const requiredAttackTime = minAnimationTime || 0.4;
-            if (animState.animationTime < requiredAttackTime) {
-                return;
-            }
-        }
+                                     (currentAnimIsFinished || 
+                                      !this.SINGLE_PLAY_ANIMATIONS.has(animState.currentAnimation.toLowerCase()) ||
+                                      animState.animationTime >= Math.max(animState.minAnimationTime, 0.1));
         
         if (shouldChangeAnimation) {
             const hasGLTFAnimations = this.entityAnimations.has(entityId);
@@ -344,7 +385,8 @@ class AnimationSystem {
             }
         }
         
-        if (animState.currentAnimation === desiredAnimation && animState.currentAction) {
+        if (animState.currentAnimation === desiredAnimation && animState.currentAction && 
+            !this.SINGLE_PLAY_ANIMATIONS.has(animState.currentAnimation.toLowerCase())) {
             const currentSpeed = animState.currentAction.getEffectiveTimeScale();
             if (Math.abs(currentSpeed - animationSpeed) > 0.1) {
                 animState.currentAction.setEffectiveTimeScale(animationSpeed);
@@ -361,6 +403,9 @@ class AnimationSystem {
         if (!animationActions[animationName]) {
             const fallbacks = {
                 'attack': ['combat', 'fight', 'swing', 'strike'],
+                'shoot': ['bow', 'cast', 'throw', 'attack'], // Ranged attack fallbacks
+                'bow': ['shoot', 'cast', 'throw', 'attack'],
+                'cast': ['shoot', 'throw', 'attack'],
                 'walk': ['run', 'move', 'step'],
                 'hurt': ['damage', 'hit', 'pain'],
                 'idle': ['stand', 'rest', 'default']
@@ -390,12 +435,19 @@ class AnimationSystem {
         const newAction = animationActions[animationName];
         if (!newAction) return;
         
-        if (animState.currentAnimation === animationName && 
-            animState.currentAction === newAction && 
-            newAction.isRunning() && 
-            newAction.getEffectiveWeight() > 0) {
-            newAction.setEffectiveTimeScale(speed);
+        const isSinglePlay = this.SINGLE_PLAY_ANIMATIONS.has(animationName.toLowerCase()) ||
+                           this.SINGLE_PLAY_ANIMATIONS.has('shoot') && ['shoot', 'bow', 'cast', 'throw'].includes(animationName.toLowerCase());
+        
+        if (isSinglePlay && animState.currentAnimation === animationName && 
+            animState.currentAction === newAction && newAction.isRunning() && 
+            !newAction.paused && newAction.time < newAction.getClip().duration) {
             return;
+        }
+        
+        if (isSinglePlay) {
+            newAction.reset();
+            newAction.setLoop(THREE.LoopOnce);
+            newAction.clampWhenFinished = true;
         }
         
         animState.currentAnimation = animationName;
@@ -405,32 +457,51 @@ class AnimationSystem {
         if (animState.currentAction && animState.currentAction !== newAction) {
             const oldAction = animState.currentAction;
             
-            oldAction.enabled = true;
-            oldAction.setEffectiveWeight(1);
-            if (!oldAction.isRunning()) {
-                oldAction.play();
+            if (isSinglePlay) {
+                oldAction.stop();
+                oldAction.setEffectiveWeight(0);
+                oldAction.enabled = false;
+            } else {
+                oldAction.enabled = true;
+                oldAction.setEffectiveWeight(1);
+                if (!oldAction.isRunning()) {
+                    oldAction.play();
+                }
             }
             
             newAction.enabled = true;
             newAction.setEffectiveTimeScale(speed);
-            newAction.setEffectiveWeight(0);
             
-            if (!newAction.isRunning()) {
+            if (isSinglePlay) {
+                newAction.setEffectiveWeight(1);
                 newAction.play();
+                
+                Object.values(animationActions).forEach(action => {
+                    if (action !== newAction) {
+                        action.stop();
+                        action.setEffectiveWeight(0);
+                        action.enabled = false;
+                    }
+                });
+            } else {
+                newAction.setEffectiveWeight(0);
+                if (!newAction.isRunning()) {
+                    newAction.play();
+                }
+                
+                Object.values(animationActions).forEach(action => {
+                    if (action !== newAction && action !== oldAction) {
+                        action.stop();
+                        action.setEffectiveWeight(0);
+                        action.enabled = false;
+                    }
+                });
+                
+                this.performManualCrossfade(oldAction, newAction, 0.1);
             }
             
-            Object.values(animationActions).forEach(action => {
-                if (action !== newAction && action !== oldAction) {
-                    action.stop();
-                    action.setEffectiveWeight(0);
-                    action.enabled = false;
-                }
-            });
-            
-            this.performManualCrossfade(oldAction, newAction, 0.1);
-            
         } else {
-            if (animState.currentAction) {
+            if (animState.currentAction && !isSinglePlay) {
                 newAction.setEffectiveTimeScale(speed);
                 return;
             }
@@ -608,7 +679,6 @@ class AnimationSystem {
         
         let celebrationAnimName = null;
         
-        // First try to get team-specific celebration variant
         if (teamType) {
             const variantKey = teamType === 'player' ? 'celebrate' : 'celebrate_1';
             if (animationActions[variantKey]) {
@@ -616,7 +686,6 @@ class AnimationSystem {
             }
         }
         
-        // Fallback to any available celebration animation
         if (!celebrationAnimName) {
             const celebrationNames = ['celebrate', 'celebrate_1', 'victory', 'cheer', 'dance', 'happy', 'win'];
             for (const name of celebrationNames) {
@@ -640,42 +709,34 @@ class AnimationSystem {
         const mixer = this.entityMixers.get(entityId);
         if (!mixer) return;
         
-        // Completely stop all actions
         Object.values(animationActions).forEach(action => {
             action.stop();
             action.setEffectiveWeight(0);
             action.enabled = false;
         });
         
-        // Get the original clip and create a fresh action
         const originalAction = animationActions[celebrationAnimName];
         const clip = originalAction.getClip();
         
-        // Create a completely new action from the clip to ensure clean state
         const newAction = mixer.clipAction(clip);
         
-        // Now that we fixed the double-update bug, normal speed should work
-        const celebrationSpeed = 1.0; // Normal speed with single update
+        const celebrationSpeed = 1.0;
         
-        // Configure the new action
         newAction.enabled = true;
         newAction.setLoop(THREE.LoopRepeat);
         newAction.reset();
         newAction.setEffectiveTimeScale(celebrationSpeed);
         newAction.setEffectiveWeight(1.0);
         
-        // Start at a random point in the animation for variety
         const randomStartTime = Math.random() * clip.duration;
         newAction.time = randomStartTime;
         newAction.play();
         
-        // Replace the action in our map
         animationActions[celebrationAnimName] = newAction;
         
         animState.currentAnimation = celebrationAnimName;
         animState.currentAction = newAction;
         animState.animationTime = 0;
-        
     }
     
     stopCelebration(entityId) {

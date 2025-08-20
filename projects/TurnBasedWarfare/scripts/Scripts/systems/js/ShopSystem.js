@@ -8,6 +8,10 @@ class ShopSystem {
         const shop = document.getElementById('unitShop');
         shop.innerHTML = '';
         
+        // Add undo button at the top of the shop
+        const undoButton = this.createUndoButton();
+        shop.appendChild(undoButton);
+        
         const UnitTypes = this.game.getCollections().units;
 
         // Get all valid units and sort by price (cheapest first)
@@ -24,8 +28,59 @@ class ShopSystem {
         });
     }
     
+    createUndoButton() {
+        const undoContainer = document.createElement('div');
+        undoContainer.className = 'undo-container';
+        undoContainer.style.cssText = `
+            margin-bottom: 10px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            border: 1px solid #444;
+        `;
+        
+        const undoButton = document.createElement('button');
+        undoButton.id = 'undoButton';
+        undoButton.className = 'undo-button';
+        undoButton.innerHTML = '↶ Undo (Ctrl+Z)';
+        undoButton.style.cssText = `
+            width: 100%;
+            padding: 8px 12px;
+            background: #444;
+            color: #fff;
+            border: 1px solid #666;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        `;
+        
+        undoButton.addEventListener('click', () => {
+            if (this.game.placementSystem) {
+                this.game.placementSystem.undoLastPlacement();
+            }
+        });
+        
+        undoButton.addEventListener('mouseenter', () => {
+            if (!undoButton.disabled) {
+                undoButton.style.background = '#555';
+                undoButton.style.borderColor = '#777';
+            }
+        });
+        
+        undoButton.addEventListener('mouseleave', () => {
+            if (!undoButton.disabled) {
+                undoButton.style.background = '#444';
+                undoButton.style.borderColor = '#666';
+            }
+        });
+        
+        undoContainer.appendChild(undoButton);
+        return undoContainer;
+    }
+    
     createUnitCard(unitId, unitType) {
-        if(unitType.value < 0) return null;
+        if(unitType.value < 0 || !unitType.buyable) return null;
         
         const card = document.createElement('div');
         card.className = 'unit-card';
@@ -60,6 +115,9 @@ class ShopSystem {
         const state = this.game.state;
         const UnitTypes = this.game.getCollections().units;
         const inPlacementPhase = state.phase === 'placement';
+        
+        // Update undo button
+        this.updateUndoButton(inPlacementPhase);
         
         // Use dataset.unitId to reliably match cards with unit types
         document.querySelectorAll('.unit-card').forEach(card => {
@@ -96,6 +154,37 @@ class ShopSystem {
         const strengthElement = document.getElementById('enemyStrength');
         if (strengthElement) {
             strengthElement.textContent = strengthLevels[strengthIndex];
+        }
+    }
+    
+    updateUndoButton(inPlacementPhase) {
+        const undoButton = document.getElementById('undoButton');
+        if (!undoButton || !this.game.placementSystem) return;
+        
+        const undoStatus = this.game.placementSystem.getUndoStatus();
+        const canUndo = undoStatus.canUndo && inPlacementPhase;
+        
+        undoButton.disabled = !canUndo;
+        
+        if (canUndo) {
+            undoButton.style.background = '#444';
+            undoButton.style.color = '#fff';
+            undoButton.style.cursor = 'pointer';
+            undoButton.style.opacity = '1';
+            
+            // Show what can be undone
+            if (undoStatus.lastAction) {
+                const lastAction = undoStatus.lastAction;
+                undoButton.innerHTML = `↶ Undo ${lastAction.unitType.title} (+${lastAction.cost}g)`;
+            } else {
+                undoButton.innerHTML = '↶ Undo (Ctrl+Z)';
+            }
+        } else {
+            undoButton.style.background = '#222';
+            undoButton.style.color = '#666';
+            undoButton.style.cursor = 'not-allowed';
+            undoButton.style.opacity = '0.5';
+            undoButton.innerHTML = undoStatus.undoCount === 0 ? '↶ Nothing to undo' : '↶ Undo (placement phase only)';
         }
     }
     

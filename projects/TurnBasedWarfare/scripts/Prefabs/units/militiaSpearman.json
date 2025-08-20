@@ -1,5 +1,5 @@
 {
-  "title": "Militia Spearman",
+  "title": "Militia",
   "size": 25,
   "value": 30,
   "hp": 85,
@@ -145,10 +145,11 @@
           "rotation": {
             "x": 0,
             "y": 45,
-            "z": -90
+            "z": 0
           }
         }
       }
     ]
-  }
+  },
+  "buyable": true
 }

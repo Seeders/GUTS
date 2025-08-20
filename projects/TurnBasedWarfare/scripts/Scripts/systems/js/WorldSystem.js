@@ -310,7 +310,11 @@ class WorldSystem {
         }
 
         this.controls = new THREE_.OrbitControls(this.camera, this.renderer.domElement);
-        
+        this.controls.mouseButtons = {
+            LEFT: null,                           // Disable left click
+            MIDDLE: THREE.MOUSE.ROTATE,          // Middle mouse for rotation
+            RIGHT: THREE.MOUSE.PAN               // Right mouse for panning (optional)
+        };
         this.controls.target.set(lookAt.x, lookAt.y, lookAt.z);
         this.controls.maxPolarAngle = Math.PI / 2.05;
         this.controls.minPolarAngle = 0.1;

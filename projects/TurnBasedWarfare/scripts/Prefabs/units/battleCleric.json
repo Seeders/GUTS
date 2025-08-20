@@ -1,12 +1,12 @@
 {
-  "title": "Battle Cleric",
+  "title": "Crusader",
   "size": 25,
   "value": 110,
   "hp": 200,
   "speed": 35,
   "damage": 14,
   "attackSpeed": 1,
-  "element": "lightning",
+  "element": "physical",
   "armor": 6,
   "fireResistance": 0.2,
   "coldResistance": 0.2,
@@ -157,5 +157,6 @@
         }
       }
     ]
-  }
+  },
+  "buyable": false
 }

@@ -15,7 +15,7 @@ class ComponentManager {
             
             // Enhanced Combat component with elemental damage and defenses
             Combat: (
-                damage = 10, 
+                damage = 0, 
                 range = 1, 
                 attackSpeed = 1, 
                 projectile = null, 

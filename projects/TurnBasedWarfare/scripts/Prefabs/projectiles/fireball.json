@@ -43,9 +43,9 @@
       }
     }
   },
-  "speed": 100,
+  "speed": 300,
   "title": "Fireball",
-  "ballistic": true,
+  "ballistic": false,
   "homing": false,
   "homingStrength": 0,
   "particle": "smoke",

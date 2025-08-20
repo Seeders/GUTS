@@ -86,7 +86,7 @@ class MovementSystem {
 
                 const isAnchored =
                     !!aiState &&
-                    aiState.state === 'attacking' &&
+                    (aiState.state === 'attacking' || aiState.state === 'waiting') &&
                     aiState.aiBehavior &&
                     !!aiState.aiBehavior.currentTarget;
 

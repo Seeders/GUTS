@@ -28,6 +28,7 @@
     "UIComponents",
     "NotificationSystem",
     "GameLoader",
+    "GameUtils",
     "ECSGame"
   ],
   "fileName": "game",

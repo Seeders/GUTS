@@ -4,7 +4,7 @@ class ChainLightningAbility extends engine.app.appClasses['BaseAbility'] {
             id: 'chain_lightning',
             name: 'Chain Lightning',
             description: 'Lightning that jumps between multiple enemies',
-            cooldown: 2.0,
+            cooldown: 4.0,
             range: 250,
             manaCost: 40,
             targetType: 'auto',
@@ -65,7 +65,7 @@ class ChainLightningAbility extends engine.app.appClasses['BaseAbility'] {
     
     canExecute(casterEntity) {
         const enemies = this.getEnemiesInRange(casterEntity);
-        return enemies.length >= 2;
+        return enemies.length >= 1;
     }
     
     execute(casterEntity) {
@@ -117,6 +117,10 @@ class ChainLightningAbility extends engine.app.appClasses['BaseAbility'] {
     }
     
     findClosestEnemy(casterEntity, enemies) {
+        const ai = this.game.getComponent(casterEntity, this.componentTypes.AI_STATE);
+        if(ai && ai.target) {
+            return ai.target;
+        }
         const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
         if (!casterPos) return null;
         

@@ -94,7 +94,7 @@ class PhaseSystem {
         this.game.battleLogSystem.add(`Round ${state.round} battle begins!`, 'log-victory');
         
         document.getElementById('readyButton').disabled = true;
-        this.game.effectsSystem.playBattleStartAnimation();
+       // this.game.effectsSystem.playBattleStartAnimation();
     }
     
     checkForRoundEnd() {
