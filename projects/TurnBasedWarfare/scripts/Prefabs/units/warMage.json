@@ -12,7 +12,7 @@
   "armor": 2,
   "fireResistance": 0.4,
   "coldResistance": 0,
-  "lightningResistance": 0.2,  
+  "lightningResistance": 0.2,
   "abilities": [
     "ChainLightningAbility"
   ],
@@ -149,18 +149,18 @@
     "equipment": [
       {
         "slot": "mainHand",
-        "item": "woodStaff",
+        "item": "staff_feathers",
         "attachmentData": {
           "bone": "RightHand",
           "offset": {
-            "x": 10,
-            "y": 0,
-            "z": -5
+            "x": 0,
+            "y": 5,
+            "z": -8
           },
           "rotation": {
             "x": 0,
             "y": 0,
-            "z": -90
+            "z": 0
           }
         }
       }
