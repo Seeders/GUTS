@@ -11,6 +11,8 @@
   "fireResistance": 0.1,
   "coldResistance": 0.3,
   "lightningResistance": 0.2,
+  "range": 100,
+  "projectile": "fireball",
   "render": {
     "animations": {
       "idle": [
@@ -42,7 +44,17 @@
           "main": {
             "shapes": [
               {
+                "type": "gltf",
                 "url": "projects/TurnBasedWarfare/resources/animations/2h_spell_summon.glb",
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "rotationX": 0,
+                "rotationY": 0,
+                "rotationZ": 0,
+                "color": "#FFFFFF",
+                "metalness": "0",
+                "roughness": "1",
                 "id": 0
               }
             ]
@@ -76,7 +88,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/dance_thriller/dance_thriller.glb",
+                "url": "projects/TurnBasedWarfare/resources/animations/dance_thriller.glb",
                 "id": 0
               }
             ]
@@ -117,6 +129,45 @@
           }
         ]
       }
-    }
-  }
+    },
+    "equipment": [
+      {
+        "slot": "mainHand",
+        "item": "knightSword",
+        "attachmentData": {
+          "bone": "RightHand",
+          "offset": {
+            "x": -2,
+            "y": 5,
+            "z": -5
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": -90
+          }
+        }
+      },
+      {
+        "slot": "offHand",
+        "item": "woodStaff",
+        "attachmentData": {
+          "bone": "",
+          "offset": {
+            "x": -10,
+            "y": 5,
+            "z": -6
+          },
+          "rotation": {
+            "x": 0,
+            "y": -10,
+            "z": 90
+          }
+        }
+      }
+    ]
+  },
+  "abilities": [
+    "RaiseDeadAbility"
+  ]
 }

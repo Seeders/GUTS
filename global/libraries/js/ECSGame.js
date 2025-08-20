@@ -15,7 +15,8 @@ class ECSGame {
         this.entityId = 0;
         this.entitiesToAdd = [];
         this.entities = new Map();
-        this.components = new Map();        
+        this.components = new Map();  
+        this.classes = [];      
         this.systems = [];
         
         this.nextEntityId = 1;
@@ -158,6 +159,11 @@ class ECSGame {
         if (system.init) {
             system.init();
         }
+    }
+    
+    addClass(classConfig, classRef) {
+        this.classes[classConfig.type] = { 'config': classConfig, classRef: classRef };
+        APP.appClasses[classConfig.type] = classRef;
     }
         
 }

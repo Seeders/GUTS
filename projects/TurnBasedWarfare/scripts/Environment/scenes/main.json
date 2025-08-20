@@ -99,6 +99,12 @@
           "type": "DamageSystem"
         },
         {
+          "type": "AbilitySystem"
+        },
+        {
+          "type": "ParticleSystem"
+        },
+        {
           "type": "UISystem"
         }
       ],
@@ -140,6 +146,20 @@
           "parameters": {
             "level": "level1"
           }
+        }
+      ],
+      "classes": [
+        {
+          "collection": "abilities",
+          "type": "BaseAbility"
+        },
+        {
+          "collection": "abilities",
+          "type": "RaiseDeadAbility"
+        },
+        {
+          "collection": "abilities",
+          "type": "ChainLightningAbility"
         }
       ]
     }

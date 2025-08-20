@@ -16,7 +16,8 @@ class UISystem {
         this.game.statisticsTrackingSystem.startSession();
         this.game.shopSystem.createShop();
         this.game.phaseSystem.startPlacementPhase();
-        this.game.effectsSystem.initialize();                
+        this.game.particleSystem.initialize(); 
+        this.game.effectsSystem.initialize();                  
         // Welcome messages
         this.game.battleLogSystem.addWelcomeMessages();
     }

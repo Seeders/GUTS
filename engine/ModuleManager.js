@@ -38,6 +38,7 @@ class ModuleManager {
     
     this.scriptContext = {
       app: app,
+      appClasses: {},
       getFunction: (typeName) => this.getCompiledScript(typeName, 'functions'),
       getComponent: (typeName) => this.getCompiledScript(typeName, 'components'),
       getRenderer: (typeName) => this.getCompiledScript(typeName, 'renderers'),

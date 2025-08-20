@@ -6,7 +6,7 @@
   "speed": 35,
   "damage": 14,
   "attackSpeed": 1,
-  "element": "divine",
+  "element": "lightning",
   "armor": 6,
   "fireResistance": 0.2,
   "coldResistance": 0.2,
@@ -76,7 +76,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/dance_thriller/dance_thriller.glb",
+                "url": "projects/TurnBasedWarfare/resources/animations/dance_thriller.glb",
                 "id": 0
               }
             ]
@@ -157,5 +157,8 @@
         }
       }
     ]
-  }
+  },
+  "abilities": [
+    "ChainLightningAbility"
+  ]
 }

@@ -11,7 +11,7 @@
   "element": "fire",
   "armor": 2,
   "fireResistance": 0.4,
-  "coldResistance": 0.0,
+  "coldResistance": 0,
   "lightningResistance": 0.2,
   "render": {
     "animations": {
@@ -93,7 +93,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/dance_thriller/dance_thriller.glb",
+                "url": "projects/TurnBasedWarfare/resources/animations/dance_thriller.glb",
                 "id": 0
               }
             ]

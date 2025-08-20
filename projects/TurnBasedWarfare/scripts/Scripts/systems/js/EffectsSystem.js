@@ -1,212 +1,246 @@
 class EffectsSystem {
-    constructor(app) {
-        this.game = app;  
+    constructor(game) {
+        this.game = game;  
         this.game.effectsSystem = this;
-        this.particles = [];
-        this.particleCanvas = null;
-        this.particleContext = null;
-        this.animationId = null;
+        
+        // Screen effect tracking
+        this.screenEffects = [];
+        this.shakeActive = false;
+        this.flashActive = false;
+        
+        // UI notifications
+        this.notifications = [];
     }
     
     initialize() {
-        this.setupParticleSystem();
         this.addEffectsCSS();
+        console.log('EffectsSystem initialized');
     }
     
-    setupParticleSystem() {
-        this.particleCanvas = document.createElement('canvas');
-        this.particleCanvas.id = 'particle-canvas';
-        this.particleCanvas.style.cssText = `
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 10;
-        `;
-        
-        // Add to game container when available
-        setTimeout(() => {
-            const gameContainer = document.getElementById('gameContainer');
-            if (gameContainer && !this.particleCanvas.parentElement) {
-                gameContainer.appendChild(this.particleCanvas);
-                this.particleContext = this.particleCanvas.getContext('2d');
-                this.startParticleAnimation();
-            }
-        }, 100);
-    }
+    // === PARTICLE EFFECTS ===
+    // Particle effect configurations for different game events
     
-    startParticleAnimation() {
-        this.resizeCanvas();
-        window.addEventListener('resize', () => this.resizeCanvas());
-        this.animate();
-    }
-    
-    resizeCanvas() {
-        if (!this.particleCanvas || !this.particleCanvas.parentElement) return;
-        
-        const rect = this.particleCanvas.parentElement.getBoundingClientRect();
-        this.particleCanvas.width = rect.width;
-        this.particleCanvas.height = rect.height;
-    }
-    
-    animate() {
-        if (!this.particleContext || !this.particleCanvas) return;
-        
-        // Clear canvas
-        this.particleContext.clearRect(0, 0, this.particleCanvas.width, this.particleCanvas.height);
-        
-        // Update and draw particles
-        this.particles = this.particles.filter(particle => {
-            // Update particle physics
-            particle.x += particle.vx;
-            particle.y += particle.vy;
-            particle.vy += particle.gravity || 0.15;
-            particle.vx *= particle.friction || 0.99;
-            particle.life -= particle.decay;
-            
-            // Draw particle if still alive
-            if (particle.life > 0) {
-                this.drawParticle(particle);
-                return true;
-            }
-            return false;
-        });
-        
-        // Continue animation
-        this.animationId = requestAnimationFrame(() => this.animate());
-    }
-    
-    drawParticle(particle) {
-        this.particleContext.save();
-        
-        // Set particle properties
-        this.particleContext.globalAlpha = Math.max(0, particle.life);
-        this.particleContext.fillStyle = particle.color;
-        
-        // Draw particle shape
-        if (particle.shape === 'star') {
-            this.drawStar(particle.x, particle.y, particle.size);
-        } else {
-            // Default circle
-            this.particleContext.beginPath();
-            this.particleContext.arc(particle.x, particle.y, particle.size * particle.life, 0, Math.PI * 2);
-            this.particleContext.fill();
-        }
-        
-        this.particleContext.restore();
-    }
-    
-    drawStar(x, y, size) {
-        const spikes = 5;
-        const outerRadius = size;
-        const innerRadius = size * 0.5;
-        
-        this.particleContext.beginPath();
-        this.particleContext.moveTo(x, y - outerRadius);
-        
-        for (let i = 0; i < spikes * 2; i++) {
-            const radius = i % 2 === 0 ? outerRadius : innerRadius;
-            const angle = (i * Math.PI) / spikes;
-            this.particleContext.lineTo(
-                x + Math.cos(angle - Math.PI / 2) * radius,
-                y + Math.sin(angle - Math.PI / 2) * radius
-            );
-        }
-        
-        this.particleContext.closePath();
-        this.particleContext.fill();
-    }
-    
-    createParticleEffect(x, y, type = 'victory', options = {}) {
-        if (!this.particleContext) return;
-        
-        const effects = {
+    getEffectConfig(effectType) {
+        const configs = {
             victory: {
                 count: 25,
-                colors: ['#00ff00', '#ffff00', '#00ffff', '#88ff88'],
                 shape: 'star',
-                spread: 8,
-                lifetime: 1.5
+                color: 0x00ff00,
+                colorRange: { start: 0x00ff00, end: 0xffff00 },
+                lifetime: 1.5,
+                velocity: { speed: 8, spread: 0.5, pattern: 'burst' },
+                scale: 0.8,
+                scaleVariation: 0.3,
+                physics: { gravity: -0.5, drag: 0.99 },
+                rotation: { enabled: true, speed: 5 },
+                visual: { fadeOut: true, scaleOverTime: true, blending: 'additive' }
             },
             defeat: {
                 count: 20,
-                colors: ['#ff4444', '#ff8888', '#ff0000'],
                 shape: 'circle',
-                spread: 6,
-                lifetime: 1.0
+                color: 0xff4444,
+                colorRange: { start: 0xff4444, end: 0xff0000 },
+                lifetime: 1.0,
+                velocity: { speed: 6, spread: 0.8, pattern: 'burst' },
+                scale: 0.6,
+                scaleVariation: 0.4,
+                physics: { gravity: 0.8, drag: 0.98 },
+                rotation: { enabled: false, speed: 0 },
+                visual: { fadeOut: true, scaleOverTime: true, blending: 'additive' }
             },
             placement: {
-                count: 12,
-                colors: ['#00ff44', '#44ff44', '#88ff88'],
+                count: 15,
                 shape: 'circle',
-                spread: 4,
-                lifetime: 0.8
+                color: 0x00ff44,
+                colorRange: { start: 0x00ff44, end: 0x88ff88 },
+                lifetime: 1.2,
+                velocity: { speed: 160, spread: 0.4, pattern: 'cone' },
+                scale: 2,
+                scaleVariation: 0.3,
+                physics: { gravity: -1, drag: 0.98 }, // Float upward
+                rotation: { enabled: false, speed: 0 },
+                visual: { fadeOut: true, scaleOverTime: true, blending: 'additive' }
             },
             explosion: {
                 count: 30,
-                colors: ['#ffaa00', '#ff6600', '#ff0000', '#ffff00'],
                 shape: 'circle',
-                spread: 10,
-                lifetime: 1.2
+                color: 0xffaa00,
+                colorRange: { start: 0xffaa00, end: 0xff0000 },
+                lifetime: 1.2,
+                velocity: { speed: 10, spread: 0.6, pattern: 'sphere' },
+                scale: 1.0,
+                scaleVariation: 0.5,
+                physics: { gravity: 1.0, drag: 0.96 },
+                rotation: { enabled: true, speed: 8 },
+                visual: { fadeOut: true, scaleOverTime: true, blending: 'additive' }
             },
             heal: {
                 count: 15,
-                colors: ['#00ff88', '#44ff44', '#88ffaa'],
+                shape: 'cross',
+                color: 0x00ff88,
+                colorRange: { start: 0x00ff88, end: 0x88ffaa },
+                lifetime: 1.0,
+                velocity: { speed: 3, spread: 0.2, pattern: 'cone' },
+                scale: 0.5,
+                scaleVariation: 0.3,
+                physics: { gravity: -0.8, drag: 0.99 },
+                rotation: { enabled: true, speed: 3 },
+                visual: { fadeOut: true, scaleOverTime: true, blending: 'additive' }
+            },
+            magic: {
+                count: 20,
                 shape: 'star',
-                spread: 3,
-                lifetime: 1.0
+                color: 0x8800ff,
+                colorRange: { start: 0x8800ff, end: 0xff88ff },
+                lifetime: 2.0,
+                velocity: { speed: 5, spread: 0.4, pattern: 'sphere' },
+                scale: 0.6,
+                scaleVariation: 0.4,
+                physics: { gravity: -0.3, drag: 0.98 },
+                rotation: { enabled: true, speed: 6 },
+                visual: { fadeOut: true, scaleOverTime: true, blending: 'additive' }
+            },
+            damage: {
+                count: 8,
+                shape: 'circle',
+                color: 0xff0000,
+                lifetime: 0.6,
+                velocity: { speed: 2, spread: 0.5, pattern: 'burst' },
+                scale: 0.3,
+                scaleVariation: 0.2,
+                physics: { gravity: 0.5, drag: 0.98 },
+                rotation: { enabled: false, speed: 0 },
+                visual: { fadeOut: true, scaleOverTime: true, blending: 'additive' }
+            },
+            levelup: {
+                count: 40,
+                shape: 'star',
+                color: 0xffd700,
+                colorRange: { start: 0xffd700, end: 0xffa500 },
+                lifetime: 2.5,
+                velocity: { speed: 8, spread: 0.6, pattern: 'cone' },
+                scale: 1.2,
+                scaleVariation: 0.5,
+                physics: { gravity: -0.4, drag: 0.98 },
+                rotation: { enabled: true, speed: 4 },
+                visual: { fadeOut: true, scaleOverTime: true, blending: 'additive' }
             }
         };
         
-        const config = effects[type] || effects.victory;
-        const particleCount = options.count || config.count;
-        const spreadMultiplier = options.spread || 1;
-        
-        for (let i = 0; i < particleCount; i++) {
-            const angle = (Math.PI * 2 * i) / particleCount + Math.random() * 0.5;
-            const speed = (2 + Math.random() * 4) * spreadMultiplier;
-            
-            this.particles.push({
-                x: x,
-                y: y,
-                vx: Math.cos(angle) * speed * config.spread,
-                vy: Math.sin(angle) * speed * config.spread - Math.random() * 2,
-                color: config.colors[Math.floor(Math.random() * config.colors.length)],
-                size: 2 + Math.random() * 4,
-                shape: config.shape,
-                life: config.lifetime,
-                decay: 0.01 + Math.random() * 0.02,
-                gravity: type === 'heal' ? -0.05 : 0.15,
-                friction: 0.98
-            });
-        }
+        return configs[effectType] || configs.damage;
     }
     
-    // Public effect methods
-    showVictoryEffect(x, y, options = {}) {
-        this.createParticleEffect(x, y, 'victory', options);
+    showVictoryEffect(x, y, z, options = {}) {
+        this.createParticleEffect(x, y, z, 'victory', options);
         this.playScreenShake(300, 2);
+        this.showNotification('Victory!', 'victory', 2000);
     }
     
-    showDefeatEffect(x, y, options = {}) {
-        this.createParticleEffect(x, y, 'defeat', options);
+    showDefeatEffect(x, y, z, options = {}) {
+        this.createParticleEffect(x, y, z, 'defeat', options);
         this.playScreenFlash('#ff4444', 500);
+        this.showNotification('Defeat!', 'defeat', 2000);
     }
     
-    showPlacementEffect(x, y, options = {}) {
-        this.createParticleEffect(x, y, 'placement', options);
+    showPlacementEffect(x, y, z, options = {}) {
+        this.createParticleEffect(x, y, z, 'placement', options);
     }
     
-    showExplosionEffect(x, y, options = {}) {
-        this.createParticleEffect(x, y, 'explosion', options);
+    showExplosionEffect(x, y, z, options = {}) {
+        this.createParticleEffect(x, y, z, 'explosion', options);
         this.playScreenShake(200, 3);
     }
     
-    showHealEffect(x, y, options = {}) {
-        this.createParticleEffect(x, y, 'heal', options);
+    showHealEffect(x, y, z, options = {}) {
+        this.createParticleEffect(x, y, z, 'heal', options);
     }
+    
+    showMagicEffect(x, y, z, options = {}) {
+        this.createParticleEffect(x, y, z, 'magic', options);
+    }
+    
+    showDamageEffect(x, y, z, options = {}) {
+        this.createParticleEffect(x, y, z, 'damage', options);
+    }
+    
+    showLevelUpEffect(x, y, z, options = {}) {
+        this.createParticleEffect(x, y, z, 'levelup', options);
+        this.playScreenShake(400, 1);
+        this.showNotification('Level Up!', 'levelup', 3000);
+    }
+    
+    // Generic particle effect creation
+    createParticleEffect(x, y, z, effectType, options = {}) {
+        if (!this.game.particleSystem) return;
+        
+        const baseConfig = this.getEffectConfig(effectType);
+        
+        // Merge options with base config
+        const config = {
+            ...baseConfig,
+            position: new THREE.Vector3(x, y, z),
+            ...options
+        };
+        
+        // Apply option overrides
+        if (options.count !== undefined) config.count = options.count;
+        if (options.speedMultiplier !== undefined) {
+            config.velocity.speed *= options.speedMultiplier;
+        }
+        if (options.scaleMultiplier !== undefined) {
+            config.scale *= options.scaleMultiplier;
+        }
+        if (options.color !== undefined) {
+            config.color = options.color;
+            config.colorRange = null;
+        }
+        
+        this.game.particleSystem.createParticles(config);
+    }
+    
+    // === ENTITY-BASED EFFECTS ===
+    // Convenience methods for entity-based effects
+    
+    showEffectAtEntity(entityId, effectType, options = {}) {
+        if (!this.game.particleSystem) return;
+        
+        const pos = this.game.getComponent(entityId, this.game.componentManager.getComponentTypes().POSITION);
+        if (pos) {
+            const height = this.game.particleSystem.getWorldHeight(pos.x, pos.z);
+            const effectHeight = height + (options.heightOffset || 10);
+            
+            switch (effectType) {
+                case 'victory':
+                    this.showVictoryEffect(pos.x, effectHeight, pos.z, options);
+                    break;
+                case 'defeat':
+                    this.showDefeatEffect(pos.x, effectHeight, pos.z, options);
+                    break;
+                case 'placement':
+                    this.showPlacementEffect(pos.x, effectHeight, pos.z, options);
+                    break;
+                case 'explosion':
+                    this.showExplosionEffect(pos.x, effectHeight, pos.z, options);
+                    break;
+                case 'heal':
+                    this.showHealEffect(pos.x, effectHeight, pos.z, options);
+                    break;
+                case 'magic':
+                    this.showMagicEffect(pos.x, effectHeight, pos.z, options);
+                    break;
+                case 'damage':
+                    this.showDamageEffect(pos.x, effectHeight, pos.z, options);
+                    break;
+                case 'levelup':
+                    this.showLevelUpEffect(pos.x, effectHeight, pos.z, options);
+                    break;
+                default:
+                    console.warn(`EffectsSystem: Unknown effect type: ${effectType}`);
+            }
+        }
+    }
+    
+    // === SCREEN EFFECTS ===
     
     playBattleStartAnimation() {
         const transition = document.createElement('div');
@@ -224,9 +258,12 @@ class EffectsSystem {
     }
     
     playScreenShake(duration = 300, intensity = 2) {
+        if (this.shakeActive) return; // Prevent multiple shakes
+        
         const gameContainer = document.getElementById('gameContainer');
         if (!gameContainer) return;
         
+        this.shakeActive = true;
         const originalTransform = gameContainer.style.transform;
         let startTime = Date.now();
         
@@ -235,12 +272,14 @@ class EffectsSystem {
             const progress = elapsed / duration;
             
             if (progress < 1) {
-                const shakeX = (Math.random() - 0.5) * intensity * (1 - progress);
-                const shakeY = (Math.random() - 0.5) * intensity * (1 - progress);
+                const diminishingIntensity = intensity * (1 - progress);
+                const shakeX = (Math.random() - 0.5) * diminishingIntensity;
+                const shakeY = (Math.random() - 0.5) * diminishingIntensity;
                 gameContainer.style.transform = `translate(${shakeX}px, ${shakeY}px)`;
                 requestAnimationFrame(shake);
             } else {
                 gameContainer.style.transform = originalTransform;
+                this.shakeActive = false;
             }
         };
         
@@ -248,6 +287,9 @@ class EffectsSystem {
     }
     
     playScreenFlash(color = '#ffffff', duration = 300) {
+        if (this.flashActive) return; // Prevent multiple flashes
+        
+        this.flashActive = true;
         const flash = document.createElement('div');
         flash.className = 'screen-flash';
         flash.style.cssText = `
@@ -269,13 +311,274 @@ class EffectsSystem {
             if (document.body.contains(flash)) {
                 document.body.removeChild(flash);
             }
+            this.flashActive = false;
         }, duration);
     }
     
-    playSound(soundId) {
-        // Placeholder for sound system integration
-        console.log(`Playing sound: ${soundId}`);
+    // === UI NOTIFICATIONS ===
+    
+    showNotification(message, type = 'info', duration = 3000) {
+        const notification = document.createElement('div');
+        notification.className = `game-notification notification-${type}`;
+        notification.textContent = message;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            color: white;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            z-index: 1000;
+            animation: notificationSlideIn 0.5s ease-out;
+            max-width: 300px;
+            word-wrap: break-word;
+        `;
+        
+        // Set type-specific styles
+        switch (type) {
+            case 'victory':
+                notification.style.background = 'linear-gradient(145deg, #001100, #003300)';
+                notification.style.border = '2px solid #00ff00';
+                notification.style.color = '#00ff00';
+                notification.style.textShadow = '0 0 10px rgba(0, 255, 0, 0.5)';
+                break;
+            case 'defeat':
+                notification.style.background = 'linear-gradient(145deg, #110000, #330000)';
+                notification.style.border = '2px solid #ff0000';
+                notification.style.color = '#ff4444';
+                notification.style.textShadow = '0 0 10px rgba(255, 68, 68, 0.5)';
+                break;
+            case 'levelup':
+                notification.style.background = 'linear-gradient(145deg, #111100, #333300)';
+                notification.style.border = '2px solid #ffd700';
+                notification.style.color = '#ffd700';
+                notification.style.textShadow = '0 0 10px rgba(255, 215, 0, 0.5)';
+                break;
+            default:
+                notification.style.background = 'linear-gradient(145deg, #001122, #003344)';
+                notification.style.border = '2px solid #00aaff';
+                notification.style.color = '#00aaff';
+                notification.style.textShadow = '0 0 10px rgba(0, 170, 255, 0.5)';
+        }
+        
+        document.body.appendChild(notification);
+        this.notifications.push(notification);
+        
+        // Position multiple notifications
+        this.repositionNotifications();
+        
+        // Auto-remove after duration
+        setTimeout(() => {
+            this.removeNotification(notification);
+        }, duration);
     }
+    
+    removeNotification(notification) {
+        if (document.body.contains(notification)) {
+            notification.style.animation = 'notificationSlideOut 0.3s ease-out forwards';
+            setTimeout(() => {
+                if (document.body.contains(notification)) {
+                    document.body.removeChild(notification);
+                }
+                const index = this.notifications.indexOf(notification);
+                if (index > -1) {
+                    this.notifications.splice(index, 1);
+                }
+                this.repositionNotifications();
+            }, 300);
+        }
+    }
+    
+    repositionNotifications() {
+        this.notifications.forEach((notification, index) => {
+            notification.style.top = `${20 + index * 80}px`;
+        });
+    }
+    
+    // === COMBAT FEEDBACK ===
+    
+    showDamageNumber(x, y, z, damage, type = 'damage') {
+        // Create floating damage number using particle system
+        if (this.game.particleSystem) {
+            const config = this.getEffectConfig(type);
+            const options = {
+                ...config,
+                position: new THREE.Vector3(x, y + 5, z),
+                count: 1,
+                velocity: { ...config.velocity, speed: config.velocity.speed * 0.5 },
+                scale: config.scale * 1.5
+            };
+            
+            // Show particle effect based on damage type
+            switch (type) {
+                case 'heal':
+                    options.shape = 'cross';
+                    options.color = 0x00ff88;
+                    break;
+                case 'critical':
+                    options.count = 5;
+                    options.velocity.speed *= 0.6;
+                    options.color = 0xff0044;
+                    break;
+            }
+            
+            this.game.particleSystem.createParticles(options);
+        }
+        
+        // Create floating text element
+        this.createFloatingText(x, y, z, damage.toString(), type);
+    }
+    
+    createFloatingText(worldX, worldY, worldZ, text, type = 'damage') {
+        if (!this.game.camera) return;
+        
+        // Convert world position to screen position
+        const vector = new THREE.Vector3(worldX, worldY, worldZ);
+        vector.project(this.game.camera);
+        
+        const screenX = (vector.x * 0.5 + 0.5) * window.innerWidth;
+        const screenY = (vector.y * -0.5 + 0.5) * window.innerHeight;
+        
+        // Create floating text element
+        const textElement = document.createElement('div');
+        textElement.textContent = text;
+        textElement.style.cssText = `
+            position: fixed;
+            left: ${screenX}px;
+            top: ${screenY}px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 18px;
+            pointer-events: none;
+            z-index: 500;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            animation: floatingText 2s ease-out forwards;
+            transform: translate(-50%, -50%);
+        `;
+        
+        // Set color based on type
+        switch (type) {
+            case 'heal':
+                textElement.style.color = '#00ff88';
+                textElement.textContent = `+${text}`;
+                break;
+            case 'critical':
+                textElement.style.color = '#ff0044';
+                textElement.style.fontSize = '24px';
+                textElement.textContent = `${text}!`;
+                break;
+            case 'damage':
+                textElement.style.color = '#ff4444';
+                break;
+            default:
+                textElement.style.color = '#ffffff';
+        }
+        
+        document.body.appendChild(textElement);
+        
+        // Remove after animation
+        setTimeout(() => {
+            if (document.body.contains(textElement)) {
+                document.body.removeChild(textElement);
+            }
+        }, 2000);
+    }
+    
+    // === ENVIRONMENTAL EFFECTS ===
+    
+    createTrailEffect(startPos, endPos, type = 'magic') {
+        if (!this.game.particleSystem) return;
+        
+        const config = this.getEffectConfig(type);
+        const distance = startPos.distanceTo(endPos);
+        const particleCount = Math.ceil(distance / 20); // One particle every 20 units
+        
+        for (let i = 0; i < particleCount; i++) {
+            const progress = i / (particleCount - 1);
+            const position = new THREE.Vector3().lerpVectors(startPos, endPos, progress);
+            
+            setTimeout(() => {
+                const trailConfig = {
+                    ...config,
+                    position: position,
+                    count: 3,
+                    velocity: { ...config.velocity, speed: config.velocity.speed * 0.5 }
+                };
+                this.game.particleSystem.createParticles(trailConfig);
+            }, i * 50); // Stagger the trail
+        }
+    }
+    
+    createAuraEffect(x, y, z, type = 'magic', duration = 3000) {
+        if (!this.game.particleSystem) return;
+        
+        const config = this.getEffectConfig(type);
+        const startTime = Date.now();
+        const interval = 200; // Create effect every 200ms
+        
+        const createAura = () => {
+            if (Date.now() - startTime > duration) return;
+            
+            // Create particles in a circle around the position
+            const auraConfig = {
+                ...config,
+                position: new THREE.Vector3(x, y, z),
+                count: 8,
+                velocity: { ...config.velocity, speed: config.velocity.speed * 0.3 },
+                scale: config.scale * 0.8
+            };
+            
+            this.game.particleSystem.createParticles(auraConfig);
+            
+            setTimeout(createAura, interval);
+        };
+        
+        createAura();
+    }
+    
+    // === SOUND INTEGRATION ===
+    
+    playSound(soundId, options = {}) {
+        // Integrate with your sound system here
+        console.log(`Playing sound: ${soundId}`, options);
+        
+        // Example integration:
+        // if (this.game.soundSystem) {
+        //     this.game.soundSystem.playSound(soundId, options);
+        // }
+    }
+    
+    // === UTILITY METHODS ===
+    
+    update(deltaTime) {
+        // Update any time-based screen effects if needed
+        // The particle system handles its own updates
+    }
+    
+    // Convert screen coordinates to world position
+    screenToWorldPosition(screenX, screenY, depth = 0) {
+        if (this.game.particleSystem) {
+            return this.game.particleSystem.screenToWorld(screenX, screenY, depth);
+        }
+        return new THREE.Vector3(0, 0, 0);
+    }
+    
+    // Create effect at screen position (useful for UI interactions)
+    createEffectAtScreenPosition(screenX, screenY, type, options = {}) {
+        const worldPos = this.screenToWorldPosition(screenX, screenY, options.depth || 0);
+        this.createParticleEffect(worldPos.x, worldPos.y, worldPos.z, type, options);
+    }
+    
+    // Create custom particle effect with full control
+    createCustomParticleEffect(config) {
+        if (this.game.particleSystem) {
+            this.game.particleSystem.createParticles(config);
+        }
+    }
+    
+    // === CSS AND STYLES ===
     
     addEffectsCSS() {
         if (document.querySelector('#effects-styles')) return;
@@ -305,11 +608,48 @@ class EffectsSystem {
                 100% { opacity: 0; }
             }
             
+            @keyframes notificationSlideIn {
+                from { 
+                    transform: translateX(100%);
+                    opacity: 0; 
+                }
+                to { 
+                    transform: translateX(0);
+                    opacity: 1; 
+                }
+            }
+            
+            @keyframes notificationSlideOut {
+                from { 
+                    transform: translateX(0);
+                    opacity: 1; 
+                }
+                to { 
+                    transform: translateX(100%);
+                    opacity: 0; 
+                }
+            }
+            
+            @keyframes floatingText {
+                0% { 
+                    transform: translate(-50%, -50%) scale(0.8);
+                    opacity: 0;
+                }
+                20% { 
+                    transform: translate(-50%, -50%) scale(1.2);
+                    opacity: 1;
+                }
+                100% { 
+                    transform: translate(-50%, -150%) scale(1);
+                    opacity: 0;
+                }
+            }
+            
             .victory-notification, .defeat-notification {
                 position: fixed;
-                bottom: 0px;
+                bottom: 50px;
                 left: 50%;
-                transform: translate(-50%, -50%);
+                transform: translate(-50%, 0);
                 background: linear-gradient(145deg, #001100, #003300);
                 border: 2px solid #00ff00;
                 border-radius: 10px;
@@ -318,19 +658,27 @@ class EffectsSystem {
                 z-index: 2000;
                 color: #00ff00;
                 font-family: 'Courier New', monospace;
+                animation: victoryAppear 0.5s ease-out;
             }
 
-            .victory-notification h2 {
+            .defeat-notification {
+                background: linear-gradient(145deg, #110000, #330000);
+                border-color: #ff0000;
+                color: #ff4444;
+            }
+
+            .victory-notification h2, .defeat-notification h2 {
                 margin-bottom: 1rem;
+                font-size: 1.5rem;
             }
             
             @keyframes victoryAppear {
                 from { 
-                    transform: translate(-50%, -50%) scale(0.8); 
+                    transform: translate(-50%, 100%) scale(0.8); 
                     opacity: 0; 
                 }
                 to { 
-                    transform: translate(-50%, -50%) scale(1); 
+                    transform: translate(-50%, 0) scale(1); 
                     opacity: 1; 
                 }
             }
@@ -349,17 +697,42 @@ class EffectsSystem {
                 font-weight: bold; 
                 text-shadow: 0 0 5px rgba(255, 68, 68, 0.5);
             }
+            
+            .game-notification {
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+                backdrop-filter: blur(5px);
+            }
         `;
         document.head.appendChild(style);
     }
     
-    cleanup() {
-        if (this.animationId) {
-            cancelAnimationFrame(this.animationId);
+    // === CLEANUP ===
+    
+    clearAllEffects() {
+        // Clear particle effects
+        if (this.game.particleSystem) {
+            this.game.particleSystem.clearAllParticles();
         }
-        if (this.particleCanvas && this.particleCanvas.parentElement) {
-            this.particleCanvas.parentElement.removeChild(this.particleCanvas);
+        
+        // Clear notifications
+        this.notifications.forEach(notification => {
+            this.removeNotification(notification);
+        });
+        
+        // Clear any active screen effects
+        this.shakeActive = false;
+        this.flashActive = false;
+    }
+    
+    destroy() {
+        this.clearAllEffects();
+        
+        // Remove CSS
+        const styleElement = document.querySelector('#effects-styles');
+        if (styleElement) {
+            styleElement.remove();
         }
-        this.particles = [];
+        
+        console.log('EffectsSystem destroyed');
     }
 }

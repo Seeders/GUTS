@@ -1,4 +1,4 @@
-    class RenderSystem {
+class RenderSystem {
     constructor(game) {
         this.game = game;
         this.game.renderSystem = this;
@@ -73,8 +73,17 @@
         
         let facingAngle = null;
         
-        // Priority 1: If we have a current target, always face toward it
-        if (aiState && aiState.aiBehavior && aiState.aiBehavior.currentTarget && pos) {
+        // Priority 1: Face movement direction if moving (unless attacking)
+        if (velocity && (Math.abs(velocity.vx) > this.MIN_MOVEMENT_THRESHOLD || Math.abs(velocity.vz) > this.MIN_MOVEMENT_THRESHOLD)) {
+            // Only face movement direction if NOT actively attacking
+            if (!aiState || aiState.state !== 'attacking') {
+                // Calculate facing angle from movement direction (X and Z)
+                facingAngle = Math.atan2(velocity.vz, velocity.vx);
+            }
+        }
+        
+        // Priority 2: If actively attacking, face the target
+        if (facingAngle === null && aiState && aiState.state === 'attacking' && aiState.aiBehavior && aiState.aiBehavior.currentTarget && pos) {
             // Get the current position of the target (fresh every frame)
             const targetPos = this.game.getComponent(aiState.aiBehavior.currentTarget, this.componentTypes.POSITION);
             
@@ -88,14 +97,10 @@
                     facingAngle = Math.atan2(dz, dx);
                 }
             }
-        } 
-        // Priority 2: Face movement direction if moving
-        else if (velocity && (Math.abs(velocity.vx) > this.MIN_MOVEMENT_THRESHOLD || Math.abs(velocity.vz) > this.MIN_MOVEMENT_THRESHOLD)) {
-            // Calculate facing angle from movement direction (X and Z)
-            facingAngle = Math.atan2(velocity.vz, velocity.vx);
         }
-        // Priority 3: Use initial facing direction if no movement or target
-        else if (facing && facing.angle !== undefined) {
+        
+        // Priority 3: Use initial facing direction if no movement and not attacking
+        if (facingAngle === null && facing && facing.angle !== undefined) {
             facingAngle = facing.angle;
         }
         

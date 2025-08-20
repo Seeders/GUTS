@@ -76,7 +76,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/dance_thriller/dance_thriller.glb",
+                "url": "projects/TurnBasedWarfare/resources/animations/dance_thriller.glb",
                 "id": 0
               }
             ]
@@ -104,11 +104,10 @@
         "shapes": [
           {
             "type": "gltf",
-            "url": "projects/TurnBasedWarfare/resources/models/berserker/berserker.glb",
+            "url": "projects/TurnBasedWarfare/resources/models/berserker2/berserker2.glb",
             "width": 2,
             "height": 0.2,
             "depth": 1,
-            "x": 0,
             "y": 0,
             "z": 0,
             "rotationX": 0,
@@ -116,10 +115,43 @@
             "rotationZ": 0,
             "color": "#FFFFFF",
             "metalness": "0",
-            "roughness": "1"
+            "roughness": "1",
+            "position": {
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
           }
         ]
       }
-    }
+    },
+    "equipment": [
+      {
+        "slot": "mainHand",
+        "item": "axe1h",
+        "attachmentData": {
+          "bone": "RightHand",
+          "offset": {
+            "x": 0,
+            "y": 15,
+            "z": 5
+          },
+          "rotation": {
+            "x": 15,
+            "y": 0,
+            "z": 0
+          }
+        }
+      }
+    ]
   }
 }

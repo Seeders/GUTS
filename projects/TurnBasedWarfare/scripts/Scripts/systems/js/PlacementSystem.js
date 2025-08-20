@@ -68,10 +68,15 @@ class PlacementSystem {
         });
         
         this.game.battleLogSystem.add(`Deployed ${state.selectedUnitType.title}`, 'log-victory');
-        this.game.effectsSystem.showPlacementEffect(
-            event.clientX - this.canvas.getBoundingClientRect().left,
-            event.clientY - this.canvas.getBoundingClientRect().top
-        );
+        
+        // Fixed: Show placement effect at world coordinates instead of screen coordinates
+        if (this.game.effectsSystem) {
+            this.game.effectsSystem.showPlacementEffect(
+                worldPosition.x, 
+                unitY + 25, // Higher above the unit
+                worldPosition.z
+            );
+        }
     }
     
     respawnPlayerUnits() {
@@ -92,6 +97,18 @@ class PlacementSystem {
         placements.forEach(placement => {
             const entityId = this.createUnit(placement.x, placement.y, placement.z, placement.unitType, team);
             placement.entityId = entityId;
+            
+            // Add respawn effect for existing units
+            if (this.game.effectsSystem) {
+                const effectType = team === 'player' ? 'magic' : 'heal';
+                this.game.effectsSystem.createParticleEffect(
+                    placement.x, 
+                    placement.y + 15, 
+                    placement.z, 
+                    effectType,
+                    { count: 8, speedMultiplier: 0.6 }
+                );
+            }
         });
     }
     
@@ -179,25 +196,30 @@ class PlacementSystem {
         this.game.addComponent(entity, ComponentTypes.FACING, Components.Facing(initialFacing));
         this.game.addComponent(entity, ComponentTypes.EQUIPMENT, Components.Equipment());
         
-        this.equipUnitFromDefinition(entity, unitType);
-        
+        this.equipUnitFromDefinition(entity, unitType);        
+
         return entity;
     }
     
     async equipUnitFromDefinition(entityId, unitType) {
-        if (!this.game.equipmentSystem || !unitType?.render?.equipment) return;
-        
         setTimeout(async () => {
-            for (const equippedItem of unitType.render.equipment) {
-                const itemData = this.getItemFromCollection(equippedItem.item);
-                if (itemData) {
-                    try {
-                        await this.game.equipmentSystem.equipItem(entityId, equippedItem, itemData, equippedItem.item);
-                    } catch (error) {
-                        console.warn(`Failed to equip ${equippedItem.item} on slot ${equippedItem.slot}:`, error);
+            
+            if (this.game.equipmentSystem && unitType?.render?.equipment) {            
+                for (const equippedItem of unitType.render.equipment) {
+                    const itemData = this.getItemFromCollection(equippedItem.item);
+                    if (itemData) {
+                        try {
+                            await this.game.equipmentSystem.equipItem(entityId, equippedItem, itemData, equippedItem.item);
+                        } catch (error) {
+                            console.warn(`Failed to equip ${equippedItem.item} on slot ${equippedItem.slot}:`, error);
+                        }
                     }
                 }
             }
+            if(this.game.abilitySystem && unitType?.abilities){
+                this.game.abilitySystem.addAbilitiesToUnit(entityId, unitType.abilities);
+            }
+           
         }, 100);
     }
     
@@ -209,6 +231,16 @@ class PlacementSystem {
         }
         
         return collections.items[itemId];
+    }
+    
+    getAbilityFromCollection(abilityId) {
+        const collections = this.game.getCollections();
+        if (!collections || !collections.abilities || !collections.abilities[abilityId]) {
+            console.warn(`Ability ${abilityId} not found in collections`);
+            return null;
+        }
+        
+        return collections.abilities[abilityId];
     }
     
     placeEnemyUnits(onComplete) {
@@ -434,6 +466,18 @@ class PlacementSystem {
                 entityId: entityId
             });
             
+            // Add enemy placement effect
+            if (this.game.effectsSystem) {
+                // Use a different effect for enemy placements
+                this.game.effectsSystem.createParticleEffect(
+                    unit.worldX, 
+                    unit.worldY + 10, 
+                    unit.worldZ, 
+                    'defeat', // Red particles for enemy
+                    { count: 8, speedMultiplier: 0.8 }
+                );
+            }
+            
             placedCount++;
             
             if (placedCount < unitsToPlace.length) {
@@ -457,6 +501,19 @@ class PlacementSystem {
     }
     
     resetAllPlacements() {
+        // Show destruction effects for all existing units before clearing
+        if (this.game.effectsSystem) {
+            [...this.playerPlacements, ...this.enemyPlacements].forEach(placement => {
+                this.game.effectsSystem.createParticleEffect(
+                    placement.x, 
+                    placement.y + 5, 
+                    placement.z, 
+                    'explosion',
+                    { count: 6, speedMultiplier: 0.5 }
+                );
+            });
+        }
+        
         this.playerPlacements = [];
         this.enemyPlacements = [];
         this.game.battleLogSystem.add('All unit placements cleared');
@@ -478,6 +535,34 @@ class PlacementSystem {
             counts[type] = (counts[type] || 0) + 1;
         });
         return counts;
+    }
+    
+    // Additional effect methods for enhanced visual feedback
+    showInvalidPlacementEffect(screenX, screenY) {
+        if (this.game.effectsSystem) {
+            // Convert screen coordinates to world for effect
+            const worldPos = this.game.effectsSystem.screenToWorldPosition(screenX, screenY);
+            this.game.effectsSystem.createParticleEffect(
+                worldPos.x, 
+                worldPos.y, 
+                worldPos.z, 
+                'damage',
+                { count: 5, speedMultiplier: 0.3, color: 0xff4444 }
+            );
+        }
+    }
+    
+    showPlacementPreview(worldX, worldY, worldZ) {
+        if (this.game.effectsSystem) {
+            // Subtle preview effect
+            this.game.effectsSystem.createParticleEffect(
+                worldX, 
+                worldY + 5, 
+                worldZ, 
+                'heal',
+                { count: 3, speedMultiplier: 0.2, scaleMultiplier: 0.5 }
+            );
+        }
     }
     
     // Debug method to test unit creation with elemental properties

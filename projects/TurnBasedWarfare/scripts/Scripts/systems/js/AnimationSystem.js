@@ -88,7 +88,6 @@ class AnimationSystem {
         animState.animationTime = 0;
         animState.isDying = true;
         
-        console.log(`Playing death animation '${animationName}' for entity ${entityId}`);
     }
 
     setCorpseAnimation(entityId) {
@@ -155,7 +154,6 @@ class AnimationSystem {
                 
                 // Handle multiple animation variants (like celebrate)
                 if (Array.isArray(animDataArray) && animDataArray.length > 1) {
-                    console.log(`Loading ${animDataArray.length} variants for ${animName}`);
                     for (let i = 0; i < animDataArray.length; i++) {
                         try {
                             const animModel = await this.game.modelManager.getAnimation(objectType, spawnType, animName, i);
@@ -178,7 +176,6 @@ class AnimationSystem {
                                     // Store with variant index
                                     const variantKey = i === 0 ? animName : `${animName}_${i}`;
                                     animationActions[variantKey] = action;
-                                    console.log(`Loaded ${animName} variant ${i} as '${variantKey}' for entity ${entityId}`);
                                 }
                             } else {
                                 console.warn(`No animation model returned for ${animName} variant ${i}`);
@@ -216,9 +213,7 @@ class AnimationSystem {
             }
             
             this.entityAnimations.set(entityId, animationActions);
-            
-            console.log(`Entity ${entityId} loaded animations:`, Object.keys(animationActions));
-            
+          
             if (animationActions.idle) {
                 animationActions.idle.play();
                 const animState = this.entityAnimationStates.get(entityId);
@@ -618,7 +613,6 @@ class AnimationSystem {
             const variantKey = teamType === 'player' ? 'celebrate' : 'celebrate_1';
             if (animationActions[variantKey]) {
                 celebrationAnimName = variantKey;
-                console.log(`Selected ${teamType} team celebration: ${variantKey}`);
             }
         }
         
@@ -657,9 +651,6 @@ class AnimationSystem {
         const originalAction = animationActions[celebrationAnimName];
         const clip = originalAction.getClip();
         
-        // Debug: Log clip information
-        console.log(`Celebration clip '${celebrationAnimName}' duration: ${clip.duration}s, tracks: ${clip.tracks.length}`);
-        
         // Create a completely new action from the clip to ensure clean state
         const newAction = mixer.clipAction(clip);
         
@@ -685,8 +676,6 @@ class AnimationSystem {
         animState.currentAction = newAction;
         animState.animationTime = 0;
         
-        console.log(`Playing celebration animation '${celebrationAnimName}' for entity ${entityId} starting at ${randomStartTime.toFixed(2)}s of ${clip.duration.toFixed(2)}s`);
-        console.log(`Action time scale: ${newAction.getEffectiveTimeScale()}, weight: ${newAction.getEffectiveWeight()}`);
     }
     
     stopCelebration(entityId) {

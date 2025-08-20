@@ -91,7 +91,7 @@
           "main": {
             "shapes": [
               {
-                "url": "projects/TurnBasedWarfare/resources/models/dance_thriller/dance_thriller.glb",
+                "url": "projects/TurnBasedWarfare/resources/animations/dance_thriller.glb",
                 "id": 0
               }
             ]
@@ -140,6 +140,42 @@
           }
         ]
       }
-    }
+    },
+    "equipment": [
+      {
+        "slot": "offHand",
+        "item": "knightShield",
+        "attachmentData": {
+          "bone": "LeftHand",
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": -8
+          },
+          "rotation": {
+            "x": 192,
+            "y": 0,
+            "z": 90
+          }
+        }
+      },
+      {
+        "slot": "mainHand",
+        "item": "knightSword",
+        "attachmentData": {
+          "bone": "RightHand",
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 5
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": -90
+          }
+        }
+      }
+    ]
   }
 }

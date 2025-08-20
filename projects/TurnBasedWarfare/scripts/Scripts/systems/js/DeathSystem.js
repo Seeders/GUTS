@@ -14,7 +14,15 @@ class DeathSystem {
             
             if (deathState.isDying) {
                 const timeSinceDeath = now - deathState.deathStartTime;
+                // Remove health (corpses can't be damaged)
+                if (this.game.hasComponent(entityId, this.componentTypes.HEALTH)) {
+                    this.game.removeComponent(entityId, this.componentTypes.HEALTH);
+                }
                 
+                // Remove velocity (corpses don't move)
+                if (this.game.hasComponent(entityId, this.componentTypes.VELOCITY)) {
+                    this.game.removeComponent(entityId, this.componentTypes.VELOCITY);
+                }
                 // Check if death animation is complete
                 if (timeSinceDeath >= deathState.deathAnimationDuration) {
                     this.convertToCorpse(entityId);
@@ -24,32 +32,21 @@ class DeathSystem {
     }
     
     convertToCorpse(entityId) {
-        const ComponentTypes = this.game.componentManager.getComponentTypes();
         const Components = this.game.componentManager.getComponents();
         
         // Get current components before conversion
-        const position = this.game.getComponent(entityId, ComponentTypes.POSITION);
-        const unitType = this.game.getComponent(entityId, ComponentTypes.UNIT_TYPE);
-        const team = this.game.getComponent(entityId, ComponentTypes.TEAM);
-        const renderable = this.game.getComponent(entityId, ComponentTypes.RENDERABLE);
+        const position = this.game.getComponent(entityId, this.componentTypes.POSITION);
+        const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
+        const team = this.game.getComponent(entityId, this.componentTypes.TEAM);
+        const renderable = this.game.getComponent(entityId, this.componentTypes.RENDERABLE);
         
         if (!position || !unitType || !team) return;
         
         // Remove death state
-        this.game.removeComponent(entityId, ComponentTypes.DEATH_STATE);
-        
-        // Remove health (corpses can't be damaged)
-        if (this.game.hasComponent(entityId, ComponentTypes.HEALTH)) {
-            this.game.removeComponent(entityId, ComponentTypes.HEALTH);
-        }
-        
-        // Remove velocity (corpses don't move)
-        if (this.game.hasComponent(entityId, ComponentTypes.VELOCITY)) {
-            this.game.removeComponent(entityId, ComponentTypes.VELOCITY);
-        }
+        this.game.removeComponent(entityId, this.componentTypes.DEATH_STATE);        
         
         // Add corpse component
-        this.game.addComponent(entityId, ComponentTypes.CORPSE, Components.Corpse(
+        this.game.addComponent(entityId, this.componentTypes.CORPSE, Components.Corpse(
             { ...unitType }, 
             Date.now() / 1000, 
             team.team
