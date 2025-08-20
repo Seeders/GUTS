@@ -471,7 +471,7 @@ class PlacementSystem {
                 // Use a different effect for enemy placements
                 this.game.effectsSystem.createParticleEffect(
                     unit.worldX, 
-                    unit.worldY + 10, 
+                    unit.worldY, 
                     unit.worldZ, 
                     'defeat', // Red particles for enemy
                     { count: 8, speedMultiplier: 0.8 }

@@ -1,7 +1,7 @@
 {
   "title": "Knight",
   "size": 35,
-  "value": 100,
+  "value": 110,
   "hp": 240,
   "speed": 25,
   "damage": 20,

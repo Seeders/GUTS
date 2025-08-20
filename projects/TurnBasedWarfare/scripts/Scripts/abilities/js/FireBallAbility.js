@@ -19,24 +19,71 @@ class FireballAbility extends engine.app.appClasses['BaseAbility'] {
         this.element = 'fire';
     }
     
+    defineEffects() {
+        return {
+            cast: {
+                type: 'magic',
+                options: {
+                    count: 20,
+                    color: 0xff4400,
+                    colorRange: { start: 0xff4400, end: 0xff8800 },
+                    scaleMultiplier: 1.2,
+                    speedMultiplier: 0.8
+                }
+            },
+            projectile: {
+                type: 'magic',
+                options: {
+                    count: 8,
+                    color: 0xff2200,
+                    scaleMultiplier: 0.6,
+                    speedMultiplier: 1.5
+                }
+            },
+            explosion: {
+                type: 'explosion',
+                options: {
+                    count: 35,
+                    color: 0xff4400,
+                    colorRange: { start: 0xff4400, end: 0xff0000 },
+                    scaleMultiplier: 1.5,
+                    speedMultiplier: 1.2
+                }
+            },
+            impact: {
+                type: 'damage',
+                options: {
+                    count: 12,
+                    color: 0xff0000,
+                    scaleMultiplier: 1.0
+                }
+            }
+        };
+    }
+    
     canExecute(casterEntity) {
-        const enemies = this.getValidTargets(casterEntity, 'enemy');
+        const enemies = this.getEnemiesInRange(casterEntity);
         return enemies.length > 0;
     }
     
     execute(casterEntity, targetData = null) {
         if (!this.game.projectileSystem) return;
         
-        const enemies = this.getValidTargets(casterEntity, 'enemy');
+        const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
+        if (!casterPos) return;
+        
+        // Cast effect at caster
+        this.createVisualEffect(casterPos, 'cast');
+        
+        const enemies = this.getEnemiesInRange(casterEntity);
         if (enemies.length === 0) return;
         
-        // Target the closest enemy
-        const casterPos = this.game.getComponent(casterEntity, this.game.componentManager.getComponentTypes().POSITION);
+        // Find closest enemy
         let closestEnemy = null;
         let closestDistance = Infinity;
         
         enemies.forEach(enemyId => {
-            const enemyPos = this.game.getComponent(enemyId, this.game.componentManager.getComponentTypes().POSITION);
+            const enemyPos = this.game.getComponent(enemyId, this.componentTypes.POSITION);
             if (!enemyPos) return;
             
             const distance = Math.sqrt(
@@ -52,7 +99,7 @@ class FireballAbility extends engine.app.appClasses['BaseAbility'] {
         
         if (!closestEnemy) return;
         
-        // Create fireball projectile
+        // Create fireball projectile with enhanced effects
         const projectileData = {
             id: 'fireball',
             title: 'Fireball',
@@ -62,12 +109,23 @@ class FireballAbility extends engine.app.appClasses['BaseAbility'] {
             ballistic: true,
             splashRadius: this.splashRadius,
             homing: true,
-            homingStrength: 0.3
+            homingStrength: 0.3,
+            onHit: (targetPos) => {
+                // Explosion effect
+                this.createVisualEffect(targetPos, 'explosion');
+                if (this.game.effectsSystem) {
+                    this.game.effectsSystem.playScreenShake(300, 2);
+                }
+            },
+            onTravel: (currentPos) => {
+                // Trail effect during flight
+                this.createVisualEffect(currentPos, 'projectile', { heightOffset: 0 });
+            }
         };
         
         this.game.projectileSystem.fireProjectile(casterEntity, closestEnemy, projectileData);
         
         this.logAbilityUsage(casterEntity, 
-            `Fireball launched at enemy target!`);
+            `Fireball launched at enemy target!`, true);
     }
 }

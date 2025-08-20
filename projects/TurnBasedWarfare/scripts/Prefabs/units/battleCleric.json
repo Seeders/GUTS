@@ -157,8 +157,5 @@
         }
       }
     ]
-  },
-  "abilities": [
-    "ChainLightningAbility"
-  ]
+  }
 }

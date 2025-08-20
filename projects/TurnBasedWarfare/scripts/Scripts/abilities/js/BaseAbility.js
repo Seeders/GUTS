@@ -7,24 +7,113 @@ class BaseAbility {
         this.cooldown = config.cooldown || 10.0;
         this.range = config.range || 100;
         this.manaCost = config.manaCost || 0;
-        this.targetType = config.targetType || 'auto'; // auto, passive, aura
+        this.targetType = config.targetType || 'auto';
         this.animation = config.animation || 'cast';
         this.priority = config.priority || 5;
         this.castTime = config.castTime || 1.5;
-        this.autoTrigger = config.autoTrigger || 'combat'; // combat, low_health, enemy_count, etc.
+        this.autoTrigger = config.autoTrigger || 'combat';
         this.componentTypes = this.game.componentManager.getComponentTypes();
+        
+        // Effect definitions for this ability
+        this.effects = this.defineEffects();
     }
     
-    // Override these methods in subclasses
-    canExecute(casterEntity) {
-        return true;
+    // Override this method in subclasses to define custom effects
+    defineEffects() {
+        return {
+            cast: {
+                type: 'magic',
+                options: {
+                    count: 15,
+                    scaleMultiplier: 0.8,
+                    speedMultiplier: 0.6
+                }
+            },
+            impact: {
+                type: 'magic',
+                options: {
+                    count: 10,
+                    scaleMultiplier: 1.2
+                }
+            }
+        };
     }
     
-    execute(casterEntity, targetData = null) {
-        console.log(`${this.name} executed by entity ${casterEntity}`);
+    // Enhanced visual effect creation with ability-specific effects
+    createVisualEffect(position, effectName = 'cast', customOptions = {}) {
+        if (!this.game.effectsSystem) return;
+        
+        const effectDef = this.effects[effectName];
+        if (effectDef) {
+            const mergedOptions = {
+                ...effectDef.options,
+                ...customOptions,
+                heightOffset: customOptions.heightOffset || 10
+            };
+            
+            this.game.effectsSystem.createParticleEffect(
+                position.x, 
+                position.y + mergedOptions.heightOffset, 
+                position.z, 
+                effectDef.type, 
+                mergedOptions
+            );
+        } else {
+            // Fallback to basic effect
+            this.game.effectsSystem.createParticleEffect(
+                position.x, 
+                position.y, 
+                position.z, 
+                'magic', 
+                customOptions
+            );
+        }
     }
     
-    // Helper methods for autobattle mechanics
+    // Enhanced ability usage logging with effects
+    logAbilityUsage(casterEntity, message = null, showScreenEffect = false) {
+        if (!this.game.battleLogSystem) return;
+        
+        const unitType = this.game.getComponent(casterEntity, this.componentTypes.UNIT_TYPE);
+        const team = this.game.getComponent(casterEntity, this.componentTypes.TEAM);
+        
+        if (unitType && team) {
+            const defaultMessage = `${team.team} ${unitType.type} uses ${this.name}!`;
+            this.game.battleLogSystem.add(message || defaultMessage, 'log-ability');
+            
+            // Optional screen shake for powerful abilities
+            if (showScreenEffect && this.game.effectsSystem) {
+                this.game.effectsSystem.playScreenShake(200, 1);
+            }
+        }
+    }
+    
+    // Create damage effect with visual feedback
+    dealDamageWithEffects(sourceId, targetId, damage, element = 'physical', options = {}) {
+        if (this.game.damageSystem) {
+            const result = this.game.damageSystem.applyDamage(sourceId, targetId, damage, element, {
+                isSpell: true,
+                ...options
+            });
+            
+            // Show damage effect at target
+            const targetPos = this.game.getComponent(targetId, this.componentTypes.POSITION);
+            if (targetPos && this.game.effectsSystem) {
+                const effectType = result.isCritical ? 'critical' : 'damage';
+                this.game.effectsSystem.showDamageNumber(
+                    targetPos.x, targetPos.y + 15, targetPos.z, 
+                    result.damage, effectType
+                );
+                
+                this.createVisualEffect(targetPos, 'impact');
+            }
+            
+            return result;
+        }
+        return null;
+    }
+    
+    // Helper methods remain the same...
     getEnemiesInRange(casterEntity, range = null) {
         const effectiveRange = range || this.range;
         const casterPos = this.game.getComponent(casterEntity, this.componentTypes.POSITION);
@@ -93,7 +182,6 @@ class BaseAbility {
             const pos = this.game.getComponent(entityId, this.componentTypes.POSITION);
             if (!pos) return;
             
-            // Count nearby entities
             let nearbyCount = 0;
             entities.forEach(otherId => {
                 if (otherId === entityId) return;
@@ -117,32 +205,12 @@ class BaseAbility {
         return bestPos;
     }
     
-    createVisualEffect(position, effectType = 'cast') {
-        const effectId = this.game.createEntity();
-        const components = this.game.componentManager.getComponents();
-        
-        this.game.addComponent(effectId, this.componentTypes.POSITION, 
-            components.Position(position.x, position.y + 10, position.z));
-        
-        this.game.addComponent(effectId, this.componentTypes.RENDERABLE, 
-            components.Renderable("effects", effectType));
-        
-        this.game.addComponent(effectId, this.componentTypes.LIFETIME, 
-            components.Lifetime(2.0, Date.now() / 1000));
-        
-        this.game.addComponent(effectId, this.componentTypes.ANIMATION, 
-            components.Animation(3, 0, 1));
+    // Override these methods in subclasses
+    canExecute(casterEntity) {
+        return true;
     }
     
-    logAbilityUsage(casterEntity, message = null) {
-        if (!this.game.battleLogSystem) return;
-        
-        const unitType = this.game.getComponent(casterEntity, this.componentTypes.UNIT_TYPE);
-        const team = this.game.getComponent(casterEntity, this.componentTypes.TEAM);
-        
-        if (unitType && team) {
-            const defaultMessage = `${team.team} ${unitType.type} uses ${this.name}!`;
-            this.game.battleLogSystem.add(message || defaultMessage, 'log-ability');
-        }
+    execute(casterEntity, targetData = null) {
+        console.log(`${this.name} executed by entity ${casterEntity}`);
     }
 }

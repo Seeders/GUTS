@@ -4,7 +4,7 @@
   "value": 140,
   "hp": 150,
   "speed": 55,
-  "damage": 16,
+  "damage": 5,
   "attackSpeed": 0.9,
   "range": 160,
   "projectile": "fireball",
@@ -12,7 +12,10 @@
   "armor": 2,
   "fireResistance": 0.4,
   "coldResistance": 0,
-  "lightningResistance": 0.2,
+  "lightningResistance": 0.2,  
+  "abilities": [
+    "ChainLightningAbility"
+  ],
   "render": {
     "animations": {
       "idle": [
