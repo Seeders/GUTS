@@ -6,6 +6,7 @@ class Engine {
         this.lastTime = Date.now();
         this.deltaTime = 0;
         this.engineClasses = [];
+        this.appClasses = {};
         this.libraries = {};
         this.running = false;
         const urlParams = new URLSearchParams(window.location.search);

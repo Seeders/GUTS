@@ -43,7 +43,14 @@ class SceneManager {
     loadECS() {
         
         const sceneEntities = this.currentSceneData.sceneData;
-          sceneEntities.forEach(async (sceneEntity) => {         
+          sceneEntities.forEach(async (sceneEntity) => {   
+
+            sceneEntity.classes.forEach((classDef) => {
+                let params = {...classDef.parameters, canvas: this.game.canvas };
+                const ClassDef = this.game.moduleManager.getCompiledScript(classDef.type, classDef.collection);
+                this.game.addClass(classDef, ClassDef);
+                
+            });         
             
             sceneEntity.managers.forEach((managerDef) => {
                 let params = {...managerDef.parameters, canvas: this.game.canvas };
@@ -63,7 +70,7 @@ class SceneManager {
                 }
                 this.game.addSystem(systemInst);
                 
-            });                         
+            });                        
         });
     }
 
