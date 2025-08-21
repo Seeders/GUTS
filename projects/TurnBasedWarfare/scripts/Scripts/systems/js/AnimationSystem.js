@@ -277,15 +277,7 @@ class AnimationSystem {
         const isSinglePlay = this.SINGLE_PLAY_ANIMATIONS.has(animationName.toLowerCase());
         if (!isSinglePlay) return false;
         
-        // Check if action is running and hasn't reached the end
-        if (!action.isRunning()) return true;
-        
-        const clip = action.getClip();
-        if (!clip) return true;
-        
-        // Consider animation finished if it's reached 95% completion or stopped
-        const progress = action.time / clip.duration;
-        return progress >= 0.95 || action.paused;
+        return action.time >= action.getClip().duration || !action.isRunning();
     }
     
     updateEntityAnimation(entityId, velocity, health, deltaTime) {
@@ -337,6 +329,9 @@ class AnimationSystem {
                 } else {
                     desiredAnimation = animState.currentAnimation;
                 }
+            } else if (aiState.state === 'waiting') {
+                // Units waiting for cooldowns - always show idle
+                desiredAnimation = 'idle';
             } else if (aiState.state === 'chasing' || aiState.state === 'moving') {
                 desiredAnimation = 'walk';
                 if (velocity && (Math.abs(velocity.vx) > 0.1 || Math.abs(velocity.vz) > 0.1)) {

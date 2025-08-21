@@ -2,14 +2,17 @@
   "title": "Peasant Archer",
   "size": 25,
   "value": 35,
-  "hp": 75,
-  "speed": 45,
-  "damage": 6,
-  "attackSpeed": 1.5,
-  "range": 120,
+  "hp": 100,
+  "speed": 50,
+  "damage": 10,
+  "attackSpeed": 1,
+  "range": 200,
   "projectile": "arrow",
   "element": "physical",
-  "armor": 1,
+  "fireResistance": 0.1,
+  "coldResistance": 0.1,
+  "lightningResistance": 0.1,
+  "armor": 0,
   "render": {
     "animations": {
       "idle": [

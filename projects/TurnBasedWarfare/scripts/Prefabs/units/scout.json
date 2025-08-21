@@ -1,18 +1,18 @@
 {
-  "title": "Ranger",
+  "title": "Scout",
   "size": 25,
-  "value": 85,
-  "hp": 140,
-  "speed": 55,
-  "damage": 16,
-  "attackSpeed": 1.3,
-  "range": 130,
-  "projectile": "huntingArrow",
+  "value": 35,
+  "hp": 100,
+  "speed": 60,
+  "damage": 10,
+  "attackSpeed": 1.5,
+  "range": 100,
+  "projectile": "arrow",
   "element": "poison",
-  "armor": 3,
-  "fireResistance": 0.05,
-  "coldResistance": 0.1,
-  "lightningResistance": 0.05,
+  "armor": 0,
+  "fireResistance": 0,
+  "coldResistance": 0,
+  "lightningResistance": 0,
   "render": {
     "animations": {
       "idle": [
@@ -142,7 +142,26 @@
           }
         ]
       }
-    }
+    },
+    "equipment": [
+      {
+        "slot": "mainHand",
+        "item": "woodBow",
+        "attachmentData": {
+          "bone": "LeftHand",
+          "offset": {
+            "x": 0,
+            "y": 13,
+            "z": 5
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        }
+      }
+    ]
   },
-  "buyable": false
+  "buyable": true
 }

@@ -1,13 +1,14 @@
 {
   "title": "Apprentice",
   "size": 25,
-  "value": 40,
-  "hp": 95,
-  "speed": 65,
+  "value": 35,
+  "hp": 100,
+  "speed": 50,
   "damage": 10,
   "attackSpeed": 1,
+  "range": 150,
   "element": "fire",
-  "armor": 1,
+  "armor": 0,
   "render": {
     "animations": {
       "idle": [
@@ -159,6 +160,5 @@
     ]
   },
   "buyable": true,
-  "range": 150,
   "projectile": "fireball"
 }

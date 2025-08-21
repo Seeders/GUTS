@@ -1,13 +1,13 @@
 {
   "title": "Militia",
   "size": 25,
-  "value": 30,
-  "hp": 85,
+  "value": 35,
+  "hp": 100,
   "speed": 40,
-  "damage": 7,
-  "attackSpeed": 1.2,
+  "damage": 10,
+  "attackSpeed": 1,
   "element": "physical",
-  "armor": 2,
+  "armor": 6,
   "render": {
     "animations": {
       "idle": [

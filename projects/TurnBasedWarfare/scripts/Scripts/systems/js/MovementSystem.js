@@ -575,6 +575,14 @@ class MovementSystem {
             return;
         }
         
+        // Simple fix: Don't move if waiting for cooldowns
+        if (aiState && aiState.state === 'waiting') {
+            data.desiredVelocity.vx = 0;
+            data.desiredVelocity.vy = 0;
+            data.desiredVelocity.vz = 0;
+            return;
+        }
+        
         if (aiState && aiState.state === 'chasing' && aiState.aiBehavior && aiState.aiBehavior.targetPosition) {
             const targetPos = aiState.aiBehavior.targetPosition;
             const dx = targetPos.x - pos.x;

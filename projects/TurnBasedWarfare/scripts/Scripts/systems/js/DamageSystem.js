@@ -18,7 +18,7 @@ class DamageSystem {
         this.POISON_CONFIG = {
             DEFAULT_DURATION: 5.0,  // seconds
             DEFAULT_TICKS: 5,       // number of damage instances
-            STACK_LIMIT: 3,         // maximum poison stacks
+            STACK_LIMIT: 50,         // maximum poison stacks
             STACK_REFRESH: true     // new poison refreshes duration
         };
 

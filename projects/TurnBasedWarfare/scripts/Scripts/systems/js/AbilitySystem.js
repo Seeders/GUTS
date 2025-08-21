@@ -63,7 +63,7 @@ class AbilitySystem {
             this.considerAbilityUsage(entityId, abilities, now);
         }
     }
-        
+    
     considerAbilityUsage(entityId, abilities, now) {
         const availableAbilities = abilities
             .filter(ability => this.isAbilityOffCooldown(entityId, ability.id, now))
@@ -76,6 +76,11 @@ class AbilitySystem {
             // Transition back to attacking state since we have abilities ready
             if (this.game.combatAISystems) {
                 this.game.combatAISystems.changeAIState(aiState, 'attacking', now);
+                
+                // Re-enable movement decisions by resetting decision time
+                if (aiState.aiBehavior) {
+                    aiState.aiBehavior.lastDecisionTime = 0;
+                }
             }
         }
         

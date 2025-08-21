@@ -120,5 +120,5 @@
       }
     }
   },
-  "buyable": true
+  "buyable": false
 }

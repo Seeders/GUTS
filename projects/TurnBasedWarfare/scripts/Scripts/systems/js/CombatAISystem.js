@@ -89,7 +89,8 @@ class CombatAISystem {
             const shouldMakeDecision = (aiBehavior.lastDecisionTime === 0) ||
                 (now - aiBehavior.lastDecisionTime > this.MOVEMENT_DECISION_INTERVAL);
 
-            if (shouldMakeDecision) {
+            // Only make movement decisions if not in waiting state
+            if (shouldMakeDecision && aiState.state !== 'waiting') {
                 this.makeAIDecision(entityId, pos, combat, team, aiState, enemies, collision, now);
                 aiBehavior.lastDecisionTime = now;
             }
@@ -117,11 +118,13 @@ class CombatAISystem {
     makeAIDecision(entityId, pos, combat, team, aiState, enemies, collision, now) {
         const aiBehavior = aiState.aiBehavior;
         let targetEnemy = this.findBestTarget(pos, enemies, aiBehavior, now);
+        
         if (!targetEnemy) {
             aiBehavior.currentTarget = null;
             aiBehavior.targetPosition = null;
             return;
         }
+        
         const targetHealth = this.game.getComponent(targetEnemy, this.componentTypes.HEALTH);
         const targetDeathState = this.game.getComponent(targetEnemy, this.componentTypes.DEATH_STATE);
         if (!targetHealth || targetHealth.current <= 0 || (targetDeathState && targetDeathState.isDying)) {
@@ -129,12 +132,30 @@ class CombatAISystem {
             aiBehavior.targetPosition = null;
             return;
         }
+        
         const enemyPos = this.game.getComponent(targetEnemy, this.componentTypes.POSITION);
         if (!enemyPos) return;
+        
         aiBehavior.currentTarget = targetEnemy;
         aiBehavior.targetPosition = { x: enemyPos.x, y: enemyPos.y, z: enemyPos.z };
+        
         if (this.isInAttackRange(entityId, targetEnemy, combat)) {
-            this.changeAIState(aiState, 'attacking', now);
+            // Check if this is a spell caster and if abilities are available
+            if (combat.damage <= 0 && this.game.abilitySystem) {
+                const abilities = this.game.abilitySystem.getEntityAbilities(entityId);
+                const hasAvailableAbility = abilities.some(ability => {
+                    return this.game.abilitySystem.isAbilityOffCooldown(entityId, ability.id, now) &&
+                           ability.canExecute(entityId);
+                });
+                
+                if (hasAvailableAbility) {
+                    this.changeAIState(aiState, 'attacking', now);
+                } else {
+                    this.changeAIState(aiState, 'waiting', now);
+                }
+            } else {
+                this.changeAIState(aiState, 'attacking', now);
+            }
         } else {
             this.changeAIState(aiState, 'chasing', now);
         }
@@ -185,55 +206,60 @@ class CombatAISystem {
     handleCombat(entityId, pos, combat, aiState, collision, now) {
         const aiBehavior = aiState.aiBehavior;
         if (!aiBehavior.currentTarget || aiState.state !== 'attacking') return;
+        
         const targetPos = this.game.getComponent(aiBehavior.currentTarget, this.componentTypes.POSITION);
         const targetHealth = this.game.getComponent(aiBehavior.currentTarget, this.componentTypes.HEALTH);
         const targetDeathState = this.game.getComponent(aiBehavior.currentTarget, this.componentTypes.DEATH_STATE);
+        
         if (!targetPos || !targetHealth || targetHealth.current <= 0 || (targetDeathState && targetDeathState.isDying)) {
             aiBehavior.currentTarget = null;
             aiBehavior.targetPosition = null;
             this.changeAIState(aiState, 'idle', now);
             return;
         }
+        
         if (!this.isInAttackRange(entityId, aiBehavior.currentTarget, combat, 5)) {
             this.changeAIState(aiState, 'chasing', now);
             return;
         }
         
-        // Check if unit is in the middle of an attack animation
-        if (this.isUnitCurrentlyAttacking(entityId)) {
-            // Don't start new attack while animation is playing
-            aiBehavior.targetPosition = { x: targetPos.x, y: targetPos.y, z: targetPos.z };
-            return;
+        // Handle melee units with damage > 0
+        if (combat.damage > 0) {
+            if (now - combat.lastAttack >= 1 / combat.attackSpeed) {
+                this.initiateAttack(entityId, aiBehavior.currentTarget, combat, now);
+                combat.lastAttack = now;
+                aiBehavior.lastAttackStart = now;
+            }
+        } 
+        // Handle spell casters (damage <= 0)
+        else if (combat.damage <= 0) {
+            // Check if any abilities are available
+            let hasAvailableAbility = false;
+            if (this.game.abilitySystem) {
+                const abilities = this.game.abilitySystem.getEntityAbilities(entityId);
+                hasAvailableAbility = abilities.some(ability => {
+                    return this.game.abilitySystem.isAbilityOffCooldown(entityId, ability.id, now) &&
+                           ability.canExecute(entityId);
+                });
+            }
+            
+            if (hasAvailableAbility) {
+                // We have spells ready - stay in attacking state
+                // The ability system will handle casting and animations
+            } else {
+                // No abilities available - switch to waiting state and stop movement
+                this.changeAIState(aiState, 'waiting', now);
+                
+                // Stop movement while waiting for cooldowns
+                const velocity = this.game.getComponent(entityId, this.componentTypes.VELOCITY);
+                if (velocity) {
+                    velocity.vx = 0;
+                    velocity.vz = 0;
+                }
+            }
         }
         
-        if (now - combat.lastAttack >= 1 / combat.attackSpeed && combat.damage > 0) {
-            this.initiateAttack(entityId, aiBehavior.currentTarget, combat, now);
-            combat.lastAttack = now;
-            aiBehavior.lastAttackStart = now;
-        }
         aiBehavior.targetPosition = { x: targetPos.x, y: targetPos.y, z: targetPos.z };
-    }
-
-    isUnitCurrentlyAttacking(entityId) {
-        if (!this.game.animationSystem) return false;
-        
-        const animState = this.game.animationSystem.entityAnimationStates.get(entityId);
-        if (!animState) return false;
-        
-        const currentAnim = animState.currentAnimation;
-        if (!currentAnim) return false;
-        
-        // Check if currently playing an attack animation
-        const attackAnimations = ['attack', 'shoot', 'bow', 'cast', 'throw', 'combat', 'fight', 'swing', 'strike', 'aim', 'fire'];
-        if (!attackAnimations.includes(currentAnim.toLowerCase())) return false;
-        
-        // Check if it's a single-play animation that's still running
-        const isSinglePlay = this.game.animationSystem.SINGLE_PLAY_ANIMATIONS.has(currentAnim.toLowerCase());
-        if (!isSinglePlay) return false;
-        
-        // Check if animation is still playing
-        const isFinished = this.game.animationSystem.isAnimationFinished(entityId, currentAnim);
-        return !isFinished;
     }
 
     initiateAttack(attackerId, targetId, combat, now) {
@@ -244,7 +270,6 @@ class CombatAISystem {
         if (this.game.animationSystem) {
             const animationSpeed = this.calculateAttackAnimationSpeed(attackerId, combat);
             const minAnimationTime = 1 / combat.attackSpeed * 0.8; // 80% of attack interval
-            
             this.game.animationSystem.triggerSinglePlayAnimation(attackerId, 'attack', animationSpeed, minAnimationTime);
         }
         

@@ -361,7 +361,7 @@ class PlacementSystem {
             id: Object.keys(this.game.getCollections().units)[availableUnits.indexOf(unit)],
             ...unit,
             index: index
-        })).filter(unit => unit.value <= budget);
+        })).filter(unit => unit.value <= budget && unit.buyable);
         
         if (units.length === 0) {
             return { units: [], totalCost: 0, efficiency: 0 };
