@@ -136,7 +136,6 @@ class ModelManager {
                                     : `${prefix}_${type}_${animationName}_${variantIndex}`;
                                     
                                 this.models[modelKey] = await this.createModel(prefix, type, mergedModel, false, true);
-                                console.log(`Loaded animation variant: ${modelKey}`);
                             }));
                         }));
                     }
