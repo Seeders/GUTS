@@ -22,7 +22,6 @@ class TeamHealthSystem {
         setTimeout(() => {
             this.createTeamHealthBars();
             this.updateHealthDisplay();
-            console.log('Team health UI initialized');
         }, 100);
     }
     
@@ -30,7 +29,6 @@ class TeamHealthSystem {
     ensureUIExists() {
         const existingContainer = document.getElementById('teamHealthBars');
         if (!existingContainer) {
-            console.log('Team health bars not found, creating...');
             this.createTeamHealthBars();
         }
         this.updateHealthDisplay();
@@ -51,7 +49,6 @@ class TeamHealthSystem {
             
             if (targetContainer) {
                 targetContainer.appendChild(healthContainer);
-                console.log('Team health bars container created and added to:', targetContainer.id);
             } else {
                 console.error('Could not find container for team health bars');
                 return;
@@ -82,7 +79,6 @@ class TeamHealthSystem {
         // Add inline styles to ensure visibility
         this.addInlineStyles();
         
-        console.log('Team health bars HTML created');
     }
     
     addInlineStyles() {
@@ -208,7 +204,6 @@ class TeamHealthSystem {
             }
         `;
         
-        console.log('Team health bar styles added');
     }
     
     updateHealthDisplay() {
@@ -231,7 +226,6 @@ class TeamHealthSystem {
     }
     
     onBattleStart() {
-        console.log('Battle started - resetting round processing flag');
         this.roundProcessed = false;
         
         // Ensure health bars are visible
@@ -243,7 +237,6 @@ class TeamHealthSystem {
         if (this.roundProcessed) return null;
         this.roundProcessed = true;
         
-        console.log(`Applying round damage for ${winningTeam} victory with ${survivingUnits.length} units`);
         
         // Calculate damage based on surviving units' value
         const totalDamage = this.calculateSurvivingUnitsValue(survivingUnits);
@@ -279,7 +272,6 @@ class TeamHealthSystem {
         if (this.roundProcessed) return null;
         this.roundProcessed = true;
         
-        console.log('Round ended in draw - no damage dealt');
         
         if (this.game.battleLogSystem) {
             this.game.battleLogSystem.add(
@@ -312,14 +304,12 @@ class TeamHealthSystem {
             }
         });
         
-        console.log(`Calculated surviving units value: ${totalValue}`);
         return totalValue;
     }
     
     dealDamageToTeam(team, damage) {
         this.teamHealth[team] = Math.max(0, this.teamHealth[team] - damage);
         
-        console.log(`Dealt ${damage} damage to ${team} team. Health: ${this.teamHealth[team]}/${this.MAX_TEAM_HEALTH}`);
         
         this.updateHealthDisplay();
         this.showDamageEffect(team, damage);
@@ -352,7 +342,6 @@ class TeamHealthSystem {
     }
     
     resetTeamHealth() {
-        console.log('Resetting team health for new game');
         this.teamHealth.player = this.MAX_TEAM_HEALTH;
         this.teamHealth.enemy = this.MAX_TEAM_HEALTH;
         this.roundProcessed = false;

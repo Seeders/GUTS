@@ -801,6 +801,5 @@ class TileMap {
 		});
 		this.terrainData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height).data;
           
-        console.log('draw terrainCanvas', this.terrainData);
 	}
   }

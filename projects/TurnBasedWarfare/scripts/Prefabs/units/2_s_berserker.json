@@ -1,0 +1,175 @@
+{
+  "title": "Berserker (2) [S]",
+  "size": 25,
+  "value": 160,
+  "hp": 180,
+  "speed": 55,
+  "damage": 24,
+  "attackSpeed": 1.5,
+  "element": "physical",
+  "armor": 3,
+  "fireResistance": 0.1,
+  "coldResistance": 0.2,
+  "lightningResistance": 0.05,
+  "render": {
+    "animations": {
+      "idle": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "projects/TurnBasedWarfare/resources/animations/idle.glb",
+                "id": 0
+              }
+            ]
+          }
+        }
+      ],
+      "walk": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "projects/TurnBasedWarfare/resources/animations/walk_steady_right_hand.glb",
+                "id": 0
+              }
+            ]
+          }
+        }
+      ],
+      "attack": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "projects/TurnBasedWarfare/resources/animations/1h_axe_swing.glb",
+                "id": 0
+              }
+            ]
+          }
+        }
+      ],
+      "death": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "projects/TurnBasedWarfare/resources/animations/death_fallback.glb",
+                "id": 0
+              }
+            ]
+          }
+        }
+      ],
+      "celebrate": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "projects/TurnBasedWarfare/resources/animations/dance_gangnamstyle.glb",
+                "id": 0
+              }
+            ]
+          }
+        },
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "projects/TurnBasedWarfare/resources/animations/dance_thriller.glb",
+                "id": 0
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "model": {
+      "main": {
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "shapes": [
+          {
+            "type": "gltf",
+            "url": "projects/TurnBasedWarfare/resources/models/berserker2/berserker2.glb",
+            "width": 2,
+            "height": 0.2,
+            "depth": 1,
+            "y": 0,
+            "z": 0,
+            "rotationX": 0,
+            "rotationY": 0,
+            "rotationZ": 0,
+            "color": "#FFFFFF",
+            "metalness": "0",
+            "roughness": "1",
+            "position": {
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        ]
+      }
+    },
+    "equipment": [
+      {
+        "slot": "mainHand",
+        "item": "axe1h",
+        "attachmentData": {
+          "bone": "RightHand",
+          "offset": {
+            "x": 0,
+            "y": 15,
+            "z": 5
+          },
+          "rotation": {
+            "x": 15,
+            "y": 0,
+            "z": 0
+          }
+        }
+      },
+      {
+        "slot": "offHand",
+        "item": "axe1h",
+        "attachmentData": {
+          "bone": "",
+          "offset": {
+            "x": 0,
+            "y": 15,
+            "z": 5
+          },
+          "rotation": {
+            "x": 180,
+            "y": 0,
+            "z": 180
+          }
+        }
+      }
+    ]
+  },
+  "buyable": false
+}

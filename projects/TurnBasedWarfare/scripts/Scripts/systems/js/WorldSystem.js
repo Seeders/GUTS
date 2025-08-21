@@ -688,7 +688,6 @@ class WorldSystem {
 
             terrainCtx.imageSmoothingEnabled = false;
             const terrainData = this.game.terrainTileMapper.terrainData;//terrainCtx.getImageData(0, 0, terrainCanvas.width, terrainCanvas.height).data;
-            console.log('read terrainCanvas', terrainData);
             const terrainTypeColors = this.createTerrainTypeColorMap();
 
             this.heightMapData = new Float32Array(this.extendedSize * this.extendedSize);

@@ -14,6 +14,13 @@ class PlacementSystem {
         this.undoStack = [];
         this.maxUndoSteps = 10; // Maximum number of undo steps
         
+        // Add enemy strategy tracking
+        this.enemyStrategies = {
+            current: null,
+            history: [],
+            playerCounters: new Map(), // Track what player uses to counter it
+        };
+        
         this.config = {
             maxUnitsPerRound: 10,
             maxCombinationsToCheck: 10000,
@@ -34,6 +41,29 @@ class PlacementSystem {
             LIGHTNING: 'lightning',
             POISON: 'poison',
             DIVINE: 'divine'
+        };
+        
+        // Strategy definitions
+        this.buildStrategies = {
+            balanced: {
+                name: 'Balanced',
+                weights: { hp: 0.3, damage: 0.4, range: 0.2, speed: 0.1 },
+                unitTypePreferences: {},
+                description: 'Well-rounded army composition'
+            },
+            counter: {
+                name: 'Counter Strategy',
+                weights: {},
+                unitTypePreferences: {},
+                description: 'Counters player\'s last strategy'
+            },
+            starter: {
+                name: 'Opening Gambit',
+                weights: { hp: 0, damage: 0, range: 0, speed: 0 },
+                unitTypePreferences: {},
+                maxUnitsToPlace: 2, // Only place 2 units
+                description: 'Simple opening with 2 random units'
+            }
         };
         
         // Bind keyboard event listener
@@ -331,7 +361,8 @@ class PlacementSystem {
         return collections.abilities[abilityId];
     }
     
-    placeEnemyUnits(onComplete) {
+    // Enhanced enemy placement with strategy support
+    placeEnemyUnits(strategy = null, onComplete) {
         this.respawnEnemyUnits();
         
         const round = this.game.state.round;
@@ -339,9 +370,125 @@ class PlacementSystem {
         const existingValue = this.calculateExistingEnemyValue();
         const availableGold = Math.max(0, enemyTotalGold - existingValue);
         
-        console.log(`Enemy Round ${round}: ${enemyTotalGold} total budget, ${existingValue} existing value, ${availableGold} available for new units`);
+        // Determine strategy for this round
+        const selectedStrategy = strategy || this.selectEnemyStrategy(round);
+        this.enemyStrategies.current = selectedStrategy;
+        this.enemyStrategies.history.push({ round, strategy: selectedStrategy });
         
-        this.addNewEnemyUnitsWithOptimalBudget(availableGold, onComplete);
+        console.log(`Enemy Round ${round}: Using ${selectedStrategy} strategy with ${availableGold} gold`, this.getEnemyStrategyInfo());
+        
+        if (this.game.battleLogSystem) {
+            this.game.battleLogSystem.add(
+                `Enemy adopts ${this.buildStrategies[selectedStrategy]?.name || selectedStrategy} strategy!`,
+                'log-damage'
+            );
+        }
+        
+        this.addNewEnemyUnitsWithStrategy(availableGold, selectedStrategy, onComplete);
+    }
+    
+    // New strategy selection method - always try to counter
+    selectEnemyStrategy(round) {
+        // Always try to counter the player after round 1
+        if (round > 1) {
+            const counterStrategy = this.getCounterStrategy();
+            if (counterStrategy) {
+                return 'counter';
+            }
+        }
+        
+        // For round 1, use a special starter strategy
+        return 'starter';
+    }
+    
+    // Analyze player's army to determine counter strategy - enhanced for more aggressive countering
+    getCounterStrategy() {
+        const playerStats = this.analyzePlayerArmy();
+        
+        // If player has no units, use balanced
+        if (this.playerPlacements.length === 0) {
+            return null;
+        }
+        
+        // Counter tank-heavy armies - FORCE mages only
+        if (playerStats.tankHeavy) {
+            this.buildStrategies.counter.unitTypePreferences = { 
+                mage: 2  // Only mages allowed (filtering will handle this)
+            };
+            this.buildStrategies.counter.weights = { 
+                elemental: 0.5, 
+                damage: 0.5
+            };
+            this.buildStrategies.counter.description = 'Countering player tanks with mages ONLY';
+            return 'counter';
+        }
+        
+        // Counter ranged-heavy armies - FORCE tanks only
+        if (playerStats.archerHeavy) {
+            this.buildStrategies.counter.unitTypePreferences = { 
+                tank: 2  // Only tanks allowed
+            };
+            this.buildStrategies.counter.weights = { 
+                hp: 0.5, 
+                armor: 0.5
+            };
+            this.buildStrategies.counter.description = 'Countering player ranged units with tanks ONLY';
+            return 'counter';
+        }
+        
+        // Counter mage-heavy armies - FORCE archers only
+        if (playerStats.mageHeavy) {
+            this.buildStrategies.counter.unitTypePreferences = { 
+                archer: 2  // Only archers allowed
+            };
+            this.buildStrategies.counter.weights = { 
+                damage: 0.5, 
+                range: 0.5
+            };
+            this.buildStrategies.counter.description = 'Countering player mages with archers ONLY';
+            return 'counter';
+        }
+        
+        // Default counter for balanced armies
+        this.buildStrategies.counter.unitTypePreferences = { 
+            mage: 1.25, 
+            archer: 1.25,
+            tank: 1.5
+        };
+        this.buildStrategies.counter.weights = { 
+            hp: 0.2, damage: 0.5, range: 0.2, speed: 0.1 
+        };
+        this.buildStrategies.counter.description = 'Countering balanced army with damage focus';
+        return 'counter';
+    }
+    
+    // Analyze player's current army composition
+    analyzePlayerArmy() {
+        const totalUnits = this.playerPlacements.length;
+        
+        if (totalUnits === 0) return {};
+        
+        let tankCount = 0;
+        let mageCount = 0;
+        let archerCount = 0;
+        
+        this.playerPlacements.forEach(placement => {
+            const unit = placement.unitType;
+            
+            // Categorize using the same logic as categorizeUnit
+            const category = this.categorizeUnit(unit);
+            switch (category) {
+                case 'tank': tankCount++; break;
+                case 'archer': archerCount++; break;
+                case 'mage': mageCount++; break;
+            }
+        });
+        
+        return {
+            tankHeavy: tankCount / totalUnits > 0.5,
+            mageHeavy: mageCount / totalUnits > 0.5,
+            archerHeavy: archerCount / totalUnits > 0.5
+        };
     }
     
     calculateExistingEnemyValue() {
@@ -356,6 +503,206 @@ class PlacementSystem {
         return totalGold;
     }
     
+    // Strategy-enhanced enemy unit placement
+    addNewEnemyUnitsWithStrategy(budget, strategy, onComplete) {
+        const UnitTypes = this.game.getCollections().units;
+        const availableUnits = Object.values(UnitTypes);
+        
+        if (budget <= 0) {
+            if (onComplete && typeof onComplete === 'function') {
+                onComplete();
+            }
+            return;
+        }
+        
+        const strategyConfig = this.buildStrategies[strategy] || this.buildStrategies.balanced;
+        const optimalCombination = this.findOptimalUnitCombinationWithStrategy(
+            budget, 
+            availableUnits, 
+            strategyConfig
+        );
+        
+        if (optimalCombination.units.length === 0) {
+            if (onComplete && typeof onComplete === 'function') {
+                onComplete();
+            }
+            return;
+        }
+        
+        const unitsToPlace = this.prepareUnitsForPlacement(optimalCombination.units);
+        this.placeUnitsWithTiming(unitsToPlace, optimalCombination, budget, onComplete);
+    }
+    
+    // Enhanced unit combination finder with strategy support
+    findOptimalUnitCombinationWithStrategy(budget, availableUnits, strategyConfig) {
+        const maxUnits = Math.floor((this.config.maxUnitsPerRound || 10) * (strategyConfig.maxUnitsMultiplier || 1.0));
+        
+        const units = availableUnits.map((unit, index) => ({
+            id: Object.keys(this.game.getCollections().units)[availableUnits.indexOf(unit)],
+            ...unit,
+            index: index,
+            strategyScore: this.calculateUnitStrategyScore(unit, strategyConfig)
+        })).filter(unit => {
+            if (!unit.buyable || unit.value > budget) return false;
+            
+            // Apply value threshold for swarm strategy
+            if (strategyConfig.valueThreshold) {
+                const maxValue = budget * strategyConfig.valueThreshold;
+                return unit.value <= maxValue;
+            }
+            
+            return true;
+        });
+        
+        if (units.length === 0) {
+            return { units: [], totalCost: 0, efficiency: 0 };
+        }
+        
+        // Generate combinations with strategy bias
+        const validCombinations = this.generateStrategyCombinations(units, budget, maxUnits, strategyConfig);
+        
+        let bestCombination = { units: [], totalCost: 0, efficiency: 0 };
+        
+        for (const combination of validCombinations) {
+            const efficiency = this.calculateCombinationEfficiency(combination, budget, strategyConfig);
+            if (efficiency > bestCombination.efficiency) {
+                bestCombination = combination;
+                bestCombination.efficiency = efficiency;
+            }
+        }
+        
+        return bestCombination;
+    }
+    
+    // Calculate how well a unit fits the current strategy
+    calculateUnitStrategyScore(unit, strategyConfig) {
+        let score = this.calculateUnitEfficiencyWithWeights(unit, strategyConfig.weights);
+        
+        // Apply unit type preferences
+        if (strategyConfig.unitTypePreferences) {
+            const unitCategory = this.categorizeUnit(unit);
+            const multiplier = strategyConfig.unitTypePreferences[unitCategory];
+            if (multiplier) {
+                score *= multiplier;
+            }
+        }
+        
+        return score;
+    }
+    
+    // Calculate unit efficiency with custom weights
+    calculateUnitEfficiencyWithWeights(unit, weights) {
+        const hp = unit.hp || 100;
+        const damage = unit.damage || 10;
+        const range = unit.range || 1;
+        const speed = unit.speed || 1;
+        const armor = unit.armor || 0;
+        const element = (unit.element || 'physical');        
+        const poison = element == 'poison' ? 1 : 0;
+        const physical = element == 'physical' ? 1 : 0;
+        const elemental = physical + poison == 0 ? 1 : 0;
+
+
+        let combatValue = (hp * weights.hp) + (damage * weights.damage) + 
+                         (range * weights.range) + (speed * weights.speed) + (elemental * weights.elemental ) + (armor * weights.armor) + (poison * weights.poison);
+        
+        
+        return combatValue / unit.value;
+    }
+    
+    // Generate combinations with strategy considerations
+    generateStrategyCombinations(units, budget, maxUnits, strategyConfig) {
+        const combinations = [];
+        
+        // Sort units by strategy score for greedy approach
+        const sortedUnits = [...units].sort((a, b) => b.strategyScore - a.strategyScore);
+        
+        // Strategy-based greedy combination
+        combinations.push(this.getStrategyGreedyCombination(sortedUnits, budget, maxUnits));
+        
+        // Add some randomized combinations for variety
+        for (let i = 0; i < 5; i++) {
+            const shuffledUnits = [...units].sort(() => Math.random() - 0.5);
+            combinations.push(this.getStrategyGreedyCombination(shuffledUnits, budget, maxUnits));
+        }
+        
+        // Original recursive approach with limited iterations
+        this.generateCombinationsRecursive(
+            units, budget, maxUnits, [], 0, 0, 0, combinations, 
+            Math.min(this.config.maxCombinationsToCheck, 1000)
+        );
+        
+        return combinations;
+    }
+    
+    // Strategy-aware greedy combination
+    getStrategyGreedyCombination(sortedUnits, budget, maxUnits) {
+        const selectedUnits = [];
+        let remainingBudget = budget;
+        let unitsPlaced = 0;
+        
+        for (const unit of sortedUnits) {
+            while (remainingBudget >= unit.value && unitsPlaced < maxUnits) {
+                selectedUnits.push(unit);
+                remainingBudget -= unit.value;
+                unitsPlaced++;
+            }
+        }
+        
+        return {
+            units: selectedUnits,
+            totalCost: budget - remainingBudget
+        };
+    }
+    
+    // Calculate combination efficiency with strategy considerations
+    calculateCombinationEfficiency(combination, budget, strategyConfig) {
+        const budgetEfficiency = combination.totalCost / budget;
+        
+        // Calculate strategy alignment bonus
+        let strategyAlignment = 0;
+        const unitTypes = new Map();
+        
+        combination.units.forEach(unit => {
+            const type = this.categorizeUnit(unit);
+            unitTypes.set(type, (unitTypes.get(type) || 0) + 1);
+        });
+        
+        // Bonus for having preferred unit types
+        if (strategyConfig.unitTypePreferences) {
+            for (const [type, preference] of Object.entries(strategyConfig.unitTypePreferences)) {
+                const count = unitTypes.get(type) || 0;
+                strategyAlignment += count * (preference - 1.0) * 0.1;
+            }
+        }
+        
+        return budgetEfficiency + strategyAlignment;
+    }
+    
+    // Categorize units for strategy analysis
+    categorizeUnit(unit) {
+        const id = (unit.id || '').toLowerCase();
+        
+        if (id.includes('_s_') || (unit.hp > 200 && unit.armor > 5)) {
+            return 'tank';
+        }
+        if (id.includes('_d_')) {
+            return 'archer';
+        }
+        if (id.includes('_i_')) {
+            return 'mage';
+        }
+        if (unit.range > 50) {
+            return 'ranged';
+        }
+        if (unit.speed > 55) {
+            return 'fast';
+        }
+        
+        return 'melee';
+    }
+    
+    // Legacy methods for backward compatibility
     findOptimalUnitCombination(budget, availableUnits, maxUnits = this.config.maxUnitsPerRound) {
         const units = availableUnits.map((unit, index) => ({
             id: Object.keys(this.game.getCollections().units)[availableUnits.indexOf(unit)],
@@ -468,28 +815,10 @@ class PlacementSystem {
         return combatValue / unit.value;
     }
     
+    // Legacy method - kept for backward compatibility
     addNewEnemyUnitsWithOptimalBudget(budget, onComplete) {
-        const UnitTypes = this.game.getCollections().units;
-        const availableUnits = Object.values(UnitTypes);
-        
-        if (budget <= 0) {
-            if (onComplete && typeof onComplete === 'function') {
-                onComplete();
-            }
-            return;
-        }
-        
-        const optimalCombination = this.findOptimalUnitCombination(budget, availableUnits);
-        
-        if (optimalCombination.units.length === 0) {
-            if (onComplete && typeof onComplete === 'function') {
-                onComplete();
-            }
-            return;
-        }
-        
-        const unitsToPlace = this.prepareUnitsForPlacement(optimalCombination.units);
-        this.placeUnitsWithTiming(unitsToPlace, optimalCombination, budget, onComplete);
+        // Use balanced strategy as default for legacy calls
+        this.addNewEnemyUnitsWithStrategy(budget, 'balanced', onComplete);
     }
     
     prepareUnitsForPlacement(units) {
@@ -600,6 +929,8 @@ class PlacementSystem {
         this.playerPlacements = [];
         this.enemyPlacements = [];
         this.clearUndoStack(); // Clear undo stack when resetting everything
+        this.enemyStrategies.history = []; // Clear strategy history
+        this.enemyStrategies.current = null;
         this.game.battleLogSystem.add('All unit placements cleared');
     }
     
@@ -669,6 +1000,15 @@ class PlacementSystem {
             canUndo: this.undoStack.length > 0,
             undoCount: this.undoStack.length,
             lastAction: this.undoStack.length > 0 ? this.undoStack[this.undoStack.length - 1] : null
+        };
+    }
+    
+    // Add method to get current enemy strategy info (for UI/debugging)
+    getEnemyStrategyInfo() {
+        return {
+            current: this.enemyStrategies.current,
+            description: this.buildStrategies[this.enemyStrategies.current]?.description || 'Unknown',
+            history: this.enemyStrategies.history.slice(-5) // Last 5 strategies
         };
     }
 }

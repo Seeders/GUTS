@@ -1,0 +1,155 @@
+Fantasy Auto-Battler Unit Roster
+================================
+
+CORE UNITS (Tier 1 Base → Tier 2 Specs)
+---------------------------------------
+
+Watchman (Tank)
+  Base: Shield Bash — reduce damage briefly
+  • Bulwark — Shield Wall (block ranged)
+  • Commander — Rallying Cry (+atk/move)
+  • Vindicator — Vengeance Slam (AoE scales with fallen allies)
+
+Hunter (Ranged DPS)
+  Base: Piercing Shot — every 4th arrow pierces
+  • Ranger — Deadeye (crit + pierce)
+  • Marksman — Headshot (snipe lowest HP)
+  • Beastmaster — Wild Companion (summon pet)
+
+Apprentice (Caster)
+  Base: Magic Bolt — simple ranged spell
+  • Fire Mage — Inferno Wave (fire line AoE)
+  • Ice Mage — Absolute Zero (freeze group)
+  • Arcanist — Mana Infusion (restore ally mana)
+
+Rogue (Assassin/Utility)
+  Base: Backstab — bonus damage from behind
+  • Assassin — Shadow Dance (untargetable burst)
+  • Poisoner — Venom Nova (DoT poison)
+  • Trickster — Mirage (illusion clones)
+
+Acolyte (Healer)
+  Base: Heal — restore lowest ally HP
+  • Cleric — Sanctuary (protective dome)
+  • Zealot — Purge Flame (AoE burn + heal allies)
+  • Oracle — Divine Inspiration (restore team mana)
+
+Slinger (Light AoE Ranged)
+  Base: Stone Throw — splash dmg
+  • Bomber — Cluster Bomb (big AoE)
+  • Fire Slinger — Burning Pitch (ground fire DoT)
+  • Ricochet — Chain Shot (bouncing attack)
+
+Spearman (Anti-Cavalry)
+  Base: Pike Thrust — bonus vs charges
+  • Phalanx — Spear Wall (stop charge)
+  • Dragoon — Storm of Spears (volley throw)
+  • Temple Guard — Sacred Spear (+armor aura)
+
+Warhounds (Beast Swarm)
+  Base: Pack Instinct — stronger near allies
+  • Alpha Wolf — Pack Hunt (focus fire)
+  • Dire Wolves — Howl of Terror (slow atk speed)
+  • Spirit Wolves — Ethereal Howl (magic dmg + invuln)
+
+Occultist (Dark Debuffer)
+  Base: Hex Bolt — weaken enemy atk
+  • Hexer — Mass Hex (polymorph group)
+  • Cultist — Blood Pact (sac HP to heal allies)
+  • Plaguebearer — Pestilence (contagious DoT)
+
+Thralls (Disposable Swarm)
+  Base: Pike Stab — weak melee
+  • Shieldbearer — Turtle Shell (invuln at low HP)
+  • Martyr — Last Stand (explode on death)
+  • Berserker Mob — Blood Surge (death → atk speed buff)
+
+Knight (Heavy Cavalry)
+  Base: Charge — rush + impact dmg
+  • Crusader — Holy Charge (heal allies while charging)
+  • Cataphract — Iron Charge (unstoppable)
+  • Dark Knight — Soul Rend (lifedrain)
+
+Ranger (Advanced Archer)
+  Base: Volley Fire — multi-shot
+  • Sharpshooter — Perfect Shot (massive hit)
+  • Beastmaster — Call of the Hawk (pet summon)
+  • Trapper — Root Net (immobilize foes)
+
+Elementalist (Tri-Mage)
+  Base: Elemental Bolt — rotates fire/ice/lightning
+  • Pyromancer — Inferno (firestorm)
+  • Cryomancer — Blizzard (freeze AoE)
+  • Stormcaller — Chain Tempest (mobile lightning storm)
+
+Assassin (Stealth Melee)
+  Base: Ambush — big opener
+  • Shadowdancer — Vanish (AoE re-engage)
+  • Venomblade — Toxic Bloom (poison burst)
+  • Nightstalker — Dread Assault (fear enemies)
+
+Druid (Nature Support)
+  Base: Minor Heal + Treant Sprout
+  • Grovekeeper — Nature’s Renewal (heal all)
+  • Beast Shaman — Wild Stampede (summon beasts)
+  • Corrupted Druid — Rotting Growth (poison vines)
+
+Ballista (Anti-Large Artillery)
+  Base: Piercing Bolt — big dmg vs large foes
+  • Siegebreaker — Titan Killer (%HP dmg)
+  • Storm Launcher — Thunder Bolt (stun)
+  • Dragon Slayer — Sky Piercer (delete flier)
+
+Shaman (Totem Mage)
+  Base: Totem Drop — buff/debuff
+  • Spirit Caller — Ancestors’ Wrath (ghost allies)
+  • Earthshaker — Earthquake Totem (big stun)
+  • Stormbringer — Totemic Storm (lightning chain)
+
+Berserker (Bruiser)
+  Base: Rage — grows stronger at low HP
+  • Ravager — Blood Frenzy (double atk + lifesteal)
+  • Warbringer — Battle Shout (team buff)
+  • Executioner — Headsman’s Strike (execute low HP)
+
+Warlock (Dark Caster)
+  Base: Dark Bolt — ranged shadow attack
+  • Curseweaver — Mass Hex (multi-polymorph)
+  • Pyromancer — Inferno Blast (meteors)
+  • Blood Mage — Blood Rain (sac HP → AoE dmg)
+
+Treant (Nature Tank)
+  Base: Root Strike — slows enemy
+  • Ancient Guardian — Entangling Roots (AoE root)
+  • Grovebound — Rebirth (revives once)
+  • Corrupted Treant — Plague Spores (death cloud)
+
+
+ELITE UNITS (Heroic Tier 3)
+----------------------------
+Paladin — Smite / Aura of Protection / Sacred Bulwark
+Orc Warlord — Cleave / War Banner / Bloodrage
+Elven Archer — Piercing Arrow / Elven Vision / Perfect Headshot
+Battlemage — Spellstrike / Elemental Ward / Arcane Overload
+Catapult — Boulder Shot / Fire Payload / Siege Barrage
+Necromancer — Raise Dead / Dark Curse / Legion of Bones
+War Golem — Crushing Slam / Hardened Plates / Magma Eruption
+Valkyrie — Dive / Blessing / Skyfall Strike
+Blood Mage — Blood Bolt / Sacrifice / Sanguine Ascension
+Dire Wolves — Pack Hunt / Howl / Midnight Ambush
+
+
+LEGENDARY UNITS (Tier 4 Mythics)
+--------------------------------
+Infernal Dragon — Inferno Cataclysm (firestorm)
+Storm Dragon — Maelstrom (roaming lightning)
+Frost Dragon — Glacial Apocalypse (mass freeze + shatter)
+Lich King — Endless Legion (summon undead horde)
+Archangel — Radiant Dawn (blind + heal)
+Fallen Angel — Abyssal Wings (drain life + shield)
+Demon Lord — Gate of Hell (summon demons)
+Voidfiend — Oblivion Rift (black hole detonation)
+Earth Titan — Worldbreaker (split ground, stun)
+Crystal Titan — Prism Burst (laser beams)
+Molten Titan — Volcano’s Wrath (lava eruption)
+World Ent — Verdant Cataclysm (mass root + treant swarm)

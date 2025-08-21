@@ -44,7 +44,7 @@ class PhaseSystem {
         }, 1000);
         
         setTimeout(() => {
-            this.game.placementSystem.placeEnemyUnits(() => {
+            this.game.placementSystem.placeEnemyUnits(null, () => {
                 state.enemyPlacementComplete = true;
                 this.updateReadyButtonState();
             });
