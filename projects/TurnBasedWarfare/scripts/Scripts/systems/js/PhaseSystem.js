@@ -6,7 +6,7 @@ class PhaseSystem {
         this.lastBattleEndCheck = 0;
         this.BATTLE_END_CHECK_INTERVAL = 1.0;
         this.config = {
-            placementPhaseTime: 30,
+            placementPhaseTime: 90,
             enemyPlacementDelay: 2000,
             battleCleanupDelay: 1500,
             roundTransitionDelay: 500,

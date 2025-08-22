@@ -104,7 +104,7 @@
         "shapes": [
           {
             "type": "gltf",
-            "url": "projects/TurnBasedWarfare/resources/models/berserker2/berserker2.glb",
+            "url": "projects/TurnBasedWarfare/resources/models/berserker/berserker.glb",
             "width": 2,
             "height": 0.2,
             "depth": 1,
@@ -142,7 +142,7 @@
           "bone": "RightHand",
           "offset": {
             "x": 0,
-            "y": 15,
+            "y": 5,
             "z": 5
           },
           "rotation": {
@@ -159,7 +159,7 @@
           "bone": "",
           "offset": {
             "x": 0,
-            "y": 15,
+            "y": 5,
             "z": 5
           },
           "rotation": {

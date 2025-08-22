@@ -80,7 +80,7 @@ Elementalist (Tri-Mage)
   Base: Elemental Bolt — rotates fire/ice/lightning
   • Pyromancer — Inferno (firestorm)
   • Cryomancer — Blizzard (freeze AoE)
-  • Stormcaller — Chain Tempest (mobile lightning storm)
+  • Electrician — Chain Lightning (lightning chain)
 
 Assassin (Stealth Melee)
   Base: Ambush — big opener
@@ -104,7 +104,7 @@ Shaman (Totem Mage)
   Base: Totem Drop — buff/debuff
   • Spirit Caller — Ancestors’ Wrath (ghost allies)
   • Earthshaker — Earthquake Totem (big stun)
-  • Stormbringer — Totemic Storm (lightning chain)
+  • Stormbringer — Tempest (mobile lightning storm)
 
 Berserker (Bruiser)
   Base: Rage — grows stronger at low HP
@@ -153,3 +153,202 @@ Earth Titan — Worldbreaker (split ground, stun)
 Crystal Titan — Prism Burst (laser beams)
 Molten Titan — Volcano’s Wrath (lava eruption)
 World Ent — Verdant Cataclysm (mass root + treant swarm)
+
+
+
+
+
+
+
+
+
+Perfect—here’s the Master Table of your Rune System, combining:
+
+Base Classes & Colors
+
+Runes (with Types & Effects)
+
+AAA (Triple-Same Rune Capstones)
+
+Color Synergies (3 Different Runes of the Same Color = Missing Type)
+
+This is designed to be clean, thematic, and easy to use for development and balance:
+
+MASTER RUNE SYSTEM TABLE
+RED – Strength (Barbarian Base)
+
+Rune 1 (Item – Fehu): Frontline units gain +5% max HP.
+
+AAA (3x Fehu): Dragonfang Blade (Item) – Permanent +25% damage & cleave to one melee unit.
+
+Rune 2 (Structure – Thurisaz): Start each battle with a barricade (+5% damage reduction nearby).
+
+AAA: Iron Bulwark (Structure) – Permanent frontline fortification at start of each battle.
+
+Rune 3 (Edict – Uruz): All melee units gain +5% lifesteal.
+
+AAA: War God’s Edict (Edict) – All melee units gain +15% damage & 15% lifesteal permanently.
+
+Rune 4 (Companion – Raidwolf): Summon a warhound each round.
+
+AAA: Alpha Pack (Companion) – 3 upgraded warhounds each round.
+
+Color Synergies (3 different Red runes)
+
+Item + Structure + Edict = Companion: Battle Standard (summon a banner-bearer each round: +5% HP aura).
+
+Item + Structure + Companion = Edict: Siege Doctrine (+10% damage vs. structures/summons).
+
+Item + Edict + Companion = Structure: War Drums (attack speed aura structure at battle start).
+
+Structure + Edict + Companion = Item: Champion’s Armament (+10% HP & +5% damage to random frontline unit each round).
+
+GREEN – Dexterity (Archer Base)
+
+Rune 1 (Companion – Ehwaz): Summon a hawk that scouts enemies.
+
+AAA: Falcon Lord (Companion) – Permanent beast ally that marks enemies (+10% crit chance vs. marked).
+
+Rune 2 (Spell – Laguz): Active: Volley (all ranged units fire an extra shot, 2-round CD).
+
+AAA: Storm of Arrows (Spell) – Active: All ranged units fire continuously for 4s (3-round CD).
+
+Rune 3 (Structure – Berkano): Start with a camouflaged trap in a random lane (roots 1 enemy).
+
+AAA: Hunting Grounds (Structure) – 3 traps each battle, chosen lanes.
+
+Rune 4 (Item – Jera): Ranged units gain +5% crit chance.
+
+AAA: Huntsmaster’s Bow (Item) – +20% crit chance, +50% crit damage to one ranged unit.
+
+Color Synergies (3 different Green runes)
+
+Companion + Spell + Structure = Item: Huntsman’s Tools (buff 1 random ranged unit each round: +5% atk speed & crit).
+
+Companion + Spell + Item = Structure: Living Snare (entangling vines trap each battle).
+
+Companion + Structure + Item = Spell: Volley Support (trigger extra basic attacks from all ranged, 2-round CD).
+
+Spell + Structure + Item = Companion: Alpha Call (extra beast every 2 rounds).
+
+BLUE – Intelligence (Apprentice Base)
+
+Rune 1 (Spell – Ansuz): Active: Arcane Bolt (deal 50 damage to random enemy caster, 2-round CD).
+
+AAA: Mindstorm (Spell) – Stuns all enemy casters for 5s (3-round CD).
+
+Rune 2 (Companion – Isa): Summon a mana sprite each round (+5 mana/sec nearby allies).
+
+AAA: Mana Wyrm (Companion) – Large mana-draining ally.
+
+Rune 3 (Edict – Perthro): All allies start battle with +20 mana.
+
+AAA: Arcane Ascension (Edict) – All mages cast 20% faster and start at +50 mana permanently.
+
+Rune 4 (Ritual – Sowilo): Each spell cast by allies grants +1% spell damage for this battle (stacks).
+
+AAA: Runic Overload (Ritual) – Spells scale infinitely (+3% spell damage per cast).
+
+Color Synergies (3 different Blue runes)
+
+Spell + Companion + Edict = Ritual: Mana Nexus (+1% spell dmg per cast this battle).
+
+Spell + Companion + Ritual = Edict: Arcane Aegis (+20% magic resist for first 6s).
+
+Spell + Edict + Ritual = Companion: Runestone Familiar (floating rune ally gives +5 mana/sec).
+
+Companion + Edict + Ritual = Spell: Burst of Insight (Active: +50 mana to all casters, 3-round CD).
+
+PURPLE – Int/Str (Acolyte Base)
+
+Rune 1 (Edict – Hagalaz): Allies gain +5% armor while above 50% HP.
+
+AAA: Divine Ward (Edict) – Permanent +15% armor to all allies.
+
+Rune 2 (Companion – Ingwaz): Summon a spirit healer each round (heals nearby allies).
+
+AAA: Celestial Guardian (Companion) – Large persistent healing spirit.
+
+Rune 3 (Item – Othala): One unit starts each round with a shield (10% max HP).
+
+AAA: Sacred Relic (Item) – Permanent 20% shield to chosen unit.
+
+Rune 4 (Ritual – Eihwaz): When an ally dies, all others gain +3% damage for that battle.
+
+AAA: Martyr’s Blessing (Ritual) – Permanent +5% damage stacking every ally death (persists across rounds).
+
+Color Synergies (3 different Purple runes)
+
+Edict + Companion + Item = Ritual: Sacred Vow (+10% dmg for 5s when below 50% HP).
+
+Edict + Companion + Ritual = Item: Relic of Faith (random ally gets shield each round).
+
+Edict + Item + Ritual = Companion: Spirit Guardian (small healing spirit each round).
+
+Companion + Item + Ritual = Edict: Martyr’s Oath (+5% dmg to all allies for 6s when one dies).
+
+TEAL – Dex/Int (Scout Base)
+
+Rune 1 (Spell – Kenaz): Active: Smoke Bomb (blind enemies in small area, 2-round CD).
+
+AAA: Silent Storm (Spell) – Active: Global blind for 3s (3-round CD).
+
+Rune 2 (Companion – Algiz): Summon a shadow clone each round (50% stats of best assassin).
+
+AAA: Doppelganger (Companion) – Summons 2 full-power clones.
+
+Rune 3 (Ritual – Nauthiz): Each enemy killed grants +3% atk speed to all allies this battle.
+
+AAA: Death Spiral (Ritual) – Permanent +3% atk speed stacking every kill across rounds.
+
+Rune 4 (Edict – Raido): All assassins gain +10% backstab damage.
+
+AAA: Thieves’ Network (Edict) – Assassins start stealthed and deal +25% crit damage.
+
+Color Synergies (3 different Teal runes)
+
+Spell + Companion + Ritual = Edict: Cloak of Deception (first 5s untargetable by ranged).
+
+Spell + Companion + Edict = Ritual: Silent Accord (+3% atk speed after first kill each round).
+
+Spell + Ritual + Edict = Companion: Shadow Familiar (scout ally reveals ambushers).
+
+Companion + Ritual + Edict = Spell: Saboteur’s Gambit (Active: disable enemy unit 4s, 2-round CD).
+
+YELLOW – Str/Dex (Soldier Base)
+
+Rune 1 (Edict – Tiwaz): All units take -5% AoE damage.
+
+AAA: Tactical Doctrine (Edict) – Permanent -15% AoE damage taken.
+
+Rune 2 (Structure – Gebo): Start each battle with a shield wall (blocks projectiles).
+
+AAA: Iron Bastion (Structure) – Shield wall now covers 2 lanes and lasts longer.
+
+Rune 3 (Item – Mannaz): One frontline gains +10% armor each round.
+
+AAA: Knight’s Oath (Item) – Permanent +25% armor & 10% dmg to chosen unit.
+
+Rune 4 (Companion – Sowilo): Summon a standard-bearer soldier (+5% atk speed aura).
+
+AAA: Legion Banner (Companion) – 3 banner soldiers each round.
+
+Color Synergies (3 different Yellow runes)
+
+Edict + Structure + Item = Companion: Standard Bearer (summon banner soldier each round).
+
+Edict + Structure + Companion = Item: Steel Tempering (buff frontline unit: +10% armor & dmg).
+
+Edict + Item + Companion = Structure: Bastion Outpost (temporary shield wall each battle).
+
+Structure + Item + Companion = Edict: Tactical Drills (-15% AoE dmg taken for 6s).
+
+KEY TAKEAWAYS
+
+24 total runes, 6 colors, 6 classes, each with 4 unique rune types.
+
+AAA = Thematic, game-changing “chase” reward for deep investment.
+
+Color Synergies = Missing-type payoffs for color commitment, rewarding intra-color drafting.
+
+Opposites avoided: No color directly gains its natural counter’s core strength.

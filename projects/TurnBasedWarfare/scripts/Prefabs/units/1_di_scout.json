@@ -1,5 +1,5 @@
 {
-  "title": "Scout (1) [DI]",
+  "title": "Rogue (1) [DI]",
   "size": 25,
   "value": 35,
   "hp": 100,
@@ -121,7 +121,7 @@
         "shapes": [
           {
             "type": "gltf",
-            "url": "projects/TurnBasedWarfare/resources/models/ranger/ranger.glb",
+            "url": "projects/TurnBasedWarfare/resources/models/rogue/rogue.glb",
             "width": 2,
             "height": 0.2,
             "depth": 1,
@@ -151,7 +151,7 @@
           "bone": "LeftHand",
           "offset": {
             "x": 0,
-            "y": 13,
+            "y": 3,
             "z": 5
           },
           "rotation": {

@@ -143,7 +143,7 @@
         "shapes": [
           {
             "type": "gltf",
-            "url": "projects/TurnBasedWarfare/resources/models/shadow_assassin/shadow_assassin.glb",
+            "url": "projects/TurnBasedWarfare/resources/models/trickster/trickster.glb",
             "width": 2,
             "height": 0.2,
             "depth": 1,

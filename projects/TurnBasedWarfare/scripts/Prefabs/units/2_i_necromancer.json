@@ -116,7 +116,7 @@
         "shapes": [
           {
             "type": "gltf",
-            "url": "projects/TurnBasedWarfare/resources/models/lich/lich.glb",
+            "url": "projects/TurnBasedWarfare/resources/models/necromancer/necromancer.glb",
             "x": 0,
             "y": 0,
             "z": 0,
@@ -137,13 +137,13 @@
         "attachmentData": {
           "bone": "RightHand",
           "offset": {
-            "x": -2,
-            "y": 5,
-            "z": -5
+            "x": 0,
+            "y": 10,
+            "z": 5
           },
           "rotation": {
             "x": 0,
-            "y": 0,
+            "y": 20,
             "z": 0
           }
         }
@@ -155,12 +155,12 @@
           "bone": "",
           "offset": {
             "x": 0,
-            "y": 5,
-            "z": -6
+            "y": 10,
+            "z": 5
           },
           "rotation": {
             "x": 0,
-            "y": 150,
+            "y": 160,
             "z": 0
           }
         }

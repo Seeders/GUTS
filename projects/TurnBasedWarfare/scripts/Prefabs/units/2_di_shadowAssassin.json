@@ -135,15 +135,10 @@
           "y": 0,
           "z": 0
         },
-        "scale": {
-          "x": 1,
-          "y": 1,
-          "z": 1
-        },
         "shapes": [
           {
             "type": "gltf",
-            "url": "projects/TurnBasedWarfare/resources/models/shadow_assassin/shadow_assassin.glb",
+            "url": "projects/TurnBasedWarfare/resources/models/assassin/assassin.glb",
             "width": 2,
             "height": 0.2,
             "depth": 1,

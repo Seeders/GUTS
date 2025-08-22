@@ -101,7 +101,7 @@
         "shapes": [
           {
             "type": "gltf",
-            "url": "projects/TurnBasedWarfare/resources/models/templar/templar.glb",
+            "url": "projects/TurnBasedWarfare/resources/models/acolyte/acolyte.glb",
             "width": 2,
             "height": 0.2,
             "depth": 1,
@@ -144,10 +144,10 @@
           "offset": {
             "x": 5,
             "y": 0,
-            "z": 0
+            "z": -2
           },
           "rotation": {
-            "x": 10,
+            "x": 15,
             "y": 0,
             "z": 0
           }

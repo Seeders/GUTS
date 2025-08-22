@@ -121,7 +121,7 @@
         "shapes": [
           {
             "type": "gltf",
-            "url": "projects/TurnBasedWarfare/resources/models/elf_female/elf_female.glb",
+            "url": "projects/TurnBasedWarfare/resources/models/beastmaster/beastmaster.glb",
             "width": 2,
             "height": 0.2,
             "depth": 1,
