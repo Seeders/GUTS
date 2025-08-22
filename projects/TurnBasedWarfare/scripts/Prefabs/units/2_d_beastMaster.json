@@ -163,5 +163,9 @@
       }
     ]
   },
-  "buyable": false
+  "buyable": false,
+  "squadWidth": 1,
+  "squadHeight": 1,
+  "placementGridWidth": 1,
+  "placementGridHeight": 1
 }

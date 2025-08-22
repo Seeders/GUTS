@@ -181,5 +181,9 @@
     "2_d_beastMaster",
     "2_d_elvenArcher",
     "2_d_ranger"
-  ]
+  ],
+  "squadWidth": 2,
+  "squadHeight": 5,
+  "placementGridWidth": 2,
+  "placementGridHeight": 5
 }

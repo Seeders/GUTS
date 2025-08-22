@@ -160,5 +160,9 @@
     "2_is_paladin",
     "2_is_crusader",
     "2_is_oathBreaker"
-  ]
+  ],
+  "squadWidth": 1,
+  "squadHeight": 1,
+  "placementGridWidth": 1,
+  "placementGridHeight": 1
 }

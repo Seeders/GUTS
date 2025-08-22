@@ -183,5 +183,9 @@
     "2_sd_gladiator",
     "2_sd_knight",
     "2_sd_hoplite"
-  ]
+  ],
+  "squadWidth": 1,
+  "squadHeight": 1,
+  "placementGridWidth": 1,
+  "placementGridHeight": 1
 }

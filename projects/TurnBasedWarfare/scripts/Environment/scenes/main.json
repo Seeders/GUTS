@@ -37,6 +37,12 @@
           "type": "ScreenManager"
         },
         {
+          "type": "UnitCreationManager"
+        },        
+        {
+          "type": "SquadManager"
+        },
+        {
           "type": "InputManager"
         }
       ],
@@ -64,6 +70,9 @@
         },
         {
           "type": "EffectsSystem"
+        },
+        {
+          "type": "GridSystem"
         },
         {
           "type": "PlacementSystem"

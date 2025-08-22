@@ -29,6 +29,8 @@
     "NotificationSystem",
     "GameLoader",
     "GameUtils",
+    "PlacementPreview",
+    "EnemyStrategy",
     "ECSGame"
   ],
   "fileName": "game",

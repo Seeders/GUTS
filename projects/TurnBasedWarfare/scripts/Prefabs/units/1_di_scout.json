@@ -168,5 +168,9 @@
     "2_di_goblinBomber",
     "2_di_shadowAssassin",
     "2_di_trickster"
-  ]
+  ],
+  "squadWidth": 1,
+  "squadHeight": 1,
+  "placementGridWidth": 1,
+  "placementGridHeight": 1
 }
