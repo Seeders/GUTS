@@ -58,7 +58,7 @@ class SquadManager {
         
         return cells;
     }
-    
+        
     /**
      * Calculate world positions for individual units within a squad formation
      * @param {Object} gridPos - Center grid position {x, z}
@@ -69,40 +69,59 @@ class SquadManager {
     calculateUnitPositions(gridPos, squadData, gridSystem) {
         const { squadWidth, squadHeight, placementGridWidth, placementGridHeight } = squadData;
         const positions = [];
-        
-        // Get the world position of the center of the formation
-        const centerWorldPos = gridSystem.gridToWorld(gridPos.x, gridPos.z);
-        
-        // Calculate the total formation size in world units
-        const formationWorldWidth = placementGridWidth * gridSystem.dimensions.cellSize;
-        const formationWorldHeight = placementGridHeight * gridSystem.dimensions.cellSize;
-        
-        // Handle single unit case
-        if (squadWidth === 1 && squadHeight === 1) {
-            positions.push({
-                x: centerWorldPos.x,
-                z: centerWorldPos.z
-            });
+        const cellSize = gridSystem.dimensions.cellSize;
+
+        // Compute the top-left (min) cell of the formation footprint
+        const startCellX = gridPos.x - Math.floor(placementGridWidth / 2);
+        const startCellZ = gridPos.z - Math.floor(placementGridHeight / 2);
+
+        // Compute the true geometric center of the whole footprint, even for even sizes
+        // Example: width=2 -> center at (start + 0.5); width=3 -> center at (start + 1)
+        const centerCellX = startCellX + (placementGridWidth - 1) / 2;
+        const centerCellZ = startCellZ + (placementGridHeight - 1) / 2;
+        const centerWorldPos = gridSystem.gridToWorld(centerCellX, centerCellZ);
+
+        // If squad footprint matches placement footprint, snap each unit to its cell center.
+        if (squadWidth === placementGridWidth && squadHeight === placementGridHeight) {
+            for (let row = 0; row < squadHeight; row++) {
+                for (let col = 0; col < squadWidth; col++) {
+                    const cellX = startCellX + col;
+                    const cellZ = startCellZ + row;
+                    const wp = gridSystem.gridToWorld(cellX, cellZ);
+                    positions.push({ x: wp.x, z: wp.z });
+                }
+            }
             return positions;
         }
-        
-        // Calculate starting position for unit grid
-        const startX = centerWorldPos.x - (formationWorldWidth / 2) + (formationWorldWidth / squadWidth / 2);
-        const startZ = centerWorldPos.z - (formationWorldHeight / 2) + (formationWorldHeight / squadHeight / 2);
-        
-        // Generate unit positions in formation
+
+        // General case: distribute units evenly across the footprint bounds
+        const formationWorldWidth  = placementGridWidth  * cellSize;
+        const formationWorldHeight = placementGridHeight * cellSize;
+
+        // Single unit: drop on the geometric center of the footprint
+        if (squadWidth === 1 && squadHeight === 1) {
+            positions.push({ x: centerWorldPos.x, z: centerWorldPos.z });
+            return positions;
+        }
+
+        // Start from the top-left point of the unit grid *inside* the formation bounds
+        const stepX = formationWorldWidth  / Math.max(1, squadWidth);
+        const stepZ = formationWorldHeight / Math.max(1, squadHeight);
+
+        const startX = centerWorldPos.x - (formationWorldWidth / 2) + (stepX / 2);
+        const startZ = centerWorldPos.z - (formationWorldHeight / 2) + (stepZ / 2);
+
         for (let row = 0; row < squadHeight; row++) {
             for (let col = 0; col < squadWidth; col++) {
-                const x = startX + (col * (formationWorldWidth / squadWidth));
-                const z = startZ + (row * (formationWorldHeight / squadHeight));
-                
+                const x = startX + col * stepX;
+                const z = startZ + row * stepZ;
                 positions.push({ x, z });
             }
         }
-        
+
         return positions;
     }
-    
+
     /**
      * Check if a squad can fit within given zone bounds
      * @param {Object} squadData - Squad configuration

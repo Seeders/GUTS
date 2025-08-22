@@ -185,7 +185,7 @@
     "2_sd_hoplite"
   ],
   "squadWidth": 1,
-  "squadHeight": 1,
+  "squadHeight": 4,
   "placementGridWidth": 1,
-  "placementGridHeight": 1
+  "placementGridHeight": 4
 }

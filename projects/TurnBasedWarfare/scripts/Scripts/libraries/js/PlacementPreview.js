@@ -21,8 +21,8 @@ class PlacementPreview {
             borderOpacity: 0.8,
             unitIndicatorRadius: 3,
             unitIndicatorSegments: 8,
-            elevationOffset: 3,
-            unitElevationOffset: 4,
+            elevationOffset: 20,
+            unitElevationOffset: 20,
             indicatorElevationOffset: 15,
             cellSizeMultiplier: 0.9
         };
@@ -157,20 +157,22 @@ class PlacementPreview {
         this.cells.forEach((cell) => {
             const worldPos = this.gridSystem.gridToWorld(cell.x, cell.z);
             
-            // Create cell plane
+            // Create cell plane - geometry is already centered
             const cellSize = this.gridSystem.dimensions.cellSize * this.config.cellSizeMultiplier;
             const geometry = new THREE.PlaneGeometry(cellSize, cellSize);
             const mesh = new THREE.Mesh(geometry, cellMaterial);
+            
+            // Position directly at world center - no offset needed since geometry is centered
             mesh.position.set(worldPos.x, this.config.elevationOffset, worldPos.z);
             mesh.rotation.x = -Math.PI / 2;
             mesh.userData = { type: 'cell', cellPos: cell };
             previewGroup.add(mesh);
             
-            // Create cell border
+            // Create cell border with same positioning
             const borderGeometry = new THREE.EdgesGeometry(geometry);
             const border = new THREE.LineSegments(borderGeometry, borderMaterial);
-            border.position.copy(mesh.position);
-            border.rotation.copy(mesh.rotation);
+            border.position.set(worldPos.x, this.config.elevationOffset, worldPos.z);
+            border.rotation.x = -Math.PI / 2;
             border.userData = { type: 'border', cellPos: cell };
             previewGroup.add(border);
         });

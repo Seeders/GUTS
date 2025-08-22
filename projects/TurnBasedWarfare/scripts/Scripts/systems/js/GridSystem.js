@@ -4,7 +4,7 @@ class GridSystem {
         this.game.gridSystem = this;        
     }
     
-    init(terrainSize = 768, cellSize = 50) {
+    init(terrainSize = 768, cellSize = 48) {
         this.cellSize = cellSize;
         this.showGrid = true;
         this.snapToGrid = true;

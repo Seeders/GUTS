@@ -166,8 +166,8 @@
     "2_i_enchanter",
     "2_i_necromancer"
   ],
-  "squadWidth": 1,
-  "squadHeight": 1,
-  "placementGridWidth": 1,
-  "placementGridHeight": 1
+  "squadWidth": 2,
+  "squadHeight": 2,
+  "placementGridWidth": 2,
+  "placementGridHeight": 2
 }
