@@ -11,7 +11,7 @@ class PhaseSystem {
             battleCleanupDelay: 1500,
             roundTransitionDelay: 500,
             notificationDisplayTime: 5000,
-            baseGoldPerRound: 50,
+            baseGoldPerRound: 25,
             startingGold: 100,
             hintDisplayDelay: 3000,
             maxSquadsPerRound: 2  // New limit
@@ -59,13 +59,15 @@ class PhaseSystem {
     
     distributeRoundGold() {
         const state = this.game.state;
-        const roundGold = this.calculateRoundGold(state.round);
         
         if (state.round === 1) {
-            state.playerGold = roundGold;
-        } else {
-            state.playerGold += roundGold;
-        }
+            state.playerGold = this.config.startingGold;
+            console.log('set player gold 3', state.playerGold);
+            return;
+        } 
+        const roundGold = this.calculateRoundGold(state.round);
+        state.playerGold += roundGold;
+    
         
         if (this.game.battleLogSystem) {
             const message = state.round === 1 
@@ -477,7 +479,7 @@ class PhaseSystem {
             this.checkForRoundEnd();
         }
     }
-    
+        
     clearMatchData() {
         if (this.phaseTimer) {
             clearInterval(this.phaseTimer);
@@ -487,6 +489,7 @@ class PhaseSystem {
         const state = this.game.state;
         state.round = 1;
         state.playerGold = this.getStartingGold();
+        console.log('set player gold 4', state.playerGold);
         state.phase = 'placement';
         state.phaseTimeLeft = this.config.placementPhaseTime;
         state.playerReady = false;
@@ -508,6 +511,11 @@ class PhaseSystem {
         }
         
         this.removeGameOverlays();
+        
+        // ONLY reset experience on full game restart (not between rounds)
+        if (this.game.squadExperienceSystem) {
+            this.game.squadExperienceSystem.reset();
+        }
         
         if (this.game.statisticsTrackingSystem) {
             this.game.statisticsTrackingSystem.resetSession();
@@ -545,8 +553,13 @@ class PhaseSystem {
             location.reload();
         }
     }
-    
+        
     clearBattlefield() {
+        // IMPORTANT: Save player squad experience BEFORE clearing
+        if (this.game.squadExperienceSystem) {
+            this.game.squadExperienceSystem.savePlayerExperience();
+        }
+        
         const ComponentTypes = this.game.componentManager.getComponentTypes();
         const entitiesToDestroy = new Set();
         
@@ -586,7 +599,12 @@ class PhaseSystem {
         if (this.game.projectileSystem?.clearAllProjectiles) {
             this.game.projectileSystem.clearAllProjectiles();
         }
+    
+    // Clear current round experience data (saved data is preserved)
+    if (this.game.squadExperienceSystem) {
+        this.game.squadExperienceSystem.squadExperience.clear();
     }
+}
     
     update(deltaTime) {
         const now = Date.now() / 1000;

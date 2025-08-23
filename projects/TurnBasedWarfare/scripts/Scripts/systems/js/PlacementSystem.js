@@ -337,8 +337,7 @@ class PlacementSystem {
         
         this.placeSquad(gridPos, state.selectedUnitType, 'player');
     }
-    
-    // OPTIMIZED: Early returns and reduced calculations
+            
     placeSquad(gridPos, unitType, team) {
         // Double-check squad limits before placing
         if (team === 'player' && !this.game.phaseSystem.canPlayerPlaceSquad()) {
@@ -349,7 +348,7 @@ class PlacementSystem {
         if (team === 'enemy' && !this.game.phaseSystem.canEnemyPlaceSquad()) {
             return null;
         }
-        
+        debugger;
         const squadData = this.squadManager.getSquadData(unitType);
         const cells = this.squadManager.getSquadCells(gridPos, squadData);
         
@@ -373,6 +372,12 @@ class PlacementSystem {
             
             this.updateGameStateForPlacement(placementId, gridPos, cells, unitType, squadUnits, team, undoInfo);
             this.gridSystem.occupyCells(cells, placementId);
+            
+            // Initialize squad in experience system
+            if (this.game.squadExperienceSystem) {
+                const unitIds = createdUnits.map(unit => unit.entityId);
+                this.game.squadExperienceSystem.initializeSquad(placementId, unitType, unitIds, team);
+            }
             
             // Batch effects creation
             if (this.game.effectsSystem && createdUnits.length <= 8) { // Limit effects for performance
@@ -510,7 +515,7 @@ class PlacementSystem {
             }
         });
     }
-    
+            
     undoLastPlacement() {
         if (!this.config.enableUndo) return;
         
@@ -547,6 +552,11 @@ class PlacementSystem {
                 this.playerPlacements.splice(placementIndex, 1);
             }
             
+            // Remove from experience system
+            if (this.game.squadExperienceSystem) {
+                this.game.squadExperienceSystem.removeSquad(undoInfo.placementId);
+            }
+            
             this.gridSystem.freeCells(undoInfo.placementId);
             this.createUndoEffects(undoInfo);
             this.logUndo(undoInfo);
@@ -560,6 +570,7 @@ class PlacementSystem {
             this.game.battleLogSystem?.add('Undo failed!', 'log-damage');
         }
     }
+
     
     createUndoEffects(undoInfo) {
         if (!this.game.effectsSystem) return;
@@ -594,9 +605,9 @@ class PlacementSystem {
     // OPTIMIZED: Simplified enemy placement with performance limits
     placeEnemyUnits(strategy = null, onComplete) {
         this.respawnEnemyUnits();
-        
         const round = this.game.state.round;
-        const enemyTotalGold = this.calculateEnemyTotalGold(round);
+        const enemyTotalGold = round == 1 ? this.game.phaseSystem.config.startingGold : this.calculateEnemyTotalGold(round);
+
         const existingValue = this.calculateExistingEnemyValue();
         const availableGold = Math.max(0, enemyTotalGold - existingValue);
         
@@ -828,9 +839,11 @@ class PlacementSystem {
             this.game.battleLogSystem?.add(`Enemy respawned ${totalUnits} units from previous rounds`);
         }
     }
-    
+           
     respawnSquads(placements, team) {
         placements.forEach(placement => {
+            const newUnitIds = [];
+            
             if (placement.squadUnits && placement.squadUnits.length > 0) {
                 placement.squadUnits.forEach(unit => {
                     const entityId = this.unitCreator.create(
@@ -841,6 +854,7 @@ class PlacementSystem {
                         team
                     );
                     unit.entityId = entityId;
+                    newUnitIds.push(entityId);
                     
                     // Limit respawn effects for performance
                     if (Math.random() < 0.3) { // Only 30% of units get effects
@@ -856,8 +870,20 @@ class PlacementSystem {
                     team
                 );
                 placement.entityId = entityId;
+                newUnitIds.push(entityId);
                 
                 this.createRespawnEffect({ x: placement.x, y: placement.y, z: placement.z }, team);
+            }
+            
+            // Re-initialize in experience system with restored level bonuses
+            if (this.game.squadExperienceSystem && placement.placementId) {
+                // Initialize squad with the unit type directly
+                this.game.squadExperienceSystem.initializeSquad(
+                    placement.placementId, 
+                    placement.unitType,  // Pass unit type directly
+                    newUnitIds, 
+                    team
+                );
             }
         });
     }
@@ -874,8 +900,13 @@ class PlacementSystem {
             { count: 4, speedMultiplier: 0.6 } // Reduced particle count
         );
     }
-    
+
     resetAllPlacements() {
+        // Clean up experience system first
+        if (this.game.squadExperienceSystem) {
+            this.game.squadExperienceSystem.reset();
+        }
+        
         // Batch cleanup effects to avoid lag
         if (this.game.effectsSystem) {
             const allPlacements = [...this.playerPlacements, ...this.enemyPlacements];
@@ -922,7 +953,7 @@ class PlacementSystem {
         
         this.game.battleLogSystem?.add('All unit placements cleared');
     }
-    
+
     startNewPlacementPhase() {
         this.respawnPlayerUnits();
         
@@ -1079,7 +1110,5 @@ class PlacementSystem {
         if (this.unitCreator) {
             this.unitCreator.dispose();
         }
-        
-        console.log('PlacementSystem disposed');
     }
 }

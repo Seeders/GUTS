@@ -67,6 +67,11 @@ class DamageSystem {
         // Apply immediate damage
         targetHealth.current -= damageResult.finalDamage;
 
+        // Award experience for damage dealt (before death check)
+        if (this.game.squadExperienceSystem && damageResult.finalDamage > 0) {
+            this.game.squadExperienceSystem.awardExperienceForDamage(sourceId, targetId, damageResult.finalDamage);
+        }
+
         // Visual feedback
         this.applyVisualFeedback(targetId, damageResult, element);
 
@@ -126,7 +131,7 @@ class DamageSystem {
                 const damageMultiplier = Math.max(0.2, 1 - (distance / radius));
                 const adjustedDamage = Math.floor(baseDamage * damageMultiplier);
                 
-                // Apply damage
+                // Apply damage (experience will be awarded inside applyDamage)
                 const result = this.applyDamage(sourceId, entityId, adjustedDamage, element, {
                     ...options,
                     isSplash: true,
@@ -658,7 +663,6 @@ class DamageSystem {
      * Debug method to display all active status effects
      */
     debugStatusEffects() {
-        console.log('=== Active Status Effects ===');
         for (const [entityId, effects] of this.activeStatusEffects.entries()) {
             const unitType = this.game.getComponent(entityId, this.componentTypes.UNIT_TYPE);
             const team = this.game.getComponent(entityId, this.componentTypes.TEAM);

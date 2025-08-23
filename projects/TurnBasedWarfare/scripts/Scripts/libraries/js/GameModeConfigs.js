@@ -58,6 +58,7 @@ class GameModeConfigs {
         // Apply gold progression
         if (gameInstance.state) {
             gameInstance.state.playerGold = config.goldProgression(round);
+            console.log('set player gold 1', gameInstance.state.playerGold);
         }
 
         // Apply special rules

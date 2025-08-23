@@ -1,0 +1,727 @@
+class SquadExperienceSystem {
+    constructor(game) {
+        this.game = game;
+        this.game.squadExperienceSystem = this;
+        
+        // Squad experience tracking
+        this.squadExperience = new Map(); // placementId -> experience data
+        this.savedPlayerExperience = new Map(); // placementId -> saved experience data
+        
+        // Experience configuration
+        this.config = {
+            experiencePerLevel: 10,     // Base experience needed per level
+            maxLevel: 10,                // Maximum squad level
+            levelUpCostRatio: 0.5,       // Cost to level up = squad value * ratio
+            experienceMultiplier: 1.0,   // Global experience gain multiplier
+            minExperiencePerHit: 0.1     // Minimum experience per damage instance
+        };
+        
+        // Level bonuses (applied to all units in squad)
+        this.levelBonuses = {
+            1: { hp: 1.1, damage: 1.1, name: "Veteran" },
+            2: { hp: 1.2, damage: 1.2, name: "Elite" },
+            3: { hp: 1.3, damage: 1.3, name: "Champion" },
+            4: { hp: 1.4, damage: 1.4, name: "Master" },
+            5: { hp: 1.5, damage: 1.5, name: "Legendary" },
+            6: { hp: 1.6, damage: 1.6, name: "Mythic" },
+            7: { hp: 1.7, damage: 1.7, name: "Ascended" },
+            8: { hp: 1.8, damage: 1.8, name: "Divine" },
+            9: { hp: 1.9, damage: 1.9, name: "Transcendent" },
+            10: { hp: 2.0, damage: 2.0, name: "Godlike" }
+        };
+        
+        // UI update throttling
+        this.lastUIUpdate = 0;
+        this.UI_UPDATE_INTERVAL = 500; // Update UI every 500ms
+    }
+    
+    /**
+     * Initialize experience tracking for a new squad
+     * @param {string} placementId - Unique placement identifier
+     * @param {Object} unitType - Unit type definition (not squadData)
+     * @param {Array} unitIds - Array of entity IDs in the squad
+     * @param {string} team - Team identifier
+     */
+    initializeSquad(placementId, unitType, unitIds, team) {
+        const squadValue = this.calculateSquadValue(unitType);
+        
+        const experienceData = {
+            placementId: placementId,
+            level: 0,
+            experience: 0,
+            experienceToNextLevel: this.calculateExperienceNeeded(0),
+            squadValue: squadValue,
+            unitIds: [...unitIds],
+            team: team,
+            squadSize: unitIds.length,
+            canLevelUp: false,
+            totalUnitsInSquad: unitIds.length, // Just use actual unit count
+            lastExperienceGain: 0,
+            creationTime: Date.now()
+        };
+        
+        this.squadExperience.set(placementId, experienceData);
+        
+        // Try to restore saved experience for player squads
+        if (team === 'player') {
+            this.restorePlayerExperience(placementId, experienceData);
+        }
+        
+        // Apply initial bonuses if any
+        this.applyLevelBonuses(placementId);
+        return experienceData;
+    }
+    
+    /**
+     * Award experience to a squad when one of their units deals damage
+     * @param {number} attackerEntityId - Entity that dealt damage
+     * @param {number} targetEntityId - Entity that received damage
+     * @param {number} damageDealt - Amount of damage dealt
+     */
+    awardExperienceForDamage(attackerEntityId, targetEntityId, damageDealt) {
+        // Find the attacker's squad
+        const attackerSquadData = this.findSquadByUnitId(attackerEntityId);
+        if (!attackerSquadData) {
+            return; // Unit not part of a tracked squad
+        }
+        
+        // Find the target's squad to get their total health and value
+        const targetSquadData = this.findSquadByUnitId(targetEntityId);
+        if (!targetSquadData) {
+            return; // Target not part of a tracked squad
+        }
+        
+        // Don't award experience for friendly fire
+        if (attackerSquadData.team === targetSquadData.team) {
+            return;
+        }
+        
+        // Calculate experience based on damage percentage of target squad
+        const targetSquadTotalHealth = this.calculateSquadTotalHealth(targetSquadData.placementId);
+        const damagePercentage = Math.min(1.0, damageDealt / targetSquadTotalHealth);
+        const experiencePerUnit = (targetSquadData.squadValue * damagePercentage) / attackerSquadData.squadSize;
+        const totalExperience = Math.max(this.config.minExperiencePerHit, experiencePerUnit * this.config.experienceMultiplier);
+        
+        // Award experience to the attacking squad
+        this.addExperience(attackerSquadData.placementId, totalExperience);
+        
+        // Log experience gain
+        if (this.game.battleLogSystem && totalExperience > 1) {
+            const levelBonusName = this.getLevelBonusName(attackerSquadData.level);
+            const squadName = this.getSquadDisplayName(attackerSquadData.placementId);
+            this.game.battleLogSystem.add(
+                `${levelBonusName} ${squadName} gains ${totalExperience.toFixed(1)} XP!`,
+                'log-victory'
+            );
+        }
+    }
+    
+    /**
+     * Add experience to a squad
+     * @param {string} placementId - Squad placement ID
+     * @param {number} experience - Experience to add
+     */
+    addExperience(placementId, experience) {
+        const squadData = this.squadExperience.get(placementId);
+        if (!squadData) return;
+        
+        // Don't gain experience if already at max level or ready to level up
+        if (squadData.level >= this.config.maxLevel || squadData.canLevelUp) {
+            return;
+        }
+        
+        squadData.experience += experience;
+        squadData.lastExperienceGain = Date.now();
+        
+        // Check if squad can level up
+        if (squadData.experience >= squadData.experienceToNextLevel) {
+            squadData.canLevelUp = true;
+            
+            // Stop gaining experience until manually leveled up
+            const overflow = squadData.experience - squadData.experienceToNextLevel;
+            squadData.experience = squadData.experienceToNextLevel;
+            
+            // Notify player
+            if (this.game.battleLogSystem) {
+                const squadName = this.getSquadDisplayName(placementId);
+                this.game.battleLogSystem.add(
+                    `${squadName} is ready to level up! (Available during placement phase)`,
+                    'log-victory'
+                );
+            }
+            
+        }
+        
+        // Update UI periodically
+        const now = Date.now();
+        if (now - this.lastUIUpdate > this.UI_UPDATE_INTERVAL) {
+            this.updateSquadUI();
+            this.lastUIUpdate = now;
+        }
+    }
+    
+    /**
+     * Level up a squad (only during placement phase)
+     * @param {string} placementId - Squad placement ID
+     * @param {string} specializationId - Optional specialization unit ID (for level 3+)
+     * @returns {boolean} Success status
+     */
+    levelUpSquad(placementId, specializationId = null) {
+        if (this.game.state.phase !== 'placement') {
+            this.game.battleLogSystem?.add('Squads can only be leveled up during placement phase!', 'log-damage');
+            return false;
+        }
+        
+        const squadData = this.squadExperience.get(placementId);
+        if (!squadData || !squadData.canLevelUp) {
+            return false;
+        }
+        
+        const levelUpCost = Math.floor(squadData.squadValue * this.config.levelUpCostRatio);
+        if (this.game.state.playerGold < levelUpCost) {
+            this.game.battleLogSystem?.add(`Not enough gold to level up! Need ${levelUpCost}g`, 'log-damage');
+            return false;
+        }
+        
+        // Check if this is a specialization level (level 3+) and if specialization is available
+        const isSpecializationLevel = (squadData.level + 1) >= 3;
+        const currentUnitType = this.getCurrentUnitType(placementId);
+        const hasSpecializations = currentUnitType && currentUnitType.specUnits && currentUnitType.specUnits.length > 0;
+        
+        if (isSpecializationLevel && hasSpecializations && !specializationId) {
+            // Show specialization selection UI instead of leveling up immediately
+            this.showSpecializationSelection(placementId, squadData, levelUpCost);
+            return false; // Don't level up yet, wait for specialization choice
+        }
+        
+        // Deduct cost
+        this.game.state.playerGold -= levelUpCost;
+        
+        // Handle specialization transformation
+        if (specializationId && isSpecializationLevel && hasSpecializations) {
+            const success = this.applySpecialization(placementId, specializationId);
+            if (!success) {
+                // Refund gold if specialization failed
+                this.game.state.playerGold += levelUpCost;
+                return false;
+            }
+        }
+        
+        // Level up
+        squadData.level++;
+        squadData.experience = 0;
+        squadData.experienceToNextLevel = this.calculateExperienceNeeded(squadData.level);
+        squadData.canLevelUp = false;
+        
+        // Apply level bonuses to all units in squad
+        this.applyLevelBonuses(placementId);
+        
+        // Notify player
+        const levelBonusName = this.getLevelBonusName(squadData.level);
+        const squadName = this.getSquadDisplayName(placementId);
+        const specializationText = specializationId ? ' and specialized!' : '';
+        this.game.battleLogSystem?.add(
+            `${squadName} promoted to ${levelBonusName} level ${squadData.level}${specializationText} (-${levelUpCost}g)`,
+            'log-victory'
+        );
+        
+        // Visual effects
+        if (this.game.effectsSystem) {
+            squadData.unitIds.forEach(entityId => {
+                const pos = this.game.getComponent(entityId, this.game.componentManager.getComponentTypes().POSITION);
+                if (pos) {
+                    const effectType = specializationId ? 'magic' : 'heal';
+                    const particleCount = specializationId ? 12 : 8;
+                    this.game.effectsSystem.createParticleEffect(
+                        pos.x, pos.y + 20, pos.z,
+                        effectType,
+                        { count: particleCount, speedMultiplier: specializationId ? 1.5 : 1.2 }
+                    );
+                }
+            });
+        }
+        return true;
+    }
+    
+    /**
+     * Apply specialization transformation to a squad
+     * @param {string} placementId - Squad placement ID
+     * @param {string} specializationId - Specialization unit type ID
+     * @returns {boolean} Success status
+     */
+    applySpecialization(placementId, specializationId) {
+        const squadData = this.squadExperience.get(placementId);
+        if (!squadData) return false;
+        
+        // Get the specialization unit type
+        const collections = this.game.getCollections();
+        if (!collections || !collections.units || !collections.units[specializationId]) {
+            console.error(`Specialization unit type ${specializationId} not found`);
+            return false;
+        }
+        
+        const specializationUnitType = collections.units[specializationId];
+        
+        // Find the placement in PlacementSystem to update the unit type
+        if (!this.game.placementSystem) {
+            console.error('PlacementSystem not found');
+            return false;
+        }
+        
+        const placement = this.game.placementSystem.playerPlacements.find(p => p.placementId === placementId);
+        if (!placement) {
+            console.error(`Placement ${placementId} not found`);
+            return false;
+        }
+        
+        // Update the placement's unit type
+        const oldUnitType = placement.unitType;
+        placement.unitType = { id: specializationId, ...specializationUnitType };
+        
+        // Recreate all units in the squad with the new unit type
+        const componentTypes = this.game.componentManager.getComponentTypes();
+        const newUnitIds = [];
+        
+        // Store positions of old units
+        const positions = [];
+        squadData.unitIds.forEach(entityId => {
+            const pos = this.game.getComponent(entityId, componentTypes.POSITION);
+            if (pos) {
+                positions.push({ x: pos.x, y: pos.y, z: pos.z });
+            }
+            // Destroy old unit
+            if (this.game.destroyEntity) {
+                this.game.destroyEntity(entityId);
+            }
+        });
+        
+        // Create new specialized units at the same positions
+        positions.forEach(pos => {
+            const terrainHeight = this.game.unitCreationManager.getTerrainHeight(pos.x, pos.z);
+            const unitY = terrainHeight !== null ? terrainHeight : pos.y;
+            
+            const entityId = this.game.unitCreationManager.create(
+                pos.x, unitY, pos.z, 
+                placement.unitType, 
+                squadData.team
+            );
+            newUnitIds.push(entityId);
+        });
+        
+        // Update squad data with new unit IDs
+        squadData.unitIds = newUnitIds;
+        
+        // Update squad value based on new unit type
+        squadData.squadValue = this.calculateSquadValue(placement.unitType);
+        
+        return true;
+    }
+    
+    /**
+     * Show specialization selection UI
+     * @param {string} placementId - Squad placement ID
+     * @param {Object} squadData - Squad experience data
+     * @param {number} levelUpCost - Cost to level up
+     */
+    showSpecializationSelection(placementId, squadData, levelUpCost) {
+        const currentUnitType = this.getCurrentUnitType(placementId);
+        if (!currentUnitType || !currentUnitType.specUnits) return;
+        
+        const collections = this.game.getCollections();
+        if (!collections || !collections.units) return;
+        
+        // Create specialization selection modal
+        const modal = document.createElement('div');
+        modal.className = 'specialization-modal';
+        modal.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8); z-index: 10000;
+            display: flex; justify-content: center; align-items: center;
+        `;
+        
+        const content = document.createElement('div');
+        content.style.cssText = `
+            background: linear-gradient(145deg, #1a1a2e, #16213e);
+            border: 2px solid #ffaa00; border-radius: 10px;
+            padding: 20px; max-width: 600px; width: 90%;
+            color: #fff; text-align: center;
+        `;
+        
+        const squadName = this.getSquadDisplayName(placementId);
+        content.innerHTML = `
+            <h3 style="color: #ffaa00; margin-bottom: 15px;">⭐ SPECIALIZATION AVAILABLE! ⭐</h3>
+            <p style="margin-bottom: 20px;">Choose a specialization for your ${squadName}:</p>
+            <div id="specialization-options" style="margin-bottom: 20px;"></div>
+            <button id="cancel-specialization" style="
+                background: #666; color: #fff; border: none; padding: 8px 16px;
+                border-radius: 4px; cursor: pointer; margin-right: 10px;
+            ">Cancel</button>
+        `;
+        
+        modal.appendChild(content);
+        
+        // Add specialization options
+        const optionsContainer = content.querySelector('#specialization-options');
+        currentUnitType.specUnits.forEach(specId => {
+            const specUnit = collections.units[specId];
+            if (specUnit) {
+                const optionButton = document.createElement('button');
+                optionButton.style.cssText = `
+                    display: block; width: 100%; margin: 8px 0; padding: 12px;
+                    background: linear-gradient(135deg, #006600, #008800);
+                    color: white; border: 1px solid #00aa00; border-radius: 4px;
+                    cursor: pointer; transition: all 0.2s ease;
+                `;
+                
+                optionButton.innerHTML = `
+                    <strong>${specUnit.title || specId}</strong><br>
+                    <small style="opacity: 0.8;">${specUnit.hp || 100} HP, ${specUnit.damage || 10} DMG - Cost: ${levelUpCost}g</small>
+                `;
+                
+                optionButton.addEventListener('click', () => {
+                    document.body.removeChild(modal);
+                    this.levelUpSquad(placementId, specId);
+                    
+                    // Refresh shop
+                    if (this.game.shopSystem) {
+                        this.game.shopSystem.createShop();
+                    }
+                });
+                
+                optionButton.addEventListener('mouseenter', () => {
+                    optionButton.style.background = 'linear-gradient(135deg, #008800, #00aa00)';
+                    optionButton.style.transform = 'translateY(-2px)';
+                });
+                
+                optionButton.addEventListener('mouseleave', () => {
+                    optionButton.style.background = 'linear-gradient(135deg, #006600, #008800)';
+                    optionButton.style.transform = 'translateY(0)';
+                });
+                
+                optionsContainer.appendChild(optionButton);
+            }
+        });
+        
+        // Cancel button
+        content.querySelector('#cancel-specialization').addEventListener('click', () => {
+            document.body.removeChild(modal);
+        });
+        
+        // Close on escape
+        const escHandler = (e) => {
+            if (e.key === 'Escape') {
+                document.body.removeChild(modal);
+                document.removeEventListener('keydown', escHandler);
+            }
+        };
+        document.addEventListener('keydown', escHandler);
+        
+        document.body.appendChild(modal);
+    }
+    
+    /**
+     * Get the current unit type for a squad
+     * @param {string} placementId - Squad placement ID
+     * @returns {Object|null} Unit type or null if not found
+     */
+    getCurrentUnitType(placementId) {
+        if (!this.game.placementSystem) return null;
+        
+        const placement = this.game.placementSystem.playerPlacements.find(p => p.placementId === placementId);
+        return placement ? placement.unitType : null;
+    }
+    
+    /**
+     * Apply level bonuses to all units in a squad
+     * @param {string} placementId - Squad placement ID
+     */
+    applyLevelBonuses(placementId) {
+        const squadData = this.squadExperience.get(placementId);
+        if (!squadData || squadData.level <= 0) return;
+        
+        const bonuses = this.levelBonuses[squadData.level];
+        if (!bonuses) return;
+        
+        const componentTypes = this.game.componentManager.getComponentTypes();
+        
+        squadData.unitIds.forEach(entityId => {
+            // Apply health bonus
+            const health = this.game.getComponent(entityId, componentTypes.HEALTH);
+            if (health && bonuses.hp > 1) {
+                const newMaxHealth = Math.floor(health.max * bonuses.hp);
+                const healthIncrease = newMaxHealth - health.max;
+                health.max = newMaxHealth;
+                health.current += healthIncrease; // Also increase current health
+            }
+            
+            // Apply damage bonus
+            const combat = this.game.getComponent(entityId, componentTypes.COMBAT);
+            if (combat && bonuses.damage > 1) {
+                combat.damage = Math.floor(combat.damage * bonuses.damage);
+            }
+            
+            // Visual indicator (flash effect)
+            const animation = this.game.getComponent(entityId, componentTypes.ANIMATION);
+            if (animation) {
+                animation.flash = 0.8;
+            }
+        });
+    }
+    
+    /**
+     * Calculate total health of all units in a squad
+     * @param {string} placementId - Squad placement ID
+     * @returns {number} Total health
+     */
+    calculateSquadTotalHealth(placementId) {
+        const squadData = this.squadExperience.get(placementId);
+        if (!squadData) return 100; // Default fallback
+        
+        const componentTypes = this.game.componentManager.getComponentTypes();
+        let totalHealth = 0;
+        
+        squadData.unitIds.forEach(entityId => {
+            const health = this.game.getComponent(entityId, componentTypes.HEALTH);
+            if (health) {
+                totalHealth += health.max;
+            }
+        });
+        
+        return Math.max(1, totalHealth); // Avoid division by zero
+    }
+    
+    /**
+     * Calculate squad value based on unit type
+     * @param {Object} unitType - Unit type definition
+     * @returns {number} Squad value (just the unit's base cost)
+     */
+    calculateSquadValue(unitType) {
+        return unitType.value;
+    }
+    
+    /**
+     * Calculate experience needed for next level
+     * @param {number} currentLevel - Current level
+     * @returns {number} Experience needed
+     */
+    calculateExperienceNeeded(currentLevel) {
+        // Exponential scaling: level 1 = 100, level 2 = 150, level 3 = 225, etc.
+        return Math.floor(this.config.experiencePerLevel * Math.pow(1.5, currentLevel));
+    }
+    
+    /**
+     * Find squad data by unit entity ID
+     * @param {number} entityId - Unit entity ID
+     * @returns {Object|null} Squad experience data
+     */
+    findSquadByUnitId(entityId) {
+        for (const [placementId, squadData] of this.squadExperience.entries()) {
+            if (squadData.unitIds.includes(entityId)) {
+                return squadData;
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Get display name for a squad
+     * @param {string} placementId - Squad placement ID
+     * @returns {string} Display name
+     */
+    getSquadDisplayName(placementId) {
+        // Try to get the name from placement system
+        if (this.game.placementSystem) {
+            const playerPlacements = this.game.placementSystem.playerPlacements;
+            const placement = playerPlacements.find(p => p.placementId === placementId);
+            if (placement && placement.unitType) {
+                return placement.unitType.title || placement.unitType.id || 'Squad';
+            }
+            
+            const enemyPlacements = this.game.placementSystem.enemyPlacements;
+            const enemyPlacement = enemyPlacements.find(p => p.placementId === placementId);
+            if (enemyPlacement && enemyPlacement.unitType) {
+                return enemyPlacement.unitType.title || enemyPlacement.unitType.id || 'Enemy Squad';
+            }
+        }
+        
+        return `Squad ${placementId.slice(-4)}`;
+    }
+    
+    /**
+     * Get level bonus name
+     * @param {number} level - Squad level
+     * @returns {string} Bonus name
+     */
+    getLevelBonusName(level) {
+        return this.levelBonuses[level]?.name || '';
+    }
+    
+    /**
+     * Update squad experience UI
+     */
+    updateSquadUI() {
+        // This method could update a dedicated squad experience panel
+        // For now, we'll just ensure the shop system can access this data
+        if (this.game.shopSystem && this.game.shopSystem.updateSquadExperience) {
+            this.game.shopSystem.updateSquadExperience();
+        }
+    }
+    
+    /**
+     * Get all player squads that can level up
+     * @returns {Array} Array of squad data that can level up
+     */
+    getSquadsReadyToLevelUp() {
+        const readySquads = [];
+        
+        for (const [placementId, squadData] of this.squadExperience.entries()) {
+            if (squadData.team === 'player' && squadData.canLevelUp) {
+                readySquads.push({
+                    ...squadData,
+                    displayName: this.getSquadDisplayName(placementId),
+                    levelUpCost: Math.floor(squadData.squadValue * this.config.levelUpCostRatio),
+                    nextLevelName: this.getLevelBonusName(squadData.level + 1)
+                });
+            }
+        }
+        
+        return readySquads;
+    }
+    
+    /**
+     * Get squad experience info for display
+     * @param {string} placementId - Squad placement ID
+     * @returns {Object} Experience info
+     */
+    getSquadInfo(placementId) {
+        const squadData = this.squadExperience.get(placementId);
+        if (!squadData) return null;
+        
+        return {
+            level: squadData.level,
+            experience: squadData.experience,
+            experienceToNextLevel: squadData.experienceToNextLevel,
+            canLevelUp: squadData.canLevelUp,
+            displayName: this.getSquadDisplayName(placementId),
+            levelName: this.getLevelBonusName(squadData.level),
+            nextLevelName: this.getLevelBonusName(squadData.level + 1),
+            levelUpCost: Math.floor(squadData.squadValue * this.config.levelUpCostRatio),
+            experiencePercentage: (squadData.experience / squadData.experienceToNextLevel) * 100,
+            isMaxLevel: squadData.level >= this.config.maxLevel
+        };
+    }
+    
+    /**
+     * Clean up squad data when units are destroyed
+     * @param {string} placementId - Squad placement ID
+     */
+    removeSquad(placementId) {
+        const removed = this.squadExperience.delete(placementId);
+    }
+    
+    /**
+     * Update method called each frame
+     * @param {number} deltaTime - Time since last frame
+     */
+    update(deltaTime) {
+        // Periodic cleanup of invalid squads
+        if (Math.random() < 0.01) { // 1% chance per frame
+            this.cleanupInvalidSquads();
+        }
+    }
+    
+    /**
+     * Clean up experience data for squads with dead/missing units
+     */
+    cleanupInvalidSquads() {
+        const componentTypes = this.game.componentManager.getComponentTypes();
+        const toRemove = [];
+        
+        for (const [placementId, squadData] of this.squadExperience.entries()) {
+            // Check if any units in the squad still exist and are alive
+            const validUnits = squadData.unitIds.filter(entityId => {
+                const health = this.game.getComponent(entityId, componentTypes.HEALTH);
+                return health && health.current > 0;
+            });
+            
+            if (validUnits.length === 0) {
+                toRemove.push(placementId);
+            } else if (validUnits.length < squadData.unitIds.length) {
+                // Update the unit list to remove dead units
+                squadData.unitIds = validUnits;
+                squadData.squadSize = validUnits.length;
+            }
+        }
+        
+        toRemove.forEach(placementId => {
+            this.removeSquad(placementId);
+        });
+    }
+    
+    /**
+     * Reset all experience data (for new game)
+     */
+    reset() {
+        this.squadExperience.clear();
+        this.savedPlayerExperience.clear();
+    }
+
+    /**
+     * Save player squad experience before round cleanup
+     */
+    savePlayerExperience() {
+        this.savedPlayerExperience = new Map();
+        
+        for (const [placementId, squadData] of this.squadExperience.entries()) {
+            if (squadData.team === 'player') {
+                // Save the experience data
+                this.savedPlayerExperience.set(placementId, {
+                    level: squadData.level,
+                    experience: squadData.experience,
+                    experienceToNextLevel: squadData.experienceToNextLevel,
+                    canLevelUp: squadData.canLevelUp,
+                    squadValue: squadData.squadValue,
+                    totalUnitsInSquad: squadData.totalUnitsInSquad
+                });
+            }
+        }
+    }
+
+    /**
+     * Restore saved player experience to a respawned squad
+     */
+    restorePlayerExperience(placementId, squadData) {
+        const saved = this.savedPlayerExperience.get(placementId);
+        if (saved) {
+            squadData.level = saved.level;
+            squadData.experience = saved.experience;
+            squadData.experienceToNextLevel = saved.experienceToNextLevel;
+            squadData.canLevelUp = saved.canLevelUp;
+            
+            
+            // Apply level bonuses if squad has levels
+            if (squadData.level > 0) {
+                this.applyLevelBonuses(placementId);
+            }
+            
+            return true;
+        }
+        return false;
+    }
+    
+    /**
+     * Get debug information
+     * @returns {Object} Debug info
+     */
+    getDebugInfo() {
+        const squads = Array.from(this.squadExperience.values());
+        return {
+            totalSquads: squads.length,
+            playerSquads: squads.filter(s => s.team === 'player').length,
+            enemySquads: squads.filter(s => s.team === 'enemy').length,
+            squadsReadyToLevelUp: squads.filter(s => s.canLevelUp).length,
+            averageLevel: squads.length > 0 ? squads.reduce((sum, s) => sum + s.level, 0) / squads.length : 0,
+            maxLevel: Math.max(0, ...squads.map(s => s.level))
+        };
+    }
+}

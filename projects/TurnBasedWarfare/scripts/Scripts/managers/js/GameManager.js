@@ -44,6 +44,7 @@ class GameManager {
     applyModeConfiguration(mode) {
         if (this.gameInstance && this.gameInstance.state) {
             this.gameInstance.state.playerGold = mode.startingGold;
+            console.log('set player gold 2', this.gameInstance.state.playerGold);
             this.gameInstance.state.gameMode = mode.id;
             this.gameInstance.state.maxRounds = mode.maxRounds;
             this.gameInstance.state.goldMultiplier = mode.goldMultiplier;

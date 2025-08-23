@@ -5,7 +5,7 @@ class TeamHealthSystem {
         this.componentTypes = this.game.componentManager.getComponentTypes();
         
         // Team health configuration
-        this.MAX_TEAM_HEALTH = 2500;
+        this.MAX_TEAM_HEALTH = 5000;
         this.teamHealth = {
             player: this.MAX_TEAM_HEALTH,
             enemy: this.MAX_TEAM_HEALTH

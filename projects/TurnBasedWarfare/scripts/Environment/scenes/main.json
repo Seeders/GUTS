@@ -114,6 +114,9 @@
           "type": "ParticleSystem"
         },
         {
+          "type": "SquadExperienceSystem"
+        },
+        {
           "type": "UISystem"
         }
       ],
